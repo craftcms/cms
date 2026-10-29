@@ -70,9 +70,10 @@
        */
       emptyRow?: boolean;
       /**
-       * How many placeholder rows to draw while there are no rows yet, under
-       * the real headers. Their cells come from the `placeholder-cell` slot,
-       * or else a line of text.
+       * How many placeholder rows to draw in place of the rows, under the real
+       * headers, such as while they load. Takes the place of the loading
+       * spinner. Their cells come from the `placeholder-cell` slot, or else a
+       * line of text.
        */
       placeholderRows?: number;
     }>(),
@@ -267,10 +268,7 @@
     return columnCount + leadingColumnTracks.value.length;
   });
 
-  const showPlaceholders = computed(
-    () =>
-      props.placeholderRows > 0 && props.table.getRowModel().rows.length === 0
-  );
+  const showPlaceholders = computed(() => props.placeholderRows > 0);
 
   /** Varies the placeholder lines' lengths, the same way on every render. */
   function placeholderWidth(rowIdx: number, cellIdx: number): string {
@@ -463,7 +461,41 @@
         </tr>
       </thead>
       <tbody>
-        <template v-if="table.getRowModel().rows.length > 0">
+        <template v-if="showPlaceholders">
+          <tr
+            v-for="rowIdx in placeholderRows"
+            :key="`placeholder-${rowIdx}`"
+            class="cp-table-row"
+            aria-hidden="true"
+          >
+            <td v-if="selectable" class="cp-table-cell cp-table-cell--select">
+              <PlaceholderShape class="cp-table-placeholder-checkbox" />
+            </td>
+            <td v-if="reorderable && !readOnly"></td>
+            <td
+              v-for="(column, cellIdx) in table.getVisibleLeafColumns()"
+              :key="column.id"
+              :class="[
+                'cp-table-cell',
+                `cp-table-cell--${column.id}`,
+                resolveMetaClasses(column.columnDef.meta?.columnClass),
+                resolveMetaClasses(column.columnDef.meta?.cellClass),
+              ]"
+            >
+              <slot
+                name="placeholder-cell"
+                :column="column"
+                :index="cellIdx"
+                :width="placeholderWidth(rowIdx, cellIdx)"
+              >
+                <PlaceholderShape
+                  :style="{maxInlineSize: placeholderWidth(rowIdx, cellIdx)}"
+                />
+              </slot>
+            </td>
+          </tr>
+        </template>
+        <template v-else-if="table.getRowModel().rows.length > 0">
           <tr
             v-for="(row, rowIdx) in table.getRowModel().rows"
             :key="row.id"
@@ -552,40 +584,6 @@
                 <FlexRender :cell="cell" />
               </slot>
             </component>
-          </tr>
-        </template>
-        <template v-else-if="showPlaceholders">
-          <tr
-            v-for="rowIdx in placeholderRows"
-            :key="`placeholder-${rowIdx}`"
-            class="cp-table-row"
-            aria-hidden="true"
-          >
-            <td v-if="selectable" class="cp-table-cell cp-table-cell--select">
-              <PlaceholderShape class="cp-table-placeholder-checkbox" />
-            </td>
-            <td v-if="reorderable && !readOnly"></td>
-            <td
-              v-for="(column, cellIdx) in table.getVisibleLeafColumns()"
-              :key="column.id"
-              :class="[
-                'cp-table-cell',
-                `cp-table-cell--${column.id}`,
-                resolveMetaClasses(column.columnDef.meta?.columnClass),
-                resolveMetaClasses(column.columnDef.meta?.cellClass),
-              ]"
-            >
-              <slot
-                name="placeholder-cell"
-                :column="column"
-                :index="cellIdx"
-                :width="placeholderWidth(rowIdx, cellIdx)"
-              >
-                <PlaceholderShape
-                  :style="{maxInlineSize: placeholderWidth(rowIdx, cellIdx)}"
-                />
-              </slot>
-            </td>
           </tr>
         </template>
         <template v-else-if="emptyRow">

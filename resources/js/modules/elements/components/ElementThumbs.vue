@@ -53,7 +53,10 @@
        * size to suit it.
        */
       thumbSize?: ChipThumbSizeValue;
-      /** How many placeholder tiles to draw while there are no tiles yet. */
+      /**
+       * How many placeholder tiles to draw in place of the tiles, such as while
+       * they load. Takes the place of the loading spinner.
+       */
       placeholders?: number;
     }>(),
     {
@@ -210,7 +213,7 @@
 </script>
 
 <template>
-  <template v-if="data.length === 0 && placeholders > 0">
+  <template v-if="placeholders > 0">
     <div
       class="thumbsview-header"
       v-if="selectable && selectAll"

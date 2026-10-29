@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Data\NavItem;
@@ -582,6 +583,24 @@ abstract class ContentIndexViewModel extends ViewModel
     public function defaultTableColumns(): array
     {
         return $this->sourceSettings()->defaultTableColumns;
+    }
+
+    /**
+     * How the source's cards show their thumbnails, going by its first field
+     * layout, so the placeholders drawn while its cards load can match them.
+     *
+     * @return array{style: string, alignment: 'start'|'end'}
+     */
+    public function cardThumbs(): array
+    {
+        $sourceKey = $this->sourceState()[0];
+        $fieldLayout = $this->sourceSettings()->fieldLayouts[0]
+            ?? ($sourceKey !== null ? ElementSources::getFieldLayoutsForSource($this->elementType, $sourceKey)->first() : null);
+
+        return [
+            'style' => $fieldLayout?->getCardThumbStyle() ?? (is_a($this->elementType, Asset::class, true) ? 'cover' : 'normal'),
+            'alignment' => $fieldLayout?->getCardThumbAlignment() === 'start' ? 'start' : 'end',
+        ];
     }
 
     /** @return list<array<string, mixed>> */

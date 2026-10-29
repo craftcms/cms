@@ -215,6 +215,7 @@ it('leaves the rows out of a page load that names no view mode until they are re
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('content/Index')
             ->has('sources')
+            ->where('cardThumbs', ['style' => 'normal', 'alignment' => 'end'])
             ->missing('data')
             ->missing('pagination')
             ->missing('structure')

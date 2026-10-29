@@ -50,6 +50,7 @@ export type ContentIndexData = Omit<
   | 'actions'
   | 'exporters'
   | 'pagination'
+  | 'cardThumbs'
 > & {
   source: SourceItem | null;
   sources: Source[];
@@ -63,6 +64,8 @@ export type ContentIndexData = Omit<
   actions: BulkActionItem[] | null;
   exporters: Array<{type: string; name: string; formattable: boolean}>;
   pagination: PaginationData;
+  /** How the source's cards show their thumbnails, for card placeholders. */
+  cardThumbs?: {style: string; alignment: 'start' | 'end'};
 };
 
 /**
@@ -142,6 +145,7 @@ export function useContentIndexData<
     actions: computed(() => props().actions),
     exporters: computed(() => props().exporters),
     pagination: computed(() => props().pagination),
+    cardThumbs: computed(() => props().cardThumbs),
 
     // Merged into the literal rather than `Object.assign`ed onto the result:
     // every key above is a `computed()` ref, and assigning over one after

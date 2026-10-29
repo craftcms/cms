@@ -11,6 +11,7 @@
   } from '@/common/types';
   import ElementTable from '@/modules/elements/index/components/ElementTable.vue';
   import ElementCards from '@/modules/elements/components/ElementCards.vue';
+  import type {CardThumbSettings} from '@/modules/elements/components/ElementCards.vue';
   import ElementThumbs from '@/modules/elements/components/ElementThumbs.vue';
   import ElementIndexToolbar from '@/modules/elements/index/components/ElementIndexToolbar.vue';
   import type {ElementIndexView} from '@/modules/elements/index/types/model';
@@ -118,9 +119,21 @@
     load: () => inlineEditing?.load() ?? Promise.resolve(),
     save: (request) => inlineEditing?.save(request) ?? Promise.resolve(false),
   });
+  /**
+   * How many placeholders stand in for the rows while they load: as many as
+   * are on screen, so the page holds its height, or else a screenful.
+   */
+  function placeholderCount(screenful: number): number {
+    return pending.value || loading.value ? data.value.length || screenful : 0;
+  }
   /** Whether the rows have thumbnails, for the placeholders drawn before them. */
   const hasThumbs = computed(() =>
     visibleViewModes.value.some(({mode}) => mode === 'thumbs')
+  );
+  const cardPlaceholderThumb = computed<CardThumbSettings | null>(() =>
+    hasThumbs.value
+      ? (elementIndex.cardThumbs ?? {style: 'normal', alignment: 'end'})
+      : null
   );
   const isInlineEditing = computed(
     () =>
@@ -367,7 +380,6 @@
         ref="body"
         :class="{
           'element-index__grid': mode === 'cards' || mode === 'thumbs',
-          'element-index__loading': loading && !pending,
         }"
         @mousedown.capture="
           isInlineEditing
@@ -387,8 +399,8 @@
           :selectable="selectable"
           :select-all="multiSelect"
           :loading="loading"
-          :placeholders="pending ? 8 : 0"
-          :placeholder-thumbs="hasThumbs"
+          :placeholders="placeholderCount(8)"
+          :placeholder-thumb="cardPlaceholderThumb"
           :item-behavior="itemBehavior"
           :sortable="rowReorder?.enabled.value ?? false"
           :interactions-disabled="processing"
@@ -410,7 +422,7 @@
           :item-behavior="itemBehavior"
           :interactions-disabled="processing"
           :thumb-size="thumbSize"
-          :placeholders="pending ? 8 : 0"
+          :placeholders="placeholderCount(8)"
           @edit="onThumbEdit"
         />
         <ElementTable
@@ -419,7 +431,7 @@
           :selection="selection"
           :selectable="selectable"
           :loading="loading"
-          :placeholder-rows="pending ? 5 : 0"
+          :placeholder-rows="placeholderCount(5)"
           :spacing="TableSpacing.Spacious"
           :item-behavior="itemBehavior"
           :with-bottom-border="withBottomBorder"
@@ -427,6 +439,7 @@
           :structure="
             !isInlineEditing &&
             !pending &&
+            !loading &&
             structure !== undefined &&
             mode === 'structure'
           "
@@ -589,13 +602,6 @@
     background-color: var(--c-surface-default);
   }
 
-  // While loading, the view's spinner sits in the middle of the body rather
-  // than at its top: the body and the view fill its height.
-  .element-index__body[aria-busy='true'] {
-    display: flex;
-    flex-direction: column;
-  }
-
   .element-index__thumb-placeholder {
     inline-size: var(--c-thumbnail-size);
     block-size: var(--c-thumbnail-size);
@@ -607,12 +613,5 @@
 
   .element-index__count-placeholder {
     inline-size: 8rem;
-  }
-
-  .element-index__loading {
-    display: flex;
-    flex: 1 1 auto;
-    flex-direction: column;
-    padding-block: 0;
   }
 </style>

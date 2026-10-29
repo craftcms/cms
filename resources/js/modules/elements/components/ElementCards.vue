@@ -12,6 +12,11 @@
     type ElementIndexItemBehavior,
   } from '@/modules/elements/types/item-behavior';
 
+  export interface CardThumbSettings {
+    style: string;
+    alignment: 'start' | 'end';
+  }
+
   interface CardElement {
     id: string | number;
     label?: string;
@@ -37,10 +42,16 @@
       loading?: boolean;
       renderServerActions?: boolean;
       itemBehavior?: ElementIndexItemBehavior<CardElement>;
-      /** How many placeholder cards to draw while there are no cards yet. */
+      /**
+       * How many placeholder cards to draw in place of the cards, such as while
+       * they load. Takes the place of the loading spinner.
+       */
       placeholders?: number;
-      /** Whether the placeholder cards have thumbnails. */
-      placeholderThumbs?: boolean;
+      /**
+       * How the placeholder cards show a thumbnail, as the cards' field layout
+       * has it, or null for none.
+       */
+      placeholderThumb?: CardThumbSettings | null;
     }>(),
     {
       data: () => [],
@@ -52,7 +63,7 @@
       loading: false,
       renderServerActions: true,
       placeholders: 0,
-      placeholderThumbs: false,
+      placeholderThumb: null,
     }
   );
 
@@ -171,7 +182,7 @@
 </script>
 
 <template>
-  <template v-if="data.length === 0 && placeholders > 0">
+  <template v-if="placeholders > 0">
     <div
       class="card-grid-header"
       v-if="selectable && selectAll"
@@ -184,9 +195,13 @@
       aria-hidden="true"
     >
       <li v-for="index in placeholders" :key="index">
-        <craft-card>
+        <PlaceholderShape
+          v-if="placeholderThumb?.style === 'cover'"
+          class="card-cover-placeholder"
+        />
+        <craft-card v-else :thumb-alignment="placeholderThumb?.alignment">
           <PlaceholderShape
-            v-if="placeholderThumbs"
+            v-if="placeholderThumb"
             slot="thumbnail"
             class="card-thumb-placeholder"
           />
@@ -283,6 +298,12 @@
   .card-thumb-placeholder {
     inline-size: var(--c-thumbnail-size);
     block-size: var(--c-thumbnail-size);
+  }
+
+  .card-cover-placeholder {
+    aspect-ratio: 4 / 3;
+    block-size: auto;
+    border-radius: var(--c-card-radius, var(--c-radius-md));
   }
 
   .card-label-placeholder {
