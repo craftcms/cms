@@ -67,7 +67,18 @@ class Mcp extends Component
 
     public function getSettings(): Settings
     {
-        return $this->settings ??= new Settings(Craft::$app->getProjectConfig()->get('mcp') ?? []);
+        if ($this->settings === null) {
+            $projectConfig = Craft::$app->getProjectConfig();
+            $cpTrigger = trim((string)Craft::$app->getConfig()->getGeneral()->cpTrigger, '/');
+            // Without public registration, the authenticated server defaults to the control panel, so the public
+            // server can have `/mcp`.
+            $defaults = $cpTrigger !== '' && !$projectConfig->get(ProjectConfig::PATH_USERS . '.allowPublicRegistration')
+                ? ['route' => "/$cpTrigger/mcp", 'authorizationRoute' => "/$cpTrigger/mcp/auth"]
+                : [];
+            $this->settings = new Settings([...$defaults, ...($projectConfig->get('mcp') ?? [])]);
+        }
+
+        return $this->settings;
     }
 
     public function resetSettings(): void

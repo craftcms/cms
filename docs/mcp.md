@@ -4,7 +4,7 @@ Craft exposes content and configuration through the Model Context Protocol. It u
 
 ## Servers
 
-- **Authenticated HTTP:** a configurable endpoint, `/mcp` by default, plus an authorization endpoint, `/mcp/auth` by default. Users sign in through Craft and authorize the client through OAuth. Any active user can use it. Craft checks the user's current account state and permissions for each request. It is disabled until an administrator enables it under **Settings → MCP**.
+- **Authenticated HTTP:** a configurable endpoint, plus an authorization endpoint. They default to `/{cpTrigger}/mcp` and `/{cpTrigger}/mcp/auth`, such as `/admin/mcp`, or to `/mcp` and `/mcp/auth` when public registration is enabled or `cpTrigger` is empty. Users sign in through Craft and authorize the client through OAuth. Any active user can use it. Craft checks the user's current account state and permissions for each request. It is disabled until an administrator enables it under **Settings → MCP**.
 - **Public HTTP:** a configurable endpoint, `/mcp` by default. It is disabled until an administrator enables it and approves capabilities and content sources under **Settings → MCP**.
 - **Stdio:** `php craft mcp/serve --user=…`. The argument accepts a user ID, username, or email. That user must be active. The process acts as that user.
 
@@ -24,7 +24,7 @@ Update Craft and run its database migrations, then generate signing keys:
 php craft oauth/generate-keys
 ```
 
-Enable the authenticated server under **Settings → MCP**. Configure an MCP client with the authorization endpoint URL, normally `https://example.com/mcp/auth`. Opening the authenticated endpoint in a browser shows that URL with setup instructions. Use the normal Craft login process, including two-factor authentication, then approve or deny the client's consent request.
+Enable the authenticated server under **Settings → MCP**. Configure an MCP client with the authorization endpoint URL, such as `https://example.com/admin/mcp/auth`. Opening the authenticated endpoint in a browser shows that URL with setup instructions. Use the normal Craft login process, including two-factor authentication, then approve or deny the client's consent request.
 
 MCP uses the OAuth resource ID `mcp`. Clients discover registration, authorization, and token endpoints through OAuth metadata. See the [OAuth guide](oauth.md) for signing keys, shared configuration, discovery URLs, token lifetimes, and consent behavior.
 
