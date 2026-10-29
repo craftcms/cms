@@ -49,9 +49,11 @@ class GenerateTitles extends ImageAnalysisTask
     /**
      * Gives an image that’s still titled after its filename its embedded title.
      */
-    public static function valuesFromMetadata(Asset $asset, ImageMetadata $metadata): array
+    public static function fillFromMetadata(Asset $asset, ImageMetadata $metadata, ImageAnalysisChanges $changes): void
     {
-        return $metadata->title !== null && $asset->hasDefaultTitle() ? ['title' => mb_substr($metadata->title, 0, 255)] : [];
+        if ($metadata->title !== null && $asset->hasDefaultTitle()) {
+            $changes->setForSite($asset->siteId, 'title', mb_substr($metadata->title, 0, 255));
+        }
     }
 
     public static function needed(Asset $asset, bool $overwrite): bool
@@ -63,7 +65,7 @@ class GenerateTitles extends ImageAnalysisTask
             : array_any($groups, static fn (TranslatedSite $group): bool => $group->value === null);
     }
 
-    public static function instructions(Asset $asset): string
+    public static function instructions(Asset $asset, bool $overwrite): string
     {
         $languages = array_map(
             static fn (string $property, TranslatedSite $group): string => "- $property: ".I18N::getLocaleById($group->language)->getDisplayName('en')." ($group->language)",
@@ -79,7 +81,7 @@ class GenerateTitles extends ImageAnalysisTask
         ]);
     }
 
-    public static function schema(JsonSchema $schema, Asset $asset): array
+    public static function schema(JsonSchema $schema, Asset $asset, bool $overwrite): array
     {
         $properties = [];
 

@@ -361,6 +361,11 @@ class Asset extends Element
     private ?ImageMetadata $_uploadMetadata = null;
 
     /**
+     * @var ImageMetadata|null An uploaded image’s metadata, for filling in the asset’s other sites once it’s been saved to them
+     */
+    private ?ImageMetadata $_otherSitesMetadata = null;
+
+    /**
      * The width and height of a staged image that wasn't downloaded, read from the start of its file.
      *
      * @var array{int, int}|null
@@ -3669,9 +3674,14 @@ JS;
         ) {
             $this->_uploadMetadata = $this->uploadAnalysis->metadata ?? Images::metadata($this->tempFilePath);
 
-            foreach (app(ImageAnalyzer::class)->valuesFromMetadata($this, $this->_uploadMetadata) as $attribute => $value) {
+            $changes = app(ImageAnalyzer::class)->metadataChanges($this, $this->_uploadMetadata);
+
+            foreach ($changes->siteAttributes[$this->siteId] ?? [] as $attribute => $value) {
                 $this->$attribute = $value;
             }
+
+            // Other sites are filled in once the asset has been saved to them
+            $this->_otherSitesMetadata = $this->_uploadMetadata;
         }
 
         // Set the field layout
@@ -3830,6 +3840,18 @@ JS;
         }
 
         parent::afterSave($isNew);
+    }
+
+    #[Override]
+    public function afterPropagate(bool $isNew): void
+    {
+        if ($this->_otherSitesMetadata !== null && ! $this->propagating) {
+            $metadata = $this->_otherSitesMetadata;
+            $this->_otherSitesMetadata = null;
+            app(ImageAnalyzer::class)->fillOtherSitesFromMetadata($this, $metadata);
+        }
+
+        parent::afterPropagate($isNew);
     }
 
     #[Override]

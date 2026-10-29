@@ -65,22 +65,30 @@ class ImageAnalyzer
     }
 
     /**
-     * Returns what an image’s embedded metadata fills in for the asset in its own site, as each image analysis task
-     * reads it, such as its alt text and title. This doesn’t depend on AI being set up.
+     * Returns what an image’s embedded metadata fills in for the asset, as each image analysis task reads it, such as
+     * its alt text and title. This doesn’t depend on AI being set up.
      *
-     * @return array<string, mixed>
-     *
-     * @see ImageAnalysisTaskInterface::valuesFromMetadata()
+     * @see ImageAnalysisTaskInterface::fillFromMetadata()
      */
-    public function valuesFromMetadata(Asset $asset, ImageMetadata $metadata): array
+    public function metadataChanges(Asset $asset, ImageMetadata $metadata): ImageAnalysisChanges
     {
-        $values = [];
+        $changes = new ImageAnalysisChanges;
 
         foreach ($this->tasks() as $task) {
-            $values = [...$values, ...$task::valuesFromMetadata($asset, $metadata)];
+            $task::fillFromMetadata($asset, $metadata, $changes);
         }
 
-        return $values;
+        return $changes;
+    }
+
+    /**
+     * Saves what an image’s embedded metadata fills in for the asset’s other sites, such as once a new image has been
+     * saved to them. What it fills in for the asset’s own site is left to the caller.
+     */
+    public function fillOtherSitesFromMetadata(Asset $asset, ImageMetadata $metadata): void
+    {
+        $changes = $this->metadataChanges($asset, $metadata)->withoutSite($asset->siteId);
+        $this->save($asset, $changes);
     }
 
     /**
@@ -238,7 +246,7 @@ class ImageAnalyzer
             $image = $this->preparedImage($copy, $tempPaths);
 
             foreach ($groups as $group) {
-                $agent = new ImageAnalysisAgent($group, $asset);
+                $agent = new ImageAnalysisAgent($group, $asset, $overwrite);
 
                 try {
                     $response = $this->ai->task(reset($group)::handle())->prompt($agent, $agent->analysisPrompt(), [$image]);
@@ -277,9 +285,10 @@ class ImageAnalyzer
 
     /**
      * Records what the image is missing that can be read from its file: its colors and hash, and its embedded metadata,
-     * and what that fills in, as an upload’s does. What it fills in is set on the asset too, for the tasks to see.
+     * and what that fills in, as an upload’s does. What it fills in is set on the asset, and saved for its other sites,
+     * for the tasks to see.
      *
-     * @see valuesFromMetadata()
+     * @see metadataChanges()
      */
     private function sample(Asset $asset, string $path, ImageAnalysisChanges $changes): void
     {
@@ -296,14 +305,19 @@ class ImageAnalyzer
             $metadata = $this->images->metadata($path);
             $analysis = $analysis->withMetadata($metadata);
 
-            $values = $this->valuesFromMetadata($asset, $metadata);
+            $filled = $this->metadataChanges($asset, $metadata);
+            $values = $filled->siteAttributes[$asset->siteId] ?? [];
             Typecast::configure($asset, $values);
 
             foreach ($values as $attribute => $value) {
                 $changes->setForSite($asset->siteId, $attribute, $value);
             }
+
+            // Other sites are saved now, so tasks don’t ask for what was filled in for them
+            $this->save($asset, $filled->withoutSite($asset->siteId));
         }
 
+        $asset->analysis = $analysis;
         $changes->set('analysis', $analysis);
     }
 

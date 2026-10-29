@@ -25,16 +25,14 @@ use Illuminate\JsonSchema\Types\Type;
 interface ImageAnalysisTaskInterface extends TaskInterface
 {
     /**
-     * Returns what the metadata embedded in the image’s file fills in for the asset in its own site, such as alt text
-     * written for it, as attribute values indexed by name.
+     * Records what the metadata embedded in the image’s file fills in for the asset, such as alt text written for it,
+     * in its own site or any of its others.
      *
      * This is called when an image is uploaded, and when its metadata is first read for analysis, before the tasks
      * that would run are chosen, whether or not AI is set up. Tasks should only fill in values the asset is missing,
      * so {@see needed()} sees them and the model isn’t asked for them.
-     *
-     * @return array<string, mixed>
      */
-    public static function valuesFromMetadata(Asset $asset, ImageMetadata $metadata): array;
+    public static function fillFromMetadata(Asset $asset, ImageMetadata $metadata, ImageAnalysisChanges $changes): void;
 
     /**
      * Returns whether the task has anything to do for an image.
@@ -46,15 +44,18 @@ interface ImageAnalysisTaskInterface extends TaskInterface
 
     /**
      * Returns what the model should do for the task, which is added to the prompt.
+     *
+     * @param  bool  $overwrite  Whether values the asset already has may be replaced, as passed to {@see needed()}.
      */
-    public static function instructions(Asset $asset): string;
+    public static function instructions(Asset $asset, bool $overwrite): string;
 
     /**
      * Returns the properties of the task’s part of the response.
      *
+     * @param  bool  $overwrite  Whether values the asset already has may be replaced, as passed to {@see needed()}.
      * @return array<string, Type>
      */
-    public static function schema(JsonSchema $schema, Asset $asset): array;
+    public static function schema(JsonSchema $schema, Asset $asset, bool $overwrite): array;
 
     /**
      * Applies the task’s part of the response to the asset, by recording changes to make.
