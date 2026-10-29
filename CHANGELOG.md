@@ -247,6 +247,7 @@
 - Fixed an error that occurred on release pages if one of the release’s drafts belonged to an element that had been deleted, such as along with its section. The draft is now listed as blocked with “The entry has been deleted.”, and can be removed by anyone who can manage the release.
 - Fixed a bug where AI-generated alt text and titles replaced the ones filled in from an image’s embedded metadata, for images whose metadata was read by the image analysis queue job, such as indexed images.
 - Fixed a bug where the “Duplicate” and “Delete” element actions didn’t do anything when unpublished drafts were selected, and element actions on element indexes ran for the primary site rather than the selected one.
+- Fixed a bug where saving an element removed the values of fields whose field type was missing, such as fields from an uninstalled plugin, from some or all of the element’s sites. ([#20173](https://github.com/craftcms/cms/pull/20173))
 
 ### Accessibility
 
