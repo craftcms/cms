@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\FieldLayout\Concerns;
+namespace CraftCms\Yii2Adapter\FieldLayout\Concerns;
 
 use craft\base\Event as YiiEvent;
 use craft\events\DefineFieldLayoutCustomFieldsEvent;

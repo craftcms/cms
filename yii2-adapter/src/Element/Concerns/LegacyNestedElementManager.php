@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Element\Concerns;
+namespace CraftCms\Yii2Adapter\Element\Concerns;
 
 /**
  * @internal

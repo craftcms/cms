@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-namespace CraftCms\Cms\Field\Elements\Concerns;
+namespace CraftCms\Yii2Adapter\Field\Elements\Concerns;
 
 use craft\base\ElementEventConstants;
 use Deprecated;

@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-namespace CraftCms\Cms\Field\Concerns;
+namespace CraftCms\Yii2Adapter\Field\Concerns;
 
 use Closure;
 use Craft;

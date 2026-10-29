@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-namespace CraftCms\Cms\Shared\Concerns;
+namespace CraftCms\Yii2Adapter\Shared\Concerns;
 
 use craft\base\Event as YiiEvent;
 use craft\base\FieldLayoutComponent;
