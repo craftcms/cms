@@ -29,10 +29,10 @@
       </template>
       <template v-else>{{ formatPrice(edition.price) }}</template>
     </div>
-    <p
-      v-if="!isEditionFree(edition) && !plugin.abandoned"
-      class="edition-purchase__renewal"
-    >
+    <p v-if="isEditionFree(edition)" class="edition-purchase__renewal">
+      {{ t('No purchase necessary.') }}
+    </p>
+    <p v-else-if="!plugin.abandoned" class="edition-purchase__renewal">
       {{
         t('Plus {renewalPrice}/year for updates after one year.', {
           renewalPrice: formatPrice(edition.renewalPrice),

@@ -837,6 +837,7 @@ return [
     'Image type' => 'Image type',
     'Let each asset choose which sites it should be saved to' => 'Let each asset choose which sites it should be saved to',
     'No description.' => 'No description.',
+    'No purchase necessary.' => 'No purchase necessary.',
     'Sort' => 'Sort',
     'Partner Profile' => 'Partner Profile',
     'Previous' => 'Previous',
