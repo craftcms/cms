@@ -137,7 +137,11 @@
     </craft-empty>
 
     <ul v-else-if="result" class="plugin-reviews">
-      <li v-for="review in result.data" :key="review.id" class="grid gap-md">
+      <li
+        v-for="review in result.data"
+        :key="review.id"
+        class="flex flex-col gap-md"
+      >
         <RatingStars :rating="review.rating" />
         <p class="m-0">{{ review.comment }}</p>
         <div class="flex items-center gap-md">

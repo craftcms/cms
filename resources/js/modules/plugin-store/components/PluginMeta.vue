@@ -49,7 +49,7 @@
 </script>
 
 <template>
-  <div class="grid gap-md">
+  <div class="flex flex-col gap-lg">
     <div class="grid gap-md">
       <PluginEdition
         v-for="edition in plugin.editions"
