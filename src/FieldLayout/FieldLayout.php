@@ -24,6 +24,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\Heading;
 use CraftCms\Cms\FieldLayout\LayoutElements\HorizontalRule;
 use CraftCms\Cms\FieldLayout\LayoutElements\LineBreak;
 use CraftCms\Cms\FieldLayout\LayoutElements\Markdown;
+use CraftCms\Cms\FieldLayout\LayoutElements\Template;
 use CraftCms\Cms\FieldLayout\LayoutElements\Tip;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Support\Arr;
@@ -683,6 +684,7 @@ class FieldLayout extends Component
             new Tip(['style' => Tip::STYLE_TIP]),
             new Tip(['style' => Tip::STYLE_WARNING]),
             new Markdown,
+            new Template,
         ];
 
         event($event = new FieldLayoutUIElementsResolving($this, $elements));
