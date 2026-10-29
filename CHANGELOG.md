@@ -399,7 +399,7 @@
 - `craft\web\assets\pluginstore\PluginStoreAsset` is now deprecated and does nothing.
 - Removed the `plugin-store/craft-data` and `plugin-store/save-plugin-license-keys` actions.
 - Added the `page-header` layout slot, a row atop the screen’s panel that spans the secondary nav and the content.
-- Added the `subtle` attribute to `<craft-button-group>`, which sets its buttons on a quiet track with the pressed one raised out of it.
+- Added the `appearance` property to `<craft-tabs>`, and `CraftCms\Cms\Cp\Components\Tabs::appearance()`. `line` is the default; `fill` sets the tabs on a quiet track with the selected one raised out of it.
 - Added the `.cp-prose` and `.cp-group-heading` CSS classes, for long-form text and group headings in control panel screens.
 - Added `CraftCms\Cms\Support\Query::prepareDateForDb()`, which converts a date to the UTC string Craft stores dates as, for writing or comparing it with the query builder. ([#20053](https://github.com/craftcms/cms/pull/20053))
 - Eloquent models that extend `CraftCms\Cms\Shared\BaseModel` now store and read dates in UTC, including their timestamps and soft-delete dates. ([#20053](https://github.com/craftcms/cms/pull/20053))
