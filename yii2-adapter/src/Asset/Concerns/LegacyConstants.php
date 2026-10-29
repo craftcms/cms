@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Asset\Concerns;
+namespace CraftCms\Yii2Adapter\Asset\Concerns;
 
 use craft\base\ElementEventConstants;
 use craft\base\Event as YiiEvent;

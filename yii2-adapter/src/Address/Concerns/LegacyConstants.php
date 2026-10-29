@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-namespace CraftCms\Cms\Address\Concerns;
+namespace CraftCms\Yii2Adapter\Address\Concerns;
 
 use CommerceGuys\Addressing\AddressFormat\AddressField;
 use craft\base\ElementEventConstants;
