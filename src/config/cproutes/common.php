@@ -3,6 +3,8 @@
 use craft\helpers\StringHelper;
 
 return [
+    'oauth/<resource:[a-zA-Z0-9_-]+>/<action:register|authorize|approve|deny|token>' => 'oauth/<action>',
+
     'assets/edit/<elementId:\d+><filename:(?:-[^\/]*)?>' => 'elements/edit',
     'assets' => 'assets/index',
     'assets/<defaultSource:{handle}(\/.*)?>' => 'assets/index',
@@ -42,6 +44,7 @@ return [
     'myaccount/preferences' => 'users/preferences',
     'myaccount/password' => 'users/password',
     'myaccount/passkeys' => 'users/passkeys',
+    'myaccount/tokens' => 'users/tokens',
     'update' => 'updater',
     'settings/addresses' => ['template' => 'settings/addresses/_fields'],
     'settings/assets' => 'volumes/volume-index',
@@ -63,6 +66,7 @@ return [
     'settings/globals' => 'system-settings/global-set-index',
     'settings/globals/new' => 'system-settings/edit-global-set',
     'settings/globals/<globalSetId:\d+>' => 'system-settings/edit-global-set',
+    'settings/mcp' => 'mcp-settings/index',
     'settings/plugins/<handle>' => 'plugins/edit-plugin-settings',
     'settings/routes' => [
         'template' => 'settings/routes',

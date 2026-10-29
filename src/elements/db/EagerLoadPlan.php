@@ -74,4 +74,10 @@ class EagerLoadPlan extends BaseObject
      * @since 5.11.2
      */
     public ?array $siteIds = null;
+
+    /**
+     * @var Closure|null Applies constraints after mapping criteria have been configured.
+     * @since 5.12.0
+     */
+    public ?Closure $configureQuery = null;
 }

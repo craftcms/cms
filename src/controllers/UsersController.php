@@ -52,6 +52,7 @@ use craft\web\Request;
 use craft\web\ServiceUnavailableHttpException;
 use craft\web\UploadedFile;
 use craft\web\View;
+use DateInterval;
 use DateTime;
 use Throwable;
 use yii\base\Exception;
@@ -1549,6 +1550,195 @@ JS);
         ]);
 
         return $response;
+    }
+
+    /**
+     * Personal access tokens screen
+     *
+     * @return Response
+     * @since 5.12.0
+     */
+    public function actionTokens(): Response
+    {
+        $this->requireCpRequest();
+        $user = static::currentUser();
+        /**
+         * @var Response|CpScreenResponseBehavior $response
+         * @phpstan-ignore varTag.nativeType
+         */
+        $response = $this->asEditUserScreen($user, self::SCREEN_TOKENS);
+
+        $tokens = Craft::$app->getPersonalAccessTokens();
+
+        $this->getView()->registerJsWithVars(fn($action) => <<<JS
+$('#new-token-btn').on('activate', () => {
+  Craft.elevatedSessionManager.requireElevatedSession(
+    () => {
+      new Craft.CpModal($action, {
+        onSubmit: () => window.location.reload(),
+      });
+    },
+    null,
+    Math.min(Craft.elevatedSessionDuration, 300)
+  );
+});
+$(document).on('click', '.token-edit-btn', (ev) => {
+  const {clientId, tokenId} = ev.currentTarget.dataset;
+  new Craft.CpModal($action, {
+    params: {clientId, tokenId},
+    showSubmitButton: !!tokenId,
+    onSubmit: () => window.location.reload(),
+  });
+});
+JS, ['users/token-modal']);
+
+        $response->contentTemplate('users/_tokens', [
+            'groups' => $tokens->scopeGroups(),
+            'grants' => $tokens->grants($user),
+            'newToken' => Craft::$app->getSession()->getFlash('accessToken'),
+        ]);
+
+        return $response;
+    }
+
+    /**
+     * Returns the modal for creating a personal access token, or for viewing an existing token or authorized app.
+     *
+     * Personal access tokens can be renamed. Their scopes are signed into the token, so they can’t be changed.
+     *
+     * @return Response
+     * @since 5.12.0
+     */
+    public function actionTokenModal(): Response
+    {
+        $this->requireCpRequest();
+        $user = static::currentUser();
+        $tokens = Craft::$app->getPersonalAccessTokens();
+        $clientId = $this->request->getParam('clientId');
+        $tokenId = $this->request->getParam('tokenId') ?: null;
+        $grant = null;
+
+        if ($clientId) {
+            $grant = ArrayHelper::firstWhere($tokens->grants($user), fn(array $grant) => $grant['clientId'] === $clientId && $grant['tokenId'] === $tokenId);
+            if (!$grant) {
+                throw new NotFoundHttpException('Token not found.');
+            }
+        } else {
+            $this->requireElevatedSession();
+        }
+
+        $response = $this->asCpModal()->contentTemplate('users/_token', [
+            'groups' => $grant ? $tokens->scopeGroups() : $tokens->scopeGroupsFor($user),
+            'grant' => $grant,
+        ]);
+
+        if (!$grant) {
+            return $response->action('users/create-token')->submitButtonLabel(Craft::t('app', 'Create'));
+        }
+
+        return $response->action($grant['personal'] ? 'users/save-token' : null);
+    }
+
+    /**
+     * Creates a personal access token for the current user.
+     *
+     * @return Response|null
+     * @since 5.12.0
+     */
+    public function actionCreateToken(): ?Response
+    {
+        $this->requirePostRequest();
+        $this->requireCpRequest();
+        $this->requireElevatedSession();
+        $user = static::currentUser();
+
+        $name = trim($this->request->getBodyParam('name', ''));
+        $scopes = array_values(array_filter((array)($this->request->getBodyParam('scopes') ?: [])));
+        $errors = [];
+        if ($error = $this->tokenNameError($name)) {
+            $errors['name'][] = $error;
+        }
+        if (!$scopes) {
+            $errors['scopes'][] = Craft::t('app', 'Choose at least one scope.');
+        }
+        if ($errors) {
+            return $this->asFailure(Craft::t('app', 'Couldn’t create the token.'), ['errors' => $errors]);
+        }
+
+        $days = (int)$this->request->getRequiredBodyParam('expiresIn');
+        if (!in_array($days, [7, 30, 90, 365], true)) {
+            throw new BadRequestHttpException('Invalid expiration.');
+        }
+
+        try {
+            $token = Craft::$app->getPersonalAccessTokens()->create($user, $name, $scopes, new DateInterval("P{$days}D"));
+        } catch (InvalidArgumentException) {
+            return $this->asFailure(Craft::t('app', 'Couldn’t create the token.'), [
+                'errors' => ['scopes' => [Craft::t('app', 'Choose at least one scope.')]],
+            ]);
+        }
+        Craft::$app->getSession()->setFlash('accessToken', $token);
+
+        return $this->asSuccess(Craft::t('app', 'Token created.'), redirect: UrlHelper::cpUrl('myaccount/tokens'));
+    }
+
+    /**
+     * Renames one of the current user’s personal access tokens.
+     *
+     * @return Response|null
+     * @since 5.12.0
+     */
+    public function actionSaveToken(): ?Response
+    {
+        $this->requirePostRequest();
+        $this->requireCpRequest();
+
+        $name = trim($this->request->getBodyParam('name', ''));
+        if ($error = $this->tokenNameError($name)) {
+            return $this->asFailure(Craft::t('app', 'Couldn’t save the token.'), ['errors' => ['name' => [$error]]]);
+        }
+
+        try {
+            Craft::$app->getPersonalAccessTokens()->rename(static::currentUser(), $this->request->getRequiredBodyParam('tokenId'), $name);
+        } catch (InvalidArgumentException $e) {
+            throw new BadRequestHttpException($e->getMessage(), previous: $e);
+        }
+
+        return $this->asSuccess(Craft::t('app', 'Token saved.'), redirect: UrlHelper::cpUrl('myaccount/tokens'));
+    }
+
+    private function tokenNameError(string $name): ?string
+    {
+        if ($name === '') {
+            return Craft::t('yii', '{attribute} cannot be blank.', ['attribute' => Craft::t('app', 'Name')]);
+        }
+        if (mb_strlen($name) > 255) {
+            return Craft::t('yii', '{attribute} should contain at most {max, number} {max, plural, one{character} other{characters}}.', [
+                'attribute' => Craft::t('app', 'Name'),
+                'max' => 255,
+            ]);
+        }
+        return null;
+    }
+
+    /**
+     * Revokes one of the current user’s personal access tokens, or their tokens for an authorized app.
+     *
+     * @return Response|null
+     * @since 5.12.0
+     */
+    public function actionRevokeToken(): ?Response
+    {
+        $this->requirePostRequest();
+        $this->requireCpRequest();
+
+        Craft::$app->getPersonalAccessTokens()->revoke(
+            static::currentUser(),
+            $this->request->getRequiredBodyParam('clientId'),
+            $this->request->getBodyParam('tokenId') ?: null,
+        );
+
+        return $this->asSuccess(Craft::t('app', 'Access revoked.'), redirect: UrlHelper::cpUrl('myaccount/tokens'));
     }
 
     /**

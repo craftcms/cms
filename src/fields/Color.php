@@ -13,6 +13,7 @@ use craft\base\DefaultableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\InputSchemaFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\elements\Entry;
 use craft\fields\data\ColorData;
@@ -35,7 +36,8 @@ class Color extends Field implements
     InlineEditableFieldInterface,
     MergeableFieldInterface,
     CrossSiteCopyableFieldInterface,
-    DefaultableFieldInterface
+    DefaultableFieldInterface,
+    InputSchemaFieldInterface
 {
     /**
      * @inheritdoc
@@ -519,5 +521,14 @@ class Color extends Field implements
         }
 
         return $this->getPreviewHtml($value, $element ?? new Entry());
+    }
+
+    /**
+     * @inheritdoc
+     * @since 5.12.0
+     */
+    public function getInputSchema(): array
+    {
+        return ['type' => 'string'];
     }
 }

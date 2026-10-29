@@ -391,7 +391,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
     /**
      * Sets the section's entry types.
      *
-     * @param EntryType[] $entryTypes
+     * @param array<EntryType|int|string|array{id?:int,uid?:string,name?:string,handle?:string}> $entryTypes
      * @since 3.1.0
      */
     public function setEntryTypes(array $entryTypes): void

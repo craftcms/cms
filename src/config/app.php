@@ -11,6 +11,8 @@ return [
     'controllerNamespace' => 'craft\controllers',
 
     'components' => [
+        'oauth' => ['class' => craft\services\OAuth::class],
+        'mcp' => ['class' => craft\services\Mcp::class],
         'addresses' => [
             'class' => craft\services\Addresses::class,
         ],
@@ -92,6 +94,9 @@ return [
         ],
         'plugins' => [
             'class' => craft\services\Plugins::class,
+        ],
+        'personalAccessTokens' => [
+            'class' => craft\services\PersonalAccessTokens::class,
         ],
         'pluginStore' => [
             'class' => craft\services\PluginStore::class,

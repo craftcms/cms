@@ -74,10 +74,12 @@ use craft\helpers\Db;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
 use craft\models\Section;
+use craft\oauth\Resource as OAuthResource;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\records\GqlToken as GqlTokenRecord;
 use GraphQL\Error\ClientAware;
@@ -207,6 +209,29 @@ class Gql extends Component
 
     /**
      * @event RegisterGqlSchemaComponentsEvent The event that is triggered when registering GraphQL schema components.
+     *
+     * Components can support authenticated (OAuth) requests by setting an `authenticated` key on their config,
+     * set to `true` if the component should be available to all authenticated users, or a callable that is passed
+     * a [[User]] and returns whether the component should be available to them. Components that support
+     * authenticated requests are responsible for limiting their results to what [[GqlSchema::$user]] may access.
+     *
+     * ---
+     * ```php
+     * use craft\elements\User;
+     * use craft\events\RegisterGqlSchemaComponentsEvent;
+     * use craft\services\Gql;
+     * use yii\base\Event;
+     *
+     * Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_SCHEMA_COMPONENTS, function(RegisterGqlSchemaComponentsEvent $event) {
+     *     $event->queries['My Plugin'] = [
+     *         'widgets:read' => [
+     *             'label' => 'Query for widgets',
+     *             'authenticated' => fn(User $user) => $user->can('myPlugin:viewWidgets'),
+     *         ],
+     *     ];
+     * });
+     * ```
+     *
      * @since 3.5.0
      */
     public const EVENT_REGISTER_GQL_SCHEMA_COMPONENTS = 'registerGqlSchemaComponents';
@@ -325,6 +350,18 @@ class Gql extends Component
      * @since 3.6.0
      */
     public const GRAPHQL_COMPLEXITY_NPLUS1 = 500;
+
+    /**
+     * @var string The OAuth scope that grants queries against the authenticated schema.
+     * @since 5.12.0
+     */
+    public const SCOPE_READ = 'graphql:read';
+
+    /**
+     * @var string The OAuth scope that grants queries and mutations against the authenticated schema.
+     * @since 5.12.0
+     */
+    public const SCOPE_WRITE = 'graphql:write';
 
     /**
      * @var Schema|null Currently loaded schema definition
@@ -796,6 +833,116 @@ class Gql extends Component
             'queries' => $queries,
             'mutations' => $mutations,
         ];
+    }
+
+    /**
+     * Returns a schema for authenticated requests made on behalf of a user, made up of the schema components that
+     * support authenticated requests and are available to that user.
+     *
+     * The schema’s scope is cached per user, and varies by the project config version and the user’s permissions.
+     * Components whose `authenticated` callbacks depend on anything else should be available whenever the user
+     * might need them, and limit their results instead.
+     *
+     * @param User $user The user the request is authenticated as
+     * @param bool $includeMutations Whether mutation components should be included
+     * @return GqlSchema
+     * @since 5.12.0
+     */
+    public function getSchemaForUser(User $user, bool $includeMutations = true): GqlSchema
+    {
+        $cacheKey = sprintf(
+            'gql-user-scope::%s::%s::%s::%s::%s',
+            $user->id,
+            (int)$includeMutations,
+            Craft::$app->edition->value,
+            Craft::$app->getInfo()->configVersion,
+            $this->_userPermissionsHash($user),
+        );
+
+        return new GqlSchema([
+            'name' => 'Authenticated Schema',
+            'uid' => "user:$user->uid",
+            'scope' => Craft::$app->getCache()->getOrSet($cacheKey, fn() => $this->_userScope($user, $includeMutations)),
+            'user' => $user,
+        ]);
+    }
+
+    /**
+     * Returns the schema components that are available to a user.
+     *
+     * @param User $user
+     * @param bool $includeMutations
+     * @return string[]
+     */
+    private function _userScope(User $user, bool $includeMutations): array
+    {
+        $components = $this->getAllSchemaComponents();
+        $scope = [];
+
+        $collect = function(array $group) use (&$collect, &$scope, $user) {
+            foreach ($group as $component => $config) {
+                $authenticated = $config['authenticated'] ?? false;
+                if ($authenticated === true || (is_callable($authenticated) && $authenticated($user))) {
+                    $scope[] = $component;
+                }
+
+                if (isset($config['nested'])) {
+                    $collect($config['nested']);
+                }
+            }
+        };
+
+        array_map($collect, $components['queries']);
+        if ($includeMutations) {
+            array_map($collect, $components['mutations']);
+        }
+
+        $scope[] = 'directive:parseRefs';
+        $scope[] = 'directive:transform';
+
+        return $scope;
+    }
+
+    /**
+     * Returns a hash of a user’s current permissions.
+     *
+     * @param User $user
+     * @return string
+     */
+    private function _userPermissionsHash(User $user): string
+    {
+        $permissions = $user->admin ? ['*'] : Craft::$app->getUserPermissions()->getPermissionsByUserId($user->id);
+        sort($permissions);
+        return md5(implode(',', $permissions));
+    }
+
+    /**
+     * Returns the GraphQL API’s protected OAuth resource definition.
+     *
+     * @return OAuthResource
+     * @since 5.12.0
+     */
+    public function getOAuthResource(): OAuthResource
+    {
+        return new OAuthResource([
+            'id' => 'graphql',
+            'scopes' => [
+                self::SCOPE_READ => Craft::t('app', 'Query content you have access to.'),
+                self::SCOPE_WRITE => Craft::t('app', 'Create, edit, and delete content you have access to.'),
+            ],
+            'defaultScopes' => [self::SCOPE_READ, self::SCOPE_WRITE],
+            'scopeLevels' => [self::SCOPE_READ, self::SCOPE_WRITE],
+            'scopeLabels' => [
+                self::SCOPE_READ => Craft::t('app', 'Read only'),
+                self::SCOPE_WRITE => Craft::t('app', 'Read and write'),
+            ],
+            'resourceUrl' => function() {
+                $baseUrl = Craft::$app->getSites()->getPrimarySite()->getBaseUrl() ?? UrlHelper::baseUrl();
+                $actionTrigger = Craft::$app->getConfig()->getGeneral()->actionTrigger;
+                return rtrim($baseUrl, '/') . "/$actionTrigger/graphql/api";
+            },
+            'consentDescription' => 'This client can query and change content through the GraphQL API at the access level you choose, within your permissions.',
+        ]);
     }
 
     /**
@@ -1479,6 +1626,12 @@ class Gql extends Component
                 '::' . Craft::$app->getInfo()->configVersion .
                 '::' . serialize($variables) .
                 ($operationName ? "::$operationName" : '');
+
+            // Results for authenticated requests are limited to what the user can access, so vary them by the
+            // user’s current permissions as well
+            if ($schema->user) {
+                $cacheKey .= '::' . $this->_userPermissionsHash($schema->user);
+            }
         } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $cacheKey = null;
@@ -1641,9 +1794,11 @@ class Gql extends Component
     private function siteSchemaComponents(): array
     {
         $sites = Craft::$app->getSites()->getAllSites(true);
+        $isMultiSite = Craft::$app->getIsMultiSite(true);
         $queryComponents = [
             'settings.sites:read' => [
                 'label' => Craft::t('app', 'Query for sites'),
+                'authenticated' => true,
                 'info' => Craft::t('app', 'Adds “{plural}” and “{singular}” queries, and a “{field}” field to elements.', [
                     'plural' => 'sites',
                     'singular' => 'site',
@@ -1657,6 +1812,7 @@ class Gql extends Component
                 'label' => Craft::t('app', 'Query for elements in the “{site}” site', [
                     'site' => $site->name,
                 ]),
+                'authenticated' => fn(User $user) => !$isMultiSite || $user->can("editSite:$site->uid"),
             ];
         }
 
@@ -1673,12 +1829,15 @@ class Gql extends Component
         $queryComponents = [
             'elements.drafts:read' => [
                 'label' => Craft::t('app', 'Query for element drafts'),
+                'authenticated' => fn(User $user) => $user->can('accessCp'),
             ],
             'elements.revisions:read' => [
                 'label' => Craft::t('app', 'Query for element revisions'),
+                'authenticated' => fn(User $user) => $user->can('accessCp'),
             ],
             'elements.inactive:read' => [
                 'label' => Craft::t('app', 'Query for non-enabled elements'),
+                'authenticated' => fn(User $user) => $user->can('accessCp'),
             ],
         ];
 
@@ -1700,6 +1859,7 @@ class Gql extends Component
         if (!empty($entriesService->getAllSections())) {
             $queryComponents['settings.sections:read'] = [
                 'label' => Craft::t('app', 'Query for sections'),
+                'authenticated' => fn(User $user) => $user->can('accessCp'),
                 'info' => Craft::t('app', 'Adds “{plural}” and “{singular}” queries, and a “{field}” field to entries.', [
                     'plural' => 'sections',
                     'singular' => 'section',
@@ -1711,6 +1871,7 @@ class Gql extends Component
         if (!empty($entriesService->getAllEntryTypes())) {
             $queryComponents['settings.entrytypes:read'] = [
                 'label' => Craft::t('app', 'Query for entry types'),
+                'authenticated' => fn(User $user) => $user->can('accessCp'),
                 'info' => Craft::t('app', 'Adds “{plural}” and “{singular}” queries, and a “{field}” field to entries.', [
                     'plural' => 'entryTypes',
                     'singular' => 'entryType',
@@ -1726,9 +1887,11 @@ class Gql extends Component
             $prefix = "sections.$section->uid";
             $queryComponents["$prefix:read"] = [
                 'label' => Craft::t('app', 'Query for the “{name}” entry', ['name' => $name]),
+                'authenticated' => fn(User $user) => $user->can("viewEntries:$section->uid"),
             ];
             $mutationComponents["$prefix:save"] = [
                 'label' => Craft::t('app', 'Save the “{section}” entry', ['section' => $name]),
+                'authenticated' => fn(User $user) => $user->can("saveEntries:$section->uid"),
             ];
         }
 
@@ -1742,19 +1905,28 @@ class Gql extends Component
 
             $queryComponents["$prefix:read"] = [
                 'label' => Craft::t('app', 'Query for entries in the “{name}” section', ['name' => $name]),
+                'authenticated' => fn(User $user) => $user->can("viewEntries:$section->uid"),
             ];
 
             $mutationComponents["$prefix:edit"] = [
                 'label' => Craft::t('app', 'Edit entries in the “{name}” section', ['name' => $name]),
+                'authenticated' => fn(User $user) => (
+                    $user->can("createEntries:$section->uid") ||
+                    $user->can("saveEntries:$section->uid") ||
+                    $user->can("deleteEntries:$section->uid")
+                ),
                 'nested' => [
                     "$prefix:create" => [
                         'label' => Craft::t('app', 'Create entries in the “{section}” section', ['section' => $name]),
+                        'authenticated' => fn(User $user) => $user->can("createEntries:$section->uid"),
                     ],
                     "$prefix:save" => [
                         'label' => Craft::t('app', 'Save entries in the “{section}” section', ['section' => $name]),
+                        'authenticated' => fn(User $user) => $user->can("saveEntries:$section->uid"),
                     ],
                     "$prefix:delete" => [
                         'label' => Craft::t('app', 'Delete entries in the “{section}” section', ['section' => $name]),
+                        'authenticated' => fn(User $user) => $user->can("deleteEntries:$section->uid"),
                     ],
                 ],
             ];
@@ -1780,6 +1952,7 @@ class Gql extends Component
                     'name' => $name,
                     'type' => $type,
                 ]),
+                'authenticated' => true,
             ];
 
             $mutationComponents["$prefix:edit"] = [
@@ -1787,24 +1960,28 @@ class Gql extends Component
                     'name' => $name,
                     'type' => $type,
                 ]),
+                'authenticated' => true,
                 'nested' => [
                     "$prefix:create" => [
                         'label' => Craft::t('app', 'Create entries in the “{section}” {type} field', [
                             'section' => $name, // todo: change to 'name'
                             'type' => $type,
                         ]),
+                        'authenticated' => true,
                     ],
                     "$prefix:save" => [
                         'label' => Craft::t('app', 'Save entries in the “{section}” {type} field', [
                             'section' => $name, // todo: change to 'name'
                             'type' => $type,
                         ]),
+                        'authenticated' => true,
                     ],
                     "$prefix:delete" => [
                         'label' => Craft::t('app', 'Delete entries in the “{section}” {type} field', [
                             'section' => $name, // todo: change to 'name'
                             'type' => $type,
                         ]),
+                        'authenticated' => true,
                     ],
                 ],
             ];
@@ -1828,6 +2005,7 @@ class Gql extends Component
         if (!empty($volumes)) {
             $queryComponents['settings.volumes:read'] = [
                 'label' => Craft::t('app', 'Query for volumes'),
+                'authenticated' => fn(User $user) => $user->can('accessCp'),
                 'info' => Craft::t('app', 'Adds “{plural}” and “{singular}” queries, and a “{field}” field to assets.', [
                     'plural' => 'volumes',
                     'singular' => 'volume',
@@ -1840,18 +2018,26 @@ class Gql extends Component
                 $prefix = "volumes.$volume->uid";
                 $queryComponents["$prefix:read"] = [
                     'label' => Craft::t('app', 'Query for assets in the “{name}” volume', ['name' => $name]),
+                    'authenticated' => fn(User $user) => $user->can("viewAssets:$volume->uid"),
                 ];
                 $mutationComponents["$prefix:edit"] = [
                     'label' => Craft::t('app', 'Edit assets in the “{volume}” volume', ['volume' => $name]),
+                    'authenticated' => fn(User $user) => (
+                        $user->can("saveAssets:$volume->uid") ||
+                        $user->can("deleteAssets:$volume->uid")
+                    ),
                     'nested' => [
                         "$prefix:create" => [
                             'label' => Craft::t('app', 'Create assets in the “{volume}” volume', ['volume' => $name]),
+                            'authenticated' => fn(User $user) => $user->can("saveAssets:$volume->uid"),
                         ],
                         "$prefix:save" => [
                             'label' => Craft::t('app', 'Modify assets in the “{volume}” volume', ['volume' => $name]),
+                            'authenticated' => fn(User $user) => $user->can("saveAssets:$volume->uid"),
                         ],
                         "$prefix:delete" => [
                             'label' => Craft::t('app', 'Delete assets from the “{volume}” volume', ['volume' => $name]),
+                            'authenticated' => fn(User $user) => $user->can("deleteAssets:$volume->uid"),
                         ],
                     ],
                 ];
@@ -1901,6 +2087,7 @@ class Gql extends Component
         if (Craft::$app->edition === CmsEdition::Solo) {
             $queryComponents['usergroups.solo:read'] = [
                 'label' => Craft::t('app', 'View {type}', ['type' => User::lowerDisplayName()]),
+                'authenticated' => fn(User $user) => $user->can('viewUsers'),
             ];
         } else {
             $userGroups = Craft::$app->getUserGroups()->getAllGroups();
@@ -1908,6 +2095,7 @@ class Gql extends Component
             if (!empty($userGroups)) {
                 $queryComponents['settings.usergroups:read'] = [
                     'label' => Craft::t('app', 'Query for user groups'),
+                    'authenticated' => fn(User $user) => $user->can('viewUsers'),
                     'info' => Craft::t('app', 'Adds “{plural}” and “{singular}” queries, and a “{field}” field to users.', [
                         'plural' => 'userGroups',
                         'singular' => 'userGroup',
@@ -1918,6 +2106,7 @@ class Gql extends Component
 
             $queryComponents['usergroups.everyone:read'] = [
                 'label' => Craft::t('app', 'Query for users'),
+                'authenticated' => fn(User $user) => $user->can('viewUsers'),
             ];
 
             foreach ($userGroups as $userGroup) {
@@ -1925,6 +2114,7 @@ class Gql extends Component
                 $prefix = "usergroups.$userGroup->uid";
                 $queryComponents["$prefix:read"] = [
                     'label' => Craft::t('app', 'Query for users in the “{name}” user group', ['name' => $name]),
+                    'authenticated' => fn(User $user) => $user->can('viewUsers'),
                 ];
             }
         }

@@ -1,0 +1,92 @@
+{% import '_includes/forms.twig' as forms %}
+
+<h2>{{ 'Tokens'|t('app') }}</h2>
+<p>{{ 'Tokens let apps and scripts access Craft’s APIs as you, limited to what you have access to.'|t('app')|widont }}</p>
+
+{% if newToken %}
+  <div class="readable">
+    {% embed '_includes/forms/field.twig' with {
+      label: 'New token'|t('app'),
+      instructions: 'Copy this token now. You won’t be able to see it again.'|t('app'),
+      id: 'new-token',
+    } %}
+      {% block input %}
+        {% include '_includes/forms/copytext.twig' with {
+          id: 'new-token',
+          value: newToken,
+          class: ['code', 'fullwidth'],
+        } %}
+      {% endblock %}
+    {% endembed %}
+    <p class="light">{{ 'Send it with API requests in an `Authorization: Bearer` header.'|t('app')|md(inlineOnly=true) }}</p>
+  </div>
+  <hr>
+{% endif %}
+
+<div class="pane tablepane hairline">
+  {% if grants is empty %}
+    <p class="zilch">{{ 'You haven’t created or authorized any tokens yet.'|t('app') }}</p>
+  {% else %}
+    <div class="tableview">
+      <table class="data fullwidth">
+        <thead>
+        <tr>
+          <th scope="col">{{ 'Name'|t('app') }}</th>
+          <th scope="col">{{ 'Type'|t('app') }}</th>
+          <th scope="col">{{ 'Expires on'|t('app') }}</th>
+          <th scope="col"><span class="visually-hidden">{{ 'Actions'|t('app') }}</span></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for grant in grants %}
+          <tr>
+            <th scope="row">{{ grant.name }}</th>
+            <td>
+              {% if grant.personal %}
+                {{ 'Personal'|t('app') }}
+              {% else %}
+                {# Apps show the APIs they were authorized for #}
+                {{ grant.scopes|keys|map(handle => groups[handle].label ?? null)|filter|join(', ')|default('App'|t('app')) }}
+              {% endif %}
+            </td>
+            <td>{{ grant.expiresAt|date('short') }}</td>
+            <td class="thin">
+              {{ disclosureMenu([
+                {
+                  label: 'Edit'|t('app'),
+                  icon: 'edit',
+                  attributes: {
+                    class: ['token-edit-btn'],
+                    data: {'client-id': grant.clientId, 'token-id': grant.tokenId},
+                  },
+                },
+                {
+                  label: 'Revoke'|t('app'),
+                  icon: 'remove',
+                  destructive: true,
+                  action: 'users/revoke-token',
+                  params: {clientId: grant.clientId, tokenId: grant.tokenId},
+                  confirm: 'Are you sure you want to revoke “{name}”? Anything using it will lose access.'|t('app', {name: grant.name}),
+                  redirect: 'myaccount/tokens',
+                },
+              ], {
+                buttonAttributes: {
+                  class: ['action-btn', 'hairline'],
+                  hiddenLabel: 'Actions'|t('app'),
+                  'aria-label': 'Actions for {name}'|t('app', {name: grant.name}),
+                },
+              }) }}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>
+
+{{ forms.button({
+  id: 'new-token-btn',
+  label: 'New token'|t('app'),
+  icon: 'plus',
+}) }}
