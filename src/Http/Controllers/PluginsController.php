@@ -17,6 +17,7 @@ use CraftCms\Cms\View\LegacyAssets\PluginsAsset;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -173,7 +174,7 @@ readonly class PluginsController
         return $plugin->getSettingsResponse();
     }
 
-    public function saveSettings(Request $request, string $handle): Response
+    public function saveSettings(Request $request, string $handle): mixed
     {
         $request->validate([
             'settings' => ['nullable', 'array'],
@@ -192,6 +193,16 @@ readonly class PluginsController
         }
 
         $success = $this->plugins->savePluginSettings($plugin, $settings);
+
+        if (! $success && $request->expectsJson()) {
+            $errors = [];
+
+            foreach ($plugin->getSettings()?->errors()->getMessages() ?? [] as $attribute => $messages) {
+                $errors["settings.$attribute"] = $messages;
+            }
+
+            throw ValidationException::withMessages($errors);
+        }
 
         return $success
             ? $this->asSuccess(t('Plugin settings saved.'))
