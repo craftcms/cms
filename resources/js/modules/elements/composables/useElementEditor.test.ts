@@ -1788,6 +1788,21 @@ describe('useElementEditor', () => {
     reload.mockRestore();
   });
 
+  it('saves without error when the response redirects to another screen', async () => {
+    const {editor, page} = mount(
+      payload({activityUrl: '/actions/elements/recent-activity'})
+    );
+    const save = interceptSave();
+
+    editor.save();
+
+    // Save redirects to the entries index, whose props carry no edit payload.
+    await expect(
+      save.land(page, {title: 'Entries', elementType: 'craft\\elements\\Entry'})
+    ).resolves.toBeUndefined();
+    save.restore();
+  });
+
   it('saves a newer mutation before attaching after an earlier autosave', async () => {
     vi.useFakeTimers();
     postSpy.mockResolvedValue({data: {draftId: 9}});
