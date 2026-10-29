@@ -55,7 +55,7 @@ Signing keys, token lifetimes, and client redirect restrictions are configured s
 
 Under **Settings → MCP**, choose a public route, enable the server, and approve each tool, resource, resource template, or prompt to expose. A capability must be marked `PublicMcp` before it is eligible for approval.
 
-Approve the sites, sections, nested-entry fields, volumes, user groups, and other element types the public content tools may read. These approvals are stored in project config under `mcp`. Drafts, revisions, and inactive content each require a separate approval. An empty source list exposes none of that source's content.
+Approve the sites, sections, nested-entry fields, volumes, user groups, and other element types the public content tools may read. Categories, tags, and global sets aren't available through MCP. These approvals are stored in project config under `mcp`. Drafts, revisions, and inactive content each require a separate approval. An empty source list exposes none of that source's content.
 
 Public callers have no Craft user identity. They receive only approved capabilities. The core public tools `craft-context-get` and `craft-query` describe and query approved content. Public queries default to 25 results and are capped at 100.
 
