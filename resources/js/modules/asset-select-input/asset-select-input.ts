@@ -3,6 +3,10 @@ import {UploadError} from '@/upload-client';
 import type {UploaderCallbacks} from '@/modules/uploader/base-uploader';
 import {BaseElementSelectInput} from '@/modules/element-select-input/base-element-select-input';
 import {openAssetImageEditor} from '@/modules/image-editor';
+import {IntervalManager} from '@/modules/interval-manager/interval-manager';
+import '@craftcms/ui/components/progress-bar/progress-bar';
+import type CraftProgressBar from '@craftcms/ui/components/progress-bar/progress-bar';
+import './asset-select-input.css';
 
 declare const Craft: any;
 declare const Garnish: any;
@@ -12,7 +16,7 @@ declare const $: any;
  * AssetSelectInput — a port of `Craft.AssetSelectInput` onto
  * {@link BaseElementSelectInput}. Extends the base element select with:
  * - An upload button + hidden file input wired to the native uploader
- * - A `ProgressBar` overlay during uploads
+ * - A `<craft-progress-bar>` overlay during uploads, announced to screen readers
  * - Shift-Space keyboard shortcut to open the file preview modal
  *
  * Notes:
@@ -25,7 +29,8 @@ export class AssetSelectInput extends BaseElementSelectInput {
   $uploadBtn: any = null;
   $fileInput: any = null;
   uploader: any = null;
-  progressBar: any = null;
+  progressBar: CraftProgressBar | null = null;
+  #progressAnnouncer: IntervalManager | null = null;
   openPreviewTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor(settings?: any) {
@@ -115,9 +120,19 @@ export class AssetSelectInput extends BaseElementSelectInput {
   }
 
   _attachUploader(): void {
-    this.progressBar = new Craft.ProgressBar(
-      $('<div class="progress-shade"></div>').appendTo(this.$container)
-    );
+    const shade = document.createElement('div');
+    shade.className = 'progress-shade';
+    this.progressBar = document.createElement('craft-progress-bar');
+    this.progressBar.label = Craft.t('app', 'Upload progress');
+    this.progressBar.hidden = true;
+    shade.append(this.progressBar);
+    this.$container[0].append(shade);
+
+    // The bar has no live region of its own, so progress is read out
+    // periodically while an upload runs.
+    this.#progressAnnouncer = new IntervalManager({
+      onInterval: () => Craft.cp.announce(this.#progressMessage()),
+    });
 
     if (this.$addElementBtn) {
       this.$uploadBtn = $('<button/>', {
@@ -216,19 +231,34 @@ export class AssetSelectInput extends BaseElementSelectInput {
   }
 
   _onUploadStart(): void {
-    this.progressBar.$progressBar.css({
-      top: Math.round(this.$container.outerHeight() / 2) - 6,
-    });
     this.$container.addClass('uploading');
-    this.progressBar.resetProgressBar();
-    this.progressBar.showProgressBar();
+    this.progressBar?.reset();
+    this.progressBar?.show();
+    this.#progressAnnouncer?.start();
+  }
+
+  #hideProgress(): void {
+    this.progressBar?.hide();
+    this.#progressAnnouncer?.stop();
+    this.$container.removeClass('uploading');
+  }
+
+  #progressMessage(): string {
+    const bar = this.progressBar;
+    if (!bar || bar.pending || bar.progress === 100) {
+      return Craft.t('app', 'Processing');
+    }
+
+    return Craft.t('app', '{num} percent complete', {num: bar.progress});
   }
 
   _onUploadProgress(
     data: Parameters<NonNullable<UploaderCallbacks['progress']>>[0]
   ): void {
     const progress = Math.round(Math.min(data.loaded / data.total, 1) * 100);
-    this.progressBar.setProgressPercentage(progress);
+    if (this.progressBar) {
+      this.progressBar.progress = progress;
+    }
   }
 
   _onUploadComplete({
@@ -269,8 +299,7 @@ export class AssetSelectInput extends BaseElementSelectInput {
         await Craft.appendBodyHtml(data.bodyHtml);
 
         if (this.uploader.isLastUpload()) {
-          this.progressBar.hideProgressBar();
-          this.$container.removeClass('uploading');
+          this.#hideProgress();
           this.$container.trigger('change');
         }
       })
@@ -292,8 +321,7 @@ export class AssetSelectInput extends BaseElementSelectInput {
     file,
   }: Parameters<NonNullable<UploaderCallbacks['fail']>>[0]): void {
     if (canceled) {
-      this.progressBar.hideProgressBar();
-      this.$container.removeClass('uploading');
+      this.#hideProgress();
       return;
     }
 
@@ -319,8 +347,7 @@ export class AssetSelectInput extends BaseElementSelectInput {
     }
 
     Craft.cp.displayError(message);
-    this.progressBar.hideProgressBar();
-    this.$container.removeClass('uploading');
+    this.#hideProgress();
   }
 
   canAddMoreFiles(slotsTaken: number): boolean {

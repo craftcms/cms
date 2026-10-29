@@ -34,25 +34,6 @@ interface LegacyModalInstance {
 }
 
 // Set up interfaces and types
-interface ProgressBarInterface {
-  // oxlint-disable-next-line @typescript-eslint/no-misused-new
-  new (
-    $element: JQuery,
-    displaySteps?: boolean,
-    settings?: LegacyWidgetSettings
-  ): ProgressBarInterface;
-
-  $progressBar: JQuery;
-
-  setItemCount(count: number): void;
-
-  setProcessedItemCount(count: number): void;
-
-  updateProgressBar(): void;
-
-  showProgressBar(): void;
-}
-
 interface IntervalManagerInterface {
   // oxlint-disable-next-line @typescript-eslint/no-misused-new
   new (settings?: LegacyWidgetSettings): IntervalManagerInterface;
@@ -141,7 +122,6 @@ interface ElementSelectorModalSettings {
 interface CraftStatic {
   csrfTokenName?: string;
   csrfTokenValue?: string;
-  ProgressBar: ProgressBarInterface;
   IntervalManager: IntervalManagerInterface;
   t(message: string, params?: LegacyWidgetSettings, category?: string): string;
   sendActionRequest(
