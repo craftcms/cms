@@ -33,7 +33,16 @@
 
 <template>
   <article class="plugin-card">
-    <PluginBand :icon-url="plugin.iconUrl" />
+    <div class="plugin-card__head">
+      <PluginBand :icon-url="plugin.iconUrl" />
+      <craft-badge
+        v-if="!plugin.abandoned"
+        no-prefix
+        class="plugin-card__price"
+      >
+        {{ priceRangeLabel(plugin) }}
+      </craft-badge>
+    </div>
     <div class="plugin-card__body">
       <CpLink
         :href="pluginRoute({handle: plugin.handle})"
@@ -49,9 +58,6 @@
         <span v-if="plugin.abandoned" class="plugin-card__abandoned">
           {{ t('Abandoned') }}
         </span>
-        <strong v-else class="plugin-card__price">
-          {{ priceRangeLabel(plugin) }}
-        </strong>
       </div>
       <CpLink
         :href="developerRoute({id: plugin.developerId})"
@@ -120,9 +126,24 @@
     font-size: var(--c-text-sm);
   }
 
+  /* On the surface color, so it reads as white in light mode and dark in dark. */
+  .plugin-card__head {
+    position: relative;
+  }
+
   .plugin-card__price {
-    flex-shrink: 0;
-    font-size: var(--c-text-sm);
+    --c-color-fill-quiet: var(--c-surface-raised);
+    --c-color-border-quiet: transparent;
+    --c-color-on-quiet: var(--c-text-default);
+    position: absolute;
+    inset-block: 0;
+    /* The same as the space above and below it in the 2.5rem band. */
+    inset-inline-end: calc((2.5rem - var(--c-size-control-sm)) / 2);
+    block-size: fit-content;
+    margin-block: auto;
+    border-radius: var(--c-radius-full);
+    box-shadow: var(--c-shadow-xs);
+    font-weight: 600;
   }
 
   .plugin-card__description {
