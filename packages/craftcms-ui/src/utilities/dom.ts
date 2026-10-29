@@ -313,7 +313,9 @@ function collectFormInputs(
   >('input[name], select[name], textarea[name]');
 
   for (const control of controls) {
-    if (control.disabled || exclude?.contains(control)) {
+    // Like native form submission, skip controls with an empty name — e.g.
+    // the native input of a Lion field (`craft-input`) without a name.
+    if (control.disabled || !control.name || exclude?.contains(control)) {
       continue;
     }
 

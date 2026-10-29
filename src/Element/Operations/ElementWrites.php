@@ -1017,10 +1017,9 @@ readonly class ElementWrites
                 'target' => '_blank',
             ]).
             $message.
-            Html::tag('span', '', [
-                'data-icon' => 'external',
-                'aria-label' => t('Open in a new tab'),
-                'role' => 'img',
+            Html::tag('craft-icon', '', [
+                'name' => 'external',
+                'label' => t('Open in a new tab'),
             ]).
             Html::endTag('a');
         }
