@@ -601,8 +601,8 @@
 - Removed support for the non-standard `ED256` passkey algorithm. ([#19701](https://github.com/craftcms/cms/pull/19701))
 - Updated Twig to 3.30.
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
-- Fixed a bug where custom fields declaring small integer, big integer, float, or double database types were compared and sorted as text on PostgreSQL.
-- Fixed incorrect JSON paths when querying Date fields and other custom fields with multiple stored values.
+- Fixed a bug where custom fields declaring small integer, big integer, float, or double database types were compared and sorted as text on PostgreSQL. ([#20172](https://github.com/craftcms/cms/pull/20172))
+- Fixed incorrect JSON paths when querying Date fields and other custom fields with multiple stored values. ([#20172](https://github.com/craftcms/cms/pull/20172))
 - Fixed a bug where element query date params, such as `postDate`, `before`, `after`, `dateCreated`, and Date field params, as well as date condition rules, were off by the system time zone’s UTC offset. ([#19963](https://github.com/craftcms/cms/pull/19963))
 - Fixed a bug where many dates Craft stores, such as elements’ soft-delete dates and sites’, plugins’, relations’, and activity events’ dates, were stored in the system time zone rather than UTC. ([#20053](https://github.com/craftcms/cms/pull/20053))
 - Fixed a bug where revisions were created for elements that hadn’t changed since their last revision, including nested entries that hadn’t changed between their owner’s revisions, if the system time zone wasn’t UTC. ([#20053](https://github.com/craftcms/cms/pull/20053))
