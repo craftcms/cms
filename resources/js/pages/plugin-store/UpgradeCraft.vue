@@ -211,7 +211,7 @@
     display: grid;
     grid-template-rows: auto auto 1fr auto;
     gap: var(--c-spacing-lg);
-    padding: var(--c-spacing-xl);
+    padding: var(--c-spacing-lg);
     border: 1px solid var(--c-color-border-quiet);
     border-radius: var(--c-radius-md);
   }
