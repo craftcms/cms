@@ -19,6 +19,7 @@ import type {
   EditableTableSettings,
 } from './types';
 import {type ReorderDirection} from '@craftcms/ui';
+import {trim, uuid} from '@/common/craft/strings';
 
 // `Craft`, `$` (jQuery), and `Garnish` remain page globals. This class extends the
 // modern `@craftcms/garnish` `Base` but still orchestrates jQuery Craft/Garnish
@@ -915,7 +916,7 @@ export class EditableTable extends Base<EditableTableSettings> {
       $('<input/>', {
         type: 'hidden',
         name: `${baseName}[${rowId}][rowId]`,
-        value: values.rowId ?? Craft.uuid(),
+        value: values.rowId ?? uuid(),
       }).appendTo($tr);
     }
 
@@ -1305,7 +1306,7 @@ export class Row extends Base {
 
   handlePaste(ev: any): void {
     // Native listener, so the event is native — read `clipboardData` directly.
-    const data = Craft.trim(ev.clipboardData.getData('Text'), ' \n\r');
+    const data = trim(ev.clipboardData.getData('Text'), ' \n\r');
     if (!data.match(/[\t\r\n]/)) {
       return;
     }

@@ -12,6 +12,7 @@ import {
 import {type ActionMenuItem} from '@craftcms/ui';
 import type {UiValues} from '@/modules/ui/types';
 import {createInitialIcon} from '@/common/utils/initialIcon';
+import {uuid} from '@/common/craft/strings';
 
 declare const Craft: any;
 declare const $: any;
@@ -40,7 +41,7 @@ export class Tab extends Base {
 
     // New tab?
     if (!this.uid) {
-      this.uid = Craft.uuid();
+      this.uid = uuid();
       this.config = {
         uid: this.uid,
         name:

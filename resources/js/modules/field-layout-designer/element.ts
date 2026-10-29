@@ -8,6 +8,7 @@ import {
 import type {Tab} from './tab';
 import {type ActionMenuItem, t} from '@craftcms/ui';
 import type {UiValues} from '@/modules/ui/types';
+import {uuid} from '@/common/craft/strings';
 
 declare const Craft: any;
 
@@ -44,7 +45,7 @@ export class Element extends Base {
     // New element?
     const isNew = !this.uid;
     if (isNew) {
-      this.uid = Craft.uuid();
+      this.uid = uuid();
       this.config = Object.assign(JSON.parse($container.dataset.config), {
         uid: this.uid,
       });

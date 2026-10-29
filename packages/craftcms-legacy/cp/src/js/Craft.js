@@ -2,6 +2,28 @@ import {formatMessage, t} from '@craftcms/ui/utilities/translate';
 import {createHttpClient, isCancel} from '@craftcms/ui/utilities/api/http';
 import {sendLegacyRequest} from '@craftcms/ui/utilities/api/legacyRequest';
 import * as d3 from 'd3';
+import {
+  formatInputId,
+  namespaceId,
+  namespaceInputName,
+} from '../../../../../resources/js/common/craft/namespace';
+import {
+  endsWith,
+  ensureEndsWith,
+  ensureStartsWith,
+  escapeChars,
+  escapeRegex,
+  lowercaseFirst,
+  ltrim,
+  randomString,
+  removeLeft,
+  removeRight,
+  rtrim,
+  startsWith,
+  trim,
+  uppercaseFirst,
+  uuid,
+} from '../../../../../resources/js/common/craft/strings';
 
 /** global: Craft */
 /** global: Garnish */
@@ -139,16 +161,7 @@ $.extend(Craft, {
     return $('<div/>').text(str).html();
   },
 
-  /**
-   * Escapes special regular expression characters.
-   *
-   * @param {string} str
-   * @returns {string}
-   */
-  escapeRegex: function (str) {
-    // h/t https://stackoverflow.com/a/9310752
-    return str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-  },
+  escapeRegex,
 
   /**
    * Returns the text in a string that might contain HTML tags.
@@ -206,18 +219,7 @@ $.extend(Craft, {
     }
   },
 
-  /**
-   * Formats an ID out of an input name.
-   *
-   * @param {string} inputName
-   * @returns {string}
-   */
-  formatInputId: function (inputName) {
-    // IDs must begin with a letter
-    let id = inputName.replace(/^[^A-Za-z]+/, '');
-    id = this.rtrim(id.replace(/[^A-Za-z0-9_.]+/g, '-'), '-');
-    return id || this.randomString(10);
-  },
+  formatInputId,
 
   /**
    * Sleeps for the given duration in milliseconds.
@@ -1294,172 +1296,25 @@ $.extend(Craft, {
     return keys;
   },
 
-  /**
-   * Takes an array or string of chars, and places a backslash before each one, returning the combined string.
-   *
-   * Userd by ltrim() and rtrim()
-   *
-   * @param {(string|Object)} chars
-   * @returns {string}
-   */
-  escapeChars: function (chars) {
-    if (!Array.isArray(chars)) {
-      chars = chars.split();
-    }
+  escapeChars,
 
-    var escaped = '';
+  ltrim,
 
-    for (var i = 0; i < chars.length; i++) {
-      escaped += '\\' + chars[i];
-    }
+  rtrim,
 
-    return escaped;
-  },
+  trim,
 
-  /**
-   * Trim characters off of the beginning of a string.
-   *
-   * @param {string} str
-   * @param {(string|Object)} [chars] The characters to trim off. Defaults to a space if left blank.
-   * @returns {string}
-   */
-  ltrim: function (str, chars) {
-    if (!str) {
-      return str;
-    }
-    if (typeof chars === 'undefined') {
-      return str.trimStart();
-    }
-    const re = new RegExp('^[' + Craft.escapeChars(chars) + ']+');
-    return str.replace(re, '');
-  },
+  startsWith,
 
-  /**
-   * Trim characters off of the end of a string.
-   *
-   * @param {string} str
-   * @param {(string|Object)} [chars] The characters to trim off. Defaults to a space if left blank.
-   * @returns {string}
-   */
-  rtrim: function (str, chars) {
-    if (!str) {
-      return str;
-    }
-    if (typeof chars === 'undefined') {
-      return str.trimEnd();
-    }
-    const re = new RegExp('[' + Craft.escapeChars(chars) + ']+$');
-    return str.replace(re, '');
-  },
+  endsWith,
 
-  /**
-   * Trim characters off of the beginning and end of a string.
-   *
-   * @param {string} str
-   * @param {(string|Object)} [chars] The characters to trim off. Defaults to a space if left blank.
-   * @returns {string}
-   */
-  trim: function (str, chars) {
-    if (!str) {
-      return str;
-    }
-    if (typeof chars === 'undefined') {
-      return str.trim();
-    }
-    str = Craft.ltrim(str, chars);
-    str = Craft.rtrim(str, chars);
-    return str;
-  },
+  ensureStartsWith,
 
-  /**
-   * Returns whether a string starts with another string.
-   *
-   * @param {string} str
-   * @param {string} substr
-   * @param {boolean} [caseInsensitive=false]
-   * @returns {boolean}
-   */
-  startsWith: function (str, substr, caseInsensitive = false) {
-    if (caseInsensitive) {
-      return str.toLowerCase().startsWith(substr.toLowerCase());
-    }
-    return str.startsWith(substr);
-  },
+  ensureEndsWith,
 
-  /**
-   * Returns whether a string ends with another string.
-   *
-   * @param {string} str
-   * @param {string} substr
-   * @param {boolean} [caseInsensitive=false]
-   * @returns {boolean}
-   */
-  endsWith: function (str, substr, caseInsensitive = false) {
-    if (caseInsensitive) {
-      return str.toLowerCase().endsWith(substr.toLowerCase());
-    }
-    return str.endsWith(substr);
-  },
+  removeLeft,
 
-  /**
-   * Ensures a string starts with another string.
-   *
-   * @param {string} str
-   * @param {string} substr
-   * @param {boolean} [caseInsensitive=false]
-   * @return {string}
-   */
-  ensureStartsWith: function (str, substr, caseInsensitive = false) {
-    if (!Craft.startsWith(str, substr, caseInsensitive)) {
-      str = substr + str;
-    }
-    return str;
-  },
-
-  /**
-   * Ensures a string ends with another string.
-   *
-   * @param {string} str
-   * @param {string} substr
-   * @param {boolean} [caseInsensitive=false]
-   * @return {string}
-   */
-  ensureEndsWith: function (str, substr, caseInsensitive = false) {
-    if (!Craft.endsWith(str, substr, caseInsensitive)) {
-      str += substr;
-    }
-    return str;
-  },
-
-  /**
-   * Removes a string from the beginning of another string.
-   *
-   * @param {string} str
-   * @param {string} substr
-   * @param {boolean} [caseInsensitive=false]
-   * @return {string}
-   */
-  removeLeft: function (str, substr, caseInsensitive = false) {
-    if (Craft.startsWith(str, substr, caseInsensitive)) {
-      return str.slice(substr.length);
-    }
-    return str;
-  },
-
-  /**
-   * Removes a string from the end of another string.
-   *
-   * @param {string} str
-   * @param {string} substr
-   * @param {boolean} [caseInsensitive=false]
-   * @return {string}
-   */
-  removeRight: function (str, substr, caseInsensitive = false) {
-    if (Craft.endsWith(str, substr, caseInsensitive)) {
-      return str.slice(0, -substr.length);
-    }
-    return str;
-  },
+  removeRight,
 
   /**
    * @callback filterArrayCallback
@@ -1570,25 +1425,9 @@ $.extend(Craft, {
     return [...new Set(arr)];
   },
 
-  /**
-   * Makes the first character of a string uppercase.
-   *
-   * @param {string} str
-   * @returns {string}
-   */
-  uppercaseFirst: function (str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  },
+  uppercaseFirst,
 
-  /**
-   * Makes the first character of a string lowercase.
-   *
-   * @param {string} str
-   * @returns {string}
-   */
-  lowercaseFirst: function (str) {
-    return str.charAt(0).toLowerCase() + str.slice(1);
-  },
+  lowercaseFirst,
 
   parseUrl: function (url) {
     var m = url.match(
@@ -1751,55 +1590,13 @@ $.extend(Craft, {
     return asciiStr;
   },
 
-  uuid: function () {
-    if (typeof crypto.randomUUID === 'function') {
-      return crypto.randomUUID();
-    }
+  uuid,
 
-    // h/t https://stackoverflow.com/a/2117523/1688568
-    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
-      (
-        c ^
-        (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
-      ).toString(16)
-    );
-  },
+  namespaceInputName,
 
-  /**
-   * @param {string} name
-   * @param {string} [namespace]
-   * @returns {string}
-   */
-  namespaceInputName: function (name, namespace) {
-    if (!namespace) {
-      return name;
-    }
+  namespaceId,
 
-    return name.replace(/([^'"\[\]]+)([^'"]*)/, `${namespace}[$1]$2`);
-  },
-
-  /**
-   * @param {string} id
-   * @param {string} [namespace]
-   * @returns {string}
-   */
-  namespaceId: function (id, namespace) {
-    return (
-      (namespace ? `${Craft.formatInputId(namespace)}-` : '') +
-      Craft.formatInputId(id)
-    );
-  },
-
-  randomString: function (length) {
-    // h/t https://stackoverflow.com/a/1349426/1688568
-    var result = '';
-    var characters =
-      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for (var i = 0; i < length; i++) {
-      result += characters.charAt(Math.floor(Math.random() * 62));
-    }
-    return result;
-  },
+  randomString,
 
   /**
    * Creates a validation error list.

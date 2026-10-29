@@ -11,6 +11,12 @@ import {resolveElement, type ElementArg} from '@/common/utils/dom';
 import {jq} from '@/common/utils/jquery';
 import punycode from 'punycode/';
 import type {LinkField} from './link-field';
+import {
+  removeLeft,
+  removeRight,
+  startsWith,
+  trim,
+} from '@/common/craft/strings';
 
 declare const Craft: any;
 
@@ -107,7 +113,7 @@ export class LinkInput extends Base<LinkInputSettings> {
   hasPrefix(value: string): boolean {
     value = value.toLowerCase();
     for (const prefix of this.settings!.prefixes ?? []) {
-      if (Craft.startsWith(value, prefix, true)) {
+      if (startsWith(value, prefix, true)) {
         return true;
       }
     }
@@ -124,23 +130,20 @@ export class LinkInput extends Base<LinkInputSettings> {
 
   removePrefix(value: string): string {
     for (const prefix of this.settings!.prefixes ?? []) {
-      value = Craft.removeLeft(value, prefix, true);
+      value = removeLeft(value, prefix, true);
     }
     return value;
   }
 
   removeFirstPrefix(value: string): string {
-    const prefixes = this.settings!.prefixes ?? [];
-    if (prefixes.length) {
-      return Craft.removeLeft(value, prefixes[0], true);
-    }
-    return value;
+    const [prefix] = this.settings!.prefixes ?? [];
+    return prefix === undefined ? value : removeLeft(value, prefix, true);
   }
 
   createChip(value: string): void {
     let label = this.removePrefix(value);
     if (label.match(/^[^/]+\/$/)) {
-      label = Craft.removeRight(label, '/');
+      label = removeRight(label, '/');
     }
 
     this.reset();
@@ -220,7 +223,7 @@ export class LinkInput extends Base<LinkInputSettings> {
   }
 
   normalize(value: string): string {
-    value = Craft.trim(value);
+    value = trim(value);
     if (!value) {
       return '';
     }
