@@ -122,16 +122,18 @@ class PersonalAccessTokens
      * Creates a personal access token, issued through Passport’s personal access client like `$user->createToken()`,
      * which this creates if it doesn’t exist yet.
      *
+     * The scopes can come from several scope groups, so one token can access several APIs.
+     *
      * @param  string[]  $scopes
      * @return string The access token. It isn’t stored, so it can’t be retrieved again.
      *
-     * @throws InvalidArgumentException if the user may not grant the scopes from the group
+     * @throws InvalidArgumentException if the user may not grant the scopes
      */
-    public function create(User $user, string $group, string $name, array $scopes, DateInterval $expiresIn): string
+    public function create(User $user, string $name, array $scopes, DateInterval $expiresIn): string
     {
-        $scopeGroup = $this->scopeGroupsFor($user)->get($group);
+        $grantable = $this->scopeGroupsFor($user)->flatMap(fn (ScopeGroup $group) => $group->scopesFor($user))->all();
 
-        if (! $scopeGroup || $scopes === [] || array_diff($scopes, $scopeGroup->scopesFor($user)) !== []) {
+        if ($scopes === [] || array_diff($scopes, $grantable) !== []) {
             throw new InvalidArgumentException('Invalid scopes.');
         }
 
@@ -158,10 +160,11 @@ class PersonalAccessTokens
     /**
      * The user’s active personal access tokens, and the apps they’ve authorized, for the registered scope groups.
      *
-     * Personal access tokens are listed individually, with their `tokenId`. Apps are listed once per client and scope
-     * group, with a `tokenId` of `null`, and stay listed while they can still refresh their access.
+     * Personal access tokens are listed individually, with their `tokenId`. Apps are listed once per client, with a
+     * `tokenId` of `null`, and stay listed while they can still refresh their access. Scopes are grouped by the handle
+     * of the scope group that defines them, and scopes outside the registered groups aren’t listed.
      *
-     * @return list<array{group: string, clientId: string, tokenId: string|null, name: string, scopes: string[], expiresAt: Carbon, personal: bool}>
+     * @return list<array{clientId: string, tokenId: string|null, name: string, scopes: array<string, string[]>, expiresAt: Carbon, personal: bool}>
      */
     public function grants(User $user): array
     {
@@ -171,21 +174,19 @@ class PersonalAccessTokens
         foreach ($this->activeTokens($user)->get() as $token) {
             /** @var string[] $scopes */
             $scopes = $token->getAttribute('scopes') ?? [];
-            $group = $this->groupFor($groups, $scopes);
 
-            if (! $group) {
+            if ($this->groupScopes($groups, $scopes) === []) {
                 continue;
             }
 
             $client = $token->client;
             $clientId = (string) $token->getAttribute('client_id');
             $personal = $client->hasGrantType('personal_access');
-            $key = $personal ? "token:{$token->getKey()}" : "client:$clientId:$group->handle";
+            $key = $personal ? "token:{$token->getKey()}" : "client:$clientId";
             $grant = $grants[$key] ?? null;
             $expiresAt = $this->expiresAt($token);
 
             $grants[$key] = [
-                'group' => $group->handle,
                 'clientId' => $clientId,
                 'tokenId' => $personal ? (string) $token->getKey() : null,
                 'name' => (string) (($personal ? $token->getAttribute('name') : null) ?? $client->getAttribute('name')),
@@ -195,27 +196,42 @@ class PersonalAccessTokens
             ];
         }
 
-        return array_values($grants);
+        return array_values(array_map(fn (array $grant): array => [
+            ...$grant,
+            'scopes' => $this->groupScopes($groups, $grant['scopes']),
+        ], $grants));
     }
 
     /**
-     * Revokes the user’s access and refresh tokens for a client and scope group, or just one token if `$tokenId` is
-     * given (as for personal access tokens).
+     * Renames one of the user’s personal access tokens.
+     *
+     * A token’s scopes are signed into it, so they can’t be changed after it’s created.
+     *
+     * @throws InvalidArgumentException if the token isn’t one of the user’s active personal access tokens
      */
-    public function revoke(User $user, string $group, string $clientId, ?string $tokenId = null): void
+    public function rename(User $user, string $tokenId, string $name): void
     {
-        $scopeGroup = $this->scopeGroups()->get($group);
-
-        if (! $scopeGroup) {
-            return;
+        if (collect($this->grants($user))->doesntContain('tokenId', $tokenId)) {
+            throw new InvalidArgumentException('Invalid token.');
         }
+
+        Passport::token()->newQuery()->whereKey($tokenId)->update(['name' => $name]);
+    }
+
+    /**
+     * Revokes one of the user’s personal access tokens, or if `$tokenId` is `null`, the access and refresh tokens
+     * they’ve granted an app for the registered scope groups.
+     */
+    public function revoke(User $user, string $clientId, ?string $tokenId = null): void
+    {
+        $groups = $this->scopeGroups();
 
         $tokens = Passport::token()->newQuery()
             ->where('user_id', $user->id)
             ->where('client_id', $clientId)
             ->when($tokenId !== null, fn (Builder $query) => $query->whereKey($tokenId))
             ->get()
-            ->filter(fn (Token $token) => $scopeGroup->contains($token->getAttribute('scopes') ?? []));
+            ->filter(fn (Token $token) => $this->groupScopes($groups, $token->getAttribute('scopes') ?? []) !== []);
 
         if ($tokens->isEmpty()) {
             return;
@@ -263,13 +279,17 @@ class PersonalAccessTokens
     }
 
     /**
-     * The group a token belongs to: the one that defines all of its scopes.
+     * Groups scope IDs by the handle of the scope group that defines them, leaving out scopes outside the groups.
      *
      * @param  Collection<string, ScopeGroup>  $groups
      * @param  string[]  $scopes
+     * @return array<string, string[]>
      */
-    private function groupFor(Collection $groups, array $scopes): ?ScopeGroup
+    private function groupScopes(Collection $groups, array $scopes): array
     {
-        return $groups->first(fn (ScopeGroup $group) => $group->contains($scopes));
+        return $groups
+            ->map(fn (ScopeGroup $group): array => array_values(array_intersect($scopes, array_keys($group->scopes))))
+            ->filter()
+            ->all();
     }
 }

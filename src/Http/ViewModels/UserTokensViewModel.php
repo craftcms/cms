@@ -21,14 +21,20 @@ class UserTokensViewModel extends ViewModel
     public array $groups;
 
     /**
-     * The user’s personal access tokens and authorized apps.
+     * The registered scope groups’ labels and scope descriptions, keyed by handle, for showing existing tokens.
+     *
+     * @var array<string, array{label: string, scopes: array<string, string>}>
+     */
+    public array $scopeGroups;
+
+    /**
+     * The user’s personal access tokens and authorized apps, with their scopes grouped by scope group handle.
      *
      * @var list<array{
-     *     group: string,
      *     clientId: string,
      *     tokenId: string|null,
      *     name: string,
-     *     scopes: string[],
+     *     scopes: array<string, string[]>,
      *     expiresAt: string,
      *     personal: bool,
      * }>
@@ -37,9 +43,7 @@ class UserTokensViewModel extends ViewModel
 
     public function __construct(User $user, PersonalAccessTokens $tokens)
     {
-        $groups = $tokens->scopeGroupsFor($user);
-
-        $this->groups = $groups
+        $this->groups = $tokens->scopeGroupsFor($user)
             ->map(fn (ScopeGroup $group): array => [
                 'handle' => $group->handle,
                 'label' => $group->label,
@@ -51,9 +55,13 @@ class UserTokensViewModel extends ViewModel
             ->values()
             ->all();
 
-        $this->grants = array_values(array_map(fn (array $grant): array => [
+        $this->scopeGroups = $tokens->scopeGroups()
+            ->map(fn (ScopeGroup $group): array => ['label' => $group->label, 'scopes' => $group->scopes])
+            ->all();
+
+        $this->grants = array_map(fn (array $grant): array => [
             ...$grant,
             'expiresAt' => $grant['expiresAt']->toIso8601String(),
-        ], array_filter($tokens->grants($user), fn (array $grant): bool => $groups->has($grant['group']))));
+        ], $tokens->grants($user));
     }
 }

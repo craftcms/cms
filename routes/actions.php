@@ -236,6 +236,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('auth/delete-passkey', [UserPasskeysController::class, 'delete']);
 
         Route::post('users/create-token', [PersonalAccessTokensController::class, 'store']);
+        Route::post('users/update-token', [PersonalAccessTokensController::class, 'update']);
         Route::post('users/revoke-token', [PersonalAccessTokensController::class, 'destroy']);
 
         Route::post('auth/generate-recovery-codes', [RecoveryCodesController::class, 'generate']);

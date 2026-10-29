@@ -44,14 +44,4 @@ class ScopeGroup
 
         return $scopes;
     }
-
-    /**
-     * Whether the scope IDs are a nonempty subset of this group’s scopes.
-     *
-     * @param  string[]  $scopes
-     */
-    public function contains(array $scopes): bool
-    {
-        return $scopes !== [] && array_diff($scopes, array_keys($this->scopes)) === [];
-    }
 }

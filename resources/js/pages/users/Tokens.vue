@@ -3,9 +3,10 @@
   import {router, useHttp, usePage} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
   import CraftCheckboxGroup from '@craftcms/ui/vue/CraftCheckboxGroup.vue';
-  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+  import CraftField from '@craftcms/ui/vue/CraftField.vue';
   import {useCraftTable} from '@/common/table/craftTable';
   import CraftDate from '@/common/components/Date.vue';
+  import ActionMenu from '@/common/components/ActionMenu.vue';
   import ModalForm from '@/common/components/ModalForm.vue';
   import Select from '@/common/form/Select.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
@@ -15,6 +16,7 @@
   import {
     destroy as revokeAction,
     store as createAction,
+    update as updateAction,
   } from '@actions/Users/PersonalAccessTokensController';
 
   defineOptions({
@@ -30,32 +32,53 @@
   const ELEVATED_SETUP_SECONDS = 300;
 
   const modalActive = ref(false);
+  // The token or app being viewed, or null when creating a token.
+  const editing = ref<Grant | null>(null);
   const newToken = ref<string | null>(null);
-  const revoking = ref<string | null>(null);
 
   const createRequest = useHttp<
-    {name: string; group: string; scopes: string[]; expiresIn: number},
+    {name: string; scopes: string[]; expiresIn: number},
     {token: string}
   >({
     name: '',
-    group: '',
     scopes: [],
     expiresIn: 30,
   });
+  const updateRequest = useHttp<{tokenId: string; name: string}, unknown>({
+    tokenId: '',
+    name: '',
+  });
   const revokeRequest = useHttp<
-    {group: string; clientId: string; tokenId: string | null},
+    {clientId: string; tokenId: string | null},
     unknown
-  >({group: '', clientId: '', tokenId: null});
+  >({clientId: '', tokenId: null});
 
-  const groups = computed(() => page.props.groups);
-  const selectedGroup = computed(
-    () =>
-      groups.value.find((group) => group.handle === createRequest.group) ??
-      groups.value[0]
-  );
-  const groupOptions = computed(() =>
-    groups.value.map((group) => ({label: group.label, value: group.handle}))
-  );
+  // The groups and scopes shown in the modal. Existing tokens show the scopes
+  // they were granted, even ones the user can no longer grant.
+  const modalGroups = computed(() => {
+    const grant = editing.value;
+
+    if (!grant) {
+      return page.props.groups;
+    }
+
+    return Object.entries(grant.scopes).map(([handle, scopes]) => ({
+      handle,
+      label: page.props.scopeGroups[handle]?.label ?? handle,
+      scopes: scopes.map((scope) => ({
+        value: scope,
+        label: page.props.scopeGroups[handle]?.scopes[scope] ?? scope,
+      })),
+    }));
+  });
+  const editingApp = computed(() => !!editing.value && !editing.value.personal);
+  const modalTitle = computed(() => {
+    if (!editing.value) {
+      return t('New token');
+    }
+
+    return editing.value.personal ? t('Edit token') : editing.value.name;
+  });
   const expiryOptions = [
     {label: t('7 days'), value: '7'},
     {label: t('30 days'), value: '30'},
@@ -63,12 +86,21 @@
     {label: t('1 year'), value: '365'},
   ];
 
-  function grantKey(grant: Grant): string {
-    return `${grant.group}:${grant.clientId}:${grant.tokenId ?? ''}`;
+  // Apps show the APIs they were authorized for.
+  function grantType(grant: Grant): string {
+    if (grant.personal) {
+      return t('Personal');
+    }
+
+    const labels = Object.keys(grant.scopes)
+      .map((handle) => page.props.scopeGroups[handle]?.label)
+      .filter(Boolean);
+
+    return labels.length ? labels.join(', ') : t('App');
   }
 
-  function groupLabel(handle: string): string {
-    return groups.value.find((group) => group.handle === handle)?.label ?? '';
+  function grantKey(grant: Grant): string {
+    return `${grant.clientId}:${grant.tokenId ?? ''}`;
   }
 
   async function openNewTokenModal() {
@@ -80,15 +112,50 @@
       return;
     }
 
+    editing.value = null;
     createRequest.reset();
     createRequest.clearErrors();
-    createRequest.group = groups.value[0]?.handle ?? '';
     modalActive.value = true;
   }
 
-  function setGroup(handle: string | number) {
-    createRequest.group = String(handle);
-    createRequest.scopes = [];
+  function openTokenModal(grant: Grant) {
+    editing.value = grant;
+    createRequest.clearErrors();
+    createRequest.name = grant.name;
+    createRequest.scopes = Object.values(grant.scopes).flat();
+    modalActive.value = true;
+  }
+
+  async function submitModal() {
+    if (!editing.value) {
+      return createToken();
+    }
+
+    if (editingApp.value) {
+      modalActive.value = false;
+      return;
+    }
+
+    if (updateRequest.processing) {
+      return;
+    }
+
+    updateRequest.tokenId = editing.value.tokenId ?? '';
+    updateRequest.name = createRequest.name;
+
+    const response = await updateRequest
+      .post(updateAction().url, {
+        onError: () => {
+          createRequest.setError('name', updateRequest.errors.name ?? '');
+          nextTick(focusFirstInvalid);
+        },
+      })
+      .catch(() => null);
+
+    if (response) {
+      modalActive.value = false;
+      router.reload({only: ['grants']});
+    }
   }
 
   async function createToken() {
@@ -127,18 +194,11 @@
       return;
     }
 
-    revoking.value = grantKey(grant);
+    revokeRequest.clientId = grant.clientId;
+    revokeRequest.tokenId = grant.tokenId;
 
-    try {
-      revokeRequest.group = grant.group;
-      revokeRequest.clientId = grant.clientId;
-      revokeRequest.tokenId = grant.tokenId;
-
-      if (await revokeRequest.post(revokeAction().url)) {
-        router.reload({only: ['grants']});
-      }
-    } finally {
-      revoking.value = null;
+    if (await revokeRequest.post(revokeAction().url)) {
+      router.reload({only: ['grants']});
     }
   }
 
@@ -152,43 +212,36 @@
         columnHelper.display({
           id: 'name',
           header: t('Name'),
-          cell: ({row}) =>
-            h('div', [
-              h('span', {class: 'font-bold'}, row.original.name),
-              h(
-                'div',
-                {class: 'text-sm text-quiet'},
-                row.original.personal
-                  ? t('Personal token')
-                  : t('Authorized app')
-              ),
-            ]),
+          meta: {cellTag: 'th'},
+          cell: ({row}) => row.original.name,
         }),
         columnHelper.display({
-          id: 'access',
-          header: t('Access'),
-          cell: ({row}) =>
-            (groups.value.length > 1
-              ? `${groupLabel(row.original.group)}: `
-              : '') + row.original.scopes.join(', '),
+          id: 'type',
+          header: t('Type'),
+          cell: ({row}) => grantType(row.original),
         }),
         columnHelper.display({
           id: 'expiresAt',
-          header: t('Expires'),
+          header: t('Expires on'),
           cell: ({row}) => h(CraftDate, {value: row.original.expiresAt}),
         }),
         columnHelper.actions(({row}) => [
-          h(
-            'craft-button',
-            {
-              type: 'button',
-              size: 'small',
-              'aria-label': t('Revoke {name}', {name: row.original.name}),
-              loading: revoking.value === grantKey(row.original),
-              onclick: () => revoke(row.original),
-            },
-            t('Revoke')
-          ),
+          h(ActionMenu, {
+            label: t('Actions for {name}', {name: row.original.name}),
+            actions: [
+              {
+                icon: 'pencil',
+                label: t('Edit'),
+                onClick: () => openTokenModal(row.original),
+              },
+              {
+                icon: 'xmark',
+                label: t('Revoke'),
+                variant: 'danger',
+                onClick: () => revoke(row.original),
+              },
+            ],
+          }),
         ]),
       ];
     },
@@ -246,59 +299,81 @@
     </div>
 
     <ModalForm
-      :title="t('New token')"
+      :title="modalTitle"
       :is-active="modalActive"
-      :loading="createRequest.processing"
-      :submit-label="t('Create')"
-      @submit="createToken"
+      :loading="createRequest.processing || updateRequest.processing"
+      :submit-label="editing ? t('Save') : t('Create')"
+      :submit-disabled="editingApp"
+      @submit="submitModal"
       @close="modalActive = false"
     >
       <craft-field-group>
-        <CraftInput
-          id="token-name"
-          v-model="createRequest.name"
+        <CraftField
+          v-if="!editingApp"
           :label="t('Name')"
           :help-text="t('What this token will be used for.')"
           :error="createRequest.errors.name"
-          maxlength="255"
+          .hasErrors="!!createRequest.errors.name"
           required
-          autofocus
-        />
-
-        <Select
-          v-if="groups.length > 1"
-          id="token-group"
-          :label="t('API')"
-          :model-value="createRequest.group"
-          :options="groupOptions"
-          @update:model-value="setGroup"
-        />
-
-        <CraftCheckboxGroup
-          v-if="selectedGroup"
-          id="token-scopes"
-          :key="selectedGroup.handle"
-          v-model="createRequest.scopes"
-          :error="createRequest.errors.scopes"
         >
-          <label slot="label">
-            {{
-              groups.length > 1
-                ? t('Scopes')
-                : t('{api} Scopes', {api: selectedGroup.label})
-            }}
-          </label>
-          <div slot="help-text">{{ t('Choose at least one.') }}</div>
-          <craft-checkbox
-            v-for="scope in selectedGroup.scopes"
-            :key="scope.value"
-            .choiceValue="scope.value"
+          <craft-input slot="input">
+            <input
+              id="token-name"
+              slot="input"
+              v-model="createRequest.name"
+              type="text"
+              maxlength="255"
+              autofocus
+            />
+          </craft-input>
+        </CraftField>
+
+        <CraftField
+          id="token-scopes"
+          :label="
+            modalGroups.length > 1
+              ? t('Scopes')
+              : t('{api} Scopes', {api: modalGroups[0]?.label ?? ''})
+          "
+          :help-text="
+            editing?.personal
+              ? t('Scopes can’t be changed after a token is created.')
+              : undefined
+          "
+          :error="createRequest.errors.scopes"
+          .hasErrors="!!createRequest.errors.scopes"
+          fieldset
+          :required="!editing"
+        >
+          <CraftCheckboxGroup
+            slot="input"
+            :key="editing ? grantKey(editing) : 'new'"
+            v-model="createRequest.scopes"
           >
-            <label slot="label">{{ scope.label }}</label>
-          </craft-checkbox>
-        </CraftCheckboxGroup>
+            <template v-for="(group, index) in modalGroups" :key="group.handle">
+              <div v-if="modalGroups.length > 1" :class="{'mt-sm': index > 0}">
+                {{ group.label }}
+              </div>
+              <craft-checkbox
+                v-for="scope in group.scopes"
+                :key="scope.value"
+                .choiceValue="scope.value"
+                :disabled="!!editing"
+              >
+                <label slot="label">{{ scope.label }}</label>
+              </craft-checkbox>
+            </template>
+          </CraftCheckboxGroup>
+        </CraftField>
+
+        <CraftField v-if="editing" :label="t('Expires on')">
+          <div slot="input">
+            <CraftDate :value="editing.expiresAt" />
+          </div>
+        </CraftField>
 
         <Select
+          v-else
           id="token-expires-in"
           :label="t('Expiration')"
           :model-value="createRequest.expiresIn"

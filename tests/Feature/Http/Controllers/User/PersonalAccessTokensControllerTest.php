@@ -48,7 +48,6 @@ function createTestToken(array $overrides = []): string
 {
     return postJson(action([PersonalAccessTokensController::class, 'store']), [
         'name' => 'Build script',
-        'group' => 'test-api',
         'scopes' => ['test-api:read'],
         'expiresIn' => 7,
         ...$overrides,
@@ -70,6 +69,10 @@ it('lists the scope groups and scopes the user may grant', function (): void {
                 'handle' => 'test-api',
                 'label' => 'Test API',
                 'scopes' => [['value' => 'test-api:read', 'label' => 'Read test data']],
+            ]])
+            ->where('scopeGroups', ['test-api' => [
+                'label' => 'Test API',
+                'scopes' => ['test-api:read' => 'Read test data', 'test-api:write' => 'Change test data'],
             ]])
             ->where('grants', []));
 });
@@ -120,7 +123,6 @@ it('rejects scopes the user may not grant', function (array $scopes): void {
 
     postJson(action([PersonalAccessTokensController::class, 'store']), [
         'name' => 'Build script',
-        'group' => 'test-api',
         'scopes' => $scopes,
         'expiresIn' => 7,
     ])->assertUnprocessable()->assertJsonValidationErrors('scopes');
@@ -152,21 +154,69 @@ it('lists and revokes tokens and authorized apps for registered scope groups onl
     expect($grants->keys()->sort()->values()->all())->toBe(['Build script', 'Preview', 'Test app'])
         ->and($grants['Build script']['personal'])->toBeTrue()
         ->and($grants['Test app']['personal'])->toBeFalse()
-        ->and($grants['Test app']['scopes'])->toBe(['test-api:read', 'test-api:write']);
+        ->and($grants['Test app']['scopes'])->toBe(['test-api' => ['test-api:read', 'test-api:write']]);
 
     postJson(action([PersonalAccessTokensController::class, 'destroy']), [
-        'group' => 'test-api',
         'clientId' => $grants['Build script']['clientId'],
         'tokenId' => $grants['Build script']['tokenId'],
     ])->assertOk();
     postJson(action([PersonalAccessTokensController::class, 'destroy']), [
-        'group' => 'test-api',
         'clientId' => (string) $app->id,
     ])->assertOk();
 
     $this->withToken($token)->getJson('personal-access-token-test')->assertUnauthorized();
     expect(collect(app(PersonalAccessTokens::class)->grants($this->user->asElement()))->pluck('name')->all())->toBe(['Preview'])
         ->and(Passport::token()->newQuery()->find('app-token-1')->revoked)->toBeFalse();
+});
+
+it('creates tokens with scopes from several scope groups', function (): void {
+    registerTestScopeGroup();
+    $tokens = app(PersonalAccessTokens::class);
+    $tokens->registerScopeGroup('other-api', fn () => new ScopeGroup(
+        handle: 'other-api',
+        label: 'Other API',
+        scopes: ['other-api:read' => 'Read other data'],
+    ));
+    $tokens->registerPassportScopes();
+
+    $token = createTestToken(['scopes' => ['test-api:read', 'other-api:read']]);
+
+    expect($tokens->grants($this->user->asElement()))->sequence(fn ($grant) => $grant->scopes->toBe([
+        'test-api' => ['test-api:read'],
+        'other-api' => ['other-api:read'],
+    ]));
+
+    $grant = $tokens->grants($this->user->asElement())[0];
+    postJson(action([PersonalAccessTokensController::class, 'destroy']), [
+        'clientId' => $grant['clientId'],
+        'tokenId' => $grant['tokenId'],
+    ])->assertOk();
+
+    $this->withToken($token)->getJson('personal-access-token-test')->assertUnauthorized();
+});
+
+it('renames personal access tokens, but not apps’ tokens', function (): void {
+    registerTestScopeGroup();
+    createTestToken();
+    $grant = app(PersonalAccessTokens::class)->grants($this->user->asElement())[0];
+
+    postJson(action([PersonalAccessTokensController::class, 'update']), [
+        'tokenId' => $grant['tokenId'],
+        'name' => 'Deploy script',
+    ])->assertOk();
+
+    expect(Passport::token()->newQuery()->find($grant['tokenId']))
+        ->name->toBe('Deploy script')
+        ->scopes->toBe(['test-api:read']);
+
+    postJson(action([PersonalAccessTokensController::class, 'update']), [
+        'tokenId' => 'missing',
+        'name' => 'Mine',
+    ])->assertNotFound();
+    postJson(action([PersonalAccessTokensController::class, 'update']), [
+        'tokenId' => $grant['tokenId'],
+        'name' => '',
+    ])->assertUnprocessable()->assertJsonValidationErrors('name');
 });
 
 it('keeps the application’s scope descriptions when adding registered scopes to Passport', function (): void {

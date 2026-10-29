@@ -55,7 +55,6 @@ readonly class PersonalAccessTokensController
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'group' => ['required', 'string'],
             'scopes' => ['required', 'array', 'list'],
             'scopes.*' => ['string'],
             'expiresIn' => ['required', 'integer', Rule::in([7, 30, 90, 365])],
@@ -66,7 +65,6 @@ readonly class PersonalAccessTokensController
         try {
             $token = $this->tokens->create(
                 $user->asElement(),
-                $validated['group'],
                 $validated['name'],
                 $validated['scopes'],
                 new DateInterval("P{$validated['expiresIn']}D"),
@@ -81,6 +79,26 @@ readonly class PersonalAccessTokensController
         ]);
     }
 
+    public function update(Request $request): Response
+    {
+        if (! $user = $request->craftUser()) {
+            abort(401);
+        }
+
+        $validated = $request->validate([
+            'tokenId' => ['required', 'string'],
+            'name' => ['required', 'string', 'max:255'],
+        ]);
+
+        try {
+            $this->tokens->rename($user->asElement(), $validated['tokenId'], $validated['name']);
+        } catch (InvalidArgumentException) {
+            abort(404);
+        }
+
+        return $this->asSuccess(t('Token saved.'));
+    }
+
     public function destroy(Request $request): Response
     {
         if (! $user = $request->craftUser()) {
@@ -88,12 +106,11 @@ readonly class PersonalAccessTokensController
         }
 
         $validated = $request->validate([
-            'group' => ['required', 'string'],
             'clientId' => ['required', 'string'],
             'tokenId' => ['nullable', 'string'],
         ]);
 
-        $this->tokens->revoke($user->asElement(), $validated['group'], $validated['clientId'], $validated['tokenId'] ?? null);
+        $this->tokens->revoke($user->asElement(), $validated['clientId'], $validated['tokenId'] ?? null);
 
         return $this->asSuccess(t('Access revoked.'));
     }
