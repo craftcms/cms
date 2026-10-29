@@ -98,13 +98,17 @@ it('stores public MCP settings in project config', function (): void {
     $siteHandle = Sites::getPrimarySite()->handle;
     $projectConfig = app(ProjectConfig::class);
 
-    post(route('craft.cp.settings.mcp.store'), new Settings([
-        'publicEnabled' => true,
-        'publicRoute' => '/services/mcp',
-        'publicElementTypes' => [Address::class, 'user'],
-        'publicSiteHandles' => [$siteHandle],
-        'publicTools' => ['craft-context-get', 'craft-query'],
-    ])->toArray())
+    post(route('craft.cp.settings.mcp.store'), [
+        ...new Settings([
+            'publicEnabled' => true,
+            'publicRoute' => '/services/mcp',
+            'publicElementTypes' => [Address::class],
+            'publicSiteHandles' => [$siteHandle],
+            'publicTools' => ['craft-context-get', 'craft-query'],
+        ])->toArray(),
+        // The Users group's “Query all users” option
+        'publicUsers' => ['*'],
+    ])
         ->assertRedirect()
         ->assertSessionHasNoErrors();
 
@@ -113,6 +117,13 @@ it('stores public MCP settings in project config', function (): void {
         ->and($projectConfig->get('mcp.publicElementTypes'))->toBe([Address::class, 'user'])
         ->and($projectConfig->get('mcp.publicSiteHandles'))->toBe([$siteHandle])
         ->and($projectConfig->get('mcp.publicTools'))->toBe(['craft-context-get', 'craft-query']);
+
+    app()->instance(Settings::class, new Settings($projectConfig->get('mcp')));
+    get(route('craft.cp.settings.mcp.index'))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('ui.values.publicElementTypes', [Address::class])
+            ->where('ui.values.publicUsers', ['*']))
+        ->assertOk();
 });
 
 it('serves only approved tools from the configured public endpoint', function (): void {

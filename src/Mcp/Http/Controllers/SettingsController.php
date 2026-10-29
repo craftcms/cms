@@ -62,6 +62,14 @@ readonly class SettingsController
     {
         Typecast::configure($settings, $request->validate($settings->getRules()));
 
+        if ($request->has('publicUsers')) {
+            $users = $request->validate([
+                'publicUsers' => ['array'],
+                'publicUsers.*' => ['string', 'max:512'],
+            ])['publicUsers'] ?? [];
+            $this->settingsUi->applyUsers($settings, array_values($users));
+        }
+
         if (! $settings->validate()) {
             return $this->screen($settings);
         }
@@ -74,7 +82,7 @@ readonly class SettingsController
     private function screen(Settings $settings): CpScreenResponse
     {
         $editable = $this->generalConfig->allowAdminChanges;
-        $values = $settings->toArray();
+        $values = $this->settingsUi->values($settings);
 
         return new CpScreenResponse()
             ->title(t('MCP Settings'))
