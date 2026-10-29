@@ -12,6 +12,7 @@ import {commandShortcut} from '@/common/utils/keyShortcuts';
 import {registerShortcut, type ShortcutRegistration} from '@/common/shortcuts';
 import {findDeltaData} from '@/common/craft/delta';
 import {t} from '@craftcms/ui/utilities/translate';
+import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
 
 declare const Craft: any;
 declare const $: any;
@@ -278,8 +279,9 @@ export class CpModal extends Base {
       }
 
       requestAnimationFrame(() => {
-        Craft.appendHeadHtml(data.headHtml);
-        Craft.appendBodyHtml(data.bodyHtml);
+        void appendHeadHtml(data.headHtml).then(() =>
+          appendBodyHtml(data.bodyHtml)
+        );
 
         Craft.initUiElements(this.#$content);
         Craft.cp.elementThumbLoader.load(this.#$content);

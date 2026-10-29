@@ -2,7 +2,14 @@ import {afterEach, expect, it, vi} from 'vite-plus/test';
 import type {TwoFactorData} from './login-challenge';
 import './login-challenge';
 
+const smsStyles = () =>
+  [...document.head.querySelectorAll('style')].filter((style) =>
+    style.textContent?.includes('.sms-form')
+  );
+
 afterEach(() => {
+  smsStyles().forEach((style) => style.remove());
+  delete (window as {smsReady?: boolean}).smsReady;
   document.body.replaceChildren();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
@@ -27,8 +34,6 @@ it.each([
   'reports a failed method switch after %s and restores the form once',
   async (_case, fetchResponse, expectedMessage) => {
     const Craft = {
-      appendHeadHtml: vi.fn().mockResolvedValue(undefined),
-      appendBodyHtml: vi.fn().mockResolvedValue(undefined),
       initUiElements: vi.fn(),
       createAuthFormHandler: vi.fn(),
     };
@@ -64,7 +69,7 @@ it.each([
     await vi.waitFor(() =>
       expect(challenge.shadowRoot!.querySelector('.sms-form')).not.toBeNull()
     );
-    expect(Craft.appendHeadHtml).toHaveBeenCalledTimes(1);
-    expect(Craft.appendBodyHtml).toHaveBeenCalledTimes(1);
+    expect(smsStyles()).toHaveLength(1);
+    expect((window as {smsReady?: boolean}).smsReady).toBe(true);
   }
 );

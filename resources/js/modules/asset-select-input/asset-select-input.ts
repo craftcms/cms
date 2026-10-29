@@ -9,6 +9,7 @@ import type CraftProgressBar from '@craftcms/ui/components/progress-bar/progress
 import './asset-select-input.css';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
 
 declare const Craft: any;
 declare const Garnish: any;
@@ -291,8 +292,8 @@ export class AssetSelectInput extends BaseElementSelectInput {
         );
         this.selectElements([elementInfo]);
 
-        await Craft.appendHeadHtml(data.headHtml);
-        await Craft.appendBodyHtml(data.bodyHtml);
+        await appendHeadHtml(data.headHtml);
+        await appendBodyHtml(data.bodyHtml);
 
         if (this.uploader.isLastUpload()) {
           this.#hideProgress();

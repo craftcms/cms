@@ -2,6 +2,7 @@ import {formatMessage, t} from '@craftcms/ui/utilities/translate';
 import {createHttpClient, isCancel} from '@craftcms/ui/utilities/api/http';
 import {sendLegacyRequest} from '@craftcms/ui/utilities/api/legacyRequest';
 import {openExternalLinksInNewTabs} from '@craftcms/ui/utilities/external-links';
+import {appendElementHtml} from '@craftcms/ui/utilities/dom';
 import * as d3 from 'd3';
 import {
   getActionUrl,
@@ -1255,89 +1256,11 @@ $.extend(Craft, {
     return $ul;
   },
 
-  _existingCss: null,
-  _existingJs: null,
   _appendHtmlQueue: null,
 
-  _appendHtml: async function (html, $parent) {
-    if (!html) {
-      return;
-    }
-
-    /**
-     * Separate scripts from other nodes to bypass jQuery's internal
-     * script handling, which uses sync XHR (jQuery._evalUrl) and
-     * silently falls back to async for cross-origin URLs, breaking
-     * execution order.
-     *
-     * @see https://github.com/jquery/jquery/issues/4801
-     * @see https://github.com/jquery/jquery/issues/1895
-     */
-    const scriptNodes = [];
-    const otherNodes = [];
-
-    for (const node of $.parseHTML(html.trim(), true)) {
-      // Deduplicate CSS
-      if (node.nodeName === 'LINK' && node.href) {
-        if (!this._existingCss) {
-          this._existingCss = $('link[href]')
-            .toArray()
-            .map((n) => n.href.replace(/&/g, '&amp;'));
-        }
-        if (this._existingCss.includes(node.href)) {
-          continue;
-        }
-        this._existingCss.push(node.href);
-      }
-
-      // Deduplicate and separate scripts
-      if (node.nodeName === 'SCRIPT') {
-        if (node.src) {
-          if (!this._existingJs) {
-            this._existingJs = $('script[src]')
-              .toArray()
-              .map((n) => n.src.replace(/&/g, '&amp;'));
-          }
-          if (this._existingJs.includes(node.src)) {
-            continue;
-          }
-          this._existingJs.push(node.src);
-        }
-        scriptNodes.push(node);
-        continue;
-      }
-
-      otherNodes.push(node);
-    }
-
-    if (otherNodes.length) {
-      $parent.append(otherNodes);
-    }
-
-    // Load scripts sequentially via native <script> insertion to
-    // preserve execution order without requiring CORS.
-    const parentEl = $parent[0];
-    for (const scriptNode of scriptNodes) {
-      const scriptEl = document.createElement('script');
-
-      for (const attr of scriptNode.attributes) {
-        scriptEl.setAttribute(attr.name, attr.value);
-      }
-
-      if (scriptEl.src) {
-        await new Promise((resolve) => {
-          scriptEl.onload = scriptEl.onerror = resolve;
-          parentEl.appendChild(scriptEl);
-        });
-      } else {
-        scriptEl.textContent = scriptNode.textContent;
-        parentEl.appendChild(scriptEl);
-      }
-    }
-  },
-
-  _queueAppendHtml: function (html, $parent) {
-    const append = () => this._appendHtml(html, $parent);
+  // Queued so each call's scripts run after the previous call's have loaded.
+  _queueAppendHtml: function (html, parent) {
+    const append = () => appendElementHtml(html, parent).then(() => {});
     this._appendHtmlQueue = (this._appendHtmlQueue || Promise.resolve())
       .catch(() => {})
       .then(append);
@@ -1351,7 +1274,7 @@ $.extend(Craft, {
    * @returns {Promise}
    */
   appendHeadHtml: function (html) {
-    return this._queueAppendHtml(html, $('head'));
+    return this._queueAppendHtml(html, document.head);
   },
 
   /**
@@ -1361,7 +1284,7 @@ $.extend(Craft, {
    * @returns {Promise}
    */
   appendBodyHtml: function (html) {
-    return this._queueAppendHtml(html, Garnish.$bod);
+    return this._queueAppendHtml(html, document.body);
   },
 
   /**

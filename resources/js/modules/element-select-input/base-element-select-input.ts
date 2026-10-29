@@ -18,6 +18,7 @@ import {elementSelectInputData} from './support';
 import {getActionUrl} from '@/common/craft/url';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
 
 declare const Craft: any;
 declare const $: any;
@@ -930,8 +931,8 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
             data.elements[replacementId][0]
           );
           this.selectElements([elementInfo]).then(resolve);
-          await Craft.appendHeadHtml(data.headHtml);
-          await Craft.appendBodyHtml(data.bodyHtml);
+          await appendHeadHtml(data.headHtml);
+          await appendBodyHtml(data.bodyHtml);
         })
         .catch((e: any) => {
           Craft.cp.displayError(e?.response?.data?.message);
@@ -1268,8 +1269,8 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
     // awaited `onSelect`. Only the close is ours to ask for.
     this.modal?.hide();
 
-    await Craft.appendHeadHtml(data.headHtml);
-    await Craft.appendBodyHtml(data.bodyHtml);
+    await appendHeadHtml(data.headHtml);
+    await appendBodyHtml(data.bodyHtml);
 
     this.elementEditor?.resume();
   }
@@ -1334,8 +1335,8 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
     this.$elementsContainer.replaceWith($newElementsContainer);
     this.$elementsContainer = $newElementsContainer;
 
-    await Craft.appendHeadHtml(response.data.headHtml);
-    await Craft.appendBodyHtml(response.data.bodyHtml);
+    await appendHeadHtml(response.data.headHtml);
+    await appendBodyHtml(response.data.bodyHtml);
 
     this.resetElements();
 
