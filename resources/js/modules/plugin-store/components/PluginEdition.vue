@@ -65,13 +65,9 @@
   }
 
   .plugin-edition--framed {
-    padding: var(--c-spacing-xl);
+    padding: var(--c-spacing-lg);
     border: 1px solid var(--c-color-border-quiet);
     border-radius: var(--c-radius-md);
-  }
-
-  .plugin-edition--framed.plugin-edition--compact {
-    padding: var(--c-spacing-lg);
   }
 
   .plugin-edition:not(.plugin-edition--compact) {
@@ -95,7 +91,7 @@
     display: flex;
     gap: var(--c-spacing-sm);
     align-items: center;
-    padding-block: var(--c-spacing-sm);
+    padding-block: var(--c-spacing-md);
     border-block-start: 1px solid var(--c-color-border-quiet);
   }
 
