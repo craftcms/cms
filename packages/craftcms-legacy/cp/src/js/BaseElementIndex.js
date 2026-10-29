@@ -3195,7 +3195,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     _handleSiteChange: async function (ev) {
       this.siteMenu.$options.removeClass('sel');
       var $option = $(ev.selectedOption).addClass('sel');
-      this.$siteMenuBtn.html($option.html());
+      // Keep the button's icon; only its label follows the selected site.
+      const $icon = this.$siteMenuBtn.children('craft-icon').detach();
+      this.$siteMenuBtn.html($option.html()).prepend($icon);
       await this._setSite($option.data('site-id'));
       if (this.initialized) {
         this.updateElements();

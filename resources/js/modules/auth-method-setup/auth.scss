@@ -35,19 +35,12 @@
       border: 1px solid var(--bg-enabled);
       font-weight: 500;
 
-      [data-icon] {
+      .auth-method-active-icon {
         width: calc(var(--touch-target-size) - 4px);
         height: calc(var(--touch-target-size) - 4px);
         border-radius: calc(var(--touch-target-size) / 2 - 2px);
         background-color: var(--bg-enabled);
-        text-align: center;
-
-        &::before {
-          position: relative;
-          inset-block-start: -2px;
-          color: var(--white);
-          opacity: 1;
-        }
+        color: var(--white);
       }
     }
   }
