@@ -45,7 +45,7 @@ const folderData = {
 
 function createModal(settings: Record<string, unknown> = {}) {
   return new VolumeFolderSelectorModal({
-    loadIndexBody: async () => ({html: '', props: folderData}),
+    loadIndexBody: async () => ({props: folderData}),
     ...settings,
   } as any);
 }
