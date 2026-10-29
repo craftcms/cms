@@ -11,6 +11,7 @@ import type {CraftActionMenu, ReorderDirection} from '@craftcms/ui';
 import {openSlideout, type SlideoutSaveResult} from '@/common/slideouts';
 import {componentSelectData} from './support';
 import {getActionUrl} from '@/common/craft/url';
+import {t} from '@craftcms/ui/utilities/translate';
 
 // `Craft` and `$` (jQuery) remain page globals. The Choose menu and the
 // *chip* action menus are both modern, self-booting `craft-action-menu`s
@@ -775,7 +776,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
     if (this.#menu) {
       actions.push({
         icon: 'arrows-rotate',
-        label: Craft.t('app', 'Replace'),
+        label: t('Replace'),
         callback: () => {
           // Announce rather than act: the owning select's container listener
           // opens the Choose menu as the default (picking an option puts the
@@ -797,7 +798,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
 
     actions.push({
       icon: 'remove',
-      label: Craft.t('app', 'Remove'),
+      label: t('Remove'),
       onActivate: () => owner().removeComponent(chip),
       destructive: true,
     });

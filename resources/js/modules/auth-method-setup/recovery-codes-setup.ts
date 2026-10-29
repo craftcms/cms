@@ -73,7 +73,7 @@ export class RecoveryCodesSetup extends LitElement {
       console.error({error});
     } finally {
       this.submitButton?.removeAttribute('loading');
-      Craft.cp.announce(Craft.t('app', 'Loading complete'));
+      Craft.cp.announce(t('Loading complete'));
     }
   };
 

@@ -3,6 +3,7 @@ import {
   renderOverrideSettings,
 } from '@actions/Settings/EntryTypesController';
 import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
+import {t} from '@craftcms/ui/utilities/translate';
 
 // `Craft` and `$` (jQuery) remain page globals; the settings form is
 // server-rendered HTML, so the legacy seams the rest of the manager leans on
@@ -114,7 +115,7 @@ async function openVueSlideout(chip: HTMLElement, data: any): Promise<void> {
     EntryTypeOverrideSettings as InertiaPageComponent,
     {
       contextId,
-      title: Craft.t('app', '{label} Settings', {
+      title: t('{label} Settings', {
         label: name?.trim() ?? chip.dataset.label,
       }),
     },

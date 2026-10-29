@@ -375,7 +375,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     if (skipLinkAnchor) {
       const $skipLink = document.createElement('a');
       $skipLink.className = 'skip-link';
-      $skipLink.textContent = Craft.t('app', 'Skip to card view designer');
+      $skipLink.textContent = t('Skip to card view designer');
       $skipLink.href = `#${skipLinkAnchor}`;
 
       this.cvd.$container.setAttribute('tabindex', '-1');
@@ -446,10 +446,10 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
 
     let defaultValue = '';
     if (this.tabElements().length === 0) {
-      defaultValue = Craft.t('app', 'Content');
+      defaultValue = t('Content');
     }
     const name = Craft.escapeHtml(
-      prompt(Craft.t('app', 'Give your tab a name.'), defaultValue)
+      prompt(t('Give your tab a name.'), defaultValue)
     );
 
     if (!name) {

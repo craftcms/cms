@@ -1,4 +1,5 @@
 import {Base} from '@craftcms/garnish';
+import {t} from '@craftcms/ui/utilities/translate';
 
 // Mostly Craft.* runtime seams (the still-legacy element index + prompt handler
 // + progress bar); the only jQuery is via the objects Craft.ui/Craft.cp return
@@ -58,9 +59,7 @@ export class AssetMover extends Base {
       response.data.count > AssetMover.countLimit ||
       response.data.totalSize > AssetMover.sizeLimit
     ) {
-      proceed = confirm(
-        Craft.t('app', 'Are you sure you want to move the selected items?')
-      );
+      proceed = confirm(t('Are you sure you want to move the selected items?'));
       confirmed = true;
     }
 
@@ -73,7 +72,7 @@ export class AssetMover extends Base {
 
     if (allowUndo && this.conflictCount === 0) {
       $undoBtn = Craft.ui.createButton({
-        label: Craft.t('app', 'Undo'),
+        label: t('Undo'),
         spinner: true,
       });
     }
@@ -90,9 +89,7 @@ export class AssetMover extends Base {
     if (allowUndo) {
       $undoBtn?.on('activate', async () => {
         // ask to confirm if they want to undo
-        if (
-          confirm(Craft.t('app', 'Are you sure you want to undo the move?'))
-        ) {
+        if (confirm(t('Are you sure you want to undo the move?'))) {
           // if yes, undo
           const totalFoldersMoved = await this.moveFolders(
             this.undoMovedFolders.folderIds,
@@ -104,11 +101,7 @@ export class AssetMover extends Base {
           );
           const totalItemsMoved = totalFoldersMoved + totalAssetsMoved;
           if (totalItemsMoved) {
-            this.successNotice(
-              moveParams,
-              Craft.t('app', 'Move reverted.'),
-              false
-            );
+            this.successNotice(moveParams, t('Move reverted.'), false);
             Craft.elementIndex.updateElements(true);
           }
         }
@@ -132,8 +125,8 @@ export class AssetMover extends Base {
     });
     return this._batchMoveRequests(requests, {
       conflictChoices: [
-        {value: 'keepBoth', title: Craft.t('app', 'Keep both')},
-        {value: 'replace', title: Craft.t('app', 'Replace it')},
+        {value: 'keepBoth', title: t('Keep both')},
+        {value: 'replace', title: t('Replace it')},
       ],
       handleConflictChoice: function (prompt: any) {
         const params: any = {
@@ -185,15 +178,11 @@ export class AssetMover extends Base {
         conflictChoices: [
           {
             value: 'replace',
-            title: Craft.t(
-              'app',
-              'Replace the folder (all existing files will be deleted)'
-            ),
+            title: t('Replace the folder (all existing files will be deleted)'),
           },
           {
             value: 'merge',
-            title: Craft.t(
-              'app',
+            title: t(
               'Merge the folder (any conflicting files will be replaced)'
             ),
           },

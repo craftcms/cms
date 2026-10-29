@@ -13,6 +13,7 @@ import {type ActionMenuItem} from '@craftcms/ui';
 import type {UiValues} from '@/modules/ui/types';
 import {createInitialIcon} from '@/common/utils/initialIcon';
 import {uuid} from '@/common/craft/strings';
+import {t} from '@craftcms/ui/utilities/translate';
 
 declare const Craft: any;
 declare const $: any;
@@ -119,7 +120,7 @@ export class Tab extends Base {
     const $tab = this.$container.querySelector('.tabs .tab');
 
     const menu = document.createElement('craft-action-menu');
-    menu.label = Craft.t('app', 'Actions');
+    menu.label = t('Actions');
     // Disable the generated (default ellipsis) invoker when read-only.
     menu.disabled = !!this.designer.settings!.readOnly;
     // Anchor the settings slideout (focus return) to the menu element, since the
@@ -132,7 +133,7 @@ export class Tab extends Base {
     menu.actions = (): ActionMenuItem[] => {
       const items: ActionMenuItem[] = [
         {
-          label: Craft.t('app', 'Settings'),
+          label: t('Settings'),
           icon: 'gear',
           onClick: () => {
             this.createSettings();
@@ -148,8 +149,8 @@ export class Tab extends Base {
         items.push({
           label:
             Craft.orientation === 'ltr'
-              ? Craft.t('app', 'Move to the left')
-              : Craft.t('app', 'Move to the right'),
+              ? t('Move to the left')
+              : t('Move to the right'),
           icon: Craft.orientation === 'ltr' ? 'arrow-left' : 'arrow-right',
           onClick: () => {
             this.moveLeft();
@@ -161,8 +162,8 @@ export class Tab extends Base {
         items.push({
           label:
             Craft.orientation === 'ltr'
-              ? Craft.t('app', 'Move to the right')
-              : Craft.t('app', 'Move to the left'),
+              ? t('Move to the right')
+              : t('Move to the left'),
           icon: Craft.orientation === 'ltr' ? 'arrow-right' : 'arrow-left',
           onClick: () => {
             this.moveRight();
@@ -173,14 +174,14 @@ export class Tab extends Base {
       items.push(
         this.isSidebar
           ? {
-              label: Craft.t('app', 'Move to content'),
+              label: t('Move to content'),
               icon: 'browser',
               onClick: () => {
                 this.setType('content');
               },
             }
           : {
-              label: Craft.t('app', 'Move to the sidebar'),
+              label: t('Move to the sidebar'),
               icon: 'sidebar-flip',
               onClick: () => {
                 this.setType('sidebar');
@@ -188,7 +189,7 @@ export class Tab extends Base {
             },
         {type: 'hr'},
         {
-          label: Craft.t('app', 'Remove'),
+          label: t('Remove'),
           icon: 'xmark-large',
           variant: 'danger',
           onClick: () => {
@@ -237,7 +238,7 @@ export class Tab extends Base {
     }
 
     await openLayoutComponentSettings(data, {
-      title: this.config?.name || Craft.t('app', 'Settings'),
+      title: this.config?.name || t('Settings'),
       triggerElement: this.$actionBtn,
       requestData: () => this.settingsRequestData(),
       apply: (settings) => this.applyTabSettings(settings),
@@ -252,7 +253,7 @@ export class Tab extends Base {
    */
   async applyTabSettings(settings: UiValues): Promise<void> {
     if (!settings.name) {
-      const message = Craft.t('app', 'You must specify a tab name.');
+      const message = t('You must specify a tab name.');
 
       throw Object.assign(new Error(message), {
         name: 'TabNameRequired',

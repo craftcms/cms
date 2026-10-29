@@ -16,6 +16,7 @@ import type {
 import {editEntryTypeOverrides} from './entry-type-override-settings';
 import {groupedEntryTypeManagerData} from './support';
 import {namespaceId, namespaceInputName} from '@/common/craft/namespace';
+import {t} from '@craftcms/ui/utilities/translate';
 
 declare const Craft: any;
 declare const $: any;
@@ -105,7 +106,7 @@ function handleDefineChipActions(
     chip.querySelector('[data-edit-action]')?.setAttribute('hidden', '');
     actions.push({
       icon: 'gear',
-      label: Craft.t('app', 'Settings'),
+      label: t('Settings'),
       onActivate: () => void editEntryTypeOverrides(chip),
     });
   }
@@ -115,7 +116,7 @@ function handleDefineChipActions(
   actions.push(
     {
       icon: ltr ? 'arrow-left' : 'arrow-right',
-      label: Craft.t('app', 'Move to previous group'),
+      label: t('Move to previous group'),
       onActivate: () => managerFor(chip)?.moveChipToGroup(chip, 'previous'),
       attributes: {
         'data-move-to-previous-group': true,
@@ -124,7 +125,7 @@ function handleDefineChipActions(
     },
     {
       icon: ltr ? 'arrow-right' : 'arrow-left',
-      label: Craft.t('app', 'Move to next group'),
+      label: t('Move to next group'),
       onActivate: () => managerFor(chip)?.moveChipToGroup(chip, 'next'),
       attributes: {
         'data-move-to-next-group': true,
@@ -267,7 +268,7 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
           icon="plus"
           variant="dashed"
           --command="add-group"
-          >${Craft.t('app', 'Add Group')}</craft-button
+          >${t('Add Group')}</craft-button
         >
       `).querySelector<HTMLElement>('craft-button')!;
       this.container.append(btn);
@@ -328,7 +329,7 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
       return;
     }
 
-    const name = prompt(Craft.t('app', 'Group Name'));
+    const name = prompt(t('Group Name'));
     if (name === null || name === '') {
       return;
     }
@@ -618,7 +619,7 @@ export class Group extends Base {
         .actions=${[
           {
             icon: 'pencil',
-            label: Craft.t('app', 'Rename'),
+            label: t('Rename'),
             onClick: (ev: Event) => {
               close(ev);
               groupData.get(container)?.rename();
@@ -627,7 +628,7 @@ export class Group extends Base {
           {type: 'hr'},
           {
             icon: 'trash',
-            label: Craft.t('app', 'Remove'),
+            label: t('Remove'),
             variant: 'danger',
             onClick: (ev: Event) => {
               close(ev);
@@ -653,7 +654,7 @@ export class Group extends Base {
   }
 
   rename(): void {
-    const name = prompt(Craft.t('app', 'Group Name'), this.name);
+    const name = prompt(t('Group Name'), this.name);
     if (name === null || name === '') {
       return;
     }

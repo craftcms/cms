@@ -18,6 +18,7 @@
 import {ref, shallowRef, toValue, type MaybeRefOrGetter, type Ref} from 'vue';
 import type {SlideoutController} from './types';
 import type {ScreenPageProps} from '@/common/composables/screen';
+import {t} from '@craftcms/ui/utilities/translate';
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- the legacy CP globals
    are untyped, and typing them here would only describe one caller's slice. */
@@ -198,7 +199,7 @@ export function useElementEditor(
 
     const indicator =
       '<craft-icon name="alert" data-tab-error><span class="sr-only">' +
-      Craft.t('app', 'This tab contains errors') +
+      t('This tab contains errors') +
       '</span></craft-icon>';
     const tabMenu = tabManager?.menu ?? [];
 
@@ -292,19 +293,14 @@ export function useElementEditor(
         .find('h2')
         .html(
           count > 0
-            ? Craft.t(
-                'app',
+            ? t(
                 'Found {num, number} {num, plural, =1{error} other{errors}} in this tab.',
                 {num: count}
               ) +
                 ($tabsWithErrors.length > 1
-                  ? `<span class="visually-hidden">${Craft.t(
-                      'app',
-                      '{total, number} {total, plural, =1{error} other{errors}} found in {num, number} {num, plural, =1{tab} other{tabs}}.',
-                      {total: errorCount, num: $tabsWithErrors.length}
-                    )}</span>`
+                  ? `<span class="visually-hidden">${t('{total, number} {total, plural, =1{error} other{errors}} found in {num, number} {num, plural, =1{tab} other{tabs}}.', {total: errorCount, num: $tabsWithErrors.length})}</span>`
                   : '')
-            : Craft.t('app', 'Found errors in other tabs.')
+            : t('Found errors in other tabs.')
         );
 
       $summary.prependTo($pane);

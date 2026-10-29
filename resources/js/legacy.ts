@@ -10,6 +10,7 @@
  * barrel belongs here instead, so there is one Lit instance and one set of
  * element definitions on every CP page.
  */
+import './bootstrap/seed-translations';
 import '@craftcms/ui';
 
 // We need to globally register these for the moment because an

@@ -1,3 +1,4 @@
+import './bootstrap/seed-translations';
 import '@craftcms/ui';
 import '../../packages/craftcms-legacy/cp/src/js/UI.js';
 import Cp from './bootstrap/cp.js';

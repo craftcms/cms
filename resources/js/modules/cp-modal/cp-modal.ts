@@ -6,6 +6,7 @@ import type {LegacyRequestOptions} from '@craftcms/ui/utilities/api/legacyReques
 import {commandShortcut} from '@/common/utils/keyShortcuts';
 import {registerShortcut, type ShortcutRegistration} from '@/common/shortcuts';
 import {findDeltaData} from '@/common/craft/delta';
+import {t} from '@craftcms/ui/utilities/translate';
 
 declare const Craft: any;
 declare const $: any;
@@ -124,13 +125,13 @@ export class CpModal extends Base {
 
     this.#$loadSpinner = $('<craft-spinner/>', {
       class: 'cpmodal-spinner',
-      label: Craft.t('app', 'Loading'),
+      label: t('Loading'),
     }).appendTo(this.#$container);
 
     this.#$cancelBtn = $('<craft-button/>', {
       type: 'button',
       slot: 'footer',
-      text: Craft.t('app', 'Cancel'),
+      text: t('Cancel'),
     });
 
     if (this.#cpSettings.showSubmitButton) {
@@ -138,7 +139,7 @@ export class CpModal extends Base {
         type: 'button',
         slot: 'footer',
         variant: 'primary',
-        text: Craft.t('app', 'Save'),
+        text: t('Save'),
         'aria-keyshortcuts': commandShortcut('S'),
       });
     }
@@ -160,8 +161,8 @@ export class CpModal extends Base {
     this.addListener(this.#$container[0], 'submit', 'handleSubmit');
     this.#shortcuts = registerShortcut('Mod+S', (ev) => this.handleSubmit(ev), {
       target: this.dialog,
-      description: () => Craft.t('app', 'Save'),
-      group: () => Craft.t('app', 'Forms'),
+      description: () => t('Save'),
+      group: () => t('Forms'),
       isAvailable: () => this.visible,
     });
     this.dialog.addEventListener('craft-before-hide', (ev) => {
@@ -422,8 +423,7 @@ export class CpModal extends Base {
     if (
       !this.isDirty() ||
       confirm(
-        Craft.t(
-          'app',
+        t(
           'Are you sure you want to close this screen? Any changes will be lost.'
         )
       )

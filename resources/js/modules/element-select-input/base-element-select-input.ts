@@ -16,6 +16,7 @@ import {
 } from '@craftcms/garnish';
 import {elementSelectInputData} from './support';
 import {getActionUrl} from '@/common/craft/url';
+import {t} from '@craftcms/ui/utilities/translate';
 
 declare const Craft: any;
 declare const $: any;
@@ -783,10 +784,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
                 ? 'arrow-left'
                 : 'arrow-right'
           ),
-        label:
-          axis === 'y'
-            ? Craft.t('app', 'Move up')
-            : Craft.t('app', 'Move forward'),
+        label: axis === 'y' ? t('Move up') : t('Move forward'),
         callback: () => {
           this.moveElementForward($element);
         },
@@ -801,10 +799,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
                 ? 'arrow-right'
                 : 'arrow-left'
           ),
-        label:
-          axis === 'y'
-            ? Craft.t('app', 'Move down')
-            : Craft.t('app', 'Move backward'),
+        label: axis === 'y' ? t('Move down') : t('Move backward'),
         callback: () => {
           this.moveElementBackward($element);
         },
@@ -816,7 +811,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       if (this.settings.elementType) {
         actions.push({
           icon: async () => await Craft.ui.icon('arrows-rotate'),
-          label: Craft.t('app', 'Replace'),
+          label: t('Replace'),
           callback: () => {
             this.showReplaceModal($element);
           },
@@ -825,7 +820,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
 
       actions.push({
         icon: async () => await Craft.ui.icon('remove'),
-        label: Craft.t('app', 'Remove'),
+        label: t('Remove'),
         callback: () => {
           this.removeElementOrSelection($element);
         },
@@ -1147,7 +1142,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
         // whether that came from Cancel, Escape or a completed selection.
         onClose: this.onModalHide.bind(this),
         triggerElement: () => this.getNextLogicalFocusElement(),
-        modalTitle: Craft.t('app', 'Choose'),
+        modalTitle: t('Choose'),
       },
       this.settings.modalSettings
     );
@@ -1612,7 +1607,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
 
     if (val) {
       this.$searchSpinner.removeClass('hidden');
-      Craft.cp.announce(Craft.t('app', 'Loading'));
+      Craft.cp.announce(t('Loading'));
 
       const excludeIds: number[] = [];
       for (let i = 0; i < this.$elements.length; i++) {
@@ -1657,7 +1652,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
           this.killSearchMenu();
         }
         this.$searchSpinner.addClass('hidden');
-        Craft.cp.announce(Craft.t('app', 'Loading complete'));
+        Craft.cp.announce(t('Loading complete'));
       }
 
       const $menu = $('<div class="menu tagmenu"/>').appendTo($(bod));
@@ -1665,11 +1660,11 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
 
       for (const element of response.data.elements) {
         const $li = $('<li/>').appendTo($ul);
-        const optionLabel = `${Craft.t('app', 'Existing {type}', {
+        const optionLabel = `${t('Existing {type}', {
           type:
             (this.settings.elementType
               ? Craft.elementTypeNames[this.settings.elementType]?.[2]
-              : null) ?? Craft.t('app', 'element'),
+              : null) ?? t('element'),
         })}: ${element.title}`;
         $li.attr('aria-label', optionLabel);
 
@@ -1685,11 +1680,11 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
 
       if (!response.data.exactMatch && this.canCreateElements()) {
         const $li = $('<li/>').appendTo($ul);
-        const optionLabel = `${Craft.t('app', 'Create {type}', {
+        const optionLabel = `${t('Create {type}', {
           type:
             (this.settings.elementType
               ? Craft.elementTypeNames[this.settings.elementType]?.[2]
-              : null) ?? Craft.t('app', 'element'),
+              : null) ?? t('element'),
         })}: ${val}`;
         $li.attr('aria-label', optionLabel);
 

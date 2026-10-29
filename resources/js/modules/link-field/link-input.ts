@@ -17,6 +17,7 @@ import {
   startsWith,
   trim,
 } from '@/common/craft/strings';
+import {t} from '@craftcms/ui/utilities/translate';
 
 declare const Craft: any;
 
@@ -261,7 +262,7 @@ export class LinkInput extends Base<LinkInputSettings> {
     const actions = [
       {
         icon: 'share',
-        label: Craft.t('app', 'View in a new tab'),
+        label: t('View in a new tab'),
         onActivate: () => {
           const href = this.#chip?.querySelector('a')?.getAttribute('href');
           if (href) {
@@ -271,7 +272,7 @@ export class LinkInput extends Base<LinkInputSettings> {
       },
       {
         icon: 'pencil',
-        label: Craft.t('app', 'Edit'),
+        label: t('Edit'),
         onActivate: () => {
           this.switchToTextInput();
           this.#textInput?.focus();
@@ -279,7 +280,7 @@ export class LinkInput extends Base<LinkInputSettings> {
       },
       {
         icon: 'link',
-        label: Craft.t('app', 'Copy URL'),
+        label: t('Copy URL'),
         onActivate: () => {
           createCopyTextPrompt({
             label: 'Full URL',
@@ -289,7 +290,7 @@ export class LinkInput extends Base<LinkInputSettings> {
       },
       {
         icon: 'xmark-large',
-        label: Craft.t('app', 'Remove'),
+        label: t('Remove'),
         destructive: true,
         onActivate: () => {
           this.createTextInput('');

@@ -9,6 +9,7 @@
 import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
 import {Base, type GarnishBaseSettings} from '@craftcms/garnish';
 import {AuthMethodSetupSlideout} from './auth-method-setup-slideout';
+import {t} from '@craftcms/ui/utilities/translate';
 
 declare const Craft: any;
 declare const $: any;
@@ -93,7 +94,7 @@ export class AuthMethodSetup extends Base<AuthMethodSetupSettings> {
     }
 
     button.classList.add('loading');
-    Craft.cp.announce(Craft.t('app', 'Loading'));
+    Craft.cp.announce(t('Loading'));
 
     Craft.elevatedSessionManager.requireElevatedSession(
       () => {
