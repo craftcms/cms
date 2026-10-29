@@ -459,18 +459,11 @@ export class CardViewDesigner extends Base {
   }
 
   /**
-   * Shows Thumb Style only when the thumbnail can be an asset's image (always for assets; otherwise once a
-   * thumb source is a field outside a Content Block), and hides Thumb Alignment when the thumbnail covers the card.
+   * Hides Thumb Alignment when there's no thumbnail, or it covers the card.
    */
   toggleThumbFields(): void {
-    const showStyle =
-      this.designer.settings!.alwaysShowThumbStyle ||
-      this.thumbSources().some((key) => !key.startsWith('contentBlock:'));
-    const cover = showStyle && this.designer.config.cardThumbStyle === 'cover';
+    const cover = this.designer.config.cardThumbStyle === 'cover';
 
-    this.$thumbManagementContainer
-      .querySelectorAll('[data-attribute="thumb-style"]')
-      .forEach((el: HTMLElement) => el.classList.toggle('hidden', !showStyle));
     this.$thumbManagementContainer
       .querySelectorAll('[data-attribute="thumb-alignment"]')
       .forEach((el: HTMLElement) =>

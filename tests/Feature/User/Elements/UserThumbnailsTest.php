@@ -54,7 +54,7 @@ it('forwards the requested mode to configured fields before falling back to nati
 
     $html = $this->user->getThumbHtml(120, ImageTransformMode::Letterbox);
 
-    expect(ThumbnailField::$requests)->toBe([[$value === '' ? null : $value, $this->user, 120, ImageTransformMode::Letterbox]]);
+    expect(ThumbnailField::$requests)->toBe($value ? [[$value, $this->user, 120, ImageTransformMode::Letterbox]] : []);
     if ($value) {
         expect($html)->toBe($value)
             ->and($this->driver->requests)->toBeEmpty();

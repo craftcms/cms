@@ -19,6 +19,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
+use CraftCms\Cms\Element\Data\Thumb;
 use CraftCms\Cms\Element\DeletionBlockers\Contracts\DeletionBlockerInterface;
 use CraftCms\Cms\Element\DeletionBlockers\EntryAuthorsBlocker;
 use CraftCms\Cms\Element\Element;
@@ -1272,6 +1273,13 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
             $this->active => self::STATUS_ACTIVE,
             default => self::STATUS_INACTIVE,
         };
+    }
+
+    protected function thumb(): ?Thumb
+    {
+        $photo = $this->getPhoto();
+
+        return $photo || $this->uid ? $this->ownThumb($photo) : null;
     }
 
     protected function thumbUrl(int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string

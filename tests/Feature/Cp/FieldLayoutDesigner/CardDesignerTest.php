@@ -129,7 +129,7 @@ it('previews cards with the sample image for the theme being shown', function (?
     'dark' => ['dark', 'dark', '[[[0.01,'],
 ]);
 
-it('shows the thumb style setting for asset volumes and for fields as the thumb source, and thumb alignment unless cards are covered', function (string $type, bool $thumbField, ?string $style, bool $styleShown, bool $alignmentShown) {
+it('shows the thumb style setting, and thumb alignment unless there’s no thumbnail or cards are covered', function (string $type, bool $thumbField, ?string $style, bool $alignmentShown) {
     $layout = $type === Entry::class
         ? EntryModel::factory()->withField('images', Assets::class)->createElementWithFields()->element->getFieldLayout()
         : new FieldLayout(['type' => $type]);
@@ -143,15 +143,16 @@ it('shows the thumb style setting for asset volumes and for fields as the thumb 
     $field = $designer->filter('craft-field[data-attribute="thumb-style"]');
 
     expect($field->filter('input[type="radio"][name="thumb-style"]')->each(fn (Crawler $radio) => $radio->attr('value')))->toBe(['normal', 'cover'])
-        ->and(str_contains((string) $field->attr('class'), 'hidden'))->toBe(! $styleShown)
+        ->and(str_contains((string) $field->attr('class'), 'hidden'))->toBeFalse()
         ->and(str_contains((string) $designer->filter('craft-field[data-attribute="thumb-alignment"]')->attr('class'), 'hidden'))->toBe(! $alignmentShown);
 })->with([
-    'asset volume by default' => [Asset::class, false, null, true, false],
-    'asset volume set to normal' => [Asset::class, false, 'normal', true, true],
-    'user fields without a thumb source' => [User::class, false, 'cover', false, true],
-    'entry type without a thumb source' => [Entry::class, false, 'cover', false, false],
-    'entry type with a thumb source' => [Entry::class, true, null, true, true],
-    'entry type with a thumb source set to cover' => [Entry::class, true, 'cover', true, false],
+    'asset volume by default' => [Asset::class, false, null, false],
+    'asset volume set to normal' => [Asset::class, false, 'normal', true],
+    'user fields' => [User::class, false, null, true],
+    'user fields set to cover' => [User::class, false, 'cover', false],
+    'entry type without a thumb source' => [Entry::class, false, null, false],
+    'entry type with a thumb source' => [Entry::class, true, null, true],
+    'entry type with a thumb source set to cover' => [Entry::class, true, 'cover', false],
 ]);
 
 it('gives only entry cards a header in the preview, for their entry type’s label', function (string $type, bool $header) {

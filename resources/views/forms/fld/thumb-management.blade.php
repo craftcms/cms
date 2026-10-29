@@ -9,8 +9,8 @@
      * Craft.FieldLayoutDesigner / CardViewDesigner JS expects:
      * `.thumb-management`, the `craft-checkbox-select[id$="thumb-sources"]`, the `[id$="thumb-alignment"]` and
      * `[id$="thumb-style"]` radio groups (whose radios' values are the
-     * alignments and styles), and the `[data-attribute="thumb-alignment"]` and
-     * `[data-attribute="thumb-style"]` field wrappers it shows/hides.
+     * alignments and styles), and the `[data-attribute="thumb-alignment"]` field wrapper
+     * it shows/hides.
      *
      * Declared in a PHP docblock (rather than a Blade comment) so PhpStorm types
      * these variables.
@@ -20,7 +20,6 @@
      * @var string $thumbAlignment
      * @var string $thumbStyle
      * @var bool $showThumbAlignment
-     * @var bool $showThumbStyle
      * @var bool $disabled
      * @var array $alignmentOptions
      * @var array $styleOptions
@@ -68,7 +67,6 @@
             'instructions' => \CraftCms\Cms\t('Choose whether image thumbnails should sit beside the card’s content, or cover the whole card.'),
             'id' => 'thumb-style',
             'fieldset' => true,
-            'fieldClass' => $showThumbStyle ? false : 'hidden',
         ],
     ) !!}
     {{-- Radios shown as buttons, choosing whether the thumbnail is aligned to

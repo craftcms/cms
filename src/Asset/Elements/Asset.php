@@ -56,6 +56,7 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
+use CraftCms\Cms\Element\Data\Thumb;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
@@ -2375,6 +2376,11 @@ JS, [
         return Html::encodeSpaces(AssetsHelper::generateUrl($this));
     }
 
+    protected function thumb(): Thumb
+    {
+        return $this->ownThumb($this->isFolder ? null : $this);
+    }
+
     protected function thumbUrl(int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
         if ($this->isFolder) {
@@ -2781,26 +2787,34 @@ JS, [
     }
 
     /**
-     * Returns the URL of a 4:3 thumbnail that can cover the asset's card, or `null` if the asset should keep a normal
-     * card.
+     * Returns the URL of a 4:3 thumbnail that can cover an element card, or `null` if the asset’s image can’t cover
+     * one (see [[canCoverCard()]]).
+     */
+    public function getCardCoverUrl(): ?string
+    {
+        if (! $this->canCoverCard()) {
+            return null;
+        }
+
+        return AssetsService::getThumbUrl($this, 800, 600, false, ImageTransformMode::Crop);
+    }
+
+    /**
+     * Returns whether the asset’s image can cover an element card.
      *
      * Only images that could be transparent are left out, along with images smaller than 480×360, which would be scaled
      * up, and images narrower than 3:4 or wider than 2:1, which would be cropped too far to tell what they show.
      */
-    public function getCardCoverUrl(): ?string
+    public function canCoverCard(): bool
     {
         if ($this->kind !== FileKind::Image->value || $this->hasCheckeredThumb()) {
-            return null;
+            return false;
         }
 
         $width = (int) $this->getWidth();
         $height = (int) $this->getHeight();
 
-        if ($width < 480 || $height < 360 || $width * 4 < $height * 3 || $width > $height * 2) {
-            return null;
-        }
-
-        return AssetsService::getThumbUrl($this, 800, 600, false, ImageTransformMode::Crop);
+        return $width >= 480 && $height >= 360 && $width * 4 >= $height * 3 && $width <= $height * 2;
     }
 
     /**

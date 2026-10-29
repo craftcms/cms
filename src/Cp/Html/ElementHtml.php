@@ -35,11 +35,7 @@ use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\NestedElementManager;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Field\BaseRelationField;
-use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
-use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
@@ -978,11 +974,12 @@ readonly class ElementHtml
             $classes[] = 'error';
         }
 
-        $coverAsset = $this->cardCoverAsset($element);
+        $elementThumb = $element->getThumb();
+        $coverAsset = $elementThumb?->supportsCover() && $this->cardThumbStyle($element) === 'cover' ? $elementThumb->getAsset() : null;
         $coverUrl = $coverAsset?->getCardCoverUrl();
         $luminance = $coverUrl !== null ? $coverAsset->analysis?->colors?->luminance : null;
 
-        $thumb = $element->getThumbHtml(120, ImageTransformMode::Fit);
+        $thumb = $elementThumb?->getHtml(120, ImageTransformMode::Fit);
         $thumbAlignment = $element->getFieldLayout()?->getCardThumbAlignment() ?? 'end';
 
         if ($thumb) {
@@ -1022,51 +1019,11 @@ readonly class ElementHtml
     }
 
     /**
-     * Returns the asset whose image an element's card thumbnail shows, if its field layout's cards use the `cover`
-     * thumb style and the thumbnail comes straight from an asset: the element itself, or the first element related
-     * through the first of its field layout's thumb sources that has a thumbnail for it.
+     * Returns the thumb style of an element's card: its field layout's, or else `cover` for assets.
      */
-    private function cardCoverAsset(ElementInterface $element): ?Asset
+    private function cardThumbStyle(ElementInterface $element): string
     {
-        $fieldLayout = $element->getFieldLayout();
-
-        if (($fieldLayout?->getCardThumbStyle() ?? ($element instanceof Asset ? 'cover' : 'normal')) !== 'cover') {
-            return null;
-        }
-
-        if ($element instanceof Asset) {
-            return $element;
-        }
-
-        foreach ($fieldLayout->thumbSources ?? [] as $key) {
-            // A Content Block's fields hold their values in the block, not the element, so only the layout's own
-            // relation fields are looked into.
-            $layoutElement = str_starts_with($key, 'layoutElement:') ? $fieldLayout->getElementByKey($key) : null;
-
-            try {
-                $field = $layoutElement instanceof CustomField ? $layoutElement->getField() : null;
-            } catch (FieldNotFoundException) {
-                $field = null;
-            }
-
-            if ($field instanceof BaseRelationField) {
-                $value = $element->getFieldValue($field->handle);
-                $related = $value instanceof ElementQueryInterface ? (clone $value)->eagerly()->one() : $value->first();
-
-                if ($related !== null) {
-                    return $related instanceof Asset ? $related : null;
-                }
-
-                continue;
-            }
-
-            // Any other source that shows a thumbnail for the element provides it, and it isn't an asset's image
-            if ($fieldLayout->getThumbHtmlForElement($key, $element, 120)) {
-                return null;
-            }
-        }
-
-        return null;
+        return $element->getFieldLayout()?->getCardThumbStyle() ?? ($element instanceof Asset ? 'cover' : 'normal');
     }
 
     /**
