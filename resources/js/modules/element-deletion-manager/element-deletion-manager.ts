@@ -3,6 +3,7 @@ import type CraftButton from '@craftcms/ui/components/button/button';
 import type CraftDialog from '@craftcms/ui/components/dialog/dialog';
 import './element-deletion-manager.css';
 import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 
 // jQuery-built blocker markup + Craft.ui/Craft.cp seams, shown in a
 // `craft-dialog`.
@@ -84,12 +85,9 @@ export class ElementDeletionManager extends Base {
   }
 
   async run(): Promise<void> {
-    const {data} = await Craft.sendActionRequest(
-      'POST',
+    const {data} = await actionClient.post(
       'delete-elements/deletion-blockers',
-      {
-        data: this.getParams(),
-      }
+      this.getParams()
     );
 
     this.settings.onLoadBlockers();
@@ -143,12 +141,9 @@ export class ElementDeletionManager extends Base {
     }
     let data: any = null;
     try {
-      const response = await Craft.sendActionRequest(
-        'POST',
+      const response = await actionClient.post(
         'delete-elements/delete',
-        {
-          data: this.getParams(),
-        }
+        this.getParams()
       );
       data = response.data;
     } catch {
@@ -436,11 +431,9 @@ class Blocker extends Base {
             button.loading = true;
             let response;
             try {
-              response = await Craft.sendActionRequest('POST', action.action, {
-                data: {
-                  elementIds: this.manager.elementIds,
-                  ...action.params,
-                },
+              response = await actionClient.post(action.action, {
+                elementIds: this.manager.elementIds,
+                ...action.params,
               });
             } finally {
               button.loading = false;

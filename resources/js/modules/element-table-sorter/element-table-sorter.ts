@@ -1,5 +1,6 @@
 import {DragSort} from '@craftcms/garnish';
 import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 
 // Keeps the `declare const $` / `declare const Craft` seams: the structural
 // row logic is jQuery-heavy and interops with the still-legacy table view
@@ -120,17 +121,17 @@ export class ElementTableSorter extends DragSort {
 
       const data = this._getAjaxBaseData($targetItem);
 
-      Craft.sendActionRequest('POST', 'structures/get-element-level-delta', {
-        data,
-      }).then((response: any) => {
-        this._loadingDraggeeLevelDelta = false;
+      void actionClient
+        .post('structures/get-element-level-delta', data)
+        .then((response: any) => {
+          this._loadingDraggeeLevelDelta = false;
 
-        if (this.dragging) {
-          this._draggeeLevelDelta = response.data.delta;
-          this._setTargetLevelBounds();
-          this.drag(false);
-        }
-      });
+          if (this.dragging) {
+            this._draggeeLevelDelta = response.data.delta;
+            this._setTargetLevelBounds();
+            this.drag(false);
+          }
+        });
     }
 
     return $draggee.toArray();
@@ -302,7 +303,8 @@ export class ElementTableSorter extends DragSort {
         $prevRow = $prevRow.prev();
       }
 
-      Craft.sendActionRequest('POST', 'structures/move-element', {data})
+      actionClient
+        .post('structures/move-element', data)
         .then(() => {
           Craft.cp.displaySuccess(t('New position saved.'));
           this.onPositionChange();

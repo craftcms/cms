@@ -1,8 +1,17 @@
 import $ from 'jquery';
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+  type MockInstance,
+} from 'vite-plus/test';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {PreviewFileModal} from './preview-file-modal';
 
-const sendActionRequest = vi.fn();
+let post: MockInstance;
 const cp = {announce: vi.fn(), displayError: vi.fn(), displayNotice: vi.fn()};
 
 function openDialogs(): HTMLElement[] {
@@ -51,19 +60,18 @@ describe('PreviewFileModal', () => {
     vi.stubGlobal('Craft', {
       t: (_category: string, message: string) => message,
       cp,
-      sendActionRequest,
       getActionUrl: (action: string) => `/actions/${action}`,
       appendHeadHtml: vi.fn(),
       appendBodyHtml: vi.fn(),
     });
-    sendActionRequest.mockImplementation(
-      async (_method: string, _action: string, {data}: any) => ({
+    post = vi
+      .spyOn(actionClient, 'post')
+      .mockImplementation(async (_action: string, data: any) => ({
         data: {
           requestId: data.requestId,
           previewHtml: `<p class="preview">${data.assetId}</p>`,
         },
-      })
-    );
+      }));
   });
 
   afterEach(() => {
@@ -103,7 +111,7 @@ describe('PreviewFileModal', () => {
   });
 
   it('highlights a text preview’s code, keeping markup in it as text', async () => {
-    sendActionRequest.mockResolvedValueOnce({
+    post.mockResolvedValueOnce({
       data: {
         requestId: 1,
         previewHtml:
@@ -124,7 +132,7 @@ describe('PreviewFileModal', () => {
     const writeText = vi
       .spyOn(navigator.clipboard, 'writeText')
       .mockResolvedValue(undefined);
-    sendActionRequest.mockResolvedValueOnce({
+    post.mockResolvedValueOnce({
       data: {
         requestId: 1,
         previewHtml:
@@ -155,7 +163,7 @@ describe('PreviewFileModal', () => {
     vi.spyOn(navigator.clipboard, 'writeText').mockRejectedValue(
       new Error('Denied')
     );
-    sendActionRequest.mockResolvedValueOnce({
+    post.mockResolvedValueOnce({
       data: {
         requestId: 1,
         previewHtml: '<pre><code data-language="text">abc</code></pre>',
@@ -174,7 +182,7 @@ describe('PreviewFileModal', () => {
 
   it('moves a preview’s own footer controls into the footer, until the next asset loads', async () => {
     const select = elementSelect([1, 2, 3]);
-    sendActionRequest
+    post
       .mockResolvedValueOnce({
         data: {
           requestId: 1,

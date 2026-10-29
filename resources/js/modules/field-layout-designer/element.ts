@@ -9,6 +9,7 @@ import type {Tab} from './tab';
 import {type ActionMenuItem, t} from '@craftcms/ui';
 import type {UiValues} from '@/modules/ui/types';
 import {uuid} from '@/common/craft/strings';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 
 declare const Craft: any;
 
@@ -265,14 +266,11 @@ export class Element extends Base {
   async createSettings(): Promise<void> {
     let data;
     try {
-      const response = await Craft.sendActionRequest(
-        'POST',
+      const response = await actionClient.post(
         'fields/render-layout-component-settings',
         {
-          data: {
-            ...this.settingsRequestData(),
-            config: this.config,
-          },
+          ...this.settingsRequestData(),
+          config: this.config,
         }
       );
       data = response.data;
@@ -348,15 +346,12 @@ export class Element extends Base {
     let data;
 
     try {
-      const response = await Craft.sendActionRequest(
-        'POST',
+      const response = await actionClient.post(
         'fields/apply-layout-element-settings',
         {
-          data: {
-            ...this.settingsRequestData(),
-            config,
-            settings,
-          },
+          ...this.settingsRequestData(),
+          config,
+          settings,
         }
       );
       data = response.data;

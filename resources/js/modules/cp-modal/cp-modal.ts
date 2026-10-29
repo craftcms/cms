@@ -2,7 +2,12 @@ import {Base, isMobileBrowser} from '@craftcms/garnish';
 import {inputName} from '@/modules/ui/runtime';
 import type {UiValues} from '@/modules/ui/types';
 import {isHttpError} from '@craftcms/ui/utilities/api/http';
-import type {LegacyRequestOptions} from '@craftcms/ui/utilities/api/legacyRequest';
+import {
+  sendLegacyRequest,
+  type LegacyRequestOptions,
+} from '@craftcms/ui/utilities/api/legacyRequest';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {getCpUrl} from '@/common/craft/url';
 import {commandShortcut} from '@/common/utils/keyShortcuts';
 import {registerShortcut, type ShortcutRegistration} from '@/common/shortcuts';
 import {findDeltaData} from '@/common/craft/delta';
@@ -190,9 +195,8 @@ export class CpModal extends Base {
 
       this.#abortController = new AbortController();
 
-      Craft.sendActionRequest(
-        'GET',
-        this.action,
+      sendLegacyRequest(
+        actionClient,
         $.extend(
           {
             params: Object.assign(
@@ -205,7 +209,8 @@ export class CpModal extends Base {
               'X-Craft-Container-Id': this.#$container.attr('id'),
             },
           },
-          this.#cpSettings.requestOptions
+          this.#cpSettings.requestOptions,
+          {method: 'get', url: this.action}
         )
       )
         .then((response: any) => {
@@ -313,12 +318,12 @@ export class CpModal extends Base {
       this.#$container.data('initial-delta-values')
     );
 
-    Craft.sendActionRequest('POST', null, {
-      data,
-      headers: {
-        'X-Craft-Namespace': this.namespace,
-      },
-    })
+    actionClient
+      .post(getCpUrl(), data, {
+        headers: {
+          'X-Craft-Namespace': this.namespace,
+        },
+      })
       .then((response: any) => {
         this.handleSubmitResponse(response);
       })

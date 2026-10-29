@@ -10,6 +10,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
 import {Base, type GarnishBaseSettings} from '@craftcms/garnish';
 import {AuthMethodSetupSlideout} from './auth-method-setup-slideout';
 import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 
 declare const Craft: any;
 declare const $: any;
@@ -98,9 +99,8 @@ export class AuthMethodSetup extends Base<AuthMethodSetupSettings> {
 
     Craft.elevatedSessionManager.requireElevatedSession(
       () => {
-        Craft.sendActionRequest('POST', 'auth/method-setup-html', {
-          data: {method},
-        })
+        actionClient
+          .post('auth/method-setup-html', {method})
           .then(async ({data}: any) => {
             this.showingSlideout = true;
             const slideout = new AuthMethodSetupSlideout(data);
@@ -144,8 +144,9 @@ export class AuthMethodSetup extends Base<AuthMethodSetupSettings> {
 
   /** Re-fetch and re-render the method listing, then re-wire it. */
   refresh(): void {
-    Craft.sendActionRequest('POST', 'auth/method-listing-html').then(
-      async ({data}: any) => {
+    void actionClient
+      .post('auth/method-listing-html')
+      .then(async ({data}: any) => {
         // Release the outgoing listing's button listeners before replacing
         // the markup below.
         for (const container of Object.values(this.methodListings ?? {})) {
@@ -163,8 +164,7 @@ export class AuthMethodSetup extends Base<AuthMethodSetupSettings> {
         this.initUi();
         this.settings!.onRefresh();
         this.trigger('refresh');
-      }
-    );
+      });
   }
 }
 

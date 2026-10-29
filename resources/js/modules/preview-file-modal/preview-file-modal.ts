@@ -6,6 +6,7 @@ import {hasAttr} from '@craftcms/garnish';
 import {submitNativeForm} from '@/common/utils/forms';
 import {highlightCodeBlocks} from '@/common/utils/highlight-code';
 import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 
 declare const Craft: any;
 declare const $: any;
@@ -258,9 +259,8 @@ export class PreviewFileModal {
       spinner.remove();
     };
 
-    Craft.sendActionRequest('POST', 'assets/preview-file', {
-      data: {assetId, requestId},
-    })
+    actionClient
+      .post('assets/preview-file', {assetId, requestId})
       .then(async (response: any) => {
         if (response.data.requestId !== this.requestId) return;
         onResponse();

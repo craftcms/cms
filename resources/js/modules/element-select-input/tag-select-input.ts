@@ -1,6 +1,7 @@
 import {bod, DOWN_KEY, RETURN_KEY, UP_KEY} from '@craftcms/garnish';
 import {BaseElementSelectInput} from './base-element-select-input';
 import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 
 declare const Craft: any;
 declare const Garnish: any;
@@ -197,17 +198,11 @@ export class TagSelectInput extends BaseElementSelectInput {
     }
 
     try {
-      const response = await Craft.sendActionRequest(
-        'POST',
-        'tags/search-for-tags',
-        {
-          data: {
-            search: val,
-            tagGroupId: this.settings.tagGroupId,
-            excludeIds,
-          },
-        }
-      );
+      const response = await actionClient.post('tags/search-for-tags', {
+        search: val,
+        tagGroupId: this.settings.tagGroupId,
+        excludeIds,
+      });
 
       if (this.searchMenu) this.killSearchMenu();
       this.$spinner.addClass('hidden');
@@ -336,9 +331,8 @@ export class TagSelectInput extends BaseElementSelectInput {
     if (!id) {
       $element.addClass('loading disabled');
 
-      Craft.sendActionRequest('POST', 'tags/create-tag', {
-        data: {groupId: this.settings.tagGroupId, title},
-      })
+      actionClient
+        .post('tags/create-tag', {groupId: this.settings.tagGroupId, title})
         .then((response: any) => {
           $element.attr('data-id', response.data.id);
           $input.val(response.data.id);

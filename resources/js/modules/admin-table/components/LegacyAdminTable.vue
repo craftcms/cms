@@ -10,6 +10,7 @@
    *
    * @see resources/js/legacy-admin-table.ts
    */
+  import {actionClient} from '@craftcms/ui';
   import {useCraftTable} from '@/common/table/craftTable';
   import {computed, h, ref, watch} from 'vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
@@ -79,9 +80,7 @@
     }
 
     try {
-      await window.Craft.sendActionRequest('POST', props.deleteAction, {
-        data: {id: row.id},
-      });
+      await actionClient.post(props.deleteAction, {id: row.id});
 
       rows.value = rows.value.filter((candidate) => candidate !== row);
 

@@ -35,7 +35,12 @@ import {
   type LegacyRequestOptions,
 } from '@craftcms/ui/utilities/api/legacyRequest';
 import {commandShortcut} from '@/common/utils/keyShortcuts';
+import {
+  actionClient,
+  actionHeaders,
+} from '@craftcms/ui/utilities/api/actionClient';
 import {findDeltaData} from '@/common/craft/delta';
+import {getCpUrl} from '@/common/craft/url';
 import {t} from '@craftcms/ui/utilities/translate';
 
 declare const Craft: any;
@@ -336,16 +341,11 @@ export class CpScreenSlideout extends Slideout {
         },
         this.settings!.requestOptions
       );
-      const request = /^(?:https?:\/\/|\/)/.test(this.action!)
-        ? sendLegacyRequest(http, {
-            ...options,
-            method: 'get',
-            url: this.action!,
-            headers: {...Craft._actionHeaders(), ...options.headers},
-          })
-        : Craft.sendActionRequest('GET', this.action, options);
-
-      request
+      sendLegacyRequest(actionClient, {
+        ...options,
+        method: 'get',
+        url: this.action!,
+      })
         .then((response: any) => {
           this.update(response.data)
             .then(() => {
@@ -713,9 +713,9 @@ export class CpScreenSlideout extends Slideout {
     };
     const request = action
       ? http.post(action, data, {
-          headers: {...Craft._actionHeaders(), ...options.headers},
+          headers: {...actionHeaders(), ...options.headers},
         })
-      : Craft.sendActionRequest('POST', null, options);
+      : actionClient.post(getCpUrl(), data, {headers: options.headers});
 
     request
       .then((response: any) => {

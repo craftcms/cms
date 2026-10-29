@@ -17,6 +17,7 @@ import {editEntryTypeOverrides} from './entry-type-override-settings';
 import {groupedEntryTypeManagerData} from './support';
 import {namespaceId, namespaceInputName} from '@/common/craft/namespace';
 import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 
 declare const Craft: any;
 declare const $: any;
@@ -496,15 +497,10 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
     ).map((input) => input.value);
 
     try {
-      const {data} = await Craft.sendActionRequest(
-        'POST',
+      const {data} = await actionClient.post(
         'matrix/default-table-column-options',
         {
-          data: {
-            entryTypeIds: this.selects().flatMap(
-              (select) => select.selectedIds
-            ),
-          },
+          entryTypeIds: this.selects().flatMap((select) => select.selectedIds),
         }
       );
 
