@@ -13,9 +13,26 @@ it('runs a standalone plugin suite without Craft workbench providers', function 
 
     try {
         File::copyDirectory($root.'/tests/TestClasses/PluginTestSuite', $package);
-        File::copyDirectory(default_skeleton_path(), $package.'/laravel');
-        File::deleteDirectory($package.'/laravel/config/craft');
-        File::cleanDirectory($package.'/laravel/bootstrap/cache');
+        $skeleton = default_skeleton_path();
+
+        foreach (['app', 'lang', 'migrations', 'resources', 'routes'] as $directory) {
+            File::copyDirectory($skeleton.'/'.$directory, $package.'/laravel/'.$directory);
+        }
+
+        foreach (['bootstrap', 'config'] as $directory) {
+            File::ensureDirectoryExists($package.'/laravel/'.$directory);
+
+            foreach (File::files($skeleton.'/'.$directory) as $file) {
+                File::copy($file->getPathname(), $package.'/laravel/'.$directory.'/'.$file->getFilename());
+            }
+        }
+
+        File::copy($skeleton.'/composer.json', $package.'/laravel/composer.json');
+
+        foreach (['bootstrap/cache', 'database/migrations', 'public', 'storage/framework/cache/data', 'storage/framework/sessions', 'storage/framework/views', 'storage/logs'] as $directory) {
+            File::ensureDirectoryExists($package.'/laravel/'.$directory);
+        }
+
         File::ensureDirectoryExists($package.'/vendor/pestphp/pest/bin');
         File::copy($root.'/vendor/pestphp/pest/bin/pest', $package.'/vendor/pestphp/pest/bin/pest');
 
