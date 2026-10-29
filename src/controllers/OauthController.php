@@ -8,6 +8,7 @@ use craft\filters\IpRateLimitIdentity;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\oauth\Client;
 use craft\oauth\Repositories;
 use craft\oauth\User as OAuthUser;
 use craft\web\Controller;
@@ -116,10 +117,10 @@ class OauthController extends Controller
         $now = Db::prepareDateForDb(new DateTime());
         Craft::$app->getDb()->createCommand()->insert(Table::OAUTH_CLIENTS, [
             'id' => $id,
-            'resource_id' => $definition->id,
             'name' => $name,
             'redirect_uris' => json_encode($uris, JSON_THROW_ON_ERROR),
             'grant_types' => json_encode(['authorization_code', 'refresh_token'], JSON_THROW_ON_ERROR),
+            'scopes' => json_encode(array_keys($definition->scopes), JSON_THROW_ON_ERROR),
             'revoked' => false,
             'created_at' => $now,
             'updated_at' => $now,
@@ -152,6 +153,13 @@ class OauthController extends Controller
             $authorization = $oauth->server($resource)->validateAuthorizationRequest($request);
             if (!$authorization->getScopes()) {
                 throw OAuthServerException::invalidScope('(empty)');
+            }
+            // The token endpoint enforces the client’s scopes too, but catch them before asking for consent.
+            $client = $authorization->getClient();
+            foreach ($authorization->getScopes() as $scope) {
+                if ($client instanceof Client && !$client->hasScope($scope->getIdentifier())) {
+                    throw OAuthServerException::invalidScope($scope->getIdentifier(), $authorization->getRedirectUri());
+                }
             }
             $prompts = preg_split('/\s+/', trim((string)$this->request->getQueryParam('prompt', '')), flags: PREG_SPLIT_NO_EMPTY);
             $session = Craft::$app->getSession();

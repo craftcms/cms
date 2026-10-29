@@ -18,6 +18,7 @@ use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\ServerRequest;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use PHPUnit\Framework\TestCase;
+use yii\base\InvalidConfigException;
 use yii\console\Application;
 use yii\db\Transaction;
 
@@ -58,8 +59,8 @@ class OAuthTest extends TestCase
         $this->app->oauthConfig = $config;
         $this->app->generalConfig = $generalConfig;
         $this->app->identity = new OAuthTestUser(['id' => (int)$userId, 'active' => true]);
-        foreach (['mcp', 'api'] as $resource) {
-            $db->createCommand()->insert(Table::OAUTH_CLIENTS, ['id' => 'test-' . $resource, 'resource_id' => $resource, 'name' => 'Test client', 'redirect_uris' => '["https://client.example/callback"]', 'grant_types' => '["authorization_code","refresh_token"]', 'revoked' => false])->execute();
+        foreach (['mcp' => '["mcp:read","mcp:write","mcp:admin"]', 'api' => '["api:read","api:write"]'] as $resource => $scopes) {
+            $db->createCommand()->insert(Table::OAUTH_CLIENTS, ['id' => 'test-' . $resource, 'name' => 'Test client', 'redirect_uris' => '["https://client.example/callback"]', 'grant_types' => '["authorization_code","refresh_token"]', 'scopes' => $scopes, 'revoked' => false])->execute();
         }
         $this->oauth = new OAuth();
         $this->app->set('oauth', $this->oauth);
@@ -105,10 +106,6 @@ class OAuthTest extends TestCase
 
     public function testCredentialsCannotCrossResourceBoundaries(): void
     {
-        // Both resources recognize the scope: rejection must come from resource ownership.
-        $this->app->oauthConfig->resources['api']['scopes'] = ['mcp:read' => 'Use API'];
-        $this->app->oauthConfig->resources['api']['defaultScopes'] = ['mcp:read'];
-
         $verifier = str_repeat('d', 43);
         $code = $this->authorize($verifier);
         $parameters = ['grant_type' => 'authorization_code', 'code' => $code, 'redirect_uri' => 'https://client.example/callback', 'code_verifier' => $verifier];
@@ -120,6 +117,31 @@ class OAuthTest extends TestCase
 
         $fresh = $this->exchange(['grant_type' => 'refresh_token', 'refresh_token' => $tokens['refresh_token']]);
         self::assertSame($this->app->identity->id, $this->authenticate($fresh['access_token'])->id);
+    }
+
+    public function testClientsCanOnlyRequestTheirScopes(): void
+    {
+        // The MCP client can’t use the API resource’s endpoints at all.
+        $request = (new ServerRequest('GET', $this->oauth->url('authorize', 'api')))->withQueryParams(['response_type' => 'code', 'client_id' => 'test-mcp', 'redirect_uri' => 'https://client.example/callback', 'scope' => 'api:read']);
+        $this->expectOAuthError(fn() => $this->oauth->server('api')->validateAuthorizationRequest($request), 'invalid_client');
+
+        // A client limited to some of a resource’s scopes can’t be granted the others.
+        $this->app->getDb()->createCommand()->update(Table::OAUTH_CLIENTS, ['scopes' => '["api:read"]'], ['id' => 'test-api'])->execute();
+        self::assertSame(['api:read'], $this->tokenScopes($this->grant('api', 'api:read')['access_token']));
+        $verifier = str_repeat('h', 43);
+        $code = $this->authorize($verifier, 'api', 'api:read api:write');
+        $this->expectOAuthError(fn() => $this->exchange(['grant_type' => 'authorization_code', 'code' => $code, 'redirect_uri' => 'https://client.example/callback', 'code_verifier' => $verifier], 'api'), 'invalid_scope');
+
+        // Like Passport, a client without scopes may request any of them.
+        $this->app->getDb()->createCommand()->update(Table::OAUTH_CLIENTS, ['scopes' => null], ['id' => 'test-api'])->execute();
+        self::assertEqualsCanonicalizing(['api:read', 'api:write'], $this->tokenScopes($this->grant('api', 'api:read api:write')['access_token']));
+    }
+
+    public function testScopesMustBeUniqueAcrossResources(): void
+    {
+        $this->app->oauthConfig->resources['api']['scopes']['mcp:read'] = 'Read MCP';
+        $this->expectException(InvalidConfigException::class);
+        $this->oauth->getResources();
     }
 
     public function testResourcePermissionChangesDoNotRequireControlPanelAccess(): void
@@ -160,12 +182,13 @@ class OAuthTest extends TestCase
     }
 
     /**
-     * Craft 6 adopts these tables with Laravel Passport, so they must keep Passport 13’s columns.
+     * Craft 6 adopts these tables with Laravel Passport, so they must keep Passport 13’s columns (plus the optional
+     * `oauth_clients.scopes` column Passport supports).
      */
     public function testTablesHavePassportColumns(): void
     {
         $passport = [
-            Table::OAUTH_CLIENTS => ['id', 'owner_type', 'owner_id', 'name', 'secret', 'provider', 'redirect_uris', 'grant_types', 'revoked', 'created_at', 'updated_at'],
+            Table::OAUTH_CLIENTS => ['id', 'owner_type', 'owner_id', 'name', 'secret', 'provider', 'redirect_uris', 'grant_types', 'scopes', 'revoked', 'created_at', 'updated_at'],
             Table::OAUTH_ACCESS_TOKENS => ['id', 'user_id', 'client_id', 'name', 'scopes', 'revoked', 'created_at', 'updated_at', 'expires_at'],
             Table::OAUTH_AUTH_CODES => ['id', 'user_id', 'client_id', 'scopes', 'revoked', 'expires_at'],
             Table::OAUTH_REFRESH_TOKENS => ['id', 'access_token_id', 'revoked', 'expires_at'],
@@ -174,7 +197,7 @@ class OAuthTest extends TestCase
         foreach ($passport as $table => $columns) {
             $actual = $this->app->getDb()->getTableSchema($table, true)->columnNames;
             self::assertSame([], array_values(array_diff($columns, $actual)), "$table is missing Passport columns.");
-            self::assertSame([], array_values(array_diff($actual, $columns, ['resource_id'])), "$table has columns Passport doesn’t.");
+            self::assertSame([], array_values(array_diff($actual, $columns)), "$table has columns Passport doesn’t.");
         }
     }
 

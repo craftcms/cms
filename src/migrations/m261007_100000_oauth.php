@@ -8,9 +8,10 @@ use craft\db\Table;
 /**
  * Creates the OAuth tables.
  *
- * The tables follow Laravel Passport 13’s layout, so Craft 6 can adopt them (and the tokens in them) as-is. The only
- * addition is `resource_id`, which binds clients and credentials to a Craft OAuth resource. Columns Craft 5 doesn’t
- * use (`owner_*`, `secret`, `provider`, and `updated_at`) are there for the same reason.
+ * The tables follow Laravel Passport 13’s layout, so Craft 6 can adopt them (and the tokens in them) as-is. Like
+ * Passport, there’s no resource column: a token belongs to the OAuth resource that defines its scopes, and the optional
+ * `oauth_clients.scopes` column Passport supports limits which scopes (and therefore resources) a client can request.
+ * Columns Craft 5 doesn’t use (`owner_*`, `secret`, `provider`, and `updated_at`) are there so Craft 6 can use them.
  */
 class m261007_100000_oauth extends Migration
 {
@@ -24,7 +25,6 @@ class m261007_100000_oauth extends Migration
     {
         $this->createTable(Table::OAUTH_CLIENTS, [
             'id' => $this->char(36)->notNull(),
-            'resource_id' => $this->string(64)->notNull(),
             'owner_type' => $this->string(),
             'owner_id' => $this->bigInteger(),
             'name' => $this->string()->notNull(),
@@ -32,6 +32,7 @@ class m261007_100000_oauth extends Migration
             'provider' => $this->string(),
             'redirect_uris' => $this->text()->notNull(),
             'grant_types' => $this->text()->notNull(),
+            'scopes' => $this->text(),
             'revoked' => $this->boolean()->notNull(),
             'created_at' => $this->dateTime(),
             'updated_at' => $this->dateTime(),
@@ -39,7 +40,6 @@ class m261007_100000_oauth extends Migration
         ]);
         $this->createTable(Table::OAUTH_ACCESS_TOKENS, [
             'id' => $this->char(80)->notNull(),
-            'resource_id' => $this->string(64)->notNull(),
             'user_id' => $this->integer(),
             'client_id' => $this->char(36)->notNull(),
             'name' => $this->string(),
@@ -52,7 +52,6 @@ class m261007_100000_oauth extends Migration
         ]);
         $this->createTable(Table::OAUTH_AUTH_CODES, [
             'id' => $this->char(80)->notNull(),
-            'resource_id' => $this->string(64)->notNull(),
             'user_id' => $this->integer()->notNull(),
             'client_id' => $this->char(36)->notNull(),
             'scopes' => $this->text(),
@@ -69,13 +68,12 @@ class m261007_100000_oauth extends Migration
         ]);
 
         $this->createIndex(null, Table::OAUTH_CLIENTS, ['owner_type', 'owner_id']);
-        $this->createIndex(null, Table::OAUTH_CLIENTS, ['resource_id', 'id'], true);
         foreach ([Table::OAUTH_ACCESS_TOKENS, Table::OAUTH_AUTH_CODES] as $table) {
             $this->createIndex(null, $table, ['user_id']);
             $this->createIndex(null, $table, ['expires_at']);
-            $this->createIndex(null, $table, ['resource_id', 'client_id']);
+            $this->createIndex(null, $table, ['client_id']);
             $this->addForeignKey(null, $table, ['user_id'], Table::USERS, ['id'], 'CASCADE');
-            $this->addForeignKey(null, $table, ['resource_id', 'client_id'], Table::OAUTH_CLIENTS, ['resource_id', 'id'], 'CASCADE');
+            $this->addForeignKey(null, $table, ['client_id'], Table::OAUTH_CLIENTS, ['id'], 'CASCADE');
         }
         $this->createIndex(null, Table::OAUTH_REFRESH_TOKENS, ['access_token_id']);
         $this->createIndex(null, Table::OAUTH_REFRESH_TOKENS, ['expires_at']);
