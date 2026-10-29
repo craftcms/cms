@@ -85,7 +85,7 @@ class GraphqlOAuthCest
         $client = (new Query())->from(Table::OAUTH_CLIENTS)->where(['id' => $grants['Build script']['clientId']])->one();
         $I->assertSame(['personal_access'], Json::decode($client['grant_types']));
         $I->assertNull($client['scopes']);
-        $I->assertNull($client['provider']);
+        $I->assertSame('craft', $client['provider']);
         $I->assertSame([], $oauth->getUserGrants('mcp', $user));
         $oauth->revokeUserGrant('mcp', $user, $grants['Build script']['clientId'], $grants['Build script']['tokenId']);
         $I->assertSame(['users' => []], $this->graphql($I, '{ users(email: "nobody@example.com") { id } }', $token)['data']);

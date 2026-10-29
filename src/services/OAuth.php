@@ -39,6 +39,9 @@ class OAuth extends Component
     /** @event RegisterOAuthResourcesEvent Registers protected API definitions. */
     public const EVENT_REGISTER_RESOURCES = 'registerResources';
 
+    /** The user provider Craft 6’s Passport guard uses, which Passport matches personal access clients against. */
+    private const PERSONAL_ACCESS_PROVIDER = 'craft';
+
     private ?array $resources = null;
 
     /** @return array<string,Resource> */
@@ -296,17 +299,17 @@ class OAuth extends Component
     /**
      * Returns the ID of the personal access client, creating it if it doesn’t exist yet.
      *
-     * This finds the same client that Passport’s `ClientRepository::personalAccessClient()` does: the first unrevoked
-     * client without a user provider whose `grant_types` include `personal_access`. Its `scopes` are `null`, so it
-     * can issue tokens for any resource.
+     * This finds the same client that Passport’s `ClientRepository::personalAccessClient()` does in Craft 6: the latest
+     * unrevoked client for the `craft` user provider whose `grant_types` include `personal_access`. Its `scopes` are
+     * `null`, so it can issue tokens for any resource.
      */
     private function personalAccessClientId(): string
     {
         $clients = (new Query())
             ->select(['id', 'grant_types'])
             ->from(Table::OAUTH_CLIENTS)
-            ->where(['revoked' => false, 'provider' => null])
-            ->orderBy(['created_at' => SORT_ASC])
+            ->where(['revoked' => false, 'provider' => self::PERSONAL_ACCESS_PROVIDER])
+            ->orderBy(['created_at' => SORT_DESC])
             ->all();
         foreach ($clients as $client) {
             if ($this->isPersonalAccessClient($client['grant_types'])) {
@@ -319,6 +322,7 @@ class OAuth extends Component
         Db::insert(Table::OAUTH_CLIENTS, [
             'id' => $id,
             'name' => 'Personal Access Client',
+            'provider' => self::PERSONAL_ACCESS_PROVIDER,
             'redirect_uris' => '[]',
             'grant_types' => '["personal_access"]',
             'revoked' => false,
