@@ -468,6 +468,10 @@ class Cp extends Component
             'iconMask' => '@app/icons/light/files.svg',
             'label' => Craft::t('app', 'Entry Types'),
         ];
+        $settings[$label]['assets'] = [
+            'iconMask' => '@app/icons/light/image.svg',
+            'label' => Craft::t('app', 'Assets'),
+        ];
         $settings[$label]['fields'] = [
             'iconMask' => '@app/icons/light/pen-to-square.svg',
             'label' => Craft::t('app', 'Fields'),
@@ -483,17 +487,6 @@ class Cp extends Component
         $settings[$label]['tags'] = [
             'iconMask' => '@app/icons/light/tags.svg',
             'label' => Craft::t('app', 'Tags'),
-        ];
-
-        $label = Craft::t('app', 'Media');
-
-        $settings[$label]['assets'] = [
-            'iconMask' => '@app/icons/light/image.svg',
-            'label' => Craft::t('app', 'Assets'),
-        ];
-        $settings[$label]['filesystems'] = [
-            'iconMask' => '@app/icons/light/folder-open.svg',
-            'label' => Craft::t('app', 'Filesystems'),
         ];
 
         $label = Craft::t('app', 'Extend');
