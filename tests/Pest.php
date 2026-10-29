@@ -32,7 +32,7 @@ pest()->beforeEach(fn () => enableMcp())->in('Feature/Mcp');
 function enableMcp(array $settings = []): void
 {
     $projectConfig = app(ProjectConfig::class);
-    $projectConfig->set('mcp', [...($projectConfig->get('mcp') ?? []), 'enabled' => true, ...$settings]);
+    $projectConfig->set('mcp', ['route' => '/mcp', 'authorizationRoute' => '/mcp/auth', ...($projectConfig->get('mcp') ?? []), 'enabled' => true, ...$settings]);
     app()->forgetInstance(Settings::class);
     app()->forgetInstance(Access::class);
 

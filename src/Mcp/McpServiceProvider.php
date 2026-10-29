@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Mcp;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Settings as CpSettings;
 use CraftCms\Cms\Mcp\Commands\ServeCommand;
 use CraftCms\Cms\Mcp\Enums\McpScope;
@@ -32,9 +33,17 @@ class McpServiceProvider extends ServiceProvider
         $kernel->addToMiddlewarePriorityBefore(AuthenticatesRequests::class, AddOAuthChallenge::class);
         $kernel->addToMiddlewarePriorityBefore(AuthenticatesRequests::class, ReorderJsonAccept::class);
 
-        $this->app->scoped(Settings::class, fn (): Settings => new Settings(
-            $this->app->make(ProjectConfig::class)->get('mcp') ?? [],
-        ));
+        $this->app->scoped(Settings::class, function (): Settings {
+            $projectConfig = $this->app->make(ProjectConfig::class);
+            $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+            // Without public registration, the authenticated server defaults to the control panel, so the public
+            // server can have `/mcp`.
+            $defaults = $cpTrigger !== '' && ! $projectConfig->get('users.allowPublicRegistration')
+                ? ['route' => "/{$cpTrigger}/mcp", 'authorizationRoute' => "/{$cpTrigger}/mcp/auth"]
+                : [];
+
+            return new Settings([...$defaults, ...($projectConfig->get('mcp') ?? [])]);
+        });
 
         if ($this->app->bound(AuthorizationViewResponse::class)) {
             return;

@@ -50,6 +50,22 @@ it('exposes the authenticated MCP connection settings', function () {
         ->assertOk();
 });
 
+it('defaults the authenticated server to the control panel without public registration', function (bool $registration, string $route, string $authorizationRoute): void {
+    $projectConfig = app(ProjectConfig::class);
+    $projectConfig->set('users.allowPublicRegistration', $registration);
+    $projectConfig->remove('mcp');
+    app()->forgetInstance(Settings::class);
+    $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+
+    expect(app(Settings::class))
+        ->route->toBe(str_replace('{cp}', $cpTrigger, $route))
+        ->authorizationRoute->toBe(str_replace('{cp}', $cpTrigger, $authorizationRoute))
+        ->publicRoute->toBe('/mcp');
+})->with([
+    'without public registration' => [false, '/{cp}/mcp', '/{cp}/mcp/auth'],
+    'with public registration' => [true, '/mcp', '/mcp/auth'],
+]);
+
 it('notes control panel endpoints and endpoints both servers share', function (array $values, array $notices): void {
     actingAs(User::find()->one());
     $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');

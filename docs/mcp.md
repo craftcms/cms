@@ -6,13 +6,13 @@ Craft runs three MCP servers:
 
 | Server        | URL                             | Who can use it                                                     |
 | ------------- | ------------------------------- | ------------------------------------------------------------------ |
-| Authenticated | Configurable, `/mcp` by default | Any active user, through OAuth                                     |
+| Authenticated | Configurable, `/{cpTrigger}/mcp` by default, or `/mcp` with public registration | Any active user, through OAuth |
 | Public        | Configurable, `/mcp` by default | Anyone, but only for capabilities and content an administrator has approved |
 | Stdio         | `php craft mcp:serve --user=…`  | Whoever can run Craft's CLI, acting as the named user              |
 
 The stdio server is always available. The authenticated and public servers are disabled until an administrator enables them under **Settings → MCP**.
 
-The two HTTP servers can share an endpoint. Requests with a bearer token go to the authenticated server, and the rest go to the public server. Clients discover OAuth from a `401` response, which a shared endpoint can't send, so authenticated clients should connect to the separate **Authorization Endpoint** (`/mcp/auth` by default) instead. It always requires a token and serves the authenticated server.
+The two HTTP servers can share an endpoint. Requests with a bearer token go to the authenticated server, and the rest go to the public server. Clients discover OAuth from a `401` response, which a shared endpoint can't send, so authenticated clients should connect to the separate **Authorization Endpoint** (`/{cpTrigger}/mcp/auth` by default, or `/mcp/auth` with public registration) instead. It always requires a token and serves the authenticated server.
 
 When an endpoint is under the control panel, such as `/admin/mcp`, Craft treats its requests as control panel requests, so users also need the **Access the control panel** permission.
 
