@@ -1,18 +1,17 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import {formatNumber} from '@craftcms/ui/utilities/format';
-  import {computed, ref, watch} from 'vue';
+  import {computed, ref, useId, watch} from 'vue';
   import {
     developer as developerRoute,
     plugin as pluginRoute,
   } from '@actions/PluginStore/PluginStoreController';
   import CpLink from '@/common/components/CpLink.vue';
-  import Select from '@/common/form/Select.vue';
-  import EditionActions from './EditionActions.vue';
+  import EditionPurchase from './EditionPurchase.vue';
   import PartnerBadge from './PartnerBadge.vue';
+  import PluginBand from './PluginBand.vue';
   import PluginIcon from './PluginIcon.vue';
   import {usePluginLicenseInfo} from '../composables/usePluginStoreData';
-  import {formatPrice, isEditionFree} from '../pricing';
+  import {formatDate} from '../dates';
   import type {Plugin} from '../types';
 
   const {plugin} = defineProps<{plugin: Plugin}>();
@@ -42,26 +41,27 @@
       plugin.editions[0]
   );
 
-  const editionOptions = computed(() =>
-    plugin.editions.map((e) => ({
-      value: e.handle,
-      label: `${e.name} — ${isEditionFree(e) ? t('Free') : formatPrice(e.price)}`,
-    }))
-  );
+  const editionLabelId = useId();
+
+  function onEditionChange(event: Event): void {
+    const value = (event.target as HTMLElement & {value: string}).value;
+
+    if (value) {
+      editionHandle.value = value;
+    }
+  }
 
   const totalReviews = computed(
     () => plugin.reviewStats?.totalReviews ?? plugin.totalReviews ?? 0
   );
 
   const reviewsLabel = computed(() =>
-    totalReviews.value
-      ? t('{rating} · {totalReviews, plural, =1{# review} other{# reviews}}', {
-          rating: Number(
-            plugin.reviewStats?.ratingAvg ?? plugin.ratingAvg ?? 0
-          ).toFixed(1),
-          totalReviews: totalReviews.value,
-        })
-      : t('No reviews yet')
+    t('{rating} · {totalReviews, plural, =1{# review} other{# reviews}}', {
+      rating: Number(
+        plugin.reviewStats?.ratingAvg ?? plugin.ratingAvg ?? 0
+      ).toFixed(1),
+      totalReviews: totalReviews.value,
+    })
   );
 
   // A plain click switches tabs in place; a modified one opens the link as usual.
@@ -83,95 +83,112 @@
 
 <template>
   <section class="plugin-hero" :aria-label="plugin.name">
-    <PluginIcon :url="plugin.iconUrl" size="lg" />
+    <PluginBand :icon-url="plugin.iconUrl" />
+    <div class="plugin-hero__body">
+      <PluginIcon :url="plugin.iconUrl" size="lg" class="plugin-hero__icon" />
 
-    <div class="plugin-hero__info">
-      <h1 class="text-2xl">{{ plugin.name }}</h1>
-      <div class="flex items-center gap-sm">
-        <CpLink :href="developerRoute({id: plugin.developerId})">
-          {{ plugin.developerName }}
-        </CpLink>
-        <PartnerBadge v-if="plugin.developerPartner" kind="craft" />
+      <div class="plugin-hero__info">
+        <h1 class="text-2xl">{{ plugin.name }}</h1>
+        <div class="flex items-center gap-sm">
+          <CpLink :href="developerRoute({id: plugin.developerId})">
+            {{ plugin.developerName }}
+          </CpLink>
+          <PartnerBadge v-if="plugin.developerPartner" kind="craft" />
+        </div>
+        <p v-if="plugin.shortDescription" class="plugin-hero__description">
+          {{ plugin.shortDescription }}
+        </p>
+        <dl class="plugin-hero__stats">
+          <div v-if="totalReviews">
+            <dt class="cp-group-heading">{{ t('Rating') }}</dt>
+            <dd>
+              <a
+                :href="pluginRoute({handle: plugin.handle, tab: 'reviews'}).url"
+                @click="showReviews"
+              >
+                ★ {{ reviewsLabel }}
+              </a>
+            </dd>
+          </div>
+          <div>
+            <dt class="cp-group-heading">{{ t('Version') }}</dt>
+            <dd class="font-mono">{{ plugin.version }}</dd>
+          </div>
+          <div>
+            <dt class="cp-group-heading">{{ t('Last release') }}</dt>
+            <dd>{{ formatDate(plugin.lastUpdate) }}</dd>
+          </div>
+        </dl>
       </div>
-      <p v-if="plugin.shortDescription" class="plugin-hero__description">
-        {{ plugin.shortDescription }}
-      </p>
-      <dl class="plugin-hero__stats">
-        <div>
-          <dt class="cp-group-heading">{{ t('Rating') }}</dt>
-          <dd>
-            <a
-              v-if="totalReviews"
-              :href="pluginRoute({handle: plugin.handle, tab: 'reviews'}).url"
-              @click="showReviews"
-            >
-              ★ {{ reviewsLabel }}
-            </a>
-            <template v-else>{{ reviewsLabel }}</template>
-          </dd>
-        </div>
-        <div>
-          <dt class="cp-group-heading">{{ t('Active Installs') }}</dt>
-          <dd>{{ formatNumber(plugin.activeInstalls) }}</dd>
-        </div>
-        <div>
-          <dt class="cp-group-heading">{{ t('Version') }}</dt>
-          <dd>{{ plugin.version }}</dd>
-        </div>
-        <div>
-          <dt class="cp-group-heading">{{ t('Compatibility') }}</dt>
-          <dd>{{ plugin.compatibility }}</dd>
-        </div>
-      </dl>
-    </div>
 
-    <div v-if="edition" class="plugin-hero__purchase">
-      <Select
-        v-if="plugin.editions.length > 1"
-        :label="t('Edition')"
-        :options="editionOptions"
-        v-model="editionHandle"
-      />
-      <EditionActions :plugin="plugin" :edition="edition" />
-      <p
-        v-if="!isEditionFree(edition) && !plugin.abandoned"
-        class="plugin-hero__renewal"
-      >
-        {{
-          t('Plus {renewalPrice}/year for updates after one year.', {
-            renewalPrice: formatPrice(edition.renewalPrice),
-          })
-        }}
-      </p>
+      <div v-if="edition" class="plugin-hero__purchase">
+        <div class="plugin-hero__panel">
+          <div v-if="plugin.editions.length > 1" class="grid gap-xs">
+            <span :id="editionLabelId" class="cp-group-heading">
+              {{ t('Edition') }}
+            </span>
+            <craft-button-group
+              name="edition"
+              subtle
+              class="plugin-hero__editions"
+              :aria-labelledby="editionLabelId"
+              .value="editionHandle"
+              @change="onEditionChange"
+            >
+              <craft-button
+                v-for="e in plugin.editions"
+                :key="e.handle"
+                :value="e.handle"
+              >
+                {{ e.name }}
+              </craft-button>
+            </craft-button-group>
+          </div>
+          <EditionPurchase :plugin="plugin" :edition="edition" />
+        </div>
+      </div>
     </div>
   </section>
 </template>
 
 <style scoped>
   .plugin-hero {
+    flex: 0 0 calc(100% + var(--cp-container-padding) * 2);
+    margin-block-start: calc(var(--c-spacing-lg) * -1);
+    margin-inline: calc(var(--cp-container-padding) * -1);
+  }
+
+  .plugin-hero__body {
     display: flex;
     flex-wrap: wrap;
     gap: var(--c-spacing-xl);
-    align-items: center;
-    inline-size: 100%;
-    box-sizing: border-box;
-    padding: var(--c-spacing-xl);
-    border: 1px solid var(--c-color-border-quiet);
-    border-radius: var(--c-radius-lg);
-    background: var(--c-surface-sunken);
+    align-items: flex-start;
+    padding-block-start: var(--c-spacing-lg);
+    padding-inline: var(--cp-container-padding);
+  }
+
+  /* Pulled up so it sits over the band. */
+  .plugin-hero__icon,
+  .plugin-hero__purchase {
+    position: relative;
+  }
+
+  .plugin-hero__icon {
+    margin-block-start: calc((var(--c-spacing-lg) + 1rem) * -1);
   }
 
   .plugin-hero__info {
     display: flex;
     flex: 1 1 24rem;
     flex-direction: column;
-    gap: var(--c-spacing-sm);
+    gap: var(--c-spacing-xs);
     min-inline-size: 0;
   }
 
   .plugin-hero__description {
     max-inline-size: 40rem;
-    margin: 0;
+    margin-block: var(--c-spacing-sm) 0;
+    margin-inline: 0;
     font-size: var(--c-text-base);
     line-height: 1.45;
   }
@@ -180,25 +197,45 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--c-spacing-md) var(--c-spacing-xl);
-    margin-block: var(--c-spacing-sm) 0;
+    margin-block: var(--c-spacing-lg) 0;
     margin-inline: 0;
   }
 
   .plugin-hero__stats dd {
-    margin-block: var(--c-spacing-2xs) 0;
+    margin-block: var(--c-spacing-xs) 0;
     margin-inline: 0;
   }
 
   .plugin-hero__purchase {
     display: flex;
-    flex: 0 0 16rem;
+    flex: 0 0 18rem;
     flex-direction: column;
-    gap: var(--c-spacing-sm);
+    gap: var(--c-spacing-md);
   }
 
-  .plugin-hero__renewal {
-    margin: 0;
-    color: var(--c-text-quiet);
-    font-size: var(--c-text-sm);
+  .plugin-hero__editions {
+    display: flex;
+    margin-block-end: var(--c-spacing-sm);
+  }
+
+  .plugin-hero__editions craft-button {
+    flex: 1;
+  }
+
+  .plugin-hero__panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--c-spacing-md);
+    padding: var(--c-spacing-lg);
+    border: 1px solid var(--c-color-border-quiet);
+    border-radius: var(--c-radius-lg);
+    background: var(--c-surface-default);
+  }
+
+  /* Only beside the info column; once it wraps below, it would cover it. */
+  @media (width >= var(--breakpoint-xl)) {
+    .plugin-hero__purchase {
+      margin-block-start: calc((var(--c-spacing-lg) + 1rem) * -1);
+    }
   }
 </style>

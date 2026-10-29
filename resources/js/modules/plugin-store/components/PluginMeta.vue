@@ -3,12 +3,13 @@
   import {computed} from 'vue';
   import {category as categoryRoute} from '@actions/PluginStore/PluginStoreController';
   import CpLink from '@/common/components/CpLink.vue';
+  import ActiveInstalls from './ActiveInstalls.vue';
   import GithubActivity from './GithubActivity.vue';
   import InstallInstructions from './InstallInstructions.vue';
   import MetaStat from './MetaStat.vue';
   import {useCoreData} from '../composables/usePluginStoreData';
-  import {formatDate} from '../dates';
   import {reportIssueUrl} from '../links';
+  import craftIcon from '../images/craft-mask.svg?raw';
   import cloudIcon from '../images/cloud.svg?raw';
   import graphqlIcon from '../images/graphql.svg?raw';
   import type {Plugin} from '../types';
@@ -31,7 +32,8 @@
     mit: 'MIT',
   };
 
-  const supports = computed(() => [
+  const compatibility = computed(() => [
+    {svg: craftIcon, label: plugin.compatibility},
     ...(plugin.cloudTested
       ? [{svg: cloudIcon, label: 'Tested on Craft Cloud'}]
       : []),
@@ -67,7 +69,8 @@
 
     <dl class="m-0">
       <InstallInstructions :plugin="plugin" />
-      <div class="grid grid-cols-2">
+      <ActiveInstalls :plugin="plugin" />
+      <div class="plugin-meta__pair">
         <MetaStat :label="t('License')">
           {{ licenseLabels[plugin.license] ?? plugin.license }}
         </MetaStat>
@@ -75,22 +78,19 @@
           {{ plugin.totalReleases }}
         </MetaStat>
       </div>
-      <MetaStat v-if="supports.length" :label="t('Supports')">
+      <MetaStat :label="t('Compatibility')">
         <ul class="plugin-meta__compatibility">
-          <li v-for="item in supports" :key="item.label">
+          <li v-for="item in compatibility" :key="item.label">
             <span class="plugin-meta__compat-icon" v-html="item.svg"></span>
             {{ item.label }}
           </li>
         </ul>
       </MetaStat>
-      <MetaStat :label="t('Last release')">
-        {{ formatDate(plugin.lastUpdate) }}
-      </MetaStat>
       <MetaStat v-if="pluginCategories.length" :label="t('Categories')">
         <ul class="plugin-meta__categories">
           <li v-for="category in pluginCategories" :key="category.id">
             <CpLink :href="categoryRoute({id: category.id})">
-              <craft-chip>{{ category.title }}</craft-chip>
+              <craft-badge no-prefix>{{ category.title }}</craft-badge>
             </CpLink>
           </li>
         </ul>
@@ -107,6 +107,13 @@
 </template>
 
 <style scoped>
+  /* Total releases can be missing, and License should fill the row then. */
+  .plugin-meta__pair {
+    display: grid;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+  }
+
   .plugin-meta__compatibility,
   .plugin-meta__categories {
     display: grid;

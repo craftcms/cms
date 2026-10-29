@@ -77,6 +77,31 @@ function isUpgrade(
   );
 }
 
+/**
+ * What the edition costs as an upgrade from the one already licensed, or null
+ * when it's bought outright.
+ */
+export function upgradePrice(
+  plugin: Pick<Plugin, 'editions'>,
+  edition: PluginEdition,
+  licenseInfo: PluginLicenseInfo | null
+): number | null {
+  const licensed = plugin.editions.find(
+    (e) => e.handle === licenseInfo?.licensedEdition
+  );
+
+  if (
+    !licensed ||
+    licensed.handle === edition.handle ||
+    !Number(licensed.price) ||
+    !['valid', 'astray'].includes(licenseInfo?.licenseKeyStatus ?? '')
+  ) {
+    return null;
+  }
+
+  return Number(edition.price) - Number(licensed.price);
+}
+
 /** Decides which buttons an edition offers, and why any are unavailable. */
 export function resolveEditionActions({
   plugin,

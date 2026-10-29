@@ -8,13 +8,19 @@
   import {useCart} from '../composables/useCart';
   import {usePluginLicenseInfo} from '../composables/usePluginStoreData';
   import {isPluginInCart, showError} from '../cart';
-  import {resolveEditionActions} from '../editionActions';
+  import {resolveEditionActions, upgradePrice} from '../editionActions';
   import {formatPrice} from '../pricing';
   import type {Plugin, PluginEdition, PluginStoreContext} from '../types';
 
-  const {plugin, edition} = defineProps<{
+  const {
+    plugin,
+    edition,
+    showPrice = true,
+  } = defineProps<{
     plugin: Plugin;
     edition: PluginEdition;
+    /** Off where the price is shown beside the button rather than on it. */
+    showPrice?: boolean;
   }>();
 
   const page = usePage<{context: PluginStoreContext}>();
@@ -36,23 +42,9 @@
   );
 
   /** What the edition costs as an upgrade from the one already licensed. */
-  const upgradePrice = computed(() => {
-    const info = licenseInfo.value;
-    const licensed = plugin.editions.find(
-      (e) => e.handle === info?.licensedEdition
-    );
-
-    if (
-      !licensed ||
-      licensed.handle === edition.handle ||
-      !Number(licensed.price) ||
-      !['valid', 'astray'].includes(info?.licenseKeyStatus ?? '')
-    ) {
-      return null;
-    }
-
-    return Number(edition.price) - Number(licensed.price);
-  });
+  const upgrade = computed(() =>
+    upgradePrice(plugin, edition, licenseInfo.value)
+  );
 
   const installedLabel = computed(() => {
     switch (actions.value.install?.kind) {
@@ -166,12 +158,15 @@
         .loading="addingToCart"
         @click="addToCart"
       >
-        <template v-if="upgradePrice !== null">
-          <del>{{ formatPrice(edition.price) }}</del>
-          {{ formatPrice(upgradePrice) }}
+        <template v-if="!showPrice">{{ t('Add to cart') }}</template>
+        <template v-else>
+          <template v-if="upgrade !== null">
+            <del>{{ formatPrice(edition.price) }}</del>
+            {{ formatPrice(upgrade) }}
+          </template>
+          <template v-else>{{ formatPrice(edition.price) }}</template>
+          <span class="sr-only">{{ t('Add to cart') }}</span>
         </template>
-        <template v-else>{{ formatPrice(edition.price) }}</template>
-        <span class="sr-only">{{ t('Add to cart') }}</span>
       </craft-button>
       <craft-button
         v-else-if="actions.purchase.kind === 'licensed'"
