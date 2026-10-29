@@ -91,6 +91,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use Override;
 use PDOException;
 use RuntimeException;
@@ -227,6 +228,18 @@ class Yii2ServiceProvider extends ServiceProvider
         if (!file_exists(config_path('database.php'))) {
             Config::set('database.default', Env::get('DB_CONNECTION', Env::get('CRAFT_DB_DRIVER', 'mysql')));
         }
+
+        /**
+         * Craft 6 reads the table prefix from `DB_PREFIX`. Craft 5 sites may still set it with
+         * `CRAFT_DB_TABLE_PREFIX` or `DB_TABLE_PREFIX`, which Craft 5 always suffixed with an underscore.
+         * This runs before the connection is resolved, so the prefix applies to it and to `db2`.
+         */
+        $connection = Config::get('database.default');
+        $legacyPrefix = Env::get('CRAFT_DB_TABLE_PREFIX') ?: Env::get('DB_TABLE_PREFIX');
+
+        if (!Config::get("database.connections.{$connection}.prefix") && $legacyPrefix) {
+            Config::set("database.connections.{$connection}.prefix", Str::finish($legacyPrefix, '_'));
+        }
     }
 
     protected function registerExceptionHandling(): void
@@ -316,14 +329,6 @@ class Yii2ServiceProvider extends ServiceProvider
             OnCommand::class,
             RepairCategoryGroupStructureCommand::class,
         ]);
-
-        /**
-         * Prefix is not generally a configuration variable that
-         * is set through the environment in Laravel, so
-         * we set it here for backwards compatibility.
-         */
-        $connection = Config::get('database.default');
-        Config::set("database.connections.{$connection}.prefix", Env::get('DB_TABLE_PREFIX'));
 
         new I18NCompatibility()->boot();
         new TestToEmailAddressCompatibility()->boot();

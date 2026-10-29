@@ -719,6 +719,10 @@
 - Fixed a bug where front-end forms with an empty `redirectInput('')` redirected to the primary site rather than the current site’s home page, such as after logging in on a site with a base path like `/fr`. ([#20174](https://github.com/craftcms/cms/pull/20174))
 - Fixed a bug where front-end requests posted with an `action` param, and token routes, ran on the primary site rather than the requested site, when the site had a base path. ([#20174](https://github.com/craftcms/cms/pull/20174))
 - Fixed a 404 error that occurred when posting to an action URL on a site with a base path, such as `/fr/actions/users/login`. ([#20174](https://github.com/craftcms/cms/pull/20174))
+- The database table prefix is now set with the `DB_PREFIX` environment variable. The installer saved it to `DB_TABLE_PREFIX`, and now also appends an underscore, like the `craft:setup:db-creds` command. ([#20192](https://github.com/craftcms/cms/pull/20192))
+- When `craftcms/yii2-adapter` is installed and no table prefix is configured, the `CRAFT_DB_TABLE_PREFIX` and `DB_TABLE_PREFIX` environment variables are applied with a trailing underscore, like Craft 5. ([#20192](https://github.com/craftcms/cms/pull/20192))
+- Fixed a bug where Craft couldn’t boot when the database connection had a table prefix, because queries that aliased tables didn’t apply the prefix. ([#20192](https://github.com/craftcms/cms/pull/20192))
+- Fixed a bug where orphaned foreign key rows weren’t deleted during garbage collection when the database connection had a table prefix. ([#20192](https://github.com/craftcms/cms/pull/20192))
 - Fixed an error that occurred when running `craft:up` on PostgreSQL sites that were first installed on Craft 3 or 4. ([#20188](https://github.com/craftcms/cms/pull/20188))
 - Fixed an error that occurred when running `craft:up` or loading entry types on sites upgraded from Craft 5, if an entry type had an empty title or slug translation method. ([#20187](https://github.com/craftcms/cms/pull/20187))
 

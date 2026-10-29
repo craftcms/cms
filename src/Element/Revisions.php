@@ -23,7 +23,6 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Throwable;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
@@ -76,7 +75,7 @@ readonly class Revisions
                 $lastRevisionInfo = DB::useWriteConnectionWhenReading()
                     ->table(Table::ELEMENTS, 'e')
                     ->select(['e.id', 'r.num', 'e.dateCreated'])
-                    ->join(new Alias(Table::REVISIONS, 'r'), 'r.id', 'e.revisionId')
+                    ->join(Table::REVISIONS.' as r', 'r.id', 'e.revisionId')
                     ->where('r.canonicalId', $canonical->id)
                     ->orderByDesc('r.num')
                     ->first();

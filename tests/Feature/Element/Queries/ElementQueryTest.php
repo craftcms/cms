@@ -122,7 +122,7 @@ it('sources concrete element queries from their element tables first', function 
     $joins = collect($builder->joins);
 
     expect($joins)->toHaveCount(2);
-    expect(normalizeJoinAlias($joins[0]))->toBe('elements as elements');
+    expect($joins[0]->table)->toBe('elements as elements');
     expect($joins[0]->wheres[0])->toMatchArray([
         'type' => 'Column',
         'first' => 'elements.id',
@@ -131,7 +131,7 @@ it('sources concrete element queries from their element tables first', function 
         'boolean' => 'and',
     ]);
 
-    expect(normalizeJoinAlias($joins[1]))->toBe('elements_sites as elements_sites');
+    expect($joins[1]->table)->toBe('elements_sites as elements_sites');
     expect($joins[1]->wheres[0])->toMatchArray([
         'type' => 'Column',
         'first' => 'elements_sites.elementId',
@@ -156,7 +156,7 @@ it('does not duplicate pending before query callbacks when cloned while preparin
     });
 
     $query->beforeQuery(function (ElementQuery $query) {
-        $query->getQuery()->leftJoin(new Alias('search_marker', 'search_marker'), 'search_marker.id', '=', 'elements.id');
+        $query->getQuery()->leftJoin('search_marker as search_marker', 'search_marker.id', '=', 'elements.id');
     });
 
     $query->applyBeforeQueryCallbacks();
@@ -166,19 +166,10 @@ it('does not duplicate pending before query callbacks when cloned while preparin
     $clone->applyBeforeQueryCallbacks();
 
     $markerJoins = collect($clone->getQuery()->joins)
-        ->filter(fn (JoinClause $join) => normalizeJoinAlias($join) === 'search_marker as search_marker');
+        ->filter(fn (JoinClause $join) => $join->table === 'search_marker as search_marker');
 
     expect($markerJoins)->toHaveCount(1);
 });
-
-function normalizeJoinAlias(JoinClause $join): string
-{
-    $table = $join->table;
-
-    expect($table)->toBeInstanceOf(Alias::class);
-
-    return preg_replace('/[`"\[\]]/', '', $table->getValue($join->getGrammar()));
-}
 
 it('uses clone criteria without changing the original query', function (Closure $factory, array $initial, array $changed, bool $executed, bool $cloneFirst) {
     $original = $factory($initial);
