@@ -165,7 +165,9 @@ it('queues images that are missing their colors or metadata when asked to, witho
 });
 
 it('samples what an image is missing from its file, filling in its alt text and title from its metadata', function (): void {
-    aiImageSettings(['test:caption' => ['enabled' => false], 'test:focus' => ['enabled' => false]]);
+    // Craft’s alt text and title tasks fill these in, even when they’re disabled
+    app(AiTasks::class)->register(GenerateAltText::class, GenerateTitles::class);
+    aiImageSettings(['test:caption' => ['enabled' => false], 'test:focus' => ['enabled' => false], 'craft:altText' => ['enabled' => false], 'craft:title' => ['enabled' => false]]);
     $asset = analyzableImage(filename: 'photo.jpg', sampled: false);
     Storage::disk('analysis-disk')->put($asset->getPath(), file_get_contents(metadataJpeg(xmpPacket(
         '<dc:title><rdf:Alt><rdf:li xml:lang="x-default">Harbor at dusk</rdf:li></rdf:Alt></dc:title>'.
@@ -184,6 +186,28 @@ it('samples what an image is missing from its file, filling in its alt text and 
         ->and($saved->title)->toBe('Harbor at dusk')
         ->and($saved->alt)->toBe('Boats at dusk')
         ->and(app(ImageAnalyzer::class)->needsSampling($saved))->toBeFalse();
+});
+
+it('doesn’t replace the alt text and title an image’s embedded metadata fills in with generated ones', function (): void {
+    app(AiTasks::class)->register(GenerateAltText::class, GenerateTitles::class);
+    aiImageSettings(['test:caption' => ['enabled' => false], 'test:focus' => ['enabled' => false]]);
+    $asset = analyzableImage(filename: 'photo.jpg', sampled: false);
+    Storage::disk('analysis-disk')->put($asset->getPath(), file_get_contents(metadataJpeg(xmpPacket(
+        '<dc:title><rdf:Alt><rdf:li xml:lang="x-default">Harbor at dusk</rdf:li></rdf:Alt></dc:title>'.
+        '<Iptc4xmpCore:AltTextAccessibility><rdf:Alt><rdf:li xml:lang="x-default">Fishing boats moored at dusk</rdf:li></rdf:Alt></Iptc4xmpCore:AltTextAccessibility>'
+    ))));
+    deleteMetadataJpegs();
+    $asset->title = AssetsHelper::filename2Title(pathinfo($asset->getFilename(), PATHINFO_FILENAME));
+    Elements::saveElement($asset);
+    ImageAnalysisAgent::fake([['craft_altText' => ["site{$asset->siteId}" => 'A red square'], 'craft_title' => ["site{$asset->siteId}" => 'Red square']]]);
+
+    $applied = app(ImageAnalyzer::class)->analyze($asset);
+    $saved = Asset::find()->id($asset->id)->one();
+
+    expect($saved->alt)->toBe('Fishing boats moored at dusk')
+        ->and($saved->title)->toBe('Harbor at dusk')
+        ->and($applied)->toBe([]);
+    ImageAnalysisAgent::assertNeverPrompted();
 });
 
 it('queues new images for files already in place, which couldn’t be sampled when they were saved', function (): void {

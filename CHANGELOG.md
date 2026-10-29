@@ -133,6 +133,7 @@
 - The header’s notification button is now a plain icon button, matching the search button beside it. ([#20106](https://github.com/craftcms/cms/pull/20106))
 - Plain links to control panel pages, such as those in elements’ metadata and other server-rendered HTML, now open with Inertia rather than reloading the page. ([#20118](https://github.com/craftcms/cms/pull/20118))
 - Link and Email field values in element indexes and cards now stay on one line, cut off with an ellipsis, after a button that shows the full address with options to open or copy it. Hovering over the link shows the same details. ([#20123](https://github.com/craftcms/cms/pull/20123))
+- Fixed a bug where legacy buttons and text inputs were unstyled, and `fullwidth` controls didn’t fill their containers, on Twig control panel pages rendered inside the Inertia shell.
 - Fixed a bug where release dates were formatted for the control panel’s language rather than the user’s formatting locale. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Fixed a bug where the User Profile Fields and Address Fields settings pages had no Save button. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Fixed a bug where some status badges and dots had no color, including “Pending” jobs in the Queue Manager utility, disabled sites on the Sites settings page, and options in legacy select menus, such as the “Yes” option of `forms.booleanMenu()`. ([#20085](https://github.com/craftcms/cms/pull/20085))
@@ -151,6 +152,7 @@
 - Fixed a bug where comboboxes’ menus could grow as wide as the window and extend off-screen when an option had a long label or hint, such as an environment variable suggestion.
 - Fixed a bug where typing an option’s exact label or value into a combobox that accepts free text could make two options look selected. Exact matches are now listed first.
 - Fixed a bug where rich selects’ menus could extend off-screen when an option had a long label or hint, and a long option could stretch the select itself past its container.
+- Fixed a bug where required `CraftCms\Cms\Ui\Controls\Choice` selects displayed the first option while their value was empty. They now show a disabled prompt until an option is chosen. ([#20178](https://github.com/craftcms/cms/pull/20178))
 - Fixed a bug where permission trees, such as user group permissions and the public MCP settings, used the browser’s native checkboxes instead of the control panel’s checkbox styling.
 - Fixed a bug where logging in from the control panel’s login page could redirect to the front end instead of the control panel, when a front-end login path was also configured.
 - Fixed a bug where element edit pages could have a few pixels of vertical scroll after the window was resized, even though their content fit within it. ([#20028](https://github.com/craftcms/cms/pull/20028))
@@ -195,6 +197,10 @@
 - Fixed a bug where medium chips’ thumbnails were smaller than small chips’. They’re now 32px, between small and large chips’. ([#20124](https://github.com/craftcms/cms/pull/20124))
 - Fixed a bug where portrait image thumbnails in medium and large chips were letterboxed in a square, so their rounded corners didn’t show. ([#20124](https://github.com/craftcms/cms/pull/20124))
 - Fixed a bug where the checkmark in enabled lightswitches was slightly off-center. ([#20107](https://github.com/craftcms/cms/pull/20107))
+- Fixed a bug where going back to an element index page, such as a volume’s root after opening a subfolder, could switch it from thumbs or cards view to table view with blank rows. ([#20137](https://github.com/craftcms/cms/issues/20137))
+- Fixed a bug where Twig control panel pages’ action buttons, action menus, and context menus were missing when rendered inside the Inertia shell.
+- Fixed a bug where Categories and Tags fields showed “Legacy input [] has an invalid name.” in the element editor, and their relations weren’t saved. ([#20179](https://github.com/craftcms/cms/pull/20179))
+- Fixed a bug where legacy menus, such as the Tags field’s suggestions, were shown below the page instead of positioned beside their trigger. ([#20179](https://github.com/craftcms/cms/pull/20179))
 
 ### Content Management
 
@@ -240,9 +246,13 @@
 - Fixed a bug where typing in a newly added nested entry’s fields could replace the edit form with a “UI array path … must be a row index” error once the entry autosaved.
 - Fixed a bug where changing a field back to the value it had when the edit page loaded wasn’t autosaved, so field layout elements shown or hidden by conditions based on it didn’t update.
 - Fixed a bug where Table fields’ Date and Time cells, and their default row values, shifted by the site’s UTC offset each time they were saved from the control panel.
+- Fixed bugs where Dropdown fields didn’t preserve blank option values and could show duplicate blank placeholders. ([#20140](https://github.com/craftcms/cms/pull/20140))
 - Fixed a bug where going from one element edit page to another, such as switching sites, opened the next page’s “Revisions” details panel rather than the one that was open.
 - Fixed a bug where viewing an element revision showed three read-only notices, including one about settings changes not being permitted, and no “Revert content from this revision” button. ([#20115](https://github.com/craftcms/cms/pull/20115))
 - Fixed an error that occurred on release pages if one of the release’s drafts belonged to an element that had been deleted, such as along with its section. The draft is now listed as blocked with “The entry has been deleted.”, and can be removed by anyone who can manage the release.
+- Fixed a bug where AI-generated alt text and titles replaced the ones filled in from an image’s embedded metadata, for images whose metadata was read by the image analysis queue job, such as indexed images.
+- Fixed a bug where the “Duplicate” and “Delete” element actions didn’t do anything when unpublished drafts were selected, and element actions on element indexes ran for the primary site rather than the selected one.
+- Fixed a bug where saving an element removed the values of fields whose field type was missing, such as fields from an uninstalled plugin, from some or all of the element’s sites. ([#20173](https://github.com/craftcms/cms/pull/20173))
 
 ### Accessibility
 
@@ -290,6 +300,8 @@
 - Added Settings → Extend → Connections, where administrators choose the providers and models that plugins’ AI features use. Providers come from the `ai.providers` config, with keys set through environment variables. AI features stay off until a provider is chosen. ([#20006](https://github.com/craftcms/cms/pull/20006))
 - AI Connections now checks that the models chosen for AI tasks have the capabilities the tasks need, such as vision, document, audio, or video input, structured output, or tool calling, when the settings are saved. Tasks whose model lacks one are unavailable until a different model is chosen, and the settings explain why. ([#20099](https://github.com/craftcms/cms/pull/20099))
 - Added the “Generate alt text” AI task, which writes alt text for images in each site’s language, filling in images that are missing it when they’re uploaded, replaced, indexed, or analyzed. Sites that share alt text get one. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Images’ embedded alt text is now read in each language the file has it in, and each site of an image is given the alt text in its language, if the file has it.
+- When the “Generate alt text” AI task is set up, it now writes the alt text that some of an image’s sites are missing as translations of the alt text the image already has, and images’ embedded descriptions are given to the model as context, rather than used as their alt text.
 - Alternative Text fields now have a “Generate alt text” action, which fills in suggested alt text for editors to review before saving. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Added the “Generate titles” AI task, which titles images that are still titled after their filename, such as “IMG 4759”, in each site’s language, when they’re uploaded, replaced, indexed, or analyzed. Sites that share titles get one. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Uploaded images, and images whose files are replaced while they’re still titled after their filename, are now titled from the title embedded in their file, if they have one. ([#20103](https://github.com/craftcms/cms/pull/20103))
@@ -319,6 +331,7 @@
 - The MCP server’s `elements.update` tool can now set and clear assets’ focal points via a `focalPoint` attribute. ([#19933](https://github.com/craftcms/cms/pull/19933))
 - The MCP server now validates custom field values against the `elements.field-schema` schema, and returns an error that identifies each invalid value. ([#19965](https://github.com/craftcms/cms/pull/19965))
 - The MCP server now accepts any date or time that Date and Time fields can parse, such as “2:30 PM” or a date with a UTC offset, rather than requiring ISO 8601. A value they can’t parse is rejected, rather than clearing the field, and a field’s instructions no longer replace the description of its format.
+- Fixed a bug where the HTTP MCP servers rejected handshake-based clients. Both handshake sessions and per-request protocol metadata are now supported.
 - The MCP server’s `mcp:use` OAuth scope has been replaced with `mcp:read`, `mcp:write`, and `mcp:admin`. Users now choose an access level when they authorize an MCP client, defaulting to read only, and only administrators are offered full access. Clients that authorize again keep the earlier level without another prompt. ([#20080](https://github.com/craftcms/cms/pull/20080))
 - The MCP server now only shows and accepts the custom fields that users can see and edit in an element’s edit form, as field layouts’ conditions allow. ([#20091](https://github.com/craftcms/cms/pull/20091))
 - Added the `assets.analyze` MCP tool, which queues images to be analyzed by the image analysis AI tasks that are set up, such as for alt text, filling in only what they’re missing. ([#20103](https://github.com/craftcms/cms/pull/20103))
@@ -354,9 +367,12 @@
 - Assets now have `volume` fields in GraphQL, when the schema includes the “Query for volumes” component. ([#20055](https://github.com/craftcms/cms/pull/20055))
 - Users now have `groups` fields in GraphQL, when the schema includes the “Query for user groups” component. ([#20055](https://github.com/craftcms/cms/pull/20055))
 - Fixed a bug where impersonation URLs, including those generated by `craft:users:impersonate`, redirected to the login page rather than signing in as the user.
+- Fixed an error when saving plugin settings that failed the settings model’s validation. ([#20158](https://github.com/craftcms/cms/pull/20158))
+- Fixed a bug where the `entrify/categories`, `entrify/tags`, and `entrify/global-set` commands failed with an “Unknown command” error. ([#20175](https://github.com/craftcms/cms/pull/20175))
 
 ### Extensibility
 
+- Added the `craft:ui-value-change` DOM event and `Cp.$ui.active()` for plugins to observe canonical values from Craft 6 UI-rendered fields. ([#19920](https://github.com/craftcms/cms/discussions/19920))
 - Added `CraftCms\Cms\Cp\CommandPalette\CommandPaletteItem`, `PageRegistry`, `ActionRegistry`, and `SearchProviderRegistry`, which plugins can use to add pages, actions, and search providers to the command palette, and `CraftCms\Cms\Cp\CommandPalette\Contracts\SearchProvider` and `CraftCms\Cms\Cp\CommandPalette\SearchProviders\ElementSearchProvider`, for searching custom content or element types. ([#20081](https://github.com/craftcms/cms/pull/20081))
 - Added `Craft.commandPalette`, with `open()`, `close()`, `registerActions()`, `registerProvider()`, and `registerView()` methods, for opening the command palette and adding page actions, client-side search providers, and views to it. A page’s own action menus are listed as command palette actions when they’re within an element with a `data-command-palette-actions` attribute. ([#20081](https://github.com/craftcms/cms/pull/20081))
 - Added `CraftCms\Cms\Asset\Elements\Asset::getOrientation()`, `CraftCms\Cms\Element\Queries\AssetQuery::orientation()`, `CraftCms\Cms\Asset\Enums\ImageOrientation`, `CraftCms\Cms\Asset\Conditions\OrientationConditionRule`, and the `orientation` GraphQL argument and field for assets, which say whether images are landscape, portrait, or square, from their width and height. ([#20114](https://github.com/craftcms/cms/pull/20114))
@@ -394,7 +410,9 @@
 - Added `CraftCms\Cms\Asset\Analysis\ImageAnalyzer::needsSampling()`, and a `$sample` argument to `CraftCms\Cms\Asset\Analysis\ImageAnalyzer::queue()`, which also queues images that are missing their colors or metadata. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Added `CraftCms\Cms\Filesystem\Data\UploadedFile::isLocal()` and `imageSize()`. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Added `CraftCms\Cms\Asset\Elements\Asset::hasDefaultTitle()`. ([#20103](https://github.com/craftcms/cms/pull/20103))
-- Added `CraftCms\Cms\Asset\Elements\Asset::valuesFromEmbeddedMetadata()` and `CraftCms\Cms\Image\Data\ImageMetadata::suggestedAlt()`. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added `CraftCms\Cms\Asset\Analysis\ImageAnalysisTask::fillFromMetadata()`, which image analysis tasks can override to fill in values from an image’s embedded metadata in any of its sites, such as Craft’s alt text and title tasks do, whether or not AI is set up, and `CraftCms\Cms\Asset\Analysis\ImageAnalyzer::metadataChanges()` and `fillOtherSitesFromMetadata()`. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- `CraftCms\Cms\Asset\Analysis\Contracts\ImageAnalysisTaskInterface::instructions()` and `schema()` now have `$overwrite` arguments, like `needed()` and `apply()`.
+- Added `CraftCms\Cms\Image\Data\ImageMetadata::$altTextTranslations` and `altTextIn()`.
 - Content-model audit checks registered with `CraftCms\Cms\Mcp\ContentModel\CheckRegistry` can now return a `note` with their findings. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Added `CraftCms\Cms\Asset\ImageDuplicates`, which finds images that look like copies of each other. ([#20113](https://github.com/craftcms/cms/pull/20113))
 - Added `CraftCms\Cms\Image\ImageHash`, `CraftCms\Cms\Image\Data\ImageSample`, `CraftCms\Cms\Image\Images::sample()`, `CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis::$hash`, and the `hash` GraphQL field for image analysis, which hold an image’s difference hash. ([#20113](https://github.com/craftcms/cms/pull/20113))
@@ -549,6 +567,7 @@
 - Added `CraftCms\Cms\Cp\Components\Tab::icon()`. ([#20005](https://github.com/craftcms/cms/pull/20005))
 - Added a `prefix` slot to `<craft-tab>`. ([#20005](https://github.com/craftcms/cms/pull/20005))
 - The `capitalize`, `lower`, `title`, and `upper` Twig filters now have `language` arguments, which default to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
+- Improved Twig attribute access on Eloquent models to resolve missing and null attributes, casts, accessors, and relations through Eloquent property access, while preserving explicit method calls. ([#20165](https://github.com/craftcms/cms/pull/20165))
 - Added the `craft:project-config:check` command, which checks project config schema compatibility without applying changes.
 - Added the `{% render %}` Twig tag. `{% render %}` tags and `render()` methods are allowed within the Twig sandbox. ([#19988](https://github.com/craftcms/cms/pull/19988))
 - Added `CraftCms\Cms\Component\Contracts\Renderable`. ([#19988](https://github.com/craftcms/cms/pull/19988))
@@ -575,6 +594,13 @@
 - Added `CraftCms\Cms\Plugin\Plugins::hasPluginIcon()`. ([#20074](https://github.com/craftcms/cms/pull/20074))
 - Added `CraftCms\Cms\Ui\Controls\Textarea::singleLine()`. ([#20074](https://github.com/craftcms/cms/pull/20074))
 - Added `craft\helpers\Db::isSafeOrderBy()`. ([#19994](https://github.com/craftcms/cms/pull/19994))
+- Control panel elements with a `data-icon` attribute, such as those in plugins’ templates and scripts, now show the matching SVG icon via `<craft-icon>` when `craftcms/yii2-adapter` is installed, since the legacy icon font is no longer loaded. Core control panel markup uses `<craft-icon>` instead. ([#20179](https://github.com/craftcms/cms/pull/20179))
+- Fixed a bug where `CraftCms\Cms\Plugin\Testing\PluginTestCase` could install plugins twice when workbench project config existed. ([#20177](https://github.com/craftcms/cms/pull/20177))
+- Fixed a bug where plugin tests could overwrite or delete Composer’s plugin manifest. ([#20177](https://github.com/craftcms/cms/pull/20177))
+- Fixed a bug where plugins’ named routes were unavailable in plugin tests. ([#20177](https://github.com/craftcms/cms/pull/20177))
+- Fixed a bug where Craft installation could fail to create an admin user when the default SQLite connection changed after boot. ([#20177](https://github.com/craftcms/cms/pull/20177))
+- Fixed a bug where plugin test suites extending `CraftCms\Cms\Plugin\Testing\PluginTestCase` failed without additional service providers. ([#20169](https://github.com/craftcms/cms/pull/20169))
+- Fixed a bug where plugin control panel routes and control panel action routes did not require authentication and the `accessCp` permission. ([#20164](https://github.com/craftcms/cms/pull/20164))
 
 ### System
 
@@ -583,11 +609,17 @@
 - MySQL database backups and restores now respect the `PDO::MYSQL_ATTR_SSL_CAPATH` and `PDO::MYSQL_ATTR_SSL_CIPHER` database connection attributes. ([#19366](https://github.com/craftcms/cms/pull/19366))
 - Craft can now determine the dimensions of BMP and JPEG XL images on remote volumes without downloading them.
 - Saving nested elements on multi-site installs now executes fewer database queries. ([#20090](https://github.com/craftcms/cms/pull/20090))
+- User permission checks are now faster for users with many permissions. ([#20149](https://github.com/craftcms/cms/pull/20149))
 - Requests now read from the database’s write connection for two seconds after the same session writes data, in addition to POST requests. ([#20122](https://github.com/craftcms/cms/pull/20122))
 - Craft now requires Laravel 13.38 or later. ([#20122](https://github.com/craftcms/cms/pull/20122))
 - Removed support for the non-standard `ED256` passkey algorithm. ([#19701](https://github.com/craftcms/cms/pull/19701))
 - Updated Twig to 3.30.
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
+- Fixed a bug where numeric custom field comparisons and sorting, Lightswitch field queries, and Date field queries could return incorrect results on SQLite. ([#20167](https://github.com/craftcms/cms/pull/20167))
+- Fixed errors in empty and negated custom field queries on MySQL caused by treating SQL expressions as JSON column selectors. ([#20167](https://github.com/craftcms/cms/pull/20167))
+- Fixed a bug where custom fields declaring small integer, big integer, float, or double database types were compared and sorted as text on PostgreSQL. ([#20172](https://github.com/craftcms/cms/pull/20172))
+- Fixed incorrect JSON paths when querying Date fields and other custom fields with multiple stored values. ([#20172](https://github.com/craftcms/cms/pull/20172))
+- Fixed an error when ordering element queries by custom field handles. ([#20170](https://github.com/craftcms/cms/pull/20170))
 - Fixed a bug where element query date params, such as `postDate`, `before`, `after`, `dateCreated`, and Date field params, as well as date condition rules, were off by the system time zone’s UTC offset. ([#19963](https://github.com/craftcms/cms/pull/19963))
 - Fixed a bug where many dates Craft stores, such as elements’ soft-delete dates and sites’, plugins’, relations’, and activity events’ dates, were stored in the system time zone rather than UTC. ([#20053](https://github.com/craftcms/cms/pull/20053))
 - Fixed a bug where revisions were created for elements that hadn’t changed since their last revision, including nested entries that hadn’t changed between their owner’s revisions, if the system time zone wasn’t UTC. ([#20053](https://github.com/craftcms/cms/pull/20053))
@@ -598,6 +630,7 @@
 - Fixed a bug where assets’ “Volume settings” and user groups’ “User group settings” action menu items led to 404 errors. ([#19961](https://github.com/craftcms/cms/pull/19961))
 - Fixed a bug where saving an image as a new asset, from an asset opened via an Assets field, didn’t replace the asset in the field. ([#19961](https://github.com/craftcms/cms/pull/19961))
 - Fixed a bug where field layout designers’ field library didn’t reflect changes saved from a field’s settings slideout. ([#19961](https://github.com/craftcms/cms/pull/19961))
+- Fixed a bug where native fields, such as assets’ Alternative Text field, were missing from field layout designers’ field library. ([#20136](https://github.com/craftcms/cms/pull/20136))
 - Fixed a bug where errors added with `Craft.ui.addErrorsToField()` weren’t shown. ([#19961](https://github.com/craftcms/cms/pull/19961))
 - Fixed a bug where black cards’ body text had insufficient contrast. ([#19989](https://github.com/craftcms/cms/pull/19989))
 - Fixed a bug where thumbnails in relational fields linked to their elements. ([#19942](https://github.com/craftcms/cms/pull/19942))
@@ -675,6 +708,12 @@
 - Fixed a bug where control panel screens that hadn’t been ported to Vue, such as plugins’ Twig-rendered pages, kept reloading when an element source had “Show count” enabled. ([#20082](https://github.com/craftcms/cms/pull/20082))
 - Uploads staged on an S3 disk are now copied into their volume within S3, rather than downloaded and uploaded again, when the volume’s disk uses the same credentials and endpoint. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Fixed a bug where `withTransforms` criteria were ignored for eager-loaded assets. ([#20117](https://github.com/craftcms/cms/pull/20117))
+- Fixed errors that occurred when running the legacy `queue` console commands with the Yii adapter installed, such as `php craft queue:run` and `php craft queue:info --no-interaction`. ([#20162](https://github.com/craftcms/cms/pull/20162))
+- Fixed a bug where Composer warned about ambiguous class resolution for `Legacy*` traits when `craftcms/yii2-adapter` was installed. ([#20161](https://github.com/craftcms/cms/pull/20161))
+- Fixed a bug where the lists in `config/craft/twig-sandbox.php` replaced Craft’s default Twig sandbox allowlists rather than extending them, which broke system emails for projects upgraded from Craft 5. ([#20159](https://github.com/craftcms/cms/pull/20159))
+- Fixed a bug where front-end forms with an empty `redirectInput('')` redirected to the primary site rather than the current site’s home page, such as after logging in on a site with a base path like `/fr`. ([#20174](https://github.com/craftcms/cms/pull/20174))
+- Fixed a bug where front-end requests posted with an `action` param, and token routes, ran on the primary site rather than the requested site, when the site had a base path. ([#20174](https://github.com/craftcms/cms/pull/20174))
+- Fixed a 404 error that occurred when posting to an action URL on a site with a base path, such as `/fr/actions/users/login`. ([#20174](https://github.com/craftcms/cms/pull/20174))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 

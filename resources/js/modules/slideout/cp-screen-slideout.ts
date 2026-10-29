@@ -201,14 +201,14 @@ export class CpScreenSlideout extends Slideout {
       class: 'btn header-btn hidden',
       title: Craft.t('app', 'Open in a new tab'),
       'aria-label': Craft.t('app', 'Open in a new tab'),
-      'data-icon': 'external',
+      html: '<craft-icon name="external"></craft-icon>',
     }).appendTo(this.$toolbar);
     this.$sidebarBtn = $('<button/>', {
       type: 'button',
       class: 'btn header-btn hidden sidebar-btn',
       title: Craft.t('app', 'Show sidebar'),
       'aria-label': Craft.t('app', 'Show sidebar'),
-      'data-icon': `sidebar-${Garnish.ltr ? 'right' : 'left'}`,
+      html: `<craft-icon name="sidebar-${Garnish.ltr ? 'right' : 'left'}"></craft-icon>`,
       'aria-expanded': 'false',
     }).appendTo(this.$toolbar);
 
@@ -845,11 +845,11 @@ export class CpScreenSlideout extends Slideout {
 
     const tabMenu = this.tabManager?.menu || [];
     const tabErrorIndicator =
-      '<span data-icon="alert">' +
-      '<span class="visually-hidden">' +
+      '<craft-icon name="alert" data-tab-error>' +
+      '<span class="sr-only">' +
       Craft.t('app', 'This tab contains errors') +
-      '</span>\n' +
-      '</span>';
+      '</span>' +
+      '</craft-icon>';
 
     Object.entries(errors).forEach(([name, fieldErrors]) => {
       const $field = this.$container.find(`[data-error-key="${name}"]`);
@@ -868,7 +868,9 @@ export class CpScreenSlideout extends Slideout {
           // add error indicator to the tabs menuBtn
           if (this.tabManager.$menuBtn.hasClass('error') == false) {
             this.tabManager.$menuBtn.addClass('error');
-            this.tabManager.$menuBtn.append('<span data-icon="alert"></span>');
+            this.tabManager.$menuBtn.append(
+              '<craft-icon name="alert" data-tab-error></craft-icon>'
+            );
           }
 
           for (let i = 0; i < fieldTabAnchors.length; i++) {

@@ -186,6 +186,7 @@ test('saveUserPermissions', function () {
     $this->userPermissions->saveUserPermissions($user->id, ['accessSiteWhenSystemIsOff']);
 
     expect($this->userPermissions->doesUserHavePermission($user->id, 'accessSiteWhenSystemIsOff'))->toBeTrue();
+    expect($this->userPermissions->doesUserHavePermission($user->id, 'ACCESSSITEWHENSYSTEMISOFF'))->toBeTrue();
 });
 
 test('permissions are resolved with canonical casing', function () {

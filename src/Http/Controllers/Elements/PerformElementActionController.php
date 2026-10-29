@@ -73,7 +73,11 @@ class PerformElementActionController
                 elementType: $elementType,
                 source: $source,
                 condition: $request->condition(),
-                baseCriteria: $request->baseCriteria(),
+                baseCriteria: [
+                    ...$this->elementIndexes->baseCriteria($elementType),
+                    ...($source['criteria'] ?? []),
+                    ...$request->baseCriteria(),
+                ],
                 criteria: $request->criteria(),
                 filterConditionConfig: $request->filterConditionConfig(),
                 collapsedElementIds: $request->collapsedElementIds(),

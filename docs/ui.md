@@ -304,6 +304,39 @@ A Control component rendered by the core `Field` Node receives `control`, `value
 value and optionally `typing` or `discrete` as the change kind. Only editable Controls may submit a `name` or apply
 browser-required constraints. Use `inputName(control.path)` for the ordinary nested request shape.
 
+## Observing field values in the Control Panel
+
+On Inertia/Vue pages, Craft dispatches a bubbling, composed `craft:ui-value-change` DOM event when an editable Control's
+canonical value changes. Plugin Controls participate by emitting `update:value` as above; a hidden input or composite
+Control needs no separate DOM event. Listen on `document` or an ancestor of the mounted UI:
+
+```ts
+document.addEventListener('craft:ui-value-change', (event) => {
+  const {ui, path, scope, value, kind} = event.detail
+
+  if (!ui.root.closest('[data-my-plugin-settings]')) return
+  if (path.length !== 2 || path[0] !== 'settings' || path[1] !== 'apiKey') return
+
+  // `value` is the new canonical value, not the input element's DOM value.
+  console.log({value, scope, kind})
+})
+```
+
+`detail.ui` identifies the mounted renderer; `ui.root` is its DOM anchor, so it can distinguish simultaneous editors.
+`path` is the absolute Control path (for example `['settings', 'matrix', 'entries', 'block-a', 'heading']`); `scope` is
+the absolute scope containing that Control. `kind` is `typing` or `discrete`. `value` is a snapshot of the changed
+Control's canonical value. For composite Controls it may be an object or array, not a string.
+
+For the initial value or to read another path after a change, use `ui.getValue(path)`. Plugin scripts can discover UIs
+that have already mounted with `Cp.$ui.active()`; it returns the currently mounted renderer handles. The same handle
+remains valid as its values change and is removed from `active()` when the renderer unmounts. Reads return snapshots,
+not mutable access to renderer state. Batch updates made through the renderer's `setValues()` are visible in full to
+every event listener. Initial rendering, unchanged values, server refreshes, and `resetValues()` do not emit change
+events; explicit `setValue()` and `setValues()` calls do when an editable value actually changes.
+
+This API applies only to Craft 6 UI-rendered fields. Legacy HTML fields and the Yii2 adapter keep their own JavaScript
+and DOM contracts. `craft:ui-value-change` is an observation API, not a save hook or authorization boundary.
+
 The test plugin contains complete reference implementations:
 
 - `tests/TestClasses/TestPlugin/src/UI/Nodes/Notice.php`

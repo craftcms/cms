@@ -860,9 +860,11 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
         autosave.cancel();
         autosave.acknowledgeChanges();
 
-        if (!slideout) {
-          // The save itself moved the element's `dateUpdated`; without this the
-          // next poll would report our own write as someone else's change.
+        // The save itself moved the element's `dateUpdated`; without this the
+        // next poll would report our own write as someone else's change. A
+        // save that redirects lands on another screen, whose props carry no
+        // stamps and which has nothing left to poll.
+        if (!slideout && props.updatedTimestamps) {
           activity.rebase(props.updatedTimestamps);
         }
 
