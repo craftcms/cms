@@ -243,3 +243,7 @@ Schema components opt in with an `authenticated` key: `true` to make them availa
 - Drafts, revisions, and non-enabled elements are available to users with control panel access. Entries’ `drafts`, `revisions`, `currentRevision`, `parent`, `ancestors`, `children`, and `descendants` fields only return entries the user can view, and drafts created with the `createDraft` mutation are always created by the authenticated user.
 - Mutations check `craft\services\Elements::canSave()`, `canDelete()`, and `canCreateDrafts()` for the user before changing an element, and existing elements are checked before and after they’re populated.
 - Results for authenticated requests are cached per user, and vary by the user’s current permissions. Each user’s schema is cached as well, and is rebuilt when the project config or their permissions change. Components whose `authenticated` callbacks depend on anything else should stay available and limit their results instead.
+
+## Upgrading to Craft 6
+
+Craft 6 uses Laravel Passport for OAuth. Craft 5’s OAuth tables use Passport 13’s layout, plus a `resource_id` column, and its access tokens are signed the same way. This is so that, with the same signing keys, access tokens issued by Craft 5 can stay valid in Craft 6. Refresh tokens are encrypted with a key derived from the Craft security key rather than Laravel’s `APP_KEY`, so OAuth clients will need to authorize again once their access tokens expire.
