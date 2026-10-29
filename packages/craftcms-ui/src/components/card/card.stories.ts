@@ -130,26 +130,6 @@ const LUMINANCE: Record<number, Luminance> = {
       [0.093, 0.355],
     ],
   ],
-  1043: [
-    [
-      [0.022, 0.353],
-      [0.088, 0.521],
-      [0.092, 0.645],
-      [0.047, 0.546],
-    ],
-    [
-      [0.014, 0.091],
-      [0.042, 0.281],
-      [0.07, 0.333],
-      [0.031, 0.225],
-    ],
-    [
-      [0.01, 0.224],
-      [0.012, 0.129],
-      [0.026, 0.245],
-      [0.015, 0.23],
-    ],
-  ],
   1069: [
     [
       [0.063, 0.125],
@@ -452,8 +432,10 @@ export const KitchenSink: Story = {
 /**
  * `cover-src` makes a cover card: the image fills the card, and the header and
  * body are laid over it, in white or black picked from `luminance`. A header
- * with a label gets a blurred bar of its own, in white or black, filled just
- * enough for the label to reach 4.5:1.
+ * with text gets a blurred bar of its own, in black or white, strong enough
+ * for the text to reach 4.5:1 over any image. The body sits on a scrim of the
+ * same black or white, which fades in above the content and blurs the image
+ * behind it.
  */
 export const Cover: Story = {
   parameters: coverParameters,
@@ -465,40 +447,17 @@ export const Cover: Story = {
 };
 
 /**
- * Without a label, the header's controls sit on the image. Where they wouldn't
- * reach 4.5:1 against it, the checkbox and plain buttons get a backing, opposite
- * their border, that does.
+ * Without text in the header, its checkbox and plain buttons get a blurred
+ * backing, opposite their border, so they hold up over any image.
  */
 export const CoverBackedControls: Story = {
   parameters: coverParameters,
-  render: () => coverGrid(coverCard({id: 1025}), coverCard({id: 1018})),
-};
-
-/** Controls stay bare where the image alone gives them 4.5:1. */
-export const CoverBareControls: Story = {
-  parameters: coverParameters,
-  render: () => coverGrid(coverCard({id: 1015})),
-};
-
-/**
- * The body's scrim fades in above the content and is at full strength behind
- * it, in black or white, whichever the bottom of the image needs.
- */
-export const CoverScrim: Story = {
-  parameters: coverParameters,
-  render: () => coverGrid(coverCard({id: 1018}), coverCard({id: 1084})),
-};
-
-/**
- * Without `luminance`, before an image has been sampled, the header and body
- * are white over a heavier black.
- */
-export const CoverUnknownLuminance: Story = {
-  parameters: coverParameters,
   render: () =>
     coverGrid(
-      coverCard({id: 1043, luminance: null}),
-      coverCard({id: 1043, label: 'Yosemite', luminance: null})
+      coverCard({id: 1025}),
+      coverCard({id: 1018}),
+      coverCard({id: 1015}),
+      coverCard({id: 1084})
     ),
 };
 
@@ -513,15 +472,23 @@ export const CoverActive: Story = {
 };
 
 /**
- * Small images, and narrow or wide ones, keep a normal card with a thumbnail:
- * Craft only sets `cover-src` for images that can fill a card.
+ * Cover cards and normal cards share a grid: the same column widths, headers
+ * of the same height, and controls that line up.
  */
 export const CoverAlongsideNormalCards: Story = {
   parameters: coverParameters,
   render: () =>
     coverGrid(
       coverCard({id: 1015}),
+      coverCard({id: 1036, label: 'Base camp'}),
       html`<craft-card label="Icon 48">
+        <craft-button
+          slot="actions"
+          icon="ellipsis"
+          variant="plain"
+          size="small"
+          aria-label="Actions"
+        ></craft-button>
         <img
           slot="thumbnail"
           src="https://picsum.photos/id/1062/48/48"

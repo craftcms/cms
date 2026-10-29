@@ -63,41 +63,35 @@ Asset cards do this for images that can fill a card.
 
 The text and controls are white or black, a little transparent.
 Which one comes from the luminance, separately for the header (the top of the image) and the body (the bottom).
-Whatever's laid behind them is as light as it can be while keeping them legible.
+Behind them is a fixed black or white, strong enough that they stay legible over any pixel, so the luminance only decides which looks better.
 A cover card's `data-color` only colors its border, in the page's theme, as a normal card's would be. What's laid over the image keeps the white or black that the image calls for.
 
-When the header has a label, from the `label` attribute or slot, or a `[data-card-label]` element in the `header` slot, it gets a bar of its own, the height of a normal card's header, blurred and filled with just enough black or white for the label:
+When the header has text, from the `label` attribute or slot, the `badge` slot, or a `[data-card-label]` element in the `header` slot, it gets a bar of its own, the height of a normal card's header, blurred and filled with black or white:
 
 <Canvas of={CardStories.Cover} sourceState="shown" />
 
-Without a label, the header's controls sit on the image.
-Where the image would let them fade into it, the checkbox and plain buttons get a backing, blurred like a label bar:
+With only controls in the header, the checkbox and plain buttons sit on the image with a backing, blurred like a label bar:
 
 <Canvas of={CardStories.CoverBackedControls} />
 
-Where the image is already dark or light enough, they're left bare:
-
-<Canvas of={CardStories.CoverBareControls} />
-
-The body's scrim fades in above the content, in black or white, whichever the bottom of the image needs, and the image blurs in under it, crisp at the top of the fade and fully blurred behind the text, so busy detail doesn't show through:
-
-<Canvas of={CardStories.CoverScrim} />
-
-Before an image is sampled, there's no luminance, so the card plays it safe with white over a heavier black:
-
-<Canvas of={CardStories.CoverUnknownLuminance} />
+Every cover card's body sits on a scrim of the same black or white, which fades in above the content, and the image blurs in under it, crisp at the top of the fade and fully blurred behind the text.
+Without luminance, as for an image sampled before luminance was, the header and body are white.
 
 A selected cover card gets an accent border and ring:
 
 <Canvas of={CardStories.CoverActive} />
 
-Small images, and narrow or wide ones, would be scaled up or cropped too far to fill a card, so Craft gives them a normal card with a thumbnail:
+Cover cards share a grid with normal cards, with the same column widths, headers of the same height, and controls that line up.
+Craft gives small images, and narrow or wide ones, a normal card with a thumbnail, since they would be scaled up or cropped too far to fill a card:
 
 <Canvas of={CardStories.CoverAlongsideNormalCards} />
 
-The card sets `data-theme` on what it lays over the image, so checkboxes and other controls take the matching theme, and `data-cover` (`bar`, `backed`, `bare`, or `body`), which `cp.css` styles them by.
+The card sets `data-theme` on what it lays over the image, so checkboxes and other controls take the matching theme, and `data-cover` (`bar`, `backed`, or `body`), which `cp.css` styles them by.
 The card's own border, corners, and shadow still follow the page's theme.
 Header buttons are never flush in a cover card, so they line up with other cards' buttons.
+A focused control gets a black and white ring, so it shows against any image.
+
+If the image fails to load, the card falls back to a normal one, with its thumbnail.
 
 ## Colors
 
@@ -155,7 +149,8 @@ It has no implicit role and does not receive focus, so the content decides the s
 - **Don't rely on `active` alone.** It changes only fill and border colors. Pair a selection with a checkbox, text, or another cue, and expose the selected state on the control that sets it.
 - **Expose `collapsed` on its toggle.** The card has no toggle of its own. The button that collapses it needs `aria-expanded`.
 - **Say what a cover image shows in the content.** The image is decorative, with an empty `alt`, so the card's title or other content has to carry its meaning.
-- **Pass the luminance whenever it's known.** Without it, a cover card falls back to heavy black behind white, which keeps the text legible but hides more of the image.
+- **Pass the luminance whenever it's known.** Without it, a cover card uses white text, which stays legible but may suit a light image less well than black.
+- **Keep sending a thumbnail with a cover card.** It's what the card shows if the cover image fails to load.
 - **Don't add text colors to a cover card's content.** It's white or black for a reason; a color of its own can lose its contrast against the image.
 - **Don't make the whole card a link.** For a card that leads somewhere, put the link on its heading so the link's name is the heading, not the card's whole content, and other controls in the card stay reachable.
 
