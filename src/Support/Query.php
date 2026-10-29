@@ -11,11 +11,14 @@ use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
+use Illuminate\Database\SQLiteConnection;
 use Illuminate\Support\Facades\Date;
 use InvalidArgumentException;
 use Money\Money;
 use Serializable;
 use Tpetry\QueryExpressions\Function\String\Lower;
+use Tpetry\QueryExpressions\Operator\Comparison\IsNull;
+use Tpetry\QueryExpressions\Operator\Comparison\NotIsNull;
 
 /**
  * @since 6.0.0
@@ -207,15 +210,13 @@ readonly class Query
                         $method = $operator === '!=' ? 'whereNot' : 'where';
 
                         $query->$method(function (Builder $query) use ($column) {
-                            $query->whereNull($column)->orWhere($column, '');
+                            self::whereNull($query, $column)->orWhere($column, '');
                         }, boolean: $boolean);
 
                         continue;
                     }
 
-                    $method = $operator === '!=' ? 'whereNotNull' : 'whereNull';
-
-                    $query->$method($column, boolean: $boolean);
+                    self::whereNull($query, $column, $boolean, $operator === '!=');
 
                     continue;
                 }
@@ -293,13 +294,23 @@ readonly class Query
                     $query->whereNotIn($caseColumn, $notInVals);
 
                     if ($parsedColumnType === self::TYPE_JSON) {
-                        $query->orWhereNull($column);
+                        self::whereNull($query, $column, 'or');
                     }
                 }, boolean: $boolean);
             }
         }, boolean: $boolean);
 
         return $query;
+    }
+
+    private static function whereNull(Builder $query, string|Expression $column, string $boolean = 'and', bool $not = false): Builder
+    {
+        // MySQL's null grammar mistakes SQL expressions containing -> for JSON column selectors.
+        if ($column instanceof Expression) {
+            return $query->where($not ? new NotIsNull($column) : new IsNull($column), boolean: $boolean);
+        }
+
+        return $query->whereNull($column, $boolean, $not);
     }
 
     /**
@@ -482,7 +493,7 @@ readonly class Query
             $value = ! $value;
         }
 
-        if ($columnType === self::TYPE_JSON) {
+        if ($columnType === self::TYPE_JSON && ! $query->getConnection() instanceof SQLiteConnection) {
             /** @phpstan-ignore-next-line */
             $value = match ($value) {
                 true => 'true',
@@ -497,12 +508,15 @@ readonly class Query
         }
 
         return $query->where(function (Builder $query) use ($column, $value, $defaultValue) {
-            $query
-                ->where($column, $value)
-                ->when(
-                    $defaultValue === $value && $value !== null,
-                    fn (Builder $query) => $query->orWhereNull($column),
-                );
+            if ($value === null) {
+                self::whereNull($query, $column);
+            } else {
+                $query->where($column, $value);
+
+                if ($defaultValue === $value) {
+                    self::whereNull($query, $column, 'or');
+                }
+            }
         }, boolean: $boolean);
     }
 

@@ -207,8 +207,7 @@ trait RespondsWithFlash
             abort(400, 'Request contained an invalid body param');
         }
 
-        // I'm not sure why, but decrypt ac
-        if (! $url) {
+        if (! is_string($url)) {
             return null;
         }
 
@@ -232,6 +231,6 @@ trait RespondsWithFlash
             return Url::cpUrl($url);
         }
 
-        return $url;
+        return Url::url($url);
     }
 }
