@@ -7,6 +7,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -15,12 +16,15 @@ it('installs Craft and the plugin with its install migration', function () {
     expect(Cms::isInstalled())->toBeTrue()
         ->and(app(Plugins::class)->getPlugin('bootstrap-plugin'))->toBeInstanceOf(Plugin::class)
         ->and(Schema::hasTable('bootstrap_plugin_records'))->toBeTrue()
-        ->and(DB::table(Table::MIGRATIONS)->where('track', 'plugin:bootstrap-plugin')->where('migration', 'Install')->exists())->toBeTrue();
+        ->and(DB::table(Table::MIGRATIONS)->where('track', 'plugin:bootstrap-plugin')->where('migration', 'Install')->exists())->toBeTrue()
+        ->and(app(Sites::class)->getPrimarySite()->name)->toBe('Craft test site');
+
+    $this->artisan('craft:plugin:list')->expectsOutputToContain('1.0.0')->assertSuccessful();
 
     $this->get('/bootstrap-plugin')->assertOk()->assertJson(['plugin' => 'bootstrap-plugin']);
 
     $this->actingAs(CraftCms\Cms\User\Models\User::first(), 'craft')
-        ->get('/'.Cms::config()->cpTrigger.'/bootstrap-plugin')
+        ->get(route('bootstrap-plugin.index'))
         ->assertOk()->assertJson(['plugin' => 'bootstrap-plugin']);
 });
 
