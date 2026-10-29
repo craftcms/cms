@@ -14,11 +14,13 @@ use craft\elements\actions\DeleteForSite;
 use craft\elements\Asset;
 use craft\elements\User;
 use craft\enums\PropagationMethod;
+use craft\events\ConfigEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\models\Site;
 use craft\models\Volume;
 use craft\queue\jobs\PropagateElements;
+use craft\queue\jobs\ResaveElements;
 use craft\queue\QueueInterface;
 use craft\test\TestCase;
 use crafttests\fixtures\AssetFixture;
@@ -169,6 +171,48 @@ class AssetPropagationTest extends TestCase
 
         self::assertContains($site->id, $this->siteIdsForAsset($allAsset));
         self::assertSame([$primarySiteId], $this->siteIdsForAsset($customAsset));
+    }
+
+    /**
+     * Applying volume config saved before the propagation method setting existed shouldn’t change the
+     * method set by m261022_000000_volume_propagation_method, or queue any propagation.
+     *
+     * @dataProvider legacyVolumeConfigProvider
+     */
+    public function testLegacyVolumeConfig(bool $multiSite, string $propagationMethod): void
+    {
+        $primarySiteId = Craft::$app->getSites()->getPrimarySite()->id;
+        $otherSiteIds = (new Query())->select(['id'])->from(Table::SITES)->where(['dateDeleted' => null])->andWhere(['not', ['id' => $primarySiteId]])->column();
+        if (!$multiSite) {
+            Craft::$app->getDb()->createCommand()->update(Table::SITES, ['dateDeleted' => '2026-01-01 00:00:00'], ['id' => $otherSiteIds], [], false)->execute();
+        }
+
+        try {
+            Craft::$app->getDb()->createCommand()->update(Table::VOLUMES, ['propagationMethod' => $propagationMethod], ['id' => $this->volume->id], [], false)->execute();
+            $config = $this->volume->getConfig();
+            unset($config['propagationMethod']);
+            $config['name'] = 'Renamed volume';
+
+            Craft::$app->getVolumes()->handleChangedVolume(new ConfigEvent([
+                'tokenMatches' => [$this->volume->uid],
+                'newValue' => $config,
+            ]));
+
+            self::assertSame($propagationMethod, (new Query())->select(['propagationMethod'])->from(Table::VOLUMES)->where(['id' => $this->volume->id])->scalar());
+            self::assertFalse($this->hasQueuedJob(ResaveElements::class), 'No assets were queued to be resaved.');
+        } finally {
+            if (!$multiSite) {
+                Craft::$app->getDb()->createCommand()->update(Table::SITES, ['dateDeleted' => null], ['id' => $otherSiteIds], [], false)->execute();
+            }
+        }
+    }
+
+    public static function legacyVolumeConfigProvider(): array
+    {
+        return [
+            'single site' => [false, PropagationMethod::Custom->value],
+            'multi-site' => [true, PropagationMethod::All->value],
+        ];
     }
 
     public function testDeleteForSite(): void
@@ -337,6 +381,17 @@ class AssetPropagationTest extends TestCase
         }
 
         return null;
+    }
+
+    private function hasQueuedJob(string $class): bool
+    {
+        foreach ((new Query())->select(['job'])->from(Table::QUEUE)->column() as $job) {
+            if (Craft::$app->getQueue()->serializer->unserialize(is_resource($job) ? stream_get_contents($job) : $job) instanceof $class) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function createSite(int $num): Site

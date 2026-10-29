@@ -36,6 +36,7 @@ trait EditUserTrait
     private const SCREEN_PREFERENCES = 'preferences';
     private const SCREEN_PASSWORD = 'password';
     private const SCREEN_PASSKEYS = 'passkeys';
+    private const SCREEN_TOKENS = 'tokens';
 
     /**
      * Returns the user being edited.
@@ -110,6 +111,10 @@ trait EditUserTrait
         if ($user->getIsCurrent() && $user->getHasPassword()) {
             $screens[self::SCREEN_PASSWORD] = ['label' => Craft::t('app', 'Password & Verification')];
             $screens[self::SCREEN_PASSKEYS] = ['label' => Craft::t('app', 'Passkeys')];
+        }
+
+        if ($user->getIsCurrent() && Craft::$app->getPersonalAccessTokens()->scopeGroupsFor($user)) {
+            $screens[self::SCREEN_TOKENS] = ['label' => Craft::t('app', 'Tokens')];
         }
 
         if (!isset($screens[$screen])) {

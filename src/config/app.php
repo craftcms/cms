@@ -95,6 +95,9 @@ return [
         'plugins' => [
             'class' => craft\services\Plugins::class,
         ],
+        'personalAccessTokens' => [
+            'class' => craft\services\PersonalAccessTokens::class,
+        ],
         'pluginStore' => [
             'class' => craft\services\PluginStore::class,
         ],

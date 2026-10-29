@@ -8,13 +8,19 @@ use craft\db\Table;
 use craft\elements\User;
 use craft\events\RegisterOAuthResourcesEvent;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\oauth\AccessToken;
+use craft\oauth\Client;
 use craft\oauth\Repositories;
 use craft\oauth\Resource;
+use craft\oauth\Scope;
 use DateInterval;
 use DateTime;
+use DateTimeImmutable;
 use GuzzleHttp\Psr7\Uri;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\CryptKey;
@@ -26,6 +32,7 @@ use League\OAuth2\Server\RequestTypes\AuthorizationRequestInterface;
 use League\OAuth2\Server\ResourceServer;
 use Psr\Http\Message\ServerRequestInterface;
 use yii\base\Component;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 /** Shared OAuth authorization and resource authentication. @since 5.12.0 */
@@ -33,6 +40,9 @@ class OAuth extends Component
 {
     /** @event RegisterOAuthResourcesEvent Registers protected API definitions. */
     public const EVENT_REGISTER_RESOURCES = 'registerResources';
+
+    /** The user provider Craft 6’s Passport guard uses, which Passport matches personal access clients against. */
+    private const PERSONAL_ACCESS_PROVIDER = 'craft';
 
     private ?array $resources = null;
 
@@ -42,10 +52,14 @@ class OAuth extends Component
         if ($this->resources === null) {
             $definitions = Craft::$app->getConfig()->getOAuth()->resources;
             $definitions['mcp'] ??= Craft::$app->get('mcp')->getOAuthResource();
+            if (Craft::$app->getConfig()->getGeneral()->enableGql) {
+                $definitions['graphql'] ??= Craft::$app->getGql()->getOAuthResource();
+            }
             $event = new RegisterOAuthResourcesEvent(['resources' => $definitions]);
             $this->trigger(self::EVENT_REGISTER_RESOURCES, $event);
             $resources = [];
             $metadataPaths = [];
+            $scopeResources = [];
             foreach ($event->resources as $id => $definition) {
                 if (!is_string($id) || !preg_match('/^[a-zA-Z0-9_-]{1,64}$/D', $id)) {
                     throw new InvalidConfigException('OAuth resource IDs must contain 1–64 letters, numbers, underscores, or hyphens.');
@@ -58,6 +72,11 @@ class OAuth extends Component
                     if (!is_string($scope) || !preg_match('/^[\x21\x23-\x5b\x5d-\x7e]+$/D', $scope) || !is_string($description) || trim($description) === '') {
                         throw new InvalidConfigException('OAuth scopes require valid IDs and consent descriptions.');
                     }
+                    // Tokens are bound to a resource by their scopes, so a scope can only belong to one resource.
+                    if (isset($scopeResources[$scope])) {
+                        throw new InvalidConfigException("OAuth resources $scopeResources[$scope] and $id can’t both define the $scope scope.");
+                    }
+                    $scopeResources[$scope] = $id;
                 }
                 if (!array_is_list($resource->defaultScopes) || ($resource->defaultScopes && !$resource->allowsScopes($resource->defaultScopes))) {
                     throw new InvalidConfigException('OAuth default scopes must be a subset of the resource scopes.');
@@ -125,7 +144,9 @@ class OAuth extends Component
     {
         $request = $this->resourceServer($resource)->validateAuthenticatedRequest($request);
         $granted = $request->getAttribute('oauth_scopes', []);
-        if (!is_array($granted) || !$this->getResource($resource)->allowsScopes($granted) || array_diff($requiredScopes, $granted)) {
+        // Personal access tokens can grant scopes for several resources, so only this resource’s scopes count here.
+        $granted = is_array($granted) ? array_values(array_intersect($granted, array_keys($this->getResource($resource)->scopes))) : [];
+        if (!$granted || array_diff($requiredScopes, $granted)) {
             throw OAuthServerException::accessDenied('The token does not grant the required scopes for this resource.');
         }
 
@@ -153,14 +174,16 @@ class OAuth extends Component
     {
         $definition = $this->getResource($resource);
         $rows = (new Query())->select(['scopes'])->from(Table::OAUTH_ACCESS_TOKENS)->where([
-            'resourceId' => $resource,
-            'clientId' => $request->getClient()->getIdentifier(),
-            'userId' => $request->getUser()->getIdentifier(),
+            'client_id' => $request->getClient()->getIdentifier(),
+            'user_id' => $request->getUser()->getIdentifier(),
             'revoked' => false,
-        ])->andWhere(['>', 'expiresAt', Db::prepareDateForDb(new DateTime())])->column();
+        ])->andWhere(['>', 'expires_at', Db::prepareDateForDb(new DateTime())])->column();
         $granted = [];
         foreach ($rows as $scopes) {
-            $granted = array_merge($granted, json_decode($scopes, true, flags: JSON_THROW_ON_ERROR));
+            $scopes = json_decode($scopes, true, flags: JSON_THROW_ON_ERROR);
+            if ($definition->allowsScopes($scopes)) {
+                $granted = array_merge($granted, $scopes);
+            }
         }
 
         if (!$definition->grantsCover($granted, $this->scopeIds($request->getScopes()))) {
@@ -206,6 +229,95 @@ class OAuth extends Component
         }
 
         return $user;
+    }
+
+    /**
+     * Creates a personal access token for a user, like Laravel Passport’s `HasApiTokens::createToken()`.
+     *
+     * The token is issued through the personal access client (one that only supports the `personal_access` grant),
+     * which is shared by all resources and created the first time it’s needed. The token’s name is stored with the
+     * token. Its scopes can belong to several resources, and each resource only accepts the token for its own scopes.
+     *
+     * Use [[PersonalAccessTokens::create()]] to create tokens with the scopes a user may grant.
+     *
+     * @param string[] $scopes The scope IDs to grant
+     * @return string The signed access token. It isn’t stored, so it can’t be retrieved again.
+     * @throws InvalidArgumentException if a scope doesn’t belong to a resource, or the user may not access its resource
+     * @internal
+     */
+    public function createPersonalAccessToken(User $user, string $name, array $scopes, DateInterval $expiresIn): string
+    {
+        $scopes = array_values(array_unique($scopes));
+        if (!$scopes) {
+            throw new InvalidArgumentException('Invalid scopes.');
+        }
+        $resources = [];
+        foreach ($scopes as $scope) {
+            $resource = ArrayHelper::firstWhere($this->getResources(), fn(Resource $resource) => isset($resource->scopes[$scope]));
+            if (!$resource) {
+                throw new InvalidArgumentException("Invalid scope: $scope");
+            }
+            $resources[$resource->id] = $resource;
+        }
+        try {
+            foreach ($resources as $resource) {
+                $this->authorizedUser((string)$user->id, $resource->id);
+            }
+        } catch (OAuthServerException $e) {
+            throw new InvalidArgumentException($e->getMessage(), previous: $e);
+        }
+
+        // The personal access client has no `scopes`, so any resource’s repository can issue the token.
+        $repository = new Repositories(reset($resources));
+        $token = $repository->getNewToken($repository->getClientEntity($this->personalAccessClientId()), array_map(function(string $id) {
+            $scope = new Scope();
+            $scope->setIdentifier($id);
+            return $scope;
+        }, $scopes), (string)$user->id);
+        /** @var AccessToken $token */
+        $token->name = $name;
+        $token->setIdentifier(bin2hex(random_bytes(40)));
+        $token->setExpiryDateTime((new DateTimeImmutable())->add($expiresIn));
+        $token->setPrivateKey($this->key('private'));
+        $repository->persistNewAccessToken($token);
+
+        return $token->toString();
+    }
+
+    /**
+     * Returns the ID of the personal access client, creating it if it doesn’t exist yet.
+     *
+     * This finds the same client that Passport’s `ClientRepository::personalAccessClient()` does in Craft 6: the latest
+     * unrevoked client for the `craft` user provider whose `grant_types` include `personal_access`. Its `scopes` are
+     * `null`, so it can issue tokens for any resource.
+     */
+    private function personalAccessClientId(): string
+    {
+        $clients = (new Query())
+            ->from(Table::OAUTH_CLIENTS)
+            ->where(['revoked' => false, 'provider' => self::PERSONAL_ACCESS_PROVIDER])
+            ->orderBy(['created_at' => SORT_DESC])
+            ->all();
+        foreach ($clients as $client) {
+            if ((new Client($client))->supportsGrantType('personal_access')) {
+                return $client['id'];
+            }
+        }
+
+        $id = StringHelper::UUID();
+        $now = Db::prepareDateForDb(new DateTime());
+        Db::insert(Table::OAUTH_CLIENTS, [
+            'id' => $id,
+            'name' => 'Personal Access Client',
+            'provider' => self::PERSONAL_ACCESS_PROVIDER,
+            'redirect_uris' => '[]',
+            'grant_types' => '["personal_access"]',
+            'revoked' => false,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        return $id;
     }
 
     /** Generate the default keys explicitly, without replacing existing keys. */

@@ -4,10 +4,8 @@ namespace craft\mcp;
 
 use Craft;
 use Mcp\Capability\Discovery\DiscovererInterface;
-use Mcp\Schema\Enum\ProtocolVersion;
 use Mcp\Server;
 use Mcp\Server\Builder;
-use Mcp\Server\Stateless\StatelessProtocol;
 
 class ServerFactory
 {
@@ -19,19 +17,26 @@ class ServerFactory
     ) {
     }
 
-    public function admin(): StatelessProtocol
+    public function authenticated(): Server
     {
-        return $this->builder($this->capabilities, AdminInstructions::Brief)->buildStateless([ProtocolVersion::V2026_07_28]);
+        $scopes = Craft::$app->get('mcp')->tokenScopes ?? [];
+        sort($scopes);
+
+        return $this->builder($this->capabilities, AdminInstructions::Brief)
+            ->setSession(new SessionStore(Craft::$app->getCache(), ['authenticated', Craft::$app->getUser()->getId(), $scopes]))
+            ->build();
     }
 
-    public function public(): StatelessProtocol
+    public function public(): Server
     {
-        return $this->builder($this->publicCapabilities, 'Use craft-context-get for approved public content and supported query criteria. Then query it with craft-query.')->buildStateless([ProtocolVersion::V2026_07_28]);
+        return $this->builder($this->publicCapabilities, 'Use craft-context-get for approved public content and supported query criteria. Then query it with craft-query.')
+            ->setSession(new SessionStore(Craft::$app->getCache(), ['public']))
+            ->build();
     }
 
-    public function preflight(): StatelessProtocol
+    public function preflight(): Server
     {
-        return $this->builder($this->capabilities)->buildStateless([ProtocolVersion::V2026_07_28]);
+        return $this->builder($this->capabilities)->build();
     }
 
     public function stdio(): Server

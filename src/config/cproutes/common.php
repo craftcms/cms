@@ -3,7 +3,6 @@
 use craft\helpers\StringHelper;
 
 return [
-    'mcp' => 'mcp/admin',
     'oauth/<resource:[a-zA-Z0-9_-]+>/<action:register|authorize|approve|deny|token>' => 'oauth/<action>',
 
     'assets/edit/<elementId:\d+><filename:(?:-[^\/]*)?>' => 'elements/edit',
@@ -45,11 +44,15 @@ return [
     'myaccount/preferences' => 'users/preferences',
     'myaccount/password' => 'users/password',
     'myaccount/passkeys' => 'users/passkeys',
+    'myaccount/tokens' => 'users/tokens',
     'update' => 'updater',
     'settings/addresses' => ['template' => 'settings/addresses/_fields'],
     'settings/assets' => 'volumes/volume-index',
     'settings/assets/volumes/new' => 'volumes/edit-volume',
     'settings/assets/volumes/<volumeId:\d+>' => 'volumes/edit-volume',
+    'settings/assets/filesystems' => 'fs/index',
+    'settings/assets/filesystems/new' => 'fs/edit',
+    'settings/assets/filesystems/<handle:{handle}>' => 'fs/edit',
     'settings/assets/transforms' => 'image-transforms/index',
     'settings/assets/transforms/new' => 'image-transforms/edit',
     'settings/assets/transforms/<transformHandle:{handle}>' => 'image-transforms/edit',

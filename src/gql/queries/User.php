@@ -27,11 +27,22 @@ class User extends Query
      */
     public static function getQueries(bool $checkToken = true): array
     {
-        if ($checkToken && !GqlHelper::canQueryUsers()) {
-            return [];
+        $queries = [];
+
+        // Only authenticated requests have a current user
+        if (GqlHelper::getSchemaUser()) {
+            $queries['currentUser'] = [
+                'type' => UserInterface::getType(),
+                'resolve' => UserResolver::class . '::resolveOne',
+                'description' => 'This query is used to query for the user that authenticated the request.',
+            ];
         }
 
-        return [
+        if ($checkToken && !GqlHelper::canQueryUsers()) {
+            return $queries;
+        }
+
+        return $queries + [
             'users' => [
                 'type' => Type::listOf(UserInterface::getType()),
                 'args' => UserArguments::getArguments(),

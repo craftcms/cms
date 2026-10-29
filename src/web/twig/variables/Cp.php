@@ -457,16 +457,6 @@ class Cp extends Component
             'iconMask' => '@app/icons/light/envelope.svg',
             'label' => Craft::t('app', 'Email'),
         ];
-        $settings[$label]['plugins'] = [
-            'iconMask' => '@app/icons/light/plug.svg',
-            'label' => Craft::t('app', 'Plugins'),
-        ];
-        if (!$readOnly) {
-            $settings[$label]['mcp'] = [
-                'iconMask' => '@app/icons/light/robot.svg',
-                'label' => Craft::t('app', 'MCP'),
-            ];
-        }
 
         $label = Craft::t('app', 'Content');
 
@@ -477,6 +467,10 @@ class Cp extends Component
         $settings[$label]['entry-types'] = [
             'iconMask' => '@app/icons/light/files.svg',
             'label' => Craft::t('app', 'Entry Types'),
+        ];
+        $settings[$label]['assets'] = [
+            'iconMask' => '@app/icons/light/image.svg',
+            'label' => Craft::t('app', 'Assets'),
         ];
         $settings[$label]['fields'] = [
             'iconMask' => '@app/icons/light/pen-to-square.svg',
@@ -495,16 +489,18 @@ class Cp extends Component
             'label' => Craft::t('app', 'Tags'),
         ];
 
-        $label = Craft::t('app', 'Media');
+        $label = Craft::t('app', 'Extend');
 
-        $settings[$label]['assets'] = [
-            'iconMask' => '@app/icons/light/image.svg',
-            'label' => Craft::t('app', 'Assets'),
+        $settings[$label]['plugins'] = [
+            'iconMask' => '@app/icons/light/plug.svg',
+            'label' => Craft::t('app', 'Plugins'),
         ];
-        $settings[$label]['filesystems'] = [
-            'iconMask' => '@app/icons/light/folder-open.svg',
-            'label' => Craft::t('app', 'Filesystems'),
-        ];
+        if (!$readOnly) {
+            $settings[$label]['mcp'] = [
+                'iconMask' => '@app/icons/light/robot.svg',
+                'label' => Craft::t('app', 'MCP'),
+            ];
+        }
 
         $label = Craft::t('app', 'Plugins');
 

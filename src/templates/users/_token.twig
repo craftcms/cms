@@ -1,0 +1,74 @@
+{% import '_includes/forms.twig' as forms %}
+
+{% set personal = grant ? grant.personal : true %}
+{% set grantedScopes = grant ? grant.scopes|reduce((all, scopes) => all|merge(scopes), []) : [] %}
+{# Existing tokens list every group they have scopes in, even if the user can no longer grant them #}
+{% set shownGroups = groups|filter(group => grant ? grant.scopes[group.handle] is defined : group.scopesFor(currentUser)|length) %}
+
+<h2>{{ not grant ? 'New token'|t('app') : (personal ? 'Edit token'|t('app') : grant.name) }}</h2>
+
+{% if personal %}
+  {{ forms.textField({
+    label: 'Name'|t('app'),
+    instructions: 'What this token will be used for.'|t('app'),
+    id: 'name',
+    name: 'name',
+    value: grant.name ?? null,
+    maxlength: 255,
+    required: true,
+    autofocus: true,
+    attribute: 'name',
+  }) }}
+{% endif %}
+
+{% if grant %}
+  {{ hiddenInput('clientId', grant.clientId) }}
+  {% if grant.tokenId %}{{ hiddenInput('tokenId', grant.tokenId) }}{% endif %}
+{% endif %}
+
+{% set scopesInput %}
+  {% if not grant %}{{ hiddenInput('scopes', '') }}{% endif %}
+  {% for group in shownGroups %}
+    {% if shownGroups|length > 1 %}
+      <div{% if not loop.first %} class="mt-m"{% endif %}>{{ group.label }}</div>
+    {% endif %}
+    <div{% if grant %} class="disabled"{% endif %}>
+    {{ forms.checkboxGroup({
+      options: (grant ? grant.scopes[group.handle] : group.scopesFor(currentUser))|map(scope => {
+        label: group.scopes[scope],
+        value: scope,
+        name: grant ? null : 'scopes[]',
+        checked: scope in grantedScopes,
+        disabled: grant is not null,
+      }),
+    }) }}
+    </div>
+  {% endfor %}
+{% endset %}
+
+{{ forms.field({
+  label: shownGroups|length > 1 ? 'Scopes'|t('app') : '{api} Scopes'|t('app', {api: (shownGroups|first).label}),
+  instructions: grant and personal ? 'Scopes can’t be changed after a token is created.'|t('app') : null,
+  fieldset: true,
+  required: not grant,
+  attribute: 'scopes',
+}, scopesInput) }}
+
+{% if grant %}
+  {{ forms.field({
+    label: 'Expires on'|t('app'),
+  }, grant.expiresAt|date('short')) }}
+{% else %}
+  {{ forms.selectField({
+    label: 'Expiration'|t('app'),
+    id: 'expiresIn',
+    name: 'expiresIn',
+    options: [
+      {label: '7 days'|t('app'), value: 7},
+      {label: '30 days'|t('app'), value: 30},
+      {label: '90 days'|t('app'), value: 90},
+      {label: '1 year'|t('app'), value: 365},
+    ],
+    value: 30,
+  }) }}
+{% endif %}

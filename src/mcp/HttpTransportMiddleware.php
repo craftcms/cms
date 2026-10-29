@@ -11,6 +11,7 @@ use craft\services\Sites;
 use Mcp\Schema\Wire\McpHeader;
 use Mcp\Server\Transport\Http\Middleware\CorsMiddleware;
 use Mcp\Server\Transport\Http\Middleware\DnsRebindingProtectionMiddleware;
+use Mcp\Server\Transport\StreamableHttpTransport;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 
@@ -36,11 +37,12 @@ class HttpTransportMiddleware
         return [
             new CorsMiddleware(
                 allowedOrigins: $origins,
-                allowedMethods: ['POST', 'OPTIONS'],
+                allowedMethods: ['POST', 'DELETE', 'OPTIONS'],
                 allowedHeaders: [
                     'Accept',
                     'Authorization',
                     'Content-Type',
+                    StreamableHttpTransport::SESSION_HEADER,
                     McpHeader::PROTOCOL_VERSION,
                     McpHeader::METHOD,
                     McpHeader::NAME,

@@ -99,6 +99,7 @@ class Entry extends ElementMutationResolver
 
         if (array_key_exists('asUnpublishedDraft', $arguments) && $arguments['asUnpublishedDraft']) {
             $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+            $this->requireUserAuthorization($entry, 'save');
             Craft::$app->getDrafts()->saveElementAsDraft($entry);
         } else {
             $entry = $this->saveElement($entry);
@@ -154,6 +155,7 @@ class Entry extends ElementMutationResolver
 
         $section = $entry->getSection();
         $this->requireSchemaAction("sections.$section->uid", 'delete');
+        $this->requireUserAuthorization($entry, 'delete');
 
         return $elementService->deleteElementById($entryId, hardDelete: $hardDelete);
     }
@@ -190,10 +192,13 @@ class Entry extends ElementMutationResolver
             throw new Error('Unable to perform the action.');
         }
 
+        $this->requireUserAuthorization($entry, 'createDrafts');
+
         $draftName = $arguments['name'] ?? '';
         $draftNotes = $arguments['notes'] ?? '';
         $provisional = $arguments['provisional'] ?? false;
-        $creatorId = $arguments['creatorId'] ?? null;
+        // Authenticated users can only create drafts for themselves
+        $creatorId = Gql::getSchemaUser()->id ?? $arguments['creatorId'] ?? null;
 
         $draft = Craft::$app->getDrafts()->createDraft($entry, $creatorId ?? $entry->getAuthorId(), $draftName, $draftNotes, [], $provisional);
 
@@ -234,6 +239,9 @@ class Entry extends ElementMutationResolver
         } else {
             throw new Error('Unable to perform the action.');
         }
+
+        $this->requireUserAuthorization($draft, 'save');
+        $this->requireUserAuthorization($draft, 'saveCanonical');
 
         /** @var EntryElement $draft */
         $draft = Craft::$app->getDrafts()->applyDraft($draft);

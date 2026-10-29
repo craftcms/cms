@@ -1047,7 +1047,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         const labelSelector = 'label[for="' + $constraint.attr('id') + '"]';
         const $label = $(labelSelector, this.$constraintContainer);
         $constraint.val(1 / $constraint.val());
-        $label.html(
+        $label.text(
           $label.text().split(':').reverse().join(':').replace(/\s/g, '')
         );
       }

@@ -2,7 +2,7 @@
 
 Craft’s `Craft::$app->getOAuth()` service lets clients access APIs on behalf of Craft users. It uses `league/oauth2-server` directly. [MCP](mcp.md) uses this service, and plugins and custom modules can register their own protected APIs.
 
-Each API is an OAuth **resource** with its own ID, URL, scopes, and required user permissions. Clients, authorization codes, access tokens, and refresh tokens are bound to that resource. A credential issued for one resource cannot authenticate against another, even if both use the same scope IDs.
+Each API is an OAuth **resource** with its own ID, URL, scopes, and required user permissions. Scope IDs are unique across resources, and a credential belongs to the resource that defines its scopes. Clients registered through a resource may only request that resource’s scopes. A credential issued for one resource cannot authenticate against another.
 
 ## Setup
 
@@ -68,7 +68,7 @@ The event’s `resources` map accepts configuration arrays or `craft\oauth\Resou
 | Property | Meaning |
 | --- | --- |
 | Resource ID | Map key containing 1–64 letters, numbers, underscores, or hyphens. Use a stable plugin-specific ID. |
-| `scopes` | Nonempty map of allowed scope IDs to human-readable consent descriptions. Scope IDs cannot contain spaces, quotes, backslashes, or non-ASCII characters. |
+| `scopes` | Nonempty map of allowed scope IDs to human-readable consent descriptions. Scope IDs cannot contain spaces, quotes, backslashes, or non-ASCII characters, and must not be used by another resource. Prefix them with the resource ID, such as `my-plugin-api:read`. |
 | `defaultScopes` | Allowed scopes to use when an authorization request omits `scope`. Defaults to an empty list. |
 | `scopeLevels` | Optional list of scopes that form access levels, ordered from narrowest to broadest. See [Access levels](#access-levels). |
 | `scopeLabels` | Optional map of access levels to short labels for the consent screen. |
@@ -112,7 +112,7 @@ Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_SITE_URL_RULES, function
 });
 ```
 
-Pass a PSR-7 request to `authenticate()`. It returns the authenticated Craft user or throws `OAuthServerException`. Its optional `$scopes` argument receives the scopes the token grants. For example, this read endpoint authenticates exclusively with a bearer token:
+Pass a PSR-7 request to `authenticate()`. It returns the authenticated Craft user or throws `OAuthServerException`. Its optional `$scopes` argument receives the scopes the token grants for this resource. A personal access token can also have scopes for other resources, which are left out, and tokens without any of this resource’s scopes are rejected. For example, this read endpoint authenticates exclusively with a bearer token:
 
 ```php
 namespace myvendor\myplugin\controllers;
@@ -186,10 +186,10 @@ https://example.com/.well-known/oauth-protected-resource/api/my-plugin
 https://example.com/.well-known/oauth-authorization-server/admin/oauth/my-plugin-api
 ```
 
-For MCP at `https://example.com/admin/mcp`, they are:
+For MCP's authorization endpoint at `https://example.com/mcp/auth`, they are:
 
 ```text
-https://example.com/.well-known/oauth-protected-resource/admin/mcp
+https://example.com/.well-known/oauth-protected-resource/mcp/auth
 https://example.com/.well-known/oauth-authorization-server/admin/oauth/mcp
 ```
 
@@ -210,7 +210,7 @@ Discovery metadata, registration, and the token endpoint stay available while th
 
 ## Scopes, consent, and token lifetime
 
-Authorization grants only the requested scopes, and the consent screen shows their descriptions. `defaultScopes` is used when `scope` is omitted. If no defaults are defined, the client must explicitly request at least one allowed scope. Scope IDs are local to a resource.
+Authorization grants only the requested scopes, and the consent screen shows their descriptions. `defaultScopes` is used when `scope` is omitted. If no defaults are defined, the client must explicitly request at least one allowed scope. Registration stores the resource’s scopes on the client, in `oauth_clients.scopes`, and the client can’t be granted scopes outside that list.
 
 Consent is reused while the same user and client have unexpired, unrevoked access tokens covering the requested scopes. Adding a scope requires consent if existing grants do not cover it. `prompt=consent` asks again, `prompt=login` asks for a fresh login, and `prompt=none` returns an OAuth error when login or consent would be needed.
 
@@ -223,3 +223,41 @@ Scopes listed in `scopeLevels` are ordered access levels, and each level include
 Consent is reused when the requested levels overlap the levels granted by the broadest level the user chose before. Craft then grants that earlier level, so a client that requests every level keeps the level the user chose. To require a level, check that the token holds it or a broader one.
 
 `userScopes` limits the levels offered to each user, and the scopes granted when a token is issued or refreshed. For example, MCP offers `mcp:admin` only to administrators, and refreshing an `mcp:admin` token after the user loses admin status drops that scope.
+
+## GraphQL
+
+When the GraphQL API is enabled, Craft registers a `graphql` resource. Its URL is the primary site’s `actions/graphql/api` endpoint, so discovery metadata is served at `/.well-known/oauth-protected-resource/actions/graphql/api`. If your GraphQL API is routed elsewhere, change the resource’s `resourceUrl` from an `EVENT_REGISTER_RESOURCES` handler.
+
+`graphql:read` and `graphql:write` are access levels. A read token can only run queries; a write token can also run mutations. Any active user may authorize a client, so resources don’t require control panel access.
+
+Users can also create personal access tokens from **My Account** → **Tokens** in the control panel, for apps and scripts that can’t complete an OAuth authorization flow. Creating one requires an elevated session. Users choose a name, the scopes to grant from any of the APIs offered, and an expiration (7, 30, or 90 days, or a year), and the token is shown once. Like Laravel Passport, Craft issues personal access tokens through one client that only supports the `personal_access` grant, created the first time it’s needed. Its `provider` is `craft`, the user provider of Craft 6’s Passport guard, so Craft 6 issues new personal access tokens through the same client. The client has no `scopes`, so it serves every resource. A personal access token can have scopes from several resources, and each resource accepts it for its own scopes, as Passport’s `tokenCan()` does in Craft 6. Craft stores the token’s name with the token. Clicking a token shows its scopes, and personal tokens can be renamed there. Their scopes are signed into the token, so they can’t be changed. The same screen lists the apps the user has authorized. Revoking a personal token revokes it for every API, and revoking an app revokes its access and refresh tokens.
+
+APIs offer scopes on the Tokens screen by registering a scope group with `craft\services\PersonalAccessTokens::registerScopeGroup()`, the same way they do in Craft 6. The factory returns a `craft\oauth\ScopeGroup` with a handle, a label, the scopes, and an optional `userScopes` closure that limits the scopes each user may grant, or `null` if the group isn’t available. The scopes must be defined by a registered OAuth resource:
+
+```php
+use craft\elements\User;
+use craft\oauth\ScopeGroup;
+
+Craft::$app->getPersonalAccessTokens()->registerScopeGroup('my-plugin', fn() => new ScopeGroup(
+    handle: 'my-plugin',
+    label: 'My Plugin',
+    scopes: ['my-plugin:read' => 'Read my plugin’s data'],
+    userScopes: fn(User $user, array $scopes) => $user->can('myPlugin:access') ? $scopes : [],
+));
+```
+
+Craft registers a `graphql` group when the GraphQL API is enabled. MCP doesn’t register one, because MCP clients authorize themselves. If no group offers scopes the user may grant, the screen isn’t shown. Plugins can manage tokens with the service’s `create()`, `grants()`, `rename()`, and `revoke()` methods.
+
+Send the access token in `Authorization: Bearer …` to the GraphQL API. Instead of a schema token, Craft builds a schema from the GraphQL schema components that support authenticated requests and are available to the user, and sets the user as the request’s identity. Expired or invalid access tokens return HTTP 401 with a `WWW-Authenticate` header that points to the discovery metadata. GraphQL schema tokens keep working as before.
+
+Schema components opt in with an `authenticated` key: `true` to make them available to every authenticated user, or a callable that receives the user and returns whether it’s available to them. Craft’s built-in components check the corresponding user permissions. For example, `sections.<uid>:read` requires `viewEntries:<uid>`, and `volumes.<uid>:save` requires `saveAssets:<uid>`. Categories, tags, and global sets are deprecated, so their components aren’t available to authenticated requests. Components are responsible for limiting their own results to what `craft\models\GqlSchema::$user` may access:
+
+- The `currentUser` query returns the authenticated user, with the same fields as the `user` query. It’s available to every authenticated request, even without “Query for users”, and isn’t available to schema tokens.
+- Entry and asset queries, including related entries and assets, use the `editable` query param, so peer entries, drafts, and assets are hidden unless the user can view them. Root entry queries don’t return nested entries; those are available through their owners.
+- Drafts, revisions, and non-enabled elements are available to users with control panel access. Entries’ `drafts`, `revisions`, `currentRevision`, `parent`, `ancestors`, `children`, and `descendants` fields only return entries the user can view, and drafts created with the `createDraft` mutation are always created by the authenticated user.
+- Mutations check `craft\services\Elements::canSave()`, `canDelete()`, and `canCreateDrafts()` for the user before changing an element, and existing elements are checked before and after they’re populated.
+- Results for authenticated requests are cached per user, and vary by the user’s current permissions. Each user’s schema is cached as well, and is rebuilt when the project config or their permissions change. Components whose `authenticated` callbacks depend on anything else should stay available and limit their results instead.
+
+## Upgrading to Craft 6
+
+Craft 6 uses Laravel Passport for OAuth. Craft 5’s OAuth tables use Passport 13’s layout, including the optional `oauth_clients.scopes` column Passport checks with `Client::hasScope()`, and its access tokens are signed the same way. This is so that, with the same signing keys, access tokens issued by Craft 5 can stay valid in Craft 6. Refresh tokens are encrypted with a key derived from the Craft security key rather than Laravel’s `APP_KEY`, so OAuth clients will need to authorize again once their access tokens expire.
