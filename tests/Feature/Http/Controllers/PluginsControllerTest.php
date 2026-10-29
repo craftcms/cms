@@ -20,7 +20,6 @@ use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
-use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
@@ -303,18 +302,16 @@ test('saveSettings returns settings model validation errors for JSON requests wi
         ->toMatchArray(['foo' => 'saved value', 'bar' => 'saved bar']);
 });
 
-test('saveSettings re-renders settings model errors and submitted values for form requests without saving', function () {
-    $url = action([PluginsController::class, 'saveSettings'], ['test-plugin']);
+test('saveSettings redirects form requests back with settings model errors without saving', function () {
+    $editUrl = action([PluginsController::class, 'editSettings'], ['test-plugin']);
     app(ProjectConfig::class)->set('plugins.test-plugin.settings', ['foo' => 'saved value', 'bar' => 'saved bar']);
 
-    post($url, ['settings' => ['foo' => '', 'bar' => 'unsaved bar']])
-        ->assertOk()
-        ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('Ui')
-            ->where('ui.errors.0.path', ['settings', 'foo'])
-            ->where('ui.errors.0.messages', ['The foo field is required.'])
-            ->where('ui.values.settings.foo', null)
-        );
+    $this->from($editUrl)
+        ->post(action([PluginsController::class, 'saveSettings'], ['test-plugin']), [
+            'settings' => ['foo' => '', 'bar' => 'unsaved bar'],
+        ])
+        ->assertRedirect($editUrl)
+        ->assertSessionHasErrors(['settings.foo' => 'The foo field is required.']);
 
     expect(app(ProjectConfig::class)->get('plugins.test-plugin.settings'))
         ->toMatchArray(['foo' => 'saved value', 'bar' => 'saved bar']);
