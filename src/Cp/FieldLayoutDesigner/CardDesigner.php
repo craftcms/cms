@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\FieldLayoutDesigner;
 
-use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Cp\Html\StatusHtml;
@@ -108,7 +107,7 @@ class CardDesigner
     {
         $showThumb ??= $fieldLayout->type::hasThumbs() || $fieldLayout->hasThumbField();
         $thumbAlignment = $fieldLayout->getCardThumbAlignment();
-        $cover = $showThumb && $this->showThumbStyle($fieldLayout) && $fieldLayout->getCardThumbStyle() === 'cover';
+        $cover = $showThumb && $fieldLayout->getCardThumbStyle() === 'cover';
         $sampleElement = $this->sampleElement($fieldLayout);
         $sampleUser = $sampleElement instanceof User ? $sampleElement : null;
         $labelText = $sampleUser?->getName() ?? t('The Quick Brown Fox');
@@ -173,15 +172,6 @@ class CardDesigner
             'statusIndicatorHtml' => $sampleElement ? app(StatusHtml::class)->componentStatusIndicatorHtml($sampleElement) : null,
         ])->render();
 
-    }
-
-    /**
-     * Whether the Thumb Style setting applies: for asset volumes, whose own thumbnails are images, and for other
-     * element types once a field is chosen as the thumb source, as that's the only way they get an asset's image.
-     */
-    private function showThumbStyle(FieldLayout $fieldLayout): bool
-    {
-        return $fieldLayout->type === Asset::class || $fieldLayout->hasThumbField();
     }
 
     /**
@@ -319,34 +309,20 @@ class CardDesigner
             'disabled' => false,
         ];
 
-        if ($fieldLayout->type::hasThumbs()) {
-            $options = [
-                ['label' => t('Default'), 'value' => '__default__'],
-            ];
-        } else {
-            $options = [
-                ['label' => t('None'), 'value' => '__none__'],
-            ];
-        }
-
-        $thumbOptions = array_values($this->thumbOptions($fieldLayout));
-        usort($thumbOptions, fn (array $a, array $b) => $a['label'] <=> $b['label']);
-        array_push($options, ...$thumbOptions);
+        $options = array_values($this->thumbOptions($fieldLayout));
+        usort($options, fn (array $a, array $b) => $a['label'] <=> $b['label']);
 
         // radio button switch that lets you choose whether the thumb alignment should be start or end
         $orientation = I18N::getLocale()->getOrientation();
         $showThumb = $fieldLayout->type::hasThumbs() || $fieldLayout->hasThumbField();
-        $showThumbStyle = $this->showThumbStyle($fieldLayout);
-        $cover = $showThumbStyle && $fieldLayout->getCardThumbStyle() === 'cover';
+        $cover = $fieldLayout->getCardThumbStyle() === 'cover';
 
         return view('c::forms.fld.thumb-management', [
-            // dropdown field that contains all thumbable fields + the None/Default option
             'options' => $options,
-            'thumbFieldKey' => $fieldLayout->thumbFieldKey,
+            'thumbSources' => $fieldLayout->thumbSources,
             'thumbAlignment' => $fieldLayout->getCardThumbAlignment(),
             'thumbStyle' => $fieldLayout->getCardThumbStyle(),
             'showThumbAlignment' => $showThumb && ! $cover,
-            'showThumbStyle' => $showThumbStyle,
             'styleOptions' => [
                 ['value' => 'normal', 'label' => t('Normal')],
                 ['value' => 'cover', 'label' => t('Cover')],

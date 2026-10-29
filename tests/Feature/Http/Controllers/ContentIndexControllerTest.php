@@ -136,7 +136,7 @@ it('selects fit for index tiles and inline cards', function (string $viewMode, s
     $entry = EntryModel::factory()->withField('thumbnail', ModeThumbnailField::class, value: $mode)
         ->createElementWithFields()->element;
     $layout = $entry->getFieldLayout();
-    $layout->thumbFieldKey = 'layoutElement:'.$layout->getCustomFieldElements()[0]->uid;
+    $layout->thumbSources = ['layoutElement:'.$layout->getCustomFieldElements()[0]->uid];
     expect(Fields::saveLayout($layout))->toBeTrue();
 
     get("/{$this->cpTrigger}/content/entries?viewMode={$viewMode}")
@@ -550,7 +550,7 @@ it('renders tile thumbnails at the requested size', function (?string $thumbSize
     $entry = EntryModel::factory()->withField('thumbnail', ModeThumbnailField::class, value: 'fit')
         ->createElementWithFields()->element;
     $layout = $entry->getFieldLayout();
-    $layout->thumbFieldKey = 'layoutElement:'.$layout->getCustomFieldElements()[0]->uid;
+    $layout->thumbSources = ['layoutElement:'.$layout->getCustomFieldElements()[0]->uid];
     expect(Fields::saveLayout($layout))->toBeTrue();
 
     get(route('craft.cp.content.index', array_filter([

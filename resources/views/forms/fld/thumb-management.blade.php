@@ -3,25 +3,23 @@
      * Thumbnail management markup for the card view designer.
      *
      * Split out of CardDesigner::thumbManagementHtml()'s Html::* chain. The PHP
-     * method still computes the data (thumb source, alignment, and style
+     * method still computes the data (thumb sources, alignment, and style
      * options, and the current values); the fields are rendered here by the
      * same FormFields helpers, so the markup stays exactly what the
      * Craft.FieldLayoutDesigner / CardViewDesigner JS expects:
-     * `.thumb-management`, `select[id$="thumb-source"]` (with the `__none__` /
-     * `__default__` option values), the `[id$="thumb-alignment"]` and
+     * `.thumb-management`, the `craft-checkbox-select[id$="thumb-sources"]`, the `[id$="thumb-alignment"]` and
      * `[id$="thumb-style"]` radio groups (whose radios' values are the
-     * alignments and styles), and the `[data-attribute="thumb-alignment"]` and
-     * `[data-attribute="thumb-style"]` field wrappers it shows/hides.
+     * alignments and styles), and the `[data-attribute="thumb-alignment"]` field wrapper
+     * it shows/hides.
      *
      * Declared in a PHP docblock (rather than a Blade comment) so PhpStorm types
      * these variables.
      *
      * @var array $options
-     * @var ?string $thumbFieldKey
+     * @var list<string> $thumbSources
      * @var string $thumbAlignment
      * @var string $thumbStyle
      * @var bool $showThumbAlignment
-     * @var bool $showThumbStyle
      * @var bool $disabled
      * @var array $alignmentOptions
      * @var array $styleOptions
@@ -30,13 +28,14 @@
 <div class="thumb-management">
     <h2 class="sr-only">{{ \CraftCms\Cms\t('Manage element thumbnails') }}</h2>
 
-    {{-- dropdown field that contains all thumbable fields + the None/Default option --}}
-    {!! \CraftCms\Cms\Cp\FormFields::selectFieldHtml([
-        'label' => \CraftCms\Cms\t('Thumb Source'),
-        'instructions' => \CraftCms\Cms\t('Choose the field that chips and cards should source their thumbnail from.'),
-        'id' => 'thumb-source',
+    {{-- All thumbable fields, in the order they're tried --}}
+    {!! \CraftCms\Cms\Cp\FormFields::checkboxSelectFieldHtml([
+        'label' => \CraftCms\Cms\t('Thumb Sources'),
+        'instructions' => \CraftCms\Cms\t('Choose the fields that chips and cards should source their thumbnails from. The first one with a thumbnail will be used.'),
+        'id' => 'thumb-sources',
         'options' => $options,
-        'value' => $thumbFieldKey,
+        'values' => $thumbSources,
+        'sortable' => true,
         'disabled' => $disabled,
     ]) !!}
 
@@ -68,7 +67,6 @@
             'instructions' => \CraftCms\Cms\t('Choose whether image thumbnails should sit beside the card’s content, or cover the whole card.'),
             'id' => 'thumb-style',
             'fieldset' => true,
-            'fieldClass' => $showThumbStyle ? false : 'hidden',
         ],
     ) !!}
     {{-- Radios shown as buttons, choosing whether the thumbnail is aligned to

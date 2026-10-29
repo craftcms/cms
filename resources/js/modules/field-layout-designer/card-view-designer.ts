@@ -19,6 +19,7 @@ export class CardViewDesigner extends Base {
   $previewContainer: any = null;
   $libraryContainer: CraftCheckboxSelect;
   $thumbManagementContainer: any = null;
+  $thumbSources: CraftCheckboxSelect | null = null;
   alwaysShowThumbAlignmentBtns = false;
   hasThumbAlignment = false;
   abortController: AbortController | null = null;
@@ -51,19 +52,25 @@ export class CardViewDesigner extends Base {
     this.alwaysShowThumbAlignmentBtns =
       designer.settings!.alwaysShowThumbAlignmentBtns;
 
-    const $thumbSelectDropdown = this.$thumbManagementContainer.querySelector(
-      'select[id$="thumb-source"]'
+    this.$thumbSources = this.$thumbManagementContainer.querySelector(
+      'craft-checkbox-select[id$="thumb-sources"]'
     );
-    this.addListener($thumbSelectDropdown, 'change', (ev: any) => {
-      this.manageThumbnails(ev.target);
-    });
+    if (this.$thumbSources) {
+      this.addListener(this.$thumbSources, 'change', (ev: any) => {
+        if (
+          ev.target instanceof HTMLElement &&
+          ev.target.matches('input[type=checkbox]')
+        ) {
+          this.manageThumbnails();
+        }
+      });
+      this.addListener(this.$thumbSources, 'craft-order-change', () => {
+        this.manageThumbnails();
+      });
+    }
 
-    const thumbSource = $thumbSelectDropdown?.value;
     this.hasThumbAlignment =
-      this.alwaysShowThumbAlignmentBtns ||
-      (!!thumbSource &&
-        thumbSource !== '__none__' &&
-        thumbSource !== '__default__');
+      this.alwaysShowThumbAlignmentBtns || this.thumbSources().length > 0;
     this.toggleThumbFields();
 
     // The thumb-alignment options are radios, so whichever way the selection
@@ -388,25 +395,19 @@ export class CardViewDesigner extends Base {
     }
   }
 
-  manageThumbnails(target: any): void {
-    const $select = target;
-    let thumbFieldKey = null;
+  thumbSources(): string[] {
+    return this.$thumbSources?.modelValue ?? [];
+  }
 
-    if ($select.value === '__none__' || $select.value === '__default__') {
-      if (
-        $select.value === '__none__' &&
-        !this.designer.settings!.alwaysShowThumbAlignmentBtns
-      ) {
-        this.hasThumbAlignment = false;
-      }
-    } else {
-      thumbFieldKey = $select.value;
-      this.hasThumbAlignment = true;
-    }
+  manageThumbnails(): void {
+    const thumbSources = this.thumbSources();
+    this.hasThumbAlignment =
+      this.alwaysShowThumbAlignmentBtns || thumbSources.length > 0;
 
-    if (thumbFieldKey !== this.designer.config.thumbFieldKey) {
+    const current = (this.designer.config.thumbSources ?? []) as string[];
+    if (thumbSources.join() !== current.join()) {
       this.designer.updateConfig((config: any) => {
-        config.thumbFieldKey = thumbFieldKey;
+        config.thumbSources = thumbSources;
         return config;
       });
       this.updatePreview();
@@ -415,77 +416,54 @@ export class CardViewDesigner extends Base {
     this.toggleThumbFields();
   }
 
+  /** The thumb sources a layout element provides, with its UID filled in. */
+  elementThumbOptions(
+    $container: HTMLElement
+  ): {value: string; label: string}[] {
+    const thumbOptions = $container.dataset.thumbOptions
+      ? JSON.parse($container.dataset.thumbOptions)
+      : [];
+    return thumbOptions.map((option: any) => ({
+      ...option,
+      value: option.value.replace(/\{uid}/g, $container.dataset.uid),
+    }));
+  }
+
   updateThumbnailsDropdown(element: FldElement, action: string): void {
-    const $select = this.$thumbManagementContainer.querySelector(
-      'select[id$="thumb-source"]'
-    );
-    if (!$select) {
+    if (!this.$thumbSources) {
       return;
     }
 
-    const thumbOptions = element.$container.dataset.thumbOptions
-      ? JSON.parse(element.$container.dataset.thumbOptions)
-      : null;
-    if (!thumbOptions?.length) {
-      return;
-    }
-
-    thumbOptions.forEach((option: any) => {
-      const value = option.value.replace(/\{uid}/g, element.uid);
+    let checkedRemoved = false;
+    for (const option of this.elementThumbOptions(element.$container)) {
       switch (action) {
-        case 'add': {
-          const $option = document.createElement('option');
-          $option.value = value;
-          $option.text = option.label;
-          $select.appendChild($option);
+        case 'add':
+          this.$thumbSources.addOption({checked: false, ...option});
           break;
-        }
-        case 'remove': {
-          const $option = $select.querySelector(`option[value="${value}"]`);
-          if ($option) {
-            const selected = $option.selected;
-            $option.remove();
-            if (selected) {
-              this.manageThumbnails($select);
-            }
-          }
+        case 'remove':
+          checkedRemoved ||= this.thumbSources().includes(option.value);
+          this.$thumbSources.removeOption(option.value);
           break;
-        }
       }
-    });
+    }
+
+    if (checkedRemoved) {
+      this.manageThumbnails();
+    }
   }
 
   updateThumbnailsDropdownOptionLabel($container: any): void {
-    const uid = $container.dataset.uid;
-    const $select = this.$thumbManagementContainer.querySelector(
-      'select[id$="thumb-source"]'
-    );
-    const $option = $select?.querySelector(`option[value="${uid}"]`);
-
-    if (!$option) {
-      return;
+    for (const option of this.elementThumbOptions($container)) {
+      this.$thumbSources?.updateOption(option.value, {label: option.label});
     }
-
-    const label =
-      $container.querySelector('.fld-element-label')?.textContent ??
-      this.attribute;
-    $option.textContent = label;
   }
 
   /**
-   * Shows Thumb Style only when the thumbnail can be an asset's image (always for assets; otherwise once a
-   * relation field is the thumb source), and hides Thumb Alignment when the thumbnail covers the card.
+   * Hides Thumb Alignment when there's no thumbnail, or it covers the card.
    */
   toggleThumbFields(): void {
-    const thumbFieldKey = this.designer.config.thumbFieldKey as string | null;
-    const showStyle =
-      this.designer.settings!.alwaysShowThumbStyle ||
-      (!!thumbFieldKey && !thumbFieldKey.startsWith('contentBlock:'));
-    const cover = showStyle && this.designer.config.cardThumbStyle === 'cover';
+    const cover = this.designer.config.cardThumbStyle === 'cover';
 
-    this.$thumbManagementContainer
-      .querySelectorAll('[data-attribute="thumb-style"]')
-      .forEach((el: HTMLElement) => el.classList.toggle('hidden', !showStyle));
     this.$thumbManagementContainer
       .querySelectorAll('[data-attribute="thumb-alignment"]')
       .forEach((el: HTMLElement) =>

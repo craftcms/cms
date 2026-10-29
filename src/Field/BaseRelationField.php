@@ -17,6 +17,7 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Data\Thumb;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
@@ -1333,13 +1334,20 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
 
     public function getThumbHtml(mixed $value, ElementInterface $element, int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
+        return $this->getThumb($value)?->getHtml($size, $mode);
+    }
+
+    /**
+     * Returns the field’s thumbnail for a value: the first related element’s thumbnail.
+     */
+    public function getThumb(mixed $value): ?Thumb
+    {
         /** @var ElementQueryInterface|ElementCollection<int, ElementInterface> $value */
         if ($value instanceof ElementQueryInterface) {
-            $handle = sprintf('%s-%s-%s', preg_replace('/:+/', '-', __METHOD__), $this->id, $size);
-            $value = (clone $value)->eagerly($handle);
+            $value = (clone $value)->eagerly(sprintf('%s-%s', preg_replace('/:+/', '-', __METHOD__), $this->id));
         }
 
-        return $value->one()?->getThumbHtml($size, $mode);
+        return $value->one()?->getThumb();
     }
 
     /**

@@ -242,7 +242,7 @@ it('configures persisted layout options fluently', function () {
             'name' => 'Summary',
         ]])
         ->cardView(['generatedField:generated-field'])
-        ->thumbFieldKey('layoutElement:thumbnail')
+        ->thumbSources(['layoutElement:thumbnail', 'layoutElement:image'])
         ->cardThumbAlignment('start')
         ->cardThumbStyle('cover');
 
@@ -251,9 +251,23 @@ it('configures persisted layout options fluently', function () {
         'name' => 'Summary',
     ]])
         ->and($layout->getCardView())->toBe(['generatedField:generated-field'])
-        ->and($layout->thumbFieldKey)->toBe('layoutElement:thumbnail')
+        ->and($layout->thumbSources)->toBe(['layoutElement:thumbnail', 'layoutElement:image'])
         ->and($layout->getCardThumbAlignment())->toBe('start')
         ->and($layout->getCardThumbStyle())->toBe('cover');
+});
+
+it('maps the deprecated thumbFieldKey onto the first thumb source', function () {
+    $layout = new FieldLayout(['cardView' => ['dateCreated'], 'thumbFieldKey' => 'layoutElement:thumbnail']);
+
+    expect($layout->thumbSources)->toBe(['layoutElement:thumbnail'])
+        ->and($layout->getConfig())->toHaveKey('thumbSources', ['layoutElement:thumbnail'])
+        ->and($layout->getConfig())->not->toHaveKey('thumbFieldKey');
+
+    $layout->thumbSources = ['layoutElement:image', 'layoutElement:thumbnail'];
+    expect($layout->thumbFieldKey)->toBe('layoutElement:image');
+
+    $layout->thumbFieldKey = null;
+    expect($layout->thumbSources)->toBe([]);
 });
 
 it('defaults the card thumb style by element type, and keeps a chosen one through its config', function (string $type, ?string $style, string $expected) {
