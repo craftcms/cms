@@ -86,7 +86,7 @@ afterEach(() => {
   document.body.innerHTML = '';
   useAssistantPanel().opened.value = false;
   pagePanel.value = false;
-  screenPanels.openPanelId.value = null;
+  screenPanels.start(null);
 });
 
 it('takes the chat’s tab away when it’s closed on a page without panels of its own', async () => {

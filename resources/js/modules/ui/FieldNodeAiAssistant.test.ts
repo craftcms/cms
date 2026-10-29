@@ -8,7 +8,7 @@ import {
   type AssistantEditor,
   type AssistantProposal,
 } from '@/modules/ai/assistant/context';
-import {UiFailure} from './runtime';
+import {stubUiRenderer} from './renderer/context.test-support';
 import FieldNode from './FieldNode.vue';
 import type {UiChange, UiNodePayload, UiValues} from './types';
 
@@ -96,7 +96,7 @@ describe('FieldNode and the AI assistant', () => {
       },
     });
     app.component('craft:text', TextControl);
-    app.provide(UiFailure, vi.fn());
+    app.provide(...stubUiRenderer(values));
     app.provide(AssistantEditorKey, editor);
     app.mount(container);
     await nextTick();

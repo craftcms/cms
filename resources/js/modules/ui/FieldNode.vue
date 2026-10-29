@@ -7,6 +7,7 @@
   import {
     computed,
     getCurrentInstance,
+    inject,
     onErrorCaptured,
     provide,
     shallowRef,
