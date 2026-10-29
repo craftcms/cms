@@ -29,8 +29,8 @@ class User extends Query
     {
         $queries = [];
 
-        // Authenticated requests can always query their own user
-        if (!$checkToken || GqlHelper::getSchemaUser()) {
+        // Only authenticated requests have a current user
+        if (GqlHelper::getSchemaUser()) {
             $queries['currentUser'] = [
                 'type' => UserInterface::getType(),
                 'resolve' => UserResolver::class . '::resolveOne',
