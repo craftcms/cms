@@ -139,6 +139,63 @@ it('normalizes empty ui label formats from project config to the title placehold
         ->and($found->uiLabelFormat)->toBe('{title}');
 });
 
+it('loads entry types with empty translation methods as translated for each site', function () {
+    $entryType = EntryType::factory()->create([
+        'hasTitleField' => false,
+        'titleTranslationMethod' => '',
+        'slugTranslationMethod' => '',
+    ]);
+    $entryType->delete();
+
+    $found = $this->entryTypes->getEntryTypeById($entryType->id, withTrashed: true);
+    expect($found->titleTranslationMethod)->toBe(TranslationMethod::Site);
+
+    $entryType->restore();
+    $this->entryTypes->refreshEntryTypes();
+    $found = $this->entryTypes->getEntryTypeById($entryType->id);
+
+    expect($found->titleTranslationMethod)->toBe(TranslationMethod::Site)
+        ->and($found->slugTranslationMethod)->toBe(TranslationMethod::Site);
+});
+
+it('loads entry types with empty translation methods and a key format as custom', function () {
+    $entryType = EntryType::factory()->create([
+        'titleTranslationMethod' => '',
+        'titleTranslationKeyFormat' => '{site.handle}',
+        'slugTranslationMethod' => '',
+        'slugTranslationKeyFormat' => '{site.language}',
+    ]);
+    $this->entryTypes->refreshEntryTypes();
+
+    $found = $this->entryTypes->getEntryTypeById($entryType->id);
+
+    expect($found->titleTranslationMethod)->toBe(TranslationMethod::Custom)
+        ->and($found->titleTranslationKeyFormat)->toBe('{site.handle}')
+        ->and($found->slugTranslationMethod)->toBe(TranslationMethod::Custom)
+        ->and($found->slugTranslationKeyFormat)->toBe('{site.language}');
+});
+
+it('stores empty translation methods from project config as translated for each site', function () {
+    $uid = fake()->uuid();
+
+    $this->entryTypes->handleChangedEntryType(new ItemUpdated(
+        path: "entryTypes.$uid",
+        newValue: [
+            'name' => 'Pages',
+            'handle' => 'pages',
+            'hasTitleField' => false,
+            'titleTranslationMethod' => '',
+            'titleFormat' => '{dateCreated}',
+            'slugTranslationMethod' => '',
+        ],
+        tokenMatches: [$uid],
+    ));
+
+    expect(DB::table(Table::ENTRYTYPES)->where('uid', $uid)->first(['titleTranslationMethod', 'slugTranslationMethod']))
+        ->titleTranslationMethod->toBe(TranslationMethod::Site->value)
+        ->slugTranslationMethod->toBe(TranslationMethod::Site->value);
+});
+
 it('can save an entry type', function () {
     Event::fake([
         EntryTypeSaving::class,
