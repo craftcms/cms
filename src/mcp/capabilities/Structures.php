@@ -8,7 +8,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\Table;
-use craft\elements\Category;
 use craft\elements\Entry;
 use craft\mcp\ElementQueryFactory;
 use craft\mcp\McpActor;
@@ -171,12 +170,6 @@ class Structures
 
             return $section?->structureId === $structureId && $actor->can("saveEntries:$section->uid")
                 && $this->elements->canSave($element, $actor);
-        }
-
-        if ($element instanceof Category) {
-            $group = $element->getGroup();
-
-            return $group->structureId === $structureId && $this->elements->canSave($element, $actor);
         }
 
         return false;
