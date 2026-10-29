@@ -192,6 +192,10 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
                     // Blank cells are posted as null (ConvertEmptyStringsToNull), and null keys don't survive saving
                     $option['label'] = (string) ($option['label'] ?? '');
                     $option['value'] = (string) ($option['value'] ?? '');
+                    // The color input posts hex values without a leading #
+                    if (is_string($option['color'] ?? null) && $option['color'] !== '') {
+                        $option['color'] = ColorRule::normalizeColor($option['color']);
+                    }
                     $options[] = $option;
                 }
             }
