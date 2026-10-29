@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import {computed} from 'vue';
+  import {plugin as pluginRoute} from '@actions/PluginStore/PluginStoreController';
   import MetaStat from './MetaStat.vue';
   import RatingStars from './RatingStars.vue';
   import {reviewUrl} from '../links';
@@ -9,6 +10,22 @@
   const {plugin} = defineProps<{plugin: Plugin}>();
 
   const emit = defineEmits<{'show-reviews': []}>();
+
+  // A plain click switches tabs in place; a modified one opens the link as usual.
+  function showReviews(event: MouseEvent): void {
+    if (
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    emit('show-reviews');
+  }
 
   const heading = computed(() =>
     t('{totalReviews, plural, =1{# Review} other{# Reviews}}', {
@@ -22,14 +39,14 @@
     <template #label>
       <span class="flex items-baseline justify-between">
         {{ heading }}
-        <craft-button
+        <a
           v-if="plugin.reviewStats?.totalReviews"
-          variant="link"
-          size="small"
-          @click="emit('show-reviews')"
+          :href="pluginRoute({handle: plugin.handle, tab: 'reviews'}).url"
+          class="reviews-stat__all"
+          @click="showReviews"
         >
           {{ t('All reviews') }}
-        </craft-button>
+        </a>
       </span>
     </template>
 
@@ -66,5 +83,9 @@
 <style scoped>
   .reviews-stat__quiet {
     color: var(--c-text-quiet);
+  }
+
+  .reviews-stat__all {
+    font-weight: normal;
   }
 </style>
