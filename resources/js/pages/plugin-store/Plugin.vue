@@ -7,6 +7,7 @@
     plugin as pluginRoute,
   } from '@actions/PluginStore/PluginStoreController';
   import CpLink from '@/common/components/CpLink.vue';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import PartnerBadge from '@/modules/plugin-store/components/PartnerBadge.vue';
   import PluginChangelog from '@/modules/plugin-store/components/PluginChangelog.vue';
   import PluginEdition from '@/modules/plugin-store/components/PluginEdition.vue';
@@ -115,15 +116,20 @@
     </div>
 
     <div v-else class="grid gap-lg">
-      <header class="flex items-center gap-xl">
-        <PluginIcon :url="plugin.iconUrl" size="lg" />
-        <div class="flex items-center gap-sm">
-          <CpLink :href="developerRoute({id: plugin.developerId})">
-            {{ plugin.developerName }}
-          </CpLink>
-          <PartnerBadge v-if="plugin.developerPartner" kind="craft" />
+      <LayoutSlot name="title">
+        <div class="flex items-center gap-lg">
+          <PluginIcon :url="plugin.iconUrl" size="lg" />
+          <div class="grid gap-xs">
+            <h1 class="text-xl">{{ plugin.name }}</h1>
+            <div class="flex items-center gap-sm">
+              <CpLink :href="developerRoute({id: plugin.developerId})">
+                {{ plugin.developerName }}
+              </CpLink>
+              <PartnerBadge v-if="plugin.developerPartner" kind="craft" />
+            </div>
+          </div>
         </div>
-      </header>
+      </LayoutSlot>
 
       <craft-tabs
         :label="plugin.name"
