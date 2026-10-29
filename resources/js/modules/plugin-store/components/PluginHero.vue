@@ -146,7 +146,18 @@
               </craft-button>
             </craft-button-group>
           </div>
-          <EditionPurchase :plugin="plugin" :edition="edition" />
+          <!-- Every edition takes the same spot, so switching doesn't move the page below. -->
+          <div class="plugin-hero__purchases">
+            <EditionPurchase
+              v-for="e in plugin.editions"
+              :key="e.handle"
+              :plugin="plugin"
+              :edition="e"
+              :class="{
+                'plugin-hero__purchase--hidden': e.handle !== edition.handle,
+              }"
+            />
+          </div>
           <InstallCommands
             v-if="hasSingleFreeEdition(plugin)"
             :plugin="plugin"
@@ -226,6 +237,18 @@
 
   .plugin-hero__editions craft-button {
     flex: 1;
+  }
+
+  .plugin-hero__purchases {
+    display: grid;
+  }
+
+  .plugin-hero__purchases > * {
+    grid-area: 1 / 1;
+  }
+
+  .plugin-hero__purchase--hidden {
+    visibility: hidden;
   }
 
   .plugin-hero__panel {
