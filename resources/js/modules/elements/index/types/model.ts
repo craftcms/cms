@@ -49,6 +49,8 @@ export interface ElementIndexView {
   columnOptions: ComputedRef<CheckboxOption[]>;
   visibleViewModes: ComputedRef<ViewMode[]>;
   loading: Ref<boolean>;
+  /** Whether the rows are still to come, drawn as placeholders until then. */
+  pending: ComputedRef<boolean>;
   processing: ComputedRef<boolean>;
   filterContext: ComputedRef<ElementIndexContext | null>;
   exportElements?: ExportElementIndex;

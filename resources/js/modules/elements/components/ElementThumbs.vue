@@ -8,6 +8,7 @@
     type DropState,
   } from '@/common/composables/useReorderableItems';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
+  import PlaceholderShape from '@/common/components/PlaceholderShape.vue';
   import type {Selectable} from '@/common/composables/useSelectable';
   import {isInteractiveClick} from '@/common/utils/dom';
   import {
@@ -52,6 +53,8 @@
        * size to suit it.
        */
       thumbSize?: ChipThumbSizeValue;
+      /** How many placeholder tiles to draw while there are no tiles yet. */
+      placeholders?: number;
     }>(),
     {
       data: () => [],
@@ -61,6 +64,7 @@
       readOnly: undefined,
       loading: false,
       thumbSize: 'lg',
+      placeholders: 0,
     }
   );
 
@@ -206,7 +210,31 @@
 </script>
 
 <template>
-  <div class="grid flex-1 place-items-center min-h-50" v-if="loading">
+  <template v-if="data.length === 0 && placeholders > 0">
+    <div
+      class="thumbsview-header"
+      v-if="selectable && selectAll"
+      aria-hidden="true"
+    >
+      <PlaceholderShape class="checkbox-placeholder" />
+    </div>
+    <ul class="thumbsview" :data-thumb-size="thumbSize" aria-hidden="true">
+      <li v-for="index in placeholders" :key="index">
+        <craft-chip
+          prefix-placement="block-start"
+          appearance="outline-fill"
+          data-color="white"
+          full-width
+          show-thumb
+          :thumb-size="thumbSize"
+        >
+          <PlaceholderShape slot="thumbnail" class="thumb-placeholder" />
+          <PlaceholderShape class="thumb-label-placeholder" />
+        </craft-chip>
+      </li>
+    </ul>
+  </template>
+  <div class="grid flex-1 place-items-center min-h-50" v-else-if="loading">
     <craft-spinner></craft-spinner>
   </div>
   <template v-else-if="data.length > 0">
@@ -324,6 +352,11 @@
 </template>
 
 <style scoped lang="scss">
+  .checkbox-placeholder {
+    inline-size: 1rem;
+    block-size: 1rem;
+  }
+
   .thumbsview-header {
     margin-block-end: var(--c-spacing-md);
     display: flex;
@@ -397,6 +430,16 @@
   .thumb-fallback {
     font-size: max(24px, var(--c-thumbnail-size) * 0.4);
     color: var(--c-text-quiet);
+  }
+
+  .thumb-placeholder {
+    inline-size: var(--c-thumbnail-size);
+    block-size: var(--c-thumbnail-size);
+  }
+
+  .thumb-label-placeholder {
+    inline-size: 6rem;
+    margin-block: 0.25rem;
   }
 
   // Dragging, but still over itself — dim rather than remove, so the grid

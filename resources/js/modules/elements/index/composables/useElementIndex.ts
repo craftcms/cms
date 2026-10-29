@@ -251,10 +251,16 @@ export function useElementIndex(options: UseElementIndexOptions) {
     // created with, which every later source or filter would keep showing as
     // its page count.
     get rowCount() {
-      return elementIndex.pagination.total;
+      return elementIndex.pagination?.total ?? 0;
     },
     enableMultiSort: false,
   });
+
+  /**
+   * Whether the rows are still to come. A page load leaves them out until it
+   * knows the view mode and thumbnail size to render them for; see `restore()`.
+   */
+  const pending = computed(() => elementIndex.data === undefined);
 
   function restore(): void {
     const restores = [
@@ -264,6 +270,17 @@ export function useElementIndex(options: UseElementIndexOptions) {
       restoreThumbSize(),
       ...(options.structure ? [structureView.restore()] : []),
     ].filter((restore): restore is IndexRestore => restore !== null);
+
+    // Requested after the others have read the URL into the view state, so the
+    // mode and size are the ones the index will show. Naming the mode in the
+    // URL also gets the rows rendered along with any later page load. `queue`
+    // reports the thumbnail jobs rendering them queued.
+    if (pending.value) {
+      restores.unshift({
+        params: {viewMode: mode.value, ...thumbSizeModeParams(mode.value)},
+        only: ['data', 'pagination', 'structure', 'queue'],
+      });
+    }
 
     if (restores.length === 0) {
       return;
@@ -322,7 +339,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
   }
 
   const processing = computed(
-    () => loading.value || Boolean(toValue(options.busy))
+    () => loading.value || pending.value || Boolean(toValue(options.busy))
   );
   const filterContext = computed<ElementIndexContext | null>(() =>
     elementIndex.source
@@ -371,6 +388,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
     thumbSize,
     thumbSizeOptions,
     loading,
+    pending,
     processing,
     filterContext,
     visibleViewModes,

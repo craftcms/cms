@@ -33,6 +33,8 @@ use Illuminate\Pagination\LengthAwarePaginator as IlluminatePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
+use Inertia\RenderContext;
+use Inertia\Support\Header;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
@@ -108,6 +110,31 @@ abstract class ContentIndexViewModel extends ViewModel
     protected function defaultSourceKey(): ?string
     {
         return null;
+    }
+
+    /**
+     * Leaves the rows out of a page load that doesn't name a view mode.
+     *
+     * The view mode and thumbnail size the rows are rendered for live in the
+     * browser's view state, which the server can't see. Rows rendered without
+     * them would draw at the defaults until the index re-requested them, so
+     * the page draws placeholders instead and requests the rows itself once it
+     * has read its view state (see `useElementIndex`'s `restore()`). That visit
+     * puts `viewMode` in the URL, so later visits come with rows again.
+     */
+    #[\Override]
+    public function toInertiaProperties(RenderContext $context): array
+    {
+        $properties = parent::toInertiaProperties($context);
+
+        if (
+            $context->request->header(Header::PARTIAL_COMPONENT) !== $context->component
+            && ! $this->request->filled('viewMode')
+        ) {
+            unset($properties['data'], $properties['pagination'], $properties['structure']);
+        }
+
+        return $properties;
     }
 
     /**

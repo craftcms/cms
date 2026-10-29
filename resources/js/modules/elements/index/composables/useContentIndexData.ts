@@ -86,9 +86,7 @@ export type ContentIndexData = Omit<
  */
 export function useContentIndexData<
   Extra extends object = Record<never, never>,
-  Source extends Omit<ContentIndexData, 'data'> & {
-    data: Array<ElementIndexRow>;
-  } = ContentIndexData,
+  Source extends ContentIndexData = ContentIndexData,
 >(extra?: Extra, source?: MaybeRefOrGetter<Source>) {
   // Indexes that aren't an Inertia page — the element selector modal, which
   // fetches the same payload over XHR — pass their own source. `usePage()` is

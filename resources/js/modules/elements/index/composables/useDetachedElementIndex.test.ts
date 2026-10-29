@@ -50,6 +50,28 @@ it.each(['earlier first', 'latest first'])(
   }
 );
 
+it('requests the rows a payload left out, for the view mode it shows', async () => {
+  vi.stubGlobal('Craft', {systemUid: 'test', pageTrigger: 'p'});
+  const fetch = vi.fn().mockResolvedValue(indexData(1));
+  scope = effectScope();
+  const index = scope.run(() =>
+    useDetachedElementIndex({
+      initial: indexData(undefined, {data: undefined, pagination: undefined}),
+      fetch,
+    })
+  )!;
+
+  expect(index.view.pending.value).toBe(true);
+
+  index.restore();
+
+  expect(fetch).toHaveBeenCalledWith(
+    expect.objectContaining({viewMode: 'table'})
+  );
+  await vi.waitFor(() => expect(index.view.pending.value).toBe(false));
+  expect(index.view.elementIndex.data.map(({id}) => id)).toEqual([1]);
+});
+
 it('keeps the loading state off for a thumb size change', async () => {
   vi.stubGlobal('Craft', {systemUid: 'test', pageTrigger: 'p'});
   const response = deferred<ContentIndexData>();

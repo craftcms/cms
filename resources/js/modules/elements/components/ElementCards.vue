@@ -4,6 +4,7 @@
   import {usePage} from '@inertiajs/vue3';
   import SelectableCardList from '@/common/components/SelectableCardList.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
+  import PlaceholderShape from '@/common/components/PlaceholderShape.vue';
   import type {Selectable} from '@/common/composables/useSelectable';
   import {isInteractiveClick} from '@/common/utils/dom';
   import {
@@ -36,6 +37,10 @@
       loading?: boolean;
       renderServerActions?: boolean;
       itemBehavior?: ElementIndexItemBehavior<CardElement>;
+      /** How many placeholder cards to draw while there are no cards yet. */
+      placeholders?: number;
+      /** Whether the placeholder cards have thumbnails. */
+      placeholderThumbs?: boolean;
     }>(),
     {
       data: () => [],
@@ -46,6 +51,8 @@
       readOnly: undefined,
       loading: false,
       renderServerActions: true,
+      placeholders: 0,
+      placeholderThumbs: false,
     }
   );
 
@@ -164,7 +171,33 @@
 </script>
 
 <template>
-  <div class="grid flex-1 place-items-center min-h-50" v-if="loading">
+  <template v-if="data.length === 0 && placeholders > 0">
+    <div
+      class="card-grid-header"
+      v-if="selectable && selectAll"
+      aria-hidden="true"
+    >
+      <PlaceholderShape class="checkbox-placeholder" />
+    </div>
+    <ul
+      :class="{'card-grid': true, 'card-grid--single': singleColumn}"
+      aria-hidden="true"
+    >
+      <li v-for="index in placeholders" :key="index">
+        <craft-card>
+          <PlaceholderShape
+            v-if="placeholderThumbs"
+            slot="thumbnail"
+            class="card-thumb-placeholder"
+          />
+          <PlaceholderShape slot="header" class="card-label-placeholder" />
+          <PlaceholderShape />
+          <PlaceholderShape class="card-text-placeholder" />
+        </craft-card>
+      </li>
+    </ul>
+  </template>
+  <div class="grid flex-1 place-items-center min-h-50" v-else-if="loading">
     <craft-spinner></craft-spinner>
   </div>
   <template v-else-if="data.length > 0">
@@ -242,6 +275,25 @@
 </template>
 
 <style scoped lang="scss">
+  .checkbox-placeholder {
+    inline-size: 1rem;
+    block-size: 1rem;
+  }
+
+  .card-thumb-placeholder {
+    inline-size: var(--c-thumbnail-size);
+    block-size: var(--c-thumbnail-size);
+  }
+
+  .card-label-placeholder {
+    inline-size: 50%;
+  }
+
+  .card-text-placeholder {
+    inline-size: 70%;
+    margin-block-start: var(--c-spacing-sm);
+  }
+
   .card-grid-header {
     margin-block-end: var(--c-spacing-md);
     display: flex;
