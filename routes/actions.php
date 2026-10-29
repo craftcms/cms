@@ -84,6 +84,7 @@ use CraftCms\Cms\Http\Controllers\Users\EnableController;
 use CraftCms\Cms\Http\Controllers\Users\ImpersonationController;
 use CraftCms\Cms\Http\Controllers\Users\PasskeysController as UserPasskeysController;
 use CraftCms\Cms\Http\Controllers\Users\PasswordController;
+use CraftCms\Cms\Http\Controllers\Users\PersonalAccessTokensController;
 use CraftCms\Cms\Http\Controllers\Users\PhotoController;
 use CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController;
 use CraftCms\Cms\Http\Controllers\Users\SaveUserController;
@@ -233,6 +234,10 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('auth/passkey-creation-options', [UserPasskeysController::class, 'creationOptions']);
         Route::post('auth/verify-passkey-creation', [UserPasskeysController::class, 'verifyCreation']);
         Route::post('auth/delete-passkey', [UserPasskeysController::class, 'delete']);
+
+        Route::post('users/create-token', [PersonalAccessTokensController::class, 'store']);
+        Route::post('users/update-token', [PersonalAccessTokensController::class, 'update']);
+        Route::post('users/revoke-token', [PersonalAccessTokensController::class, 'destroy']);
 
         Route::post('auth/generate-recovery-codes', [RecoveryCodesController::class, 'generate']);
         Route::post('auth/download-recovery-codes', [RecoveryCodesController::class, 'download']);
