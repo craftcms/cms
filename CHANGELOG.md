@@ -20,6 +20,7 @@
 - Fixed an error that occurred when logging in with a passkey that was registered with an older version of Craft. ([#20052](https://github.com/craftcms/cms/issues/20052))
 - Fixed a bug where closing an element selector modal while it was loading caused it to keep loading all of the source’s elements in the background. ([#20100](https://github.com/craftcms/cms/issues/20100))
 - Fixed a bug where moving assets and replacing existing files with the same name could fail. ([#20128](https://github.com/craftcms/cms/issues/20128))
+- Fixed a bug where nested entries added via drafts on multi-site installs could get an incomplete first revision, causing their nested content to be deleted when reverting to it. ([#20151](https://github.com/craftcms/cms/issues/20151))
 
 ## 5.11.5.1 - 2026-10-08
 

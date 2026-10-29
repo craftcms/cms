@@ -2045,8 +2045,6 @@ class Elements extends Component
 
                         $siteClone = clone $siteElement;
                         $siteClone->duplicateOf = $siteElement;
-                        $siteClone->propagating = true;
-                        $siteClone->propagatingFrom = $mainClone;
                         $siteClone->id = $mainClone->id;
                         $siteClone->uid = $mainClone->uid;
                         $siteClone->structureId = $mainClone->structureId;
@@ -2076,6 +2074,10 @@ class Elements extends Component
                             $siteAttributes[$siteElement->siteId] ?? [],
                         ));
                         $siteClone->siteId = $siteElement->siteId;
+                        // Set these after $newAttributes, which may have set `propagating` to `false` for $mainClone
+                        // (see https://github.com/craftcms/cms/issues/20151)
+                        $siteClone->propagating = true;
+                        $siteClone->propagatingFrom = $mainClone;
 
                         // Clone any field values that are objects (without affecting the dirty fields)
                         $dirtyFields = $siteClone->getDirtyFields();
