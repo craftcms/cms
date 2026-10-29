@@ -13,6 +13,7 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\oauth\AccessToken;
 use craft\oauth\Repositories;
 use craft\oauth\Resource;
 use DateInterval;
@@ -245,8 +246,11 @@ class OAuth extends Component
     }
 
     /**
-     * Creates a personal access token for a user, without an OAuth client flow. The token gets its own client, named
-     * after the token, so it can be listed and revoked like any other grant.
+     * Creates a personal access token for a user, without an OAuth client flow.
+     *
+     * As with Laravel Passport, the token is issued through the resource’s personal access client (one that only
+     * supports the `personal_access` grant), which is created the first time it’s needed. The token’s name is stored
+     * with the token.
      *
      * @param string[] $scopes The scope IDs to grant. Access levels include the narrower levels.
      * @return string The signed access token. It isn’t stored, so it can’t be retrieved again.
@@ -268,18 +272,11 @@ class OAuth extends Component
         }
         $scopes = array_values(array_intersect(array_keys($definition->scopes), $scopes));
 
-        $clientId = StringHelper::UUID();
-        Db::insert(Table::OAUTH_CLIENTS, [
-            'resourceId' => $resource,
-            'id' => $clientId,
-            'name' => $name,
-            // Without redirect URIs, the client can’t be used for authorization requests.
-            'redirectUris' => '[]',
-        ]);
-
         $repository = new Repositories($definition);
         $scopes = array_map(fn(string $scope) => $repository->getScopeEntityByIdentifier($scope), $scopes);
-        $token = $repository->getNewToken($repository->getClientEntity($clientId), $scopes, (string)$user->id);
+        /** @var AccessToken $token */
+        $token = $repository->getNewToken($repository->getClientEntity($this->personalAccessClientId($definition)), $scopes, (string)$user->id);
+        $token->name = $name;
         $token->setIdentifier(bin2hex(random_bytes(40)));
         $token->setExpiryDateTime($expiresAt);
         $token->setPrivateKey($this->key('private'));
@@ -289,56 +286,104 @@ class OAuth extends Component
     }
 
     /**
-     * Returns the clients a user has active grants for, including personal access tokens.
+     * Returns the ID of a resource’s personal access client, creating it if it doesn’t exist yet.
+     */
+    private function personalAccessClientId(Resource $resource): string
+    {
+        $clients = (new Query())
+            ->select(['id', 'grant_types'])
+            ->from(Table::OAUTH_CLIENTS)
+            ->where(['resource_id' => $resource->id, 'revoked' => false, 'redirect_uris' => '[]'])
+            ->orderBy(['created_at' => SORT_DESC])
+            ->all();
+        foreach ($clients as $client) {
+            if ($this->isPersonalAccessClient($client['grant_types'])) {
+                return $client['id'];
+            }
+        }
+
+        $id = StringHelper::UUID();
+        $now = Db::prepareDateForDb(new DateTime());
+        Db::insert(Table::OAUTH_CLIENTS, [
+            'id' => $id,
+            'resource_id' => $resource->id,
+            'name' => "{$resource->getLabel()} Personal Access Client",
+            'redirect_uris' => '[]',
+            'grant_types' => '["personal_access"]',
+            'revoked' => false,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        return $id;
+    }
+
+    private function isPersonalAccessClient(?string $grantTypes): bool
+    {
+        $grantTypes = json_decode($grantTypes ?? '', true);
+        return is_array($grantTypes) && in_array('personal_access', $grantTypes, true);
+    }
+
+    /**
+     * Returns a user’s active personal access tokens and the apps they’ve authorized for a resource.
      *
-     * @return array{resourceId:string,clientId:string,name:string,scopes:string[],expiresAt:DateTime,personal:bool}[]
+     * Personal access tokens are listed individually, with their `tokenId`. Apps are listed once per client, with a
+     * `tokenId` of `null`.
+     *
+     * @return array{resourceId:string,clientId:string,tokenId:string|null,name:string,scopes:string[],expiresAt:DateTime,personal:bool}[]
      */
     public function getUserGrants(string $resource, User $user): array
     {
         $now = Db::prepareDateForDb(new DateTime());
         $rows = (new Query())
             ->select([
-                'access.clientId',
+                'access.id',
+                'access.client_id',
+                'access.name',
                 'access.scopes',
-                'access.expiresAt',
-                'refreshExpiresAt' => 'refresh.expiresAt',
-                'clients.name',
-                'clients.redirectUris',
+                'access.created_at',
+                'access.expires_at',
+                'refreshExpiresAt' => 'refresh.expires_at',
+                'clientName' => 'clients.name',
+                'clients.grant_types',
             ])
             ->from(['access' => Table::OAUTH_ACCESS_TOKENS])
-            ->innerJoin(['clients' => Table::OAUTH_CLIENTS], '[[clients.id]] = [[access.clientId]]')
+            ->innerJoin(['clients' => Table::OAUTH_CLIENTS], '[[clients.id]] = [[access.client_id]]')
             ->leftJoin(['refresh' => Table::OAUTH_REFRESH_TOKENS], [
                 'and',
-                '[[refresh.accessTokenId]] = [[access.id]]',
+                '[[refresh.access_token_id]] = [[access.id]]',
                 ['refresh.revoked' => false],
-                ['>', 'refresh.expiresAt', $now],
+                ['>', 'refresh.expires_at', $now],
             ])
             ->where([
-                'access.resourceId' => $resource,
-                'access.userId' => $user->id,
+                'access.resource_id' => $resource,
+                'access.user_id' => $user->id,
                 'access.revoked' => false,
                 'clients.revoked' => false,
             ])
             ->andWhere([
                 'or',
-                ['>', 'access.expiresAt', $now],
+                ['>', 'access.expires_at', $now],
                 ['not', ['refresh.id' => null]],
             ])
-            ->orderBy(['clients.dateCreated' => SORT_DESC])
+            ->orderBy(['access.created_at' => SORT_DESC])
             ->all();
 
         $grants = [];
         foreach ($rows as $row) {
-            $expiresAt = DateTimeHelper::toDateTime(max($row['expiresAt'], $row['refreshExpiresAt'] ?? ''));
-            $scopes = json_decode($row['scopes'], true);
-            $grant = $grants[$row['clientId']] ?? null;
-            $grants[$row['clientId']] = [
+            $personal = $this->isPersonalAccessClient($row['grant_types']);
+            $key = $personal ? "token:{$row['id']}" : "client:{$row['client_id']}";
+            $expiresAt = DateTimeHelper::toDateTime(max($row['expires_at'], $row['refreshExpiresAt'] ?? ''));
+            $scopes = json_decode($row['scopes'] ?? '[]', true) ?: [];
+            $grant = $grants[$key] ?? null;
+            $grants[$key] = [
                 'resourceId' => $resource,
-                'clientId' => $row['clientId'],
-                'name' => $row['name'],
+                'clientId' => $row['client_id'],
+                'tokenId' => $personal ? $row['id'] : null,
+                'name' => $personal ? ($row['name'] ?? $row['clientName']) : $row['clientName'],
                 'scopes' => array_values(array_unique(array_merge($grant['scopes'] ?? [], $scopes))),
                 'expiresAt' => $grant ? max($grant['expiresAt'], $expiresAt) : $expiresAt,
-                'personal' => $row['redirectUris'] === '[]',
+                'personal' => $personal,
             ];
         }
 
@@ -346,19 +391,21 @@ class OAuth extends Component
     }
 
     /**
-     * Revokes a user’s access and refresh tokens for a client. Personal access token clients are revoked as well.
+     * Revokes a user’s access and refresh tokens for a client, or just one of them if `$tokenId` is given (as for
+     * personal access tokens).
      */
-    public function revokeUserGrant(string $resource, User $user, string $clientId): void
+    public function revokeUserGrant(string $resource, User $user, string $clientId, ?string $tokenId = null): void
     {
-        $condition = ['resourceId' => $resource, 'userId' => $user->id, 'clientId' => $clientId];
+        $condition = ['resource_id' => $resource, 'user_id' => $user->id, 'client_id' => $clientId];
+        if ($tokenId !== null) {
+            $condition['id'] = $tokenId;
+        }
         $accessTokenIds = (new Query())->select('id')->from(Table::OAUTH_ACCESS_TOKENS)->where($condition);
-        Db::update(Table::OAUTH_REFRESH_TOKENS, ['revoked' => true], ['accessTokenId' => $accessTokenIds], updateTimestamp: false);
-        Db::update(Table::OAUTH_ACCESS_TOKENS, ['revoked' => true], $condition, updateTimestamp: false);
-        Db::update(Table::OAUTH_CLIENTS, ['revoked' => true], [
-            'resourceId' => $resource,
-            'id' => $clientId,
-            'redirectUris' => '[]',
-        ], updateTimestamp: false);
+        Db::update(Table::OAUTH_REFRESH_TOKENS, ['revoked' => true], ['access_token_id' => $accessTokenIds], updateTimestamp: false);
+        Db::update(Table::OAUTH_ACCESS_TOKENS, [
+            'revoked' => true,
+            'updated_at' => Db::prepareDateForDb(new DateTime()),
+        ], $condition, updateTimestamp: false);
     }
 
     /** Generate the default keys explicitly, without replacing existing keys. */

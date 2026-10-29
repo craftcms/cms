@@ -1683,6 +1683,7 @@ JS, ['users/new-access-token']);
             $this->request->getRequiredBodyParam('resource'),
             static::currentUser(),
             $this->request->getRequiredBodyParam('clientId'),
+            $this->request->getBodyParam('tokenId') ?: null,
         );
 
         return $this->asSuccess(Craft::t('app', 'Access revoked.'), redirect: UrlHelper::cpUrl('myaccount/tokens'));

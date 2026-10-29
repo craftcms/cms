@@ -8,6 +8,7 @@
 namespace crafttests\functional;
 
 use Craft;
+use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
 use craft\enums\CmsEdition;
@@ -42,9 +43,10 @@ class GraphqlOAuthCest
 
         Craft::$app->getDb()->createCommand()->insert(Table::OAUTH_CLIENTS, [
             'id' => 'test-graphql',
-            'resourceId' => 'graphql',
+            'resource_id' => 'graphql',
             'name' => 'Test GraphQL client',
-            'redirectUris' => '["https://client.example/callback"]',
+            'redirect_uris' => '["https://client.example/callback"]',
+            'grant_types' => '["authorization_code","refresh_token"]',
             'revoked' => false,
         ])->execute();
     }
@@ -65,22 +67,31 @@ class GraphqlOAuthCest
         $oauth = Craft::$app->getOAuth();
         $user = $this->user(['viewUsers']);
         $token = $oauth->createPersonalAccessToken('graphql', $user, 'Build script', [Gql::SCOPE_READ], new DateTimeImmutable('+7 days'));
+        $other = $oauth->createPersonalAccessToken('graphql', $user, 'Preview', [Gql::SCOPE_READ], new DateTimeImmutable('+7 days'));
         $this->token($user);
 
         $data = $this->graphql($I, '{ users(email: "nobody@example.com") { id } }', $token);
         $I->assertSame(['users' => []], $data['data']);
 
         $grants = ArrayHelper::index($oauth->getUserGrants('graphql', $user), 'name');
-        $I->assertEqualsCanonicalizing(['Build script', 'Test GraphQL client'], array_keys($grants));
+        $I->assertEqualsCanonicalizing(['Build script', 'Preview', 'Test GraphQL client'], array_keys($grants));
         $I->assertTrue($grants['Build script']['personal']);
         $I->assertSame([Gql::SCOPE_READ], $grants['Build script']['scopes']);
         $I->assertFalse($grants['Test GraphQL client']['personal']);
 
-        $oauth->revokeUserGrant('graphql', $user, $grants['Build script']['clientId']);
-        $I->assertSame(['Test GraphQL client'], array_column($oauth->getUserGrants('graphql', $user), 'name'));
+        // Like Passport, personal tokens share one personal access client that only supports the personal_access grant
+        $I->assertSame($grants['Build script']['clientId'], $grants['Preview']['clientId']);
+        $client = (new Query())->from(Table::OAUTH_CLIENTS)->where(['id' => $grants['Build script']['clientId']])->one();
+        $I->assertSame(['personal_access'], Json::decode($client['grant_types']));
+        $I->assertSame('Build script', (new Query())->select('name')->from(Table::OAUTH_ACCESS_TOKENS)->where(['id' => $grants['Build script']['tokenId']])->scalar());
+
+        // Revoking one personal token leaves the others alone
+        $oauth->revokeUserGrant('graphql', $user, $grants['Build script']['clientId'], $grants['Build script']['tokenId']);
+        $I->assertEqualsCanonicalizing(['Preview', 'Test GraphQL client'], array_column($oauth->getUserGrants('graphql', $user), 'name'));
         $I->haveHttpHeader('Authorization', "Bearer $token");
         $I->amOnPage('/actions/graphql/api?' . http_build_query(['query' => '{ ping }']));
         $I->seeResponseCodeIs(401);
+        $I->assertSame(['ping' => 'pong'], $this->graphql($I, '{ ping }', $other)['data']);
     }
 
     public function testPersonalAccessTokenScopes(FunctionalTester $I): void

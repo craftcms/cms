@@ -60,7 +60,7 @@
                 data: {
                   form: 'false',
                   action: 'users/revoke-access-token',
-                  params: {resource: grant.resourceId, clientId: grant.clientId},
+                  params: {resource: grant.resourceId, clientId: grant.clientId, tokenId: grant.tokenId},
                   confirm: 'Are you sure you want to revoke “{name}”? Anything using it will lose access.'|t('app', {name: grant.name}),
                   redirect: 'myaccount/tokens'|hash,
                 },
