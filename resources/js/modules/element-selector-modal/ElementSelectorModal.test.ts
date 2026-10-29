@@ -6,6 +6,7 @@ import {
   type AssetSelectorOptions,
   type ElementInfo,
 } from '@craftcms/ui';
+import {prefixedKey} from '@/common/composables/useStorage';
 
 /**
  * The real index pulls the whole element-index component tree and its
@@ -171,6 +172,28 @@ describe('ElementSelectorModal', () => {
     await nextTick();
 
     expect(host.querySelector('.index-stub')).not.toBeNull();
+    unmount();
+  });
+
+  it('draws placeholders in the modal index’s stored view mode until the body has loaded', async () => {
+    localStorage.setItem(
+      prefixedKey('elementindex.CraftCms\\Cms\\Entry\\Elements\\Entry.modal'),
+      JSON.stringify({mode: 'cards'})
+    );
+    const instance = controller({context: 'field'});
+    const {host, unmount} = await mountModal(instance);
+
+    const placeholder = host.querySelector('[slot="loading"]');
+    expect(
+      placeholder?.querySelector('.picker-placeholder__grid')
+    ).not.toBeNull();
+    expect(placeholder?.querySelector('.picker-placeholder__rows')).toBeNull();
+
+    await instance.open();
+    await nextTick();
+
+    expect(host.querySelector('[slot="loading"]')).toBeNull();
+    localStorage.clear();
     unmount();
   });
 
