@@ -46,6 +46,7 @@ class OAuth extends Component
             $this->trigger(self::EVENT_REGISTER_RESOURCES, $event);
             $resources = [];
             $metadataPaths = [];
+            $scopeResources = [];
             foreach ($event->resources as $id => $definition) {
                 if (!is_string($id) || !preg_match('/^[a-zA-Z0-9_-]{1,64}$/D', $id)) {
                     throw new InvalidConfigException('OAuth resource IDs must contain 1–64 letters, numbers, underscores, or hyphens.');
@@ -58,6 +59,11 @@ class OAuth extends Component
                     if (!is_string($scope) || !preg_match('/^[\x21\x23-\x5b\x5d-\x7e]+$/D', $scope) || !is_string($description) || trim($description) === '') {
                         throw new InvalidConfigException('OAuth scopes require valid IDs and consent descriptions.');
                     }
+                    // Tokens are bound to a resource by their scopes, so a scope can only belong to one resource.
+                    if (isset($scopeResources[$scope])) {
+                        throw new InvalidConfigException("OAuth resources $scopeResources[$scope] and $id can’t both define the $scope scope.");
+                    }
+                    $scopeResources[$scope] = $id;
                 }
                 if (!array_is_list($resource->defaultScopes) || ($resource->defaultScopes && !$resource->allowsScopes($resource->defaultScopes))) {
                     throw new InvalidConfigException('OAuth default scopes must be a subset of the resource scopes.');
@@ -153,14 +159,16 @@ class OAuth extends Component
     {
         $definition = $this->getResource($resource);
         $rows = (new Query())->select(['scopes'])->from(Table::OAUTH_ACCESS_TOKENS)->where([
-            'resource_id' => $resource,
             'client_id' => $request->getClient()->getIdentifier(),
             'user_id' => $request->getUser()->getIdentifier(),
             'revoked' => false,
         ])->andWhere(['>', 'expires_at', Db::prepareDateForDb(new DateTime())])->column();
         $granted = [];
         foreach ($rows as $scopes) {
-            $granted = array_merge($granted, json_decode($scopes, true, flags: JSON_THROW_ON_ERROR));
+            $scopes = json_decode($scopes, true, flags: JSON_THROW_ON_ERROR);
+            if ($definition->allowsScopes($scopes)) {
+                $granted = array_merge($granted, $scopes);
+            }
         }
 
         if (!$definition->grantsCover($granted, $this->scopeIds($request->getScopes()))) {
