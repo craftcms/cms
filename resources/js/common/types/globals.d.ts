@@ -7,6 +7,7 @@ import type {InertiaPageRegistry} from '@/bootstrap/inertia-pages';
 import type {Router} from '@inertiajs/core';
 import type {HttpResponse} from '@craftcms/ui/utilities/api/http';
 import type {LegacyRequestOptions} from '@craftcms/ui/utilities/api/legacyRequest';
+import type {UiValueChangeDetail, uiValues} from '@/modules/ui/ui-values';
 
 type LegacySettingValue =
   | string
@@ -75,6 +76,7 @@ interface CpServices {
 
 interface CpStatic extends CpServices {
   $components: CpComponentRegistry;
+  $ui: typeof uiValues;
   $elementDetailsPanels: ElementDetailsPanelRegistry;
   $assistant: AssistantApi;
   /** @deprecated Use `$elementDetailsPanels`. */
@@ -287,6 +289,9 @@ declare global {
   let Craft: CraftStatic;
   let Garnish: GarnishStatic;
   let $: JQueryStatic;
+  interface DocumentEventMap {
+    'craft:ui-value-change': CustomEvent<UiValueChangeDetail>;
+  }
   interface Window {
     bootedCallbacks: Array<(craft: CraftStatic) => void>;
     bootingCallbacks: Array<(craft: CraftStatic) => void>;

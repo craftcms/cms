@@ -16,6 +16,7 @@ use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Image\Data\ImageColors;
+use CraftCms\Cms\Image\Data\ImageMetadata;
 use CraftCms\Cms\Image\Data\ImageSample;
 use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Support\File;
@@ -57,6 +58,25 @@ class ImageAnalyzer
             $this->aiTasks->tasksByHandle()->all(),
             static fn (string $task): bool => is_subclass_of($task, ImageAnalysisTaskInterface::class),
         );
+    }
+
+    /**
+     * Returns what an image’s embedded metadata fills in for the asset in its own site, as each image analysis task
+     * reads it, such as its alt text and title. This doesn’t depend on AI being set up.
+     *
+     * @return array<string, mixed>
+     *
+     * @see ImageAnalysisTaskInterface::valuesFromMetadata()
+     */
+    public function valuesFromMetadata(Asset $asset, ImageMetadata $metadata): array
+    {
+        $values = [];
+
+        foreach ($this->tasks() as $task) {
+            $values = [...$values, ...$task::valuesFromMetadata($asset, $metadata)];
+        }
+
+        return $values;
     }
 
     /**
@@ -185,32 +205,30 @@ class ImageAnalyzer
     private function run(Asset $asset, ?array $handles, bool $overwrite, bool $sample): array
     {
         $tasks = $this->tasks();
-        $groups = [];
         $changes = new ImageAnalysisChanges;
         $applied = [];
         $failure = null;
-
-        foreach ($this->pendingTasks($asset, $handles, $overwrite) as $handle) {
-            $resolved = $this->ai->resolve($handle);
-            $groups[$resolved->provider."\0".$resolved->model][self::responseProperty($handle)] = $tasks[$handle];
-        }
-
-        $sample = $sample && $this->needsSampling($asset);
-
-        if ($groups === [] && ! $sample) {
-            return [$changes, $applied, $failure];
-        }
-
-        $copy = $asset->getCopyOfFile();
+        $copy = null;
 
         try {
-            if ($sample) {
+            // Sample first, so tasks see what the image’s embedded metadata filled in, and don’t replace it
+            if ($sample && $this->needsSampling($asset)) {
+                $copy = $asset->getCopyOfFile();
                 $this->sample($asset, $copy, $changes);
+            }
+
+            $groups = [];
+
+            foreach ($this->pendingTasks($asset, $handles, $overwrite) as $handle) {
+                $resolved = $this->ai->resolve($handle);
+                $groups[$resolved->provider."\0".$resolved->model][self::responseProperty($handle)] = $tasks[$handle];
             }
 
             if ($groups === []) {
                 return [$changes, $applied, $failure];
             }
+
+            $copy ??= $asset->getCopyOfFile();
 
             $image = $this->modelImages->forFile($copy);
 
@@ -236,7 +254,9 @@ class ImageAnalyzer
                 }
             }
         } finally {
-            File::delete($copy);
+            if ($copy !== null) {
+                File::delete($copy);
+            }
         }
 
         return [$changes, $applied, $failure];
@@ -252,9 +272,9 @@ class ImageAnalyzer
 
     /**
      * Records what the image is missing that can be read from its file: its colors and hash, and its embedded metadata,
-     * and what that fills in, as an upload’s does.
+     * and what that fills in, as an upload’s does. What it fills in is set on the asset too, for the tasks to see.
      *
-     * @see Asset::valuesFromEmbeddedMetadata()
+     * @see valuesFromMetadata()
      */
     private function sample(Asset $asset, string $path, ImageAnalysisChanges $changes): void
     {
@@ -271,7 +291,10 @@ class ImageAnalyzer
             $metadata = $this->images->metadata($path);
             $analysis = $analysis->withMetadata($metadata);
 
-            foreach ($asset->valuesFromEmbeddedMetadata($metadata) as $attribute => $value) {
+            $values = $this->valuesFromMetadata($asset, $metadata);
+            Typecast::configure($asset, $values);
+
+            foreach ($values as $attribute => $value) {
                 $changes->setForSite($asset->siteId, $attribute, $value);
             }
         }

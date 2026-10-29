@@ -236,15 +236,20 @@ it('answers CORS preflight requests without authentication or collecting user in
         app(PublicRouteRegistrar::class)->register();
     }
 
-    $this->call('OPTIONS', $public ? '/_test/public-preflight' : route('craft.cp.mcp.server'), server: [
+    $response = $this->call('OPTIONS', $public ? '/_test/public-preflight' : route('craft.cp.mcp.server'), server: [
         'HTTP_ORIGIN' => 'https://craft.test',
-        'HTTP_ACCESS_CONTROL_REQUEST_METHOD' => 'POST',
+        'HTTP_ACCESS_CONTROL_REQUEST_METHOD' => 'DELETE',
+        'HTTP_ACCESS_CONTROL_REQUEST_HEADERS' => 'Mcp-Session-Id, Mcp-Param-Cursor',
     ])
         ->assertNoContent()
-        ->assertHeader('Access-Control-Allow-Origin', 'https://craft.test');
+        ->assertHeader('Access-Control-Allow-Origin', 'https://craft.test')
+        ->assertHeader('Access-Control-Expose-Headers', 'Mcp-Session-Id');
+
+    expect(explode(', ', $response->headers->get('Access-Control-Allow-Methods')))->toContain('DELETE')
+        ->and(explode(', ', $response->headers->get('Access-Control-Allow-Headers')))->toContain('Mcp-Session-Id', 'Mcp-Param-Cursor');
 })->with(['admin server' => false, 'public server' => true]);
 
-it('requires both the MCP scope and Craft endpoint permissions', function (array $scopes, array $permissions): void {
+it('requires both the MCP scope and Craft endpoint permissions', function (array $scopes, array $permissions, string $method): void {
     Edition::set(Edition::Pro);
     $user = User::query()->firstOrFail();
     $user->admin = false;
@@ -262,12 +267,12 @@ it('requires both the MCP scope and Craft endpoint permissions', function (array
     Passport::actingAs($user, $scopes, 'craft-mcp');
     Route::getRoutes()->getByName('craft.cp.mcp.server')->flushController();
 
-    $this->postJson($endpoint, McpRequest::payload('server/discover'), $headers)->assertForbidden();
+    $this->json($method, $endpoint, McpRequest::payload('server/discover'), $headers)->assertForbidden();
 })->with([
     'missing MCP scope' => [[], ['accessCp', 'useCraftMcp']],
     'missing control panel permission' => [['mcp:read'], ['useCraftMcp']],
     'missing MCP permission' => [['mcp:read'], ['accessCp']],
-]);
+])->with(['POST', 'DELETE']);
 
 it('grants the access level chosen on the consent screen', function (bool $admin, array $approval, array $options, array $granted): void {
     Edition::set(Edition::Pro);

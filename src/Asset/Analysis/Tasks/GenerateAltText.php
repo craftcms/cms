@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Asset\Analysis\Tasks;
 use CraftCms\Cms\Asset\Analysis\ImageAnalysisChanges;
 use CraftCms\Cms\Asset\Analysis\ImageAnalysisTask;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Image\Data\ImageMetadata;
 use CraftCms\Cms\Support\Facades\I18N;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use WeakMap;
@@ -39,6 +40,17 @@ class GenerateAltText extends ImageAnalysisTask
     public static function description(): ?string
     {
         return t('Writes alternative text for images, in each site’s language, when they’re uploaded or analyzed.');
+    }
+
+    /**
+     * Fills in missing alt text with the image’s embedded alt text, or else its description, which is often written
+     * to describe the image too.
+     */
+    public static function valuesFromMetadata(Asset $asset, ImageMetadata $metadata): array
+    {
+        $alt = $metadata->altText ?? $metadata->description;
+
+        return ($asset->alt ?? '') === '' && $alt !== null ? ['alt' => $alt] : [];
     }
 
     public static function needed(Asset $asset, bool $overwrite): bool

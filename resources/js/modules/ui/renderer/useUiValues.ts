@@ -211,6 +211,11 @@ export function useUiValues(initial: UiPayload) {
     );
   }
 
+  /** The control last seen at `path`, if any. */
+  function controlAt(path: string[]): UiControlPayload | undefined {
+    return knownControls.get(JSON.stringify(path));
+  }
+
   /**
    * Whether the control at `path` now holds different nested UIs. When it
    * does, the controls inside the old ones are forgotten.
@@ -277,6 +282,7 @@ export function useUiValues(initial: UiPayload) {
     groupCanonical,
     registerBehavior,
     rememberControls,
+    controlAt,
     restructured,
   };
 }

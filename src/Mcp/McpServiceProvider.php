@@ -178,7 +178,7 @@ class McpServiceProvider extends ServiceProvider
                 $router->options($config->endpoint, [McpController::class, 'preflight'])
                     ->middleware($middleware);
 
-                $router->allowDuringMaintenance()->post($config->endpoint, [McpController::class, 'admin'])
+                $router->allowDuringMaintenance()->match(['POST', 'DELETE'], $config->endpoint, [McpController::class, 'admin'])
                     ->middleware($authenticatedMiddleware)
                     ->name('mcp.server');
 

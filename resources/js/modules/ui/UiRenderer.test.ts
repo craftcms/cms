@@ -38,8 +38,10 @@ import {
 } from '@/bootstrap/components';
 import {actionClient} from '@craftcms/ui';
 import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
+import Cp from '@/bootstrap/cp';
 import UiRenderer from './UiRenderer.vue';
 import {registerUiComponents} from './register';
+import type {UiValueChangeDetail} from './ui-values';
 import type {
   UiChange,
   UiControlPayload,
@@ -399,6 +401,7 @@ describe('UiRenderer', () => {
   let app: ReturnType<typeof createApp>;
   let container: HTMLElement;
   let form: HTMLFormElement;
+  let eventController: AbortController;
   let currentPayload: Ref<UiPayload>;
   let renderer: {
     advanceBaseline: () => void;
@@ -411,6 +414,7 @@ describe('UiRenderer', () => {
   };
 
   beforeEach(async () => {
+    eventController = new AbortController();
     Object.defineProperty(HTMLElement.prototype, 'attachInternals', {
       configurable: true,
       value: () => ({setFormValue: vi.fn()}),
@@ -424,6 +428,7 @@ describe('UiRenderer', () => {
   });
 
   afterEach(() => {
+    eventController.abort();
     vi.unstubAllGlobals();
     app.unmount();
     form.remove();
@@ -436,6 +441,75 @@ describe('UiRenderer', () => {
     } else {
       Reflect.deleteProperty(HTMLElement.prototype, 'attachInternals');
     }
+  });
+
+  function observeUiChanges(): UiValueChangeDetail[] {
+    const changes: UiValueChangeDetail[] = [];
+    document.addEventListener(
+      'craft:ui-value-change',
+      (event) => changes.push(event.detail),
+      {signal: eventController.signal}
+    );
+
+    return changes;
+  }
+
+  it('exposes mounted values and publishes only changed editable values', async () => {
+    const changes = observeUiChanges();
+    const ui = required(
+      Cp.$ui.active().find(({root}) => container.contains(root)),
+      'Expected the mounted UI.'
+    );
+    const path = ['settings', 'placeholder'];
+    const original = ui.getValue(path);
+
+    expect(ui.root.isConnected).toBe(true);
+    expect(changes).toEqual([]);
+
+    renderer.setValue(path, original);
+    expect(changes).toEqual([]);
+
+    const snapshots: UiValue[] = [];
+    document.addEventListener(
+      'craft:ui-value-change',
+      ({detail}) => snapshots.push(detail.ui.getValue(['settings', 'uiMode'])),
+      {signal: eventController.signal}
+    );
+    renderer.setValues([
+      {path, value: 'New placeholder'},
+      {path: ['settings', 'uiMode'], value: 'other'},
+    ]);
+
+    expect(
+      changes.map(({path, scope, value, kind}) => ({
+        path,
+        scope,
+        value,
+        kind,
+      }))
+    ).toEqual([
+      {path, scope: ['settings'], value: 'New placeholder', kind: 'discrete'},
+      {
+        path: ['settings', 'uiMode'],
+        scope: ['settings'],
+        value: 'other',
+        kind: 'discrete',
+      },
+    ]);
+    expect(snapshots).toEqual(['other', 'other']);
+    expect(changes.every(({ui: source}) => source === ui)).toBe(true);
+
+    const previous = changes.length;
+    renderer.resetValues();
+    expect(changes).toHaveLength(previous);
+    expect(ui.getValue(path)).toEqual(original);
+
+    currentPayload.value = clonePayload();
+    await nextTick();
+    expect(changes).toHaveLength(previous);
+
+    app.unmount();
+    expect(Cp.$ui.active()).not.toContain(ui);
   });
 
   it('renders custom help beside a field label', async () => {
@@ -736,6 +810,11 @@ describe('UiRenderer', () => {
 
     app.unmount();
     await mount(nested);
+    const changes = observeUiChanges();
+    const ui = required(
+      Cp.$ui.active().find(({root}) => container.contains(root)),
+      'Expected the mounted UI.'
+    );
 
     const fieldFor = (name: string) =>
       container
@@ -757,6 +836,15 @@ describe('UiRenderer', () => {
 
     expect(matrix().getAttribute('status')).toBe('modified');
     expect(heading().getAttribute('status')).toBeNull();
+    expect(changes).toHaveLength(1);
+    expect(changes[0]).toMatchObject({
+      path: [...blockScope, 'heading'],
+      scope: blockScope,
+      value: 'Changed',
+      kind: 'typing',
+    });
+    expect(changes[0]!.ui).toBe(ui);
+    expect(ui.getValue([...blockScope, 'heading'])).toBe('Changed');
 
     renderer.advanceBaseline();
     await nextTick();
@@ -1178,6 +1266,13 @@ describe('UiRenderer', () => {
       onChange,
       onMutation: (current) => (mutation = current),
     });
+    const observed = observeUiChanges();
+    const ui = required(
+      Cp.$ui.active().find(({root}) => container.contains(root)),
+      'Expected the mounted UI.'
+    );
+    expect(ui.getValue(['name'])).toBe('');
+    expect(observed).toEqual([]);
 
     const name = required(
       container.querySelector<HTMLElement & {updateComplete: Promise<void>}>(
@@ -1215,6 +1310,24 @@ describe('UiRenderer', () => {
       name: 'My Site',
       summary: 'Derived from My Site',
     });
+    expect(
+      observed.map(({path, scope, value, kind}) => ({
+        path,
+        scope,
+        value,
+        kind,
+      }))
+    ).toEqual([
+      {path: ['name'], scope: [], value: 'My Site', kind: 'typing'},
+      {
+        path: ['summary'],
+        scope: [],
+        value: 'Derived from My Site',
+        kind: 'typing',
+      },
+    ]);
+    expect(observed.every(({ui: source}) => source === ui)).toBe(true);
+    expect(ui.getValue(['summary'])).toBe('Derived from My Site');
   });
 
   it('uses a path slot to override a control without replacing UI behavior', async () => {
@@ -1986,6 +2099,7 @@ describe('UiRenderer', () => {
     await mount(pluginPayload, {
       registerComponents: registerTestPluginUiComponents,
     });
+    const observed = observeUiChanges();
 
     const input = required(
       container.querySelector<HTMLInputElement>('[data-test-plugin-control]'),
@@ -2003,6 +2117,15 @@ describe('UiRenderer', () => {
     expect(Object.fromEntries(new FormData(form))).toMatchObject({
       'settings[placeholder]': 'plugin-submitted',
     });
+    expect(
+      observed.map(({path, value, kind}) => ({path, value, kind}))
+    ).toEqual([
+      {
+        path: ['settings', 'placeholder'],
+        value: 'plugin-submitted',
+        kind: 'typing',
+      },
+    ]);
   });
 
   it.each([
@@ -3053,6 +3176,7 @@ describe('UiRenderer', () => {
     await mount(relational, {
       onMutation: (value) => (mutation = value),
     });
+    const observed = observeUiChanges();
 
     // The chip's own text nodes only — its `[slot="suffix"]` action menu
     // contributes the items' labels to `textContent`.
@@ -3075,6 +3199,7 @@ describe('UiRenderer', () => {
       expect.objectContaining({disabledElementIds: [2, 1]})
     );
     expect(mutation).toEqual({settings: {related: [2, 1, 3]}});
+    expect(observed.map(({value}) => value)).toEqual([[2, 1, 3]]);
 
     // Removal goes through the chip's own action menu now, rather than the
     // legacy controller.
@@ -3099,6 +3224,10 @@ describe('UiRenderer', () => {
     expect([...new FormData(form).getAll('settings[related][]')]).toEqual([
       '1',
       '3',
+    ]);
+    expect(observed.map(({value}) => value)).toEqual([
+      [2, 1, 3],
+      [1, 3],
     ]);
   });
 
@@ -4359,6 +4488,7 @@ describe('UiRenderer', () => {
     ];
     app.unmount();
     await mount(emptyText, {onMutation: (value) => (mutation = value)});
+    const changes = observeUiChanges();
 
     // Report an empty string where the server sent nothing. Driving the value
     // directly rather than through the DOM is deliberate: a text input already
@@ -4370,11 +4500,15 @@ describe('UiRenderer', () => {
     // The same value said two ways, not an edit — so no control has to know how
     // the server happens to spell "empty".
     expect(mutation ?? {}).toEqual({});
+    expect(changes).toEqual([]);
 
     renderer.setValue(['settings', 'summary'], 'real');
     await nextTick();
 
     expect(mutation).toEqual({settings: {summary: 'real'}});
+    expect(changes.map(({path, value}) => ({path, value}))).toEqual([
+      {path: ['settings', 'summary'], value: 'real'},
+    ]);
   });
 
   it('renders and updates permission trees', async () => {
@@ -4494,6 +4628,7 @@ describe('UiRenderer', () => {
     const disabled = ref(false);
     app.unmount();
     await mount(clonePayload(), {disabled});
+    const changes = observeUiChanges();
     renderer.setValue(['settings', 'placeholder'], 'Unsaved edit');
     const input = container.querySelector<HTMLInputElement>(
       'input[name="settings[placeholder]"]'
@@ -4503,12 +4638,15 @@ describe('UiRenderer', () => {
     await nextTick();
     expect(input.disabled).toBe(true);
     expect(Array.from(new FormData(form))).toEqual([]);
+    const notified = changes.length;
+    renderer.setValue(['settings', 'placeholder'], 'Disabled edit');
+    expect(changes).toHaveLength(notified);
 
     disabled.value = false;
     await nextTick();
     expect(input.disabled).toBe(false);
     expect(new FormData(form).get('settings[placeholder]')).toBe(
-      'Unsaved edit'
+      'Disabled edit'
     );
   });
 
@@ -4521,11 +4659,14 @@ describe('UiRenderer', () => {
       );
       app.unmount();
       await mount(nonEditable);
+      const changes = observeUiChanges();
 
       expect(container.querySelector<HTMLInputElement>('input')?.value).toBe(
         'Submitted placeholder'
       );
       expect(Array.from(new FormData(form))).toEqual([]);
+      renderer.setValue(['settings', 'placeholder'], 'Changed without editing');
+      expect(changes).toEqual([]);
     }
   );
 

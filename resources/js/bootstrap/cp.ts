@@ -21,6 +21,7 @@ import type {ScreenPageProps} from '@/common/composables/screen';
 import {setUpInertiaMessages} from '@/modules/messages/inertia';
 import {trackScrollbarWidth} from '@/common/utils/scrollbarWidth';
 import {registerSubmitShortcut} from '@/common/utils/submitShortcut';
+import {uiValues} from '@/modules/ui/ui-values';
 
 type TranslationStore = Record<string, Record<string, string>>;
 
@@ -74,6 +75,10 @@ const Cp = {
 
   get $components() {
     return cpComponentRegistry;
+  },
+
+  get $ui() {
+    return uiValues;
   },
 
   // Plugin bundles must use the mounted app's router, not their own module copy.
