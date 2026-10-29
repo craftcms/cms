@@ -244,6 +244,7 @@
 - Fixed a bug where going from one element edit page to another, such as switching sites, opened the next page’s “Revisions” details panel rather than the one that was open.
 - Fixed a bug where viewing an element revision showed three read-only notices, including one about settings changes not being permitted, and no “Revert content from this revision” button. ([#20115](https://github.com/craftcms/cms/pull/20115))
 - Fixed an error that occurred on release pages if one of the release’s drafts belonged to an element that had been deleted, such as along with its section. The draft is now listed as blocked with “The entry has been deleted.”, and can be removed by anyone who can manage the release.
+- Fixed a bug where AI-generated alt text and titles replaced the ones filled in from an image’s embedded metadata, for images whose metadata was read by the image analysis queue job, such as indexed images.
 
 ### Accessibility
 
@@ -397,7 +398,7 @@
 - Added `CraftCms\Cms\Asset\Analysis\ImageAnalyzer::needsSampling()`, and a `$sample` argument to `CraftCms\Cms\Asset\Analysis\ImageAnalyzer::queue()`, which also queues images that are missing their colors or metadata. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Added `CraftCms\Cms\Filesystem\Data\UploadedFile::isLocal()` and `imageSize()`. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Added `CraftCms\Cms\Asset\Elements\Asset::hasDefaultTitle()`. ([#20103](https://github.com/craftcms/cms/pull/20103))
-- Added `CraftCms\Cms\Asset\Elements\Asset::valuesFromEmbeddedMetadata()` and `CraftCms\Cms\Image\Data\ImageMetadata::suggestedAlt()`. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added `CraftCms\Cms\Asset\Analysis\ImageAnalysisTask::valuesFromMetadata()`, which image analysis tasks can override to fill in values from an image’s embedded metadata, such as Craft’s alt text and title tasks do, whether or not AI is set up, and `CraftCms\Cms\Asset\Analysis\ImageAnalyzer::valuesFromMetadata()`. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Content-model audit checks registered with `CraftCms\Cms\Mcp\ContentModel\CheckRegistry` can now return a `note` with their findings. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Added `CraftCms\Cms\Asset\ImageDuplicates`, which finds images that look like copies of each other. ([#20113](https://github.com/craftcms/cms/pull/20113))
 - Added `CraftCms\Cms\Image\ImageHash`, `CraftCms\Cms\Image\Data\ImageSample`, `CraftCms\Cms\Image\Images::sample()`, `CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis::$hash`, and the `hash` GraphQL field for image analysis, which hold an image’s difference hash. ([#20113](https://github.com/craftcms/cms/pull/20113))

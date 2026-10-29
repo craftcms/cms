@@ -9,6 +9,7 @@ use CraftCms\Cms\Ai\Enums\Capability;
 use CraftCms\Cms\Ai\Task;
 use CraftCms\Cms\Asset\Analysis\Contracts\ImageAnalysisTaskInterface;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Image\Data\ImageMetadata;
 
 /**
  * Base class for image analysis tasks. Register them with {@see AiTasks} like other AI tasks.
@@ -20,6 +21,11 @@ abstract class ImageAnalysisTask extends Task implements ImageAnalysisTaskInterf
     public static function requirements(): array
     {
         return [Capability::Vision, Capability::StructuredOutput];
+    }
+
+    public static function valuesFromMetadata(Asset $asset, ImageMetadata $metadata): array
+    {
+        return [];
     }
 
     public static function needed(Asset $asset, bool $overwrite): bool

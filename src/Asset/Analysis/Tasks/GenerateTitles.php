@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Asset\Analysis\Tasks;
 use CraftCms\Cms\Asset\Analysis\ImageAnalysisChanges;
 use CraftCms\Cms\Asset\Analysis\ImageAnalysisTask;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Image\Data\ImageMetadata;
 use CraftCms\Cms\Support\Facades\I18N;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use WeakMap;
@@ -43,6 +44,14 @@ class GenerateTitles extends ImageAnalysisTask
     public static function description(): ?string
     {
         return t('Titles images that are still titled after their filename, in each site’s language, when they’re uploaded or analyzed.');
+    }
+
+    /**
+     * Gives an image that’s still titled after its filename its embedded title.
+     */
+    public static function valuesFromMetadata(Asset $asset, ImageMetadata $metadata): array
+    {
+        return $metadata->title !== null && $asset->hasDefaultTitle() ? ['title' => mb_substr($metadata->title, 0, 255)] : [];
     }
 
     public static function needed(Asset $asset, bool $overwrite): bool

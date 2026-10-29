@@ -8,6 +8,7 @@ use CraftCms\Cms\Ai\Contracts\TaskInterface;
 use CraftCms\Cms\Asset\Analysis\ImageAnalysisChanges;
 use CraftCms\Cms\Asset\Analysis\ImageAnalysisTask;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Image\Data\ImageMetadata;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\Types\Type;
 
@@ -23,6 +24,18 @@ use Illuminate\JsonSchema\Types\Type;
  */
 interface ImageAnalysisTaskInterface extends TaskInterface
 {
+    /**
+     * Returns what the metadata embedded in the image’s file fills in for the asset in its own site, such as alt text
+     * written for it, as attribute values indexed by name.
+     *
+     * This is called when an image is uploaded, and when its metadata is first read for analysis, before the tasks
+     * that would run are chosen, whether or not AI is set up. Tasks should only fill in values the asset is missing,
+     * so {@see needed()} sees them and the model isn’t asked for them.
+     *
+     * @return array<string, mixed>
+     */
+    public static function valuesFromMetadata(Asset $asset, ImageMetadata $metadata): array;
+
     /**
      * Returns whether the task has anything to do for an image.
      *
