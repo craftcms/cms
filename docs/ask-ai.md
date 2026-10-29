@@ -4,6 +4,23 @@
 
 The chat runs as the `craft:assistant` [AI task](ai.md), which needs a model with tool calling, and it’s shown to users with the **Use the AI assistant** permission (`useAiAssistant`) while that task is available. Conversations are stored with `laravel/ai`’s conversation tables, one user each.
 
+## Guidance and skills
+
+Users steer the chat without code, in two ways:
+
+- **Guidance**: instructions the chat always follows. Guidance for every site, and additions for each site, are edited in the **AI Guidance & Skills** utility, which the `utility:ai-guidance` permission opens. Users can only edit the additions for sites they can edit, and the guidance for every site only if they can edit every site. Each user can add their own on their account’s **AI Assistant** screen. The chat gets the guidance for every site, the addition for the site the user is working in (the open element’s, or else the control panel’s), and the user’s own, in its instructions. MCP clients are told to read guidance with `guidance.get` before writing content, and the chat only reads it for other sites.
+- **Skills**: instructions for kinds of tasks, with a unique title and a short description, created in the same utility. They apply to the whole site. The chat loads a skill with `laravel/ai`’s `LoadSkill` tool when a request matches its description. Users can also choose a skill by typing `/`, which adds a `craft:skill` item to the context.
+
+Guidance and skills are instructions, not data: they shape how the chat works and writes, but don’t allow changes the user didn’t ask for, and the chat still asks the user to approve each change. MCP clients get them with the `guidance.get`, `skills.list`, and `skills.get` tools. The chat isn’t offered the `skills.*` tools, as it has its own.
+
+Plugins can read guidance with `CraftCms\Cms\Ai\Guidance\Guidance`, such as for their own AI features:
+
+```php
+use CraftCms\Cms\Ai\Guidance\Guidance;
+
+$instructions = app(Guidance::class)->forAssistant($user, $entry->getSite());
+```
+
 Plugins can extend the chat in three ways:
 
 - **[Tools](#tools)**: MCP tools a plugin registers are offered to the chat too.
@@ -170,7 +187,7 @@ public function boot(AssistantContextTypes $contextTypes): void
 }
 ```
 
-- `handle()` must be globally unique. Prefix it with your plugin handle. It may only contain letters, numbers, underscores, hyphens, and colons, and must start with a letter. `craft:element` is Craft’s own.
+- `handle()` must be globally unique. Prefix it with your plugin handle. It may only contain letters, numbers, underscores, hyphens, and colons, and must start with a letter. `craft:element` and `craft:skill` are Craft’s own.
 - The context type is resolved from the container for each message, so constructor injection works.
 - `resolve()` gets the items of its type in the message’s context, as `{type, ref, ...data}`, where `data` is what was passed to `addContext()`.
 - The items come from the browser. Check that the user can view each one, and leave out the ones they can’t. Return `null` when there’s nothing to describe.
@@ -260,6 +277,6 @@ A `source` action gets `query`, with the trigger character and what the user typ
 
 ## What isn’t extensible
 
-The agent, its instructions, its own display tools (`show_elements`, `show_components`, `show_field`, `ask_user`, and `propose_changes`), and the chat’s HTTP API are internal, and can change.
+The agent, its instructions, its own tools (`show_elements`, `show_components`, `show_field`, `ask_user`, `propose_changes`, and `LoadSkill`), and the chat’s HTTP API are internal, and can change.
 
 To change what the chat can do for everyone, add MCP capabilities, which other MCP clients get too. To add something only the chat needs, such as tools that work with what the user has open, add a context type.

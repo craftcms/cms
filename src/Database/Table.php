@@ -19,6 +19,10 @@ readonly class Table
 
     public const string AGENT_CONVERSATION_MESSAGES = 'agent_conversation_messages';
 
+    public const string AGENT_GUIDANCE = 'agent_guidance';
+
+    public const string AGENT_SKILLS = 'agent_skills';
+
     public const string ASSETINDEXDATA = 'assetindexdata';
 
     public const string ASSETINDEXINGSESSIONS = 'assetindexingsessions';

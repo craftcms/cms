@@ -1,18 +1,24 @@
 <script setup lang="ts">
   /**
-   * The actions on the current conversation, in the chat’s header: renaming
-   * it, and deleting it.
+   * The chat’s actions, in its header: renaming and deleting the current
+   * conversation, once it’s stored, and links to where the assistant’s
+   * guidance and skills are edited.
    */
   import {getActionUrl, t} from '@craftcms/ui';
-  import type {ActionMenuItem} from '@craftcms/ui/components/action-menu/action-menu.types';
-  import {shallowRef} from 'vue';
+  import {usePage} from '@inertiajs/vue3';
+  import {computed, shallowRef} from 'vue';
+  import type {CraftData} from '@/common/composables/useCraftData';
+  import ActionMenu from '@/common/components/ActionMenu.vue';
   import ModalForm from '@/common/components/ModalForm.vue';
+  import type {ActionItem} from '@/common/types';
   import AssistantController from '@/actions/CraftCms/Cms/Ai/Http/Controllers/AssistantController';
   import {AssistantRequestError, actionFetch} from './assistant';
 
   const props = defineProps<{
     threadId: string;
     title: string;
+    /** Whether the conversation is stored, so it can be renamed and deleted. */
+    stored: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -25,7 +31,46 @@
   const name = shallowRef('');
   const error = shallowRef<string | null>(null);
 
-  const actions: ActionMenuItem[] = [
+  const page = usePage<{craft?: CraftData}>();
+
+  const links = computed<ActionItem[]>(() => {
+    const user = page.props?.craft?.currentUser;
+
+    return [
+      ...(user?.personalGuidanceUrl
+        ? [
+            {
+              type: 'link' as const,
+              label: t('Personal guidance'),
+              icon: 'user',
+              href: user.personalGuidanceUrl,
+            },
+          ]
+        : []),
+      ...(user?.aiGuidanceUrl
+        ? [
+            {
+              type: 'link' as const,
+              label: t('Site guidance'),
+              icon: 'sparkles',
+              href: user.aiGuidanceUrl,
+            },
+          ]
+        : []),
+      ...(user?.aiSkillsUrl
+        ? [
+            {
+              type: 'link' as const,
+              label: t('Skills'),
+              icon: 'layer-group',
+              href: user.aiSkillsUrl,
+            },
+          ]
+        : []),
+    ];
+  });
+
+  const conversationActions: ActionItem[] = [
     {
       label: t('Rename…'),
       icon: 'pencil',
@@ -42,6 +87,13 @@
       onClick: () => void remove(),
     },
   ];
+
+  // The links go first, as the menu moves Delete to the end, which would put it with them.
+  const actions = computed<ActionItem[]>(() => [
+    ...links.value,
+    ...(props.stored && links.value.length ? [{type: 'hr' as const}] : []),
+    ...(props.stored ? conversationActions : []),
+  ]);
 
   /** Posts to one of the conversation’s actions. */
   async function send(
@@ -104,7 +156,12 @@
 </script>
 
 <template>
-  <craft-action-menu :label="t('Chat actions')" .actions="actions" />
+  <!-- Links make Inertia visits, as `ActionMenu` renders them as `CpLink`s. -->
+  <ActionMenu
+    v-if="actions.length"
+    :label="t('Chat actions')"
+    :actions="actions"
+  />
 
   <ModalForm
     :is-active="renaming"
@@ -114,7 +171,7 @@
     @close="renaming = false"
     @submit="rename"
   >
-    <craft-field :label="t('Name')" required :has-errors="!!error">
+    <craft-field :label="t('Name')" required .hasErrors="!!error">
       <craft-input slot="input">
         <input slot="input" v-model="name" type="text" required />
       </craft-input>

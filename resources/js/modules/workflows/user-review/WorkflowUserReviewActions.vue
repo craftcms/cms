@@ -8,7 +8,7 @@
     COMMENT_MAX_LENGTH,
     useCharacterLimit,
   } from '@/common/composables/useCharacterLimit';
-  import {commentToolbarButtons} from '@/modules/markdown-field/commentToolbarButtons';
+  import {commentToolbarButtons} from '@/modules/markdown-field/toolbarPresets';
   import {isModifierKeyPressed} from '@/modules/markdown-field/behaviors/utilities';
   import '@/modules/markdown-field/markdown-field';
   import {

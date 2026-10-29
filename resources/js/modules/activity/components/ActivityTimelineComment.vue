@@ -14,7 +14,7 @@
   } from '@/common/composables/useCharacterLimit';
   import type {ActionItem} from '@/common/types';
   import type {ActivityEvent} from '@/modules/activity/composables/useActivityTimeline';
-  import {commentToolbarButtons} from '@/modules/markdown-field/commentToolbarButtons';
+  import {commentToolbarButtons} from '@/modules/markdown-field/toolbarPresets';
   import ActivityCommentCard from './ActivityCommentCard.vue';
   import ActivityTimelineEvent from './ActivityTimelineEvent.vue';
   import '../../markdown-field/markdown-field';
