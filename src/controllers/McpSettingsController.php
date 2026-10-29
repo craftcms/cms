@@ -23,16 +23,22 @@ class McpSettingsController extends Controller
             'publicResourceTemplates' => array_map(static fn($ref) => ['label' => $ref->resourceTemplate->name, 'value' => $ref->resourceTemplate->uriTemplate], array_values($definitions->getResourceTemplates())),
             'publicPrompts' => array_map(static fn($ref) => ['label' => $ref->prompt->name, 'value' => $ref->prompt->name], array_values($definitions->getPrompts())),
         ];
-        $options = static fn(array $models) => array_map(static fn($model) => ['label' => $model->name, 'value' => $model->handle], $models);
+        $options = static fn(array $models, string $message) => array_map(static fn($model) => [
+            'label' => Craft::t('app', $message, ['name' => Craft::t('site', $model->name)]),
+            'value' => $model->handle,
+        ], $models);
         $elementTypes = Craft::$app->get('mcp')->getCapabilityContainer()->get(PublicElementTypes::class);
         $additionalTypes = array_filter($elementTypes->all(), static fn($name) => !$elementTypes->make($name)->isScopeControlled(), ARRAY_FILTER_USE_KEY);
         $scopes = [
-            'publicSiteHandles' => $options(Craft::$app->getSites()->getAllSites(withDisabled: true)),
-            'publicSectionHandles' => $options(Craft::$app->getEntries()->getAllSections()),
-            'publicNestedEntryFieldHandles' => $options(array_values(array_filter(Craft::$app->getFields()->getAllFields(), static fn($field) => in_array($field::class, Craft::$app->getFields()->getNestedEntryFieldTypes(), true)))),
-            'publicVolumeHandles' => $options(Craft::$app->getVolumes()->getAllVolumes()),
-            'publicUserGroupHandles' => $options(Craft::$app->getUserGroups()->getAllGroups()),
-            'publicElementTypes' => array_map(static fn($name, $class) => ['label' => $class::displayName(), 'value' => $name], array_keys($additionalTypes), array_values($additionalTypes)),
+            'publicSiteHandles' => $options(Craft::$app->getSites()->getAllSites(withDisabled: true), 'Query elements in the “{name}” site'),
+            'publicSectionHandles' => $options(Craft::$app->getEntries()->getAllSections(), 'Query entries in the “{name}” section'),
+            'publicNestedEntryFieldHandles' => $options(array_values(array_filter(Craft::$app->getFields()->getAllFields(), static fn($field) => in_array($field::class, Craft::$app->getFields()->getNestedEntryFieldTypes(), true))), 'Query entries in the “{name}” field'),
+            'publicVolumeHandles' => $options(Craft::$app->getVolumes()->getAllVolumes(), 'Query assets in the “{name}” volume'),
+            'publicElementTypes' => array_map(static fn($name, $class) => [
+                'label' => Craft::t('app', 'Query {type}', ['type' => $class::pluralLowerDisplayName()]),
+                'value' => $name,
+            ], array_keys($additionalTypes), array_values($additionalTypes)),
+            'publicUserGroupHandles' => $options(Craft::$app->getUserGroups()->getAllGroups(), 'Query users in the “{name}” user group'),
         ];
 
         return $this->renderTemplate('mcp/settings', compact('settings', 'capabilities', 'scopes'), View::TEMPLATE_MODE_CP);
