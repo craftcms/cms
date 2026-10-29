@@ -86,6 +86,7 @@
         <craft-spinner v-if="loading && result"></craft-spinner>
         <Select
           small
+          class="w-auto"
           :label="t('Order by')"
           label-sr-only
           :options="orderByOptions"
@@ -96,6 +97,7 @@
         />
         <Select
           small
+          class="w-auto"
           :label="t('Direction')"
           label-sr-only
           :options="directionOptions"

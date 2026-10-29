@@ -1,7 +1,8 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import {useElementVisibility} from '@vueuse/core';
-  import {computed, ref, useTemplateRef, watch} from 'vue';
+  import {computed, ref, useId, useTemplateRef, watch} from 'vue';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import Select from '@/common/form/Select.vue';
   import PluginGrid from './PluginGrid.vue';
   import {
@@ -38,7 +39,7 @@
     return orderBy && direction ? {orderBy, direction} : null;
   });
 
-  const {plugins, loading, pending, hasMore, failed, loadMore} = usePluginIndex(
+  const {plugins, loading, hasMore, failed, loadMore} = usePluginIndex(
     () => filter,
     sort
   );
@@ -54,6 +55,8 @@
         }[value] ?? value,
     }))
   );
+
+  const sortLabelId = useId();
 
   const directionOptions = [
     {value: 'asc', label: t('Ascending')},
@@ -88,12 +91,16 @@
 
 <template>
   <div class="plugin-index">
-    <div class="plugin-index__header">
-      <slot name="header"></slot>
-      <div v-if="sort" class="flex items-center gap-sm">
-        <craft-spinner v-if="loading && !pending"></craft-spinner>
+    <LayoutSlot v-if="sort" name="content-actions">
+      <div
+        role="group"
+        :aria-labelledby="sortLabelId"
+        class="flex items-center gap-sm"
+      >
+        <span :id="sortLabelId" class="cp-group-heading">{{ t('Sort') }}</span>
         <Select
           small
+          class="w-auto"
           :label="t('Sort by')"
           label-sr-only
           :options="attributeOptions"
@@ -102,6 +109,7 @@
         />
         <Select
           small
+          class="w-auto"
           :label="t('Direction')"
           label-sr-only
           :options="directionOptions"
@@ -109,7 +117,7 @@
           @update:model-value="setDirection"
         />
       </div>
-    </div>
+    </LayoutSlot>
 
     <PluginGrid :plugins="plugins" />
 
@@ -129,16 +137,6 @@
 </template>
 
 <style scoped>
-  .plugin-index__header {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--c-spacing-md);
-    align-items: center;
-    justify-content: space-between;
-    padding-block-end: var(--c-spacing-md);
-    border-block-end: 1px solid var(--c-color-border-quiet);
-  }
-
   .plugin-index__error {
     color: var(--c-color-danger-on-quiet);
   }

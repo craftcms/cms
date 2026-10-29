@@ -89,8 +89,6 @@ export function usePluginIndex(
   return {
     plugins: computed(() => plugins.value),
     loading: computed(() => loading.value),
-    /** Nothing has come back yet. */
-    pending: computed(() => loading.value && plugins.value.length === 0),
     hasMore: computed(() => hasMore.value),
     failed: computed(() => failed.value),
     loadMore: load,
