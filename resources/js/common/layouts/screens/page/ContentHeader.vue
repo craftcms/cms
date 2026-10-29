@@ -22,7 +22,8 @@
           <slot name="title"></slot>
         </LayoutSlotOutlet>
 
-        <div class="flex gap-2 items-center">
+        <!-- Kept at the end even when it wraps below the title. -->
+        <div class="flex gap-2 items-center ms-auto">
           <LayoutSlotOutlet name="content-actions">
             <slot name="actions"></slot>
           </LayoutSlotOutlet>
