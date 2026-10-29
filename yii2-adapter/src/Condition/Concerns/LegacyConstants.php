@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-namespace CraftCms\Cms\Condition\Concerns;
+namespace CraftCms\Yii2Adapter\Condition\Concerns;
 
 use craft\base\Event as YiiEvent;
 use craft\elements\conditions\users\AffiliatedSiteConditionRule;

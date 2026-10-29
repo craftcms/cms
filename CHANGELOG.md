@@ -560,6 +560,7 @@
 - Added `CraftCms\Cms\Cp\Components\Tab::icon()`. ([#20005](https://github.com/craftcms/cms/pull/20005))
 - Added a `prefix` slot to `<craft-tab>`. ([#20005](https://github.com/craftcms/cms/pull/20005))
 - The `capitalize`, `lower`, `title`, and `upper` Twig filters now have `language` arguments, which default to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
+- Improved Twig attribute access on Eloquent models to resolve missing and null attributes, casts, accessors, and relations through Eloquent property access, while preserving explicit method calls. ([#20165](https://github.com/craftcms/cms/pull/20165))
 - Added the `craft:project-config:check` command, which checks project config schema compatibility without applying changes.
 - Added the `{% render %}` Twig tag. `{% render %}` tags and `render()` methods are allowed within the Twig sandbox. ([#19988](https://github.com/craftcms/cms/pull/19988))
 - Added `CraftCms\Cms\Component\Contracts\Renderable`. ([#19988](https://github.com/craftcms/cms/pull/19988))
@@ -586,6 +587,7 @@
 - Added `CraftCms\Cms\Plugin\Plugins::hasPluginIcon()`. ([#20074](https://github.com/craftcms/cms/pull/20074))
 - Added `CraftCms\Cms\Ui\Controls\Textarea::singleLine()`. ([#20074](https://github.com/craftcms/cms/pull/20074))
 - Added `craft\helpers\Db::isSafeOrderBy()`. ([#19994](https://github.com/craftcms/cms/pull/19994))
+- Fixed a bug where plugin control panel routes and control panel action routes did not require authentication and the `accessCp` permission. ([#20164](https://github.com/craftcms/cms/pull/20164))
 
 ### System
 
@@ -601,6 +603,7 @@
 - Updated Twig to 3.30.
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
 - Fixed a bug where numeric custom field comparisons and sorting, Lightswitch field queries, and Date field queries could return incorrect results on SQLite. ([#20167](https://github.com/craftcms/cms/pull/20167))
+- Fixed an error when ordering element queries by custom field handles. ([#20170](https://github.com/craftcms/cms/pull/20170))
 - Fixed a bug where element query date params, such as `postDate`, `before`, `after`, `dateCreated`, and Date field params, as well as date condition rules, were off by the system time zone’s UTC offset. ([#19963](https://github.com/craftcms/cms/pull/19963))
 - Fixed a bug where many dates Craft stores, such as elements’ soft-delete dates and sites’, plugins’, relations’, and activity events’ dates, were stored in the system time zone rather than UTC. ([#20053](https://github.com/craftcms/cms/pull/20053))
 - Fixed a bug where revisions were created for elements that hadn’t changed since their last revision, including nested entries that hadn’t changed between their owner’s revisions, if the system time zone wasn’t UTC. ([#20053](https://github.com/craftcms/cms/pull/20053))
@@ -689,6 +692,8 @@
 - Fixed a bug where control panel screens that hadn’t been ported to Vue, such as plugins’ Twig-rendered pages, kept reloading when an element source had “Show count” enabled. ([#20082](https://github.com/craftcms/cms/pull/20082))
 - Uploads staged on an S3 disk are now copied into their volume within S3, rather than downloaded and uploaded again, when the volume’s disk uses the same credentials and endpoint. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Fixed a bug where `withTransforms` criteria were ignored for eager-loaded assets. ([#20117](https://github.com/craftcms/cms/pull/20117))
+- Fixed errors that occurred when running the legacy `queue` console commands with the Yii adapter installed, such as `php craft queue:run` and `php craft queue:info --no-interaction`. ([#20162](https://github.com/craftcms/cms/pull/20162))
+- Fixed a bug where Composer warned about ambiguous class resolution for `Legacy*` traits when `craftcms/yii2-adapter` was installed. ([#20161](https://github.com/craftcms/cms/pull/20161))
 - Fixed a bug where the lists in `config/craft/twig-sandbox.php` replaced Craft’s default Twig sandbox allowlists rather than extending them, which broke system emails for projects upgraded from Craft 5. ([#20159](https://github.com/craftcms/cms/pull/20159))
 
 ## 6.0.0-alpha.20 - 2026-10-07
