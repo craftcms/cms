@@ -8,14 +8,16 @@ use craft\db\Table;
 use craft\elements\User;
 use craft\events\RegisterOAuthResourcesEvent;
 use craft\helpers\App;
-use craft\helpers\DateTimeHelper;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\oauth\AccessToken;
+use craft\oauth\Client;
 use craft\oauth\Repositories;
 use craft\oauth\Resource;
+use craft\oauth\Scope;
 use DateInterval;
 use DateTime;
 use DateTimeImmutable;
@@ -142,7 +144,9 @@ class OAuth extends Component
     {
         $request = $this->resourceServer($resource)->validateAuthenticatedRequest($request);
         $granted = $request->getAttribute('oauth_scopes', []);
-        if (!is_array($granted) || !$this->getResource($resource)->allowsScopes($granted) || array_diff($requiredScopes, $granted)) {
+        // Personal access tokens can grant scopes for several resources, so only this resource’s scopes count here.
+        $granted = is_array($granted) ? array_values(array_intersect($granted, array_keys($this->getResource($resource)->scopes))) : [];
+        if (!$granted || array_diff($requiredScopes, $granted)) {
             throw OAuthServerException::accessDenied('The token does not grant the required scopes for this resource.');
         }
 
@@ -228,68 +232,52 @@ class OAuth extends Component
     }
 
     /**
-     * Returns the resources a user can create personal access tokens for: those that allow them, which the user is
-     * permitted to access, and which have scopes the user may be granted.
+     * Creates a personal access token for a user, like Laravel Passport’s `HasApiTokens::createToken()`.
      *
-     * @return array<string,Resource>
-     */
-    public function getPersonalTokenResources(User $user): array
-    {
-        return array_filter($this->getResources(), function(Resource $resource) use ($user) {
-            if (!$resource->personalTokens || !$this->personalTokenScopes($resource, $user)) {
-                return false;
-            }
-            try {
-                $this->authorizedUser((string)$user->id, $resource->id);
-            } catch (OAuthServerException) {
-                return false;
-            }
-            return true;
-        });
-    }
-
-    /**
-     * @return string[]
-     */
-    private function personalTokenScopes(Resource $resource, User $user): array
-    {
-        return $resource->scopesForUser($user, array_keys($resource->scopes));
-    }
-
-    /**
-     * Creates a personal access token for a user, without an OAuth client flow.
+     * The token is issued through the personal access client (one that only supports the `personal_access` grant),
+     * which is shared by all resources and created the first time it’s needed. The token’s name is stored with the
+     * token. Its scopes can belong to several resources, and each resource only accepts the token for its own scopes.
      *
-     * As with Laravel Passport, the token is issued through the personal access client (one that only supports the
-     * `personal_access` grant), which is shared by all resources and created the first time it’s needed. The token’s
-     * name is stored with the token, and its scopes determine its resource.
+     * Use [[PersonalAccessTokens::create()]] to create tokens with the scopes a user may grant.
      *
-     * @param string[] $scopes The scope IDs to grant. Access levels include the narrower levels.
+     * @param string[] $scopes The scope IDs to grant
      * @return string The signed access token. It isn’t stored, so it can’t be retrieved again.
-     * @throws InvalidArgumentException if the resource doesn’t allow personal access tokens for the user, or the
-     * scopes aren’t ones the user may be granted
+     * @throws InvalidArgumentException if a scope doesn’t belong to a resource, or the user may not access its resource
+     * @internal
      */
-    public function createPersonalAccessToken(string $resource, User $user, string $name, array $scopes, DateTimeImmutable $expiresAt): string
+    public function createPersonalAccessToken(User $user, string $name, array $scopes, DateInterval $expiresIn): string
     {
-        if (!isset($this->getPersonalTokenResources($user)[$resource])) {
-            throw new InvalidArgumentException("Personal access tokens aren’t available for $resource.");
-        }
-        $definition = $this->getResource($resource);
-        if (!$scopes || array_diff($scopes, $this->personalTokenScopes($definition, $user))) {
+        $scopes = array_values(array_unique($scopes));
+        if (!$scopes) {
             throw new InvalidArgumentException('Invalid scopes.');
         }
-        $level = $definition->highestLevel($scopes);
-        if ($level !== null) {
-            $scopes = array_merge($scopes, $definition->grantedLevels($level));
+        $resources = [];
+        foreach ($scopes as $scope) {
+            $resource = ArrayHelper::firstWhere($this->getResources(), fn(Resource $resource) => isset($resource->scopes[$scope]));
+            if (!$resource) {
+                throw new InvalidArgumentException("Invalid scope: $scope");
+            }
+            $resources[$resource->id] = $resource;
         }
-        $scopes = array_values(array_intersect(array_keys($definition->scopes), $scopes));
+        try {
+            foreach ($resources as $resource) {
+                $this->authorizedUser((string)$user->id, $resource->id);
+            }
+        } catch (OAuthServerException $e) {
+            throw new InvalidArgumentException($e->getMessage(), previous: $e);
+        }
 
-        $repository = new Repositories($definition);
-        $scopes = array_map(fn(string $scope) => $repository->getScopeEntityByIdentifier($scope), $scopes);
+        // The personal access client has no `scopes`, so any resource’s repository can issue the token.
+        $repository = new Repositories(reset($resources));
+        $token = $repository->getNewToken($repository->getClientEntity($this->personalAccessClientId()), array_map(function(string $id) {
+            $scope = new Scope();
+            $scope->setIdentifier($id);
+            return $scope;
+        }, $scopes), (string)$user->id);
         /** @var AccessToken $token */
-        $token = $repository->getNewToken($repository->getClientEntity($this->personalAccessClientId()), $scopes, (string)$user->id);
         $token->name = $name;
         $token->setIdentifier(bin2hex(random_bytes(40)));
-        $token->setExpiryDateTime($expiresAt);
+        $token->setExpiryDateTime((new DateTimeImmutable())->add($expiresIn));
         $token->setPrivateKey($this->key('private'));
         $repository->persistNewAccessToken($token);
 
@@ -306,13 +294,12 @@ class OAuth extends Component
     private function personalAccessClientId(): string
     {
         $clients = (new Query())
-            ->select(['id', 'grant_types'])
             ->from(Table::OAUTH_CLIENTS)
             ->where(['revoked' => false, 'provider' => self::PERSONAL_ACCESS_PROVIDER])
             ->orderBy(['created_at' => SORT_DESC])
             ->all();
         foreach ($clients as $client) {
-            if ($this->isPersonalAccessClient($client['grant_types'])) {
+            if ((new Client($client))->supportsGrantType('personal_access')) {
                 return $client['id'];
             }
         }
@@ -331,106 +318,6 @@ class OAuth extends Component
         ]);
 
         return $id;
-    }
-
-    private function isPersonalAccessClient(?string $grantTypes): bool
-    {
-        $grantTypes = json_decode($grantTypes ?? '', true);
-        return is_array($grantTypes) && in_array('personal_access', $grantTypes, true);
-    }
-
-    /**
-     * Returns a user’s active personal access tokens and the apps they’ve authorized for a resource.
-     *
-     * Personal access tokens are listed individually, with their `tokenId`. Apps are listed once per client, with a
-     * `tokenId` of `null`.
-     *
-     * @return array{resourceId:string,clientId:string,tokenId:string|null,name:string,scopes:string[],expiresAt:DateTime,personal:bool}[]
-     */
-    public function getUserGrants(string $resource, User $user): array
-    {
-        $now = Db::prepareDateForDb(new DateTime());
-        $rows = (new Query())
-            ->select([
-                'access.id',
-                'access.client_id',
-                'access.name',
-                'access.scopes',
-                'access.created_at',
-                'access.expires_at',
-                'refreshExpiresAt' => 'refresh.expires_at',
-                'clientName' => 'clients.name',
-                'clients.grant_types',
-            ])
-            ->from(['access' => Table::OAUTH_ACCESS_TOKENS])
-            ->innerJoin(['clients' => Table::OAUTH_CLIENTS], '[[clients.id]] = [[access.client_id]]')
-            ->leftJoin(['refresh' => Table::OAUTH_REFRESH_TOKENS], [
-                'and',
-                '[[refresh.access_token_id]] = [[access.id]]',
-                ['refresh.revoked' => false],
-                ['>', 'refresh.expires_at', $now],
-            ])
-            ->where([
-                'access.user_id' => $user->id,
-                'access.revoked' => false,
-                'clients.revoked' => false,
-            ])
-            ->andWhere([
-                'or',
-                ['>', 'access.expires_at', $now],
-                ['not', ['refresh.id' => null]],
-            ])
-            ->orderBy(['access.created_at' => SORT_DESC])
-            ->all();
-
-        $definition = $this->getResource($resource);
-        $grants = [];
-        foreach ($rows as $row) {
-            $scopes = json_decode($row['scopes'] ?? '', true);
-            if (!is_array($scopes) || !$definition->allowsScopes($scopes)) {
-                continue;
-            }
-            $personal = $this->isPersonalAccessClient($row['grant_types']);
-            $key = $personal ? "token:{$row['id']}" : "client:{$row['client_id']}";
-            $expiresAt = DateTimeHelper::toDateTime(max($row['expires_at'], $row['refreshExpiresAt'] ?? ''));
-            $grant = $grants[$key] ?? null;
-            $grants[$key] = [
-                'resourceId' => $resource,
-                'clientId' => $row['client_id'],
-                'tokenId' => $personal ? $row['id'] : null,
-                'name' => $personal ? ($row['name'] ?? $row['clientName']) : $row['clientName'],
-                'scopes' => array_values(array_unique(array_merge($grant['scopes'] ?? [], $scopes))),
-                'expiresAt' => $grant ? max($grant['expiresAt'], $expiresAt) : $expiresAt,
-                'personal' => $personal,
-            ];
-        }
-
-        return array_values($grants);
-    }
-
-    /**
-     * Revokes a user’s access and refresh tokens for a client, or just one of them if `$tokenId` is given (as for
-     * personal access tokens).
-     */
-    public function revokeUserGrant(string $resource, User $user, string $clientId, ?string $tokenId = null): void
-    {
-        $condition = ['user_id' => $user->id, 'client_id' => $clientId];
-        if ($tokenId !== null) {
-            $condition['id'] = $tokenId;
-        }
-        // Clients and the personal access client can have tokens for other resources too.
-        $definition = $this->getResource($resource);
-        $rows = (new Query())->select(['id', 'scopes'])->from(Table::OAUTH_ACCESS_TOKENS)->where($condition)->pairs();
-        $accessTokenIds = array_keys(array_filter($rows, fn(?string $scopes) => $definition->allowsScopes(json_decode($scopes ?? '', true) ?: [])));
-        if (!$accessTokenIds) {
-            return;
-        }
-        $condition = ['id' => $accessTokenIds];
-        Db::update(Table::OAUTH_REFRESH_TOKENS, ['revoked' => true], ['access_token_id' => $accessTokenIds], updateTimestamp: false);
-        Db::update(Table::OAUTH_ACCESS_TOKENS, [
-            'revoked' => true,
-            'updated_at' => Db::prepareDateForDb(new DateTime()),
-        ], $condition, updateTimestamp: false);
     }
 
     /** Generate the default keys explicitly, without replacing existing keys. */

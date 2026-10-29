@@ -32,37 +32,48 @@
         <thead>
         <tr>
           <th scope="col">{{ 'Name'|t('app') }}</th>
-          <th scope="col">{{ 'Access'|t('app') }}</th>
-          <th scope="col">{{ 'Expires'|t('app') }}</th>
+          <th scope="col">{{ 'Type'|t('app') }}</th>
+          <th scope="col">{{ 'Expires on'|t('app') }}</th>
           <th scope="col"><span class="visually-hidden">{{ 'Actions'|t('app') }}</span></th>
         </tr>
         </thead>
         <tbody>
         {% for grant in grants %}
-          {% set resource = resources[grant.resourceId] %}
-          {% set level = resource.highestLevel(grant.scopes) %}
           <tr>
-            <th scope="row">
-              {{ grant.name }}
-              <div class="smalltext light">{{ grant.personal ? 'Personal token'|t('app') : 'Authorized app'|t('app') }}</div>
-            </th>
+            <th scope="row">{{ grant.name }}</th>
             <td>
-              {% if resources|length > 1 %}{{ resource.getLabel() }}:{% endif %}
-              {{ level ? (resource.scopeLabels[level] ?? level) : grant.scopes|join(', ') }}
+              {% if grant.personal %}
+                {{ 'Personal'|t('app') }}
+              {% else %}
+                {# Apps show the APIs they were authorized for #}
+                {{ grant.scopes|keys|map(handle => groups[handle].label ?? null)|filter|join(', ')|default('App'|t('app')) }}
+              {% endif %}
             </td>
             <td>{{ grant.expiresAt|date('short') }}</td>
             <td class="thin">
-              {{ tag('button', {
-                type: 'button',
-                class: ['btn', 'small', 'formsubmit'],
-                text: 'Revoke'|t('app'),
-                aria: {label: 'Revoke {name}'|t('app', {name: grant.name})},
-                data: {
-                  form: 'false',
-                  action: 'users/revoke-access-token',
-                  params: {resource: grant.resourceId, clientId: grant.clientId, tokenId: grant.tokenId},
+              {{ disclosureMenu([
+                {
+                  label: 'Edit'|t('app'),
+                  icon: 'edit',
+                  attributes: {
+                    class: ['token-edit-btn'],
+                    data: {'client-id': grant.clientId, 'token-id': grant.tokenId},
+                  },
+                },
+                {
+                  label: 'Revoke'|t('app'),
+                  icon: 'remove',
+                  destructive: true,
+                  action: 'users/revoke-token',
+                  params: {clientId: grant.clientId, tokenId: grant.tokenId},
                   confirm: 'Are you sure you want to revoke “{name}”? Anything using it will lose access.'|t('app', {name: grant.name}),
-                  redirect: 'myaccount/tokens'|hash,
+                  redirect: 'myaccount/tokens',
+                },
+              ], {
+                buttonAttributes: {
+                  class: ['action-btn', 'hairline'],
+                  hiddenLabel: 'Actions'|t('app'),
+                  'aria-label': 'Actions for {name}'|t('app', {name: grant.name}),
                 },
               }) }}
             </td>

@@ -86,6 +86,7 @@ use craft\services\Gql;
 use craft\services\Images;
 use craft\services\ImageTransforms;
 use craft\services\Path;
+use craft\services\PersonalAccessTokens;
 use craft\services\Plugins;
 use craft\services\PluginStore;
 use craft\services\ProjectConfig;
@@ -172,6 +173,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read MigrationManager $migrator The application’s migration manager
  * @property-read Mutex $mutex The application’s mutex service
  * @property-read Path $path The path service
+ * @property-read PersonalAccessTokens $personalAccessTokens The personal access tokens service
  * @property-read PluginStore $pluginStore The plugin store service
  * @property-read Plugins $plugins The plugins service
  * @property-read ProjectConfig $projectConfig The project config service
@@ -1353,6 +1355,17 @@ trait ApplicationTrait
     public function getOAuth(): \craft\services\OAuth
     {
         return $this->get('oauth');
+    }
+
+    /**
+     * Returns the personal access tokens service.
+     *
+     * @return PersonalAccessTokens The personal access tokens service
+     * @since 5.12.0
+     */
+    public function getPersonalAccessTokens(): PersonalAccessTokens
+    {
+        return $this->get('personalAccessTokens');
     }
 
     /**

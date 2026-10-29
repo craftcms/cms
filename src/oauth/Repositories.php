@@ -212,7 +212,7 @@ class Repositories implements ClientRepositoryInterface, AccessTokenRepositoryIn
 
     private function isRevoked(string $table, string $id): bool
     {
-        // Access tokens and auth codes belong to the resource that owns their scopes.
+        // Access tokens and auth codes belong to the resources that own their scopes.
         $row = (new Query())->from($table)->where(['id' => $id])->one();
         return !$row || $row['revoked'] || !$this->hasResourceScopes($row['scopes']) || !$this->getClientEntity($row['client_id']);
     }
@@ -227,8 +227,9 @@ class Repositories implements ClientRepositoryInterface, AccessTokenRepositoryIn
 
     private function hasResourceScopes(?string $scopes): bool
     {
+        // Personal access tokens can have scopes for several resources, and belong to each of them.
         $scopes = json_decode($scopes ?? '', true);
-        return is_array($scopes) && $this->resource->allowsScopes($scopes);
+        return is_array($scopes) && array_intersect($scopes, array_keys($this->resource->scopes));
     }
 
     private function requireClient(string $clientId): Client

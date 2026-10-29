@@ -113,7 +113,7 @@ trait EditUserTrait
             $screens[self::SCREEN_PASSKEYS] = ['label' => Craft::t('app', 'Passkeys')];
         }
 
-        if ($user->getIsCurrent() && Craft::$app->getOAuth()->getPersonalTokenResources($user)) {
+        if ($user->getIsCurrent() && Craft::$app->getPersonalAccessTokens()->scopeGroupsFor($user)) {
             $screens[self::SCREEN_TOKENS] = ['label' => Craft::t('app', 'Tokens')];
         }
 

@@ -15,13 +15,16 @@ use craft\enums\CmsEdition;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use craft\oauth\ScopeGroup;
 use craft\oauth\User as OAuthUser;
 use craft\services\Gql;
-use craft\services\OAuth;
-use DateTimeImmutable;
+use craft\services\PersonalAccessTokens;
+use DateInterval;
+use DateTime;
 use FunctionalTester;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\ServerRequest;
+use League\OAuth2\Server\Exception\OAuthServerException;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -64,20 +67,21 @@ class GraphqlOAuthCest
 
     public function testPersonalAccessTokens(FunctionalTester $I): void
     {
-        $oauth = Craft::$app->getOAuth();
+        $tokens = Craft::$app->getPersonalAccessTokens();
         $user = $this->user(['viewUsers']);
-        $token = $oauth->createPersonalAccessToken('graphql', $user, 'Build script', [Gql::SCOPE_READ], new DateTimeImmutable('+7 days'));
-        $other = $oauth->createPersonalAccessToken('graphql', $user, 'Preview', [Gql::SCOPE_READ], new DateTimeImmutable('+7 days'));
+        $token = $tokens->create($user, 'Build script', [Gql::SCOPE_READ], new DateInterval('P7D'));
+        $other = $tokens->create($user, 'Preview', [Gql::SCOPE_READ], new DateInterval('P7D'));
         $this->token($user);
 
         $data = $this->graphql($I, '{ users(email: "nobody@example.com") { id } }', $token);
         $I->assertSame(['users' => []], $data['data']);
 
-        $grants = ArrayHelper::index($oauth->getUserGrants('graphql', $user), 'name');
+        $grants = ArrayHelper::index($tokens->grants($user), 'name');
         $I->assertEqualsCanonicalizing(['Build script', 'Preview', 'Test GraphQL client'], array_keys($grants));
         $I->assertTrue($grants['Build script']['personal']);
-        $I->assertSame([Gql::SCOPE_READ], $grants['Build script']['scopes']);
+        $I->assertSame(['graphql' => [Gql::SCOPE_READ]], $grants['Build script']['scopes']);
         $I->assertFalse($grants['Test GraphQL client']['personal']);
+        $I->assertEqualsWithDelta((new DateTime('+7 days'))->getTimestamp(), $grants['Build script']['expiresAt']->getTimestamp(), 60);
 
         // Like Passport, personal tokens share one personal access client that only supports the personal_access grant,
         // and can be used for any resource. The token's scopes decide which resource it belongs to.
@@ -86,38 +90,77 @@ class GraphqlOAuthCest
         $I->assertSame(['personal_access'], Json::decode($client['grant_types']));
         $I->assertNull($client['scopes']);
         $I->assertSame('craft', $client['provider']);
-        $I->assertSame([], $oauth->getUserGrants('mcp', $user));
-        $oauth->revokeUserGrant('mcp', $user, $grants['Build script']['clientId'], $grants['Build script']['tokenId']);
-        $I->assertSame(['users' => []], $this->graphql($I, '{ users(email: "nobody@example.com") { id } }', $token)['data']);
         $I->assertSame('Build script', (new Query())->select('name')->from(Table::OAUTH_ACCESS_TOKENS)->where(['id' => $grants['Build script']['tokenId']])->scalar());
 
+        // Personal tokens can be renamed, but not other users' tokens or apps' tokens
+        $tokens->rename($user, $grants['Preview']['tokenId'], 'Preview site');
+        $I->assertContains('Preview site', array_column($tokens->grants($user), 'name'));
+        $I->expectThrowable(InvalidArgumentException::class, fn() => $tokens->rename($this->user([]), $grants['Preview']['tokenId'], 'Mine'));
+        $I->expectThrowable(InvalidArgumentException::class, fn() => $tokens->rename($user, 'nope', 'Mine'));
+
         // Revoking one personal token leaves the others alone
-        $oauth->revokeUserGrant('graphql', $user, $grants['Build script']['clientId'], $grants['Build script']['tokenId']);
-        $I->assertEqualsCanonicalizing(['Preview', 'Test GraphQL client'], array_column($oauth->getUserGrants('graphql', $user), 'name'));
+        $tokens->revoke($user, $grants['Build script']['clientId'], $grants['Build script']['tokenId']);
+        $I->assertEqualsCanonicalizing(['Preview site', 'Test GraphQL client'], array_column($tokens->grants($user), 'name'));
         $I->haveHttpHeader('Authorization', "Bearer $token");
         $I->amOnPage('/actions/graphql/api?' . http_build_query(['query' => '{ ping }']));
         $I->seeResponseCodeIs(401);
         $I->assertSame(['ping' => 'pong'], $this->graphql($I, '{ ping }', $other)['data']);
     }
 
+    public function testPersonalAccessTokensCanMixApis(FunctionalTester $I): void
+    {
+        $user = $this->user(['viewUsers', 'accessCp', 'useCraftMcp']);
+        $tokens = new PersonalAccessTokens();
+        $tokens->registerScopeGroup('mcp', fn() => new ScopeGroup('mcp', 'MCP', ['mcp:read' => 'Read'], fn(User $user, array $scopes) => $scopes));
+        $token = $tokens->create($user, 'Agent', [Gql::SCOPE_READ, 'mcp:read'], new DateInterval('P7D'));
+
+        // Each API accepts the token, and only sees its own scopes
+        $I->assertSame(['users' => []], $this->graphql($I, '{ users(email: "nobody@example.com") { id } }', $token)['data']);
+        $request = new ServerRequest('POST', 'https://example.test/mcp', ['Authorization' => "Bearer $token"]);
+        $I->assertSame($user->id, Craft::$app->getOAuth()->authenticate($request, 'mcp', scopes: $scopes)->id);
+        $I->assertSame(['mcp:read'], $scopes);
+        $I->expectThrowable(OAuthServerException::class, fn() => Craft::$app->getOAuth()->authenticate($request, 'mcp', ['mcp:write']));
+
+        // It's listed once, with its scopes grouped by API, and revoking it revokes it for every API
+        $grants = $tokens->grants($user);
+        $I->assertCount(1, $grants);
+        $I->assertSame(['graphql' => [Gql::SCOPE_READ], 'mcp' => ['mcp:read']], $grants[0]['scopes']);
+        $tokens->revoke($user, $grants[0]['clientId'], $grants[0]['tokenId']);
+        $I->expectThrowable(OAuthServerException::class, fn() => Craft::$app->getOAuth()->authenticate($request, 'mcp'));
+        $I->haveHttpHeader('Authorization', "Bearer $token");
+        $I->amOnPage('/actions/graphql/api?' . http_build_query(['query' => '{ ping }']));
+        $I->seeResponseCodeIs(401);
+
+        // Tokens for one API still only work with that API
+        $graphqlToken = $tokens->create($user, 'GraphQL only', [Gql::SCOPE_READ], new DateInterval('P7D'));
+        $request = new ServerRequest('POST', 'https://example.test/mcp', ['Authorization' => "Bearer $graphqlToken"]);
+        $I->expectThrowable(OAuthServerException::class, fn() => Craft::$app->getOAuth()->authenticate($request, 'mcp'));
+    }
+
     public function testPersonalAccessTokenScopes(FunctionalTester $I): void
     {
-        $oauth = Craft::$app->getOAuth();
+        $tokens = Craft::$app->getPersonalAccessTokens();
         $user = $this->user([]);
-        $I->assertSame(['graphql'], array_keys($oauth->getPersonalTokenResources($user)));
+        $I->assertSame(['graphql'], array_keys($tokens->scopeGroupsFor($user)));
 
-        // Choosing an access level grants the narrower levels too
-        $oauth->createPersonalAccessToken('graphql', $user, 'Write', [Gql::SCOPE_WRITE], new DateTimeImmutable('+7 days'));
-        $I->assertSame([Gql::SCOPE_READ, Gql::SCOPE_WRITE], $oauth->getUserGrants('graphql', $user)[0]['scopes']);
+        // Tokens get the scopes that were chosen, as in Craft 6. A write token can still run queries.
+        $token = $tokens->create($user, 'Write', [Gql::SCOPE_WRITE], new DateInterval('P7D'));
+        $I->assertSame(['graphql' => [Gql::SCOPE_WRITE]], $tokens->grants($user)[0]['scopes']);
+        $I->assertSame(['ping' => 'pong'], $this->graphql($I, '{ ping }', $token)['data']);
 
         // MCP tokens come from MCP clients, not the Tokens screen
-        $I->expectThrowable(InvalidArgumentException::class, fn() => $oauth->createPersonalAccessToken('mcp', $user, 'MCP', ['mcp:read'], new DateTimeImmutable('+7 days')));
-        $I->expectThrowable(InvalidArgumentException::class, fn() => $oauth->createPersonalAccessToken('graphql', $user, 'Bad', ['mcp:read'], new DateTimeImmutable('+7 days')));
+        $I->expectThrowable(InvalidArgumentException::class, fn() => $tokens->create($user, 'MCP', ['mcp:read'], new DateInterval('P7D')));
+        $I->expectThrowable(InvalidArgumentException::class, fn() => $tokens->create($user, 'None', [], new DateInterval('P7D')));
+
+        // Plugins can offer their own scopes, as long as an OAuth resource defines them
+        $tokens = new PersonalAccessTokens();
+        $tokens->registerScopeGroup('custom', fn() => new ScopeGroup('custom', 'Custom', ['custom:read' => 'Read']));
+        $I->expectThrowable(InvalidArgumentException::class, fn() => $tokens->create($user, 'Custom', ['custom:read'], new DateInterval('P7D')));
 
         // Without GraphQL, nothing offers personal access tokens
         Craft::$app->getConfig()->getGeneral()->enableGql = false;
         try {
-            $I->assertSame([], (new OAuth())->getPersonalTokenResources($user));
+            $I->assertSame([], (new PersonalAccessTokens())->scopeGroupsFor($user));
         } finally {
             Craft::$app->getConfig()->getGeneral()->enableGql = true;
         }
