@@ -20,6 +20,7 @@ import {
   legacyGarnish,
   setJqData,
 } from './interop';
+import {getCpUrl} from '@/common/craft/url';
 
 type JsonValue =
   | string
@@ -680,9 +681,7 @@ export class MatrixEntry extends Base {
 
       case 'editEntryType': {
         new Craft.CpScreenSlideout(
-          Craft.getCpUrl(
-            `settings/entry-types/${this.container.dataset.typeId}`
-          )
+          getCpUrl(`settings/entry-types/${this.container.dataset.typeId}`)
         );
         break;
       }

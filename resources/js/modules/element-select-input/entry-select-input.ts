@@ -1,4 +1,5 @@
 import {BaseElementSelectInput} from './base-element-select-input';
+import {getActionUrl} from '@/common/craft/url';
 
 declare const Craft: any;
 
@@ -57,7 +58,7 @@ export class EntrySelectInput extends BaseElementSelectInput {
       let saved = false;
 
       void Craft.openSlideout(
-        Craft.getActionUrl('elements/edit', {
+        getActionUrl('elements/edit', {
           elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
           siteId: this.settings.criteria.siteId,
           elementId: entry.id,

@@ -10,6 +10,7 @@ import {
 import type {CraftActionMenu, ReorderDirection} from '@craftcms/ui';
 import {openSlideout, type SlideoutSaveResult} from '@/common/slideouts';
 import {componentSelectData} from './support';
+import {getActionUrl} from '@/common/craft/url';
 
 // `Craft` and `$` (jQuery) remain page globals. The Choose menu and the
 // *chip* action menus are both modern, self-booting `craft-action-menu`s
@@ -630,7 +631,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
     const action = this.settings.createAction ?? '';
     const url = /^((https?:)?\/\/|\/)/.test(action)
       ? action
-      : Craft.getActionUrl(action);
+      : getActionUrl(action);
 
     void openSlideout(url, {
       opener: this.#createBtn,

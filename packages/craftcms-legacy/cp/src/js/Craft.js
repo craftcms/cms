@@ -4,6 +4,12 @@ import {sendLegacyRequest} from '@craftcms/ui/utilities/api/legacyRequest';
 import {openExternalLinksInNewTabs} from '@craftcms/ui/utilities/external-links';
 import * as d3 from 'd3';
 import {
+  getActionUrl,
+  getCpUrl,
+  getSiteUrl,
+  getUrl,
+} from '../../../../../resources/js/common/craft/url';
+import {
   findDeltaData,
   findModifiedDeltaNames,
   groupParams,
@@ -241,165 +247,13 @@ $.extend(Craft, {
     });
   },
 
-  /**
-   * @param {string} [path]
-   * @param {(Object|string)} [params]
-   * @param {string} [baseUrl]
-   * @returns {string}
-   */
-  getUrl: function (path, params, baseUrl) {
-    if (typeof path !== 'string') {
-      path = '';
-    }
+  getUrl,
 
-    // Normalize the params
-    let anchor = null;
-    if ($.isPlainObject(params)) {
-      if (typeof params['#'] !== 'undefined') {
-        anchor = params['#'];
-        delete params['#'];
-      }
-    } else if (typeof params === 'string') {
-      let anchorPos = params.indexOf('#');
-      if (anchorPos !== -1) {
-        anchor = params.substring(anchorPos + 1);
-        params = params.substring(0, anchorPos);
-      }
-      params = Object.fromEntries(new URLSearchParams(params).entries());
-    } else {
-      params = {};
-    }
+  getCpUrl,
 
-    // Was there already an anchor on the path?
-    let anchorPos = path.indexOf('#');
-    if (anchorPos !== -1) {
-      // Only keep it if the params didn't specify a new anchor
-      if (!anchor) {
-        anchor = path.substring(anchorPos + 1);
-      }
-      path = path.substring(0, anchorPos);
-    }
+  getSiteUrl,
 
-    // Were there already any query string params in the path?
-    let qsPos = path.indexOf('?');
-    if (qsPos !== -1) {
-      params = $.extend(
-        Object.fromEntries(
-          new URLSearchParams(path.substring(qsPos + 1)).entries()
-        ),
-        params
-      );
-      path = path.substring(0, qsPos);
-    }
-
-    // Return path if it appears to be an absolute URL.
-    if (path.search('://') !== -1 || path[0] === '/') {
-      return (
-        path +
-        (!$.isEmptyObject(params) ? `?${$.param(params)}` : '') +
-        (anchor ? `#${anchor}` : '')
-      );
-    }
-
-    path = Craft.trim(path, '/');
-
-    // Put it all together
-    let url;
-
-    if (baseUrl) {
-      url = baseUrl;
-
-      if (path && Craft.pathParam) {
-        // Does baseUrl already contain a path?
-        var pathMatch = url.match(
-          new RegExp('[&?]' + Craft.escapeRegex(Craft.pathParam) + '=[^&]+')
-        );
-        if (pathMatch) {
-          url = url.replace(
-            pathMatch[0],
-            Craft.rtrim(pathMatch[0], '/') + '/' + path
-          );
-          path = '';
-        }
-      }
-    } else {
-      url = Craft.baseUrl;
-    }
-
-    // Does the base URL already have a query string?
-    qsPos = url.indexOf('?');
-    let baseParams;
-    if (qsPos !== -1) {
-      baseParams = Object.fromEntries(
-        new URLSearchParams(url.substring(qsPos + 1)).entries()
-      );
-      url = url.substring(0, qsPos);
-      params = Object.assign({}, baseParams, params);
-    }
-
-    if (!Craft.omitScriptNameInUrls && path) {
-      if (Craft.usePathInfo || !Craft.pathParam) {
-        // Make sure that the script name is in the URL
-        if (url.search(Craft.scriptName) === -1) {
-          url = Craft.rtrim(url, '/') + '/' + Craft.scriptName;
-        }
-      } else {
-        // Move the path into the query string params
-        if (baseParams && baseParams[Craft.pathParam] !== undefined) {
-          path =
-            baseParams[Craft.pathParam].trimEnd() + (path ? '/' + path : '');
-        }
-        params[Craft.pathParam] = path;
-        path = null;
-      }
-    }
-
-    if (path) {
-      url = Craft.rtrim(url, '/') + '/' + path;
-    }
-
-    if (!$.isEmptyObject(params)) {
-      url += `?${$.param(params)}`;
-    }
-
-    if (anchor) {
-      url += `#${anchor}`;
-    }
-
-    return url;
-  },
-
-  /**
-   * @param {string} [path]
-   * @param {(Object|string)} [params]
-   * @returns {string}
-   */
-  getCpUrl: function (path, params) {
-    if (!Craft.baseCpUrl) {
-      throw 'Craft.baseCpUrl is undefined.';
-    }
-    return this.getUrl(path, params, Craft.baseCpUrl);
-  },
-
-  /**
-   * @param {string} [path]
-   * @param {(Object|string)} [params]
-   * @returns {string}
-   */
-  getSiteUrl: function (path, params) {
-    return this.getUrl(path, params, Craft.baseSiteUrl);
-  },
-
-  /**
-   * Returns an action URL.
-   *
-   * @param {string} action
-   * @param {(Object|string)} [params]
-   * @returns {string}
-   */
-  getActionUrl: function (action, params) {
-    return Craft.getUrl(action, params, Craft.actionUrl);
-  },
+  getActionUrl,
 
   /**
    * Redirects the window to a given URL.

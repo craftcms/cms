@@ -3,6 +3,7 @@ import {elementEditorParams} from '@/modules/slideout/element-editor-params';
 import type {UiValues} from '@/modules/ui/types';
 import {closeSlideout, openSlideout} from './store';
 import type {SlideoutInstance, SlideoutSaveResult} from './types';
+import {getActionUrl} from '@/common/craft/url';
 
 declare const $: any;
 declare const Craft: any;
@@ -76,7 +77,7 @@ export class ElementEditorPanel extends Base {
       ...settings.params,
     };
 
-    this.opened = openSlideout(Craft.getActionUrl('elements/edit', params), {
+    this.opened = openSlideout(getActionUrl('elements/edit', params), {
       opener: $element[0] ?? undefined,
       onSaved: (result) => this.saved(result, settings),
       onClosed: () => {

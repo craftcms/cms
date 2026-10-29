@@ -19,8 +19,7 @@ describe('field action listeners', () => {
     window.Craft = {
       cp: {copyElements},
       openSlideout,
-      getCpUrl: (path: string, params?: Record<string, unknown>) =>
-        `/admin/${path}?${new URLSearchParams(params as never).toString()}`,
+      baseCpUrl: '/admin',
     } as never;
 
     await import('./index');
@@ -90,7 +89,7 @@ describe('field input action listeners', () => {
     openSlideout.mockReset();
     createCopyTextPrompt.mockReset();
     copyElements.mockReset();
-    window.Craft = {cp: {copyElements}, getCpUrl: () => ''} as never;
+    window.Craft = {cp: {copyElements}, baseCpUrl: '/admin'} as never;
     await import('./index');
   });
 
