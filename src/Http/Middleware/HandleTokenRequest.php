@@ -75,6 +75,7 @@ readonly class HandleTokenRequest
 
         $newRequest = $request->duplicateWithUri((string) $tokenRoute[0], $tokenRoute[1] ?? []);
         $newRequest->attributes->set(self::ROUTE_RESOLVED_ATTRIBUTE, true);
+        $newRequest->attributes->set('isCpRequest', $request->isCpRequest());
         app()->instance('request', $newRequest);
 
         return $next($newRequest);
