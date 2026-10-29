@@ -141,8 +141,9 @@ class Choice extends Control
      * chosen. Defaults to “Select…”; pass a string to say something better.
      *
      * The blank option is what makes the empty state visible, and re-selectable
-     * once something has been chosen. Without this call it still renders, just
-     * unlabelled.
+     * once something has been chosen on optional controls. Required controls
+     * show it as a disabled prompt. Without this call optional controls leave
+     * it unlabelled, and required controls use “Select…”.
      */
     public function placeholder(?string $label = null): static
     {
@@ -154,8 +155,7 @@ class Choice extends Control
     /**
      * Drops the leading blank option, for a setting with no valid empty state.
      *
-     * A required control already omits it — this is for one that always holds a
-     * value without being marked required, so nothing can clear it.
+     * Use this only when the control always holds a value.
      */
     public function withoutPlaceholder(): static
     {
@@ -226,16 +226,9 @@ class Choice extends Control
     }
 
     /**
-     * The options a single `<select>` offers, with somewhere to represent
-     * "nothing chosen" when the control permits it.
-     *
-     * A `<select>` with no selected option shows its first one, so an optional
-     * setting that has never been set looks set — and because nothing changed,
-     * saving posts nothing and it stays unset. A leading blank makes the empty
-     * state visible, and re-selectable once something has been chosen.
-     *
-     * A required control has no valid empty state to offer, and options that
-     * already carry an empty value supply their own.
+     * A leading blank keeps an unset value from looking like the first real
+     * option. Required controls disable it as a prompt, rather than offering
+     * an empty choice. Options that already carry an empty value supply their own.
      *
      * `ChoiceControl.vue`'s `selectOptions` mirrors this for the Vue renderer.
      *
@@ -244,7 +237,7 @@ class Choice extends Control
      */
     private static function selectOptions(array $options, bool $required, string|false|null $placeholder): array
     {
-        if ($required || $placeholder === false) {
+        if ($placeholder === false) {
             return $options;
         }
 
@@ -254,7 +247,11 @@ class Choice extends Control
             }
         }
 
-        return [['label' => $placeholder ?? '', 'value' => ''], ...$options];
+        return [[
+            'label' => $placeholder ?? ($required ? t('Select…') : ''),
+            'value' => '',
+            'disabled' => $required,
+        ], ...$options];
     }
 
     /** @param array<string, mixed> $attributes */
