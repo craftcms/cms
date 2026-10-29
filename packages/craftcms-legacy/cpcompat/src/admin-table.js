@@ -1,7 +1,10 @@
 /** global: Craft */
 /** global: Garnish */
 /**
- * Admin table class
+ * The legacy `Craft.AdminTable`, used by the legacy dashboard and by plugins'
+ * settings screens. Core's admin tables are Vue components.
+ *
+ * Loaded CP-wide via CraftCms\Yii2Adapter\View\LegacyAssets\CpCompatAsset.
  */
 Craft.AdminTable = Garnish.Base.extend(
   {

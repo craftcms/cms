@@ -28,7 +28,7 @@ use function CraftCms\Cms\craftAsset;
  * `jsClass` escape hatch keeps working for plugin subclasses. It defines its
  * class at top-level eval, so it is registered ahead of cp-compat.js. So are
  * the relation field settings scripts for the legacy settings templates and
- * the legacy element index.
+ * the legacy element index and admin table.
  *
  * @internal
  */
@@ -44,6 +44,7 @@ class CpCompatAsset implements LegacyAssetInterface
         $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/assets-field-settings.js'));
         $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/element-field-settings.js'));
         $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/element-index.js'));
+        $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/admin-table.js'));
         $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/cp-compat.js'));
     }
 }
