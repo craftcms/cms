@@ -28,15 +28,15 @@
 </script>
 
 <template>
-  <CpLink
-    :href="pluginRoute({handle: plugin.handle})"
-    class="plugin-card"
-    block
-  >
-    <PluginIcon :url="plugin.iconUrl" />
+  <div class="plugin-card">
+    <CpLink :href="pluginRoute({handle: plugin.handle})" tabindex="-1">
+      <PluginIcon :url="plugin.iconUrl" />
+    </CpLink>
     <div class="plugin-card__body">
       <div class="plugin-card__name">
-        <strong>{{ plugin.name }}</strong>
+        <CpLink :href="pluginRoute({handle: plugin.handle})">
+          <strong>{{ plugin.name }}</strong>
+        </CpLink>
         <craft-badge v-if="trialEdition" size="small" no-prefix>
           {{ trialEdition.name }}
         </craft-badge>
@@ -60,23 +60,18 @@
       </div>
       <div v-else class="plugin-card__quiet">{{ priceRangeLabel(plugin) }}</div>
     </div>
-  </CpLink>
+  </div>
 </template>
 
 <style scoped>
   .plugin-card {
     display: flex;
-    gap: var(--c-spacing-md);
-    align-items: flex-start;
+    gap: var(--c-spacing-lg);
+    align-items: start;
     block-size: 100%;
     padding-block: var(--c-spacing-lg);
-    border-block-end: 1px solid var(--c-color-border-quiet);
     color: var(--c-text-default);
     text-decoration: none;
-  }
-
-  .plugin-card:hover strong {
-    color: var(--c-color-accent-on-quiet, var(--c-color-accent-fill-loud));
   }
 
   .plugin-card__body {
