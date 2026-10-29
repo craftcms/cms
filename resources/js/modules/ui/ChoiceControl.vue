@@ -8,10 +8,12 @@
   import type {CheckboxSelectOption} from '@craftcms/ui/components/checkbox-select/checkbox-select';
   import '@craftcms/ui/components/icon/icon';
   import '@craftcms/ui/components/indicator/indicator';
+  import '@craftcms/ui/components/input/input';
   import '@craftcms/ui/components/radio/radio';
   import '@craftcms/ui/components/radio-group/radio-group';
   import '@craftcms/ui/components/select/select';
-  import {computed, inject, ref, watch} from 'vue';
+  import {t} from '@craftcms/ui';
+  import {computed, inject, nextTick, ref, watch} from 'vue';
   import type {UiControlPayload, UiValue} from './types';
   import {FieldLabelSrOnly, inputName, serverErrorValidators} from './runtime';
 
@@ -27,6 +29,8 @@
     icon?: string;
     /** Shown before a checkbox or radio label: tints the icon, or as a dot. */
     color?: string;
+    /** A value someone added themselves, when custom options are allowed. */
+    custom?: boolean;
     value: ChoiceValue;
     disabled?: boolean;
     /**
@@ -62,6 +66,11 @@
      * means the control has no valid empty state and shouldn't offer one.
      */
     placeholder?: string | false;
+    /**
+     * Whether people can add their own options. Options marked `custom` are
+     * values added that way. Checkboxes and radios only.
+     */
+    allowCustom?: true;
   };
 
   const props = defineProps<{
@@ -176,6 +185,93 @@
     );
   }
 
+  type CustomOption = {key: number; text: string; checked: boolean};
+
+  const customCheckboxes = computed(
+    () =>
+      props.control.props.allowCustom === true &&
+      props.control.props.multiple &&
+      props.control.props.presentation === 'checkboxes'
+  );
+
+  /** The options shown as checkboxes or radios; custom ones get their own rows. */
+  const choiceOptions = computed(() =>
+    customCheckboxes.value
+      ? props.control.props.options.filter((option) => !option.custom)
+      : props.control.props.options
+  );
+
+  let customOptionKey = 0;
+  const customOptions = ref<CustomOption[]>(
+    props.control.props.options
+      .filter((option) => option.custom && selected(option.value))
+      .map((option) => ({
+        key: customOptionKey++,
+        text: inputValue(option.value),
+        checked: true,
+      }))
+  );
+  const customOptionInputs = new Map<number, HTMLInputElement>();
+  const addOptionButton = ref<HTMLElement | null>(null);
+
+  function customOptionId(option: CustomOption): string {
+    return `ui-${props.control.path.join('-')}-custom-${option.key}`;
+  }
+
+  /** Emits the checked options followed by the checked custom options' text. */
+  function emitCheckboxes(values: string[]): void {
+    const choiceValues = new Set(
+      choiceOptions.value.map((option) => inputValue(option.value))
+    );
+
+    emit('update:value', [
+      ...values.filter((value) => choiceValues.has(value)),
+      ...customOptions.value
+        .filter((option) => option.checked && option.text !== '')
+        .map((option) => option.text),
+    ]);
+  }
+
+  function currentValues(): string[] {
+    return Array.isArray(props.value) ? props.value.map(inputValue) : [];
+  }
+
+  async function addCustomOption(): Promise<void> {
+    const option = {key: customOptionKey++, text: '', checked: true};
+    customOptions.value.push(option);
+    await nextTick();
+    customOptionInputs.get(option.key)?.focus();
+  }
+
+  async function onCustomOptionChecked(
+    option: CustomOption,
+    event: Event
+  ): Promise<void> {
+    option.checked = (event.target as HTMLInputElement).checked;
+
+    if (!option.checked && option.text === '') {
+      customOptions.value = customOptions.value.filter(
+        (other) => other.key !== option.key
+      );
+      customOptionInputs.delete(option.key);
+      await nextTick();
+      addOptionButton.value?.focus();
+      return;
+    }
+
+    emitCheckboxes(currentValues());
+
+    if (option.checked) {
+      await nextTick();
+      customOptionInputs.get(option.key)?.focus();
+    }
+  }
+
+  function onCustomOptionInput(option: CustomOption, event: Event): void {
+    option.text = (event.target as HTMLInputElement).value;
+    emitCheckboxes(currentValues());
+  }
+
   function onOptionChanged(event: Event): void {
     if (!(event.target instanceof HTMLInputElement)) {
       throw new TypeError('Expected a choice input event target.');
@@ -188,15 +284,16 @@
       return;
     }
 
-    const values = Array.isArray(props.value)
-      ? props.value.map(inputValue)
-      : [];
-    emit(
-      'update:value',
-      input.checked
-        ? [...values, input.value]
-        : values.filter((value) => value !== input.value)
-    );
+    const values = currentValues();
+    const next = input.checked
+      ? [...values, input.value]
+      : values.filter((value) => value !== input.value);
+
+    if (customCheckboxes.value) {
+      emitCheckboxes(next);
+    } else {
+      emit('update:value', next);
+    }
   }
 
   function onButtonClicked(value: ChoiceValue): void {
@@ -452,7 +549,7 @@
       value=""
     />
     <div
-      v-for="(option, index) in control.props.options"
+      v-for="(option, index) in choiceOptions"
       :key="inputValue(option.value)"
     >
       <label
@@ -523,5 +620,69 @@
         </label>
       </component>
     </div>
+    <template v-if="customCheckboxes">
+      <div
+        v-for="option in customOptions"
+        :key="option.key"
+        data-custom
+        class="flex flex-wrap items-center gap-sm"
+      >
+        <craft-checkbox
+          .disabled="!editable"
+          .choiceValue="option.text"
+          .checked="option.checked"
+        >
+          <input
+            slot="input"
+            :id="customOptionId(option)"
+            type="checkbox"
+            :name="editable ? `${inputName(control.path)}[]` : ''"
+            :value="option.text"
+            :checked="option.checked"
+            :disabled="!editable"
+            @change="onCustomOptionChecked(option, $event)"
+          />
+          <label slot="label" :for="customOptionId(option)">
+            {{ t('Custom:') }}
+          </label>
+        </craft-checkbox>
+        <!-- Lion's checkbox group only accepts checkboxes as registered
+             fields, so the text field mustn't register with it. -->
+        <div @form-element-register.stop>
+          <craft-input
+            :label="t('Custom:')"
+            label-sr-only
+            .inputSize="'small'"
+            .modelValue="option.text"
+            .disabled="!editable || !option.checked"
+          >
+            <input
+              :ref="
+                (el) =>
+                  el
+                    ? customOptionInputs.set(option.key, el as HTMLInputElement)
+                    : customOptionInputs.delete(option.key)
+              "
+              slot="input"
+              type="text"
+              :value="option.text"
+              @input="onCustomOptionInput(option, $event)"
+            />
+          </craft-input>
+        </div>
+      </div>
+      <craft-button
+        v-if="editable"
+        ref="addOptionButton"
+        data-add-option
+        type="button"
+        icon="plus"
+        variant="dashed"
+        size="small"
+        @click="addCustomOption"
+      >
+        {{ t('Add option') }}
+      </craft-button>
+    </template>
   </component>
 </template>

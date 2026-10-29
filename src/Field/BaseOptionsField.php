@@ -377,7 +377,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
             }
 
             $options[] = Arr::whereNotNull([
-                ...Arr::only($option, ['label', 'value', 'disabled', 'icon', 'color']),
+                ...Arr::only($option, ['label', 'value', 'disabled', 'icon', 'color', 'custom']),
                 'group' => $group,
             ]);
         }
@@ -386,6 +386,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
             ->options($options)
             ->multiple(static::$multi)
             ->presentation($this->uiPresentation())
+            ->allowCustom(static::$allowCustomOptions && $this->customOptions)
             ->value($this->encodeValue($context->value));
     }
 

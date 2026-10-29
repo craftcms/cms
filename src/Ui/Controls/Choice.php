@@ -14,6 +14,7 @@ use CraftCms\Cms\Cp\Components\Radio;
 use CraftCms\Cms\Cp\Components\RadioGroup;
 use CraftCms\Cms\Cp\Components\Select as SelectComponent;
 use CraftCms\Cms\Cp\Enums\CheckboxSelectPresentation;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\Enums\AllOptionMode;
 use CraftCms\Cms\Ui\Enums\ChoicePresentation;
@@ -30,7 +31,7 @@ class Choice extends Control
     /** The token {@see self::allOption()} posts by default. */
     public const string ALL_VALUE = '*';
 
-    /** @var list<array{label: string, labelHtml?: string, icon?: string, color?: string, value: bool|float|int|string, disabled?: bool, thumbnail?: array{src: string, width?: int, height?: int, aspectRatio?: string}}> */
+    /** @var list<array{label: string, labelHtml?: string, icon?: string, color?: string, custom?: bool, value: bool|float|int|string, disabled?: bool, thumbnail?: array{src: string, width?: int, height?: int, aspectRatio?: string}}> */
     private array $options = [];
 
     private bool $multiple = false;
@@ -38,6 +39,8 @@ class Choice extends Control
     private bool $sortable = false;
 
     private bool $iconsOnly = true;
+
+    private bool $allowCustom = false;
 
     private ChoicePresentation $presentation = ChoicePresentation::Select;
 
@@ -84,7 +87,7 @@ class Choice extends Control
      * `icon` and `color` are shown before a checkbox or radio label: the icon tinted
      * with the color, or a color swatch when there's no icon.
      *
-     * @param  list<array{label: string, labelHtml?: string, icon?: string, color?: string, value: bool|float|int|string, disabled?: bool, group?: string|null, thumbnail?: array{src: string, width?: int, height?: int, aspectRatio?: string}}>  $options
+     * @param  list<array{label: string, labelHtml?: string, icon?: string, color?: string, custom?: bool, value: bool|float|int|string, disabled?: bool, group?: string|null, thumbnail?: array{src: string, width?: int, height?: int, aspectRatio?: string}}>  $options
      */
     public function options(array $options): static
     {
@@ -116,6 +119,18 @@ class Choice extends Control
     public function iconsOnly(bool $iconsOnly = true): static
     {
         $this->iconsOnly = $iconsOnly;
+
+        return $this;
+    }
+
+    /**
+     * Whether people can add their own options alongside the given ones.
+     * Options marked `custom` are values added that way. Checkboxes and radios
+     * presentations only.
+     */
+    public function allowCustom(bool $allowCustom = true): static
+    {
+        $this->allowCustom = $allowCustom;
 
         return $this;
     }
@@ -232,6 +247,10 @@ class Choice extends Control
             $props['iconsOnly'] = false;
         }
 
+        if ($this->allowCustom) {
+            $props['allowCustom'] = true;
+        }
+
         return $props;
     }
 
@@ -339,6 +358,9 @@ class Choice extends Control
             ->id($attributes['id'])
             ->name($attributes['name'])
             ->options($checkboxes)
+            ->customOptionTemplate(($control->props['allowCustom'] ?? false) && $name !== null
+                ? FormFields::customCheckboxTemplate($name, $attributes['aria']['describedby'] ?? null)
+                : null)
             ->attributes(self::groupAttributes($attributes, 'group'))
             ->toHtml();
     }
@@ -410,7 +432,7 @@ class Choice extends Control
     }
 
     /**
-     * @param  array{label: string, labelHtml?: string, icon?: string, color?: string, value: bool|float|int|string, disabled?: bool}  $option
+     * @param  array{label: string, labelHtml?: string, icon?: string, color?: string, custom?: bool, value: bool|float|int|string, disabled?: bool}  $option
      * @param  array<string, mixed>  $attributes
      */
     private static function checkbox(array $option, int $index, array $attributes, ?string $name, bool $checked): Checkbox
@@ -424,6 +446,11 @@ class Choice extends Control
             ->label(self::optionLabel($option))
             ->icon($option['icon'] ?? null)
             ->color($option['color'] ?? null)
+            ->custom(($option['custom'] ?? false) ? FormFields::textHtml([
+                'value' => (string) $option['value'],
+                'class' => 'small custom-option-input',
+                'labelledBy' => "{$attributes['id']}-{$index}-label",
+            ]) : null)
             ->describedBy($attributes['aria']['describedby'] ?? null)
             ->inputAttributes([
                 'aria' => ['invalid' => $attributes['aria']['invalid'] ?? null],

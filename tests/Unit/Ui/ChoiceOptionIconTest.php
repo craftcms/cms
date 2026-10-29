@@ -60,3 +60,25 @@ it('shows a button’s icon beside its label unless options show only their icon
     'single' => false,
     'multiple' => true,
 ]);
+
+it('renders saved custom checkboxes and an “Add option” button when custom options are allowed', function () {
+    $payload = app(UiResolver::class)->resolve(Ui::make([
+        Field::make('Options', Choice::make('options')
+            ->presentation(ChoicePresentation::Checkboxes)
+            ->multiple()
+            ->allowCustom()
+            ->options([
+                ['label' => 'A', 'value' => 'a'],
+                ['label' => 'mine', 'value' => 'mine', 'custom' => true],
+            ])
+            ->value(['mine'])),
+    ]), new UiContext);
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
+    $custom = $crawler->filter('[data-custom]');
+
+    expect($custom)->toHaveCount(1)
+        ->and($custom->filter('input[type=checkbox]')->attr('value'))->toBe('mine')
+        ->and($custom->filter('input[type=checkbox]')->attr('checked'))->not->toBeNull()
+        ->and($custom->filter('input.custom-option-input')->attr('value'))->toBe('mine')
+        ->and(trim($crawler->filter('craft-button.add')->text()))->toBe('Add option');
+});

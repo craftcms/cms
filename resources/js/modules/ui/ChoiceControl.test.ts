@@ -251,6 +251,90 @@ describe('ChoiceControl', () => {
     }
   );
 
+  describe('custom checkbox options', () => {
+    const customProps = {
+      allowCustom: true,
+      options: [
+        {label: 'A', value: 'a'},
+        {label: 'mine', value: 'mine', custom: true},
+      ],
+    };
+
+    function customRows(): HTMLElement[] {
+      return [...container!.querySelectorAll<HTMLElement>('[data-custom]')];
+    }
+
+    function textInput(row: HTMLElement): HTMLInputElement {
+      return row.querySelector<HTMLInputElement>('input[type=text]')!;
+    }
+
+    function addButton(): HTMLElement {
+      return container!.querySelector<HTMLElement>(
+        'craft-button[data-add-option]'
+      )!;
+    }
+
+    it('shows a saved custom value as a checked “Custom:” option with its text', async () => {
+      await mount(customProps, ['mine']);
+
+      const rows = customRows();
+      const checkbox = rows[0]!.querySelector<HTMLInputElement>(
+        'input[type=checkbox]'
+      )!;
+
+      expect(rows).toHaveLength(1);
+      expect(checkbox.checked).toBe(true);
+      expect(checkbox.value).toBe('mine');
+      expect(rows[0]!.querySelector('label')!.textContent?.trim()).toBe(
+        'Custom:'
+      );
+      expect(textInput(rows[0]!).value).toBe('mine');
+      expect(
+        [
+          ...container!.querySelectorAll(
+            'div:not([data-custom]) > craft-checkbox > label'
+          ),
+        ].map((label) => label.textContent?.trim())
+      ).toEqual(['A']);
+    });
+
+    it('adds a focused custom option, and emits what’s typed into it', async () => {
+      await mount(customProps, ['mine']);
+
+      addButton().click();
+      await nextTick();
+
+      const row = customRows()[1]!;
+      expect(document.activeElement).toBe(textInput(row));
+
+      textInput(row).value = 'new';
+      textInput(row).dispatchEvent(new Event('input', {bubbles: true}));
+      await nextTick();
+
+      expect(emitted.at(-1)).toEqual(['mine', 'new']);
+      expect(
+        row.querySelector<HTMLInputElement>('input[type=checkbox]')!.value
+      ).toBe('new');
+    });
+
+    it('removes an empty custom option when it’s unchecked', async () => {
+      await mount(customProps, []);
+
+      addButton().click();
+      await nextTick();
+
+      const checkbox = customRows()[0]!.querySelector<HTMLInputElement>(
+        'input[type=checkbox]'
+      )!;
+      checkbox.checked = false;
+      checkbox.dispatchEvent(new Event('change', {bubbles: true}));
+      await nextTick();
+
+      expect(customRows()).toHaveLength(0);
+      expect(document.activeElement).toBe(addButton());
+    });
+  });
+
   const allOption = {allLabel: 'All', allValue: '*', allMode: 'singleValue'};
 
   async function checkboxSelect(): Promise<CraftCheckboxSelect> {

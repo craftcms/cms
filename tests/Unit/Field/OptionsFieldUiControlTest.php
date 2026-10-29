@@ -24,3 +24,19 @@ it('passes option icons and colors to its control', function (string $fieldType)
 })->with([
     'checkboxes' => Checkboxes::class,
 ]);
+
+it('offers custom options when they’re allowed, with saved custom values among them', function (string $fieldType, mixed $value) {
+    $field = new $fieldType([
+        'customOptions' => true,
+        'options' => [
+            ['label' => 'A', 'value' => 'a', 'default' => false],
+        ],
+    ]);
+
+    $props = $field->uiControl(new FieldContext('value', $field->normalizeValue($value, null)))->props();
+
+    expect($props['allowCustom'])->toBeTrue()
+        ->and($props['options'][1])->toBe(['label' => 'mine', 'value' => 'mine', 'custom' => true]);
+})->with([
+    'checkboxes' => [Checkboxes::class, ['mine']],
+]);
