@@ -2,6 +2,7 @@
   import {t} from '@craftcms/ui';
   import {useElementVisibility} from '@vueuse/core';
   import {computed, ref, useId, useTemplateRef, watch} from 'vue';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import Select from '@/common/form/Select.vue';
   import PluginGrid from './PluginGrid.vue';
   import {
@@ -12,10 +13,16 @@
   import type {PluginIndexFilter} from '../api';
   import type {SortDirection} from '../types';
 
-  const {filter, sortable = true} = defineProps<{
+  const {
+    filter,
+    sortable = true,
+    sortRow = false,
+  } = defineProps<{
     filter: PluginIndexFilter;
     /** Featured sections come in the order they were curated in. */
     sortable?: boolean;
+    /** Puts the sort on its own row, for a page whose title is too tall to share one. */
+    sortRow?: boolean;
   }>();
 
   const {coreData} = useCoreData();
@@ -89,33 +96,40 @@
 </script>
 
 <template>
-  <div class="plugin-index">
-    <div
+  <div class="plugin-index" :class="{'plugin-index--ruled': !sortRow}">
+    <component
+      :is="sortRow ? 'div' : LayoutSlot"
       v-if="sort"
-      role="group"
-      :aria-labelledby="sortLabelId"
-      class="plugin-index__sort"
+      v-bind="
+        sortRow ? {class: 'plugin-index__sort-row'} : {name: 'content-actions'}
+      "
     >
-      <span :id="sortLabelId" class="cp-group-heading">{{ t('Sort') }}</span>
-      <Select
-        small
-        class="w-auto"
-        :label="t('Sort by')"
-        label-sr-only
-        :options="attributeOptions"
-        :model-value="sort.orderBy"
-        @update:model-value="setOrderBy"
-      />
-      <Select
-        small
-        class="w-auto"
-        :label="t('Direction')"
-        label-sr-only
-        :options="directionOptions"
-        :model-value="sort.direction"
-        @update:model-value="setDirection"
-      />
-    </div>
+      <div
+        role="group"
+        :aria-labelledby="sortLabelId"
+        class="plugin-index__sort"
+      >
+        <span :id="sortLabelId" class="cp-group-heading">{{ t('Sort') }}</span>
+        <Select
+          small
+          class="w-auto"
+          :label="t('Sort by')"
+          label-sr-only
+          :options="attributeOptions"
+          :model-value="sort.orderBy"
+          @update:model-value="setOrderBy"
+        />
+        <Select
+          small
+          class="w-auto"
+          :label="t('Direction')"
+          label-sr-only
+          :options="directionOptions"
+          :model-value="sort.direction"
+          @update:model-value="setDirection"
+        />
+      </div>
+    </component>
 
     <PluginGrid :plugins="plugins" />
 
@@ -135,11 +149,21 @@
 </template>
 
 <style scoped>
-  /* Its own row under the page title, ruled off from the grid. */
   .plugin-index__sort {
     display: flex;
     gap: var(--c-spacing-sm);
     align-items: center;
+  }
+
+  /* Ruled off from the grid either way: below the title row, or below the sort's own row. */
+  /* Pulled up over the content's top padding, so it sits as close under the title row as the sort row's rule does. */
+  .plugin-index--ruled {
+    margin-block-start: calc(var(--c-spacing-lg) * -1);
+    border-block-start: 1px solid var(--c-color-border-quiet);
+  }
+
+  .plugin-index__sort-row {
+    display: flex;
     justify-content: flex-end;
     padding-block-end: var(--c-spacing-md);
     border-block-end: 1px solid var(--c-color-border-quiet);

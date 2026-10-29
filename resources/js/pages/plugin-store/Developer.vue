@@ -94,7 +94,7 @@
         </div>
       </section>
     </LayoutSlot>
-    <PluginIndex :filter="{developerId}" />
+    <PluginIndex :filter="{developerId}" sort-row />
   </StoreContainer>
 </template>
 
