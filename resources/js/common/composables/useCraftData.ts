@@ -12,6 +12,8 @@ export interface CpUser {
   admin: boolean;
   /** The "Underline links" accessibility preference. */
   underlineLinks: boolean;
+  /** Whether the user's account has a Tokens screen. */
+  showTokens: boolean;
 }
 
 export interface CraftData {

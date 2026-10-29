@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Auth\PersonalAccessTokens\PersonalAccessTokens;
 use CraftCms\Cms\Auth\PersonalAccessTokens\ScopeGroup;
 use CraftCms\Cms\Http\Controllers\Users\PersonalAccessTokensController;
+use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User;
@@ -72,6 +73,21 @@ it('lists the scope groups and scopes the user may grant', function (): void {
             ]])
             ->where('grants', []));
 });
+
+it('offers the screen in the user menu only when the user may grant a scope', function (?array $grantableScopes, bool $showTokens): void {
+    if ($grantableScopes !== null) {
+        registerTestScopeGroup(fn (UserElement $user, array $scopes) => $grantableScopes);
+    }
+
+    get(action([PreferencesController::class, 'index']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('craft.currentUser.showTokens', $showTokens));
+})->with([
+    'no scope group' => [null, false],
+    'no grantable scopes' => [[], false],
+    'a grantable scope' => [['test-api:read'], true],
+]);
 
 it('requires an elevated session to create a token', function (): void {
     registerTestScopeGroup();
