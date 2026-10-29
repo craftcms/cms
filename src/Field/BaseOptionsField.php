@@ -366,7 +366,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     {
         $options = collect($this->translatedOptions(true, $context->value, $context->element))
             ->filter(fn (array $option): bool => array_key_exists('value', $option))
-            ->map(fn (array $option): array => Arr::only($option, ['label', 'value', 'disabled']))
+            ->map(fn (array $option): array => Arr::whereNotNull(Arr::only($option, ['label', 'value', 'disabled', 'icon', 'color'])))
             ->values()
             ->all();
 

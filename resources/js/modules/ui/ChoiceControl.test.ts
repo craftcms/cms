@@ -186,6 +186,46 @@ describe('ChoiceControl', () => {
     expect(buttons.every((b) => b.textContent?.trim() === '')).toBe(true);
   });
 
+  it.each([['checkboxes', true]])(
+    'shows each %s option’s icon or color dot before its label',
+    async (presentation, multiple) => {
+      await mount(
+        {
+          presentation,
+          multiple,
+          options: [
+            {label: 'Icon', value: 'icon', icon: 'star', color: '#ff0000'},
+            {label: 'Color', value: 'color', color: '#00ff00'},
+            {label: 'Plain', value: 'plain'},
+          ],
+        },
+        multiple ? [] : ''
+      );
+
+      const labels = [
+        ...container!.querySelectorAll(
+          ':is(craft-checkbox, craft-radio) > label[slot=label]'
+        ),
+      ];
+      const icon = labels[0]!.querySelector('craft-icon')!;
+
+      expect(icon.getAttribute('name')).toBe('star');
+      expect(icon.hasAttribute('label')).toBe(false);
+      expect((icon as HTMLElement).style.color).toBe('#ff0000');
+      expect(
+        labels[1]!.querySelector('craft-indicator')!.getAttribute('fill')
+      ).toBe('#00ff00');
+      expect(labels[2]!.querySelector('craft-icon, craft-indicator')).toBe(
+        null
+      );
+      expect(labels.map((label) => label.textContent?.trim())).toEqual([
+        'Icon',
+        'Color',
+        'Plain',
+      ]);
+    }
+  );
+
   const allOption = {allLabel: 'All', allValue: '*', allMode: 'singleValue'};
 
   async function checkboxSelect(): Promise<CraftCheckboxSelect> {

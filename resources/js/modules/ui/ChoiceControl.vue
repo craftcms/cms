@@ -7,6 +7,7 @@
   import type CraftCheckboxSelect from '@craftcms/ui/components/checkbox-select/checkbox-select';
   import type {CheckboxSelectOption} from '@craftcms/ui/components/checkbox-select/checkbox-select';
   import '@craftcms/ui/components/icon/icon';
+  import '@craftcms/ui/components/indicator/indicator';
   import '@craftcms/ui/components/radio/radio';
   import '@craftcms/ui/components/radio-group/radio-group';
   import '@craftcms/ui/components/select/select';
@@ -19,8 +20,13 @@
   type ChoiceOption = {
     label: string;
     labelHtml?: string;
-    /** Icon name; `craft-button` resolves and renders it. */
+    /**
+     * Icon name. A button renders it in place of the label; a checkbox or
+     * radio shows it before the label, tinted with `color`.
+     */
     icon?: string;
+    /** Shown before a checkbox or radio label: tints the icon, or as a dot. */
+    color?: string;
     value: ChoiceValue;
     disabled?: boolean;
     /**
@@ -487,8 +493,16 @@
             :name="option.icon"
             :label="option.label"
           />
-          <span v-else-if="option.labelHtml" v-html="option.labelHtml" />
-          <template v-else>{{ option.label }}</template>
+          <template v-else>
+            <craft-icon
+              v-if="option.icon"
+              :name="option.icon"
+              :style="option.color ? {color: option.color} : undefined"
+            />
+            <craft-indicator v-else-if="option.color" :fill="option.color" />
+            <span v-if="option.labelHtml" v-html="option.labelHtml" />
+            <template v-else>{{ option.label }}</template>
+          </template>
         </label>
       </component>
     </div>
