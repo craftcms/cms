@@ -81,6 +81,7 @@
     defaultFormActions: () => DEFAULT_FORM_ACTIONS,
     formAdditionalButtons: () => [],
     contentMaxWidth: false,
+    headerRule: false,
     fillViewport: false,
   });
 
@@ -407,7 +408,10 @@
                             </slot>
 
                             <slot name="content-header">
-                              <ContentHeader v-show="hasHeader()">
+                              <ContentHeader
+                                v-show="hasHeader()"
+                                :ruled="headerRule"
+                              >
                                 <template #title>
                                   <slot name="title">
                                     <h1 class="text-xl">{{ pageTitle }}</h1>

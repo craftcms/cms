@@ -80,6 +80,11 @@ export interface ScreenProps {
    */
   contentMaxWidth?: boolean | string;
   /**
+   * Ends the content header with a rule, for a screen whose content starts
+   * right under its title row, such as a listing sorted from that row.
+   */
+  headerRule?: boolean;
+  /**
    * Fits the shell to the viewport instead of letting the document scroll,
    * so `page-main` gets a definite height to fill (e.g. a full-bleed editor).
    * Full pages only; a slideout is bounded already.
