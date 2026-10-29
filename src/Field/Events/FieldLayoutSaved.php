@@ -18,7 +18,7 @@ class FieldLayoutSaved extends FieldLayoutEvent
     public function __construct(
         FieldLayout $layout,
         public bool $isNew,
-        /** @var array{tabs: list<array<string, mixed>>, generatedFields: list<GeneratedField>, cardView: list<string>, thumbFieldKey: string|null, cardThumbAlignment: string}|null */
+        /** @var array{tabs: list<array<string, mixed>>, generatedFields: list<GeneratedField>, cardView: list<string>, thumbSources: list<string>, cardThumbAlignment: string, cardThumbStyle: string}|null */
         public ?array $previousConfig = null,
     ) {
         parent::__construct($layout);

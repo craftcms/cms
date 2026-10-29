@@ -33,6 +33,21 @@ class MissingField extends Field implements MissingComponentInterface
         return null;
     }
 
+    /**
+     * Returns the stored value unchanged, so it survives saves until the field type is available again.
+     */
+    #[Override]
+    public function serializeValue(mixed $value, ?ElementInterface $element): mixed
+    {
+        return $value;
+    }
+
+    #[Override]
+    public function serializeValueForDb(mixed $value, ElementInterface $element): mixed
+    {
+        return $value;
+    }
+
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {

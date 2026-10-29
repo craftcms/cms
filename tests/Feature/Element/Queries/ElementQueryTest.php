@@ -14,6 +14,10 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
 use CraftCms\Cms\Field\Elements\ContentBlock;
 use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\Field\Number;
+use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\MultipleRecordsFoundException;
@@ -118,7 +122,7 @@ it('sources concrete element queries from their element tables first', function 
     $joins = collect($builder->joins);
 
     expect($joins)->toHaveCount(2);
-    expect(normalizeJoinAlias($joins[0]))->toBe('elements as elements');
+    expect($joins[0]->table)->toBe('elements as elements');
     expect($joins[0]->wheres[0])->toMatchArray([
         'type' => 'Column',
         'first' => 'elements.id',
@@ -127,7 +131,7 @@ it('sources concrete element queries from their element tables first', function 
         'boolean' => 'and',
     ]);
 
-    expect(normalizeJoinAlias($joins[1]))->toBe('elements_sites as elements_sites');
+    expect($joins[1]->table)->toBe('elements_sites as elements_sites');
     expect($joins[1]->wheres[0])->toMatchArray([
         'type' => 'Column',
         'first' => 'elements_sites.elementId',
@@ -152,7 +156,7 @@ it('does not duplicate pending before query callbacks when cloned while preparin
     });
 
     $query->beforeQuery(function (ElementQuery $query) {
-        $query->getQuery()->leftJoin(new Alias('search_marker', 'search_marker'), 'search_marker.id', '=', 'elements.id');
+        $query->getQuery()->leftJoin('search_marker as search_marker', 'search_marker.id', '=', 'elements.id');
     });
 
     $query->applyBeforeQueryCallbacks();
@@ -162,19 +166,10 @@ it('does not duplicate pending before query callbacks when cloned while preparin
     $clone->applyBeforeQueryCallbacks();
 
     $markerJoins = collect($clone->getQuery()->joins)
-        ->filter(fn (JoinClause $join) => normalizeJoinAlias($join) === 'search_marker as search_marker');
+        ->filter(fn (JoinClause $join) => $join->table === 'search_marker as search_marker');
 
     expect($markerJoins)->toHaveCount(1);
 });
-
-function normalizeJoinAlias(JoinClause $join): string
-{
-    $table = $join->table;
-
-    expect($table)->toBeInstanceOf(Alias::class);
-
-    return preg_replace('/[`"\[\]]/', '', $table->getValue($join->getGrammar()));
-}
 
 it('uses clone criteria without changing the original query', function (Closure $factory, array $initial, array $changed, bool $executed, bool $cloneFirst) {
     $original = $factory($initial);
@@ -218,3 +213,59 @@ it('preserves extension callback binding and passes the executing query', functi
 
     expect($clone->applyAfterQueryCallbacks(collect())->all())->toBe(['legacy', 'extension']);
 });
+
+it('orders by custom field handles across field layouts', function (string $fieldType, array $values, bool $multipleLayouts) {
+    $result = EntryModel::factory()
+        ->withField('sortValue', $fieldType, value: $values[0])
+        ->createElementWithFields();
+    $first = $result->element;
+    $factory = EntryModel::factory();
+
+    if ($multipleLayouts) {
+        $factory = $factory->withFieldLayout(FieldLayout::factory()->forField($result->fields->get('sortValue')));
+    } else {
+        $factory = $factory->state(['typeId' => $first->typeId, 'sectionId' => $first->sectionId]);
+    }
+
+    $ids = [$first->id];
+    foreach (array_slice($values, 1) as $value) {
+        $entry = $factory->createElement();
+        $entry->setFieldValue('sortValue', $value);
+        expect(Elements::saveElement($entry))->toBeTrue();
+        $ids[] = $entry->id;
+    }
+
+    $query = Entry::find()->id($ids)->orderBy('sortValue');
+    $expected = [$ids[1], $ids[0], $ids[2]];
+
+    expect($query->ids())->toBe($expected)
+        ->and($query->ids())->toBe($expected)
+        ->and((clone $query)->reorder()->orderBy('sortValue', 'desc')->ids())->toBe(array_reverse($expected))
+        ->and((clone $query)->inReverse()->ids())->toBe(array_reverse($expected));
+})->with([
+    'text' => [PlainText::class, ['Bravo', 'Alpha', 'Charlie']],
+    'number' => [Number::class, [10, 2, 30]],
+])->with([false, true]);
+
+it('orders by rand() and random() on every database', function () {
+    $ids = EntryModel::factory(3)->create()->pluck('id')->sort()->values()->all();
+    $query = fn () => Entry::find()->id($ids);
+
+    foreach (['rand()', 'RANDOM() desc'] as $orderBy) {
+        expect($query()->orderBy($orderBy)->ids())->toEqualCanonicalizing($ids);
+    }
+
+    expect($query()->orderBy(['random()' => SORT_ASC])->ids())->toEqualCanonicalizing($ids);
+});
+
+it('rejects other SQL expressions passed as strings', function (Closure $query) {
+    $entry = EntryModel::factory()->create();
+
+    expect(fn () => $query(Entry::find()->id($entry->id))->all())
+        ->toThrow(InvalidArgumentException::class, 'Pass SQL expressions with `expression()`');
+})->with([
+    'orderBy' => [fn (ElementQuery $query) => $query->orderBy('field(elements.id, 3, 1, 2)')],
+    'orderBy array' => [fn (ElementQuery $query) => $query->orderBy(['coalesce(elements.id, 0)' => SORT_DESC])],
+    'select' => [fn (ElementQuery $query) => $query->select(['count(*) as total'])->asArray()],
+    'groupBy' => [fn (ElementQuery $query) => $query->groupBy('lower(elements.type)')],
+]);

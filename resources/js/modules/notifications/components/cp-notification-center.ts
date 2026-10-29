@@ -82,6 +82,9 @@ class CpNotificationCenter extends LitElement {
   @query('craft-popover')
   private popoverElement?: HTMLElement & {hide(): Promise<void>};
 
+  @query('.notification-heading')
+  private headingElement?: HTMLElement;
+
   #stopListening?: () => void;
 
   override connectedCallback(): void {
@@ -102,6 +105,15 @@ class CpNotificationCenter extends LitElement {
     return this.#unread.length
       ? t('Notifications, {count} unread', {count: this.#unread.length})
       : t('Notifications');
+  }
+
+  async #markAllRead(): Promise<void> {
+    const marking = markNotificationsRead(
+      this.#unread.map((notification) => notification.id)
+    );
+    await this.updateComplete;
+    this.headingElement?.focus();
+    await marking;
   }
 
   protected override render() {
@@ -137,17 +149,16 @@ class CpNotificationCenter extends LitElement {
 
         <div slot="content">
           <header class="notification-header">
-            <h2 class="notification-heading">${t('Notifications')}</h2>
+            <h2 class="notification-heading" tabindex="-1">
+              ${t('Notifications')}
+            </h2>
             ${this.#unread.length
               ? html`
                   <craft-button
                     type="button"
                     size="small"
                     variant="plain"
-                    @click=${() =>
-                      markNotificationsRead(
-                        this.#unread.map((notification) => notification.id)
-                      )}
+                    @click=${() => this.#markAllRead()}
                   >
                     ${t('Mark all as read')}
                   </craft-button>

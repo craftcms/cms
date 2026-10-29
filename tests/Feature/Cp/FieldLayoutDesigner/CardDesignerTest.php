@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Field\Assets;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\User\Elements\User;
 use Symfony\Component\DomCrawler\Crawler;
@@ -88,3 +91,76 @@ it('renders the thumbnail alignment setting as radios shown as buttons', functio
         ->and($designer->filter('craft-tooltip[for="thumb-alignment-end"]')->text())->toBe('Right')
         ->and($designer->filter('craft-button-group#thumb-alignment')->count())->toBe(0);
 });
+
+it('previews cards in the thumb style, once it applies', function (?string $style, bool $thumbField, bool $cover) {
+    $layout = $thumbField
+        ? EntryModel::factory()->withField('images', Assets::class)->createElementWithFields()->element->getFieldLayout()
+        : new FieldLayout(['type' => Asset::class]);
+
+    if ($thumbField) {
+        $layout->thumbSources = ['layoutElement:'.$layout->getCustomFieldElements()[0]->uid];
+    }
+
+    $layout->setCardThumbStyle($style);
+    $card = new Crawler('<div>'.app(CardDesigner::class)->previewHtml($layout).'</div>')->filter('craft-card');
+
+    expect($card->attr('cover-src') !== null)->toBe($cover)
+        ->and($card->filter('[slot="thumbnail"]')->count())->toBe($cover ? 0 : 1);
+})->with([
+    'asset volume by default' => [null, false, true],
+    'asset volume set to normal' => ['normal', false, false],
+    'entry type by default' => [null, true, false],
+    'entry type set to cover' => ['cover', true, true],
+]);
+
+it('previews cards with the sample image for the theme being shown', function (?string $cookie, string $theme, string $luminance) {
+    if ($cookie !== null) {
+        request()->cookies->set(Theme::COOKIE, $cookie);
+    }
+
+    $preview = cardPreview(Asset::class);
+    $card = $preview->filter('craft-card');
+
+    expect($card->attr('cover-src'))->toEndWith("bachelor-$theme.jpg")
+        ->and($card->attr('luminance'))->toStartWith($luminance)
+        ->and($preview->filter('craft-chip.cvd-chip img')->attr('src'))->toEndWith("bachelor-$theme.jpg");
+})->with([
+    'light by default' => [null, 'light', '[[[0.389,'],
+    'dark' => ['dark', 'dark', '[[[0.01,'],
+]);
+
+it('shows the thumb style setting, and thumb alignment unless there’s no thumbnail or cards are covered', function (string $type, bool $thumbField, ?string $style, bool $alignmentShown) {
+    $layout = $type === Entry::class
+        ? EntryModel::factory()->withField('images', Assets::class)->createElementWithFields()->element->getFieldLayout()
+        : new FieldLayout(['type' => $type]);
+
+    if ($thumbField) {
+        $layout->thumbSources = ['layoutElement:'.$layout->getCustomFieldElements()[0]->uid];
+    }
+
+    $layout->setCardThumbStyle($style);
+    $designer = new Crawler('<div>'.app(CardDesigner::class)->html($layout).'</div>');
+    $field = $designer->filter('craft-field[data-attribute="thumb-style"]');
+
+    expect($field->filter('input[type="radio"][name="thumb-style"]')->each(fn (Crawler $radio) => $radio->attr('value')))->toBe(['normal', 'cover'])
+        ->and(str_contains((string) $field->attr('class'), 'hidden'))->toBeFalse()
+        ->and(str_contains((string) $designer->filter('craft-field[data-attribute="thumb-alignment"]')->attr('class'), 'hidden'))->toBe(! $alignmentShown);
+})->with([
+    'asset volume by default' => [Asset::class, false, null, false],
+    'asset volume set to normal' => [Asset::class, false, 'normal', true],
+    'user fields' => [User::class, false, null, true],
+    'user fields set to cover' => [User::class, false, 'cover', false],
+    'entry type without a thumb source' => [Entry::class, false, null, false],
+    'entry type with a thumb source' => [Entry::class, true, null, true],
+    'entry type with a thumb source set to cover' => [Entry::class, true, 'cover', false],
+]);
+
+it('gives only entry cards a header in the preview, for their entry type’s label', function (string $type, bool $header) {
+    $card = new Crawler('<div>'.app(CardDesigner::class)->previewHtml(new FieldLayout(['type' => $type])).'</div>')->filter('craft-card');
+
+    expect($card->filter('[slot="header"]')->count())->toBe($header ? 1 : 0);
+})->with([
+    'entry type' => [Entry::class, true],
+    'asset volume' => [Asset::class, false],
+    'user fields' => [User::class, false],
+]);

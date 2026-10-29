@@ -13,7 +13,6 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function Laravel\Prompts\progress;
 
@@ -49,7 +48,7 @@ class BaseEntryTypeMergeMigration extends Migration
 
         $query = DB::table(Table::ELEMENTS_SITES, 'es')
             ->select(['es.id', 'es.content'])
-            ->join(new Alias(Table::ENTRIES, 'e'), 'e.id', '=', 'es.elementId')
+            ->join(Table::ENTRIES.' as e', 'e.id', '=', 'es.elementId')
             ->where('e.typeId', $outgoingEntryTypeRecord->id)
             ->whereNotNull('es.content');
 
@@ -58,8 +57,8 @@ class BaseEntryTypeMergeMigration extends Migration
         // and now special case for singles
         $query = DB::table(Table::ELEMENTS_SITES, 'es')
             ->select(['es.id', 'es.content'])
-            ->join(new Alias(Table::ENTRIES, 'e'), 'e.id', '=', 'es.elementId')
-            ->leftJoin(new Alias(Table::SECTIONS, 's'), 'e.sectionId', '=', 's.id')
+            ->join(Table::ENTRIES.' as e', 'e.id', '=', 'es.elementId')
+            ->leftJoin(Table::SECTIONS.' as s', 'e.sectionId', '=', 's.id')
             ->whereNotNull('es.content')
             ->where('s.type', SectionType::Single->value);
 
@@ -119,7 +118,7 @@ class BaseEntryTypeMergeMigration extends Migration
 
         $this->components->task('Restoring entries', function () use ($entryTypeRecord) {
             DB::table(Table::ELEMENTS, 'elements')
-                ->join(new Alias(Table::ENTRIES, 'entries'), 'entries.id', '=', 'elements.id')
+                ->join(Table::ENTRIES.' as entries', 'entries.id', '=', 'elements.id')
                 ->where('entries.typeId', $entryTypeRecord->id)
                 ->where('entries.deletedWithEntryType', true)
                 ->update([

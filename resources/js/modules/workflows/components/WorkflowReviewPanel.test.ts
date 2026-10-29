@@ -1,4 +1,4 @@
-import {createApp, defineComponent, h, nextTick} from 'vue';
+import {createApp, defineComponent, h, nextTick, shallowRef} from 'vue';
 import {http} from '@inertiajs/vue3';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import WorkflowDefaultActions from './WorkflowDefaultActions.vue';
@@ -172,10 +172,14 @@ describe('WorkflowReviewPanel', () => {
   ) {
     container = document.createElement('div');
     document.body.append(container);
+    const current = shallowRef(workflowReview);
     app = createApp({
       render: () =>
         h(WorkflowReviewPanel, {
-          review: workflowReview,
+          review: current.value,
+          onReviewUpdated: (value: WorkflowReviewData) => {
+            current.value = value;
+          },
           elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
           elementId: 12,
           draftId: 7,

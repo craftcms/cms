@@ -85,7 +85,7 @@
   <craft-action-menu
     :icon="icon"
     :label="label ?? undefined"
-    :searchable="searchable"
+    .searchable="searchable"
   >
     <slot v-once name="invoker" :label="label" :attributes="{slot: 'invoker'}">
       <craft-button

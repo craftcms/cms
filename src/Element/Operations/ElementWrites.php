@@ -32,6 +32,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Search\Search;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
@@ -606,7 +607,7 @@ readonly class ElementWrites
                             foreach ($fieldLayout->getCustomFields() as $field) {
                                 $validUids[$field->layoutElement->uid] = true;
 
-                                if (($saveContent || in_array($field->handle, $dirtyFields)) && $field::dbType() !== null) {
+                                if (($saveContent || in_array($field->handle, $dirtyFields)) && ($field::dbType() !== null || $field instanceof MissingField)) {
                                     $value = $element->getFieldValue($field->handle);
                                     if ($element->isNewForSite && $field->isValueEmpty($value, $element)) {
                                         continue;
@@ -1016,10 +1017,9 @@ readonly class ElementWrites
                 'target' => '_blank',
             ]).
             $message.
-            Html::tag('span', '', [
-                'data-icon' => 'external',
-                'aria-label' => t('Open in a new tab'),
-                'role' => 'img',
+            Html::tag('craft-icon', '', [
+                'name' => 'external',
+                'label' => t('Open in a new tab'),
             ]).
             Html::endTag('a');
         }

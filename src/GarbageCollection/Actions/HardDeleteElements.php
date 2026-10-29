@@ -10,7 +10,6 @@ use CraftCms\Cms\Element\Eloquent\EloquentElement;
 use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * Hard-deletes eligible elements.
@@ -81,8 +80,8 @@ class HardDeleteElements extends GarbageCollectionAction
 
         // first get nested elements which are not nested (owned) and that don't have any revisions
         $ids1 = $this->hardDeleteQuery(DB::table(Table::ELEMENTS, 'e'), 'e')
-            ->leftJoin(new Alias(Table::REVISIONS, 'r'), 'r.canonicalId', 'e.id')
-            ->leftJoin(new Alias(Table::ELEMENTS_OWNERS, 'eo'), 'eo.elementId', '=', new Coalesce(['e.canonicalId', 'e.id']))
+            ->leftJoin(Table::REVISIONS.' as r', 'r.canonicalId', 'e.id')
+            ->leftJoin(Table::ELEMENTS_OWNERS.' as eo', 'eo.elementId', '=', new Coalesce(['e.canonicalId', 'e.id']))
             ->whereIn('e.type', $nestedElementTypes)
             ->whereNull('r.id')
             ->whereNull('eo.elementId')
@@ -90,7 +89,7 @@ class HardDeleteElements extends GarbageCollectionAction
 
         // then get any nested elements that don't have any revisions, including nested ones
         $ids2 = $this->hardDeleteQuery(DB::table(Table::ELEMENTS, 'e'), 'e')
-            ->leftJoin(new Alias(Table::REVISIONS, 'r'), 'r.canonicalId', '=', new Coalesce(['e.canonicalId', 'e.id']))
+            ->leftJoin(Table::REVISIONS.' as r', 'r.canonicalId', '=', new Coalesce(['e.canonicalId', 'e.id']))
             ->whereIn('type', $nestedElementTypes)
             ->whereNull('r.id')
             ->pluck('e.id');

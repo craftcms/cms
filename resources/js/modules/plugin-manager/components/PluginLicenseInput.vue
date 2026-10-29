@@ -102,7 +102,7 @@
       <template v-if="showUpdateButton">
         <craft-button
           type="submit"
-          :loading="form.processing"
+          .loading="form.processing"
           :variant="ButtonVariant.Fill"
         >
           {{ t('Update') }}

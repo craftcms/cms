@@ -39,7 +39,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use RuntimeException;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
@@ -72,6 +71,11 @@ class UserPermissions
      * @var Collection<int, Collection<int, string>>
      */
     private Collection $permissionsByUserId;
+
+    /**
+     * @var array<int, array<string, true>> Users’ permissions, indexed by user ID and permission name
+     */
+    private array $permissionMapsByUserId = [];
 
     public function __construct(
         private readonly PermissionGroupCatalog $permissionGroupCatalog,
@@ -162,7 +166,7 @@ class UserPermissions
         return $this->permissionsByGroupId->getOrPut(
             $groupId,
             fn () => $this->createUserPermissionsQuery()
-                ->join(new Alias(Table::USERPERMISSIONS_USERGROUPS, 'p_g'), 'p_g.permissionId', 'p.id')
+                ->join(Table::USERPERMISSIONS_USERGROUPS.' as p_g', 'p_g.permissionId', 'p.id')
                 ->where('p_g.groupId', $groupId)
                 ->pluck('p.name')
                 ->pipe(fn (Collection $permissions) => collect($this->canonicalPermissionNames($permissions->all()))),
@@ -183,8 +187,8 @@ class UserPermissions
         }
 
         return $this->createUserPermissionsQuery()
-            ->join(new Alias(Table::USERPERMISSIONS_USERGROUPS, 'p_g'), 'p_g.permissionId', 'p.id')
-            ->join(new Alias(Table::USERGROUPS_USERS, 'g_u'), 'g_u.groupId', 'p_g.groupId')
+            ->join(Table::USERPERMISSIONS_USERGROUPS.' as p_g', 'p_g.permissionId', 'p.id')
+            ->join(Table::USERGROUPS_USERS.' as g_u', 'g_u.groupId', 'p_g.groupId')
             ->where('g_u.userId', $userId)
             ->pluck('p.name')
             ->pipe(fn (Collection $permissions) => collect($this->canonicalPermissionNames($permissions->all())));
@@ -259,7 +263,7 @@ class UserPermissions
         }
 
         return $this->createUserPermissionsQuery()
-            ->join(new Alias(Table::USERPERMISSIONS_USERS, 'p_u'), 'p_u.permissionId', 'p.id')
+            ->join(Table::USERPERMISSIONS_USERS.' as p_u', 'p_u.permissionId', 'p.id')
             ->where('p_u.userId', $userId)
             ->pluck('p.name')
             ->pipe(fn (Collection $permissions) => collect($this->canonicalPermissionNames($permissions->all())));
@@ -296,7 +300,10 @@ class UserPermissions
             return true;
         }
 
-        return $this->getPermissionsByUserId($userId)->containsStrict($this->canonicalPermissionName($checkPermission));
+        // Build the map from getPermissionsByUserId(), in case it's been overridden
+        $this->permissionMapsByUserId[$userId] ??= array_fill_keys($this->getPermissionsByUserId($userId)->all(), true);
+
+        return isset($this->permissionMapsByUserId[$userId][$this->canonicalPermissionName($checkPermission)]);
     }
 
     /**
@@ -340,6 +347,7 @@ class UserPermissions
         $this->permissionsByUserId ??= collect();
         $userPermissions = $groupPermissions->merge($permissions)->unique();
         $this->permissionsByUserId[$userId] = $userPermissions;
+        unset($this->permissionMapsByUserId[$userId]);
 
         event(new UserPermissionsSaved($userId, $permissions));
 
@@ -394,6 +402,7 @@ class UserPermissions
         $this->permissionsByGroupId ??= collect();
         $this->permissionsByGroupId->put($userGroup->id, collect($permissions));
         unset($this->permissionsByUserId);
+        $this->permissionMapsByUserId = [];
     }
 
     /** @param Collection<int, PermissionGroup> $permissions */
@@ -993,5 +1002,6 @@ class UserPermissions
             $this->permissionsByGroupId,
             $this->permissionsByUserId,
         );
+        $this->permissionMapsByUserId = [];
     }
 }

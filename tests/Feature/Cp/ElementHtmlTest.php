@@ -2,14 +2,26 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis;
+use CraftCms\Cms\Asset\Models\Asset;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
 use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Field\Assets;
+use CraftCms\Cms\Field\ContentBlock;
+use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Image\Data\ImageColors;
+use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Tests\TestClasses\Asset\ControlPanelAssetTransformDriver;
 use CraftCms\Cms\Tests\TestClasses\Field\ModeThumbnailField;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
@@ -24,7 +36,7 @@ describe('elementChipHtml', function () {
         $entry = Entry::factory()->withField('thumbnail', ModeThumbnailField::class, value: 'fit')
             ->createElementWithFields()->element;
         $layout = $entry->getFieldLayout();
-        $layout->thumbFieldKey = 'layoutElement:'.$layout->getCustomFieldElements()[0]->uid;
+        $layout->thumbSources = ['layoutElement:'.$layout->getCustomFieldElements()[0]->uid];
 
         expect($this->elementHtml->elementChipHtml($entry, ['size' => $size, 'appearance' => $appearance]))
             ->toContainTag('craft-thumbnail', ['mode' => 'fit', 'sizes' => "calc({$pixels}rem/16)"]);
@@ -143,7 +155,7 @@ describe('elementCardHtml', function () {
         $entry = Entry::factory()->withField('thumbnail', ModeThumbnailField::class, value: $supportedMode)
             ->createElementWithFields()->element;
         $layout = $entry->getFieldLayout();
-        $layout->thumbFieldKey = 'layoutElement:'.$layout->getCustomFieldElements()[0]->uid;
+        $layout->thumbSources = ['layoutElement:'.$layout->getCustomFieldElements()[0]->uid];
         $attributes = $this->elementHtml->elementCardAttributes($entry);
         $inline = $this->elementHtml->elementCardHtml($entry);
         $separate = $this->elementHtml->elementCardThumbHtml($entry);
@@ -173,6 +185,140 @@ describe('elementCardHtml', function () {
 
         expect($html)->toContain('class="card')
             ->and($html)->toContain('name="myFieldName[]"');
+    });
+
+    it('covers an asset’s card only with an opaque image that can fill it', function (string $filename, int $width, int $height, bool $covered, string $color = '#3a6ea5') {
+        new ControlPanelAssetTransformDriver()->register();
+        Cms::config()->defaultAssetTransformer('test');
+        $asset = Asset::factory()->createElement(['filename' => $filename, 'width' => $width, 'height' => $height]);
+        $luminance = [[[0.1, 0.6], null], [[0.02, 0.3], [0.05, 0.4]]];
+        $asset->analysis = new ImageAnalysis(colors: new ImageColors(grid: [[$color]], luminance: $luminance));
+
+        $attributes = $this->elementHtml->elementCardAttributes($asset);
+
+        expect($attributes['cover-src'] ?? null)->toBe($covered ? '/transforms/800x600.webp' : null)
+            ->and($attributes['luminance'] ?? null)->toBe($covered ? $luminance : null);
+    })->with([
+        'smallest' => ['photo.jpg', 480, 360, true],
+        'too narrow' => ['photo.jpg', 479, 360, false],
+        'too short' => ['photo.jpg', 480, 359, false],
+        'widest' => ['photo.jpg', 1200, 600, true],
+        'too wide' => ['photo.jpg', 1201, 600, false],
+        'tallest' => ['photo.jpg', 600, 800, true],
+        'too tall' => ['photo.jpg', 599, 800, false],
+        'opaque png' => ['logo.png', 800, 600, true],
+        'transparent' => ['logo.png', 800, 600, false, '#3a6ea580'],
+    ]);
+
+    it('covers an element’s card with the image its thumbnail field shows, with the cover thumb style', function (int $width, string $style, bool $covered) {
+        new ControlPanelAssetTransformDriver()->register();
+        Cms::config()->defaultAssetTransformer('test');
+        $luminance = [[[0.1, 0.6]], [[0.02, 0.3]]];
+        $asset = Asset::factory()->createElement([
+            'width' => $width,
+            'height' => 600,
+            'analysis' => ['colors' => ['grid' => [['#3a6ea5']], 'luminance' => $luminance]],
+        ]);
+        $entry = Entry::factory()->withField('images', Assets::class, value: [$asset->id])
+            ->createElementWithFields()->element;
+        $layout = $entry->getFieldLayout();
+        $layout->thumbSources = ['layoutElement:'.$layout->getCustomFieldElements()[0]->uid];
+        $layout->setCardThumbStyle($style);
+
+        $attributes = $this->elementHtml->elementCardAttributes($entry);
+
+        expect($attributes['cover-src'] ?? null)->toBe($covered ? '/transforms/800x600.webp' : null)
+            ->and($attributes['luminance'] ?? null)->toBe($covered ? $luminance : null);
+    })->with([
+        'fills the card' => [800, 'cover', true],
+        'too small' => [400, 'cover', false],
+        'normal thumb style' => [800, 'normal', false],
+    ]);
+
+    it('covers an element’s card with the image from its first thumb source that has a thumbnail', function (bool $firstHasThumb, bool $covered) {
+        new ControlPanelAssetTransformDriver()->register();
+        Cms::config()->defaultAssetTransformer('test');
+        $asset = Asset::factory()->createElement([
+            'width' => 800,
+            'height' => 600,
+            'analysis' => ['colors' => ['grid' => [['#3a6ea5']], 'luminance' => [[[0.1, 0.6]]]]],
+        ]);
+        $entry = Entry::factory()
+            ->withField('thumbnail', ModeThumbnailField::class, value: $firstHasThumb ? 'fit' : null)
+            ->withField('images', Assets::class, value: [$asset->id])
+            ->createElementWithFields()->element;
+        $layout = $entry->getFieldLayout();
+        $layout->thumbSources = array_map(fn (CustomField $field) => "layoutElement:{$field->uid}", $layout->getCustomFieldElements());
+        $layout->setCardThumbStyle('cover');
+
+        expect($this->elementHtml->elementCardAttributes($entry)['cover-src'] ?? null)
+            ->toBe($covered ? '/transforms/800x600.webp' : null);
+    })->with([
+        'first source has no thumbnail' => [false, true],
+        'first source has a non-asset thumbnail' => [true, false],
+    ]);
+
+    it('covers an element’s card with the image from a thumb source within a Content Block', function () {
+        new ControlPanelAssetTransformDriver()->register();
+        Cms::config()->defaultAssetTransformer('test');
+        $asset = Asset::factory()->createElement([
+            'width' => 800,
+            'height' => 600,
+            'analysis' => ['colors' => ['grid' => [['#3a6ea5']], 'luminance' => [[[0.1, 0.6]]]]],
+        ]);
+        $innerField = Field::factory()->create(['handle' => 'innerImages', 'type' => Assets::class]);
+        Fields::refreshFields();
+        $innerUid = Str::uuid()->toString();
+        $entry = Entry::factory()->withField('block', ContentBlock::class, [
+            'fieldLayouts' => [
+                Str::uuid()->toString() => [
+                    'tabs' => [[
+                        'name' => 'Content',
+                        'elements' => [[
+                            'uid' => $innerUid,
+                            'type' => CustomField::class,
+                            'fieldUid' => $innerField->uid,
+                        ]],
+                    ]],
+                ],
+            ],
+        ], value: ['fields' => ['innerImages' => [$asset->id]]])
+            ->createElementWithFields()->element;
+        $layout = $entry->getFieldLayout();
+        $layout->thumbSources = ["contentBlock:{$layout->getCustomFieldElements()[0]->uid}.layoutElement:{$innerUid}"];
+        $layout->setCardThumbStyle('cover');
+
+        expect($this->elementHtml->elementCardAttributes($entry)['cover-src'] ?? null)->toBe('/transforms/800x600.webp');
+    });
+
+    it('covers a user’s card with their photo, with the cover thumb style', function (string $style, bool $covered) {
+        new ControlPanelAssetTransformDriver()->register();
+        Cms::config()->defaultAssetTransformer('test');
+        $user = UserModel::factory()->createElement();
+        $user->setPhoto(Asset::factory()->createElement([
+            'width' => 800,
+            'height' => 600,
+            'analysis' => ['colors' => ['grid' => [['#3a6ea5']], 'luminance' => [[[0.1, 0.6]]]]],
+        ]));
+        $layout = $user->getFieldLayout();
+        $layout->setCardThumbStyle($style);
+        Fields::saveLayout($layout);
+
+        expect($this->elementHtml->elementCardAttributes($user)['cover-src'] ?? null)
+            ->toBe($covered ? '/transforms/800x600.webp' : null);
+    })->with([
+        'cover' => ['cover', true],
+        'normal' => ['normal', false],
+    ]);
+
+    it('keeps an asset’s normal card when its volume uses the normal thumb style', function () {
+        new ControlPanelAssetTransformDriver()->register();
+        Cms::config()->defaultAssetTransformer('test');
+        $asset = Asset::factory()->createElement(['filename' => 'photo.jpg', 'width' => 800, 'height' => 600]);
+        $asset->analysis = new ImageAnalysis(colors: new ImageColors(grid: [['#3a6ea5']], luminance: [[[0.1, 0.6]]]));
+        $asset->getFieldLayout()->setCardThumbStyle('normal');
+
+        expect($this->elementHtml->elementCardAttributes($asset)['cover-src'] ?? null)->toBeNull();
     });
 
     it('dispatches and allows overriding ElementCardHtmlResolving', function () {

@@ -7,7 +7,6 @@ namespace CraftCms\Cms\GarbageCollection\Actions;
 use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * @since 6.0.0
@@ -26,7 +25,7 @@ class DeleteOrphanedDraftsAndRevisions extends GarbageCollectionAction
 
                 foreach ($tables as $fk => $table) {
                     DB::table($table, 't')
-                        ->leftJoin(new Alias(Table::ELEMENTS, 'e'), "e.$fk", 't.id')
+                        ->leftJoin(Table::ELEMENTS.' as e', "e.$fk", 't.id')
                         ->whereNull('e.id')
                         ->pluck('t.id')
                         ->chunk($this->garbageCollection::CHUNK_SIZE)

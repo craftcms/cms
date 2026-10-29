@@ -62,7 +62,7 @@
       />
 
       <div class="mt-4 flex gap-2 items-center">
-        <craft-button type="submit" :loading="processing">
+        <craft-button type="submit" .loading="processing">
           {{ t('Clear caches') }}
         </craft-button>
         <TransitionFade>
@@ -111,7 +111,7 @@
 
       <div class="mt-4">
         <div class="flex gap-2 items-center">
-          <craft-button type="submit" :loading="processing">
+          <craft-button type="submit" .loading="processing">
             {{ t('Invalidate caches') }}
           </craft-button>
           <TransitionFade>

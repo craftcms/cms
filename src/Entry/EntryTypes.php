@@ -121,8 +121,6 @@ class EntryTypes
         $entryTypes = new MemoizableArray(
             $this->_createEntryTypeQuery()->get()->all(),
             function (object $result) {
-                $result->titleTranslationMethod = TranslationMethod::from($result->titleTranslationMethod);
-                $result->slugTranslationMethod = TranslationMethod::from($result->slugTranslationMethod);
                 $result->color = $result->color ? Color::from($result->color) : null;
 
                 return new EntryType($result);
@@ -375,13 +373,13 @@ class EntryTypes
             $entryTypeModel->icon = $data['icon'] ?? null;
             $entryTypeModel->color = $data['color'] ?? null;
             $entryTypeModel->hasTitleField = $data['hasTitleField'];
-            $entryTypeModel->titleTranslationMethod = $data['titleTranslationMethod'] ?? '';
+            $entryTypeModel->titleTranslationMethod = TranslationMethod::fromStored($data['titleTranslationMethod'] ?? null, $data['titleTranslationKeyFormat'] ?? null)->value;
             $entryTypeModel->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
             $entryTypeModel->titleFormat = $data['titleFormat'];
             $entryTypeModel->allowLineBreaksInTitles = $data['allowLineBreaksInTitles'] ?? false;
             $entryTypeModel->uiLabelFormat = ($data['uiLabelFormat'] ?? null) ?: '{title}';
             $entryTypeModel->showSlugField = $data['showSlugField'] ?? true;
-            $entryTypeModel->slugTranslationMethod = $data['slugTranslationMethod'] ?? TranslationMethod::Site->value;
+            $entryTypeModel->slugTranslationMethod = TranslationMethod::fromStored($data['slugTranslationMethod'] ?? null, $data['slugTranslationKeyFormat'] ?? null)->value;
             $entryTypeModel->slugTranslationKeyFormat = $data['slugTranslationKeyFormat'] ?? null;
             $entryTypeModel->showStatusField = $data['showStatusField'] ?? true;
             $entryTypeModel->showPostDateField = $data['showPostDateField'] ?? true;

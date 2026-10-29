@@ -25,17 +25,30 @@ class DeleteOrphanedForeignKeyRows extends GarbageCollectionAction
                     $disabledFkChecks = false;
                 }
 
+                // Schema introspection returns physical table names, but the query builder adds the prefix itself.
+                $prefix = DB::getTablePrefix();
+
                 foreach (Schema::getTables(Schema::getCurrentSchemaListing()) as $table) {
-                    $tableName = $table['schema_qualified_name'];
+                    if (! str_starts_with($table['name'], $prefix)) {
+                        continue;
+                    }
+
+                    $unprefixedName = substr($table['name'], strlen($prefix));
+                    $tableName = isset($table['schema']) ? "{$table['schema']}.$unprefixedName" : $unprefixedName;
 
                     foreach (Schema::getForeignKeys($tableName) as $foreignKey) {
-                        if (strtoupper((string) $foreignKey['on_delete']) !== 'CASCADE') {
+                        if (
+                            strtoupper((string) $foreignKey['on_delete']) !== 'CASCADE' ||
+                            ! str_starts_with($foreignKey['foreign_table'], $prefix)
+                        ) {
                             continue;
                         }
 
-                        $referencedTable = isset($foreignKey['foreign_schema'])
-                            ? $foreignKey['foreign_schema'].'.'.$foreignKey['foreign_table']
-                            : $foreignKey['foreign_table'];
+                        $referencedTable = substr($foreignKey['foreign_table'], strlen($prefix));
+
+                        if (isset($foreignKey['foreign_schema'])) {
+                            $referencedTable = "{$foreignKey['foreign_schema']}.$referencedTable";
+                        }
                         $localColumns = $foreignKey['columns'];
                         $foreignColumns = $foreignKey['foreign_columns'];
 
@@ -48,8 +61,8 @@ class DeleteOrphanedForeignKeyRows extends GarbageCollectionAction
                         }
 
                         foreach (array_combine($localColumns, $foreignColumns) as $localCol => $foreignCol) {
-                            $children->whereNotNull("$tableName.$localCol");
-                            $parent->whereColumn("parent.$foreignCol", "$tableName.$localCol");
+                            $children->whereNotNull("$unprefixedName.$localCol");
+                            $parent->whereColumn("parent.$foreignCol", "$unprefixedName.$localCol");
                         }
 
                         $children->whereNotExists($parent)->delete();

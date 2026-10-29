@@ -8,12 +8,12 @@
 namespace craft\services;
 
 use Craft;
-use craft\db\Table;
 use craft\elements\Tag;
 use craft\errors\TagGroupNotFoundException;
 use craft\events\TagGroupEvent;
 use craft\models\TagGroup;
 use craft\records\TagGroup as TagGroupRecord;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
@@ -22,9 +22,8 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\MemoizableArray;
-use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
-use DateTime;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -390,41 +389,20 @@ class Tags extends Component
         DB::beginTransaction();
         try {
             // Delete the tags
-            $elementsTable = Table::ELEMENTS;
-            $tagsTable = Table::TAGS;
-            $now = Query::prepareDateForDb(new DateTime());
-            $db = Craft::$app->getDb();
+            $condition = fn(Builder $query): Builder => $query
+                ->where('tags.groupId', $tagGroup->id)
+                ->whereColumn('tags.id', 'elements.id')
+                ->whereNull(['elements.canonicalId', 'elements.revisionId', 'elements.dateDeleted']);
 
-            $conditionSql = <<<SQL
-[[tags.groupId]] = $tagGroup->id AND
-[[tags.id]] = [[elements.id]] AND
-[[elements.canonicalId]] IS NULL AND
-[[elements.revisionId]] IS NULL AND
-[[elements.dateDeleted]] IS NULL
-SQL;
+            DB::table('tags')
+                ->join(Table::ELEMENTS, 'elements.id', 'tags.id')
+                ->where($condition)
+                ->update(['deletedWithGroup' => true]);
 
-            if ($db->getIsMysql()) {
-                $db->createCommand(<<<SQL
-UPDATE $elementsTable [[elements]], $tagsTable [[tags]]
-SET [[elements.dateDeleted]] = '$now',
-  [[tags.deletedWithGroup]] = 1
-WHERE $conditionSql
-SQL)->execute();
-            } else {
-                // Not possible to update two tables simultaneously with Postgres
-                $db->createCommand(<<<SQL
-UPDATE $tagsTable [[tags]]
-SET [[deletedWithGroup]] = TRUE
-FROM $elementsTable [[elements]]
-WHERE $conditionSql
-SQL)->execute();
-                $db->createCommand(<<<SQL
-UPDATE $elementsTable [[elements]]
-SET [[dateDeleted]] = '$now'
-FROM $tagsTable [[tags]]
-WHERE $conditionSql
-SQL)->execute();
-            }
+            DB::table(Table::ELEMENTS)
+                ->join('tags', 'elements.id', 'tags.id')
+                ->where($condition)
+                ->update(['dateDeleted' => now()]);
 
             // Delete the field layout
             if ($tagGroupRecord->fieldLayoutId) {

@@ -56,7 +56,6 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Override;
 use RuntimeException;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
@@ -129,8 +128,8 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         $ns = $field->handle.'_'.Str::random(5);
 
         $exists = DB::table(DbTable::ADDRESSES, "addresses_$ns")
-            ->join(new Alias(DbTable::ELEMENTS, "elements_$ns"), "elements_$ns.id", '=', "addresses_$ns.id")
-            ->join(new Alias(DbTable::ELEMENTS_OWNERS, "elements_owners_$ns"), "elements_owners_$ns.elementId", '=', "elements_$ns.id")
+            ->join(DbTable::ELEMENTS." as elements_$ns", "elements_$ns.id", '=', "addresses_$ns.id")
+            ->join(DbTable::ELEMENTS_OWNERS." as elements_owners_$ns", "elements_owners_$ns.elementId", '=', "elements_$ns.id")
             ->where("addresses_$ns.fieldId", $field->id)
             ->where("elements_$ns.enabled", true)
             ->whereNull("elements_$ns.dateDeleted")
@@ -912,7 +911,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                 'elements_owners.ownerId as source',
                 'addresses.id as target',
             ])
-            ->join(new Alias(DbTable::ELEMENTS_OWNERS, 'elements_owners'), function (JoinClause $join) use ($sourceElementIds) {
+            ->join(DbTable::ELEMENTS_OWNERS.' as elements_owners', function (JoinClause $join) use ($sourceElementIds) {
                 $join->whereColumn('elements_owners.elementId', 'addresses.id')
                     ->whereIn('elements_owners.ownerId', $sourceElementIds);
             })

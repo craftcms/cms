@@ -28,7 +28,6 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
@@ -209,7 +208,7 @@ readonly class UserGroups
                 'g.description',
                 'g.uid',
             ])
-            ->join(new Alias(Table::USERGROUPS_USERS, 'gu'), 'gu.groupId', 'g.id')
+            ->join(Table::USERGROUPS_USERS.' as gu', 'gu.groupId', 'g.id')
             ->where('gu.userId', $userId)
             ->get()
             ->mapInto(UserGroup::class);

@@ -107,7 +107,6 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Override;
 use RuntimeException;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
@@ -1828,7 +1827,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             ->authorOf($this)
             ->status(null)
             ->join(
-                new Alias(Table::ENTRIES_AUTHORS, 'entries_authors'),
+                Table::ENTRIES_AUTHORS.' as entries_authors',
                 function (JoinClause $join) {
                     $join->on('entries_authors.authorId', '=', 'users.id')
                         ->where('entries_authors.entryId', '=', $this->id);
@@ -2940,7 +2939,7 @@ JS;
             /** @var self|null $parent */
             $parent = self::find()
                 ->structureId($section->structureId)
-                ->join(new Alias(Table::ENTRIES, 'j'), 'j.parentId', '=', 'elements.id')
+                ->join(Table::ENTRIES.' as j', 'j.parentId', '=', 'elements.id')
                 ->where('j.id', $this->id)
                 ->first();
 

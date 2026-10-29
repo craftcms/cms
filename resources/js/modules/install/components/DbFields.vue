@@ -6,15 +6,6 @@
   import Select from '@/common/form/Select.vue';
 
   type DbDriver = 'mysql' | 'mariadb' | 'pgsql' | 'sqlite';
-  type DbFormData = {
-    driver: DbDriver;
-    host?: string;
-    port?: number;
-    database?: string;
-    username?: string;
-    password?: string;
-    prefix?: string;
-  };
   type DbDefaults = {
     host?: string;
     port?: string;
@@ -23,30 +14,24 @@
     prefix?: string;
   };
 
-  const emit = defineEmits<{
-    (e: 'update:modelValue', value: DbFormData): void;
-  }>();
   const props = withDefaults(
     defineProps<{
-      modelValue: DbFormData;
       defaults: Record<DbDriver, DbDefaults>;
       errors?: Record<string, string>;
     }>(),
     {errors: () => ({})}
   );
 
-  const model = computed({
-    get() {
-      return props.modelValue;
-    },
-    set(value) {
-      emit('update:modelValue', value);
-    },
-  });
+  const driver = defineModel<DbDriver>('driver', {required: true});
+  const host = defineModel<string>('host');
+  const port = defineModel<number | string>('port');
+  const database = defineModel<string>('database');
+  const username = defineModel<string>('username');
+  const password = defineModel<string>('password');
+  const prefix = defineModel<string>('prefix');
 
-  const selectedDriver = computed(() => model.value.driver);
-  const currentDefaults = computed(() => props.defaults[selectedDriver.value]);
-  const isSqlite = computed(() => selectedDriver.value === 'sqlite');
+  const currentDefaults = computed(() => props.defaults[driver.value]);
+  const isSqlite = computed(() => driver.value === 'sqlite');
 
   const options = [
     {value: 'mysql', label: 'MySQL'},
@@ -57,12 +42,8 @@
 </script>
 
 <template>
-  <craft-callout variant="danger" v-if="errors && errors['*']">
-    <ul>
-      <li v-for="formError in errors['*']" :key="formError">
-        {{ formError }}
-      </li>
-    </ul>
+  <craft-callout variant="danger" v-if="errors['*']">
+    <p>{{ errors['*'] }}</p>
   </craft-callout>
 
   <div class="grid grid-cols-5 gap-2">
@@ -71,7 +52,7 @@
         :label="t('Driver')"
         name="driver"
         id="db-driver"
-        v-model="model.driver"
+        v-model="driver"
         :options="options"
         :error="errors?.driver"
       />
@@ -82,7 +63,7 @@
         :label="t('Host')"
         name="host"
         id="db-host"
-        v-model="model.host"
+        v-model="host"
         :placeholder="currentDefaults.host ?? undefined"
         :error="errors?.host"
       />
@@ -93,7 +74,7 @@
         :label="t('Port')"
         name="port"
         id="db-port"
-        v-model="model.port"
+        v-model="port"
         size="7"
         :placeholder="currentDefaults.port ?? undefined"
         :error="errors?.port"
@@ -111,7 +92,7 @@
         :label="t('Username')"
         name="username"
         id="db-username"
-        v-model="model.username"
+        v-model="username"
         :placeholder="currentDefaults.username ?? undefined"
         :error="errors?.username"
       />
@@ -122,7 +103,7 @@
         :label="t('Password')"
         name="password"
         id="db-password"
-        v-model="model.password"
+        v-model="password"
         :error="errors?.password"
       />
     </div>
@@ -138,7 +119,7 @@
         :label="isSqlite ? t('Database File Path') : t('Database Name')"
         name="database"
         id="db-database"
-        v-model="model.database"
+        v-model="database"
         :placeholder="currentDefaults.database"
         :error="errors?.database"
       />
@@ -149,7 +130,7 @@
         :label="t('Prefix')"
         name="prefix"
         id="db-prefix"
-        v-model="model.prefix"
+        v-model="prefix"
         maxlength="5"
         size="7"
         :error="errors?.prefix"

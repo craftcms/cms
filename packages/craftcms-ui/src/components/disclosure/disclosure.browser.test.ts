@@ -67,3 +67,29 @@ it('points the closed chevron left in right-to-left text', async () => {
 
   expect(disclosure.querySelector('craft-button')!.icon).toBe('chevron-down');
 });
+
+it('fires craft-hide and craft-show on itself as its slotted content toggles', async () => {
+  document.body.innerHTML = `
+    <craft-disclosure label="Details" opened>
+      <div slot="content">Content</div>
+    </craft-disclosure>`;
+  const disclosure =
+    document.querySelector<CraftDisclosure>('craft-disclosure')!;
+  const onHost: string[] = [];
+  const bubbled: string[] = [];
+  for (const type of ['craft-show', 'craft-hide']) {
+    disclosure.addEventListener(type, () => onHost.push(type));
+    document.body.addEventListener(type, () => bubbled.push(type));
+  }
+  await disclosure.updateComplete;
+  await settle();
+
+  const invoker = disclosure.querySelector<HTMLElement>('[slot="invoker"]')!;
+  invoker.click();
+  await disclosure.updateComplete;
+  invoker.click();
+  await disclosure.updateComplete;
+
+  expect(onHost).toEqual(['craft-hide', 'craft-show']);
+  expect(bubbled).toEqual([]);
+});

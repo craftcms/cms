@@ -43,6 +43,7 @@
       selectAll: true,
       singleColumn: false,
       sortable: false,
+      readOnly: undefined,
       loading: false,
       renderServerActions: true,
     }

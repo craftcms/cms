@@ -6,6 +6,8 @@
   import type {Source, SourceItem} from '@/modules/elements/types/sources';
   import useCraftData from '@/common/composables/useCraftData';
   import CreateEntryController from '@actions/Entries/CreateEntryController';
+  import {withIndexReturnUrl} from '@/modules/elements/index/composables/useElementIndexVisits';
+  import {usePage} from '@inertiajs/vue3';
 
   type EntryType = {
     handle: string;
@@ -44,6 +46,7 @@
   }>();
 
   const {site} = useCraftData();
+  const page = usePage();
 
   function entryTypesOf(section: PublishableSection): Array<EntryType> {
     return Array.isArray(section.entryTypes)
@@ -112,7 +115,7 @@
 
   // The URL the legacy button used: a GET to `entries/{section}/new`, scoped to
   // an entry type and the active site, which creates a draft and redirects to
-  // the editor.
+  // the editor, which returns here once it's saved.
   function createUrl({section, entryType}: CreatableType): string {
     const query: Record<string, string> = {type: entryType.handle};
 
@@ -120,9 +123,12 @@
       query.siteId = String(site.value.id);
     }
 
-    return CreateEntryController['/{cpTrigger?}/entries/{section}/new'].url(
-      {section: section.handle},
-      {query}
+    return withIndexReturnUrl(
+      CreateEntryController['/{cpTrigger?}/entries/{section}/new'].url(
+        {section: section.handle},
+        {query}
+      ),
+      page.url
     );
   }
 

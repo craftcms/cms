@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Asset\Analysis\Tasks;
 use CraftCms\Cms\Asset\Analysis\ImageAnalysisChanges;
 use CraftCms\Cms\Asset\Analysis\ImageAnalysisTask;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Image\Data\ImageMetadata;
 use CraftCms\Cms\Support\Facades\I18N;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use WeakMap;
@@ -45,6 +46,16 @@ class GenerateTitles extends ImageAnalysisTask
         return t('Titles images that are still titled after their filename, in each site’s language, when they’re uploaded or analyzed.');
     }
 
+    /**
+     * Gives an image that’s still titled after its filename its embedded title.
+     */
+    public static function fillFromMetadata(Asset $asset, ImageMetadata $metadata, ImageAnalysisChanges $changes): void
+    {
+        if ($metadata->title !== null && $asset->hasDefaultTitle()) {
+            $changes->setForSite($asset->siteId, 'title', mb_substr($metadata->title, 0, 255));
+        }
+    }
+
     public static function needed(Asset $asset, bool $overwrite): bool
     {
         $groups = self::groups($asset);
@@ -54,7 +65,7 @@ class GenerateTitles extends ImageAnalysisTask
             : array_any($groups, static fn (TranslatedSite $group): bool => $group->value === null);
     }
 
-    public static function instructions(Asset $asset): string
+    public static function instructions(Asset $asset, bool $overwrite): string
     {
         $languages = array_map(
             static fn (string $property, TranslatedSite $group): string => "- $property: ".I18N::getLocaleById($group->language)->getDisplayName('en')." ($group->language)",
@@ -70,7 +81,7 @@ class GenerateTitles extends ImageAnalysisTask
         ]);
     }
 
-    public static function schema(JsonSchema $schema, Asset $asset): array
+    public static function schema(JsonSchema $schema, Asset $asset, bool $overwrite): array
     {
         $properties = [];
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
+  import type CraftSlidePicker from '@craftcms/ui/components/slide-picker/slide-picker';
   import {useReorderableItems} from '@/common/composables/useReorderableItems';
   import type {DashboardWidget} from './types';
   import {widgetName} from './widgetName';
@@ -29,7 +30,7 @@
 <template>
   <craft-popover
     placement="bottom-end"
-    :opened="opened"
+    .opened="opened"
     @opened-changed="opened = $event.detail.opened"
   >
     <craft-button
@@ -82,9 +83,11 @@
             :max="Math.min(columns, widget.maxColspan)"
             :step="1"
             :value="Math.min(widget.colspan, columns)"
-            :disabled="busy"
+            .disabled="busy"
             :label="`${t('Number of columns')} ${widgetName(widget)}`"
-            @value-change="emit('resize', widget, $event.detail.value)"
+            @change="
+              emit('resize', widget, ($event.target as CraftSlidePicker).value)
+            "
           ></craft-slide-picker>
           <craft-button
             :id="`widget-delete-${widget.id}`"
@@ -93,7 +96,7 @@
             variant="danger-plain"
             icon
             :aria-labelledby="`widget-delete-${widget.id} widget-label-${widget.id}`"
-            :disabled="busy"
+            .disabled="busy"
             @click="emit('remove', widget)"
           >
             <craft-icon name="trash" :label="t('Delete')"></craft-icon>

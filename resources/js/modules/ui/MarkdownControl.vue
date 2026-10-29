@@ -48,8 +48,8 @@
     .showLinkLabelField="control.props.showLabelField ?? false"
     .linkAdvancedFields="control.props.advancedFields ?? []"
     sanitize-html
-    :disabled="!editable"
-    :required="editable && required"
+    .disabled="!editable"
+    .required="editable && required"
     :aria-invalid="invalid ? 'true' : undefined"
     .value="value ?? ''"
     @input="

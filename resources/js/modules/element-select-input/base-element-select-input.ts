@@ -1692,7 +1692,10 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
         })}: ${val}`;
         $li.attr('aria-label', optionLabel);
 
-        $('<div class="menu-item" data-icon="plus"/>').appendTo($li).text(val);
+        $('<div class="menu-item"/>')
+          .appendTo($li)
+          .text(val)
+          .prepend('<craft-icon name="plus"></craft-icon>');
       }
 
       $ul.find('.menu-item:not(.disabled):first').addClass('hover');

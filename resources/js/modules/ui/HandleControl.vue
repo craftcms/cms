@@ -65,7 +65,7 @@
     :placeholder="control.props.placeholder"
     :required="editable && required"
     :readonly="control.mode === 'readOnly'"
-    :disabled="control.mode === 'disabled'"
+    .disabled="control.mode === 'disabled'"
     .validators="serverErrorValidators(invalid)"
     @model-value-changed="onModelValueChanged"
     @change="generator.markDirty()"
