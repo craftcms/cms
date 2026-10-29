@@ -90,7 +90,9 @@
 
 <style scoped>
   .cart-dialog {
-    --c-dialog-inline-size: min(48rem, 100%);
+    --c-dialog-inline-size: 64rem;
+    --c-dialog-max-inline-size: 90vw;
+    --c-dialog-block-size: min(48rem, 85dvh);
   }
 
   .cart {
