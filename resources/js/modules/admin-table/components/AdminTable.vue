@@ -109,6 +109,7 @@
       actions: () => [],
       source: null,
       context: 'index',
+      readOnly: undefined,
       loading: false,
       layout: 'auto',
       spacing: TableSpacing.Spacious,

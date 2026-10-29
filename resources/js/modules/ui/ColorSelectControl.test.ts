@@ -60,6 +60,7 @@ describe('ColorSelectControl', () => {
     return container.querySelector('craft-select-color') as HTMLElement & {
       modelValue: string | null;
       colors: string[];
+      allowTransparent: boolean;
     };
   }
 
@@ -77,7 +78,7 @@ describe('ColorSelectControl', () => {
     const select = await mount('');
 
     expect(select.colors).toEqual(['red', 'blue']);
-    expect(select.getAttribute('allow-transparent')).toBe('true');
+    expect(select.allowTransparent).toBe(true);
     expect(select.getAttribute('blank-label')).toBe('No color');
     expect(select.modelValue).toBe('__blank__');
     expect(select.getAttribute('name')).toBe('color');

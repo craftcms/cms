@@ -1,4 +1,4 @@
-import {computed, ref, shallowRef} from 'vue';
+import {computed, getCurrentScope, onScopeDispose, ref, shallowRef} from 'vue';
 import {
   AssetIndexer,
   type ChangeEventData,
@@ -16,6 +16,7 @@ interface UseAssetIndexerOptions {
 
 // =============================================================================
 // Global state — shared across all components that call useAssetIndexer()
+// while the owning component (the one passing `existingSessions`) is mounted
 // =============================================================================
 const indexer = shallowRef<AssetIndexer | null>(null);
 const sessions = ref<Map<number, IndexingSession>>(new Map());
@@ -25,7 +26,49 @@ const isReviewOpen = ref(false);
 const isStarting = ref(false);
 const lastError = ref<string | null>(null);
 const isComplete = ref(false);
-let initialized = false;
+
+function resetState() {
+  sessions.value = new Map();
+  currentSessionId.value = null;
+  reviewSession.value = null;
+  isReviewOpen.value = false;
+  isStarting.value = false;
+  lastError.value = null;
+  isComplete.value = false;
+}
+
+/** Replace any previous indexer with one seeded from fresh server data. */
+function initialize({
+  existingSessions = [],
+  maxConcurrentConnections,
+  autoResume = true,
+}: UseAssetIndexerOptions): AssetIndexer {
+  indexer.value?.destroy();
+  resetState();
+
+  const instance = new AssetIndexer({
+    existingSessions,
+    maxConcurrentConnections,
+    autoResume,
+  });
+  indexer.value = instance;
+
+  subscribe();
+  sync();
+
+  return instance;
+}
+
+/** Stop the indexer when its owner goes away, unless a newer owner already replaced it. */
+function teardown(instance: AssetIndexer) {
+  if (indexer.value !== instance) {
+    return;
+  }
+
+  instance.destroy();
+  indexer.value = null;
+  resetState();
+}
 
 /** Pull the current truth out of the service into our refs. */
 function sync() {
@@ -138,9 +181,38 @@ function reviewSessionOverview(sessionId: number) {
   indexer.value?.getSessionOverview(sessionId);
 }
 
-/** Finish a session, optionally deleting selected items. */
-function finishSession(params: FinishIndexingParams) {
-  indexer.value?.finishSession(params);
+/**
+ * Finish a session, optionally deleting selected items. Resolves once the
+ * server has finished (or failed to finish) the session.
+ */
+function finishSession(params: FinishIndexingParams): Promise<void> {
+  const instance = indexer.value;
+  if (!instance) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve) => {
+    const done = () => {
+      offChange();
+      offError();
+      resolve();
+    };
+    const offChange = instance.on<ChangeEventData>(
+      'change',
+      ({sessions: current}) => {
+        if (!current.some((session) => session.id === params.sessionId)) {
+          done();
+        }
+      }
+    );
+    const offError = instance.on<ErrorEventData>('error', ({sessionId}) => {
+      if (sessionId === params.sessionId) {
+        done();
+      }
+    });
+
+    instance.finishSession(params);
+  });
 }
 
 /** Keep all files and stop the session (from the review modal). */
@@ -170,13 +242,15 @@ function closeReview() {
  * Composable that wraps the AssetIndexer service, exposing its state
  * as reactive Vue refs and its operations as plain functions.
  *
- * State is **global** — the first call that provides `existingSessions`
- * creates the underlying `AssetIndexer` instance; subsequent calls from
- * any component share the same refs and actions.
+ * State is **global** — a call that provides `existingSessions` (the owner)
+ * creates a fresh `AssetIndexer` instance seeded with those sessions and
+ * destroys it when the owner's effect scope is disposed; calls without
+ * options from descendant components share the same refs and actions.
  *
- * Only `startIndexing` is async (returns the API response). All other
- * actions are fire-and-forget — state updates arrive via the `change`
- * event from the service and are synced into reactive refs automatically.
+ * `startIndexing` returns the API response and `finishSession` resolves when
+ * the session is finished. All other actions are fire-and-forget — state
+ * updates arrive via the `change` event from the service and are synced into
+ * reactive refs automatically.
  *
  * @example Initialize with server data (typically in a page-level component)
  * ```vue
@@ -242,22 +316,12 @@ function closeReview() {
  * ```
  */
 export function useAssetIndexer(options: UseAssetIndexerOptions = {}) {
-  if (!initialized) {
-    const {
-      existingSessions = [],
-      maxConcurrentConnections,
-      autoResume = true,
-    } = options;
+  if (options.existingSessions) {
+    const instance = initialize(options);
 
-    indexer.value = new AssetIndexer({
-      existingSessions,
-      maxConcurrentConnections,
-      autoResume,
-    });
-
-    subscribe();
-    sync();
-    initialized = true;
+    if (getCurrentScope()) {
+      onScopeDispose(() => teardown(instance));
+    }
   }
 
   return {

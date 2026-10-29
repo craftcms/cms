@@ -87,7 +87,7 @@
         tabindex="0"
         :action="ConfigService.getInstance().getCpUrl('login')"
         :static-email="state.loginName"
-        :use-email-as-username="
+        .useEmailAsUsername="
           ConfigService.getInstance().get('useEmailAsUsername', false)
         "
         @craft:login:success="handleSuccess"

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\FieldLayoutDesigner;
 
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Fields;
@@ -99,6 +100,7 @@ class FieldLayoutDesigner
             'customizableUi' => $config['customizableUi'],
             'withCardViewDesigner' => $config['withCardViewDesigner'] ?? false,
             'alwaysShowThumbAlignmentBtns' => $fieldLayout->type::hasThumbs(),
+            'alwaysShowThumbStyle' => $fieldLayout->type === Asset::class,
             'readOnly' => $config['disabled'],
         ];
 

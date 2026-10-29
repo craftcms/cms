@@ -218,7 +218,7 @@
         <craft-button
           type="button"
           icon="plus"
-          :loading="adding"
+          .loading="adding"
           @click="addPasskey"
         >
           {{ t('Add a passkey') }}

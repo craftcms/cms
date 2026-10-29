@@ -45,7 +45,7 @@ readonly class ContentHtml
                         'class' => 'cp-metadata-list__item',
                     ]).
                     Html::tag('dt', Html::encode($label), ['class' => 'font-bold text-xs'])."\n".
-                    implode('', array_map(fn (mixed $value): string => Html::tag('dd', $value)."\n", (array) $value)).
+                    implode('', array_map(fn (mixed $value): string => Html::tag('dd', $value)."\n", is_array($value) ? $value : [$value])).
                     Html::endTag('div');
             }
         }

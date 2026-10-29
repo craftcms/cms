@@ -11,7 +11,8 @@
 ### Control Panel UI
 
 - Added a command palette, opened from the search button in the global header or with <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>K</kbd>. It finds fields, tabs, and Matrix blocks on the current page, control panel pages and settings, entries, assets, users, and releases, and runs actions such as creating entries and settings, publishing releases, clearing caches, and changing preferences, with the same permission checks as the screens they stand in for. It also searches the Craft CMS documentation, and lists recently visited pages when nothing has been typed. ([#20081](https://github.com/craftcms/cms/pull/20081))
-- Element cards whose thumbnail is an image, such as asset cards and entry cards with an Assets thumbnail field, are now cover cards: the image fills the card, with the header and content laid over it in white or black, on just enough of a blurred bar, backing, or scrim to keep them legible. Images smaller than 480×360, narrower than 3:4, wider than 2:1, or possibly transparent keep the normal card. ([#20148](https://github.com/craftcms/cms/pull/20148))
+- Element cards can now be cover cards, where the thumbnail image fills the card, with the header and content laid over it in white or black, on just enough of a blurred bar, backing, or scrim to keep them legible. Card view designers have a new “Thumb Style” setting, with “Normal” and “Cover” options, which defaults to “Cover” for asset volumes, and is available to other element types once a field is chosen as their “Thumb Source”. Only images from assets can cover a card, and images smaller than 480×360, narrower than 3:4, wider than 2:1, or possibly transparent keep the normal card. ([#20148](https://github.com/craftcms/cms/pull/20148))
+- Element cards whose header has no label, such as asset cards, now show just their checkbox and action button over the card, without a header bar, and cards whose header has nothing in it no longer show one at all. Entry cards keep their header bar, with their entry type’s label and icon. ([#20148](https://github.com/craftcms/cms/pull/20148))
 - HUD tips now match their HUD’s colors, and HUDs have a light outline in dark mode. ([#20005](https://github.com/craftcms/cms/pull/20005))
 - Added a “Theme” user preference, with “Light”, “Dark”, and “System” options. “System” is the default. Pages shown to logged-out users, such as the login page, always follow the system’s light or dark setting. ([#19966](https://github.com/craftcms/cms/pull/19966))
 - The control panel now warns users a couple of minutes before their session expires, with options to stay signed in or sign out, and lets them sign back in without leaving the page once it has. ([#20086](https://github.com/craftcms/cms/pull/20086))
@@ -196,6 +197,7 @@
 - Fixed a bug where medium chips’ thumbnails were smaller than small chips’. They’re now 32px, between small and large chips’. ([#20124](https://github.com/craftcms/cms/pull/20124))
 - Fixed a bug where portrait image thumbnails in medium and large chips were letterboxed in a square, so their rounded corners didn’t show. ([#20124](https://github.com/craftcms/cms/pull/20124))
 - Fixed a bug where the checkmark in enabled lightswitches was slightly off-center. ([#20107](https://github.com/craftcms/cms/pull/20107))
+- Fixed a bug where going back to an element index page, such as a volume’s root after opening a subfolder, could switch it from thumbs or cards view to table view with blank rows. ([#20137](https://github.com/craftcms/cms/issues/20137))
 
 ### Content Management
 
@@ -320,6 +322,7 @@
 - The MCP server’s `elements.update` tool can now set and clear assets’ focal points via a `focalPoint` attribute. ([#19933](https://github.com/craftcms/cms/pull/19933))
 - The MCP server now validates custom field values against the `elements.field-schema` schema, and returns an error that identifies each invalid value. ([#19965](https://github.com/craftcms/cms/pull/19965))
 - The MCP server now accepts any date or time that Date and Time fields can parse, such as “2:30 PM” or a date with a UTC offset, rather than requiring ISO 8601. A value they can’t parse is rejected, rather than clearing the field, and a field’s instructions no longer replace the description of its format.
+- Fixed a bug where the HTTP MCP servers rejected handshake-based clients. Both handshake sessions and per-request protocol metadata are now supported.
 - The MCP server’s `mcp:use` OAuth scope has been replaced with `mcp:read`, `mcp:write`, and `mcp:admin`. Users now choose an access level when they authorize an MCP client, defaulting to read only, and only administrators are offered full access. Clients that authorize again keep the earlier level without another prompt. ([#20080](https://github.com/craftcms/cms/pull/20080))
 - The MCP server now only shows and accepts the custom fields that users can see and edit in an element’s edit form, as field layouts’ conditions allow. ([#20091](https://github.com/craftcms/cms/pull/20091))
 - Added the `assets.analyze` MCP tool, which queues images to be analyzed by the image analysis AI tasks that are set up, such as for alt text, filling in only what they’re missing. ([#20103](https://github.com/craftcms/cms/pull/20103))
@@ -358,10 +361,12 @@
 
 ### Extensibility
 
+- Added the `craft:ui-value-change` DOM event and `Cp.$ui.active()` for plugins to observe canonical values from Craft 6 UI-rendered fields. ([#19920](https://github.com/craftcms/cms/discussions/19920))
 - Added `CraftCms\Cms\Cp\CommandPalette\CommandPaletteItem`, `PageRegistry`, `ActionRegistry`, and `SearchProviderRegistry`, which plugins can use to add pages, actions, and search providers to the command palette, and `CraftCms\Cms\Cp\CommandPalette\Contracts\SearchProvider` and `CraftCms\Cms\Cp\CommandPalette\SearchProviders\ElementSearchProvider`, for searching custom content or element types. ([#20081](https://github.com/craftcms/cms/pull/20081))
 - Added `Craft.commandPalette`, with `open()`, `close()`, `registerActions()`, `registerProvider()`, and `registerView()` methods, for opening the command palette and adding page actions, client-side search providers, and views to it. A page’s own action menus are listed as command palette actions when they’re within an element with a `data-command-palette-actions` attribute. ([#20081](https://github.com/craftcms/cms/pull/20081))
 - Added `CraftCms\Cms\Asset\Elements\Asset::getCardCoverUrl()`. ([#20148](https://github.com/craftcms/cms/pull/20148))
 - Added the `cover-src` and `luminance` attributes to `craft-card`, which make it a cover card. ([#20148](https://github.com/craftcms/cms/pull/20148))
+- Added `CraftCms\Cms\FieldLayout\FieldLayout::getCardThumbStyle()`, `setCardThumbStyle()`, and `cardThumbStyle()`, and the `cardThumbStyle` field layout config key. ([#20148](https://github.com/craftcms/cms/pull/20148))
 - Added `CraftCms\Cms\Asset\Elements\Asset::getOrientation()`, `CraftCms\Cms\Element\Queries\AssetQuery::orientation()`, `CraftCms\Cms\Asset\Enums\ImageOrientation`, `CraftCms\Cms\Asset\Conditions\OrientationConditionRule`, and the `orientation` GraphQL argument and field for assets, which say whether images are landscape, portrait, or square, from their width and height. ([#20114](https://github.com/craftcms/cms/pull/20114))
 - `CraftCms\Cms\Asset\AssetsHelper::iconSvg()` now has a `$dark` argument, and returns the dark variant for the control panel’s dark theme by default. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Added `CraftCms\Cms\Asset\AssetsHelper::folderIconSvg()`. ([#20085](https://github.com/craftcms/cms/pull/20085))
@@ -601,6 +606,7 @@
 - Fixed a bug where assets’ “Volume settings” and user groups’ “User group settings” action menu items led to 404 errors. ([#19961](https://github.com/craftcms/cms/pull/19961))
 - Fixed a bug where saving an image as a new asset, from an asset opened via an Assets field, didn’t replace the asset in the field. ([#19961](https://github.com/craftcms/cms/pull/19961))
 - Fixed a bug where field layout designers’ field library didn’t reflect changes saved from a field’s settings slideout. ([#19961](https://github.com/craftcms/cms/pull/19961))
+- Fixed a bug where native fields, such as assets’ Alternative Text field, were missing from field layout designers’ field library. ([#20136](https://github.com/craftcms/cms/pull/20136))
 - Fixed a bug where errors added with `Craft.ui.addErrorsToField()` weren’t shown. ([#19961](https://github.com/craftcms/cms/pull/19961))
 - Fixed a bug where black cards’ body text had insufficient contrast. ([#19989](https://github.com/craftcms/cms/pull/19989))
 - Fixed a bug where thumbnails in relational fields linked to their elements. ([#19942](https://github.com/craftcms/cms/pull/19942))

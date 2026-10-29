@@ -20,8 +20,16 @@ export class CardViewDesigner extends Base {
   $libraryContainer: CraftCheckboxSelect;
   $thumbManagementContainer: any = null;
   alwaysShowThumbAlignmentBtns = false;
+  hasThumbAlignment = false;
   abortController: AbortController | null = null;
   attribute: any = null;
+  previewCardObserver = new ResizeObserver(() => this.snapPreviewCard());
+  /**
+   * The preview's sample image depends on the theme, so it's rendered again
+   * when the theme changes without a page load (System following the
+   * operating system, say).
+   */
+  themeObserver = new MutationObserver(() => void this.updatePreview());
 
   constructor(designer: FieldLayoutDesigner, container: HTMLElement) {
     super();
@@ -50,10 +58,13 @@ export class CardViewDesigner extends Base {
       this.manageThumbnails(ev.target);
     });
 
-    if (this.alwaysShowThumbAlignmentBtns) {
-      // always show the thumbnail alignment buttons
-      this.showThumbAlignment();
-    }
+    const thumbSource = $thumbSelectDropdown?.value;
+    this.hasThumbAlignment =
+      this.alwaysShowThumbAlignmentBtns ||
+      (!!thumbSource &&
+        thumbSource !== '__none__' &&
+        thumbSource !== '__default__');
+    this.toggleThumbFields();
 
     // The thumb-alignment options are radios, so whichever way the selection
     // changes (clicks or arrow keys), the checked one's value is applied.
@@ -69,10 +80,71 @@ export class CardViewDesigner extends Base {
       });
     }
 
+    const $thumbStyleGroup = this.$thumbManagementContainer.querySelector(
+      '[id$="thumb-style"].radio-group'
+    );
+    if ($thumbStyleGroup) {
+      this.addListener($thumbStyleGroup, 'change', (ev: any) => {
+        const $radio = ev.target;
+        if ($radio instanceof HTMLInputElement && $radio.checked) {
+          this.manageThumbnailStyle($radio.value);
+        }
+      });
+    }
+
     this.listenToCheckboxEvents();
     this.listenToAppearanceControls();
     this.disablePreviewLinks();
     this.syncPreviewAppearance();
+    this.observePreviewCard();
+    this.themeObserver.observe(document.documentElement, {
+      attributeFilter: ['data-theme'],
+    });
+  }
+
+  /**
+   * Watches the preview card, and what's in it, for size changes, so it can
+   * be snapped to the workspace grid.
+   */
+  observePreviewCard(): void {
+    this.previewCardObserver.disconnect();
+    const card = this.$previewContainer?.querySelector('craft-card');
+
+    if (!card) {
+      return;
+    }
+
+    this.previewCardObserver.observe(card);
+    for (const child of Array.from(card.children) as Element[]) {
+      this.previewCardObserver.observe(child);
+    }
+  }
+
+  /**
+   * Rounds the preview card's height up to a whole number of the workspace
+   * grid's cells, plus its bottom border, so both of its outer edges land on a
+   * row of dots, as the chip's do.
+   */
+  snapPreviewCard(): void {
+    const card = this.$previewContainer?.querySelector('craft-card');
+
+    if (!card) {
+      return;
+    }
+
+    const cell = parseFloat(
+      getComputedStyle(this.$previewContainer, '::before').backgroundSize
+    );
+
+    card.style.removeProperty('--cvd-card-min-block-size');
+
+    if (!cell) {
+      return;
+    }
+
+    const height = card.getBoundingClientRect().height;
+    const snapped = Math.ceil((height - 1) / cell) * cell + 1;
+    card.style.setProperty('--cvd-card-min-block-size', `${snapped}px`);
   }
 
   /**
@@ -160,6 +232,7 @@ export class CardViewDesigner extends Base {
     if (name) {
       const nameElement = document.createElement('div');
       nameElement.className = 'card-titlebar-label';
+      nameElement.setAttribute('data-card-label', '');
       nameElement.textContent = name;
       label.append(nameElement);
     }
@@ -235,9 +308,21 @@ export class CardViewDesigner extends Base {
     }
 
     if (response) {
+      // The new card keeps the old one's snapped height until it's snapped
+      // itself, so it doesn't show at its natural height for a frame first,
+      // with a cover card's content a few pixels higher.
+      const snapped = this.$previewContainer
+        .querySelector('craft-card')
+        ?.style.getPropertyValue('--cvd-card-min-block-size');
       this.$previewContainer.innerHTML = response.data.previewHtml;
+      if (snapped) {
+        this.$previewContainer
+          .querySelector('craft-card')
+          ?.style.setProperty('--cvd-card-min-block-size', snapped);
+      }
       this.syncPreviewAppearance();
       this.disablePreviewLinks();
+      this.observePreviewCard();
     }
   }
 
@@ -292,6 +377,17 @@ export class CardViewDesigner extends Base {
     }
   }
 
+  manageThumbnailStyle(style: string): void {
+    if (style !== this.designer.config.cardThumbStyle) {
+      this.designer.updateConfig((config: any) => {
+        config.cardThumbStyle = style;
+        return config;
+      });
+      this.toggleThumbFields();
+      this.updatePreview();
+    }
+  }
+
   manageThumbnails(target: any): void {
     const $select = target;
     let thumbFieldKey = null;
@@ -301,13 +397,11 @@ export class CardViewDesigner extends Base {
         $select.value === '__none__' &&
         !this.designer.settings!.alwaysShowThumbAlignmentBtns
       ) {
-        // hide the alignment buttons
-        this.hideThumbAlignment();
+        this.hasThumbAlignment = false;
       }
     } else {
       thumbFieldKey = $select.value;
-      // show the alignment buttons
-      this.showThumbAlignment();
+      this.hasThumbAlignment = true;
     }
 
     if (thumbFieldKey !== this.designer.config.thumbFieldKey) {
@@ -317,6 +411,8 @@ export class CardViewDesigner extends Base {
       });
       this.updatePreview();
     }
+
+    this.toggleThumbFields();
   }
 
   updateThumbnailsDropdown(element: FldElement, action: string): void {
@@ -376,16 +472,25 @@ export class CardViewDesigner extends Base {
     $option.textContent = label;
   }
 
-  showThumbAlignment(): void {
-    this.$thumbManagementContainer
-      .querySelectorAll('[data-attribute="thumb-alignment"]')
-      .forEach((el: HTMLElement) => el.classList.remove('hidden'));
-  }
+  /**
+   * Shows Thumb Style only when the thumbnail can be an asset's image (always for assets; otherwise once a
+   * relation field is the thumb source), and hides Thumb Alignment when the thumbnail covers the card.
+   */
+  toggleThumbFields(): void {
+    const thumbFieldKey = this.designer.config.thumbFieldKey as string | null;
+    const showStyle =
+      this.designer.settings!.alwaysShowThumbStyle ||
+      (!!thumbFieldKey && !thumbFieldKey.startsWith('contentBlock:'));
+    const cover = showStyle && this.designer.config.cardThumbStyle === 'cover';
 
-  hideThumbAlignment(): void {
+    this.$thumbManagementContainer
+      .querySelectorAll('[data-attribute="thumb-style"]')
+      .forEach((el: HTMLElement) => el.classList.toggle('hidden', !showStyle));
     this.$thumbManagementContainer
       .querySelectorAll('[data-attribute="thumb-alignment"]')
-      .forEach((el: HTMLElement) => el.classList.add('hidden'));
+      .forEach((el: HTMLElement) =>
+        el.classList.toggle('hidden', !this.hasThumbAlignment || cover)
+      );
   }
 
   /**
@@ -395,6 +500,8 @@ export class CardViewDesigner extends Base {
    */
   override destroy(): void {
     this.abortController?.abort();
+    this.previewCardObserver.disconnect();
+    this.themeObserver.disconnect();
     document.removeEventListener(
       'model-value-changed',
       this.onAppearanceChange

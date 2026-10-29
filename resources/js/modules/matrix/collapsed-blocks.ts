@@ -13,12 +13,19 @@
  * Blocks are remembered by their bare identity. A block the browser just minted
  * is keyed `uid:<uuid>` until the next save adopts it, so the prefix is stripped
  * on the way in and its collapsed state survives being materialized.
+ *
+ * Reads are reactive: every write through this module invalidates them, so
+ * each Matrix on the page (and any computed or render) sees the change.
  */
 
+import {shallowRef} from 'vue';
 import {prefixedKey} from '@/common/composables/useStorage';
 import {NESTED_ELEMENT_UID_PREFIX} from '@/modules/ui/types';
 
 const STORAGE_KEY = 'MatrixInput.collapsedEntries';
+
+/** Bumped on every write so reactive reads re-run. */
+const version = shallowRef(0);
 
 type SiteId = number | string | null | undefined;
 
@@ -42,6 +49,8 @@ export function collapsedBlockId(id: string | number): string {
  * and reads there throw rather than returning null.
  */
 function read(siteId?: SiteId): string[] {
+  void version.value;
+
   try {
     const value =
       localStorage.getItem(storageKey(siteId)) ??
@@ -60,6 +69,8 @@ function write(ids: string[], siteId?: SiteId): void {
   } catch {
     // Nothing to remember it with; the session's collapsed state still works.
   }
+
+  version.value++;
 }
 
 export function collapsedBlockIds(siteId?: SiteId): string[] {

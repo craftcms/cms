@@ -33,7 +33,7 @@
 ### Scrolling and reflow
 
 - [ ] At 320 CSS px, the body and the thumbnail column fit without horizontal scrolling. Per WCAG 1.4.10 (Reflow). Not yet verified: the thumbnail column is a fixed 120px.
-- [ ] A cover card grows to fit its content, so nothing is cut off with text enlarged or its spacing overridden. Per WCAG 1.4.4 (Resize Text) and 1.4.12 (Text Spacing). Known gap: a cover card is a fixed 4:3 and clips what doesn't fit.
+- [ ] A cover card grows to fit its content, so nothing is cut off with text enlarged or its spacing overridden. Per WCAG 1.4.4 (Resize Text) and 1.4.12 (Text Spacing). Growth is covered by `grows a cover card past 4:3 when its content needs more room` in `card.browser.test.ts`; not yet verified with text enlarged or its spacing overridden.
 - [ ] With `thumb-alignment="end"`, reading order still makes sense. The thumbnail comes first in the DOM but is drawn after the body. Per WCAG 1.3.2 (Meaningful Sequence). Not yet verified.
 
 ## Depends on usage

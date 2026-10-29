@@ -61,7 +61,12 @@ describe('craft-progress', () => {
     const element = await createProgress({progress: '-1'});
 
     expect(announced(element)).toBe('Loading');
-    expect(canvas(element).getAttribute('aria-valuenow')).toBe('');
+  });
+
+  it('reports no value while indeterminate', async () => {
+    const element = await createProgress({progress: '-1'});
+
+    expect(canvas(element).hasAttribute('aria-valuenow')).toBe(false);
   });
 
   it('announces a failure', async () => {

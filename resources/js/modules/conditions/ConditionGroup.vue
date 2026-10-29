@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {inject, shallowReactive} from 'vue';
+  import {inject} from 'vue';
   import {t} from '@craftcms/ui';
   import {useDelayedLoading} from '@/common/composables/useDelayedLoading';
   import TypePicker from '@/common/components/TypePicker.vue';
@@ -22,29 +22,11 @@
 
     if (!payload) return;
 
-    editor.rules[payload.config.uid] = payload;
-    props.group.rules.push({kind: 'rule', id: payload.config.uid});
-
-    editor.changed();
-  }
-
-  function addGroup(): void {
-    props.group.rules.push(
-      shallowReactive({
-        kind: 'group',
-        id: crypto.randomUUID(),
-        operator: 'and',
-        rules: shallowReactive([]),
-      })
-    );
-
-    editor.changed();
+    editor.addRule(props.group, payload);
   }
 
   function remove(index: number): void {
-    props.group.rules.splice(index, 1);
-
-    editor.changed();
+    editor.removeChild(props.group, index);
   }
 
   function removeGroup(): void {
@@ -56,18 +38,15 @@
     }
   }
 
-  function operator(value: GroupDraft['operator']): void {
-    props.group.operator = value;
-
-    editor.changed();
-  }
-
   function onOperatorChange(event: Event): void {
     if (!(event.target instanceof HTMLSelectElement)) {
       throw new TypeError('Expected a select event target.');
     }
 
-    operator(event.target.value as GroupDraft['operator']);
+    editor.setOperator(
+      props.group,
+      event.target.value as GroupDraft['operator']
+    );
   }
 </script>
 
@@ -132,7 +111,7 @@
             type="button"
             icon="plus"
             variant="dashed"
-            @click="addGroup"
+            @click="editor.addGroup(group)"
             >{{ t('Add a group') }}</craft-button
           >
         </div>

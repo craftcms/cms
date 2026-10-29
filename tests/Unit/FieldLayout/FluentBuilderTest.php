@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -242,7 +243,8 @@ it('configures persisted layout options fluently', function () {
         ]])
         ->cardView(['generatedField:generated-field'])
         ->thumbFieldKey('layoutElement:thumbnail')
-        ->cardThumbAlignment('start');
+        ->cardThumbAlignment('start')
+        ->cardThumbStyle('cover');
 
     expect($layout->getGeneratedFields())->toBe([[
         'uid' => 'generated-field',
@@ -250,13 +252,30 @@ it('configures persisted layout options fluently', function () {
     ]])
         ->and($layout->getCardView())->toBe(['generatedField:generated-field'])
         ->and($layout->thumbFieldKey)->toBe('layoutElement:thumbnail')
-        ->and($layout->getCardThumbAlignment())->toBe('start');
+        ->and($layout->getCardThumbAlignment())->toBe('start')
+        ->and($layout->getCardThumbStyle())->toBe('cover');
 });
+
+it('defaults the card thumb style by element type, and keeps a chosen one through its config', function (string $type, ?string $style, string $expected) {
+    $layout = new FieldLayout(['type' => $type, 'cardView' => ['dateCreated'], 'cardThumbStyle' => $style]);
+    $config = $layout->getConfig();
+
+    expect($layout->getCardThumbStyle())->toBe($expected)
+        ->and($config['cardThumbStyle'])->toBe($expected)
+        ->and(new FieldLayout(['type' => $type, ...$config])->getCardThumbStyle())->toBe($expected);
+})->with([
+    'asset default' => [Asset::class, null, 'cover'],
+    'entry default' => [Entry::class, null, 'normal'],
+    'asset set to normal' => [Asset::class, 'normal', 'normal'],
+    'entry set to cover' => [Entry::class, 'cover', 'cover'],
+]);
 
 it('rejects invalid constrained fluent values', function () {
     expect(fn () => new TextField(['attribute' => 'title'])->instructionsPosition('middle'))
         ->toThrow(InvalidArgumentException::class)
         ->and(fn () => new FieldLayout()->cardThumbAlignment('middle'))
+        ->toThrow(InvalidArgumentException::class)
+        ->and(fn () => new FieldLayout()->cardThumbStyle('banner'))
         ->toThrow(InvalidArgumentException::class)
         ->and(fn () => Template::make('_includes/card')->templateMode('invalid'))
         ->toThrow(ValueError::class);

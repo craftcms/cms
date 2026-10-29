@@ -1,6 +1,6 @@
 # MCP server
 
-Craft exposes its content and configuration to AI agents and other clients over the [Model Context Protocol](https://modelcontextprotocol.io). The server is built on the official `mcp/sdk` PHP package. Over HTTP, it speaks the stateless transport for protocol version `2026-07-28`. Over stdio, it speaks the session-based protocol that local MCP clients use.
+Craft exposes its content and configuration to AI agents and other clients over the [Model Context Protocol](https://modelcontextprotocol.io). The server is built on the official `mcp/sdk` PHP package. Each HTTP endpoint supports both handshake-based clients and the stateless protocol version `2026-07-28`, with per-request metadata. Over stdio, it speaks the session-based protocol that local MCP clients use.
 
 Craft runs three MCP servers:
 
@@ -14,7 +14,9 @@ The authenticated and stdio servers are always available. The public server is d
 
 ## How a request is handled
 
-The HTTP servers are stateless. Every request builds a new server instance, discovers the capabilities the current request may use, and then handles the JSON-RPC message.
+Every HTTP request builds a new server instance, discovers the capabilities the current request may use, and then handles the JSON-RPC message. Handshake clients start with `initialize`, then send the returned `Mcp-Session-Id` and negotiated `MCP-Protocol-Version` headers on subsequent requests. `DELETE` with those headers tears down the session. Modern clients send protocol metadata on each request without a session.
+
+Handshake sessions use Laravel's default cache store, with a one-hour sliding expiration. Configure a persistent store such as Redis or the database, not `array` or `null`. Multi-instance deployments must share that store, or use session affinity with persistent local storage. Public sessions are separate from authenticated sessions, which are bound to the user's ID and granted MCP scopes. Sessions never replace authentication or preserve capability approvals: permissions, scopes, and public approvals are checked on every request.
 
 ```mermaid
 sequenceDiagram
@@ -28,7 +30,7 @@ sequenceDiagram
     Client->>Route: POST JSON-RPC message
     Route->>Route: Authenticate, authorize, set activity origin
     Route->>Controller: admin() or public()
-    Controller->>Factory: Build stateless server
+    Controller->>Factory: Build dual-protocol server
     Factory->>Discovery: Discover capabilities
     Discovery->>Discovery: Merge core and registered classes
     Discovery->>Discovery: Remove capabilities the request may not use

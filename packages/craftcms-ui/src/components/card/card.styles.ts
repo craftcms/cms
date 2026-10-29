@@ -235,6 +235,34 @@ export default css`
     box-sizing: border-box;
   }
 
+  /* Without a label, a header is just its controls, floating over the card, as
+     a cover card's are. Its border stays, transparent, so nothing moves. In a
+     selected card its controls match the body, rather than a selected bar. */
+  :host .card.card--bare-header .card__header.card__header {
+    background-color: transparent;
+    border-color: transparent;
+  }
+
+  :host([active]) .card.card--bare-header .card__header.card__header {
+    color: inherit;
+    --c-color-fill-quiet: inherit;
+    --c-color-border-quiet: inherit;
+    --c-color-on-quiet: inherit;
+    --c-checkbox-border-color: var(
+      --c-color-on-quiet,
+      var(--c-color-neutral-on-quiet)
+    );
+    --c-checkbox-checked-fill: initial;
+    --c-checkbox-checked-mark: initial;
+  }
+
+  :host([data-color]:not([data-color='white'])[active])
+    .card.card--bare-header
+    .card__header.card__header {
+    --c-checkbox-checked-fill: var(--c-color-on-quiet);
+    --c-checkbox-checked-mark: var(--c-color-fill-quiet);
+  }
+
   .card__label-text,
   .card__label::slotted(:is(h1, h2, h3, h4, h5, h6, label)) {
     text-box: trim-both cap alphabetic;
@@ -313,13 +341,9 @@ export default css`
 
   /* Classes are repeated to outrank the color and selection rules above. */
   :host .card.card--cover.card--cover {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    aspect-ratio: 4 / 3;
-    /* An aspect ratio gives the card a minimum width from its content, so a
-       long title would otherwise widen it past its column. */
-    min-inline-size: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr auto;
     color: var(--_body-ink);
     background-color: var(--c-color-neutral-fill-quiet);
     border: 0;
@@ -327,8 +351,28 @@ export default css`
     isolation: isolate;
   }
 
-  :host .card--cover :is(.card__header, .card-body, .card__footer) {
-    flex-shrink: 0;
+  /* Makes the card at least 4:3, and lets it grow taller when there's more
+     content than that fits. An aspect ratio on the card itself wouldn't, as
+     the card clips its overflow. It spans the whole card, under the border. */
+  .card--cover::before {
+    content: '';
+    grid-area: 1 / 1 / -1 / -1;
+    aspect-ratio: 4 / 3;
+    margin: calc(-1 * var(--c-card-border-width, 1px));
+    pointer-events: none;
+  }
+
+  .card--cover .card__header {
+    grid-area: 1 / 1;
+  }
+
+  .card--cover .card-body {
+    grid-area: 2 / 1;
+    align-self: end;
+  }
+
+  .card--cover .card__footer {
+    grid-area: 3 / 1;
   }
 
   .card__cover {
@@ -340,7 +384,9 @@ export default css`
     object-fit: cover;
   }
 
-  /* Neutral whatever the card's color, as the image stands in for it. */
+  /* In the card's color, as the page's theme has it, like a normal card's
+     border. That's the only place the color shows: what's laid over the image
+     takes the image's theme. */
   .card--cover::after {
     content: '';
     position: absolute;
@@ -348,7 +394,7 @@ export default css`
     z-index: 1;
     border-radius: inherit;
     box-shadow: inset 0 0 0 var(--c-card-border-width, 1px)
-      var(--c-color-neutral-border-quiet);
+      var(--c-color-border-quiet, var(--c-color-neutral-border-quiet));
     pointer-events: none;
   }
 

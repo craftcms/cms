@@ -4,19 +4,25 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\FieldLayoutDesigner;
 
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Cp\Cp;
+use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Container\Attributes\Singleton;
 use Throwable;
 
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
 /**
@@ -25,6 +31,24 @@ use function CraftCms\Cms\t;
 #[Singleton]
 class CardDesigner
 {
+    /**
+     * The luminance of the sample images cards are previewed with, Mt. Bachelor at sunset for the light theme
+     * (`images/thumb-styles/bachelor-light.jpg`) and under the stars for the dark theme (`bachelor-dark.jpg`), as
+     * {@see Images::sample()} measures it.
+     */
+    private const array PREVIEW_COVER_LUMINANCE = [
+        'light' => [
+            [[0.389, 0.676], [0.294, 0.592], [0.171, 0.454], [0.116, 0.378]],
+            [[0.038, 0.65], [0.025, 0.435], [0.021, 0.198], [0.021, 0.4]],
+            [[0.004, 0.04], [0.004, 0.028], [0.004, 0.023], [0.004, 0.024]],
+        ],
+        'dark' => [
+            [[0.01, 0.029], [0.009, 0.027], [0.009, 0.027], [0.009, 0.026]],
+            [[0.007, 0.065], [0.007, 0.111], [0.007, 0.095], [0.008, 0.07]],
+            [[0.002, 0.02], [0.002, 0.012], [0.002, 0.011], [0.003, 0.014]],
+        ],
+    ];
+
     /** @param array<string, mixed> $config */
     public function html(FieldLayout $fieldLayout, array $config = []): string
     {
@@ -84,6 +108,7 @@ class CardDesigner
     {
         $showThumb ??= $fieldLayout->type::hasThumbs() || $fieldLayout->hasThumbField();
         $thumbAlignment = $fieldLayout->getCardThumbAlignment();
+        $cover = $showThumb && $this->showThumbStyle($fieldLayout) && $fieldLayout->getCardThumbStyle() === 'cover';
         $sampleElement = $this->sampleElement($fieldLayout);
         $sampleUser = $sampleElement instanceof User ? $sampleElement : null;
         $labelText = $sampleUser?->getName() ?? t('The Quick Brown Fox');
@@ -127,10 +152,9 @@ class CardDesigner
 
         $bodyHtml .= Html::endTag('div');
 
-        // get thumb placeholder
-        $thumbnailHtml = $showThumb ? Html::tag('div',
-            Html::tag('craft-icon', '', ['name' => 'image']),
-        ) : '';
+        $theme = Theme::resolveFor(currentUserElement())->value;
+        $previewSrc = Cp::publicAssetUrl("images/thumb-styles/bachelor-$theme.jpg");
+        $thumbnailHtml = $showThumb ? Html::tag('img', '', ['src' => $previewSrc, 'alt' => '']) : '';
 
         return view('c::forms.fld.card-preview', [
             'cvd' => $this,
@@ -138,13 +162,26 @@ class CardDesigner
             'bodyHtml' => $bodyHtml,
             'showThumb' => $showThumb,
             'thumbAlignment' => $thumbAlignment,
+            'coverSrc' => $cover ? $previewSrc : null,
+            'coverLuminance' => self::PREVIEW_COVER_LUMINANCE[$theme],
             'thumbnailHtml' => $thumbnailHtml,
             'avatarHtml' => $avatarHtml,
             'labelText' => $labelText,
+            // Only entry cards have a label in their header (their entry type's), which the preview shows as it's set.
+            'showHeader' => $fieldLayout->type === Entry::class,
             // The sample chip shows a status indicator, rather than a label.
             'statusIndicatorHtml' => $sampleElement ? app(StatusHtml::class)->componentStatusIndicatorHtml($sampleElement) : null,
         ])->render();
 
+    }
+
+    /**
+     * Whether the Thumb Style setting applies: for asset volumes, whose own thumbnails are images, and for other
+     * element types once a field is chosen as the thumb source, as that's the only way they get an asset's image.
+     */
+    private function showThumbStyle(FieldLayout $fieldLayout): bool
+    {
+        return $fieldLayout->type === Asset::class || $fieldLayout->hasThumbField();
     }
 
     /**
@@ -299,13 +336,21 @@ class CardDesigner
         // radio button switch that lets you choose whether the thumb alignment should be start or end
         $orientation = I18N::getLocale()->getOrientation();
         $showThumb = $fieldLayout->type::hasThumbs() || $fieldLayout->hasThumbField();
+        $showThumbStyle = $this->showThumbStyle($fieldLayout);
+        $cover = $showThumbStyle && $fieldLayout->getCardThumbStyle() === 'cover';
 
         return view('c::forms.fld.thumb-management', [
             // dropdown field that contains all thumbable fields + the None/Default option
             'options' => $options,
             'thumbFieldKey' => $fieldLayout->thumbFieldKey,
             'thumbAlignment' => $fieldLayout->getCardThumbAlignment(),
-            'showThumb' => $showThumb,
+            'thumbStyle' => $fieldLayout->getCardThumbStyle(),
+            'showThumbAlignment' => $showThumb && ! $cover,
+            'showThumbStyle' => $showThumbStyle,
+            'styleOptions' => [
+                ['value' => 'normal', 'label' => t('Normal')],
+                ['value' => 'cover', 'label' => t('Cover')],
+            ],
             'disabled' => $config['disabled'],
             'alignmentOptions' => [
                 [
