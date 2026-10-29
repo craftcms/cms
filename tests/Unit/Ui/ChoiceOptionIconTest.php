@@ -36,4 +36,5 @@ it('shows each option’s icon or color before its label', function (ChoicePrese
         ->and($crawler->filter('.color-preview')->attr('style'))->toContain('#00ff00');
 })->with([
     'checkboxes' => ChoicePresentation::Checkboxes,
+    'radios' => ChoicePresentation::Radios,
 ]);

@@ -79,7 +79,7 @@ class Choice extends Control
      * `group` heads a run of consecutive options sharing it, when presented as
      * a select; other presentations ignore it.
      *
-     * `icon` and `color` are shown before a checkbox's label: the icon tinted
+     * `icon` and `color` are shown before a checkbox or radio label: the icon tinted
      * with the color, or a color swatch when there's no icon.
      *
      * @param  list<array{label: string, labelHtml?: string, icon?: string, color?: string, value: bool|float|int|string, disabled?: bool, group?: string|null, thumbnail?: array{src: string, width?: int, height?: int, aspectRatio?: string}}>  $options
@@ -445,6 +445,8 @@ class Choice extends Control
                 ->disabled($attributes['name'] === null || ($option['disabled'] ?? false))
                 ->label($icon !== null ? Icon::make()->name($icon)->label($option['label']) : self::optionLabel($option))
                 ->attributes(['title' => $icon !== null ? $option['label'] : null])
+                ->icon($buttons ? null : ($option['icon'] ?? null))
+                ->color($buttons ? null : ($option['color'] ?? null))
                 ->thumbnail($option['thumbnail'] ?? null)
                 ->describedBy($attributes['aria']['describedby'] ?? null)
                 ->inputAttributes([
