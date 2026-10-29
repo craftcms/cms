@@ -6,6 +6,7 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Data\Thumb;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Field\Icon;
@@ -643,6 +644,22 @@ abstract class BaseField extends FieldLayoutElement
     public function thumbHtml(ElementInterface $element, int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
         return null;
+    }
+
+    /**
+     * Returns the thumbnail the field provides for an element, if it has one.
+     *
+     * Fields that provide thumbnails should override this, so it can be known without rendering one.
+     *
+     * @param  ElementInterface  $element  The element the field is associated with
+     */
+    public function thumb(ElementInterface $element): ?Thumb
+    {
+        if ($this->thumbHtml($element, 120) === null) {
+            return null;
+        }
+
+        return new Thumb(fn (int $size, ImageTransformMode $mode) => $this->thumbHtml($element, $size, $mode));
     }
 
     /**

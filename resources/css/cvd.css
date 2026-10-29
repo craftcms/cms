@@ -41,6 +41,19 @@
   padding-block: var(--c-spacing-lg);
 }
 
+/* Beside the preview, the settings scroll rather than stretching the
+   designer taller than the preview needs. */
+@container cvd (width > 37.5rem) {
+  .cvd-library {
+    max-block-size: calc(500rem / 16);
+    overflow-y: auto;
+    /* Reaches across the gap to the preview's hairline, so it scrolls right
+       up to it, with its content kept where it was. */
+    margin-inline-end: calc(-1 * var(--cp-container-padding));
+    padding-inline-end: var(--cp-container-padding);
+  }
+}
+
 .cvd-library .draggable {
   display: flex;
 }
@@ -150,11 +163,13 @@
   background-position: right top;
 }
 
-/* Thumbnail Source starts as wide as its longest option and takes whatever
-   room Alignment leaves. When the two don't fit side by side, the row wraps and
-   Source spans the full width. */
-.thumb-management craft-field[data-attribute='thumb-source'] {
-  flex: 1 1 auto;
+/* The thumb fields are spaced like the library's other fields. */
+.thumb-management {
+  display: contents;
+}
+
+.thumb-management > * {
+  grid-column: 1 / -1;
 }
 
 .thumb-management
@@ -189,17 +204,24 @@
   justify-self: stretch;
 }
 
-/* Fills the chip's thumbnail box, like the card's thumbnail placeholder. */
+/* Its height is snapped to the grid (see CardViewDesigner::snapPreviewCard()).
+   Set on the card's base, as the host's percentage height wouldn't pass a
+   minimum on to it. */
+.cvd-preview > craft-card::part(base) {
+  min-block-size: var(--cvd-card-min-block-size, auto);
+}
+
+/* Sized like a cover card in an element index, not the whole pane. */
+.cvd-preview > craft-card[cover-src] {
+  justify-self: start;
+  inline-size: min(100%, calc(360rem / 16));
+}
+
 .cvd-chip-thumbnail {
-  display: grid;
-  place-items: center;
   inline-size: 100%;
   block-size: 100%;
-  box-sizing: border-box;
-  border: 1px solid var(--c-color-border-quiet);
-  background-color: var(--c-color-fill-quiet);
   border-radius: var(--c-radius-sm);
-  font-size: 0.75em;
+  overflow: clip;
 }
 
 /* Both previews get a ring just darker than the page outside their outlines
@@ -237,20 +259,15 @@
 .cvd-thumbnail {
   width: 100%;
   aspect-ratio: 4/3;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  border: 1px solid var(--c-color-border-quiet);
-  background-color: var(--c-color-fill-quiet);
   border-radius: var(--c-radius-md);
+  overflow: clip;
 }
 
-/* White's quiet fill is the card's own white, so a white card's thumbnail
-   takes the neutral tint instead, as it has without a color. */
-craft-card[data-color='white'] .cvd-thumbnail {
-  border-color: var(--c-color-neutral-border-quiet);
-  background-color: var(--c-color-neutral-fill-quiet);
+:is(.cvd-thumbnail, .cvd-chip-thumbnail) > img {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
 }
 
 .card-placeholder {
