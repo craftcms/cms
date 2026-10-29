@@ -120,12 +120,15 @@
           <div class="cms-edition__price">
             {{ card.price ? formatPrice(card.price) : t('Free') }}
           </div>
-          <p v-if="card.price" class="cms-edition__quiet">
+          <p v-if="card.price" class="cms-edition__renewal">
             {{
               t('Plus {renewalPrice}/year for updates after one year.', {
                 renewalPrice: formatPrice(card.edition.renewalPrice),
               })
             }}
+          </p>
+          <p v-else class="cms-edition__renewal">
+            {{ t('No purchase necessary.') }}
           </p>
         </div>
 
@@ -143,11 +146,8 @@
         </ul>
 
         <div class="grid gap-sm">
-          <craft-badge
-            v-if="card.actions.status"
-            :fill="card.actions.status === 'licensed' ? 'blue' : 'green'"
-          >
-            {{ statusLabels[card.actions.status] }}
+          <craft-badge v-if="card.actions.status === 'licensed'" fill="blue">
+            {{ statusLabels.licensed }}
           </craft-badge>
 
           <craft-button
@@ -168,8 +168,19 @@
             {{ t('Added to cart') }}
           </craft-button>
 
+          <!-- The edition already running takes the place of the button that would switch to it. -->
           <craft-button
-            v-if="card.actions.switchTo"
+            v-if="
+              card.actions.status === 'installed' ||
+              card.actions.status === 'installed-trial'
+            "
+            icon="check"
+            disabled
+          >
+            {{ statusLabels[card.actions.status] }}
+          </craft-button>
+          <craft-button
+            v-else-if="card.actions.switchTo"
             .loading="pending === card.edition.handle"
             .disabled="pending !== null"
             @click="switchTo(card.edition)"
@@ -207,7 +218,14 @@
 
   .cms-edition__price {
     font-size: 2rem;
-    font-weight: 300;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  .cms-edition__renewal {
+    margin: 0;
+    color: var(--c-text-quiet);
+    font-size: var(--c-text-sm);
   }
 
   .cms-edition__quiet {
