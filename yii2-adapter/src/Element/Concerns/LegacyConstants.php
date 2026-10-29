@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-namespace CraftCms\Cms\Element\Concerns;
+namespace CraftCms\Yii2Adapter\Element\Concerns;
 
 use craft\base\Element;
 use craft\base\ElementEventConstants;
