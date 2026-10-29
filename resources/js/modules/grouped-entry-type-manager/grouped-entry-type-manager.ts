@@ -15,6 +15,7 @@ import type {
 } from '@/modules/component-select';
 import {editEntryTypeOverrides} from './entry-type-override-settings';
 import {groupedEntryTypeManagerData} from './support';
+import {namespaceId, namespaceInputName} from '@/common/craft/namespace';
 
 declare const Craft: any;
 declare const $: any;
@@ -334,8 +335,8 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
 
     // Each cloned select needs its own id in place of TEMP_ID.
     const namespace = this.settings.namespace ?? null;
-    const tempId = Craft.namespaceId('TEMP_ID', namespace);
-    const id = Craft.namespaceId(
+    const tempId = namespaceId('TEMP_ID', namespace);
+    const id = namespaceId(
       `entry-type-select-${Math.floor(Math.random() * 1000000)}`,
       namespace
     );
@@ -510,7 +511,7 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
         .empty()
         .append(
           Craft.ui.createSortableCheckboxSelect({
-            name: Craft.namespaceInputName(
+            name: namespaceInputName(
               'defaultTableColumns',
               this.settings.namespace ?? null
             ),
