@@ -342,13 +342,6 @@ class UrlManager extends \yii\web\UrlManager
                 $routesService->getProjectConfigRoutes()
             );
 
-            if (Craft::$app->getIsInstalled()) {
-                $mcpSettings = Craft::$app->get('mcp')->getSettings();
-                if ($mcpSettings->publicEnabled) {
-                    $rules = [trim($mcpSettings->publicRoute, '/') => 'mcp/public', ...$rules];
-                }
-            }
-
             $eventName = self::EVENT_REGISTER_SITE_URL_RULES;
         }
 
@@ -371,6 +364,11 @@ class UrlManager extends \yii\web\UrlManager
     {
         // Is there a token in the URL?
         if (($route = $this->_getTokenRoute($request)) !== false) {
+            return $route;
+        }
+
+        // Is this an MCP request?
+        if (Craft::$app->getIsInstalled() && ($route = Craft::$app->get('mcp')->getSettings()->requestRoute($request)) !== false) {
             return $route;
         }
 

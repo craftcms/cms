@@ -110,11 +110,6 @@ class UserPermissions extends Component
         if (!isset($this->_allPermissions)) {
             $this->_allPermissions = [];
 
-            $this->_allPermissions[] = [
-                'heading' => Craft::t('app', 'MCP'),
-                'permissions' => ['useCraftMcp' => ['label' => Craft::t('app', 'Use Craft MCP')]],
-            ];
-
             $this->_generalPermissions($this->_allPermissions);
             $this->_userPermissions($this->_allPermissions);
             $this->_sitePermissions($this->_allPermissions);
