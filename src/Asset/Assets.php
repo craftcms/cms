@@ -173,7 +173,7 @@ class Assets
 
         $assets = array_values(array_filter($assets, fn (Asset $asset): bool => $asset::class === Asset::class
             && ! $asset->isFolder
-            && ! $asset->getFieldLayout()?->thumbFieldKey));
+            && empty($asset->getFieldLayout()->thumbSources)));
 
         $this->assetTransformers->preload($assets, fn (Asset $asset): array => array_map(
             fn (int $size): array => ['width' => $size, 'height' => $size, 'mode' => ImageTransformMode::Fit->value],

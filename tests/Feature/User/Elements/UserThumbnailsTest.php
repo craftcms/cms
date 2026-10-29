@@ -48,7 +48,7 @@ it('forwards the requested mode to configured fields before falling back to nati
     $customField = new CustomField(config: ['fieldUid' => $field->uid, 'uid' => Str::uuid()->toString()]);
     $layout = $this->user->getFieldLayout();
     $layout->tab('Thumbnail', fn (FieldLayoutTab $tab) => $tab->add($customField));
-    $layout->thumbFieldKey = "layoutElement:{$customField->uid}";
+    $layout->thumbSources = ["layoutElement:{$customField->uid}"];
     expect(Fields::saveLayout($layout))->toBeTrue();
     $this->user->setFieldValue('thumbnail', $value);
 

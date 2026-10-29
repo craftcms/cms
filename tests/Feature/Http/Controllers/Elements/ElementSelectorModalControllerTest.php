@@ -56,7 +56,7 @@ it('uses fit for modal thumbnail presence and list rendering', function (string 
     $entry = EntryModel::factory()->withField('thumbnail', ModeThumbnailField::class, value: $supportedMode)
         ->createElementWithFields()->element;
     $layout = $entry->getFieldLayout();
-    $layout->thumbFieldKey = 'layoutElement:'.$layout->getCustomFieldElements()[0]->uid;
+    $layout->thumbSources = ['layoutElement:'.$layout->getCustomFieldElements()[0]->uid];
     expect(Fields::saveLayout($layout))->toBeTrue();
 
     $response = ($this->postBody)()->assertOk();

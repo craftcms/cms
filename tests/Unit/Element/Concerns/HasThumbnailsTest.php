@@ -111,7 +111,7 @@ describe('getThumbHtml', function () {
         $element = new TestThumbnailElement;
         $element->setCustomThumbUrl('/native.jpg');
         $layout = Mockery::mock(FieldLayout::class);
-        $layout->thumbFieldKey = 'layoutElement:thumbnail';
+        $layout->thumbSources = ['layoutElement:thumbnail'];
         $layout->shouldReceive('getThumbHtmlForElement')->once()
             ->with('layoutElement:thumbnail', $element, 120, $mode)->andReturn($fieldHtml);
         $element->thumbnailLayout = $layout;

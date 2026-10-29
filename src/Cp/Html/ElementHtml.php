@@ -1024,7 +1024,7 @@ readonly class ElementHtml
     /**
      * Returns the asset whose image an element's card thumbnail shows, if its field layout's cards use the `cover`
      * thumb style and the thumbnail comes straight from an asset: the element itself, or the first element related
-     * through its field layout's thumbnail field.
+     * through the first of its field layout's thumb sources that has a thumbnail for it.
      */
     private function cardCoverAsset(ElementInterface $element): ?Asset
     {
@@ -1038,26 +1038,35 @@ readonly class ElementHtml
             return $element;
         }
 
-        $layoutElement = $fieldLayout?->thumbFieldKey ? $fieldLayout->getElementByKey($fieldLayout->thumbFieldKey) : null;
+        foreach ($fieldLayout->thumbSources ?? [] as $key) {
+            // A Content Block's fields hold their values in the block, not the element, so only the layout's own
+            // relation fields are looked into.
+            $layoutElement = str_starts_with($key, 'layoutElement:') ? $fieldLayout->getElementByKey($key) : null;
 
-        if (! $layoutElement instanceof CustomField) {
-            return null;
+            try {
+                $field = $layoutElement instanceof CustomField ? $layoutElement->getField() : null;
+            } catch (FieldNotFoundException) {
+                $field = null;
+            }
+
+            if ($field instanceof BaseRelationField) {
+                $value = $element->getFieldValue($field->handle);
+                $related = $value instanceof ElementQueryInterface ? (clone $value)->eagerly()->one() : $value->first();
+
+                if ($related !== null) {
+                    return $related instanceof Asset ? $related : null;
+                }
+
+                continue;
+            }
+
+            // Any other source that shows a thumbnail for the element provides it, and it isn't an asset's image
+            if ($fieldLayout->getThumbHtmlForElement($key, $element, 120)) {
+                return null;
+            }
         }
 
-        try {
-            $field = $layoutElement->getField();
-        } catch (FieldNotFoundException) {
-            return null;
-        }
-
-        if (! $field instanceof BaseRelationField) {
-            return null;
-        }
-
-        $value = $element->getFieldValue($field->handle);
-        $related = $value instanceof ElementQueryInterface ? (clone $value)->eagerly()->one() : $value->first();
-
-        return $related instanceof Asset ? $related : null;
+        return null;
     }
 
     /**

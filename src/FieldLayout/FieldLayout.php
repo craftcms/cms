@@ -70,9 +70,26 @@ class FieldLayout extends Component
     public ?array $reservedFieldHandles = null;
 
     /**
-     * @var string|null The element key that provides thumbnails for this layout
+     * @var list<string> The keys of the layout elements that can provide thumbnails for this layout, in order. The
+     *                   first one with a thumbnail for an element provides it.
      */
-    public ?string $thumbFieldKey = null;
+    public array $thumbSources = [] {
+        set(array $value) {
+            $this->thumbSources = array_values(array_unique(array_filter($value, fn (mixed $key) => is_string($key) && $key !== '')));
+        }
+    }
+
+    /**
+     * @var string|null The first of the layout’s [[thumbSources]]. Setting it replaces all of them.
+     *
+     * @deprecated in 6.0.0. [[thumbSources]] should be used instead.
+     */
+    public ?string $thumbFieldKey {
+        get => $this->thumbSources[0] ?? null;
+        set {
+            $this->thumbSources = $value !== null ? [$value] : [];
+        }
+    }
 
     /**
      * @var BaseField[][]
@@ -574,9 +591,20 @@ class FieldLayout extends Component
         return $this;
     }
 
+    /** @param list<string> $keys */
+    public function thumbSources(array $keys): static
+    {
+        $this->thumbSources = $keys;
+
+        return $this;
+    }
+
+    /**
+     * @deprecated in 6.0.0. [[thumbSources()]] should be used instead.
+     */
     public function thumbFieldKey(?string $key): static
     {
-        $this->thumbFieldKey = $key;
+        $this->thumbSources = $key !== null ? [$key] : [];
 
         return $this;
     }
@@ -818,7 +846,7 @@ class FieldLayout extends Component
      * Returns the field layout’s config.
      */
     /**
-     * @return array{tabs: list<array<string, mixed>>, generatedFields: list<GeneratedField>, cardView: list<string>, thumbFieldKey: string|null, cardThumbAlignment: string, cardThumbStyle: string}|null
+     * @return array{tabs: list<array<string, mixed>>, generatedFields: list<GeneratedField>, cardView: list<string>, thumbSources: list<string>, cardThumbAlignment: string, cardThumbStyle: string}|null
      */
     public function getConfig(): ?array
     {
@@ -840,7 +868,7 @@ class FieldLayout extends Component
             'tabs' => $tabConfigs,
             'generatedFields' => $generatedFields,
             'cardView' => $cardViewConfig,
-            'thumbFieldKey' => $this->thumbFieldKey,
+            'thumbSources' => $this->thumbSources,
             'cardThumbAlignment' => $cardThumbAlignment,
             'cardThumbStyle' => $this->getCardThumbStyle(),
         ];
@@ -1111,15 +1139,20 @@ class FieldLayout extends Component
         );
     }
 
+    /**
+     * Returns whether any of the layout’s [[thumbSources]] is a field that can provide thumbnails.
+     */
     public function hasThumbField(): bool
     {
-        if (! isset($this->thumbFieldKey)) {
-            return false;
+        foreach ($this->thumbSources as $key) {
+            $field = $this->getElementByKey($key);
+
+            if ($field instanceof BaseField && $field->thumbable()) {
+                return true;
+            }
         }
 
-        $field = $this->getElementByKey($this->thumbFieldKey);
-
-        return $field instanceof BaseField && $field->thumbable();
+        return false;
     }
 
     /**

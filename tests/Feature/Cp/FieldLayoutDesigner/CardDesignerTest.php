@@ -98,7 +98,7 @@ it('previews cards in the thumb style, once it applies', function (?string $styl
         : new FieldLayout(['type' => Asset::class]);
 
     if ($thumbField) {
-        $layout->thumbFieldKey = 'layoutElement:'.$layout->getCustomFieldElements()[0]->uid;
+        $layout->thumbSources = ['layoutElement:'.$layout->getCustomFieldElements()[0]->uid];
     }
 
     $layout->setCardThumbStyle($style);
@@ -135,7 +135,7 @@ it('shows the thumb style setting for asset volumes and for fields as the thumb 
         : new FieldLayout(['type' => $type]);
 
     if ($thumbField) {
-        $layout->thumbFieldKey = 'layoutElement:'.$layout->getCustomFieldElements()[0]->uid;
+        $layout->thumbSources = ['layoutElement:'.$layout->getCustomFieldElements()[0]->uid];
     }
 
     $layout->setCardThumbStyle($style);

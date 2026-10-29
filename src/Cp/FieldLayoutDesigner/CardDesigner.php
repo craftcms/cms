@@ -177,7 +177,7 @@ class CardDesigner
 
     /**
      * Whether the Thumb Style setting applies: for asset volumes, whose own thumbnails are images, and for other
-     * element types once a field is chosen as the thumb source, as that's the only way they get an asset's image.
+     * element types once a field is chosen as a thumb source, as that's the only way they get an asset's image.
      */
     private function showThumbStyle(FieldLayout $fieldLayout): bool
     {
@@ -319,19 +319,8 @@ class CardDesigner
             'disabled' => false,
         ];
 
-        if ($fieldLayout->type::hasThumbs()) {
-            $options = [
-                ['label' => t('Default'), 'value' => '__default__'],
-            ];
-        } else {
-            $options = [
-                ['label' => t('None'), 'value' => '__none__'],
-            ];
-        }
-
-        $thumbOptions = array_values($this->thumbOptions($fieldLayout));
-        usort($thumbOptions, fn (array $a, array $b) => $a['label'] <=> $b['label']);
-        array_push($options, ...$thumbOptions);
+        $options = array_values($this->thumbOptions($fieldLayout));
+        usort($options, fn (array $a, array $b) => $a['label'] <=> $b['label']);
 
         // radio button switch that lets you choose whether the thumb alignment should be start or end
         $orientation = I18N::getLocale()->getOrientation();
@@ -340,9 +329,8 @@ class CardDesigner
         $cover = $showThumbStyle && $fieldLayout->getCardThumbStyle() === 'cover';
 
         return view('c::forms.fld.thumb-management', [
-            // dropdown field that contains all thumbable fields + the None/Default option
             'options' => $options,
-            'thumbFieldKey' => $fieldLayout->thumbFieldKey,
+            'thumbSources' => $fieldLayout->thumbSources,
             'thumbAlignment' => $fieldLayout->getCardThumbAlignment(),
             'thumbStyle' => $fieldLayout->getCardThumbStyle(),
             'showThumbAlignment' => $showThumb && ! $cover,
