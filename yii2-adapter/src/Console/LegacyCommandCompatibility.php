@@ -30,23 +30,9 @@ readonly class LegacyCommandCompatibility
                 $command['description'] = Str::before($command['description'], '. ') . '. ';
             }
 
-            $signature = str_replace('/', ':', $command['name']);
+            $artisanName = str_replace('/', ':', $command['name']);
 
-            foreach ($command['definition']['arguments'] as $definition) {
-                $signature .= $this->convertDefinition($definition, 'argument');
-            }
-
-            foreach ($command['definition']['options'] as $definition) {
-                if ($definition['name'] === '--quiet') {
-                    continue;
-                }
-
-                $signature .= $this->convertDefinition($definition, 'option');
-            }
-
-            Application::starting(function(Application $artisan) use ($app, $command, $signature) {
-                $artisanName = explode(' ', $signature)[0];
-
+            Application::starting(function(Application $artisan) use ($app, $command, $artisanName) {
                 if ($artisanName === 'help') {
                     return;
                 }
@@ -59,11 +45,34 @@ readonly class LegacyCommandCompatibility
                     return;
                 }
 
+                $signature = $artisanName;
+                $legacyOptions = [];
+
+                foreach ($command['definition']['arguments'] as $definition) {
+                    $signature .= $this->convertDefinition($definition, 'argument');
+                }
+
+                foreach ($command['definition']['options'] as $definition) {
+                    $optionName = ltrim($definition['name'], '-');
+                    $legacyOptions[] = $optionName;
+
+                    /**
+                     * Options such as `--verbose` are already defined globally by Artisan.
+                     * LegacyCraftCommand forwards them to the Yii command instead.
+                     */
+                    if ($artisan->getDefinition()->hasOption($optionName)) {
+                        continue;
+                    }
+
+                    $signature .= $this->convertDefinition($definition, 'option');
+                }
+
                 $artisan->resolve(new LegacyCraftCommand(
                     app: $app,
                     signature: "craft:{$signature}",
                     description: $command['description'],
                     hidden: str_ends_with($artisanName, ':index'),
+                    legacyOptions: $legacyOptions,
                 ));
 
                 // Add with slash for backwards compatibility
@@ -74,6 +83,7 @@ readonly class LegacyCommandCompatibility
                     signature: "craft:{$signatureWithSlash}",
                     description: $command['description'],
                     hidden: true,
+                    legacyOptions: $legacyOptions,
                     deprecationMessage: "Calling `php craft $nameWithSlash` is deprecated use `php craft $artisanName` instead.",
                 ));
             });

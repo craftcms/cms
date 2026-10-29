@@ -14,11 +14,13 @@ use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Jobs\PropagateElements;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
+use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
 use CraftCms\Cms\Site\Data\Site as SiteData;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Assets;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Controls\ElementSites;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Bus;
@@ -172,6 +174,42 @@ it('resaves assets when a volume is switched to save assets to all sites', funct
     expect(app(Volumes::class)->saveVolume($volume))->toBeTrue();
 
     Bus::assertDispatched(ResaveElements::class);
+});
+
+it('keeps existing volumes’ propagation method when applying config saved before the setting existed', function () {
+    $volume = assetPropagationVolume(PropagationMethod::Custom);
+    $config = $volume->getConfig();
+    unset($config['propagationMethod']);
+
+    Bus::fake([ResaveElements::class]);
+
+    app(Volumes::class)->handleChangedVolume(new ItemUpdated(
+        path: "volumes.$volume->uid",
+        newValue: $config,
+        tokenMatches: [$volume->uid],
+    ));
+
+    expect(DB::table(Table::VOLUMES)->where('id', $volume->id)->value('propagationMethod'))
+        ->toBe(PropagationMethod::Custom->value);
+    Bus::assertNotDispatched(ResaveElements::class);
+});
+
+it('saves assets to all sites for new volumes from config saved before the setting existed, on multi-site installs', function () {
+    $uid = Str::uuid()->toString();
+
+    app(Volumes::class)->handleChangedVolume(new ItemUpdated(
+        path: "volumes.$uid",
+        newValue: [
+            'name' => 'Legacy Volume',
+            'handle' => 'legacyVolume',
+            'fs' => 'asset-propagation-test',
+            'sortOrder' => 1,
+        ],
+        tokenMatches: [$uid],
+    ));
+
+    expect(DB::table(Table::VOLUMES)->where('uid', $uid)->value('propagationMethod'))
+        ->toBe(PropagationMethod::All->value);
 });
 
 it('only propagates assets in volumes that save assets to all sites to new sites', function () {

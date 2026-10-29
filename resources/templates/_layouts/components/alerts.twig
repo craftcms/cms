@@ -36,10 +36,10 @@
                 {% block content %}
                   {% if alert is string or (alert.showIcon ?? true) %}
                     {% include '_layouts/components/tag.twig' with {
-                      type: 'span',
+                      type: 'craft-icon',
                       attributes: {
-                        'aria-label': 'Error'|t('app'),
-                        'data-icon': 'alert',
+                        name: 'alert',
+                        label: 'Error'|t('app'),
                       },
                     } only %}
                   {% endif %}

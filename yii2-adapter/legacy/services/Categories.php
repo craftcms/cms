@@ -634,13 +634,13 @@ class Categories extends Component
                 ->whereColumn('categories.id', 'elements.id')
                 ->whereNull(['elements.canonicalId', 'elements.revisionId', 'elements.dateDeleted']);
 
-            DB::table(new Alias($categoriesTable, 'categories'))
-                ->join(new Alias($elementsTable, 'elements'), 'elements.id', 'categories.id')
+            DB::table($categoriesTable)
+                ->join($elementsTable, 'elements.id', 'categories.id')
                 ->where($condition)
                 ->update(['deletedWithGroup' => true]);
 
-            DB::table(new Alias($elementsTable, 'elements'))
-                ->join(new Alias($categoriesTable, 'categories'), 'elements.id', 'categories.id')
+            DB::table($elementsTable)
+                ->join($categoriesTable, 'elements.id', 'categories.id')
                 ->where($condition)
                 ->update(['dateDeleted' => $now]);
 

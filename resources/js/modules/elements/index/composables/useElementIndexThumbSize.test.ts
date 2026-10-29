@@ -1,20 +1,26 @@
 import {ref} from 'vue';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {useElementIndexThumbSize} from './useElementIndexThumbSize';
-import type {ViewMode, ViewState} from '@/modules/elements/types/view-state';
+import type {
+  SourceViewState,
+  ViewMode,
+  ViewState,
+} from '@/modules/elements/types/view-state';
 
 const merge = vi.fn();
 const visitor = {merge, visit: vi.fn(), currentQuery: () => ({})};
 
-function viewStateRef(thumbSizes?: ViewState['thumbSizes']) {
+function viewStateRef(thumbSizes?: SourceViewState['thumbSizes']) {
   return ref<ViewState>({
     inlineEditing: false,
     mode: 'table',
     showHeaderColumn: true,
     static: false,
-    ...(thumbSizes ? {thumbSizes} : {}),
+    ...(thumbSizes ? {sources: {'volume:a': {thumbSizes}}} : {}),
   });
 }
+
+const sourceA = () => 'volume:a';
 
 describe('useElementIndexThumbSize', () => {
   beforeEach(() => {
@@ -27,7 +33,8 @@ describe('useElementIndexThumbSize', () => {
     const {thumbSize, options} = useElementIndexThumbSize(
       viewStateRef(),
       visitor,
-      () => mode.value
+      () => mode.value,
+      sourceA
     );
 
     expect([thumbSize.value, options.value]).toEqual([
@@ -50,11 +57,14 @@ describe('useElementIndexThumbSize', () => {
     const {thumbSize} = useElementIndexThumbSize(
       viewState,
       visitor,
-      () => 'thumbs'
+      () => 'thumbs',
+      sourceA
     );
 
     thumbSize.value = '2xl';
-    expect(viewState.value.thumbSizes).toEqual({thumbs: '2xl'});
+    expect(viewState.value.sources?.['volume:a']?.thumbSizes).toEqual({
+      thumbs: '2xl',
+    });
     expect(merge).toHaveBeenLastCalledWith(
       {thumbSize: '2xl'},
       {only: ['data'], silent: true}
@@ -73,7 +83,8 @@ describe('useElementIndexThumbSize', () => {
     const {modeParams} = useElementIndexThumbSize(
       viewStateRef({table: 'md'}),
       visitor,
-      () => 'table'
+      () => 'table',
+      sourceA
     );
 
     expect(modeParams('thumbs')).toEqual({thumbSize: null});
@@ -84,7 +95,8 @@ describe('useElementIndexThumbSize', () => {
     const {restore} = useElementIndexThumbSize(
       viewStateRef({table: 'lg', thumbs: 'lg'}),
       visitor,
-      () => 'table'
+      () => 'table',
+      sourceA
     );
 
     expect(restore()).toEqual({params: {thumbSize: 'lg'}, only: ['data']});
@@ -92,7 +104,8 @@ describe('useElementIndexThumbSize', () => {
       useElementIndexThumbSize(
         viewStateRef({table: 'lg', thumbs: 'lg'}),
         visitor,
-        () => 'thumbs'
+        () => 'thumbs',
+        sourceA
       ).restore()
     ).toBeNull();
   });
@@ -105,7 +118,8 @@ describe('useElementIndexThumbSize', () => {
     const {thumbSize, restore} = useElementIndexThumbSize(
       viewState,
       {...visitor, currentQuery: () => query},
-      () => 'table'
+      () => 'table',
+      sourceA
     );
 
     expect(restore()).toBeNull();
@@ -114,5 +128,24 @@ describe('useElementIndexThumbSize', () => {
     query.thumbSize = 'xl';
     expect(restore()).toBeNull();
     expect(thumbSize.value).toBe('sm');
+  });
+
+  it('keeps a size per source, and gives a source switch the new source’s size', () => {
+    const source = ref('volume:a');
+    const {thumbSize, modeParams} = useElementIndexThumbSize(
+      viewStateRef(),
+      visitor,
+      () => 'thumbs',
+      () => source.value
+    );
+
+    thumbSize.value = 'xl';
+    expect(modeParams('thumbs', 'volume:b')).toEqual({thumbSize: null});
+
+    source.value = 'volume:b';
+    expect(thumbSize.value).toBe('lg');
+
+    source.value = 'volume:a';
+    expect(thumbSize.value).toBe('xl');
   });
 });

@@ -14,6 +14,10 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
 use CraftCms\Cms\Field\Elements\ContentBlock;
 use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\Field\Number;
+use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\MultipleRecordsFoundException;
@@ -218,3 +222,36 @@ it('preserves extension callback binding and passes the executing query', functi
 
     expect($clone->applyAfterQueryCallbacks(collect())->all())->toBe(['legacy', 'extension']);
 });
+
+it('orders by custom field handles across field layouts', function (string $fieldType, array $values, bool $multipleLayouts) {
+    $result = EntryModel::factory()
+        ->withField('sortValue', $fieldType, value: $values[0])
+        ->createElementWithFields();
+    $first = $result->element;
+    $factory = EntryModel::factory();
+
+    if ($multipleLayouts) {
+        $factory = $factory->withFieldLayout(FieldLayout::factory()->forField($result->fields->get('sortValue')));
+    } else {
+        $factory = $factory->state(['typeId' => $first->typeId, 'sectionId' => $first->sectionId]);
+    }
+
+    $ids = [$first->id];
+    foreach (array_slice($values, 1) as $value) {
+        $entry = $factory->createElement();
+        $entry->setFieldValue('sortValue', $value);
+        expect(Elements::saveElement($entry))->toBeTrue();
+        $ids[] = $entry->id;
+    }
+
+    $query = Entry::find()->id($ids)->orderBy('sortValue');
+    $expected = [$ids[1], $ids[0], $ids[2]];
+
+    expect($query->ids())->toBe($expected)
+        ->and($query->ids())->toBe($expected)
+        ->and((clone $query)->reorder()->orderBy('sortValue', 'desc')->ids())->toBe(array_reverse($expected))
+        ->and((clone $query)->inReverse()->ids())->toBe(array_reverse($expected));
+})->with([
+    'text' => [PlainText::class, ['Bravo', 'Alpha', 'Charlie']],
+    'number' => [Number::class, [10, 2, 30]],
+])->with([false, true]);

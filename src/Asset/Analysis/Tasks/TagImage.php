@@ -45,7 +45,7 @@ class TagImage extends ImageAnalysisTask
         return $overwrite || $asset->analysis?->keywords === null;
     }
 
-    public static function instructions(Asset $asset): string
+    public static function instructions(Asset $asset, bool $overwrite): string
     {
         $language = Sites::getPrimarySite()->language;
         $max = self::MAX_KEYWORDS;
@@ -53,7 +53,7 @@ class TagImage extends ImageAnalysisTask
         return "List up to $max keywords that someone might search for to find the image, most important first: its subjects, the objects and people in it (without naming people), where it is, what’s happening, its style, mood, and prominent colors. Use single words or short phrases, in lowercase unless they’re proper nouns, written in ".I18N::getLocaleById($language)->getDisplayName('en')." ($language).\n\nAlso transcribe any text that appears in the image, such as on signs, labels, or documents, as it’s written, keeping line breaks between separate pieces of text. If there isn’t any, use an empty string.";
     }
 
-    public static function schema(JsonSchema $schema, Asset $asset): array
+    public static function schema(JsonSchema $schema, Asset $asset, bool $overwrite): array
     {
         return [
             'keywords' => $schema->array()->items($schema->string())->max(self::MAX_KEYWORDS)->required(),

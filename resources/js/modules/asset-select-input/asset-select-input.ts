@@ -138,7 +138,6 @@ export class AssetSelectInput extends BaseElementSelectInput {
       this.$uploadBtn = $('<button/>', {
         type: 'button',
         class: 'btn dashed',
-        'data-icon': 'upload',
         'aria-label':
           this.settings.limit == 1
             ? Craft.t('app', 'Upload a file')
@@ -148,7 +147,9 @@ export class AssetSelectInput extends BaseElementSelectInput {
           this.settings.limit == 1
             ? Craft.t('app', 'Upload a file')
             : Craft.t('app', 'Upload files'),
-      }).insertAfter(this.$addElementBtn);
+      })
+        .prepend('<craft-icon name="upload"></craft-icon>')
+        .insertAfter(this.$addElementBtn);
 
       this.$fileInput = $('<input/>', {
         type: 'file',

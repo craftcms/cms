@@ -164,7 +164,12 @@ export function useElementIndex(options: UseElementIndexOptions) {
     options: thumbSizeOptions,
     restore: restoreThumbSize,
     modeParams: thumbSizeModeParams,
-  } = useElementIndexThumbSize(viewState, visitor, () => mode.value);
+  } = useElementIndexThumbSize(
+    viewState,
+    visitor,
+    () => mode.value,
+    () => elementIndex.source?.key ?? '*'
+  );
   const inlineEditingActive = computed({
     get: () => viewState.value.inlineEditing,
     set: (value: boolean) => {
@@ -292,7 +297,14 @@ export function useElementIndex(options: UseElementIndexOptions) {
 
   function changeSource(key: string): void {
     if (key === elementIndex.source?.key) return;
-    visitor.merge({source: key, viewMode: mode.value}, {resetPage: true});
+    visitor.merge(
+      {
+        source: key,
+        viewMode: mode.value,
+        ...thumbSizeModeParams(mode.value, key),
+      },
+      {resetPage: true}
+    );
   }
 
   function changeSite(handle: string): void {

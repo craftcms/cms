@@ -1117,9 +1117,7 @@ abstract class ContentIndexViewModel extends ViewModel
     protected function baseCriteria(): array
     {
         return [
-            'drafts' => $this->canHaveDrafts() ? null : false,
-            'draftOf' => false,
-            'savedDraftsOnly' => true,
+            ...app(ElementIndexes::class)->baseCriteria($this->elementType),
             ...($this->sourceState()[1]['criteria'] ?? []),
         ];
     }

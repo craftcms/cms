@@ -5,12 +5,13 @@ import type {
   IndexVisitor,
 } from '@/modules/elements/index/composables/useElementIndexVisits';
 import type {
+  SourceViewState,
   ThumbSize as ThumbSizeValue,
   ViewMode,
   ViewState,
 } from '@/modules/elements/types/view-state';
 
-type ThumbSizeView = keyof NonNullable<ViewState['thumbSizes']>;
+type ThumbSizeView = keyof NonNullable<SourceViewState['thumbSizes']>;
 
 /** Thumbnail tiles come in every size; table rows stop at a card's. */
 const sizesByView: Record<ThumbSizeView, ThumbSizeValue[]> = {
@@ -38,7 +39,8 @@ function viewFor(mode: ViewMode['mode']): ThumbSizeView | null {
 
 /**
  * The size of the index's thumbnails, chosen in the View menu: one size for
- * table and structure views, another for thumbnail tiles. Their chips take a
+ * table and structure views, another for thumbnail tiles, kept per source as
+ * sort and columns are. Their chips take a
  * size to suit. The server renders the thumbnails at their size, so changing
  * it updates the local view state and then quietly re-requests the rows with
  * a `thumbSize` param, the same way `useElementIndexViewMode` handles
@@ -47,25 +49,42 @@ function viewFor(mode: ViewMode['mode']): ThumbSizeView | null {
 export function useElementIndexThumbSize(
   viewState: Ref<ViewState>,
   visitor: IndexVisitor,
-  mode: () => ViewMode['mode']
+  mode: () => ViewMode['mode'],
+  sourceKey: () => string
 ) {
-  function sizeFor(view: ThumbSizeView): ThumbSizeValue {
-    return viewState.value.thumbSizes?.[view] ?? defaultSizes[view];
+  function sizeFor(
+    view: ThumbSizeView,
+    source: string = sourceKey()
+  ): ThumbSizeValue {
+    return (
+      viewState.value.sources?.[source]?.thumbSizes?.[view] ??
+      defaultSizes[view]
+    );
   }
 
   function store(view: ThumbSizeView, size: ThumbSizeValue): void {
-    viewState.value.thumbSizes = {...viewState.value.thumbSizes, [view]: size};
+    const source = viewState.value.sources?.[sourceKey()];
+    viewState.value.sources = {
+      ...viewState.value.sources,
+      [sourceKey()]: {
+        ...source,
+        thumbSizes: {...source?.thumbSizes, [view]: size},
+      },
+    };
   }
 
   /** The `thumbSize` param for a mode's rows, or null for its default. */
-  function param(forMode: ViewMode['mode']): ThumbSizeValue | null {
+  function param(
+    forMode: ViewMode['mode'],
+    source: string = sourceKey()
+  ): ThumbSizeValue | null {
     const view = viewFor(forMode);
 
-    if (!view || sizeFor(view) === defaultSizes[view]) {
+    if (!view || sizeFor(view, source) === defaultSizes[view]) {
       return null;
     }
 
-    return sizeFor(view);
+    return sizeFor(view, source);
   }
 
   /** The sizes the current view offers, or none for a view without thumbnails. */
@@ -128,9 +147,15 @@ export function useElementIndexThumbSize(
     return size ? {params: {thumbSize: size}, only: ['data']} : null;
   }
 
-  /** Params a visit to another view mode needs, so its rows come at its size. */
-  function modeParams(forMode: ViewMode['mode']): IndexQueryParams {
-    return {thumbSize: param(forMode)};
+  /**
+   * Params a visit to another view mode or source needs, so its rows come at
+   * its size.
+   */
+  function modeParams(
+    forMode: ViewMode['mode'],
+    source: string = sourceKey()
+  ): IndexQueryParams {
+    return {thumbSize: param(forMode, source)};
   }
 
   return {thumbSize, options, restore, modeParams};

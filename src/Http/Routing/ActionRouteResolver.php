@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Http\Routing;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
+use CraftCms\Cms\Http\Middleware\ResolveSite;
+use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Http\Request;
 
 /**
@@ -48,6 +50,18 @@ readonly class ActionRouteResolver
 
         if ($request->segment($segmentIndex) === $actionTrigger && count($request->segments()) > $segmentIndex) {
             return array_slice($request->segments(), $segmentIndex);
+        }
+
+        // Action URLs generated on a site with a base path, such as `/fr/actions/...`
+        if ($request->isCpRequest() || ! in_array($actionTrigger, $request->segments(), true) || ! Cms::isInstalled()) {
+            return null;
+        }
+
+        $site = app(ResolveSite::class)->siteForPath($request, $request->decodedPath());
+        $segments = explode('/', Sites::getRequestPath($request, $site));
+
+        if ($segments[0] === $actionTrigger && count($segments) > 1) {
+            return array_slice($segments, 1);
         }
 
         return null;

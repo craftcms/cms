@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Config;
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Plugin\PluginSettings;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager;
 use CraftCms\Cms\Support\Typecast;
@@ -52,8 +53,32 @@ class ConfigServiceProvider extends ServiceProvider
                 return;
             }
 
+            if ($file === 'twig-sandbox') {
+                $this->mergeTwigSandboxConfig();
+
+                return;
+            }
+
             $this->mergeConfigFrom(__DIR__."/../../config/$file.php", "craft.$file");
         });
+    }
+
+    /**
+     * Extends Craft’s default sandbox allowlists with the project’s, rather than letting a
+     * project list replace a default list.
+     */
+    private function mergeTwigSandboxConfig(): void
+    {
+        if ($this->app->configurationIsCached()) {
+            return;
+        }
+
+        $repository = $this->app->make(ConfigRepository::class);
+
+        $repository->set('craft.twig-sandbox', Arr::merge(
+            require __DIR__.'/../../config/twig-sandbox.php',
+            $repository->get('craft.twig-sandbox', []),
+        ));
     }
 
     private function normalizePluginSettings(ConfigRepository $repository): void
@@ -108,7 +133,11 @@ class ConfigServiceProvider extends ServiceProvider
         }
 
         collect($this->configFiles)->each(function (string $file) {
-            $this->publishes([__DIR__."/../../config/$file.php" => config_path("craft/$file.php")], 'craftcms-config');
+            $source = $file === 'twig-sandbox'
+                ? __DIR__.'/../../stubs/twig-sandbox.php.stub'
+                : __DIR__."/../../config/$file.php";
+
+            $this->publishes([$source => config_path("craft/$file.php")], 'craftcms-config');
         });
     }
 

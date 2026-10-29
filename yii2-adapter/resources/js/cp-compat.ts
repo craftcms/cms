@@ -3,6 +3,7 @@ import './matrix/field-actions';
 import './nested-element-manager';
 import './element-editor';
 import './native-field-refresh';
+import './data-icon';
 import '@/modules/auth-method-setup/compat';
 import '@/modules/element-select-input/compat';
 import '@/modules/element-selector-modal/compat';

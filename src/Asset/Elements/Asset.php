@@ -361,6 +361,11 @@ class Asset extends Element
     private ?ImageMetadata $_uploadMetadata = null;
 
     /**
+     * @var ImageMetadata|null An uploaded image’s metadata, for filling in the asset’s other sites once it’s been saved to them
+     */
+    private ?ImageMetadata $_otherSitesMetadata = null;
+
+    /**
      * The width and height of a staged image that wasn't downloaded, read from the start of its file.
      *
      * @var array{int, int}|null
@@ -2153,31 +2158,6 @@ JS, [
     }
 
     /**
-     * Returns what the metadata embedded in the image’s file fills in: its alt text, if it has none, and its title, if
-     * it’s still the one it was given from its filename.
-     *
-     * This is used when an image is uploaded, and when a queue job samples one whose metadata wasn’t read then.
-     *
-     * @return array{title?: string, alt?: string}
-     *
-     * @since 6.0.0
-     */
-    public function valuesFromEmbeddedMetadata(ImageMetadata $metadata): array
-    {
-        $values = [];
-
-        if ($metadata->title !== null && $this->hasDefaultTitle()) {
-            $values['title'] = mb_substr($metadata->title, 0, 255);
-        }
-
-        if (($this->alt === null || $this->alt === '') && ($alt = $metadata->suggestedAlt()) !== null) {
-            $values['alt'] = $alt;
-        }
-
-        return $values;
-    }
-
-    /**
      * Returns whether the asset’s title is missing, or is still the one it was given from its filename.
      *
      * @since 6.0.0
@@ -3694,9 +3674,14 @@ JS;
         ) {
             $this->_uploadMetadata = $this->uploadAnalysis->metadata ?? Images::metadata($this->tempFilePath);
 
-            foreach ($this->valuesFromEmbeddedMetadata($this->_uploadMetadata) as $attribute => $value) {
+            $changes = app(ImageAnalyzer::class)->metadataChanges($this, $this->_uploadMetadata);
+
+            foreach ($changes->siteAttributes[$this->siteId] ?? [] as $attribute => $value) {
                 $this->$attribute = $value;
             }
+
+            // Other sites are filled in once the asset has been saved to them
+            $this->_otherSitesMetadata = $this->_uploadMetadata;
         }
 
         // Set the field layout
@@ -3855,6 +3840,18 @@ JS;
         }
 
         parent::afterSave($isNew);
+    }
+
+    #[Override]
+    public function afterPropagate(bool $isNew): void
+    {
+        if ($this->_otherSitesMetadata !== null && ! $this->propagating) {
+            $metadata = $this->_otherSitesMetadata;
+            $this->_otherSitesMetadata = null;
+            app(ImageAnalyzer::class)->fillOtherSitesFromMetadata($this, $metadata);
+        }
+
+        parent::afterPropagate($isNew);
     }
 
     #[Override]

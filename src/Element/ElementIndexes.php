@@ -70,6 +70,23 @@ class ElementIndexes
     }
 
     /**
+     * Returns the criteria every element index applies ahead of its source's,
+     * so saved unpublished drafts are listed (and acted on) alongside
+     * canonical elements, as in the Craft 5 element index.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     * @return array{drafts: ?bool, draftOf: bool, savedDraftsOnly: bool}
+     */
+    public function baseCriteria(string $elementType): array
+    {
+        return [
+            'drafts' => $elementType::hasDrafts() ? null : false,
+            'draftOf' => false,
+            'savedDraftsOnly' => true,
+        ];
+    }
+
+    /**
      * Builds the element query state for a source, applying the source's own
      * condition/criteria plus any client-supplied condition, criteria, filter
      * condition, and collapsed-element exclusions.

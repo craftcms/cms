@@ -9,7 +9,6 @@ use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\Renderable;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -18,6 +17,7 @@ use CraftCms\Cms\Twig\Variables\Paginate;
 use CraftCms\Cms\View\Enums\Position;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Support\MessageBag as MessageBagContract;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\ViewErrorBag;
 use InvalidArgumentException;
@@ -97,18 +97,6 @@ class Template
                     return $object->$item();
                 }
             }
-
-            if ($object instanceof BaseModel && $object->hasAttribute($item)) {
-                if ($isDefinedTest) {
-                    return true;
-                }
-
-                if ($sandboxed) {
-                    $env->getExtension(SandboxExtension::class)->checkPropertyAllowed($object, $item, $lineno, $source);
-                }
-
-                return $object->$item;
-            }
         }
 
         foreach ($arguments as $key => $value) {
@@ -118,10 +106,28 @@ class Template
         }
 
         if ($type !== TwigTemplate::METHOD_CALL && $item instanceof Stringable) {
+            if ($sandboxed) {
+                $env->getExtension(SandboxExtension::class)->getChecker()->ensureToStringAllowed($item, $lineno, $source);
+            }
             $item = (string) $item;
         }
 
         if ($type !== TwigTemplate::METHOD_CALL && is_string($item)) {
+            if ($object instanceof Model && $arguments === []) {
+                if ($sandboxed) {
+                    $env->getExtension(SandboxExtension::class)->checkPropertyAllowed($object, $item, $lineno, $source);
+                }
+
+                if ($isDefinedTest) {
+                    return $object->hasAttribute($item)
+                        || $object->relationLoaded($item)
+                        || (! method_exists(Model::class, $item) && $object->isRelation($item))
+                        || isset($object->$item);
+                }
+
+                return $object->$item;
+            }
+
             if ($object instanceof ViewErrorBag) {
                 if (method_exists($object, $item)) {
                     return CoreExtension::getAttribute(
