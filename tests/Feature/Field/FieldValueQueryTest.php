@@ -25,10 +25,6 @@ class NumericQueryField extends Field
 }
 
 test('numeric custom fields compare and sort by their declared type', function (string $fieldType, array $settings, string $columnType, bool $fractional = false) {
-    if (DB::getDriverName() === 'pgsql' && $fieldType === NumericQueryField::class && ! in_array($columnType, [Query::TYPE_INTEGER, 'decimal(12,2)'])) {
-        $this->markTestSkipped('PostgreSQL only casts integer and decimal custom fields.');
-    }
-
     NumericQueryField::$columnType = $columnType;
     app(FieldTypes::class)->register(NumericQueryField::class);
 
@@ -124,10 +120,6 @@ test('lightswitch queries distinguish true false and missing values', function (
 });
 
 test('date custom fields compare and sort chronologically', function () {
-    if (DB::getDriverName() !== 'sqlite') {
-        $this->markTestSkipped('SQLite JSON path regression.');
-    }
-
     $entry = EntryModel::factory()
         ->withField('dateValue', Date::class, value: new DateTime('2026-02-10 12:00:00', new DateTimeZone('UTC')))
         ->createElementWithFields()->element;

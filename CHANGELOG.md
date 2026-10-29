@@ -603,6 +603,7 @@
 - Updated Twig to 3.30.
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
 - Fixed a bug where numeric custom field comparisons and sorting, Lightswitch field queries, and Date field queries could return incorrect results on SQLite. ([#20167](https://github.com/craftcms/cms/pull/20167))
+- Fixed errors in empty and negated custom field queries on MySQL caused by treating SQL expressions as JSON column selectors. ([#20167](https://github.com/craftcms/cms/pull/20167))
 - Fixed a bug where custom fields declaring small integer, big integer, float, or double database types were compared and sorted as text on PostgreSQL. ([#20172](https://github.com/craftcms/cms/pull/20172))
 - Fixed incorrect JSON paths when querying Date fields and other custom fields with multiple stored values. ([#20172](https://github.com/craftcms/cms/pull/20172))
 - Fixed an error when ordering element queries by custom field handles. ([#20170](https://github.com/craftcms/cms/pull/20170))
