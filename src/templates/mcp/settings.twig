@@ -1,38 +1,147 @@
 {% extends '_layouts/cp' %}
 {% import '_includes/forms' as forms %}
-{% set title = 'MCP'|t('app') %}
+{% set title = 'MCP Settings'|t('app') %}
 {% set selectedSubnavItem = 'settings' %}
 {% set readOnly = not craft.app.config.general.allowAdminChanges %}
 {% set fullPageForm = not readOnly %}
 {% set crumbs = [{label: 'Settings'|t('app'), url: url('settings')}] %}
+{% set authenticatedErrors = ['enabled', 'route', 'authorizationRoute']|filter(a => settings.hasErrors(a)) is not empty %}
+{% set publicErrors = settings.hasErrors() and settings.getErrors()|keys|filter(a => a not in ['enabled', 'route', 'authorizationRoute']) is not empty %}
+{% set tabs = {
+    'mcp-public': {label: 'Public'|t('app'), url: '#mcp-public', class: publicErrors ? 'error' : null},
+    'mcp-authenticated': {label: 'Authenticated'|t('app'), url: '#mcp-authenticated', class: authenticatedErrors ? 'error' : null},
+} %}
+{% set selectedTab = authenticatedErrors and not publicErrors ? 'mcp-authenticated' : 'mcp-public' %}
+
+{% macro notice(id, type, label, message, show) %}
+    <p id="{{ id }}" class="{{ type }} has-icon{% if not show %} hidden{% endif %}">
+        <span class="icon" aria-hidden="true"></span>
+        <span class="visually-hidden">{{ label }} </span>
+        <span>{{ message }}</span>
+    </p>
+{% endmacro %}
+
+{% macro checkboxes(group, settings, readOnly) %}
+    {% import '_includes/forms' as forms %}
+    {% if group.options is not empty %}
+        {% set attributes = group.options|column('attribute')|unique %}
+        {% set errors = attributes|map(a => settings.getErrors(a))|reduce((all, e) => all|merge(e), []) %}
+        {% embed '_includes/forms/field' with {
+            label: group.label,
+            labelExtra: readOnly ? null : tag('button', {type: 'button', class: ['btn', 'small', 'mcp-select-all'], text: 'Select all'|t('app')}),
+            errors: errors,
+            fieldset: true,
+        } %}
+            {% block input %}
+                {% import '_includes/forms' as forms %}
+                <div class="checkbox-group">
+                    {% for option in group.options %}
+                        <div>
+                            {{ forms.checkbox({
+                                name: 'settings['~option.attribute~'][]',
+                                value: option.value,
+                                label: option.label,
+                                checked: option.value in attribute(settings, option.attribute),
+                                disabled: readOnly,
+                            }) }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endblock %}
+        {% endembed %}
+    {% endif %}
+{% endmacro %}
 
 {% block content %}
     {% if readOnly %}{% set contentNotice = readOnlyNotice() %}{% endif %}
     {% if not readOnly %}
         {{ actionInput('mcp-settings/save') }}
         {{ redirectInput('settings/mcp') }}
+        {# Blank values first, so unchecked checkbox lists save as empty arrays #}
+        {% for attribute in ['publicTools', 'publicResources', 'publicResourceTemplates', 'publicPrompts', 'publicSiteHandles', 'publicSectionHandles', 'publicNestedEntryFieldHandles', 'publicVolumeHandles', 'publicElementTypes', 'publicUserGroupHandles'] %}
+            {{ hiddenInput('settings['~attribute~']', '') }}
+        {% endfor %}
     {% endif %}
 
-    <p>{{ 'Authenticated clients connect to {endpoint}. Users need permission to access the control panel and use Craft MCP.'|t('app', {endpoint: cpUrl(craft.app.config.mcp.endpoint)}) }}</p>
-    <p>{{ 'Local clients can connect through php craft mcp/serve --user=….'|t('app') }}</p>
+    <div id="mcp-public"{% if selectedTab != 'mcp-public' %} class="hidden"{% endif %}>
+        <p>{{ 'Lets anyone use the tools and content you approve below, without signing in.'|t('app') }}</p>
+        {{ forms.lightswitchField({label: 'Enable the Public MCP Server'|t('app'), id: 'mcp-public-enabled', name: 'settings[publicEnabled]', on: settings.publicEnabled, disabled: readOnly, errors: settings.getErrors('publicEnabled')}) }}
+        {{ forms.textField({label: 'Endpoint'|t('app'), id: 'mcp-public-route', instructions: 'The app-relative path public MCP clients connect to, such as `/mcp`.'|t('app'), name: 'settings[publicRoute]', value: settings.publicRoute, required: true, disabled: readOnly, class: 'code', errors: settings.getErrors('publicRoute')}) }}
+        {{ _self.notice('mcp-shared-route', 'warning', 'Warning:'|t('app'), 'The authenticated server uses this endpoint too. Requests without an access token go to the public server, so MCP clients can’t discover how to sign in at this endpoint.'|t('app'), settings.enabled and settings.publicEnabled and settings.route|trim('/') == settings.publicRoute|trim('/')) }}
 
-    {{ forms.lightswitchField({label: 'Enable public MCP'|t('app'), name: 'settings[publicEnabled]', on: settings.publicEnabled, disabled: readOnly, errors: settings.getErrors('publicEnabled')}) }}
-    {{ forms.textField({label: 'Public MCP endpoint'|t('app'), instructions: 'Public clients can access only the capabilities and content sources selected below.'|t('app'), name: 'settings[publicRoute]', value: settings.publicRoute, required: true, disabled: readOnly, errors: settings.getErrors('publicRoute')}) }}
+        <hr>
+        <h2>{{ 'Capabilities'|t('app') }}</h2>
+        <p>{{ 'Approve each capability that unauthenticated MCP clients may discover and execute.'|t('app') }}</p>
+        {% for group in capabilities %}
+            {{ _self.checkboxes(group, settings, readOnly) }}
+        {% endfor %}
 
-    {% set labels = {
-        publicSiteHandles: 'Sites', publicSectionHandles: 'Sections', publicNestedEntryFieldHandles: 'Nested entry fields', publicVolumeHandles: 'Volumes', publicUserGroupHandles: 'User groups', publicElementTypes: 'Other element types',
-        publicTools: 'Tools', publicResources: 'Resources', publicResourceTemplates: 'Resource templates', publicPrompts: 'Prompts'
-    } %}
-    <h2>{{ 'Public content sources'|t('app') }}</h2>
-    {% for attribute, options in scopes %}
-        {{ forms.checkboxGroupField({label: labels[attribute]|t('app'), name: 'settings['~attribute~']', options: options, values: attribute(settings, attribute), disabled: readOnly, errors: settings.getErrors(attribute)}) }}
-    {% endfor %}
-    {% for attribute, label in {publicAllowDrafts: 'Allow drafts', publicAllowRevisions: 'Allow revisions', publicAllowInactive: 'Allow inactive content'} %}
-        {{ forms.lightswitchField({label: label|t('app'), name: 'settings['~attribute~']', on: attribute(settings, attribute), disabled: readOnly}) }}
-    {% endfor %}
+        <hr>
+        <h2>{{ 'Content'|t('app') }}</h2>
+        <p>{{ 'Choose the content that approved public capabilities may expose.'|t('app') }}</p>
+        {% for group in content %}
+            {{ _self.checkboxes(group, settings, readOnly) }}
+        {% endfor %}
 
-    <h2>{{ 'Public capabilities'|t('app') }}</h2>
-    {% for attribute, options in capabilities %}
-        {{ forms.checkboxGroupField({label: labels[attribute]|t('app'), name: 'settings['~attribute~']', options: options, values: attribute(settings, attribute), disabled: readOnly, errors: settings.getErrors(attribute)}) }}
-    {% endfor %}
+        <hr>
+        <h2>{{ 'Element States'|t('app') }}</h2>
+        {% for attribute, field in {
+            publicAllowDrafts: ['Allow Drafts', 'Allow public queries to include drafts.'],
+            publicAllowRevisions: ['Allow Revisions', 'Allow public queries to include revisions.'],
+            publicAllowInactive: ['Allow Inactive Elements', 'Allow public queries to include elements that are not enabled.'],
+        } %}
+            {{ forms.lightswitchField({label: field[0]|t('app'), instructions: field[1]|t('app'), name: 'settings['~attribute~']', on: attribute(settings, attribute), disabled: readOnly}) }}
+        {% endfor %}
+    </div>
+
+    <div id="mcp-authenticated"{% if selectedTab != 'mcp-authenticated' %} class="hidden"{% endif %}>
+        <p>{{ 'Lets MCP clients act as a Craft user after the user signs in and approves access. Any active user can sign in. Tools still check their permissions.'|t('app') }}</p>
+        {{ forms.lightswitchField({label: 'Enable the Authenticated MCP Server'|t('app'), id: 'mcp-enabled', name: 'settings[enabled]', on: settings.enabled, disabled: readOnly, errors: settings.getErrors('enabled')}) }}
+        {{ forms.textField({label: 'Endpoint'|t('app'), id: 'mcp-route', instructions: 'The app-relative path MCP clients connect to, such as `/mcp`.'|t('app'), name: 'settings[route]', value: settings.route, required: true, disabled: readOnly, class: 'code', errors: settings.getErrors('route')}) }}
+        {{ _self.notice('mcp-route-cp', 'notice', 'Tip:'|t('app'), 'This endpoint is in the control panel, so only users with control panel access can use it.'|t('app'), settings.isCpRoute(settings.route)) }}
+        {{ forms.textField({label: 'Authorization Endpoint'|t('app'), id: 'mcp-authorization-route', instructions: 'The app-relative path to give MCP clients that sign in with OAuth. It always requires an access token, so clients can discover how to sign in.'|t('app'), name: 'settings[authorizationRoute]', value: settings.authorizationRoute, required: true, disabled: readOnly, class: 'code', errors: settings.getErrors('authorizationRoute')}) }}
+    </div>
 {% endblock %}
+
+{% js %}
+    (() => {
+        const cpTrigger = {{ craft.app.config.general.cpTrigger|json_encode|raw }};
+        const trim = (value) => value.replace(/^\/+|\/+$/g, '');
+        const route = document.getElementById('mcp-route');
+        const authorizationRoute = document.getElementById('mcp-authorization-route');
+        const publicRoute = document.getElementById('mcp-public-route');
+        const enabled = (name) => document.querySelector(`input[name="settings[${name}]"]`)?.value === '1';
+
+        const update = () => {
+            const path = trim(route.value);
+            document.getElementById('mcp-route-cp').classList.toggle('hidden', !cpTrigger || !`${path}/`.startsWith(`${cpTrigger}/`));
+            document.getElementById('mcp-shared-route').classList.toggle('hidden', !enabled('enabled') || !enabled('publicEnabled') || path !== trim(publicRoute.value));
+        };
+
+        // While the authorization endpoint starts with the endpoint, keep the rest of it after the endpoint.
+        let suffix;
+        const captureSuffix = () => {
+            suffix = route.value !== '' && authorizationRoute.value.startsWith(route.value)
+                ? authorizationRoute.value.slice(route.value.length)
+                : null;
+        };
+        captureSuffix();
+        authorizationRoute.addEventListener('input', captureSuffix);
+        route.addEventListener('input', () => {
+            if (suffix !== null) {
+                authorizationRoute.value = route.value + suffix;
+            }
+            update();
+        });
+        publicRoute.addEventListener('input', update);
+        $('#mcp-enabled, #mcp-public-enabled').on('change', update);
+
+        for (const button of document.querySelectorAll('.mcp-select-all')) {
+            button.addEventListener('click', () => {
+                for (const checkbox of button.closest('.field').querySelectorAll('input[type=checkbox]:not(:disabled)')) {
+                    checkbox.checked = true;
+                }
+            });
+        }
+    })();
+{% endjs %}

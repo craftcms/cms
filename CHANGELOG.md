@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Added authenticated HTTP, public HTTP, and stdio MCP servers, with OAuth authorization, public content approvals, and plugin extension points.
+- Added authenticated HTTP, public HTTP, and stdio MCP servers, with OAuth authorization, public content approvals, and plugin extension points. The HTTP servers are enabled and given endpoints from Settings → MCP.
 - GraphQL API requests can now be authenticated with OAuth access tokens, granting access to the content the authorizing user has permission to access.
 - GraphQL schema components can now support authenticated requests via an `authenticated` key on their config.
 - Added the `currentUser` GraphQL query, which returns the user that authenticated the request.

@@ -3,7 +3,6 @@
 use craft\helpers\StringHelper;
 
 return [
-    'mcp' => 'mcp/admin',
     'oauth/<resource:[a-zA-Z0-9_-]+>/<action:register|authorize|approve|deny|token>' => 'oauth/<action>',
 
     'assets/edit/<elementId:\d+><filename:(?:-[^\/]*)?>' => 'elements/edit',

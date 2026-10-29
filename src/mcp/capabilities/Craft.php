@@ -7,6 +7,7 @@ namespace craft\mcp\capabilities;
 use Craft as CraftApp;
 use craft\mcp\AdminInstructions;
 use craft\mcp\attributes\PublicMcp;
+use craft\mcp\attributes\RequiresPermission;
 use craft\mcp\public\Access;
 use craft\mcp\public\ElementCriteria;
 use craft\mcp\public\ElementQuery;
@@ -44,9 +45,10 @@ class Craft
     /** @return array{version: string, edition: string, name: string, isInstalled: bool, siteCount: ?int, instructions: string} */
     #[McpTool(
         name: 'info.get',
-        description: 'Returns Craft application information and full admin MCP instructions, including site and plugin guidance. Read these instructions before using other Craft capabilities.',
+        description: 'Returns Craft application information and full MCP instructions, including site and plugin guidance. Read these instructions before using other Craft capabilities.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
+    #[RequiresPermission('accessCp')]
     public function info(): array
     {
         $isInstalled = CraftApp::$app->getIsInstalled();

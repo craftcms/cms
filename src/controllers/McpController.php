@@ -4,7 +4,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\helpers\StringHelper;
-use craft\helpers\UrlHelper;
 use craft\mcp\HttpTransportMiddleware;
 use craft\mcp\ServerFactory;
 use craft\web\Controller;
@@ -27,7 +26,7 @@ class McpController extends Controller
         $filters = [];
 
         foreach (Craft::$app->getConfig()->getMcp()->filters as $name => $filter) {
-            $filters[$name] = is_string($filter) ? ['class' => $filter, 'only' => ['admin']] : $filter + ['only' => ['admin']];
+            $filters[$name] = is_string($filter) ? ['class' => $filter, 'only' => ['authenticated']] : $filter + ['only' => ['authenticated']];
         }
 
         return parent::behaviors() + $filters;
@@ -35,11 +34,16 @@ class McpController extends Controller
 
     public function beforeAction($action): bool
     {
+        $settings = Craft::$app->get('mcp')->getSettings();
+        if (($action->id === 'authenticated' && !$settings->enabled) || ($action->id === 'public' && !$settings->publicEnabled)) {
+            throw new NotFoundHttpException();
+        }
+
         // CORS preflight requests and GET requests, which show setup instructions or are rejected, don't need
         // credentials, including while the system is offline.
-        if ($action->id === 'admin' && ($this->request->getIsOptions() || $this->request->getIsGet())) {
+        if ($action->id === 'authenticated' && ($this->request->getIsOptions() || $this->request->getIsGet())) {
             $this->allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
-        } elseif ($action->id === 'admin') {
+        } elseif ($action->id === 'authenticated') {
             $oauth = Craft::$app->getOAuth();
             $session = Craft::$app->getUser();
             $session->enableSession = false;
@@ -56,6 +60,10 @@ class McpController extends Controller
                 $this->response->data = ['error' => 'invalid_token', 'error_description' => $exception->getMessage()];
                 return false;
             }
+
+            // Authenticated users go through the same checks as any other signed-in request, including control
+            // panel access for control panel requests.
+            $this->allowAnonymous = self::ALLOW_ANONYMOUS_NEVER;
         } elseif ($action->id === 'public') {
             Craft::$app->getUser()->enableSession = false;
             Craft::$app->getUser()->enableAutoLogin = false;
@@ -65,25 +73,24 @@ class McpController extends Controller
         return parent::beforeAction($action);
     }
 
-    public function actionAdmin(): Response
+    public function actionAuthenticated(): Response
     {
+        $settings = Craft::$app->get('mcp')->getSettings();
+
         if ($this->isEndpointPageRequest()) {
-            return $this->renderEndpointPage(Craft::$app->getOAuth()->resource('mcp'), false);
+            return $this->renderEndpointPage($settings->url($settings->authorizationRoute), false);
         }
 
         $servers = Craft::$app->get('mcp')->getCapabilityContainer()->get(ServerFactory::class);
-        return $this->handle($this->request->getIsOptions() ? $servers->preflight() : $servers->admin());
+        return $this->handle($this->request->getIsOptions() ? $servers->preflight() : $servers->authenticated());
     }
 
     public function actionPublic(): Response
     {
         $settings = Craft::$app->get('mcp')->getSettings();
-        if (!$settings->publicEnabled) {
-            throw new NotFoundHttpException();
-        }
 
         if ($this->isEndpointPageRequest()) {
-            return $this->renderEndpointPage(UrlHelper::siteUrl(trim($settings->publicRoute, '/')), true);
+            return $this->renderEndpointPage($settings->url($settings->publicRoute), true);
         }
 
         $servers = Craft::$app->get('mcp')->getCapabilityContainer()->get(ServerFactory::class);

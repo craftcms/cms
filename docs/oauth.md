@@ -186,10 +186,10 @@ https://example.com/.well-known/oauth-protected-resource/api/my-plugin
 https://example.com/.well-known/oauth-authorization-server/admin/oauth/my-plugin-api
 ```
 
-For MCP at `https://example.com/admin/mcp`, they are:
+For MCP's authorization endpoint at `https://example.com/mcp/auth`, they are:
 
 ```text
-https://example.com/.well-known/oauth-protected-resource/admin/mcp
+https://example.com/.well-known/oauth-protected-resource/mcp/auth
 https://example.com/.well-known/oauth-authorization-server/admin/oauth/mcp
 ```
 

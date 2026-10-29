@@ -4,9 +4,13 @@ Craft exposes content and configuration through the Model Context Protocol. It u
 
 ## Servers
 
-- **Authenticated HTTP:** `{cpTrigger}/mcp`, normally `/admin/mcp`. Users sign in through Craft and authorize the client through OAuth. They need both **Access the control panel** and **Use Craft MCP** permissions. Craft checks the user's current account state and permissions for each request.
-- **Public HTTP:** a configurable site route, `/mcp` by default. It is disabled until an administrator enables it and approves capabilities and content sources under **Settings → MCP**.
-- **Stdio:** `php craft mcp/serve --user=…`. The argument accepts a user ID, username, or email. That user must be active and have **Use Craft MCP** permission. The process acts as that user.
+- **Authenticated HTTP:** a configurable endpoint, plus an authorization endpoint. They default to `/{cpTrigger}/mcp` and `/{cpTrigger}/mcp/auth`, such as `/admin/mcp`, or to `/mcp` and `/mcp/auth` when public registration is enabled or `cpTrigger` is empty. Users sign in through Craft and authorize the client through OAuth. Any active user can use it. Craft checks the user's current account state and permissions for each request. It is disabled until an administrator enables it under **Settings → MCP**.
+- **Public HTTP:** a configurable endpoint, `/mcp` by default. It is disabled until an administrator enables it and approves capabilities and content sources under **Settings → MCP**.
+- **Stdio:** `php craft mcp/serve --user=…`. The argument accepts a user ID, username, or email. That user must be active. The process acts as that user.
+
+Endpoints are paths relative to the site's base URL. The authenticated endpoints can begin with the control panel trigger, such as `/admin/mcp`. Requests to them are then control panel requests, so only users with **Access the control panel** can use them. The same applies to any authenticated endpoint requested on a separate `baseCpUrl` domain.
+
+Both servers can share an endpoint. Requests to it with an `Authorization` header go to the authenticated server, and requests without one go to the public server. Clients then can't discover how to sign in at that endpoint, so give OAuth clients the authorization endpoint. It always requires an access token, and Craft's OAuth discovery metadata describes it. It can also be the same as the authenticated endpoint, when the public server doesn't share that endpoint.
 
 HTTP endpoints support both the `initialize` handshake used by protocol versions through `2025-11-25` and the per-request metadata used by `2026-07-28`. Send JSON-RPC messages with POST. Handshake clients must return the `Mcp-Session-Id` response header on subsequent requests and can end their session with DELETE. Opening an HTTP endpoint in a browser shows its URL and setup instructions for common AI assistants; other GET requests receive a `405` response. Stdio uses the SDK's session-based transport. It omits capabilities marked `RequiresHttp`; restart the process after changing permissions, instruction configuration, or the content model externally.
 
@@ -20,7 +24,7 @@ Update Craft and run its database migrations, then generate signing keys:
 php craft oauth/generate-keys
 ```
 
-Grant the intended users **Use Craft MCP** and control panel access. Configure an MCP client with the authenticated endpoint URL, normally `https://example.com/admin/mcp`. Use the normal Craft login process, including two-factor authentication, then approve or deny the client's consent request.
+Enable the authenticated server under **Settings → MCP**. Configure an MCP client with the authorization endpoint URL, such as `https://example.com/admin/mcp/auth`. Opening the authenticated endpoint in a browser shows that URL with setup instructions. Use the normal Craft login process, including two-factor authentication, then approve or deny the client's consent request.
 
 MCP uses the OAuth resource ID `mcp`. Clients discover registration, authorization, and token endpoints through OAuth metadata. See the [OAuth guide](oauth.md) for signing keys, shared configuration, discovery URLs, token lifetimes, and consent behavior.
 
@@ -55,7 +59,7 @@ Signing keys, token lifetimes, and client redirect restrictions are configured s
 
 Under **Settings → MCP**, choose a public route, enable the server, and approve each tool, resource, resource template, or prompt to expose. A capability must be marked `PublicMcp` before it is eligible for approval.
 
-Approve the sites, sections, nested-entry fields, volumes, user groups, and other element types the public content tools may read. These approvals are stored in project config under `mcp`. Drafts, revisions, and inactive content each require a separate approval. An empty source list exposes none of that source's content.
+On the Public tab, approve the sites, entries, nested-entry fields, assets, addresses, and users the public content tools may read. Categories, tags, and global sets aren't available through MCP. These approvals are stored in project config under `mcp`. Drafts, revisions, and inactive content each require a separate approval. An empty source list exposes none of that source's content.
 
 Public callers have no Craft user identity. They receive only approved capabilities. The core public tools `craft-context-get` and `craft-query` describe and query approved content. Public queries default to 25 results and are capped at 100.
 
@@ -74,9 +78,9 @@ Field settings and project config values whose keys look sensitive, as defined b
 
 Asset creation and replacement accept HTTPS file references. Craft rejects local paths, private network addresses, redirects, and files that exceed the configured upload limits.
 
-Capability discovery applies user permissions, `allowAdminChanges`, and the access token's scope. Record operations also enforce the corresponding element permissions. Unavailable capabilities are omitted from discovery and cannot be called directly.
+Capability discovery applies user permissions, `allowAdminChanges`, and the access token's scope. `info.get`, `elements.schema`, the `craft://element-types` resources, and `preferences.*` require control panel access. Record operations also enforce the corresponding element permissions. Unavailable capabilities are omitted from discovery and cannot be called directly.
 
-Start with `info.get`. Read `elements.schema` or `craft://element-types/{type}` before changing elements, and `elements.field-schema` before writing custom fields. `configuration.schema` describes each configuration operation. List results supply pagination information; retain the query criteria and use the returned offsets to continue.
+Start with `info.get`, if it's available. Read `elements.schema` or `craft://element-types/{type}` before changing elements, and `elements.field-schema` before writing custom fields. `configuration.schema` describes each configuration operation. List results supply pagination information; retain the query criteria and use the returned offsets to continue.
 
 ## Plugin extensions
 
