@@ -43,10 +43,10 @@ class GraphqlOAuthCest
 
         Craft::$app->getDb()->createCommand()->insert(Table::OAUTH_CLIENTS, [
             'id' => 'test-graphql',
-            'resource_id' => 'graphql',
             'name' => 'Test GraphQL client',
             'redirect_uris' => '["https://client.example/callback"]',
             'grant_types' => '["authorization_code","refresh_token"]',
+            'scopes' => '["graphql:read","graphql:write"]',
             'revoked' => false,
         ])->execute();
     }
@@ -79,10 +79,16 @@ class GraphqlOAuthCest
         $I->assertSame([Gql::SCOPE_READ], $grants['Build script']['scopes']);
         $I->assertFalse($grants['Test GraphQL client']['personal']);
 
-        // Like Passport, personal tokens share one personal access client that only supports the personal_access grant
+        // Like Passport, personal tokens share one personal access client that only supports the personal_access grant,
+        // and can be used for any resource. The token's scopes decide which resource it belongs to.
         $I->assertSame($grants['Build script']['clientId'], $grants['Preview']['clientId']);
         $client = (new Query())->from(Table::OAUTH_CLIENTS)->where(['id' => $grants['Build script']['clientId']])->one();
         $I->assertSame(['personal_access'], Json::decode($client['grant_types']));
+        $I->assertNull($client['scopes']);
+        $I->assertNull($client['provider']);
+        $I->assertSame([], $oauth->getUserGrants('mcp', $user));
+        $oauth->revokeUserGrant('mcp', $user, $grants['Build script']['clientId'], $grants['Build script']['tokenId']);
+        $I->assertSame(['users' => []], $this->graphql($I, '{ users(email: "nobody@example.com") { id } }', $token)['data']);
         $I->assertSame('Build script', (new Query())->select('name')->from(Table::OAUTH_ACCESS_TOKENS)->where(['id' => $grants['Build script']['tokenId']])->scalar());
 
         // Revoking one personal token leaves the others alone
