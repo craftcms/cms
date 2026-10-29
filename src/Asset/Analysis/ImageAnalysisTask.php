@@ -23,10 +23,7 @@ abstract class ImageAnalysisTask extends Task implements ImageAnalysisTaskInterf
         return [Capability::Vision, Capability::StructuredOutput];
     }
 
-    public static function valuesFromMetadata(Asset $asset, ImageMetadata $metadata): array
-    {
-        return [];
-    }
+    public static function fillFromMetadata(Asset $asset, ImageMetadata $metadata, ImageAnalysisChanges $changes): void {}
 
     public static function needed(Asset $asset, bool $overwrite): bool
     {

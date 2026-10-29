@@ -26,12 +26,12 @@ class CaptionImageTask extends ImageAnalysisTask
         return $overwrite || ($asset->alt ?? '') === '';
     }
 
-    public static function instructions(Asset $asset): string
+    public static function instructions(Asset $asset, bool $overwrite): string
     {
         return 'Write a caption.';
     }
 
-    public static function schema(JsonSchema $schema, Asset $asset): array
+    public static function schema(JsonSchema $schema, Asset $asset, bool $overwrite): array
     {
         return ['caption' => $schema->string()->required()];
     }

@@ -37,6 +37,19 @@ it('reads alt text from either IPTC namespace', function (string $namespace) {
     expect(new ImageMetadataReader()->read($path)->altText)->toBe('A pier');
 })->with(['Iptc4xmpCore', 'Iptc4xmpExt']);
 
+it('reads alt text written in other languages', function () {
+    $path = metadataJpeg(xmpPacket('<Iptc4xmpCore:AltTextAccessibility><rdf:Alt><rdf:li xml:lang="x-default">A pier</rdf:li><rdf:li xml:lang="de">Ein Steg</rdf:li><rdf:li xml:lang="fr-CA">Un quai</rdf:li></rdf:Alt></Iptc4xmpCore:AltTextAccessibility>'));
+    $metadata = new ImageMetadataReader()->read($path);
+
+    expect($metadata->altText)->toBe('A pier')
+        ->and($metadata->altTextTranslations)->toBe(['de' => 'Ein Steg', 'fr-ca' => 'Un quai'])
+        ->and($metadata->altTextIn('de-CH'))->toBe('Ein Steg')
+        ->and($metadata->altTextIn('fr-CA'))->toBe('Un quai')
+        ->and($metadata->altTextIn('fr'))->toBeNull()
+        ->and($metadata->altTextIn('en'))->toBeNull()
+        ->and(ImageMetadata::fromArray($metadata->toArray()))->toEqual($metadata);
+});
+
 it('reads XMP packets that end past the first 8 KB of the file', function () {
     // Editing software often writes long packets, such as IPTC’s reference images, whose packets run to about 30 KB
     $padding = '<!-- '.str_repeat('padding ', 2000).'-->';
