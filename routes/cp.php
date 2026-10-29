@@ -59,6 +59,7 @@ use CraftCms\Cms\Http\Controllers\Users\IndexController as UsersIndexController;
 use CraftCms\Cms\Http\Controllers\Users\PasskeysController;
 use CraftCms\Cms\Http\Controllers\Users\PasswordController;
 use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
+use CraftCms\Cms\Http\Controllers\Users\PersonalAccessTokensController;
 use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
 use CraftCms\Cms\Http\Controllers\Users\SignInProvidersController;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
@@ -278,6 +279,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('myaccount/password', [PasswordController::class, 'index']);
     Route::get('myaccount/preferences', [PreferencesController::class, 'index']);
     Route::patch('myaccount/preferences', [PreferencesController::class, 'update']);
+    Route::get('myaccount/tokens', [PersonalAccessTokensController::class, 'index']);
     Route::get('myaccount/sign-in-providers', [SignInProvidersController::class, 'index']);
     Route::post('myaccount/sign-in-providers/{provider}/connect', [SignInProvidersController::class, 'connect']);
     Route::delete('myaccount/sign-in-providers/{provider}', [SignInProvidersController::class, 'destroy']);
@@ -340,6 +342,9 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::post('settings/mcp', [McpSettingsController::class, 'store'])
             ->middleware(RequireAdminChanges::class)
             ->name('settings.mcp.store');
+        Route::post('settings/mcp/render-ui', [McpSettingsController::class, 'renderUi'])
+            ->middleware(RequireAdminChanges::class)
+            ->name('settings.mcp.render-ui');
 
         // Entry types
         Route::prefix('settings/entry-types')->name('settings.entry-types.')->group(function () {

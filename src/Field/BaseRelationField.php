@@ -1428,7 +1428,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         }
 
         if ($this->maintainHierarchy) {
-            $criteria['orderBy'] = ['structureelements.lft' => SORT_ASC];
+            $criteria['orderBy'] = 'structureelements.lft';
         }
 
         return [

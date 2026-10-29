@@ -4,22 +4,18 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Mcp\OAuth;
 
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Mcp\Enums\McpScope;
-use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Mcp\Settings;
 use Illuminate\Support\Uri;
 
 /** @since 6.0.0 */
 readonly class Metadata
 {
-    public function baseUrl(): string
-    {
-        return Env::parse(Cms::config()->baseCpUrl) ?? config('app.url');
-    }
-
     public function resource(): string
     {
-        return $this->url('craft.cp.mcp.server');
+        $settings = app(Settings::class);
+
+        return $settings->url($settings->authorizationRoute);
     }
 
     public function issuer(): string
@@ -49,9 +45,9 @@ readonly class Metadata
     {
         return [
             'issuer' => $this->issuer(),
-            'authorization_endpoint' => $this->url('craft.cp.mcp.oauth.authorize'),
+            'authorization_endpoint' => $this->url('craft.mcp.oauth.authorize'),
             'token_endpoint' => $this->url('passport.token'),
-            'registration_endpoint' => $this->url('craft.cp.mcp.oauth.register'),
+            'registration_endpoint' => $this->url('craft.mcp.oauth.register'),
             'token_endpoint_auth_methods_supported' => ['none', 'client_secret_basic', 'client_secret_post'],
             'response_types_supported' => ['code'],
             'grant_types_supported' => ['authorization_code', 'refresh_token'],
@@ -62,6 +58,8 @@ readonly class Metadata
 
     private function url(string $name): string
     {
-        return rtrim($this->baseUrl(), '/').'/'.ltrim(route($name, absolute: false), '/');
+        $settings = app(Settings::class);
+
+        return rtrim($settings->baseUrl($settings->authorizationRoute), '/').'/'.ltrim(route($name, absolute: false), '/');
     }
 }

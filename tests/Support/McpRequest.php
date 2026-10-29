@@ -14,10 +14,10 @@ class McpRequest
     /** @param array<string, mixed> $params */
     public static function send(TestCase $test, string $method, array $params = []): TestResponse
     {
-        Route::getRoutes()->getByName('craft.cp.mcp.server')->flushController();
+        Route::getRoutes()->getByName('craft.mcp.server')->flushController();
 
         return $test->postJson(
-            route('craft.cp.mcp.server'),
+            route('craft.mcp.server'),
             self::payload($method, $params),
             self::headers($method, $params['name'] ?? $params['uri'] ?? null),
         );
