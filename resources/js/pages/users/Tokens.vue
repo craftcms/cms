@@ -199,7 +199,6 @@
   <UserScreen>
     <div class="grid gap-lg">
       <div>
-        <h2>{{ t('Tokens') }}</h2>
         <p>
           {{
             t(
@@ -207,30 +206,34 @@
             )
           }}
         </p>
-      </div>
 
-      <div role="status">
-        <craft-callout v-if="newToken" variant="success">
-          <div class="grid gap-md">
-            <craft-input-copy .modelValue="newToken" monospace>
-              <label slot="label">{{ t('New token') }}</label>
-            </craft-input-copy>
-            <p>
-              {{ t('Copy this token now. You won’t be able to see it again.') }}
-              {{
-                t(
-                  'Send it with API requests in an Authorization: Bearer header.'
-                )
-              }}
-            </p>
-          </div>
-        </craft-callout>
+        <div role="status" :class="{'mt-lg': newToken}">
+          <craft-callout v-if="newToken" variant="success">
+            <div class="grid gap-md">
+              <craft-input-copy .modelValue="newToken" monospace>
+                <label slot="label">{{ t('New token') }}</label>
+              </craft-input-copy>
+              <p>
+                {{
+                  t('Copy this token now. You won’t be able to see it again.')
+                }}
+                {{
+                  t(
+                    'Send it with API requests in an Authorization: Bearer header.'
+                  )
+                }}
+              </p>
+            </div>
+          </craft-callout>
+        </div>
       </div>
 
       <craft-pane :padding="0" appearance="raised">
         <AdminTable :table="table">
           <template #empty-row>
-            {{ t('You haven’t created or authorized any tokens yet.') }}
+            <craft-empty
+              :label="t('You haven’t created or authorized any tokens yet.')"
+            ></craft-empty>
           </template>
         </AdminTable>
       </craft-pane>
