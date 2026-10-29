@@ -2,7 +2,7 @@
 
 Craft’s `Craft::$app->getOAuth()` service lets clients access APIs on behalf of Craft users. It uses `league/oauth2-server` directly. [MCP](mcp.md) uses this service, and plugins and custom modules can register their own protected APIs.
 
-Each API is an OAuth **resource** with its own ID, URL, scopes, and required user permissions. Clients, authorization codes, access tokens, and refresh tokens are bound to that resource. A credential issued for one resource cannot authenticate against another, even if both use the same scope IDs.
+Each API is an OAuth **resource** with its own ID, URL, scopes, and required user permissions. Scope IDs are unique across resources, and a credential belongs to the resource that defines its scopes. Clients registered through a resource may only request that resource’s scopes. A credential issued for one resource cannot authenticate against another.
 
 ## Setup
 
@@ -68,7 +68,7 @@ The event’s `resources` map accepts configuration arrays or `craft\oauth\Resou
 | Property | Meaning |
 | --- | --- |
 | Resource ID | Map key containing 1–64 letters, numbers, underscores, or hyphens. Use a stable plugin-specific ID. |
-| `scopes` | Nonempty map of allowed scope IDs to human-readable consent descriptions. Scope IDs cannot contain spaces, quotes, backslashes, or non-ASCII characters. |
+| `scopes` | Nonempty map of allowed scope IDs to human-readable consent descriptions. Scope IDs cannot contain spaces, quotes, backslashes, or non-ASCII characters, and must not be used by another resource. Prefix them with the resource ID, such as `my-plugin-api:read`. |
 | `defaultScopes` | Allowed scopes to use when an authorization request omits `scope`. Defaults to an empty list. |
 | `scopeLevels` | Optional list of scopes that form access levels, ordered from narrowest to broadest. See [Access levels](#access-levels). |
 | `scopeLabels` | Optional map of access levels to short labels for the consent screen. |
@@ -210,7 +210,7 @@ Discovery metadata, registration, and the token endpoint stay available while th
 
 ## Scopes, consent, and token lifetime
 
-Authorization grants only the requested scopes, and the consent screen shows their descriptions. `defaultScopes` is used when `scope` is omitted. If no defaults are defined, the client must explicitly request at least one allowed scope. Scope IDs are local to a resource.
+Authorization grants only the requested scopes, and the consent screen shows their descriptions. `defaultScopes` is used when `scope` is omitted. If no defaults are defined, the client must explicitly request at least one allowed scope. Registration stores the resource’s scopes on the client, in `oauth_clients.scopes`, and the client can’t be granted scopes outside that list.
 
 Consent is reused while the same user and client have unexpired, unrevoked access tokens covering the requested scopes. Adding a scope requires consent if existing grants do not cover it. `prompt=consent` asks again, `prompt=login` asks for a fresh login, and `prompt=none` returns an OAuth error when login or consent would be needed.
 
@@ -223,3 +223,7 @@ Scopes listed in `scopeLevels` are ordered access levels, and each level include
 Consent is reused when the requested levels overlap the levels granted by the broadest level the user chose before. Craft then grants that earlier level, so a client that requests every level keeps the level the user chose. To require a level, check that the token holds it or a broader one.
 
 `userScopes` limits the levels offered to each user, and the scopes granted when a token is issued or refreshed. For example, MCP offers `mcp:admin` only to administrators, and refreshing an `mcp:admin` token after the user loses admin status drops that scope.
+
+## Upgrading to Craft 6
+
+Craft 6 uses Laravel Passport for OAuth. Craft 5’s OAuth tables use Passport 13’s layout, including the optional `oauth_clients.scopes` column Passport checks with `Client::hasScope()`, and its access tokens are signed the same way. This is so that, with the same signing keys, access tokens issued by Craft 5 can stay valid in Craft 6. Refresh tokens are encrypted with a key derived from the Craft security key rather than Laravel’s `APP_KEY`, so OAuth clients will need to authorize again once their access tokens expire.

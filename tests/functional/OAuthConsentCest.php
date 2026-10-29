@@ -36,9 +36,10 @@ class OAuthConsentCest
         $clientId = StringHelper::UUID();
         Craft::$app->getDb()->createCommand()->insert(Table::OAUTH_CLIENTS, [
             'id' => $clientId,
-            'resourceId' => 'mcp',
             'name' => 'Test MCP client',
-            'redirectUris' => '["https://client.example/callback"]',
+            'redirect_uris' => '["https://client.example/callback"]',
+            'grant_types' => '["authorization_code","refresh_token"]',
+            'scopes' => '["mcp:read","mcp:write","mcp:admin"]',
             'revoked' => false,
         ])->execute();
 
