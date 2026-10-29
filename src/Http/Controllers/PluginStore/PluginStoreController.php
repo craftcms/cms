@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\PluginStore;
 
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\PHP;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
@@ -78,6 +80,10 @@ readonly class PluginStoreController
     {
         return Inertia::render($component, [
             'title' => t('Plugin Store'),
+            // The secondary nav's selected item follows this in the trail.
+            'crumbs' => [
+                new ActionItem()->label(t('Plugin Store'))->href(Url::cpUrl('plugin-store')),
+            ],
             'context' => $this->context(),
             ...$props,
         ]);

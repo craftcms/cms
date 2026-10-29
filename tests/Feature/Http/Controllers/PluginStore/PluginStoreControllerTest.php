@@ -6,6 +6,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Support\PHP;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Inertia\Testing\AssertableInertia;
 
@@ -23,14 +24,16 @@ it('requires login', function () {
         ->assertRedirect(Cms::config()->cpTrigger.'/login');
 });
 
-it('renders the discover page with the install’s context', function () {
+it('renders the discover page with the install’s context and crumb', function () {
     get(action([PluginStoreController::class, 'index']))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('plugin-store/Index')
             ->where('context.edition', Edition::get()->handle())
             ->where('context.phpVersion', PHP::version())
-            ->has('context.editions', count(Edition::cases())),
+            ->has('context.editions', count(Edition::cases()))
+            ->where('crumbs.0.label', 'Plugin Store')
+            ->where('crumbs.0.href', Url::cpUrl('plugin-store')),
         );
 });
 
