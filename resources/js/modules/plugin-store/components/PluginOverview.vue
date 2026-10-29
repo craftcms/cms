@@ -10,8 +10,6 @@
 
   const {plugin} = defineProps<{plugin: Plugin}>();
 
-  const emit = defineEmits<{'show-reviews': []}>();
-
   const {licenseInfoFor} = usePluginLicenseInfo();
 
   const licenseMismatched = computed(
@@ -74,7 +72,7 @@
       </div>
       <p v-else>{{ t('No description.') }}</p>
 
-      <PluginMeta :plugin="plugin" @show-reviews="emit('show-reviews')" />
+      <PluginMeta :plugin="plugin" />
     </div>
   </div>
 </template>

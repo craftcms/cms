@@ -3,23 +3,17 @@
   import {computed} from 'vue';
   import {category as categoryRoute} from '@actions/PluginStore/PluginStoreController';
   import CpLink from '@/common/components/CpLink.vue';
-  import ActiveInstalls from './ActiveInstalls.vue';
   import GithubActivity from './GithubActivity.vue';
   import InstallInstructions from './InstallInstructions.vue';
   import MetaStat from './MetaStat.vue';
-  import PluginEdition from './PluginEdition.vue';
-  import ReviewsStat from './ReviewsStat.vue';
   import {useCoreData} from '../composables/usePluginStoreData';
   import {formatDate} from '../dates';
   import {reportIssueUrl} from '../links';
-  import craftIcon from '../images/craft-mask.svg?raw';
   import cloudIcon from '../images/cloud.svg?raw';
   import graphqlIcon from '../images/graphql.svg?raw';
   import type {Plugin} from '../types';
 
   const {plugin} = defineProps<{plugin: Plugin}>();
-
-  const emit = defineEmits<{'show-reviews': []}>();
 
   const {categories} = useCoreData();
 
@@ -37,8 +31,7 @@
     mit: 'MIT',
   };
 
-  const compatibility = computed(() => [
-    {svg: craftIcon, label: plugin.compatibility},
+  const supports = computed(() => [
     ...(plugin.cloudTested
       ? [{svg: cloudIcon, label: 'Tested on Craft Cloud'}]
       : []),
@@ -50,16 +43,6 @@
 
 <template>
   <div class="flex flex-col gap-lg">
-    <div class="grid gap-md">
-      <PluginEdition
-        v-for="edition in plugin.editions"
-        :key="edition.handle"
-        :plugin="plugin"
-        :edition="edition"
-        compact
-      />
-    </div>
-
     <div class="grid gap-sm">
       <craft-button
         v-if="plugin.documentationUrl"
@@ -84,27 +67,22 @@
 
     <dl class="m-0">
       <InstallInstructions :plugin="plugin" />
-      <ReviewsStat :plugin="plugin" @show-reviews="emit('show-reviews')" />
-      <ActiveInstalls :plugin="plugin" />
       <div class="grid grid-cols-2">
-        <MetaStat :label="t('Version')">{{ plugin.version }}</MetaStat>
         <MetaStat :label="t('License')">
           {{ licenseLabels[plugin.license] ?? plugin.license }}
-        </MetaStat>
-      </div>
-      <div :class="{'grid grid-cols-2': plugin.totalReleases}">
-        <MetaStat :label="t('Compatibility')">
-          <ul class="plugin-meta__compatibility">
-            <li v-for="item in compatibility" :key="item.label">
-              <span class="plugin-meta__compat-icon" v-html="item.svg"></span>
-              {{ item.label }}
-            </li>
-          </ul>
         </MetaStat>
         <MetaStat v-if="plugin.totalReleases" :label="t('Total releases')">
           {{ plugin.totalReleases }}
         </MetaStat>
       </div>
+      <MetaStat v-if="supports.length" :label="t('Supports')">
+        <ul class="plugin-meta__compatibility">
+          <li v-for="item in supports" :key="item.label">
+            <span class="plugin-meta__compat-icon" v-html="item.svg"></span>
+            {{ item.label }}
+          </li>
+        </ul>
+      </MetaStat>
       <MetaStat :label="t('Last release')">
         {{ formatDate(plugin.lastUpdate) }}
       </MetaStat>

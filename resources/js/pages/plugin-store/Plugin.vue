@@ -2,16 +2,11 @@
   import {t} from '@craftcms/ui';
   import {router} from '@inertiajs/vue3';
   import {computed, onScopeDispose, shallowRef, watch} from 'vue';
-  import {
-    developer as developerRoute,
-    plugin as pluginRoute,
-  } from '@actions/PluginStore/PluginStoreController';
-  import CpLink from '@/common/components/CpLink.vue';
+  import {plugin as pluginRoute} from '@actions/PluginStore/PluginStoreController';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import PartnerBadge from '@/modules/plugin-store/components/PartnerBadge.vue';
   import PluginChangelog from '@/modules/plugin-store/components/PluginChangelog.vue';
   import PluginEdition from '@/modules/plugin-store/components/PluginEdition.vue';
-  import PluginIcon from '@/modules/plugin-store/components/PluginIcon.vue';
+  import PluginHero from '@/modules/plugin-store/components/PluginHero.vue';
   import PluginOverview from '@/modules/plugin-store/components/PluginOverview.vue';
   import PluginReviews from '@/modules/plugin-store/components/PluginReviews.vue';
   import StoreContainer from '@/modules/plugin-store/components/StoreContainer.vue';
@@ -117,18 +112,7 @@
 
     <div v-else class="grid gap-lg">
       <LayoutSlot name="title">
-        <div class="flex items-center gap-lg">
-          <PluginIcon :url="plugin.iconUrl" size="lg" />
-          <div class="grid gap-xs">
-            <h1 class="text-xl">{{ plugin.name }}</h1>
-            <div class="flex items-center gap-sm">
-              <CpLink :href="developerRoute({id: plugin.developerId})">
-                {{ plugin.developerName }}
-              </CpLink>
-              <PartnerBadge v-if="plugin.developerPartner" kind="craft" />
-            </div>
-          </div>
-        </div>
+        <PluginHero :plugin="plugin" @show-reviews="showTab('reviews')" />
       </LayoutSlot>
 
       <craft-tabs
@@ -140,11 +124,7 @@
           <craft-tab slot="tab">{{ tab.label }}</craft-tab>
           <div slot="panel">
             <template v-if="props.tab === tab.id">
-              <PluginOverview
-                v-if="tab.id === 'overview'"
-                :plugin="plugin"
-                @show-reviews="showTab('reviews')"
-              />
+              <PluginOverview v-if="tab.id === 'overview'" :plugin="plugin" />
               <PluginReviews
                 v-else-if="tab.id === 'reviews'"
                 :plugin="plugin"
