@@ -43,13 +43,22 @@
       plugin.editions[0]
   );
 
-  const editionLabelId = useId();
+  const panelIdPrefix = useId();
 
-  function onEditionChange(event: Event): void {
-    const value = (event.target as HTMLElement & {value: string}).value;
+  const editionIndex = computed(() =>
+    Math.max(
+      0,
+      plugin.editions.findIndex((e) => e.handle === editionHandle.value)
+    )
+  );
 
-    if (value) {
-      editionHandle.value = value;
+  function onEditionShow(event: Event): void {
+    const index = (event.target as HTMLElement & {selectedIndex: number})
+      .selectedIndex;
+    const handle = plugin.editions[index]?.handle;
+
+    if (handle) {
+      editionHandle.value = handle;
     }
   }
 
@@ -126,37 +135,37 @@
       <div v-if="edition" class="plugin-hero__purchase">
         <div class="plugin-hero__panel">
           <div v-if="plugin.editions.length > 1" class="grid gap-xs">
-            <span :id="editionLabelId" class="cp-group-heading">
+            <span class="cp-group-heading" aria-hidden="true">
               {{ t('Edition') }}
             </span>
-            <craft-button-group
-              name="edition"
-              subtle
+            <craft-tabs
+              appearance="fill"
+              equal-width
+              sync-location-hash="false"
               class="plugin-hero__editions"
-              :aria-labelledby="editionLabelId"
-              .value="editionHandle"
-              @change="onEditionChange"
+              :label="t('Edition')"
+              .selectedIndex="editionIndex"
+              @craft-tab-show="onEditionShow"
             >
-              <craft-button
+              <craft-tab
                 v-for="e in plugin.editions"
                 :key="e.handle"
-                :value="e.handle"
+                slot="tab"
+                :controls="`${panelIdPrefix}-${e.handle}`"
               >
                 {{ e.name }}
-              </craft-button>
-            </craft-button-group>
+              </craft-tab>
+            </craft-tabs>
           </div>
           <!-- Every edition takes the same spot, so switching doesn't move the page below. -->
           <div class="plugin-hero__purchases">
-            <EditionPurchase
+            <div
               v-for="e in plugin.editions"
+              :id="`${panelIdPrefix}-${e.handle}`"
               :key="e.handle"
-              :plugin="plugin"
-              :edition="e"
-              :class="{
-                'plugin-hero__purchase--hidden': e.handle !== edition.handle,
-              }"
-            />
+            >
+              <EditionPurchase :plugin="plugin" :edition="e" />
+            </div>
           </div>
           <InstallCommands
             v-if="hasSingleFreeEdition(plugin)"
@@ -230,13 +239,10 @@
     gap: var(--c-spacing-md);
   }
 
+  /* Its panels are the editions below, so it needs no gap before its own. */
   .plugin-hero__editions {
-    display: flex;
+    --c-tabs-gap: 0;
     margin-block-end: var(--c-spacing-sm);
-  }
-
-  .plugin-hero__editions craft-button {
-    flex: 1;
   }
 
   .plugin-hero__purchases {
@@ -247,7 +253,9 @@
     grid-area: 1 / 1;
   }
 
-  .plugin-hero__purchase--hidden {
+  /* The tabs hide the editions not shown; here they keep their space instead. */
+  .plugin-hero__purchases > :global(.hidden) {
+    display: block;
     visibility: hidden;
   }
 
