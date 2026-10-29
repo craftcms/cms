@@ -247,6 +247,7 @@
 - Fixed an error that occurred on release pages if one of the release’s drafts belonged to an element that had been deleted, such as along with its section. The draft is now listed as blocked with “The entry has been deleted.”, and can be removed by anyone who can manage the release.
 - Fixed a bug where AI-generated alt text and titles replaced the ones filled in from an image’s embedded metadata, for images whose metadata was read by the image analysis queue job, such as indexed images.
 - Fixed a bug where the “Duplicate” and “Delete” element actions didn’t do anything when unpublished drafts were selected, and element actions on element indexes ran for the primary site rather than the selected one.
+- Fixed a bug where saving, creating, or deleting an element from its edit page went to the first source of its index, rather than the source it was opened from, such as a section, volume, or custom source.
 
 ### Accessibility
 
@@ -375,6 +376,7 @@
 - Added `CraftCms\Cms\Cp\Enums\Theme::resolveFor()`. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Added `CraftCms\Cms\Translation\Locale::getLanguageTag()`, and the `Craft.formattingLocale` JavaScript variable, which hold the formatting locale as a BCP 47 language tag for `Intl` APIs. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Added `CraftCms\Cms\Utility\Utility::subpageTitle()`, which titles a utility’s subpages and gives them a breadcrumb back to the utility. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- Added `CraftCms\Cms\Element\ElementHelper::postEditRedirectUrl()`, which returns the current request’s `returnUrl` param, or else the element’s post-edit URL.
 - `craft\web\assets\prismjs\PrismJsAsset` no longer registers Prism, or Craft 5.12’s Prism shim. Plugins that rely on Prism should bundle it themselves, or use `Craft.highlighter` instead. ([#20088](https://github.com/craftcms/cms/pull/20088))
 - Added `CraftCms\Cms\Support\Query::prepareDateForDb()`, which converts a date to the UTC string Craft stores dates as, for writing or comparing it with the query builder. ([#20053](https://github.com/craftcms/cms/pull/20053))
 - Eloquent models that extend `CraftCms\Cms\Shared\BaseModel` now store and read dates in UTC, including their timestamps and soft-delete dates. ([#20053](https://github.com/craftcms/cms/pull/20053))

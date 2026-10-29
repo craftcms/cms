@@ -18,7 +18,9 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites as SitesFacade;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Tpetry\QueryExpressions\Function\String\Lower;
@@ -726,6 +728,33 @@ class ElementHelper
         }
 
         return $element->getPostEditUrl() ?? Cms::config()->getPostCpLoginRedirect();
+    }
+
+    /**
+     * Returns the URL that users should be redirected to after editing the given element: the
+     * current request's `returnUrl` param, such as the index the editor was opened from, or else
+     * {@see postEditUrl()}.
+     */
+    public static function postEditRedirectUrl(ElementInterface $element): string
+    {
+        $returnUrl = request()->query('returnUrl');
+
+        if (! is_string($returnUrl) || $returnUrl === '') {
+            return self::postEditUrl($element);
+        }
+
+        // only require the URL to be hashed if it contains Twig code
+        try {
+            $returnUrl = Crypt::decrypt($returnUrl);
+        } catch (DecryptException) {
+            if (str_contains($returnUrl, '{')) {
+                abort(400, "Invalid returnUrl param: $returnUrl");
+            }
+        }
+
+        // swap the QS placeholder with a `?`
+        // (see https://github.com/craftcms/cms/issues/18923)
+        return str_replace(':QS:', '?', $returnUrl);
     }
 
     /**

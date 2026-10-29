@@ -117,7 +117,10 @@ readonly class CreateEntryController
         ]));
 
         if (! $this->request->wantsJson()) {
-            $response->headers->set('Location', Url::urlWithParams($editUrl, ['fresh' => 1]));
+            $response->headers->set('Location', Url::urlWithParams($editUrl, array_filter([
+                'fresh' => 1,
+                'returnUrl' => $this->request->query('returnUrl'),
+            ])));
         }
 
         return $response;
