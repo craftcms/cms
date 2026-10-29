@@ -56,12 +56,3 @@ it('renders a form-associated multiple button group', function () {
     expect($html)->toContainTag('craft-button-group', ['name' => 'topics', 'multiple' => true, 'role' => 'group'])
         ->and($html)->toContainTag('craft-button', ['value' => 'one', 'active' => 'true']);
 });
-
-it('renders a subtle button group', function () {
-    $html = ButtonGroup::make()
-        ->subtle()
-        ->buttons([Button::make()->label('One')])
-        ->toHtml();
-
-    expect($html)->toContainTag('craft-button-group', ['subtle' => true]);
-});

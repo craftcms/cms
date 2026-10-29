@@ -101,17 +101,6 @@ export const SelectionModeVariants: Story = {
   `,
 };
 
-/** `subtle` sets the buttons on a quiet track, raising the pressed one. */
-export const SelectionModeSubtle: Story = {
-  name: 'Selection mode — subtle',
-  render: () => html`
-    <craft-button-group name="edition" value="lite" subtle>
-      <craft-button value="lite">Lite</craft-button>
-      <craft-button value="pro">Pro</craft-button>
-    </craft-button-group>
-  `,
-};
-
 /** Icon-only buttons work in selection mode just like labeled buttons. */
 export const SelectionModeIcons: Story = {
   name: 'Selection mode — icon buttons',

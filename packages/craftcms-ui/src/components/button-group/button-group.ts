@@ -55,12 +55,6 @@ export default class CraftButtonGroup extends LitElement {
   @property({reflect: true, type: Boolean}) multiple = false;
 
   /**
-   * Sets the buttons on a quiet track instead of joining their borders, for a
-   * selection that sits alongside a page's main actions rather than among them.
-   */
-  @property({reflect: true, type: Boolean}) subtle = false;
-
-  /**
    * Re-marks the ends and dividers when a child is shown or hidden, which
    * changes which one is visibly first or last without firing `slotchange`,
    * or when one is selected or deselected.
