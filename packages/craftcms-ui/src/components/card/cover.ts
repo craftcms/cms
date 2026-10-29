@@ -10,7 +10,9 @@
  * has loaded.
  *
  * The image's luminance only picks white or black, whichever suits it: from
- * its top row for the header, and its bottom row for the content.
+ * its top row for the header, and its bottom row for the content. White on
+ * black is used unless that part of the image is light throughout, as a black
+ * scrim reads as a natural shadow, but turns a washed-out image gray.
  */
 
 /** A region's [P10, P90] relative luminance, or `null` if it's transparent. */
@@ -69,25 +71,16 @@ export const COVER_BACKING = 0.65;
  */
 export const COVER_BACKING_HOVER = 0.8;
 
-const toLinear = (channel: number) =>
-  channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
-
-const contrastRatio = (a: number, b: number) =>
-  (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
-
 /**
- * The least luminance the semi-transparent ink can have: white over black, or
- * black over white.
+ * The least relative luminance the darkest part (P10) of every region must
+ * have for black ink on white to be used instead.
  */
-const INK_LUMINANCE: Record<CoverTheme, number> = {
-  dark: toLinear(COVER_INK_OPACITY.dark),
-  light: toLinear(1 - COVER_INK_OPACITY.light),
-};
+export const COVER_LIGHT_THEME_MIN_LUMINANCE = 0.25;
 
 /**
- * Picks white or black ink for some rows of the image, as
- * `ImageColors::textColor()` does: white against the lightest P90, black
- * against the darkest P10, whichever contrasts more.
+ * Picks white or black ink for some rows of the image: black when even their
+ * darkest region's P10 is at least {@link COVER_LIGHT_THEME_MIN_LUMINANCE},
+ * and white otherwise.
  */
 function theme(rows: Luminance): CoverTheme | null {
   const ranges = rows
@@ -99,12 +92,8 @@ function theme(rows: Luminance): CoverTheme | null {
   }
 
   const darkest = Math.min(...ranges.map(([p10]) => p10));
-  const lightest = Math.max(...ranges.map(([, p90]) => p90));
 
-  return contrastRatio(INK_LUMINANCE.dark, lightest) >=
-    contrastRatio(INK_LUMINANCE.light, darkest)
-    ? 'dark'
-    : 'light';
+  return darkest >= COVER_LIGHT_THEME_MIN_LUMINANCE ? 'light' : 'dark';
 }
 
 /**

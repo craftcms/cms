@@ -128,6 +128,39 @@ describe('coverAppearance', () => {
   });
 
   it.each([
+    [
+      'dark, with deep shadows under bright highlights',
+      [[[0.2, 0.95]]],
+      'dark',
+    ],
+    [
+      'dark, when one region has shadows',
+      [
+        [
+          [0.5, 0.9],
+          [0.24, 0.6],
+        ],
+      ],
+      'dark',
+    ],
+    [
+      'light, when every region is light',
+      [
+        [
+          [0.5, 0.9],
+          [0.25, 0.6],
+        ],
+      ],
+      'light',
+    ],
+    ['light, for a pale image', [[[0.3, 0.4]]], 'light'],
+  ] as const)('picks %s', (_, luminance, theme) => {
+    const {header, body} = coverAppearance(luminance, true);
+
+    expect([header.theme, body.theme]).toEqual([theme, theme]);
+  });
+
+  it.each([
     ['unknown', null],
     ['not sampled for luminance', []],
     ['transparent', [[null], [null]]],

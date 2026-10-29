@@ -169,9 +169,9 @@ export const CoverBrokenImage: Story = {
 };
 
 /**
- * Labels and content long enough to wrap over several lines. A cover card is a
- * fixed 4:3 for now, so what doesn't fit is cut off: a known reflow gap,
- * tracked separately from contrast.
+ * Labels and content long enough to wrap over several lines. A cover card grows
+ * past 4:3 to fit its content, with the scrim behind all of it, and the other
+ * cards in its row grow to match.
  */
 export const CoverLongContent: Story = {
   render: () => {
@@ -183,7 +183,7 @@ export const CoverLongContent: Story = {
         name: LONG_TEXT,
         luminance,
         label: LONG_TEXT,
-        body: html`<div>${LONG_TEXT}</div>
+        body: html`${[1, 2, 3, 4].map(() => html`<div>${LONG_TEXT}</div>`)}
           <div slot="footer">${LONG_TEXT}</div>`,
       }),
       coverCard({
