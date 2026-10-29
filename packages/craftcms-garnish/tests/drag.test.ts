@@ -222,6 +222,17 @@ describe('BaseDrag handle resolution', () => {
     expect(d.$targetItem).toBe(a);
   });
 
+  it('resolves a string handle that starts with a child combinator', () => {
+    const a = makeItem();
+    a.innerHTML =
+      '<div class="element"><div class="actions"><div class="move-btn"></div></div></div>';
+    const handle = a.querySelector('.move-btn')!;
+    const d = new BaseDrag([a], {handle: '> .element > .actions > .move-btn'});
+    mockRect(a, 0, 0);
+    firePointer(handle, 'pointerdown', {pageX: 1, pageY: 1});
+    expect(d.$targetItem).toBe(a);
+  });
+
   it('resolves a function handle', () => {
     const a = makeItem();
     const handle = document.createElement('div');

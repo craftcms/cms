@@ -408,9 +408,11 @@ export class BaseDrag<
       // Legacy split commas and forced `:first` per selector to dodge
       // craftcms/cms#12896. `querySelector` is inherently first-match, so the
       // `:first` hack is dropped.
+      // A leading `>` is relative to the item, as with jQuery's `find()`.
       return handle
         .split(',')
-        .map((s) => item.querySelector(s.trim()))
+        .map((s) => s.trim())
+        .map((s) => item.querySelector(s.startsWith('>') ? `:scope ${s}` : s))
         .filter((el): el is Element => el !== null);
     }
 
