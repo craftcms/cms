@@ -505,16 +505,21 @@
             :name="option.icon"
             :label="option.label"
           />
-          <template v-else>
+          <span
+            v-else-if="option.icon || option.color"
+            class="inline-flex items-center gap-sm"
+          >
             <craft-icon
               v-if="option.icon"
               :name="option.icon"
               :style="option.color ? {color: option.color} : undefined"
             />
-            <craft-indicator v-else-if="option.color" :fill="option.color" />
+            <craft-indicator v-else :fill="option.color" />
             <span v-if="option.labelHtml" v-html="option.labelHtml" />
             <template v-else>{{ option.label }}</template>
-          </template>
+          </span>
+          <span v-else-if="option.labelHtml" v-html="option.labelHtml" />
+          <template v-else>{{ option.label }}</template>
         </label>
       </component>
     </div>
