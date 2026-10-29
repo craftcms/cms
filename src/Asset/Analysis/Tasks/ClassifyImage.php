@@ -40,7 +40,7 @@ class ClassifyImage extends ImageAnalysisTask
         return $overwrite || $asset->analysis?->type === null;
     }
 
-    public static function instructions(Asset $asset): string
+    public static function instructions(Asset $asset, bool $overwrite): string
     {
         $types = array_map(
             static fn (ImageType $type): string => "- $type->value: {$type->description()}",
@@ -53,7 +53,7 @@ class ClassifyImage extends ImageAnalysisTask
         ]);
     }
 
-    public static function schema(JsonSchema $schema, Asset $asset): array
+    public static function schema(JsonSchema $schema, Asset $asset, bool $overwrite): array
     {
         return [
             'type' => $schema->string()->enum(array_column(ImageType::cases(), 'value'))->required(),

@@ -59,6 +59,9 @@ readonly class ImageMetadata implements Arrayable, JsonSerializable
      * @param  string|null  $city  The city the image shows or was taken in (XMP `photoshop:City`, IPTC City)
      * @param  string|null  $state  The state or province (XMP `photoshop:State`, IPTC Province/State)
      * @param  string|null  $country  The country (XMP `photoshop:Country`, IPTC Country)
+     * @param  array<string, string>  $altTextTranslations  Alt text written for the image in other languages, indexed
+     *                                                      by their language tags (e.g. `de`), when the file has it in
+     *                                                      several
      */
     public function __construct(
         #[AllowedInSandbox]
@@ -87,6 +90,8 @@ readonly class ImageMetadata implements Arrayable, JsonSerializable
         public ?string $state = null,
         #[AllowedInSandbox]
         public ?string $country = null,
+        #[AllowedInSandbox]
+        public array $altTextTranslations = [],
     ) {}
 
     /**
@@ -120,6 +125,7 @@ readonly class ImageMetadata implements Arrayable, JsonSerializable
             city: self::text($data['city'] ?? null),
             state: self::text($data['state'] ?? null),
             country: self::text($data['country'] ?? null),
+            altTextTranslations: self::translations($data['altTextTranslations'] ?? null),
         );
     }
 
@@ -136,6 +142,37 @@ readonly class ImageMetadata implements Arrayable, JsonSerializable
     }
 
     /**
+     * Returns the alt text written for the image in a language, or in the language it’s a dialect of, such as `de`
+     * for `de-CH`, or `null` if the file has none in that language.
+     */
+    #[AllowedInSandbox]
+    public function altTextIn(string $language): ?string
+    {
+        $language = strtolower($language);
+        $base = strtok($language, '-_');
+
+        return $this->altTextTranslations[$language] ?? $this->altTextTranslations[$base] ?? null;
+    }
+
+    /**
+     * Returns translations indexed by lowercase language tags, dropping any that aren’t text.
+     *
+     * @return array<string, string>
+     */
+    private static function translations(mixed $value): array
+    {
+        $translations = [];
+
+        foreach (is_array($value) ? $value : [] as $language => $text) {
+            if (is_string($language) && preg_match('/^[a-z]{2,3}([-_][a-z0-9]{1,8})*$/i', $language) && ($text = self::text($text)) !== null) {
+                $translations[strtolower($language)] = $text;
+            }
+        }
+
+        return $translations;
+    }
+
+    /**
      * Returns a value trimmed and cut to {@see MAX_LENGTH} characters, or `null` if it’s blank or isn’t text.
      */
     public static function text(mixed $value): ?string
@@ -149,7 +186,7 @@ readonly class ImageMetadata implements Arrayable, JsonSerializable
         return $value !== '' ? $value : null;
     }
 
-    /** @return array{title: string|null, description: string|null, altText: string|null, creator: string|null, credit: string|null, copyright: string|null, keywords: list<string>, dateTaken: string|null, camera: string|null, latitude: float|null, longitude: float|null, city: string|null, state: string|null, country: string|null} */
+    /** @return array{title: string|null, description: string|null, altText: string|null, creator: string|null, credit: string|null, copyright: string|null, keywords: list<string>, dateTaken: string|null, camera: string|null, latitude: float|null, longitude: float|null, city: string|null, state: string|null, country: string|null, altTextTranslations: array<string, string>} */
     public function toArray(): array
     {
         return [
@@ -167,10 +204,11 @@ readonly class ImageMetadata implements Arrayable, JsonSerializable
             'city' => $this->city,
             'state' => $this->state,
             'country' => $this->country,
+            'altTextTranslations' => $this->altTextTranslations,
         ];
     }
 
-    /** @return array{title: string|null, description: string|null, altText: string|null, creator: string|null, credit: string|null, copyright: string|null, keywords: list<string>, dateTaken: string|null, camera: string|null, latitude: float|null, longitude: float|null, city: string|null, state: string|null, country: string|null} */
+    /** @return array{title: string|null, description: string|null, altText: string|null, creator: string|null, credit: string|null, copyright: string|null, keywords: list<string>, dateTaken: string|null, camera: string|null, latitude: float|null, longitude: float|null, city: string|null, state: string|null, country: string|null, altTextTranslations: array<string, string>} */
     public function jsonSerialize(): array
     {
         return $this->toArray();

@@ -28,6 +28,7 @@ class ImageAnalysisAgent implements Agent, HasStructuredOutput
     public function __construct(
         public readonly array $tasks,
         public readonly Asset $asset,
+        public readonly bool $overwrite = false,
     ) {}
 
     public function instructions(): string
@@ -43,7 +44,7 @@ class ImageAnalysisAgent implements Agent, HasStructuredOutput
         $sections = [];
 
         foreach ($this->tasks as $property => $task) {
-            $sections[] = "## $property\n\n".trim($task::instructions($this->asset));
+            $sections[] = "## $property\n\n".trim($task::instructions($this->asset, $this->overwrite));
         }
 
         return "Analyze the attached image for these tasks:\n\n".implode("\n\n", $sections);
@@ -54,7 +55,7 @@ class ImageAnalysisAgent implements Agent, HasStructuredOutput
         $properties = [];
 
         foreach ($this->tasks as $property => $task) {
-            $properties[$property] = $schema->object($task::schema($schema, $this->asset))->required();
+            $properties[$property] = $schema->object($task::schema($schema, $this->asset, $this->overwrite))->required();
         }
 
         return $properties;
