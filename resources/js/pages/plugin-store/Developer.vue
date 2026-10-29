@@ -59,37 +59,37 @@
             <span v-if="developer.location" class="developer-hero__location">
               {{ developer.location }}
             </span>
+            <div
+              v-if="developer.developerUrl || developer.partnerInfo?.profileUrl"
+              class="developer-hero__links"
+            >
+              <a
+                v-if="developer.developerUrl"
+                :href="developer.developerUrl"
+                target="_blank"
+                rel="noopener"
+              >
+                {{ t('Website') }}
+                <craft-icon name="arrow-up-right-from-square"></craft-icon>
+                <span class="sr-only">{{ t('Opens in a new window') }}</span>
+              </a>
+              <a
+                v-if="developer.partnerInfo?.profileUrl"
+                :href="developer.partnerInfo.profileUrl"
+                target="_blank"
+                rel="noopener"
+              >
+                {{ t('Partner Profile') }}
+                <craft-icon name="arrow-up-right-from-square"></craft-icon>
+                <span class="sr-only">{{ t('Opens in a new window') }}</span>
+              </a>
+            </div>
             <ul v-if="badges.length" class="developer-hero__badges">
               <li v-for="badge in badges" :key="badge.kind">
                 <PartnerBadge :kind="badge.kind" />
                 {{ badge.label }}
               </li>
             </ul>
-          </div>
-          <div
-            v-if="developer.developerUrl || developer.partnerInfo?.profileUrl"
-            class="developer-hero__links"
-          >
-            <a
-              v-if="developer.developerUrl"
-              :href="developer.developerUrl"
-              target="_blank"
-              rel="noopener"
-            >
-              {{ t('Website') }}
-              <craft-icon name="arrow-up-right-from-square"></craft-icon>
-              <span class="sr-only">{{ t('Opens in a new window') }}</span>
-            </a>
-            <a
-              v-if="developer.partnerInfo?.profileUrl"
-              :href="developer.partnerInfo.profileUrl"
-              target="_blank"
-              rel="noopener"
-            >
-              {{ t('Partner Profile') }}
-              <craft-icon name="arrow-up-right-from-square"></craft-icon>
-              <span class="sr-only">{{ t('Opens in a new window') }}</span>
-            </a>
           </div>
         </div>
       </section>
@@ -141,7 +141,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--c-spacing-sm);
-    margin-block: var(--c-spacing-sm) 0;
+    margin-block: var(--c-spacing-md) 0;
     margin-inline: 0;
     padding: 0;
     list-style: none;
@@ -165,7 +165,6 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--c-spacing-lg);
-    padding-block-start: var(--c-spacing-xs);
   }
 
   .developer-hero__links a {
