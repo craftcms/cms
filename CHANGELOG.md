@@ -696,6 +696,9 @@
 - Fixed errors that occurred when running the legacy `queue` console commands with the Yii adapter installed, such as `php craft queue:run` and `php craft queue:info --no-interaction`. ([#20162](https://github.com/craftcms/cms/pull/20162))
 - Fixed a bug where Composer warned about ambiguous class resolution for `Legacy*` traits when `craftcms/yii2-adapter` was installed. ([#20161](https://github.com/craftcms/cms/pull/20161))
 - Fixed a bug where the lists in `config/craft/twig-sandbox.php` replaced Craft’s default Twig sandbox allowlists rather than extending them, which broke system emails for projects upgraded from Craft 5. ([#20159](https://github.com/craftcms/cms/pull/20159))
+- Fixed a bug where front-end forms with an empty `redirectInput('')` redirected to the primary site rather than the current site’s home page, such as after logging in on a site with a base path like `/fr`. ([#20174](https://github.com/craftcms/cms/pull/20174))
+- Fixed a bug where front-end requests posted with an `action` param, and token routes, ran on the primary site rather than the requested site, when the site had a base path. ([#20174](https://github.com/craftcms/cms/pull/20174))
+- Fixed a 404 error that occurred when posting to an action URL on a site with a base path, such as `/fr/actions/users/login`. ([#20174](https://github.com/craftcms/cms/pull/20174))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 
