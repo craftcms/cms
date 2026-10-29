@@ -6,6 +6,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\MissingComponents;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPluginSettingsRequest;
 use CraftCms\Cms\User\Elements\User;
@@ -19,6 +20,7 @@ use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
+use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
@@ -276,15 +278,46 @@ test('saveSettings returns 404 for non-existent plugin', function () {
         ->assertNotFound();
 });
 
-test('saveSettings persists plugin settings', function () {
-    postJson(action([PluginsController::class, 'saveSettings'], ['test-plugin']), [
+test('saveSettings persists plugin settings', function (bool $json) {
+    $response = $this->{$json ? 'postJson' : 'post'}(action([PluginsController::class, 'saveSettings'], ['test-plugin']), [
         'settings' => ['foo' => 'bar', 'bar' => 'baz'],
-    ])->assertOk();
+    ]);
+
+    $json ? $response->assertOk() : $response->assertRedirect();
 
     $settings = app(Plugins::class)->getPlugin('test-plugin')->getSettings();
 
     expect($settings->foo)->toBe('bar');
     expect($settings->bar)->toBe('baz');
+})->with(['JSON' => true, 'form' => false]);
+
+test('saveSettings returns settings model validation errors for JSON requests without saving', function () {
+    $url = action([PluginsController::class, 'saveSettings'], ['test-plugin']);
+    app(ProjectConfig::class)->set('plugins.test-plugin.settings', ['foo' => 'saved value', 'bar' => 'saved bar']);
+
+    postJson($url, ['settings' => ['foo' => '', 'bar' => 'unsaved bar']])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['settings.foo' => 'The foo field is required.']);
+
+    expect(app(ProjectConfig::class)->get('plugins.test-plugin.settings'))
+        ->toMatchArray(['foo' => 'saved value', 'bar' => 'saved bar']);
+});
+
+test('saveSettings re-renders settings model errors and submitted values for form requests without saving', function () {
+    $url = action([PluginsController::class, 'saveSettings'], ['test-plugin']);
+    app(ProjectConfig::class)->set('plugins.test-plugin.settings', ['foo' => 'saved value', 'bar' => 'saved bar']);
+
+    post($url, ['settings' => ['foo' => '', 'bar' => 'unsaved bar']])
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Ui')
+            ->where('ui.errors.0.path', ['settings', 'foo'])
+            ->where('ui.errors.0.messages', ['The foo field is required.'])
+            ->where('ui.values.settings.foo', null)
+        );
+
+    expect(app(ProjectConfig::class)->get('plugins.test-plugin.settings'))
+        ->toMatchArray(['foo' => 'saved value', 'bar' => 'saved bar']);
 });
 
 test('saveSettings uses plugin form request validation', function () {
@@ -343,14 +376,16 @@ test('respects read-only mode for switchEdition', function () {
         ->assertForbidden();
 });
 
-test('respects read-only mode for saveSettings', function () {
+test('respects read-only mode for saveSettings', function (bool $json) {
     Cms::config()->allowAdminChanges = false;
 
-    postJson(action([PluginsController::class, 'saveSettings'], ['test-plugin']), [
-        'settings' => [],
+    $this->{$json ? 'postJson' : 'post'}(action([PluginsController::class, 'saveSettings'], ['test-plugin']), [
+        'settings' => ['foo' => 'not allowed'],
     ])
         ->assertForbidden();
-});
+
+    expect(app(Plugins::class)->getPlugin('test-plugin')->getSettings()->foo)->toBeNull();
+})->with(['JSON' => true, 'form' => false]);
 
 test('respects read-only mode for settings UI refresh', function () {
     Cms::config()->allowAdminChanges = false;
