@@ -38,6 +38,8 @@ class ButtonGroup extends ViewComponent
 
     protected bool $multiple = false;
 
+    protected bool $subtle = false;
+
     protected function tagName(): string
     {
         return 'craft-button-group';
@@ -85,6 +87,14 @@ class ButtonGroup extends ViewComponent
         return $this;
     }
 
+    /** Sets the buttons on a quiet track instead of joining their borders. */
+    public function subtle(bool $subtle = true): static
+    {
+        $this->subtle = $subtle;
+
+        return $this;
+    }
+
     /**
      * The `<craft-button-group>` web component is form-associated: with `name`
      * set it owns selection and submits through ElementInternals. `name` and
@@ -98,6 +108,7 @@ class ButtonGroup extends ViewComponent
             'name' => $this->name,
             'value' => $this->value,
             'multiple' => $this->multiple,
+            'subtle' => $this->subtle,
             'role' => 'group',
             'aria' => [
                 'labelledby' => $this->labelledBy,
