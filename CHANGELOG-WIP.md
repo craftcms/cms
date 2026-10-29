@@ -444,7 +444,6 @@
   - `CraftCms\Cms\Cp\FormFields`
   - `CraftCms\Cms\Cp\Html\ContentHtml`
   - `CraftCms\Cms\Cp\Html\ElementHtml`
-  - `CraftCms\Cms\Cp\Html\ElementIndexHtml`
   - `CraftCms\Cms\Cp\Html\MenuHtml`
   - `CraftCms\Cms\Cp\Html\PreviewHtml`
   - `CraftCms\Cms\Cp\Html\StatusHtml`
@@ -845,6 +844,7 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - Removed the classic (pre-3.2) `Craft.LivePreview` control panel JavaScript class, which Craft hasn’t used since 3.2. ([#19964](https://github.com/craftcms/cms/pull/19964))
 - Removed the `Craft.ImageUpload` control panel JavaScript class.
 - `Craft.AssetImageEditor`, `Craft.GroupedEntryTypeManager`, `Craft.RecoveryCodesSetup`, `Craft.SortableCheckboxSelect`, and `Craft.TagSelectInput` are now provided by the Yii2 adapter.
+- The legacy element index is now rendered only by the Yii2 adapter, through the `elementIndex()` Twig function and `craft\helpers\Cp::elementIndexHtml()`. Templates that extend `_layouts/elementindex` always get the Vue element index.
 - Added `AuthChallengeForm`, `AssetSelectorController`, `ElementSelectorController`, `Uploads`, `createElementSelectorModal`, `highlighter`, and `registerElementSelectorController` to the `@craftcms/cp` import-map module. Control panel plugin code should import them from there; they’re no longer `Craft.*` globals, except `Craft.createElementSelectorModal` and `Craft.highlighter`, which the Yii2 adapter still provides.
 - Deprecated the `Craft.LightSwitch`, `Craft.InfoIcon`, `Craft.ColorInput`, `Craft.PasswordInput`, `Craft.IconPicker`, `Craft.SlidePicker`, `Craft.SlideRuleInput`, and `Craft.Tooltip` control panel JavaScript classes, along with the `.infoicon` jQuery plugin. The corresponding `@craftcms/ui` web components should be used instead. 
 - Deprecated the `Craft.SortableCheckboxSelect` control panel JavaScript class. `<craft-checkbox-select>` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))

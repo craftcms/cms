@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Cp\Html;
+namespace CraftCms\Yii2Adapter\Cp\Html;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementIndexState;
@@ -19,6 +19,9 @@ use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
 /**
+ * Renders the legacy jQuery element index. Core renders element indexes with
+ * the Vue index instead.
+ *
  * @since 6.0.0
  */
 #[Singleton]
@@ -28,7 +31,8 @@ readonly class ElementIndexHtml
         private Sites $sites,
         private ElementSources $elementSources,
         private ElementIndexState $indexState,
-    ) {}
+    ) {
+    }
 
     /**
      * @param  class-string<ElementInterface>  $elementType
@@ -66,7 +70,7 @@ readonly class ElementIndexHtml
         $siteIds = $config['siteIds'] ?? $this->sites->getEditableSiteIds()->all();
 
         $sortOptions = $this->indexState->sortOptions($elementType)
-            ->map(fn (array $option) => [
+            ->map(fn(array $option) => [
                 'label' => $option['label'] ?? $option['option'],
                 'attr' => $option['attribute'] ?? $option['key'],
                 'defaultDir' => $option['defaultDir'],
@@ -100,10 +104,10 @@ readonly class ElementIndexHtml
             ]);
 
             // if field layouts were supplied, merge in additional table columns and sort columns
-            if (! empty($config['fieldLayouts'])) {
+            if (!empty($config['fieldLayouts'])) {
                 $sortOptions = array_merge(
                     $sortOptions,
-                    array_map(fn (array $option) => [
+                    array_map(fn(array $option) => [
                         'label' => $option['label'],
                         'attr' => $option['attribute'],
                         'defaultDir' => $option['defaultDir'],
@@ -122,7 +126,7 @@ readonly class ElementIndexHtml
         // If all the sources are site-specific, filter out any unneeded site IDs
         if (
             $config['showSiteMenu'] &&
-            $sources->every(fn (array $source) => $source['type'] === 'heading' || isset($source['sites']))
+            $sources->every(fn(array $source) => $source['type'] === 'heading' || isset($source['sites']))
         ) {
             $representedSiteIds = [];
             foreach ($sources as $source) {
@@ -132,11 +136,11 @@ readonly class ElementIndexHtml
                     }
                 }
             }
-            $siteIds = array_values(array_filter($siteIds, fn (int $siteId) => isset($representedSiteIds[$siteId])));
+            $siteIds = array_values(array_filter($siteIds, fn(int $siteId) => isset($representedSiteIds[$siteId])));
         }
 
         if ($config['registerJs']) {
-            HtmlStack::jsWithVars(fn ($elementType, $id, $settings) => <<<JS
+            HtmlStack::jsWithVars(fn($elementType, $id, $settings) => <<<JS
 Craft.createElementIndex($elementType, $('#' + $id), $settings)
 JS, [
                 $elementType,
@@ -163,23 +167,23 @@ JS, [
             'data' => [
                 'site-ids' => $siteIds,
             ],
-        ]).
+        ]) .
             Html::beginTag('div', [
                 'class' => array_filter([
                     'sidebar',
-                    (! $showSidebar ? 'hidden' : null),
+                    (!$showSidebar ? 'hidden' : null),
                 ]),
-            ]).
+            ]) .
             Html::tag('nav', template('_elements/sources', [
                 'elementType' => $elementType,
                 'sources' => $sources,
                 $sortOptionsKey => $sortOptions,
                 'tableColumns' => $tableColumns,
                 'defaultTableColumns' => $config['defaultTableColumns'],
-            ], templateMode: TemplateMode::Cp)).
-            Html::endTag('div').
-            Html::beginTag('div', ['class' => 'main']).
-            Html::beginTag('div', ['class' => ['toolbar', 'flex']]).
+            ], templateMode: TemplateMode::Cp)) .
+            Html::endTag('div') .
+            Html::beginTag('div', ['class' => 'main']) .
+            Html::beginTag('div', ['class' => ['toolbar', 'flex']]) .
             template('_elements/toolbar', [
                 'elementType' => $elementType,
                 'context' => $config['context'],
@@ -188,20 +192,20 @@ JS, [
                 'showSiteMenu' => $config['showSiteMenu'],
                 'siteIds' => $siteIds,
                 'canHaveDrafts' => $elementType::hasDrafts(),
-            ], templateMode: TemplateMode::Cp).
-            Html::endTag('div'). // .toolbar
-            Html::tag('div', attributes: ['class' => 'elements']).
+            ], templateMode: TemplateMode::Cp) .
+            Html::endTag('div') . // .toolbar
+            Html::tag('div', attributes: ['class' => 'elements']) .
             Html::endTag('div'); // .main
 
         if ($this->contextIsAdministrative($config['context'])) {
             $html .= Html::beginTag('div', [
                 'class' => ['footer', 'flex', 'flex-justify'],
-            ]).
-                template('_elements/footer', templateMode: TemplateMode::Cp).
+            ]) .
+                template('_elements/footer', templateMode: TemplateMode::Cp) .
                 Html::endTag('div'); // .footer
         }
 
-        return $html.
+        return $html .
             Html::endTag('div'); // .element-index;
     }
 
