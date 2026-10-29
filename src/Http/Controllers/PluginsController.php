@@ -174,7 +174,7 @@ readonly class PluginsController
         return $plugin->getSettingsResponse();
     }
 
-    public function saveSettings(Request $request, string $handle): mixed
+    public function saveSettings(Request $request, string $handle): Response
     {
         $request->validate([
             'settings' => ['nullable', 'array'],
@@ -192,9 +192,7 @@ readonly class PluginsController
             $settings = $request->safe()->input('settings', []);
         }
 
-        $success = $this->plugins->savePluginSettings($plugin, $settings);
-
-        if (! $success && $request->expectsJson()) {
+        if (! $this->plugins->savePluginSettings($plugin, $settings)) {
             $errors = [];
 
             foreach ($plugin->getSettings()?->errors()->getMessages() ?? [] as $attribute => $messages) {
@@ -204,9 +202,7 @@ readonly class PluginsController
             throw ValidationException::withMessages($errors);
         }
 
-        return $success
-            ? $this->asSuccess(t('Plugin settings saved.'))
-            : $this->editSettings($handle, $plugin);
+        return $this->asSuccess(t('Plugin settings saved.'));
     }
 
     public function renderSettingsUi(Request $request, string $handle): JsonResponse
