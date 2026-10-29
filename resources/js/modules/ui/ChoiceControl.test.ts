@@ -46,7 +46,8 @@ describe('ChoiceControl', () => {
 
   async function mount(
     props: Record<string, unknown>,
-    value: UiValue
+    value: UiValue,
+    required = false
   ): Promise<void> {
     emitted = [];
     const control = reactive<UiControlPayload<any>>({
@@ -66,7 +67,7 @@ describe('ChoiceControl', () => {
           value,
           editable: true,
           invalid: false,
-          required: false,
+          required,
           'onUpdate:value': (next: unknown) => emitted.push(next),
         }),
     });
@@ -111,6 +112,34 @@ describe('ChoiceControl', () => {
 
     expect(selectOptionLabels()[0]).toBe('Select…');
   });
+
+  it.each([
+    {value: '', placeholder: undefined},
+    {value: '', placeholder: 'Choose a volume'},
+    {value: null, placeholder: undefined},
+    {value: undefined, placeholder: 'Choose a volume'},
+  ])(
+    'shows a disabled prompt for an empty required select: %j',
+    async ({value, placeholder}) => {
+      await mount(
+        {multiple: false, presentation: 'select', placeholder},
+        value,
+        true
+      );
+
+      const select = container!.querySelector('select')!;
+      const prompt = select.selectedOptions[0]!;
+      expect(select.required).toBe(true);
+      expect(select.value).toBe('');
+      expect(prompt.textContent?.trim()).toBe(placeholder ?? 'Select…');
+      expect(prompt.disabled).toBe(true);
+      expect(emitted).toEqual([]);
+
+      select.value = 'two';
+      select.dispatchEvent(new Event('change', {bubbles: true}));
+      expect(emitted).toEqual(['two']);
+    }
+  );
 
   it('drops the blank option for a control with no empty state', async () => {
     // `Choice::withoutPlaceholder()` — the setting always holds a value, so

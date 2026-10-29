@@ -50,7 +50,10 @@ readonly class CreateElementController
         ]));
 
         if (! $this->request->acceptsJson()) {
-            return redirect(Url::urlWithParams($editUrl, ['fresh' => '1']));
+            return redirect(Url::urlWithParams($editUrl, array_filter([
+                'fresh' => '1',
+                'returnUrl' => $this->request->input('returnUrl'),
+            ])));
         }
 
         return $response;

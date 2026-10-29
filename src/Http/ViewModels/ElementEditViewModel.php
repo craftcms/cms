@@ -170,7 +170,7 @@ class ElementEditViewModel extends ViewModel
             && ! $this->element->getIsUnpublishedDraft()
             && ! $this->element->isProvisionalDraft;
 
-        return Crypt::encrypt($isNamedDraft ? '{cpEditUrl}' : $this->postEditRedirectUrl($this->element));
+        return Crypt::encrypt($isNamedDraft ? '{cpEditUrl}' : ElementHelper::postEditRedirectUrl($this->element));
     }
 
     /** Where the edit form posts when there are no provisional changes to apply. */

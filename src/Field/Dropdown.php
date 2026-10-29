@@ -13,6 +13,8 @@ use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
 use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Choice;
 
 use function CraftCms\Cms\t;
 
@@ -60,6 +62,19 @@ class Dropdown extends BaseOptionsField implements InlineEditableFieldInterface,
         }
 
         return parent::getStatus($element);
+    }
+
+    #[\Override]
+    public function uiControl(FieldContext $context): Control
+    {
+        $control = parent::uiControl($context);
+
+        // A blank option is encoded as __blank__, so Choice can't tell it supplies its own empty state
+        if ($control instanceof Choice && collect($this->options)->contains(fn (array $option): bool => ($option['value'] ?? null) === '')) {
+            $control->withoutPlaceholder();
+        }
+
+        return $control;
     }
 
     #[\Override]

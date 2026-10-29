@@ -31,6 +31,7 @@ use CraftCms\Cms\Support\Url;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as IlluminatePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
 
 use function CraftCms\Cms\currentUser;
@@ -1117,9 +1118,7 @@ abstract class ContentIndexViewModel extends ViewModel
     protected function baseCriteria(): array
     {
         return [
-            'drafts' => $this->canHaveDrafts() ? null : false,
-            'draftOf' => false,
-            'savedDraftsOnly' => true,
+            ...app(ElementIndexes::class)->baseCriteria($this->elementType),
             ...($this->sourceState()[1]['criteria'] ?? []),
         ];
     }
@@ -1452,9 +1451,27 @@ abstract class ContentIndexViewModel extends ViewModel
     private function elementUrls(ElementInterface $element): array
     {
         return [
-            'cpEditUrl' => currentUser()?->can('view', $element) ? $element->getCpEditUrl() : null,
+            'cpEditUrl' => currentUser()?->can('view', $element) ? $this->withEditReturnUrl($element->getCpEditUrl()) : null,
             'viewUrl' => $element->getUrl(),
         ];
+    }
+
+    /**
+     * Adds this index, as it's currently shown, to an element's edit URL as the
+     * editor's `returnUrl` param. The index takes its source from the URL alone,
+     * so without it the editor would return to the index's first source.
+     *
+     * Only index screens have a URL worth returning to; a modal or embedded
+     * index lives inside another page.
+     */
+    private function withEditReturnUrl(?string $url): ?string
+    {
+        // Encrypted once and shared by every row.
+        $returnUrl = once(fn (): ?string => static::RENDER_CONTEXT === ElementSources::CONTEXT_INDEX
+            ? Crypt::encrypt($this->request->fullUrl())
+            : null);
+
+        return $url !== null && $returnUrl !== null ? Url::urlWithParams($url, ['returnUrl' => $returnUrl]) : $url;
     }
 
     /**
@@ -1534,6 +1551,6 @@ abstract class ContentIndexViewModel extends ViewModel
 
     protected function editUrl(ElementInterface $element): ?string
     {
-        return $element->getCpEditUrl();
+        return $this->withEditReturnUrl($element->getCpEditUrl());
     }
 }

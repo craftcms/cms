@@ -85,6 +85,7 @@ import {
     _form = null;
     _error = null;
     _errors = [];
+    _snapshot = null;
     ready = Promise.resolve();
 
     set node(node) {
@@ -194,6 +195,9 @@ import {
       this._form?.addEventListener('submit', this.handleSubmit, true);
       this.addEventListener('input', this.handleInput);
       this.addEventListener('change', this.handleInput);
+      // Legacy inputs (e.g. element select inputs) announce changes with
+      // jQuery's `.trigger('change')`, which native listeners never see.
+      window.jQuery?.(this).on('change', this.handleLegacyChange);
       this.ready = this.mount();
     }
 
@@ -201,13 +205,16 @@ import {
       this._form?.removeEventListener('submit', this.handleSubmit, true);
       this.removeEventListener('input', this.handleInput);
       this.removeEventListener('change', this.handleInput);
+      window.jQuery?.(this).off('change', this.handleLegacyChange);
       this._form = null;
       this._runId++;
       this.dispose();
     }
 
     handleInput = (event) => {
-      if (event instanceof CustomEvent) {
+      // An unnamed control (e.g. an element select input's search box) isn't
+      // part of the value, so typing in it must not publish (and autosave).
+      if (event instanceof CustomEvent || event.target?.name === '') {
         return;
       }
 
@@ -215,6 +222,17 @@ import {
         this.publish(isTypingEvent(event) ? 'typing' : 'discrete');
       } catch (error) {
         this.invalidate(error);
+      }
+    };
+
+    handleLegacyChange = (event) => {
+      // Native change events reach `handleInput` directly, and inputs also
+      // trigger `change` as they initialize, before anything has changed.
+      if (
+        !event.originalEvent &&
+        JSON.stringify(serializeFormInputsAsObject(this)) !== this._snapshot
+      ) {
+        this.handleInput(event);
       }
     };
 
@@ -291,6 +309,7 @@ import {
         );
         this.renderErrors();
         window.Craft?.initUiElements?.(this);
+        this._snapshot = JSON.stringify(serializeFormInputsAsObject(this));
       } catch (error) {
         if (runId === this._runId) {
           this.invalidate(error);
@@ -334,6 +353,7 @@ import {
       }
 
       const value = serializeFormInputsAsObject(this);
+      this._snapshot = JSON.stringify(value);
 
       if (this._values && this._control?.path) {
         if (this._control.props?.expandValues) {
@@ -505,15 +525,23 @@ import {
         continue;
       }
 
-      const value =
-        control.name in values
-          ? values[control.name]
-          : expandedPath
-            ? valueAt(
-                values,
-                inputPath(control.name).slice(expandedPath.length)
-              )
-            : undefined;
+      let value;
+
+      if (control.name in values) {
+        value = values[control.name];
+      } else if (expandedPath) {
+        // An expanded value is keyed by path, so a `name[]` control reads the
+        // list at `name`, and a plain control whose path holds a list or an
+        // object (e.g. a relation field's empty reset input) keeps its own.
+        const segments = inputPath(control.name).slice(expandedPath.length);
+        const isList = segments.at(-1) === '';
+        value = valueAt(values, isList ? segments.slice(0, -1) : segments);
+
+        if (!isList && value && typeof value === 'object') {
+          continue;
+        }
+      }
+
       const expected = Array.isArray(value)
         ? value.map(String)
         : [String(value ?? '')];
@@ -543,7 +571,7 @@ import {
 
   function formControls(container) {
     return container.querySelectorAll(
-      'input[name], select[name], textarea[name]'
+      'input[name]:not([name=""]), select[name]:not([name=""]), textarea[name]:not([name=""])'
     );
   }
 
