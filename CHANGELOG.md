@@ -627,6 +627,7 @@
 - Removed support for the non-standard `ED256` passkey algorithm. ([#19701](https://github.com/craftcms/cms/pull/19701))
 - Updated Twig to 3.30.
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
+- Fixed a bug where eager-loading relation fields with “Maintain hierarchy” enabled logged an `orderBy()` deprecation warning.
 - Fixed an error that occurred when sending system messages on sites upgraded from Craft 5 whose email settings had an empty “HTML Email Template” value. ([#20194](https://github.com/craftcms/cms/pull/20194))
 - Fixed an error that prevented the control panel from loading for users with an unread announcement migrated from Craft 5, such as a plugin’s “What’s new” announcement. ([#20195](https://github.com/craftcms/cms/pull/20195))
 - Fixed an error that occurred when Craft 5 templates called `setTransform()` on assets returned by Assets fields or asset queries with the Yii adapter installed. The transform now applies to the asset’s URL. ([#20191](https://github.com/craftcms/cms/pull/20191))
