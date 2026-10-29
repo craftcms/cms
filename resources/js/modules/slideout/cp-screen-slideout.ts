@@ -43,6 +43,7 @@ import {findDeltaData} from '@/common/craft/delta';
 import {getCpUrl} from '@/common/craft/url';
 import {t} from '@craftcms/ui/utilities/translate';
 import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
+import {setElementAttributes} from '@/common/craft/attributes';
 
 declare const Craft: any;
 declare const $: any;
@@ -443,7 +444,7 @@ export class CpScreenSlideout extends Slideout {
       this.updateExtraToolbarItems(data.extraToolbarItems);
 
       if (data.formAttributes) {
-        Craft.setElementAttributes(this.$container, data.formAttributes);
+        setElementAttributes(this.$container, data.formAttributes);
       }
 
       if (data.editUrl) {

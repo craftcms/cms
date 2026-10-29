@@ -34,8 +34,6 @@ describe('ComponentSelect', () => {
     };
     (window as any).Craft = {
       t: (_category: string, message: string) => message,
-      addActionsToChip: vi.fn(),
-      hasMousePointerEvents: () => false,
       appendHeadHtml: vi.fn(),
       appendBodyHtml: vi.fn(),
     };

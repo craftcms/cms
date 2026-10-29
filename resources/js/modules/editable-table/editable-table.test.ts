@@ -14,7 +14,6 @@ it.each([1, 3])('populates a hidden table with %i minimum rows', (minRows) => {
   vi.stubGlobal('$', $);
   vi.stubGlobal('Garnish', {});
   vi.stubGlobal('Craft', {
-    hasMousePointerEvents: () => false,
     inArray: <T>(value: T, values: T[]) => values.includes(value),
   });
 
@@ -81,7 +80,6 @@ it('initializes text cells without the legacy NiceText behavior', () => {
   vi.stubGlobal('$', $);
   vi.stubGlobal('Garnish', {});
   vi.stubGlobal('Craft', {
-    hasMousePointerEvents: () => true,
     inArray: <T>(value: T, values: T[]) => values.includes(value),
   });
 
@@ -136,7 +134,6 @@ it.each([
     vi.stubGlobal('$', $);
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false}));
     vi.stubGlobal('Craft', {
-      hasMousePointerEvents: () => true,
       inArray: <T>(value: T, values: T[]) => values.includes(value),
     });
 
@@ -236,7 +233,6 @@ it.each(['autosuggest', 'template', 'singleline', 'multiline'])(
   (type) => {
     vi.stubGlobal('$', $);
     vi.stubGlobal('Craft', {
-      hasMousePointerEvents: () => true,
       inArray: (value: unknown, values: unknown[]) => values.includes(value),
       ui: {
         createTextInput: (config: Record<string, string>) =>

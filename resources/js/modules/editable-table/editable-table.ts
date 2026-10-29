@@ -22,6 +22,7 @@ import {type ReorderDirection} from '@craftcms/ui';
 import {trim, uuid} from '@/common/craft/strings';
 import {DataTableSorter} from '@/modules/data-table-sorter/data-table-sorter';
 import {t} from '@craftcms/ui/utilities/translate';
+import {hasMousePointerEvents} from '@/common/craft/pointer';
 
 // `Craft`, `$` (jQuery), and `Garnish` remain page globals. This class extends the
 // modern `@craftcms/garnish` `Base` but still orchestrates jQuery Craft/Garnish
@@ -163,7 +164,7 @@ export class EditableTable extends Base<EditableTableSettings> {
       editableTableData.set(tableEl, this);
     }
 
-    if (Craft.hasMousePointerEvents()) {
+    if (hasMousePointerEvents()) {
       this.sorter = new DataTableSorter(this.$table, {
         handle: 'craft-reorder-button',
         helperClass: 'editabletablesorthelper',
@@ -886,7 +887,7 @@ export class EditableTable extends Base<EditableTableSettings> {
         class: 'flex gap-2 items-center justify-end self-end',
       });
 
-      if (Craft.hasMousePointerEvents()) {
+      if (hasMousePointerEvents()) {
         $div.append(document.createElement('craft-reorder-button'));
       }
 
@@ -968,7 +969,7 @@ export class Row extends Base {
 
     editableTableRowData.set(this.$tr[0], this);
 
-    if (!Craft.hasMousePointerEvents()) {
+    if (!hasMousePointerEvents()) {
       this.$tr.find('.move').hide();
     }
 

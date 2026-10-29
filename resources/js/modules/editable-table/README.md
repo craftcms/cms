@@ -42,10 +42,8 @@ reads them as jQuery (`.css`, `.find`, `.children`, `.replaceWith`,
 `createRowObj`/`getRowObj`. The seams:
 
 - `Craft.ui.*` (createCheckbox/Select/ColorInput/DateInput/TimeInput/
-  Lightswitch/TextInput/IconPicker/icon), `Craft.DataTableSorter`,
-  `Craft.HandleGenerator`, `Craft.t`/`Craft.uuid`/`Craft.trim`/
-  `Craft.inArray`/`Craft.selectFullValue`/`Craft.filterNumberInputVal`/
-  `Craft.hasMousePointerEvents`.
+  Lightswitch/TextInput/IconPicker/icon), `Craft.HandleGenerator`,
+  `Craft.inArray`/`Craft.selectFullValue`/`Craft.filterNumberInputVal`.
 - `Garnish.NiceText` and `Garnish.DisclosureMenu` (not yet ported to the modern
   named API), `Garnish.RETURN_KEY`, `Garnish.isCtrlKeyPressed`,
   `Garnish.firstFocusableElement` — accessed via the legacy global.

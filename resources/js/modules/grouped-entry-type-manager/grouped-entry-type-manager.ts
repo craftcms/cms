@@ -18,6 +18,7 @@ import {groupedEntryTypeManagerData} from './support';
 import {namespaceId, namespaceInputName} from '@/common/craft/namespace';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {hasMousePointerEvents} from '@/common/craft/pointer';
 
 declare const Craft: any;
 declare const $: any;
@@ -290,7 +291,7 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
 
   /** On touch there's no sorter; the reorder button's menu handles moves. */
   initGroupSort(): void {
-    if (this.groupSort || !Craft.hasMousePointerEvents()) {
+    if (this.groupSort || !hasMousePointerEvents()) {
       return;
     }
 
@@ -308,7 +309,7 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
 
   /** No axis lock: groups flow horizontally while chips stack vertically. */
   initChipSort(): void {
-    if (this.chipSort || !Craft.hasMousePointerEvents()) {
+    if (this.chipSort || !hasMousePointerEvents()) {
       return;
     }
 

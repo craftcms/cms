@@ -5,6 +5,12 @@ import {openExternalLinksInNewTabs} from '@craftcms/ui/utilities/external-links'
 import {appendElementHtml} from '@craftcms/ui/utilities/dom';
 import * as d3 from 'd3';
 import {
+  escapeHtml,
+  setElementAttributes,
+} from '../../../../../resources/js/common/craft/attributes';
+import {addActionsToChip} from '../../../../../resources/js/common/craft/chip-actions';
+import {hasMousePointerEvents} from '../../../../../resources/js/common/craft/pointer';
+import {
   getActionUrl,
   getCpUrl,
   getSiteUrl,
@@ -171,9 +177,7 @@ $.extend(Craft, {
    * @param {string} str
    * @returns {string}
    */
-  escapeHtml: function (str) {
-    return $('<div/>').text(str).html();
-  },
+  escapeHtml,
 
   escapeRegex,
 
@@ -1732,231 +1736,7 @@ $.extend(Craft, {
    * @param {Array} actions
    * @param {boolean} [prepend]
    */
-  addActionsToChip(chip, actions, prepend = false) {
-    if (!actions?.length) {
-      return;
-    }
-
-    // Whichever action container already exists: the modern craft-chip's
-    // `[slot="suffix"]`, or the (chip or card) `*-actions` container from
-    // either markup generation.
-    const $container = $(chip)
-      .find(
-        '> [slot="suffix"], > .chip-content > .chip-actions, > .card-titlebar > .card-actions-container > .card-actions'
-      )
-      .first();
-
-    // An existing modern menu — the common case for anything rendered by
-    // `ElementHtml::componentActionMenu()`.
-    let $actionMenu = $container.find('> craft-action-menu').first();
-    if ($actionMenu.length) {
-      this._addActionsToActionMenu($actionMenu.get(0), actions, prepend);
-      return;
-    }
-
-    // An existing legacy trigger — old markup, or a plugin that still
-    // renders the disclosure-menu shape.
-    let $actionMenuBtn = $container
-      .find('.action-btn, [data-disclosure-trigger]')
-      .first()
-      .removeClass('hidden');
-
-    if (!$actionMenuBtn.length) {
-      if ($container.length) {
-        // A recognized container exists but has no menu yet — build a
-        // modern one.
-        $actionMenu = this._buildActionMenu().appendTo($container);
-        this._addActionsToActionMenu($actionMenu.get(0), actions, prepend);
-        return;
-      }
-
-      // No container at all — very old/custom markup. Build the legacy
-      // button + disclosure menu from scratch.
-      console.warn(
-        'A chip was given actions without an action container, so a deprecated ' +
-          'disclosure menu was built for it. Render the chip with a ' +
-          '`<div slot="suffix">` (as `craft-chip` and ' +
-          '`ElementHtml::chipHtml()` do) to get a `craft-action-menu` instead.',
-        chip
-      );
-
-      const menuId = `actions-${Math.floor(Math.random() * 1000000)}`;
-      const labelId = `${menuId}-label`;
-      const $label = $('<label/>', {
-        id: labelId,
-        class: 'visually-hidden',
-        text: Craft.t('app', 'Actions'),
-      });
-      $actionMenuBtn = $('<button/>', {
-        class: 'btn action-btn',
-        type: 'button',
-        title: Craft.t('app', 'Actions'),
-        'aria-controls': menuId,
-        'aria-describedby': labelId,
-        'data-disclosure-trigger': 'true',
-      });
-      const $menu = $('<div/>', {
-        id: menuId,
-        class: 'menu menu--disclosure',
-      });
-
-      const $newContainer = $('<div/>', {class: 'chip-actions'});
-      $newContainer.append($label, $actionMenuBtn, $menu);
-      $(chip).append($newContainer);
-    }
-
-    const disclosureMenu = $actionMenuBtn
-      .disclosureMenu()
-      .data('disclosureMenu');
-
-    const safeActions = actions.filter((a) => !a.destructive);
-    const destructiveActions = actions.filter((a) => a.destructive);
-
-    let before = prepend
-      ? disclosureMenu.$container.children().first().get(0)
-      : null;
-
-    if (safeActions.length) {
-      disclosureMenu.addItems(
-        safeActions,
-        disclosureMenu.addGroup(null, true, before)
-      );
-    }
-
-    if (destructiveActions.length) {
-      disclosureMenu.addItems(
-        destructiveActions,
-        disclosureMenu.addGroup(null, true, before)
-      );
-    }
-
-    Craft.initUiElements(disclosureMenu.$container);
-  },
-
-  /**
-   * Builds a new (empty) `<craft-action-menu>` with the standard "Actions"
-   * invoker — the same markup `ElementHtml::componentActionMenu()` renders —
-   * for chips/cards whose action menu wasn't pre-rendered (e.g.
-   * `showActionMenu: false`) but still need actions added client-side.
-   *
-   * @returns {jQuery}
-   */
-  _buildActionMenu() {
-    const $invoker = $('<craft-button/>', {
-      type: 'button',
-      slot: 'invoker',
-      appearance: 'plain',
-      variant: 'inherit',
-      size: 'small',
-      icon: '',
-      'aria-label': Craft.t('app', 'Actions'),
-    });
-    $('<craft-icon/>', {name: 'ellipsis'}).appendTo($invoker);
-
-    const $content = $('<div/>', {slot: 'content'});
-
-    return $('<craft-action-menu/>').append($invoker, $content);
-  },
-
-  /**
-   * Builds `craft-action-item`s from the same action-descriptor shape the
-   * jQuery `disclosureMenu()` plugin accepts (`icon`/`label`/`onActivate`/
-   * `callback`/`attributes`/`destructive`) and adds them to `actionMenu`'s
-   * `[slot="content"]` (creating it if missing). Safe actions come first,
-   * destructive ones after a separator, mirroring `disclosureMenuItems()`'s
-   * server-side grouping.
-   *
-   * Clicking an injected item closes the menu: `craft-action-menu` only
-   * auto-closes for default-slot items, and these live in the content
-   * container, so a `close-overlay` event is dispatched manually (mirrors
-   * `component-select.ts`'s Choose menu).
-   *
-   * @param {HTMLElement} actionMenu
-   * @param {Array} actions
-   * @param {boolean} [prepend]
-   * @returns {Promise<void>}
-   */
-  async _addActionsToActionMenu(actionMenu, actions, prepend = false) {
-    let $content = $(actionMenu).children('[slot="content"]').first();
-    if (!$content.length) {
-      $content = $('<div/>', {slot: 'content'}).appendTo(actionMenu);
-    }
-
-    const buildItem = async (action) => {
-      const item = document.createElement('craft-action-item');
-
-      if (action.destructive) {
-        item.setAttribute('variant', 'danger');
-      }
-
-      if (action.attributes) {
-        Craft.setElementAttributes(item, action.attributes);
-      }
-
-      if (action.icon) {
-        if (typeof action.icon === 'string') {
-          // A `data-icon`-style icon *name* — craft-action-item resolves it
-          // itself via <craft-icon>.
-          item.setAttribute('icon', action.icon);
-        } else {
-          // An Element, or an (async) factory returning one (e.g.
-          // `Craft.ui.icon()`) — slot it in directly.
-          const icon =
-            typeof action.icon === 'function'
-              ? await action.icon()
-              : action.icon;
-          if (icon instanceof Element) {
-            icon.setAttribute('slot', 'icon');
-            item.append(icon);
-          }
-        }
-      }
-
-      if (action.label) {
-        item.append(document.createTextNode(action.label));
-      }
-
-      const handler = action.onActivate || action.callback;
-      item.addEventListener('click', () => {
-        if (!item.disabled) {
-          handler?.(item);
-        }
-        item.dispatchEvent(new Event('close-overlay', {bubbles: true}));
-      });
-
-      return item;
-    };
-
-    const safeActions = actions.filter((a) => !a.destructive);
-    const destructiveActions = actions.filter((a) => a.destructive);
-
-    const [safeItems, destructiveItems] = await Promise.all([
-      Promise.all(safeActions.map(buildItem)),
-      Promise.all(destructiveActions.map(buildItem)),
-    ]);
-
-    const nodes = [...safeItems];
-
-    if (destructiveItems.length) {
-      if (safeItems.length || $content.children().length) {
-        const hr = document.createElement('hr');
-        hr.className = 'action-menu__separator';
-        Object.assign(hr.style, {
-          margin: '0',
-          border: '0',
-          borderBlockStart: '1px solid var(--c-color-neutral-border-quiet)',
-        });
-        nodes.push(hr);
-      }
-      nodes.push(...destructiveItems);
-    }
-
-    if (prepend) {
-      $content.prepend(nodes);
-    } else {
-      $content.append(nodes);
-    }
-  },
+  addActionsToChip,
 
   /**
    * Submits a form.
@@ -2089,59 +1869,7 @@ $.extend(Craft, {
    * @param {(jQuery|HTMLElement|string)} element
    * @param {Object} attributes
    */
-  setElementAttributes: function (element, attributes) {
-    const $element = $(element);
-
-    for (const name in attributes) {
-      if (!attributes.hasOwnProperty(name)) {
-        continue;
-      }
-
-      let value = attributes[name];
-
-      if (value === null || value === false) {
-        $element.removeAttr(name);
-      } else if (value === true) {
-        $element.attr(name, '');
-      } else if (Array.isArray(value) || $.isPlainObject(value)) {
-        if (Craft.dataAttributes.includes(name)) {
-          // Make sure it's an object
-          value = Object.assign({}, value);
-          for (const n in value) {
-            if (!value.hasOwnProperty(n)) {
-              continue;
-            }
-            let subValue = value[n];
-            if (subValue === null || subValue === false) {
-              continue;
-            }
-            if ($.isPlainObject(subValue) || Array.isArray(subValue)) {
-              subValue = JSON.stringify(subValue);
-            } else if (subValue === true) {
-              subValue = '';
-            } else {
-              subValue = this.escapeHtml(subValue);
-            }
-            $element.attr(`${name}-${n}`, subValue);
-          }
-        } else if (name === 'class') {
-          // Make sure it's an array
-          if ($.isPlainObject(value)) {
-            value = Object.values(value);
-          }
-          for (const c of value) {
-            $element.addClass(c);
-          }
-        } else if (name === 'style') {
-          $element.css(value);
-        } else {
-          $element.attr(name, JSON.stringify(value));
-        }
-      } else {
-        $element.attr(name, this.escapeHtml(value));
-      }
-    }
-  },
+  setElementAttributes,
 
   isVisible: function () {
     return (
@@ -2209,9 +1937,7 @@ $.extend(Craft, {
     });
   },
 
-  hasMousePointerEvents: function () {
-    return matchMedia('(pointer:fine)').matches;
-  },
+  hasMousePointerEvents,
 });
 
 // -------------------------------------------

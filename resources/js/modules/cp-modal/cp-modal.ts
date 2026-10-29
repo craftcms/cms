@@ -13,6 +13,7 @@ import {registerShortcut, type ShortcutRegistration} from '@/common/shortcuts';
 import {findDeltaData} from '@/common/craft/delta';
 import {t} from '@craftcms/ui/utilities/translate';
 import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
+import {setElementAttributes} from '@/common/craft/attributes';
 
 declare const Craft: any;
 declare const $: any;
@@ -275,7 +276,7 @@ export class CpModal extends Base {
       }
 
       if (data.formAttributes) {
-        Craft.setElementAttributes(this.#$container, data.formAttributes);
+        setElementAttributes(this.#$container, data.formAttributes);
       }
 
       requestAnimationFrame(() => {
