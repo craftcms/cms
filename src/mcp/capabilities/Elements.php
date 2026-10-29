@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace craft\mcp\capabilities;
 
+use craft\mcp\attributes\RequiresPermission;
 use craft\mcp\ElementLifecycle;
 use craft\mcp\ElementQueryCriteria;
 use craft\mcp\ElementResourceLinks;
@@ -81,6 +82,7 @@ readonly class Elements
         description: 'Describes an element type for the elements.* tools: the criteria, create and update attributes, field-schema context, and duplication modes it accepts. Also available as the craft://element-types/{type} resource.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
+    #[RequiresPermission('accessCp')]
     public function schema(
         #[Schema(definition: self::TypeSchema)]
         string $type,
@@ -399,6 +401,7 @@ readonly class Elements
         description: 'A JSON list of the element types the elements.* tools support.',
         mimeType: 'application/json',
     )]
+    #[RequiresPermission('accessCp')]
     public function typesResource(): array
     {
         $types = array_map(function(string $handle): array {
@@ -423,6 +426,7 @@ readonly class Elements
         description: 'A JSON description of the criteria, attributes, field-schema context, and duplication modes an element type accepts in the elements.* tools.',
         mimeType: 'application/json',
     )]
+    #[RequiresPermission('accessCp')]
     public function typeResource(string $type): array
     {
         $adapter = $this->adapters->find($type);

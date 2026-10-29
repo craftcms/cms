@@ -17,13 +17,13 @@ class ServerFactory
     ) {
     }
 
-    public function admin(): Server
+    public function authenticated(): Server
     {
         $scopes = Craft::$app->get('mcp')->tokenScopes ?? [];
         sort($scopes);
 
         return $this->builder($this->capabilities, AdminInstructions::Brief)
-            ->setSession(new SessionStore(Craft::$app->getCache(), ['admin', Craft::$app->getUser()->getId(), $scopes]))
+            ->setSession(new SessionStore(Craft::$app->getCache(), ['authenticated', Craft::$app->getUser()->getId(), $scopes]))
             ->build();
     }
 

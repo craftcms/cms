@@ -152,10 +152,10 @@ class OAuthTest extends TestCase
         $apiTokens = $this->exchange(['grant_type' => 'authorization_code', 'code' => $code, 'redirect_uri' => 'https://client.example/callback', 'code_verifier' => $verifier], 'api');
         self::assertSame($this->app->identity->id, $this->authenticate($apiTokens['access_token'], 'api')->id);
 
-        $this->app->identity->permissions = ['accessCp', 'useCraftMcp', 'useApi'];
+        $this->app->identity->permissions = ['useApi'];
         $code = $this->authorize($verifier);
         $mcpTokens = $this->exchange(['grant_type' => 'authorization_code', 'code' => $code, 'redirect_uri' => 'https://client.example/callback', 'code_verifier' => $verifier]);
-        $this->app->identity->permissions = ['accessCp', 'useCraftMcp'];
+        $this->app->identity->permissions = [];
 
         $this->expectOAuthError(fn() => $this->authenticate($apiTokens['access_token'], 'api'), 'access_denied');
         $this->expectOAuthError(fn() => $this->exchange(['grant_type' => 'refresh_token', 'refresh_token' => $apiTokens['refresh_token']], 'api'), 'access_denied');
@@ -442,7 +442,7 @@ class OAuthTestApplication extends Application
 
 class OAuthTestUser extends User
 {
-    public array $permissions = ['accessCp', 'useCraftMcp', 'useApi'];
+    public array $permissions = ['accessCp', 'useApi'];
     public function init(): void
     {
     }

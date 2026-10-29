@@ -5,7 +5,6 @@ namespace craft\services;
 use Craft;
 use craft\elements\User;
 use craft\events\RegisterComponentTypesEvent;
-use craft\helpers\UrlHelper;
 use craft\mcp\CapabilityContainer;
 use craft\mcp\CapabilityRegistry;
 use craft\mcp\contentmodel\CheckRegistry;
@@ -61,8 +60,7 @@ class Mcp extends Component
                 self::SCOPE_ADMIN => Craft::t('app', 'Full access'),
             ],
             'userScopes' => fn(User $user, array $scopes) => $user->admin ? $scopes : array_diff($scopes, [self::SCOPE_ADMIN]),
-            'permissions' => ['accessCp', 'useCraftMcp'],
-            'resourceUrl' => fn() => UrlHelper::removeParam(UrlHelper::cpUrl('mcp'), 'site'),
+            'resourceUrl' => fn() => $this->getSettings()->url($this->getSettings()->authorizationRoute),
             'consentDescription' => 'This client can use Craft MCP at the access level you choose, within your permissions.',
         ]);
     }

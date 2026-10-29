@@ -93,24 +93,24 @@ class HttpTransportTest extends TestCase
         $user = User::find()->admin()->one();
         Craft::$app->getUser()->setIdentity($user);
         Craft::$app->get('mcp')->tokenScopes = [Mcp::SCOPE_READ, Mcp::SCOPE_WRITE];
-        $response = $this->exchange('admin', $this->initialize('2025-11-25'));
+        $response = $this->exchange('authenticated', $this->initialize('2025-11-25'));
         self::assertSame(200, $response->getStatusCode(), (string)$response->getBody());
         $headers = ['Mcp-Session-Id' => $response->getHeaderLine('Mcp-Session-Id'), 'MCP-Protocol-Version' => '2025-11-25'];
         $list = ['jsonrpc' => '2.0', 'id' => 2, 'method' => 'tools/list'];
 
         // Scope ordering does not create a different session.
         Craft::$app->get('mcp')->tokenScopes = [Mcp::SCOPE_WRITE, Mcp::SCOPE_READ];
-        self::assertSame(200, $this->exchange('admin', $list, $headers)->getStatusCode());
+        self::assertSame(200, $this->exchange('authenticated', $list, $headers)->getStatusCode());
         self::assertSame(404, $this->exchange('public', $list, $headers)->getStatusCode());
 
         Craft::$app->get('mcp')->tokenScopes = [Mcp::SCOPE_READ];
-        self::assertSame(404, $this->exchange('admin', $list, $headers)->getStatusCode());
+        self::assertSame(404, $this->exchange('authenticated', $list, $headers)->getStatusCode());
 
         Craft::$app->get('mcp')->tokenScopes = [Mcp::SCOPE_READ, Mcp::SCOPE_WRITE];
         $otherUser = clone $user;
         $otherUser->id += 1000;
         Craft::$app->getUser()->setIdentity($otherUser);
-        self::assertSame(404, $this->exchange('admin', $list, $headers)->getStatusCode());
+        self::assertSame(404, $this->exchange('authenticated', $list, $headers)->getStatusCode());
     }
 
     private function initialize(string $version): array

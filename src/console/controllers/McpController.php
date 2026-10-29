@@ -29,7 +29,7 @@ class McpController extends Controller
             ? Craft::$app->getUsers()->getUserById((int)$this->user)
             : Craft::$app->getUsers()->getUserByUsernameOrEmail($this->user);
 
-        if (!$user || !$user->active || $user->suspended || $user->locked || !$user->can('useCraftMcp')) {
+        if (!$user || !$user->active || $user->suspended || $user->locked) {
             $this->stderr("The selected user is not permitted to use Craft MCP.\n");
             return ExitCode::NOPERM;
         }

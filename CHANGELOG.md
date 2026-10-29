@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Added authenticated HTTP, public HTTP, and stdio MCP servers, with OAuth authorization, public content approvals, and plugin extension points.
+- Added authenticated HTTP, public HTTP, and stdio MCP servers, with OAuth authorization, public content approvals, and plugin extension points. The HTTP servers are enabled and given endpoints from Settings → MCP.
 - Added `craft\base\InputSchemaFieldInterface`.
 - Plain Text, Email, Link, Number, Money, Lightswitch, Date, Time, Color, Country, Table, and option fields now implement `craft\base\InputSchemaFieldInterface`.
 - Added `craft\gql\GqlInputSchema`.

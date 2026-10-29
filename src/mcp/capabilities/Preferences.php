@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace craft\mcp\capabilities;
 
 use Craft;
+use craft\mcp\attributes\RequiresPermission;
 use craft\mcp\McpActor;
 use craft\services\Users;
 use Mcp\Capability\Attribute\McpTool;
@@ -32,6 +33,7 @@ class Preferences
         description: 'Returns the authenticated user’s preferred control panel language and formatting locale. A null locale means dates and numbers are formatted for the language.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
+    #[RequiresPermission('accessCp')]
     public function get(): array
     {
         $preferences = $this->users->getUserPreferences($this->actor->user()->id);
@@ -52,6 +54,7 @@ class Preferences
         description: 'Changes the authenticated user’s preferred control panel language or formatting locale, as their Preferences page does. Omitted values are left as they are.',
         annotations: new ToolAnnotations(destructiveHint: false, idempotentHint: true),
     )]
+    #[RequiresPermission('accessCp')]
     public function update(RequestContext $context, ?string $language = null, ?string $locale = null): array
     {
         $request = $context->getRequest();
