@@ -3,6 +3,7 @@ import {inputName} from '@/modules/ui/runtime';
 import type {UiValues} from '@/modules/ui/types';
 import {isHttpError} from '@craftcms/ui/utilities/api/http';
 import type {LegacyRequestOptions} from '@craftcms/ui/utilities/api/legacyRequest';
+import {findDeltaData} from '@/common/craft/delta';
 
 declare const Craft: any;
 declare const $: any;
@@ -298,7 +299,7 @@ export class CpModal extends Base {
   submit(): void {
     this.showSubmitSpinner();
 
-    const data = Craft.findDeltaData(
+    const data = findDeltaData(
       this.#$container.data('initialSerializedValue'),
       this.#$container.serialize(),
       this.#$container.data('delta-names'),

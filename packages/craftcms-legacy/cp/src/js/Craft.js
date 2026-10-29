@@ -3,6 +3,12 @@ import {createHttpClient, isCancel} from '@craftcms/ui/utilities/api/http';
 import {sendLegacyRequest} from '@craftcms/ui/utilities/api/legacyRequest';
 import * as d3 from 'd3';
 import {
+  findDeltaData,
+  findModifiedDeltaNames,
+  groupParams,
+  groupParamsByDeltaNames,
+} from '../../../../../resources/js/common/craft/delta';
+import {
   formatInputId,
   namespaceId,
   namespaceInputName,
@@ -890,235 +896,13 @@ $.extend(Craft, {
     return arr;
   },
 
-  /**
-   * @callback findDeltaDataCallback
-   * @param {string} deltaName
-   * @param {Array} params
-   */
-  /**
-   * Compares old and new post data, and removes any values that haven't
-   * changed within the given list of delta namespaces.
-   *
-   * @param {string} oldData
-   * @param {string} newData
-   * @param {Object} deltaNames
-   * @param {findDeltaDataCallback|null} [callback] Callback function that should be called whenever a new group of modified params has been found
-   * @param {Object} [initialDeltaValues] Initial delta values. If undefined, `Craft.initialDeltaValues` will be used.
-   * @param {Object} [forceModifiedDeltaNames] List of delta names that should be considered modified regardless of their param values
-   * @param {boolean} [asArray] Whether the params should be returned as an array
-   * @returns {string}
-   */
-  findDeltaData: function (
-    oldData,
-    newData,
-    deltaNames,
-    callback = null,
-    initialDeltaValues = {},
-    forceModifiedDeltaNames = [],
-    asArray = false
-  ) {
-    const [modifiedDeltaNames, groupedNewParams] = this.findModifiedDeltaNames(
-      oldData,
-      newData,
-      deltaNames,
-      initialDeltaValues,
-      forceModifiedDeltaNames
-    );
+  findDeltaData,
 
-    // Figure out which of the new params should actually be posted
-    let params = groupedNewParams.__root__;
-    for (const name of modifiedDeltaNames) {
-      params = params.concat(groupedNewParams[name]);
-      params.push(`modifiedDeltaNames[]=${name}`);
-      if (callback) {
-        callback(name, groupedNewParams[name]);
-      }
-    }
+  findModifiedDeltaNames,
 
-    return asArray ? params : params.join('&');
-  },
+  groupParams,
 
-  /**
-   * Returns the delta names that have been modified, given old and new form data.
-   *
-   * @param {string} oldData
-   * @param {string} newData
-   * @param {Object} deltaNames
-   * @param {Object} [initialDeltaValues] Initial delta values. If undefined, `Craft.initialDeltaValues` will be used.
-   * @param {Object} [modifiedDeltaNames] List of delta names that should be considered modified regardless of their param values
-   * @param {boolean} [mostSpecific] Whether the most specific modified delta names should be returned
-   * @returns {Array}
-   */
-  findModifiedDeltaNames: function (
-    oldData,
-    newData,
-    deltaNames,
-    initialDeltaValues = {},
-    modifiedDeltaNames = [],
-    mostSpecific = false
-  ) {
-    // Make sure oldData and newData are always strings. This is important because further below String.split is called.
-    oldData = typeof oldData === 'string' ? oldData : '';
-    newData = typeof newData === 'string' ? newData : '';
-    deltaNames = Array.isArray(deltaNames) ? [...deltaNames] : [];
-    initialDeltaValues = $.isPlainObject(initialDeltaValues)
-      ? initialDeltaValues
-      : {};
-    modifiedDeltaNames = Array.isArray(modifiedDeltaNames)
-      ? [...modifiedDeltaNames]
-      : [];
-
-    // Sort the delta namespaces from least -> most specific
-    deltaNames.sort((a, b) => {
-      if (a.length === b.length) {
-        return 0;
-      }
-      if (mostSpecific) {
-        return a.length < b.length ? 1 : -1;
-      }
-      return a.length > b.length ? 1 : -1;
-    });
-
-    // Group all the old & new params by namespace
-    const groupedOldParams = this._groupParamsByDeltaNames(
-      oldData,
-      deltaNames,
-      false,
-      initialDeltaValues
-    );
-    const groupedNewParams = this._groupParamsByDeltaNames(
-      newData,
-      deltaNames,
-      true,
-      false
-    );
-
-    for (const name of deltaNames) {
-      if (
-        !modifiedDeltaNames.includes(name) &&
-        typeof groupedNewParams[name] === 'object' &&
-        (typeof groupedOldParams[name] !== 'object' ||
-          JSON.stringify(groupedOldParams[name]) !==
-            JSON.stringify(groupedNewParams[name]))
-      ) {
-        modifiedDeltaNames.push(name);
-      }
-    }
-
-    // Sort the delta namespaces from least -> most specific
-    modifiedDeltaNames.sort((a, b) => {
-      if (a.length === b.length) {
-        return 0;
-      }
-      if (mostSpecific) {
-        return a.length < b.length ? 1 : -1;
-      }
-      return a.length > b.length ? 1 : -1;
-    });
-
-    return [modifiedDeltaNames, groupedNewParams];
-  },
-
-  /**
-   * @param {string|Object} params
-   * @param {Object} deltaNames
-   * @param {boolean} [withRoot]
-   * @returns {Object}
-   */
-  groupParams: function (params, deltaNames, withRoot = false) {
-    if (typeof params === 'string') {
-      params = params.split('&');
-    }
-
-    const grouped = {};
-
-    if (withRoot) {
-      grouped.__root__ = [];
-    }
-
-    // sort delta names from most to least specific
-    deltaNames = deltaNames.sort((a, b) => b.length - a.length);
-
-    for (const name of deltaNames) {
-      grouped[name] = [];
-    }
-
-    const encodeURIComponentExceptEqualChar = (o) =>
-      encodeURIComponent(o).replace('%3D', '=');
-
-    params = params.map((p) => decodeURIComponent(p));
-
-    paramLoop: for (const param of params) {
-      for (const name of deltaNames) {
-        const paramName = param.substring(0, name.length + 1);
-        if ([`${name}=`, `${name}[`].includes(paramName)) {
-          if (typeof grouped[name] === 'undefined') {
-            grouped[name] = [];
-          }
-          grouped[name].push(encodeURIComponentExceptEqualChar(param));
-          continue paramLoop;
-        }
-      }
-
-      if (withRoot) {
-        grouped.__root__.push(encodeURIComponentExceptEqualChar(param));
-      }
-    }
-
-    return grouped;
-  },
-
-  /**
-   * @param {string|Object} params
-   * @param {Object} deltaNames
-   * @param {boolean} withRoot
-   * @param {(boolean|Object)} initialValues
-   * @returns {Object}
-   * @private
-   */
-  _groupParamsByDeltaNames: function (
-    params,
-    deltaNames,
-    withRoot,
-    initialValues
-  ) {
-    const grouped = this.groupParams(params, deltaNames, withRoot);
-
-    if (initialValues) {
-      const serializeParam = (name, value) => {
-        if (Array.isArray(value) || $.isPlainObject(value)) {
-          value = $.param(value);
-        } else if (typeof value === 'string') {
-          value = encodeURIComponent(value);
-        } else if (value === null) {
-          value = '';
-        }
-        return `${encodeURIComponent(name)}=${value}`;
-      };
-
-      for (const name in initialValues) {
-        if (initialValues.hasOwnProperty(name)) {
-          if ($.isPlainObject(initialValues[name])) {
-            grouped[name] = [];
-            for (const subName in initialValues[name]) {
-              if (initialValues[name].hasOwnProperty(subName)) {
-                grouped[name].push(
-                  serializeParam(
-                    `${name}[${subName}]`,
-                    initialValues[name][subName]
-                  )
-                );
-              }
-            }
-          } else {
-            grouped[name] = [serializeParam(name, initialValues[name])];
-          }
-        }
-      }
-    }
-
-    return grouped;
-  },
+  _groupParamsByDeltaNames: groupParamsByDeltaNames,
 
   /**
    * Expands an object of POST array-style strings into an actual array.
