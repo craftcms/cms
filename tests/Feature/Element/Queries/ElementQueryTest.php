@@ -255,3 +255,26 @@ it('orders by custom field handles across field layouts', function (string $fiel
     'text' => [PlainText::class, ['Bravo', 'Alpha', 'Charlie']],
     'number' => [Number::class, [10, 2, 30]],
 ])->with([false, true]);
+
+it('orders by rand() and random() on every database', function () {
+    $ids = EntryModel::factory(3)->create()->pluck('id')->sort()->values()->all();
+    $query = fn () => Entry::find()->id($ids);
+
+    foreach (['rand()', 'RANDOM() desc'] as $orderBy) {
+        expect($query()->orderBy($orderBy)->ids())->toEqualCanonicalizing($ids);
+    }
+
+    expect($query()->orderBy(['random()' => SORT_ASC])->ids())->toEqualCanonicalizing($ids);
+});
+
+it('rejects other SQL expressions passed as strings', function (Closure $query) {
+    $entry = EntryModel::factory()->create();
+
+    expect(fn () => $query(Entry::find()->id($entry->id))->all())
+        ->toThrow(InvalidArgumentException::class, 'Pass SQL expressions with `expression()`');
+})->with([
+    'orderBy' => [fn (ElementQuery $query) => $query->orderBy('field(elements.id, 3, 1, 2)')],
+    'orderBy array' => [fn (ElementQuery $query) => $query->orderBy(['coalesce(elements.id, 0)' => SORT_DESC])],
+    'select' => [fn (ElementQuery $query) => $query->select(['count(*) as total'])->asArray()],
+    'groupBy' => [fn (ElementQuery $query) => $query->groupBy('lower(elements.type)')],
+]);
