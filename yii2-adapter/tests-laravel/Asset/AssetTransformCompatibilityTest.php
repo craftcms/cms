@@ -38,6 +38,7 @@ use CraftCms\Cms\Image\Events\ImageTransforming;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Yii2Adapter\Asset\ImageTransformers;
 use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
 use Illuminate\Support\Facades\DB;
@@ -88,6 +89,29 @@ it('provides mutable transform state and transformed copies', function(): void {
     expect($copy)->not->toBe($asset)
         ->and($copy->getUrl())->toBe('/transforms/640x320.webp')
         ->and($asset->getUrl())->toBe('/transforms/320x160.webp');
+});
+
+it('applies setTransform() to the URL of native assets', function(): void {
+    $model = AssetModel::factory()->create([
+        'filename' => 'source.jpg',
+        'width' => 800,
+        'height' => 400,
+        'id' => Element::factory()->set('type', Asset::class),
+    ]);
+    $asset = Asset::find()->id($model->id)->one();
+    $other = Asset::find()->id($model->id)->one();
+
+    expect($asset)->not->toBeInstanceOf(LegacyAsset::class);
+
+    $html = app(TemplateManager::class)->renderString(
+        '{% do asset.setTransform({ width: 320 }) %}{{ asset.url }}',
+        ['asset' => $asset],
+    );
+
+    expect($html)->toBe('/transforms/320x160.webp')
+        ->and($other->getUrl())->toBeNull()
+        ->and($asset->setTransform(null))->toBe($asset)
+        ->and($asset->getUrl())->toBeNull();
 });
 
 it('provides named transform magic properties', function(): void {

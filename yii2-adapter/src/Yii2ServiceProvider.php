@@ -42,6 +42,7 @@ use CraftCms\Cms\Utility\UtilityTypes;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateRoots;
 use CraftCms\Yii2Adapter\Asset\LegacyAssetFileKinds;
+use CraftCms\Yii2Adapter\Asset\LegacyAssetTransforms;
 use CraftCms\Yii2Adapter\Config\GeneralConfigCompatibility;
 use CraftCms\Yii2Adapter\Config\MultiEnvironmentConfigCompatibility;
 use CraftCms\Yii2Adapter\Console\AddCategoriesSupportCommand;
@@ -153,6 +154,7 @@ class Yii2ServiceProvider extends ServiceProvider
 
             $event->handled = true;
         });
+        Event::listen(AssetUrlResolving::class, [LegacyAssetTransforms::class, 'handleUrlResolving']);
         $this->app->scoped(Gql::class, LegacyGql::class);
         $this->app->scoped(SystemMessages::class, LegacySystemMessages::class);
         $this->app->scoped(UserPermissions::class, LegacyUserPermissions::class);
