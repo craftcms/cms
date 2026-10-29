@@ -4,4 +4,4 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/bootstrap-plugin', fn () => ['plugin' => 'bootstrap-plugin']);
+Route::get('/bootstrap-plugin', fn () => ['plugin' => 'bootstrap-plugin'])->name('bootstrap-plugin.index');

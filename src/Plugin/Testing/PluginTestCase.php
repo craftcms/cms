@@ -62,6 +62,7 @@ abstract class PluginTestCase extends BaseTestCase
             password: 'craftcms2018!!',
             email: 'support@craftcms.com',
             site: $site,
+            applyProjectConfigYaml: false,
         )->silent();
 
         $migrator = app(Migrator::class)->track('craft');
