@@ -945,9 +945,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             $sql = new Coalesce([
                 new JsonExtract(
                     'elements_sites.content',
-                    DB::getDriverName() === 'sqlite'
-                        ? [$this->layoutElement->uid, $key]
-                        : "$.\"{$this->layoutElement->uid}\".\"{$key}\"",
+                    [$this->layoutElement->uid, $key],
                 ),
                 $sql,
             ]);
@@ -977,12 +975,17 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             };
         }
 
-        // for pgsql, we have to make sure decimals column type is cast to decimal, otherwise they won't be sorted correctly
+        // PostgreSQL extracts JSON values as text, so numeric field types need explicit casts.
         // see https://github.com/craftcms/cms/issues/15828, https://github.com/craftcms/cms/issues/15973
         if (DB::getDriverName() === 'pgsql') {
             $castType = match (Query::parseColumnType($dbType)) {
                 Query::TYPE_DECIMAL => 'DECIMAL',
+                Query::TYPE_TINYINT,
+                Query::TYPE_SMALLINT => 'SMALLINT',
                 Query::TYPE_INTEGER => 'INTEGER',
+                Query::TYPE_BIGINT => 'BIGINT',
+                Query::TYPE_FLOAT => 'REAL',
+                Query::TYPE_DOUBLE => 'DOUBLE PRECISION',
                 default => null,
             };
         }
