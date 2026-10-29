@@ -14,8 +14,7 @@ use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Ui\Controls\Lightswitch;
 use CraftCms\Cms\Ui\Controls\PermissionTree;
 use CraftCms\Cms\Ui\Controls\Text;
-use CraftCms\Cms\Ui\Enums\ControlMode;
-use CraftCms\Cms\Ui\Nodes\CopyAttribute;
+use CraftCms\Cms\Ui\Nodes\Callout;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\Heading;
 use CraftCms\Cms\Ui\Nodes\Separator;
@@ -47,27 +46,38 @@ readonly class SettingsUi
         private Volumes $volumes,
     ) {}
 
-    public function make(): Ui
+    /** @param array<string, mixed> $values The form's current values, which decide which notices show. */
+    public function make(array $values = []): Ui
     {
-        $endpoint = route('craft.cp.mcp.server');
+        $settings = new Settings;
+        $route = (string) ($values['route'] ?? $settings->route);
+        $publicRoute = (string) ($values['publicRoute'] ?? $settings->publicRoute);
+        $shared = ($values['enabled'] ?? false) && ($values['publicEnabled'] ?? false) && trim($route, '/') === trim($publicRoute, '/');
 
         return Ui::make([
-            Heading::make('mcp-connection-heading', t('Connection'))
-                ->description(t('Clients authenticate through Laravel Passport. The authorizing user must have control panel access and the “Use Craft MCP” permission.')),
-            Field::make(t('MCP Endpoint'), Text::make('endpoint')->monospace()->mode(ControlMode::ReadOnly))
-                ->instructions(t('Use this URL when connecting an authenticated MCP client to Craft.'))
-                ->actions(CopyAttribute::make('mcp-endpoint-copy', $endpoint)),
-            Separator::make('public-mcp-separator'),
-            Heading::make('public-mcp-heading', t('Public MCP'))
-                ->description(t('Public MCP is disabled until it is enabled here. Every public capability and content source also requires explicit approval below.')),
-            $this->booleanField(
-                t('Enable Public MCP'),
-                'publicEnabled',
-                t('Allow unauthenticated MCP clients to access explicitly approved capabilities and content.'),
-            ),
-            Field::make(t('Public Endpoint'), Text::make('publicRoute')->monospace())
-                ->instructions(t('Enter an app-relative path, such as `/mcp`.'))
+            Heading::make('mcp-authenticated-heading', t('Authenticated MCP Server'))
+                ->description(t('Lets MCP clients act as a Craft user after the user signs in and approves access. Any active user can sign in. Tools still check their permissions.')),
+            Field::make(t('Enable the Authenticated MCP Server'), Lightswitch::make('enabled')->reactive()),
+            Field::make(t('Endpoint'), Text::make('route')->monospace()->reactive())
+                ->instructions(t('The app-relative path MCP clients connect to, such as `/mcp`.'))
                 ->required(),
+            ...($settings->isCpRoute($route) ? [
+                Callout::make('mcp-route-cp-notice', t('This endpoint is in the control panel, so only users with control panel access can use it.')),
+            ] : []),
+            Field::make(t('Authorization Endpoint'), Text::make('authorizationRoute')->monospace())
+                ->instructions(t('The app-relative path to give MCP clients that sign in with OAuth. It always requires an access token, so clients can discover how to sign in.'))
+                ->required(),
+            Separator::make('public-mcp-separator'),
+            Heading::make('public-mcp-heading', t('Public MCP Server'))
+                ->description(t('Lets anyone use the tools and content you approve below, without signing in.')),
+            Field::make(t('Enable the Public MCP Server'), Lightswitch::make('publicEnabled')->reactive()),
+            Field::make(t('Endpoint'), Text::make('publicRoute')->monospace()->reactive())
+                ->instructions(t('The app-relative path public MCP clients connect to, such as `/mcp`.'))
+                ->required(),
+            ...($shared ? [
+                Callout::make('mcp-shared-endpoint-warning', t('The authenticated server uses this endpoint too. Requests without an access token go to the public server, so MCP clients can’t discover how to sign in at this endpoint.'))
+                    ->variant('warning'),
+            ] : []),
             Separator::make('public-capabilities-separator'),
             Heading::make('public-capabilities-heading', t('Public Capabilities'))
                 ->description(t('Approve each capability that unauthenticated MCP clients may discover and execute.')),

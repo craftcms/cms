@@ -11,7 +11,7 @@ use Laravel\Passport\Passport;
 beforeEach(function (): void {
     $key = openssl_pkey_new(['private_key_bits' => 2048]);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
-    $this->user = User::factory()->withPermissions(['accessCp', 'useCraftMcp'])->create(['admin' => false]);
+    $this->user = User::factory()->withPermissions(['accessCp'])->create(['admin' => false]);
     Passport::actingAs($this->user, ['mcp:write'], 'craft-mcp');
 
     $this->call = fn (string $name, array $arguments = []): TestResponse => McpRequest::send($this, 'tools/call', [

@@ -35,7 +35,7 @@ readonly class AuthorizationView
         $client = $parameters['client'];
         $clientName = (string) $client->getAttribute('name');
         $redirectUri = $request->query('redirect_uri') ?? $client->getAttribute('redirect_uris')[0] ?? null;
-        $isMcp = $request->routeIs('craft.cp.mcp.oauth.*');
+        $isMcp = $request->routeIs('craft.mcp.oauth.*');
         $user = $request->craftUser();
         $accessChoices = $isMcp && $user
             ? McpScope::choices(array_map(static fn (Scope $scope): string => $scope->id, $parameters['scopes']), $user)
@@ -57,7 +57,7 @@ readonly class AuthorizationView
 
         $authToken = $parameters['authToken'];
         $csrfToken = csrf_token();
-        $routePrefix = $isMcp ? 'craft.cp.mcp.oauth.' : 'passport.authorizations.';
+        $routePrefix = $isMcp ? 'craft.mcp.oauth.' : 'passport.authorizations.';
         $approveAction = route($routePrefix.'approve');
         $denyAction = route($routePrefix.'deny');
         $viewData = compact('clientName', 'redirectUri', 'scopes', 'accessOptions', 'authToken', 'csrfToken', 'approveAction', 'denyAction');

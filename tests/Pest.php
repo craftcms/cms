@@ -4,15 +4,52 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Mcp\Public\Access;
+use CraftCms\Cms\Mcp\RouteRegistrar;
+use CraftCms\Cms\Mcp\Settings;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Tests\TestCase;
 use CraftCms\Cms\Tests\UnitTestCase;
+use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Http\Request;
+use Illuminate\Routing\RouteCollection;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Assert;
 
 uses(TestCase::class)->in('Feature');
 uses(UnitTestCase::class)->in('Unit');
+
+// MCP routes follow the MCP settings, and tests start from cached routes registered before any settings existed.
+pest()->beforeEach(fn () => enableMcp())->in('Feature/Mcp');
+
+/**
+ * Saves MCP settings, enabling the authenticated server by default, and registers the routes they call for.
+ *
+ * @param  array<string, mixed>  $settings
+ */
+function enableMcp(array $settings = []): void
+{
+    $projectConfig = app(ProjectConfig::class);
+    $projectConfig->set('mcp', [...($projectConfig->get('mcp') ?? []), 'enabled' => true, ...$settings]);
+    app()->forgetInstance(Settings::class);
+    app()->forgetInstance(Access::class);
+
+    // Cached routes are compiled, and compiled collections can't look up routes named after they were added. Start
+    // from a plain collection without any MCP routes from earlier settings.
+    $routes = new RouteCollection;
+
+    foreach (Route::getRoutes()->getRoutes() as $route) {
+        if (($route->defaults['mcp'] ?? false) !== true && ! str_starts_with((string) $route->getName(), 'craft.mcp.')) {
+            $routes->add($route);
+        }
+    }
+
+    Route::setRoutes($routes);
+    app(UrlGenerator::class)->setRoutes($routes);
+    app(RouteRegistrar::class)->register();
+}
 
 /**
  * Asserts the response flashed a message of the given type, and optionally

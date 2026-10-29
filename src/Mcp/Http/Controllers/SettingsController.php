@@ -14,6 +14,8 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -30,11 +32,30 @@ readonly class SettingsController
         private GeneralConfig $generalConfig,
         private ProjectConfig $projectConfig,
         private SettingsUi $settingsUi,
+        private UiResolver $uiResolver,
     ) {}
 
     public function index(Settings $settings): CpScreenResponse
     {
         return $this->screen($settings);
+    }
+
+    /** Rebuilds the settings Ui for the submitted form values, so its notices follow the endpoints. */
+    public function renderUi(Request $request): JsonResponse
+    {
+        $request->validate([
+            'values' => ['required', 'array'],
+            'scope' => ['present', 'array', 'size:0'],
+        ]);
+
+        $values = $request->array('values');
+
+        return new JsonResponse([
+            'ui' => $this->uiResolver->resolve($this->settingsUi->make($values), new UiContext(
+                values: $values,
+                refreshable: true,
+            )),
+        ]);
     }
 
     public function store(Request $request, Settings $settings): Response|CpScreenResponse
@@ -52,13 +73,8 @@ readonly class SettingsController
 
     private function screen(Settings $settings): CpScreenResponse
     {
-        $mode = $this->generalConfig->allowAdminChanges
-            ? ControlMode::Editable
-            : ControlMode::ReadOnly;
-        $values = [
-            ...$settings->toArray(),
-            'endpoint' => route('craft.cp.mcp.server'),
-        ];
+        $editable = $this->generalConfig->allowAdminChanges;
+        $values = $settings->toArray();
 
         return new CpScreenResponse()
             ->title(t('MCP Settings'))
@@ -67,12 +83,15 @@ readonly class SettingsController
                 new ActionItem()->label(t('MCP')),
             ])
             ->redirectUrl('settings')
-            ->ui($this->settingsUi->make(), new UiContext(
-                values: $values,
-                errors: $settings->errors()->getMessages(),
-                mode: $mode,
-            ), props: [
-                'readOnly' => ! $this->generalConfig->allowAdminChanges,
+            ->inertiaPage('settings/mcp/Settings', [
+                'ui' => $this->uiResolver->resolve($this->settingsUi->make($values), new UiContext(
+                    values: $values,
+                    errors: $settings->errors()->getMessages(),
+                    mode: $editable ? ControlMode::Editable : ControlMode::ReadOnly,
+                    refreshable: $editable,
+                )),
+                'readOnly' => ! $editable,
+                'refreshUrl' => $editable ? route('craft.cp.settings.mcp.render-ui') : null,
                 'submit' => [
                     'method' => 'post',
                     'url' => route('craft.cp.settings.mcp.store'),

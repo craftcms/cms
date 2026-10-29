@@ -331,6 +331,9 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::post('settings/mcp', [McpSettingsController::class, 'store'])
             ->middleware(RequireAdminChanges::class)
             ->name('settings.mcp.store');
+        Route::post('settings/mcp/render-ui', [McpSettingsController::class, 'renderUi'])
+            ->middleware(RequireAdminChanges::class)
+            ->name('settings.mcp.render-ui');
 
         // Entry types
         Route::prefix('settings/entry-types')->name('settings.entry-types.')->group(function () {
