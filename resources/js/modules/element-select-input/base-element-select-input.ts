@@ -19,6 +19,8 @@ import {getActionUrl} from '@/common/craft/url';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
+import {addActionsToChip} from '@/common/craft/chip-actions';
+import {hasMousePointerEvents} from '@/common/craft/pointer';
 
 declare const Craft: any;
 declare const $: any;
@@ -136,7 +138,7 @@ const DEFAULTS: BaseElementSelectInputSettings = {
   selectable: true,
   // Whether chips get an action menu at all: it's forwarded to
   // `app/render-elements` for the chips fetched after a selection, and gates
-  // the client-side `Craft.addActionsToChip()` injection in `addElements()`.
+  // the client-side `addActionsToChip()` injection in `addElements()`.
   // Set it to `false` when the host renders the chips' menus itself (e.g.
   // `ElementSelectControl.vue`).
   showActionMenu: true,
@@ -415,7 +417,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
   }
 
   initElementSort(): void {
-    if (this.settings.sortable && Craft.hasMousePointerEvents()) {
+    if (this.settings.sortable && hasMousePointerEvents()) {
       this.elementSort = new DragSort({
         container: this.$elementsContainer,
         filter: this.settings.selectable
@@ -585,7 +587,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
         : [];
 
       if (actions.length) {
-        Craft.addActionsToChip($element, actions);
+        addActionsToChip($element, actions);
 
         const updateMoveButtons = () => {
           const $li = $element.parent();

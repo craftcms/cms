@@ -35,7 +35,6 @@ describe('CpModal', () => {
         elementThumbLoader: {load: vi.fn()},
       },
       baseCpUrl: 'https://example.test/admin',
-      setElementAttributes: vi.fn(),
       appendHeadHtml: vi.fn(),
       appendBodyHtml: vi.fn(),
       initUiElements: vi.fn(),

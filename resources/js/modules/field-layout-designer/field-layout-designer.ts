@@ -22,6 +22,7 @@ import type {FieldLayoutConfig, FieldLayoutDesignerSettings} from './types';
 import {ButtonVariant, t} from '@craftcms/ui';
 import {openSlideout} from '@/common/slideouts';
 import {getCpUrl} from '@/common/craft/url';
+import {escapeHtml} from '@/common/craft/attributes';
 
 // `Craft` and jQuery (`$`) are still globals on the page. FLD is native; `$` is
 // used ONLY at the Craft-interop seams (Craft.ui/Grid/listbox/Slideout return or
@@ -448,9 +449,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     if (this.tabElements().length === 0) {
       defaultValue = t('Content');
     }
-    const name = Craft.escapeHtml(
-      prompt(t('Give your tab a name.'), defaultValue)
-    );
+    const name = escapeHtml(prompt(t('Give your tab a name.'), defaultValue));
 
     if (!name) {
       return;

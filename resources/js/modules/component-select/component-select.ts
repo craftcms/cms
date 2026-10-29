@@ -14,13 +14,14 @@ import {getActionUrl} from '@/common/craft/url';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
+import {addActionsToChip} from '@/common/craft/chip-actions';
+import {hasMousePointerEvents} from '@/common/craft/pointer';
 
 // `Craft` and `$` (jQuery) remain page globals. The Choose menu and the
 // *chip* action menus are both modern, self-booting `craft-action-menu`s
-// now, but the controller still pairs `@craftcms/garnish` `DragSort` with
-// still-jQuery Craft seams — `Craft.addActionsToChip` (which also carries a
-// jQuery `disclosureMenu()` fallback for old/plugin-rendered chip markup) —
-// so jQuery survives there.
+// now, but chips are still wired with jQuery events, and `addActionsToChip()`
+// keeps a jQuery `disclosureMenu()` fallback for old/plugin-rendered chip
+// markup.
 declare const Craft: any;
 declare const $: any;
 
@@ -42,13 +43,13 @@ const wiredChips = new WeakSet<HTMLElement>();
  * Detail for the bubbling `define-chip-actions` `CustomEvent` dispatched while
  * a chip gets its one-time wiring. Listeners — `<craft-entry-type-manager>`
  * adds its "Move to previous/next group" items this way — may push
- * `Craft.addActionsToChip` action descriptors into `actions`; contributed
+ * `addActionsToChip()` action descriptors into `actions`; contributed
  * actions land before the built-in Replace/Remove items.
  */
 export interface DefineChipActionsEventDetail {
   /** The chip being wired. */
   chip: HTMLElement;
-  /** `Craft.addActionsToChip` action descriptors to add to the chip's menu. */
+  /** `addActionsToChip()` action descriptors to add to the chip's menu. */
   actions: any[];
 }
 
@@ -736,7 +737,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
   }
 
   /**
-   * Add the chip's action-menu items through the `Craft.addActionsToChip` seam
+   * Add the chip's action-menu items through the `addActionsToChip()` seam
    * (it finds — or creates — the self-booting `craft-action-menu` inside the
    * `craft-chip`'s `[slot="suffix"]`, building `craft-action-item`s from these
    * descriptors). A bubbling `define-chip-actions` event — dispatched natively
@@ -799,7 +800,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
       destructive: true,
     });
 
-    Craft.addActionsToChip($(chip), actions);
+    addActionsToChip($(chip), actions);
   }
 
   /**
@@ -826,7 +827,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
 
   /**
    * The chip's own action menu (legacy `getDisclosureMenu`), in whichever
-   * shape it's in — mirroring `Craft.addActionsToChip`'s own resolution:
+   * shape it's in — mirroring `addActionsToChip()`'s own resolution:
    *
    * - Modern self-booting `craft-action-menu` (what
    *   `ElementHtml::componentActionMenu()` renders now): returns
@@ -928,7 +929,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
       this.#dragSort ||
       this.#sortManagedExternally ||
       !this.settings.sortable ||
-      !Craft.hasMousePointerEvents()
+      !hasMousePointerEvents()
     ) {
       return;
     }

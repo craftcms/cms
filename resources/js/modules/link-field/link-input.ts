@@ -18,6 +18,7 @@ import {
   trim,
 } from '@/common/craft/strings';
 import {t} from '@craftcms/ui/utilities/translate';
+import {addActionsToChip} from '@/common/craft/chip-actions';
 
 declare const Craft: any;
 
@@ -42,7 +43,7 @@ interface LinkInputSettings extends GarnishBaseSettings {
  * validating the value against the type's pattern and prefixes.
  *
  * jQuery-free, but carries a few documented seams: the chip's action menu is
- * built through `Craft.addActionsToChip` (the smart `craft-action-menu` helper,
+ * built through `addActionsToChip()` (the smart `craft-action-menu` helper,
  * still in the cp bundle — same seam component-select uses), and the paired
  * {@link LinkField} instance is read via the legacy `.data('linkField')` cache.
  * The text input and copy prompt come from `@craftcms/ui/factory`. Booted from
@@ -163,7 +164,7 @@ export class LinkInput extends Base<LinkInputSettings> {
     link.textContent = label;
     content.append(link);
 
-    // Empty actions container — `Craft.addActionsToChip` builds a
+    // Empty actions container — `addActionsToChip()` builds a
     // `<craft-action-menu>` inside it.
     const actions = document.createElement('div');
     actions.className = 'chip-actions';
@@ -256,7 +257,7 @@ export class LinkInput extends Base<LinkInputSettings> {
       return;
     }
 
-    // Descriptors for `Craft.addActionsToChip`: it prefers/builds a
+    // Descriptors for `addActionsToChip()`: it prefers/builds a
     // `<craft-action-menu>` and auto-groups the `destructive` item, so no manual
     // divider is needed (icons are name strings resolved by craft-action-item).
     const actions = [
@@ -299,7 +300,7 @@ export class LinkInput extends Base<LinkInputSettings> {
       },
     ];
 
-    Craft.addActionsToChip(this.#chip, actions);
+    addActionsToChip(this.#chip, actions);
   }
 
   reset(): void {

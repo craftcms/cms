@@ -37,7 +37,7 @@ export default class CraftElementSelectInput extends ControllerElement<BaseEleme
    *
    * Along with {@link removeElement}, this is the seam for hosts that render the
    * chips' action menus themselves (`ElementSelectControl.vue`) instead of
-   * letting `Craft.addActionsToChip()` inject them: `instance` is protected, so
+   * letting `addActionsToChip()` inject them: `instance` is protected, so
    * the menu items talk to the custom element rather than the controller.
    */
   replaceElement(id: number | string): void {
