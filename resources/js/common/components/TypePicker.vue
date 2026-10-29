@@ -59,7 +59,7 @@
 <template>
   <craft-action-menu
     :actions="actions"
-    :disabled="disabled"
+    .disabled="disabled"
     :label="label"
     searchable
   >

@@ -115,7 +115,7 @@ The settings screen shows the name of the plugin that owns the task class. New t
 
 ## Image analysis tasks
 
-Tasks that learn something about an image, like Craft’s own alt text, title, focal point, tagging, and image type tasks, extend `CraftCms\Cms\Asset\Analysis\ImageAnalysisTask` instead. They need vision and structured output, and `CraftCms\Cms\Asset\Analysis\ImageAnalyzer` runs them when images are uploaded, replaced, or indexed, or with the “Analyze images” action. Tasks that use the same provider and model share one request per image: each adds its instructions to the prompt and its properties to the response’s JSON schema, then applies its part of the response. See `CraftCms\Cms\Asset\Analysis\Contracts\ImageAnalysisTaskInterface` for the methods to implement.
+Tasks that learn something about an image, like Craft’s own alt text, title, focal point, tagging, and image type tasks, extend `CraftCms\Cms\Asset\Analysis\ImageAnalysisTask` instead. They need vision and structured output, and `CraftCms\Cms\Asset\Analysis\ImageAnalyzer` runs them when images are uploaded, replaced, or indexed, or with the “Analyze images” action. Tasks that use the same provider and model share one request per image: each adds its instructions to the prompt and its properties to the response’s JSON schema, then applies its part of the response. Tasks can also fill in values from an image’s embedded metadata, in any of the image’s sites, with `fillFromMetadata()`, which runs whether or not AI is set up, before Craft decides which tasks the image still needs. See `CraftCms\Cms\Asset\Analysis\Contracts\ImageAnalysisTaskInterface` for the methods to implement.
 
 ## Running a task
 

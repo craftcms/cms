@@ -28,10 +28,12 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections as SectionsFacade;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Tests\TestClasses\Field\ModeThumbnailField;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -136,7 +138,7 @@ it('selects fit for index tiles and inline cards', function (string $viewMode, s
     $entry = EntryModel::factory()->withField('thumbnail', ModeThumbnailField::class, value: $mode)
         ->createElementWithFields()->element;
     $layout = $entry->getFieldLayout();
-    $layout->thumbFieldKey = 'layoutElement:'.$layout->getCustomFieldElements()[0]->uid;
+    $layout->thumbSources = ['layoutElement:'.$layout->getCustomFieldElements()[0]->uid];
     expect(Fields::saveLayout($layout))->toBeTrue();
 
     get("/{$this->cpTrigger}/content/entries?viewMode={$viewMode}")
@@ -177,7 +179,9 @@ it('includes public URLs and only authorized edit URLs in every index view mode'
     ]))->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('data.0.id', $entry->id)
-            ->where('data.0.cpEditUrl', $canView ? $entry->getCpEditUrl() : null)
+            ->where('data.0.cpEditUrl', fn (?string $url) => $canView
+                ? $url !== null && Url::removeParam($url, 'returnUrl') === $entry->getCpEditUrl()
+                : $url === null)
             ->where('data.0.viewUrl', 'https://localhost/'.$entry->uri)
         );
 })->with([
@@ -419,6 +423,47 @@ function encodeUrl(string $url): string
     return (string) preg_replace_callback('/[^\x21-\x7e]+/', fn (array $match) => rawurlencode($match[0]), $url);
 }
 
+/**
+ * Decrypts the `returnUrl` param an index added to an element's edit URL.
+ */
+function editReturnUrl(string $editUrl): ?string
+{
+    parse_str((string) parse_url(html_entity_decode($editUrl), PHP_URL_QUERY), $query);
+
+    return isset($query['returnUrl']) ? Crypt::decrypt($query['returnUrl']) : null;
+}
+
+it('sends the editor back to the source it was opened from', function (Closure $source) {
+    $section = Section::factory()->create();
+    $entry = EntryModel::factory()->forSection($section)->createElement(['title' => 'Hello']);
+    [$path, $query] = $source($section);
+    $indexUrl = url("/{$this->cpTrigger}/{$path}").($query ? '?'.http_build_query($query) : '');
+
+    get($indexUrl)
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.id', $entry->id)
+            ->where('data.0.cpEditUrl', fn (string $url) => editReturnUrl($url) === $indexUrl)
+            ->where('data.0.title', fn (string $html) => preg_match('/<CpLink class="label-link" href="([^"]+)"/', $html, $match) === 1
+                && editReturnUrl($match[1]) === $indexUrl)
+        );
+})->with([
+    'section' => fn (Section $section) => ["content/entries/{$section->handle}", []],
+    'custom source' => function () {
+        app(ElementSources::class)->saveSources(EntryElement::class, [
+            ['type' => ElementSources::TYPE_NATIVE, 'key' => '*'],
+            [
+                'type' => ElementSources::TYPE_CUSTOM,
+                'key' => 'custom:mine',
+                'label' => 'Mine',
+                'condition' => EntryElement::createCondition()->getConfig(),
+            ],
+        ]);
+
+        return ['content/entries', ['source' => 'custom:mine']];
+    },
+]);
+
 it('scopes the Singles source to single sections only', function () {
     $single = Section::factory()->create(['type' => SectionType::Single]);
     $channel = Section::factory()->create(['type' => SectionType::Channel]);
@@ -550,7 +595,7 @@ it('renders tile thumbnails at the requested size', function (?string $thumbSize
     $entry = EntryModel::factory()->withField('thumbnail', ModeThumbnailField::class, value: 'fit')
         ->createElementWithFields()->element;
     $layout = $entry->getFieldLayout();
-    $layout->thumbFieldKey = 'layoutElement:'.$layout->getCustomFieldElements()[0]->uid;
+    $layout->thumbSources = ['layoutElement:'.$layout->getCustomFieldElements()[0]->uid];
     expect(Fields::saveLayout($layout))->toBeTrue();
 
     get(route('craft.cp.content.index', array_filter([
@@ -992,7 +1037,7 @@ it('links only the title chip’s label, not the whole chip', function () {
 
                 return str_starts_with($title, '<craft-chip')
                     && preg_match('/<CpLink class="label-link" href="([^"]+)" bare>/', $title, $match) === 1
-                    && html_entity_decode($match[1]) === $entry->getCpEditUrl();
+                    && Url::removeParam(html_entity_decode($match[1]), 'returnUrl') === $entry->getCpEditUrl();
             })
         );
 });

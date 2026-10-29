@@ -162,6 +162,7 @@ it('gives the assistant the guidance for every site, for the site the user is wo
 ]);
 
 it('returns the guidance to MCP clients, for a site the user can edit', function () {
+    enableMcp();
     $key = openssl_pkey_new(['private_key_bits' => 2048]);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     $user = UserModel::factory()->withPermissions(['accessCp', 'useCraftMcp', 'editSite:'.Sites::getPrimarySite()->uid])->create(['admin' => false]);

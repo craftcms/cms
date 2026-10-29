@@ -168,11 +168,11 @@
         :data-id="String(element.id)"
         :data-site-id="element.siteId ?? undefined"
         :data-color="element.color ?? undefined"
-        :selectable="canSelect || undefined"
-        :selected="selection.isSelected(element.id) || undefined"
+        .selectable="canSelect"
+        .selected="selection.isSelected(element.id)"
         :select-label="t('Select {label}', {label: labelFor(element)})"
-        :show-status="!!element.status || undefined"
-        :show-thumb="!!element.thumbHtml || undefined"
+        .showStatus="!!element.status"
+        .showThumb="!!element.thumbHtml"
         @craft-selection-change="
           (event: CustomEvent<{selected: boolean; shiftKey: boolean}>) =>
             onSelectedChange(element, event.detail)

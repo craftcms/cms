@@ -2,6 +2,7 @@ import {css, html, type PropertyValues} from 'lit';
 import CraftInput from '../input/input.js';
 import {t} from '@src/utilities/translate';
 import '../icon/icon.js';
+import type CraftButton from '../button/button.js';
 import '../button/button.js';
 
 /**
@@ -186,9 +187,13 @@ export default class CraftInputSearch extends CraftInput {
     }
 
     this.modelValue = '';
-    this._inputNode?.dispatchEvent(new Event('input', {bubbles: true}));
+    this._inputNode?.dispatchEvent(
+      new Event('input', {bubbles: true, composed: true})
+    );
     this._inputNode?.focus();
-    this.dispatchEvent(new CustomEvent('clear', {bubbles: true}));
+    this.dispatchEvent(
+      new CustomEvent('clear', {bubbles: true, composed: true})
+    );
   }
 
   #hasValue(): boolean {
@@ -236,8 +241,8 @@ export default class CraftInputSearch extends CraftInput {
     }
   }
 
-  #createClearButton(): HTMLElement {
-    const button = document.createElement('craft-button');
+  #createClearButton(): CraftButton {
+    const button = document.createElement('craft-button') as CraftButton;
     button.slot = 'search-clear';
     button.setAttribute('data-search-clear', '');
     button.setAttribute('type', 'button');
@@ -250,6 +255,13 @@ export default class CraftInputSearch extends CraftInput {
     icon.setAttribute('name', 'xmark-large');
     icon.setAttribute('label', t('Clear search'));
     button.append(icon);
+
+    // Out of the Tab order: a keyboard user empties the field with Escape,
+    // or by selecting the text and deleting it. Set after the button's first
+    // update, which otherwise puts it back to 0.
+    button.updateComplete.then(() => {
+      button.tabIndex = -1;
+    });
 
     return button;
   }

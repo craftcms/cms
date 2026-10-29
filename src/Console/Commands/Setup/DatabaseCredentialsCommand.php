@@ -122,7 +122,7 @@ class DatabaseCredentialsCommand extends Command
 
         $this->prefix = $this->option('prefix') ?? text(
             label: 'Database table prefix:',
-            default: $this->prefix ?? Config::get("database.connections.{$this->driver}.prefix") ?? Env::get('DB_PREFIX', Env::get('CRAFT_DB_PREFIX', '')),
+            default: $this->prefix ?? Config::get("database.connections.{$this->driver}.prefix") ?? Env::get('DB_PREFIX', Env::get('CRAFT_DB_TABLE_PREFIX', Env::get('DB_TABLE_PREFIX', ''))),
             validate: ['max:5'],
             transform: function ($value) {
                 if (! $value) {

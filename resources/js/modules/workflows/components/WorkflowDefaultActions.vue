@@ -141,7 +141,7 @@
         show-toolbar
         .toolbarButtons="commentToolbarButtons"
         .value="note"
-        :disabled="processing"
+        .disabled="processing"
         @input="note = ($event.target as HTMLTextAreaElement).value"
         @keydown="onNoteKeydown"
       />
@@ -159,7 +159,7 @@
             type="button"
             size="small"
             :variant="ButtonVariant.Solid"
-            :disabled="processing || noteIsEmpty || overage > 0"
+            .disabled="processing || noteIsEmpty || overage > 0"
             focusable-when-disabled
             @click="addComment"
           >
@@ -176,7 +176,7 @@
       <craft-button
         type="button"
         :variant="ButtonVariant.Primary"
-        :disabled="processing || overage > 0"
+        .disabled="processing || overage > 0"
         @click="submitForReview"
       >
         {{ review.submitLabel }}

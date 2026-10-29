@@ -116,6 +116,10 @@ export interface ElementEditPayload {
   elementId: number | null;
   canonicalId: number | null;
   elementType: string;
+  /** The element type's reference handle, which its reference tags start with. */
+  refHandle?: string | null;
+  /** The element's front-end URL, when it has one. */
+  elementUrl?: string | null;
   siteId: number | null;
   fieldLayoutId: number | null;
   title: string;
@@ -856,9 +860,11 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
         autosave.cancel();
         autosave.acknowledgeChanges();
 
-        if (!slideout) {
-          // The save itself moved the element's `dateUpdated`; without this the
-          // next poll would report our own write as someone else's change.
+        // The save itself moved the element's `dateUpdated`; without this the
+        // next poll would report our own write as someone else's change. A
+        // save that redirects lands on another screen, whose props carry no
+        // stamps and which has nothing left to poll.
+        if (!slideout && props.updatedTimestamps) {
           activity.rebase(props.updatedTimestamps);
         }
 

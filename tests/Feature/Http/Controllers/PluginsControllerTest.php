@@ -6,6 +6,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\MissingComponents;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPluginSettingsRequest;
 use CraftCms\Cms\User\Elements\User;
@@ -276,15 +277,44 @@ test('saveSettings returns 404 for non-existent plugin', function () {
         ->assertNotFound();
 });
 
-test('saveSettings persists plugin settings', function () {
-    postJson(action([PluginsController::class, 'saveSettings'], ['test-plugin']), [
+test('saveSettings persists plugin settings', function (bool $json) {
+    $response = $this->{$json ? 'postJson' : 'post'}(action([PluginsController::class, 'saveSettings'], ['test-plugin']), [
         'settings' => ['foo' => 'bar', 'bar' => 'baz'],
-    ])->assertOk();
+    ]);
+
+    $json ? $response->assertOk() : $response->assertRedirect();
 
     $settings = app(Plugins::class)->getPlugin('test-plugin')->getSettings();
 
     expect($settings->foo)->toBe('bar');
     expect($settings->bar)->toBe('baz');
+})->with(['JSON' => true, 'form' => false]);
+
+test('saveSettings returns settings model validation errors for JSON requests without saving', function () {
+    $url = action([PluginsController::class, 'saveSettings'], ['test-plugin']);
+    app(ProjectConfig::class)->set('plugins.test-plugin.settings', ['foo' => 'saved value', 'bar' => 'saved bar']);
+
+    postJson($url, ['settings' => ['foo' => '', 'bar' => 'unsaved bar']])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['settings.foo' => 'The foo field is required.']);
+
+    expect(app(ProjectConfig::class)->get('plugins.test-plugin.settings'))
+        ->toMatchArray(['foo' => 'saved value', 'bar' => 'saved bar']);
+});
+
+test('saveSettings redirects form requests back with settings model errors without saving', function () {
+    $editUrl = action([PluginsController::class, 'editSettings'], ['test-plugin']);
+    app(ProjectConfig::class)->set('plugins.test-plugin.settings', ['foo' => 'saved value', 'bar' => 'saved bar']);
+
+    $this->from($editUrl)
+        ->post(action([PluginsController::class, 'saveSettings'], ['test-plugin']), [
+            'settings' => ['foo' => '', 'bar' => 'unsaved bar'],
+        ])
+        ->assertRedirect($editUrl)
+        ->assertSessionHasErrors(['settings.foo' => 'The foo field is required.']);
+
+    expect(app(ProjectConfig::class)->get('plugins.test-plugin.settings'))
+        ->toMatchArray(['foo' => 'saved value', 'bar' => 'saved bar']);
 });
 
 test('saveSettings uses plugin form request validation', function () {
@@ -343,14 +373,16 @@ test('respects read-only mode for switchEdition', function () {
         ->assertForbidden();
 });
 
-test('respects read-only mode for saveSettings', function () {
+test('respects read-only mode for saveSettings', function (bool $json) {
     Cms::config()->allowAdminChanges = false;
 
-    postJson(action([PluginsController::class, 'saveSettings'], ['test-plugin']), [
-        'settings' => [],
+    $this->{$json ? 'postJson' : 'post'}(action([PluginsController::class, 'saveSettings'], ['test-plugin']), [
+        'settings' => ['foo' => 'not allowed'],
     ])
         ->assertForbidden();
-});
+
+    expect(app(Plugins::class)->getPlugin('test-plugin')->getSettings()->foo)->toBeNull();
+})->with(['JSON' => true, 'form' => false]);
 
 test('respects read-only mode for settings UI refresh', function () {
     Cms::config()->allowAdminChanges = false;
@@ -359,4 +391,28 @@ test('respects read-only mode for settings UI refresh', function () {
         'values' => [],
         'scope' => ['settings'],
     ])->assertForbidden();
+});
+
+test('enableAll and disableAll toggle every installed plugin', function () {
+    $plugins = app(Plugins::class);
+    $plugins->disablePlugin('test-plugin');
+
+    postJson(action([PluginsController::class, 'enableAll']))
+        ->assertOk()
+        ->assertJsonPath('message', 'Plugins enabled.');
+
+    expect($plugins->isPluginEnabled('test-plugin'))->toBeTrue();
+
+    postJson(action([PluginsController::class, 'disableAll']))
+        ->assertOk()
+        ->assertJsonPath('message', 'Plugins disabled.');
+
+    expect($plugins->isPluginEnabled('test-plugin'))->toBeFalse();
+});
+
+test('respects read-only mode for enableAll and disableAll', function () {
+    Cms::config()->allowAdminChanges = false;
+
+    postJson(action([PluginsController::class, 'enableAll']))->assertForbidden();
+    postJson(action([PluginsController::class, 'disableAll']))->assertForbidden();
 });

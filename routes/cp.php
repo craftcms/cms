@@ -17,6 +17,7 @@ use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
+use CraftCms\Cms\Http\Controllers\CommandPaletteController;
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Http\Controllers\ContentIndexController;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
@@ -61,6 +62,7 @@ use CraftCms\Cms\Http\Controllers\Users\IndexController as UsersIndexController;
 use CraftCms\Cms\Http\Controllers\Users\PasskeysController;
 use CraftCms\Cms\Http\Controllers\Users\PasswordController;
 use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
+use CraftCms\Cms\Http\Controllers\Users\PersonalAccessTokensController;
 use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
 use CraftCms\Cms\Http\Controllers\Users\SignInProvidersController;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
@@ -131,6 +133,12 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
 
     Route::post('notifications/mark-read', [NotificationsController::class, 'markRead']);
 
+    Route::prefix('command-palette')->name('command-palette.')->group(function () {
+        Route::get('/', [CommandPaletteController::class, 'index'])->name('index');
+        Route::get('search/{provider}', [CommandPaletteController::class, 'search'])->name('search');
+        Route::get('docs', [CommandPaletteController::class, 'docs'])->name('docs');
+    });
+
     Route::middleware(RequireEdition::class.':'.Edition::Pro->value)->group(function () {
         Route::resource('releases', ReleasesController::class)
             ->except('edit')
@@ -141,6 +149,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             Route::get('schedule', [ReleasesController::class, 'scheduleModal'])->name('scheduleModal');
             Route::post('schedule', [ReleasesController::class, 'schedule'])->name('schedule');
             Route::post('unschedule', [ReleasesController::class, 'unschedule'])->name('unschedule');
+            Route::get('publish', [ReleasesController::class, 'publishModal'])->name('publishModal');
             Route::post('publish', [ReleasesController::class, 'publish'])->name('publish');
             Route::post('drafts', [ReleasesController::class, 'attach'])->name('attach');
             Route::delete('drafts/{draft}', [ReleasesController::class, 'detach'])->whereNumber('draft')->name('detach');
@@ -274,6 +283,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('myaccount/password', [PasswordController::class, 'index']);
     Route::get('myaccount/preferences', [PreferencesController::class, 'index']);
     Route::patch('myaccount/preferences', [PreferencesController::class, 'update']);
+    Route::get('myaccount/tokens', [PersonalAccessTokensController::class, 'index']);
     Route::middleware('can:'.Assistant::PERMISSION)->group(function () {
         Route::get('myaccount/ai-assistant', [AiAccountController::class, 'index']);
         Route::patch('myaccount/ai-assistant', [AiAccountController::class, 'update']);
@@ -340,6 +350,9 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::post('settings/mcp', [McpSettingsController::class, 'store'])
             ->middleware(RequireAdminChanges::class)
             ->name('settings.mcp.store');
+        Route::post('settings/mcp/render-ui', [McpSettingsController::class, 'renderUi'])
+            ->middleware(RequireAdminChanges::class)
+            ->name('settings.mcp.render-ui');
 
         // Entry types
         Route::prefix('settings/entry-types')->name('settings.entry-types.')->group(function () {
@@ -388,6 +401,9 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::allowDuringMaintenance()
             ->post('settings/general', [GeneralSettingsController::class, 'store'])
             ->name('settings.general.store');
+        Route::allowDuringMaintenance()
+            ->post('settings/general/maintenance-mode', [GeneralSettingsController::class, 'maintenanceMode'])
+            ->name('settings.general.maintenance-mode');
 
         // Email
         Route::get('settings/email', [EmailSettingsController::class, 'index'])
@@ -436,6 +452,9 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             Route::get('/', [PluginsController::class, 'index']);
 
             Route::middleware(RequireAdminChanges::class)->group(function () {
+                // Registered before `{handle}`, which would otherwise take them for plugin handles.
+                Route::post('enable-all', [PluginsController::class, 'enableAll'])->name('settings.plugins.enable-all');
+                Route::post('disable-all', [PluginsController::class, 'disableAll'])->name('settings.plugins.disable-all');
                 Route::post('{handle}/install', [PluginsController::class, 'install']);
                 Route::post('{handle}/uninstall', [PluginsController::class, 'uninstall']);
                 Route::post('{handle}/enable', [PluginsController::class, 'enable']);

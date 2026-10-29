@@ -1,11 +1,10 @@
-import {computed, inject, onBeforeUnmount} from 'vue';
-import {UiControlBehaviors, UiErrors, UiPending, isRecord} from '../runtime';
+import {computed, onBeforeUnmount} from 'vue';
+import {isRecord} from '../runtime';
+import {useOptionalUiRenderer} from '../renderer/context';
 
 export function useTableBehavior(path: () => string[], keyed: () => boolean) {
-  const register = inject(UiControlBehaviors, undefined);
-  const pending = inject(UiPending, undefined);
-  const errors = inject(UiErrors, undefined);
-  const unregister = register?.(path(), {
+  const renderer = useOptionalUiRenderer();
+  const unregister = renderer?.registerBehavior(path(), {
     comparisonValue: (value) =>
       keyed() && isRecord(value) ? Object.keys(value) : undefined,
   });
@@ -13,8 +12,10 @@ export function useTableBehavior(path: () => string[], keyed: () => boolean) {
   onBeforeUnmount(() => unregister?.());
 
   return {
-    pending: computed(() => pending?.value ?? false),
-    errorsCleared: computed(() => errors?.childrenCleared(path()) ?? false),
-    clearErrors: () => errors?.clearChildren(path()),
+    pending: computed(() => renderer?.pending.value ?? false),
+    errorsCleared: computed(
+      () => renderer?.childErrorsCleared(path()) ?? false
+    ),
+    clearErrors: () => renderer?.clearChildErrors(path()),
   };
 }

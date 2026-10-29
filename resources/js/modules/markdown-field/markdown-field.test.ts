@@ -107,6 +107,11 @@ it('applies properties from the Vue Markdown Control', async () => {
     dataset: {uiControlPath: '["body"]'},
   });
   expect(container.querySelector('.overtype-toolbar')).not.toBeNull();
+  expect(
+    container
+      .querySelector('craft-markdown-field')!
+      .hasAttribute('show-toolbar')
+  ).toBe(true);
   expect(textExpander.for).toBe(textarea.id);
   expect(textExpander.slot).toBe('input');
 

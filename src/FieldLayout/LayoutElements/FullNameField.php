@@ -102,4 +102,10 @@ class FullNameField extends TextField
     {
         return t('Full Name');
     }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'id-card';
+    }
 }

@@ -140,3 +140,20 @@ it('marks the hide-label action as reactive independently of the label', functio
     expect($label->control->reactive)->toBeTrue()
         ->and($label->children[0]->control->reactive)->toBeTrue();
 });
+
+it('offers every built-in UI element in the field layout designer', function () {
+    $layout = new FieldLayout;
+    $layout->type = Entry::class;
+
+    $classes = array_map(get_class(...), $layout->getAvailableUiElements());
+
+    expect($classes)->toBe([
+        Heading::class,
+        Tip::class,
+        Tip::class,
+        Markdown::class,
+        Template::class,
+        HorizontalRule::class,
+        LineBreak::class,
+    ]);
+});

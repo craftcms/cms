@@ -8,7 +8,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Mcp\Events\CollectingAdminInstructions;
-use CraftCms\Cms\Mcp\PublicRouteRegistrar;
+use CraftCms\Cms\Mcp\RouteRegistrar;
 use CraftCms\Cms\Mcp\Settings;
 use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\User\Models\User;
@@ -45,7 +45,7 @@ it('keeps startup instructions brief and delivers full guidance through the admi
 
     $route = '/_test/public-instructions';
     app()->instance(Settings::class, new Settings(['publicEnabled' => true, 'publicRoute' => $route]));
-    app(PublicRouteRegistrar::class)->register();
+    app(RouteRegistrar::class)->register();
 
     $publicInstructions = $this->postJson($route, McpRequest::payload('server/discover'), McpRequest::headers('server/discover'))
         ->assertOk()

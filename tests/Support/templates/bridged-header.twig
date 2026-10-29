@@ -1,0 +1,13 @@
+{% extends '_layouts/cp' %}
+{% set title = 'Test' %}
+{% set actionMenu = actionMenu ?? '<button type="button">More actions</button>' %}
+
+{% block contextMenu %}
+    <button type="button">Choose site</button>
+{% endblock %}
+
+{% block actionButton %}
+    <a class="btn submit add icon" href="{{ cpUrl('test-plugin/new') }}">New</a>
+{% endblock %}
+
+{% block content %}<p>hi</p>{% endblock %}

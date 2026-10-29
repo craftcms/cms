@@ -1,4 +1,5 @@
 import {createApp, h, nextTick, ref} from 'vue';
+import jquery from 'jquery';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import UiRenderer from '@/modules/ui/UiRenderer.vue';
@@ -12,6 +13,7 @@ afterEach(() => {
   document.body.innerHTML = '';
   delete (window as any).Cp;
   delete (window as any).Craft;
+  delete (window as any).jQuery;
   delete (window as any).legacyOrder;
   vi.restoreAllMocks();
 });
@@ -205,6 +207,111 @@ describe('Legacy HTML UI Control', () => {
       a_b: {'c.d': 'nested'},
       items: {'2': 'sparse'},
     });
+  });
+
+  it('ignores unnamed controls like a native form submission', async () => {
+    // An element select input's search box is a `craft-input`, whose Lion base
+    // writes its empty `name` onto the native input.
+    const {container, form, mutation, submitted} = await mount(
+      {
+        html: '<input type="hidden" name="fields[topics]" value=""><input type="hidden" name="fields[topics][]" value="7"><craft-input><input slot="input" type="text" name="" value="tech"></craft-input>',
+        headHtml: '',
+        bodyHtml: '',
+      },
+      {
+        path: ['fields', 'topics'],
+        values: {
+          fields: {
+            topics: {'fields[topics]': '', 'fields[topics][]': ['7']},
+          },
+        },
+      }
+    );
+    await container.querySelector<HTMLElement & {ready: Promise<void>}>(
+      'craft-legacy-html-control'
+    )!.ready;
+    const search = container.querySelector<HTMLInputElement>('[slot=input]')!;
+    search.dispatchEvent(new InputEvent('input', {bubbles: true}));
+    await nextTick();
+
+    expect(mutation.value).toEqual({});
+
+    form.dispatchEvent(
+      new SubmitEvent('submit', {bubbles: true, cancelable: true})
+    );
+
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+    expect(search.value).toBe('tech');
+    expect(submitted.value).toEqual({fields: {topics: ['7']}});
+  });
+
+  it('publishes changes legacy inputs announce through jQuery', async () => {
+    (window as any).jQuery = jquery;
+    const {container, mutation} = await mount(
+      {
+        html: '<div class="elementselect"><input type="hidden" name="fields[keywords]" value=""><ul><li><input type="hidden" name="fields[keywords][]" value="5"></li></ul></div>',
+        headHtml: '',
+        bodyHtml: '',
+      },
+      {
+        path: ['fields', 'keywords'],
+        values: {
+          fields: {
+            keywords: {'fields[keywords]': '', 'fields[keywords][]': '5'},
+          },
+        },
+      }
+    );
+    await container.querySelector<HTMLElement & {ready: Promise<void>}>(
+      'craft-legacy-html-control'
+    )!.ready;
+
+    // Inputs trigger `change` as they initialize, too.
+    jquery(container.querySelector('.elementselect')!).trigger('change');
+    await nextTick();
+    expect(mutation.value).toEqual({});
+
+    // What an element select input does when an element is selected.
+    const list = container.querySelector('ul')!;
+    list.insertAdjacentHTML(
+      'beforeend',
+      '<li><input type="hidden" name="fields[keywords][]" value="6"></li>'
+    );
+    jquery(container.querySelector('.elementselect')!).trigger('change');
+    await nextTick();
+
+    expect(mutation.value).toEqual({fields: {keywords: ['5', '6']}});
+  });
+
+  it('restores list inputs from an already-expanded value', async () => {
+    // After an autosave, the island remounts with the value it last published
+    // (expanded), not the server's flat input names.
+    const {container, form, submitted} = await mount(
+      {
+        html: '<input type="hidden" name="fields[keywords]" value=""><input type="hidden" name="fields[keywords][]" value="5"><input type="hidden" name="fields[keywords][]" value="6">',
+        headHtml: '',
+        bodyHtml: '',
+      },
+      {
+        path: ['fields', 'keywords'],
+        values: {fields: {keywords: ['5', '6']}},
+      }
+    );
+    await container.querySelector<HTMLElement & {ready: Promise<void>}>(
+      'craft-legacy-html-control'
+    )!.ready;
+
+    expect(
+      [...container.querySelectorAll<HTMLInputElement>('input')].map(
+        (input) => input.value
+      )
+    ).toEqual(['', '5', '6']);
+
+    form.dispatchEvent(
+      new SubmitEvent('submit', {bubbles: true, cancelable: true})
+    );
+
+    expect(submitted.value).toEqual({fields: {keywords: ['5', '6']}});
   });
 
   it('preserves leading-zero keys like PHP', async () => {

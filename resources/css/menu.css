@@ -1,0 +1,129 @@
+/**
+Menu — base styles.
+
+The chrome for `@craftcms/garnish`'s floating menus: `CustomSelect` (also
+`Garnish.Menu`) and `DisclosureMenu`, and what legacy inputs and plugins build
+on them, such as tag and element search results. Garnish appends the menu to
+`<body>`, positions it with inline `top`/`left` in page coordinates, and adds
+`visible` while it's open. The pane and items follow `craft-popover` and
+`craft-action-item`, so these menus match the modern ones.
+ */
+.menu {
+  z-index: var(--c-layer-popover);
+  position: absolute;
+  box-sizing: border-box;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: var(--c-spacing-xs);
+  border: 1px solid var(--c-color-neutral-border-quiet);
+  border-radius: var(--c-radius-md);
+  background-color: var(--c-surface-overlay);
+  box-shadow: var(--c-shadow-sm);
+  color: var(--c-text-default);
+  font-size: var(--c-text-sm);
+  user-select: none;
+}
+
+.menu:not(.visible) {
+  display: none;
+}
+
+.menu ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.menu li.filtered {
+  display: none;
+}
+
+.menu :is(.menu-item, .menu-option),
+.menu li > a {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: var(--c-spacing-sm);
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding: var(--c-spacing-sm);
+  border: 1px solid transparent;
+  border-radius: var(--c-radius-md);
+  background-color: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: default;
+}
+
+/* `.hover` is the keyboard-highlighted option of a `CustomSelect`; it yields
+   to the pointer while the pointer is over the menu. */
+.menu :is(.menu-item, .menu-option, li > a):not(.sel, .disabled):hover,
+.menu:not(:hover)
+  :is(.menu-item, .menu-option, li > a):not(.sel, .disabled).hover {
+  background-color: var(--c-color-neutral-fill-quiet);
+  color: var(--c-color-neutral-on-quiet);
+}
+
+.menu :is(.menu-item, .menu-option, li > a).sel {
+  border-color: var(--c-color-accent-border-loud);
+  background-color: var(--c-color-accent-fill-quiet);
+  color: var(--c-color-accent-on-quiet);
+}
+
+.menu :is(.menu-item, .menu-option, li > a).disabled {
+  opacity: 0.5;
+}
+
+.menu :is(.menu-item, .menu-option, li > a).error {
+  color: var(--c-color-danger-on-quiet);
+}
+
+.menu .icon {
+  display: inline-flex;
+  flex: none;
+  inline-size: 1em;
+  block-size: 1em;
+}
+
+.menu .icon svg {
+  inline-size: 100%;
+  block-size: 100%;
+  fill: currentColor;
+}
+
+.menu .menu-item-description {
+  flex-basis: 100%;
+  color: var(--c-text-quiet);
+  font-size: var(--c-text-xs);
+  white-space: normal;
+}
+
+.menu .menu-item-description:empty {
+  display: none;
+}
+
+.menu hr {
+  margin-block: var(--c-spacing-xs);
+  margin-inline: calc(var(--c-spacing-xs) * -1);
+  border: 0;
+  border-block-start: 1px solid var(--c-color-neutral-border-quiet);
+}
+
+.menu :is(h3, h6, .h6) {
+  margin: 0;
+  padding: var(--c-spacing-sm);
+  color: var(--c-text-quiet);
+  font-size: var(--c-text-xs);
+  font-weight: 600;
+}
+
+.menu > .search-container {
+  margin: calc(var(--c-spacing-xs) * -1);
+  margin-block-end: var(--c-spacing-xs);
+  padding: var(--c-spacing-sm);
+  border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+}

@@ -178,7 +178,6 @@ it('sets an asset’s uploader through elements.update', function (bool $peer, b
     $volume = Volume::findOrFail($this->folder->volumeId);
     app(UserPermissions::class)->saveUserPermissions($user->id, [
         'accessCp',
-        'useCraftMcp',
         ...array_map(
             static fn (string $permission): string => "$permission:$volume->uid",
             ['viewAssets', 'saveAssets', ...($peer ? ['viewPeerAssets', 'savePeerAssets'] : [])],
@@ -251,7 +250,7 @@ it('checks destination permissions before downloading a file reference', functio
     $user = User::query()->firstOrFail();
     $user->admin = false;
     $user->save();
-    app(UserPermissions::class)->saveUserPermissions($user->id, ['accessCp', 'useCraftMcp']);
+    app(UserPermissions::class)->saveUserPermissions($user->id, ['accessCp']);
     actingAs($user);
     app(Request::class)->setUserResolver(static fn (): User => $user);
     Http::fake();

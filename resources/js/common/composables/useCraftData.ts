@@ -20,6 +20,8 @@ export interface CpUser {
   aiGuidanceUrl: string | null;
   /** The same utility’s Skills page, if the user can use it. */
   aiSkillsUrl: string | null;
+  /** Whether the user's account has a Tokens screen. */
+  showTokens: boolean;
 }
 
 export interface CraftData {

@@ -15,7 +15,6 @@ use CraftCms\Cms\Support\Query;
 use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * @internal
@@ -74,7 +73,7 @@ trait QueriesAssetLocation
                 throw new QueryAbortedException;
             }
 
-            $assetQuery->join(new Alias(Table::VOLUMEFOLDERS, 'volumeFolders'), 'volumeFolders.id', '=', 'assets.folderId');
+            $assetQuery->join(Table::VOLUMEFOLDERS.' as volumeFolders', 'volumeFolders.id', '=', 'assets.folderId');
 
             static::applyVolumeId($assetQuery, $assetQuery->volumeId);
             static::applyFolderId($assetQuery, $assetQuery->folderId, $assetQuery);

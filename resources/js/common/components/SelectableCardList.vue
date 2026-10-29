@@ -242,7 +242,7 @@
 
       <craft-card
         v-bind="cardAttrs?.(id, index)"
-        :active="selection.isSelected(id)"
+        .active="selection.isSelected(id)"
       >
         <!-- Slot content carries its own `slot="thumbnail"`, so a consumer can
              render nothing per item rather than an empty region. -->
@@ -282,7 +282,7 @@
             >
               <craft-reorder-button
                 class="move-btn"
-                :disabled="interactionsDisabled || ids.length < 2"
+                .disabled="interactionsDisabled || ids.length < 2"
                 :position="getRowPosition(index)"
                 :orientation="reorderOrientation"
                 @craft-reorder="

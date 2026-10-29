@@ -1,4 +1,5 @@
 import {beforeEach, describe, expect, it} from 'vitest';
+import type CraftButton from '../button/button.js';
 import type CraftInputSearch from './input-search.js';
 import './input-search.js';
 
@@ -98,6 +99,23 @@ describe('craft-input-search', () => {
     ).toBeTruthy();
   });
 
+  it('leaves the clear button out of the Tab order', async () => {
+    const element = await createInputSearch();
+    await type(element, 'foo');
+    const button = clearButton(element) as CraftButton;
+    await button.updateComplete;
+
+    expect(button.getAttribute('tabindex')).toBe('-1');
+    expect(button.tabIndex).toBe(-1);
+
+    await type(element, 'foobar');
+    button.requestUpdate();
+    await button.updateComplete;
+
+    expect(clearButton(element)).toBe(button);
+    expect(button.tabIndex).toBe(-1);
+  });
+
   it('clears the value and focuses the input when the clear button is pressed', async () => {
     const element = await createInputSearch();
     const events: string[] = [];
@@ -114,6 +132,24 @@ describe('craft-input-search', () => {
     expect(document.activeElement).toBe(element.querySelector('input'));
     expect(events).toEqual(['input', 'clear']);
     expect(clearButton(element)).toBeNull();
+  });
+
+  it('fires clear and input past a shadow root it is rendered in', async () => {
+    const host = document.createElement('div');
+    document.body.append(host);
+    host.attachShadow({mode: 'open'}).innerHTML =
+      '<craft-input-search></craft-input-search>';
+    const element = host.shadowRoot!.querySelector('craft-input-search')!;
+    await element.updateComplete;
+    const events: string[] = [];
+    host.addEventListener('clear', () => events.push('clear'));
+    host.addEventListener('input', () => events.push('input'));
+    await type(element, 'foo');
+    events.length = 0;
+
+    element.clear();
+
+    expect(events).toEqual(['input', 'clear']);
   });
 
   it('clears the value on Escape', async () => {

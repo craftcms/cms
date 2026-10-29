@@ -156,7 +156,7 @@
           tabindex="0"
           :action="config.getCpUrl('login')"
           :static-email="loginName"
-          :use-email-as-username="config.get('useEmailAsUsername', false)"
+          .useEmailAsUsername="config.get('useEmailAsUsername', false)"
           @craft:login:success="onSignedIn"
         >
           <HtmlFragmentRenderer

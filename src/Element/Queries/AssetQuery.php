@@ -12,6 +12,7 @@ use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesAlt;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesAssetLocation;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesAssetProperties;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesImageType;
+use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesOrientation;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesSizes;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
@@ -21,7 +22,6 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Override;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUser;
 
@@ -37,6 +37,7 @@ class AssetQuery extends ElementQuery
     use QueriesAssetLocation;
     use QueriesAssetProperties;
     use QueriesImageType;
+    use QueriesOrientation;
     use QueriesSizes;
 
     #[Override]
@@ -91,7 +92,7 @@ class AssetQuery extends ElementQuery
         ]);
 
         $this->beforeQuery(static function (self $elementQuery) {
-            $elementQuery->query->leftJoin(new Alias(Table::ASSETS_SITES, 'assets_sites'), function (JoinClause $join) {
+            $elementQuery->query->leftJoin(Table::ASSETS_SITES.' as assets_sites', function (JoinClause $join) {
                 $join->on('assets_sites.assetId', '=', 'assets.id')
                     ->whereColumn('assets_sites.siteId', '=', 'elements_sites.siteId');
             });

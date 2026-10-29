@@ -170,7 +170,7 @@ class ElementEditViewModel extends ViewModel
             && ! $this->element->getIsUnpublishedDraft()
             && ! $this->element->isProvisionalDraft;
 
-        return Crypt::encrypt($isNamedDraft ? '{cpEditUrl}' : $this->postEditRedirectUrl($this->element));
+        return Crypt::encrypt($isNamedDraft ? '{cpEditUrl}' : ElementHelper::postEditRedirectUrl($this->element));
     }
 
     /** Where the edit form posts when there are no provisional changes to apply. */
@@ -839,6 +839,18 @@ class ElementEditViewModel extends ViewModel
         return $this->element::class;
     }
 
+    /** The element type's reference handle, which its reference tags start with. */
+    public function refHandle(): ?string
+    {
+        return $this->element::refHandle();
+    }
+
+    /** The element's front-end URL — the canonical element's, for a draft or revision. */
+    public function elementUrl(): ?string
+    {
+        return $this->element->getCanonical(true)->getUrl();
+    }
+
     public function siteId(): ?int
     {
         return $this->element->siteId;
@@ -914,7 +926,9 @@ class ElementEditViewModel extends ViewModel
                 $label = $item['label'];
             }
 
-            $link = Arr::only($item, ['type', 'label', 'href', 'selected']);
+            // The description (“Saved … by …”) rides along for the command
+            // palette, which offers these as actions and shows it as a hint.
+            $link = Arr::only($item, ['type', 'label', 'description', 'href', 'selected']);
 
             if ($groupIndex === null) {
                 $items[] = $link;
@@ -924,6 +938,7 @@ class ElementEditViewModel extends ViewModel
         }
 
         return [
+            'id' => 'revision-crumb',
             'label' => $label,
             'items' => $items,
         ];

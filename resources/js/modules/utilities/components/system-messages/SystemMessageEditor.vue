@@ -108,7 +108,7 @@
           :options="locales"
           :disabled="loader.processing"
         />
-        <craft-spinner :visible="loader.processing" style="--size: 1rem" />
+        <craft-spinner .visible="loader.processing" style="--size: 1rem" />
       </div>
 
       <craft-field
@@ -123,7 +123,7 @@
           .modelValue="form.subject"
           maxlength="1000"
           required
-          :disabled="loader.processing"
+          .disabled="loader.processing"
           :aria-invalid="form.errors.subject ? 'true' : undefined"
           @model-value-changed="onSubjectChanged"
         >
@@ -158,7 +158,7 @@
           .toolbarButtons="commentToolbarButtons"
           sanitize-html
           required
-          :disabled="loader.processing"
+          .disabled="loader.processing"
           :aria-invalid="form.errors.body ? 'true' : undefined"
           .value="form.body"
           @input="form.body = ($event.target as HTMLTextAreaElement).value"

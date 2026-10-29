@@ -16,6 +16,7 @@ use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Queue\Models\JobProgress as JobProgressModel;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Contracts\Queue\Queue as LaravelQueue;
+use Illuminate\Queue\Failed\CountableFailedJobProvider;
 use Illuminate\Queue\Failed\FailedJobProviderInterface;
 use Illuminate\Support\Facades\Artisan;
 
@@ -134,6 +135,44 @@ class QueueComponent extends Queue
     public function getHasReservedJobs(): bool
     {
         return app(JobProgress::class)->hasReservedJobs();
+    }
+
+    /**
+     * Returns the total number of waiting jobs.
+     */
+    public function getTotalWaiting(): int
+    {
+        return JobProgressModel::query()->where('status', JobStatus::Pending)->count();
+    }
+
+    /**
+     * Returns the total number of delayed jobs.
+     */
+    public function getTotalDelayed(): int
+    {
+        return JobProgressModel::query()->where('status', JobStatus::Delayed)->count();
+    }
+
+    /**
+     * Returns the total number of reserved jobs.
+     */
+    public function getTotalReserved(): int
+    {
+        return JobProgressModel::query()->where('status', JobStatus::Reserved)->count();
+    }
+
+    /**
+     * Returns the total number of failed jobs.
+     */
+    public function getTotalFailed(): int
+    {
+        $failedJobProvider = app(FailedJobProviderInterface::class);
+
+        if ($failedJobProvider instanceof CountableFailedJobProvider) {
+            return $failedJobProvider->count();
+        }
+
+        return count($failedJobProvider->all());
     }
 
     /**

@@ -3,7 +3,10 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Database\ConnectionConfig;
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\BulkOp\BulkOps;
 use CraftCms\Cms\Support\File;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 
 it('normalizes file-backed sqlite connection config for production use', function () {
@@ -108,3 +111,38 @@ it('builds sqlite requirement checker dsn values from the connection config', fu
 
     DB::purge('sqlite_dsn_test');
 });
+
+it('uses the current sqlite connection for bulk operations after boot', function (bool $explicitConnection) {
+    $original = DB::getDefaultConnection();
+    config()->set('database.connections.bulk_ops_after_boot', ['driver' => 'sqlite', 'database' => ':memory:']);
+    $connection = DB::connection('bulk_ops_after_boot');
+    $connection->getSchemaBuilder()->create(Table::BULKOPEVENTS, function (Blueprint $table): void {
+        $table->string('key');
+        $table->string('senderClass');
+        $table->string('eventName');
+    });
+    $connection->getSchemaBuilder()->create(Table::ELEMENTS_BULKOPS, function (Blueprint $table): void {
+        $table->string('key');
+    });
+
+    try {
+        if ($explicitConnection) {
+            config()->set('database.bulk_ops_connection', 'bulk_ops_after_boot');
+        } else {
+            DB::setDefaultConnection('bulk_ops_after_boot');
+        }
+
+        $replayed = 0;
+        $bulkOps = app(BulkOps::class);
+        $bulkOps->defer(stdClass::class, function () use (&$replayed): void {
+            $replayed++;
+        });
+        $bulkOps->ensure(fn () => event(new stdClass));
+
+        expect($replayed)->toBe(1)
+            ->and($connection->table(Table::BULKOPEVENTS)->count())->toBe(0);
+    } finally {
+        DB::setDefaultConnection($original);
+        DB::purge('bulk_ops_after_boot');
+    }
+})->with(['default connection switched' => false, 'explicit bulk ops connection' => true]);

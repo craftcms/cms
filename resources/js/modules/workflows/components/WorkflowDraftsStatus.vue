@@ -19,7 +19,7 @@
 <template>
   <craft-popover
     placement="bottom-end"
-    :opened="opened"
+    .opened="opened"
     @opened-changed="opened = $event.detail.opened"
   >
     <button

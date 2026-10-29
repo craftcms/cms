@@ -47,7 +47,6 @@ use League\Flysystem\StorageAttributes;
 use RuntimeException;
 use Throwable;
 use Tpetry\QueryExpressions\Function\String\Concat;
-use Tpetry\QueryExpressions\Language\Alias;
 use Tpetry\QueryExpressions\Value\Value;
 
 /**
@@ -379,7 +378,7 @@ class AssetIndexer
                 $session->listEmptyFolders,
                 fn (Builder $query) => $query->selectSub($this->folderAssetCountQuery($session, true), 'missingAssetCount'),
             )
-            ->leftJoin(new Alias(Table::VOLUMES, 'volumes'), 'volumes.id', 'folders.volumeId')
+            ->leftJoin(Table::VOLUMES.' as volumes', 'volumes.id', 'folders.volumeId')
             ->where('folders.dateCreated', '<', $cutoff)
             ->whereIn('folders.volumeId', $volumeList)
             ->whereNotNull('folders.parentId')
@@ -390,7 +389,7 @@ class AssetIndexer
             ->unless(
                 $session->listEmptyFolders,
                 fn (Builder $query) => $query
-                    ->leftJoin(new Alias(Table::ASSETINDEXDATA, 'indexData'), function (JoinClause $join) {
+                    ->leftJoin(Table::ASSETINDEXDATA.' as indexData', function (JoinClause $join) {
                         $join->whereColumn('folders.id', 'indexData.recordId')
                             ->where('indexData.isDir', true);
                     })
@@ -406,10 +405,10 @@ class AssetIndexer
                 'assets.filename as filename',
                 'assets.id as assetId',
             ])
-            ->leftJoin(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', 'assets.id')
-            ->leftJoin(new Alias(Table::VOLUMEFOLDERS, 'folders'), 'folders.id', 'assets.folderId')
-            ->leftJoin(new Alias(Table::VOLUMES, 'volumes'), 'volumes.id', 'assets.volumeId')
-            ->leftJoin(new Alias(Table::ASSETINDEXDATA, 'indexData'), function (JoinClause $join) {
+            ->leftJoin(Table::ELEMENTS.' as elements', 'elements.id', 'assets.id')
+            ->leftJoin(Table::VOLUMEFOLDERS.' as folders', 'folders.id', 'assets.folderId')
+            ->leftJoin(Table::VOLUMES.' as volumes', 'volumes.id', 'assets.volumeId')
+            ->leftJoin(Table::ASSETINDEXDATA.' as indexData', function (JoinClause $join) {
                 $join->whereColumn('assets.id', 'indexData.recordId')
                     ->where('indexData.isDir', false);
             })
@@ -443,8 +442,8 @@ class AssetIndexer
     {
         $query = DB::table(Table::ASSETS, 'countedAssets')
             ->selectRaw('count(*)')
-            ->join(new Alias(Table::VOLUMEFOLDERS, 'countedFolders'), 'countedFolders.id', 'countedAssets.folderId')
-            ->leftJoin(new Alias(Table::ELEMENTS, 'countedElements'), 'countedElements.id', 'countedAssets.id')
+            ->join(Table::VOLUMEFOLDERS.' as countedFolders', 'countedFolders.id', 'countedAssets.folderId')
+            ->leftJoin(Table::ELEMENTS.' as countedElements', 'countedElements.id', 'countedAssets.id')
             ->whereColumn('countedAssets.volumeId', 'folders.volumeId')
             ->where('countedFolders.path', 'like', new Concat(['folders.path', new Value('%')]));
 
@@ -453,7 +452,7 @@ class AssetIndexer
         }
 
         return $query
-            ->leftJoin(new Alias(Table::ASSETINDEXDATA, 'countedIndexData'), fn (JoinClause $join) => $join
+            ->leftJoin(Table::ASSETINDEXDATA.' as countedIndexData', fn (JoinClause $join) => $join
                 ->whereColumn('countedAssets.id', 'countedIndexData.recordId')
                 ->where('countedIndexData.isDir', false))
             ->where('countedAssets.dateCreated', '<', Query::prepareDateForDb($session->dateCreated))

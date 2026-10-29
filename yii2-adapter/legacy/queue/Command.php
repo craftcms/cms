@@ -27,6 +27,7 @@ class Command extends \yii\queue\cli\Command
     /**
      * @var string The job ID to run
      * @since 4.8.0
+     * @deprecated 6.0.0 Running a single job is no longer supported.
      */
     public ?string $jobId = null;
 
@@ -85,7 +86,8 @@ class Command extends \yii\queue\cli\Command
     public function actionRun(): int
     {
         if ($this->jobId) {
-            return $this->queue->executeJob($this->jobId) ? ExitCode::OK : ExitCode::UNSPECIFIED_ERROR;
+            $this->stderr('Running a single job with `--job-id` is not supported in Craft 6. Run `php craft queue:work` to process the queue instead.' . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
         }
 
         return $this->queue->run() ?? ExitCode::OK;

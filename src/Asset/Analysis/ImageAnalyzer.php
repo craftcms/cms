@@ -16,6 +16,7 @@ use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Image\Data\ImageColors;
+use CraftCms\Cms\Image\Data\ImageMetadata;
 use CraftCms\Cms\Image\Data\ImageSample;
 use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Support\File;
@@ -57,6 +58,33 @@ class ImageAnalyzer
             $this->aiTasks->tasksByHandle()->all(),
             static fn (string $task): bool => is_subclass_of($task, ImageAnalysisTaskInterface::class),
         );
+    }
+
+    /**
+     * Returns what an image’s embedded metadata fills in for the asset, as each image analysis task reads it, such as
+     * its alt text and title. This doesn’t depend on AI being set up.
+     *
+     * @see ImageAnalysisTaskInterface::fillFromMetadata()
+     */
+    public function metadataChanges(Asset $asset, ImageMetadata $metadata): ImageAnalysisChanges
+    {
+        $changes = new ImageAnalysisChanges;
+
+        foreach ($this->tasks() as $task) {
+            $task::fillFromMetadata($asset, $metadata, $changes);
+        }
+
+        return $changes;
+    }
+
+    /**
+     * Saves what an image’s embedded metadata fills in for the asset’s other sites, such as once a new image has been
+     * saved to them. What it fills in for the asset’s own site is left to the caller.
+     */
+    public function fillOtherSitesFromMetadata(Asset $asset, ImageMetadata $metadata): void
+    {
+        $changes = $this->metadataChanges($asset, $metadata)->withoutSite($asset->siteId);
+        $this->save($asset, $changes);
     }
 
     /**
@@ -185,37 +213,35 @@ class ImageAnalyzer
     private function run(Asset $asset, ?array $handles, bool $overwrite, bool $sample): array
     {
         $tasks = $this->tasks();
-        $groups = [];
         $changes = new ImageAnalysisChanges;
         $applied = [];
         $failure = null;
-
-        foreach ($this->pendingTasks($asset, $handles, $overwrite) as $handle) {
-            $resolved = $this->ai->resolve($handle);
-            $groups[$resolved->provider."\0".$resolved->model][self::responseProperty($handle)] = $tasks[$handle];
-        }
-
-        $sample = $sample && $this->needsSampling($asset);
-
-        if ($groups === [] && ! $sample) {
-            return [$changes, $applied, $failure];
-        }
-
-        $copy = $asset->getCopyOfFile();
+        $copy = null;
 
         try {
-            if ($sample) {
+            // Sample first, so tasks see what the image’s embedded metadata filled in, and don’t replace it
+            if ($sample && $this->needsSampling($asset)) {
+                $copy = $asset->getCopyOfFile();
                 $this->sample($asset, $copy, $changes);
+            }
+
+            $groups = [];
+
+            foreach ($this->pendingTasks($asset, $handles, $overwrite) as $handle) {
+                $resolved = $this->ai->resolve($handle);
+                $groups[$resolved->provider."\0".$resolved->model][self::responseProperty($handle)] = $tasks[$handle];
             }
 
             if ($groups === []) {
                 return [$changes, $applied, $failure];
             }
 
+            $copy ??= $asset->getCopyOfFile();
+
             $image = $this->modelImages->forFile($copy);
 
             foreach ($groups as $group) {
-                $agent = new ImageAnalysisAgent($group, $asset);
+                $agent = new ImageAnalysisAgent($group, $asset, $overwrite);
 
                 try {
                     $response = $this->ai->task(reset($group)::handle())->prompt($agent, $agent->analysisPrompt(), [$image]);
@@ -236,7 +262,9 @@ class ImageAnalyzer
                 }
             }
         } finally {
-            File::delete($copy);
+            if ($copy !== null) {
+                File::delete($copy);
+            }
         }
 
         return [$changes, $applied, $failure];
@@ -252,9 +280,10 @@ class ImageAnalyzer
 
     /**
      * Records what the image is missing that can be read from its file: its colors and hash, and its embedded metadata,
-     * and what that fills in, as an upload’s does.
+     * and what that fills in, as an upload’s does. What it fills in is set on the asset, and saved for its other sites,
+     * for the tasks to see.
      *
-     * @see Asset::valuesFromEmbeddedMetadata()
+     * @see metadataChanges()
      */
     private function sample(Asset $asset, string $path, ImageAnalysisChanges $changes): void
     {
@@ -271,11 +300,19 @@ class ImageAnalyzer
             $metadata = $this->images->metadata($path);
             $analysis = $analysis->withMetadata($metadata);
 
-            foreach ($asset->valuesFromEmbeddedMetadata($metadata) as $attribute => $value) {
+            $filled = $this->metadataChanges($asset, $metadata);
+            $values = $filled->siteAttributes[$asset->siteId] ?? [];
+            Typecast::configure($asset, $values);
+
+            foreach ($values as $attribute => $value) {
                 $changes->setForSite($asset->siteId, $attribute, $value);
             }
+
+            // Other sites are saved now, so tasks don’t ask for what was filled in for them
+            $this->save($asset, $filled->withoutSite($asset->siteId));
         }
 
+        $asset->analysis = $analysis;
         $changes->set('analysis', $analysis);
     }
 

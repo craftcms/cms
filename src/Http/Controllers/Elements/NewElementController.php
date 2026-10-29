@@ -44,6 +44,9 @@ readonly class NewElementController
             mb_ucfirst(t('Couldn’t create {type}.', ['type' => $elementType::lowerDisplayName()])),
         );
 
-        return redirect(Url::urlWithParams((string) $element->getCpEditUrl(), ['fresh' => 1]));
+        return redirect(Url::urlWithParams((string) $element->getCpEditUrl(), array_filter([
+            'fresh' => 1,
+            'returnUrl' => $request->query('returnUrl'),
+        ])));
     }
 }

@@ -10,6 +10,8 @@
   import '@craftcms/ui/components/radio/radio';
   import '@craftcms/ui/components/radio-group/radio-group';
   import '@craftcms/ui/components/select/select';
+  import {t} from '@craftcms/ui/utilities/translate';
+  import {Required} from '@lion/ui/form-core.js';
   import {computed, inject, ref, watch} from 'vue';
   import type {UiControlPayload, UiValue} from './types';
   import {FieldLabelSrOnly, inputName, serverErrorValidators} from './runtime';
@@ -50,8 +52,8 @@
     allMode?: 'singleValue' | 'eachValue';
     sortable?: boolean;
     /**
-     * Label for the leading blank option. Absent leaves it unlabeled; `false`
-     * means the control has no valid empty state and shouldn't offer one.
+     * Label for the leading blank option. Defaults to “Select…” when required,
+     * or an empty label otherwise; `false` omits the blank option.
      */
     placeholder?: string | false;
   };
@@ -69,20 +71,23 @@
   }>();
   const fieldLabelSrOnly = inject(FieldLabelSrOnly, undefined);
 
+  // Lion skips other validators for an empty select. The field renders the
+  // server's message; this validator keeps the native invalid state in sync.
+  const selectValidators = computed(() =>
+    props.invalid && props.required
+      ? [
+          new Required(undefined, {getMessage: () => ''}),
+          ...serverErrorValidators(true),
+        ]
+      : serverErrorValidators(props.invalid)
+  );
+
   /**
-   * A single select needs somewhere to represent "nothing chosen".
-   *
-   * A `<select>` with no selected option shows its first one, so an optional
-   * setting that has never been set looks set — and because nothing changed,
-   * saving posts nothing and it stays unset. A leading blank option makes the
-   * empty state visible, and re-selectable once something has been chosen.
-   *
-   * Multi-selects show an empty list when empty, so they don't need it, and a
-   * required control has no valid empty state to offer. Options that already
-   * carry an empty value supply their own.
-   *
-   * `Choice::placeholder()` labels it and `Choice::withoutPlaceholder()` drops
-   * it for a setting that has no valid empty state.
+   * A leading blank keeps an unset value from looking like the first real
+   * option. Required controls disable it as a prompt, rather than offering
+   * an empty choice. Multi-selects and options with an empty value already
+   * represent the empty state. `Choice::withoutPlaceholder()` opts out for
+   * settings that always hold a value.
    *
    * `UI\Controls\Choice::selectOptions()` mirrors this for the HTML fallback.
    */
@@ -92,23 +97,30 @@
 
     if (
       props.control.props.multiple ||
-      props.required ||
       placeholder === false ||
       options.some((option) => inputValue(option.value) === '')
     ) {
       return options;
     }
 
-    return [{label: placeholder ?? '', value: ''}, ...options];
+    return [
+      {
+        label: placeholder ?? (props.required ? t('Select…') : ''),
+        value: '',
+        disabled: props.required,
+      },
+      ...options,
+    ];
   });
 
   /**
    * The select's options in runs, one per `group` in the order they appear;
-   * an ungrouped run has no label and renders without an `<optgroup>`.
+   * an ungrouped run has no label and renders without an `<optgroup>`. A run
+   * is keyed by its label and first option rather than its position.
    */
   const selectGroups = computed(() =>
     selectOptions.value.reduce<
-      Array<{label: string | null; options: ChoiceOption[]}>
+      Array<{key: string; label: string | null; options: ChoiceOption[]}>
     >((groups, option) => {
       const label = option.group ?? null;
       const last = groups.at(-1);
@@ -116,7 +128,11 @@
       if (last && last.label === label) {
         last.options.push(option);
       } else {
-        groups.push({label, options: [option]});
+        groups.push({
+          key: JSON.stringify([label, inputValue(option.value)]),
+          label,
+          options: [option],
+        });
       }
 
       return groups;
@@ -124,16 +140,24 @@
   );
 
   function inputValue(value: UiValue): string {
-    return value === true ? '1' : value === false ? '' : String(value);
+    return value === true ? '1' : value === false ? '' : String(value ?? '');
   }
 
-  function selected(value: ChoiceValue): boolean {
+  const selectedValues = computed(() => {
     const values =
       props.control.props.multiple && Array.isArray(props.value)
         ? props.value
         : [props.value];
 
-    return (values ?? []).map(inputValue).includes(inputValue(value));
+    return new Set(values.map(inputValue));
+  });
+
+  const selectedOptions = computed(() =>
+    props.control.props.options.filter((option) => selected(option.value))
+  );
+
+  function selected(value: ChoiceValue): boolean {
+    return selectedValues.value.has(inputValue(value));
   }
 
   function onSelect(event: Event): void {
@@ -291,15 +315,16 @@
 <template>
   <craft-select
     v-if="control.props.presentation === 'select'"
-    :label-sr-only="fieldLabelSrOnly || undefined"
+    .labelSrOnly="fieldLabelSrOnly"
     :name="
       editable
         ? `${inputName(control.path)}${control.props.multiple ? '[]' : ''}`
         : ''
     "
-    :disabled="!editable"
+    .disabled="!editable"
     :required="editable && required"
-    .validators="serverErrorValidators(invalid)"
+    .validators="selectValidators"
+    .submitted="invalid"
   >
     <select
       slot="input"
@@ -314,7 +339,7 @@
       :aria-invalid="invalid ? 'true' : undefined"
       @change="onSelect"
     >
-      <template v-for="(group, index) in selectGroups" :key="index">
+      <template v-for="group in selectGroups" :key="group.key">
         <optgroup v-if="group.label !== null" :label="group.label">
           <option
             v-for="option in group.options"
@@ -355,9 +380,7 @@
       value=""
     />
     <input
-      v-for="option in control.props.options.filter((option) =>
-        selected(option.value)
-      )"
+      v-for="option in selectedOptions"
       :key="inputValue(option.value)"
       type="hidden"
       :name="`${inputName(control.path)}[]`"
@@ -370,8 +393,8 @@
       :key="inputValue(option.value)"
       type="button"
       :value="inputValue(option.value)"
-      :active="selected(option.value)"
-      :disabled="!editable || option.disabled"
+      .active="selected(option.value)"
+      .disabled="!editable || option.disabled"
       :icon.attr="option.icon"
       :aria-label="option.icon || option.labelHtml ? option.label : undefined"
       @click="onButtonClicked(option.value)"
@@ -386,8 +409,8 @@
     v-else-if="useCheckboxSelect"
     role="group"
     :name="editable ? inputName(control.path) : undefined"
-    :disabled="!editable"
-    :sortable="control.props.sortable === true"
+    .disabled="!editable"
+    .sortable="control.props.sortable === true"
     :presentation="
       control.props.presentation === 'add-menu' ? 'add-menu' : 'checkboxes'
     "
@@ -411,7 +434,7 @@
         : ''
     "
     :required="editable && required"
-    :disabled="!editable"
+    .disabled="!editable"
     :aria-invalid="invalid ? 'true' : undefined"
     :aria-required="required ? 'true' : undefined"
     .validators="serverErrorValidators(invalid)"
@@ -450,7 +473,7 @@
             ? option.label
             : undefined
         "
-        :disabled="!editable || option.disabled"
+        .disabled="!editable || option.disabled"
         .choiceValue="inputValue(option.value)"
         .checked="selected(option.value)"
       >
