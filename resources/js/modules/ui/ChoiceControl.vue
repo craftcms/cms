@@ -49,6 +49,8 @@
     options: ChoiceOption[];
     multiple: boolean;
     presentation: ChoicePresentation;
+    /** Absent means a button with an icon shows only the icon. */
+    iconsOnly?: false;
     /** Label for the “All” checkbox; absent when there isn't one. */
     allLabel?: string;
     /** What “All” posts in `singleValue` mode. */
@@ -74,6 +76,11 @@
     (event: 'update:value', value: string | string[]): void;
   }>();
   const fieldLabelSrOnly = inject(FieldLabelSrOnly, undefined);
+
+  /** Whether a button shows only its option's icon, named by the label. */
+  function iconOnly(option: ChoiceOption): boolean {
+    return option.icon !== undefined && props.control.props.iconsOnly !== false;
+  }
 
   /**
    * A single select needs somewhere to represent "nothing chosen".
@@ -390,13 +397,18 @@
       .active="selected(option.value)"
       .disabled="!editable || option.disabled"
       :icon.attr="option.icon"
-      :aria-label="option.icon || option.labelHtml ? option.label : undefined"
+      :aria-label="
+        iconOnly(option) || option.labelHtml ? option.label : undefined
+      "
       @click="onButtonClicked(option.value)"
     >
-      <!-- An icon option slots nothing: `craft-button` renders the icon
+      <!-- An icon-only option slots nothing: `craft-button` renders the icon
            itself, and only stays square while its light DOM is empty. -->
-      <span v-if="!option.icon && option.labelHtml" v-html="option.labelHtml" />
-      <template v-else-if="!option.icon">{{ option.label }}</template>
+      <span
+        v-if="!iconOnly(option) && option.labelHtml"
+        v-html="option.labelHtml"
+      />
+      <template v-else-if="!iconOnly(option)">{{ option.label }}</template>
     </craft-button>
   </craft-button-group>
   <craft-checkbox-select
@@ -463,7 +475,7 @@
       <component
         :is="control.props.multiple ? 'craft-checkbox' : 'craft-radio'"
         :title="
-          control.props.presentation === 'buttons' && option.icon
+          control.props.presentation === 'buttons' && iconOnly(option)
             ? option.label
             : undefined
         "
@@ -489,7 +501,7 @@
         />
         <label slot="label" :for="optionId(index)">
           <craft-icon
-            v-if="control.props.presentation === 'buttons' && option.icon"
+            v-if="control.props.presentation === 'buttons' && iconOnly(option)"
             :name="option.icon"
             :label="option.label"
           />

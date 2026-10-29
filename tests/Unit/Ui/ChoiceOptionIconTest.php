@@ -38,3 +38,25 @@ it('shows each option’s icon or color before its label', function (ChoicePrese
     'checkboxes' => ChoicePresentation::Checkboxes,
     'radios' => ChoicePresentation::Radios,
 ]);
+
+it('shows a button’s icon beside its label unless options show only their icons', function (bool $multiple) {
+    $payload = app(UiResolver::class)->resolve(Ui::make([
+        Field::make('Align', Choice::make('align')
+            ->presentation(ChoicePresentation::Buttons)
+            ->multiple($multiple)
+            ->iconsOnly(false)
+            ->options([
+                ['label' => 'Left', 'value' => 'left', 'icon' => 'arrow-left'],
+            ])),
+    ]), new UiContext);
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
+    $option = $crawler->filter($multiple ? 'craft-button' : 'craft-radio')->first();
+
+    expect(trim($option->text()))->toBe('Left')
+        ->and($option->attr('title'))->toBeNull()
+        ->and($option->attr('aria-label'))->toBeNull()
+        ->and($option->filter('craft-icon[label]'))->toHaveCount(0);
+})->with([
+    'single' => false,
+    'multiple' => true,
+]);

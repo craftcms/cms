@@ -37,6 +37,8 @@ class Choice extends Control
 
     private bool $sortable = false;
 
+    private bool $iconsOnly = true;
+
     private ChoicePresentation $presentation = ChoicePresentation::Select;
 
     /** Label for the leading blank option, or `false` when there shouldn't be one. */
@@ -107,6 +109,17 @@ class Choice extends Control
      * Implies a multi-select checkbox list, unless it's already presented with
      * an “Add item” menu.
      */
+    /**
+     * Whether a button with an icon shows only the icon, named by its label.
+     * Without it, the icon sits beside the label. Buttons presentation only.
+     */
+    public function iconsOnly(bool $iconsOnly = true): static
+    {
+        $this->iconsOnly = $iconsOnly;
+
+        return $this;
+    }
+
     public function sortable(bool $sortable = true): static
     {
         $this->sortable = $sortable;
@@ -213,6 +226,10 @@ class Choice extends Control
 
         if ($this->placeholder !== null) {
             $props['placeholder'] = $this->placeholder;
+        }
+
+        if (! $this->iconsOnly) {
+            $props['iconsOnly'] = false;
         }
 
         return $props;
@@ -426,16 +443,18 @@ class Choice extends Control
 
     /**
      * With `$buttons`, the radios are drawn as a row of joined buttons, and an
-     * option with an icon shows only the icon, named by the option's label.
+     * option with an icon shows only the icon, named by the option's label,
+     * unless the control isn't {@see self::iconsOnly()}.
      *
      * @param  array<string, mixed>  $attributes
      */
     private static function radiosHtml(ControlPayload $control, mixed $value, array $attributes, bool $buttons = false): string
     {
         $values = self::values($value);
-        $radios = array_map(function (array $option, int $index) use ($attributes, $values, $buttons): Radio {
+        $iconsOnly = $control->props['iconsOnly'] ?? true;
+        $radios = array_map(function (array $option, int $index) use ($attributes, $values, $buttons, $iconsOnly): Radio {
             $optionValue = (string) $option['value'];
-            $icon = $buttons ? ($option['icon'] ?? null) : null;
+            $icon = $buttons && $iconsOnly ? ($option['icon'] ?? null) : null;
 
             return Radio::make()
                 ->id("{$attributes['id']}-{$index}")
@@ -445,7 +464,7 @@ class Choice extends Control
                 ->disabled($attributes['name'] === null || ($option['disabled'] ?? false))
                 ->label($icon !== null ? Icon::make()->name($icon)->label($option['label']) : self::optionLabel($option))
                 ->attributes(['title' => $icon !== null ? $option['label'] : null])
-                ->icon($buttons ? null : ($option['icon'] ?? null))
+                ->icon($icon === null ? ($option['icon'] ?? null) : null)
                 ->color($buttons ? null : ($option['color'] ?? null))
                 ->thumbnail($option['thumbnail'] ?? null)
                 ->describedBy($attributes['aria']['describedby'] ?? null)
@@ -484,18 +503,21 @@ class Choice extends Control
      */
     private static function buttons(ControlPayload $control, array $values, array $attributes): array
     {
-        return array_map(function (array $option) use ($attributes, $values): Button {
+        $iconsOnly = $control->props['iconsOnly'] ?? true;
+
+        return array_map(function (array $option) use ($attributes, $values, $iconsOnly): Button {
             $optionValue = (string) $option['value'];
 
             $icon = $option['icon'] ?? null;
+            $iconOnly = $iconsOnly && $icon !== null;
 
             return Button::make()
                 ->icon($icon)
                 // An icon-only button keeps its light DOM empty, which is what
                 // `<craft-button>` keys its square treatment on. The option's
                 // label becomes the button's accessible name instead.
-                ->label($icon !== null ? null : self::optionLabel($option))
-                ->accessibleName($icon !== null ? $option['label'] : null)
+                ->label($iconOnly ? null : self::optionLabel($option))
+                ->accessibleName($iconOnly ? $option['label'] : null)
                 ->value($optionValue)
                 ->active(in_array($optionValue, $values, true))
                 ->disabled($attributes['name'] === null || ($option['disabled'] ?? false));

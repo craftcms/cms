@@ -226,6 +226,31 @@ describe('ChoiceControl', () => {
     }
   );
 
+  it.each([
+    ['single-choice', false, 'craft-radio'],
+    ['multiple-choice', true, 'craft-button'],
+  ])(
+    'shows a %s button’s icon beside its label unless options show only their icons',
+    async (_, multiple, selector) => {
+      await mount(
+        {
+          presentation: 'buttons',
+          multiple,
+          iconsOnly: false,
+          options: [{label: 'Left', value: 'left', icon: 'arrow-left'}],
+        },
+        multiple ? [] : ''
+      );
+
+      const option = container!.querySelector(selector)!;
+
+      expect(option.textContent?.trim()).toBe('Left');
+      expect(option.hasAttribute('title')).toBe(false);
+      expect(option.hasAttribute('aria-label')).toBe(false);
+      expect(option.querySelector('craft-icon[label]')).toBe(null);
+    }
+  );
+
   const allOption = {allLabel: 'All', allValue: '*', allMode: 'singleValue'};
 
   async function checkboxSelect(): Promise<CraftCheckboxSelect> {
