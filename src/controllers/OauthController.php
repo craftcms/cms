@@ -113,13 +113,16 @@ class OauthController extends Controller
         }
 
         $id = StringHelper::UUID();
+        $now = Db::prepareDateForDb(new DateTime());
         Craft::$app->getDb()->createCommand()->insert(Table::OAUTH_CLIENTS, [
             'id' => $id,
-            'resourceId' => $definition->id,
+            'resource_id' => $definition->id,
             'name' => $name,
-            'redirectUris' => json_encode($uris, JSON_THROW_ON_ERROR),
+            'redirect_uris' => json_encode($uris, JSON_THROW_ON_ERROR),
+            'grant_types' => json_encode(['authorization_code', 'refresh_token'], JSON_THROW_ON_ERROR),
             'revoked' => false,
-            'dateCreated' => Db::prepareDateForDb(new DateTime()),
+            'created_at' => $now,
+            'updated_at' => $now,
         ])->execute();
 
         $this->response->setStatusCode(201);

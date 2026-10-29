@@ -153,11 +153,11 @@ class OAuth extends Component
     {
         $definition = $this->getResource($resource);
         $rows = (new Query())->select(['scopes'])->from(Table::OAUTH_ACCESS_TOKENS)->where([
-            'resourceId' => $resource,
-            'clientId' => $request->getClient()->getIdentifier(),
-            'userId' => $request->getUser()->getIdentifier(),
+            'resource_id' => $resource,
+            'client_id' => $request->getClient()->getIdentifier(),
+            'user_id' => $request->getUser()->getIdentifier(),
             'revoked' => false,
-        ])->andWhere(['>', 'expiresAt', Db::prepareDateForDb(new DateTime())])->column();
+        ])->andWhere(['>', 'expires_at', Db::prepareDateForDb(new DateTime())])->column();
         $granted = [];
         foreach ($rows as $scopes) {
             $granted = array_merge($granted, json_decode($scopes, true, flags: JSON_THROW_ON_ERROR));

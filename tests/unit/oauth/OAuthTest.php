@@ -59,7 +59,7 @@ class OAuthTest extends TestCase
         $this->app->generalConfig = $generalConfig;
         $this->app->identity = new OAuthTestUser(['id' => (int)$userId, 'active' => true]);
         foreach (['mcp', 'api'] as $resource) {
-            $db->createCommand()->insert(Table::OAUTH_CLIENTS, ['id' => 'test-' . $resource, 'resourceId' => $resource, 'name' => 'Test client', 'redirectUris' => '["https://client.example/callback"]', 'revoked' => false, 'dateCreated' => date('Y-m-d H:i:s')])->execute();
+            $db->createCommand()->insert(Table::OAUTH_CLIENTS, ['id' => 'test-' . $resource, 'resource_id' => $resource, 'name' => 'Test client', 'redirect_uris' => '["https://client.example/callback"]', 'grant_types' => '["authorization_code","refresh_token"]', 'revoked' => false])->execute();
         }
         $this->oauth = new OAuth();
         $this->app->set('oauth', $this->oauth);
@@ -149,6 +149,33 @@ class OAuthTest extends TestCase
 
         $this->expectOAuthError(fn() => $this->authenticate($tokens['access_token']), 'access_denied');
         $this->expectOAuthError(fn() => $this->exchange(['grant_type' => 'refresh_token', 'refresh_token' => $tokens['refresh_token']]), 'invalid_grant');
+    }
+
+    public function testClientsCanOnlyUseTheirGrantTypes(): void
+    {
+        $tokens = $this->grant('mcp');
+        $this->app->getDb()->createCommand()->update(Table::OAUTH_CLIENTS, ['grant_types' => '["authorization_code"]'], ['id' => 'test-mcp'])->execute();
+
+        $this->expectOAuthError(fn() => $this->exchange(['grant_type' => 'refresh_token', 'refresh_token' => $tokens['refresh_token']]), 'unauthorized_client');
+    }
+
+    /**
+     * Craft 6 adopts these tables with Laravel Passport, so they must keep Passport 13’s columns.
+     */
+    public function testTablesHavePassportColumns(): void
+    {
+        $passport = [
+            Table::OAUTH_CLIENTS => ['id', 'owner_type', 'owner_id', 'name', 'secret', 'provider', 'redirect_uris', 'grant_types', 'revoked', 'created_at', 'updated_at'],
+            Table::OAUTH_ACCESS_TOKENS => ['id', 'user_id', 'client_id', 'name', 'scopes', 'revoked', 'created_at', 'updated_at', 'expires_at'],
+            Table::OAUTH_AUTH_CODES => ['id', 'user_id', 'client_id', 'scopes', 'revoked', 'expires_at'],
+            Table::OAUTH_REFRESH_TOKENS => ['id', 'access_token_id', 'revoked', 'expires_at'],
+        ];
+
+        foreach ($passport as $table => $columns) {
+            $actual = $this->app->getDb()->getTableSchema($table, true)->columnNames;
+            self::assertSame([], array_values(array_diff($columns, $actual)), "$table is missing Passport columns.");
+            self::assertSame([], array_values(array_diff($actual, $columns, ['resource_id'])), "$table has columns Passport doesn’t.");
+        }
     }
 
     public function testRequestedScopeSubsetControlsProtectedOperations(): void

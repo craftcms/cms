@@ -223,3 +223,7 @@ Scopes listed in `scopeLevels` are ordered access levels, and each level include
 Consent is reused when the requested levels overlap the levels granted by the broadest level the user chose before. Craft then grants that earlier level, so a client that requests every level keeps the level the user chose. To require a level, check that the token holds it or a broader one.
 
 `userScopes` limits the levels offered to each user, and the scopes granted when a token is issued or refreshed. For example, MCP offers `mcp:admin` only to administrators, and refreshing an `mcp:admin` token after the user loses admin status drops that scope.
+
+## Upgrading to Craft 6
+
+Craft 6 uses Laravel Passport for OAuth. Craft 5’s OAuth tables use Passport 13’s layout, plus a `resource_id` column, and its access tokens are signed the same way. This is so that, with the same signing keys, access tokens issued by Craft 5 can stay valid in Craft 6. Refresh tokens are encrypted with a key derived from the Craft security key rather than Laravel’s `APP_KEY`, so OAuth clients will need to authorize again once their access tokens expire.
