@@ -740,6 +740,7 @@ return [
     'Export Type' => 'Export Type',
     'Export' => 'Export',
     'Export…' => 'Export…',
+    'Extend' => 'Extend',
     'External project config changes discarded.' => 'External project config changes discarded.',
     'Failed to generate transform with id of {id}.' => 'Failed to generate transform with id of {id}.',
     'Failed to load plugin reviews. Please try again' => 'Failed to load plugin reviews. Please try again',

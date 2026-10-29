@@ -457,16 +457,6 @@ class Cp extends Component
             'iconMask' => '@app/icons/light/envelope.svg',
             'label' => Craft::t('app', 'Email'),
         ];
-        $settings[$label]['plugins'] = [
-            'iconMask' => '@app/icons/light/plug.svg',
-            'label' => Craft::t('app', 'Plugins'),
-        ];
-        if (!$readOnly) {
-            $settings[$label]['mcp'] = [
-                'iconMask' => '@app/icons/light/robot.svg',
-                'label' => Craft::t('app', 'MCP'),
-            ];
-        }
 
         $label = Craft::t('app', 'Content');
 
@@ -505,6 +495,19 @@ class Cp extends Component
             'iconMask' => '@app/icons/light/folder-open.svg',
             'label' => Craft::t('app', 'Filesystems'),
         ];
+
+        $label = Craft::t('app', 'Extend');
+
+        $settings[$label]['plugins'] = [
+            'iconMask' => '@app/icons/light/plug.svg',
+            'label' => Craft::t('app', 'Plugins'),
+        ];
+        if (!$readOnly) {
+            $settings[$label]['mcp'] = [
+                'iconMask' => '@app/icons/light/robot.svg',
+                'label' => Craft::t('app', 'MCP'),
+            ];
+        }
 
         $label = Craft::t('app', 'Plugins');
 

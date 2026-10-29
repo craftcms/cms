@@ -20,6 +20,7 @@
 - Added the `defaultRateLimit` and `defaultRateLimitDuration` config settings, which configure the rate limits for `users/login`, `users/send-password-reset-email`, `auth/verify-totp`, and `auth/verify-recovery-code` requests. ([#20054](https://github.com/craftcms/cms/pull/20054))
 - Queue jobs’ Job Data is now syntax-highlighted in the Queue Manager utility.
 - The Project Config utility’s “Loaded Project Config Data” is now syntax-highlighted.
+- The global Settings page now has an “Extend” section, which contains Plugins and MCP.
 - Added Settings → MCP, where administrators can enable the authenticated and public MCP servers, set their endpoints, and approve the capabilities and content that the public server exposes. ([#20145](https://github.com/craftcms/cms/pull/20145), [#20189](https://github.com/craftcms/cms/pull/20189))
 - Added the `oauth/generate-keys` command, which generates the keys used to sign OAuth access tokens. ([#20145](https://github.com/craftcms/cms/pull/20145))
 - Added support for `config/mcp.php` and `config/oauth.php` config files. ([#20145](https://github.com/craftcms/cms/pull/20145))
