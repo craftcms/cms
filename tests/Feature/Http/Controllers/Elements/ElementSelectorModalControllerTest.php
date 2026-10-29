@@ -34,12 +34,11 @@ beforeEach(function () {
     );
 });
 
-it('serves index props alongside the html the legacy index still boots from', function () {
+it('serves the index props the modal renders from', function () {
     $response = ($this->postBody)();
 
     $response->assertOk();
-    // The HTML is still there — the modal hasn't stopped using it yet.
-    expect($response->json('html'))->toBeString()->not->toBeEmpty();
+    expect($response->json('html'))->toBeNull();
 
     $props = $response->json('props');
     expect($props)->toBeArray();

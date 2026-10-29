@@ -22,7 +22,7 @@ function element(id: number, extra: Partial<ElementInfo> = {}): ElementInfo {
 }
 
 function body(props: Record<string, unknown> = {}): ElementIndexBody {
-  return {html: '<div class="element-index"></div>', props};
+  return {props};
 }
 
 function create(options: Partial<ElementSelectorOptions> = {}) {
