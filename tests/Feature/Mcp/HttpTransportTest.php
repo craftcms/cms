@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Mcp\Public\Access;
-use CraftCms\Cms\Mcp\PublicRouteRegistrar;
+use CraftCms\Cms\Mcp\RouteRegistrar;
 use CraftCms\Cms\Mcp\Settings;
 use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\Tests\TestCase;
@@ -28,7 +28,7 @@ beforeEach(function (): void {
         'publicTools' => ['craft-context-get'],
     ]));
     app()->forgetInstance(Access::class);
-    app(PublicRouteRegistrar::class)->register();
+    app(RouteRegistrar::class)->register();
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:read'], 'craft-mcp');
 });
 
@@ -38,7 +38,7 @@ afterEach(function (): void {
 
 function mcpHttpRequest(TestCase $test, string $endpoint, string $method, array $payload = [], array $headers = []): TestResponse
 {
-    Route::getRoutes()->getByName('craft.cp.mcp.server')->flushController();
+    Route::getRoutes()->getByName('craft.mcp.server')->flushController();
     foreach (Route::getRoutes()->getRoutes() as $route) {
         if ($route->getName() === 'craft.mcp.public') {
             $route->flushController();
@@ -71,7 +71,7 @@ function mcpHttpInitialize(TestCase $test, string $endpoint, string $version = '
 }
 
 it('serves both HTTP protocols and persists handshake sessions until teardown', function (bool $public, string $version): void {
-    $endpoint = $public ? '/_test/dual-protocol-mcp' : route('craft.cp.mcp.server');
+    $endpoint = $public ? '/_test/dual-protocol-mcp' : route('craft.mcp.server');
     $session = mcpHttpInitialize($this, $endpoint, $version);
     $headers = ['Mcp-Session-Id' => $session, 'Mcp-Protocol-Version' => $version];
 
@@ -98,7 +98,7 @@ it('serves both HTTP protocols and persists handshake sessions until teardown', 
 })->with(['admin' => false, 'public' => true])->with(['2025-03-26', '2025-06-18', '2025-11-25']);
 
 it('isolates handshake sessions by endpoint, user, and scopes', function (string $boundary): void {
-    $admin = route('craft.cp.mcp.server');
+    $admin = route('craft.mcp.server');
     $public = '/_test/dual-protocol-mcp';
     $owner = User::query()->firstOrFail();
     $source = $boundary === 'public to admin' ? $public : $admin;

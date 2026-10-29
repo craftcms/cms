@@ -9,6 +9,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Mcp\AdminInstructions;
 use CraftCms\Cms\Mcp\Attributes\PublicMcp;
+use CraftCms\Cms\Mcp\Attributes\RequiresPermission;
 use CraftCms\Cms\Mcp\Public\Access;
 use CraftCms\Cms\Mcp\Public\ElementCriteria;
 use CraftCms\Cms\Mcp\Public\ElementQuery;
@@ -45,9 +46,10 @@ readonly class Craft
     /** @return array{version: string, edition: string, name: string, isInstalled: bool, siteCount: ?int, instructions: string} */
     #[McpTool(
         name: 'info.get',
-        description: 'Returns Craft application information and full admin MCP instructions, including site and plugin guidance. Read these instructions before using other Craft capabilities.',
+        description: 'Returns Craft application information and full MCP instructions, including site and plugin guidance. Read these instructions before using other Craft capabilities.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
+    #[RequiresPermission('accessCp')]
     public function info(): array
     {
         $isInstalled = Cms::isInstalled();

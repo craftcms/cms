@@ -134,7 +134,7 @@ it('lists canonical activity with inclusive timezone bounds, site isolation, and
 
 it('allows view-only editors to comment and protects comment versions from other viewers', function (): void {
     $viewer = User::factory()->withPermissions([
-        'accessCp', 'useCraftMcp', "viewEntries:{$this->entry->getSection()->uid}",
+        'accessCp', "viewEntries:{$this->entry->getSection()->uid}",
         "viewPeerEntries:{$this->entry->getSection()->uid}",
     ])->create(['admin' => false]);
     ($this->callActivity)('activity.comments.create', ['markdown' => 'View-only editorial note'], $viewer)
@@ -154,7 +154,7 @@ it('allows view-only editors to comment and protects comment versions from other
         ->assertJsonPath('result.structuredContent.events.0.comment.html', null)
         ->assertJsonPath('result.structuredContent.events.0.comment.markdown', null);
 
-    $denied = User::factory()->withPermissions(['accessCp', 'useCraftMcp'])->create(['admin' => false]);
+    $denied = User::factory()->withPermissions(['accessCp'])->create(['admin' => false]);
     ($this->callActivity)('activity.list', actor: $denied)
         ->assertOk()->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'Element not found.');
