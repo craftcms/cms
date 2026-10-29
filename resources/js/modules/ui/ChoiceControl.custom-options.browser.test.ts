@@ -13,14 +13,17 @@ afterEach(() => {
   container?.remove();
 });
 
-async function mount(value: string[]): Promise<unknown[]> {
+async function mount(
+  value: string | string[],
+  multiple = true
+): Promise<unknown[]> {
   const emitted: unknown[] = [];
   const control: UiControlPayload<any> = {
     type: 'CraftCms\\Cms\\Ui\\Controls\\Choice',
     component: 'craft:choice',
     props: {
-      multiple: true,
-      presentation: 'checkboxes',
+      multiple,
+      presentation: multiple ? 'checkboxes' : 'radios',
       allowCustom: true,
       options: [
         {label: 'A', value: 'a'},
@@ -46,7 +49,9 @@ async function mount(value: string[]): Promise<unknown[]> {
   });
   app.mount(container);
   await nextTick();
-  await customElements.whenDefined('craft-checkbox-group');
+  await customElements.whenDefined(
+    multiple ? 'craft-checkbox-group' : 'craft-radio-group'
+  );
 
   return emitted;
 }
@@ -73,4 +78,26 @@ it('adds a custom checkbox whose text is checked and emitted, leaving the group 
       (element) => element.tagName.toLowerCase()
     )
   ).toEqual(['craft-checkbox', 'craft-checkbox', 'craft-checkbox']);
+});
+
+it('emits what’s typed into the custom radio, leaving the group to its radios', async () => {
+  const emitted = await mount('a', false);
+  const group = container!.querySelector('craft-radio-group')!;
+  const input = container!.querySelector<HTMLInputElement>(
+    '[data-custom] input[type=text]'
+  )!;
+
+  await userEvent.click(
+    container!.querySelector<HTMLInputElement>(
+      '[data-custom] input[type=radio]'
+    )!
+  );
+  await userEvent.type(input, 'new');
+
+  expect(emitted.at(-1)).toBe('new');
+  expect(
+    (group as HTMLElement & {formElements: HTMLElement[]}).formElements.map(
+      (element) => element.tagName.toLowerCase()
+    )
+  ).toEqual(['craft-radio', 'craft-radio']);
 });

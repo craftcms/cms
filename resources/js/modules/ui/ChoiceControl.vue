@@ -194,12 +194,43 @@
       props.control.props.presentation === 'checkboxes'
   );
 
+  const customRadio = computed(
+    () =>
+      props.control.props.allowCustom === true &&
+      !props.control.props.multiple &&
+      props.control.props.presentation === 'radios'
+  );
+
   /** The options shown as checkboxes or radios; custom ones get their own rows. */
   const choiceOptions = computed(() =>
-    customCheckboxes.value
+    customCheckboxes.value || customRadio.value
       ? props.control.props.options.filter((option) => !option.custom)
       : props.control.props.options
   );
+
+  const savedCustomRadioOption = props.control.props.options.find(
+    (option) => option.custom && selected(option.value)
+  );
+  const customRadioText = ref(
+    savedCustomRadioOption ? inputValue(savedCustomRadioOption.value) : ''
+  );
+  const customRadioSelected = ref(savedCustomRadioOption !== undefined);
+  const customRadioId = computed(
+    () => `ui-${props.control.path.join('-')}-custom`
+  );
+
+  function onCustomRadioChecked(): void {
+    customRadioSelected.value = true;
+    emit('update:value', customRadioText.value);
+  }
+
+  function onCustomRadioInput(event: Event): void {
+    customRadioText.value = (event.target as HTMLInputElement).value;
+
+    if (customRadioSelected.value) {
+      emit('update:value', customRadioText.value);
+    }
+  }
 
   let customOptionKey = 0;
   const customOptions = ref<CustomOption[]>(
@@ -280,6 +311,7 @@
     const input = event.target;
 
     if (!props.control.props.multiple) {
+      customRadioSelected.value = false;
       emit('update:value', input.value);
       return;
     }
@@ -646,8 +678,8 @@
             {{ t('Custom:') }}
           </label>
         </craft-checkbox>
-        <!-- Lion's checkbox group only accepts checkboxes as registered
-             fields, so the text field mustn't register with it. -->
+        <!-- Lion's choice groups only accept checkboxes or radios as
+             registered fields, so the text field mustn't register with it. -->
         <div @form-element-register.stop>
           <craft-input
             :label="t('Custom:')"
@@ -684,5 +716,45 @@
         {{ t('Add option') }}
       </craft-button>
     </template>
+    <div
+      v-if="customRadio"
+      data-custom
+      class="flex flex-wrap items-center gap-sm"
+    >
+      <craft-radio
+        .disabled="!editable"
+        .choiceValue="customRadioText"
+        .checked="customRadioSelected"
+      >
+        <input
+          slot="input"
+          :id="customRadioId"
+          type="radio"
+          :name="editable ? inputName(control.path) : ''"
+          :value="customRadioText"
+          :checked="customRadioSelected"
+          :disabled="!editable"
+          @change="onCustomRadioChecked"
+        />
+        <label slot="label" :for="customRadioId">{{ t('Custom:') }}</label>
+      </craft-radio>
+      <!-- See the custom checkboxes above. -->
+      <div @form-element-register.stop>
+        <craft-input
+          :label="t('Custom:')"
+          label-sr-only
+          .inputSize="'small'"
+          .modelValue="customRadioText"
+          .disabled="!editable"
+        >
+          <input
+            slot="input"
+            type="text"
+            :value="customRadioText"
+            @input="onCustomRadioInput"
+          />
+        </craft-input>
+      </div>
+    </div>
   </component>
 </template>

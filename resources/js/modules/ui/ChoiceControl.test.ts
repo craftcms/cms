@@ -335,6 +335,66 @@ describe('ChoiceControl', () => {
     });
   });
 
+  describe('custom radio option', () => {
+    function customRadio(): HTMLInputElement {
+      return container!.querySelector<HTMLInputElement>(
+        '[data-custom] input[type=radio]'
+      )!;
+    }
+
+    function customText(): HTMLInputElement {
+      return container!.querySelector<HTMLInputElement>(
+        '[data-custom] input[type=text]'
+      )!;
+    }
+
+    it('shows a saved custom value as the checked “Custom:” radio with its text', async () => {
+      await mount(
+        {
+          multiple: false,
+          presentation: 'radios',
+          allowCustom: true,
+          options: [
+            {label: 'A', value: 'a'},
+            {label: 'mine', value: 'mine', custom: true},
+          ],
+        },
+        'mine'
+      );
+
+      expect(container!.querySelectorAll('input[type=radio]')).toHaveLength(2);
+      expect(customRadio().checked).toBe(true);
+      expect(customRadio().value).toBe('mine');
+      expect(customText().value).toBe('mine');
+      expect(
+        container!.querySelector('[data-custom] label')!.textContent?.trim()
+      ).toBe('Custom:');
+    });
+
+    it('emits what’s typed once the “Custom:” radio is chosen', async () => {
+      await mount(
+        {
+          multiple: false,
+          presentation: 'radios',
+          allowCustom: true,
+          options: [{label: 'A', value: 'a'}],
+        },
+        'a'
+      );
+
+      customText().value = 'new';
+      customText().dispatchEvent(new Event('input', {bubbles: true}));
+      await nextTick();
+      expect(emitted).toEqual([]);
+
+      customRadio().checked = true;
+      customRadio().dispatchEvent(new Event('change', {bubbles: true}));
+      await nextTick();
+      expect(emitted.at(-1)).toBe('new');
+      expect(customRadio().value).toBe('new');
+    });
+  });
+
   const allOption = {allLabel: 'All', allValue: '*', allMode: 'singleValue'};
 
   async function checkboxSelect(): Promise<CraftCheckboxSelect> {

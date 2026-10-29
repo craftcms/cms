@@ -82,3 +82,31 @@ it('renders saved custom checkboxes and an “Add option” button when custom o
         ->and($custom->filter('input.custom-option-input')->attr('value'))->toBe('mine')
         ->and(trim($crawler->filter('craft-button.add')->text()))->toBe('Add option');
 });
+
+it('renders a “Custom:” radio with a text input when custom options are allowed', function (mixed $value, ?string $customValue) {
+    $options = [['label' => 'A', 'value' => 'a']];
+
+    if ($customValue !== null) {
+        $options[] = ['label' => $customValue, 'value' => $customValue, 'custom' => true];
+    }
+
+    $payload = app(UiResolver::class)->resolve(Ui::make([
+        Field::make('Option', Choice::make('option')
+            ->presentation(ChoicePresentation::Radios)
+            ->allowCustom()
+            ->options($options)
+            ->value($value)),
+    ]), new UiContext);
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
+    $radios = $crawler->filter('input[type=radio]');
+    $custom = $radios->last();
+
+    expect($radios)->toHaveCount(2)
+        ->and($custom->attr('value'))->toBe($customValue ?? '')
+        ->and($custom->attr('checked') !== null)->toBe($customValue !== null)
+        ->and($crawler->filter('input.custom-option-input'))->toHaveCount(1)
+        ->and($crawler->filter('input.custom-option-input')->attr('value') ?? '')->toBe($customValue ?? '');
+})->with([
+    'with a saved custom value' => ['mine', 'mine'],
+    'without one' => ['a', null],
+]);

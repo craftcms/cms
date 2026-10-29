@@ -15,6 +15,7 @@ use CraftCms\Cms\Cp\Components\RadioGroup;
 use CraftCms\Cms\Cp\Components\Select as SelectComponent;
 use CraftCms\Cms\Cp\Enums\CheckboxSelectPresentation;
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\Enums\AllOptionMode;
 use CraftCms\Cms\Ui\Enums\ChoicePresentation;
@@ -479,6 +480,15 @@ class Choice extends Control
     {
         $values = self::values($value);
         $iconsOnly = $control->props['iconsOnly'] ?? true;
+        $allowCustom = ! $buttons && ($control->props['allowCustom'] ?? false);
+        $options = $control->props['options'];
+        $customOption = null;
+
+        if ($allowCustom) {
+            $customOption = Arr::first($options, fn (array $option): bool => $option['custom'] ?? false);
+            $options = array_values(array_filter($options, fn (array $option): bool => ! ($option['custom'] ?? false)));
+        }
+
         $radios = array_map(function (array $option, int $index) use ($attributes, $values, $buttons, $iconsOnly): Radio {
             $optionValue = (string) $option['value'];
             $icon = $buttons && $iconsOnly ? ($option['icon'] ?? null) : null;
@@ -499,7 +509,19 @@ class Choice extends Control
                     'required' => $attributes['required'],
                     'aria' => ['invalid' => $attributes['aria']['invalid'] ?? null],
                 ]);
-        }, $control->props['options'], array_keys($control->props['options']));
+        }, $options, array_keys($options));
+
+        if ($allowCustom) {
+            $radios[] = FormFields::radioFromConfig([
+                'id' => "{$attributes['id']}-custom",
+                'name' => $attributes['name'],
+                'value' => $customOption !== null ? (string) $customOption['value'] : '',
+                'checked' => $customOption !== null && in_array((string) $customOption['value'], $values, true),
+                'disabled' => $attributes['name'] === null,
+                'describedBy' => $attributes['aria']['describedby'] ?? null,
+                'custom' => true,
+            ]);
+        }
 
         return RadioGroup::make()
             ->id($attributes['id'])
