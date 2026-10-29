@@ -2,25 +2,6 @@
 
 ## Unreleased
 
-- Added authenticated HTTP, public HTTP, and stdio MCP servers, with OAuth authorization, public content approvals, and plugin extension points. The HTTP servers are enabled and given endpoints from Settings → MCP.
-- GraphQL API requests can now be authenticated with OAuth access tokens, granting access to the content the authorizing user has permission to access.
-- GraphQL schema components can now support authenticated requests via an `authenticated` key on their config.
-- Added the `currentUser` GraphQL query, which returns the user that authenticated the request.
-- Added the My Account → Tokens screen, where users can create personal access tokens for the APIs that offer them (such as the GraphQL API), rename them, and revoke tokens and the apps they’ve authorized.
-- Added `craft\gql\base\ElementMutationResolver::requireUserAuthorization()`.
-- Added `craft\helpers\Gql::getSchemaUser()`.
-- Added `craft\models\GqlSchema::$user`.
-- Added `craft\services\Gql::SCOPE_READ`.
-- Added `craft\services\Gql::SCOPE_WRITE`.
-- Added `craft\services\Gql::getOAuthResource()`.
-- Added `craft\services\Gql::getSchemaForUser()`.
-- Added `craft\base\ApplicationTrait::getPersonalAccessTokens()`.
-- Added `craft\oauth\ScopeGroup`.
-- Added `craft\services\PersonalAccessTokens`.
-- Added `craft\base\InputSchemaFieldInterface`.
-- Plain Text, Email, Link, Number, Money, Lightswitch, Date, Time, Color, Country, Table, and option fields now implement `craft\base\InputSchemaFieldInterface`.
-- Added `craft\gql\GqlInputSchema`.
-- Added `craft\utilities\ClearCaches::clear()`.
 - Added `craft\helpers\Db::isSafeOrderBy()`. ([#19994](https://github.com/craftcms/cms/pull/19994))
 - Fixed a bug where default titles of assets with long filenames were taken from the end of the filename. ([#20112](https://github.com/craftcms/cms/pull/20112))
 - Fixed a bug where characters were stripped from text that wasn’t UTF-8 when it was converted to UTF-8, such as alt text read from images’ IPTC captions. ([#20111](https://github.com/craftcms/cms/pull/20111))
