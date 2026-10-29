@@ -3,7 +3,6 @@
   import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
   import {computed} from 'vue';
   import {plugin as pluginRoute} from '@actions/PluginStore/PluginStoreController';
-  import Prose from '@/common/components/Prose.vue';
   import PluginMeta from './PluginMeta.vue';
   import PluginScreenshots from './PluginScreenshots.vue';
   import {usePluginLicenseInfo} from '../composables/usePluginStoreData';
@@ -64,14 +63,15 @@
     />
 
     <div class="plugin-overview">
-      <Prose v-if="plugin.longDescription || plugin.shortDescription">
-        <!-- The description is HTML the Plugin Store renders from the developer's Markdown. -->
-        <div
-          v-if="plugin.longDescription"
-          v-html="plugin.longDescription"
-        ></div>
-        <p v-else>{{ plugin.shortDescription }}</p>
-      </Prose>
+      <!-- The description is HTML the Plugin Store renders from the developer's Markdown. -->
+      <div
+        v-if="plugin.longDescription"
+        class="cp-prose"
+        v-html="plugin.longDescription"
+      ></div>
+      <div v-else-if="plugin.shortDescription" class="cp-prose">
+        <p>{{ plugin.shortDescription }}</p>
+      </div>
       <p v-else>{{ t('No description.') }}</p>
 
       <PluginMeta :plugin="plugin" @show-reviews="emit('show-reviews')" />
