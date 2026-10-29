@@ -11,6 +11,7 @@ use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
+use Illuminate\Database\SQLiteConnection;
 use Illuminate\Support\Facades\Date;
 use InvalidArgumentException;
 use Money\Money;
@@ -482,7 +483,7 @@ readonly class Query
             $value = ! $value;
         }
 
-        if ($columnType === self::TYPE_JSON) {
+        if ($columnType === self::TYPE_JSON && ! $query->getConnection() instanceof SQLiteConnection) {
             /** @phpstan-ignore-next-line */
             $value = match ($value) {
                 true => 'true',

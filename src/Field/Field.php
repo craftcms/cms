@@ -404,7 +404,20 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             return reset($valuesSql);
         }
 
-        return new Coalesce($valuesSql);
+        $sql = new Coalesce($valuesSql);
+
+        // COALESCE doesn't preserve its arguments' type affinity on SQLite.
+        if (DB::getDriverName() === 'sqlite') {
+            $dbType = $instances[0]->dbTypeForValueSql();
+            if (is_array($dbType)) {
+                $dbType = $dbType[$key ?? array_key_first($dbType)];
+            }
+            if ($dbType !== null && (Query::isNumericColumnType($dbType) || $dbType === Query::TYPE_BOOLEAN)) {
+                return new Cast($sql, 'NUMERIC');
+            }
+        }
+
+        return $sql;
     }
 
     /**
@@ -932,7 +945,9 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             $sql = new Coalesce([
                 new JsonExtract(
                     'elements_sites.content',
-                    "$.\"{$this->layoutElement->uid}\".\"{$key}\"",
+                    DB::getDriverName() === 'sqlite'
+                        ? [$this->layoutElement->uid, $key]
+                        : "$.\"{$this->layoutElement->uid}\".\"{$key}\"",
                 ),
                 $sql,
             ]);
@@ -970,6 +985,11 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
                 Query::TYPE_INTEGER => 'INTEGER',
                 default => null,
             };
+        }
+
+        // JSON extraction has no type affinity on SQLite, even for numeric values.
+        if (DB::getDriverName() === 'sqlite' && (Query::isNumericColumnType($dbType) || $dbType === Query::TYPE_BOOLEAN)) {
+            $castType = 'NUMERIC';
         }
 
         if ($castType !== null) {
