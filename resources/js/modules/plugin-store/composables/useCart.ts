@@ -104,21 +104,34 @@ export const useCart = createGlobalState(() => {
     await load();
     const items = cartItemsData(cart.value, cmsLicenseKey());
 
+    // An item already in the cart is swapped for the new edition, keeping its
+    // renewal choices.
     for (const item of newItems) {
-      const inCart = items.some((existing) =>
+      const index = items.findIndex((existing) =>
         item.type === 'plugin-edition'
           ? existing.plugin === item.plugin
           : existing.type === 'cms-edition'
       );
+      const existing = index === -1 ? null : items[index]!;
 
-      if (!inCart) {
-        items.push(
-          newCartItemData(
-            item,
-            item.type === 'plugin-edition' ? licenseInfoFor(item.plugin) : null,
-            cmsLicenseKey()
-          )
-        );
+      if (existing?.edition === item.edition) {
+        continue;
+      }
+
+      const data = newCartItemData(
+        item,
+        item.type === 'plugin-edition' ? licenseInfoFor(item.plugin) : null,
+        cmsLicenseKey()
+      );
+
+      if (existing) {
+        items[index] = {
+          ...data,
+          expiryDate: existing.expiryDate,
+          autoRenew: existing.autoRenew,
+        };
+      } else {
+        items.push(data);
       }
     }
 
