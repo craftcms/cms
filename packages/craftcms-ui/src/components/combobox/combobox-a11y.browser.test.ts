@@ -1,0 +1,577 @@
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vite-plus/test';
+import {cdp, page, userEvent} from 'vite-plus/test/browser';
+import {contrast, loadTokens} from '../../../test/contrast';
+import type CraftCombobox from './combobox.js';
+import './combobox.js';
+import '../field/field.js';
+import '../../styles/cp.css';
+
+const grouped = [
+  {
+    type: 'optgroup',
+    label: 'Pome',
+    options: [
+      {label: 'Apple', value: 'apple'},
+      {label: 'Pear', value: 'pear'},
+    ],
+  },
+  {
+    type: 'optgroup',
+    label: 'Stone',
+    options: [
+      {label: 'Cherry', value: 'cherry'},
+      {label: 'Damson', value: 'damson'},
+    ],
+  },
+] as CraftCombobox['options'];
+
+const fruit: CraftCombobox['options'] = [
+  {label: 'Apple', value: 'apple', data: {icon: 'star'}},
+  {label: 'Banana', value: 'banana', disabled: true},
+  {label: 'Cherry', value: 'cherry'},
+  {label: 'Damson', value: 'damson'},
+];
+
+beforeAll(loadTokens);
+
+beforeEach(async () => {
+  document.body.innerHTML = '';
+  await page.viewport(1280, 720);
+});
+
+afterEach(async () => {
+  await cdp().send('Emulation.setEmulatedMedia', {features: []});
+});
+
+async function settle() {
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  await new Promise((resolve) => setTimeout(resolve));
+}
+
+async function fixture(
+  configure: (control: CraftCombobox) => void = () => {},
+  theme = 'light'
+) {
+  const surface = document.createElement('div');
+  surface.dataset.theme = theme;
+  surface.style.backgroundColor = 'var(--c-surface-default)';
+  surface.style.padding = '1rem';
+  surface.innerHTML = `
+    <button type="button">Before</button>
+    <label id="fruit-label">Fruit</label>
+    <button type="button">After</button>`;
+  const control = document.createElement('craft-combobox') as CraftCombobox;
+  control.setAttribute('aria-labelledby', 'fruit-label');
+  control.options = fruit;
+  control.showAllOnEmpty = true;
+  configure(control);
+  surface.querySelector('label')!.after(control);
+  document.body.append(surface);
+  await control.updateComplete;
+  await settle();
+
+  return {
+    control,
+    surface,
+    input: control.querySelector('input')!,
+    combobox: control.querySelector<HTMLElement>('[role=combobox]')!,
+    listbox: control.querySelector<HTMLElement>('[role=listbox]')!,
+    background: getComputedStyle(surface).backgroundColor,
+  };
+}
+
+function option(control: CraftCombobox, label: string): HTMLElement {
+  return [...control.querySelectorAll<HTMLElement>('craft-option')].find(
+    (candidate) => candidate.textContent?.trim().startsWith(label)
+  )!;
+}
+
+function activeOption(control: CraftCombobox): string | undefined {
+  return control
+    .querySelector<HTMLElement>('craft-option[active]')
+    ?.textContent?.trim();
+}
+
+async function open(input: HTMLInputElement) {
+  input.focus();
+  await userEvent.keyboard('{ArrowDown}');
+  await settle();
+}
+
+describe('semantics', () => {
+  it('exposes an expandable combobox that autocompletes from the listbox it controls', async () => {
+    const {control, input, combobox, listbox} = await fixture();
+
+    await expect
+      .element(page.getByRole('combobox', {name: 'Fruit', expanded: false}))
+      .toBeInTheDocument();
+    expect(combobox).toHaveAttribute('aria-haspopup', 'listbox');
+    expect(combobox).toHaveAttribute('aria-controls', listbox.id);
+    expect(input).toHaveAttribute('aria-autocomplete', 'list');
+
+    await open(input);
+
+    expect(control.opened).toBe(true);
+    await expect
+      .element(page.getByRole('combobox', {name: 'Fruit', expanded: true}))
+      .toBeInTheDocument();
+  });
+
+  it.each([
+    ['an aria-labelledby on the host', false],
+    ['a Form field label', true],
+  ])('names its listbox after the label from %s', async (_, inField) => {
+    const {control, input} = await fixture();
+    if (inField) {
+      control.removeAttribute('aria-labelledby');
+      const field = document.createElement('craft-field');
+      field.label = 'Fruit';
+      control.slot = 'input';
+      control.replaceWith(field);
+      field.append(control);
+      await field.updateComplete;
+      await settle();
+    }
+
+    await open(input);
+
+    await expect
+      .element(page.getByRole('listbox', {name: 'Fruit'}))
+      .toBeInTheDocument();
+  });
+
+  it.each([false, true])(
+    'names each option group after its label and exposes its options in it (multiple choice: %s)',
+    async (multipleChoice) => {
+      const {input} = await fixture((c) => {
+        c.multipleChoice = multipleChoice;
+        c.options = grouped;
+      });
+
+      await open(input);
+
+      for (const [group, labels] of [
+        ['Pome', ['Apple', 'Pear']],
+        ['Stone', ['Cherry', 'Damson']],
+      ] as const) {
+        for (const label of labels) {
+          await expect
+            .element(
+              page
+                .getByRole('group', {name: group})
+                .getByRole('option', {name: label})
+            )
+            .toBeInTheDocument();
+        }
+      }
+    }
+  );
+
+  it('drops a group that has no matching options', async () => {
+    const {input} = await fixture((c) => (c.options = grouped));
+
+    input.focus();
+    await userEvent.keyboard('Che');
+    await settle();
+
+    await expect
+      .element(page.getByRole('group', {name: 'Stone'}))
+      .toBeInTheDocument();
+    await expect
+      .element(page.getByRole('group', {name: 'Pome'}))
+      .not.toBeInTheDocument();
+  });
+
+  it('marks its listbox multiselectable in multiple-choice mode', async () => {
+    const {listbox} = await fixture((c) => (c.multipleChoice = true));
+
+    expect(listbox).toHaveAttribute('aria-multiselectable', 'true');
+  });
+
+  it('keeps the chevron and the selected option’s icon out of the accessibility tree', async () => {
+    const {control} = await fixture((c) => (c.modelValue = 'apple'));
+    const icons = control.shadowRoot!.querySelectorAll('.indicator, .prefix');
+
+    expect(icons).toHaveLength(2);
+    for (const icon of icons) {
+      expect(icon).toHaveAttribute('aria-hidden', 'true');
+    }
+    await expect
+      .element(page.getByRole('combobox', {name: 'Fruit'}))
+      .toBeInTheDocument();
+  });
+});
+
+describe('keyboard and focus', () => {
+  it('keeps focus in the textbox and points it at the active option', async () => {
+    const {control, input} = await fixture();
+
+    await open(input);
+    await userEvent.keyboard('{ArrowDown}');
+
+    expect(document.activeElement).toBe(input);
+    const active = control.querySelector<HTMLElement>('craft-option[active]')!;
+    expect(input).toHaveAttribute('aria-activedescendant', active.id);
+    await expect.element(active).toHaveAccessibleName('Apple');
+  });
+
+  it('opens on Alt+Down without moving the active option', async () => {
+    const {control, input} = await fixture();
+
+    input.focus();
+    await userEvent.keyboard('{Alt>}{ArrowDown}{/Alt}');
+    await settle();
+
+    expect(control.opened).toBe(true);
+    expect(activeOption(control)).toBeUndefined();
+  });
+
+  it('moves the active option with Down and Up, wrapping at both ends', async () => {
+    const {control, input} = await fixture(
+      (c) => (c.options = fruit.filter((item) => item.label !== 'Banana'))
+    );
+
+    await open(input);
+    const visited = [];
+    for (const key of ['Down', 'Down', 'Down', 'Down', 'Up']) {
+      await userEvent.keyboard(`{Arrow${key}}`);
+      visited.push(activeOption(control));
+    }
+
+    expect(visited).toEqual(['Apple', 'Cherry', 'Damson', 'Apple', 'Damson']);
+  });
+
+  it('stops on a disabled option, marked aria-disabled, without selecting it', async () => {
+    const {control, input} = await fixture();
+
+    await open(input);
+    await userEvent.keyboard('{ArrowDown}{ArrowDown}');
+    const banana = option(control, 'Banana');
+
+    expect(activeOption(control)).toBe('Banana');
+    expect(banana).toHaveAttribute('aria-disabled', 'true');
+    expect(input).toHaveAttribute('aria-activedescendant', banana.id);
+
+    await userEvent.keyboard('{Enter}');
+    await settle();
+
+    expect(control.modelValue).toBe('');
+  });
+
+  it('moves the active option across groups and selects it with Enter', async () => {
+    const {control, input} = await fixture((c) => (c.options = grouped));
+
+    await open(input);
+    await userEvent.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}');
+
+    expect(activeOption(control)).toBe('Cherry');
+
+    await userEvent.keyboard('{Enter}');
+    await settle();
+
+    expect(control.modelValue).toBe('cherry');
+  });
+
+  it('moves the caret, not the active option, with Home and End', async () => {
+    const {control, input} = await fixture();
+
+    await userEvent.click(input);
+    await userEvent.keyboard('an');
+    await settle();
+    const active = activeOption(control);
+
+    await userEvent.keyboard('{Home}');
+    expect(input.selectionStart).toBe(0);
+    expect(activeOption(control)).toBe(active);
+
+    await userEvent.keyboard('{End}');
+    expect(input.selectionStart).toBe(input.value.length);
+    expect(activeOption(control)).toBe(active);
+  });
+
+  it('closes on Tab without selecting the active option, and moves focus on', async () => {
+    const {control, input, surface} = await fixture();
+
+    await open(input);
+    await userEvent.keyboard('{ArrowDown}');
+    await userEvent.tab();
+    await settle();
+
+    expect(control.opened).toBe(false);
+    expect(control.modelValue).toBe('');
+    expect(document.activeElement).toBe(surface.querySelectorAll('button')[1]);
+  });
+
+  it.each([false, true])(
+    'returns focus to the textbox after an option is picked with a pointer (multiple choice: %s)',
+    async (multipleChoice) => {
+      const {control, input} = await fixture(
+        (c) => (c.multipleChoice = multipleChoice)
+      );
+
+      await open(input);
+      await userEvent.click(option(control, 'Cherry'));
+      await settle();
+
+      expect(control.modelValue).toEqual(
+        multipleChoice ? ['cherry'] : 'cherry'
+      );
+      expect(document.activeElement).toBe(input);
+    }
+  );
+
+  describe.each(['light', 'dark'])('in the %s theme', (theme) => {
+    it.each([false, true])(
+      'shows a 3:1 focus ring around the field when focused from the keyboard (multiple choice: %s)',
+      async (multipleChoice) => {
+        const {control, input, surface, background} = await fixture((c) => {
+          c.multipleChoice = multipleChoice;
+          if (multipleChoice) {
+            c.modelValue = ['apple', 'cherry'];
+          }
+        }, theme);
+
+        surface.querySelectorAll('button')[1]!.focus();
+        await userEvent.tab({shift: true});
+        await settle();
+        expect(document.activeElement).toBe(input);
+
+        const ringed = multipleChoice
+          ? control.shadowRoot!.querySelector<HTMLElement>(
+              '.input-group__input'
+            )!
+          : input.closest<HTMLElement>('.form-control')!;
+        const style = getComputedStyle(ringed);
+        expect(style.outlineStyle).not.toBe('none');
+        expect(parseFloat(style.outlineWidth)).toBeGreaterThanOrEqual(2);
+        expect(contrast(style.outlineColor, background)).toBeGreaterThanOrEqual(
+          3
+        );
+
+        const ring = ringed.getBoundingClientRect();
+        for (const token of control.shadowRoot!.querySelectorAll('.token')) {
+          const box = token.getBoundingClientRect();
+          expect(box.left).toBeGreaterThanOrEqual(ring.left);
+          expect(box.right).toBeLessThanOrEqual(ring.right);
+        }
+      }
+    );
+  });
+});
+
+describe('multiple choice', () => {
+  it.each(['its button', 'Backspace'])(
+    'focuses the textbox after a token is removed with %s',
+    async (how) => {
+      const {control, input} = await fixture((c) => {
+        c.multipleChoice = true;
+        c.modelValue = ['apple', 'cherry'];
+      });
+
+      if (how === 'Backspace') {
+        await userEvent.click(input);
+        await userEvent.keyboard('{Backspace}');
+      } else {
+        await userEvent.click(
+          page.getByRole('button', {name: 'Remove Cherry'})
+        );
+      }
+      await settle();
+
+      expect(control.modelValue).toEqual(['apple']);
+      expect(document.activeElement).toBe(input);
+    }
+  );
+});
+
+describe('pointer', () => {
+  it('makes the clear button at least 24 by 24 pixels', async () => {
+    const {control} = await fixture((c) => {
+      c.clearable = true;
+      c.modelValue = 'cherry';
+    });
+    const box = control
+      .shadowRoot!.querySelector('.clear')!
+      .getBoundingClientRect();
+
+    expect(box.width).toBeGreaterThanOrEqual(24);
+    expect(box.height).toBeGreaterThanOrEqual(24);
+  });
+
+  it('makes each token’s remove button at least 24 by 24 pixels, or leaves room for one', async () => {
+    const {control} = await fixture((c) => {
+      c.multipleChoice = true;
+      c.modelValue = ['apple', 'cherry'];
+    });
+    const buttons = [
+      ...control.shadowRoot!.querySelectorAll<HTMLElement>('.token button'),
+    ];
+    const boxes = buttons.map((button) => button.getBoundingClientRect());
+
+    for (const [index, box] of boxes.entries()) {
+      const centerX = box.left + box.width / 2;
+      const centerY = box.top + box.height / 2;
+      const roomy =
+        (box.width >= 24 && box.height >= 24) ||
+        boxes.every(
+          (other, otherIndex) =>
+            otherIndex === index ||
+            Math.hypot(
+              other.left + other.width / 2 - centerX,
+              other.top + other.height / 2 - centerY
+            ) >= 24
+        );
+      expect(roomy, `remove button ${index}`).toBe(true);
+    }
+  });
+});
+
+describe('visual', () => {
+  describe.each(['light', 'dark'])('in the %s theme', (theme) => {
+    it.each([false, true])(
+      'draws the textbox and popup borders at 3:1 and the footer text at 4.5:1 (multiple choice: %s)',
+      async (multipleChoice) => {
+        const {control, input, background} = await fixture((c) => {
+          c.multipleChoice = multipleChoice;
+          c.limit = 2;
+        }, theme);
+        const border = multipleChoice
+          ? control.shadowRoot!.querySelector('.input-group__input')!
+          : input.closest('.form-control')!;
+        await open(input);
+        const popup = control.querySelector<HTMLElement>('[slot=listbox]')!;
+        const footer = control.querySelector<HTMLElement>('.combobox__footer')!;
+
+        expect(
+          contrast(getComputedStyle(border).borderTopColor, background)
+        ).toBeGreaterThanOrEqual(3);
+        expect(
+          contrast(getComputedStyle(popup).borderTopColor, background)
+        ).toBeGreaterThanOrEqual(3);
+        expect(
+          contrast(
+            getComputedStyle(footer).color,
+            getComputedStyle(popup).backgroundColor
+          )
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+    );
+  });
+
+  describe.each(['light', 'dark'])('in the %s theme', (theme) => {
+    it('draws each group’s label at 4.5:1 against the popup', async () => {
+      const {control, input} = await fixture(
+        (c) => (c.options = grouped),
+        theme
+      );
+      await open(input);
+      const popup = getComputedStyle(
+        control.querySelector('[slot=listbox]')!
+      ).backgroundColor;
+      const labels = control.querySelectorAll<HTMLElement>(
+        '[role=group] > [role=presentation]'
+      );
+
+      expect(labels).toHaveLength(2);
+      for (const label of labels) {
+        expect(
+          contrast(getComputedStyle(label).color, popup)
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+    });
+  });
+
+  it('keeps the textbox border and popup border in forced colors mode', async () => {
+    await cdp().send('Emulation.setEmulatedMedia', {
+      features: [{name: 'forced-colors', value: 'active'}],
+    });
+    const {control, input} = await fixture((c) => (c.multipleChoice = true));
+    await open(input);
+
+    for (const element of [
+      control.shadowRoot!.querySelector('.input-group__input')!,
+      control.querySelector('[slot=listbox]')!,
+    ]) {
+      const style = getComputedStyle(element);
+      expect(style.borderTopStyle).not.toBe('none');
+      expect(parseFloat(style.borderTopWidth)).toBeGreaterThan(0);
+      expect(style.borderTopColor).not.toBe('rgba(0, 0, 0, 0)');
+    }
+  });
+
+  it.each([
+    ['below', 'flex-start'],
+    ['above', 'flex-end'],
+  ])(
+    'opens the popup %s the field without covering the textbox',
+    async (_, alignment) => {
+      const {control, input, surface} = await fixture();
+      document.body.style.margin = '0';
+      surface.style.display = 'flex';
+      surface.style.flexDirection = 'column';
+      surface.style.justifyContent = alignment;
+      surface.style.height = '100vh';
+      surface.style.boxSizing = 'border-box';
+
+      await open(input);
+      await vi.waitFor(() =>
+        expect(
+          control.querySelector('[slot=listbox]')!.getBoundingClientRect()
+            .height
+        ).toBeGreaterThan(0)
+      );
+      const field = input.closest<HTMLElement>('.form-control')!;
+      const textbox = field.getBoundingClientRect();
+      const popup = control
+        .querySelector('[slot=listbox]')!
+        .getBoundingClientRect();
+      const points = [
+        [textbox.left + textbox.width / 2, textbox.top + textbox.height / 2],
+        [textbox.left + 2, textbox.top + 2],
+        [textbox.right - 2, textbox.top + 2],
+        [textbox.left + 2, textbox.bottom - 2],
+        [textbox.right - 2, textbox.bottom - 2],
+      ];
+
+      if (alignment === 'flex-start') {
+        expect(popup.top).toBeGreaterThanOrEqual(textbox.bottom - 1);
+      } else {
+        expect(popup.bottom).toBeLessThanOrEqual(textbox.top + 1);
+      }
+      for (const [x, y] of points) {
+        const hit = control.shadowRoot!.elementFromPoint(x!, y!);
+        expect(
+          !!hit && (field.contains(hit) || !!hit.closest('.combobox__textbox'))
+        ).toBe(true);
+      }
+    }
+  );
+
+  it('fits a 320 pixel viewport, wrapping long tokens and labels, with the popup open', async () => {
+    await page.viewport(320, 640);
+    const long =
+      'Supercalifragilistic option label that is far too long for a phone';
+    const {control, input} = await fixture((c) => {
+      c.multipleChoice = true;
+      c.options = [...fruit, {label: long, value: 'long'}];
+      c.modelValue = ['long', 'apple'];
+    });
+    await open(input);
+
+    expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(320);
+    for (const token of control.shadowRoot!.querySelectorAll('.token')) {
+      expect(token.getBoundingClientRect().right).toBeLessThanOrEqual(320);
+    }
+    expect(
+      control.querySelector('[slot=listbox]')!.getBoundingClientRect().right
+    ).toBeLessThanOrEqual(320);
+  });
+});

@@ -26,7 +26,7 @@ export default css`
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: var(--c-spacing-xs);
-    border: 1px solid var(--c-color-neutral-border-quiet);
+    border: 1px solid var(--c-form-control-border-color);
     border-radius: var(--c-radius-md);
     background-color: var(--c-surface-overlay);
     box-shadow: var(--c-shadow-sm);
@@ -156,22 +156,5 @@ export default css`
     display: inline-flex;
     align-items: center;
     gap: var(--c-spacing-sm);
-  }
-
-  .combobox__optgroup {
-    padding-inline: var(--c-spacing-md);
-    padding-block: var(--c-spacing-sm);
-    font-size: 0.8em;
-    text-transform: uppercase;
-    color: var(--c-color-neutral-on-normal);
-    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
-  }
-
-  .combobox__footer {
-    padding-inline: var(--c-spacing-md);
-    padding-block: var(--c-spacing-sm);
-    font-size: 0.85em;
-    color: var(--c-text-quiet);
-    border-block-start: 1px solid var(--c-color-neutral-border-quiet);
   }
 `;

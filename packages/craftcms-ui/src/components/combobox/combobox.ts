@@ -1,4 +1,5 @@
 import {LionCombobox} from '@lion/ui/combobox.js';
+import {uuid} from '@lion/ui/core.js';
 import {html, nothing, render} from 'lit';
 import {property} from 'lit/decorators.js';
 import {repeat} from 'lit/directives/repeat.js';
@@ -66,6 +67,20 @@ interface VisibleEntry {
   groupLabel?: string;
   option: ComboboxOption;
 }
+
+interface EntryRun {
+  key: string;
+  groupLabel?: string;
+  entries: VisibleEntry[];
+}
+
+// The listbox is light DOM, out of reach of the component's own styles.
+const groupStyle =
+  'display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--c-spacing-xs);';
+const groupLabelStyle =
+  'padding-inline: var(--c-spacing-md); padding-block: var(--c-spacing-sm); font-size: 0.8em; text-transform: uppercase; color: var(--c-color-neutral-on-normal); border-block-end: 1px solid var(--c-color-neutral-border-quiet);';
+const footerStyle =
+  'padding-inline: var(--c-spacing-md); padding-block: var(--c-spacing-sm); font-size: 0.85em; color: var(--c-text-quiet); border-block-start: 1px solid var(--c-color-neutral-border-quiet);';
 
 /**
  * @summary A combobox with type-ahead filtering and optional multiple selection.
@@ -613,28 +628,41 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
       })),
       ...visible,
     ];
-    let lastGroup: string | undefined;
-    const rows = entries.map((entry) => {
-      const header =
-        entry.groupLabel && entry.groupLabel !== lastGroup
-          ? html`<div class="combobox__optgroup" aria-hidden="true">
-              ${entry.groupLabel}
-            </div>`
-          : nothing;
-      lastGroup = entry.groupLabel;
-
-      return {
-        value: entry.option.value,
-        template: html`${header}${this.#optionTemplate(
-          entry.option,
-          selected.includes(entry.option.value)
-        )}`,
-      };
-    });
+    const runs: EntryRun[] = [];
+    const occurrences = new Map<string, number>();
+    for (const entry of entries) {
+      const last = runs.at(-1);
+      if (last && last.groupLabel === entry.groupLabel) {
+        last.entries.push(entry);
+        continue;
+      }
+      const name = entry.groupLabel ?? '';
+      const occurrence = occurrences.get(name) ?? 0;
+      occurrences.set(name, occurrence + 1);
+      runs.push({
+        key: `${entry.groupLabel === undefined ? 'options' : 'group'}:${name}:${occurrence}`,
+        groupLabel: entry.groupLabel,
+        entries: [entry],
+      });
+    }
+    const optionsTemplate = (run: EntryRun) =>
+      repeat(
+        run.entries,
+        (entry) => entry.option.value,
+        (entry) =>
+          this.#optionTemplate(
+            entry.option,
+            selected.includes(entry.option.value)
+          )
+      );
 
     const footer =
       matched.length > this.limit
-        ? html`<div class="combobox__footer" aria-hidden="true">
+        ? html`<div
+            class="combobox__footer"
+            aria-hidden="true"
+            style=${footerStyle}
+          >
             ${t('Showing {shown} of {total} — keep typing to narrow results.', {
               shown: this.limit,
               total: matched.length,
@@ -646,12 +674,46 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
     // values from registered options, including selections outside the limit.
     render(
       html`${repeat(
-        rows,
-        (row) => row.value,
-        (row) => row.template
+        runs,
+        (run) => run.key,
+        (run) => {
+          if (run.groupLabel === undefined) {
+            return optionsTemplate(run);
+          }
+          const id = this.#groupLabelId(run.key);
+
+          return html`<div
+            role="group"
+            class="combobox__group"
+            aria-labelledby=${id}
+            style=${groupStyle}
+          >
+            <div
+              role="presentation"
+              id=${id}
+              class="combobox__optgroup"
+              style=${groupLabelStyle}
+            >
+              ${run.groupLabel}
+            </div>
+            ${optionsTemplate(run)}
+          </div>`;
+        }
       )}${footer}`,
       node
     );
+  }
+
+  #groupLabelIds = new Map<string, string>();
+
+  #groupLabelId(key: string): string {
+    let id = this.#groupLabelIds.get(key);
+    if (!id) {
+      id = `combobox-group-${uuid()}`;
+      this.#groupLabelIds.set(key, id);
+    }
+
+    return id;
   }
 
   #optionTemplate(option: ComboboxOption, selected = false) {
