@@ -22,6 +22,9 @@
     contentNotice?: string | null;
     errorSummary?: string | null;
     toolbar?: string | null;
+    contextMenu?: string | null;
+    actionButton?: string | null;
+    actionMenu?: string | null;
     additionalButtons?: string | null;
     sidebar?: string | null;
     bodyClass?: Array<string> | string | null;
@@ -65,6 +68,9 @@
         props.contentNotice,
         props.errorSummary,
         props.toolbar,
+        props.contextMenu,
+        props.actionButton,
+        props.actionMenu,
         props.additionalButtons,
         props.sidebar,
         props.details,
@@ -228,6 +234,27 @@
 </script>
 
 <template>
+  <LayoutSlot v-if="contextMenu" name="context-menu">
+    <HtmlFragmentRenderer
+      :fragment="fragment(contextMenu)"
+      @ready="fragmentReady"
+    />
+  </LayoutSlot>
+
+  <LayoutSlot v-if="actionButton || actionMenu" name="content-actions">
+    <HtmlFragmentRenderer
+      v-if="actionButton"
+      class="flex flex-wrap items-center gap-md"
+      :fragment="fragment(actionButton)"
+      @ready="fragmentReady"
+    />
+    <HtmlFragmentRenderer
+      v-if="actionMenu"
+      :fragment="fragment(actionMenu)"
+      @ready="fragmentReady"
+    />
+  </LayoutSlot>
+
   <LayoutSlot v-if="tabs" name="content-tabs">
     <HtmlFragmentRenderer :fragment="fragment(tabs)" @ready="bootTabs" />
   </LayoutSlot>

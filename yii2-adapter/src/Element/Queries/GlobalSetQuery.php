@@ -6,8 +6,10 @@ namespace CraftCms\Yii2Adapter\Element\Queries;
 
 use Craft;
 use craft\elements\GlobalSet;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Http\Controllers\Gql\ApiController;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Yii2Adapter\Database\DeprecatedTable;
 use Illuminate\Support\Facades\Route;
 use Override;
@@ -57,6 +59,7 @@ class GlobalSetQuery extends ElementQuery
             'globalsets.name',
             'globalsets.handle',
             'globalsets.sortOrder',
+            'globalsets.uid as globalSetUid',
         ]);
 
         $this->beforeQuery(function(self $query) {
@@ -64,6 +67,17 @@ class GlobalSetQuery extends ElementQuery
             $this->applyEditableParam($query);
             $this->applyRefParam($query);
         });
+    }
+
+    /**
+     * Global sets are identified in project config and user permissions by their `globalsets` row UID.
+     */
+    #[Override]
+    public function createElement(array $row): ElementInterface
+    {
+        $row['uid'] = Arr::pull($row, 'globalSetUid') ?? $row['uid'] ?? null;
+
+        return parent::createElement($row);
     }
 
     /**
