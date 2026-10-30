@@ -799,6 +799,7 @@ return [
     'Entry Types' => 'Berichttypes',
     'Entry URI Format' => 'Indeling URI-invoer',
     'Entry could not be added. Maximum number of entries reached.' => 'Inhoud kon niet worden toegevoegd. Maximum bereikt.',
+    'Entry type icon' => 'Entry type icon',
     'Entry type saved.' => 'Berichttype opgeslagen.',
     'Entry type settings' => 'Inhoudtype-instellingen',
     'Entry' => 'Invoer',
