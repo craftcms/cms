@@ -347,8 +347,14 @@ export default css`
     color: var(--_body-ink);
     background-color: var(--c-color-neutral-fill-quiet);
     border: 0;
-    padding: var(--c-card-border-width, 1px);
     isolation: isolate;
+  }
+
+  /* The header, body and footer reach the card's edges, under its border, so
+     their fills follow its rounded corners. Their content keeps a normal
+     card's distance from the edge. */
+  .card--cover {
+    --_cover-edge: var(--c-card-border-width, 1px);
   }
 
   /* Makes the card at least 4:3, and lets it grow taller when there's more
@@ -358,12 +364,22 @@ export default css`
     content: '';
     grid-area: 1 / 1 / -1 / -1;
     aspect-ratio: 4 / 3;
-    margin: calc(-1 * var(--c-card-border-width, 1px));
     pointer-events: none;
   }
 
   .card--cover .card__header {
     grid-area: 1 / 1;
+    min-height: calc(
+      var(--c-card-header-min-height, var(--_header-height)) +
+        var(--_cover-edge)
+    );
+    padding-block-start: calc(
+      (var(--_header-height) - 1px - var(--c-size-control-sm)) / 2 +
+        var(--_cover-edge)
+    );
+    padding-inline: calc(
+      var(--c-card-padding-inline, var(--c-spacing-md)) + var(--_cover-edge)
+    );
   }
 
   .card--cover .card-body {
@@ -373,6 +389,12 @@ export default css`
 
   .card--cover .card__footer {
     grid-area: 3 / 1;
+    padding-inline: calc(
+      var(--c-card-padding-inline, var(--c-spacing-md)) + var(--_cover-edge)
+    );
+    padding-block-end: calc(
+      var(--c-card-padding-block, var(--c-spacing-sm)) + var(--_cover-edge)
+    );
   }
 
   .card__cover {
@@ -434,6 +456,7 @@ export default css`
     position: relative;
     display: block;
     color: var(--_body-ink);
+    padding-inline: calc(var(--_body-padding-inline) + var(--_cover-edge));
     padding-block-start: calc(var(--_body-padding-block) + var(--_fade));
     background: linear-gradient(
       to top,
@@ -469,15 +492,11 @@ export default css`
     pointer-events: none;
   }
 
-  /* The body sits inside the card's border, but the image reaches its edges,
-     so the blur does too, or a band of the sharp image would show under the
-     border along the sides and bottom. */
-  :host .card--cover .card-body.card-body::before {
-    inset-inline: calc(-1 * var(--c-card-border-width, 1px));
+  :host .card--cover .card-body.card-body:last-child {
+    padding-block-end: calc(var(--_body-padding-block) + var(--_cover-edge));
   }
 
   :host .card--cover .card-body.card-body:last-child::before {
-    inset-block-end: calc(-1 * var(--c-card-border-width, 1px));
     border-end-start-radius: var(--c-card-radius, var(--c-radius-md));
     border-end-end-radius: var(--c-card-radius, var(--c-radius-md));
   }
@@ -494,7 +513,7 @@ export default css`
   @media (forced-colors: active) {
     :host .card.card--cover.card--cover {
       border: var(--c-card-border-width, 1px) solid CanvasText;
-      padding: 0;
+      --_cover-edge: 0px;
     }
 
     :host([active]) .card.card--cover.card--cover {

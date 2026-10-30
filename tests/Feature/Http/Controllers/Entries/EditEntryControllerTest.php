@@ -283,6 +283,28 @@ it('renders a revision read-only in the Inertia editor', function () {
         );
 });
 
+it('keeps the return URL when reverting to a revision', function () {
+    $revision = Elements::getElementById(
+        app(Revisions::class)->createRevision($this->entry, auth()->id(), 'Revision notes'),
+    );
+    $returnUrl = Crypt::encrypt(cp_url('content/entries/news', ['sort' => 'title']));
+
+    $revert = get(cp_url(sprintf('entries/news/%d-%s', $this->entry->id, $this->entry->slug), [
+        'revisionId' => $revision->revisionId,
+        'returnUrl' => $returnUrl,
+    ]))->inertiaProps('editorActions.buttons');
+    $revert = collect($revert)->firstWhere('label', 'Revert content from this revision');
+    app()->forgetScopedInstances();
+
+    $location = post($revert['actionUrl'], [...$revert['params'], 'redirect' => $revert['redirect']])
+        ->assertRedirect()
+        ->headers->get('Location');
+    parse_str((string) parse_url($location, PHP_URL_QUERY), $query);
+
+    expect($location)->toStartWith($this->entry->getCpEditUrl())
+        ->and($query['returnUrl'])->toBe($returnUrl);
+});
+
 it('lists drafts and revisions in the context menu', function () {
     app(Drafts::class)->createDraft($this->entry, auth()->id(), name: 'Working Draft');
     app(Revisions::class)->createRevision($this->entry, auth()->id(), 'Revision notes');

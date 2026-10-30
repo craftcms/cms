@@ -173,6 +173,46 @@ it('uses the new source default when clearing a search without a saved sort', as
   ]);
 });
 
+it('returns the sort, columns and thumb size to their defaults in one request', () => {
+  vi.stubGlobal('Craft', {systemUid: 'test', pageTrigger: 'p'});
+  localStorage.setItem(
+    'Craft-test.elementindex.Entry.modal',
+    JSON.stringify({
+      sources: {'*': {visible: ['author'], thumbSizes: {table: 'md'}}},
+    })
+  );
+  const fetch = vi.fn().mockResolvedValue(indexData(1));
+  scope = effectScope();
+  const index = scope.run(() =>
+    useDetachedElementIndex({
+      initial: indexData(undefined, {
+        sort: [{field: 'title', direction: 'asc'}],
+        defaultSort: [{field: 'postDate', direction: 'desc'}],
+        tableColumns: [
+          {label: 'Author', value: 'author'},
+          {label: 'Post Date', value: 'postDate'},
+        ],
+        defaultTableColumns: ['postDate'],
+      }),
+      fetch,
+    })
+  )!;
+
+  expect(index.view.viewCustomized.value).toBe(true);
+
+  index.view.resetView();
+
+  expect(index.view.viewCustomized.value).toBe(false);
+  expect(index.view.sortField.value).toBe('postDate');
+  expect(index.view.sortDirection.value).toBe('desc');
+  expect(index.view.tableColumns.value).toEqual(['postDate']);
+  expect(index.view.thumbSize.value).toBe('sm');
+  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(fetch.mock.calls[0]![0]).not.toHaveProperty('sort');
+  expect(fetch.mock.calls[0]![0]).not.toHaveProperty('columns');
+  expect(fetch.mock.calls[0]![0]).not.toHaveProperty('thumbSize');
+});
+
 function deferred<Value>() {
   let resolve!: (value: Value) => void;
   let reject!: (reason?: unknown) => void;

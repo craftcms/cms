@@ -51,6 +51,10 @@ export interface ElementIndexView {
   inlineEditing?: ElementIndexInlineEditing;
   sortField: Ref<string>;
   sortDirection: Ref<'asc' | 'desc'>;
+  /** Whether any of the View menu's settings differ from the source's defaults. */
+  viewCustomized: ComputedRef<boolean>;
+  /** Returns the View menu's settings to the source's defaults. */
+  resetView(this: void): void;
   tableColumns: Ref<string[]>;
   columnOptions: ComputedRef<CheckboxOption[]>;
   visibleViewModes: ComputedRef<ViewMode[]>;

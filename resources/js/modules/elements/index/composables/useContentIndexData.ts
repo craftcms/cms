@@ -139,6 +139,7 @@ export function useContentIndexData<
     tableColumns: computed(() => props().tableColumns),
     defaultTableColumns: computed(() => props().defaultTableColumns),
     sort: computed(() => props().sort),
+    defaultSort: computed(() => props().defaultSort),
     sortOptions: computed(() => props().sortOptions),
 
     // Results
