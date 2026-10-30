@@ -6,7 +6,8 @@
   import {commandShortcut} from '@/common/utils/keyShortcuts';
 
   /** The palette opens with Cmd+K on Apple platforms and Ctrl+K elsewhere. */
-  const shortcut = commandShortcut('K');
+  // `/` opens it too, when nothing that takes typing has focus.
+  const shortcut = `${commandShortcut('K')} /`;
 </script>
 
 <template>
