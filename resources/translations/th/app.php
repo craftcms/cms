@@ -1565,6 +1565,7 @@ return [
     'Resaving {type}' => 'กำลังบันทึก {type} ใหม่',
     'Reserved' => 'สงวนไว้แล้ว',
     'Reset password' => 'รีเซ็ตรหัสผ่าน',
+    'Resize editor' => 'Resize editor',
     'Resolve now' => 'แก้ไขทันที',
     'Resolved' => 'แก้ไขแล้ว',
     'Response:' => 'การตอบกลับ:',
