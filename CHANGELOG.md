@@ -408,7 +408,9 @@
 - Added the `defaultRateLimit` and `defaultRateLimitDuration` config settings, which configure the rate limits for login, password reset, and two-step verification requests. ([#20054](https://github.com/craftcms/cms/pull/20054))
 - Added the `trashedAssetDisk` config setting. When it’s set, soft-deleting an asset moves its file to that disk, and restoring the asset moves it back. Otherwise, soft-deleting an asset deletes its file, and the asset can’t be restored, unless it was deleted along with its volume. ([#8745](https://github.com/craftcms/cms/discussions/8745), [#20093](https://github.com/craftcms/cms/pull/20093))
 - GraphQL schemas can now include read-only components for sites, sections, entry types, volumes, and user groups. ([#20055](https://github.com/craftcms/cms/pull/20055))
-- The GraphQL API now accepts Passport access tokens with the `graphql:read` or `graphql:write` scope, such as personal access tokens created from My Account → Tokens. Requests made with them can query and change only the content that the token’s user has permission to access, and `graphql:read` tokens can’t run mutations.
+- The GraphQL API now accepts Passport access tokens with the `graphql:read` or `graphql:write` scope, such as personal access tokens created from My Account → Tokens. Requests made with them can query and change only the content that the token’s user has permission to access, and `graphql:read` tokens can’t run mutations. ([#20231](https://github.com/craftcms/cms/pull/20231))
+- OAuth clients can now be authorized to use the GraphQL API on a user’s behalf. Craft publishes OAuth discovery metadata for `{actionTrigger}/graphql/api` and supports dynamic client registration, and users choose “Read only” or “Read and write” access when they authorize a client. Requests with an invalid access token get a `WWW-Authenticate` header that points to the discovery metadata. ([#20231](https://github.com/craftcms/cms/pull/20231))
+- GraphQL requests made with an access token can now query releases, if the token’s user has control panel access. ([#20231](https://github.com/craftcms/cms/pull/20231))
 - Added the `currentUser` GraphQL query, which returns the user that authenticated the request with an access token.
 - Added the `sites`, `site`, `sections`, `section`, `entryTypes`, `entryType`, `volumes`, `volume`, `userGroups`, and `userGroup` GraphQL queries, which are available when the schema includes the corresponding components. ([#20055](https://github.com/craftcms/cms/pull/20055))
 - Elements now have `site` fields in GraphQL, when the schema includes the “Query for sites” component. ([#20055](https://github.com/craftcms/cms/pull/20055))
@@ -426,6 +428,7 @@
 - Added `CraftCms\Cms\Gql\Gql::getSchemaForUser()`.
 - Added `CraftCms\Cms\Gql\GqlHelper::getSchemaUser()`.
 - Added `CraftCms\Cms\Gql\Data\GqlSchema::$user`.
+- Added `CraftCms\Cms\Auth\OAuthServer\OAuthResource` and `CraftCms\Cms\Auth\OAuthServer\OAuthResources`, which let plugins offer their APIs to OAuth clients with discovery metadata, dynamic client registration, and access levels that users choose when they authorize a client. ([#20231](https://github.com/craftcms/cms/pull/20231))
 - Added `CraftCms\Cms\Ai\Contracts\AssistantContextTypeInterface` and `CraftCms\Cms\Ai\AssistantContextTypes`, for adding context types to Ask AI. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - Added `CraftCms\Cms\Ai\Task::optionalCapabilities()` and `CraftCms\Cms\Ai\Ai::supports()`, for AI tasks that use model capabilities, such as vision, when their model has them. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - Added `CraftCms\Cms\Ai\ModelImages`, which prepares asset images for AI models. ([#20109](https://github.com/craftcms/cms/pull/20109))

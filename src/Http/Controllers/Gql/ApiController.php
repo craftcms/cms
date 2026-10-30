@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Gql;
 
+use CraftCms\Cms\Auth\OAuthServer\OAuthResources;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
@@ -38,6 +39,7 @@ readonly class ApiController extends GqlController
         private GeneralConfig $generalConfig,
         private Gql $gql,
         private SiteSites $sites,
+        private OAuthResources $oauthResources,
     ) {}
 
     public function __invoke(Request $request): Response
@@ -239,9 +241,11 @@ readonly class ApiController extends GqlController
     {
         $user = $request->user(Gql::AUTH_GUARD);
 
-        if (! $user instanceof OAuthUser || ! $user->tokenCan(Gql::SCOPE_READ)) {
+        $resource = $this->oauthResources->get('graphql');
+
+        if (! $user instanceof OAuthUser || ! $resource || ! array_any($resource->scopes(), $user->tokenCan(...))) {
             throw new HttpException(401, 'Invalid access token.', headers: [
-                'WWW-Authenticate' => sprintf('Bearer error="invalid_token", scope="%s %s"', Gql::SCOPE_READ, Gql::SCOPE_WRITE),
+                'WWW-Authenticate' => $resource?->challenge('invalid_token') ?? 'Bearer error="invalid_token"',
             ]);
         }
 

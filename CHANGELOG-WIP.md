@@ -183,6 +183,9 @@
 #### GraphQL
 - GraphQL schemas can now include read-only components for sites, sections, entry types, volumes, and user groups, which add `site` fields to elements, `volume` fields to assets, and `groups` fields to users. ([#20055](https://github.com/craftcms/cms/pull/20055))
 - Added the `hasUrls` field to volumes in GraphQL queries.
+- The GraphQL API now accepts Passport access tokens with the `graphql:read` or `graphql:write` scope, from personal access tokens created on My Account → Tokens or OAuth clients that users authorize. Requests made with them can query and change only the content that the token’s user has permission to access, and `graphql:read` tokens can’t run mutations. ([#20231](https://github.com/craftcms/cms/pull/20231))
+- OAuth clients can discover and register for the GraphQL API on their own, and users choose “Read only” or “Read and write” access when they authorize one. ([#20231](https://github.com/craftcms/cms/pull/20231))
+- Added the `currentUser` GraphQL query, which returns the user that authenticated the request with an access token. ([#20231](https://github.com/craftcms/cms/pull/20231))
 - GraphQL mutations now return an error when new Matrix entries aren’t listed in `sortOrder`, rather than ignoring them, and each Matrix entry input can only specify one entry type. ([#19965](https://github.com/craftcms/cms/pull/19965))
 
 #### Debugging
@@ -234,6 +237,8 @@
 - Added the `thumbSize` config option to `CraftCms\Cms\Cp\Html\ElementHtml::chipHtml()` and `elementChipHtml()`, which sizes a chip’s thumbnail independently of the chip (`sm`, `md`, `lg`, `xl`, or `2xl`), and a `medium` chip size (`ElementHtml::CHIP_SIZE_MEDIUM`). Chips without a `size` take the one that suits their thumbnail. ([#20083](https://github.com/craftcms/cms/discussions/20083), [#20124](https://github.com/craftcms/cms/pull/20124))
 - Plugins can now make their element types available through the `elements.*` MCP tools.
 - Plugins can offer Passport scopes for personal access tokens on the Tokens screen by registering a `CraftCms\Cms\Auth\PersonalAccessTokens\ScopeGroup` with `CraftCms\Cms\Auth\PersonalAccessTokens\PersonalAccessTokens::registerScopeGroup()`. Registered scopes are added to `Passport::tokensCan()`.
+- Plugins can offer their APIs to OAuth clients, with discovery metadata, dynamic client registration, and access levels that users choose when they authorize a client, by registering a `CraftCms\Cms\Auth\OAuthServer\OAuthResource` with `CraftCms\Cms\Auth\OAuthServer\OAuthResources`. ([#20231](https://github.com/craftcms/cms/pull/20231))
+- GraphQL schema components can support requests made with access tokens via an `authenticated` key on their config, set to `true` or a closure that’s passed the user and returns whether the component is available to them. ([#20231](https://github.com/craftcms/cms/pull/20231))
 - Action menu items added via `craft\base\Element::EVENT_DEFINE_ACTION_MENU_ITEMS`, or by plugin element types’ `safeActionMenuItems()` and `destructiveActionMenuItems()` overrides, are only shown in the Inertia element editor and element chips if they define a `url` or `action`. ([#19783](https://github.com/craftcms/cms/pull/19783))
 - Plugins can no longer register custom Craft filesystem types. Filesystem types registered through `craft\base\Fs` remain supported for legacy plugins via the Yii adapter. ([#19650](https://github.com/craftcms/cms/pull/19650))
 

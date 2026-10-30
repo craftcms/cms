@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Mcp\Enums;
 
-use CraftCms\Cms\User\Contracts\CraftUser;
 use Laravel\Passport\Contracts\ScopeAuthorizable;
-use League\OAuth2\Server\Entities\ScopeEntityInterface;
 
 use function CraftCms\Cms\t;
 
@@ -28,47 +26,6 @@ enum McpScope: string
     public static function values(): array
     {
         return array_column(self::cases(), 'value');
-    }
-
-    /**
-     * The scopes a user may choose between when approving a client that requested `$requested`.
-     *
-     * @param  list<string>  $requested
-     * @return list<self>
-     */
-    public static function choices(array $requested, CraftUser $user): array
-    {
-        return array_values(array_filter(
-            self::cases(),
-            fn (self $scope): bool => in_array($scope->value, $requested, true) && ($scope !== self::Admin || $user->isAdmin()),
-        ));
-    }
-
-    /**
-     * The broadest scope in `$values`.
-     *
-     * @param  list<string>  $values
-     */
-    public static function highestIn(array $values): ?self
-    {
-        return collect(self::cases())->last(fn (self $scope): bool => in_array($scope->value, $values, true));
-    }
-
-    /**
-     * Removes requested scopes that `$level` does not grant, keeping scopes that aren’t MCP scopes.
-     *
-     * @param  list<ScopeEntityInterface>  $scopes
-     * @return list<ScopeEntityInterface>
-     */
-    public static function narrow(array $scopes, ?self $level): array
-    {
-        $granted = $level?->grantedValues() ?? [];
-
-        return array_values(array_filter(
-            $scopes,
-            fn (ScopeEntityInterface $scope): bool => self::tryFrom($scope->getIdentifier()) === null
-                || in_array($scope->getIdentifier(), $granted, true),
-        ));
     }
 
     public function label(): string

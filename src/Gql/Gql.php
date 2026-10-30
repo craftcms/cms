@@ -1290,6 +1290,7 @@ class Gql
                     'nested' => [
                         'elements.releases:read' => [
                             'label' => t('Query for releases'),
+                            'authenticated' => fn (User $user): bool => $user->can('accessCp'),
                             'info' => t('Adds “{plural}” and “{singular}” queries, and a “{field}” field to drafts.', [
                                 'plural' => 'releases',
                                 'singular' => 'release',
