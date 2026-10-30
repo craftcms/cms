@@ -65,8 +65,11 @@ export type ContentIndexData = Omit<
   actions: BulkActionItem[] | null;
   exporters: Array<{type: string; name: string; formattable: boolean}>;
   pagination: PaginationData;
-  /** How the source's cards show their thumbnails, for card placeholders. */
-  cardThumbs?: {style: string; alignment: 'start' | 'end'};
+  /**
+   * How the source's cards show their thumbnails, for the placeholders, or
+   * null when its elements have none.
+   */
+  cardThumbs?: {style: string; alignment: 'start' | 'end'} | null;
 };
 
 /**
@@ -139,6 +142,7 @@ export function useContentIndexData<
     tableColumns: computed(() => props().tableColumns),
     defaultTableColumns: computed(() => props().defaultTableColumns),
     sort: computed(() => props().sort),
+    defaultSort: computed(() => props().defaultSort),
     sortOptions: computed(() => props().sortOptions),
 
     // Results

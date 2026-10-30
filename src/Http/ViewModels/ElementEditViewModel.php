@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Ai\Assistant\Data\ElementParams;
+use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Html\ContentHtml;
@@ -31,6 +33,7 @@ use CraftCms\Cms\Release\Models\ReleaseItem;
 use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Ai;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -471,6 +474,19 @@ class ElementEditViewModel extends ViewModel
         return $this->element->id && ! $this->element->getIsRevision()
             ? Url::actionUrl('elements/recent-activity')
             : null;
+    }
+
+    /**
+     * The request parameters that identify the element to the AI assistant, which the user can add it to the context
+     * of, or `null` when they can’t use the assistant, or the element hasn’t been saved.
+     */
+    public function aiAssistant(): ?ElementParams
+    {
+        return $this->element->id
+            && ! $this->element->getIsRevision()
+            && Assistant::isAvailable()
+                ? ElementParams::for($this->element)
+                : null;
     }
 
     /** Where this editor's activity timeline is loaded on demand. */
@@ -1074,10 +1090,17 @@ class ElementEditViewModel extends ViewModel
                 continue;
             }
 
+            $siteParams = $params;
+
+            if (isset($siteParams['returnUrl']) && is_string($siteParams['returnUrl'])) {
+                // return to the index for the site being switched to
+                $siteParams['returnUrl'] = ElementHelper::returnUrlForSite($siteParams['returnUrl'], $site);
+            }
+
             $items[] = [
                 'type' => 'link',
                 'label' => t($site->getName(), category: 'site'),
-                'href' => Url::cpUrl($path, ['site' => $site->handle] + $params),
+                'href' => Url::cpUrl($path, ['site' => $site->handle] + $siteParams),
                 'selected' => $site->id === $currentSite->id,
             ];
         }

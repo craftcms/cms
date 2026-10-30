@@ -313,7 +313,7 @@ class ElementRequest extends FormRequest
                 ->status(null)
                 ->one();
 
-            if ($element && $this->canSave($element, $this->craftUser())) {
+            if ($element && self::canSave($element, $this->craftUser())) {
                 return $element;
             }
         }
@@ -380,7 +380,10 @@ class ElementRequest extends FormRequest
             ->one();
     }
 
-    private function canSave(ElementInterface $element, CraftUser $user): bool
+    /**
+     * Returns whether a user can save an element, or for a provisional draft, the element it’s a draft of.
+     */
+    public static function canSave(ElementInterface $element, CraftUser $user): bool
     {
         if ($element->getIsRevision()) {
             return false;

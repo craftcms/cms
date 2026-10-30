@@ -410,6 +410,7 @@
             type="button"
             class="details-panels__trigger"
             :aria-controls="panelElementId(panel.id)"
+            :data-unlisted-in-palette="panel.unlistedInPalette || undefined"
           >
             <template v-if="panel.initialIcon">
               <span class="initial-icon" aria-hidden="true">{{

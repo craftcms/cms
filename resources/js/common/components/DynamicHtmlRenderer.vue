@@ -30,13 +30,17 @@
   );
 
   /**
-   * Text interpolation is switched off by delimiters that HTML-encoded text
-   * can never contain: the server escapes every `"` in user content to
-   * `&quot;`, so a title like `{{ constructor.constructor('…')() }}` renders
-   * as text instead of running as a template expression. The markup still
-   * compiles, so registered components and their bound props keep working.
+   * Text interpolation is switched off by an opening delimiter the compiler
+   * can never reach: it reads `<` in text as the start of a tag (or, inside
+   * `<textarea>` and `<title>`, of the closing tag) before it checks for a
+   * delimiter. So a logged URL or an element title like
+   * `{{ $emit.constructor('…')() }}` renders as text instead of running as a
+   * template expression, however the server escaped it — including escapers
+   * that leave `"` unencoded, like `htmlspecialchars()` with `ENT_NOQUOTES`,
+   * `strip_tags()`, or a DOM re-serialization. The markup still compiles, so
+   * registered components and their bound props keep working.
    */
-  const DELIMITERS: [string, string] = ['{{"', '"}}'];
+  const DELIMITERS: [string, string] = ['<{{', '}}>'];
 
   const dynamicComponent = computed(() =>
     defineComponent({

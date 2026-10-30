@@ -57,6 +57,35 @@ it('sends a deletion back to the index the editor was opened from', function () 
     expect($delete['behavior']['redirect'])->toBe($indexUrl);
 });
 
+it('honors an unsigned return URL within the control panel', function () {
+    $this->actingAs(User::first());
+    $indexUrl = cp_url('content/entries/blog', ['sort' => 'title']);
+    request()->query->set('returnUrl', str_replace('?', ':QS:', $indexUrl));
+
+    $delete = collect(contextualEntry()->actionMenuDescriptors())->firstWhere('label', 'Delete entry');
+
+    expect($delete['behavior']['redirect'])->toBe($indexUrl);
+});
+
+it('ignores an unsigned return URL that leaves Craft', function (string $returnUrl) {
+    $this->actingAs(User::first());
+    $entry = contextualEntry();
+    $default = collect($entry->actionMenuDescriptors())->firstWhere('label', 'Delete entry')['behavior']['redirect'];
+    request()->query->set('returnUrl', $returnUrl);
+
+    $delete = collect($entry->actionMenuDescriptors())->firstWhere('label', 'Delete entry');
+
+    expect($delete['behavior']['redirect'])->toBe($default)
+        ->and($default)->not->toContain('evil');
+})->with([
+    'another host' => 'https://evil.example/landing',
+    'another host with the CP host as user info' => fn () => sprintf('http://%s@evil.example/', request()->getHttpHost()),
+    'protocol-relative' => '//evil.example/landing',
+    'backslash-relative' => '/\\evil.example/landing',
+    'javascript' => 'javascript:alert(1)//evil',
+    'javascript with a tab' => "java\tscript:alert(1)//evil",
+]);
+
 // Craft 5 offers "Delete draft" when a saved draft is open in the editor.
 it('offers draft deletion when editing a draft', function () {
     $user = User::first();

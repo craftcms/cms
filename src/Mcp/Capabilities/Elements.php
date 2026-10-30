@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Mcp\Capabilities;
 
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Elements as ElementService;
 use CraftCms\Cms\Mcp\Attributes\RequiresPermission;
 use CraftCms\Cms\Mcp\ElementLifecycle;
@@ -359,15 +360,29 @@ readonly class Elements
         array $fields = [],
     ): array {
         $adapter = $this->adapter($type);
-        $this->assertValid($attributes, $adapter->schema()['updateAttributes'], 'attributes', $type);
-
         $element = $this->lifecycle->find($adapter::elementType(), $id, $uid, $siteId);
+        $this->populate($type, $element, $attributes, $fields);
+
+        return $this->lifecycle->validate($element);
+    }
+
+    /**
+     * Sets the values that `elements.update` takes on an element, without saving it, after checking them as
+     * `elements.update` does.
+     *
+     * @param  array<string, mixed>  $attributes
+     * @param  array<string, mixed>  $fields
+     *
+     * @throws ToolCallException if the values aren’t valid, or the user can’t save the element.
+     */
+    public function populate(string $type, ElementInterface $element, array $attributes, array $fields): void
+    {
+        $adapter = $this->adapter($type);
+        $this->assertValid($attributes, $adapter->schema()['updateAttributes'], 'attributes', $type);
 
         if ($attributes !== [] || $fields !== []) {
             $adapter->prepareValidation($element, $attributes, $fields, $this->actor->user());
         }
-
-        return $this->lifecycle->validate($element);
     }
 
     /**

@@ -76,6 +76,8 @@
     cardThumbs,
     sortField,
     sortDirection,
+    viewCustomized,
+    resetView,
     tableColumns,
     columnOptions,
     visibleViewModes,
@@ -128,9 +130,7 @@
     return pending.value || loading.value ? data.value.length || screenful : 0;
   }
   /** Whether the rows have thumbnails, for the placeholders drawn before them. */
-  const hasThumbs = computed(() =>
-    visibleViewModes.value.some(({mode}) => mode === 'thumbs')
-  );
+  const hasThumbs = computed(() => cardThumbs.value !== null);
   const isInlineEditing = computed(
     () =>
       Boolean(inlineEditing?.active.value) ||
@@ -303,10 +303,12 @@
         :column-options="columnOptions"
         :thumb-size-options="thumbSizeOptions"
         :sort-options="elementIndex.sortOptions"
+        :view-customized="viewCustomized"
         :sites="showSites ? elementIndex.sites : undefined"
         :site-handle="showSites ? activeSiteHandle : undefined"
         @submit="submit"
         @reorder="reorder"
+        @use-default-view="resetView"
         @site-change="emit('site-change', $event)"
       >
         <template

@@ -139,6 +139,8 @@ export function useElementIndex(options: UseElementIndexOptions) {
     tableColumns,
     reorder,
     restore: restoreColumns,
+    isDefault: columnsAreDefault,
+    resetToDefault: resetColumns,
   } = useElementIndexColumns(elementIndex, viewState, pinnedColumn, visitor);
   const columns = options.columns?.(baseColumns, {elementIndex}) ?? baseColumns;
   const {
@@ -147,6 +149,8 @@ export function useElementIndex(options: UseElementIndexOptions) {
     sortField,
     sortDirection,
     restore: restoreSort,
+    isDefault: sortIsDefault,
+    resetToDefault: resetSort,
   } = useElementIndexSort(elementIndex, viewState, visitor);
   const {paginationState, paginationConfig} = useElementIndexPagination(
     elementIndex,
@@ -160,12 +164,10 @@ export function useElementIndex(options: UseElementIndexOptions) {
   );
   /**
    * How cards show a thumbnail, as the source's field layout has it, or null
-   * when the index has no thumbnails.
+   * when the source's elements have no thumbnails.
    */
-  const cardThumbs = computed<CardThumbSettings | null>(() =>
-    visibleViewModes.value.some(({mode}) => mode === 'thumbs')
-      ? (elementIndex.cardThumbs ?? {style: 'normal', alignment: 'end'})
-      : null
+  const cardThumbs = computed<CardThumbSettings | null>(
+    () => elementIndex.cardThumbs ?? null
   );
   const mode = computed<ViewMode['mode']>({
     get: () =>
@@ -181,7 +183,38 @@ export function useElementIndex(options: UseElementIndexOptions) {
     options: thumbSizeOptions,
     restore: restoreThumbSize,
     modeParams: thumbSizeModeParams,
+    isDefault: thumbSizeIsDefault,
+    resetToDefault: resetThumbSize,
   } = useElementIndexThumbSize(viewState, visitor, () => mode.value, sourceKey);
+  // The View menu only offers table columns in table and structure views, so
+  // only there do they count toward, or get reset by, "Use defaults".
+  const showsTableColumns = () =>
+    mode.value === 'table' || mode.value === 'structure';
+  const viewCustomized = computed(
+    () =>
+      !sortIsDefault.value ||
+      !thumbSizeIsDefault.value ||
+      (showsTableColumns() && !columnsAreDefault.value)
+  );
+
+  /** Returns the View menu's settings to the source's defaults in one visit. */
+  function resetView(): void {
+    const resets = [
+      resetSort(),
+      showsTableColumns() ? resetColumns() : null,
+      resetThumbSize(),
+    ].filter((reset): reset is IndexRestore => reset !== null);
+
+    if (resets.length === 0) {
+      return;
+    }
+
+    visitor.merge(Object.assign({}, ...resets.map((reset) => reset.params)), {
+      only: [...new Set(resets.flatMap((reset) => reset.only))],
+      resetPage: true,
+    });
+  }
+
   // Not persisted: inline editing ends with the page.
   const inlineEditingActive = shallowRef(false);
   const structureView = useElementIndexStructure(
@@ -412,6 +445,8 @@ export function useElementIndex(options: UseElementIndexOptions) {
     reorder,
     sortField,
     sortDirection,
+    viewCustomized,
+    resetView,
     mode,
     thumbSize,
     thumbSizeOptions,

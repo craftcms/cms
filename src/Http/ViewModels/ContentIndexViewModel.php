@@ -599,16 +599,35 @@ abstract class ContentIndexViewModel extends ViewModel
     }
 
     /**
-     * How the source's cards show their thumbnails, going by its first field
-     * layout, so the placeholders drawn while its cards load can match them.
+     * The sort the source falls back to when none is requested.
      *
-     * @return array{style: string, alignment: 'start'|'end'}
+     * @return array<int, array{field: string, direction: string}>
      */
-    public function cardThumbs(): array
+    public function defaultSort(): array
+    {
+        return $this->sourceSettings()->defaultSort;
+    }
+
+    /**
+     * How the source's cards show their thumbnails, going by its first field
+     * layout that provides them, so the placeholders drawn while its rows and
+     * cards load can match them. Null when the source's elements have none.
+     *
+     * @return array{style: string, alignment: 'start'|'end'}|null
+     */
+    public function cardThumbs(): ?array
     {
         $sourceKey = $this->sourceState()[0];
-        $fieldLayout = $this->sourceSettings()->fieldLayouts[0]
-            ?? ($sourceKey !== null ? ElementSources::getFieldLayoutsForSource($this->elementType, $sourceKey)->first() : null);
+        $fieldLayouts = collect($this->sourceSettings()->fieldLayouts
+            ?: ($sourceKey !== null ? ElementSources::getFieldLayoutsForSource($this->elementType, $sourceKey) : []));
+        $hasOwnThumbs = $this->elementType::hasThumbs();
+        $fieldLayout = $hasOwnThumbs
+            ? $fieldLayouts->first()
+            : $fieldLayouts->first(fn (FieldLayout $fieldLayout) => $fieldLayout->hasThumbField());
+
+        if (! $hasOwnThumbs && $fieldLayout === null) {
+            return null;
+        }
 
         return [
             'style' => $fieldLayout?->getCardThumbStyle() ?? (is_a($this->elementType, Asset::class, true) ? 'cover' : 'normal'),

@@ -67,6 +67,8 @@ it('creates editorial comments with authenticated authorship, mentions, and dura
         ->assertJsonPath('result.structuredContent.event.origin', 'MCP')
         ->json('result.structuredContent.event');
 
+    expect($created['actor'])->not->toHaveKeys(['url', 'photoColors']);
+
     $comment = ActivityEvent::findOrFail($created['id']);
     Notification::assertSentTo($editor->asElement(), ActivityMentionNotification::class);
     app(ActivityComments::class)->edit($comment, $this->author->asElement(), 'Updated review request', $this->entry);

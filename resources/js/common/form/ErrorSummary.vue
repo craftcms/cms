@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import {nextTick, onMounted, ref, useId, watch} from 'vue';
-  import {firstFocusableWithin} from '@/common/utils/dom';
+  import {firstFocusableWithin, revealElement} from '@/common/utils/dom';
   import {fieldId} from '@/modules/ui/runtime';
 
   const props = withDefaults(
@@ -39,7 +39,7 @@
    * Shows the field an error belongs to, switching to its tab first if it's on
    * a hidden one, and puts focus in it.
    */
-  function goToField(event: MouseEvent, key: string): void {
+  async function goToField(event: MouseEvent, key: string): Promise<void> {
     const field = document.getElementById(targetId(key));
 
     if (!field) {
@@ -47,16 +47,7 @@
     }
 
     event.preventDefault();
-
-    const panel = field.closest<HTMLElement>('[role="tabpanel"]');
-
-    if (panel && (panel.hidden || panel.classList.contains('hidden'))) {
-      document
-        .querySelector<HTMLElement>(
-          `[role="tab"][aria-controls="${CSS.escape(panel.id)}"]`
-        )
-        ?.click();
-    }
+    await revealElement(field, {block: 'center'});
 
     // The control rather than the first thing in the field, which can be its
     // actions menu.
@@ -65,13 +56,11 @@
     );
 
     if (control) {
-      control.focus();
+      control.focus({preventScroll: true});
     } else {
       field.setAttribute('tabindex', '-1');
-      field.focus();
+      field.focus({preventScroll: true});
     }
-
-    field.scrollIntoView({block: 'center'});
   }
 
   // Mounted once per failed save (the editor clears its errors as it submits),
