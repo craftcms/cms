@@ -65,7 +65,7 @@
 
     <div id="mcp-public"{% if selectedTab != 'mcp-public' %} class="hidden"{% endif %}>
         <p>{{ 'Lets anyone use the tools and content you approve below, without signing in.'|t('app') }}</p>
-        {{ forms.lightswitchField({label: 'Enable the Public MCP Server'|t('app'), id: 'mcp-public-enabled', name: 'settings[publicEnabled]', on: settings.publicEnabled, disabled: readOnly, errors: settings.getErrors('publicEnabled')}) }}
+        {{ forms.lightswitchField({label: 'Enable the public MCP server'|t('app'), id: 'mcp-public-enabled', name: 'settings[publicEnabled]', on: settings.publicEnabled, disabled: readOnly, errors: settings.getErrors('publicEnabled')}) }}
         {{ forms.textField({label: 'Endpoint'|t('app'), id: 'mcp-public-route', instructions: 'The app-relative path public MCP clients connect to, such as `/mcp`.'|t('app'), name: 'settings[publicRoute]', value: settings.publicRoute, required: true, disabled: readOnly, class: 'code', errors: settings.getErrors('publicRoute')}) }}
         {{ _self.notice('mcp-shared-route', 'warning', 'Warning:'|t('app'), 'The authenticated server uses this endpoint too. Requests without an access token go to the public server, so MCP clients can’t discover how to sign in at this endpoint.'|t('app'), settings.enabled and settings.publicEnabled and settings.route|trim('/') == settings.publicRoute|trim('/')) }}
 
@@ -96,7 +96,7 @@
 
     <div id="mcp-authenticated"{% if selectedTab != 'mcp-authenticated' %} class="hidden"{% endif %}>
         <p>{{ 'Lets MCP clients act as a Craft user after the user signs in and approves access. Any active user can sign in. Tools still check their permissions.'|t('app') }}</p>
-        {{ forms.lightswitchField({label: 'Enable the Authenticated MCP Server'|t('app'), id: 'mcp-enabled', name: 'settings[enabled]', on: settings.enabled, disabled: readOnly, errors: settings.getErrors('enabled')}) }}
+        {{ forms.lightswitchField({label: 'Enable the authenticated MCP server'|t('app'), id: 'mcp-enabled', name: 'settings[enabled]', on: settings.enabled, disabled: readOnly, errors: settings.getErrors('enabled')}) }}
         {{ forms.textField({label: 'Endpoint'|t('app'), id: 'mcp-route', instructions: 'The app-relative path MCP clients connect to, such as `/mcp`.'|t('app'), name: 'settings[route]', value: settings.route, required: true, disabled: readOnly, class: 'code', errors: settings.getErrors('route')}) }}
         {{ _self.notice('mcp-route-cp', 'notice', 'Tip:'|t('app'), 'This endpoint is in the control panel, so only users with control panel access can use it.'|t('app'), settings.isCpRoute(settings.route)) }}
         {{ forms.textField({label: 'Authorization Endpoint'|t('app'), id: 'mcp-authorization-route', instructions: 'The app-relative path to give MCP clients that sign in with OAuth. It always requires an access token, so clients can discover how to sign in.'|t('app'), name: 'settings[authorizationRoute]', value: settings.authorizationRoute, required: true, disabled: readOnly, class: 'code', errors: settings.getErrors('authorizationRoute')}) }}
