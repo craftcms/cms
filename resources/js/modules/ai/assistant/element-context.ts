@@ -1,9 +1,8 @@
-import {getActionUrl, t} from '@craftcms/ui';
+import {actionClient, t} from '@craftcms/ui';
 import type {TextExpanderOption} from '@craftcms/ui/components/text-expander/text-expander';
 import {shallowReactive} from 'vue';
 import AssistantController from '@/actions/CraftCms/Cms/Ai/Http/Controllers/AssistantController';
 import {assistantApi} from '@/bootstrap/assistant';
-import {actionFetch} from './assistant';
 import {
   assistantEditor,
   assistantEditors,
@@ -151,22 +150,14 @@ export async function loadElementFields(
   editor: AssistantEditor
 ): Promise<void> {
   try {
-    const response = await actionFetch(
-      getActionUrl(AssistantController.contextFields.url()),
-      {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          ...editor.params(),
-          namespace: editor.scope(),
-          values: editor.values(),
-        }),
-      }
-    );
-    const body = (await response.json()) as {
+    const {data: body} = await actionClient.post<{
       fields: ElementFieldOption[];
       status: AssistantContextStatus | null;
-    };
+    }>(AssistantController.contextFields.url(), {
+      ...editor.params(),
+      namespace: editor.scope(),
+      values: editor.values(),
+    });
     editorFields.set(editor.id, body.fields);
     editorStatuses.set(editor.id, body.status);
   } catch {

@@ -4,7 +4,7 @@
    * conversation, once it’s stored, and links to where the assistant’s
    * guidance and skills are edited.
    */
-  import {getActionUrl, t} from '@craftcms/ui';
+  import {actionClient, t} from '@craftcms/ui';
   import {usePage} from '@inertiajs/vue3';
   import {computed, shallowRef} from 'vue';
   import type {CraftData} from '@/common/composables/useCraftData';
@@ -12,7 +12,7 @@
   import ModalForm from '@/common/components/ModalForm.vue';
   import type {ActionItem} from '@/common/types';
   import AssistantController from '@/actions/CraftCms/Cms/Ai/Http/Controllers/AssistantController';
-  import {AssistantRequestError, actionFetch} from './assistant';
+  import {AssistantRequestError, requestError} from './assistant';
 
   const props = defineProps<{
     threadId: string;
@@ -100,11 +100,11 @@
     url: string,
     body: Record<string, unknown> = {}
   ): Promise<void> {
-    await actionFetch(getActionUrl(url), {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({threadId: props.threadId, ...body}),
-    });
+    try {
+      await actionClient.post(url, {threadId: props.threadId, ...body});
+    } catch (error) {
+      throw requestError(error);
+    }
   }
 
   /** Why an action failed, as the server says, if it did. */

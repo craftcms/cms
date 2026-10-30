@@ -1,3 +1,4 @@
+import {ConfigService} from '@craftcms/ui';
 import type {ActionMenuItemButton} from '@craftcms/ui/components/action-menu/action-menu.types';
 import {createApp, nextTick, shallowRef, type ShallowRef} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
@@ -18,7 +19,6 @@ const chat = vi.hoisted(() => ({
 
 vi.mock('@craftcms/ui', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@craftcms/ui')>()),
-  actionHeaders: () => ({}),
   getActionUrl: (url: string) => url,
 }));
 
@@ -49,6 +49,10 @@ describe('AssistantChat', () => {
   let app: ReturnType<typeof createApp>;
 
   beforeEach(async () => {
+    window.Craft = {registeredAssetBundles: [], registeredJsFiles: []} as never;
+    ConfigService.getInstance().initialize({
+      actionUrl: 'https://example.test/admin/actions',
+    });
     container = document.createElement('div');
     document.body.append(container);
     app = createApp(AssistantChat, {threadId: crypto.randomUUID()});
@@ -60,6 +64,7 @@ describe('AssistantChat', () => {
     app.unmount();
     container.remove();
     useAssistantContext().sent.value = [];
+    ConfigService.resetInstance();
     vi.clearAllMocks();
   });
 

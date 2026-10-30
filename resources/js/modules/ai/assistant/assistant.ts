@@ -1,4 +1,4 @@
-import {actionHeaders, csrf, getActionUrl} from '@craftcms/ui';
+import {actionClient, getActionUrl, isCancel, isHttpError} from '@craftcms/ui';
 import {fetchServerSentEvents, type ConnectionAdapter} from '@tanstack/ai-vue';
 import {streamingMarkdownExtension} from '@tanstack/markdown/extensions/streaming';
 import {renderHtml} from '@tanstack/markdown/html';
@@ -9,7 +9,6 @@ import {computed} from 'vue';
 import {screenPanels} from '@/common/composables/screenPanels';
 import type {CraftData} from '@/common/composables/useCraftData';
 import {useSessionStorage} from '@/common/composables/useStorage';
-import {noteHeaders, noteStatus} from '@/modules/auth/session-timeout/manager';
 import AssistantController from '@/actions/CraftCms/Cms/Ai/Http/Controllers/AssistantController';
 
 /**
@@ -124,50 +123,49 @@ export const useAssistantThread = createGlobalState(() => {
 });
 
 /**
- * Sends a request as Craft’s action client does: with its headers, once more
- * with a fresh CSRF token if the first is rejected, and telling the session
- * timeout when the session now expires. A failed response
- * throws an {@link AssistantRequestError} with the server’s message.
+ * An error from a request to one of the assistant’s actions, with the
+ * server’s message, if it gave one.
  */
-export async function actionFetch(
+export function requestError(error: unknown): unknown {
+  if (!isHttpError<{message?: string} | string>(error) || isCancel(error)) {
+    return error;
+  }
+
+  const data = error.response?.data;
+
+  return new AssistantRequestError(
+    (typeof data === 'object' && data?.message) || error.message,
+    {cause: error}
+  );
+}
+
+/**
+ * Sends the chat’s requests with Craft’s action client, as `fetch` would, so
+ * the reply can be read as it streams. A failed response throws an
+ * {@link AssistantRequestError} with the server’s message.
+ */
+export async function streamFetch(
   input: RequestInfo | URL,
   init: RequestInit = {}
 ): Promise<Response> {
-  const send = (token: string | null) =>
-    fetch(input, {
-      ...init,
-      headers: {
-        ...Object.fromEntries(new Headers(init.headers)),
-        // Laravel only reads the first type: JSON is what makes it return
-        // errors as JSON, rather than as a page.
-        Accept: 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        ...actionHeaders(),
-        ...(token ? {'X-CSRF-Token': token} : {}),
-      },
+  try {
+    const response = await actionClient.request<ReadableStream | null>({
+      url: input instanceof Request ? input.url : String(input),
+      method: init.method ?? 'GET',
+      headers: Object.fromEntries(new Headers(init.headers)),
+      data: init.body ?? undefined,
+      signal: init.signal ?? undefined,
+      responseType: 'stream',
     });
 
-  let response = await send(csrf.tokenValue);
-
-  if (response.status === 419 || response.status === 403) {
-    csrf.clearToken();
-    response = await send(await csrf.refreshToken());
+    return new Response(response.data, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+    });
+  } catch (error) {
+    throw requestError(error);
   }
-
-  noteHeaders(Object.fromEntries(response.headers));
-  noteStatus(response.status);
-
-  if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as {
-      message?: string;
-    } | null;
-
-    throw new AssistantRequestError(
-      body?.message || `${response.status} ${response.statusText}`
-    );
-  }
-
-  return response;
 }
 
 /**
@@ -182,6 +180,6 @@ export function assistantConnection(
 ): ConnectionAdapter {
   return fetchServerSentEvents(
     () => getActionUrl(AssistantController.run.url()),
-    () => ({fetchClient: actionFetch, body: body()})
+    () => ({fetchClient: streamFetch, body: body()})
   );
 }

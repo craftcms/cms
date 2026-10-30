@@ -1,6 +1,5 @@
-import {getActionUrl} from '@craftcms/ui';
+import {actionClient} from '@craftcms/ui';
 import AssistantController from '@/actions/CraftCms/Cms/Ai/Http/Controllers/AssistantController';
-import {actionFetch} from './assistant';
 
 /** A conversation in the chat history. */
 export interface AssistantConversation {
@@ -23,12 +22,11 @@ export interface AssistantConversationGroup {
 export async function fetchConversations(): Promise<
   AssistantConversationGroup[]
 > {
-  const response = await actionFetch(
-    getActionUrl(AssistantController.conversations.url())
-  );
+  const {data} = await actionClient.get<{
+    groups: AssistantConversationGroup[];
+  }>(AssistantController.conversations.url());
 
-  return ((await response.json()) as {groups: AssistantConversationGroup[]})
-    .groups;
+  return data.groups;
 }
 
 /**

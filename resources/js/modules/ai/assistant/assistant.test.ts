@@ -1,53 +1,42 @@
-import {csrf} from '@craftcms/ui';
-import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
-import {sessionTimeoutManager} from '@/modules/auth/session-timeout/manager';
-import {actionFetch, AssistantRequestError, renderMarkdown} from './assistant';
+import {ConfigService} from '@craftcms/ui';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {AssistantRequestError, renderMarkdown, streamFetch} from './assistant';
 
-vi.mock('@craftcms/ui', () => ({
-  actionHeaders: () => ({}),
-  csrf: {tokenValue: null, clearToken: vi.fn(), refreshToken: vi.fn()},
-  getActionUrl: (url: string) => url,
-}));
+describe('streamFetch', () => {
+  beforeEach(() => {
+    vi.stubGlobal('Cp', {registeredAssetBundles: [], registeredJsFiles: []});
+    vi.stubGlobal('Craft', {});
+    ConfigService.getInstance().initialize({
+      actionUrl: 'https://example.test/admin/actions',
+    });
+  });
 
-describe('actionFetch', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
-    vi.restoreAllMocks();
-    vi.clearAllMocks();
+    ConfigService.resetInstance();
   });
 
-  it('retries once with a fresh CSRF token when the token is rejected', async () => {
-    const fetch = vi
-      .fn()
-      .mockResolvedValueOnce(new Response(null, {status: 419}))
-      .mockResolvedValueOnce(new Response('data: {}\n\n', {status: 200}));
-    vi.stubGlobal('fetch', fetch);
-    vi.mocked(csrf.refreshToken).mockResolvedValue('fresh-token');
-
-    const response = await actionFetch('ai/assistant', {method: 'POST'});
-
-    expect(response.ok).toBe(true);
-    expect(fetch).toHaveBeenCalledTimes(2);
-    expect(fetch.mock.calls[1]![1].headers['X-CSRF-Token']).toBe('fresh-token');
-  });
-
-  it('tells the session timeout when the session now expires', async () => {
-    const update = vi
-      .spyOn(sessionTimeoutManager, 'update')
-      .mockImplementation(() => {});
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(
-        async () =>
-          new Response('data: {}\n\n', {
-            headers: {'X-Craft-Session-Expires': '1900000000'},
-          })
-      )
+  it('returns the reply as a response that can be read as it streams', async () => {
+    const fetch = vi.fn(
+      async (_input: RequestInfo | URL, _init?: RequestInit) =>
+        new Response('data: {}\n\n', {
+          headers: {'Content-Type': 'text/event-stream'},
+        })
     );
+    vi.stubGlobal('fetch', fetch);
 
-    await actionFetch('ai/assistant', {method: 'POST'});
+    const response = await streamFetch('/admin/actions/ai/assistant', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: '{"threadId":"thread-1"}',
+    });
 
-    expect(update).toHaveBeenCalledWith(1900000000);
+    expect(response.headers.get('content-type')).toBe('text/event-stream');
+    expect(await response.text()).toBe('data: {}\n\n');
+    expect(fetch.mock.calls[0]![1]).toMatchObject({
+      method: 'POST',
+      body: '{"threadId":"thread-1"}',
+    });
   });
 
   it('fails with the server’s message', async () => {
@@ -58,7 +47,9 @@ describe('actionFetch', () => {
       )
     );
 
-    const request = actionFetch('ai/assistant', {method: 'POST'});
+    const request = streamFetch('/admin/actions/ai/assistant', {
+      method: 'POST',
+    });
 
     await expect(request).rejects.toBeInstanceOf(AssistantRequestError);
     await expect(request).rejects.toThrow('The AI assistant is disabled.');
