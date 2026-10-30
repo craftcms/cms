@@ -9,6 +9,7 @@ import {
   hudData,
   isSidebarTab,
 } from './support';
+import {isRtl} from '@/common/craft/direction';
 import {type ActionMenuItem} from '@craftcms/ui';
 import type {UiValues} from '@/modules/ui/types';
 import {createInitialIcon} from '@/common/utils/initialIcon';
@@ -148,11 +149,8 @@ export class Tab extends Base {
 
       if (hasPrev) {
         items.push({
-          label:
-            Craft.orientation === 'ltr'
-              ? t('Move to the left')
-              : t('Move to the right'),
-          icon: Craft.orientation === 'ltr' ? 'arrow-left' : 'arrow-right',
+          label: isRtl() ? t('Move to the right') : t('Move to the left'),
+          icon: isRtl() ? 'arrow-right' : 'arrow-left',
           onClick: () => {
             this.moveLeft();
           },
@@ -161,11 +159,8 @@ export class Tab extends Base {
 
       if (hasNext) {
         items.push({
-          label:
-            Craft.orientation === 'ltr'
-              ? t('Move to the right')
-              : t('Move to the left'),
-          icon: Craft.orientation === 'ltr' ? 'arrow-right' : 'arrow-left',
+          label: isRtl() ? t('Move to the left') : t('Move to the right'),
+          icon: isRtl() ? 'arrow-left' : 'arrow-right',
           onClick: () => {
             this.moveRight();
           },

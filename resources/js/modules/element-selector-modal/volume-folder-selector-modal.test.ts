@@ -66,7 +66,6 @@ async function settle(modal: VolumeFolderSelectorModal): Promise<void> {
 beforeEach(() => {
   vi.stubGlobal('Craft', {
     systemUid: 'test',
-    pageTrigger: 'p',
     t: (_category: string, message: string) => message,
   });
 });

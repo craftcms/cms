@@ -14,6 +14,8 @@ import {
   UP_KEY,
   type GarnishBaseSettings,
 } from '@craftcms/garnish';
+import {elementTypeName} from '@/common/craft/element-types';
+import {isRtl} from '@/common/craft/direction';
 import {elementSelectInputData} from './support';
 import {getActionUrl} from '@/common/craft/url';
 import {t} from '@craftcms/ui/utilities/translate';
@@ -782,11 +784,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       actions.push({
         icon: async () =>
           await Craft.ui.icon(
-            axis === 'y'
-              ? 'arrow-up'
-              : Craft.orientation === 'ltr'
-                ? 'arrow-left'
-                : 'arrow-right'
+            axis === 'y' ? 'arrow-up' : isRtl() ? 'arrow-right' : 'arrow-left'
           ),
         label: axis === 'y' ? t('Move up') : t('Move forward'),
         callback: () => {
@@ -797,11 +795,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       actions.push({
         icon: async () =>
           await Craft.ui.icon(
-            axis === 'y'
-              ? 'arrow-down'
-              : Craft.orientation === 'ltr'
-                ? 'arrow-right'
-                : 'arrow-left'
+            axis === 'y' ? 'arrow-down' : isRtl() ? 'arrow-left' : 'arrow-right'
           ),
         label: axis === 'y' ? t('Move down') : t('Move backward'),
         callback: () => {
@@ -1063,7 +1057,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
 
     await Craft.animate($element, {
       opacity: -1,
-      left: offset.left + 100 * (Craft.orientation === 'ltr' ? -1 : 1),
+      left: offset.left + 100 * (isRtl() ? 1 : -1),
     });
 
     $element.remove();
@@ -1653,7 +1647,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
         const optionLabel = `${t('Existing {type}', {
           type:
             (this.settings.elementType
-              ? Craft.elementTypeNames[this.settings.elementType]?.[2]
+              ? elementTypeName(this.settings.elementType)
               : null) ?? t('element'),
         })}: ${element.title}`;
         $li.attr('aria-label', optionLabel);
@@ -1673,7 +1667,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
         const optionLabel = `${t('Create {type}', {
           type:
             (this.settings.elementType
-              ? Craft.elementTypeNames[this.settings.elementType]?.[2]
+              ? elementTypeName(this.settings.elementType)
               : null) ?? t('element'),
         })}: ${val}`;
         $li.attr('aria-label', optionLabel);

@@ -12,6 +12,8 @@ import {AuthMethodSetupSlideout} from './auth-method-setup-slideout';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
+import {ConfigService} from '@craftcms/ui/services/Config';
+import {elevatedSessionManager} from '@/modules/auth/elevated-session/manager';
 
 declare const Craft: any;
 declare const $: any;
@@ -98,9 +100,23 @@ export class AuthMethodSetup extends Base<AuthMethodSetupSettings> {
     button.classList.add('loading');
     Craft.cp.announce(t('Loading'));
 
-    Craft.elevatedSessionManager.requireElevatedSession(
-      () => {
-        actionClient
+    void elevatedSessionManager
+      .require({
+        // Re-request an elevated session even if the user just logged in, so
+        // they have the full elevated-session duration (capped at 5 minutes)
+        // to complete the setup.
+        minimumRemainingSeconds: Math.min(
+          ConfigService.getInstance().get('elevatedSessionDuration', 300),
+          300
+        ),
+      })
+      .then((confirmed) => {
+        if (!confirmed) {
+          button.classList.remove('loading');
+          return;
+        }
+
+        return actionClient
           .post('auth/method-setup-html', {method})
           .then(async ({data}: any) => {
             this.showingSlideout = true;
@@ -132,15 +148,7 @@ export class AuthMethodSetup extends Base<AuthMethodSetupSettings> {
           .finally(() => {
             button.classList.remove('loading');
           });
-      },
-      () => {
-        button.classList.remove('loading');
-      },
-      // Re-request an elevated session even if the user just logged in, so
-      // they have the full elevated-session duration (capped at 5 minutes)
-      // to complete the setup.
-      Math.min(Craft.elevatedSessionDuration, 300)
-    );
+      });
   }
 
   /** Re-fetch and re-render the method listing, then re-wire it. */

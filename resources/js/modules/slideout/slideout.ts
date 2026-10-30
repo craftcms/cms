@@ -28,6 +28,7 @@ import {
   bod,
   addModalAttributes,
   prefersReducedMotion,
+  setFocusWithin,
   type GarnishBaseSettings,
 } from '@craftcms/garnish';
 import {
@@ -398,7 +399,7 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
   }
 
   setFocusWithin(): void {
-    Craft.setFocusWithin(this.$container);
+    setFocusWithin(this.$container[0]!);
   }
 
   updateWidthsForPreviewPane(activePreview: any): void {

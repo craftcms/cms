@@ -5,6 +5,7 @@ import type {
   QueryParams as IndexQueryParams,
   QueryValue as IndexQueryValue,
 } from '@/common/types/query';
+import {pageParam} from '@/common/craft/url';
 export type {
   QueryParams as IndexQueryParams,
   QueryValue as IndexQueryValue,
@@ -103,7 +104,7 @@ export function createElementIndexVisitor(
     const replacing = Object.keys(params);
 
     if (options.resetPage) {
-      replacing.push(window.Craft?.pageTrigger ?? 'page');
+      replacing.push(pageParam());
     }
 
     const query = currentQuery(replacing);

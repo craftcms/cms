@@ -19,7 +19,7 @@ function querySort(visit: ReturnType<typeof vi.fn>) {
 }
 
 describe('useElementIndexSort', () => {
-  beforeEach(() => vi.stubGlobal('Craft', {pageTrigger: 'page'}));
+  beforeEach(() => vi.stubGlobal('Craft', {}));
   afterEach(() => vi.unstubAllGlobals());
 
   it('sends previous fields as tie-breakers while exposing one active sort', () => {

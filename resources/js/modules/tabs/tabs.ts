@@ -1,6 +1,7 @@
 import {Base, type GarnishBaseSettings} from '@craftcms/garnish';
 import {resolveElement, type ElementArg} from '@/common/utils/dom';
 import {jq} from '@/common/utils/jquery';
+import {isRtl} from '@/common/craft/direction';
 
 declare const Craft: any;
 
@@ -190,8 +191,7 @@ export class Tabs extends Base<TabsSettings> {
       (ev.key === 'ArrowLeft' || ev.key === 'ArrowRight') &&
       this.#tablist?.contains(current)
     ) {
-      const goPrev =
-        ev.key === (Craft.orientation === 'ltr' ? 'ArrowLeft' : 'ArrowRight');
+      const goPrev = ev.key === (isRtl() ? 'ArrowRight' : 'ArrowLeft');
       if (goPrev) {
         tab =
           siblingMatch(current, '[role="tab"]:not(.hidden)', 'prev') ??

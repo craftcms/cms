@@ -39,7 +39,6 @@ beforeEach(() => {
   vi.stubGlobal('$', jquery);
   vi.stubGlobal('Craft', {
     systemUid: 'test',
-    pageTrigger: 'p',
     elementTypeNames: {Entry: ['Entry', 'Entries', 'entry', 'entries']},
     cp: {onCopyElements: vi.fn(), getCopiedElements: () => []},
   });

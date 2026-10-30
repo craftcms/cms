@@ -1,6 +1,7 @@
 import {t} from '@craftcms/ui';
 import {Uploader} from '@/modules/uploader/uploader';
 import type {UploaderCallbacks} from '@/modules/uploader/base-uploader';
+import {broadcast} from '@/common/craft/broadcast';
 
 /**
  * Swaps the asset's file for a newly uploaded one through the native uploader.
@@ -33,7 +34,7 @@ export function replaceAssetFile(
         }
 
         Craft.cp?.displayNotice?.(t('New file uploaded.'));
-        Craft.broadcaster?.postMessage({event: 'saveElement', id: assetId});
+        broadcast({event: 'saveElement', id: assetId});
         onReplaced();
       },
       fail: ({error, canceled}) => {

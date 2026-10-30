@@ -1,4 +1,4 @@
-import {Base, isMobileBrowser} from '@craftcms/garnish';
+import {Base, isMobileBrowser, setFocusWithin} from '@craftcms/garnish';
 import {inputName} from '@/modules/ui/runtime';
 import type {UiValues} from '@/modules/ui/types';
 import {isHttpError} from '@craftcms/ui/utilities/api/http';
@@ -283,7 +283,7 @@ export class CpModal extends Base {
         Craft.cp.elementThumbLoader.load(this.#$content);
 
         if (!isMobileBrowser()) {
-          Craft.setFocusWithin(this.#$content);
+          setFocusWithin(this.#$content[0]!);
         }
 
         resolve();

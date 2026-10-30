@@ -3,6 +3,7 @@ import {
   type GarnishBaseSettings,
   muteResizeEvents,
 } from '@craftcms/garnish';
+import {startSide} from '@/common/craft/direction';
 import {resolveElement, type ElementArg} from '@/common/utils/dom';
 import {jq} from '@/common/utils/jquery';
 
@@ -265,7 +266,7 @@ export class Grid extends Base<GridSettings> {
       this.$items
         .show()
         .css({position: 'relative', width: 'auto', top: 0})
-        .css(Craft.left, 0);
+        .css(startSide(), 0);
       return;
     }
 
@@ -395,7 +396,7 @@ export class Grid extends Base<GridSettings> {
     for (let i = 0; i < this.items.length; i++) {
       const css = {
         width: this.getItemWidthCss(this.layout.colspans[i]!),
-        [Craft.left]: this.getItemLeftPosCss(this.layout.positions[i]!),
+        [startSide()]: this.getItemLeftPosCss(this.layout.positions[i]!),
       };
       this.items[i].css(css);
     }

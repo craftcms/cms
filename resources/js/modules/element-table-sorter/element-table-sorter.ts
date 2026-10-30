@@ -1,6 +1,7 @@
 import {DragSort} from '@craftcms/garnish';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {isRtl, startSide} from '@/common/craft/direction';
 
 // Keeps the `declare const $` / `declare const Craft` seams: the structural
 // row logic is jQuery-heavy and interops with the still-legacy table view
@@ -177,7 +178,7 @@ export class ElementTableSorter extends DragSort {
         this._$titleHelperCell = $helperCell;
         this._titleHelperCellOuterWidth = width;
 
-        $helperCell.children('div').css(`padding-${Craft.left}`, '24px');
+        $helperCell.children('div').css(`padding-${startSide()}`, '24px');
       }
     }
 
@@ -247,7 +248,7 @@ export class ElementTableSorter extends DragSort {
         $row.find('.element').data('level', newLevel);
         $row
           .find('> [data-titlecell]:first > div')
-          .css(`padding-${Craft.left}`, padding);
+          .css(`padding-${startSide()}`, padding);
 
         // Update text alternative
         $structureTextAlternative.text(altText);
@@ -435,7 +436,7 @@ export class ElementTableSorter extends DragSort {
     let mouseDist = this.realMouseX! - this.mousedownX!;
 
     // Flip that if this is RTL
-    if (Craft.orientation === 'rtl') {
+    if (isRtl()) {
       mouseDist *= -1;
     }
 
@@ -475,7 +476,7 @@ export class ElementTableSorter extends DragSort {
     const closestLevelMagnetIndent =
       this._getLevelIndent(this._targetLevel) + magnetImpact;
     $(this.helpers[0]).css(
-      `margin-${Craft.left}`,
+      `margin-${startSide()}`,
       closestLevelMagnetIndent + this._helperMargin
     );
     this._$titleHelperCell.css(

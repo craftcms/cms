@@ -7,6 +7,7 @@ import {
   openImageEditorDialog,
   type ImageEditorSettings,
 } from '@/modules/image-editor/open-image-editor-dialog';
+import {elevatedSessionManager} from '@/modules/auth/elevated-session/manager';
 import {openUiModal} from '@/modules/ui/open-ui-modal';
 import {
   createElementActionMenu,
@@ -49,10 +50,6 @@ describe('useElementActionMenu', () => {
     window.Craft = Object.assign(Object.create(null), {
       csrfTokenName: 'CRAFT_CSRF_TOKEN',
       csrfTokenValue: 'token-value',
-      elevatedSessionManager: {
-        // Stands in for the password prompt: run the guarded work straight away.
-        requireElevatedSession: vi.fn((onSuccess: () => void) => onSuccess()),
-      },
       cp: {displayError: vi.fn()},
     });
   });
@@ -210,7 +207,11 @@ describe('useElementActionMenu', () => {
     expect(post).not.toHaveBeenCalled();
   });
 
-  it('re-authenticates before a submit behavior that asks for it', () => {
+  it('re-authenticates before a submit behavior that asks for it', async () => {
+    // Stands in for the password prompt: confirm straight away.
+    const requireElevatedSession = vi
+      .spyOn(elevatedSessionManager, 'require')
+      .mockResolvedValue(true);
     const post = vi.spyOn(router, 'post').mockImplementation(() => undefined);
 
     const menu = mount([
@@ -227,12 +228,12 @@ describe('useElementActionMenu', () => {
 
     activate(menu);
 
-    expect(
-      window.Craft.elevatedSessionManager.requireElevatedSession
-    ).toHaveBeenCalled();
-    expect(post).toHaveBeenCalledWith('/actions/users/impersonate', {
-      userId: 5,
-    });
+    expect(requireElevatedSession).toHaveBeenCalled();
+    await vi.waitFor(() =>
+      expect(post).toHaveBeenCalledWith('/actions/users/impersonate', {
+        userId: 5,
+      })
+    );
   });
 
   it('submits a download as a real form, so the browser handles the file', () => {
