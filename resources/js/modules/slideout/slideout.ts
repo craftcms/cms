@@ -15,10 +15,9 @@
  *   into it.
  * - **The `$`-prefixed members are public API.** External code reads them
  *   directly (`ElementEditor.js`'s `this.$container.data('slideout')`,
- *   `CP.js`'s `$modal.find('.slideout').data('slideout')`,
  *   `CpScreenSlideout`'s chrome), so the names stay. Most are still jQuery
  *   collections; {@link Slideout.$liveRegion} is a plain element, matching the
- *   ported Garnish `Modal` — `Craft.cp.announce()` normalizes either form.
+ *   ported Garnish `Modal`.
  *   `declare const $` / `declare const Craft` are page globals.
  */
 
@@ -31,6 +30,7 @@ import {
   setFocusWithin,
   type GarnishBaseSettings,
 } from '@craftcms/garnish';
+import {announce} from '@/common/announcer';
 import {
   registerPanel,
   shadeElement,

@@ -7,6 +7,7 @@ import type {Element as FldElement} from './element';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {showError} from '@/modules/messages/messages';
+import {announce} from '@/common/announcer';
 
 declare const Craft: any;
 
@@ -363,7 +364,7 @@ export class CardViewDesigner extends Base {
 
   async updatePreview(): Promise<void> {
     this.$previewContainer.classList.add('loading');
-    Craft.cp.announce(t('Loading'));
+    announce(t('Loading'));
 
     if (this.abortController) {
       this.abortController.abort();
@@ -398,7 +399,7 @@ export class CardViewDesigner extends Base {
       // otherwise the request was canceled by a newer preview — ignore.
     } finally {
       this.$previewContainer.classList.remove('loading');
-      Craft.cp.announce(t('Loading complete'));
+      announce(t('Loading complete'));
       this.abortController = null;
     }
 

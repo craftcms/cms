@@ -136,6 +136,8 @@ export {
   type MessageType,
 } from './modules/messages/messages';
 export {useMessages} from './modules/messages/useMessages';
+export {announce} from './common/announcer';
+export type {AnnounceOptions} from './common/announcer';
 export {
   clearCopiedElements,
   copyElements,

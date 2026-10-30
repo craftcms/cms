@@ -10,14 +10,10 @@ Craft.CP = Garnish.Base.extend(
   {
     _elementThumbLoader: null,
     animationBlocker: null,
-    announcerTimeout: null,
-    modalLayers: [],
 
     $nav: null,
     $navToggle: null,
-    $globalLiveRegion: null,
     $globalSkipLinkList: null,
-    $activeLiveRegion: null,
     $globalSidebar: null,
     $globalContainer: null,
     $mainContainer: null,
@@ -98,9 +94,7 @@ Craft.CP = Garnish.Base.extend(
       // Find all the key elements
       this.$nav = $('#nav');
       this.$navToggle = $('#primary-nav-toggle');
-      this.$globalLiveRegion = $('#global-live-region');
       this.$globalSkipLinkList = $('#global-skip-links');
-      this.$activeLiveRegion = this.$globalLiveRegion;
       this.$globalSidebar = $('#global-sidebar');
       this.$globalContainer = $('#global-container');
       this.$mainContainer = $('#main-container');
@@ -176,15 +170,6 @@ Craft.CP = Garnish.Base.extend(
 
       this.addListener(this.$detailsToggle, 'close', () => {
         this.$detailsSkipLink.attr('href', '#details-toggle-wrapper');
-      });
-
-      // Layers
-      Garnish.uiLayerManager.on('addLayer', () => {
-        this.handleLayerUpdates();
-      });
-
-      Garnish.uiLayerManager.on('removeLayer', () => {
-        this.handleLayerUpdates();
       });
 
       // Does this page have a primary form?
@@ -769,86 +754,6 @@ Craft.CP = Garnish.Base.extend(
       this.handleSkipLinkVisibility();
     },
 
-    handleLayerUpdates: function () {
-      // Exit if the number of modal layers remains the same
-      if (Garnish.uiLayerManager.modalLayers.length === this.modalLayers.length)
-        return;
-
-      // Store modal layers
-      this.modalLayers = Garnish.uiLayerManager.modalLayers;
-
-      if (this.announcerTimeout) {
-        clearTimeout(this.announcerTimeout);
-      }
-
-      if (Garnish.uiLayerManager.modalLayers.length === 0) {
-        this.$activeLiveRegion = this.$globalLiveRegion;
-      } else {
-        const $modal = Garnish.uiLayerManager.highestModalLayer.$container;
-        let modalObj;
-
-        if ($modal.hasClass('modal')) {
-          modalObj = $modal.data('modal');
-        } else if ($modal.hasClass('slideout-container')) {
-          modalObj = $modal.find('.slideout').data('slideout');
-        } else if ($modal.hasClass('slideout-panel')) {
-          // A Vue slideout (`SlideoutPanel.vue`) has no jQuery object behind
-          // it, just its own live region.
-          modalObj = {
-            $liveRegion: $modal.children('[data-slideout-live-region]'),
-          };
-        }
-
-        if (!modalObj) {
-          console.warn('There is no modal object');
-        }
-
-        if (!modalObj?.$liveRegion) {
-          console.warn('There is no live region in the active modal layer.');
-          this.$activeLiveRegion = null;
-        } else {
-          this.$activeLiveRegion = modalObj.$liveRegion;
-        }
-      }
-
-      // Empty in case it was already populated and not cleared
-      this.clearLiveRegion();
-    },
-
-    /**
-     * Resolves a live region reference to its underlying element.
-     *
-     * `$liveRegion` comes in two shapes as jQuery gets removed: the jQuery-era
-     * modals (`Garnish.Modal`, `Craft.PreviewFileModal`) and
-     * `$globalLiveRegion` set it to a jQuery collection, while ported
-     * components set it to a plain element — `Craft.Slideout` does today, and
-     * the ported Garnish `Modal` builds one the same way (though it isn't
-     * reachable from `handleLayerUpdates` yet, since it registers itself in a
-     * `WeakMap` rather than via `$container.data('modal')`). Accept either so
-     * both can coexist for the rest of the port.
-     *
-     * @param {jQuery|Element|null} region
-     * @returns {Element|null}
-     */
-    getLiveRegionElement: function (region) {
-      if (!region) {
-        return null;
-      }
-
-      return region instanceof Element ? region : (region[0] ?? null);
-    },
-
-    /**
-     * Empties the active live region, whichever form it takes.
-     */
-    clearLiveRegion: function () {
-      const liveRegion = this.getLiveRegionElement(this.$activeLiveRegion);
-
-      if (liveRegion) {
-        liveRegion.textContent = '';
-      }
-    },
-
     updateResponsiveTables: function () {
       for (
         this.updateResponsiveTables._i = 0;
@@ -1252,32 +1157,8 @@ Craft.CP = Garnish.Base.extend(
         );
     },
 
-    /**
-     * Updates the active live region with a screen reader announcement
-     *
-     * @param {string} message
-     */
-    announce: function (message) {
-      const liveRegion = this.getLiveRegionElement(this.$activeLiveRegion);
-
-      if (!message || !liveRegion || !document.contains(liveRegion)) {
-        console.warn('There was an error announcing this message.');
-        return;
-      }
-
-      if (this.announcerTimeout) {
-        clearTimeout(this.announcerTimeout);
-      }
-
-      // Assigning `textContent` both clears any previous announcement and sets
-      // the new one, matching the old `.empty().text(message)` pair.
-      liveRegion.textContent = message;
-
-      // Clear message after interval
-      this.announcerTimeout = setTimeout(() => {
-        this.clearLiveRegion();
-      }, 5000);
-    },
+    // Replaced by the announcer module (common/announcer) as it loads
+    announce: function () {},
 
     /**
      * Displays a notification.

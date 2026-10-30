@@ -9,6 +9,7 @@ import {t} from '@craftcms/ui';
 import {html, LitElement, render} from 'lit';
 import {property} from 'lit/decorators.js';
 import {showError} from '@/modules/messages/messages';
+import {announce} from '@/common/announcer';
 
 declare const Craft: any;
 
@@ -44,7 +45,7 @@ export class RecoveryCodesSetup extends LitElement {
     e.preventDefault();
 
     this.submitButton?.setAttribute('loading', 'true');
-    Craft.cp.announce(t('Loading'));
+    announce(t('Loading'));
 
     if (!(e.target instanceof HTMLFormElement)) {
       throw new Error('Recovery code setup must be submitted by a form.');
@@ -74,7 +75,7 @@ export class RecoveryCodesSetup extends LitElement {
       console.error({error});
     } finally {
       this.submitButton?.removeAttribute('loading');
-      Craft.cp.announce(t('Loading complete'));
+      announce(t('Loading complete'));
     }
   };
 

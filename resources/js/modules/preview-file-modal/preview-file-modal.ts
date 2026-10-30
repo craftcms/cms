@@ -2,6 +2,7 @@ import {
   focusReturnFor,
   type FocusReturnResolver,
 } from '@craftcms/ui/utilities/focus-return';
+import {announce} from '@/common/announcer';
 import {hasAttr} from '@craftcms/garnish';
 import {submitNativeForm} from '@/common/utils/forms';
 import {highlightCodeBlocks} from '@/common/utils/highlight-code';
@@ -157,7 +158,7 @@ export class PreviewFileModal {
       }
     });
     this.visible = true;
-    Craft.cp.announce(t('Loading'));
+    announce(t('Loading'));
 
     this.loadAsset(
       assetId,

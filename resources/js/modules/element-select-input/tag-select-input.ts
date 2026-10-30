@@ -3,6 +3,7 @@ import {BaseElementSelectInput} from './base-element-select-input';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {showError} from '@/modules/messages/messages';
+import {announce} from '@/common/announcer';
 
 declare const Craft: any;
 declare const Garnish: any;
@@ -186,7 +187,7 @@ export class TagSelectInput extends BaseElementSelectInput {
     }
 
     this.$spinner.removeClass('hidden');
-    Craft.cp.announce(t('Loading'));
+    announce(t('Loading'));
 
     const excludeIds: number[] = [];
     for (let i = 0; i < this.$elements.length; i++) {
@@ -207,7 +208,7 @@ export class TagSelectInput extends BaseElementSelectInput {
 
       if (this.searchMenu) this.killSearchMenu();
       this.$spinner.addClass('hidden');
-      Craft.cp.announce(t('Loading complete'));
+      announce(t('Loading complete'));
 
       const fieldName = this.fieldName;
       const $menu = $('<div class="menu tagmenu"/>');
@@ -267,7 +268,7 @@ export class TagSelectInput extends BaseElementSelectInput {
     } catch {
       if (this.searchMenu) this.killSearchMenu();
       this.$spinner.addClass('hidden');
-      Craft.cp.announce(t('Loading complete'));
+      announce(t('Loading complete'));
     }
   }
 

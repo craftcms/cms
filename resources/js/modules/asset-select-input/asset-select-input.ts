@@ -13,6 +13,7 @@ import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
 import {startSide} from '@/common/craft/direction';
 import {showError} from '@/modules/messages/messages';
 import {QueueService} from '@/modules/queue/queue';
+import {announce} from '@/common/announcer';
 
 declare const Craft: any;
 declare const Garnish: any;
@@ -135,7 +136,7 @@ export class AssetSelectInput extends BaseElementSelectInput {
     // The bar has no live region of its own, so progress is read out
     // periodically while an upload runs.
     this.#progressAnnouncer = new IntervalManager({
-      onInterval: () => Craft.cp.announce(this.#progressMessage()),
+      onInterval: () => announce(this.#progressMessage()),
     });
 
     if (this.$addElementBtn) {

@@ -21,9 +21,7 @@ afterEach(() => {
 });
 
 function setup(response: {ok: boolean; status: number; body: unknown}) {
-  const cp = {announce: vi.fn()};
   vi.stubGlobal('Craft', {
-    cp,
     t: (_category: string, message: string) => message,
   });
   vi.stubGlobal(
@@ -48,7 +46,7 @@ function setup(response: {ok: boolean; status: number; body: unknown}) {
   button.focus();
   host.querySelector('form')!.requestSubmit(button);
 
-  return {cp, host};
+  return {host};
 }
 
 it('keeps the form and shows the error when the elevated session has expired', async () => {
