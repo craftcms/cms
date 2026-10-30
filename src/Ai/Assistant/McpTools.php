@@ -154,8 +154,8 @@ class McpTools
         $discovered = $this->discovery->discoverWithoutToken(dirname(__DIR__, 2).'/Mcp/Capabilities', ['.']);
 
         foreach ($discovered->getTools() as $reference) {
-            // The assistant loads skills with its own tool.
-            if (str_starts_with($reference->tool->name, 'skills.')) {
+            // The assistant loads skills with its own tool, but can still manage them.
+            if (in_array($reference->tool->name, ['skills.list', 'skills.get'], true)) {
                 continue;
             }
 

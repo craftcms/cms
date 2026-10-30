@@ -190,3 +190,47 @@ it('returns the guidance to MCP clients, for a site the user can edit', function
         ->assertJsonPath('result.isError', true)
         ->assertDontSee('Use British spelling.');
 });
+
+it('lets MCP clients save the guidance for the sites the user can edit, and the user’s own', function () {
+    enableMcp();
+    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
+    Site::factory()->create();
+    Sites::refreshSites();
+    $user = UserModel::factory()->withPermissions(['accessCp', 'useCraftMcp', 'accessUtilities', 'utility:ai-guidance', 'editSite:'.Sites::getPrimarySite()->uid])->create(['admin' => false]);
+    Passport::actingAs($user, ['mcp:write'], 'craft-mcp');
+    $guidance = app(Guidance::class);
+
+    McpRequest::send($this, 'tools/call', ['name' => 'guidance.update', 'arguments' => ['siteId' => $this->siteId, 'guidance' => 'Use US spelling.']])
+        ->assertOk()
+        ->assertJsonPath('result.structuredContent', ['siteId' => $this->siteId, 'guidance' => 'Use US spelling.']);
+
+    McpRequest::send($this, 'tools/call', ['name' => 'guidance.update', 'arguments' => ['guidance' => 'Write plainly.']])
+        ->assertOk()
+        ->assertJsonPath('result.isError', true);
+
+    McpRequest::send($this, 'tools/call', ['name' => 'guidance.updatePersonal', 'arguments' => ['guidance' => 'Reply in Dutch.']])
+        ->assertOk()
+        ->assertJsonPath('result.structuredContent', ['guidance' => 'Reply in Dutch.']);
+
+    expect($guidance->forSite($this->siteId))->toBe('Use US spelling.')
+        ->and($guidance->forAllSites())->toBeNull()
+        ->and($guidance->forUser($user->id))->toBe('Reply in Dutch.');
+
+    McpRequest::send($this, 'tools/call', ['name' => 'guidance.updatePersonal', 'arguments' => ['guidance' => '']])
+        ->assertOk()
+        ->assertJsonPath('result.structuredContent', ['guidance' => null]);
+});
+
+it('only offers MCP clients the site guidance to save if the user can use the utility', function () {
+    enableMcp();
+    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
+    $user = UserModel::factory()->withPermissions(['accessCp', 'useCraftMcp', 'editSite:'.Sites::getPrimarySite()->uid])->create(['admin' => false]);
+    Passport::actingAs($user, ['mcp:write'], 'craft-mcp');
+
+    $tools = McpRequest::send($this, 'tools/list')->assertOk()->json('result.tools.*.name');
+
+    expect($tools)->toContain('guidance.updatePersonal')
+        ->not->toContain('guidance.update');
+});

@@ -134,6 +134,8 @@
 - The OAuth authorization page now shows where the user will be redirected, and can no longer be displayed in a frame. ([#20105](https://github.com/craftcms/cms/pull/20105))
 - Added the `mcp:serve` command, which serves the authenticated MCP server over stdio as a named user. ([#19846](https://github.com/craftcms/cms/pull/19846))
 - Added the `guidance.get`, `skills.list`, and `skills.get` MCP tools, which return the AI guidance and skills.
+- Added the `guidance.update`, `skills.create`, `skills.update`, and `skills.delete` MCP tools, which save the AI guidance for the sites the user can edit and manage skills, for users who can use the AI Guidance & Skills utility.
+- Added the `guidance.updatePersonal` MCP tool, which saves the user’s own AI guidance.
 
 #### General
 - Replaced Craft’s system status with Laravel maintenance mode, including an admin-only Maintenance Mode control in General Settings.

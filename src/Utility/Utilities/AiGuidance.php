@@ -148,6 +148,14 @@ class AiGuidance extends Utility
     }
 
     /**
+     * The URL of a skill’s edit screen.
+     */
+    public static function skillEditUrl(AgentSkill $skill): string
+    {
+        return Url::cpUrl("ai-skills/{$skill->id}");
+    }
+
+    /**
      * A skill as the utility lists and edits it.
      *
      * @return array{id: int, title: string, description: string, body: string, editUrl: string}
@@ -161,7 +169,7 @@ class AiGuidance extends Utility
             'title' => $skill->title,
             'description' => $skill->description,
             'body' => $skill->body,
-            'editUrl' => Url::cpUrl("ai-skills/{$skill->id}"),
+            'editUrl' => self::skillEditUrl($skill),
         ];
     }
 }
