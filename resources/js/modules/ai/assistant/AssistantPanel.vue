@@ -117,6 +117,7 @@
     :order="50"
     persistent
     scrolls-itself
+    unlisted-in-palette
     :initial-focus="() => chat?.focusTarget()"
   >
     <AssistantChat
