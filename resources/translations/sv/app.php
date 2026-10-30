@@ -799,6 +799,7 @@ return [
     'Entry Types' => 'Typer av innehåll',
     'Entry URI Format' => 'Postens URI-format',
     'Entry could not be added. Maximum number of entries reached.' => 'Inlägget kunde inte läggas till. Maximalt antal inlägg har nåtts.',
+    'Entry type icon' => 'Entry type icon',
     'Entry type saved.' => 'Innehållstyp sparad.',
     'Entry type settings' => 'Inställningar för typer av inlägg',
     'Entry' => 'Post',
