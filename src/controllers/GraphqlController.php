@@ -25,6 +25,8 @@ use craft\web\Controller;
 use craft\web\ErrorHandler;
 use craft\web\Response;
 use DateTimeZone;
+use GuzzleHttp\Psr7\ServerRequest;
+use League\OAuth2\Server\Exception\OAuthServerException;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -34,6 +36,7 @@ use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response as YiiResponse;
+use yii\web\UnauthorizedHttpException;
 
 /**
  * The GqlController class is a controller that handles various GraphQL related tasks.
@@ -265,6 +268,12 @@ class GraphqlController extends Controller
             return $schema;
         }
 
+        // OAuth access tokens are JWTs, whereas GraphQL tokens never contain dots
+        $bearerToken = $this->request->getBearerToken();
+        if ($bearerToken && substr_count($bearerToken, '.') === 2) {
+            return $this->_oauthSchema($gqlService);
+        }
+
         $token = $this->_token($gqlService);
 
         // If we couldn't find a token, then return the active schema if there is one, otherwise bail
@@ -287,6 +296,37 @@ class GraphqlController extends Controller
         }
 
         return $token->getSchema();
+    }
+
+    /**
+     * Authenticates the request’s OAuth access token, and returns a schema for the authenticated user.
+     *
+     * @param GqlService $gqlService
+     * @return GqlSchema
+     * @throws UnauthorizedHttpException
+     */
+    private function _oauthSchema(GqlService $gqlService): GqlSchema
+    {
+        $oauth = Craft::$app->getOAuth();
+        $session = Craft::$app->getUser();
+        $session->enableSession = false;
+        $session->enableAutoLogin = false;
+        $session->setIdentity(null);
+
+        try {
+            $user = $oauth->authenticate(ServerRequest::fromGlobals(), 'graphql', scopes: $scopes);
+        } catch (OAuthServerException $e) {
+            $this->response->getHeaders()->set('WWW-Authenticate', sprintf(
+                'Bearer error="invalid_token", resource_metadata="%s"',
+                $oauth->resourceMetadataUrl('graphql'),
+            ));
+            throw new UnauthorizedHttpException($e->getMessage(), previous: $e);
+        }
+
+        // Set the user as the identity for the request, so permission checks and element queries apply to them
+        $session->setIdentity($user);
+
+        return $gqlService->getSchemaForUser($user, in_array(GqlService::SCOPE_WRITE, $scopes, true));
     }
 
     private function _token(GqlService $gqlService): ?GqlToken

@@ -737,6 +737,9 @@ class AssetIndexer extends Component
         $asset = Asset::find()
             ->filename(Db::escapeParam($filename))
             ->folderId($folderId)
+            ->site('*')
+            ->preferSites([Craft::$app->getSites()->getCurrentSite()->id])
+            ->unique()
             ->one();
 
         // Create an asset if there is none.

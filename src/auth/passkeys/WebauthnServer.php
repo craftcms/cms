@@ -5,7 +5,6 @@ namespace craft\auth\passkeys;
 use Cose\Algorithm\Manager;
 use Cose\Algorithm\Signature\ECDSA\ES256;
 use Cose\Algorithm\Signature\ECDSA\ES256K;
-use Cose\Algorithm\Signature\EdDSA\Ed256;
 use Cose\Algorithm\Signature\RSA\PS256;
 use Cose\Algorithm\Signature\RSA\RS256;
 use Cose\Algorithms;
@@ -127,7 +126,6 @@ class WebauthnServer
                 ES256K::create(),
                 RS256::create(),
                 PS256::create(),
-                Ed256::create(true), // removed as registration option; remove it in the next major release
             );
     }
 

@@ -968,6 +968,16 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
         return true;
     }
 
+    protected function mustHaveField(): bool
+    {
+        return false;
+    }
+
+    protected function mustHaveOwner(): bool
+    {
+        return false;
+    }
+
     /**
      * @inheritdoc
      */

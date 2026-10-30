@@ -297,7 +297,7 @@ class IndexAssetsController extends Controller
             $this->stdout('Deleting the' . ($totalMissingFiles > 1 ? ' ' . $totalMissingFiles : '') . ' missing asset record' . ($totalMissingFiles > 1 ? 's' : '') . ' ... ');
 
             /** @var Asset[] $assets */
-            $assets = Asset::find()->id($assetIds)->all();
+            $assets = Asset::find()->id($assetIds)->site('*')->unique()->all();
             foreach ($assets as $asset) {
                 Craft::$app->getImageTransforms()->deleteCreatedTransformsForAsset($asset);
                 $asset->keepFileOnDelete = true;

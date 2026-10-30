@@ -388,6 +388,8 @@ class Cp
                 'description' => $component instanceof Describable ? $component->getDescription() : null,
                 'handle' => $component instanceof Grippable ? $component->getHandle() : null,
                 'instructions' => $component instanceof FieldInterface && $component->instructions ? Craft::t('site', $component->instructions) : null,
+                'tip' => $component instanceof FieldInterface && $component->tip ? Craft::t('site', $component->tip) : null,
+                'warning' => $component instanceof FieldInterface && $component->warning ? Craft::t('site', $component->warning) : null,
                 'settings' => $config['autoReload'] ? [
                     'selectable' => $config['selectable'],
                     'id' => Craft::$app->getView()->namespaceInputId($config['id']),

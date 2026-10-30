@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Collection;
 use yii\base\Event;
 
 return [
@@ -9,6 +10,7 @@ return [
         'for',
         'if',
         'macro',
+        'render',
         'set',
         'switch',
         'verbatim',
@@ -132,7 +134,9 @@ return [
         'url',
         'uuid',
     ],
-    'allowedMethods' => [],
+    'allowedMethods' => [
+        Collection::class => ['render'],
+    ],
     'allowedProperties' => [],
     'allowedClasses' => [
         Event::class,

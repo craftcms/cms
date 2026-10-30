@@ -564,6 +564,17 @@ class Elements extends Component
     private ?bool $_updateSearchIndex = null;
 
     /**
+     * @var int The number of element saves currently in progress
+     */
+    private int $_saveDepth = 0;
+
+    /**
+     * @var array<int,class-string<ElementInterface>> Element types memoized by element ID, while element saves are in progress
+     * @see _elementTypeById()
+     */
+    private array $_elementTypesById = [];
+
+    /**
      * @inheritdoc
      */
     public function init()
@@ -1144,13 +1155,30 @@ class Elements extends Component
      */
     private function _elementTypeById(string $property, int|string $elementId): ?string
     {
+        // Nested elements look up their owner’s type repeatedly as they’re saved and propagated,
+        // so memoize element types by ID for the duration of the outermost element save.
+        // (An element’s type can’t change, and we forget them whenever an element is hard-deleted.)
+        $memoize = $property === 'id' && $this->_saveDepth > 0;
+
+        if ($memoize && isset($this->_elementTypesById[$elementId])) {
+            return $this->_elementTypesById[$elementId];
+        }
+
         $class = (new Query())
             ->select(['type'])
             ->from([Table::ELEMENTS])
             ->where([$property => $elementId])
             ->scalar();
 
-        return $class !== false ? $class : null;
+        if ($class === false) {
+            return null;
+        }
+
+        if ($memoize) {
+            $this->_elementTypesById[$elementId] = $class;
+        }
+
+        return $class;
     }
 
     /**
@@ -2647,6 +2675,8 @@ class Elements extends Component
                     Db::delete(Table::ELEMENTS, [
                         'id' => $element->id,
                     ]);
+                    // Forget any element types we’ve memoized, as their elements could have been cascade-deleted
+                    $this->_elementTypesById = [];
                     Db::delete(Table::SEARCHINDEX, [
                         'elementId' => $element->id,
                     ]);
@@ -2702,6 +2732,9 @@ class Elements extends Component
     /**
      * Deletes elements in the site they are currently loaded in.
      *
+     * Any elements that only exist in that site will be deleted entirely. They will be soft-deleted,
+     * unless they are drafts or nested elements, in which case they will be hard-deleted.
+     *
      * @param ElementInterface[] $elements
      * @throws InvalidArgumentException if all elements don’t have the same type and site ID.
      * @since 4.4.0
@@ -2723,14 +2756,20 @@ class Elements extends Component
         }
 
         // Separate the multi-site elements from the single-site elements
-        $multiSiteElementIds = $firstElement::find()
-            ->id(array_map(fn(ElementInterface $element) => $element->id, $elements))
-            ->status(null)
-            ->drafts(null)
-            ->siteId(['not', $firstElement->siteId])
-            ->unique()
-            ->select(['elements.id'])
-            ->column();
+        // (element queries ignore the siteId param when there's only one site, so check that first)
+        if (Craft::$app->getIsMultiSite(false, true)) {
+            $multiSiteElementIds = $firstElement::find()
+                ->id(array_map(fn(ElementInterface $element) => $element->id, $elements))
+                ->status(null)
+                ->drafts(null)
+                ->provisionalDrafts(null)
+                ->siteId(['not', $firstElement->siteId])
+                ->unique()
+                ->select(['elements.id'])
+                ->column();
+        } else {
+            $multiSiteElementIds = [];
+        }
 
         $multiSiteElementIdsIdx = array_flip($multiSiteElementIds);
         $multiSiteElements = [];
@@ -2770,6 +2809,7 @@ class Elements extends Component
                     ->id($multiSiteElementIds)
                     ->status(null)
                     ->drafts(null)
+                    ->provisionalDrafts(null)
                     ->site('*')
                     ->unique(),
                 true,
@@ -2790,10 +2830,16 @@ class Elements extends Component
             }
         }
 
-        // Fully delete any single-site elements
+        // Delete any single-site elements the same way they'd be deleted normally (soft-deleted),
+        // except for drafts, which are always hard-deleted, and nested elements, which get deleted for a site
+        // along with their owners and couldn't be restored on their own
         if (!empty($singleSiteElements)) {
             foreach ($singleSiteElements as $element) {
-                $this->deleteElement($element, true);
+                $hardDelete = (
+                    $element->getIsDraft() ||
+                    ($element instanceof NestedElementInterface && $element->getPrimaryOwnerId() !== null)
+                );
+                $this->deleteElement($element, $hardDelete);
             }
         }
     }
@@ -3610,6 +3656,10 @@ class Elements extends Component
                         }
                     }
 
+                    if ($query && $plan->configureQuery !== null) {
+                        ($plan->configureQuery)($query);
+                    }
+
                     // Do we just need the count?
                     if ($plan->count && !$plan->all) {
                         // Just fetch the target elements’ IDs
@@ -3898,6 +3948,47 @@ class Elements extends Component
         bool $crossSiteValidate = false,
         bool $saveContent = false,
         ?Element_SiteSettingsRecord &$siteSettingsRecord = null,
+    ): bool {
+        return $this->_ensureSaveScope(function() use (
+            $element,
+            $runValidation,
+            $propagate,
+            $updateSearchIndex,
+            $supportedSites,
+            $forceTouch,
+            $crossSiteValidate,
+            $saveContent,
+            &$siteSettingsRecord,
+        ) {
+            return $this->_saveElementInScope(
+                $element,
+                $runValidation,
+                $propagate,
+                $updateSearchIndex,
+                $supportedSites,
+                $forceTouch,
+                $crossSiteValidate,
+                $saveContent,
+                $siteSettingsRecord,
+            );
+        });
+    }
+
+    /**
+     * Saves an element, within an element save scope.
+     *
+     * @see _saveElementInternal()
+     */
+    private function _saveElementInScope(
+        ElementInterface $element,
+        bool $runValidation,
+        bool $propagate,
+        ?bool $updateSearchIndex,
+        ?array $supportedSites,
+        bool $forceTouch,
+        bool $crossSiteValidate,
+        bool $saveContent,
+        ?Element_SiteSettingsRecord &$siteSettingsRecord,
     ): bool {
         /** @var ElementInterface&DraftBehavior $element */
         $isNewElement = !$element->id;
@@ -4405,6 +4496,19 @@ class Elements extends Component
                 }
             }
 
+            // Bump the owner elements' `dateUpdated` timestamps, recursively, so freshness checks based on
+            // `dateUpdated` (e.g. whether a new revision needs to be created for an ancestor) notice that
+            // something changed, even if this nested element was saved independently of its owner.
+            if (
+                !$element->propagating &&
+                $element instanceof NestedElementInterface &&
+                $element->getIsCanonical() &&
+                isset($element->touchOwnersOnSave) &&
+                $element->touchOwnersOnSave
+            ) {
+                $this->touchOwners($element);
+            }
+
             // Update the changed attributes & fields
             if ($trackChanges) {
                 $userId = Craft::$app->getUser()->getId();
@@ -4462,6 +4566,26 @@ class Elements extends Component
         return true;
     }
 
+    /**
+     * Executes the given callback function within an element save scope, which lasts until the outermost
+     * element save completes.
+     *
+     * @param callable $callback
+     * @return mixed
+     */
+    private function _ensureSaveScope(callable $callback): mixed
+    {
+        $this->_saveDepth++;
+
+        try {
+            return $callback();
+        } finally {
+            if (--$this->_saveDepth === 0) {
+                $this->_elementTypesById = [];
+            }
+        }
+    }
+
     private function updateSearchIndex(
         ElementInterface $element,
         array $searchableDirtyFields,
@@ -4493,6 +4617,33 @@ class Elements extends Component
                 $this->updateSearchIndex($owner, [$field->handle], $propagate, true);
                 $this->invalidateCachesForElement($owner);
             }
+        }
+    }
+
+    /**
+     * Updates the `dateUpdated` timestamp of a nested element’s owner, and its owner’s owner, and so on up
+     * the ownership chain, so that anything checking an ancestor’s `dateUpdated` to determine whether it’s
+     * changed (e.g. [[\craft\services\Revisions::createRevision()]], deciding whether a new revision needs
+     * to be created) will notice that it has, even though the ancestor itself wasn’t directly modified.
+     *
+     * @param NestedElementInterface $element The (canonical) nested element that was just saved
+     * @see https://github.com/craftcms/cms/issues/19594
+     */
+    private function touchOwners(NestedElementInterface $element): void
+    {
+        $timestamp = Db::prepareDateForDb($element->dateUpdated ?? DateTimeHelper::now());
+        $owner = $element->getOwner();
+
+        while ($owner !== null) {
+            Db::update(Table::ELEMENTS, [
+                'dateUpdated' => $timestamp,
+            ], ['id' => $owner->id]);
+
+            if (!$owner instanceof NestedElementInterface) {
+                return;
+            }
+
+            $owner = $owner->getOwner();
         }
     }
 

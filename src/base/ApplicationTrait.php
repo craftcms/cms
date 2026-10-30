@@ -49,6 +49,7 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Markdown as MarkdownHelper;
 use craft\helpers\Session;
+use craft\helpers\Template as TemplateHelper;
 use craft\i18n\Formatter;
 use craft\i18n\I18N;
 use craft\i18n\Locale;
@@ -85,6 +86,7 @@ use craft\services\Gql;
 use craft\services\Images;
 use craft\services\ImageTransforms;
 use craft\services\Path;
+use craft\services\PersonalAccessTokens;
 use craft\services\Plugins;
 use craft\services\PluginStore;
 use craft\services\ProjectConfig;
@@ -171,6 +173,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read MigrationManager $migrator The application’s migration manager
  * @property-read Mutex $mutex The application’s mutex service
  * @property-read Path $path The path service
+ * @property-read PersonalAccessTokens $personalAccessTokens The personal access tokens service
  * @property-read PluginStore $pluginStore The plugin store service
  * @property-read Plugins $plugins The plugins service
  * @property-read ProjectConfig $projectConfig The project config service
@@ -1348,6 +1351,23 @@ trait ApplicationTrait
         return $this->get('mutex');
     }
 
+    /** Returns the shared OAuth authorization service. @since 5.12.0 */
+    public function getOAuth(): \craft\services\OAuth
+    {
+        return $this->get('oauth');
+    }
+
+    /**
+     * Returns the personal access tokens service.
+     *
+     * @return PersonalAccessTokens The personal access tokens service
+     * @since 5.12.0
+     */
+    public function getPersonalAccessTokens(): PersonalAccessTokens
+    {
+        return $this->get('personalAccessTokens');
+    }
+
     /**
      * Returns the path service.
      *
@@ -1600,6 +1620,12 @@ trait ApplicationTrait
         Collection::macro('one', function() {
             assert($this instanceof Collection);
             return $this->first(...func_get_args());
+        });
+
+        // Register Collection::render() for rendering collections of Renderable objects
+        Collection::macro('render', function(array $variables = []) {
+            assert($this instanceof Collection);
+            return TemplateHelper::render($this, $variables);
         });
 
         // Set the Craft edition

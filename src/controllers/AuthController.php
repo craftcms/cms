@@ -10,12 +10,14 @@ namespace craft\controllers;
 use Craft;
 use craft\auth\methods\RecoveryCodes;
 use craft\auth\methods\TOTP;
+use craft\filters\IpRateLimitIdentity;
 use craft\helpers\Html;
 use craft\helpers\Session as SessionHelper;
 use craft\i18n\Locale;
 use craft\web\Controller;
 use craft\web\View;
 use yii\base\InvalidConfigException;
+use yii\filters\RateLimiter;
 use yii\web\Response;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
@@ -36,6 +38,21 @@ class AuthController extends Controller
         'verify-recovery-code' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'verify-totp' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors(): array
+    {
+        return parent::behaviors() + [
+            'rateLimiter' => [
+                'class' => RateLimiter::class,
+                'only' => ['verify-totp', 'verify-recovery-code'],
+                'enableRateLimitHeaders' => false,
+                'user' => fn() => IpRateLimitIdentity::createDefault('auth-verify'),
+            ],
+        ];
+    }
 
     /**
      * Returns the HTML for an authentication method’s setup slideout.

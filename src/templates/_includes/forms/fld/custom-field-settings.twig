@@ -28,10 +28,14 @@
         const oldName = {{ defaultLabel|json_encode|raw }};
         const oldHandle = {{ defaultHandle|json_encode|raw }};
         const oldInstructions = {{ defaultInstructions|json_encode|raw }};
+        const oldTip = {{ defaultTip|json_encode|raw }};
+        const oldWarning = {{ defaultWarning|json_encode|raw }};
 
         const $labelInput = $("#{{ 'label'|namespaceInputId }}");
         const $handleInput = $("#{{ 'handle'|namespaceInputId }}");
         const $instructionsInput = $("#{{ 'instructions'|namespaceInputId }}");
+        const $tipInput = $("#{{ 'tip'|namespaceInputId }}");
+        const $warningInput = $("#{{ 'warning'|namespaceInputId }}");
 
         componentSelect.on('change', () => {
           const $chip = componentSelect.getComponents().first();
@@ -43,13 +47,17 @@
           const newName = $chip.data('label');
           const newHandle = $chip.data('handle');
           const newInstructions = $chip.data('instructions') ?? null;
+          const newTip = $chip.data('tip') ?? null;
+          const newWarning = $chip.data('warning') ?? null;
 
           $labelInput.attr('placeholder', newName);
           $handleInput.attr('placeholder', newHandle);
           $instructionsInput.attr('placeholder', newInstructions);
+          $tipInput.attr('placeholder', newTip);
+          $warningInput.attr('placeholder', newWarning);
 
           if (!replaced) {
-            // Override the name/handle/instructions for consistency with the old field,
+            // Override the name/handle/instructions/tip/warning for consistency with the old field,
             // if they weren't already being overridden
             if (!$labelInput.val()) {
               $labelInput.val(oldName);
@@ -59,6 +67,12 @@
             }
             if (!$instructionsInput.val()) {
               $instructionsInput.val(oldInstructions);
+            }
+            if (!$tipInput.val()) {
+              $tipInput.val(oldTip);
+            }
+            if (!$warningInput.val()) {
+              $warningInput.val(oldWarning);
             }
           }
 

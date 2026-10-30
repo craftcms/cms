@@ -128,7 +128,8 @@ class FsController extends Controller
         $response = $this->asCpScreen()
             ->title($title)
             ->addCrumb(Craft::t('app', 'Settings'), 'settings')
-            ->addCrumb(Craft::t('app', 'Filesystems'), 'settings/filesystems')
+            ->addCrumb(Craft::t('app', 'Assets'), 'settings/assets')
+            ->addCrumb(Craft::t('app', 'Filesystems'), 'settings/assets/filesystems')
             ->contentTemplate('settings/filesystems/_edit.twig', [
                 'oldHandle' => $handle,
                 'filesystem' => $filesystem,
@@ -141,9 +142,9 @@ class FsController extends Controller
         if (!$this->readOnly) {
             $response
                 ->action('fs/save')
-                ->redirectUrl('settings/filesystems')
+                ->redirectUrl('settings/assets/filesystems')
                 ->addAltAction(Craft::t('app', 'Save and continue editing'), [
-                    'redirect' => 'settings/filesystems/{handle}',
+                    'redirect' => 'settings/assets/filesystems/{handle}',
                     'shortcut' => true,
                     'retainScroll' => true,
                 ]);
