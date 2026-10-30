@@ -2772,20 +2772,18 @@ JS, [
     }
 
     /**
-     * Returns the URL of a 4:3 thumbnail that can cover an element card, or `null` if the asset’s image can’t cover
-     * one (see [[canCoverCard()]]).
+     * Returns the URL of a 4:3 thumbnail that can cover an element card, or `null` if one can’t be generated.
+     *
+     * It’s returned whether or not the image is a good fit for a card (see [[canCoverCard()]]).
      */
     public function getCardCoverUrl(): ?string
     {
-        if (! $this->canCoverCard()) {
-            return null;
-        }
-
         return AssetsService::getThumbUrl($this, 800, 600, false, ImageTransformMode::Crop);
     }
 
     /**
-     * Returns whether the asset’s image can cover an element card.
+     * Returns whether the asset’s image is a good fit for covering an element card, for cards whose thumb style is
+     * `auto`.
      *
      * Only images that could be transparent are left out, along with images smaller than 480×360, which would be scaled
      * up, and images narrower than 3:4 or wider than 2:1, which would be cropped too far to tell what they show.

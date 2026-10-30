@@ -653,31 +653,32 @@ class FieldLayout extends Component
     }
 
     /**
-     * Returns how element cards show their thumbnail: `normal`, in a column beside the card's content, or `cover`,
-     * covering the whole card with the content laid over it, when the thumbnail is an image that can fill it.
+     * Returns how element cards show their thumbnail: `normal`, in a column beside the card's content; `cover`,
+     * covering the whole card with the content laid over it, when the thumbnail is an asset's image; or `auto`, covering
+     * the card only when the image is a good fit for it (see {@see Asset::canCoverCard()}).
      *
-     * Asset volumes' layouts default to `cover`, and all others to `normal`.
+     * Asset volumes' layouts default to `auto`, and all others to `normal`.
      *
-     * @return string `normal` or `cover`
+     * @return string `normal`, `cover`, or `auto`
      */
     public function getCardThumbStyle(): string
     {
-        return $this->_cardThumbStyle ?? ($this->type === Asset::class ? 'cover' : 'normal');
+        return $this->_cardThumbStyle ?? ($this->type === Asset::class ? 'auto' : 'normal');
     }
 
     /**
      * Sets how element cards show their thumbnail.
      *
-     * @param  string|null  $style  `normal` or `cover`, or `null` for the element type's default
+     * @param  string|null  $style  `normal`, `cover`, or `auto`, or `null` for the element type's default
      */
     public function setCardThumbStyle(?string $style = null): void
     {
-        $this->_cardThumbStyle = in_array($style, ['normal', 'cover'], true) ? $style : null;
+        $this->_cardThumbStyle = in_array($style, ['normal', 'cover', 'auto'], true) ? $style : null;
     }
 
     public function cardThumbStyle(?string $style = null): static
     {
-        if ($style !== null && ! in_array($style, ['normal', 'cover'], true)) {
+        if ($style !== null && ! in_array($style, ['normal', 'cover', 'auto'], true)) {
             throw new InvalidArgumentException("Invalid card thumbnail style: $style");
         }
 

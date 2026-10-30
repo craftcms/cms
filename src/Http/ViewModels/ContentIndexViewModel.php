@@ -630,7 +630,7 @@ abstract class ContentIndexViewModel extends ViewModel
         }
 
         return [
-            'style' => $fieldLayout?->getCardThumbStyle() ?? (is_a($this->elementType, Asset::class, true) ? 'cover' : 'normal'),
+            'style' => $fieldLayout?->getCardThumbStyle() ?? (is_a($this->elementType, Asset::class, true) ? 'auto' : 'normal'),
             'alignment' => $fieldLayout?->getCardThumbAlignment() === 'start' ? 'start' : 'end',
         ];
     }
