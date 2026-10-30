@@ -1,0 +1,154 @@
+{% extends '_layouts/site' %}
+
+{% macro options(value) %}
+  {%- for option in value -%}
+    {{ option.label }}{{ not loop.last ? ', ' }}
+  {%- else -%}
+    <span class="muted">None</span>
+  {%- endfor -%}
+{% endmacro %}
+
+{% block title %}{{ entry.title }} - {{ siteName }}{% endblock %}
+
+{% block content %}
+  {% set empty = '<span class="muted">Empty</span>' %}
+  <article>
+    <h1 id="title">{{ entry.title }}</h1>
+    <time datetime="{{ entry.postDate|atom }}">{{ entry.postDate|date('long') }}</time>
+
+    <h2>Text</h2>
+    <dl>
+      <dt>Plain Text</dt>
+      <dd>{{ entry.showcasePlainText ?: empty|raw }}</dd>
+      <dt>Multi-line Text</dt>
+      <dd>{{ entry.showcaseMultiline ? entry.showcaseMultiline|nl2br : empty|raw }}</dd>
+      <dt>Markdown</dt>
+      <dd>{{ entry.showcaseMarkdown ?: empty|raw }}</dd>
+      <dt>Email</dt>
+      <dd>
+        {% if entry.showcaseEmail %}
+          <a href="mailto:{{ entry.showcaseEmail }}">{{ entry.showcaseEmail }}</a>
+        {% else %}{{ empty|raw }}{% endif %}
+      </dd>
+      <dt>Link</dt>
+      <dd>{{ entry.showcaseLink ? entry.showcaseLink.link : empty|raw }}</dd>
+    </dl>
+
+    <h2>Numbers &amp; Dates</h2>
+    <dl>
+      <dt>Number</dt>
+      <dd>{{ entry.showcaseNumber is not null ? entry.showcaseNumber|number ~ ' kg' : empty|raw }}</dd>
+      <dt>Money</dt>
+      <dd>{{ entry.showcaseMoney ? entry.showcaseMoney|money : empty|raw }}</dd>
+      <dt>Range</dt>
+      <dd>{{ entry.showcaseRange is not null ? entry.showcaseRange ~ ' / 10' : empty|raw }}</dd>
+      <dt>Date</dt>
+      <dd>{{ entry.showcaseDate ? entry.showcaseDate|datetime('long') : empty|raw }}</dd>
+      <dt>Time</dt>
+      <dd>{{ entry.showcaseTime ? entry.showcaseTime|time('short') : empty|raw }}</dd>
+      <dt>Color</dt>
+      <dd>
+        {% if entry.showcaseColor %}
+          <span class="swatch" style="background: {{ entry.showcaseColor.hex }}"></span>
+          {{- entry.showcaseColor.label ?? entry.showcaseColor.hex }}
+        {% else %}{{ empty|raw }}{% endif %}
+      </dd>
+    </dl>
+
+    <h2>Options</h2>
+    <dl>
+      <dt>Lightswitch</dt>
+      <dd>{{ entry.showcaseLightswitch ? 'On' : 'Off' }}</dd>
+      <dt>Dropdown</dt>
+      <dd>{{ entry.showcaseDropdown.label ?: empty|raw }}</dd>
+      <dt>Radio Buttons</dt>
+      <dd>{{ entry.showcaseRadio.label ?: empty|raw }}</dd>
+      <dt>Checkboxes</dt>
+      <dd>{{ _self.options(entry.showcaseCheckboxes) }}</dd>
+      <dt>Multi-select</dt>
+      <dd>{{ _self.options(entry.showcaseMultiSelect) }}</dd>
+      <dt>Button Group</dt>
+      <dd>{{ entry.showcaseButtonGroup.label ?: empty|raw }}</dd>
+      <dt>Country</dt>
+      <dd>{{ entry.showcaseCountry ? entry.showcaseCountry.name : empty|raw }}</dd>
+      <dt>Icon</dt>
+      <dd>{{ entry.showcaseIcon ? entry.showcaseIcon.name : empty|raw }}</dd>
+    </dl>
+
+    <h2>Relations</h2>
+    <dl>
+      <dt>Entries</dt>
+      <dd>
+        {% for related in entry.showcaseEntries.all() %}
+          <a href="{{ related.url }}">{{ related.title }}</a>{{ not loop.last ? ', ' }}
+        {% else %}{{ empty|raw }}{% endfor %}
+      </dd>
+      <dt>Assets</dt>
+      <dd>
+        {% for asset in entry.showcaseAssets.all() %}
+          <img src="{{ asset.url }}" alt="{{ asset.alt ?? asset.title }}" width="{{ asset.width }}" height="{{ asset.height }}">
+        {% else %}{{ empty|raw }}{% endfor %}
+      </dd>
+      <dt>Users</dt>
+      <dd>
+        {% for user in entry.showcaseUsers.all() %}
+          {{ user.friendlyName }}{{ not loop.last ? ', ' }}
+        {% else %}{{ empty|raw }}{% endfor %}
+      </dd>
+    </dl>
+
+    <h2>Structured</h2>
+    <dl>
+      <dt>Table</dt>
+      <dd>
+        {% if entry.showcaseTable|length %}
+          <table>
+            <thead><tr><th>Item</th><th>Quantity</th></tr></thead>
+            <tbody>
+              {% for row in entry.showcaseTable %}
+                <tr><td>{{ row.item }}</td><td>{{ row.quantity }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}{{ empty|raw }}{% endif %}
+      </dd>
+      <dt>Content Block</dt>
+      <dd>
+        {% set block = entry.showcaseContentBlock %}
+        {% if block and (block.showcaseBlockHeading or block.showcaseBlockText) %}
+          <div class="card">
+            <strong>{{ block.showcaseBlockHeading }}</strong>
+            <div>{{ block.showcaseBlockText|nl2br }}</div>
+          </div>
+        {% else %}{{ empty|raw }}{% endif %}
+      </dd>
+      <dt>Matrix</dt>
+      <dd>
+        {% for block in entry.showcaseMatrix.all() %}
+          <div class="card {{ block.type.handle == 'matrixCallout' ? 'callout' }}">
+            <strong>{{ block.title }}</strong>
+            {% if block.type.handle == 'matrixCallout' %}
+              <span class="muted">({{ block.matrixTone.label }})</span>
+            {% endif %}
+            <div>{{ block.matrixText|nl2br }}</div>
+          </div>
+        {% else %}{{ empty|raw }}{% endfor %}
+      </dd>
+      <dt>Addresses</dt>
+      <dd>
+        {% for address in entry.showcaseAddresses.all() %}
+          <div class="card">
+            {% if address.title %}<strong>{{ address.title }}</strong>{% endif %}
+            {{ address|address }}
+          </div>
+        {% else %}{{ empty|raw }}{% endfor %}
+      </dd>
+      <dt>JSON</dt>
+      <dd>
+        {% if entry.showcaseJson %}
+          <pre>{{ entry.showcaseJson.value|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+        {% else %}{{ empty|raw }}{% endif %}
+      </dd>
+    </dl>
+  </article>
+{% endblock %}
