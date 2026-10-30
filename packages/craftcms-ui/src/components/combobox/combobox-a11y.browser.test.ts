@@ -363,7 +363,7 @@ describe('keyboard and focus', () => {
         );
 
         const ring = ringed.getBoundingClientRect();
-        for (const token of control.shadowRoot!.querySelectorAll('.token')) {
+        for (const token of control.querySelectorAll('craft-combobox-token')) {
           const box = token.getBoundingClientRect();
           expect(box.left).toBeGreaterThanOrEqual(ring.left);
           expect(box.right).toBeLessThanOrEqual(ring.right);
@@ -439,6 +439,53 @@ describe('announcements', () => {
     );
   });
 
+  it.each([
+    ['its remove button', 'Removed Cherry'],
+    ['Backspace', 'Removed Cherry'],
+    ['the clear button', 'Removed Apple and Cherry'],
+  ])('announces which values were removed with %s', async (how, message) => {
+    document.documentElement.lang = 'en';
+    const {control, input} = await fixture((c) => {
+      c.multipleChoice = true;
+      c.clearable = true;
+      c.modelValue = ['apple', 'cherry'];
+    });
+
+    if (how === 'Backspace') {
+      await userEvent.click(input);
+      await userEvent.keyboard('{Backspace}');
+    } else {
+      await userEvent.click(
+        page.getByRole('button', {
+          name: how === 'the clear button' ? 'Clear' : 'Cherry',
+          exact: true,
+        })
+      );
+    }
+
+    await vi.waitFor(() =>
+      expect(liveRegion(control).textContent?.trim()).toBe(message)
+    );
+    await settle();
+    expect(liveRegion(control).textContent?.trim()).toBe(message);
+  });
+
+  it('announces the count again once typing follows a removal', async () => {
+    const {control, input} = await fixture((c) => {
+      c.multipleChoice = true;
+      c.modelValue = ['apple', 'cherry'];
+    });
+
+    await userEvent.click(input);
+    await userEvent.keyboard('{Backspace}');
+    await settle();
+    await userEvent.keyboard('Da');
+
+    await vi.waitFor(() =>
+      expect(liveRegion(control).textContent?.trim()).toBe('1 result')
+    );
+  });
+
   it('clears the live region after the announcement timeout elapses', async () => {
     const {control} = await fixture();
     vi.useFakeTimers({toFake: ['setTimeout', 'clearTimeout']});
@@ -460,6 +507,96 @@ describe('announcements', () => {
 });
 
 describe('multiple choice', () => {
+  it('lists the selected values, in the order they were chosen', async () => {
+    await fixture((c) => {
+      c.multipleChoice = true;
+      c.modelValue = ['cherry', 'apple'];
+    });
+    const items = page.getByRole('list').getByRole('listitem');
+
+    await expect.element(items.nth(0)).toHaveTextContent('Cherry');
+    await expect.element(items.nth(1)).toHaveTextContent('Apple');
+    expect(items.elements()).toHaveLength(2);
+  });
+
+  // Lion wraps the textbox in a `role=combobox` element in Chromium (ARIA
+  // 1.1), and makes the textbox the combobox everywhere else (ARIA 1.0).
+  const ariaShapes = [
+    ['a combobox wrapping the textbox', '1.1'],
+    ['the textbox as the combobox', '1.0'],
+  ];
+  const withAriaVersion = (control: CraftCombobox, version: string) => {
+    (control as unknown as {_ariaVersion: string})._ariaVersion = version;
+  };
+
+  it.each(ariaShapes)(
+    'names the textbox and combobox by the label and then the selected values, leaving out “Remove”, with %s',
+    async (_, version) => {
+      const {input, combobox} = await fixture((c) => {
+        withAriaVersion(c, version);
+        c.multipleChoice = true;
+        c.modelValue = ['apple', 'cherry'];
+      });
+
+      await expect.element(input).toHaveAccessibleName('Fruit Apple Cherry');
+      await expect.element(combobox).toHaveAccessibleName('Fruit Apple Cherry');
+      await expect
+        .element(page.getByRole('button', {name: 'Cherry', exact: true}))
+        .toHaveAccessibleDescription('Remove');
+    }
+  );
+
+  it.each(ariaShapes)(
+    'names the textbox by a wrapping field’s label and then its selected values, with %s',
+    async (_, version) => {
+      const {control, input} = await fixture((c) => {
+        withAriaVersion(c, version);
+        c.multipleChoice = true;
+        c.modelValue = ['apple'];
+      });
+      control.removeAttribute('aria-labelledby');
+      const field = document.createElement('craft-field');
+      field.label = 'Status';
+      control.slot = 'input';
+      field.append(control);
+      document.body.append(field);
+      await field.updateComplete;
+      await settle();
+
+      await expect.element(input).toHaveAccessibleName('Status Apple');
+    }
+  );
+
+  it('renames the textbox as values are added and removed', async () => {
+    const {input} = await fixture((c) => {
+      c.multipleChoice = true;
+    });
+
+    await expect.element(input).toHaveAccessibleName('Fruit');
+    await userEvent.click(input);
+    await userEvent.keyboard('{ArrowDown}{Enter}');
+    await expect.element(input).toHaveAccessibleName('Fruit Apple');
+    await userEvent.keyboard('{Backspace}');
+    await expect.element(input).toHaveAccessibleName('Fruit');
+  });
+
+  it('announces each value as it’s added, through an assertive list that’s there before anything is chosen', async () => {
+    const {control} = await fixture((c) => {
+      c.multipleChoice = true;
+    });
+    const list = control.querySelector('ul')!;
+
+    expect(list).toHaveAttribute('aria-live', 'assertive');
+    expect(list).toHaveAttribute('aria-atomic', 'false');
+    expect(list).toBeEmptyDOMElement();
+
+    control.modelValue = ['cherry'];
+    await control.updateComplete;
+
+    expect(control.querySelector('ul')).toBe(list);
+    expect(list).toHaveTextContent('Cherry');
+  });
+
   it.each(['its button', 'Backspace'])(
     'focuses the textbox after a token is removed with %s',
     async (how) => {
@@ -473,7 +610,7 @@ describe('multiple choice', () => {
         await userEvent.keyboard('{Backspace}');
       } else {
         await userEvent.click(
-          page.getByRole('button', {name: 'Remove Cherry'})
+          page.getByRole('button', {name: 'Cherry', exact: true})
         );
       }
       await settle();
@@ -503,9 +640,9 @@ describe('pointer', () => {
       c.multipleChoice = true;
       c.modelValue = ['apple', 'cherry'];
     });
-    const buttons = [
-      ...control.shadowRoot!.querySelectorAll<HTMLElement>('.token button'),
-    ];
+    const buttons = [...control.querySelectorAll('craft-combobox-token')].map(
+      (token) => token.shadowRoot!.querySelector('button')!
+    );
     const boxes = buttons.map((button) => button.getBoundingClientRect());
 
     for (const [index, box] of boxes.entries()) {
@@ -638,7 +775,7 @@ describe('visual', () => {
     await open(input);
 
     expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(320);
-    for (const token of control.shadowRoot!.querySelectorAll('.token')) {
+    for (const token of control.querySelectorAll('craft-combobox-token')) {
       expect(token.getBoundingClientRect().right).toBeLessThanOrEqual(320);
     }
     expect(popupOf(control).getBoundingClientRect().right).toBeLessThanOrEqual(

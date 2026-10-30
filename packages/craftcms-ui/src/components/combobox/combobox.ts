@@ -8,6 +8,7 @@ import {emitChange, emitInput} from '@src/utilities/form-events';
 import {t} from '@src/utilities/translate';
 import '../option/option.js';
 import '../option/option-group.js';
+import './combobox-token.js';
 import '../icon/icon.js';
 import '../indicator/indicator.js';
 import '../button/button.js';
@@ -338,22 +339,34 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
     // itself — a table column heading, say — rather than one in the `label`
     // slot. Lion rewrites the textbox's own `aria-labelledby` from its (empty)
     // label on every update, so this has to be reapplied after `super`.
-    const labelledBy = this.getAttribute('aria-labelledby');
-    if (labelledBy) {
-      this._inputNode?.setAttribute('aria-labelledby', labelledBy);
+    if (this.multipleChoice) {
+      this.#syncSelection();
+    } else {
+      this.#selection?.remove();
+      this.#selection = undefined;
     }
+    const selectionId = this.#selection?.id;
+    const labelledBy = (
+      this.getAttribute('aria-labelledby') ||
+      this._inputNode?.getAttribute('aria-labelledby') ||
+      ''
+    )
+      .split(' ')
+      .filter((id) => id && id !== selectionId)
+      .join(' ');
+    // In multiple-choice mode the textbox is named by its label and then the
+    // selected values, so focusing it says what's already chosen.
+    const textboxLabelledBy = selectionId
+      ? `${labelledBy} ${selectionId}`.trim()
+      : labelledBy;
+    this._inputNode?.setAttribute('aria-labelledby', textboxLabelledBy);
     // Lion names the listbox after its own label only, which is empty when a
     // wrapping craft-field provides the label.
-    this._listboxNode?.setAttribute(
-      'aria-labelledby',
-      this._inputNode.getAttribute('aria-labelledby') ?? ''
-    );
+    this._listboxNode?.setAttribute('aria-labelledby', labelledBy);
     // In Chromium, Lion puts the combobox role on the textbox's wrapper (the
-    // ARIA 1.1 pattern), which needs the same name as the textbox.
-    this._comboboxNode?.setAttribute(
-      'aria-labelledby',
-      this._inputNode.getAttribute('aria-labelledby') ?? ''
-    );
+    // ARIA 1.1 pattern), which needs the same name as the textbox: it's the
+    // name a screen reader announces when the textbox is focused.
+    this._comboboxNode?.setAttribute('aria-labelledby', textboxLabelledBy);
     if (this.multipleChoice) {
       this.syncInputs();
       this._inputNode.removeAttribute('name');
@@ -781,13 +794,23 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
             num: count,
           });
 
-    if (message !== this.#announcedMatches) {
-      this.#announcedMatches = message;
-      this.#announce(message);
+    if (message === this.#announcedMatches) {
+      return;
     }
+    this.#announcedMatches = message;
+    // Backspace reopens the list on keyup, which would talk over the removal
+    // it just announced; the count is announced again once typing changes it.
+    if (this.#announcingRemoval && !this.#filtering) {
+      return;
+    }
+    this.#announce(message);
   }
 
-  #announce(message: string): void {
+  /** Whether the live region is showing which values were just removed. */
+  #announcingRemoval = false;
+
+  #announce(message: string, removal = false): void {
+    this.#announcingRemoval = removal;
     if (this.#announceTimeout !== null) {
       clearTimeout(this.#announceTimeout);
       this.#announceTimeout = null;
@@ -802,6 +825,7 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
 
     this.#announceTimeout = setTimeout(() => {
       this.#announceTimeout = null;
+      this.#announcingRemoval = false;
       this.announcement = '';
     }, announcementTimeout);
   }
@@ -841,32 +865,7 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
 
     return html`
       <div class="input-group__input">
-        ${this.multipleChoice
-          ? repeat(
-              this.selectedValues,
-              (value) => value,
-              (value) => html`
-                <span class="token">
-                  ${this.#decorationTemplate(this.#option(value)?.data ?? {})}
-                  ${this.valueLabel(value)}
-                  ${!this.inactive
-                    ? html`<button
-                        type="button"
-                        aria-label=${t('Remove {label}', {
-                          label: this.valueLabel(value),
-                        })}
-                        @click=${() =>
-                          this.changeValues(
-                            this.selectedValues.filter((item) => item !== value)
-                          )}
-                      >
-                        ×
-                      </button>`
-                    : nothing}
-                </span>
-              `
-            )
-          : nothing}
+        <slot name="selection"></slot>
         <div class="combobox__textbox">
           ${icon
             ? html`<craft-icon class="prefix" name=${icon}></craft-icon>`
@@ -957,6 +956,47 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
     this.internals.setFormValue(omit ? null : value);
   }
 
+  /**
+   * The selected values, as a list in the light DOM so the textbox's
+   * `aria-labelledby` can reach it. It's an assertive live region, so a value
+   * is announced as it's added.
+   */
+  #selection?: HTMLUListElement;
+
+  #syncSelection() {
+    if (!this.#selection) {
+      this.#selection = document.createElement('ul');
+      this.#selection.slot = 'selection';
+      this.#selection.id = `selection-${this._inputId}`;
+      // Safari drops the list role from a list without bullets.
+      this.#selection.setAttribute('role', 'list');
+      this.#selection.setAttribute('aria-live', 'assertive');
+      this.#selection.setAttribute('aria-atomic', 'false');
+      this.append(this.#selection);
+    }
+    render(
+      repeat(
+        this.selectedValues,
+        (value) => value,
+        (value) => html`
+          <li>
+            <craft-combobox-token
+              ?removable=${!this.inactive}
+              @craft-remove=${() =>
+                this.changeValues(
+                  this.selectedValues.filter((item) => item !== value)
+                )}
+            >
+              ${this.#decorationTemplate(this.#option(value)?.data ?? {})}
+              ${this.valueLabel(value)}
+            </craft-combobox-token>
+          </li>
+        `
+      ),
+      this.#selection
+    );
+  }
+
   private syncInputs() {
     if (!this.inputs) {
       this.inputs = document.createElement('span');
@@ -1010,6 +1050,9 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
     if (this.inactive) {
       return;
     }
+    const removed = this.selectedValues.filter(
+      (value) => !values.includes(value)
+    );
     this.changingValues = true;
     try {
       this.modelValue = values;
@@ -1022,6 +1065,21 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
     this.syncInputs();
     this._notifyModelValueChanged();
     this._inputNode.focus();
+    // The list of values announces additions only; a removed value leaves no
+    // node behind to announce, so say what went.
+    if (removed.length) {
+      this.#announce(
+        t('Removed {name}', {
+          name: new Intl.ListFormat(
+            document.documentElement.lang || undefined,
+            {
+              type: 'conjunction',
+            }
+          ).format(removed.map((value) => this.valueLabel(value))),
+        }),
+        true
+      );
+    }
   }
 
   private commitQuery() {

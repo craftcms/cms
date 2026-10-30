@@ -132,24 +132,10 @@ export default css`
     outline: none;
   }
 
-  .token {
-    box-sizing: border-box;
-    max-width: 100%;
-    display: inline-flex;
-    align-items: center;
-    gap: var(--c-spacing-xs);
-    padding: var(--c-spacing-xs);
-    border-radius: var(--c-radius-sm);
-    background: var(--c-color-neutral-fill-quiet);
-    overflow-wrap: anywhere;
-  }
-
-  .token button {
-    border: 0;
-    background: transparent;
-    font: inherit;
-    color: inherit;
-    cursor: pointer;
+  /* The tokens sit in the field's flex row beside the textbox, as list items */
+  ::slotted([slot='selection']) {
+    display: contents;
+    list-style: none;
   }
 
   .combobox__footer {
