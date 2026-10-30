@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Auth\PersonalAccessTokens\PersonalAccessTokens;
 use CraftCms\Cms\Auth\PersonalAccessTokens\ScopeGroup;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Users\PersonalAccessTokensController;
 use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
 use CraftCms\Cms\Support\Query;
@@ -24,6 +25,8 @@ beforeEach(function (): void {
     openssl_pkey_export($key, $privateKey);
     config()->set('passport.private_key', $privateKey);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
+
+    Cms::config()->enableGql = false;
 
     $this->user = User::query()->firstOrFail();
     actingAs($this->user);
