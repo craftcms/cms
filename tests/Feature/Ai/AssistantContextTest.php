@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Ai\Assistant\AssistantAgent;
+use CraftCms\Cms\Ai\Assistant\Content\ElementContexts;
 use CraftCms\Cms\Ai\Assistant\ShowComponents;
 use CraftCms\Cms\Ai\Assistant\ShowElements;
 use CraftCms\Cms\Ai\Assistant\ShowField;
@@ -374,6 +375,25 @@ it('leaves out elements that aren’t identified as the editor identifies them',
     'an element type that isn’t a string' => [['elementType' => []]],
     'a namespace that isn’t a list of strings' => [['namespace' => [['a']]]],
 ]);
+
+it('fills the context’s places with the elements that resolve, past those that don’t', function () {
+    AssistantAgent::fake(['Hello.']);
+    $entries = collect(range(1, ElementContexts::MAX))->map(fn (int $i): Entry => EntryModel::factory()
+        ->forSection($this->section)
+        ->createElement(['title' => "Entry $i"]));
+
+    postJson(action([AssistantController::class, 'run']), [
+        'threadId' => (string) Str::uuid(),
+        'runId' => (string) Str::uuid(),
+        'messages' => [['id' => (string) Str::uuid(), 'role' => 'user', 'content' => 'Improve this']],
+        'forwardedProps' => ['context' => [
+            [...entryContext($this->entry)[0], 'elementId' => 999999],
+            ...$entries->map(fn (Entry $entry): array => [...entryContext($entry)[0], 'values' => []])->all(),
+        ]],
+    ])->assertOk()->streamedContent();
+
+    AssistantAgent::assertPrompted(static fn (AgentPrompt $prompt): bool => str_contains($prompt->agent->instructions(), 'Entry '.ElementContexts::MAX));
+});
 
 it('resumes with the context the user’s answers to approval requests come with', function () {
     AssistantAgent::fake([

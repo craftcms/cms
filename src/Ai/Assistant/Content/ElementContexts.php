@@ -61,7 +61,12 @@ readonly class ElementContexts
         $contexts = [];
         $user = $request->craftUser();
 
-        foreach (array_slice(array_values($items), 0, self::MAX) as $item) {
+        // Items that don’t resolve, or repeat an element, leave their places to the next, up to a bound on the lookups.
+        foreach (array_slice(array_values($items), 0, self::MAX * 3) as $item) {
+            if (count($contexts) === self::MAX) {
+                break;
+            }
+
             if (! is_array($item) || ! ($element = $this->element($request, $item))) {
                 continue;
             }
