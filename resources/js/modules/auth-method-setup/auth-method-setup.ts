@@ -15,6 +15,7 @@ import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
 import {ConfigService} from '@craftcms/ui/services/Config';
 import {elevatedSessionManager} from '@/modules/auth/elevated-session/manager';
 import {showError} from '@/modules/messages/messages';
+import {announce} from '@/common/announcer';
 
 declare const Craft: any;
 declare const $: any;
@@ -99,7 +100,7 @@ export class AuthMethodSetup extends Base<AuthMethodSetupSettings> {
     }
 
     button.classList.add('loading');
-    Craft.cp.announce(t('Loading'));
+    announce(t('Loading'));
 
     void elevatedSessionManager
       .require({

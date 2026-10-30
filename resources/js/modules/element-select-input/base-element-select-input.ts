@@ -14,6 +14,7 @@ import {
   UP_KEY,
   type GarnishBaseSettings,
 } from '@craftcms/garnish';
+import {announce} from '@/common/announcer';
 import {loadElementThumbs} from '@/modules/element-thumb-loader/globals';
 import {iconSvg} from '@/common/craft/icon-svg';
 import {elementTypeName} from '@/common/craft/element-types';
@@ -1600,7 +1601,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
 
     if (val) {
       this.$searchSpinner.removeClass('hidden');
-      Craft.cp.announce(t('Loading'));
+      announce(t('Loading'));
 
       const excludeIds: number[] = [];
       for (let i = 0; i < this.$elements.length; i++) {
@@ -1639,7 +1640,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
           this.killSearchMenu();
         }
         this.$searchSpinner.addClass('hidden');
-        Craft.cp.announce(t('Loading complete'));
+        announce(t('Loading complete'));
       }
 
       const $menu = $('<div class="menu tagmenu"/>').appendTo($(bod));

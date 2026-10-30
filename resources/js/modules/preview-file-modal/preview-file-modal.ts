@@ -2,6 +2,7 @@ import {
   focusReturnFor,
   type FocusReturnResolver,
 } from '@craftcms/ui/utilities/focus-return';
+import {announce} from '@/common/announcer';
 import {hasAttr} from '@craftcms/garnish';
 import {highlightCodeBlocks} from '@/common/utils/highlight-code';
 import {t} from '@craftcms/ui/utilities/translate';
@@ -121,7 +122,7 @@ export class PreviewFileModal {
     document.body.append(this.dialog);
     this.dialog.opened = true;
     this.visible = true;
-    Craft.cp.announce(t('Loading'));
+    announce(t('Loading'));
 
     this.loadAsset(
       assetId,

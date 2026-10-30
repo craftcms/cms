@@ -25,7 +25,6 @@ beforeEach(() => {
 });
 
 let post: MockInstance;
-const cp = {announce: vi.fn()};
 
 function openDialogs(): HTMLElement[] {
   return [...document.body.querySelectorAll<HTMLElement>('craft-dialog')];
@@ -68,7 +67,6 @@ describe('PreviewFileModal', () => {
     vi.stubGlobal('$', $);
     vi.stubGlobal('Craft', {
       t: (_category: string, message: string) => message,
-      cp,
       appendHeadHtml: vi.fn(),
       appendBodyHtml: vi.fn(),
     });

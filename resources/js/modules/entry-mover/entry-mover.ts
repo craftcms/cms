@@ -2,6 +2,7 @@ import {Base, Modal} from '@craftcms/garnish';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {showError, showSuccess} from '@/modules/messages/messages';
+import {announce} from '@/common/announcer';
 
 /** A `craft-button`, whose `disabled` and `loading` states are properties. */
 type SelectButton = HTMLElement & {disabled: boolean; loading: boolean};
@@ -214,7 +215,7 @@ export class EntryMover extends Base {
     }
 
     this.#selectBtn.loading = true;
-    Craft.cp.announce(t('Loading'));
+    announce(t('Loading'));
 
     const data = {
       sectionId: this.#sectionsList?.modelValue,
@@ -225,7 +226,7 @@ export class EntryMover extends Base {
       .post('entries/move-to-section', data)
       .then((response: {data: {message: string}}) => {
         showSuccess(response.data.message);
-        Craft.cp.announce(response.data.message);
+        announce(response.data.message);
 
         this.elementIndex?.updateElements();
         this.elementIndex?.$elements.attr('tabindex', '-1').focus();
@@ -233,7 +234,7 @@ export class EntryMover extends Base {
       })
       .catch((e: {response?: {data?: {message?: string}}}) => {
         showError(e?.response?.data?.message);
-        Craft.cp.announce(e?.response?.data?.message);
+        announce(e?.response?.data?.message);
       })
       .finally(() => {
         if (this.#selectBtn) {
