@@ -6,6 +6,19 @@ import type {Table} from '@tanstack/vue-table';
 import type {CraftTableFeatures} from '@/common/table/craftTable';
 import type {LegacyAdminTableRow} from '@/modules/admin-table/types/legacy';
 
+const messages = vi.hoisted(() => ({
+  showError: vi.fn(),
+  showNotice: vi.fn(),
+  showSuccess: vi.fn(),
+}));
+vi.mock('@/modules/messages/messages', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  ...messages,
+}));
+beforeEach(() => {
+  Object.values(messages).forEach((fn) => fn.mockReset());
+});
+
 const captured: {
   table: Table<CraftTableFeatures, LegacyAdminTableRow> | null;
 } = {table: null};
@@ -32,7 +45,7 @@ beforeEach(() => {
   document.body.innerHTML = '';
   post = vi.spyOn(actionClient, 'post').mockResolvedValue({data: {}} as any);
   (window as any).Craft = {
-    cp: {displayNotice: vi.fn(), displayError: vi.fn()},
+    cp: {},
   };
 });
 
@@ -155,7 +168,7 @@ it('posts the delete and drops the row', async () => {
   expect(post).toHaveBeenCalledWith('plugin/sync/delete', {
     id: 7,
   });
-  expect(window.Craft.cp!.displayNotice).toHaveBeenCalledWith('Sync deleted');
+  expect(messages.showNotice).toHaveBeenCalledWith('Sync deleted');
   expect(captured.table!.getRowModel().rows).toHaveLength(0);
 });
 
@@ -179,8 +192,6 @@ it('reports a failed delete and keeps the row', async () => {
   await vnode.children[0].props.onClick();
   await new Promise((resolve) => setTimeout(resolve, 0));
 
-  expect(window.Craft.cp!.displayError).toHaveBeenCalledWith(
-    'Sync could not be deleted'
-  );
+  expect(messages.showError).toHaveBeenCalledWith('Sync could not be deleted');
   expect(captured.table!.getRowModel().rows).toHaveLength(1);
 });

@@ -24,6 +24,7 @@ import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
 import {addActionsToChip} from '@/common/craft/chip-actions';
 import {hasMousePointerEvents} from '@/common/craft/pointer';
+import {showError} from '@/modules/messages/messages';
 
 declare const Craft: any;
 declare const $: any;
@@ -932,7 +933,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
           await appendBodyHtml(data.bodyHtml);
         })
         .catch((e: any) => {
-          Craft.cp.displayError(e?.response?.data?.message);
+          showError(e?.response?.data?.message);
           reject(e?.response?.data?.message);
         })
         .finally(() => {

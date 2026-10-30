@@ -11,6 +11,7 @@ import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
 import {startSide} from '@/common/craft/direction';
+import {showError} from '@/modules/messages/messages';
 
 declare const Craft: any;
 declare const Garnish: any;
@@ -87,9 +88,7 @@ export class AssetSelectInput extends BaseElementSelectInput {
                   result.newAssetId
                 ).catch(() => {});
               }
-            }).catch((error) =>
-              Craft.cp.displayError(error?.response?.data?.message)
-            );
+            }).catch((error) => showError(error?.response?.data?.message));
           });
         });
     }
@@ -303,9 +302,9 @@ export class AssetSelectInput extends BaseElementSelectInput {
       })
       .catch((error: any) => {
         if (error?.response) {
-          Craft.cp.displayError(error.response.data.message);
+          showError(error.response.data.message);
         } else {
-          Craft.cp.displayError();
+          showError();
           throw error;
         }
       });
@@ -344,7 +343,7 @@ export class AssetSelectInput extends BaseElementSelectInput {
       }
     }
 
-    Craft.cp.displayError(message);
+    showError(message);
     this.#hideProgress();
   }
 

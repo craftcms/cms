@@ -11,8 +11,21 @@ import {
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {PreviewFileModal} from './preview-file-modal';
 
+const messages = vi.hoisted(() => ({
+  showError: vi.fn(),
+  showNotice: vi.fn(),
+  showSuccess: vi.fn(),
+}));
+vi.mock('@/modules/messages/messages', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  ...messages,
+}));
+beforeEach(() => {
+  Object.values(messages).forEach((fn) => fn.mockReset());
+});
+
 let post: MockInstance;
-const cp = {announce: vi.fn(), displayError: vi.fn(), displayNotice: vi.fn()};
+const cp = {announce: vi.fn()};
 
 function openDialogs(): HTMLElement[] {
   return [...document.body.querySelectorAll<HTMLElement>('craft-dialog')];
@@ -149,7 +162,7 @@ describe('PreviewFileModal', () => {
     buttons[0]!.click();
     await settle();
     expect(writeText).toHaveBeenCalledWith('a <b> c');
-    expect(cp.displayNotice).toHaveBeenCalledWith('Copied to clipboard.');
+    expect(messages.showNotice).toHaveBeenCalledWith('Copied to clipboard.');
 
     buttons[1]!.click();
     expect(modal.visible).toBe(false);
@@ -171,7 +184,7 @@ describe('PreviewFileModal', () => {
     openDialogs()[0]!.querySelector<HTMLElement>('[slot="footer"]')!.click();
     await settle();
 
-    expect(cp.displayError).toHaveBeenCalledWith(
+    expect(messages.showError).toHaveBeenCalledWith(
       'Couldn’t copy to the clipboard.'
     );
   });

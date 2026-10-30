@@ -33,6 +33,7 @@ import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
 import {provideUiValueGroup} from '@/modules/ui/uiValueGroup';
 import UpdateFieldLayoutController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/UpdateFieldLayoutController';
 import {attach} from '@actions/ReleasesController';
+import {showError, showNotice, showSuccess} from '@/modules/messages/messages';
 
 export interface ElementEditFormData {
   typeId?: string | number | null;
@@ -741,9 +742,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
 
       return true;
     } catch (error) {
-      window.Craft?.cp?.displayError(
-        error instanceof Error ? error.message : t('Couldn’t save.')
-      );
+      showError(error instanceof Error ? error.message : t('Couldn’t save.'));
 
       return false;
     }
@@ -807,7 +806,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
         pendingRelease.value = null;
 
         if (data?.message) {
-          window.Craft?.cp?.displayError(data.message);
+          showError(data.message);
         }
 
         if (Array.isArray(data?.invalidNestedElementIds)) {
@@ -918,7 +917,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       }>(target.url, data);
 
       if (response.message) {
-        window.Craft?.cp?.displayNotice(response.message);
+        showNotice(response.message);
       }
 
       if (response.redirect) {
@@ -927,7 +926,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
 
       await slideout.reload();
     } catch (error: any) {
-      window.Craft?.cp?.displayError(
+      showError(
         error?.response?.data?.message ?? t('A server error occurred.')
       );
     }
@@ -1053,7 +1052,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     const craft = window.Craft;
 
     if (data?.message) {
-      craft?.cp?.displaySuccess(data.message, data.notificationSettings);
+      showSuccess(data.message, data.notificationSettings);
     }
 
     if (data?.element?.id) {

@@ -5,10 +5,11 @@ import {
 import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {showError} from '@/modules/messages/messages';
 
 // `Craft` and `$` (jQuery) remain page globals; the settings form is
 // server-rendered HTML, so the legacy seams the rest of the manager leans on
-// survive here (`Craft.initUiElements`, `Craft.cp.displayError`).
+// survive here (`Craft.initUiElements`).
 declare const Craft: any;
 declare const $: any;
 
@@ -51,7 +52,7 @@ export async function editEntryTypeOverrides(chip: HTMLElement): Promise<void> {
     );
     data = response.data;
   } catch (e: any) {
-    Craft.cp.displayError(e?.response?.data?.message);
+    showError(e?.response?.data?.message);
     throw e;
   }
 

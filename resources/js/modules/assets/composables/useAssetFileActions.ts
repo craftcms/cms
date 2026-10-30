@@ -15,6 +15,7 @@ import {
   type ImageEditorSettings,
 } from '@/modules/image-editor/open-image-editor-dialog';
 import type {ElementIndexOperations} from '@/modules/elements/index/types/model';
+import {showError} from '@/modules/messages/messages';
 
 interface FileActionDetail {
   elementIds?: Array<string | number>;
@@ -132,7 +133,7 @@ export function useAssetFileActions(
         ? (error.response?.data?.message ?? t('A server error occurred.'))
         : t('A server error occurred.');
       renameFileError.value = message;
-      Craft.cp?.displayError?.(message);
+      showError(message);
     } finally {
       renamingFile.value = false;
     }

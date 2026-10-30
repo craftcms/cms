@@ -4,6 +4,7 @@ import {t} from '@craftcms/ui/utilities/translate';
 import type {ScreenPageProps} from '@/common/composables/screen';
 import {firstMessages} from '@/common/slideouts/errors';
 import type {SlideoutController} from '@/common/slideouts/types';
+import {showError, showSuccess} from '@/modules/messages/messages';
 
 /**
  * What a slideout does once its screen has saved, whichever way it saved:
@@ -42,7 +43,7 @@ export function useSlideoutSaveHandlers({
     const data = response?.data ?? {};
 
     if (data.message) {
-      craft()?.cp?.displaySuccess(data.message, data.notificationSettings);
+      showSuccess(data.message, data.notificationSettings);
     }
 
     if (data.modelClass && data.modelId) {
@@ -81,7 +82,7 @@ export function useSlideoutSaveHandlers({
       throw error;
     }
 
-    craft()?.cp?.displayError(data.message);
+    showError(data.message);
 
     // The server's own summary gets drawn into the screen HTML, split across
     // its tabs. Only stand in for it when there wasn't one.

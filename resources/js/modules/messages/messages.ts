@@ -13,7 +13,7 @@
  *   `Craft.CP.Notification` renderer, drawing into `<cp-messages>`.
  */
 
-import {t} from '@craftcms/ui';
+import {t} from '@craftcms/ui/utilities/translate';
 
 export type MessageType = 'notice' | 'success' | 'error';
 
@@ -38,12 +38,19 @@ export interface CpMessage {
 
 export type MessageOutlet = (message: CpMessage) => void;
 
-interface LegacyNotification {
+/** A message shown in the default display. */
+export interface CpNotification {
   type: string;
   message: string;
   closing: boolean;
   $container: {0?: Element} | null;
+  /** The close button, as a jQuery collection. */
+  $closeBtn?: any;
+  close(): void;
+  on(event: string, handler: (...args: unknown[]) => void): void;
 }
+
+type LegacyNotification = CpNotification;
 
 type DisplayNotification = (
   this: unknown,
@@ -178,15 +185,17 @@ function renderDefault(message: CpMessage): LegacyNotification | null {
 
 /**
  * Shows a message: in its inline outlet when it names one that's on the page,
- * otherwise in the default display. A message with an `id` that has already been shown is
- * ignored.
+ * otherwise in the default display. A message with an `id` that has already
+ * been shown is ignored.
+ *
+ * Returns the notification when the message went to the default display.
  */
-export function showMessage(message: CpMessage): void {
+export function showMessage(message: CpMessage): CpNotification | null {
   const id = idOf(message);
 
   if (id) {
     if (hasSeen(id)) {
-      return;
+      return findVisibleDuplicate(message);
     }
 
     markSeen(id);
@@ -196,10 +205,37 @@ export function showMessage(message: CpMessage): void {
 
   if (handlers?.length) {
     handlers[handlers.length - 1]!(message);
-    return;
+    return null;
   }
 
-  renderDefault(message);
+  return renderDefault(message);
+}
+
+/** Shows a notice. Callers that close it later should handle a `null` result. */
+export function showNotice(
+  message: string,
+  settings?: MessageSettings
+): CpNotification | null {
+  return showMessage({type: 'notice', message, settings});
+}
+
+export function showSuccess(
+  message: string,
+  settings?: MessageSettings
+): CpNotification | null {
+  return showMessage({type: 'success', message, settings});
+}
+
+/** Shows an error, or a generic server error when there's no message. */
+export function showError(
+  message?: string | null,
+  settings?: MessageSettings
+): CpNotification | null {
+  return showMessage({
+    type: 'error',
+    message: message || t('A server error occurred.'),
+    settings,
+  });
 }
 
 /**

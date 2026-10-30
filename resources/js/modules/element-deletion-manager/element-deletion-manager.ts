@@ -8,6 +8,7 @@ import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
 import {elementTypeName} from '@/common/craft/element-types';
 import {elevatedSessionManager} from '@/modules/auth/elevated-session/manager';
 import {create} from '@craftcms/ui/utilities/create';
+import {showError, showSuccess} from '@/modules/messages/messages';
 
 // jQuery-built blocker markup + Craft.ui/Craft.cp seams, shown in a
 // `craft-dialog`.
@@ -135,9 +136,9 @@ export class ElementDeletionManager extends Base {
 
     if (data) {
       if (data.showAsFailure) {
-        Craft.cp.displayError(data.message);
+        showError(data.message);
       } else {
-        Craft.cp.displaySuccess(data.message);
+        showSuccess(data.message);
       }
     }
   }

@@ -11,6 +11,7 @@
   import type {ActionItems} from '@/common/types';
   import type {AuthMethod, AuthMethodAction} from './types';
   import '@/modules/auth-method-setup/recovery-codes-setup';
+  import {showError} from '@/modules/messages/messages';
 
   const props = defineProps<{
     methods: AuthMethod[];
@@ -86,9 +87,7 @@
           .downloadFromUrl('post', craft.getActionUrl(url), {
             [craft.csrfTokenName]: craft.csrfTokenValue,
           })
-          .catch((e: any) =>
-            craft.cp?.displayError?.(e?.response?.data?.message)
-          );
+          .catch((e: any) => showError(e?.response?.data?.message));
       }
 
       // Generic POST action (plugin-provided).

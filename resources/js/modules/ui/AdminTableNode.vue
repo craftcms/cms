@@ -50,6 +50,7 @@
     TableNodePayload,
     TableRow,
   } from './table-types';
+  import {showError, showNotice} from '@/modules/messages/messages';
 
   const props = defineProps<{
     node: TableNodePayload;
@@ -470,15 +471,11 @@
   }
 
   function notifyOrderUpdated(): void {
-    Craft.cp?.displayNotice?.(
-      props.node.props.reorderSuccessMessage ?? t('Order updated.')
-    );
+    showNotice(props.node.props.reorderSuccessMessage ?? t('Order updated.'));
   }
 
   function onOrderFailed(): void {
-    Craft.cp?.displayError?.(
-      props.node.props.reorderFailMessage ?? t('Couldn’t reorder.')
-    );
+    showError(props.node.props.reorderFailMessage ?? t('Couldn’t reorder.'));
   }
 
   const deletingRow = ref<TableRow | null>(null);
@@ -500,7 +497,7 @@
 
       return true;
     } catch (error: any) {
-      Craft.cp?.displayError?.(
+      showError(
         error?.response?.data?.message ?? t('A server error occurred.')
       );
       return false;
@@ -605,7 +602,7 @@
   );
 
   function onLoadFailed(): void {
-    Craft.cp?.displayError?.(t('An error occurred.'));
+    showError(t('An error occurred.'));
   }
 
   function refreshUi(): void {

@@ -10,8 +10,7 @@ import {type ActionMenuItem, t} from '@craftcms/ui';
 import type {UiValues} from '@/modules/ui/types';
 import {uuid} from '@/common/craft/strings';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
-
-declare const Craft: any;
+import {showError} from '@/modules/messages/messages';
 
 /**
  * A single layout element (field or UI element) within a {@link Tab}. Native DOM
@@ -274,7 +273,7 @@ export class Element extends Base {
       );
       data = response.data;
     } catch (e: any) {
-      Craft.cp.displayError(e?.response?.data?.message);
+      showError(e?.response?.data?.message);
       throw e;
     }
 
@@ -356,7 +355,7 @@ export class Element extends Base {
       data = response.data;
     } catch (e: any) {
       // The settings panel renders field errors from the rejection.
-      Craft.cp.displayError(e?.response?.data?.message);
+      showError(e?.response?.data?.message);
       throw e;
     }
 

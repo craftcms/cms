@@ -27,6 +27,7 @@ import {
   type NestedElementsManager,
   type NestedElement,
 } from './nested-elements';
+import {showNotice} from '@/modules/messages/messages';
 
 export interface NestedElementQuickEdit {
   readonly longPress: true;
@@ -545,7 +546,7 @@ export function useNestedElementOperations(
         }
       );
       reordered = true;
-      window.Craft?.cp?.displayNotice(data.message);
+      showNotice(data.message);
       window.Craft?.broadcaster?.postMessage({
         pageId: window.Craft.pageId,
         event: 'reorderNestedElements',

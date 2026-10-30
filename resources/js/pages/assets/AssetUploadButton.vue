@@ -12,6 +12,7 @@
   import type {AssetUploadDestination} from '@/modules/uploader/upload-notification';
 
   import {Uploader as FileUploader} from '@/modules/uploader/uploader';
+  import {showError} from '@/modules/messages/messages';
 
   interface Uploader {
     destroy(): void;
@@ -137,9 +138,7 @@
         }
       }
     } catch (error) {
-      Craft.cp?.displayError?.(
-        error instanceof Error ? error.message : t('Upload failed.')
-      );
+      showError(error instanceof Error ? error.message : t('Upload failed.'));
     } finally {
       finishUploads();
     }
@@ -180,7 +179,7 @@
         },
         fail: ({error, canceled}) => {
           if (!canceled) {
-            Craft.cp?.displayError?.(
+            showError(
               error instanceof Error ? error.message : t('Upload failed.')
             );
           }

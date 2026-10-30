@@ -6,6 +6,7 @@ import {
 } from './open-image-editor-dialog';
 import {broadcast} from '@/common/craft/broadcast';
 import type {SaveResult} from './useImageEditor';
+import {showError} from '@/modules/messages/messages';
 
 /**
  * Opens the image editor dialog from markup that isn't an Inertia page — asset
@@ -53,7 +54,7 @@ export class AssetImageEditor {
     settings: {onSave?: (result: SaveResult) => void} = {}
   ) {
     openAssetImageEditor(assetId, settings.onSave).catch((error) =>
-      Craft.cp?.displayError?.(error?.response?.data?.message)
+      showError(error?.response?.data?.message)
     );
   }
 }

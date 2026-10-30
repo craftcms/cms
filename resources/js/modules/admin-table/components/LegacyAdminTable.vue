@@ -20,6 +20,7 @@
     LegacyAdminTableColumn,
     LegacyAdminTableRow,
   } from '@/modules/admin-table/types/legacy';
+  import {showError, showNotice} from '@/modules/messages/messages';
 
   const props = defineProps<{
     columns: Array<LegacyAdminTableColumn>;
@@ -85,10 +86,10 @@
       rows.value = rows.value.filter((candidate) => candidate !== row);
 
       if (props.deleteSuccessMessage) {
-        window.Craft.cp?.displayNotice?.(props.deleteSuccessMessage);
+        showNotice(props.deleteSuccessMessage);
       }
     } catch {
-      window.Craft.cp?.displayError?.(props.deleteFailMessage ?? undefined);
+      showError(props.deleteFailMessage ?? undefined);
     }
   }
 

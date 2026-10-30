@@ -18,7 +18,8 @@ let uploader: Uploader;
 let input: HTMLInputElement;
 let dropZone: HTMLDivElement;
 const enqueue = vi.fn();
-const error = vi.fn();
+const error = vi.hoisted(() => vi.fn());
+vi.mock('@/modules/messages/messages', () => ({showError: error}));
 
 beforeEach(() => {
   enqueue.mockReset();
@@ -32,7 +33,6 @@ beforeEach(() => {
       archive: {extensions: ['7z']},
     },
     t: (_category: string, message: string) => message,
-    cp: {displayError: error},
   });
   input = document.createElement('input');
   input.type = 'file';

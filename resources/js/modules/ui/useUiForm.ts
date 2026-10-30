@@ -9,6 +9,7 @@ import {
 import {firstFocusableWithin} from '@/common/utils/dom';
 import {UiTableRefresh, visitControls} from './runtime';
 import type {UiPayload, UiValues} from './types';
+import {showError} from '@/modules/messages/messages';
 
 export interface UiFormResponse {
   ui: UiPayload;
@@ -61,7 +62,7 @@ export function useUiForm(options: UiFormOptions) {
 
       return true;
     } catch (error: any) {
-      Craft.cp?.displayError?.(
+      showError(
         error?.response?.data?.message ?? t('A server error occurred.')
       );
 
@@ -122,7 +123,7 @@ export function useUiForm(options: UiFormOptions) {
           messages: Array.isArray(messages) ? messages : [messages],
         };
       });
-      Craft.cp?.displayError?.(
+      showError(
         error?.response?.data?.message ?? t('A server error occurred.')
       );
 
