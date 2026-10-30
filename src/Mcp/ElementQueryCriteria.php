@@ -36,6 +36,11 @@ class ElementQueryCriteria
         ],
     ];
 
+    private const string NumericParamToken = '((not |!=|<=|>=|<|>|=)?\s*-?\d+|:empty:|:notempty:|not :empty:)';
+
+    /** A numeric query param string, such as `'not 1'`, `'>= 3'`, `'1, 2'`, or `':empty:'`. */
+    private const string NumericParamPattern = '^\s*'.self::NumericParamToken.'(\s*,\s*'.self::NumericParamToken.')*\s*$';
+
     /** Paging and sorting properties that MCP tools add to element query params. */
     public const array SchemaProperties = [
         'orderBy' => [
@@ -59,7 +64,8 @@ class ElementQueryCriteria
 
     /** Guidance for MCP clients, appended to query param descriptions. */
     private const array Hints = [
-        'trashed' => 'Use status: null when listing deleted elements.',
+        'status' => 'Pass null to include all statuses.',
+        'trashed' => 'Pass null to include both trashed and non-trashed elements. Use status: null when listing deleted elements.',
     ];
 
     /**
@@ -89,10 +95,24 @@ class ElementQueryCriteria
                 ElementQueryParamType::String => ['type' => 'string'],
                 ElementQueryParamType::StringOrStrings => self::StringOrStringsSchema,
                 ElementQueryParamType::NullableStringOrStrings => ['anyOf' => [...self::StringOrStringsSchema['anyOf'], ['type' => 'null']]],
-                ElementQueryParamType::IntOrInts => self::IntegerOrIntegersSchema,
+                ElementQueryParamType::StringList => ['type' => 'array', 'items' => ['type' => 'string']],
+                ElementQueryParamType::Int => ['type' => 'integer'],
+                ElementQueryParamType::IntOrInts => ['anyOf' => [
+                    ['type' => 'integer'],
+                    ['type' => 'string', 'pattern' => self::NumericParamPattern],
+                    ['type' => 'array', 'items' => ['anyOf' => [
+                        ['type' => ['integer', 'null']],
+                        ['type' => 'string', 'pattern' => self::NumericParamPattern],
+                        ['enum' => ['and', 'or', 'not']],
+                    ]]],
+                ]],
                 ElementQueryParamType::Boolean => ['type' => 'boolean'],
                 ElementQueryParamType::NullableBoolean => ['type' => ['boolean', 'null']],
-                ElementQueryParamType::StringList => ['type' => 'array', 'items' => ['type' => 'string']],
+                ElementQueryParamType::Scalar => ['type' => ['integer', 'string', 'boolean']],
+                ElementQueryParamType::ScalarOrScalars => ['anyOf' => [
+                    ['type' => ['integer', 'string']],
+                    ['type' => 'array', 'items' => ['type' => ['integer', 'string']]],
+                ]],
                 ElementQueryParamType::Array => ['type' => 'array'],
             },
             'description' => trim($param->descriptionFor($elementType).' '.(self::Hints[$name] ?? '')),
@@ -173,8 +193,13 @@ class ElementQueryCriteria
     {
         if (isset($schema['anyOf']) && is_array($schema['anyOf'])) {
             return collect($schema['anyOf'])
-                ->map(fn (array $option): string => $this->type($option))
+                ->flatMap(fn (array $option): array => explode('|', $this->type($option)))
+                ->unique()
                 ->implode('|');
+        }
+
+        if (isset($schema['enum']) && is_array($schema['enum'])) {
+            return 'string';
         }
 
         $type = $schema['type'] ?? 'mixed';
@@ -184,7 +209,9 @@ class ElementQueryCriteria
         }
 
         if ($type === 'array' && isset($schema['items']) && is_array($schema['items'])) {
-            return $this->type($schema['items']).'[]';
+            $itemType = $this->type($schema['items']);
+
+            return (str_contains($itemType, '|') ? "($itemType)" : $itemType).'[]';
         }
 
         return is_string($type) ? $type : 'mixed';

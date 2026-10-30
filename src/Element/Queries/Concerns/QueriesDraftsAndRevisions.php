@@ -266,6 +266,7 @@ trait QueriesDraftsAndRevisions
      * Causes the query to return provisional drafts for the matching elements,
      * when they exist for the current user.
      */
+    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Whether canonical elements should be replaced with provisional drafts if those exist.')]
     public function withProvisionalDrafts(bool $value = true): static
     {
         $this->withProvisionalDrafts = $value;
@@ -298,6 +299,7 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'The ID of the draft to return (from the `drafts` table)')]
     public function draftId(?int $value = null): static
     {
         $this->draftId = $value;
@@ -330,6 +332,7 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'Narrows the query results to drafts attached to the release with this ID.')]
     public function releaseId(?int $value = null): static
     {
         $this->releaseId = $value;
@@ -371,6 +374,7 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Scalar, 'Narrows the query results to only drafts of a given element.  Set to `false` to fetch unpublished drafts.')]
     public function draftOf(mixed $value): static
     {
         if ($value instanceof ElementInterface) {
@@ -441,6 +445,7 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'The drafts’ creator ID')]
     public function draftCreator(mixed $value): static
     {
         $this->draftCreator = match (true) {
@@ -477,6 +482,7 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether provisional drafts should be returned.')]
     public function provisionalDrafts(?bool $value = true): static
     {
         $this->provisionalDrafts = $value;
@@ -585,6 +591,7 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'The ID of the revision to return (from the `revisions` table)')]
     public function revisionId(?int $value = null): static
     {
         $this->revisionId = $value;
@@ -622,6 +629,7 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Scalar, 'The source element ID that revisions should be returned for')]
     public function revisionOf(mixed $value): static
     {
         $this->revisionOf = match (true) {
@@ -663,6 +671,7 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'The revisions’ creator ID')]
     public function revisionCreator(mixed $value): static
     {
         $this->revisionCreator = match (true) {

@@ -14,9 +14,15 @@ enum ElementQueryParamType
     case String;
     case StringOrStrings;
     case NullableStringOrStrings;
+    case StringList;
+    case Int;
+    /** One or more numbers, which may include operators such as `'not 1'` or `'>= 3'`. */
     case IntOrInts;
     case Boolean;
     case NullableBoolean;
-    case StringList;
+    /** An ID, handle, or boolean flag. */
+    case Scalar;
+    /** One or more IDs or handles. */
+    case ScalarOrScalars;
     case Array;
 }

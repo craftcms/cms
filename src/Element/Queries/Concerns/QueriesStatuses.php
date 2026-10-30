@@ -95,7 +95,7 @@ trait QueriesStatuses
      *
      * @param  string|string[]|null  $value  The property value
      */
-    #[ElementQueryParam(ElementQueryParamType::NullableStringOrStrings, 'Narrows the query results based on the elements’ statuses. Pass null to include all statuses.')]
+    #[ElementQueryParam(ElementQueryParamType::NullableStringOrStrings, 'Narrows the query results based on the elements’ statuses.')]
     public function status(array|string|null $value): static
     {
         $this->status = $value;

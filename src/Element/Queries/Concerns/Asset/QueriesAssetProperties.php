@@ -163,6 +163,7 @@ trait QueriesAssetProperties
      *
      * @uses $uploaderId
      */
+    #[ElementQueryParam(ElementQueryParamType::Scalar, 'Narrows the query results based on the user the assets were uploaded by, per the user’s ID.')]
     public function uploader(int|User|UserModel|null $value): static
     {
         if ($value instanceof User || $value instanceof UserModel) {
@@ -312,6 +313,7 @@ trait QueriesAssetProperties
      *
      * @uses $dateModified
      */
+    #[ElementQueryParam(ElementQueryParamType::String, 'Narrows the query results based on the assets’ files’ last-modified dates.')]
     public function dateModified(mixed $value): static
     {
         $this->dateModified = $value;

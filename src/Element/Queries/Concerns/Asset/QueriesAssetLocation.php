@@ -316,6 +316,7 @@ trait QueriesAssetLocation
      *
      * @uses $includeSubfolders
      */
+    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Broadens the query results to include assets from any of the subfolders of the folder specified by `folderId`.')]
     public function includeSubfolders(bool $value = true): static
     {
         $this->includeSubfolders = $value;

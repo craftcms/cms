@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns\Asset;
 
 use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use Illuminate\Support\Collection;
 use Override;
 
@@ -105,6 +107,7 @@ trait EagerloadsTransforms
      *
      * @uses $withTransforms
      */
+    #[ElementQueryParam(ElementQueryParamType::StringList, 'A list of transform handles to preload.')]
     public function withTransforms(string|array|null $value = null): static
     {
         $this->withTransforms = $value;

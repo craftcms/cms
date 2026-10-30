@@ -172,7 +172,7 @@ trait QueriesUserGroups
      *
      * @uses $groupId
      */
-    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the user group the users belong to.')]
+    #[ElementQueryParam(ElementQueryParamType::ScalarOrScalars, 'Narrows the query results based on the user group the users belong to.')]
     public function group(mixed $value): self
     {
         // If the value is a group handle, swap it with the user group

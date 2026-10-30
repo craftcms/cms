@@ -127,7 +127,7 @@ trait QueriesSites
      *     ->all();
      * ```
      */
-    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Determines which site(s) the elements should be queried in, per the sites’ handles.')]
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Determines which site(s) the elements should be queried in. Defaults to the current (requested) site.')]
     public function site($value): static
     {
         if ($value === null) {
@@ -195,7 +195,7 @@ trait QueriesSites
      *     ->all();
      * ```
      */
-    #[ElementQueryParam(ElementQueryParamType::IntOrInts, 'Determines which site(s) the elements should be queried in, per the sites’ IDs.')]
+    #[ElementQueryParam(ElementQueryParamType::IntOrInts, 'Determines which site(s) the elements should be queried in. Defaults to the current (requested) site.')]
     public function siteId($value): static
     {
         $this->siteId = self::normalizeSiteId($value);
@@ -235,6 +235,7 @@ trait QueriesSites
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Determines which site(s) the elements should be queried in, based on their language.')]
     public function language(mixed $value): static
     {
         $this->siteId = self::siteIdsFromLanguage($value);

@@ -178,7 +178,7 @@ trait QueriesAuthors
      *
      * @uses $authorId
      */
-    #[ElementQueryParam(ElementQueryParamType::IntOrInts, 'Narrows the query results based on the entries’ authors, per the users’ IDs.')]
+    #[ElementQueryParam(ElementQueryParamType::IntOrInts, 'Narrows the query results based on the entries’ authors.')]
     public function authorId(mixed $value): static
     {
         $this->authorId = $value;
@@ -219,6 +219,7 @@ trait QueriesAuthors
      *
      * @uses $authorGroupId
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the user group the entries’ authors belong to.')]
     public function authorGroup(mixed $value): static
     {
         if (is_string($value) && ($group = UserGroups::getGroupByHandle($value))) {
@@ -275,6 +276,7 @@ trait QueriesAuthors
      *
      * @uses $authorGroupId
      */
+    #[ElementQueryParam(ElementQueryParamType::IntOrInts, 'Narrows the query results based on the user group the entries’ authors belong to, per the groups’ IDs.')]
     public function authorGroupId(mixed $value): static
     {
         $this->authorGroupId = $value;

@@ -203,7 +203,7 @@ trait QueriesUserProperties
      *
      * @uses $fullName
      */
-    #[ElementQueryParam(ElementQueryParamType::String, 'Narrows the query results based on the users’ full names.')]
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the users’ full names.')]
     public function fullName(mixed $value): self
     {
         $this->fullName = $value;
@@ -241,7 +241,7 @@ trait QueriesUserProperties
      *
      * @uses $firstName
      */
-    #[ElementQueryParam(ElementQueryParamType::String, 'Narrows the query results based on the users’ first names.')]
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the users’ first names.')]
     public function firstName(mixed $value): self
     {
         $this->firstName = $value;
@@ -279,7 +279,7 @@ trait QueriesUserProperties
      *
      * @uses $lastName
      */
-    #[ElementQueryParam(ElementQueryParamType::String, 'Narrows the query results based on the users’ last names.')]
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the users’ last names.')]
     public function lastName(mixed $value): self
     {
         $this->lastName = $value;

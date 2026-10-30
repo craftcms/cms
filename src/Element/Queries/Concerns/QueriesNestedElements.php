@@ -298,6 +298,7 @@ trait QueriesNestedElements
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::IntOrInts, 'Narrows the query results based on the primary owner element of the {elements}, per the owners’ IDs.')]
     public function primaryOwnerId(mixed $value): static
     {
         $this->primaryOwnerId = $value;

@@ -281,6 +281,7 @@ trait QueriesFields
      *     ->one();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::IntOrInts, 'Narrows the query results based on the unique identifier for an element-site relation.')]
     public function siteSettingsId(mixed $value): static
     {
         $this->siteSettingsId = $value;
@@ -309,7 +310,7 @@ trait QueriesFields
      *
      * @param  bool|null  $value  The property value (defaults to true)
      */
-    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Narrows the query results to only elements that have been soft-deleted. Pass null to include both trashed and non-trashed elements.')]
+    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Narrows the query results to only elements that have been soft-deleted.')]
     public function trashed(?bool $value = true): static
     {
         $this->trashed = $value;
@@ -351,6 +352,7 @@ trait QueriesFields
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the elements’ creation dates.')]
     public function dateCreated(mixed $value): static
     {
         $this->dateCreated = $value;
@@ -390,6 +392,7 @@ trait QueriesFields
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the elements’ last-updated dates.')]
     public function dateUpdated(mixed $value): static
     {
         $this->dateUpdated = $value;
@@ -428,7 +431,7 @@ trait QueriesFields
      *     ->all();
      * ```
      */
-    #[ElementQueryParam(ElementQueryParamType::String, 'Narrows the query results based on the elements’ titles.')]
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the elements’ titles.')]
     public function title(mixed $value): static
     {
         $this->title = $value;
@@ -518,6 +521,7 @@ trait QueriesFields
      *     ->one();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the elements’ URIs.')]
     public function uri(mixed $value): static
     {
         $this->uri = $value;
