@@ -861,6 +861,8 @@
 
   .lp-preview__stage {
     position: relative;
+    display: grid;
+    grid-template: minmax(0, 1fr) / minmax(0, 1fr);
     overflow: hidden;
     /* Keeps the device's animation from laying out anything outside it. */
     contain: strict;
@@ -890,7 +892,11 @@
   }
 
   .lp-device--framed {
-    margin: auto;
+    /* Unlike auto margins, this keeps a device that's wider than the stage centered. */
+    position: relative;
+    inset: auto;
+    grid-area: 1 / 1;
+    place-self: unsafe center;
     display: grid;
     place-items: center;
     transform-origin: center;

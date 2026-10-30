@@ -214,6 +214,36 @@ it('tours Live Preview: devices, targets, and a slideout in the editor', async (
   expect(host!.querySelector('#title')).not.toBeNull();
 });
 
+it('centers a device that’s wider than the stage', async () => {
+  mount();
+
+  await page.getByRole('button', {name: 'Preview'}).click();
+  await waitForFrame();
+  await page.getByRole('button', {name: 'Tablet', exact: true}).click();
+  await page.getByRole('button', {name: 'Rotate'}).click();
+  await expect.poll(frameSize).toEqual({
+    width: `${DEVICES.tablet.height}px`,
+    height: `${DEVICES.tablet.width}px`,
+  });
+
+  const center = (selector: string) => {
+    const rect = document.querySelector(selector)!.getBoundingClientRect();
+    return {x: rect.x + rect.width / 2, y: rect.y + rect.height / 2};
+  };
+  const stage = document.querySelector('.lp-preview__stage')!;
+  const device = document.querySelector<HTMLElement>('.lp-device')!;
+  expect(device.offsetWidth).toBeGreaterThan(stage.clientWidth);
+
+  await expect
+    .poll(() =>
+      Math.abs(center('.lp-device').x - center('.lp-preview__stage').x)
+    )
+    .toBeLessThan(1);
+  expect(
+    Math.abs(center('.lp-device').y - center('.lp-preview__stage').y)
+  ).toBeLessThan(1);
+});
+
 it('lets go of the page when it goes away while open', async () => {
   mount();
   await page.getByRole('button', {name: 'Preview'}).click();
