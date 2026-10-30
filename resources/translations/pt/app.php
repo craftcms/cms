@@ -1564,6 +1564,7 @@ return [
     'Resaving {type}' => 'A guardar novamente {type}',
     'Reserved' => 'Reservado',
     'Reset password' => 'Redefinir palavra-passe',
+    'Resize editor' => 'Resize editor',
     'Resolve now' => 'Resolver agora',
     'Resolved' => 'Resolvido',
     'Response:' => 'Resposta:',
