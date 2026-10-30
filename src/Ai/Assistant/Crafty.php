@@ -60,7 +60,7 @@ readonly class Crafty
             $promptId = $this->conversations->storeUserMessage($threadId, $type, $key, AssistantAgent::class, new UserMessage($prompt));
 
             $messages = DB::table(Table::AGENT_CONVERSATION_MESSAGES);
-            $messages->clone()->where('id', $promptId)->update(['meta' => json_encode([self::QUIET => true])]);
+            $messages->clone()->where('id', $promptId)->update(['meta' => Json::encode([self::QUIET => true])]);
 
             // Stored as the conversation store stores its messages, so it sorts after the prompt.
             $stored = $messages->clone()->where('id', $promptId)->first(['created_at', 'updated_at']);
@@ -74,7 +74,7 @@ readonly class Crafty
                 'role' => 'assistant',
                 'content' => $reply,
                 'attachments' => '[]',
-                'steps' => json_encode([['content' => $reply, 'tool_calls' => [$question]]]),
+                'steps' => Json::encode([['content' => $reply, 'tool_calls' => [$question]]]),
                 'usage' => '[]',
                 'meta' => '[]',
                 'status' => MessageStatus::Completed->value,
