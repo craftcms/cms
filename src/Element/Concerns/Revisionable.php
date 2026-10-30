@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Concerns;
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
@@ -41,6 +43,7 @@ trait Revisionable
     /**
      * @var string|null The revision notes
      */
+    #[ElementProperty(ElementPropertyType::String, 'Revision notes for the {element}.', nullable: true)]
     public ?string $revisionNotes = null;
 
     /**

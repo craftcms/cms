@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Concerns;
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -241,6 +243,7 @@ trait NestedElement
         return $this->ownerId ?? $this->primaryOwnerId;
     }
 
+    #[ElementProperty(ElementPropertyType::Id, 'The ID of the {element}’s owner.')]
     public function setOwnerId(?int $id): void
     {
         $this->ownerId = $id;
@@ -374,6 +377,7 @@ trait NestedElement
         return $this->sortOrder;
     }
 
+    #[ElementProperty(ElementPropertyType::Int, 'The {element}’s sort order.')]
     public function setSortOrder(?int $sortOrder): void
     {
         $this->sortOrder = $sortOrder;

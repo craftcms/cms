@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
+use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Events\ElementMovedInStructure;
 use CraftCms\Cms\Element\Events\ElementMovingInStructure;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -99,6 +101,7 @@ trait Structurable
         return $this->getParent()?->id;
     }
 
+    #[ElementProperty(ElementPropertyType::Id, 'The ID of the {element}’s parent in its structure.', nullable: true)]
     public function setParentId(mixed $parentId): void
     {
         if (is_array($parentId)) {

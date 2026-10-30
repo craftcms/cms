@@ -451,6 +451,7 @@
 - MCP tools without `readOnlyHint: true` now require the `mcp:write` scope, and capabilities with `#[RequiresAdmin]` or `#[RequiresAdminChanges]` require `mcp:admin`. ([#20080](https://github.com/craftcms/cms/pull/20080))
 - Plain Text, Markdown, Email, Link, Number, Money, Lightswitch, Date, Time, Color, Country, Table, and option fields now implement `CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface`.
 - Added `CraftCms\Cms\Gql\GqlInputSchema`, which describes the values GraphQL input types accept as JSON schemas.
+- Added `CraftCms\Cms\Element\Attributes\ElementProperty`, which element properties and setters can use to describe the values they accept. The `elements.*` MCP tools’ create and update attributes and GraphQL mutation arguments are built from them, and element mutation argument classes that override `CraftCms\Cms\Gql\Arguments\ElementMutationArguments::elementType()` get arguments for their element type’s described properties automatically. ([#20216](https://github.com/craftcms/cms/pull/20216))
 - Control panel screens from plugins that haven’t been updated for Craft 6 now render inside the control panel shell, with their tabs, assets, and JavaScript intact.
 - Element index screens from plugins that haven’t been updated for Craft 6 now use the new element index, with the element type’s sources in the secondary nav and a Customize Sources action.
 - Added `CraftCms\Cms\Ui\Nodes\Table`, for rendering admin tables from PHP UI definitions. ([#19935](https://github.com/craftcms/cms/pull/19935))

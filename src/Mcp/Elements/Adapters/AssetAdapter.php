@@ -50,13 +50,11 @@ class AssetAdapter extends BaseElementAdapter
         return [
             'type' => 'object',
             'properties' => [
-                'title' => ['type' => ['string', 'null'], 'description' => 'Asset title.'],
-                'slug' => ['type' => ['string', 'null'], 'description' => 'Asset slug.'],
-                'alt' => ['type' => ['string', 'null'], 'description' => 'Alternative text.'],
-                'enabled' => ['type' => 'boolean', 'description' => 'Whether the asset is enabled.'],
-                'filename' => ['type' => 'string', 'description' => 'Asset filename. Changing it renames the file.'],
-                'folderId' => ['type' => 'integer', 'description' => 'Asset folder ID. Changing it moves the file.'],
-                'uploaderId' => ['type' => ['integer', 'null'], 'description' => 'ID of the user who uploaded the asset. Null marks it unknown. Changing it requires permission to save other users’ assets in the volume.'],
+                ...$this->propertySchemas(['title', 'slug', 'alt', 'enabled', 'filename', 'folderId', 'uploaderId'], [
+                    'filename' => 'Changing it renames the file.',
+                    'folderId' => 'Changing it moves the file.',
+                    'uploaderId' => 'Null marks it unknown. Changing it requires permission to save other users’ assets in the volume.',
+                ]),
                 'focalPoint' => [
                     'type' => ['object', 'null'],
                     'description' => 'Image or video focal point, as fractions of the width (x) and height (y) from the top-left corner. Image transforms crop around it. Null clears it.',

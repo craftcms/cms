@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Mcp\Elements;
 
+use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\UserInitiatedElementSave;
@@ -17,6 +19,7 @@ use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Gate;
+use LogicException;
 use Mcp\Exception\ToolCallException;
 
 /**
@@ -52,6 +55,43 @@ abstract class BaseElementAdapter implements ElementAdapter
     protected function createAttributesSchema(): ?array
     {
         return null;
+    }
+
+    /**
+     * Returns JSON Schema properties for element properties declared with {@see ElementProperty}.
+     *
+     * @param  list<string>  $names  Property names to return. Every name must be declared.
+     * @param  array<string, string>  $hints  Guidance for MCP clients, appended to property descriptions.
+     * @return array<string, array<string, mixed>>
+     */
+    protected function propertySchemas(array $names, array $hints = []): array
+    {
+        $elementType = static::elementType();
+        $properties = ElementProperty::all($elementType);
+        $schemas = [];
+
+        foreach ($names as $name) {
+            $property = $properties[$name] ?? throw new LogicException("[$elementType] does not declare the element property [$name].");
+            $schema = match ($property->type) {
+                ElementPropertyType::String => ['type' => 'string'],
+                ElementPropertyType::Int, ElementPropertyType::Id => ['type' => 'integer'],
+                ElementPropertyType::IdList => ['type' => 'array', 'items' => ['type' => 'integer']],
+                ElementPropertyType::Boolean => ['type' => 'boolean'],
+                ElementPropertyType::DateTime => ['type' => 'string', 'format' => 'date-time'],
+                ElementPropertyType::Float => ['type' => ['number', 'string']],
+            };
+
+            if ($property->nullable) {
+                $schema['type'] = [...(array) $schema['type'], 'null'];
+            }
+
+            $schemas[$name] = [
+                ...$schema,
+                'description' => trim($property->descriptionFor($elementType).' '.($hints[$name] ?? '')),
+            ];
+        }
+
+        return $schemas;
     }
 
     /**
