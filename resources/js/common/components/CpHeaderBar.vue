@@ -15,6 +15,7 @@
   import SystemInfo from '@/common/components/SystemInfo.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import {cpBreakpoints} from '@/common/composables/useCpBreakpoints';
+  import AssistantToggle from '@/modules/ai/assistant/AssistantToggle.vue';
   import CommandPaletteTrigger from '@/modules/command-palette/components/CommandPaletteTrigger.vue';
 
   // Passed in rather than read here: `crumbs` is a page prop, but whether there's
@@ -52,6 +53,9 @@
   const maintenanceMode = computed(() => page.props.craft.maintenanceMode);
   const notifications = computed(() => page.props.craft.general.notifications);
   const devMode = computed(() => page.props.craft.devMode);
+  const hasAssistant = computed(
+    () => page.props.craft.currentUser?.aiAssistant ?? false
+  );
 
   /**
    * Which bridge drew this screen, for the badge below. Only the two bridged
@@ -125,6 +129,7 @@
         <div class="flex gap-lg items-center">
           <div class="flex gap-sm items-center">
             <CommandPaletteTrigger />
+            <AssistantToggle v-if="hasAssistant" />
             <cp-notification-center
               :notifications.prop="notifications"
             ></cp-notification-center>

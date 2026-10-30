@@ -28,7 +28,8 @@ readonly class ActivityEventSerializer
                     'id', 'type', 'occurredAt', 'actor', 'impersonator', 'source',
                     'subject', 'site', 'origin', 'description', 'changes', 'comment',
                 ]);
-                $serialized['actor'] = Arr::except($serialized['actor'], ['url']);
+                // Where they're edited, and their photo's colors, are only for the control panel.
+                $serialized['actor'] = Arr::except($serialized['actor'], ['url', 'photoColors']);
                 $serialized['impersonator'] = $serialized['impersonator'] !== null
                     ? Arr::except($serialized['impersonator'], ['url'])
                     : null;

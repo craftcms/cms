@@ -7,6 +7,7 @@
   import {
     computed,
     getCurrentInstance,
+    inject,
     onErrorCaptured,
     provide,
     shallowRef,
@@ -15,6 +16,14 @@
   } from 'vue';
   import CopyElementValuesController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/CopyElementValuesController';
   import CrossSiteCopyModal from './CrossSiteCopyModal.vue';
+  import {revealElement} from '@/common/utils/dom';
+  import {assistantApi} from '@/bootstrap/assistant';
+  import {addElementField} from '@/modules/ai/assistant/element-context';
+  import {
+    AssistantEditorKey,
+    assistantContainer,
+    type ApplyAssistantProposalDetail,
+  } from '@/modules/ai/assistant/context';
   import UiNodeList from './UiNodeList.vue';
   import {
     FieldActionItems,
@@ -280,6 +289,64 @@
       detail.siteIds.includes(site.id)
     );
   });
+
+  const assistantEditor = inject(AssistantEditorKey, null);
+
+  // Adds this field to the AI assistant's context, and opens the assistant.
+  useEventListener(window, 'craft:add-to-ai-assistant', (event: Event) => {
+    const detail = (event as CustomEvent<{trigger?: unknown}>).detail;
+
+    if (
+      !assistantEditor ||
+      !(detail?.trigger instanceof HTMLElement) ||
+      detail.trigger.closest('craft-field') !== field.value
+    ) {
+      return;
+    }
+
+    const editorScope = assistantEditor.scope();
+    const path = control.value.path;
+
+    if (!pathsMatch(path.slice(0, editorScope.length), editorScope)) {
+      return;
+    }
+
+    addElementField(assistantEditor, {
+      path: path.slice(editorScope.length).join('.'),
+      label: resolvedNode.value.props.label ?? path.at(-1) ?? '',
+    });
+    assistantApi.open();
+  });
+
+  useEventListener(
+    window,
+    'craft:apply-ai-assistant-proposal',
+    (event: Event) => {
+      const detail = (event as CustomEvent<ApplyAssistantProposalDetail>)
+        .detail;
+      const {proposal, container, reveal} = detail;
+
+      if (
+        !field.value ||
+        assistantContainer(field.value) !== container ||
+        !pathsMatch(proposal.path, control.value.path)
+      ) {
+        return;
+      }
+
+      if (proposal.node) {
+        resolvedNode.value = proposal.node;
+      }
+
+      setValue(proposal.value);
+      detail.applied = true;
+
+      // The field may be on another tab than the one showing.
+      if (reveal) {
+        void revealElement(field.value);
+      }
+    }
+  );
 
   const generating = shallowRef(false);
 

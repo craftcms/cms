@@ -14,6 +14,8 @@ use CraftCms\Cms\Cp\Components\Radio;
 use CraftCms\Cms\Cp\Components\RadioGroup;
 use CraftCms\Cms\Cp\Components\Select as SelectComponent;
 use CraftCms\Cms\Cp\Enums\CheckboxSelectPresentation;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\Enums\AllOptionMode;
 use CraftCms\Cms\Ui\Enums\ChoicePresentation;
@@ -30,12 +32,16 @@ class Choice extends Control
     /** The token {@see self::allOption()} posts by default. */
     public const string ALL_VALUE = '*';
 
-    /** @var list<array{label: string, labelHtml?: string, icon?: string, value: bool|float|int|string, disabled?: bool, thumbnail?: array{src: string, width?: int, height?: int, aspectRatio?: string}}> */
+    /** @var list<array{label: string, labelHtml?: string, icon?: string, color?: string, custom?: bool, value: bool|float|int|string, disabled?: bool, thumbnail?: array{src: string, width?: int, height?: int, aspectRatio?: string}}> */
     private array $options = [];
 
     private bool $multiple = false;
 
     private bool $sortable = false;
+
+    private bool $iconsOnly = true;
+
+    private bool $allowCustom = false;
 
     private ChoicePresentation $presentation = ChoicePresentation::Select;
 
@@ -79,7 +85,10 @@ class Choice extends Control
      * `group` heads a run of consecutive options sharing it, when presented as
      * a select; other presentations ignore it.
      *
-     * @param  list<array{label: string, labelHtml?: string, icon?: string, value: bool|float|int|string, disabled?: bool, group?: string|null, thumbnail?: array{src: string, width?: int, height?: int, aspectRatio?: string}}>  $options
+     * `icon` and `color` are shown before a checkbox or radio label: the icon tinted
+     * with the color, or a color swatch when there's no icon.
+     *
+     * @param  list<array{label: string, labelHtml?: string, icon?: string, color?: string, custom?: bool, value: bool|float|int|string, disabled?: bool, group?: string|null, thumbnail?: array{src: string, width?: int, height?: int, aspectRatio?: string}}>  $options
      */
     public function options(array $options): static
     {
@@ -95,6 +104,29 @@ class Choice extends Control
         if ($multiple && $this->presentation === ChoicePresentation::Select) {
             $this->presentation = ChoicePresentation::Checkboxes;
         }
+
+        return $this;
+    }
+
+    /**
+     * Whether a button with an icon shows only the icon, named by its label.
+     * Without it, the icon sits beside the label. Buttons presentation only.
+     */
+    public function iconsOnly(bool $iconsOnly = true): static
+    {
+        $this->iconsOnly = $iconsOnly;
+
+        return $this;
+    }
+
+    /**
+     * Whether people can add their own options alongside the given ones.
+     * Options marked `custom` are values added that way. Checkboxes and radios
+     * presentations only.
+     */
+    public function allowCustom(bool $allowCustom = true): static
+    {
+        $this->allowCustom = $allowCustom;
 
         return $this;
     }
@@ -212,6 +244,14 @@ class Choice extends Control
             $props['placeholder'] = $this->placeholder;
         }
 
+        if (! $this->iconsOnly) {
+            $props['iconsOnly'] = false;
+        }
+
+        if ($this->allowCustom) {
+            $props['allowCustom'] = true;
+        }
+
         return $props;
     }
 
@@ -316,6 +356,9 @@ class Choice extends Control
             ->id($attributes['id'])
             ->name($attributes['name'])
             ->options($checkboxes)
+            ->customOptionTemplate(($control->props['allowCustom'] ?? false) && $name !== null
+                ? FormFields::customCheckboxTemplate($name, $attributes['aria']['describedby'] ?? null)
+                : null)
             ->attributes(self::groupAttributes($attributes, 'group'))
             ->toHtml();
     }
@@ -387,7 +430,7 @@ class Choice extends Control
     }
 
     /**
-     * @param  array{label: string, labelHtml?: string, value: bool|float|int|string, disabled?: bool}  $option
+     * @param  array{label: string, labelHtml?: string, icon?: string, color?: string, custom?: bool, value: bool|float|int|string, disabled?: bool}  $option
      * @param  array<string, mixed>  $attributes
      */
     private static function checkbox(array $option, int $index, array $attributes, ?string $name, bool $checked): Checkbox
@@ -399,6 +442,13 @@ class Choice extends Control
             ->checked($checked)
             ->disabled($attributes['name'] === null || ($option['disabled'] ?? false))
             ->label(self::optionLabel($option))
+            ->icon($option['icon'] ?? null)
+            ->color($option['color'] ?? null)
+            ->custom(($option['custom'] ?? false) ? FormFields::textHtml([
+                'value' => (string) $option['value'],
+                'class' => 'small custom-option-input',
+                'labelledBy' => "{$attributes['id']}-{$index}-label",
+            ]) : null)
             ->describedBy($attributes['aria']['describedby'] ?? null)
             ->inputAttributes([
                 'aria' => ['invalid' => $attributes['aria']['invalid'] ?? null],
@@ -418,16 +468,27 @@ class Choice extends Control
 
     /**
      * With `$buttons`, the radios are drawn as a row of joined buttons, and an
-     * option with an icon shows only the icon, named by the option's label.
+     * option with an icon shows only the icon, named by the option's label,
+     * unless the control isn't {@see self::iconsOnly()}.
      *
      * @param  array<string, mixed>  $attributes
      */
     private static function radiosHtml(ControlPayload $control, mixed $value, array $attributes, bool $buttons = false): string
     {
         $values = self::values($value);
-        $radios = array_map(function (array $option, int $index) use ($attributes, $values, $buttons): Radio {
+        $iconsOnly = $control->props['iconsOnly'] ?? true;
+        $allowCustom = ! $buttons && ($control->props['allowCustom'] ?? false);
+        $options = $control->props['options'];
+        $customOption = null;
+
+        if ($allowCustom) {
+            $customOption = Arr::first($options, fn (array $option): bool => $option['custom'] ?? false);
+            $options = array_values(array_filter($options, fn (array $option): bool => ! ($option['custom'] ?? false)));
+        }
+
+        $radios = array_map(function (array $option, int $index) use ($attributes, $values, $buttons, $iconsOnly): Radio {
             $optionValue = (string) $option['value'];
-            $icon = $buttons ? ($option['icon'] ?? null) : null;
+            $icon = $buttons && $iconsOnly ? ($option['icon'] ?? null) : null;
 
             return Radio::make()
                 ->id("{$attributes['id']}-{$index}")
@@ -437,13 +498,27 @@ class Choice extends Control
                 ->disabled($attributes['name'] === null || ($option['disabled'] ?? false))
                 ->label($icon !== null ? Icon::make()->name($icon)->label($option['label']) : self::optionLabel($option))
                 ->attributes(['title' => $icon !== null ? $option['label'] : null])
+                ->icon($icon === null ? ($option['icon'] ?? null) : null)
+                ->color($buttons ? null : ($option['color'] ?? null))
                 ->thumbnail($option['thumbnail'] ?? null)
                 ->describedBy($attributes['aria']['describedby'] ?? null)
                 ->inputAttributes([
                     'required' => $attributes['required'],
                     'aria' => ['invalid' => $attributes['aria']['invalid'] ?? null],
                 ]);
-        }, $control->props['options'], array_keys($control->props['options']));
+        }, $options, array_keys($options));
+
+        if ($allowCustom) {
+            $radios[] = FormFields::radioFromConfig([
+                'id' => "{$attributes['id']}-custom",
+                'name' => $attributes['name'],
+                'value' => $customOption !== null ? (string) $customOption['value'] : '',
+                'checked' => $customOption !== null && in_array((string) $customOption['value'], $values, true),
+                'disabled' => $attributes['name'] === null,
+                'describedBy' => $attributes['aria']['describedby'] ?? null,
+                'custom' => true,
+            ]);
+        }
 
         return RadioGroup::make()
             ->id($attributes['id'])
@@ -474,18 +549,21 @@ class Choice extends Control
      */
     private static function buttons(ControlPayload $control, array $values, array $attributes): array
     {
-        return array_map(function (array $option) use ($attributes, $values): Button {
+        $iconsOnly = $control->props['iconsOnly'] ?? true;
+
+        return array_map(function (array $option) use ($attributes, $values, $iconsOnly): Button {
             $optionValue = (string) $option['value'];
 
             $icon = $option['icon'] ?? null;
+            $iconOnly = $iconsOnly && $icon !== null;
 
             return Button::make()
                 ->icon($icon)
                 // An icon-only button keeps its light DOM empty, which is what
                 // `<craft-button>` keys its square treatment on. The option's
                 // label becomes the button's accessible name instead.
-                ->label($icon !== null ? null : self::optionLabel($option))
-                ->accessibleName($icon !== null ? $option['label'] : null)
+                ->label($iconOnly ? null : self::optionLabel($option))
+                ->accessibleName($iconOnly ? $option['label'] : null)
                 ->value($optionValue)
                 ->active(in_array($optionValue, $values, true))
                 ->disabled($attributes['name'] === null || ($option['disabled'] ?? false));

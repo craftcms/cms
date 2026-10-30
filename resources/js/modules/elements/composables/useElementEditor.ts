@@ -27,6 +27,7 @@ import type {
 } from '@/modules/elements/composables/useElementActionMenu';
 import {useInertiaUiRenderer} from '@/modules/ui/useInertiaUiRenderer';
 import {useElementAutosave} from '@/modules/elements/composables/useElementAutosave';
+import type {ElementPreview} from '@/modules/elements/live-preview/useLivePreview';
 import {useElementActivity} from '@/modules/elements/composables/useElementActivity';
 import {useSiteStatuses} from '@/modules/elements/composables/useSiteStatuses';
 import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
@@ -153,8 +154,17 @@ export interface ElementEditPayload {
   canDiscardDraft: boolean;
   actionMenu: Array<ElementActionMenuItem>;
   previewTargets: Array<ElementPreviewTarget>;
+  /** What Live Preview needs; `null` when the element can't be previewed here. */
+  preview?: ElementPreview | null;
+  /**
+   * Set when the screen is only there for Live Preview, which stays open.
+   * `redirect` is where saving leaves for, pre-encrypted by the server.
+   */
+  standalonePreview?: {redirect: string; editUrl: string | null} | null;
   elementDisplayName: string;
   activityUrl: string | null;
+  /** Identifies the element to the AI assistant, when the user can add it to the assistant’s context. */
+  aiAssistant: CraftCms.Cms.Ai.Assistant.Data.ElementParams | null;
   activityTimelineUrl: string | null;
   activityPageUrl: string | null;
   updatedTimestamps: {element: number | null; canonical: number | null};
@@ -625,6 +635,14 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   }
 
   /**
+   * The form's current values, including the sidebar's, as a save would post
+   * them.
+   */
+  function formValues(): UiValues {
+    return {...saveData?.(), ...requestValues(form.data())};
+  }
+
+  /**
    * Re-renders the field layout from the server, keeping unsaved values.
    *
    * Resolves with the server's response once it's been applied, or nothing
@@ -793,6 +811,8 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
         Object.assign(transformed, action.params);
         if (action.redirect) {
           transformed.redirect = action.redirect;
+        } else if (!pendingAction.value && props.standalonePreview) {
+          transformed.redirect = props.standalonePreview.redirect;
         }
 
         return transformed;
@@ -1224,6 +1244,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     nestedOwnerEditor,
     refreshUi,
     refreshLayout,
+    formValues,
     save,
     sidebarErrors,
     sidebarPayload,

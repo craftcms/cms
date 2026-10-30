@@ -460,7 +460,7 @@
       :name="inputName(control.path)"
       value=""
     />
-    <div class="overflow-x-auto">
+    <div class="table-control__scroller overflow-x-auto">
       <table
         class="editable cp-table cp-table--editable cp-table--ruled w-full"
       >
@@ -646,6 +646,12 @@
 </template>
 
 <style scoped>
+  .table-control__scroller {
+    margin-inline: calc(var(--cp-scroll-bleed, 0px) * -1);
+    padding-inline: var(--cp-scroll-bleed, 0px);
+    scroll-padding-inline: var(--cp-scroll-bleed, 0px);
+  }
+
   .row--dragging {
     opacity: 0.4;
   }

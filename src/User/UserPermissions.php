@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User;
 
 use Closure;
+use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -123,6 +124,7 @@ class UserPermissions
         $this->volumePermissions($permissions);
         $this->utilityPermissions($permissions);
         $this->importPermissions($permissions);
+        $this->aiPermissions($permissions);
 
         return $this->permissionGroupCatalog->apply($permissions);
     }
@@ -834,6 +836,18 @@ class UserPermissions
                         ),
                     ])->filter(),
                 ),
+            ]),
+        ));
+    }
+
+    /** @param Collection<int, PermissionGroup> $permissions */
+    private function aiPermissions(Collection $permissions): void
+    {
+        $permissions->add(new PermissionGroup(
+            handle: 'ai',
+            heading: t('AI'),
+            permissions: collect([
+                new Permission(key: Assistant::PERMISSION, label: t('Use the AI assistant')),
             ]),
         ));
     }

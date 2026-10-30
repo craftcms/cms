@@ -34,8 +34,18 @@ abstract class ViewModel implements Arrayable, ProvidesInertiaProperties
     {
         return [
             ...Utils::getPublicProperties($this),
-            ...array_map(fn (Closure $method): mixed => $method(), $this->publicMethodClosures()),
+            ...array_map(fn (Closure $method): mixed => $method(), $this->arrayMethodClosures()),
         ];
+    }
+
+    /**
+     * The payload methods array conversion evaluates.
+     *
+     * @return array<string, Closure>
+     */
+    protected function arrayMethodClosures(): array
+    {
+        return $this->publicMethodClosures();
     }
 
     /** @return array<string, mixed> */

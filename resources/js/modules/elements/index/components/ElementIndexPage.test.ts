@@ -192,6 +192,7 @@ async function mountPage(
       exportElements: vi.fn(),
       structureView: {isCollapsed: () => false, isPending: () => false},
       loading: ref(false),
+      pending: ref(false),
       processing: ref(false),
       filterContext: ref(null),
       visibleViewModes: ref([]),

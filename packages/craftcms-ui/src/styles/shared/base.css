@@ -18,6 +18,14 @@ body {
   color: var(--c-text-default);
 }
 
+/* Selects are transparent, and Chrome on Windows draws their option lists on
+   the select's background, falling back to white, while the options keep the
+   theme's text color, so they'd be light on white in the dark theme. */
+select :is(option, optgroup) {
+  background-color: var(--c-surface-raised);
+  color: var(--c-text-default);
+}
+
 /*
   Placeholders take the quiet text color rather than the browser default, which
   falls short of contrast against dark surfaces. Firefox also dims them with
@@ -301,6 +309,30 @@ Previously `.readable`
 
   ul {
     list-style: disc;
+  }
+
+  ol {
+    list-style: decimal;
+  }
+
+  li:has(> input[type='checkbox']) {
+    list-style: none;
+    margin-inline-start: -1.25em;
+  }
+
+  blockquote {
+    display: grid;
+    gap: 0.5em;
+    margin-inline: 0;
+    padding-inline-start: 0.75em;
+    border-inline-start: 3px solid var(--c-color-neutral-border-normal);
+    color: var(--c-text-quiet);
+  }
+
+  :not(pre) > code {
+    padding-inline: 0.25em;
+    border-radius: var(--c-radius-sm);
+    background-color: var(--c-surface-sunken);
   }
 }
 

@@ -24,6 +24,8 @@
       /** The thumbnail sizes the active view mode offers. */
       thumbSizeOptions?: Array<ThumbSize>;
       sortOptions: Array<SortOption>;
+      /** Whether any View menu setting differs from the source's default. */
+      viewCustomized?: boolean;
       processing?: boolean;
       /**
        * The sites this index can be switched between.
@@ -58,6 +60,7 @@
   const emit = defineEmits<{
     (e: 'submit'): void;
     (e: 'reorder', options: Array<CheckboxOption>): void;
+    (e: 'use-default-view'): void;
     (e: 'site-change', handle: string): void;
   }>();
 
@@ -246,11 +249,13 @@
             :disabled="processing"
             :thumb-size-options="thumbSizeOptions"
             :show-table-columns="mode === 'table' || mode === 'structure'"
+            :customized="viewCustomized"
             v-model:sort-field="sortField"
             v-model:sort-direction="sortDirection"
             v-model:table-columns="tableColumns"
             v-model:thumb-size="thumbSize"
             @reorder="(options) => emit('reorder', options)"
+            @use-defaults="emit('use-default-view')"
           />
         </div>
       </div>

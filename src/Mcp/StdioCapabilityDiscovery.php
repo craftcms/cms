@@ -20,6 +20,6 @@ readonly class StdioCapabilityDiscovery implements DiscovererInterface
         array $excludeDirs = [],
         array $namePatterns = self::DEFAULT_NAME_PATERNS,
     ): DiscoveryState {
-        return $this->capabilities->discoverStdio($basePath, $directories, $excludeDirs, $namePatterns);
+        return $this->capabilities->discoverWithoutToken($basePath, $directories, $excludeDirs, $namePatterns);
     }
 }

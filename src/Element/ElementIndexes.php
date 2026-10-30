@@ -18,7 +18,6 @@ use CraftCms\Cms\Support\Typecast;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Contracts\Database\Query\Expression as ExpressionInterface;
 use Illuminate\Support\Facades\DB;
-use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
 use function CraftCms\Cms\t;
 
@@ -428,7 +427,7 @@ class ElementIndexes
 
             $orderBy = $sortOption['orderBy'];
 
-            if ($orderBy instanceof Coalesce) {
+            if ($orderBy instanceof ExpressionInterface) {
                 $sql = $orderBy->getValue(DB::getQueryGrammar());
             } elseif (is_string($orderBy)) {
                 $sql = $orderBy;

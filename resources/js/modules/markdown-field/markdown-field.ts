@@ -37,6 +37,7 @@ interface TextareaAttributes {
   'aria-describedby'?: string;
   maxlength?: number;
   disabled?: string;
+  readonly?: string;
   required?: string;
   'aria-invalid'?: string;
 }
@@ -71,6 +72,13 @@ class MarkdownField extends LitElement {
 
   @property({type: Boolean})
   disabled = false;
+
+  /**
+   * Shows the value without letting it be changed, while it can still be
+   * focused, selected, and scrolled, unlike a disabled field.
+   */
+  @property({type: Boolean})
+  readonly = false;
 
   @property({type: Boolean})
   required = false;
@@ -301,9 +309,10 @@ class MarkdownField extends LitElement {
       value: this.value,
     };
 
-    const uploadOptions = this.disabled
-      ? undefined
-      : fileUploadOptions(this.uploadFolderId, this.uploadSiteId);
+    const uploadOptions =
+      this.disabled || this.readonly
+        ? undefined
+        : fileUploadOptions(this.uploadFolderId, this.uploadSiteId);
 
     if (uploadOptions) {
       options.fileUpload = uploadOptions;
@@ -411,6 +420,10 @@ class MarkdownField extends LitElement {
       props.disabled = 'disabled';
     }
 
+    if (this.readonly) {
+      props.readonly = 'readonly';
+    }
+
     if (this.required) {
       props.required = 'required';
     }
@@ -503,6 +516,7 @@ class MarkdownField extends LitElement {
 
     this.editor.textarea.name = this.name ?? '';
     this.editor.textarea.disabled = this.disabled;
+    this.editor.textarea.readOnly = this.readonly;
     this.editor.textarea.required = this.required;
     if (this.invalid) {
       this.editor.textarea.setAttribute('aria-invalid', 'true');
@@ -511,9 +525,9 @@ class MarkdownField extends LitElement {
     }
     this.editor.wrapper
       .querySelectorAll<HTMLButtonElement>('button')
-      .forEach((button) => (button.disabled = this.disabled));
+      .forEach((button) => (button.disabled = this.disabled || this.readonly));
 
-    if (this.disabled || !this.showToolbar) {
+    if (this.disabled || this.readonly || !this.showToolbar) {
       this.editor.toolbar?.hide();
     } else {
       this.editor.toolbar?.show();

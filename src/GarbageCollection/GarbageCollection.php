@@ -20,6 +20,7 @@ use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedSearchIndexJobs;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedStructureElements;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePointlessChangeData;
+use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleAiConversations;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleBulkOpData;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleElementActivity;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleNotifications;
@@ -103,6 +104,7 @@ class GarbageCollection
             PurgeExpiredActivity::class,
             DeleteStaleBulkOpData::class,
             DeleteStaleNotifications::class,
+            DeleteStaleAiConversations::class,
 
             // elements should always go first
             HardDeleteElements::class,

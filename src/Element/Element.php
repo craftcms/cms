@@ -472,7 +472,11 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
         return $values;
     }
 
-    /** @return string[] */
+    /**
+     * Returns the names of the element’s attributes, leaving out its internal state, such as how it’s being saved.
+     *
+     * @return string[]
+     */
     public function attributes(): array
     {
         $names = array_flip(Utils::getPublicAttributes($this));
@@ -492,22 +496,36 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
         unset(
             $names['applyingDraft'],
             $names['awaitingFieldValues'],
+            $names['collapsed'],
+            $names['dateLastMerged'],
+            $names['deletedWithOwner'],
             $names['duplicateOf'],
+            $names['eagerLoadInfo'],
             $names['elementQueryResult'],
             $names['firstSave'],
+            $names['forceSave'],
             $names['hardDelete'],
-            $names['mergingCanonicalChanges'],
-            $names['newSiteIds'],
+            $names['hasProvisionalChanges'],
             $names['isNewForSite'],
             $names['isNewSite'],
+            $names['markDraftAsSaved'],
+            $names['mergingCanonicalChanges'],
+            $names['newSiteIds'],
+            $names['oldStatus'],
+            $names['placeInStructure'],
             $names['previewing'],
             $names['propagateAll'],
             $names['propagateRequired'],
             $names['propagating'],
             $names['propagatingFrom'],
             $names['resaving'],
+            $names['ruleset'],
             $names['saveOwnership'],
             $names['searchScore'],
+            $names['siteSettingsId'],
+            $names['tempId'],
+            $names['touchOwnersOnSave'],
+            $names['trackDraftChanges'],
             $names['updateSearchIndexForOwner'],
             $names['updateSearchIndexImmediately'],
             $names['updatingFromDerivative'],

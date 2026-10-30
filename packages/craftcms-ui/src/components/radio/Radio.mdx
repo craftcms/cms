@@ -24,6 +24,10 @@ The radio carries the option's `label` and `value`. The group carries the name, 
 
 Like [Checkbox](?path=/docs/form-controls-choice-controls-checkbox--docs), it keeps the `checked`, `disabled`, and `name` of a server-rendered input rather than resetting them when the component upgrades.
 
+## Native Radios
+
+A native `<input type="radio">` that can’t be in a group of these, such as one beside a text field, is drawn the same way with the `cp-radio` class. It gets the look, not the component’s behavior.
+
 ## Accessibility
 
 Lion wires the label to the input. The group names the question with `role="radiogroup"` and its label, and the browser's native radio grouping — every option sharing the group's `name` — is what makes the arrow keys move between options.

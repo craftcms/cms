@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Workflow\Contracts\WorkflowableInterface;
 use CraftCms\Cms\Workflow\Data\WorkflowReviewData;
@@ -210,12 +211,18 @@ class ElementEditorActions
             $element->hasRevisions() &&
             Gate::check('saveCanonical', $element)
         ) {
+            // Keep the editor's return URL, so saving after the revert still goes back where it was opened from
+            $returnUrl = request()->query('returnUrl');
+
             $actions[] = [
                 'label' => t('Revert content from this revision'),
                 'actionUrl' => Url::actionUrl('elements/revert'),
                 'params' => [
                     ...$this->identityParams($element),
                     'revisionId' => $element->revisionId,
+                    ...(is_string($returnUrl) && $returnUrl !== ''
+                        ? ['redirectParams' => Json::encode(['returnUrl' => $returnUrl])]
+                        : []),
                 ],
                 'redirect' => Crypt::encrypt('{cpEditUrl}'),
                 'variant' => 'outline',

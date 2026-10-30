@@ -10,9 +10,12 @@
     computed,
     nextTick,
     onBeforeUnmount,
+    onMounted,
     provide,
+    ref,
     shallowReactive,
     useTemplateRef,
+    watch,
     type Component,
   } from 'vue';
   import {router, usePage} from '@inertiajs/vue3';
@@ -40,6 +43,15 @@
   import CpContainer from '@/common/components/CpContainer.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import {NestedOwnerEditorKey} from '@/modules/elements/nested-owner';
+  import {
+    AssistantEditorKey,
+    assistantContainer,
+    registerAssistantEditor,
+    type AssistantEditor,
+  } from '@/modules/ai/assistant/context';
+  import LivePreview from '@/modules/elements/live-preview/LivePreview.vue';
+  import {useLivePreview} from '@/modules/elements/live-preview/useLivePreview';
+  import {getActivePreview} from '@/modules/elements/live-preview/previews';
   import ReleaseCallout from '@/modules/releases/components/ReleaseCallout.vue';
   import ReleasePicker from '@/modules/releases/components/ReleasePicker.vue';
   import {provideReleaseEditorActions} from '@/modules/releases/releaseEditor';
@@ -106,6 +118,25 @@
   } = editor;
 
   provide(NestedOwnerEditorKey, editor.nestedOwnerEditor);
+
+  // The AI assistant reads the form's values, and applies the changes it
+  // proposes, through the fields that render each control path.
+  const assistantParams = payload.aiAssistant;
+
+  if (assistantParams) {
+    const assistantEditor: AssistantEditor = {
+      id: crypto.randomUUID(),
+      params: () => payload.aiAssistant ?? assistantParams,
+      label: () => payload.title,
+      scope: () => uiPayload.value?.scope ?? [],
+      values: editor.formValues,
+      container: () =>
+        contentEl.value ? assistantContainer(contentEl.value) : null,
+    };
+
+    provide(AssistantEditorKey, assistantEditor);
+    onBeforeUnmount(registerAssistantEditor(assistantEditor));
+  }
 
   /**
    * Fields outside of a tab — in a field layout whose tab was never saved,
@@ -280,6 +311,75 @@
     () => (isSlideout || !page.props.readOnly) && !payload.release
   );
 
+  // A slideout opened from within a preview edits beside that preview, so it
+  // doesn't open one of its own.
+  const inOpenPreview = isSlideout && getActivePreview() !== null;
+  const livePreview = useLivePreview(
+    () => (inOpenPreview ? null : (payload.preview ?? null)),
+    {
+      save: () => autosave.save(),
+      get hasPendingChanges() {
+        return autosave.hasPendingChanges.value;
+      },
+    }
+  );
+  // Slideouts get View too, as Craft 5's had it in their action menu, which
+  // leaves it out once there are targets.
+  const showViewButtons = computed(
+    () =>
+      (showElementControls.value || (isSlideout && !payload.release)) &&
+      payload.previewTargets.length > 0
+  );
+  const canPreview = computed(
+    () =>
+      !inOpenPreview &&
+      (showElementControls.value || (isSlideout && !payload.release)) &&
+      Boolean(payload.preview?.targets.length)
+  );
+  const livePreviewPane =
+    useTemplateRef<InstanceType<typeof LivePreview>>('livePreviewPane');
+  const livePreviewTarget = computed(
+    () => livePreviewPane.value?.editorTarget ?? null
+  );
+  /** Whether the editor content is in Live Preview's pane rather than here. */
+  const contentInPreview = computed(
+    () =>
+      Boolean(livePreviewPane.value?.holdsEditor) &&
+      Boolean(livePreviewTarget.value)
+  );
+  const livePreviewTabsTarget = computed(() =>
+    contentInPreview.value ? (livePreviewPane.value?.tabsTarget ?? null) : null
+  );
+  // The content's height, kept while it's away so the page doesn't collapse
+  // and lose its scroll position. Read before the content moves.
+  const awayHeight = ref(0);
+  watch(
+    contentInPreview,
+    (away) => {
+      if (away) {
+        awayHeight.value = contentEl.value?.offsetHeight ?? 0;
+      }
+    },
+    {flush: 'pre'}
+  );
+  const previewButton = useTemplateRef<HTMLElement>('previewButton');
+
+  watch(autosave.saves, () => {
+    livePreview.draftSaved(autosave.lastResponse.value);
+
+    // A newer save is on its way, so this one's page would only be replaced.
+    if (!autosave.hasPendingChanges.value) {
+      void livePreview.refresh();
+    }
+  });
+
+  // The screen is only there for the preview.
+  onMounted(() => {
+    if (payload.standalonePreview && canPreview.value) {
+      void livePreview.open();
+    }
+  });
+
   /**
    * What the command palette offers on this page: the Save button and its
    * menu, discarding provisional changes, adding the draft to a release, and
@@ -440,8 +540,7 @@
   <LayoutSlot
     v-if="
       activity.activity.value.length ||
-      (!isSlideout && payload.workflow.draftReviews.length) ||
-      (showElementControls && payload.previewTargets.length)
+      (!isSlideout && payload.workflow.draftReviews.length)
     "
     name="content-toolbar-meta"
   >
@@ -449,10 +548,6 @@
     <WorkflowDraftsStatus
       v-if="!isSlideout && payload.workflow.draftReviews.length"
       :drafts="payload.workflow.draftReviews"
-    />
-    <ElementViewButtons
-      v-if="showElementControls"
-      :targets="payload.previewTargets"
     />
   </LayoutSlot>
 
@@ -471,6 +566,23 @@
       ></craft-icon>
       {{ button.label }}
     </craft-button>
+  </LayoutSlot>
+
+  <LayoutSlot v-if="showViewButtons" name="content-toolbar-actions">
+    <div class="flex gap-sm items-center">
+      <craft-button
+        v-if="canPreview"
+        ref="previewButton"
+        type="button"
+        size="small"
+        variant="plain"
+        icon="eye"
+        @click="livePreview.open()"
+      >
+        {{ t('Preview') }}
+      </craft-button>
+      <ElementViewButtons :targets="payload.previewTargets" />
+    </div>
   </LayoutSlot>
 
   <LayoutSlot
@@ -622,32 +734,81 @@
     </div>
   </LayoutSlot>
 
-  <div ref="content" class="py-lg">
-    <CpContainer>
-      <component
-        :is="formWrapper ?? 'div'"
-        v-bind="formWrapper ? {editor, region: 'content'} : {}"
-      >
-        <component
-          :is="hasUntabbedFields ? 'craft-field-group' : 'div'"
-          v-if="uiPayload"
-        >
-          <UiRenderer
-            ref="renderer"
-            :payload="uiPayload"
-            :errors="errors"
-            :refresh="uiPayload.refreshable ? refreshLayout : undefined"
-            :modified="autosave.modified.value"
-            :disabled="editorLocked"
-            :sidebar-tab-outlets="sidebarTabOutlets"
-            @update:mutation="onMutation"
-          />
-        </component>
-      </component>
-
-      <slot :payload="payload" />
-    </CpContainer>
+  <!-- While Live Preview holds the content: seen only as it slides out. -->
+  <div
+    v-if="contentInPreview"
+    class="element-editor__loading"
+    :style="{blockSize: `${awayHeight}px`}"
+  >
+    <craft-spinner :label="t('Loading')"></craft-spinner>
   </div>
+  <Teleport :to="livePreviewTarget" :disabled="!contentInPreview" defer>
+    <div ref="content" class="py-lg">
+      <CpContainer>
+        <component
+          :is="formWrapper ?? 'div'"
+          v-bind="formWrapper ? {editor, region: 'content'} : {}"
+        >
+          <component
+            :is="hasUntabbedFields ? 'craft-field-group' : 'div'"
+            v-if="uiPayload"
+          >
+            <UiRenderer
+              ref="renderer"
+              :payload="uiPayload"
+              :errors="errors"
+              :refresh="uiPayload.refreshable ? refreshLayout : undefined"
+              :modified="autosave.modified.value"
+              :disabled="editorLocked"
+              :sidebar-tab-outlets="sidebarTabOutlets"
+              :tabs-outlet="livePreviewTabsTarget"
+              @update:mutation="onMutation"
+            />
+          </component>
+        </component>
+
+        <slot :payload="payload" />
+      </CpContainer>
+    </div>
+  </Teleport>
+
+  <LivePreview
+    v-if="canPreview"
+    ref="livePreviewPane"
+    :controller="livePreview"
+    :title="payload.title"
+    :standalone="payload.standalonePreview ?? null"
+    @save="primaryAction()"
+    @closed="previewButton?.focus()"
+  >
+    <!-- The standalone page has no other header to reach them from. -->
+    <template v-if="payload.standalonePreview" #actions>
+      <ElementActionMenu
+        :items="payload.actionMenu"
+        :current-entry-type-id="form.typeId"
+      />
+    </template>
+    <template #status>
+      <AutosaveMessage
+        v-if="autosave.status.value !== 'idle'"
+        :status="autosave.status.value"
+        :saved-at="autosave.savedAt.value"
+        :error="autosave.error.value"
+        :http-status="autosave.httpStatus.value"
+        @refresh="reload"
+      />
+    </template>
+    <template #footer>
+      <craft-button
+        type="button"
+        variant="primary"
+        :disabled="workflowReviewLocked"
+        @click="primaryAction()"
+      >
+        {{ payload.editorActions.primary.label }}
+      </craft-button>
+    </template>
+  </LivePreview>
 
   <ElementDetailsPanels
     v-if="hasDetails || $slots['details-header']"
@@ -698,6 +859,18 @@
 </template>
 
 <style scoped lang="scss">
+  .element-editor__loading {
+    display: flex;
+    justify-content: center;
+
+    & craft-spinner {
+      position: sticky;
+      inset-block-start: calc(50% + var(--cp-header-height, 0px) / 2);
+      align-self: flex-start;
+      translate: 0 -50%;
+    }
+  }
+
   craft-callout {
     --c-callout-padding-inline: calc(var(--cp-container-padding) - 4px);
   }

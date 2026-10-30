@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Ai\Http\Controllers\AssistantController;
+use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Auth\TwoFactorRateLimiter;
 use CraftCms\Cms\Edition;
@@ -291,6 +293,19 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('elements/bulk-duplicate', [DuplicateElementController::class, 'bulkDuplicate']);
         Route::post('elements/copy-values-from-site', CopyElementValuesController::class);
 
+        // AI assistant
+        Route::middleware('can:'.Assistant::PERMISSION)->group(function () {
+            Route::get('ai/assistant', [AssistantController::class, 'show']);
+            Route::post('ai/assistant', [AssistantController::class, 'run']);
+            Route::get('ai/assistant/conversations', [AssistantController::class, 'conversations']);
+            Route::post('ai/assistant/context-fields', [AssistantController::class, 'contextFields']);
+            Route::get('ai/assistant/mentions', [AssistantController::class, 'mentions'])->middleware('throttle:120,1');
+            Route::get('ai/assistant/skills', [AssistantController::class, 'skills'])->middleware('throttle:120,1');
+            Route::post('ai/assistant/start', [AssistantController::class, 'start']);
+            Route::post('ai/assistant/rename', [AssistantController::class, 'rename']);
+            Route::post('ai/assistant/delete', [AssistantController::class, 'destroy']);
+        });
+
         // Element Indexes
         Route::post('element-indexes/source-path', [ElementIndexSourcesController::class, 'sourcePath']);
         Route::post('element-indexes/source-attribute-info', [ElementIndexSourcesController::class, 'sourceAttributeInfo']);
@@ -401,6 +416,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
 
         // Relational fields
         Route::post('relational-fields/structured-input-html', [RelationalFieldsController::class, 'structuredInputHtml']);
+        Route::post('relational-fields/structured-elements', [RelationalFieldsController::class, 'structuredElements']);
 
         // Widgets
         Route::post('dashboard/create-widget', [WidgetsController::class, 'store']);

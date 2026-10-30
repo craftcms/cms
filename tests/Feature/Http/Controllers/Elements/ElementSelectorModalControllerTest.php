@@ -28,6 +28,7 @@ beforeEach(function () {
         array_merge([
             'context' => ElementSources::CONTEXT_MODAL,
             'elementType' => Entry::class,
+            'viewMode' => 'table',
         ], $payload),
         ['Accept' => 'application/json'],
     );
@@ -44,6 +45,16 @@ it('serves index props alongside the html the legacy index still boots from', fu
     expect($props)->toBeArray();
     expect($props['elementType'])->toBe(Entry::class);
     expect($props['sources'])->toBeArray()->not->toBeEmpty();
+});
+
+it('leaves the rows out of a first payload that names no view mode', function () {
+    EntryModel::factory()->createElement();
+
+    $props = ($this->postBody)(['viewMode' => null])->assertOk()->json('props');
+
+    expect($props['sources'])->not->toBeEmpty()
+        ->and($props)->not->toHaveKeys(['data', 'pagination', 'structure']);
+    expect(($this->postBody)()->json('props.data'))->toHaveCount(1);
 });
 
 it('resolves sources in the modal context, not the index context', function () {

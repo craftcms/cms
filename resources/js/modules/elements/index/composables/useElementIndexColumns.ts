@@ -219,5 +219,44 @@ export function useElementIndexColumns(
     });
   }
 
-  return {columns, columnOrder, columnOptions, reorder, tableColumns, restore};
+  /** Whether the visible columns, and their order, are the source's default. */
+  const isDefault = computed(() => {
+    const defaults = defaultVisible.value.filter((key) => key !== pinned?.key);
+
+    return (
+      visibleKeys.value.length === defaults.length &&
+      visibleKeys.value.every((key, index) => key === defaults[index])
+    );
+  });
+
+  /**
+   * Forgets the source's column selection, so the server renders its default
+   * columns. Folded into one visit with the other View menu settings (see
+   * `useElementIndex`).
+   */
+  function resetToDefault(): IndexRestore | null {
+    if (isDefault.value) {
+      return null;
+    }
+
+    const sources = {...viewState.value.sources};
+    sources[sourceKey.value] = {
+      ...sources[sourceKey.value],
+      visible: undefined,
+    };
+    viewState.value.sources = sources;
+
+    return {params: {columns: null}, only: ['data']};
+  }
+
+  return {
+    columns,
+    columnOrder,
+    columnOptions,
+    reorder,
+    tableColumns,
+    restore,
+    isDefault,
+    resetToDefault,
+  };
 }

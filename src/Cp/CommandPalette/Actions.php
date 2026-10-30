@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\CommandPalette;
 
+use CraftCms\Cms\Ai\Skills\AgentSkills;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\Volume;
@@ -34,6 +35,7 @@ use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Utility\Utilities;
+use CraftCms\Cms\Utility\Utilities\AiGuidance;
 use CraftCms\Cms\Utility\Utilities\AssetIndexes;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
 use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
@@ -68,6 +70,7 @@ class Actions
         private readonly Utilities $utilities,
         private readonly ProjectConfig $projectConfig,
         private readonly ActionRegistry $registry,
+        private readonly AgentSkills $skills,
     ) {}
 
     /**
@@ -298,6 +301,28 @@ class Actions
                 ->description($description)
                 ->icon('image')
                 ->href(Url::cpUrl('utilities/asset-indexes'));
+        }
+
+        if ($this->utilities->checkAuthorization(AiGuidance::class)) {
+            $actions[] = new CommandPaletteItem()
+                ->id('create-skill')
+                ->label(t('Create skill'))
+                ->description($description)
+                ->icon('plus')
+                ->href(Url::cpUrl('ai-skills/new'));
+
+            // Search-only, as there's one per skill.
+            foreach ($this->skills->all() as $skill) {
+                $actions[] = $this->deleteAction(
+                    "delete-skill-$skill->id",
+                    t('Delete the {name} skill', ['name' => $skill->title]),
+                    t('Skill'),
+                    AiGuidance::skillEditUrl($skill),
+                    t('Are you sure you want to delete the “{name}” skill?', ['name' => $skill->title]),
+                )
+                    ->removesPage(AiGuidance::skillEditUrl($skill), AiGuidance::skillsUrl())
+                    ->searchOnly();
+            }
         }
 
         return $actions;
