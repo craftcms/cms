@@ -53,6 +53,7 @@ export default css`
   }
 
   :host([selected]) {
+    cursor: default;
     font-weight: var(--c-tab-font-weight-active, var(--font-weight-semibold));
   }
 
