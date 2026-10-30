@@ -32,6 +32,22 @@ readonly class Guidance
     }
 
     /**
+     * Returns the guidance added for each site that has any, indexed by site ID.
+     *
+     * @return array<int, string>
+     */
+    public function forSites(): array
+    {
+        // The newest row for a site comes last, so it’s the one that’s kept.
+        return AgentGuidance::query()
+            ->whereNotNull('siteId')
+            ->whereNull('userId')
+            ->orderBy('id')
+            ->pluck('body', 'siteId')
+            ->all();
+    }
+
+    /**
      * Returns a user’s own guidance.
      */
     public function forUser(int $userId): ?string

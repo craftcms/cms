@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Ai\Tasks;
 use CraftCms\Cms\Ai\Enums\Capability;
 use CraftCms\Cms\Ai\Task;
 use CraftCms\Cms\Support\Facades\Ai;
+use CraftCms\Cms\User\Contracts\CraftUser;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
@@ -24,11 +25,17 @@ class Assistant extends Task
     public const string PERMISSION = 'useAiAssistant';
 
     /**
-     * Whether the current user can use the assistant, and it can run.
+     * Whether the current user can use the assistant, and it can run. Remembered for the request, as every field in
+     * an element editor asks.
      */
     public static function isAvailable(): bool
     {
-        return currentUser()?->can(self::PERMISSION) === true && Ai::available(self::handle());
+        return self::isAvailableFor(currentUser());
+    }
+
+    private static function isAvailableFor(?CraftUser $user): bool
+    {
+        return once(static fn (): bool => $user?->can(self::PERMISSION) === true && Ai::available(self::handle()));
     }
 
     public static function handle(): string

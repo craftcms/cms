@@ -109,8 +109,9 @@ class AiGuidance extends Utility
     {
         $guidance = app(Guidance::class);
         $allSites = Sites::getAllSites();
+        $siteGuidance = $guidance->forSites();
         $showSites = Sites::isMultiSite()
-            || $allSites->contains(static fn (Site $site): bool => $guidance->forSite($site->id) !== null);
+            || $allSites->contains(static fn (Site $site): bool => isset($siteGuidance[$site->id]));
 
         $scopes = [[
             'siteId' => null,
@@ -128,7 +129,7 @@ class AiGuidance extends Utility
         $sites = $allSites->map(fn (Site $site): array => [
             'siteId' => $site->id,
             'heading' => $site->getName(),
-            'body' => $guidance->forSite($site->id) ?? '',
+            'body' => $siteGuidance[$site->id] ?? '',
             'editable' => $editableSiteIds->contains($site->id),
         ]);
 
