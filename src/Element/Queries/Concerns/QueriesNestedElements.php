@@ -20,7 +20,6 @@ use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Tpetry\QueryExpressions\Language\Alias;
 
 trait QueriesNestedElements
 {
@@ -141,7 +140,7 @@ trait QueriesNestedElements
 
             if (! $allowOwnerDrafts || ! $allowOwnerRevisions) {
                 $elementQuery->join(
-                    new Alias(Table::ELEMENTS, 'owners'),
+                    Table::ELEMENTS.' as owners',
                     fn (JoinClause $join) => $join->when(
                         $elementQuery->ownerId,
                         fn (JoinClause $join) => $join->on('owners.id', '=', 'elements_owners.ownerId'),
@@ -475,7 +474,7 @@ trait QueriesNestedElements
     /** @param AddressQuery|ContentBlockQuery|EntryQuery<Entry> $elementQuery */
     private static function prepForNestedElementParams(ElementQuery $elementQuery): void
     {
-        $joinTable = new Alias(Table::ELEMENTS_OWNERS, 'elements_owners');
+        $joinTable = Table::ELEMENTS_OWNERS.' as elements_owners';
 
         if ($elementQuery->query->joinsTable($joinTable)) {
             return;

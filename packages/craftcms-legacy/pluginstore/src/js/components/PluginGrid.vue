@@ -6,8 +6,8 @@
     >
       <div
         class="tw-grid-box sm:tw-flex"
-        v-for="(plugin, key) in computedPlugins"
-        :key="key"
+        v-for="plugin in computedPlugins"
+        :key="plugin.id"
       >
         <plugin-card
           class="sm:tw-flex-1"

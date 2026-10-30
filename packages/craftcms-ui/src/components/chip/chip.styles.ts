@@ -99,11 +99,10 @@ export default css`
     min-height: var(--c-size-control-md);
   }
 
-  /* Outside the plain appearance, small and medium chips are as tall as a
-     medium button, thumbnail included: it's inset by the border and the
-     padding it keeps from the chip's edges. */
-  .cp-chip--small:not(.cp-chip--plain),
-  .cp-chip--medium:not(.cp-chip--plain) {
+  /* Outside the plain appearance, small chips are as tall as a medium
+     button, thumbnail included: it's inset by the border and the padding it
+     keeps from the chip's edges. */
+  .cp-chip--small:not(.cp-chip--plain) {
     --_thumb-size: calc(
       var(--c-size-control-md) - var(--_border-width) * 2 -
         var(--_chip-block-padding) * 2
@@ -115,6 +114,31 @@ export default css`
     --_chip-spacing: 1em;
     --_thumb-size: calc(40rem / 16);
     min-height: var(--c-size-control-lg);
+  }
+
+  /* Thumbnail sizes, overriding the one the chip's size gives it: two
+     classes, so they win over the sizes' own. sm keeps the thumbnail a small
+     chip gives it. From lg, the corners grow along with the thumbnail. */
+  .cp-chip.cp-chip--thumb-md {
+    --_thumb-size: calc(60rem / 16);
+  }
+
+  .cp-chip.cp-chip--thumb-lg {
+    --_thumb-size: calc(120rem / 16);
+  }
+
+  .cp-chip.cp-chip--thumb-xl {
+    --_thumb-size: calc(180rem / 16);
+  }
+
+  .cp-chip.cp-chip--thumb-2xl {
+    --_thumb-size: calc(240rem / 16);
+  }
+
+  .cp-chip.cp-chip--thumb-lg,
+  .cp-chip.cp-chip--thumb-xl,
+  .cp-chip.cp-chip--thumb-2xl {
+    --_radius: var(--c-radius-lg);
   }
 
   /* Alignment */
@@ -341,6 +365,67 @@ export default css`
   }
 
   /*
+   * Stacked: the prefix sits above the label, both centered, for a tile in a
+   * grid. The checkbox and suffix share a row along the top, so reaching for
+   * one never lands on the thumbnail. Grid areas place each part, so a part
+   * that isn't rendered leaves its cell empty rather than shifting the rest.
+   */
+  .cp-chip--stacked {
+    display: inline-grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'prefix prefix prefix'
+      'main main main';
+    justify-items: center;
+    row-gap: var(--_chip-block-padding);
+    padding: var(--_chip-spacing);
+  }
+
+  :host([full-width]) .cp-chip--stacked {
+    display: grid;
+  }
+
+  .cp-chip--stacked.cp-chip--has-header {
+    grid-template-areas:
+      'select . suffix'
+      'prefix prefix prefix'
+      'main main main';
+    padding-block-start: var(--_chip-block-padding);
+  }
+
+  .cp-chip--stacked .cp-chip__select {
+    grid-area: select;
+    justify-self: start;
+  }
+
+  .cp-chip--stacked .cp-chip__prefix {
+    grid-area: prefix;
+  }
+
+  /* Clear of the chip's edges, the thumbnail's corners aren't concentric
+     with the chip's, so they keep a radius of their own. */
+  .cp-chip--stacked .cp-chip__thumbnail {
+    --c-thumbnail-image-radius: var(--c-radius-md);
+  }
+
+  .cp-chip--stacked .cp-chip__main {
+    grid-area: main;
+    justify-self: stretch;
+    justify-content: center;
+    padding-inline-end: 0;
+  }
+
+  .cp-chip--stacked .cp-chip__body {
+    flex-grow: 0;
+  }
+
+  .cp-chip--stacked .cp-chip__suffix {
+    grid-area: suffix;
+    justify-self: end;
+    margin-inline-start: 0;
+  }
+
+  /*
    * Appearance tiers, mirroring craft-callout so the two read at the same
    * intensity for a given variant. The variant remaps the generic
    * --c-color-* tokens; each tier below picks which loudness of them to use.
@@ -432,6 +517,12 @@ export default css`
        Invisible, except in forced colors, where it gives the chip an edge. */
     outline: 1px solid transparent;
     outline-offset: -1px;
+  }
+
+  /* Over the inset a leading thumbnail would otherwise get, too. */
+  .cp-chip--plain.cp-chip--leads-with-thumbnail,
+  .cp-chip--plain.cp-chip--leads-with-prefix {
+    padding-inline-start: 0;
   }
 
   .cp-chip--plain .cp-chip__main:last-child {

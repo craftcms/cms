@@ -3,7 +3,7 @@
   import {computed, shallowRef, useId} from 'vue';
   import controller from '@/actions/CraftCms/Cms/Http/Controllers/Workflows/WorkflowTransitionsController';
   import type {ElementEditorActions} from '@/modules/elements/composables/useElementEditor';
-  import {commentToolbarButtons} from '@/modules/markdown-field/commentToolbarButtons';
+  import {commentToolbarButtons} from '@/modules/markdown-field/toolbarPresets';
   import {
     useWorkflowTransition,
     type WorkflowReleaseState,
@@ -141,7 +141,7 @@
         show-toolbar
         .toolbarButtons="commentToolbarButtons"
         .value="note"
-        :disabled="processing"
+        .disabled="processing"
         @input="note = ($event.target as HTMLTextAreaElement).value"
         @keydown="onNoteKeydown"
       />
@@ -159,7 +159,7 @@
             type="button"
             size="small"
             :variant="ButtonVariant.Solid"
-            :disabled="processing || noteIsEmpty || overage > 0"
+            .disabled="processing || noteIsEmpty || overage > 0"
             focusable-when-disabled
             @click="addComment"
           >
@@ -176,7 +176,7 @@
       <craft-button
         type="button"
         :variant="ButtonVariant.Primary"
-        :disabled="processing || overage > 0"
+        .disabled="processing || overage > 0"
         @click="submitForReview"
       >
         {{ review.submitLabel }}

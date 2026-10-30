@@ -141,9 +141,6 @@
       :index="elementIndex"
       :source-href="sourceHref"
       :item-behavior="itemBehavior"
-      :filter-params="{
-        includeSubfolders: page.props.includeSubfolders ? 1 : undefined,
-      }"
       customizable-sources
     >
       <template #search-options>

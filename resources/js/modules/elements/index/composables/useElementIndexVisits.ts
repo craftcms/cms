@@ -47,6 +47,24 @@ export function appendIndexQuery(url: string, query: IndexQueryParams): string {
   return serialized ? `${url}?${serialized}` : url;
 }
 
+/**
+ * Adds the index's current URL to a link into an element's editor as its
+ * `returnUrl`, so saving returns to the source being viewed rather than the
+ * index's first one. The `?` is swapped for the `:QS:` placeholder the server
+ * swaps back.
+ */
+export function withIndexReturnUrl(url: string, indexUrl: string): string {
+  const origin = window.location.origin;
+  const target = new URL(url, origin);
+
+  target.searchParams.set(
+    'returnUrl',
+    new URL(indexUrl, origin).href.replace('?', ':QS:')
+  );
+
+  return target.href;
+}
+
 export interface IndexVisitOptions {
   /** Restrict the partial reload to these props. */
   only?: Array<string>;
@@ -155,7 +173,11 @@ export function createIndexVisitor(route: ElementIndexRoute): IndexVisitor {
  * composables drive a modal index without knowing they are.
  */
 export function createDetachedIndexVisitor(
-  load: (query: IndexQueryParams, isCurrent: () => boolean) => Promise<boolean>,
+  load: (
+    query: IndexQueryParams,
+    isCurrent: () => boolean,
+    silent: boolean
+  ) => Promise<boolean>,
   initialQuery: IndexQueryParams = {}
 ) {
   const query = ref<IndexQueryParams>({...initialQuery});
@@ -182,7 +204,8 @@ export function createDetachedIndexVisitor(
     try {
       const applied = await load(
         attemptedQuery,
-        () => requestId === latestRequest
+        () => requestId === latestRequest,
+        options.silent ?? false
       );
 
       if (applied) {

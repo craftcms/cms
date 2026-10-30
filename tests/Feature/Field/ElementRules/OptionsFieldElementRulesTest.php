@@ -24,10 +24,10 @@ test('option fields accept valid options', function (string $handle, string $fie
     ['checkboxesField', Checkboxes::class, ['a']],
 ]);
 
-test('option fields reject invalid options', function (string $handle, string $fieldType, mixed $value) {
+test('option fields reject values that aren’t options without custom options', function (string $handle, string $fieldType, mixed $value) {
     $result = EntryModel::factory()
         ->withField($handle, $fieldType, [
-            'customOptions' => true,
+            'customOptions' => false,
             'options' => [
                 ['label' => 'Option A', 'value' => 'a'],
             ],
@@ -40,4 +40,22 @@ test('option fields reject invalid options', function (string $handle, string $f
 })->with([
     ['radioButtonsField', RadioButtons::class, 'b'],
     ['checkboxesField', Checkboxes::class, ['b']],
+]);
+
+test('option fields accept custom values with custom options', function (string $handle, string $fieldType, mixed $value) {
+    $result = EntryModel::factory()
+        ->withField($handle, $fieldType, [
+            'customOptions' => true,
+            'options' => [
+                ['label' => 'Option A', 'value' => 'a'],
+            ],
+        ], value: $value)
+        ->createElementWithFields(save: false);
+
+    $result->element->validate();
+
+    expect($result->element->errors()->has($handle))->toBeFalse();
+})->with([
+    ['radioButtonsField', RadioButtons::class, 'b'],
+    ['checkboxesField', Checkboxes::class, ['a', 'b']],
 ]);

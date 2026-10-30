@@ -53,9 +53,9 @@ class Markdown extends Control
             'sanitize-html' => true,
             'disabled' => $attributes['name'] === null,
             'required' => $attributes['required'],
+            'described-by' => $attributes['aria']['describedby'] ?? null,
             'aria' => [
                 'invalid' => $attributes['aria']['invalid'] ?? null,
-                'describedby' => $attributes['aria']['describedby'] ?? null,
             ],
         ]);
 

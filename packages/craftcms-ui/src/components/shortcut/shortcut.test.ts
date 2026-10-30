@@ -17,9 +17,22 @@ async function createShortcut(
   return element;
 }
 
-/** The prefix the component renders, without the slotted key. */
-function prefix(element: CraftShortcut): string {
-  return element.shadowRoot!.querySelector('.shortcut')!.textContent!.trim();
+/** The modifier keycaps the component renders, as shown. */
+function modifiers(element: CraftShortcut): string[] {
+  return [...element.shadowRoot!.querySelectorAll('kbd')]
+    .filter((key) => !key.querySelector('slot'))
+    .map((key) =>
+      (key.querySelector('[aria-hidden="true"]') ?? key).textContent!.trim()
+    );
+}
+
+/** What assistive technology reads for each modifier keycap. */
+function modifierNames(element: CraftShortcut): string[] {
+  return [...element.shadowRoot!.querySelectorAll('kbd')]
+    .filter((key) => !key.querySelector('slot'))
+    .map((key) =>
+      (key.querySelector('.cp-visually-hidden') ?? key).textContent!.trim()
+    );
 }
 
 beforeEach(() => {
@@ -32,23 +45,31 @@ afterEach(() => {
 
 describe('craft-shortcut', () => {
   it('uses the platform symbols on a Mac', async () => {
-    expect(prefix(await createShortcut({os: 'Mac'}))).toBe('⌘');
-    expect(prefix(await createShortcut({os: 'Mac', alt: ''}))).toBe('⌥⌘');
-    expect(prefix(await createShortcut({os: 'Mac', shift: ''}))).toBe('⇧⌘');
-    expect(prefix(await createShortcut({os: 'Mac', alt: '', shift: ''}))).toBe(
-      '⌥⇧⌘'
-    );
+    expect(modifiers(await createShortcut({os: 'Mac'}))).toEqual(['⌘']);
+    expect(modifiers(await createShortcut({os: 'Mac', alt: ''}))).toEqual([
+      '⌥',
+      '⌘',
+    ]);
+    expect(modifiers(await createShortcut({os: 'Mac', shift: ''}))).toEqual([
+      '⇧',
+      '⌘',
+    ]);
+    expect(
+      modifiers(await createShortcut({os: 'Mac', alt: '', shift: ''}))
+    ).toEqual(['⌥', '⇧', '⌘']);
   });
 
   it('spells the modifiers out elsewhere', async () => {
-    expect(prefix(await createShortcut({os: 'Windows'}))).toBe('Ctrl+');
-    expect(prefix(await createShortcut({os: 'Windows', alt: ''}))).toBe(
-      'Ctrl+Alt+'
-    );
-    expect(prefix(await createShortcut({os: 'Linux'}))).toBe('Super+');
-    expect(prefix(await createShortcut({os: 'Linux', shift: ''}))).toBe(
-      'Super+Shift+'
-    );
+    expect(modifiers(await createShortcut({os: 'Windows'}))).toEqual(['Ctrl']);
+    expect(modifiers(await createShortcut({os: 'Windows', alt: ''}))).toEqual([
+      'Ctrl',
+      'Alt',
+    ]);
+    expect(modifiers(await createShortcut({os: 'Linux'}))).toEqual(['Super']);
+    expect(modifiers(await createShortcut({os: 'Linux', shift: ''}))).toEqual([
+      'Super',
+      'Shift',
+    ]);
   });
 
   /** An unknown platform falls back to the Ctrl spelling rather than nothing. */
@@ -58,13 +79,25 @@ describe('craft-shortcut', () => {
     // back as Linux. Pin it to something no platform check recognizes.
     vi.spyOn(navigator, 'platform', 'get').mockReturnValue('Plan 9');
 
-    expect(prefix(await createShortcut({os: 'Unknown'}))).toBe('Ctrl+');
+    expect(modifiers(await createShortcut({os: 'Unknown'}))).toEqual(['Ctrl']);
   });
 
   it('renders the key from the default slot', async () => {
     const element = await createShortcut({os: 'Mac'}, 'K');
 
     expect(element.textContent).toBe('K');
-    expect(element.shadowRoot!.querySelector('slot')).toBeTruthy();
+    expect(element.shadowRoot!.querySelector('kbd slot')).toBeTruthy();
+  });
+
+  it('puts each key in a keycap of its own', async () => {
+    const element = await createShortcut({os: 'Mac', shift: ''}, 'K');
+
+    expect(element.shadowRoot!.querySelectorAll('kbd')).toHaveLength(3);
+  });
+
+  it('names the Mac symbols for assistive technology', async () => {
+    expect(
+      modifierNames(await createShortcut({os: 'Mac', alt: '', shift: ''}))
+    ).toEqual(['Option', 'Shift', 'Command']);
   });
 });

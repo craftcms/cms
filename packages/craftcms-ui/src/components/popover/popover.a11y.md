@@ -47,7 +47,8 @@ Its open and close behavior comes from APG's [Disclosure Navigation Menu](https:
 
 ### Reflow and zoom
 
-- [ ] The panel stays inside the viewport at 320px wide and at 400% zoom: Popper flips and shifts it, it's capped at `20rem` wide and `40vh` (or `--popover-max-block-size`) tall, and longer content scrolls inside it. Per WCAG 1.4.10 (Reflow) and 1.4.4 (Resize Text). Not yet verified. The `20rem` cap is close to a 320px viewport's full width, so an invoker near one edge can push the panel against the other.
+- [x] The panel is no taller than the room between it and the viewport edge it opens toward, less a 16px margin, unless `--popover-max-block-size` sets its height. Longer content scrolls inside it, and its footer stays in view. Per WCAG 1.4.10 (Reflow) and 2.4.11 (Focus Not Obscured (Minimum)). Verified by `grows to the room below its invoker, keeping its footer in view` and `grows to the room above its invoker when it opens upward` in `popover.browser.test.ts`.
+- [ ] The panel stays inside the viewport at 320px wide and at 400% zoom: Popper flips and shifts it, it's capped at `20rem` wide, and longer content scrolls inside it. Per WCAG 1.4.10 (Reflow) and 1.4.4 (Resize Text). Not yet verified. The `20rem` cap is close to a 320px viewport's full width, so an invoker near one edge can push the panel against the other.
 - [ ] The panel escapes clipping and scrolling ancestors, as well as stacking contexts such as a sticky footer, so its content isn't cut off or hidden. It's positioned `fixed` and lifted into the top layer. Per WCAG 1.4.10 (Reflow). Not yet verified. `stacks at the popover layer token` in `popover.test.ts` checks the z-index it's given, not that it ends up on top.
 
 ## Depends on usage

@@ -150,13 +150,32 @@ if [[ ! -f node_modules/@awesome.me/kit-ddaed3f5c5/icons/metadata/icons.json ]];
     exit 1
 fi
 step 'Copy icons' composer copy-icons
-# Build hooks format tracked source; setup should only generate build artifacts.
-# Keep the same order as build:all, invoking packages directly to disable hooks.
-for package in @craftcms/garnish @craftcms/ui @craftcms/legacy; do
-    step "Build $package" pnpm --config.enablePrePostScripts=false --filter "$package" run build
-done
-step 'Build control panel' pnpm --config.enablePrePostScripts=false run build
-step 'Generate Custom Elements Manifest' pnpm --filter @craftcms/ui run build:manifest
-step 'Install test browser' pnpm exec playwright install --with-deps --only-shell chromium
+
+# Snapshots from before the Craft 5 worktree was dropped still carry it and its
+# agent guidance; remove both so agents don't use a stale 5.x checkout.
+if [[ -d ../cms-5.x ]]; then
+    git worktree remove --force ../cms-5.x
+fi
+if [[ -f ~/.config/amp/AGENTS.md ]]; then
+    sed -i '/^# Craft 5 worktree$/,$d' ~/.config/amp/AGENTS.md
+fi
+
+# The browser download is network-bound, so overlap it with the CPU-bound
+# builds below. Its output is printed once it finishes.
+step 'Install test browser' pnpm exec playwright install --with-deps --only-shell chromium > "$scratch/browser.log" 2>&1 &
+browser_pid=$!
+
+# Build hooks format tracked source; setup should only generate build artifacts,
+# so invoke packages directly to disable hooks. `pnpm run build` builds
+# @craftcms/ui (including its manifest) and the CP; the legacy bundles import
+# @craftcms/ui's dist, so they come last.
+step 'Build @craftcms/garnish' pnpm --config.enablePrePostScripts=false --filter @craftcms/garnish run build
+step 'Build @craftcms/ui and control panel' pnpm --config.enablePrePostScripts=false run build
+step 'Build @craftcms/legacy' pnpm --config.enablePrePostScripts=false --filter @craftcms/legacy run build
+
+browser_status=0
+wait "$browser_pid" || browser_status=$?
+cat "$scratch/browser.log"
+((browser_status == 0))
 
 printf '\nOrb toolchain, dependencies, and assets are ready.\n'

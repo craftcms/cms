@@ -94,10 +94,8 @@
               type="button"
               :variant="ButtonVariant.Primary"
               .disabled="applyDraftAction.disabled ?? false"
-              :focusable-when-disabled="
-                applyDraftAction.disabled && applyDraftAction.disabledReason
-                  ? true
-                  : undefined
+              .focusableWhenDisabled="
+                !!(applyDraftAction.disabled && applyDraftAction.disabledReason)
               "
               @click="applyDraft"
             >

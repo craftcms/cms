@@ -9,7 +9,6 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use Illuminate\Support\Facades\DB;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * Deletes field layouts that are no longer used.
@@ -35,7 +34,7 @@ class DeleteOrphanedFieldLayouts extends GarbageCollectionAction
             sprintf('deleting orphaned %s field layouts', $this->elementType::lowerDisplayName()),
             function () {
                 DB::table(Table::FIELDLAYOUTS, 'fl')
-                    ->leftJoin(new Alias($this->table, 't'), "t.{$this->foreignKey}", 'fl.id')
+                    ->leftJoin($this->table.' as t', "t.{$this->foreignKey}", 'fl.id')
                     ->where('fl.type', $this->elementType)
                     ->whereNull("t.{$this->foreignKey}")
                     ->pluck('fl.id')

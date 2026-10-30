@@ -27,6 +27,7 @@ class IndexOneAssetCommand extends Command implements PromptsForMissingInput
         {--createMissingAssets=true : Auto-create new asset records when missing.}
         {--deleteMissingAssets=false : Delete all the asset records that have their files missing.}
         {--deleteEmptyFolders=false : Delete empty folders.}
+        {--analyzeImages=false : Sample missing image colors and metadata, and queue images for AI tasks.}
     ';
 
     #[Override]

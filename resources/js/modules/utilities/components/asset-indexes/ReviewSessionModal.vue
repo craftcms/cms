@@ -2,7 +2,7 @@
   import ModalForm from '@/common/components/ModalForm.vue';
   import {t} from '@craftcms/ui/utilities/translate';
   import {useAssetIndexer} from '@/modules/utilities/composables/useAssetIndexer';
-  import {computed, reactive} from 'vue';
+  import {computed, reactive, shallowRef} from 'vue';
   import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
   import CheckboxGroup from '@/common/form/CheckboxGroup.vue';
   import type {FinishIndexingParams} from '@craftcms/ui/services/AssetIndexer';
@@ -10,13 +10,6 @@
   import {show} from '@routes/cp/utilities';
 
   type TranslationParams = NonNullable<Parameters<typeof t>[1]>;
-
-  withDefaults(
-    defineProps<{
-      isActive?: boolean;
-    }>(),
-    {isActive: false}
-  );
 
   const {finishSession, closeReview, reviewSession} = useAssetIndexer();
 
@@ -94,8 +87,15 @@
     );
   }
 
+  const isFinishing = shallowRef(false);
+
   async function handleSubmit() {
-    finishSession({
+    if (isFinishing.value) {
+      return;
+    }
+
+    isFinishing.value = true;
+    await finishSession({
       sessionId: reviewSession.value!.id,
       deleteFolder: formData.deleteFolder?.filter(Boolean),
       deleteAsset: formData.deleteAsset?.filter(Boolean),
@@ -110,6 +110,7 @@
   <ModalForm
     v-if="reviewSession"
     :is-active="true"
+    :loading="isFinishing"
     @close="closeReview"
     :reset-label="hasMissingItems ? t('Keep them') : undefined"
     :submit-label="hasMissingItems ? t('Delete them') : t('OK')"

@@ -1,4 +1,5 @@
 import {afterEach, describe, expect, it} from 'vite-plus/test';
+import {computed} from 'vue';
 import {
   isBlockCollapsed,
   rememberCollapsedBlock,
@@ -24,6 +25,20 @@ describe('collapsed blocks', () => {
 
     expect(isBlockCollapsed(10, 1)).toBe(true);
     expect(isBlockCollapsed(11, 2)).toBe(true);
+  });
+
+  it('updates reactive readers when any caller changes a block', () => {
+    const collapsed = computed(() => isBlockCollapsed(10, 1));
+
+    expect(collapsed.value).toBe(false);
+
+    rememberCollapsedBlock(10, 1);
+
+    expect(collapsed.value).toBe(true);
+
+    forgetCollapsedBlock(10, 1);
+
+    expect(collapsed.value).toBe(false);
   });
 
   it('keeps other sites on the legacy state once one site changes', () => {

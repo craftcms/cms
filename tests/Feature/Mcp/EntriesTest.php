@@ -120,6 +120,15 @@ it('reads custom fields on demand and expands only one level of nested content',
         ->and($publicBlock)->not->toHaveKey('innerBlocks');
 });
 
+it('describes entries without their internal state', function (): void {
+    $entry = EntryModel::factory()->createElement(['title' => 'Lighthouses']);
+
+    $detail = app(ElementCapabilities::class)->get('entries', id: $entry->id)['element'];
+
+    expect($detail)->toHaveKeys(['title', 'slug', 'status', 'enabled'])
+        ->and($detail)->not->toHaveKeys(['forceSave', 'siteSettingsId', 'trackDraftChanges', 'ruleset']);
+});
+
 it('manages entries through MCP', function () {
     $elements = app(ElementCapabilities::class);
     $fieldSchema = $elements->fieldSchema('entries', context: ['sectionId' => $this->section->id])['schema'];

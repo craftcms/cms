@@ -16,20 +16,24 @@
   } from 'vue';
   import CopyElementValuesController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/CopyElementValuesController';
   import CrossSiteCopyModal from './CrossSiteCopyModal.vue';
+  import {revealElement} from '@/common/utils/dom';
+  import {assistantApi} from '@/bootstrap/assistant';
+  import {addElementField} from '@/modules/ai/assistant/element-context';
+  import {
+    AssistantEditorKey,
+    assistantContainer,
+    type ApplyAssistantProposalDetail,
+  } from '@/modules/ai/assistant/context';
   import UiNodeList from './UiNodeList.vue';
   import {
     FieldActionItems,
     FieldLabelSrOnly,
-    UiControlOverrides,
-    UiFailure,
-    UiChangedPaths,
-    UiModifiedGroups,
     uiChangeFromEvent,
     fieldId,
     pathsMatch,
-    setValue as setPathValue,
     controlValueAt,
   } from './runtime';
+  import {useUiRenderer} from './renderer/context';
   import type {
     UiChange,
     UiChangeKind,
@@ -48,6 +52,21 @@
     layoutElementUid: string;
     label?: string | null;
     siteIds: number[];
+  };
+
+  /**
+   * A field action that generates the field’s value on the server, such as
+   * alt text written by AI. The value fills the field without being saved.
+   */
+  type GenerateValueDetail = {
+    trigger?: unknown;
+    url: string;
+    params: Record<string, unknown>;
+  };
+
+  type GenerateValueResponse = {
+    value: UiValue;
+    message?: string;
   };
 
   type CrossSiteCopyResponse = {
@@ -80,6 +99,8 @@
     warning?: string;
     warningHtml?: string;
     layoutUid?: string;
+    /** The field type's icon, for places that list fields by name. */
+    icon?: string;
     width?: number;
     status?: string;
     statusLabel?: string;
@@ -104,12 +125,17 @@
     () => props.node,
     (node) => (resolvedNode.value = node)
   );
-  const invalidate = inject(UiFailure)!;
+  const {
+    fail: invalidate,
+    setValue: writeValue,
+    overrides,
+    modifiedGroups,
+    changedPaths,
+  } = useUiRenderer();
   provide(
     FieldLabelSrOnly,
     computed(() => Boolean(resolvedNode.value.props.labelSrOnly))
   );
-  const overrides = inject(UiControlOverrides, {});
   const components = getCurrentInstance()!.appContext.components;
   const control = computed(() => resolvedNode.value.control!);
   const component = computed(() => {
@@ -147,8 +173,6 @@
     () => props.refreshable && Boolean(control.value.reactive)
   );
 
-  const modifiedGroups = inject(UiModifiedGroups, undefined);
-  const changedPaths = inject(UiChangedPaths, undefined);
   const showStatus = computed(
     () => resolvedNode.value.props.showStatus !== false
   );
@@ -168,7 +192,7 @@
    * own, the block's field says it.
    */
   function holdsChange(): boolean {
-    if (!control.value.nestsUis || !changedPaths) {
+    if (!control.value.nestsUis) {
       return false;
     }
 
@@ -193,9 +217,7 @@
       return false;
     }
 
-    return (
-      modifiedGroups?.value.has(control.value.deltaGroup.join('.')) ?? false
-    );
+    return modifiedGroups.value.has(control.value.deltaGroup.join('.'));
   }
 
   function setValue(
@@ -207,7 +229,7 @@
      */
     detail?: UiControlPayload<object> | UiChange
   ): void {
-    setPathValue(props.values, control.value.path, value);
+    writeValue(control.value.path, value);
 
     if (detail && !('component' in detail)) {
       emit('change', detail);
@@ -268,6 +290,107 @@
     );
   });
 
+  const assistantEditor = inject(AssistantEditorKey, null);
+
+  // Adds this field to the AI assistant's context, and opens the assistant.
+  useEventListener(window, 'craft:add-to-ai-assistant', (event: Event) => {
+    const detail = (event as CustomEvent<{trigger?: unknown}>).detail;
+
+    if (
+      !assistantEditor ||
+      !(detail?.trigger instanceof HTMLElement) ||
+      detail.trigger.closest('craft-field') !== field.value
+    ) {
+      return;
+    }
+
+    const editorScope = assistantEditor.scope();
+    const path = control.value.path;
+
+    if (!pathsMatch(path.slice(0, editorScope.length), editorScope)) {
+      return;
+    }
+
+    addElementField(assistantEditor, {
+      path: path.slice(editorScope.length).join('.'),
+      label: resolvedNode.value.props.label ?? path.at(-1) ?? '',
+    });
+    assistantApi.open();
+  });
+
+  useEventListener(
+    window,
+    'craft:apply-ai-assistant-proposal',
+    (event: Event) => {
+      const detail = (event as CustomEvent<ApplyAssistantProposalDetail>)
+        .detail;
+      const {proposal, container, reveal} = detail;
+
+      if (
+        !field.value ||
+        assistantContainer(field.value) !== container ||
+        !pathsMatch(proposal.path, control.value.path)
+      ) {
+        return;
+      }
+
+      if (proposal.node) {
+        resolvedNode.value = proposal.node;
+      }
+
+      setValue(proposal.value);
+      detail.applied = true;
+
+      // The field may be on another tab than the one showing.
+      if (reveal) {
+        void revealElement(field.value);
+      }
+    }
+  );
+
+  const generating = shallowRef(false);
+
+  useEventListener(
+    window,
+    'craft:generate-field-value',
+    async (event: Event) => {
+      const detail = (event as CustomEvent<GenerateValueDetail>).detail;
+
+      if (
+        !detail ||
+        !(detail.trigger instanceof HTMLElement) ||
+        detail.trigger.closest('craft-field') !== field.value ||
+        generating.value
+      ) {
+        return;
+      }
+
+      generating.value = true;
+
+      try {
+        const {data} = await actionClient.post<GenerateValueResponse>(
+          detail.url,
+          detail.params
+        );
+
+        setValue(data.value);
+
+        if (data.message) {
+          Craft.cp?.displayNotice?.(data.message);
+        }
+      } catch (error) {
+        const message = isHttpError<{message?: string}>(error)
+          ? error.response?.data?.message
+          : undefined;
+        Craft.cp?.displayError?.(
+          message ?? t('Couldn’t generate a value for this field.')
+        );
+      } finally {
+        generating.value = false;
+      }
+    }
+  );
+
   async function copyValue(fromSiteId: number): Promise<void> {
     const detail = copyDetail.value;
 
@@ -325,10 +448,10 @@
     "
     :instructions-position="resolvedNode.props.instructionsPosition"
     :instructions-sr-only="resolvedNode.props.instructionsSrOnly || undefined"
-    :required="Boolean(resolvedNode.props.required)"
-    :readonly="control.mode === 'readOnly'"
-    :disabled="control.mode === 'disabled'"
-    :has-errors="controlErrors.length > 0"
+    .required="Boolean(resolvedNode.props.required)"
+    .readOnly="control.mode === 'readOnly'"
+    .disabled="control.mode === 'disabled'"
+    .hasErrors="controlErrors.length > 0"
     :status="
       showStatus
         ? modified
@@ -349,6 +472,8 @@
     }"
     :hidden="resolvedNode.props.hidden || undefined"
     :data-layout-element="resolvedNode.props.layoutUid"
+    :data-icon="resolvedNode.props.icon || undefined"
+    :aria-busy="generating || undefined"
   >
     <span
       v-if="resolvedNode.props.labelHtml !== undefined"

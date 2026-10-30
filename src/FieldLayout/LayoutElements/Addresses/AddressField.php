@@ -113,4 +113,10 @@ class AddressField extends BaseField
             'class' => 'no-truncate',
         ]);
     }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'map-location';
+    }
 }

@@ -214,8 +214,8 @@ it('blocks a comment that’s over the length limit', async () => {
   editor.dispatchEvent(new InputEvent('input', {bubbles: true}));
   await nextTick();
 
-  const submit = [...container.querySelectorAll('craft-button')].find(
-    (button) => button.textContent?.trim() === 'Comment'
+  const submit = container.querySelector(
+    '.activity-timeline__comment-post'
   ) as HTMLElement & {disabled: boolean};
 
   expect(submit.disabled).toBe(true);

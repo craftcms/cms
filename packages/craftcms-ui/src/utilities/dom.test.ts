@@ -276,6 +276,7 @@ describe('serializeFormInputs', () => {
         <textarea name="b">two</textarea>
         <select name="c"><option value="3" selected>3</option></select>
         <input value="no-name">
+        <input name="" value="empty-name">
       </div>
     `;
     expect(serializeFormInputs(document.getElementById('host')!)).toBe(

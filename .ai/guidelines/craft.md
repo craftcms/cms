@@ -47,6 +47,12 @@ Some files contain Unicode characters in comments and strings. If a text edit fa
   regression test only when it closes a genuine behavior-coverage gap, and
   demonstrate that it fails on the pre-fix code for the intended reason.
 
+## Test oracles
+
+- Take a test's expected result from an independent oracle: measure the real output (what's rendered, returned, or stored) rather than recomputing it with the model or simplifications the code itself relies on. An oracle that shares the code's assumptions agrees with it whenever those assumptions are wrong.
+- Choose inputs that could make the test fail: extremes, and inputs where the code's assumptions break, such as data that's missing, stale, or doesn't match what it describes.
+- Watch every new test go red once: weaken the code it guards, confirm the failure, then restore it.
+
 ## Working through tasks
 
 - When a step doesn't need my input, keep going. Put status notes in the same message as your next action. Stop and ask only when you can't continue without me, or before anything destructive.

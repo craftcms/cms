@@ -98,6 +98,64 @@ describe('craft-button link mode', () => {
   });
 });
 
+describe('craft-button shortcut', () => {
+  function shortcut(element: CraftButton) {
+    return element.shadowRoot?.querySelector('craft-shortcut') ?? null;
+  }
+
+  it('renders no shortcut without the attribute', async () => {
+    const element = await createButton();
+    expect(shortcut(element)).toBeNull();
+  });
+
+  it('shows a plain key, hidden from screen readers', async () => {
+    const element = await createButton({shortcut: 'K'}, 'Search');
+    expect(shortcut(element)?.textContent).toBe('K');
+    expect(shortcut(element)?.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('reads modifiers from a JSON shortcut', async () => {
+    const element = await createButton(
+      {shortcut: '{"key": "S", "alt": true, "shift": true}'},
+      'Save'
+    );
+    expect(shortcut(element)?.textContent).toBe('S');
+    expect(shortcut(element)?.alt).toBe(true);
+    expect(shortcut(element)?.shift).toBe(true);
+  });
+
+  it('announces its shortcut with aria-keyshortcuts', async () => {
+    vi.spyOn(navigator, 'platform', 'get').mockReturnValue('MacIntel');
+    const element = await createButton(
+      {shortcut: '{"key": "s", "shift": true}'},
+      'Save'
+    );
+    expect(element.getAttribute('aria-keyshortcuts')).toBe('Meta+Shift+S');
+
+    element.shortcut = null;
+    await element.updateComplete;
+    expect(element.hasAttribute('aria-keyshortcuts')).toBe(false);
+    vi.restoreAllMocks();
+  });
+
+  it('keeps an aria-keyshortcuts its author set', async () => {
+    const element = await createButton(
+      {shortcut: 'S', 'aria-keyshortcuts': 'Control+Enter'},
+      'Save'
+    );
+    expect(element.getAttribute('aria-keyshortcuts')).toBe('Control+Enter');
+  });
+
+  /** Vue's in-DOM compiler sets attribute values as string properties. */
+  it('reads modifiers from JSON set as a property', async () => {
+    const element = await createButton({}, 'Save');
+    element.shortcut = '{"key": "S", "alt": true}';
+    await element.updateComplete;
+    expect(shortcut(element)?.textContent).toBe('S');
+    expect(shortcut(element)?.alt).toBe(true);
+  });
+});
+
 describe('craft-button accessible name check', () => {
   // A detached button's root is itself, which can't resolve an
   // `aria-labelledby` ID, so a check that ran after removal threw.
@@ -333,6 +391,30 @@ describe('craft-button action feedback', () => {
       vi.advanceTimersByTime(element.feedbackDuration * 2);
 
       expect(states).toEqual(['success']);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('returns to idle without scheduling a reset when its action settles after removal', async () => {
+    vi.useFakeTimers();
+
+    try {
+      const element = await createButton({
+        action: '{"type":"event","name":"craft:test-feedback"}',
+      });
+      const states: string[] = [];
+      element.addEventListener('craft-state-change', (event) => {
+        states.push((event as CustomEvent<{state: string}>).detail.state);
+      });
+
+      const run = element.triggerAction();
+      element.remove();
+      await run;
+      vi.advanceTimersByTime(element.feedbackDuration * 2);
+
+      expect(states).toEqual(['success']);
+      expect(element.actionState).toBe('idle');
     } finally {
       vi.useRealTimers();
     }

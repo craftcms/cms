@@ -32,11 +32,24 @@
      * holding work that closing would throw away — only its own buttons do.
      */
     dismissible?: boolean;
+    /**
+     * Whether closing it puts focus back where it was before it opened. Off
+     * when whatever closed it moves focus somewhere on purpose.
+     */
+    restoreFocus?: boolean;
+    /**
+     * Opens without the enter transition, for a modal opened from the
+     * keyboard whose first keystrokes have to reach it. Closing still fades.
+     */
+    instant?: boolean;
   }
 
   const emit = defineEmits<{
-    (e: 'close'): void;
+    /** Dismissal was asked for — `event` is the Escape press or the dialog's own request. */
+    (e: 'close', event: Event): void;
     (e: 'opened', el: Element): void;
+    /** Once it has finished closing, transition and all. */
+    (e: 'closed'): void;
   }>();
 
   const props = withDefaults(defineProps<ModalProps>(), {
@@ -46,24 +59,33 @@
     label: () => t('Dialog'),
     resizable: false,
     dismissible: true,
+    restoreFocus: true,
+    instant: false,
   });
 
   const stackId = Symbol('modal');
   const dialog = shallowRef<CraftDialog | null>(null);
   const reducedMotion = usePreferredReducedMotion();
-  const transitionDuration = computed(() =>
-    reducedMotion.value === 'reduce' ? 0 : 250
-  );
+  const transitionDuration = computed(() => {
+    const duration = reducedMotion.value === 'reduce' ? 0 : 250;
+
+    return {enter: props.instant ? 0 : duration, leave: duration};
+  });
   let invoker: HTMLElement | null = null;
 
-  function closeDialog(element = dialog.value): void {
+  /** Resolves once the dialog has closed and handed focus back. */
+  async function closeDialog(element = dialog.value): Promise<void> {
     if (!element) return;
 
     const returnTo = invoker;
     invoker = null;
     element.opened = false;
-    void element.updateComplete.then(() => {
-      if ((!props.isActive || !element.isConnected) && returnTo?.isConnected) {
+    await element.updateComplete.then(() => {
+      if (
+        props.restoreFocus &&
+        (!props.isActive || !element.isConnected) &&
+        returnTo?.isConnected
+      ) {
         returnTo.focus();
       }
     });
@@ -95,7 +117,7 @@
   );
   onBeforeUnmount(() => {
     leaveStack();
-    closeDialog();
+    void closeDialog();
   });
 
   /** Whether this is the innermost open modal — the one Escape is for. */
@@ -117,7 +139,8 @@
 
     event.preventDefault();
     event.stopPropagation();
-    if (props.isActive && props.dismissible && isTop.value) emit('close');
+    if (props.isActive && props.dismissible && isTop.value)
+      emit('close', event);
   }
 
   function opened(): void {
@@ -126,9 +149,14 @@
     }
   }
 
-  function closed(element: Element): void {
+  /**
+   * `closed` waits for the dialog to hand focus back, so a listener that moves
+   * focus itself isn't overridden by it.
+   */
+  async function closed(element: Element): Promise<void> {
     leaveStack();
-    if (element instanceof CraftDialog) closeDialog(element);
+    if (element instanceof CraftDialog) await closeDialog(element);
+    emit('closed');
   }
 
   const content = shallowRef<HTMLElement | null>(null);
@@ -165,6 +193,8 @@
   <Transition
     name="body"
     :duration="transitionDuration"
+    :enter-from-class="instant ? '' : 'body-enter-from'"
+    :enter-active-class="instant ? '' : 'body-enter-active'"
     @after-enter="opened"
     @after-leave="closed"
   >

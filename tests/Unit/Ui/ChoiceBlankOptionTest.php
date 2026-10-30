@@ -77,11 +77,19 @@ it('keeps the blank once a value is chosen, so it can be unset again', function 
         ->and($crawler->filter('select option[value="volume:docs"][selected]'))->toHaveCount(1);
 });
 
-it('omits the blank when the field is required', function () {
-    $crawler = choiceCrawler(volumeChoice(), required: true);
+it('shows a disabled prompt for an empty required select', function (?string $placeholder) {
+    $control = volumeChoice();
+    if ($placeholder !== null) {
+        $control->placeholder($placeholder);
+    }
 
-    expect(choiceOptionValues($crawler))->toBe(['volume:images', 'volume:docs']);
-});
+    $crawler = choiceCrawler($control, required: true, values: ['volume' => '']);
+    $prompt = $crawler->filter('select[required] > option[value=""][selected][disabled]');
+
+    expect(choiceOptionValues($crawler))->toBe(['', 'volume:images', 'volume:docs'])
+        ->and($prompt)->toHaveCount(1)
+        ->and($prompt->text())->toBe($placeholder ?? 'Select…');
+})->with([null, 'Choose a volume']);
 
 it('leaves options that already carry an empty value alone', function () {
     $control = Choice::make('volume')->options([

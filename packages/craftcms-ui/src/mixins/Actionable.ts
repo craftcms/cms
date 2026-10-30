@@ -147,10 +147,16 @@ export const Actionable = <T extends Constructor<LitElement>>(Base: T) => {
         });
       } finally {
         this.#clearIdleTimeout();
-        this.#idleTimeout = setTimeout(() => {
-          this.#idleTimeout = null;
-          this.setActionState(AsyncStates.Idle);
-        }, this.feedbackDuration);
+
+        if (this.isConnected) {
+          this.#idleTimeout = setTimeout(() => {
+            this.#idleTimeout = null;
+            this.setActionState(AsyncStates.Idle);
+          }, this.feedbackDuration);
+        } else {
+          this.actionState = AsyncStates.Idle;
+          this.feedbackMessage = null;
+        }
       }
     }
   }

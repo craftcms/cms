@@ -22,8 +22,8 @@
             class: loop.first and not (showHeaderColumn ?? true) ? 'thin' : null,
           } %}
             {% if icon %}
-              <span data-icon="{{ icon }}" aria-hidden="true"></span>
-              <span class="visually-hidden">{{ attribute[1].label }}</span>
+              {{ tag('craft-icon', {name: icon}) }}
+              <span class="sr-only">{{ attribute[1].label }}</span>
             {% elseif not loop.first or (showHeaderColumn ?? true) %}
               {{ attribute[1].label|t('site') }}
             {% endif %}

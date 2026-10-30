@@ -4,7 +4,12 @@ import {useFetch} from '@/common/composables/useFetch';
 import {usePinnedScroll} from '@/common/composables/usePinnedScroll';
 
 export interface ActivityTarget {
+  /** What kind of actor it is, such as `user`, for actors. */
+  type?: string;
+  id?: number | null;
   label: string;
+  /** The two `--color-{name}-500` palette colors of a user’s default photo, which their comments are tinted with. */
+  photoColors?: string[] | null;
   url: string | null;
   deleted: boolean;
 }

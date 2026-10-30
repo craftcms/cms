@@ -16,6 +16,7 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
 use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Http\Middleware\PreventRequestsDuringMaintenance as CraftMaintenanceMiddleware;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Search\Search;
@@ -191,6 +192,9 @@ class TestCase extends Orchestra
         Field::flushMacros();
         FieldLayoutComponent::flushMacros();
         Widget::flushMacros();
+
+        // GraphQL types are built from the schema of the test that first asks for them
+        GqlEntityRegistry::flush();
 
         // ElementQuery has its own $macros property (not via Macroable trait)
         new ReflectionProperty(ElementQuery::class, 'macros')->setValue(null, []);

@@ -48,8 +48,7 @@ class FieldLayoutDesigner extends Control
         bool $withGeneratedFields = false,
         bool $withCardViewDesigner = false,
     ): string {
-        $layout = Fields::createLayout($value);
-        $layout->type = $elementType;
+        $layout = Fields::createLayout(['type' => $elementType] + $value);
         $namespace = $name === null ? null : self::parentInputName($name);
 
         return InputNamespace::namespaceInputs(

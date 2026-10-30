@@ -50,12 +50,12 @@
         ? BLANK_VALUE
         : String(value ?? '')
     "
-    :allow-transparent="control.props.allowTransparent || undefined"
+    .allowTransparent="control.props.allowTransparent === true"
     :blank-label="control.props.blankLabel"
     :colors="control.props.colors ?? undefined"
-    :required="editable && required"
+    .required="editable && required"
     :readonly="control.mode === 'readOnly'"
-    :disabled="!editable"
+    .disabled="!editable"
     .validators="serverErrorValidators(invalid)"
     @model-value-changed="onModelValueChanged"
   ></craft-select-color>

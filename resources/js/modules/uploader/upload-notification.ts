@@ -7,6 +7,10 @@ import type {ConflictResolution} from '@/modules/assets/assetMover';
 import {AssetConflictResolutionElement} from '@/modules/assets/asset-conflict-resolution.ce';
 import {FileUploadNotificationElement} from './file-upload-notification.ce';
 import {UploadCompleteNotificationElement} from './upload-complete-notification.ce';
+import {
+  type UploadDuplicate,
+  UploadDuplicatesNotificationElement,
+} from './upload-duplicates-notification.ce';
 
 declare const Craft: any;
 
@@ -115,21 +119,84 @@ export function createUploadCompleteNotification(
   };
 }
 
+/**
+ * Warns that an upload looks like a copy of images that are already uploaded,
+ * until it's dismissed, for uploaders that don't hold uploads for a choice.
+ * Links open the images' edit pages, with `navigate` if it's given, such as to
+ * visit them with Inertia.
+ */
+export function showUploadDuplicates(
+  filename: string,
+  duplicates: UploadDuplicate[],
+  navigate?: (url: string) => void
+): () => void {
+  return createUploadNotice(
+    uploadDuplicatesMessage(filename, duplicates.length),
+    createDuplicateList(duplicates, navigate),
+    () => {}
+  );
+}
+
+/** Says that an upload looks like a copy of `count` images that are already uploaded. */
+export function uploadDuplicatesMessage(
+  filename: string,
+  count: number
+): string {
+  return count === 1
+    ? t('“{filename}” looks like an image you already have.', {filename})
+    : t('“{filename}” looks like {num, number} images you already have.', {
+        filename,
+        num: count,
+      });
+}
+
 /** A filename conflict's message and choices, for a transfer notification's details. */
 export function createUploadConflictDetails(
   message: string,
-  onChoice: (choice: ConflictResolution) => void
+  onChoice: (choice: ConflictResolution) => void,
+  {
+    duplicates,
+    navigate,
+    multiple = false,
+  }: {
+    /** Images the upload looks like a copy of, listed under the message. */
+    duplicates?: UploadDuplicate[];
+    navigate?: (url: string) => void;
+    /** Whether it conflicts with more than one file. */
+    multiple?: boolean;
+  } = {}
 ): HTMLElement {
   const details = document.createElement('div');
   details.className = 'flex flex-col items-start gap-2';
   const choices = new AssetConflictResolutionElement();
   choices.className = 'flex flex-wrap gap-2';
+  choices.multiple = multiple;
   choices.addEventListener('craft-conflict-resolve', (event) =>
     onChoice((event as CustomEvent<ConflictResolution>).detail)
   );
   render(html`<span class="wrap-anywhere">${message}</span>`, details);
+  if (duplicates?.length) {
+    details.append(createDuplicateList(duplicates, navigate));
+  }
   details.append(choices);
   return details;
+}
+
+function createDuplicateList(
+  duplicates: UploadDuplicate[],
+  navigate?: (url: string) => void
+): UploadDuplicatesNotificationElement {
+  const list = new UploadDuplicatesNotificationElement();
+  list.duplicates = duplicates;
+  // Without a way to visit them in place, they open in a new window instead, leaving this page and its notice be
+  list.newWindow = !navigate;
+  if (navigate) {
+    list.addEventListener('craft-upload-navigate', (event) => {
+      event.preventDefault();
+      navigate((event as CustomEvent<string>).detail);
+    });
+  }
+  return list;
 }
 
 /** CP notices appear asynchronously, so a close request may precede the show event. */

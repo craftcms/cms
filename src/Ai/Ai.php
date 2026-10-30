@@ -8,8 +8,10 @@ use CraftCms\Cms\Ai\Contracts\TaskInterface;
 use CraftCms\Cms\Ai\Data\CapabilityCheck;
 use CraftCms\Cms\Ai\Data\ResolvedProvider;
 use CraftCms\Cms\Ai\Enums\AiUnavailableReason;
+use CraftCms\Cms\Ai\Enums\Capability;
 use CraftCms\Cms\Ai\Enums\Modality;
 use CraftCms\Cms\Ai\Exceptions\AiUnavailableException;
+use CraftCms\Cms\Asset\Analysis\ImageAnalyzer;
 use CraftCms\Cms\Support\Env;
 use Illuminate\Container\Attributes\Singleton;
 use Laravel\Ai\AiManager;
@@ -28,10 +30,13 @@ use function CraftCms\Cms\t;
  * ```php
  * use CraftCms\Cms\Support\Facades\Ai;
  *
- * if (Ai::available('altText:describe')) {
- *     $response = Ai::task('altText:describe')->prompt(agent: new AltTextAgent, prompt: 'Describe this image');
+ * if (Ai::available('seo:metaDescription')) {
+ *     $response = Ai::task('seo:metaDescription')->prompt(agent: new MetaDescriptionAgent, prompt: $entry->title);
  * }
  * ```
+ *
+ * Image tasks, such as Craft’s own `craft:altText`, are run by {@see ImageAnalyzer}
+ * instead, which sends one request for every task that shares a provider and model.
  *
  * @since 6.0.0
  */
@@ -211,7 +216,29 @@ class Ai
     }
 
     /**
-     * Returns the providers and models of enabled tasks that have {@see TaskInterface::requirements() requirements},
+     * Returns whether a task’s model has a capability, for capabilities the task uses when the model has them
+     * ({@see TaskInterface::optionalCapabilities()}).
+     *
+     * Models are checked when the AI settings are saved. One that hasn’t been, such as after Craft is updated or the
+     * cache is cleared, is checked now, and the result is cached. Models that couldn’t be checked are assumed not to
+     * have the capability, and so are tasks that can’t run.
+     */
+    public function supports(string $handle, Capability $capability): bool
+    {
+        try {
+            $resolved = $this->resolve($handle);
+        } catch (AiUnavailableException) {
+            return false;
+        }
+
+        $check = $this->capabilityChecks->result($capability, $resolved) ?? $this->capabilityChecks->check($capability, $resolved);
+
+        return $check->supported === true;
+    }
+
+    /**
+     * Returns the providers and models of enabled tasks that have {@see TaskInterface::requirements() requirements} or
+     * {@see TaskInterface::optionalCapabilities() optional capabilities},
      * indexed by task handle. Pass them to {@see checkRequirements()} after changing the AI settings.
      *
      * @return array<string, ResolvedProvider>
@@ -221,7 +248,7 @@ class Ai
         $mappings = [];
 
         foreach ($this->tasks->tasksByHandle()->all() as $handle => $task) {
-            if ($task::requirements() === []) {
+            if ($task::requirements() === [] && $task::optionalCapabilities() === []) {
                 continue;
             }
 
@@ -261,7 +288,7 @@ class Ai
             $before = $previous[$handle] ?? null;
             $changed = $previous === null || $before?->provider !== $resolved->provider || $before->model !== $resolved->model;
 
-            foreach ($task::requirements() as $capability) {
+            foreach ([...$task::requirements(), ...$task::optionalCapabilities()] as $capability) {
                 $id = implode("\0", [$capability->value, $resolved->provider, (string) $resolved->model]);
                 $result = $this->capabilityChecks->result($capability, $resolved);
 

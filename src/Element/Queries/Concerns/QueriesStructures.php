@@ -14,7 +14,8 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Tpetry\QueryExpressions\Language\Alias;
+use Tpetry\QueryExpressions\Operator\Arithmetic\Add;
+use Tpetry\QueryExpressions\Value\Number;
 
 /**
  * @internal
@@ -689,7 +690,7 @@ trait QueriesStructures
         }
 
         if ($elementQuery->leaves) {
-            $elementQuery->where('structureelements.rgt', DB::raw('structureelements.lft + 1'));
+            $elementQuery->where('structureelements.rgt', new Add('structureelements.lft', new Number(1)));
         }
     }
 
@@ -700,7 +701,7 @@ trait QueriesStructures
      */
     private static function prepForStructureParams(ElementQuery $elementQuery): void
     {
-        $joinTable = new Alias(Table::STRUCTUREELEMENTS, 'structureelements');
+        $joinTable = Table::STRUCTUREELEMENTS.' as structureelements';
 
         if ($elementQuery->query->joinsTable($joinTable)) {
             return;
@@ -751,8 +752,8 @@ trait QueriesStructures
     {
         $query->when(
             $value,
-            fn (BuilderContract $q) => $q->where('structureelements.rgt', '>', DB::raw('structureelements.lft + 1')),
-            fn (BuilderContract $q) => $q->where('structureelements.rgt', '=', DB::raw('structureelements.lft + 1')),
+            fn (BuilderContract $q) => $q->where('structureelements.rgt', '>', new Add('structureelements.lft', new Number(1))),
+            fn (BuilderContract $q) => $q->where('structureelements.rgt', '=', new Add('structureelements.lft', new Number(1))),
         );
     }
 

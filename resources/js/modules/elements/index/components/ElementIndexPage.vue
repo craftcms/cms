@@ -160,6 +160,7 @@
           :element-type="elementIndex.elementType"
           :source="elementIndex.source?.key"
           :context="elementIndex.context"
+          :params="{baseCriteria: {siteId: elementIndex.siteId}}"
           @edit="editElement"
           @view="viewElement"
           @performed="onActionPerformed"

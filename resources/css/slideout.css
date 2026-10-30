@@ -43,6 +43,9 @@ sidebar, preview thumb, image actions) are not included here.
 }
 
 .slideout-container.so-lp {
+  /* The gap around a slideout over Live Preview's editor. The inline width
+     set from `Slideout.updateWidthsForPreviewPane()` uses it too. */
+  --m: var(--c-spacing-md);
   position: fixed;
   inset-block-start: var(--m);
   inset-inline-start: var(--m);

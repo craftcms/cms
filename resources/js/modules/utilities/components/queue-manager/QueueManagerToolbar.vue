@@ -51,7 +51,7 @@
     <craft-button
       type="button"
       @click="retryAll"
-      :loading="retryAllForm.processing"
+      .loading="retryAllForm.processing"
     >
       <craft-icon name="play" slot="prefix"></craft-icon>
       {{ t('Retry all failed jobs') }}
@@ -59,7 +59,7 @@
     <craft-button
       type="button"
       @click="releaseAll"
-      :loading="releaseAllForm.processing"
+      .loading="releaseAllForm.processing"
     >
       <craft-icon name="remove" slot="prefix"></craft-icon>
       {{ t('Release all jobs') }}

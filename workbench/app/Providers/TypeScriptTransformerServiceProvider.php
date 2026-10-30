@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Workbench\App\Providers;
 
+use CraftCms\Cms\Ai\Assistant\Data\ElementParams;
+use CraftCms\Cms\Ai\Assistant\Data\Proposal;
 use CraftCms\Cms\Asset\Data\UploadResult;
 use CraftCms\Cms\Condition\ConditionBuilderPayload;
 use CraftCms\Cms\Condition\ConditionRulePayload;
 use CraftCms\Cms\Condition\Enums\GroupOperator;
+use CraftCms\Cms\Cp\CommandPalette\CommandPaletteItem;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Data\NotificationButtonData;
@@ -31,6 +34,7 @@ use CraftCms\Cms\Http\ViewModels\UserPasskeysViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPermissionsViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPreferencesViewModel;
 use CraftCms\Cms\Http\ViewModels\UserSignInProvidersViewModel;
+use CraftCms\Cms\Http\ViewModels\UserTokensViewModel;
 use CraftCms\Cms\Http\ViewModels\WorkflowEditViewModel;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Release\Data\AttachedReleaseData;
@@ -74,6 +78,8 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
             ->replaceType(DateTimeInterface::class, 'string')
             ->provider(new ClassListTransformedProvider(
                 [
+                    ElementParams::class,
+                    Proposal::class,
                     UploadResult::class,
                     UploadSessionData::class,
                     GqlSchema::class,
@@ -100,6 +106,7 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     NodePayload::class,
                     ActionItem::class,
                     NavItem::class,
+                    CommandPaletteItem::class,
                     NotificationButtonData::class,
                     NotificationData::class,
                     Permission::class,
@@ -120,6 +127,7 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     UserPreferencesViewModel::class,
                     UserSettings::class,
                     UserSignInProvidersViewModel::class,
+                    UserTokensViewModel::class,
                     WorkflowEditViewModel::class,
                     WorkflowDraftReviewData::class,
                     WorkflowReviewData::class,

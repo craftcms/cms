@@ -203,13 +203,29 @@ export default css`
   /*
   Flush
    */
+  /*
+  A popover has no box of its own, so as its invoker, the button takes the
+  button group's overlap the popover would have had, on top of any flush
+  margin.
+  */
+  :host {
+    --_group-overlap: 0px;
+  }
+
+  :host([slot='invoker']) {
+    --_group-overlap: var(--c-button-group-overlap, 0px);
+    margin-inline-start: var(--_group-overlap);
+  }
+
   :host([variant~='plain'][flush='']),
   :host([variant~='danger-plain'][flush='']),
   :host([variant~='plain'][flush~='inline']),
   :host([variant~='danger-plain'][flush~='inline']),
   :host([variant~='plain'][flush~='inline-start']),
   :host([variant~='danger-plain'][flush~='inline-start']) {
-    margin-inline-start: calc(var(--_flush-inline) * -1);
+    margin-inline-start: calc(
+      var(--_flush-inline) * -1 + var(--_group-overlap)
+    );
   }
 
   :host([variant~='plain'][flush='']),
@@ -550,6 +566,12 @@ export default css`
     margin-inline-start: var(--c-spacing-sm);
   }
 
+  .shortcut {
+    --c-shortcut-shadow: none;
+    margin-inline-start: var(--c-spacing-md);
+    margin-inline-end: calc(var(--c-spacing) / -2);
+  }
+
   .button-content--start {
     justify-content: start;
   }
@@ -593,6 +615,8 @@ export default css`
       --c-button-spacing-inline,
       var(--c-form-control-spacing-inline)
     );
+    border-radius: inherit;
+    outline: none;
 
     /* Same minimum click area as Lion's :host::before (WCAG 2.5.5), but as
        part of the anchor so clicks on it follow the link. */
@@ -612,6 +636,13 @@ export default css`
       width: 100%;
       height: 100%;
     }
+  }
+
+  /* The anchor takes focus instead of the host, so it draws the host's ring.
+     The browser's own ring would also wrap the click-area overlay above. */
+  .link:focus-visible {
+    outline: var(--c-focus-outline-width) solid var(--c-color-focus-outline);
+    outline-offset: calc(var(--c-focus-outline-offset) + var(--_border-width));
   }
 
   :host([href][size~='xsmall']:not([disabled])) .link {
@@ -671,6 +702,6 @@ export default css`
   /* Ellipsis (action menu) icons read small at craft-icon's 0.8em */
   craft-icon[name='ellipsis'],
   ::slotted(craft-icon[name='ellipsis']) {
-    font-size: 1em;
+    --c-icon-size: 1em;
   }
 `;

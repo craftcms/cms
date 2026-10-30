@@ -12,6 +12,8 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\SessionInfoController;
+use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\TestClasses\OAuth\FakeOAuthProvider;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
@@ -19,6 +21,7 @@ use Illuminate\Auth\Events\Failed;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
@@ -209,6 +212,26 @@ test('control panel logins post to the control panel and redirect to the post-CP
         'password' => 'craftcms2018!!',
     ])->assertRedirect(cp_url('entries'));
 });
+
+test('front-end logins posted from a subpath site redirect within that site', function (string $url, array $params, string $redirect, string $expected) {
+    // A configured post-login redirect must not override an explicitly posted redirect.
+    Cms::config()->postLoginRedirect = 'welcome';
+    Site::factory()->create(['baseUrl' => 'https://localhost/fr']);
+    Sites::refreshSites();
+
+    post($url, [
+        ...$params,
+        'redirect' => Crypt::encrypt($redirect),
+        'loginName' => User::findOne()->email,
+        'password' => 'craftcms2018!!',
+    ])->assertRedirect($expected);
+})->with([
+    'action param' => ['https://localhost/fr/login', ['action' => 'users/login']],
+    'action URL' => ['https://localhost/fr/actions/users/login', []],
+])->with([
+    'empty redirect' => ['', 'https://localhost/fr'],
+    'relative redirect' => ['account', 'https://localhost/fr/account'],
+]);
 
 test('modal login requires refreshing the token before resubmitting a form', function (bool $authenticated) {
     // Laravel skips CSRF verification in the testing environment.

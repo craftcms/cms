@@ -16,8 +16,10 @@ import '../visually-hidden/visually-hidden';
  * @slot - A description of what is loading, visually hidden. Replaces the
  *   `label`.
  *
- * @fires craft-show - Emitted when the spinner is shown via `show()`.
- * @fires craft-hide - Emitted when the spinner is hidden via `hide()`.
+ * @fires craft-show - Emitted when the spinner is shown via `show()`. Doesn't
+ *   bubble, so listen on the spinner itself.
+ * @fires craft-hide - Emitted when the spinner is hidden via `hide()`. Doesn't
+ *   bubble, so listen on the spinner itself.
  * @cssproperty [--size=24px] - The spinner's diameter. Shared with avatar,
  * status, and indicator, so one declaration sizes a row of them together.
  *

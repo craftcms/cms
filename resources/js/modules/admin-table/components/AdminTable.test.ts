@@ -5,8 +5,9 @@ import type {BulkAction} from '@/modules/elements/types/actions';
 import {useCraftTable} from '@/common/table/craftTable';
 import AdminTable from './AdminTable.vue';
 
+const pageProps = vi.hoisted(() => ({readOnly: false}));
 vi.mock('@inertiajs/vue3', () => ({
-  usePage: () => ({props: {readOnly: false}}),
+  usePage: () => ({props: pageProps}),
 }));
 beforeEach(() => {
   vi.stubGlobal(
@@ -16,6 +17,7 @@ beforeEach(() => {
 });
 let teardown: (() => void) | undefined;
 afterEach(() => {
+  pageProps.readOnly = false;
   teardown?.();
   document.body.innerHTML = '';
   vi.unstubAllGlobals();
@@ -178,6 +180,17 @@ it('omits selection controls and ignores row clicks when not selectable', () => 
 
   expect(selectedIds()).toEqual([]);
   expect(rows()[0]!.hasAttribute('tabindex')).toBe(false);
+});
+
+it('falls back to the page read-only state when no readOnly prop is passed', () => {
+  pageProps.readOnly = true;
+  const {rows, selectedIds} = mountSelectionTable(true);
+
+  rows()[0]!
+    .querySelector('td:last-child')!
+    .dispatchEvent(new MouseEvent('click', {bubbles: true}));
+
+  expect(selectedIds()).toEqual([]);
 });
 
 it('toggles a focused row with space and extends with shift+arrow', async () => {

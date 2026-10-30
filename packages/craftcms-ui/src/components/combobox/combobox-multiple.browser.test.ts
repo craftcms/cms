@@ -309,3 +309,34 @@ it('announces token removal once as a user change with updated submission values
   expect(models).toEqual([true]);
   expect(submissions).toEqual([[['values', '']]]);
 });
+
+it('shows each selected option’s icon or dot on its token, hidden from assistive technology', async () => {
+  const {control} = await fixture((c) => {
+    c.options = [
+      {label: 'Starred', value: 'star', data: {icon: 'star', color: 'red'}},
+      {label: 'Green', value: 'green', data: {indicator: {fill: 'green'}}},
+    ];
+    c.modelValue = ['star', 'green', 'custom'];
+  });
+  const tokens = [...control.shadowRoot!.querySelectorAll('.token')];
+
+  expect(tokens).toHaveLength(3);
+  await vi.waitFor(() =>
+    expect(tokens[0]!.querySelector('craft-icon')).toHaveAttribute(
+      'aria-hidden',
+      'true'
+    )
+  );
+  expect(tokens[0]!.querySelector('craft-icon')).toHaveAttribute(
+    'name',
+    'star'
+  );
+  expect(tokens[1]!.querySelector('craft-indicator')).toHaveAttribute(
+    'fill',
+    'green'
+  );
+  expect(tokens[1]!.querySelector('craft-indicator')).not.toHaveAttribute(
+    'label'
+  );
+  expect(tokens[2]!.querySelector('craft-icon, craft-indicator')).toBeNull();
+});

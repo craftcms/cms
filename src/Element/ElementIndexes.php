@@ -18,7 +18,6 @@ use CraftCms\Cms\Support\Typecast;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Contracts\Database\Query\Expression as ExpressionInterface;
 use Illuminate\Support\Facades\DB;
-use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
 use function CraftCms\Cms\t;
 
@@ -67,6 +66,23 @@ class ElementIndexes
         }
 
         return [$sourceKey, $source];
+    }
+
+    /**
+     * Returns the criteria every element index applies ahead of its source's,
+     * so saved unpublished drafts are listed (and acted on) alongside
+     * canonical elements, as in the Craft 5 element index.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     * @return array{drafts: ?bool, draftOf: bool, savedDraftsOnly: bool}
+     */
+    public function baseCriteria(string $elementType): array
+    {
+        return [
+            'drafts' => $elementType::hasDrafts() ? null : false,
+            'draftOf' => false,
+            'savedDraftsOnly' => true,
+        ];
     }
 
     /**
@@ -411,7 +427,7 @@ class ElementIndexes
 
             $orderBy = $sortOption['orderBy'];
 
-            if ($orderBy instanceof Coalesce) {
+            if ($orderBy instanceof ExpressionInterface) {
                 $sql = $orderBy->getValue(DB::getQueryGrammar());
             } elseif (is_string($orderBy)) {
                 $sql = $orderBy;

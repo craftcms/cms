@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="80px" height="60px" viewBox="0 0 80 60" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <title>normal</title>
+    <style>
+        /* Follows the embedding page's color-scheme, so it matches the CP theme. */
+        @media (prefers-color-scheme: dark) {
+            [fill="#F3F7FD" i] { fill: #333D51; }
+            [fill="#CDD8E4" i] { fill: #4E5B71; }
+            [stroke="#CDD8E4" i] { stroke: #4E5B71; }
+            [fill="#A6B2C2" i] { fill: #6B788D; }
+        }
+    </style>
+    <defs>
+        <clipPath id="thumb"><rect x="46" y="19" width="28" height="21" rx="3"></rect></clipPath>
+    </defs>
+    <g fill="none" fill-rule="evenodd">
+        <rect stroke="#CDD8E4" fill="#F3F7FD" x="0.5" y="0.5" width="79" height="59" rx="5"></rect>
+        <path d="M0.5,12.5 L79.5,12.5" stroke="#CDD8E4"></path>
+        <rect fill="#CDD8E4" x="6" y="20" width="30" height="5" rx="2.5"></rect>
+        <rect fill="#CDD8E4" x="6" y="30" width="22" height="4" rx="2"></rect>
+        <!-- The cover style's image, without its text and scrim -->
+        <g clip-path="url(#thumb)">
+            <svg x="46" y="19" width="28" height="21" viewBox="0 0 80 60">
+                <rect fill="#CDD8E4" x="0" y="0" width="80" height="60"></rect>
+                <path fill="#A6B2C2" d="M0,46 L22,22 L36,37 L48,26 L80,52 L80,60 L0,60 Z"></path>
+                <circle fill="#A6B2C2" cx="60" cy="16" r="5"></circle>
+            </svg>
+        </g>
+    </g>
+</svg>

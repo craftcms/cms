@@ -32,7 +32,7 @@
       v-if="actionRequired"
       type="button"
       size="small"
-      :loading="isLoadingReview"
+      .loading="isLoadingReview"
       @click="handleReview(sessionId)"
     >
       {{ t('Review') }}
@@ -41,7 +41,7 @@
       type="button"
       size="small"
       variant="danger"
-      :loading="isStopping"
+      .loading="isStopping"
       @click="handleStop(sessionId)"
     >
       <craft-icon name="xmark-large" slot="prefix"></craft-icon>

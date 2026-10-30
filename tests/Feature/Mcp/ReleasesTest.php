@@ -134,7 +134,7 @@ it('preserves omitted metadata, clears nullable metadata, and pages release name
 
 it('allows a release publisher to inspect basic metadata and publish without content permissions', function (): void {
     $publisher = User::factory()->create();
-    app(UserPermissions::class)->saveUserPermissions($publisher->id, ['accessCp', 'useCraftMcp', 'manageReleases', 'publishReleases']);
+    app(UserPermissions::class)->saveUserPermissions($publisher->id, ['accessCp', 'manageReleases', 'publishReleases']);
     Passport::actingAs($publisher, ['mcp:admin'], 'craft-mcp');
 
     ($this->callRelease)('releases.get', ['id' => $this->release->id])

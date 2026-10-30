@@ -12,6 +12,7 @@ use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Collection;
+use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 use Tpetry\QueryExpressions\Language\CaseGroup;
 use Tpetry\QueryExpressions\Language\CaseRule;
 use Tpetry\QueryExpressions\Operator\Comparison\Equal;
@@ -312,7 +313,12 @@ trait FormatsResults
                 return $order;
             }
 
-            $order['column'] = $elementQuery->columnMap[$order['column']] ?? $order['column'];
+            if (isset($elementQuery->columnMap[$order['column']])) {
+                $column = $elementQuery->resolveColumnMapping($order['column']);
+                $order['column'] = is_array($column)
+                    ? (count($column) === 1 ? reset($column) : new Coalesce($column))
+                    : $column;
+            }
 
             return $order;
         }, $orders);

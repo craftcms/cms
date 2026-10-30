@@ -9,9 +9,9 @@ import {router} from '@inertiajs/vue3';
  * Rather than thread a separate status through each of those composables, we
  * watch Inertia's global router lifecycle and flip `loading` on for visits
  * whose target pathname matches the page we're on, and off again when any visit
- * finishes. The initial page is server-rendered with data, so this only ever
- * surfaces during in-page refetches. Silent visits (`showProgress: false`) show
- * their own progress, so they're skipped.
+ * finishes, so this only ever surfaces during in-page refetches — including
+ * the one that brings a page load's rows. Silent visits (`showProgress: false`)
+ * show their own progress, so they're skipped.
  */
 export function useElementIndexLoading() {
   const loading = ref(false);

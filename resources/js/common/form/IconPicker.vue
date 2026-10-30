@@ -128,7 +128,7 @@
     :has-feedback-for="error ? 'error' : ''"
     hidden-input
     .modelValue="model"
-    :disabled="disabled"
+    .disabled="disabled"
   >
     <div class="flex gap-2 items-center" slot="before">
       <div class="icon-preview" :lang="contentLang">

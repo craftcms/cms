@@ -51,8 +51,6 @@ class CapabilityChecks
 
     private const int TIMEOUT = 30;
 
-    public function __construct(private readonly AiManager $aiManager) {}
-
     /**
      * Returns the cached result for a provider’s model, or `null` if it hasn’t been checked.
      */
@@ -297,8 +295,9 @@ class CapabilityChecks
             return $resolved->model;
         }
 
+        // Resolved here rather than injected, so checking cached results doesn’t need `laravel/ai` to be booted
         try {
-            $instance = $this->aiManager->instance($resolved->provider);
+            $instance = app(AiManager::class)->instance($resolved->provider);
 
             if ($instance instanceof TextProvider) {
                 return $instance->defaultTextModel();

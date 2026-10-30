@@ -4,17 +4,22 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
+use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+use function CraftCms\Cms\t;
+
 /**
  * @since 6.0.0
  */
 readonly class ClearCachesController
 {
+    use RespondsWithFlash;
+
     public function __construct(Utilities $utilitiesService)
     {
         if (! $utilitiesService->checkAuthorization(ClearCaches::class)) {
@@ -30,7 +35,9 @@ readonly class ClearCachesController
 
         ClearCaches::clear(is_array($caches) ? array_values($caches) : '*');
 
-        return back();
+        // The utility's form announces the result itself; a JSON caller, such
+        // as the command palette, is told what happened.
+        return $request->expectsJson() ? $this->asJsonSuccess(t('Caches cleared.')) : back();
     }
 
     public function invalidateTags(Request $request): Response

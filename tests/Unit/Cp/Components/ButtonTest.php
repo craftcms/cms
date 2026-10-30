@@ -48,6 +48,13 @@ describe('attributes', function () {
             ->and(Button::make()->toHtml())->not->toContain('toggle');
     });
 
+    it('renders a shortcut as a key, or as JSON naming its modifiers', function () {
+        expect(Button::make()->shortcut('K')->toHtml())->toContain('shortcut="K"')
+            ->and(Button::make()->shortcut(['key' => 'S', 'shift' => true])->toHtml())
+            ->toContain('shortcut="{&quot;key&quot;:&quot;S&quot;,&quot;shift&quot;:true}"')
+            ->and(Button::make()->toHtml())->not->toContain('shortcut');
+    });
+
     it('renders as a link with href, dropping the type', function () {
         $html = Button::make()
             ->type('submit')

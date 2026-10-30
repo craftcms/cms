@@ -106,6 +106,32 @@ it('uses multipart storage copies for objects larger than five gib', function ()
     expect(count(array_filter($names, fn ($name) => $name === 'UploadPartCopy')))->toBeGreaterThan(1);
 });
 
+it('copies between S3 disks that share credentials without downloading the file', function () {
+    $assets = Mockery::mock(AwsS3V3Adapter::class);
+    $assets->shouldReceive('getClient')->andReturn($this->client);
+    $assets->shouldReceive('getConfig')->andReturn([
+        'bucket' => 'asset-bucket', 'region' => 'us-east-1', 'visibility' => 'public', 'options' => ['CacheControl' => 'max-age=60'],
+    ]);
+    $assets->shouldReceive('path')->andReturnUsing(fn (string $path) => 'assets/'.$path);
+    $this->client->getHandlerList()->setHandler(function (CommandInterface $command) {
+        $this->commands[] = $command;
+
+        return Create::promiseFor(new Result($command->getName() === 'HeadObject' ? ['ContentLength' => 3] : []));
+    });
+
+    new UploadedFile($this->disk, 'staged/photo.jpg', 'photo.jpg')->storeAs($assets, 'photos/photo.jpg', 'image/jpeg');
+
+    $copy = array_find($this->commands, fn ($command) => $command->getName() === 'CopyObject');
+    expect(array_map(fn ($command) => $command->getName(), $this->commands))->not->toContain('GetObject', 'PutObject')
+        ->and(urldecode($copy['CopySource']))->toBe('/upload-bucket/prefix/staged/photo.jpg')
+        ->and($copy['Bucket'])->toBe('asset-bucket')
+        ->and($copy['Key'])->toBe('assets/photos/photo.jpg')
+        ->and($copy['ACL'])->toBe('public-read')
+        ->and($copy['ContentType'])->toBe('image/jpeg')
+        ->and($copy['CacheControl'])->toBe('max-age=60')
+        ->and($copy['MetadataDirective'])->toBe('REPLACE');
+});
+
 it('stores processed bytes when sanitization changed the local file', function () {
     $stream = fopen('php://temp', 'w+b');
     fwrite($stream, 'original');

@@ -162,7 +162,7 @@
         :name="key"
         :value="value"
       />
-      <craft-button type="submit" variant="primary" :disabled="!message">{{
+      <craft-button type="submit" variant="primary" .disabled="!message">{{
         search.heading
       }}</craft-button>
     </form>

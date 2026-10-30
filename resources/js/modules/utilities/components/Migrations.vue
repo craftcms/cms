@@ -65,7 +65,7 @@
 </script>
 
 <template>
-  <template v-if="!newMigrations">
+  <template v-if="!newMigrations.length">
     <craft-empty :label="t('No pending content migrations.')"></craft-empty>
   </template>
   <template v-if="allMigrations.length">

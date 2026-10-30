@@ -42,11 +42,9 @@
                   v-html="longDescription"
                   class="readable"
                 ></div>
-                <div
-                  v-else-if="plugin.shortDescription"
-                  v-html="plugin.shortDescription"
-                  class="readable"
-                ></div>
+                <div v-else-if="plugin.shortDescription" class="readable">
+                  {{ plugin.shortDescription }}
+                </div>
                 <p v-else>No description.</p>
               </div>
               <div class="xl:tw-ml-4 xl:tw-w-60 tw-mt-8 xl:tw-mt-0">
@@ -204,7 +202,7 @@
           'The developer recommends using <a href="{url}">{name}</a> instead.',
           'app',
           {
-            name: this.plugin.replacementName,
+            name: Craft.escapeHtml(this.plugin.replacementName),
             url: Craft.getCpUrl(
               'plugin-store/' + this.plugin.replacementHandle
             ),

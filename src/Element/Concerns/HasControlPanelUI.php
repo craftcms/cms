@@ -150,7 +150,7 @@ trait HasControlPanelUI
                         'type' => t('draft'),
                     ])),
                     'action' => 'elements/save-draft',
-                    'redirect' => sprintf('%s#', ElementHelper::postEditUrl($this)),
+                    'redirect' => sprintf('%s#', ElementHelper::postEditRedirectUrl($this)),
                     'eventData' => ['autosave' => false],
                 ];
             }
@@ -351,7 +351,7 @@ JS, [
         $isUnpublishedDraft = $this->getIsUnpublishedDraft();
         $isCurrent = $this->getIsCanonical() || $this->isProvisionalDraft;
         $canonical = $this->getCanonical(true);
-        $redirectUrl = ElementHelper::postEditUrl($this);
+        $redirectUrl = ElementHelper::postEditRedirectUrl($this);
         $sourceId = $this->isProvisionalDraft ? $this->getCanonicalId() : $this->id;
 
         if (! $this->getIsRevision()) {
@@ -575,7 +575,7 @@ JS, [
         $isUnpublishedDraft = $this->getIsUnpublishedDraft();
         $isCurrent = $isCanonical || $this->isProvisionalDraft;
         $canonical = $this->getCanonical(true);
-        $redirectUrl = ElementHelper::postEditUrl($this);
+        $redirectUrl = ElementHelper::postEditRedirectUrl($this);
 
         $isNewSite = match (true) {
             $isUnpublishedDraft => true,
@@ -1428,6 +1428,12 @@ JS,
                 return Html::encode($revision->revisionNotes);
             },
         ]);
+    }
+
+    /** @return list<array<string,mixed>> */
+    public function getMetadataGroups(): array
+    {
+        return [$this->getMetadata()];
     }
 
     /**

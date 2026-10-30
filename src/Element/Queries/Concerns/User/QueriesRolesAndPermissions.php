@@ -11,7 +11,6 @@ use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Function\String\Lower;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * @internal
@@ -174,7 +173,7 @@ trait QueriesRolesAndPermissions
             // Get the users that have that permission via a user group
             $permittedUserIdsViaGroups = DB::table(Table::USERGROUPS_USERS, 'g_u')
                 ->select('g_u.userId')
-                ->join(new Alias(Table::USERPERMISSIONS_USERGROUPS, 'p_g'), 'p_g.groupId', '=', 'g_u.groupId')
+                ->join(Table::USERPERMISSIONS_USERGROUPS.' as p_g', 'p_g.groupId', '=', 'g_u.groupId')
                 ->whereIn('p_g.permissionId', Arr::wrap($value))
                 ->pluck('userId');
 

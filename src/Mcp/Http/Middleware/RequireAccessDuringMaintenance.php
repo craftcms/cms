@@ -10,8 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
 /**
- * Lets the authenticated MCP endpoint through maintenance mode for users who can access the control panel while the
- * system is off, as the control panel itself does.
+ * Lets MCP endpoints through maintenance mode for users who can access the site or control panel while the system is
+ * off, as the site and control panel themselves do.
  *
  * The endpoint skips the usual maintenance check, which only sees the session user, not the access token’s.
  *
@@ -24,7 +24,7 @@ class RequireAccessDuringMaintenance
     /** @param Closure(Request): mixed $next */
     public function handle(Request $request, Closure $next): mixed
     {
-        if ($this->maintenanceMode->active() && ! Gate::check('accessCpWhenSystemIsOff')) {
+        if ($this->maintenanceMode->active() && ! Gate::check($request->isCpRequest() ? 'accessCpWhenSystemIsOff' : 'accessSiteWhenSystemIsOff')) {
             abort(503);
         }
 

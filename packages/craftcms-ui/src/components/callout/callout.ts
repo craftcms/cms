@@ -8,6 +8,10 @@ import {Paddable} from '@src/mixins/Paddable.js';
 import variantsStyles from '@src/styles/variants.styles.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {styleMap} from 'lit/directives/style-map.js';
+import {
+  hasSlotted,
+  LightDomController,
+} from '@src/controllers/LightDomController';
 
 /**
  * @summary A boxed message: an optional icon, an optional title, body content,
@@ -125,6 +129,14 @@ export default class CraftCallout extends Paddable(LitElement, {
    */
   @state() private resolvedIcon: string | null = null;
 
+  /**
+   * The icon and title regions only render when they have something in them,
+   * so their slots can't report their own changes. The controller re-renders
+   * the callout whenever its light DOM moves, so content slotted in later
+   * shows up.
+   */
+  private _lightDom = new LightDomController(this);
+
   protected override willUpdate(): void {
     this.resolvedIcon = this.icon ?? this.getDefaultIcon();
   }
@@ -145,12 +157,11 @@ export default class CraftCallout extends Paddable(LitElement, {
   }
 
   protected override render(): unknown {
-    const hasTitle = this.title || !!this.querySelector('[slot="title"]');
+    const hasTitle = this.title || hasSlotted(this, 'title');
     // A slotted icon counts even when there's no name to resolve — it's the
     // consumer bringing their own artwork.
     const hasIcon =
-      !this.hideIcon &&
-      (!!this.resolvedIcon || !!this.querySelector('[slot="icon"]'));
+      !this.hideIcon && (!!this.resolvedIcon || hasSlotted(this, 'icon'));
 
     return html`
       <div

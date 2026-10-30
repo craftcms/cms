@@ -14,7 +14,6 @@ use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\User\Data\UserGroup;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * @internal
@@ -139,7 +138,7 @@ trait QueriesAuthors
 
             $query->$groupIdOperator(
                 DB::table(Table::ENTRIES_AUTHORS, "entries_authors$i")
-                    ->join(new Alias(Table::USERGROUPS_USERS, "usergroups_users$i"), "usergroups_users$i.userId", '=', "entries_authors$i.authorId")
+                    ->join(Table::USERGROUPS_USERS." as usergroups_users$i", "usergroups_users$i.userId", '=', "entries_authors$i.authorId")
                     ->whereColumn('entries.id', "entries_authors$i.entryId")
                     ->whereNumericParam("usergroups_users$i.groupId", $groupIdCheck),
             );

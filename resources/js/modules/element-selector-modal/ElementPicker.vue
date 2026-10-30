@@ -11,6 +11,7 @@
     type FolderCrumb,
     type SelectedElement,
   } from './useModalElementIndex';
+  import {writeModalIndexLook} from './modalIndexLook';
 
   const props = defineProps<{
     /** Bare action path; `actionClient` expands it against the CP trigger. */
@@ -74,9 +75,7 @@
 
   // The modal's Select button and its enabled state live outside Vue, so the
   // selection is pushed out rather than read in.
-  watch(selectedElements, (elements) => emit('selection-change', elements), {
-    deep: true,
-  });
+  watch(selectedElements, (elements) => emit('selection-change', elements));
 
   // Published rather than read, for the same reason the selection is: what the
   // footer can offer depends on where the index is — uploading needs the folder
@@ -91,6 +90,17 @@
   watch(folderBreadcrumbs, (path) => emit('folder-path-change', path), {
     immediate: true,
   });
+
+  // Remembered for the placeholders the next modal draws before its payload.
+  watch(
+    () => ({
+      mode: index.view.mode.value,
+      thumbSize: index.view.thumbSize.value,
+      cardThumbs: index.view.cardThumbs.value,
+    }),
+    (look) => writeModalIndexLook(elementIndex.elementType, look),
+    {immediate: true}
+  );
 
   defineExpose({
     selectedElements,

@@ -246,7 +246,8 @@ describe('ElementSelectControl', () => {
           sources: ['section:abc'],
           siteId: 1,
           elementIds: [7],
-        })
+        }),
+        expect.anything()
       );
       expect(pasteButton(root)?.textContent?.trim()).toBe('Paste entry');
 
@@ -443,6 +444,86 @@ describe('ElementSelectControl', () => {
     settings.onSelect([{id: 9, label: 'Another entry', siteId: 1}]);
 
     expect(updates).toEqual([[5, 9]]);
+  });
+
+  describe('maintaining hierarchy', () => {
+    const news = {id: 1, label: 'News', level: 1};
+    const clubNews = {id: 2, label: 'Club news', level: 2};
+    const events = {id: 3, label: 'Events', level: 1};
+
+    async function mountHierarchy(ids: number[]): Promise<HTMLElement> {
+      const value = ref<number[]>(ids);
+      updates = [];
+      container = document.createElement('div');
+      document.body.append(container);
+      app = createApp({
+        render: () =>
+          h(ElementSelectControl, {
+            control: control({
+              maintainHierarchy: true,
+              branchLimit: null,
+              elements: [news, clubNews, events],
+            }),
+            value: value.value,
+            editable: true,
+            'onUpdate:value': (next: number[] | number | null) => {
+              updates.push(next);
+              value.value = next as number[];
+            },
+          }),
+      });
+      app.mount(container);
+      await nextTick();
+
+      return container;
+    }
+
+    function chip(root: HTMLElement, id: number): HTMLElement {
+      return root.querySelector(`craft-chip[data-id="${id}"]`)!;
+    }
+
+    it('nests chips under their parent and offers no reordering', async () => {
+      const root = await mountHierarchy([1, 2, 3]);
+
+      expect(chip(root, 2).closest('ul')?.closest('li')).toBe(
+        chip(root, 1).closest('li')
+      );
+      expect(chip(root, 3).closest('li')?.parentElement).toBe(
+        chip(root, 1).closest('li')?.parentElement
+      );
+      expect(root.querySelector('craft-reorder-button')).toBeNull();
+    });
+
+    it('removes descendants along with their ancestor', async () => {
+      const root = await mountHierarchy([1, 2, 3]);
+      menuItem(menus(root)[0], 'Remove').click();
+
+      expect(updates).toEqual([[3]]);
+    });
+
+    it('puts chosen elements in structure order, as the server returns them', async () => {
+      const sports = {id: 4, label: 'Sports news', level: 2};
+      stub.post.mockResolvedValue({
+        data: {elements: [news, clubNews, sports, events]},
+      });
+      const root = await mountHierarchy([1, 2, 3]);
+
+      (root.querySelector('[data-element-select-add]') as HTMLElement).click();
+      await flushSelector();
+      const [, settings] = stub.createElementSelectorModal.mock.calls[0]!;
+      settings.onSelect([{id: 4, label: 'Sports news', siteId: 1}]);
+      await vi.waitFor(() => expect(updates).toHaveLength(2));
+      await nextTick();
+
+      expect(stub.post).toHaveBeenCalledWith(
+        'relational-fields/structured-elements',
+        expect.objectContaining({elementIds: [1, 2, 3, 4], siteId: 1})
+      );
+      expect(updates.at(-1)).toEqual([1, 2, 4, 3]);
+      expect(chip(root, 4).closest('ul')?.closest('li')).toBe(
+        chip(root, 1).closest('li')
+      );
+    });
   });
 
   it('opens a photo selector with its folder restrictions', async () => {
@@ -777,8 +858,11 @@ describe('ElementSelectControl', () => {
     it('draws thumbnails in thumbs mode', async () => {
       const root = await mount({props: {viewMode: 'thumbs'}, value: [5]});
 
-      expect(root.querySelector('.thumb-tile')).not.toBeNull();
-      expect(root.querySelectorAll('craft-chip')).toHaveLength(0);
+      expect(
+        root.querySelectorAll(
+          '.thumbsview craft-chip[prefix-placement="block-start"]'
+        )
+      ).toHaveLength(1);
     });
 
     // Clicking a related element selects or edits it, so its tile mustn't
@@ -798,8 +882,8 @@ describe('ElementSelectControl', () => {
         value: [5],
       });
 
-      expect(root.querySelector('.thumb-tile')).not.toBeNull();
-      expect(root.querySelector('.thumb-tile a, a.thumb-tile')).toBeNull();
+      expect(root.querySelector('.thumbsview craft-chip')).not.toBeNull();
+      expect(root.querySelector('.thumb-label a, a craft-chip')).toBeNull();
     });
 
     /** The list item a card / thumb body draws per element. */
@@ -824,23 +908,19 @@ describe('ElementSelectControl', () => {
       ).toEqual([true, false]);
     });
 
-    /**
-     * Thumb tiles wrap the element in a link to its editor, so clicking the tile
-     * navigates rather than selects — the checkbox is the selection path, as it
-     * is on the element index.
-     */
+    /** The tile's chip owns the checkbox and reports its changes. */
     it('selects a thumbnail through its checkbox', async () => {
       const root = await mount({
         props: {viewMode: 'thumbs', limit: 3},
         value: [5, 6],
       });
-      const box = root.querySelector<HTMLElement>(
-        '.thumbsview craft-checkbox'
-      )!;
+      const chip = root.querySelector<HTMLElement>('.thumbsview craft-chip')!;
 
-      Object.defineProperty(box, 'checked', {value: true, configurable: true});
-      box.dispatchEvent(
-        new CustomEvent('model-value-changed', {bubbles: true})
+      chip.dispatchEvent(
+        new CustomEvent('craft-selection-change', {
+          bubbles: true,
+          detail: {selected: true, shiftKey: false},
+        })
       );
       await nextTick();
 
@@ -1684,12 +1764,13 @@ describe('ElementSelectControl', () => {
       expect(actionLabels(thumbMenu(root))).toContain('Preview file');
     });
 
-    // Tiles are a link to the element, so the actions have to sit outside it or
-    // reaching for one would navigate instead.
+    // The label links to the element, so the actions sit in the chip's suffix,
+    // apart from it, or reaching for one would navigate instead.
     it('keeps the actions outside the tile link', async () => {
       const root = await mountThumbs();
 
-      expect(thumbMenu(root)!.closest('.thumb-tile')).toBeNull();
+      expect(thumbMenu(root)!.closest('[slot="suffix"]')).not.toBeNull();
+      expect(thumbMenu(root)!.closest('a, .thumb-label')).toBeNull();
     });
 
     // Thumbs follow the chips: editing lives in the menu, not as its own button.

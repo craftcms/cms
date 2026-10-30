@@ -54,7 +54,7 @@
     type="button"
     @click="retryJob"
     size="small"
-    :loading="form.processing"
+    .loading="form.processing"
     v-bind="$attrs"
   >
     <craft-icon name="play" slot="prefix" style="font-size: 0.7em"></craft-icon>

@@ -83,4 +83,10 @@ class TitleField extends TextField
 
         return $items;
     }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'heading';
+    }
 }

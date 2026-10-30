@@ -104,7 +104,7 @@ it('updates the indexes of the given volumes', function (): void {
 });
 
 it('only offers utility tools to users who can use those utilities', function (): void {
-    $user = User::factory()->withPermissions(['accessCp', 'useCraftMcp', 'utility:clear-caches'])->create(['admin' => false]);
+    $user = User::factory()->withPermissions(['accessCp', 'utility:clear-caches'])->create(['admin' => false]);
     Passport::actingAs($user, ['mcp:write'], 'craft-mcp');
 
     $tools = array_column(McpRequest::tools($this), 'name');
@@ -133,14 +133,15 @@ it('turns maintenance mode on and off, staying reachable while it’s on', funct
 });
 
 it('only lets users who can access the system while it’s off use MCP during maintenance', function (array $permissions, int $status): void {
-    $user = User::factory()->withPermissions(['accessCp', 'useCraftMcp', ...$permissions])->create(['admin' => false]);
+    $user = User::factory()->withPermissions(['accessCp', ...$permissions])->create(['admin' => false]);
     Passport::actingAs($user, ['mcp:read'], 'craft-mcp');
     app()->maintenanceMode()->activate([]);
 
     McpRequest::send($this, 'tools/list')->assertStatus($status);
 })->with([
     'without access' => [[], 503],
-    'with access' => [['accessCpWhenSystemIsOff'], 200],
+    'with control panel access only' => [['accessCpWhenSystemIsOff'], 503],
+    'with site access' => [['accessSiteWhenSystemIsOff'], 200],
 ]);
 
 it('rebuilds the project config, unless it’s read-only', function (): void {

@@ -61,8 +61,8 @@
         type="button"
         icon="plus"
         class="w-full"
-        :loading="creating"
-        :disabled="creating"
+        .loading="creating"
+        .disabled="creating"
         @click="create"
         >{{ t('Create entry') }}</craft-button
       >

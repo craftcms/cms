@@ -1,10 +1,11 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/button/button';
   import {t} from '@craftcms/ui/utilities/translate';
-  import {computed, inject, onBeforeUnmount, ref, shallowRef, watch} from 'vue';
+  import {computed, onBeforeUnmount, ref, shallowRef, watch} from 'vue';
   import UiNodeList from './UiNodeList.vue';
   import TableControl from './TableControl.vue';
-  import {UiErrors, canonical, inputName, pathsMatch, valueAt} from './runtime';
+  import {canonical, inputName, pathsMatch, valueAt} from './runtime';
+  import {useOptionalUiRenderer} from './renderer/context';
   import {rowFields} from './table/rowUis';
   import {openColumnSettings} from './table/columnSettingsSlideout';
   import type {TableControlProps, TableValue} from './table/types';
@@ -41,9 +42,9 @@
   const columns = computed(() => props.value ?? {});
   const activeColumn = ref<string>();
   const settingsTarget = shallowRef<HTMLElement | null>(null);
-  const uiErrors = inject(UiErrors, undefined);
+  const renderer = useOptionalUiRenderer();
   const errorsCleared = computed(
-    () => uiErrors?.childrenCleared(props.control.path) ?? false
+    () => renderer?.childErrorsCleared(props.control.path) ?? false
   );
   let slideoutId: string | undefined;
   /** The column as it was when its settings opened, restored unless they're applied. */

@@ -20,6 +20,10 @@ import './modules/auth/components/verify-email/verify-email-form.js';
 import './modules/auth/components/totp/totp-form.js';
 import './modules/auth/components/recovery-codes/recovery-code-form.js';
 import {mountElevatedSessionHost} from './modules/auth/elevated-session';
+import {
+  installSessionTimeout,
+  mountSessionTimeoutHost,
+} from './modules/auth/session-timeout';
 import {installMessages} from './modules/messages';
 import {defineDashboardWidgetSettingsUiHost} from './modules/ui/dashboard-widget-settings-ui-host';
 import {defineConditionBuilderHost} from './modules/conditions/condition-builder-host';
@@ -91,6 +95,8 @@ defineFieldSettingsUiHost(Cp.$components);
 defineLayoutComponentSettingsUiHost(Cp.$components);
 
 mountElevatedSessionHost();
+installSessionTimeout();
+mountSessionTimeoutHost();
 
 /**
  * Components - dynamically imported after Craft is initialized

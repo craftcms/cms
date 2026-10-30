@@ -157,6 +157,19 @@ it('defaults missing database ports to integers for server-backed drivers', func
     'pgsql' => ['pgsql', 5432],
 ]);
 
+it('suffixes the table prefix with an underscore', function (?string $prefix, string $expected) {
+    $data = app(InstallController::class)->validateDbData([
+        'driver' => 'mysql',
+        'prefix' => $prefix,
+    ]);
+
+    expect($data['prefix'])->toBe($expected);
+})->with([
+    'without underscore' => ['craft', 'craft_'],
+    'with underscore' => ['cft_', 'cft_'],
+    'empty' => [null, ''],
+]);
+
 it('normalizes sqlite install db config without server credentials', function () {
     $data = app(InstallController::class)->validateDbData([
         'driver' => 'sqlite',

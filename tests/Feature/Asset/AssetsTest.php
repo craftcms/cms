@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Assets;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\AssetReplacing;
@@ -14,11 +15,13 @@ use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Asset\PreviewHandlers\Text;
+use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Image\Data\ImageColors;
+use CraftCms\Cms\Image\Data\ImageSample;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
@@ -530,7 +533,7 @@ describe('colors', function () {
     it('are stored when an image file comes in', function () {
         $this->assets->replaceAssetFile($this->asset, colorsImage(), 'photo.png');
 
-        expect(Asset::find()->id($this->asset->id)->one()->colors?->dominant)->toBe('#c81e28');
+        expect(Asset::find()->id($this->asset->id)->one()->analysis?->colors?->dominant)->toBe('#c81e28');
     });
 
     it('are cleared when the file is replaced by one that isn’t an image', function () {
@@ -540,24 +543,41 @@ describe('colors', function () {
         file_put_contents($replacement, 'not an image');
         $this->assets->replaceAssetFile(Asset::find()->id($this->asset->id)->one(), $replacement, 'photo.txt');
 
-        expect(Asset::find()->id($this->asset->id)->one()->colors)->toBeNull();
+        expect(Asset::find()->id($this->asset->id)->one()->analysis)->toBeNull();
     });
 
     it('are stored as inconclusive when none can be sampled', function () {
         $images = Mockery::mock(ImagesFacade::getFacadeRoot());
-        $images->shouldReceive('colors')->andReturn(new ImageColors);
+        $images->shouldReceive('sample')->andReturn(new ImageSample);
         ImagesFacade::swap($images);
 
         $this->assets->replaceAssetFile($this->asset, colorsImage(), 'photo.png');
 
-        expect(AssetModel::findOrFail($this->asset->id)->colors)->toEqual(['dominant' => null, 'grid' => []])
-            ->and(Asset::find()->id($this->asset->id)->one()->colors)->toEqual(new ImageColors);
+        expect(AssetModel::findOrFail($this->asset->id)->analysis['colors'])->toEqual(['dominant' => null, 'grid' => [], 'palette' => [], 'luminance' => [], 'weights' => []])
+            ->and(Asset::find()->id($this->asset->id)->one()->analysis?->colors)->toEqual(new ImageColors);
+    });
+
+    it('forgets what was found in the old file when the file is replaced', function () {
+        $this->assets->replaceAssetFile($this->asset, colorsImage(), 'photo.png');
+        $asset = Asset::find()->id($this->asset->id)->one();
+        $asset->analysis = $asset->analysis->withTags(['harbor'], 'Pier 9');
+        app(Elements::class)->saveElement($asset);
+
+        $this->assets->replaceAssetFile(Asset::find()->id($this->asset->id)->one(), colorsImage(), 'photo.png');
+        $analysis = Asset::find()->id($this->asset->id)->one()->analysis;
+
+        expect($analysis?->colors?->dominant)->toBe('#c81e28')
+            ->and($analysis?->keywords)->toBeNull()
+            ->and($analysis?->text)->toBeNull();
     });
 
     it('can’t be set from a request', function () {
-        $this->asset->setAttributesFromRequest(['colors' => ['dominant' => '#000000']]);
+        $this->asset->setAttributesFromRequest([
+            'analysis' => ['colors' => ['dominant' => '#000000'], 'keywords' => ['harbor']],
+            'colors' => ['dominant' => '#000000'],
+        ]);
 
-        expect($this->asset->colors)->toBeNull();
+        expect($this->asset->analysis)->toBeNull();
     });
 });
 
@@ -577,4 +597,136 @@ it('dates a replaced file by where it was stored, so indexing doesn’t mistake 
 
     expect($asset->dateModified->getTimestamp())
         ->toBe(Storage::disk('test-disk')->lastModified($asset->getPath()));
+});
+
+describe('metadata', function () {
+    beforeEach(function () {
+        $volume = Volume::factory()->create(['fs' => 'test-disk']);
+        $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
+        $this->asset = AssetModel::factory()->createElement([
+            'volumeId' => $volume->id,
+            'folderId' => $folder->id,
+            'filename' => 'photo.jpg',
+            'kind' => FileKind::Image->value,
+        ]);
+    });
+
+    afterEach(function () {
+        deleteMetadataJpegs();
+    });
+
+    it('is read when an image file comes in, before the file is cleaned', function () {
+        $path = metadataJpeg(xmpPacket(
+            '<dc:creator><rdf:Seq><rdf:li>Ada Park</rdf:li></rdf:Seq></dc:creator>',
+            'photoshop:DateCreated="2026-05-01T19:42:10"',
+        ));
+
+        $this->assets->replaceAssetFile($this->asset, $path, 'photo.jpg');
+
+        expect(Asset::find()->id($this->asset->id)->one()->analysis->metadata)
+            ->creator->toBe('Ada Park')
+            ->dateTaken->toBe('2026-05-01T19:42:10');
+    });
+
+    it('fills in missing alt text', function (?string $alt, string $expected) {
+        $this->asset->alt = $alt;
+        $path = metadataJpeg(xmpPacket('<dc:description><rdf:Alt><rdf:li xml:lang="x-default">Boats at dusk</rdf:li></rdf:Alt></dc:description>'));
+
+        $this->assets->replaceAssetFile($this->asset, $path, 'photo.jpg');
+
+        expect(Asset::find()->id($this->asset->id)->one()->alt)->toBe($expected);
+    })->with([
+        'missing' => [null, 'Boats at dusk'],
+        'already set' => ['A pier', 'A pier'],
+    ]);
+
+    it('keeps where an image was taken, even once cleaning strips its GPS coordinates from the file', function (bool $sanitize) {
+        $this->asset->sanitizeOnUpload = $sanitize;
+
+        $this->assets->replaceAssetFile($this->asset, metadataJpeg(exif: ['gps' => [
+            'latitude' => [48, 12, 30],
+            'latitudeRef' => 'N',
+            'longitude' => [16, 22, 12],
+            'longitudeRef' => 'E',
+        ]]), 'photo.jpg');
+        $metadata = Asset::find()->id($this->asset->id)->one()->analysis->metadata;
+
+        expect([$metadata->latitude, $metadata->longitude])->toBe([48.208333, 16.37]);
+    })->with([
+        'cleaned' => [true],
+        'not cleaned' => [false],
+    ])->skip(! function_exists('exif_read_data'), 'Needs the exif extension.');
+
+    it('makes images searchable by the keywords they were tagged with', function () {
+        $path = metadataJpeg(iptc: ['2#025' => ['harbor', 'boats']]);
+
+        $this->assets->replaceAssetFile($this->asset, $path, 'photo.jpg');
+
+        expect(Asset::find()->id($this->asset->id)->one()->getSearchKeywords('keywords'))->toBe('harbor boats');
+    });
+
+    it('makes images searchable by their embedded description, along with their keywords', function () {
+        $path = metadataJpeg(iptc: ['2#025' => ['harbor'], '2#120' => 'Boats at dusk']);
+
+        $this->assets->replaceAssetFile($this->asset, $path, 'photo.jpg');
+
+        expect(Asset::find()->id($this->asset->id)->one()->getSearchKeywords('keywords'))->toBe('harbor Boats at dusk');
+    });
+});
+
+describe('titles', function () {
+    beforeEach(function () {
+        $this->volume = Volume::factory()->create(['fs' => 'test-disk']);
+        $this->folder = VolumeFolderModel::factory()->create(['volumeId' => $this->volume->id]);
+    });
+
+    afterEach(function () {
+        deleteMetadataJpegs();
+    });
+
+    it('come from the file’s embedded title when it’s uploaded', function (?string $embedded) {
+        $path = metadataJpeg($embedded === null ? null : xmpPacket("<dc:title><rdf:Alt><rdf:li xml:lang=\"x-default\">$embedded</rdf:li></rdf:Alt></dc:title>"));
+        $asset = new Asset;
+        $asset->tempFilePath = $path;
+        $asset->setFilename($filename = uniqid('IMG_').'.jpg');
+        $asset->newFolderId = $this->folder->id;
+        $asset->setVolumeId($this->volume->id);
+        $asset->ruleset->useScenario(AssetRules::SCENARIO_CREATE);
+
+        expect(app(Elements::class)->saveElement($asset))->toBeTrue()
+            ->and(Asset::find()->id($asset->id)->one()->title)->toBe($embedded ?? AssetsHelper::filename2Title(pathinfo($filename, PATHINFO_FILENAME)));
+    })->with([
+        'embedded' => ['Harbor at dusk'],
+        'none' => [null],
+    ]);
+
+    it('stay as they are when the file is replaced', function () {
+        $asset = AssetModel::factory()->createElement([
+            'volumeId' => $this->volume->id,
+            'folderId' => $this->folder->id,
+            'filename' => $filename = uniqid('IMG_').'.jpg',
+            'kind' => FileKind::Image->value,
+        ]);
+        $asset->title = 'IMG 4759';
+        app(Elements::class)->saveElement($asset);
+
+        $this->assets->replaceAssetFile($asset, metadataJpeg(xmpPacket('<dc:title><rdf:Alt><rdf:li xml:lang="x-default">Harbor at dusk</rdf:li></rdf:Alt></dc:title>')), $filename);
+
+        expect(Asset::find()->id($asset->id)->one()->title)->toBe('IMG 4759');
+    });
+
+    it('come from a replacement file’s embedded title while they’re still the filename one', function () {
+        $asset = AssetModel::factory()->createElement([
+            'volumeId' => $this->volume->id,
+            'folderId' => $this->folder->id,
+            'filename' => $filename = 'IMG_4759.jpg',
+            'kind' => FileKind::Image->value,
+        ]);
+        $asset->title = AssetsHelper::filename2Title(pathinfo($filename, PATHINFO_FILENAME));
+        app(Elements::class)->saveElement($asset);
+
+        $this->assets->replaceAssetFile($asset, metadataJpeg(xmpPacket('<dc:title><rdf:Alt><rdf:li xml:lang="x-default">Harbor at dusk</rdf:li></rdf:Alt></dc:title>')), $filename);
+
+        expect(Asset::find()->id($asset->id)->one()->title)->toBe('Harbor at dusk');
+    });
 });

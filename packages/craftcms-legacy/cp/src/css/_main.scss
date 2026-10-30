@@ -3134,8 +3134,6 @@ table:not(.cp-table) {
   }
 }
 
-// Adjust the columns when in live preview
-.lp-editor-container .card-grid,
 .width-50 .card-grid,
 .width-25 .card-grid {
   grid-template-columns: minmax(0, 1fr);
@@ -4752,8 +4750,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
 
   .pane &,
   .slideout &,
-  #content &,
-  .lp-content & {
+  #content & {
     border: 1px solid var(--border-hairline);
     background: var(--secondary-pane-bg);
     box-shadow: none;
@@ -5876,48 +5873,6 @@ $min2ColWidth: 400px;
       position: absolute;
       inset-block-start: 0;
       inset-inline-end: -24px;
-    }
-  }
-}
-
-/* recent activity container */
-.activity-container {
-  margin-inline: var(--s);
-
-  ul {
-    display: flex;
-    flex-flow: row wrap;
-    gap: var(--xs);
-
-    li {
-      .activity-btn {
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        display: block;
-
-        .elementthumb {
-          position: relative;
-          width: 100%;
-          height: 100%;
-          border-radius: 50px;
-          background: var(--gray-050);
-          overflow: hidden;
-          border: 2px solid var(--white);
-          box-shadow: 0 1px 2px 1px color.adjust(mixins.$grey900, $alpha: -0.9);
-
-          img,
-          svg {
-            display: block;
-            width: 100%;
-            height: 100%;
-          }
-        }
-      }
-
-      &:not(:last-child) {
-        margin-inline-end: -10px;
-      }
     }
   }
 }

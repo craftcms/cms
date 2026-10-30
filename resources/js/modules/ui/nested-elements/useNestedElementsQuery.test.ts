@@ -158,9 +158,9 @@ describe('useNestedElementsQuery', () => {
     localStorage.setItem(
       'Craft-test.nestedentries.field:articles',
       JSON.stringify({
-        mode: 'table',
         sources: {
           __IMP__: {
+            mode: 'table',
             visible: ['postDate'],
             sort: [{field: 'sortOrder', direction: 'asc'}],
           },
@@ -181,9 +181,9 @@ describe('useNestedElementsQuery', () => {
     localStorage.setItem(
       'Craft-test.nestedentries.field:articles',
       JSON.stringify({
-        mode: 'cards',
         sources: {
           __IMP__: {
+            mode: 'cards',
             visible: ['dateUpdated'],
             sort: [{field: 'postDate', direction: 'desc'}],
           },
@@ -229,7 +229,7 @@ describe('useNestedElementsQuery', () => {
   it('falls back to the first server-provided mode when a persisted mode is unavailable', async () => {
     localStorage.setItem(
       'Craft-test.nestedentries.field:articles',
-      JSON.stringify({mode: 'table'})
+      JSON.stringify({sources: {__IMP__: {mode: 'table'}}})
     );
     const initial = payload({
       viewState: {mode: 'cards'},

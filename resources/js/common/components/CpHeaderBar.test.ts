@@ -38,7 +38,7 @@ function appendElement<T extends HTMLElement>(el: T): T {
   return el;
 }
 
-async function mountTopBar(large: boolean) {
+async function mountTopBar(large: boolean, {aiAssistant = false} = {}) {
   isLarge.value = large;
   state.page = reactive({
     url: '/admin',
@@ -62,6 +62,7 @@ async function mountTopBar(large: boolean) {
           id: 1,
           thumbHtml: null,
           name: 'Admin',
+          aiAssistant,
         },
         general: {
           cpTrigger: 'admin',
@@ -119,3 +120,32 @@ it('orders sections to match the mobile visual layout (breadcrumbs last)', async
     'cp-header-bar__breadcrumbs',
   ]);
 });
+
+function pressCommandI(): KeyboardEvent {
+  const event = new KeyboardEvent('keydown', {
+    key: 'i',
+    metaKey: true,
+    ctrlKey: true,
+    bubbles: true,
+    cancelable: true,
+  });
+  window.dispatchEvent(event);
+
+  return event;
+}
+
+it.each([true, false])(
+  'offers the AI assistant only when it’s available (available: %s)',
+  async (aiAssistant) => {
+    const {clientActions} = await import('@/modules/command-palette/registry');
+    const container = await mountTopBar(true, {aiAssistant});
+
+    expect(container.querySelector('#cp-assistant-toggle') !== null).toBe(
+      aiAssistant
+    );
+    expect(clientActions().some((action) => action.id === 'ask-ai')).toBe(
+      aiAssistant
+    );
+    expect(pressCommandI().defaultPrevented).toBe(aiAssistant);
+  }
+);

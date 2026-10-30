@@ -7,7 +7,6 @@ namespace CraftCms\Cms\GarbageCollection\Actions;
 use CraftCms\Cms\Database\Table;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * @since 6.0.0
@@ -25,8 +24,8 @@ class DeletePointlessChangeData extends GarbageCollectionAction
                 function () use ($table) {
                     // fetch any rows in the table for canonical elements that don't have any drafts
                     DB::table($table, 't')
-                        ->join(new Alias(Table::ELEMENTS, 'e'), 'e.id', 't.elementId')
-                        ->leftJoin(new Alias(Table::ELEMENTS, 'd'), function (JoinClause $join) {
+                        ->join(Table::ELEMENTS.' as e', 'e.id', 't.elementId')
+                        ->leftJoin(Table::ELEMENTS.' as d', function (JoinClause $join) {
                             $join->whereColumn('d.canonicalId', 'e.id')
                                 ->whereNotNull('d.draftId');
                         })

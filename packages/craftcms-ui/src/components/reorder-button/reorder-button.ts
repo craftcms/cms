@@ -223,6 +223,17 @@ export default class CraftReorderButton extends LitElement {
     return dir?.toLowerCase() === 'rtl';
   }
 
+  /**
+   * The menu is part of the button, so its own events stay inside it: leaving
+   * the shadow root, they'd read as the button's. `craft-reorder` and
+   * `craft-move` are what it reports instead.
+   */
+  private _stopMenuEvent = (event: Event) => {
+    if (event.target === event.currentTarget) {
+      event.stopPropagation();
+    }
+  };
+
   override render() {
     const label = this.label ?? t('Reorder');
     const horizontal = this.orientation === 'horizontal';
@@ -243,7 +254,14 @@ export default class CraftReorderButton extends LitElement {
     const downLabel = horizontal ? t('Move backward') : t('Move down');
 
     return html`
-      <craft-action-menu ?disabled="${this.disabled}">
+      <craft-action-menu
+        ?disabled="${this.disabled}"
+        @craft-show=${this._stopMenuEvent}
+        @craft-hide=${this._stopMenuEvent}
+        @craft-after-show=${this._stopMenuEvent}
+        @craft-after-hide=${this._stopMenuEvent}
+        @craft-select=${this._stopMenuEvent}
+      >
         <craft-button
           slot="invoker"
           type="button"

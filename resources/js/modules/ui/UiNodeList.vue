@@ -24,6 +24,8 @@
     refreshable: boolean;
     /** Where sidebar tabs render. Without it, they're shown as ordinary tabs. */
     sidebarTabOutlets?: SidebarTabOutlets;
+    /** Where the tab strip renders, rather than above the fields. */
+    tabsOutlet?: HTMLElement | null;
   }>();
   /**
    * A slideout sits over a page whose URL is about what's behind it, so its
@@ -114,32 +116,33 @@
 
 <template>
   <!-- UiNodeList -->
-  <craft-tabs
-    v-if="tabs.length > 1"
-    :label="t('Primary fields')"
-    :sync-location-hash="isSlideout ? 'false' : null"
-    @craft-tab-show="onSelectionChanged"
-  >
-    <craft-tab
-      v-for="tab in tabs"
-      slot="tab"
-      :key="tab.uid"
-      :controls="`${tabPanelId(tab)}-tab`"
+  <Teleport v-if="tabs.length > 1" :to="tabsOutlet" :disabled="!tabsOutlet">
+    <craft-tabs
+      :label="t('Primary fields')"
+      :sync-location-hash="isSlideout ? 'false' : null"
+      @craft-tab-show="onSelectionChanged"
     >
-      <craft-icon
-        v-if="tab.props.icon"
-        :name="tab.props.icon"
-        slot="prefix"
-      ></craft-icon>
-      {{ tab.props.label }}
-      <craft-icon
-        v-if="nodeHasErrors(tab)"
-        name="circle-exclamation"
-        :label="t('Errors')"
-        slot="suffix"
-      />
-    </craft-tab>
-  </craft-tabs>
+      <craft-tab
+        v-for="tab in tabs"
+        slot="tab"
+        :key="tab.uid"
+        :controls="`${tabPanelId(tab)}-tab`"
+      >
+        <craft-icon
+          v-if="tab.props.icon"
+          :name="tab.props.icon"
+          slot="prefix"
+        ></craft-icon>
+        {{ tab.props.label }}
+        <craft-icon
+          v-if="nodeHasErrors(tab)"
+          name="circle-exclamation"
+          :label="t('Errors')"
+          slot="suffix"
+        />
+      </craft-tab>
+    </craft-tabs>
+  </Teleport>
   <template
     v-for="node in nodes"
     :key="node.uid ?? node.control?.path.join('.')"

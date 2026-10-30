@@ -1,6 +1,7 @@
 <script setup lang="ts">
-  import {computed, getCurrentInstance, inject, onErrorCaptured} from 'vue';
-  import {UiFailure, uiChangeFromEvent} from './runtime';
+  import {computed, getCurrentInstance, onErrorCaptured} from 'vue';
+  import {uiChangeFromEvent} from './runtime';
+  import {useUiRenderer} from './renderer/context';
   import type {UiChange, UiNodePayload, UiPayload} from './types';
 
   defineOptions({name: 'UiNode'});
@@ -18,7 +19,7 @@
   const emit = defineEmits<{
     (event: 'change', change: UiChange): void;
   }>();
-  const invalidate = inject(UiFailure)!;
+  const invalidate = useUiRenderer().fail;
   const components = getCurrentInstance()!.appContext.components;
   const component = computed(() => {
     const component = components[props.node.component];

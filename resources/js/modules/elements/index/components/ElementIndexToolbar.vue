@@ -5,7 +5,11 @@
   import ElementStatus from '@/modules/elements/ElementStatus.vue';
   import IndexViewSettings from '@/modules/elements/index/components/IndexViewSettings.vue';
   import type {CheckboxOption} from '@/common/types';
-  import type {SortOption, ViewMode} from '@/modules/elements/types/view-state';
+  import type {
+    ThumbSize,
+    SortOption,
+    ViewMode,
+  } from '@/modules/elements/types/view-state';
   import FilterHud from './FilterHud.vue';
   import type {ConditionConfig} from '@/modules/conditions/types';
   import type {IndexSite} from '@/modules/elements/types/sites';
@@ -17,7 +21,11 @@
       statusOptions?: Array<{label: string; value: string}>;
       viewModes?: Array<ViewMode>;
       columnOptions: Array<CheckboxOption>;
+      /** The thumbnail sizes the active view mode offers. */
+      thumbSizeOptions?: Array<ThumbSize>;
       sortOptions: Array<SortOption>;
+      /** Whether any View menu setting differs from the source's default. */
+      viewCustomized?: boolean;
       processing?: boolean;
       /**
        * The sites this index can be switched between.
@@ -44,6 +52,7 @@
   const tableColumns = defineModel<Array<string>>('tableColumns', {
     required: true,
   });
+  const thumbSize = defineModel<ThumbSize>('thumbSize', {required: true});
   const conditions = defineModel<ConditionConfig | null>('conditions', {
     required: true,
   });
@@ -51,6 +60,7 @@
   const emit = defineEmits<{
     (e: 'submit'): void;
     (e: 'reorder', options: Array<CheckboxOption>): void;
+    (e: 'use-default-view'): void;
     (e: 'site-change', handle: string): void;
   }>();
 
@@ -237,10 +247,15 @@
             :sort-options="visibleSortOptions"
             :sort-direction-locked="sortDirectionLocked"
             :disabled="processing"
+            :thumb-size-options="thumbSizeOptions"
+            :show-table-columns="mode === 'table' || mode === 'structure'"
+            :customized="viewCustomized"
             v-model:sort-field="sortField"
             v-model:sort-direction="sortDirection"
             v-model:table-columns="tableColumns"
+            v-model:thumb-size="thumbSize"
             @reorder="(options) => emit('reorder', options)"
+            @use-defaults="emit('use-default-view')"
           />
         </div>
       </div>

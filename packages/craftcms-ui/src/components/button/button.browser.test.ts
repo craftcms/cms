@@ -654,6 +654,30 @@ describe('craft-button link keyboard focus', () => {
     await userEvent.tab();
     expect(document.activeElement).toBe(after);
   });
+
+  it('draws the same ring as a button around the same box', async () => {
+    const {userEvent} = await import('vite-plus/test/browser');
+    await import('../../styles/cp.css');
+    document.body.innerHTML =
+      '<craft-button variant="link">Button</craft-button> <craft-button variant="link" href="/">Link</craft-button>';
+    const [button, link] = document.querySelectorAll('craft-button');
+    await Promise.all([button!.updateComplete, link!.updateComplete]);
+    const anchor = link!.shadowRoot!.querySelector<HTMLElement>('a.link')!;
+
+    await userEvent.tab();
+    const {outlineColor, outlineWidth} = getComputedStyle(button!);
+    await userEvent.tab();
+    const anchorRing = getComputedStyle(anchor);
+
+    expect(anchorRing.outlineStyle).toBe('solid');
+    expect(anchorRing.outlineColor).toBe(outlineColor);
+    expect(anchorRing.outlineWidth).toBe(outlineWidth);
+    expect(anchor.getBoundingClientRect().height).toBeCloseTo(
+      link!.getBoundingClientRect().height -
+        2 * parseFloat(getComputedStyle(link!).borderBlockStartWidth),
+      0
+    );
+  });
 });
 
 describe('text box', () => {

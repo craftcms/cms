@@ -29,6 +29,7 @@
     ui: UiPayload;
     editUi: UiPayload | null;
     metadataHtml: string | null;
+    publishDisabledReason: ReleaseViewModel['publishDisabledReason'];
   }>();
 
   const canPublishNow = computed(
@@ -59,19 +60,6 @@
     }
 
     return t('Ready to publish.');
-  });
-
-  /** Why the release can't be published or scheduled yet, if it can't. */
-  const publishDisabledReason = computed((): string | null => {
-    const readiness = props.readiness;
-
-    if (!readiness || readiness.ready) {
-      return null;
-    }
-
-    return readiness.errors.length
-      ? readiness.errors.join(' ')
-      : readinessSummary.value;
   });
 
   function scheduleRelease(): void {

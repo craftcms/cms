@@ -53,4 +53,10 @@ class OrganizationField extends TextField
     {
         return t('Organization');
     }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'building';
+    }
 }
