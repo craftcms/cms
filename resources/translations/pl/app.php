@@ -799,6 +799,7 @@ return [
     'Entry Types' => 'Rodzaje wpisów',
     'Entry URI Format' => 'Format identyfikatora URI pozycji',
     'Entry could not be added. Maximum number of entries reached.' => 'Nie można dodać wpisu. Osiągnięto maksymalną liczbę wpisów.',
+    'Entry type icon' => 'Entry type icon',
     'Entry type saved.' => 'Rodzaj wpisu zapisany.',
     'Entry type settings' => 'Ustawienia typu wpisu',
     'Entry' => 'Pozycja',
