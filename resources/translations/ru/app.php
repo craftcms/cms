@@ -1564,6 +1564,7 @@ return [
     'Resaving {type}' => 'Пересохранить {type}',
     'Reserved' => 'Зарезервировано',
     'Reset password' => 'Сбросить пароль',
+    'Resize editor' => 'Resize editor',
     'Resolve now' => 'Устранить',
     'Resolved' => 'Устранено',
     'Response:' => 'Ответ:',

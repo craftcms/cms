@@ -1564,6 +1564,7 @@ return [
     'Resaving {type}' => 'جاري إعادة حفظ {type}',
     'Reserved' => 'تم الحجز',
     'Reset password' => 'إعادة تعيين كلمة المرور',
+    'Resize editor' => 'Resize editor',
     'Resolve now' => 'حل الآن',
     'Resolved' => 'تم الحل',
     'Response:' => 'الاستجابة:',

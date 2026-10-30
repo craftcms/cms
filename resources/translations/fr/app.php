@@ -1564,6 +1564,7 @@ return [
     'Resaving {type}' => 'Ré-enregistrement de {type,select,entrée{l‘} ressource{la } catégorie{la } utilisateur{l‘} other{le }}{type}',
     'Reserved' => 'Réservée',
     'Reset password' => 'Réinitialiser le mot de passe',
+    'Resize editor' => 'Resize editor',
     'Resolve now' => 'Résoudre maintenant',
     'Resolved' => 'Résolu',
     'Response:' => 'Réponse :',
