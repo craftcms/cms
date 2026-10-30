@@ -1564,6 +1564,7 @@ return [
     'Resaving {type}' => 'שומר שוב {type}',
     'Reserved' => 'שמור',
     'Reset password' => 'אפס סיסמה',
+    'Resize editor' => 'Resize editor',
     'Resolve now' => 'פתור עכשיו',
     'Resolved' => 'פתור',
     'Response:' => 'תשובה:',
