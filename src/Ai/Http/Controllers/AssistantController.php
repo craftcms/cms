@@ -277,7 +277,8 @@ readonly class AssistantController
         $threadId = $this->ownThread($request);
         $title = trim($request->string('title')->value());
 
-        Conversation::query()->whereKey($threadId)->update(['title' => $title]);
+        // Without touching `updated_at`, which is the conversation’s latest activity.
+        Conversation::query()->whereKey($threadId)->toBase()->update(['title' => $title]);
 
         return new JsonResponse(['title' => $title]);
     }

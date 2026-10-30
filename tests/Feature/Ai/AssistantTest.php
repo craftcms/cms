@@ -372,12 +372,17 @@ it('renames and deletes the user’s own conversations, and nobody else’s', fu
     $threadId = (string) Str::uuid();
     chat($threadId, 'Hi')->assertOk()->streamedContent();
     $owner = auth()->user();
+    $updatedAt = Conversation::query()->find($threadId)->updated_at;
+    $this->travel(2)->days();
 
     postJson(action([AssistantController::class, 'rename']), ['threadId' => $threadId, 'title' => ' Greetings '])
         ->assertOk()
         ->assertJsonPath('title', 'Greetings');
 
-    expect(Conversation::query()->find($threadId)?->getAttribute('title'))->toBe('Greetings');
+    // Renaming isn’t activity, which the history is sorted by.
+    expect(Conversation::query()->find($threadId))
+        ->title->toBe('Greetings')
+        ->updated_at->toEqual($updatedAt);
 
     actingAs(UserModel::factory()->withPermissions(['accessCp', Assistant::PERMISSION])->createElement());
 
