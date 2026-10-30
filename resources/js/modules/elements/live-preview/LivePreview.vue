@@ -4,8 +4,9 @@
    * edits are autosaved.
    *
    * The editor isn't rendered here. The page's own editor content is moved into
-   * the exposed `editorTarget` while this is open, so there's one form, one
-   * autosave queue, and nothing to reconcile when it closes.
+   * the exposed `editorTarget` while this is open, and its tabs into
+   * `tabsTarget`, so there's one form, one autosave queue, and nothing to
+   * reconcile when it closes.
    */
   import {t} from '@craftcms/ui';
   import {
@@ -65,12 +66,13 @@
   const root = useTemplateRef<HTMLElement>('root');
   const stage = useTemplateRef<HTMLElement>('stage');
   const editorTarget = useTemplateRef<HTMLElement>('editorTarget');
+  const tabsTarget = useTemplateRef<HTMLElement>('tabsTarget');
 
   /** Whether the pane is on screen, which outlasts `isOpen` while it slides out. */
   const shown = ref(false);
 
   // An element rather than an id, so the content follows it if it's replaced.
-  defineExpose({editorTarget, shown});
+  defineExpose({editorTarget, tabsTarget, shown});
   const preview = props.controller;
 
   /*
@@ -547,12 +549,18 @@
               @click.prevent="skipToPreview"
               >{{ t('Skip to top of preview') }}</a
             >
+            <div ref="tabsTarget" class="lp-editor__tabs"></div>
+            <div class="lp-editor__status">
+              <slot name="status"></slot>
+            </div>
+            <slot name="actions"></slot>
             <craft-button
               v-if="!standalone"
               type="button"
               size="small"
               icon="xmark"
               variant="plain"
+              flush="inline-end"
               :aria-label="t('Close Preview')"
               @click="preview.close()"
             >
@@ -563,16 +571,13 @@
               icon="arrow-up-right-from-square"
               icon-position="suffix"
               variant="plain"
+              flush="inline-end"
               :href="standalone.editUrl"
               target="_blank"
             >
               {{ t('Edit') }}
               <span class="sr-only">{{ t('Opens in a new window') }}</span>
             </craft-button>
-            <div class="lp-editor__status">
-              <slot name="status"></slot>
-            </div>
-            <slot name="actions"></slot>
           </header>
           <form
             class="lp-editor__body"
@@ -821,6 +826,7 @@
     display: grid;
     border-inline-end: 1px solid var(--c-color-border-quiet);
     grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
     min-width: 0;
     background-color: var(--c-surface-default);
   }
@@ -836,11 +842,37 @@
   }
 
   .lp-editor__header {
+    padding-inline: var(--cp-container-padding);
     border-block-end: 1px solid var(--c-color-border-quiet);
   }
 
-  .lp-editor__status {
-    margin-inline-start: auto;
+  .lp-editor__tabs {
+    flex: 1;
+    align-self: stretch;
+    display: flex;
+    min-width: 0;
+
+    & :deep(craft-tabs) {
+      --c-tabs-gap: 0;
+
+      flex: 1;
+      min-width: 0;
+    }
+
+    & :deep(craft-tabs::part(strip)) {
+      block-size: 100%;
+      align-items: stretch;
+      border-block-end-width: 0;
+    }
+
+    & :deep(craft-tabs::part(tab-group)) {
+      align-items: stretch;
+    }
+
+    & :deep(craft-tab) {
+      align-items: center;
+      padding-block: 0;
+    }
   }
 
   .lp-editor__body {

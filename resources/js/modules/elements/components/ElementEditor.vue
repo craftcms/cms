@@ -315,6 +315,11 @@
   const livePreviewTarget = computed(
     () => livePreviewPane.value?.editorTarget ?? null
   );
+  const livePreviewTabsTarget = computed(() =>
+    livePreviewPane.value?.shown
+      ? (livePreviewPane.value.tabsTarget ?? null)
+      : null
+  );
   const previewButton = useTemplateRef<HTMLElement>('previewButton');
 
   watch(autosave.saves, () => {
@@ -710,6 +715,7 @@
               :modified="autosave.modified.value"
               :disabled="editorLocked"
               :sidebar-tab-outlets="sidebarTabOutlets"
+              :tabs-outlet="livePreviewTabsTarget"
               @update:mutation="onMutation"
             />
           </component>
