@@ -82,16 +82,16 @@ it('derives transform argument types from the operation catalogue', function () 
 });
 
 it('adds the query params of an element type that its arguments class names', function () {
-    $arguments = TestWidgetArguments::getArguments();
+    $arguments = GqlArgumentsWidgetArguments::getArguments();
 
     expect($arguments['color']['description'])->toBe('Narrows the query results based on the widgets’ colors.')
         ->and((string) $arguments['color']['type'])->toBe('[String]')
         ->and($arguments['site']['description'])->toBe('Determines which site(s) the elements should be queried in. Defaults to the current (requested) site.')
         ->and($arguments)->not()->toHaveKey('drafts')
-        ->and(TestWidgetArgumentsWithoutElementType::getArguments())->not()->toHaveKey('color');
+        ->and(GqlArgumentsWidgetArgumentsWithoutElementType::getArguments())->not()->toHaveKey('color');
 });
 
-class TestWidget extends Element
+class GqlArgumentsWidget extends Element
 {
     public static function pluralDisplayName(): string
     {
@@ -100,11 +100,11 @@ class TestWidget extends Element
 
     public static function find(): ElementQueryInterface
     {
-        return new TestWidgetQuery(static::class);
+        return new GqlArgumentsWidgetQuery(static::class);
     }
 }
 
-class TestWidgetQuery extends ElementQuery
+class GqlArgumentsWidgetQuery extends ElementQuery
 {
     #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the {elements}’ colors.')]
     public function color(mixed $value): static
@@ -113,15 +113,15 @@ class TestWidgetQuery extends ElementQuery
     }
 }
 
-class TestWidgetArguments extends ElementArguments
+class GqlArgumentsWidgetArguments extends ElementArguments
 {
     protected static function elementType(): string
     {
-        return TestWidget::class;
+        return GqlArgumentsWidget::class;
     }
 }
 
-class TestWidgetArgumentsWithoutElementType extends ElementArguments {}
+class GqlArgumentsWidgetArgumentsWithoutElementType extends ElementArguments {}
 
 class RegistryArgumentHandler implements ArgumentHandlerInterface
 {
