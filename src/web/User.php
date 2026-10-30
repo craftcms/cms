@@ -439,6 +439,12 @@ class User extends \yii\web\User
         if ($duration > 0) {
             // Store the duration on the session
             SessionHelper::set($this->authDurationParam, $duration);
+
+            if ($cookieBased) {
+                // Cookie-based logins don't go through login(), so the session's expiration time was based on
+                // userSessionDuration, and won't get extended if the request said not to extend the session
+                SessionHelper::set($this->authTimeoutParam, DateTimeHelper::currentTimeStamp() + $duration);
+            }
         } else {
             SessionHelper::remove($this->authDurationParam);
         }
