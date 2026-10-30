@@ -28,7 +28,7 @@ use CraftCms\Cms\Tests\Support\Ai\FocusImageTask;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
-use Laravel\Ai\Files\LocalImage;
+use Laravel\Ai\Files\Image;
 
 use function Pest\Laravel\actingAs;
 
@@ -99,7 +99,7 @@ it('analyzes an image for every task that shares a model in one request, and sav
     $saved = Asset::find()->id($asset->id)->one();
 
     ImageAnalysisAgent::assertPromptedTimes(1);
-    ImageAnalysisAgent::assertPrompted(fn ($prompt): bool => $prompt->attachments->first() instanceof LocalImage
+    ImageAnalysisAgent::assertPrompted(fn ($prompt): bool => $prompt->attachments->first() instanceof Image
         && str_contains($prompt->prompt, 'Write a caption.')
         && str_contains($prompt->prompt, 'Find the subject.'));
     expect($applied)->toEqualCanonicalizing(['test:caption', 'test:focus'])

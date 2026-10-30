@@ -3,7 +3,7 @@
   import {computed, shallowRef, useId} from 'vue';
   import controller from '@/actions/CraftCms/Cms/Http/Controllers/Workflows/WorkflowTransitionsController';
   import type {ElementEditorActions} from '@/modules/elements/composables/useElementEditor';
-  import {commentToolbarButtons} from '@/modules/markdown-field/commentToolbarButtons';
+  import {commentToolbarButtons} from '@/modules/markdown-field/toolbarPresets';
   import {
     useWorkflowTransition,
     type WorkflowReleaseState,

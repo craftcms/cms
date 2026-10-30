@@ -8,6 +8,7 @@ use CraftCms\Cms\Component\TypeRegistry;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\Volumes;
+use CraftCms\Cms\Utility\Utilities\AiGuidance;
 use CraftCms\Cms\Utility\Utilities\AssetIndexes;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
 use CraftCms\Cms\Utility\Utilities\DbBackup;
@@ -48,6 +49,7 @@ class UtilityTypes extends TypeRegistry
         ProjectConfig::class,
         PhpInfo::class,
         SystemMessages::class,
+        AiGuidance::class,
         AssetIndexes::class,
         QueueManager::class,
         ClearCaches::class,

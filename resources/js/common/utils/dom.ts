@@ -1,4 +1,5 @@
 import {focusableWithin} from '@craftcms/ui/utilities/focus-trap';
+import {nextTick} from 'vue';
 
 /**
  * A DOM-ish argument: a CSS selector, an element, or an array-like collection
@@ -103,4 +104,81 @@ export function firstFocusableWithin(
     const nested = firstFocusableWithin(child);
     if (nested) return nested;
   }
+}
+
+/**
+ * Shows an element that may be in a tab panel that isn't selected, or in a
+ * hidden region a button discloses, such as a screen's details panel, then
+ * scrolls it into view.
+ *
+ * Tabs and disclosure buttons are found by the `aria-controls` that names
+ * what they show, so this covers `craft-tabs` in external-panel mode, the
+ * legacy `Craft.Tabs`, and `craft-disclosure` in external mode. A
+ * `craft-tabs` strip is set to the tab, which leaves focus where it is; a
+ * legacy tab or a disclosure button is clicked.
+ */
+export async function revealElement(
+  element: Element,
+  {block = 'nearest'}: {block?: ScrollLogicalPosition} = {}
+): Promise<void> {
+  const root = element.getRootNode() as Document | ShadowRoot;
+
+  for (
+    let ancestor = element.parentElement;
+    ancestor;
+    ancestor = ancestor.parentElement
+  ) {
+    const disclosure =
+      ancestor.id && ancestor.hidden
+        ? root.querySelector<HTMLElement>(
+            `button[aria-controls="${CSS.escape(ancestor.id)}"]:not([role="tab"])`
+          )
+        : null;
+
+    if (disclosure) {
+      disclosure.click();
+      // Its owner shows the region once the disclosure has updated.
+      await (
+        disclosure.closest('craft-disclosure') as {
+          updateComplete?: Promise<unknown>;
+        } | null
+      )?.updateComplete;
+      await nextTick();
+
+      continue;
+    }
+
+    const tab = ancestor.id
+      ? root.querySelector<HTMLElement>(
+          `[role="tab"][aria-controls="${CSS.escape(ancestor.id)}"]`
+        )
+      : null;
+
+    if (!tab || tab.getAttribute('aria-selected') === 'true') {
+      continue;
+    }
+
+    const tabs = tab.closest('craft-tabs') as
+      | (HTMLElement & {
+          selectedIndex: number;
+          updateComplete: Promise<unknown>;
+        })
+      | null;
+
+    if (tabs) {
+      tabs.selectedIndex = [
+        ...tabs.querySelectorAll(':scope > craft-tab'),
+      ].indexOf(tab);
+      await tabs.updateComplete;
+    } else {
+      tab.click();
+    }
+  }
+
+  element.scrollIntoView({
+    block,
+    behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      ? 'auto'
+      : 'smooth',
+  });
 }

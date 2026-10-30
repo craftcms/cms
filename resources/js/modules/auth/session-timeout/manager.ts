@@ -233,3 +233,27 @@ export class SessionTimeoutManager {
 }
 
 export const sessionTimeoutManager = new SessionTimeoutManager();
+
+/**
+ * Notes the session's new expiry from a response's headers. Requests sent
+ * without the clients `installSessionTimeout()` watches, such as streamed
+ * `fetch()` ones, pass theirs here.
+ */
+export function noteHeaders(
+  headers: Record<string, unknown> | undefined
+): void {
+  const expiresAt = expiryFromHeaders(headers);
+
+  if (expiresAt !== undefined) {
+    sessionTimeoutManager.update(expiresAt);
+  }
+}
+
+/**
+ * Checks the session after a 401 response, in case it has expired.
+ */
+export function noteStatus(status: number | undefined): void {
+  if (status === 401) {
+    void sessionTimeoutManager.check();
+  }
+}

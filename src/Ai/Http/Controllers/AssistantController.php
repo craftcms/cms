@@ -1,0 +1,515 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Ai\Http\Controllers;
+
+use CraftCms\Cms\Ai\Assistant\AssistantAgent;
+use CraftCms\Cms\Ai\Assistant\AssistantStreamProtocol;
+use CraftCms\Cms\Ai\Assistant\Content\ElementContexts;
+use CraftCms\Cms\Ai\Assistant\Content\ElementContextType;
+use CraftCms\Cms\Ai\Assistant\Crafty;
+use CraftCms\Cms\Ai\Assistant\McpTools;
+use CraftCms\Cms\Ai\Assistant\MessageContext;
+use CraftCms\Cms\Ai\Assistant\Transcript;
+use CraftCms\Cms\Ai\AssistantContextTypes;
+use CraftCms\Cms\Ai\Enums\Capability;
+use CraftCms\Cms\Ai\Exceptions\AiUnavailableException;
+use CraftCms\Cms\Ai\Jobs\NameConversation;
+use CraftCms\Cms\Ai\ModelImages;
+use CraftCms\Cms\Ai\Models\AgentSkill;
+use CraftCms\Cms\Ai\Skills\AgentSkills;
+use CraftCms\Cms\Ai\Tasks\Assistant;
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Enums\FileKind;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
+use CraftCms\Cms\Mcp\Elements\ElementAdapterRegistry;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\Ai;
+use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\Ui\Controls\ElementSelect;
+use CraftCms\Cms\User\Elements\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use Laravel\Ai\AgentUserInteraction\AgentUserInteraction;
+use Laravel\Ai\Contracts\ConversationStore;
+use Laravel\Ai\Contracts\VerifiesConversationOwnership;
+use Laravel\Ai\Exceptions\StreamErrorException;
+use Laravel\Ai\Models\Conversation;
+use Laravel\Ai\Models\ConversationMessage;
+use Mcp\Exception\ToolCallException;
+use Symfony\Component\HttpFoundation\Response;
+use Throwable;
+
+use function CraftCms\Cms\t;
+
+/**
+ * The AI assistant’s chat, which speaks the AG-UI protocol that TanStack AI’s client uses.
+ *
+ * Conversations are stored on the server, keyed by the thread IDs the client chooses, so the client only sends its
+ * new message, or its answers to approval requests. Each request comes with the items the user added to the context, in
+ * `forwardedProps.context`, as `{type, ref, ...}`, which their {@see AssistantContextTypes} resolve.
+ *
+ * @internal
+ *
+ * @since 6.0.0
+ */
+readonly class AssistantController
+{
+    /**
+     * The most suggestions an `@` in the message box offers.
+     */
+    private const int MENTION_LIMIT = 10;
+
+    /**
+     * The type of the context items for skills the user chose with `/`. Their skills go in the model’s instructions,
+     * rather than being described as data, as context types’ items are.
+     */
+    public const string SKILL_CONTEXT_TYPE = 'craft:skill';
+
+    public function __construct(
+        private ConversationStore $conversations,
+    ) {}
+
+    /**
+     * Runs a turn of a conversation, and streams it as AG-UI events.
+     */
+    public function run(
+        Request $request,
+        McpTools $tools,
+        AssistantContextTypes $contextTypes,
+        AgentSkills $skills,
+        ModelImages $modelImages,
+    ): Response {
+        $request->validate([
+            'threadId' => ['required', 'uuid'],
+            'forwardedProps.context' => ['array'],
+            'forwardedProps.siteId' => ['nullable', 'integer'],
+        ]);
+
+        $chat = AgentUserInteraction::chat($request);
+        $threadId = $chat->threadId();
+        $user = $this->user($request);
+
+        abort_if($chat->message() === null && $chat->decisions() === null, 400, 'Send a message, or answers to approval requests.');
+
+        // Before the conversation is stored, so a message that can’t be answered doesn’t leave one in the history.
+        try {
+            Ai::resolve(Assistant::handle());
+        } catch (AiUnavailableException $exception) {
+            return new JsonResponse(['message' => $exception->getMessage()], 422);
+        }
+
+        $firstMessage = null;
+
+        if (! $this->exists($threadId)) {
+            $message = $chat->message() ?? abort(400, 'A new conversation must start with a message.');
+            $firstMessage = MessageContext::strip($message->content ?? '');
+            // Replaced with a generated title once the first reply is done.
+            $this->conversations->storeConversation(
+                Conversation::participantType($user),
+                Conversation::participantKey($user),
+                Str::limit($firstMessage, 100),
+                $threadId,
+            );
+        }
+
+        abort_unless($this->belongsTo($threadId, $user), 404);
+
+        // What earlier messages were sent with comes after this message’s, so the model can keep working with it.
+        $context = $request->array('forwardedProps.context');
+        $refs = array_column(array_filter($context, is_array(...)), 'ref');
+        $earlier = array_filter(
+            MessageContext::earlierItems($threadId),
+            static fn (array $item): bool => ! in_array($item['ref'], $refs, true),
+        );
+
+        $items = [...$context, ...$earlier];
+
+        // The image of the asset open in the editor goes with the first message it’s open for, and stays in the
+        // conversation for later ones.
+        $image = $this->openImage($context, $user);
+        $imageSent = $image !== null && $this->hasImage($threadId, $image);
+        $attachImage = $image !== null && ! $imageSent && $chat->message() !== null;
+
+        $agent = new AssistantAgent(
+            $tools,
+            $user,
+            $contextTypes->resolve($request, $items),
+            $this->site($context, $request->integer('forwardedProps.siteId') ?: null),
+            $skills->all(),
+            $this->chosenSkills($items, $skills),
+            $imageSent || $attachImage ? $image->title : null,
+        );
+
+        $response = Ai::task(Assistant::handle())
+            ->stream($agent->continue($threadId, as: $user), $chat, $attachImage ? [$modelImages->forAsset($image)] : [])
+            ->catch(fn (Throwable $exception) => $this->logProviderError($threadId, $exception));
+
+        if ($firstMessage !== null) {
+            // Named by a queued job, so the title model’s request doesn’t hold the reply’s stream open.
+            $response->then(fn () => dispatch(new NameConversation($threadId, $firstMessage)));
+        }
+
+        return $response
+            ->usingProtocol(new AssistantStreamProtocol($threadId, $chat->runId() ?: null))
+            ->toResponse($request);
+    }
+
+    /**
+     * Returns a conversation’s messages, for the chat to show it again after the page reloads.
+     */
+    public function show(Request $request, Transcript $transcript): JsonResponse
+    {
+        $threadId = (string) $request->query('threadId');
+        $user = $this->user($request);
+
+        if (! Str::isUuid($threadId) || ! $this->exists($threadId)) {
+            return new JsonResponse(['messages' => [], 'activeRun' => null, 'interrupts' => null]);
+        }
+
+        abort_unless($this->belongsTo($threadId, $user), 404);
+
+        return new JsonResponse([...$transcript->load($threadId), 'activeRun' => null]);
+    }
+
+    /**
+     * Returns the skills a `/` in the message box offers: those whose titles match what the user typed.
+     */
+    public function skills(Request $request, AgentSkills $skills): JsonResponse
+    {
+        $search = mb_strtolower(trim(Str::after($request->string('query')->value(), '/')));
+        $limit = min(max($request->integer('limit', self::MENTION_LIMIT), 1), self::MENTION_LIMIT);
+
+        $options = $skills->all()
+            ->filter(fn (AgentSkill $skill): bool => $search === '' || str_contains(mb_strtolower($skill->title), $search))
+            ->take($limit)
+            ->map(fn (AgentSkill $skill): array => [
+                'label' => $skill->title,
+                // Keeps the `/`, so the message shows which skill was chosen.
+                'value' => '/'.$skill->title,
+                'data' => [
+                    'skillId' => $skill->id,
+                    'hint' => t('Skill'),
+                ],
+            ])
+            ->values()
+            ->all();
+
+        return new JsonResponse($options);
+    }
+
+    /**
+     * Returns the elements the user can view that match what they typed after `@` in the message box, as the message
+     * box’s suggestions.
+     */
+    public function mentions(Request $request, ElementAdapterRegistry $adapters): JsonResponse
+    {
+        $search = trim(Str::after($request->string('query')->value(), '@'));
+        $limit = min(max($request->integer('limit', self::MENTION_LIMIT), 1), self::MENTION_LIMIT);
+        $actor = $request->craftUser() ?? abort(401);
+        $options = [];
+
+        foreach ($adapters->handles() as $handle) {
+            $adapter = $adapters->find($handle);
+
+            try {
+                $query = $adapter?->listQuery($actor)->limit($limit);
+            } catch (ToolCallException) {
+                // The user can’t view any elements of the type.
+                continue;
+            }
+
+            if ($query === null) {
+                continue;
+            }
+
+            if ($search !== '') {
+                $query->search($search);
+            }
+
+            // Nested elements, such as Matrix blocks, are mentioned through what they’re in.
+            if ($query instanceof NestedElementQueryInterface) {
+                $query->primaryOwnerId(':empty:');
+            }
+
+            foreach ($query->all() as $element) {
+                if (! $element instanceof ElementInterface || ! $adapter->canView($actor, $element)) {
+                    continue;
+                }
+
+                $options[] = [
+                    'label' => $element->getUiLabel(),
+                    // Keeps the `@`, so the message shows what’s a mention.
+                    'value' => '@'.$element->getUiLabel(),
+                    'data' => [
+                        'elementType' => $element::class,
+                        'elementId' => $element->id,
+                        'siteId' => $element->siteId,
+                        // What kind of element it is, which the suggestion shows beside it.
+                        'hint' => $element::displayName(),
+                        'status' => ElementSelect::presentation($element)['status'],
+                    ],
+                ];
+            }
+        }
+
+        return new JsonResponse(array_slice($options, 0, $limit));
+    }
+
+    /**
+     * Starts a new conversation with a reply the assistant didn’t write, for the chat to open with.
+     */
+    public function start(Request $request, Crafty $crafty): JsonResponse
+    {
+        $request->validate(['threadId' => ['required', 'uuid']]);
+
+        $threadId = $request->string('threadId')->value();
+
+        abort_if($this->exists($threadId), 409, 'The conversation has already started.');
+
+        $crafty->start($threadId, $this->user($request));
+
+        return new JsonResponse(['threadId' => $threadId]);
+    }
+
+    /**
+     * Renames one of the user’s conversations.
+     */
+    public function rename(Request $request): JsonResponse
+    {
+        $request->validate([
+            'threadId' => ['required', 'uuid'],
+            'title' => ['required', 'string', 'max:255'],
+        ]);
+
+        $threadId = $this->ownThread($request);
+        $title = trim($request->string('title')->value());
+
+        // Without touching `updated_at`, which is the conversation’s latest activity.
+        Conversation::query()->whereKey($threadId)->toBase()->update(['title' => $title]);
+
+        return new JsonResponse(['title' => $title]);
+    }
+
+    /**
+     * Deletes one of the user’s conversations, with its messages.
+     */
+    public function destroy(Request $request): JsonResponse
+    {
+        $request->validate(['threadId' => ['required', 'uuid']]);
+
+        $threadId = $this->ownThread($request);
+
+        DB::transaction(static function () use ($threadId): void {
+            DB::table(Table::AGENT_CONVERSATION_MESSAGES)->where('conversation_id', $threadId)->delete();
+            DB::table(Table::AGENT_CONVERSATIONS)->where('id', $threadId)->delete();
+        });
+
+        return new JsonResponse(['deleted' => true]);
+    }
+
+    /**
+     * Returns the fields of an element that can be added to a message’s context. The element is identified as
+     * {@see ElementContexts::resolve()} describes, without `fields`.
+     */
+    public function contextFields(Request $request, ElementContexts $elementContexts): JsonResponse
+    {
+        $context = $elementContexts->resolve($request, [[...$request->all(), 'fields' => null]])[0] ?? abort(404);
+
+        return new JsonResponse([
+            'fields' => $elementContexts->fields($context->element),
+            // For the element’s chip, as element chips show it elsewhere.
+            'status' => ElementSelect::presentation($context->element)['status'],
+        ]);
+    }
+
+    /**
+     * Returns the user’s conversations, latest first, for the chat history, grouped by the day of their latest message
+     * in the user’s time zone: “Today”, “Yesterday”, and then each earlier date.
+     */
+    public function conversations(Request $request): JsonResponse
+    {
+        $user = $this->user($request);
+        $formatter = I18N::getFormatter();
+
+        $conversations = Conversation::query()
+            ->tap(AssistantAgent::onlyItsConversations(...))
+            ->where('participant_type', Conversation::participantType($user))
+            ->where('participant_id', Conversation::participantKey($user))
+            ->latest('updated_at')
+            ->get(['id', 'title', 'updated_at']);
+
+        $groups = [];
+
+        foreach ($conversations as $conversation) {
+            $item = $this->historyItem($conversation);
+            $date = Date::parse($item['updatedAt'])->setTimezone(Cms::timezone());
+            $heading = match (true) {
+                $date->isToday() => t('Today'),
+                $date->isYesterday() => t('Yesterday'),
+                default => $formatter->asDate($date, Locale::LENGTH_LONG),
+            };
+
+            $groups[$heading] ??= ['heading' => $heading, 'conversations' => []];
+            $groups[$heading]['conversations'][] = $item;
+        }
+
+        return new JsonResponse(['groups' => array_values($groups)]);
+    }
+
+    /**
+     * @return array{id: string, title: string, updatedAt: string}
+     */
+    private function historyItem(Conversation $conversation): array
+    {
+        // Serialized by the model, so the date is in ISO 8601 with its time zone.
+        $data = $conversation->toArray();
+
+        return ['id' => $data['id'], 'title' => $data['title'], 'updatedAt' => $data['updated_at']];
+    }
+
+    /**
+     * Logs a reply that failed with an error from the provider, such as a rate limit. The stream protocol reports other
+     * exceptions itself, but leaves these out, as it sends their message to the chat, where it’s otherwise lost.
+     */
+    private function logProviderError(string $threadId, Throwable $exception): void
+    {
+        if (! $exception instanceof StreamErrorException) {
+            return;
+        }
+
+        Log::error("The AI assistant couldn’t reply: {$exception->getMessage()}", [
+            'threadId' => $threadId,
+            'type' => $exception->error?->type,
+            'recoverable' => $exception->error?->recoverable,
+            'metadata' => $exception->error?->metadata,
+        ]);
+    }
+
+    private function user(Request $request): User
+    {
+        return $request->craftUser()?->asElement() ?? abort(401);
+    }
+
+    /**
+     * Returns the conversation a request is for, if it’s the user’s.
+     */
+    private function ownThread(Request $request): string
+    {
+        $threadId = $request->string('threadId')->value();
+
+        abort_unless($this->exists($threadId) && $this->belongsTo($threadId, $this->user($request)), 404);
+
+        return $threadId;
+    }
+
+    private function exists(string $threadId): bool
+    {
+        return Conversation::query()->whereKey($threadId)->exists();
+    }
+
+    private function belongsTo(string $threadId, User $user): bool
+    {
+        assert($this->conversations instanceof VerifiesConversationOwnership);
+
+        return $this->conversations->conversationBelongsTo(
+            $threadId,
+            Conversation::participantType($user),
+            Conversation::participantKey($user),
+        );
+    }
+
+    /**
+     * Returns the image asset open in the user’s editor, if they can view it, and the assistant’s model can see images.
+     *
+     * @param  array<mixed>  $context
+     */
+    private function openImage(array $context, User $user): ?Asset
+    {
+        $item = array_find($context, static fn (mixed $item): bool => is_array($item)
+            && ($item['type'] ?? null) === ElementContextType::handle()
+            && ($item['open'] ?? false) === true
+            && ($item['elementType'] ?? null) === Asset::class
+            && is_int($item['elementId'] ?? null));
+
+        if ($item === null || ! Ai::supports(Assistant::handle(), Capability::Vision)) {
+            return null;
+        }
+
+        $asset = Asset::find()
+            ->id($item['elementId'])
+            ->siteId(is_int($item['siteId'] ?? null) ? $item['siteId'] : null)
+            ->status(null)
+            ->one();
+
+        return $asset instanceof Asset && $asset->kind === FileKind::Image->value && $user->can('view', $asset) ? $asset : null;
+    }
+
+    /**
+     * Returns whether a message in a conversation was sent with an asset’s image, as its file is now.
+     */
+    private function hasImage(string $conversationId, Asset $asset): bool
+    {
+        // Matched in the database, as the attachments hold the images themselves.
+        return ConversationMessage::query()
+            ->where('conversation_id', $conversationId)
+            ->where('role', 'user')
+            ->where('attachments', 'like', '%"name":'.Json::encode(ModelImages::name($asset)).'%')
+            ->exists();
+    }
+
+    /**
+     * Returns the site the user is working in, whose guidance applies: the site of the element open in their editor,
+     * or else the site the control panel is working in. Only sites they can edit count.
+     *
+     * @param  array<mixed>  $context
+     */
+    private function site(array $context, ?int $controlPanelSiteId): ?Site
+    {
+        $siteId = $controlPanelSiteId;
+
+        foreach ($context as $item) {
+            if (
+                is_array($item)
+                && ($item['type'] ?? null) === ElementContextType::handle()
+                && ($item['open'] ?? false) === true
+                && is_int($item['siteId'] ?? null)
+            ) {
+                $siteId = $item['siteId'];
+                break;
+            }
+        }
+
+        return $siteId !== null && Sites::getEditableSiteIds()->contains($siteId) ? Sites::getSiteById($siteId) : null;
+    }
+
+    /**
+     * Returns the skills the user chose with `/`, in this message or earlier ones, that still exist.
+     *
+     * @param  array<mixed>  $items
+     * @return list<AgentSkill>
+     */
+    private function chosenSkills(array $items, AgentSkills $skills): array
+    {
+        $chosen = [];
+
+        foreach ($items as $item) {
+            if (is_array($item) && ($item['type'] ?? null) === self::SKILL_CONTEXT_TYPE && is_int($item['skillId'] ?? null)) {
+                $chosen[$item['skillId']] ??= $skills->find($item['skillId']);
+            }
+        }
+
+        return array_values(array_filter($chosen));
+    }
+}

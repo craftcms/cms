@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
+use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\Thumb;
@@ -16,6 +17,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Ai;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -540,15 +542,45 @@ abstract class BaseField extends FieldLayoutElement
             mode: $context->mode,
         ));
 
-        $copyAction = $this->crossSiteCopyAction($context);
-        if ($copyAction === null) {
+        $coreActions = array_values(array_filter([
+            $this->crossSiteCopyAction($context),
+            $this->aiAssistantAction($context),
+        ]));
+
+        if ($coreActions === []) {
             return $event->items;
         }
 
         return [
-            $copyAction,
+            ...$coreActions,
             ...($event->items === [] ? [] : [['type' => 'hr']]),
             ...$event->items,
+        ];
+    }
+
+    /**
+     * Returns an action that adds the field to the AI assistant’s context, for users who can use it.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function aiAssistantAction(FieldLayoutElementContext $context): ?array
+    {
+        if (
+            ! $this->uid ||
+            ! $context->element?->id ||
+            $context->element->getIsRevision() ||
+            ! Assistant::isAvailable()
+        ) {
+            return null;
+        }
+
+        return [
+            'icon' => 'sparkles',
+            'label' => t('Add to AI chat'),
+            'action' => [
+                'type' => 'event',
+                'name' => 'craft:add-to-ai-assistant',
+            ],
         ];
     }
 

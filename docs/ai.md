@@ -10,6 +10,8 @@ Craft builds on [`laravel/ai`](https://laravel.com/docs/13.x/ai-sdk). Agents, to
 
 Customers bring their own provider keys. Craft doesn’t broker requests, store keys, or log prompts.
 
+Craft’s own AI chat in the control panel, **Ask AI**, is a task too. To extend it, see [Ask AI](ask-ai.md).
+
 ## Providers
 
 A provider is an entry in the `ai.providers` config, which belongs to the Laravel application. Keys come from environment variables, as `laravel/ai` documents:
@@ -106,6 +108,8 @@ public function boot(AiTasks $tasks): void
 | `label()`      | Required. Shown to administrators. It’s called when the settings screen renders, so translations use the current user’s language. |
 | `modality()`   | `Modality::Text` by default. Also `Image`, `Audio`, `Transcription`, `Embeddings`, `Reranking`, or `Classification`. It decides which default provider applies. |
 | `description()` | Optional. Shown to administrators. Mention what the model needs, such as vision, because Craft can’t check models for it. |
+| `requirements()` | Optional. Capabilities the task needs from its model, such as `Capability::Vision`. Craft checks the model when the AI settings are saved, and the task is unavailable if the model doesn’t have one. |
+| `optionalCapabilities()` | Optional. Capabilities the task uses when its model has them. Craft checks them like requirements, but the task still runs without them. Ask `Ai::supports($handle, $capability)` before using one; it checks a model that hasn’t been checked yet. |
 
 The settings screen shows the name of the plugin that owns the task class. New tasks are enabled and use the default provider for their modality.
 
@@ -158,6 +162,28 @@ $response = (new MetaDescriptionAgent)->prompt(prompt: $entry->title, provider: 
 ```
 
 Plugins may also use `laravel/ai` directly, without tasks. Those calls don’t follow Craft’s AI settings.
+
+## Craft’s tasks
+
+Besides its image analysis tasks, Craft registers these tasks for the control panel’s AI chat. They’re for the chat only, so register a task of your own for your feature, with its own instructions and model:
+
+| Task | Handle | Used for |
+| ---- | ------ | -------- |
+| `CraftCms\Cms\Ai\Tasks\Assistant` | `craft:assistant` | The chat’s replies. See [Ask AI](ask-ai.md). |
+| `CraftCms\Cms\Ai\Tasks\GenerateChatTitle` | `craft:chatTitle` | Naming conversations after their first message. |
+
+## Images
+
+`CraftCms\Cms\Ai\ModelImages::forAsset()` returns an asset’s image as models should get it: scaled to fit 1,568 pixels, rasterized if it’s an SVG, and as base64, so it can be stored with a conversation. `forFile()` does the same for an image file you already have a copy of. Attach it to a prompt:
+
+```php
+use CraftCms\Cms\Ai\ModelImages;
+
+$image = app(ModelImages::class)->forAsset($asset);
+$response = Ai::task('gallery:caption')->prompt(agent: new CaptionAgent, prompt: 'Write a caption for this image', attachments: [$image]);
+```
+
+Tasks that extend `ImageAnalysisTask` don’t need it, as Craft sends them the image itself.
 
 ## Queueing
 
