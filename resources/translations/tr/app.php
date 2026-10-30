@@ -799,6 +799,7 @@ return [
     'Entry Types' => 'Kayıt Tipleri',
     'Entry URI Format' => 'Giriş URI Biçimi',
     'Entry could not be added. Maximum number of entries reached.' => 'Kayıt eklenemiyor. Maksimum kayıt sayısına ulaşıldı.',
+    'Entry type icon' => 'Entry type icon',
     'Entry type saved.' => 'Kayıt tipi kaydedildi.',
     'Entry type settings' => 'Kayıt türü ayarları',
     'Entry' => 'Giriş',
