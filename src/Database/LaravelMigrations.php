@@ -176,8 +176,9 @@ class LaravelMigrations
                 $table->unsignedBigInteger('participant_id')->nullable();
                 $table->string('agent');
                 $table->string('role', 25);
-                $table->text('content');
-                $table->text('attachments');
+                // Wider than `laravel/ai`’s own migration, as MySQL’s `text` can’t hold a message’s images, or a long message.
+                $table->longText('content');
+                $table->longText('attachments');
                 $table->longText('steps');
                 $table->text('usage');
                 $table->text('meta');
