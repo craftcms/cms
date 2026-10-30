@@ -38,6 +38,22 @@ describe('deviceLayout', () => {
     expect(layout.zoom).toBeCloseTo(600 / layout.frame.height);
   });
 
+  it.each(['tablet', 'phone'] as const)(
+    'frames a %s evenly on every side',
+    (type) => {
+      for (const orientation of ['portrait', 'landscape'] as const) {
+        const {viewport, frame} = deviceLayout(type, orientation, {
+          width: 1,
+          height: 1,
+        })!;
+
+        expect(frame.width - viewport.width).toBe(
+          frame.height - viewport.height
+        );
+      }
+    }
+  );
+
   it('swaps the dimensions in landscape', () => {
     const portrait = deviceLayout('tablet', 'portrait', {width: 1, height: 1})!;
     const landscape = deviceLayout('tablet', 'landscape', {

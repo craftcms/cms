@@ -179,7 +179,7 @@
   // The page is resized once, at the midpoint, faded out so it doesn't jump.
   const frameShape = shallowRef<DeviceShape | null>(targetShape.value);
   const frameOpacity = ref(1);
-  // How far the device is from desktop, which has no bezel, gutter or corners.
+  // How far the device is from desktop, which has no gutter around it.
   const framing = ref(targetShape.value ? 1 : 0);
   let shapeFrame = 0;
 
@@ -187,7 +187,8 @@
   function stageShape(): DeviceShape {
     return {
       viewport: {width: stageWidth.value, height: stageHeight.value},
-      bezel: {inline: 0, block: 0},
+      bezel: 0,
+      radius: 0,
     };
   }
 
@@ -251,8 +252,8 @@
 
   const deviceIcons: Record<DeviceType, string> = {
     desktop: 'desktop',
-    tablet: 'tablet-screen-button',
-    phone: 'mobile-screen-button',
+    tablet: 'custom-icons/tablet-even',
+    phone: 'custom-icons/mobile-even',
   };
 
   const announcement = ref('');
@@ -289,8 +290,9 @@
 
   const deviceStyle = computed(() => {
     const value = layout.value;
+    const current = shape.value;
 
-    if (!value) {
+    if (!value || !current) {
       return undefined;
     }
 
@@ -298,7 +300,8 @@
       width: `${value.frame.width}px`,
       height: `${value.frame.height}px`,
       transform: `scale(${value.zoom})`,
-      '--lp-framing': framing.value,
+      '--lp-bezel': `${current.bezel}px`,
+      '--lp-radius': `${current.radius}px`,
     };
   });
 
@@ -900,12 +903,12 @@
     display: grid;
     place-items: center;
     transform-origin: center;
-    border-radius: calc(2.5rem * var(--lp-framing, 1));
+    border-radius: var(--lp-radius);
     background-color: var(--c-color-neutral-fill-loud, #1f2937);
     box-shadow: var(--c-shadow-lg);
 
     .lp-device__viewport {
-      border-radius: calc(0.25rem * var(--lp-framing, 1));
+      border-radius: calc(var(--lp-radius) - var(--lp-bezel));
       overflow: hidden;
     }
   }

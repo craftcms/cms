@@ -6,14 +6,16 @@ interface DeviceSpec {
   /** The viewport the page is rendered at. */
   width: number;
   height: number;
-  /** The bezel drawn around the viewport, on each side. */
-  bezel: {inline: number; block: number};
+  /** The bezel drawn around the viewport, the same on every side. */
+  bezel: number;
+  /** The device's corner radius. The screen's is this less the bezel. */
+  radius: number;
 }
 
-/** Craft 5's dimensions, portrait. */
+/** An 11-inch iPad Pro and an iPhone 16 Pro, portrait. */
 export const DEVICES: Record<Exclude<DeviceType, 'desktop'>, DeviceSpec> = {
-  tablet: {width: 768, height: 1024, bezel: {inline: 16, block: 43}},
-  phone: {width: 375, height: 667, bezel: {inline: 12, block: 43}},
+  tablet: {width: 834, height: 1210, bezel: 44, radius: 62},
+  phone: {width: 402, height: 874, bezel: 15, radius: 77},
 };
 
 export interface DeviceLayout {
@@ -25,10 +27,11 @@ export interface DeviceLayout {
   zoom: number;
 }
 
-/** A device's viewport and bezel, before it's fitted to the room it has. */
+/** A device's viewport, bezel and corners, before it's fitted to the room it has. */
 export interface DeviceShape {
   viewport: {width: number; height: number};
-  bezel: {inline: number; block: number};
+  bezel: number;
+  radius: number;
 }
 
 /** The device to show, or `null` for desktop, which fills the room. */
@@ -40,17 +43,16 @@ export function deviceShape(
     return null;
   }
 
-  const spec = DEVICES[type];
+  const {width, height, bezel, radius} = DEVICES[type];
 
-  return orientation === 'landscape'
-    ? {
-        viewport: {width: spec.height, height: spec.width},
-        bezel: {inline: spec.bezel.block, block: spec.bezel.inline},
-      }
-    : {
-        viewport: {width: spec.width, height: spec.height},
-        bezel: spec.bezel,
-      };
+  return {
+    viewport:
+      orientation === 'landscape'
+        ? {width: height, height: width}
+        : {width, height},
+    bezel,
+    radius,
+  };
 }
 
 /** Sizes a device to fit the available room, keeping a gutter around it. */
@@ -60,8 +62,8 @@ export function fitDevice(
   gutter = 24
 ): DeviceLayout {
   const frame = {
-    width: viewport.width + bezel.inline * 2,
-    height: viewport.height + bezel.block * 2,
+    width: viewport.width + bezel * 2,
+    height: viewport.height + bezel * 2,
   };
   const zoom = Math.min(
     1,
@@ -85,10 +87,8 @@ export function blendShapes(
       width: mix(from.viewport.width, to.viewport.width),
       height: mix(from.viewport.height, to.viewport.height),
     },
-    bezel: {
-      inline: mix(from.bezel.inline, to.bezel.inline),
-      block: mix(from.bezel.block, to.bezel.block),
-    },
+    bezel: mix(from.bezel, to.bezel),
+    radius: mix(from.radius, to.radius),
   };
 }
 
