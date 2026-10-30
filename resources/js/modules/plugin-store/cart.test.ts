@@ -7,6 +7,7 @@ import {
   pendingTrialRows,
   pluginTrialRow,
   updateOptions,
+  withCartItem,
 } from './cart';
 import type {
   Cart,
@@ -80,7 +81,11 @@ const plugin: PluginSummary = {
 } as PluginSummary;
 
 describe('newCartItemData', () => {
-  const item = {type: 'plugin-edition', plugin: 'seo', edition: 'pro'} as const;
+  const item = {
+    type: 'plugin-edition',
+    plugin: 'seo',
+    edition: 'pro',
+  } as const;
 
   it.each([
     {name: 'a valid license', info: makeInfo(), keeps: true},
@@ -187,7 +192,11 @@ describe('isPluginBuyable', () => {
       info: makeInfo({licenseKeyStatus: 'trial'}),
       buyable: true,
     },
-    {name: 'has no license', info: makeInfo({licenseKey: null}), buyable: true},
+    {
+      name: 'has no license',
+      info: makeInfo({licenseKey: null}),
+      buyable: true,
+    },
     {
       name: 'is licensed to another install',
       info: makeInfo({licenseIssues: ['mismatched']}),
@@ -245,5 +254,63 @@ describe('trial rows', () => {
 
     expect(pendingTrialRows([row], cart)).toEqual([]);
     expect(pendingTrialRows([row], null)).toEqual([row]);
+  });
+});
+
+describe('withCartItem', () => {
+  const seomatic = {
+    type: 'plugin-edition' as const,
+    plugin: 'seomatic',
+    edition: 'lite',
+    expiryDate: '3y',
+    autoRenew: false,
+  };
+  const craft = {
+    type: 'cms-edition' as const,
+    edition: 'team',
+    expiryDate: '2y',
+    autoRenew: false,
+  };
+
+  it('adds an item for something not yet in the cart', () => {
+    const blitz = {...seomatic, plugin: 'blitz', expiryDate: '1y'};
+
+    expect(withCartItem([seomatic, craft], blitz)).toEqual([
+      seomatic,
+      craft,
+      blitz,
+    ]);
+  });
+
+  it('swaps in a new edition, keeping the renewal choices', () => {
+    const pro = {
+      ...seomatic,
+      edition: 'pro',
+      expiryDate: '1y',
+      autoRenew: true,
+    };
+    const pluginSwap = withCartItem([craft, seomatic], pro);
+    const pro2 = {
+      ...craft,
+      edition: 'pro',
+      expiryDate: '1y',
+      autoRenew: true,
+    };
+    const craftSwap = withCartItem([craft, seomatic], pro2);
+
+    expect(pluginSwap).toEqual([
+      craft,
+      {...pro, expiryDate: '3y', autoRenew: false},
+    ]);
+    expect(craftSwap).toEqual([
+      {...pro2, expiryDate: '2y', autoRenew: false},
+      seomatic,
+    ]);
+  });
+
+  it('leaves the cart alone when the edition is already in it', () => {
+    const items = [seomatic];
+
+    expect(withCartItem(items, {...seomatic, expiryDate: '1y'})).toBe(items);
   });
 });

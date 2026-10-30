@@ -83,6 +83,40 @@ export function newCartItemData(
 }
 
 /**
+ * The cart holds one edition per plugin and one of Craft, so adding another
+ * edition swaps it in, keeping the renewal choices already made.
+ */
+export function withCartItem(
+  items: CartItemData[],
+  item: CartItemData
+): CartItemData[] {
+  const index = items.findIndex((existing) =>
+    item.type === 'plugin-edition'
+      ? existing.plugin === item.plugin
+      : existing.type === 'cms-edition'
+  );
+  const existing = items[index];
+
+  if (!existing) {
+    return [...items, item];
+  }
+
+  if (existing.edition === item.edition) {
+    return items;
+  }
+
+  return items.map((current, i) =>
+    i === index
+      ? {
+          ...item,
+          expiryDate: existing.expiryDate,
+          autoRenew: existing.autoRenew,
+        }
+      : current
+  );
+}
+
+/**
  * Whether a license notice's "buy" link should add the plugin: it has to cost
  * something, and the install mustn't already hold a working license for it.
  */

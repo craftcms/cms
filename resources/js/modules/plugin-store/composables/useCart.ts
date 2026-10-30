@@ -3,7 +3,12 @@ import {usePage} from '@inertiajs/vue3';
 import {computed, shallowRef} from 'vue';
 import useCraftData from '@/common/composables/useCraftData';
 import {createCart, getCart, getPluginsByIds, updateCart} from '../api';
-import {cartItemsData, newCartItemData, type NewCartItem} from '../cart';
+import {
+  cartItemsData,
+  newCartItemData,
+  withCartItem,
+  type NewCartItem,
+} from '../cart';
 import {usePluginLicenseInfo} from './usePluginStoreData';
 import type {
   Cart,
@@ -102,38 +107,19 @@ export const useCart = createGlobalState(() => {
   async function add(newItems: NewCartItem[]): Promise<void> {
     // The cart as it is now, which may have changed since it first loaded.
     await load();
-    const items = cartItemsData(cart.value, cmsLicenseKey());
 
-    // An item already in the cart is swapped for the new edition, keeping its
-    // renewal choices.
-    for (const item of newItems) {
-      const index = items.findIndex((existing) =>
-        item.type === 'plugin-edition'
-          ? existing.plugin === item.plugin
-          : existing.type === 'cms-edition'
-      );
-      const existing = index === -1 ? null : items[index]!;
-
-      if (existing?.edition === item.edition) {
-        continue;
-      }
-
-      const data = newCartItemData(
-        item,
-        item.type === 'plugin-edition' ? licenseInfoFor(item.plugin) : null,
-        cmsLicenseKey()
-      );
-
-      if (existing) {
-        items[index] = {
-          ...data,
-          expiryDate: existing.expiryDate,
-          autoRenew: existing.autoRenew,
-        };
-      } else {
-        items.push(data);
-      }
-    }
+    const items = newItems.reduce(
+      (items, item) =>
+        withCartItem(
+          items,
+          newCartItemData(
+            item,
+            item.type === 'plugin-edition' ? licenseInfoFor(item.plugin) : null,
+            cmsLicenseKey()
+          )
+        ),
+      cartItemsData(cart.value, cmsLicenseKey())
+    );
 
     await save(items);
   }
