@@ -799,6 +799,7 @@ return [
     'Entry Types' => 'Typy Záznamov',
     'Entry URI Format' => 'Formát URI vstupu',
     'Entry could not be added. Maximum number of entries reached.' => 'Záznam sa nepodarilo pridať. Bol dosiahnutý maximálny počet záznamov.',
+    'Entry type icon' => 'Entry type icon',
     'Entry type saved.' => 'Typ záznamu uložený.',
     'Entry type settings' => 'Nastavenia typu záznamu',
     'Entry' => 'Záznam',
