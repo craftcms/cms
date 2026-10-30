@@ -1,4 +1,4 @@
-import {expect, test} from 'vite-plus/test';
+import {expect, test, vi} from 'vite-plus/test';
 import {html, render} from 'lit';
 
 import './action-item.js';
@@ -107,4 +107,20 @@ test('stops resetting its state once it is removed', async () => {
   );
 
   expect(states).toEqual(['success']);
+});
+
+test('announces its shortcut on its control', async () => {
+  vi.spyOn(navigator, 'platform', 'get').mockReturnValue('Win32');
+  const item = await mount(
+    html`<craft-action-item shortcut='{"key": "S", "shift": true}'>
+      Save and add another
+    </craft-action-item>`
+  );
+
+  expect(
+    item.shadowRoot
+      ?.querySelector('[part="control"]')
+      ?.getAttribute('aria-keyshortcuts')
+  ).toBe('Control+Shift+S');
+  vi.restoreAllMocks();
 });

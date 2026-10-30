@@ -209,6 +209,22 @@ export default class CraftButton extends HasShortcut(
       }
     }
 
+    // A shortcut shown on the button is announced on it too, unless the
+    // author already set their own.
+    if (changedProperties.has('shortcut')) {
+      const current = this.getAttribute('aria-keyshortcuts');
+      const next = this.shortcutAriaKeys;
+
+      if (current === null || current === this.#shortcutAriaKeys) {
+        if (next) {
+          this.setAttribute('aria-keyshortcuts', next);
+        } else {
+          this.removeAttribute('aria-keyshortcuts');
+        }
+        this.#shortcutAriaKeys = next;
+      }
+    }
+
     // Only while `toggle` is set: a plain button may carry an `aria-pressed`
     // its owner manages (`craft-button-group` sets one on every child), and
     // overwriting that would be worse than leaving it alone.
@@ -496,6 +512,9 @@ export default class CraftButton extends HasShortcut(
     prefix: false,
     suffix: false,
   };
+
+  /** The `aria-keyshortcuts` this button set from its shortcut, if any. */
+  #shortcutAriaKeys: string | null = null;
 
   #contentObserver: MutationObserver | null = null;
 
