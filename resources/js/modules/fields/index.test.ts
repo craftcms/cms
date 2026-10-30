@@ -1,18 +1,20 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 
 const openSlideout = vi.hoisted(() => vi.fn());
-const createCopyTextPrompt = vi.hoisted(() => vi.fn());
+const showCopyTextPrompt = vi.hoisted(() => vi.fn());
 const copyElements = vi.hoisted(() => vi.fn());
 
 vi.mock('@/common/slideouts', () => ({
   openSlideout,
 }));
-vi.mock('@craftcms/ui/factory', () => ({createCopyTextPrompt}));
+vi.mock('@craftcms/ui/utilities/copy-text-prompt', () => ({
+  showCopyTextPrompt,
+}));
 
 describe('field action listeners', () => {
   beforeEach(async () => {
     openSlideout.mockReset();
-    createCopyTextPrompt.mockReset();
+    showCopyTextPrompt.mockReset();
     copyElements.mockReset();
     document.body.innerHTML = '';
 
@@ -69,7 +71,7 @@ describe('field action listeners', () => {
       })
     );
 
-    expect(createCopyTextPrompt).toHaveBeenCalledWith({
+    expect(showCopyTextPrompt).toHaveBeenCalledWith({
       label: 'Field Handle',
       value: 'body',
     });
@@ -80,14 +82,14 @@ describe('field action listeners', () => {
       new CustomEvent('craft:copy-text-prompt', {detail: {label: 'Nope'}})
     );
 
-    expect(createCopyTextPrompt).not.toHaveBeenCalled();
+    expect(showCopyTextPrompt).not.toHaveBeenCalled();
   });
 });
 
 describe('field input action listeners', () => {
   beforeEach(async () => {
     openSlideout.mockReset();
-    createCopyTextPrompt.mockReset();
+    showCopyTextPrompt.mockReset();
     copyElements.mockReset();
     window.Craft = {cp: {copyElements}, baseCpUrl: '/admin'} as never;
     await import('./index');

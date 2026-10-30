@@ -7,40 +7,12 @@ import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
 import {elementTypeName} from '@/common/craft/element-types';
 import {elevatedSessionManager} from '@/modules/auth/elevated-session/manager';
+import {create} from '@craftcms/ui/utilities/create';
 
 // jQuery-built blocker markup + Craft.ui/Craft.cp seams, shown in a
 // `craft-dialog`.
 declare const $: any;
 declare const Craft: any;
-
-/** A `craft-button`, which is styled in both control panels, unlike `.btn`. */
-function createButton({
-  label,
-  icon,
-  variant,
-}: {
-  label: string;
-  icon?: string | null;
-  variant?: string;
-}): CraftButton {
-  const button = document.createElement('craft-button') as CraftButton;
-  button.setAttribute('type', 'button');
-
-  if (variant) {
-    button.setAttribute('variant', variant);
-  }
-
-  if (icon) {
-    const iconElement = document.createElement('craft-icon');
-    iconElement.setAttribute('name', icon);
-    iconElement.slot = 'prefix';
-    button.append(iconElement);
-  }
-
-  button.append(label);
-
-  return button;
-}
 
 const DEFAULTS = {
   siteId: null,
@@ -219,13 +191,14 @@ export class ElementDeletionManager extends Base {
     const footer = document.createElement('div');
     footer.slot = 'footer';
     footer.className = 'edm-footer';
-    const closeButton = createButton({label: t('Close')});
-    this.submitButton = createButton({
-      label: t('Delete {type}', {
+    const closeButton = create('craft-button', {type: 'button'}, t('Close'));
+    this.submitButton = create(
+      'craft-button',
+      {type: 'button', variant: 'danger'},
+      t('Delete {type}', {
         type: elementTypeName(this.elementType, this.elementIds.length !== 1),
-      }),
-      variant: 'danger',
-    });
+      })
+    );
     this.submitButton.disabled = true;
     footer.append(closeButton, this.submitButton);
     dialog.append(footer);
@@ -353,11 +326,15 @@ class Blocker extends Base {
       );
 
       for (const action of this.data.actions) {
-        const button = createButton({
-          label: action.label,
-          icon: action.icon,
-          variant: action.destructive ? 'danger' : 'outline',
-        });
+        const button = create(
+          'craft-button',
+          {
+            type: 'button',
+            icon: action.icon,
+            variant: action.destructive ? 'danger' : 'outline',
+          },
+          action.label
+        );
         const $button = $(button);
         this.buttons.push(button);
 

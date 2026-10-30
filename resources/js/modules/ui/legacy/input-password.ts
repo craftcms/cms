@@ -1,5 +1,5 @@
-import type CraftInputPassword from '../components/input-password/input-password.js';
-import {createSlottedInput} from './internal/slotted-input.js';
+import type CraftInputPassword from '@craftcms/ui/components/input-password/input-password';
+import {createSlottedInput} from './slotted-input';
 
 export interface InputPasswordConfig {
   id?: string;

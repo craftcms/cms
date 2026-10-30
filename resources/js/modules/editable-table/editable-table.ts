@@ -18,6 +18,7 @@ import type {
   EditableTableValue,
   EditableTableSettings,
 } from './types';
+import {create} from '@craftcms/ui/utilities/create';
 import {HandleGenerator} from '@/modules/input-generators/handle-generator';
 import {type ReorderDirection} from '@craftcms/ui';
 import {trim, uuid} from '@/common/craft/strings';
@@ -53,6 +54,22 @@ function defaultOptionValue(
     }
   }
   return null;
+}
+
+function textInput(
+  name: string,
+  value: unknown,
+  col: EditableTableColumn,
+  type = 'text'
+): HTMLInputElement {
+  return create('input', {
+    type,
+    name,
+    className: 'text fullwidth',
+    autocomplete: 'off',
+    value: value instanceof Object || value == null ? '' : String(value),
+    placeholder: col.placeholder ?? '',
+  });
 }
 
 /** Column types rendered as text inputs, with row-nav, paste-import, and validation. */
@@ -777,29 +794,16 @@ export class EditableTable extends Base<EditableTableSettings> {
 
           case 'email':
           case 'url': {
-            const $input = Craft.ui
-              .createTextInput({
-                name: name,
-                value: value instanceof Object ? null : value,
-                type: col.type,
-                placeholder: col.placeholder || null,
-              })
-              .appendTo($cell);
-            textExpanderTarget = $input[0];
+            textExpanderTarget = textInput(name, value, col, col.type);
+            $cell.append(textExpanderTarget);
             break;
           }
 
           case 'autosuggest':
           case 'template': {
             if (col.textExpanderTriggers) {
-              const $input = Craft.ui
-                .createTextInput({
-                  name,
-                  value: value instanceof Object ? null : value,
-                  placeholder: col.placeholder || null,
-                })
-                .appendTo($cell);
-              textExpanderTarget = $input[0];
+              textExpanderTarget = textInput(name, value, col);
+              $cell.append(textExpanderTarget);
               break;
             }
 

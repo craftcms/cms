@@ -1,4 +1,4 @@
-import type CraftSlidePicker from '../components/slide-picker/slide-picker.js';
+import type CraftSlidePicker from '@craftcms/ui/components/slide-picker/slide-picker';
 
 export interface SlidePickerConfig {
   id?: string;

@@ -30,6 +30,8 @@ import {
   isMobileBrowser,
   setFocusWithin,
 } from '@craftcms/garnish';
+import {bridgeLegacyClasses} from '@/modules/ui/legacy/buttons';
+import {create} from '@craftcms/ui/utilities/create';
 import {installCpApp} from '@/bootstrap/cp-app';
 import {resolveInertiaPage} from '@/bootstrap/inertia-pages';
 import {createApp, type App} from 'vue';
@@ -270,11 +272,13 @@ export class CpScreenSlideout extends Slideout {
       text: isForm ? t('Cancel') : t('Close'),
     }).appendTo($btnContainer);
     if (isForm) {
-      this.$saveBtn = Craft.ui
-        .createSubmitButton({
-          label: t('Save'),
-          spinner: true,
-        })
+      const saveBtn = create(
+        'craft-button',
+        {type: 'submit', variant: 'primary', className: 'submit'},
+        create('span', {className: 'label'}, t('Save'))
+      );
+      // $saveBtn is public, and callers toggle its `loading` class
+      this.$saveBtn = $(bridgeLegacyClasses(saveBtn))
         .attr('aria-keyshortcuts', commandShortcut('S'))
         .appendTo($btnContainer);
     }

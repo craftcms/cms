@@ -35,8 +35,7 @@ interface LegacyElementIndex {
  *
  * First consumer of the modern `@craftcms/garnish` `Modal` + `Select` from
  * `resources/js` — both replace their legacy `Garnish.*` equivalents 1:1.
- * `Craft.ui.createSubmitButton` stays a legacy jQuery seam (not yet ported to
- * `@craftcms/ui/factory`). Booted imperatively from `MoveToSection.php`
+ * Booted imperatively from `MoveToSection.php`
  * (`new Craft.EntryMover(...)`), so the class is exposed on `window.Craft`.
  */
 export class EntryMover extends Base {

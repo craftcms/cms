@@ -1,4 +1,4 @@
-import {createCopyTextPrompt} from '@craftcms/ui/factory';
+import {showCopyTextPrompt} from '@craftcms/ui/utilities/copy-text-prompt';
 import {openSlideout} from '@/common/slideouts';
 import type {SlideoutSaveResult} from '@/common/slideouts/types';
 import {matrixField} from '@/modules/matrix/selection-menu';
@@ -76,7 +76,7 @@ window.addEventListener('craft:copy-text-prompt', ((ev: CustomEvent) => {
     return;
   }
 
-  createCopyTextPrompt({label, value});
+  showCopyTextPrompt({label, value});
 }) as EventListener);
 
 /**

@@ -1,6 +1,7 @@
 import {Base} from '@craftcms/garnish';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {create} from '@craftcms/ui/utilities/create';
 
 // Mostly Craft.* runtime seams (the still-legacy element index + prompt handler
 // + progress bar); the only jQuery is via the objects Craft.ui/Craft.cp return
@@ -73,10 +74,7 @@ export class AssetMover extends Base {
     let $undoBtn = null;
 
     if (allowUndo && this.conflictCount === 0) {
-      $undoBtn = Craft.ui.createButton({
-        label: t('Undo'),
-        spinner: true,
-      });
+      $undoBtn = $(create('craft-button', {type: 'button'}, t('Undo')));
     }
 
     // if we didn't reach the limit, so the move was not confirmed, we want to give the option to undo

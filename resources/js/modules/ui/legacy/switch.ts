@@ -1,4 +1,4 @@
-import type CraftSwitch from '../components/switch/switch.js';
+import type CraftSwitch from '@craftcms/ui/components/switch/switch';
 
 export interface SwitchConfig {
   id?: string;
