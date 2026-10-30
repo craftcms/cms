@@ -88,6 +88,12 @@ async function fixture(
   };
 }
 
+function popupOf(control: CraftCombobox): HTMLElement {
+  return control.shadowRoot!.querySelector<HTMLElement>(
+    '#overlay-content-node-wrapper'
+  )!;
+}
+
 function option(control: CraftCombobox, label: string): HTMLElement {
   return [...control.querySelectorAll<HTMLElement>('craft-option')].find(
     (candidate) => candidate.textContent?.trim().startsWith(label)
@@ -367,6 +373,92 @@ describe('keyboard and focus', () => {
   });
 });
 
+describe('announcements', () => {
+  function liveRegion(control: CraftCombobox): HTMLElement {
+    return control.shadowRoot!.querySelector<HTMLElement>('[aria-live]')!;
+  }
+
+  it('renders an empty polite live region before anything is announced', async () => {
+    const {control} = await fixture();
+    const region = liveRegion(control);
+
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toHaveAttribute('aria-atomic', 'true');
+    expect(region.textContent?.trim()).toBe('');
+  });
+
+  it.each([false, true])(
+    'announces how many options there are when the list opens (multiple choice: %s)',
+    async (multipleChoice) => {
+      const {control, input} = await fixture((c) => {
+        c.multipleChoice = multipleChoice;
+        if (multipleChoice) {
+          c.modelValue = ['apple'];
+        }
+      });
+
+      await open(input);
+
+      await vi.waitFor(() =>
+        expect(liveRegion(control).textContent?.trim()).toBe(
+          multipleChoice ? '3 results' : '4 results'
+        )
+      );
+    }
+  );
+
+  it('announces the new count as typing filters the options', async () => {
+    const {control, input} = await fixture();
+
+    input.focus();
+    await userEvent.keyboard('Che');
+
+    await vi.waitFor(() =>
+      expect(liveRegion(control).textContent?.trim()).toBe('1 result')
+    );
+  });
+
+  it('announces when no options match', async () => {
+    const {control, input} = await fixture();
+
+    input.focus();
+    await userEvent.keyboard('zzz');
+
+    await vi.waitFor(() =>
+      expect(liveRegion(control).textContent?.trim()).toBe('No results')
+    );
+  });
+
+  it('announces every match, not just those shown, when the list is cut short', async () => {
+    const {control, input} = await fixture((c) => (c.limit = 2));
+
+    await open(input);
+
+    await vi.waitFor(() =>
+      expect(liveRegion(control).textContent?.trim()).toBe('4 results')
+    );
+  });
+
+  it('clears the live region after the announcement timeout elapses', async () => {
+    const {control} = await fixture();
+    vi.useFakeTimers({toFake: ['setTimeout', 'clearTimeout']});
+
+    try {
+      control.opened = true;
+      await vi.advanceTimersByTimeAsync(0);
+      expect(liveRegion(control).textContent?.trim()).toBe('4 results');
+
+      await vi.advanceTimersByTimeAsync(4999);
+      expect(liveRegion(control).textContent?.trim()).toBe('4 results');
+
+      await vi.advanceTimersByTimeAsync(1);
+      expect(liveRegion(control).textContent?.trim()).toBe('');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
 describe('multiple choice', () => {
   it.each(['its button', 'Backspace'])(
     'focuses the textbox after a token is removed with %s',
@@ -437,7 +529,7 @@ describe('pointer', () => {
 describe('visual', () => {
   describe.each(['light', 'dark'])('in the %s theme', (theme) => {
     it.each([false, true])(
-      'draws the textbox and popup borders at 3:1 and the footer text at 4.5:1 (multiple choice: %s)',
+      'draws the textbox and popup borders at 3:1, and the footer text at 4.5:1 inside the popup (multiple choice: %s)',
       async (multipleChoice) => {
         const {control, input, background} = await fixture((c) => {
           c.multipleChoice = multipleChoice;
@@ -447,8 +539,9 @@ describe('visual', () => {
           ? control.shadowRoot!.querySelector('.input-group__input')!
           : input.closest('.form-control')!;
         await open(input);
-        const popup = control.querySelector<HTMLElement>('[slot=listbox]')!;
-        const footer = control.querySelector<HTMLElement>('.combobox__footer')!;
+        const popup = popupOf(control);
+        const footer =
+          control.shadowRoot!.querySelector<HTMLElement>('.combobox__footer')!;
 
         expect(
           contrast(getComputedStyle(border).borderTopColor, background)
@@ -462,31 +555,12 @@ describe('visual', () => {
             getComputedStyle(popup).backgroundColor
           )
         ).toBeGreaterThanOrEqual(4.5);
+        const box = popup.getBoundingClientRect();
+        const text = footer.getBoundingClientRect();
+        expect(text.top).toBeGreaterThanOrEqual(box.top);
+        expect(text.bottom).toBeLessThanOrEqual(box.bottom);
       }
     );
-  });
-
-  describe.each(['light', 'dark'])('in the %s theme', (theme) => {
-    it('draws each group’s label at 4.5:1 against the popup', async () => {
-      const {control, input} = await fixture(
-        (c) => (c.options = grouped),
-        theme
-      );
-      await open(input);
-      const popup = getComputedStyle(
-        control.querySelector('[slot=listbox]')!
-      ).backgroundColor;
-      const labels = control.querySelectorAll<HTMLElement>(
-        '[role=group] > [role=presentation]'
-      );
-
-      expect(labels).toHaveLength(2);
-      for (const label of labels) {
-        expect(
-          contrast(getComputedStyle(label).color, popup)
-        ).toBeGreaterThanOrEqual(4.5);
-      }
-    });
   });
 
   it('keeps the textbox border and popup border in forced colors mode', async () => {
@@ -498,7 +572,7 @@ describe('visual', () => {
 
     for (const element of [
       control.shadowRoot!.querySelector('.input-group__input')!,
-      control.querySelector('[slot=listbox]')!,
+      popupOf(control),
     ]) {
       const style = getComputedStyle(element);
       expect(style.borderTopStyle).not.toBe('none');
@@ -523,16 +597,13 @@ describe('visual', () => {
 
       await open(input);
       await vi.waitFor(() =>
-        expect(
-          control.querySelector('[slot=listbox]')!.getBoundingClientRect()
-            .height
-        ).toBeGreaterThan(0)
+        expect(popupOf(control).getBoundingClientRect().height).toBeGreaterThan(
+          0
+        )
       );
       const field = input.closest<HTMLElement>('.form-control')!;
       const textbox = field.getBoundingClientRect();
-      const popup = control
-        .querySelector('[slot=listbox]')!
-        .getBoundingClientRect();
+      const popup = popupOf(control).getBoundingClientRect();
       const points = [
         [textbox.left + textbox.width / 2, textbox.top + textbox.height / 2],
         [textbox.left + 2, textbox.top + 2],
@@ -570,8 +641,8 @@ describe('visual', () => {
     for (const token of control.shadowRoot!.querySelectorAll('.token')) {
       expect(token.getBoundingClientRect().right).toBeLessThanOrEqual(320);
     }
-    expect(
-      control.querySelector('[slot=listbox]')!.getBoundingClientRect().right
-    ).toBeLessThanOrEqual(320);
+    expect(popupOf(control).getBoundingClientRect().right).toBeLessThanOrEqual(
+      320
+    );
   });
 });

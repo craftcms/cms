@@ -1,17 +1,18 @@
 import {LionCombobox} from '@lion/ui/combobox.js';
-import {uuid} from '@lion/ui/core.js';
 import {html, nothing, render} from 'lit';
-import {property} from 'lit/decorators.js';
+import {property, state} from 'lit/decorators.js';
 import {repeat} from 'lit/directives/repeat.js';
 import styles from './combobox.styles.js';
 import type CraftOption from '../option/option.js';
 import {emitChange, emitInput} from '@src/utilities/form-events';
 import {t} from '@src/utilities/translate';
 import '../option/option.js';
+import '../option/option-group.js';
 import '../icon/icon.js';
 import '../indicator/indicator.js';
 import '../button/button.js';
 import {HasLabel} from '@src/mixins/HasLabel';
+import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import {colors} from '@src/constants/colors';
 import {variants} from '@src/constants/variants';
 
@@ -63,6 +64,8 @@ function iconColor(color: string): string {
     : color;
 }
 
+const announcementTimeout = 5000;
+
 interface VisibleEntry {
   groupLabel?: string;
   option: ComboboxOption;
@@ -73,14 +76,6 @@ interface EntryRun {
   groupLabel?: string;
   entries: VisibleEntry[];
 }
-
-// The listbox is light DOM, out of reach of the component's own styles.
-const groupStyle =
-  'display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--c-spacing-xs);';
-const groupLabelStyle =
-  'padding-inline: var(--c-spacing-md); padding-block: var(--c-spacing-sm); font-size: 0.8em; text-transform: uppercase; color: var(--c-color-neutral-on-normal); border-block-end: 1px solid var(--c-color-neutral-border-quiet);';
-const footerStyle =
-  'padding-inline: var(--c-spacing-md); padding-block: var(--c-spacing-sm); font-size: 0.85em; color: var(--c-text-quiet); border-block-start: 1px solid var(--c-color-neutral-border-quiet);';
 
 /**
  * @summary A combobox with type-ahead filtering and optional multiple selection.
@@ -154,7 +149,7 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
   }
 
   static override get styles() {
-    return [...super.styles, styles];
+    return [...super.styles, visuallyHiddenStyles, styles];
   }
 
   /** Options to render. Groups are supported via `type: 'optgroup'`. */
@@ -656,19 +651,8 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
           )
       );
 
-    const footer =
-      matched.length > this.limit
-        ? html`<div
-            class="combobox__footer"
-            aria-hidden="true"
-            style=${footerStyle}
-          >
-            ${t('Showing {shown} of {total} — keep typing to narrow results.', {
-              shown: this.limit,
-              total: matched.length,
-            })}
-          </div>`
-        : nothing;
+    this.overflowTotal = matched.length > this.limit ? matched.length : 0;
+    this.#announceMatches(matched.length);
 
     // Retain selected option elements while filtering: Lion derives checked
     // values from registered options, including selections outside the limit.
@@ -676,44 +660,15 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
       html`${repeat(
         runs,
         (run) => run.key,
-        (run) => {
-          if (run.groupLabel === undefined) {
-            return optionsTemplate(run);
-          }
-          const id = this.#groupLabelId(run.key);
-
-          return html`<div
-            role="group"
-            class="combobox__group"
-            aria-labelledby=${id}
-            style=${groupStyle}
-          >
-            <div
-              role="presentation"
-              id=${id}
-              class="combobox__optgroup"
-              style=${groupLabelStyle}
-            >
-              ${run.groupLabel}
-            </div>
-            ${optionsTemplate(run)}
-          </div>`;
-        }
-      )}${footer}`,
+        (run) =>
+          run.groupLabel === undefined
+            ? optionsTemplate(run)
+            : html`<craft-option-group .label=${run.groupLabel}>
+                ${optionsTemplate(run)}
+              </craft-option-group>`
+      )}`,
       node
     );
-  }
-
-  #groupLabelIds = new Map<string, string>();
-
-  #groupLabelId(key: string): string {
-    let id = this.#groupLabelIds.get(key);
-    if (!id) {
-      id = `combobox-group-${uuid()}`;
-      this.#groupLabelIds.set(key, id);
-    }
-
-    return id;
   }
 
   #optionTemplate(option: ComboboxOption, selected = false) {
@@ -729,10 +684,9 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
         .hint=${data.hint ?? null}
         ?disabled=${option.disabled ?? false}
       >
-        <span class="combobox__option">
-          ${this.#decorationTemplate(data)}
-          ${isEnv ? html`<code>${label}</code>` : label}
-        </span>
+        ${this.#decorationTemplate(data)}${isEnv
+          ? html`<code>${label}</code>`
+          : label}
       </craft-option>
     `;
   }
@@ -797,6 +751,88 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
 
     this.opened = !this.#openedOnIndicatorMousedown;
   };
+
+  @state()
+  private announcement = '';
+
+  #announceTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  /** The match count last announced while the list was open, if any. */
+  #announcedMatches = '';
+
+  override disconnectedCallback() {
+    if (this.#announceTimeout !== null) {
+      clearTimeout(this.#announceTimeout);
+      this.#announceTimeout = null;
+    }
+    super.disconnectedCallback();
+  }
+
+  #announceMatches(count: number): void {
+    if (!this.opened && !this.#filtering) {
+      this.#announcedMatches = '';
+      return;
+    }
+
+    const message =
+      count === 0
+        ? t('No results')
+        : t('{num, number} {num, plural, =1{result} other{results}}', {
+            num: count,
+          });
+
+    if (message !== this.#announcedMatches) {
+      this.#announcedMatches = message;
+      this.#announce(message);
+    }
+  }
+
+  #announce(message: string): void {
+    if (this.#announceTimeout !== null) {
+      clearTimeout(this.#announceTimeout);
+      this.#announceTimeout = null;
+    }
+
+    this.announcement = '';
+    queueMicrotask(() => {
+      if (this.isConnected) {
+        this.announcement = message;
+      }
+    });
+
+    this.#announceTimeout = setTimeout(() => {
+      this.#announceTimeout = null;
+      this.announcement = '';
+    }, announcementTimeout);
+  }
+
+  /** How many options match when that's more than `limit`, or 0. */
+  @state()
+  private overflowTotal = 0;
+
+  override _overlayListboxTemplate() {
+    return html`
+      <div
+        id="overlay-content-node-wrapper"
+        role="dialog"
+        aria-label="${this.msgLit('lion-combobox:optionsPopup')}"
+      >
+        <slot name="listbox"></slot>
+        ${this.overflowTotal
+          ? html`<div class="combobox__footer" aria-hidden="true">
+              ${t(
+                'Showing {shown} of {total} — keep typing to narrow results.',
+                {shown: this.limit, total: this.overflowTotal}
+              )}
+            </div>`
+          : nothing}
+      </div>
+      <slot id="options-outlet"></slot>
+      <div class="cp-visually-hidden" aria-live="polite" aria-atomic="true">
+        ${this.announcement}
+      </div>
+    `;
+  }
 
   override _inputGroupInputTemplate() {
     const selectedData = this.#selectedOption()?.data;

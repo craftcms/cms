@@ -1,6 +1,6 @@
 # `craft-option` accessibility
 
-Used inside `craft-select-rich` and `craft-combobox`; see their docs for the pattern. `craft-select-color` and `craft-text-expander` use it too. This file covers only the option itself.
+Used inside `craft-select-rich` and `craft-combobox`; see their docs for the pattern. `craft-select-color` and `craft-text-expander` use it too. This file covers only the option itself, and `craft-option-group`, which groups options under a label.
 
 ## Requirements
 
@@ -24,6 +24,11 @@ Used inside `craft-select-rich` and `craft-combobox`; see their docs for the pat
 
 - [x] The label wraps rather than overflowing at a 320px viewport and at 200% zoom. Per WCAG 1.4.10 (Reflow) and 1.4.4 (Resize Text). Verified by `wraps a long label rather than overflowing at %s` in `option.browser.test.ts`.
 - [ ] A long `hint` stays readable. Per WCAG 1.4.10 (Reflow). Known gap: the hint is kept to one line and truncated with an ellipsis, and the cut-off text can't be revealed.
+
+### Groups
+
+- [x] `craft-option-group` has the `group` role, is named by its `label`, and holds its options; changing `label` renames it. Per WCAG 1.3.1 (Info and Relationships) and 4.1.2 (Name, Role, Value). Verified by `is a group named by its label, holding its options` and `renames the group when its label changes` in `option-group.browser.test.ts`.
+- [x] The group's label reaches 4.5:1 against the listbox in the light and dark themes, and stays visible in forced colors mode. Per WCAG 1.4.3 (Contrast (Minimum)). Verified by `draws its label at 4.5:1 against the listbox` and `keeps its label visible in forced colors mode` in `option-group.browser.test.ts`.
 
 ## Depends on usage
 

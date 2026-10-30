@@ -59,7 +59,9 @@ async function openCombobox(
   return {
     control,
     options: [...control.querySelectorAll<HTMLElement>('craft-option')],
-    popup: control.querySelector<HTMLElement>('[slot=listbox]')!,
+    popup: control.shadowRoot!.querySelector<HTMLElement>(
+      '#overlay-content-node-wrapper'
+    )!,
   };
 }
 
@@ -153,6 +155,33 @@ describe('visual', () => {
         'highlighted'
       );
     });
+  });
+
+  it('spaces an icon from the label beside it', async () => {
+    document.body.innerHTML = `
+      <div role="listbox" aria-label="Status" style="width: 20rem">
+        <craft-option><craft-icon name="star"></craft-icon>Starred</craft-option>
+      </div>`;
+    const option = document.querySelector('craft-option')!;
+    await (option as HTMLElement & {updateComplete: Promise<unknown>})
+      .updateComplete;
+    await settle();
+    const spacing = document.createElement('div');
+    spacing.style.width = 'var(--c-spacing-sm)';
+    document.body.append(spacing);
+    const label = document.createRange();
+    label.selectNodeContents(option.lastChild!);
+
+    const icon = option.querySelector('craft-icon')!.getBoundingClientRect();
+    const text = label.getBoundingClientRect();
+
+    expect(text.top).toBeLessThan(icon.bottom);
+    expect(text.left - icon.right).toBeGreaterThanOrEqual(
+      spacing.getBoundingClientRect().width
+    );
+    await expect
+      .element(page.getByRole('option', {name: 'Starred', exact: true}))
+      .toBeInTheDocument();
   });
 
   it('makes every option at least 24 pixels tall', async () => {

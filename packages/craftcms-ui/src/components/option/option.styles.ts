@@ -56,6 +56,13 @@ export default css`
     max-width: 100%;
   }
 
+  .content {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--c-spacing-sm);
+    min-width: 0;
+  }
+
   :host([wide]) .choice-field__label {
     align-items: baseline;
     grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -70,7 +70,7 @@ export default class CraftOption extends LionOption {
   override render() {
     return html`
       <div class="choice-field__label">
-        <slot></slot>
+        <span class="content"><slot></slot></span>
         ${this.hint ? html`<span class="hint">${this.hint}</span>` : nothing}
         <slot name="suffix"></slot>
       </div>
