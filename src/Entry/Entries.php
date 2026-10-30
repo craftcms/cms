@@ -31,7 +31,6 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Throwable;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * @since 6.0.0
@@ -69,7 +68,7 @@ class Entries
 
         // Get the structure ID
         $criteria['structureId'] ??= DB::table(Table::ENTRIES, 'entries')
-            ->join(new Alias(Table::SECTIONS, 'sections'), 'sections.id', 'entries.sectionId')
+            ->join(Table::SECTIONS.' as sections', 'sections.id', 'entries.sectionId')
             ->where('entries.id', $entryId)
             ->value('sections.structureId');
 

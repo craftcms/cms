@@ -7,10 +7,13 @@ namespace CraftCms\Cms\Http\Controllers;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Http\Routing\ActionRoute;
 use CraftCms\Cms\RouteToken\Data\RouteToken;
+use CraftCms\Cms\RouteToken\Model\RouteToken as RouteTokenModel;
 use CraftCms\Cms\RouteToken\RouteTokens;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 
 use function CraftCms\Cms\t;
@@ -51,7 +54,7 @@ readonly class PreviewController
             default => $this->requireSessionAuthorization("previewElement:{$tokenData->getCanonicalId()}"),
         };
 
-        $token = $tokens->createPreviewToken([
+        $route = [
             ActionRoute::uriForSegments(['preview', 'preview'], false), [
                 'elementType' => $tokenData->elementType,
                 'canonicalId' => $tokenData->getCanonicalId(),
@@ -60,7 +63,11 @@ readonly class PreviewController
                 'revisionId' => $tokenData->revisionId ?? null,
                 'userId' => $request->craftUser()?->getCraftUserId(),
             ],
-        ], token: $tokenData->previewToken);
+        ];
+
+        $token = isset($tokenData->previewToken)
+            ? $this->reusePreviewToken($tokens, $tokenData->previewToken, $route)
+            : $tokens->createPreviewToken($route);
 
         abort_if($token === false, 500, t('Could not create a preview token.'));
 
@@ -69,5 +76,34 @@ readonly class PreviewController
         }
 
         return new JsonResponse(compact('token'));
+    }
+
+    /**
+     * A pre-generated token is shared by everything on the edit screen, and
+     * asked for again while it's in use, so it's created once and then kept
+     * alive. Locked, as two of them can ask at once.
+     *
+     * @param  array<mixed>  $route
+     */
+    private function reusePreviewToken(RouteTokens $tokens, string $token, array $route): string|false
+    {
+        try {
+            return Cache::lock("token:$token")->block(5, function () use ($tokens, $token, $route) {
+                $existing = RouteTokenModel::where('token', $token)->first();
+
+                if (! $existing) {
+                    return $tokens->createPreviewToken($route, token: $token);
+                }
+
+                abort_unless($existing->route == $route, 400, 'Invalid preview token.');
+
+                $existing->expiryDate = now()->addSeconds($tokens->previewTokenDuration());
+                $existing->save();
+
+                return $existing->token;
+            });
+        } catch (LockTimeoutException) {
+            return false;
+        }
     }
 }

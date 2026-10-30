@@ -404,8 +404,11 @@ describe('NestedElementsIndex', () => {
         'true'
       )
     );
-    expect(root.querySelectorAll('tr.cp-table-row')).toHaveLength(0);
-    expect(root.querySelector('craft-spinner')).not.toBeNull();
+    expect(root.querySelectorAll('tr[data-nested-id]')).toHaveLength(0);
+    expect(
+      root.querySelectorAll('tr.cp-table-row[aria-hidden="true"]')
+    ).toHaveLength(2);
+    expect(root.querySelector('craft-spinner')).toBeNull();
 
     release();
     await waitForIdle(root);

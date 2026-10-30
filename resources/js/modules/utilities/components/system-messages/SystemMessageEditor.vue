@@ -136,7 +136,7 @@
         />
         <span
           slot="tip"
-          v-html="t('Type <kbd>{{</kbd> to insert a message variable.')"
+          v-html="t('Type <kbd>{{</kbd> to choose a message variable.')"
         ></span>
         <ul v-if="form.errors.subject" slot="feedback" class="error-list">
           <li>{{ form.errors.subject }}</li>
@@ -170,7 +170,7 @@
         />
         <span
           slot="tip"
-          v-html="t('Type <kbd>{{</kbd> to insert a message variable.')"
+          v-html="t('Type <kbd>{{</kbd> to choose a message variable.')"
         ></span>
         <ul v-if="form.errors.body" slot="feedback" class="error-list">
           <li>{{ form.errors.body }}</li>

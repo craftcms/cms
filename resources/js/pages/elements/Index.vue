@@ -12,7 +12,10 @@
   import {
     appendIndexQuery,
     type ElementIndexRoute,
+    withIndexReturnUrl,
   } from '@/modules/elements/index/composables/useElementIndexVisits';
+  import {usePage} from '@inertiajs/vue3';
+  import {computed} from 'vue';
 
   const props = defineProps<{
     /** Where this index lives. */
@@ -24,12 +27,19 @@
   const route: ElementIndexRoute = {
     url: (query = {}) => appendIndexQuery(props.indexUrl, query),
   };
+
+  const page = usePage();
+  const newElementHref = computed(() =>
+    props.newElement
+      ? withIndexReturnUrl(props.newElement.href, page.url)
+      : undefined
+  );
 </script>
 
 <template>
   <ElementIndexPage :route="route" :source-href="indexUrl" customizable-sources>
     <template v-if="newElement" #toolbar-actions>
-      <CpButtonLink :href="newElement.href" icon="plus" variant="primary">{{
+      <CpButtonLink :href="newElementHref" icon="plus" variant="primary">{{
         newElement.label
       }}</CpButtonLink>
     </template>

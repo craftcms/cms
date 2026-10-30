@@ -9,6 +9,7 @@ import {
   type GarnishBaseSettings,
 } from '@craftcms/garnish';
 import {nestedElementManagerData} from './support';
+import {refreshPreviews} from '@/modules/elements/live-preview/previews';
 import type {UiProperties, UiValues} from '@/modules/ui/types';
 
 // `Craft`, `Garnish` (legacy), and `$` (jQuery) remain page globals. This
@@ -701,7 +702,7 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
 
     if (!(await this.markAsDirty())) {
       // Refresh Live Preview
-      Craft.Preview.refresh();
+      refreshPreviews();
     }
   }
 
@@ -1337,7 +1338,7 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
       ownerId: this.elementEditor?.getDraftElementId($element.data('ownerId')),
       onLoad: () => {
         slideout.elementEditor.on('update', () => {
-          Craft.Preview.refresh();
+          refreshPreviews();
         });
       },
       onBeforeSubmit: async () => {

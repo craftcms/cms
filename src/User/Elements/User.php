@@ -19,6 +19,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
+use CraftCms\Cms\Element\Data\Thumb;
 use CraftCms\Cms\Element\DeletionBlockers\Contracts\DeletionBlockerInterface;
 use CraftCms\Cms\Element\DeletionBlockers\EntryAuthorsBlocker;
 use CraftCms\Cms\Element\Element;
@@ -1274,6 +1275,13 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         };
     }
 
+    protected function thumb(): ?Thumb
+    {
+        $photo = $this->getPhoto();
+
+        return $photo || $this->uid ? $this->ownThumb($photo) : null;
+    }
+
     protected function thumbUrl(int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
         if ($photo = $this->getPhoto()) {
@@ -1281,6 +1289,27 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         }
 
         return null;
+    }
+
+    /**
+     * Returns the two colors of the user’s default photo’s gradient, chosen from their UID, as the names of
+     * `--color-{name}-500` palette colors.
+     *
+     * @return array{string, string}
+     */
+    public function photoColors(): array
+    {
+        $uid = strtolower($this->uid ?? '00ff');
+        $totalColors = count(self::$photoColors);
+        /** @phpstan-ignore-next-line */
+        $color1Index = base_convert(substr($uid, 0, 2), 16, 10) % $totalColors;
+        /** @phpstan-ignore-next-line */
+        $color2Index = base_convert(substr($uid, 2, 2), 16, 10) % $totalColors;
+        if ($color2Index === $color1Index) {
+            $color2Index = ($color1Index + 1) % $totalColors;
+        }
+
+        return [self::$photoColors[$color1Index], self::$photoColors[$color2Index]];
     }
 
     protected function thumbSvg(): ?string
@@ -1292,18 +1321,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         $names = array_filter([$this->firstName, $this->lastName]) ?: [$this->getName()];
         $initials = implode('', array_map(fn ($name) => mb_strtoupper(mb_substr($name, 0, 1)), $names));
 
-        // Choose a color based on the UUID
-        $uid = strtolower($this->uid ?? '00ff');
-        $totalColors = count(self::$photoColors);
-        /** @phpstan-ignore-next-line */
-        $color1Index = base_convert(substr($uid, 0, 2), 16, 10) % $totalColors;
-        /** @phpstan-ignore-next-line */
-        $color2Index = base_convert(substr($uid, 2, 2), 16, 10) % $totalColors;
-        if ($color2Index === $color1Index) {
-            $color2Index = ($color1Index + 1) % $totalColors;
-        }
-        $color1 = self::$photoColors[$color1Index % $totalColors];
-        $color2 = self::$photoColors[$color2Index % $totalColors];
+        [$color1, $color2] = $this->photoColors();
 
         $gradientId = sprintf('gradient-%s', Str::random(10));
 

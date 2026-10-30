@@ -56,7 +56,7 @@ it('preserves custom field HTML and passes the normalized value and owner', func
         ->createElementWithFields(save: false)->element;
     $layout = $entry->getFieldLayout();
     $field = $layout->getCustomFieldElements()[0];
-    $layout->thumbFieldKey = "layoutElement:{$field->uid}";
+    $layout->thumbSources = ["layoutElement:{$field->uid}"];
 
     expect($entry->getThumbHtml(128, $mode))->toBe('<b>Custom thumbnail</b>')
         ->and(ThumbnailField::$requests)->toBe([['<b>Custom thumbnail</b>', $entry, 128, $mode]]);
@@ -66,6 +66,18 @@ it('preserves custom field HTML and passes the normalized value and owner', func
     'stretch' => ImageTransformMode::Stretch,
     'letterbox' => ImageTransformMode::Letterbox,
 ]);
+
+it('uses the first thumb source with a thumbnail for the element', function () {
+    $entry = Entry::factory()
+        ->withField('emptyThumbnail', ThumbnailField::class)
+        ->withField('thumbnail', ThumbnailField::class, value: '<b>Second thumbnail</b>')
+        ->withField('otherThumbnail', ThumbnailField::class, value: '<b>Third thumbnail</b>')
+        ->createElementWithFields(save: false)->element;
+    $layout = $entry->getFieldLayout();
+    $layout->thumbSources = array_map(fn (CustomField $field) => "layoutElement:{$field->uid}", $layout->getCustomFieldElements());
+
+    expect($entry->getThumbHtml(120))->toBe('<b>Second thumbnail</b>');
+});
 
 it('changes ownership while preserving size and mode through content blocks', function (ImageTransformMode $mode) {
     $innerField = Field::factory()->create(['handle' => 'innerThumbnail', 'type' => ThumbnailField::class]);
@@ -88,7 +100,7 @@ it('changes ownership while preserving size and mode through content blocks', fu
         ->createElementWithFields(save: false)->element;
     $layout = $entry->getFieldLayout();
     $outerField = $layout->getCustomFieldElements()[0];
-    $layout->thumbFieldKey = "contentBlock:{$outerField->uid}.layoutElement:{$innerUid}";
+    $layout->thumbSources = ["contentBlock:{$outerField->uid}.layoutElement:{$innerUid}"];
     $block = $entry->getFieldValue('block');
 
     expect($entry->getThumbHtml(120, $mode))->toBe('<b>Nested thumbnail</b>')

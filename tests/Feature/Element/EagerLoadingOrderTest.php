@@ -18,6 +18,7 @@ use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Database\Query\Expression;
+use Illuminate\Support\Facades\DB;
 
 use function Pest\Laravel\actingAs;
 
@@ -94,7 +95,7 @@ it('applies safe orderBy criteria to eager-loaded elements', function (mixed $or
     'string' => 'elements.id desc',
     'column => SORT_DESC' => [['elements.id' => SORT_DESC]],
     'column/direction pairs' => [[['elements.id', 'desc']]],
-    'expression' => fn () => new Expression('elements.id desc'),
+    'expression' => fn () => new Expression(DB::getQueryGrammar()->wrap('elements.id').' desc'),
 ]);
 
 it('ignores unsafe orderBy criteria for eager-loaded elements', function (mixed $orderBy) {

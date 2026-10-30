@@ -47,7 +47,7 @@ it('serves the capabilities the named user may use, except HTTP-only capabilitie
         $event->instructions[] = 'Use reviews.list before changing a product.';
     });
 
-    $editor = User::factory()->withPermissions(['useCraftMcp'])->create(['username' => 'editor']);
+    $editor = User::factory()->withPermissions([])->create(['username' => 'editor']);
     $call = static fn (string $tool, array $arguments = []): array => ['jsonrpc' => '2.0', 'id' => $tool, 'method' => 'tools/call', 'params' => ['name' => $tool, 'arguments' => $arguments]];
 
     $admin = ($this->serve)(User::query()->where('admin', true)->firstOrFail()->username, [$call('info.get'), $call('configuration.list', ['type' => 'sections']), $call('assets.upload.prepare')]);
@@ -85,7 +85,7 @@ it('attributes every message’s activity to the named user and the MCP origin',
         ->and($events->pluck('snapshots.origin')->all())->toBe(['MCP', 'MCP']);
 });
 
-it('refuses to serve users who may not use Craft MCP', function (Closure $user, string $message): void {
+it('refuses to serve missing or inactive users', function (Closure $user, string $message): void {
     Edition::set(Edition::Pro);
     app()->bind(StdioTransport::class, fn ($app): StdioTransport => new StdioTransport($app, fopen('php://memory', 'r'), fopen('php://memory', 'w')));
 
@@ -95,6 +95,5 @@ it('refuses to serve users who may not use Craft MCP', function (Closure $user, 
 })->with([
     'missing option' => [fn (): string => '', 'The --user option is required.'],
     'unknown user' => [fn (): string => 'nobody', 'No user exists with the ID, username, or email [nobody].'],
-    'suspended user' => [fn (): string => User::factory()->withPermissions(['useCraftMcp'])->create(['username' => 'suspended', 'suspended' => true])->username, 'The user [suspended] is not active.'],
-    'missing permission' => [fn (): string => User::factory()->withPermissions(['accessCp'])->create(['username' => 'viewer'])->username, 'The user [viewer] does not have permission to use Craft MCP.'],
+    'suspended user' => [fn (): string => User::factory()->withPermissions([])->create(['username' => 'suspended', 'suspended' => true])->username, 'The user [suspended] is not active.'],
 ]);

@@ -15,6 +15,7 @@ use CraftCms\Cms\Component\Contracts\Thumbable;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
+use CraftCms\Cms\Element\Data\Thumb;
 use CraftCms\Cms\Element\DeletionBlockers\Contracts\DeletionBlockerInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
@@ -102,6 +103,12 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns whether element indexes should include a thumbnail view by default.
      */
     public static function hasThumbs(): bool;
+
+    /**
+     * Returns the element’s thumbnail, if it has one: the first one provided by its field layout’s thumb sources, or
+     * else its own.
+     */
+    public function getThumb(): ?Thumb;
 
     /**
      * Returns whether elements of this type can have their own slugs and URIs.

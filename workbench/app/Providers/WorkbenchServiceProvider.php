@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Workbench\App\Providers;
 
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Events\CpNavItemsResolving;
 use CraftCms\Cms\Dashboard\WidgetTypes;
@@ -22,6 +23,7 @@ use Workbench\App\Widgets\LayoutSlotsDemo;
 use Workbench\App\Workflow\AutomaticApprovalStage;
 
 use function Orchestra\Testbench\package_path;
+use function Orchestra\Testbench\workbench_path;
 
 class WorkbenchServiceProvider extends ServiceProvider
 {
@@ -34,6 +36,11 @@ class WorkbenchServiceProvider extends ServiceProvider
         AliasLoader::getInstance(
             $composer['extra']['laravel']['aliases'] ?? [],
         );
+
+        // Site templates live in the repo rather than in the Testbench app.
+        if (! $this->app->runningUnitTests()) {
+            Aliases::set('@templates', workbench_path('resources/views'));
+        }
     }
 
     public function boot(): void

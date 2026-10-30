@@ -3,6 +3,7 @@ import {inputName} from '@/modules/ui/runtime';
 import type {UiValues} from '@/modules/ui/types';
 import {isHttpError} from '@craftcms/ui/utilities/api/http';
 import type {LegacyRequestOptions} from '@craftcms/ui/utilities/api/legacyRequest';
+import {commandShortcut} from '@/common/utils/keyShortcuts';
 
 declare const Craft: any;
 declare const $: any;
@@ -135,6 +136,7 @@ export class CpModal extends Base {
         slot: 'footer',
         variant: 'primary',
         text: Craft.t('app', 'Save'),
+        'aria-keyshortcuts': commandShortcut('S'),
       });
     }
 

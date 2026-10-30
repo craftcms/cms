@@ -150,7 +150,7 @@ class CpScreenResponseBehavior extends Behavior
 
     /**
      * @var string|null The URL the form should redirect to after posting, if submitted via the
-     * <kbd>Ctrl</kbd><kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut.
+     * <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>S</kbd> keyboard shortcut.
      *
      * This will only be used by full-page screens.
      *
@@ -520,7 +520,7 @@ class CpScreenResponseBehavior extends Behavior
 
     /**
      * Sets URL the form should redirect to after posting, if submitted via the
-     * <kbd>Ctrl</kbd><kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut.
+     * <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>S</kbd> keyboard shortcut.
      *
      * This will only be used by full-page screens.
      *

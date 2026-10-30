@@ -5,6 +5,7 @@
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import AssetUploadButton from '@/pages/assets/AssetUploadButton.vue';
   import ElementPicker from './ElementPicker.vue';
+  import ElementPickerPlaceholder from './ElementPickerPlaceholder.vue';
   import type {SourceItem} from '@/modules/elements/types/sources';
   import type {SelectedElement} from './useModalElementIndex';
   import {useElementSelectorController} from './useElementSelectorController';
@@ -124,6 +125,11 @@
       "
       @choose="() => controller.submit()"
       @source-change="(next: SourceItem | null) => (source = next)"
+    />
+    <ElementPickerPlaceholder
+      v-else
+      slot="loading"
+      :element-type="controller.elementType"
     />
 
     <!--

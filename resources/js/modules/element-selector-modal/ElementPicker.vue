@@ -11,6 +11,7 @@
     type FolderCrumb,
     type SelectedElement,
   } from './useModalElementIndex';
+  import {writeModalIndexLook} from './modalIndexLook';
 
   const props = defineProps<{
     /** Bare action path; `actionClient` expands it against the CP trigger. */
@@ -89,6 +90,17 @@
   watch(folderBreadcrumbs, (path) => emit('folder-path-change', path), {
     immediate: true,
   });
+
+  // Remembered for the placeholders the next modal draws before its payload.
+  watch(
+    () => ({
+      mode: index.view.mode.value,
+      thumbSize: index.view.thumbSize.value,
+      cardThumbs: index.view.cardThumbs.value,
+    }),
+    (look) => writeModalIndexLook(elementIndex.elementType, look),
+    {immediate: true}
+  );
 
   defineExpose({
     selectedElements,

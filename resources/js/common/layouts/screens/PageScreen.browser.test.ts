@@ -25,6 +25,11 @@ vi.mock('@/common/composables/useCraftData', () => ({
 vi.mock('@/common/components/CpSidebar.vue', () => ({default: Stub}));
 vi.mock('@/common/components/CpHeaderBar.vue', () => ({default: Stub}));
 vi.mock('./page/ScreenOverlays.vue', () => ({default: Stub}));
+// Loaded asynchronously, so its imports could still be loading when the file ends.
+vi.mock('@/modules/command-palette/components/CommandPalette.vue', () => ({
+  __esModule: true,
+  default: Stub,
+}));
 
 let app: App | undefined;
 

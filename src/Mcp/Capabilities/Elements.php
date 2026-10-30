@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Mcp\Capabilities;
 
 use CraftCms\Cms\Element\Elements as ElementService;
+use CraftCms\Cms\Mcp\Attributes\RequiresPermission;
 use CraftCms\Cms\Mcp\ElementLifecycle;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\ElementResourceLinks;
@@ -80,6 +81,7 @@ readonly class Elements
         description: 'Describes an element type for the elements.* tools: the criteria, create and update attributes, field-schema context, and duplication modes it accepts. Also available as the craft://element-types/{type} resource.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
+    #[RequiresPermission('accessCp')]
     public function schema(
         #[Schema(definition: self::TypeSchema)]
         string $type,
@@ -400,6 +402,7 @@ readonly class Elements
         description: 'A JSON list of the element types the elements.* tools support.',
         mimeType: 'application/json',
     )]
+    #[RequiresPermission('accessCp')]
     public function typesResource(): array
     {
         $types = array_map(function (string $handle): array {
@@ -424,6 +427,7 @@ readonly class Elements
         description: 'A JSON description of the criteria, attributes, field-schema context, and duplication modes an element type accepts in the elements.* tools.',
         mimeType: 'application/json',
     )]
+    #[RequiresPermission('accessCp')]
     public function typeResource(string $type): array
     {
         $adapter = $this->adapters->find($type);

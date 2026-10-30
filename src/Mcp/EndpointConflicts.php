@@ -7,22 +7,24 @@ namespace CraftCms\Cms\Mcp;
 use Illuminate\Routing\Router;
 
 /**
+ * Finds routes that an MCP endpoint would conflict with.
+ *
  * @since 6.0.0
  */
-readonly class PublicEndpoint
+readonly class EndpointConflicts
 {
     private const array Methods = ['GET', 'HEAD', 'DELETE', 'POST', 'OPTIONS'];
 
     public function __construct(private Router $router) {}
 
-    public function conflict(string $endpoint): ?string
+    public function find(string $endpoint): ?string
     {
-        $path = ltrim($endpoint, '/');
+        $path = trim($endpoint, '/');
 
         foreach ($this->router->getRoutes()->getRoutes() as $route) {
             if (
                 $route->isFallback
-                || ($route->defaults['publicMcp'] ?? false) === true
+                || ($route->defaults['mcp'] ?? false) === true
                 || $route->uri() !== $path
                 || $route->getDomain() !== null
             ) {
@@ -33,7 +35,7 @@ readonly class PublicEndpoint
 
             if ($methods !== []) {
                 return sprintf(
-                    'The public MCP endpoint [%s] conflicts with an existing [%s] route.',
+                    'The MCP endpoint [%s] conflicts with an existing [%s] route.',
                     $endpoint,
                     implode(', ', $methods),
                 );

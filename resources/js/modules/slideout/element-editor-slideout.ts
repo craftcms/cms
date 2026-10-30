@@ -18,6 +18,7 @@ import {
   CpScreenSlideout,
   type CpScreenSlideoutSettings,
 } from './cp-screen-slideout';
+import {refreshPreviews} from '@/modules/elements/live-preview/previews';
 import type {UiValues} from '@/modules/ui/types';
 
 declare const Craft: any;
@@ -193,8 +194,7 @@ export class ElementEditorSlideout extends CpScreenSlideout {
         this.settings!.onSaveElement!(data);
       }
 
-      // Refresh Live Preview
-      Craft.Preview.refresh();
+      refreshPreviews();
     });
   }
 
@@ -279,7 +279,7 @@ export class ElementEditorSlideout extends CpScreenSlideout {
       const $cardsAndChips = this.$content
         .find('.element.card, craft-chip')
         .removeClass('error');
-      $cardsAndChips.find('span[data-icon="triangle-exclamation"]').remove();
+      $cardsAndChips.find('craft-icon[data-element-error]').remove();
       if (ids.length) {
         const $errorCardsAndChips = $cardsAndChips
           .filter(ids.map((id: number) => `[data-id=${id}]`).join(','))
@@ -287,10 +287,10 @@ export class ElementEditorSlideout extends CpScreenSlideout {
         for (let i = 0; i < $errorCardsAndChips.length; i++) {
           const $item = $errorCardsAndChips.eq(i);
           const $label = $item.find('craft-truncate');
-          $('<span/>', {
-            'data-icon': 'triangle-exclamation',
-            'aria-label': Craft.t('app', 'Error'),
-            role: 'img',
+          $('<craft-icon/>', {
+            name: 'triangle-exclamation',
+            label: Craft.t('app', 'Error'),
+            'data-element-error': '',
           }).appendTo($label.length ? $label : $item);
         }
       }

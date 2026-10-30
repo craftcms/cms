@@ -31,7 +31,7 @@ readonly class ServerFactory
         private Request $request,
     ) {}
 
-    public function admin(): Server
+    public function authenticated(): Server
     {
         $user = $this->request->user('craft-mcp');
         assert($user instanceof OAuthenticatable);
@@ -39,7 +39,7 @@ readonly class ServerFactory
         $identity = hash('sha256', Json::encode([$user->getAuthIdentifier(), $scopes], JSON_THROW_ON_ERROR));
 
         return $this->builder($this->capabilities, AdminInstructions::Brief)
-            ->setSession(new Psr16SessionStore($this->cache, "craft-mcp-admin-$identity-"))
+            ->setSession(new Psr16SessionStore($this->cache, "craft-mcp-authenticated-$identity-"))
             ->build();
     }
 

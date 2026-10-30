@@ -446,6 +446,86 @@ describe('ElementSelectControl', () => {
     expect(updates).toEqual([[5, 9]]);
   });
 
+  describe('maintaining hierarchy', () => {
+    const news = {id: 1, label: 'News', level: 1};
+    const clubNews = {id: 2, label: 'Club news', level: 2};
+    const events = {id: 3, label: 'Events', level: 1};
+
+    async function mountHierarchy(ids: number[]): Promise<HTMLElement> {
+      const value = ref<number[]>(ids);
+      updates = [];
+      container = document.createElement('div');
+      document.body.append(container);
+      app = createApp({
+        render: () =>
+          h(ElementSelectControl, {
+            control: control({
+              maintainHierarchy: true,
+              branchLimit: null,
+              elements: [news, clubNews, events],
+            }),
+            value: value.value,
+            editable: true,
+            'onUpdate:value': (next: number[] | number | null) => {
+              updates.push(next);
+              value.value = next as number[];
+            },
+          }),
+      });
+      app.mount(container);
+      await nextTick();
+
+      return container;
+    }
+
+    function chip(root: HTMLElement, id: number): HTMLElement {
+      return root.querySelector(`craft-chip[data-id="${id}"]`)!;
+    }
+
+    it('nests chips under their parent and offers no reordering', async () => {
+      const root = await mountHierarchy([1, 2, 3]);
+
+      expect(chip(root, 2).closest('ul')?.closest('li')).toBe(
+        chip(root, 1).closest('li')
+      );
+      expect(chip(root, 3).closest('li')?.parentElement).toBe(
+        chip(root, 1).closest('li')?.parentElement
+      );
+      expect(root.querySelector('craft-reorder-button')).toBeNull();
+    });
+
+    it('removes descendants along with their ancestor', async () => {
+      const root = await mountHierarchy([1, 2, 3]);
+      menuItem(menus(root)[0], 'Remove').click();
+
+      expect(updates).toEqual([[3]]);
+    });
+
+    it('puts chosen elements in structure order, as the server returns them', async () => {
+      const sports = {id: 4, label: 'Sports news', level: 2};
+      stub.post.mockResolvedValue({
+        data: {elements: [news, clubNews, sports, events]},
+      });
+      const root = await mountHierarchy([1, 2, 3]);
+
+      (root.querySelector('[data-element-select-add]') as HTMLElement).click();
+      await flushSelector();
+      const [, settings] = stub.createElementSelectorModal.mock.calls[0]!;
+      settings.onSelect([{id: 4, label: 'Sports news', siteId: 1}]);
+      await vi.waitFor(() => expect(updates).toHaveLength(2));
+      await nextTick();
+
+      expect(stub.post).toHaveBeenCalledWith(
+        'relational-fields/structured-elements',
+        expect.objectContaining({elementIds: [1, 2, 3, 4], siteId: 1})
+      );
+      expect(updates.at(-1)).toEqual([1, 2, 4, 3]);
+      expect(chip(root, 4).closest('ul')?.closest('li')).toBe(
+        chip(root, 1).closest('li')
+      );
+    });
+  });
+
   it('opens a photo selector with its folder restrictions', async () => {
     await mount({
       value: [],

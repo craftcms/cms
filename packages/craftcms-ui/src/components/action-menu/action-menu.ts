@@ -763,6 +763,10 @@ export default class CraftActionMenu extends CraftPopover {
       craft-action-menu .action-menu__search {
         padding: var(--c-spacing-sm);
       }
+      craft-action-menu .action-menu__search input::placeholder {
+        color: var(--c-form-control-placeholder);
+        opacity: 1;
+      }
     `;
     container.appendChild(style);
 

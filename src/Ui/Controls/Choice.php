@@ -109,11 +109,6 @@ class Choice extends Control
     }
 
     /**
-     * Lets the options be reordered, with the value stored in display order.
-     * Implies a multi-select checkbox list, unless it's already presented with
-     * an “Add item” menu.
-     */
-    /**
      * Whether a button with an icon shows only the icon, named by its label.
      * Without it, the icon sits beside the label. Buttons presentation only.
      */
@@ -136,6 +131,11 @@ class Choice extends Control
         return $this;
     }
 
+    /**
+     * Lets the options be reordered, with the value stored in display order.
+     * Implies a multi-select checkbox list, unless it's already presented with
+     * an “Add item” menu.
+     */
     public function sortable(bool $sortable = true): static
     {
         $this->sortable = $sortable;

@@ -22,7 +22,7 @@
       {%- if icon is not same as(false) and icon is not same as(null) and icon is not same as('') -%}
         {{ iconSvg(item.icon) }}
       {%- elseif item.fontIcon ?? false -%}
-        <span data-icon="{{ item.fontIcon }}"></span>
+        {{ tag('craft-icon', {name: item.fontIcon}) }}
       {%- else -%}
         <span class="nav-indicator"></span>
       {%- endif -%}

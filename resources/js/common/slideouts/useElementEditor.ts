@@ -197,9 +197,9 @@ export function useElementEditor(
     }
 
     const indicator =
-      '<span data-icon="alert"><span class="visually-hidden">' +
+      '<craft-icon name="alert" data-tab-error><span class="sr-only">' +
       Craft.t('app', 'This tab contains errors') +
-      '</span></span>';
+      '</span></craft-icon>';
     const tabMenu = tabManager?.menu ?? [];
 
     Object.entries(errors).forEach(([name, fieldErrors]) => {
@@ -221,7 +221,7 @@ export function useElementEditor(
       if (!tabManager.$menuBtn.hasClass('error')) {
         tabManager.$menuBtn
           .addClass('error')
-          .append('<span data-icon="alert"></span>');
+          .append('<craft-icon name="alert" data-tab-error></craft-icon>');
       }
 
       for (let i = 0; i < anchors.length; i++) {
@@ -326,7 +326,7 @@ export function useElementEditor(
 
     tabManager?.$tabs
       .removeClass('error')
-      .find('.tab-label [data-icon="alert"]')
+      .find('.tab-label [data-tab-error]')
       .remove();
   }
 

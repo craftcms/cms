@@ -170,7 +170,7 @@ it('requires entry permissions to create and edit drafts', function (): void {
     ], ['summary' => 'Canonical summary'])['element'];
     $draft = app(Drafts::class)->create(type: 'entries', id: $entry['id'])['draft'];
     $viewPermissions = [
-        'accessCp', 'useCraftMcp',
+        'accessCp',
         "viewEntries:{$this->section->uid}", "viewPeerEntries:{$this->section->uid}", "viewPeerEntryDrafts:{$this->section->uid}",
     ];
     $viewer = User::factory()->withPermissions($viewPermissions)->create(['admin' => false]);

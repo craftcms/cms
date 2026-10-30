@@ -17,7 +17,6 @@ use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * NestedElement
@@ -464,7 +463,7 @@ trait NestedElement
 
         if (! isset($this->sortOrder)) {
             $max = DB::table(Table::ELEMENTS_OWNERS, 'eo')
-                ->join(new Alias($elementTable, 'e'), 'e.id', '=', 'eo.elementId')
+                ->join($elementTable.' as e', 'e.id', '=', 'eo.elementId')
                 ->where('eo.ownerId', $ownerId)
                 ->where("e.$fieldIdColumn", $this->fieldId)
                 ->max('eo.sortOrder');

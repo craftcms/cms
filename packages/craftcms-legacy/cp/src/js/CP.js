@@ -411,24 +411,17 @@ Craft.CP = Garnish.Base.extend(
 
       this.addListener(Garnish.$win, 'beforeunload', function (ev) {
         let confirmUnload = false;
-        if (
-          typeof Craft.livePreview !== 'undefined' &&
-          Craft.livePreview.inPreviewMode
-        ) {
-          confirmUnload = true;
-        } else {
-          for (let i = 0; i < this.$confirmUnloadForms.length; i++) {
-            const $form = this.$confirmUnloadForms.eq(i);
-            let serialized;
-            if (typeof $form.data('serializer') === 'function') {
-              serialized = $form.data('serializer')();
-            } else {
-              serialized = $form.serialize();
-            }
-            if ($form.data('initialSerializedValue') !== serialized) {
-              confirmUnload = true;
-              break;
-            }
+        for (let i = 0; i < this.$confirmUnloadForms.length; i++) {
+          const $form = this.$confirmUnloadForms.eq(i);
+          let serialized;
+          if (typeof $form.data('serializer') === 'function') {
+            serialized = $form.data('serializer')();
+          } else {
+            serialized = $form.serialize();
+          }
+          if ($form.data('initialSerializedValue') !== serialized) {
+            confirmUnload = true;
+            break;
           }
         }
 

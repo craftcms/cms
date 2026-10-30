@@ -3134,8 +3134,6 @@ table:not(.cp-table) {
   }
 }
 
-// Adjust the columns when in live preview
-.lp-editor-container .card-grid,
 .width-50 .card-grid,
 .width-25 .card-grid {
   grid-template-columns: minmax(0, 1fr);
@@ -4752,8 +4750,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
 
   .pane &,
   .slideout &,
-  #content &,
-  .lp-content & {
+  #content & {
     border: 1px solid var(--border-hairline);
     background: var(--secondary-pane-bg);
     box-shadow: none;

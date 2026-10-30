@@ -13,7 +13,6 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUser;
 
@@ -122,7 +121,7 @@ trait QueriesDraftsAndRevisions
         }
 
         $joinType = $elementQuery->drafts === true ? 'inner' : 'left';
-        $elementQuery->query->join(new Alias(Table::DRAFTS, 'drafts'), 'drafts.id', 'elements.draftId', type: $joinType);
+        $elementQuery->query->join(Table::DRAFTS.' as drafts', 'drafts.id', 'elements.draftId', type: $joinType);
 
         $elementQuery->query->addSelect([
             'elements.draftId as draftId',
@@ -141,9 +140,9 @@ trait QueriesDraftsAndRevisions
             $elementQuery->whereExists(function (Builder $query) use ($elementQuery) {
                 $query
                     ->selectRaw('1')
-                    ->from(new Alias(Table::RELEASE_ITEMS, 'release_items'))
+                    ->from(Table::RELEASE_ITEMS, 'release_items')
                     ->join(
-                        new Alias(Table::RELEASES, 'releases'),
+                        Table::RELEASES.' as releases',
                         'releases.id',
                         'release_items.releaseId',
                     )
@@ -210,7 +209,7 @@ trait QueriesDraftsAndRevisions
         }
 
         $joinType = $elementQuery->revisions === true ? 'inner' : 'left';
-        $elementQuery->query->join(new Alias(Table::REVISIONS, 'revisions'), 'revisions.id', 'elements.revisionId', type: $joinType);
+        $elementQuery->query->join(Table::REVISIONS.' as revisions', 'revisions.id', 'elements.revisionId', type: $joinType);
 
         $elementQuery->query->addSelect([
             'elements.revisionId as revisionId',

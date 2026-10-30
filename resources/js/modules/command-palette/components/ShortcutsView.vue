@@ -27,6 +27,10 @@
       description: t('Open the command palette'),
     },
     {
+      keys: [{symbol: '/', name: t('Slash')}],
+      description: t('Open the command palette when not typing in a field'),
+    },
+    {
       keys: [modifier, {symbol: 'S', name: 'S'}],
       description: t('Save'),
     },

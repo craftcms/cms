@@ -64,8 +64,11 @@ export class TagSelectInput extends BaseElementSelectInput {
   override init(settings?: any): void {
     super.init(settings);
 
-    this.$addTagInput = this.$container.children('.add').children('.text');
-    this.$spinner = this.$addTagInput.next();
+    // The text input renders inside a `craft-input`, so it isn't a direct
+    // child of the wrapper.
+    const $add = this.$container.children('.add');
+    this.$addTagInput = $add.find('input.text');
+    this.$spinner = $add.find('.spinner');
 
     this.addListener(this.$addTagInput[0], 'input', () => {
       if (this.searchTimeout) clearTimeout(this.searchTimeout);
@@ -220,9 +223,10 @@ export class TagSelectInput extends BaseElementSelectInput {
         const label = `${Craft.t('app', 'Existing {type}', {type: Craft.t('app', 'Tag')})}: ${tag.title}`;
         $li.attr('aria-label', label);
 
-        $('<div class="menu-item" data-icon="tag"/>')
+        $('<div class="menu-item"/>')
           .appendTo($li)
           .text(tag.title)
+          .prepend('<craft-icon name="tag"></craft-icon>')
           .data('id', tag.id)
           .addClass(tag.exclude ? 'disabled' : '');
       }
@@ -232,7 +236,10 @@ export class TagSelectInput extends BaseElementSelectInput {
         const label = `${Craft.t('app', 'Create {type}', {type: Craft.t('app', 'Tag')})}: ${val}`;
         $li.attr('aria-label', label);
 
-        $('<div class="menu-item" data-icon="plus"/>').appendTo($li).text(val);
+        $('<div class="menu-item"/>')
+          .appendTo($li)
+          .text(val)
+          .prepend('<craft-icon name="plus"></craft-icon>');
       }
 
       $ul.find('.menu-item:not(.disabled):first').addClass('hover');

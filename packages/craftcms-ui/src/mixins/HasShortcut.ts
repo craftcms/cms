@@ -16,16 +16,23 @@ export interface HasShortcutHost {
   /**
    * A keyboard shortcut shown on the host. Either a plain key (`"S"`,
    * `"ctrl+k"`) or an object naming the modifiers, as an object or as its
-   * JSON. Display only — the host does not bind the key.
+   * JSON. Shown and announced, but the host does not bind the key.
    */
   shortcut: string | {alt?: boolean; shift?: boolean; key: string} | null;
   /** {@link shortcut}, normalized, or null without one. */
   readonly shortcutKeys: ShortcutKeys | null;
+  /**
+   * {@link shortcut} as an `aria-keyshortcuts` value for this platform, such
+   * as `Meta+Shift+S` on a Mac or `Control+Shift+S` elsewhere.
+   */
+  readonly shortcutAriaKeys: string | null;
 }
 
 /**
- * Adds a display-only `shortcut` to a Lit element. Components render their
- * own `craft-shortcut` from {@link HasShortcutHost.shortcutKeys}.
+ * Adds a `shortcut` to a Lit element. Components render their own
+ * `craft-shortcut` from {@link HasShortcutHost.shortcutKeys}, and announce it
+ * with `aria-keyshortcuts` from {@link HasShortcutHost.shortcutAriaKeys}. The
+ * host still doesn't bind the key.
  *
  * The JSON form is parsed on read rather than by an attribute converter: Vue's
  * in-DOM compiler sets attribute values as string properties on an upgraded
@@ -62,6 +69,23 @@ export const HasShortcut = <T extends Constructor<LitElement>>(Base: T) => {
         alt: shortcut.alt ?? false,
         shift: shortcut.shift ?? false,
       };
+    }
+
+    get shortcutAriaKeys(): string | null {
+      const keys = this.shortcutKeys;
+
+      if (!keys) {
+        return null;
+      }
+
+      const isMac = /mac|iphone|ipad|ipod/i.test(navigator.platform);
+
+      return [
+        isMac ? 'Meta' : 'Control',
+        ...(keys.alt ? ['Alt'] : []),
+        ...(keys.shift ? ['Shift'] : []),
+        keys.key.length === 1 ? keys.key.toUpperCase() : keys.key,
+      ].join('+');
     }
   }
 

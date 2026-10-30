@@ -32,6 +32,7 @@ use CraftCms\Cms\Http\ViewModels\UserPasskeysViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPermissionsViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPreferencesViewModel;
 use CraftCms\Cms\Http\ViewModels\UserSignInProvidersViewModel;
+use CraftCms\Cms\Http\ViewModels\UserTokensViewModel;
 use CraftCms\Cms\Http\ViewModels\WorkflowEditViewModel;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Release\Data\AttachedReleaseData;
@@ -122,6 +123,7 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     UserPreferencesViewModel::class,
                     UserSettings::class,
                     UserSignInProvidersViewModel::class,
+                    UserTokensViewModel::class,
                     WorkflowEditViewModel::class,
                     WorkflowDraftReviewData::class,
                     WorkflowReviewData::class,

@@ -57,6 +57,8 @@
     modified?: string[];
     /** Where sidebar tabs render. Without it, they're shown as ordinary tabs. */
     sidebarTabOutlets?: SidebarTabOutlets;
+    /** Where the tab strip renders, rather than above the fields. */
+    tabsOutlet?: HTMLElement | null;
   }>();
   const emit = defineEmits<{
     (
@@ -440,6 +442,7 @@
       :scope="payload.scope"
       :refreshable="payload.refreshable"
       :sidebar-tab-outlets="sidebarTabOutlets"
+      :tabs-outlet="tabsOutlet"
       @change="onControlChange"
     />
   </template>

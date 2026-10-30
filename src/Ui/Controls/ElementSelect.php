@@ -55,6 +55,10 @@ class ElementSelect extends Control
 
     private bool $showSiteMenu = false;
 
+    private bool $maintainHierarchy = false;
+
+    private ?int $branchLimit = null;
+
     /** @var array<string, mixed>|null */
     private ?array $selectionCondition = null;
 
@@ -85,7 +89,7 @@ class ElementSelect extends Control
         return Html::tag('div', FormFields::elementSelectHtml([
             'id' => $attributes['id'],
             'name' => $attributes['name'],
-            'elements' => self::elements($control->props['elementType'], $value),
+            'elements' => self::elements($control->props['elementType'], $value, $control->props['maintainHierarchy'] ?? false),
             'elementType' => $control->props['elementType'],
             'sources' => $control->props['sources'],
             'criteria' => $control->props['criteria'],
@@ -97,6 +101,8 @@ class ElementSelect extends Control
             'limit' => $control->props['limit'],
             'single' => $control->props['single'] ?? false,
             'showSiteMenu' => $control->props['showSiteMenu'],
+            'maintainHierarchy' => $control->props['maintainHierarchy'] ?? false,
+            'branchLimit' => $control->props['branchLimit'] ?? null,
             'allowAdd' => $editable,
             'allowRemove' => $editable,
             'sortable' => false,
@@ -191,6 +197,27 @@ class ElementSelect extends Control
         return $this;
     }
 
+    /**
+     * Shows the selected elements nested by their structure level, as a
+     * relation field with “Maintain hierarchy” does. New selections get their
+     * missing ancestors filled in, and removing an element removes its
+     * descendants.
+     */
+    public function maintainHierarchy(bool $maintainHierarchy = true): static
+    {
+        $this->maintainHierarchy = $maintainHierarchy;
+
+        return $this;
+    }
+
+    /** The most branches a hierarchical selection can have. */
+    public function branchLimit(?int $branchLimit): static
+    {
+        $this->branchLimit = $branchLimit;
+
+        return $this;
+    }
+
     public function selectionCondition(?ElementConditionInterface $condition): static
     {
         $this->selectionCondition = $condition?->getConfig();
@@ -231,7 +258,7 @@ class ElementSelect extends Control
             throw new InvalidArgumentException('ElementSelect Controls require an element type.');
         }
 
-        $elements = self::elements($this->elementType, $value);
+        $elements = self::elements($this->elementType, $value, $this->maintainHierarchy);
 
         return [
             'elementType' => $this->elementType,
@@ -246,6 +273,8 @@ class ElementSelect extends Control
             'single' => $this->single,
             'showSiteMenu' => $this->showSiteMenu,
             'viewMode' => $this->viewMode,
+            'maintainHierarchy' => $this->maintainHierarchy,
+            'branchLimit' => $this->branchLimit,
             ...($this->selectionCondition !== null ? ['selectionCondition' => $this->selectionCondition] : []),
         ];
     }
@@ -341,6 +370,8 @@ class ElementSelect extends Control
             'status' => self::statusPayload($element),
             // The chip takes the element's color (an entry's type color, say), as element index chips do.
             'color' => $element instanceof Colorable ? $element->getColor()?->value : null,
+            // How deep the element sits in its structure, for fields that maintain hierarchy.
+            'level' => $element->level,
             'actions' => $element->actionMenuDescriptors(ElementActionContext::Field),
         ];
     }
@@ -388,7 +419,7 @@ class ElementSelect extends Control
      * @param  class-string<ElementInterface>  $elementType
      * @return list<ElementInterface>
      */
-    private static function elements(string $elementType, mixed $value): array
+    private static function elements(string $elementType, mixed $value, bool $withStructure = false): array
     {
         if (is_int($value) || is_string($value) && $value !== '') {
             $value = [$value];
@@ -398,7 +429,13 @@ class ElementSelect extends Control
             return [];
         }
 
-        return $elementType::find()
+        $query = $elementType::find();
+
+        if ($withStructure) {
+            $query->withStructure();
+        }
+
+        return $query
             ->site('*')
             ->preferSites(array_filter([app(RequestedSite::class)->get()?->id]))
             ->unique()

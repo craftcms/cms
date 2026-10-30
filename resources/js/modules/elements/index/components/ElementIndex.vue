@@ -1,8 +1,9 @@
 <script setup lang="ts">
-  import {computed, onMounted, provide, ref, useTemplateRef, watch} from 'vue';
+  import {computed, provide, ref, useTemplateRef, watch} from 'vue';
   import {onLongPress} from '@vueuse/core';
   import {ButtonVariant, t} from '@craftcms/ui';
   import PaginationControls from '@/common/components/PaginationControls.vue';
+  import PlaceholderShape from '@/common/components/PlaceholderShape.vue';
   import {
     TableAppearance,
     TableSpacing,
@@ -17,6 +18,7 @@
   import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
   import ElementIndexExportMenu from '@/modules/elements/index/components/ElementIndexExportMenu.vue';
   import {useInlineEditing} from '@/modules/elements/index/composables/useInlineEditing';
+  import {commandShortcut} from '@/common/utils/keyShortcuts';
   import {resizeThumbs} from '@/modules/elements/index/composables/useElementIndexThumbSize';
   import type {ThumbSize} from '@/modules/elements/types/view-state';
   import {elementIndexContextKey} from '@/modules/elements/index/index-context';
@@ -71,12 +73,16 @@
     mode,
     thumbSize,
     thumbSizeOptions,
+    cardThumbs,
     sortField,
     sortDirection,
+    viewCustomized,
+    resetView,
     tableColumns,
     columnOptions,
     visibleViewModes,
     loading,
+    pending,
     processing,
     filterContext,
     submit,
@@ -116,6 +122,15 @@
     load: () => inlineEditing?.load() ?? Promise.resolve(),
     save: (request) => inlineEditing?.save(request) ?? Promise.resolve(false),
   });
+  /**
+   * How many placeholders stand in for the rows while they load: as many as
+   * are on screen, so the page holds its height, or else a screenful.
+   */
+  function placeholderCount(screenful: number): number {
+    return pending.value || loading.value ? data.value.length || screenful : 0;
+  }
+  /** Whether the rows have thumbnails, for the placeholders drawn before them. */
+  const hasThumbs = computed(() => cardThumbs.value !== null);
   const isInlineEditing = computed(
     () =>
       Boolean(inlineEditing?.active.value) ||
@@ -138,7 +153,8 @@
       props.footerActive ||
       isInlineEditing.value ||
       props.enableAdjustPageSize ||
-      elementIndex.pagination.total > 0 ||
+      pending.value ||
+      (elementIndex.pagination?.total ?? 0) > 0 ||
       table.getPageCount() > 1
   );
   const itemBehavior = computed<ElementIndexItemBehavior>(() => ({
@@ -158,12 +174,6 @@
     }
   });
 
-  onMounted(() => {
-    if (inlineEditing?.active.value && canEditInline.value) {
-      void startInlineEditing();
-    }
-  });
-
   onLongPress(body, (event) => {
     if (
       !isInlineEditing.value &&
@@ -178,7 +188,7 @@
     if (isLoading) liveMessage.value = t('Loading…');
     else if (wasLoading)
       liveMessage.value = t('{total, plural, =1{# item} other{# items}}', {
-        total: elementIndex.pagination.total,
+        total: elementIndex.pagination?.total ?? 0,
       });
   });
   watch(selection.selectedIds, (ids) => {
@@ -293,10 +303,12 @@
         :column-options="columnOptions"
         :thumb-size-options="thumbSizeOptions"
         :sort-options="elementIndex.sortOptions"
+        :view-customized="viewCustomized"
         :sites="showSites ? elementIndex.sites : undefined"
         :site-handle="showSites ? activeSiteHandle : undefined"
         @submit="submit"
         @reorder="reorder"
+        @use-default-view="resetView"
         @site-change="emit('site-change', $event)"
       >
         <template
@@ -321,7 +333,7 @@
             <ElementIndexExportMenu
               v-if="exportElements"
               :exporters="elementIndex.exporters ?? []"
-              :max-limit="elementIndex.pagination.total"
+              :max-limit="elementIndex.pagination?.total"
               :disabled="processing"
               @export="
                 (format, type, limit) =>
@@ -354,13 +366,12 @@
             mode !== 'thumbs',
         },
       ]"
-      :aria-busy="loading ? 'true' : undefined"
+      :aria-busy="loading || pending ? 'true' : undefined"
     >
       <div
         ref="body"
         :class="{
           'element-index__grid': mode === 'cards' || mode === 'thumbs',
-          'element-index__loading': loading,
         }"
         @mousedown.capture="
           isInlineEditing
@@ -380,6 +391,8 @@
           :selectable="selectable"
           :select-all="multiSelect"
           :loading="loading"
+          :placeholders="placeholderCount(8)"
+          :placeholder-thumb="cardThumbs"
           :item-behavior="itemBehavior"
           :sortable="rowReorder?.enabled.value ?? false"
           :interactions-disabled="processing"
@@ -401,6 +414,7 @@
           :item-behavior="itemBehavior"
           :interactions-disabled="processing"
           :thumb-size="thumbSize"
+          :placeholders="placeholderCount(8)"
           @edit="onThumbEdit"
         />
         <ElementTable
@@ -409,12 +423,17 @@
           :selection="selection"
           :selectable="selectable"
           :loading="loading"
+          :placeholder-rows="placeholderCount(5)"
           :spacing="TableSpacing.Spacious"
           :item-behavior="itemBehavior"
           :with-bottom-border="withBottomBorder"
           :appearance="tableAppearance"
           :structure="
-            !isInlineEditing && structure !== undefined && mode === 'structure'
+            !isInlineEditing &&
+            !pending &&
+            !loading &&
+            structure !== undefined &&
+            mode === 'structure'
           "
           :is-row-collapsed="structureView.isCollapsed"
           :is-row-pending="structureView.isPending"
@@ -431,7 +450,26 @@
           @toggle-structure="toggleStructure"
           @move-structure-row="moveRow"
           @reorder="(from, to) => rowReorder?.move(from, to)"
-        />
+        >
+          <template #placeholder-cell="{index, width}">
+            <craft-chip
+              v-if="index === 0 && hasThumbs"
+              appearance="plain"
+              show-thumb
+              :thumb-size="thumbSize"
+            >
+              <PlaceholderShape
+                slot="thumbnail"
+                class="element-index__thumb-placeholder"
+              />
+              <PlaceholderShape
+                class="element-index__label-placeholder"
+                :style="{inlineSize: width}"
+              />
+            </craft-chip>
+            <PlaceholderShape v-else :style="{maxInlineSize: width}" />
+          </template>
+        </ElementTable>
       </div>
     </div>
     <div class="element-index__footer" v-if="showFooter">
@@ -440,6 +478,7 @@
           type="button"
           :variant="ButtonVariant.Primary"
           .disabled="processing"
+          :aria-keyshortcuts="commandShortcut('S')"
           @click="inlineEditor.save"
           >{{ t('Save') }}</craft-button
         >
@@ -452,6 +491,10 @@
         >
       </div>
       <slot v-else-if="footerActive" name="footer" />
+      <PlaceholderShape
+        v-else-if="pending"
+        class="element-index__count-placeholder"
+      />
       <PaginationControls
         v-else
         :page-index="table.atoms.pagination.get().pageIndex"
@@ -552,17 +595,16 @@
     background-color: var(--c-surface-default);
   }
 
-  // While loading, the view's spinner sits in the middle of the body rather
-  // than at its top: the body and the view fill its height.
-  .element-index__body[aria-busy='true'] {
-    display: flex;
-    flex-direction: column;
+  .element-index__thumb-placeholder {
+    inline-size: var(--c-thumbnail-size);
+    block-size: var(--c-thumbnail-size);
   }
 
-  .element-index__loading {
-    display: flex;
-    flex: 1 1 auto;
-    flex-direction: column;
-    padding-block: 0;
+  .element-index__label-placeholder {
+    min-inline-size: 8rem;
+  }
+
+  .element-index__count-placeholder {
+    inline-size: 8rem;
   }
 </style>

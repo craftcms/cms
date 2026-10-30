@@ -24,6 +24,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Update\Updates;
+use CraftCms\Cms\User\EditUserScreens;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\LegacyAssets\CpAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
@@ -220,6 +221,7 @@ class HandleInertiaRequests extends Middleware
                     'underlineLinks' => (bool) ($currentUser->getPreference('underlineLinks')
                         ?? $generalConfig->accessibilityDefaults['underlineLinks']
                         ?? false),
+                    'showTokens' => app(EditUserScreens::class)->showTokensScreen($currentUser),
                 ] : null,
                 // Outside `currentUser`, so logged-out pages (login, the
                 // updater) follow the system theme too.

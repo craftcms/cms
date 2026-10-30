@@ -16,13 +16,24 @@ export const openedWithShortcut = shallowRef(false);
 
 let shortcutInstalled = false;
 
+/** Whether a key press lands somewhere that takes typing. */
+function isTypingIn(event: KeyboardEvent): boolean {
+  const [target] = event.composedPath();
+
+  return (
+    target instanceof HTMLElement &&
+    (target.isContentEditable || target.matches('input, textarea, select'))
+  );
+}
+
 /**
- * Opens and closes the palette with Cmd+K (Ctrl+K elsewhere), from anywhere.
- * Installed with the control panel rather than by the palette component,
- * which loads after the page does, so a press made before it arrives isn't
- * lost. A focused editor that has a use for the shortcut — a rich text
- * field's link command — handles it first and cancels it, so it's left alone
- * then.
+ * Opens and closes the palette with Cmd+K (Ctrl+K elsewhere), from anywhere,
+ * and opens it with `/` when nothing that takes typing has focus, as search
+ * opens in other web apps. Installed with the control panel rather than by
+ * the palette component, which loads after the page does, so a press made
+ * before it arrives isn't lost. A focused editor that has a use for the
+ * shortcut — a rich text field's link command — handles it first and cancels
+ * it, so it's left alone then.
  */
 export function installCommandPaletteShortcut(): void {
   if (shortcutInstalled) {
@@ -32,6 +43,22 @@ export function installCommandPaletteShortcut(): void {
   shortcutInstalled = true;
 
   window.addEventListener('keydown', (event: KeyboardEvent) => {
+    // Shift is left alone: some layouts type `/` with it.
+    if (
+      event.key === '/' &&
+      !event.metaKey &&
+      !event.ctrlKey &&
+      !event.altKey &&
+      !event.defaultPrevented &&
+      !isCommandPaletteOpen.value &&
+      !isTypingIn(event)
+    ) {
+      event.preventDefault();
+      openedWithShortcut.value = true;
+      isCommandPaletteOpen.value = true;
+      return;
+    }
+
     if (
       event.key.toLowerCase() !== 'k' ||
       event.altKey ||

@@ -232,6 +232,7 @@
         <input
           v-model="decision"
           type="radio"
+          class="cp-radio"
           :name="`workflow-review-decision-${id}`"
           value="comment"
         />
@@ -245,6 +246,7 @@
         <input
           v-model="decision"
           type="radio"
+          class="cp-radio"
           :name="`workflow-review-decision-${id}`"
           value="approve"
         />
@@ -258,6 +260,7 @@
         <input
           v-model="decision"
           type="radio"
+          class="cp-radio"
           :name="`workflow-review-decision-${id}`"
           value="requestChanges"
         />
@@ -346,10 +349,6 @@
     gap: var(--c-spacing-sm);
     grid-template-columns: auto 1fr;
     cursor: pointer;
-  }
-
-  .workflow-user-review-actions__choice input {
-    margin-block-start: 0.2em;
   }
 
   .workflow-user-review-actions__choice strong,

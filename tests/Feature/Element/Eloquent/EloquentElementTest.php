@@ -372,6 +372,16 @@ it('opens a new element’s editor from a draft, without creating its model', fu
             ->where('editorActions.buttons', fn (Collection $buttons) => $buttons->pluck('label')->doesntContain('Apply draft')));
 });
 
+it('passes the index a new element was created from on to its editor', function () {
+    $returnUrl = cp_url('customers').':QS:source=*';
+
+    $response = get(cp_url('customers/new').'?'.http_build_query(['returnUrl' => $returnUrl]));
+
+    $draft = CustomerElement::find()->drafts()->status(null)->sole();
+
+    $response->assertRedirect(Url::urlWithParams($draft->getCpEditUrl(), ['fresh' => 1, 'returnUrl' => $returnUrl]));
+});
+
 it('creates the model row when a new element’s draft is applied', function () {
     $draft = new CustomerElement;
     $draft->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);

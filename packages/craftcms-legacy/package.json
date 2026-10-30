@@ -69,6 +69,6 @@
     "yii2-pjax": "~2.0.8"
   },
   "optionalDependencies": {
-    "@awesome.me/kit-ddaed3f5c5": "^1.0.74"
+    "@awesome.me/kit-ddaed3f5c5": "^1.0.77"
   }
 }

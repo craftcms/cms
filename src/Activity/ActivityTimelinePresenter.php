@@ -166,6 +166,8 @@ class ActivityTimelinePresenter
                 'deleted' => $event->actorType === ActivityActor::TYPE_USER
                     && $event->actorId !== null
                     && $actor === null,
+                // The colors of the user’s default photo, which their comments are tinted with.
+                'photoColors' => $actor?->photoColors(),
             ],
             'impersonator' => $impersonatorSnapshot === null ? null : [
                 'id' => $impersonatorSnapshot['id'],

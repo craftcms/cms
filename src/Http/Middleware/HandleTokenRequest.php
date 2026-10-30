@@ -51,10 +51,10 @@ readonly class HandleTokenRequest
         Context::addHidden(self::TOKEN_KEY, $token);
         Context::addHidden(self::HAD_TOKEN_KEY, true);
 
+        // The preview params stay: they're how the rest of the request knows
+        // it's a preview (`Request::isPreview()`).
         $originalUri = $request->uri()->withoutQuery([
             $this->generalConfig->tokenParam,
-            'x-craft-preview',
-            'x-craft-live-preview',
         ]);
 
         if ($this->isPreviewRoute((string) $tokenRoute[0])) {
