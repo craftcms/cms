@@ -130,9 +130,7 @@
     return pending.value || loading.value ? data.value.length || screenful : 0;
   }
   /** Whether the rows have thumbnails, for the placeholders drawn before them. */
-  const hasThumbs = computed(() =>
-    visibleViewModes.value.some(({mode}) => mode === 'thumbs')
-  );
+  const hasThumbs = computed(() => cardThumbs.value !== null);
   const isInlineEditing = computed(
     () =>
       Boolean(inlineEditing?.active.value) ||
