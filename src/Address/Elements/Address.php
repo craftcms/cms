@@ -16,10 +16,12 @@ use CraftCms\Cms\Address\Validation\AddressRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\Copy;
+use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Concerns\NestedElement;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -55,78 +57,91 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      * @see https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s ISO 3166-1 alpha-2 country code.')]
     public string $countryCode;
 
     /**
      * @var string|null Administrative area
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s state, province, region, or administrative area.', nullable: true)]
     public ?string $administrativeArea = null;
 
     /**
      * @var string|null Locality
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s city, town, or locality.', nullable: true)]
     public ?string $locality = null;
 
     /**
      * @var string|null Dependent locality
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s district, neighborhood, or suburb.', nullable: true)]
     public ?string $dependentLocality = null;
 
     /**
      * @var string|null Postal code
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s postal or ZIP code.', nullable: true)]
     public ?string $postalCode = null;
 
     /**
      * @var string|null Sorting code
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s sorting code.', nullable: true)]
     public ?string $sortingCode = null;
 
     /**
      * @var string|null First line of the address
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s first street address line.', nullable: true)]
     public ?string $addressLine1 = null;
 
     /**
      * @var string|null Second line of the address
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s second street address line.', nullable: true)]
     public ?string $addressLine2 = null;
 
     /**
      * @var string|null Third line of the address
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s third street address line.', nullable: true)]
     public ?string $addressLine3 = null;
 
     /**
      * @var string|null Organization name
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s organization or company name.', nullable: true)]
     public ?string $organization = null;
 
     /**
      * @var string|null Organization tax ID
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s organization tax or VAT ID.', nullable: true)]
     public ?string $organizationTaxId = null;
 
     /**
      * @var string|null Latitude
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Float, 'The address’s latitude coordinate.', nullable: true)]
     public ?string $latitude = null;
 
     /**
      * @var string|null Longitude
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Float, 'The address’s longitude coordinate.', nullable: true)]
     public ?string $longitude = null;
 
     /** @param array<string, mixed>|object $config */

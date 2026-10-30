@@ -10,9 +10,11 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
+use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Concerns\LegacyConstants;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
@@ -110,12 +112,14 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
      * @var string|null The element’s title
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The title of the {element}.', nullable: true)]
     public ?string $title = null;
 
     /**
      * @var string|null The element’s slug
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The {element}’s slug.', nullable: true)]
     public ?string $slug = null;
 
     /**

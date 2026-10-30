@@ -52,6 +52,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Actions\DeleteForSite;
 use CraftCms\Cms\Element\Actions\Restore;
+use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\CurrentElementIndex;
@@ -60,6 +61,7 @@ use CraftCms\Cms\Element\Data\Thumb;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Queries\AssetQuery;
@@ -221,12 +223,14 @@ class Asset extends Element
      * @var int|null Folder ID
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Id, 'The ID of the folder the asset is in.')]
     public ?int $folderId = null;
 
     /**
      * @var int|null The ID of the user who first added this asset (if known)
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Id, 'The ID of the user who first added the asset, if known.', nullable: true)]
     public ?int $uploaderId = null;
 
     /**
@@ -245,6 +249,7 @@ class Asset extends Element
      * @var string|null Alternative text
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'Alternative text for the asset.', nullable: true)]
     public ?string $alt = null;
 
     /**
@@ -339,6 +344,7 @@ class Asset extends Element
     /**
      * @var int|null New folder ID
      */
+    #[ElementProperty(ElementPropertyType::Id, 'The ID of the folder to move the asset to.')]
     public ?int $newFolderId = null;
 
     /**
@@ -2489,6 +2495,7 @@ JS, [
     /**
      * Sets the filename (with extension).
      */
+    #[ElementProperty(ElementPropertyType::String, 'The asset’s filename.')]
     public function setFilename(string $filename): void
     {
         $this->_filename = $filename;

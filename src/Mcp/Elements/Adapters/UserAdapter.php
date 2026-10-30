@@ -23,6 +23,8 @@ use Mcp\Exception\ToolCallException;
  */
 class UserAdapter extends BaseElementAdapter
 {
+    private const array SharedAttributes = ['email', 'username', 'firstName', 'lastName', 'fullName', 'newPassword', 'admin'];
+
     /**
      * Attributes non-admins may set on any user they are allowed to save.
      */
@@ -59,14 +61,14 @@ class UserAdapter extends BaseElementAdapter
     {
         return [
             'type' => 'object',
-            'properties' => [
-                ...$this->sharedAttributeProperties(),
-                'active' => ['type' => 'boolean', 'description' => 'Whether the user is active.'],
-                'pending' => ['type' => 'boolean', 'description' => 'Whether the user is pending activation.'],
-                'affiliatedSiteId' => ['type' => ['integer', 'null'], 'description' => 'Affiliated site ID.'],
-                'photoId' => ['type' => ['integer', 'null'], 'description' => 'Photo asset ID.'],
-                'hasDashboard' => ['type' => 'boolean', 'description' => 'Whether the user has a dashboard.'],
-            ],
+            'properties' => $this->propertySchemas([
+                ...self::SharedAttributes,
+                'active',
+                'pending',
+                'affiliatedSiteId',
+                'photoId',
+                'hasDashboard',
+            ]),
             'additionalProperties' => false,
         ];
     }
@@ -75,10 +77,7 @@ class UserAdapter extends BaseElementAdapter
     {
         return [
             'type' => 'object',
-            'properties' => [
-                ...$this->sharedAttributeProperties(),
-                'enabled' => ['type' => 'boolean', 'description' => 'Whether the user is enabled.'],
-            ],
+            'properties' => $this->propertySchemas([...self::SharedAttributes, 'enabled']),
             'additionalProperties' => false,
         ];
     }
@@ -176,22 +175,6 @@ class UserAdapter extends BaseElementAdapter
         $this->authorizeAttributes($actor, $attributes);
         $this->populate($element, $attributes, $fields, $actor);
         $this->authorizeSave($actor, $element);
-    }
-
-    /**
-     * @return array<string, array<string, mixed>>
-     */
-    private function sharedAttributeProperties(): array
-    {
-        return [
-            'email' => ['type' => 'string', 'format' => 'email', 'description' => 'User email address.'],
-            'username' => ['type' => 'string', 'description' => 'Username.'],
-            'firstName' => ['type' => 'string', 'description' => 'First name.'],
-            'lastName' => ['type' => 'string', 'description' => 'Last name.'],
-            'fullName' => ['type' => 'string', 'description' => 'Full name.'],
-            'newPassword' => ['type' => 'string', 'description' => 'New password.'],
-            'admin' => ['type' => 'boolean', 'description' => 'Whether the user is an admin.'],
-        ];
     }
 
     private function requirePermission(CraftUser $actor, string $permission, string $action): void

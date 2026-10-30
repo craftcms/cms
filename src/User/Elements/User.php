@@ -17,6 +17,7 @@ use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Actions\Restore;
+use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Data\Thumb;
@@ -25,6 +26,7 @@ use CraftCms\Cms\Element\DeletionBlockers\EntryAuthorsBlocker;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\NestedElementManager;
@@ -195,18 +197,21 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * @var int|null Photo asset ID
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Id, 'The ID of the user’s photo asset.', nullable: true)]
     public ?int $photoId = null;
 
     /**
      * @var bool Active
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Boolean, 'Whether the user is active.')]
     public bool $active = false;
 
     /**
      * @var bool Pending
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Boolean, 'Whether the user is pending activation.')]
     public bool $pending = false;
 
     /**
@@ -225,18 +230,21 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * @var bool Admin
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Boolean, 'Whether the user is an admin.')]
     public bool $admin = false;
 
     /**
      * @var string|null Username
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The user’s username.')]
     public ?string $username = null;
 
     /**
      * @var string|null Email
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The user’s email address.')]
     public ?string $email = null;
 
     /**
@@ -248,6 +256,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * @var int|null Affiliated site ID
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Id, 'The ID of the site the user is affiliated with.', nullable: true)]
     public ?int $affiliatedSiteId = null;
 
     /**
@@ -274,6 +283,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     /**
      * @var bool Whether the user has a dashboard
      */
+    #[ElementProperty(ElementPropertyType::Boolean, 'Whether the user has a dashboard.')]
     public bool $hasDashboard = false;
 
     /**
@@ -294,6 +304,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     /**
      * @var string|null New password
      */
+    #[ElementProperty(ElementPropertyType::String, 'A new password for the user.')]
     public ?string $newPassword = null;
 
     /**

@@ -2,13 +2,16 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Enums\ElementQueryParamType;
 use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Gql\ArgumentManager;
 use CraftCms\Cms\Gql\Arguments\ElementArguments;
+use CraftCms\Cms\Gql\Arguments\ElementMutationArguments;
 use CraftCms\Cms\Gql\Arguments\Transform;
 use CraftCms\Cms\Gql\Contracts\ArgumentHandlerInterface;
 use CraftCms\Cms\Gql\GqlArguments;
@@ -91,8 +94,26 @@ it('adds the query params of an element type that its arguments class names', fu
         ->and(TestWidgetArgumentsWithoutElementType::getArguments())->not()->toHaveKey('color');
 });
 
+it('adds the properties of an element type that its mutation arguments class names', function () {
+    $arguments = TestWidgetMutationArguments::getArguments();
+
+    expect($arguments['color']['description'])->toBe('The widget’s color.')
+        ->and((string) $arguments['color']['type'])->toBe('String')
+        ->and($arguments['title']['description'])->toBe('The title of the element.')
+        ->and($arguments)->not()->toHaveKey('slug')
+        ->and(TestWidgetMutationArgumentsWithoutElementType::getArguments())->not()->toHaveKey('color');
+});
+
 class TestWidget extends Element
 {
+    #[ElementProperty(ElementPropertyType::String, 'The {element}’s color.', nullable: true)]
+    public ?string $color = null;
+
+    public static function displayName(): string
+    {
+        return 'Widget';
+    }
+
     public static function pluralDisplayName(): string
     {
         return 'Widgets';
@@ -122,6 +143,16 @@ class TestWidgetArguments extends ElementArguments
 }
 
 class TestWidgetArgumentsWithoutElementType extends ElementArguments {}
+
+class TestWidgetMutationArguments extends ElementMutationArguments
+{
+    protected static function elementType(): string
+    {
+        return TestWidget::class;
+    }
+}
+
+class TestWidgetMutationArgumentsWithoutElementType extends ElementMutationArguments {}
 
 class RegistryArgumentHandler implements ArgumentHandlerInterface
 {

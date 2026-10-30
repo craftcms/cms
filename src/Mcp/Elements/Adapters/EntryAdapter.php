@@ -31,6 +31,8 @@ use RuntimeException;
  */
 class EntryAdapter extends BaseElementAdapter
 {
+    private const array SharedAttributes = ['title', 'slug', 'enabled', 'authorId', 'authorIds', 'postDate', 'expiryDate', 'parentId'];
+
     private const array DuplicateModes = ['unpublished', 'canonical'];
 
     public function __construct(
@@ -60,13 +62,10 @@ class EntryAdapter extends BaseElementAdapter
     {
         return [
             'type' => 'object',
-            'properties' => [
-                'sectionId' => ['type' => 'integer', 'description' => 'Section ID.'],
-                'typeId' => ['type' => 'integer', 'description' => 'Entry type ID. Defaults to the section’s first entry type.'],
-                'siteId' => ['type' => 'integer', 'description' => 'Site ID.'],
-                ...$this->sharedAttributeProperties(),
-                'authorId' => ['type' => ['integer', 'null'], 'description' => 'Author user ID. Defaults to the acting user.'],
-            ],
+            'properties' => $this->propertySchemas(['sectionId', 'typeId', 'siteId', ...self::SharedAttributes], [
+                'typeId' => 'Defaults to the section’s first entry type.',
+                'authorId' => 'Defaults to the acting user.',
+            ]),
             'required' => ['sectionId'],
             'additionalProperties' => false,
         ];
@@ -76,10 +75,7 @@ class EntryAdapter extends BaseElementAdapter
     {
         return [
             'type' => 'object',
-            'properties' => [
-                'typeId' => ['type' => 'integer', 'description' => 'Entry type ID.'],
-                ...$this->sharedAttributeProperties(),
-            ],
+            'properties' => $this->propertySchemas(['typeId', ...self::SharedAttributes]),
             'additionalProperties' => false,
         ];
     }
@@ -311,23 +307,6 @@ class EntryAdapter extends BaseElementAdapter
         }
 
         return $result;
-    }
-
-    /**
-     * @return array<string, array<string, mixed>>
-     */
-    private function sharedAttributeProperties(): array
-    {
-        return [
-            'title' => ['type' => ['string', 'null'], 'description' => 'Entry title.'],
-            'slug' => ['type' => ['string', 'null'], 'description' => 'Entry slug.'],
-            'enabled' => ['type' => 'boolean', 'description' => 'Whether the entry is enabled.'],
-            'authorId' => ['type' => ['integer', 'null'], 'description' => 'Author user ID.'],
-            'authorIds' => ['type' => 'array', 'items' => ['type' => 'integer'], 'description' => 'Author user IDs.'],
-            'postDate' => ['type' => ['string', 'null'], 'format' => 'date-time', 'description' => 'Post date.'],
-            'expiryDate' => ['type' => ['string', 'null'], 'format' => 'date-time', 'description' => 'Expiry date.'],
-            'parentId' => ['type' => ['integer', 'null'], 'description' => 'Parent entry ID for structured sections.'],
-        ];
     }
 
     private function defaultEntryType(Entry $entry): void
