@@ -2,8 +2,7 @@ import {ControllerElement} from '@/common/web-components';
 import {AssetSelectInput} from '@/modules/asset-select-input/asset-select-input';
 import {BaseElementSelectInput} from './base-element-select-input';
 import {EntrySelectInput} from './entry-select-input';
-
-declare const Craft: any;
+import {initLegacyUi} from '@/common/craft/legacy-ui';
 
 type ElementSelectInputConstructor = new (
   settings?: ConstructorParameters<typeof BaseElementSelectInput>[0]
@@ -39,7 +38,7 @@ export default class CraftElementSelectInput extends ControllerElement<BaseEleme
   }
 
   protected create(): BaseElementSelectInput {
-    Craft.initUiElements(this);
+    initLegacyUi(this);
 
     const Input = this.#inputClass();
 

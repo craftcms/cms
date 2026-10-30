@@ -2,16 +2,11 @@ import {
   applyOverrideSettings,
   renderOverrideSettings,
 } from '@actions/Settings/EntryTypesController';
+import {initLegacyUi} from '@/common/craft/legacy-ui';
 import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {showError} from '@/modules/messages/messages';
-
-// `Craft` and `$` (jQuery) remain page globals; the settings form is
-// server-rendered HTML, so the legacy seams the rest of the manager leans on
-// survive here (`Craft.initUiElements`).
-declare const Craft: any;
-declare const $: any;
 
 /**
  * Open the per-field entry-type override editor for a chip — the port of
@@ -186,5 +181,5 @@ function writeOverrides(chip: HTMLElement, data: any): void {
   }
 
   // Re-init any UI within the chip (description info icon, indicator tooltips).
-  Craft.initUiElements($(chip));
+  initLegacyUi(chip);
 }

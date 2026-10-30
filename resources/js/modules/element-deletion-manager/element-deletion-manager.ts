@@ -10,6 +10,7 @@ import {elevatedSessionManager} from '@/modules/auth/elevated-session/manager';
 import {create} from '@craftcms/ui/utilities/create';
 import {showError, showSuccess} from '@/modules/messages/messages';
 import {loadElementThumbs} from '@/modules/element-thumb-loader/globals';
+import {initLegacyUi} from '@/common/craft/legacy-ui';
 
 // jQuery-built blocker markup + Craft.ui/Craft.cp seams, shown in a
 // `craft-dialog`.
@@ -428,7 +429,7 @@ class Blocker extends Base {
       }
     }
 
-    Craft.initUiElements(this.$container);
+    initLegacyUi(this.$container);
   }
 
   async resolve(message: any = null): Promise<void> {

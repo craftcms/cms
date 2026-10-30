@@ -4,6 +4,7 @@ import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import {t} from '@craftcms/ui';
 import {CraftAuthChallengeForm} from '../auth-challenge-form';
 import componentStyles from './login-form.styles.js';
+import {initLegacyUi} from '@/common/craft/legacy-ui';
 // Side-effect imports: ensure both forms call CraftAuthChallengeForm.register()
 // before isNative() is ever queried.
 import '../totp/totp-form.js';
@@ -20,7 +21,6 @@ export interface TwoFactorData {
 }
 
 declare const Craft: {
-  initUiElements: (container: Element) => void;
   createAuthFormHandler: (
     method: string,
     container: Element,
@@ -88,7 +88,7 @@ export default class CraftLoginChallenge extends LitElement {
       await appendHeadHtml(this.data.headHtml);
       await appendBodyHtml(this.data.bodyHtml);
     }
-    Craft.initUiElements($authForm);
+    initLegacyUi($authForm);
 
     Craft.createAuthFormHandler(
       this.data.authMethod,

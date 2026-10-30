@@ -16,6 +16,7 @@ import {ConfigService} from '@craftcms/ui/services/Config';
 import {elevatedSessionManager} from '@/modules/auth/elevated-session/manager';
 import {showError} from '@/modules/messages/messages';
 import {announce} from '@/common/announcer';
+import {initLegacyUi} from '@/common/craft/legacy-ui';
 
 declare const Craft: any;
 declare const $: any;
@@ -169,7 +170,7 @@ export class AuthMethodSetup extends Base<AuthMethodSetupSettings> {
         const $container = $('#auth-method-setup').html(
           $(data.html).children()
         );
-        Craft.initUiElements($container);
+        initLegacyUi($container);
         await appendHeadHtml(data.headHtml);
         await appendBodyHtml(data.bodyHtml);
         this.initUi();

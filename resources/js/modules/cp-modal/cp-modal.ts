@@ -6,6 +6,7 @@ import {
   sendLegacyRequest,
   type LegacyRequestOptions,
 } from '@craftcms/ui/utilities/api/legacyRequest';
+import {initLegacyUi} from '@/common/craft/legacy-ui';
 import {loadElementThumbs} from '@/modules/element-thumb-loader/globals';
 import {
   addErrorsToField,
@@ -289,7 +290,7 @@ export class CpModal extends Base {
           appendBodyHtml(data.bodyHtml)
         );
 
-        Craft.initUiElements(this.#$content);
+        initLegacyUi(this.#$content);
         loadElementThumbs(this.#$content);
 
         if (!isMobileBrowser()) {

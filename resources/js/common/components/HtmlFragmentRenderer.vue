@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {initLegacyUi} from '@/common/craft/legacy-ui';
   import {
     appendBodyHtml,
     appendElementHtml,
@@ -126,10 +127,10 @@
         }
       }
 
-      // Upgrade legacy UI elements (lightswitches, field toggles, menus, …)
+      // Upgrade legacy UI elements (lightswitches, menus, …)
       // the same way CpScreenSlideout does after injecting fragment content.
       if (html) {
-        window.Craft?.initUiElements?.(element);
+        initLegacyUi(element);
       }
 
       emit('ready', element);

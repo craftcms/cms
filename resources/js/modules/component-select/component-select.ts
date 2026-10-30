@@ -7,6 +7,7 @@ import {
   prefersReducedMotion,
   type GarnishBaseSettings,
 } from '@craftcms/garnish';
+import {initLegacyUi} from '@/common/craft/legacy-ui';
 import type {CraftActionMenu, ReorderDirection} from '@craftcms/ui';
 import {openSlideout, type SlideoutSaveResult} from '@/common/slideouts';
 import {componentSelectData} from './support';
@@ -476,7 +477,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
 
     if (this.settings.showDescription) {
       // Descriptions render an info icon that needs a UI-elements boot.
-      Craft.initUiElements($(li));
+      initLegacyUi(li);
     }
 
     this.#onChange();
