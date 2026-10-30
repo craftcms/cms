@@ -799,6 +799,7 @@ return [
     'Entry Types' => 'ประเภทรายการ',
     'Entry URI Format' => 'รูปแบบ URI ของรายการ',
     'Entry could not be added. Maximum number of entries reached.' => 'ไม่สามารถเพิ่มรายการได้ จำนวนรายการครบจำนวนสูงสุดแล้ว',
+    'Entry type icon' => 'Entry type icon',
     'Entry type saved.' => 'บันทึกประเภทรายการแล้ว',
     'Entry type settings' => 'การตั้งค่าประเภทรายการ',
     'Entry' => 'รายการ',
