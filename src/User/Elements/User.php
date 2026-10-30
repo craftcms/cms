@@ -1291,16 +1291,14 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return null;
     }
 
-    protected function thumbSvg(): ?string
+    /**
+     * Returns the two colors of the user’s default photo’s gradient, chosen from their UID, as the names of
+     * `--color-{name}-500` palette colors.
+     *
+     * @return array{string, string}
+     */
+    public function photoColors(): array
     {
-        if (! $this->uid) {
-            return null;
-        }
-
-        $names = array_filter([$this->firstName, $this->lastName]) ?: [$this->getName()];
-        $initials = implode('', array_map(fn ($name) => mb_strtoupper(mb_substr($name, 0, 1)), $names));
-
-        // Choose a color based on the UUID
         $uid = strtolower($this->uid ?? '00ff');
         $totalColors = count(self::$photoColors);
         /** @phpstan-ignore-next-line */
@@ -1310,8 +1308,20 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         if ($color2Index === $color1Index) {
             $color2Index = ($color1Index + 1) % $totalColors;
         }
-        $color1 = self::$photoColors[$color1Index % $totalColors];
-        $color2 = self::$photoColors[$color2Index % $totalColors];
+
+        return [self::$photoColors[$color1Index], self::$photoColors[$color2Index]];
+    }
+
+    protected function thumbSvg(): ?string
+    {
+        if (! $this->uid) {
+            return null;
+        }
+
+        $names = array_filter([$this->firstName, $this->lastName]) ?: [$this->getName()];
+        $initials = implode('', array_map(fn ($name) => mb_strtoupper(mb_substr($name, 0, 1)), $names));
+
+        [$color1, $color2] = $this->photoColors();
 
         $gradientId = sprintf('gradient-%s', Str::random(10));
 

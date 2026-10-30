@@ -217,17 +217,25 @@
           <span class="activity-timeline__comment-overage" aria-live="polite">
             {{ overageMessage }}
           </span>
-          <craft-button
-            v-if="creating"
-            type="button"
-            variant="primary"
-            size="small"
-            .disabled="draft.trim() === '' || mutating || overage > 0"
-            :aria-keyshortcuts="postShortcut"
-            @click="saveComment"
-          >
-            {{ t('Comment') }}
-          </craft-button>
+          <template v-if="creating">
+            <!-- Icon-only, named by its tooltip. -->
+            <craft-button
+              :id="`${editorId}-post`"
+              class="activity-timeline__comment-post"
+              type="button"
+              :variant="draft.trim() === '' ? 'fill' : 'primary'"
+              size="small"
+              icon
+              .disabled="draft.trim() === '' || mutating || overage > 0"
+              :aria-keyshortcuts="postShortcut"
+              @click="saveComment"
+            >
+              <craft-icon name="arrow-up" :label="t('Comment')"></craft-icon>
+            </craft-button>
+            <craft-tooltip :for="`${editorId}-post`" invoker-relation="label">
+              {{ t('Comment') }}
+            </craft-tooltip>
+          </template>
         </div>
       </div>
       <craft-text-expander :for="editorId" .triggers="mentionTriggers" />
@@ -333,6 +341,10 @@
     display: flex;
     align-items: center;
     gap: var(--c-spacing-md);
+  }
+
+  .activity-timeline__comment-post {
+    --c-button-radius: 9999px;
   }
 
   .activity-timeline__comment-overage {
