@@ -1,4 +1,3 @@
-{% import '_includes/forms' as forms %}
 {% do registerLegacyAsset("CraftCms\\Cms\\View\\LegacyAssets\\MoneyAsset") %}
 
 {% set id = id ?? "money#{random()}" -%}
@@ -33,19 +32,19 @@
         </div>
     {% endif %}
     {# textFromConfig() uses the top-level name rather than inputAttributes.name. #}
-    {% include '_includes/forms/text' with {
+    {{ craft.cp.text(_context|merge({
         name: inputAttributes.name,
         inputAttributes: inputAttributes,
-    } %}
+    }))|raw }}
     {% if showClear %}
         <div class="money-clear">
-            {{ forms.button({
+            {{ craft.cp.button({
                 attributes: {
                     title: 'Clear'|t('app'),
                     class: 'clear-btn hidden',
                     'aria-label': 'Clear'|t('app'),
                 }
-            }) }}
+            })|raw }}
         </div>
     {% endif %}
 </div>

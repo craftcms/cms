@@ -1,4 +1,3 @@
-{% import "_includes/forms" as forms %}
 
 {%- set disabled = disabled ?? false %}
 
@@ -23,7 +22,7 @@
 } %}
 
 {% if field.multiline %}
-    {{ forms.textarea(config) }}
+    {{ craft.cp.textarea(config)|raw }}
 {% else %}
-    {{ forms.text(config) }}
+    {{ craft.cp.text(config)|raw }}
 {% endif %}

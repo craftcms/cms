@@ -8,7 +8,7 @@ use function CraftCms\Cms\renderString;
 
 it('renders the web component from the legacy button variables', function () {
     $html = renderString(
-        "{% include '_includes/forms/button' with {type: 'submit', label: 'Save', spinner: true, busyMessage: 'Saving…'} only %}",
+        "{{ craft.cp.button({type: 'submit', label: 'Save', spinner: true, busyMessage: 'Saving…'})|raw }}",
         templateMode: TemplateMode::Cp,
     );
 
@@ -22,7 +22,7 @@ it('renders the web component from the legacy button variables', function () {
 
 it('maps readOnly to a disabled button with the read-only class', function () {
     $html = renderString(
-        "{% include '_includes/forms/button' with {label: 'Locked', readOnly: true} only %}",
+        "{{ craft.cp.button({label: 'Locked', readOnly: true})|raw }}",
         templateMode: TemplateMode::Cp,
     );
 

@@ -126,15 +126,14 @@ describe('checkboxFieldHtml', function () {
             ->and($html)->toContainTag('label', ['slot' => 'label', 'for' => 'cb']);
     });
 
-    it('renders the checkbox label through the Twig macro', function () {
+    it('renders the checkbox label through craft.cp.checkboxField', function () {
         $html = app(TemplateManager::class)->renderString(
-            '{% import "_includes/forms" as forms %}'.
-            '{{ forms.checkboxField({id: "cb", name: "enabled", label: "Agree"}) }}',
+            '{{ craft.cp.checkboxField({id: "cb", name: "enabled", label: "Agree"})|raw }}',
             [],
             TemplateMode::Cp,
         );
 
-        // The macro moves `label` onto the checkbox, so the field itself gets
+        // In Twig, `label` belongs to the checkbox, so the field itself gets
         // no label — only `fieldLabel` puts one on the <craft-field>.
         expect($html)->toContainTag('craft-checkbox', ['slot' => 'input'])
             ->and($html)->toContainTag('label', ['slot' => 'label', 'for' => 'cb'])
@@ -227,7 +226,7 @@ describe('editable tables', function () {
             ]],
         ];
         $html = $twig
-            ? app(TemplateManager::class)->renderString('{% import "_includes/forms" as forms %}{{ forms.editableTableField(config) }}', ['config' => $config], TemplateMode::Cp)
+            ? app(TemplateManager::class)->renderString('{{ craft.cp.editableTable(config)|raw }}', ['config' => $config], TemplateMode::Cp)
             : FormFields::editableTableFieldHtml($config);
         $input = new Crawler($html);
         $payload = json_decode($input->filter('craft-table-ui')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);

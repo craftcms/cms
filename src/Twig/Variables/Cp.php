@@ -354,6 +354,72 @@ class Cp extends Component
     }
 
     /**
+     * Renders a text input wrapped in a field from the legacy text variables.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public function textField(array $config = []): string
+    {
+        return FormFields::textFieldHtml($config);
+    }
+
+    /**
+     * Renders a textarea wrapped in a field from the legacy textarea variables.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public function textareaField(array $config = []): string
+    {
+        return FormFields::textareaFieldHtml($config);
+    }
+
+    /**
+     * Renders a select wrapped in a field from the legacy select variables.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public function selectField(array $config = []): string
+    {
+        return FormFields::selectFieldHtml($config);
+    }
+
+    /**
+     * Renders a lightswitch wrapped in a field from the legacy lightswitch variables.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public function lightswitchField(array $config = []): string
+    {
+        return FormFields::lightswitchFieldHtml($config);
+    }
+
+    /**
+     * Renders a checkbox wrapped in a field from the legacy checkbox variables.
+     *
+     * In Twig, `label` is the checkbox's own label, and the field only becomes a
+     * fieldset when it's given a `fieldLabel`.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public function checkboxField(array $config = []): string
+    {
+        $config['fieldset'] ??= isset($config['fieldLabel']);
+        $config['checkboxLabel'] ??= $config['label'] ?? null;
+
+        return FormFields::checkboxFieldHtml($config);
+    }
+
+    /**
+     * Renders a checkbox select wrapped in a field from the legacy checkboxSelect variables.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public function checkboxSelectField(array $config = []): string
+    {
+        return FormFields::checkboxSelectFieldHtml($config);
+    }
+
+    /**
      * The layout `_layouts/cp` should extend for this render.
      *
      * `_layouts/basecp.twig` — the document — unless the response layer has

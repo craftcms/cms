@@ -1,4 +1,3 @@
-{% import '_includes/forms' as forms %}
 
 {% set chipId = "chip#{random()}" %}
 <div class="p-2 border rounded bg-gray-100">
@@ -19,7 +18,7 @@
 })();
 {% endjs %}
 
-{{ forms.textField({
+{{ craft.cp.textField({
   label: 'Name'|t('app'),
   id: 'name',
   name: 'name',
@@ -29,9 +28,9 @@
   data: {
     'error-key': 'name',
   },
-}) }}
+})|raw }}
 
-{{ forms.textField({
+{{ craft.cp.textField({
   label: 'Handle'|t('app'),
   id: 'handle',
   name: 'handle',
@@ -45,9 +44,9 @@
   data: {
     'error-key': 'handle'
   },
-}) }}
+})|raw }}
 
-{{ forms.textareaField({
+{{ craft.cp.textareaField({
   label: 'Description'|t('app'),
   id: 'description',
   class: 'nicetext',
@@ -58,4 +57,4 @@
   data: {
     'error-key': 'description',
   },
-}) }}
+})|raw }}

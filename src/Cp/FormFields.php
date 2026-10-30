@@ -14,6 +14,7 @@ use CraftCms\Cms\Cp\Components\CheckboxGroup;
 use CraftCms\Cms\Cp\Components\CheckboxSelect;
 use CraftCms\Cms\Cp\Components\Combobox;
 use CraftCms\Cms\Cp\Components\ComponentSelect;
+use CraftCms\Cms\Cp\Components\CopyAttribute;
 use CraftCms\Cms\Cp\Components\EntryTypeSelect;
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\FieldGroup;
@@ -36,6 +37,7 @@ use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -44,6 +46,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Ui\Controls\Table as TableControl;
 use CraftCms\Cms\Ui\Controls\TableColumn;
 use CraftCms\Cms\Ui\Enums\ControlMode;
@@ -153,11 +156,7 @@ readonly class FormFields
                 ])
                 : null,
             $showAttribute
-                ? self::renderTemplate('_includes/forms/copytextbtn', [
-                    'id' => "$id-attribute",
-                    'class' => ['code', 'small', 'light'],
-                    'value' => $config['attribute'],
-                ])
+                ? CopyAttribute::make()->value((string) $config['attribute'])->toHtml()
                 : null,
             isset($config['actions']) ? (string) $config['actions'] : null,
         ]));
@@ -1774,27 +1773,35 @@ readonly class FormFields
     /** @param array<string, mixed> $config */
     public static function entryTypeSelectHtml(array $config): string
     {
-        if (! empty($config['jsClass'])) {
-            return self::renderTemplate('_includes/forms/entryTypeSelect', $config);
-        }
-
         return self::entryTypeSelectFromConfig($config)->toHtml();
     }
 
     /** @param array<string, mixed> $config */
     public static function fieldSelectHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/fieldSelect', $config);
+        return self::fieldSelectFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Maps the legacy fieldSelect config surface onto a {@see ComponentSelect}
+     * listing every field, with handles shown.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public static function fieldSelectFromConfig(array $config): ComponentSelect
+    {
+        $config['id'] ??= 'fieldselect'.mt_rand();
+        $config['options'] ??= Fields::getAllFields()->all();
+        $config['showHandles'] = true;
+        $config['createAction'] = ($config['create'] ?? false) ? Url::cpUrl('settings/fields/edit') : null;
+
+        return self::componentSelectFromConfig($config);
     }
 
     /** @param array<string, mixed> $config */
     public static function entryTypeSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'entrytypeselect'.mt_rand();
-
-        if (! empty($config['jsClass'])) {
-            return self::fieldHtml('template:_includes/forms/entryTypeSelect', $config);
-        }
 
         return self::fieldHtml(
             fn (array $c): string => self::entryTypeSelectFromConfig($c)->toHtml(),
@@ -1967,7 +1974,10 @@ readonly class FormFields
             }
         }
 
-        return self::fieldHtml('template:_includes/forms/autosuggest', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::autosuggestFromConfig($c)->toHtml(),
+            $config,
+        );
     }
 
     public static function addressFieldsHtml(

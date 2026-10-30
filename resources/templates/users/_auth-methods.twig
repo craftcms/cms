@@ -1,4 +1,3 @@
-{% import '_includes/forms' as forms %}
 
 {% tag 'div' with {
   id: 'auth-method-setup',
@@ -52,7 +51,7 @@
       </div>
 
       {% if not isActive %}
-        {{ forms.button({
+        {{ craft.cp.button({
           class: ['auth-method-setup-btn', 'hairline'],
           type: 'button',
           label: 'Set up'|t('app'),
@@ -61,7 +60,7 @@
               method: className(method),
             }
           },
-        }) }}
+        })|raw }}
       {% endif %}
     {% endtag %}
 

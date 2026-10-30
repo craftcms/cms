@@ -1,4 +1,3 @@
-{% import '_includes/forms.twig' as forms %}
 
 <div class="flex flex-col gap-6 flex-1">
 
@@ -9,9 +8,11 @@
   <div class="flex-1 grid place-items-center">
     <craft-recovery-codes-setup container-id="{{ containerId }}">
       <form action="{{ generateUrl }}" method="post">
-        {{ forms.submitButton({
+        {{ craft.cp.button({
+          type: 'submit',
           label: 'Generate recovery codes'|t('app'),
-        }) }}
+          class: 'submit',
+        })|raw }}
       </form>
     </craft-recovery-codes-setup>
   </div>

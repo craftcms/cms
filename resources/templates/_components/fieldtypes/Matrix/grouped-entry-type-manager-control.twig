@@ -1,4 +1,3 @@
-{% import '_includes/forms.twig' as forms %}
 
 {% set groups = entryTypes.groupBy(et => et.group ?? 'General'|t('app')) %}
 {% if not groups.count() %}
@@ -24,12 +23,12 @@
     {% for groupName, groupEntryTypes in groups %}
       <li class="entry-type-group" data-name="{{ groupName }}">
         <div class="entry-type-group--titlebar"><span>{{ groupName }}</span></div>
-        {{ forms.entryTypeSelect(entryTypeSelectConfig|merge({
+        {{ craft.cp.entryTypeSelect(entryTypeSelectConfig|merge({
           id: "entry-type-select-#{random()}",
           values: groupEntryTypes,
           includeGroupInValues: true,
           disabled,
-        })) }}
+        }))|raw }}
       </li>
     {% endfor %}
   </ul>

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -282,11 +283,11 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         ];
 
         if ($this->showDate) {
-            $components[] = template('_includes/forms/date', $variables);
+            $components[] = FormFields::dateHtml($variables);
         }
 
         if ($this->showTime) {
-            $components[] = template('_includes/forms/time', $variables);
+            $components[] = FormFields::timeHtml($variables);
         }
 
         if ($this->showTimeZone) {

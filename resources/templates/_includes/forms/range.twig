@@ -1,4 +1,3 @@
-{% from '_includes/forms' import text %}
 
 {% set class = (class ?? [])|explodeClass|merge([
     'range',
@@ -52,7 +51,7 @@
         {{ tag('input', inputAttributes) }}
     </div>
     <div>
-        {{ text({
+        {{ craft.cp.text({
             type: 'number',
             id: numberInputId,
             descriptionId,
@@ -63,7 +62,7 @@
             step: step,
             suffix,
             labelledBy: labelledBy,
-        }) }}
+        })|raw }}
     </div>
 </div>
 

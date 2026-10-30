@@ -1,37 +1,39 @@
 {% extends '_components/fieldtypes/elementfieldsettings.twig' %}
-{% import '_includes/forms.twig' as forms %}
 
 {% macro uploadLocationField(config) %}
-  {% embed '_includes/forms/field.twig' with config %}
-    {% block input %}
-      {% import '_includes/forms.twig' as forms %}
-      <div class="flex flex-nowrap items-center gap-2">
-        <div>
-          {{ forms.selectField({
-            id: "#{config.id}-source",
-            name: "#{config.name}Source",
-            label: 'Source'|t,
-            options: config.sourceOptions,
-            value: config.sourceValue,
-            describedBy: describedBy,
-            disabled: config.disabled ?? false,
-          }) }}
-        </div>
-        <div class="flex-grow">
-          {{ forms.textField({
-            class: 'ltr',
-            label: 'Subpath'|t,
-            id: "#{config.id}-subpath",
-            name: "#{config.name}Subpath",
-            value: config.subpathValue,
-            placeholder: "path/to/subfolder"|t('app'),
-            describedBy: describedBy,
-            disabled: config.disabled ?? false,
-          }) }}
-        </div>
+  {% set describedBy = [
+    config.errors ?? false ? "#{config.id}-errors" : null,
+    config.instructions ?? false ? "#{config.id}-instructions" : null,
+    config.tip ?? false ? "#{config.id}-tip" : null,
+  ]|filter|join(' ') ?: null %}
+  {% set input %}
+    <div class="flex flex-nowrap items-center gap-2">
+      <div>
+        {{ craft.cp.selectField({
+          id: "#{config.id}-source",
+          name: "#{config.name}Source",
+          label: 'Source'|t,
+          options: config.sourceOptions,
+          value: config.sourceValue,
+          describedBy: describedBy,
+          disabled: config.disabled ?? false,
+        })|raw }}
       </div>
-    {% endblock %}
-  {% endembed %}
+      <div class="flex-grow">
+        {{ craft.cp.textField({
+          class: 'ltr',
+          label: 'Subpath'|t,
+          id: "#{config.id}-subpath",
+          name: "#{config.name}Subpath",
+          value: config.subpathValue,
+          placeholder: "path/to/subfolder"|t('app'),
+          describedBy: describedBy,
+          disabled: config.disabled ?? false,
+        })|raw }}
+      </div>
+    </div>
+  {% endset %}
+  {{ craft.cp.field(input, config)|raw }}
 {% endmacro %}
 
 {% set dynamicPathTip = "The path can contain variables like `{slug}` or `{author.username}`."|t('app') %}
@@ -46,14 +48,14 @@
 {% block fieldSettings %}
   <craft-field-group>
 
-    {{ forms.lightswitchField({
+    {{ craft.cp.lightswitchField({
       id: 'restrict-location-toggle',
       label: 'Restrict assets to a single location'|t('app'),
       name: 'restrictLocation',
       on: field.restrictLocation,
       toggle: 'restricted-location-settings',
       reverseToggle: 'unrestricted-location-settings',
-    }) }}
+    })|raw }}
 
     {% tag('div') with {
       id: 'restricted-location-settings',
@@ -72,18 +74,18 @@
           errors: field.errors.get('restrictedLocationSubpath'),
         }) }}
 
-        {{ forms.lightswitchField({
+        {{ craft.cp.lightswitchField({
           label: 'Allow subfolders'|t('app'),
           name: 'allowSubfolders',
           on: field.allowSubfolders,
           toggle: 'allow-subfolders-settings',
-        }) }}
+        })|raw }}
 
         {% tag('div') with {
           id: 'allow-subfolders-settings',
           class: not field.allowSubfolders ? 'hidden' : false,
         } %}
-          {{ forms.textField({
+          {{ craft.cp.textField({
             class: 'ltr',
             name: 'restrictedDefaultUploadSubpath',
             label: 'Default Upload Location'|t('app'),
@@ -91,7 +93,7 @@
             instructions: 'Where assets should be stored (relative to **Asset Location**) when they are uploaded directly to the field.'|t('app'),
             tip: dynamicPathTip,
             placeholder: 'path/to/subfolder'|t('app'),
-          }) }}
+          })|raw }}
         {% endtag %}
       </craft-field-group>
     {% endtag %}
@@ -121,23 +123,23 @@
 
     {{ block('selectionConditionField') }}
 
-    {{ forms.lightswitchField({
+    {{ craft.cp.lightswitchField({
       label: 'Show unpermitted volumes'|t('app'),
       instructions: 'Whether to show volumes that the user doesn’t have permission to view.'|t('app'),
       id: 'showUnpermittedVolumes',
       name: 'showUnpermittedVolumes',
       on: field.showUnpermittedVolumes,
-    }) }}
+    })|raw }}
 
-    {{ forms.lightswitchField({
+    {{ craft.cp.lightswitchField({
       label: 'Show unpermitted files'|t('app'),
       instructions: 'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'|t('app'),
       id: 'showUnpermittedFiles',
       name: 'showUnpermittedFiles',
       on: field.showUnpermittedFiles,
-    }) }}
+    })|raw }}
 
-    {{ forms.lightswitchField({
+    {{ craft.cp.lightswitchField({
       label: 'Restrict allowed file types'|t('app'),
       class: 'restrictFiles',
       id: 'restrictFiles',
@@ -145,7 +147,7 @@
       value: 1,
       on: field.restrictFiles,
       toggle: 'restrict-allowed-types',
-    }) }}
+    })|raw }}
 
     <fieldset
       id="restrict-allowed-types"{% if not field.restrictFiles %} class="hidden indent"{% endif %}
@@ -153,24 +155,31 @@
     >
       <legend class="font-bold">{{ 'Allowed Kinds'|t }}</legend>
       {% for option in field.getFileKindOptions() %}
-        {{ forms.checkboxField({
+        {{ craft.cp.checkboxField({
           label: option.label,
           id: 'allowedKinds-'~option.value,
           name: 'allowedKinds[]',
           value: option.value,
           checked: (option.value in field.allowedKinds),
-        }) }}
+        })|raw }}
       {% endfor %}
-      {{ forms.errorList(field.errors.get('allowedKinds')) }}
+      {% set allowedKindsErrors = field.errors.get('allowedKinds') %}
+      {% if allowedKindsErrors %}
+        <ul class="errors">
+          {% for error in allowedKindsErrors %}
+            <li><span class="visually-hidden">{{ 'Error:'|t('app') }}</span> {{ error|md(inlineOnly=true, encode=true)|raw }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
     </fieldset>
 
-    {{ forms.lightswitchField({
+    {{ craft.cp.lightswitchField({
       label: 'Allow uploading directly to the field'|t('app'),
       instructions: 'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.'|t('app'),
       id: 'allow-uploads',
       name: 'allowUploads',
       on: field.allowUploads,
-    }) }}
+    })|raw }}
 
     {{ block('limitFields') }}
     {{ block('defaultPlacementField') }}
@@ -181,7 +190,7 @@
 
     <hr>
 
-    {{ forms.selectField({
+    {{ craft.cp.selectField({
       id: 'preview-mode',
       name: 'previewMode',
       label: 'Preview Mode'|t('app'),
@@ -195,7 +204,7 @@
       value: field.previewMode,
       errors: field.errors.get('previewMode'),
       data: {'error-key': 'previewMode'},
-    }) }}
+    })|raw }}
 
     {{ block('advancedSettings') }}
   </craft-field-group>

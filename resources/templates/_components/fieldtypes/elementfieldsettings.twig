@@ -1,4 +1,3 @@
-{% import '_includes/forms.twig' as forms %}
 
 {% set sourceOptions = field.getSourceOptions() %}
 {% set elementType = elementType ?? pluralElementType %}
@@ -8,7 +7,7 @@
     {% block sourcesField %}
         {% if sourceOptions %}
             {% if field.allowMultipleSources %}
-                {{ forms.checkboxSelectField({
+                {{ craft.cp.checkboxSelectField({
                     label: "Sources"|t('app'),
                     instructions: "Which sources do you want to select {type} from?"|t('app', { type: pluralElementType }),
                     id: 'sources',
@@ -18,9 +17,9 @@
                     showAllOption: true,
                     errors: field.errors.get('sources'),
                     data: {'error-key': 'sources'},
-                }) }}
+                })|raw }}
             {% else %}
-                {{ forms.selectField({
+                {{ craft.cp.selectField({
                     label: "Source"|t('app'),
                     instructions: "Which source do you want to select {type} from?"|t('app', { type: pluralElementType }),
                     id: 'source',
@@ -29,12 +28,12 @@
                     value: field.source,
                     errors: field.errors.get('source'),
                     data: {'error-key': 'source'},
-                }) }}
+                })|raw }}
             {% endif %}
         {% else %}
-            {{ forms.field({
+            {{ craft.cp.field('<p class="error">' ~ "No sources exist yet."|t('app') ~ '</p>', {
                 label: (field.allowMultipleSources ? "Sources"|t('app') : "Source"|t('app')),
-            }, '<p class="error">' ~ "No sources exist yet."|t('app') ~ '</p>') }}
+            })|raw }}
         {% endif %}
     {% endblock %}
 
@@ -43,18 +42,18 @@
     {% endblock %}
 
     {% block maintainHierarchy %}
-        {{ forms.lightswitchField({
+        {{ craft.cp.lightswitchField({
             label: 'Maintain hierarchy'|t('app'),
             instructions: 'Whether the structure of the related {type} should be maintained.'|t('app', { type: pluralElementType }),
             id: 'maintain-hierarchy',
             name: 'maintainHierarchy',
             on: field.maintainHierarchy,
-        }) }}
+        })|raw }}
     {% endblock %}
 
     {% block limitFields %}
         {% if field.allowLimit %}
-            {{ forms.textField({
+            {{ craft.cp.textField({
                 label: 'Min Relations'|t('app'),
                 instructions: 'The minimum number of {type} that may be selected.'|t('app', {
                     type: pluralElementType,
@@ -66,9 +65,9 @@
                 maxlength: 2,
                 errors: field.errors.get('minRelations'),
                 data: {'error-key': 'minRelations'},
-            }) }}
+            })|raw }}
 
-            {{ forms.textField({
+            {{ craft.cp.textField({
                 label: 'Max Relations'|t('app'),
                 instructions: 'The maximum number of {type} that may be selected.'|t('app', {
                     type: pluralElementType,
@@ -80,10 +79,10 @@
                 maxlength: 2,
                 errors: field.errors.get('maxRelations'),
                 data: {'error-key': 'maxRelations'},
-            }) }}
+            })|raw }}
         {% endif %}
 
-        {{ forms.textField({
+        {{ craft.cp.textField({
             label: "Branch Limit"|t('app'),
             instructions: "Limit the number of selectable {type} branches."|t('app', { type: elementType }),
             id: 'branch-limit',
@@ -92,11 +91,11 @@
             size: 2,
             errors: field.errors.get('branchLimit'),
             data: {'error-key': 'branchLimit'},
-        }) }}
+        })|raw }}
     {% endblock %}
 
     {% block defaultPlacementField %}
-        {{ forms.selectField({
+        {{ craft.cp.selectField({
             label: 'Default {type} Placement'|t('app', {type: upperElementType}),
             instructions: 'Where new {type} should be placed by default in the field.'|t('app', {type: pluralElementType}),
             id: 'default-placement',
@@ -108,7 +107,7 @@
             value: field.defaultPlacement,
             errors: field.errors.get('defaultPlacement'),
             data: {'error-key': 'defaultPlacement'},
-        })}}
+        })|raw }}
     {% endblock %}
 
     {% block viewModeField %}
@@ -116,7 +115,7 @@
     {% endblock %}
 
     {% block selectionLabelField %}
-        {{ forms.textField({
+        {{ craft.cp.textField({
             label: '“Add” Button Label'|t('app'),
             instructions: 'The text label for {type} selection buttons.'|t('app', { type: elementType }),
             id: 'selection-label',
@@ -124,28 +123,28 @@
             value: field.selectionLabel,
             placeholder: field.defaultSelectionLabel(),
             errors: field.errors.get('selectionLabel'),
-        }) }}
+        })|raw }}
     {% endblock %}
 
     {% block showSearchInputField %}
-        {{ forms.lightswitchField({
+        {{ craft.cp.lightswitchField({
             fieldClass: field.allowMultipleSources ? 'hidden' : null,
             label: 'Show the search input'|t('app'),
             id: 'show-search-input',
             name: 'showSearchInput',
             on: field.showSearchInput,
             errors: field.errors.get('showSearchInput'),
-        }) }}
+        })|raw }}
     {% endblock %}
 
     {% block validateRelatedElementsField %}
-        {{ forms.lightswitchField({
+        {{ craft.cp.lightswitchField({
             label: 'Validate related {type}'|t('app', { type: pluralElementType }),
             instructions: 'Whether validation errors on the related {type} should prevent the source element from being saved.'|t('app', { type: pluralElementType }),
             id: 'validate-related-elements',
             name: 'validateRelatedElements',
             on: field.validateRelatedElements,
-        }) }}
+        })|raw }}
     {% endblock %}
 
     {% block advancedSettings %}
@@ -153,13 +152,13 @@
 
       <craft-disclosure label="{{ "Advanced"|t('app') }}">
         <div slot="content">
-          {{ forms.lightswitchField({
+          {{ craft.cp.lightswitchField({
             label: 'Allow self relations'|t('app'),
             instructions: 'Whether {type} elements should be allowed to relate to themselves.'|t('app', { type: elementType }),
             id: 'allow-self-relations',
             name: 'allowSelfRelations',
             on: field.allowSelfRelations,
-          }) }}
+          })|raw }}
 
           {% if Sites.isMultiSite() %}
             {% block targetSiteField %}

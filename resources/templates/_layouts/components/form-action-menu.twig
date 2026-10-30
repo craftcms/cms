@@ -1,5 +1,4 @@
 {% macro actionList(actions, destructive) %}
-    {% import '_includes/forms' as forms %}
     <ul>
         {% for action in actions %}
             <li>
@@ -21,7 +20,13 @@
                 } %}
                 <a {{ attr(linkAttributes) }}>
                     {% if action.shortcut ?? false %}
-                        {{ forms.optionShortcutLabel('S', action.shift ?? false) }}
+                        <span class="shortcut">
+                            {%- if Request.clientOs() == 'Mac' -%}
+                                {{ (action.shift ?? false ? '⇧') ~ '⌘S' }}
+                            {%- else -%}
+                                {{ 'Ctrl+' ~ (action.shift ?? false ? 'Shift+') ~ 'S' }}
+                            {%- endif -%}
+                        </span>
                     {% endif %}
                     {{ action.label }}
                 </a>

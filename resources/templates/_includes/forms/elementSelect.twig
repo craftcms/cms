@@ -85,7 +85,6 @@
     {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
-{% from "_includes/forms" import text %}
 
 {% tag useCustomElement ? customElement : 'div' with containerAttributes %}
     {% if name %}
@@ -137,13 +136,13 @@
             }) }}
             {% if searchCriteria %}
                 <div class="texticon search icon elementselect__search-input-wrapper">
-                    {{ text({
+                    {{ craft.cp.text({
                         width: 'auto',
                         placeholder: 'Search'|t('app'),
                         describedBy: describedBy ?? false,
                         role: 'combobox',
                         labelledBy: labelId ?? false,
-                    }) }}
+                    })|raw }}
                     <craft-spinner class="spinner hidden"></craft-spinner>
                 </div>
             {% endif %}
