@@ -1,1 +1,1 @@
-export {ElementThumbLoader} from './globals';
+export {ElementThumbLoader, loadElementThumbs} from './globals';

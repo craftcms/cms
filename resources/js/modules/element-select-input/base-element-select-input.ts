@@ -14,6 +14,7 @@ import {
   UP_KEY,
   type GarnishBaseSettings,
 } from '@craftcms/garnish';
+import {loadElementThumbs} from '@/modules/element-thumb-loader/globals';
 import {iconSvg} from '@/common/craft/icon-svg';
 import {elementTypeName} from '@/common/craft/element-types';
 import {isRtl} from '@/common/craft/direction';
@@ -710,7 +711,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       }
     }
 
-    Craft.cp.elementThumbLoader.load($elements);
+    loadElementThumbs($elements);
 
     // `?.` rather than a bare call, matching `elementSort` below: `destroy()`
     // nulls both, and a host that re-renders this input mid-selection can
@@ -1694,7 +1695,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       this.searchMenu.on('show', () => {
         this.$searchInput.attr('aria-expanded', 'true');
         this.focusSelectedOption();
-        Craft.cp.elementThumbLoader.load($menu);
+        loadElementThumbs($menu);
       });
 
       this.searchMenu.on('hide', () => {

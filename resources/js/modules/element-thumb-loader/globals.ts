@@ -23,6 +23,16 @@ class ElementThumbLoader extends ThumbnailLoader {
   }
 }
 
+let shared: ElementThumbLoader | null = null;
+
+/** Loads the element thumbnails inside the given elements. */
+export function loadElementThumbs(
+  elements: Element | ArrayLike<Element>
+): void {
+  shared ??= new ElementThumbLoader();
+  shared.load(elements instanceof Element ? [elements] : elements);
+}
+
 registerCraftGlobals({ElementThumbLoader});
 window.dispatchEvent(new Event('craft:element-thumb-loader-ready'));
 

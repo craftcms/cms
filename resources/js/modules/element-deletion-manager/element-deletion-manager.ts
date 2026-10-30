@@ -9,6 +9,7 @@ import {elementTypeName} from '@/common/craft/element-types';
 import {elevatedSessionManager} from '@/modules/auth/elevated-session/manager';
 import {create} from '@craftcms/ui/utilities/create';
 import {showError, showSuccess} from '@/modules/messages/messages';
+import {loadElementThumbs} from '@/modules/element-thumb-loader/globals';
 
 // jQuery-built blocker markup + Craft.ui/Craft.cp seams, shown in a
 // `craft-dialog`.
@@ -205,7 +206,7 @@ export class ElementDeletionManager extends Base {
     dialog.append(footer);
 
     dialog.addEventListener('craft-after-show', () => {
-      Craft.cp?.elementThumbLoader?.load($(dialog));
+      loadElementThumbs(dialog);
     });
     dialog.addEventListener('craft-hide', () => {
       if (!this.succeeded) {

@@ -42,14 +42,8 @@ describe('CpModal', () => {
     vi.stubGlobal('$', $);
     vi.stubGlobal('Craft', {
       t: (_category: string, message: string) => message,
-      cp: {
-        elementThumbLoader: {load: vi.fn()},
-      },
       baseCpUrl: 'https://example.test/admin',
-      appendHeadHtml: vi.fn(),
-      appendBodyHtml: vi.fn(),
       initUiElements: vi.fn(),
-      setFocusWithin: vi.fn(),
       findDeltaData: (_initial: string, current: string) => current,
       refreshComponentInstances: vi.fn(),
     });

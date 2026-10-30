@@ -30,6 +30,7 @@ import {
   isMobileBrowser,
   setFocusWithin,
 } from '@craftcms/garnish';
+import {loadElementThumbs} from '@/modules/element-thumb-loader/globals';
 import {
   addErrorsToField,
   clearErrorsFromField,
@@ -534,11 +535,11 @@ export class CpScreenSlideout extends Slideout {
         }
 
         Craft.initUiElements(this.$content);
-        Craft.cp.elementThumbLoader.load($(this.$content));
+        loadElementThumbs(this.$content);
 
         if (data.sidebar) {
           Craft.initUiElements(this.$sidebar);
-          Craft.cp.elementThumbLoader.load(this.$sidebar);
+          loadElementThumbs(this.$sidebar);
         }
 
         if (!isMobileBrowser() && !this.isOpening) {
