@@ -227,7 +227,7 @@ function landmarks(): Target[] {
   }
 
   for (const trigger of document.querySelectorAll<HTMLElement>(
-    '.details-panels__trigger'
+    '.details-panels__trigger:not([data-unlisted-in-palette])'
   )) {
     const icon = trigger.querySelector('craft-icon');
     const label = text(trigger.querySelector('.sr-only')) || icon?.label || '';

@@ -5,6 +5,7 @@
    * pressed on, and named for screen readers.
    */
   import {t} from '@craftcms/ui';
+  import {usePage} from '@inertiajs/vue3';
 
   defineEmits<{
     (event: 'back'): void;
@@ -30,6 +31,16 @@
       keys: [{symbol: '/', name: t('Slash')}],
       description: t('Open the command palette when not typing in a field'),
     },
+    // Only for users the AI assistant is available to.
+    ...(usePage<{craft?: {currentUser?: {aiAssistant?: boolean} | null}}>()
+      .props.craft?.currentUser?.aiAssistant
+      ? [
+          {
+            keys: [modifier, {symbol: 'I', name: 'I'}],
+            description: t('Ask AI'),
+          },
+        ]
+      : []),
     {
       keys: [modifier, {symbol: 'S', name: 'S'}],
       description: t('Save'),

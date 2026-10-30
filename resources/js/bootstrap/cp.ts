@@ -12,6 +12,7 @@ import {configureIcons} from './icons.js';
 import {installSessionTimeout} from '@/modules/auth/session-timeout';
 import {config, installCpApp, queue} from './cp-app';
 import {cpComponentRegistry} from './components.js';
+import {assistantApi} from './assistant.js';
 import {
   elementDetailsPanelRegistry,
   warnDeprecated,
@@ -87,6 +88,10 @@ const Cp = {
 
   get $elementDetailsPanels() {
     return elementDetailsPanelRegistry;
+  },
+
+  get $assistant() {
+    return assistantApi;
   },
 
   /** @deprecated Use `$elementDetailsPanels`. */

@@ -77,11 +77,14 @@ readonly class CapabilityDiscovery implements DiscovererInterface
     }
 
     /**
+     * Discovers the capabilities the current user can use without an access token, for the stdio server and the AI
+     * assistant. Capabilities that only work over HTTP are left out.
+     *
      * @param  list<string>  $directories
      * @param  list<string>  $excludeDirs
      * @param  list<string>  $namePatterns
      */
-    public function discoverStdio(
+    public function discoverWithoutToken(
         string $basePath,
         array $directories,
         array $excludeDirs = [],

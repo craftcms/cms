@@ -16,15 +16,15 @@
 
 <template>
   <div
-    class="py-1 px-(--cp-container-padding) border-b border-b-quiet flex justify-between items-center min-h-(--cp-header-height)"
+    class="py-1 px-(--cp-container-padding) border-b border-b-quiet flex justify-between items-center gap-4 min-h-(--cp-header-height)"
   >
-    <div class="flex items-center gap-1">
+    <div class="flex items-center gap-1 shrink-0">
       <h3 :id="panel.headingId" class="text-md/4" tabindex="-1">
         {{ panel.label }}
       </h3>
     </div>
 
-    <div class="flex items-center gap-1">
+    <div class="flex items-center justify-end gap-1 min-w-0">
       <span v-if="panel.statusData" class="flex items-center gap-1">
         <craft-status
           :status="panel.statusData.indicator"
