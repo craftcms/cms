@@ -343,7 +343,7 @@ return [
     'Choose the site-specific settings for nested entries.' => 'Выберите характерные для конкретного сайта настройки вложенных записей.',
     'Choose the types of entries that can be created in this field.' => 'Выберите типы записей, которые можно создавать в этом поле.',
     'Choose the types of entries that can be included in this section.' => 'Выберите типы записей, которые можно включить в этот раздел.',
-    'Choose whether image thumbnails should sit beside the card’s content, or cover the whole card.' => 'Choose whether image thumbnails should sit beside the card’s content, or cover the whole card.',
+    'Choose whether image thumbnails should sit beside the card’s content, cover the whole card, or cover it only when the image is a good fit.' => 'Choose whether image thumbnails should sit beside the card’s content, cover the whole card, or cover it only when the image is a good fit.',
     'Choose which advanced fields should be available when inserting links.' => 'Choose which advanced fields should be available when inserting links.',
     'Choose which buttons should be available in the editor toolbar.' => 'Choose which buttons should be available in the editor toolbar.',
     'Choose which filesystem assets should be stored in.' => 'Выберите, в какой файловой системе хранить ресурсы.',

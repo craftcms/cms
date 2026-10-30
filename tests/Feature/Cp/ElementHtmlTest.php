@@ -210,7 +210,7 @@ describe('elementCardHtml', function () {
         'transparent' => ['logo.png', 800, 600, false, '#3a6ea580'],
     ]);
 
-    it('covers an element’s card with the image its thumbnail field shows, with the cover thumb style', function (int $width, string $style, bool $covered) {
+    it('covers an element’s card with the image its thumbnail field shows, with the cover or auto thumb style', function (int $width, string $style, bool $covered) {
         new ControlPanelAssetTransformDriver()->register();
         Cms::config()->defaultAssetTransformer('test');
         $luminance = [[[0.1, 0.6]], [[0.02, 0.3]]];
@@ -231,7 +231,9 @@ describe('elementCardHtml', function () {
             ->and($attributes['luminance'] ?? null)->toBe($covered ? $luminance : null);
     })->with([
         'fills the card' => [800, 'cover', true],
-        'too small' => [400, 'cover', false],
+        'too small for auto, with cover' => [400, 'cover', true],
+        'fills the card, with auto' => [800, 'auto', true],
+        'too small, with auto' => [400, 'auto', false],
         'normal thumb style' => [800, 'normal', false],
     ]);
 
@@ -320,6 +322,21 @@ describe('elementCardHtml', function () {
 
         expect($this->elementHtml->elementCardAttributes($asset)['cover-src'] ?? null)->toBeNull();
     });
+
+    it('covers asset cards with any image thumbnail, but not folder cards, when the volume uses the cover thumb style', function (string $filename, int $width, bool $isFolder, bool $covered) {
+        new ControlPanelAssetTransformDriver()->register();
+        Cms::config()->defaultAssetTransformer('test');
+        $asset = Asset::factory()->createElement(['filename' => $filename, 'width' => $width, 'height' => 600]);
+        $asset->analysis = new ImageAnalysis(colors: new ImageColors(grid: [['#3a6ea580']], luminance: [[[0.1, 0.6]]]));
+        $asset->isFolder = $isFolder;
+        $asset->getFieldLayout()->setCardThumbStyle('cover');
+
+        expect($this->elementHtml->elementCardAttributes($asset)['cover-src'] ?? null)
+            ->toBe($covered ? '/transforms/800x600.webp' : null);
+    })->with([
+        'small transparent image' => ['logo.png', 200, false, true],
+        'folder' => ['photo.jpg', 800, true, false],
+    ]);
 
     it('dispatches and allows overriding ElementCardHtmlResolving', function () {
         $user = User::findOne(1);

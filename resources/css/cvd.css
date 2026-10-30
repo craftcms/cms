@@ -23,9 +23,11 @@
   gap: var(--cp-container-padding);
 }
 
+/* The settings are just wide enough for the Thumb Style radios, which don't
+   wrap, and the preview gets the rest. */
 @container cvd (width > 37.5rem) {
   .cvd-container {
-    grid-template-columns: 1fr 2fr;
+    grid-template-columns: min-content 1fr;
   }
 }
 
@@ -45,6 +47,11 @@
    designer taller than the preview needs. */
 @container cvd (width > 37.5rem) {
   .cvd-library {
+    /* Its fields all span the full width, so it doesn't need the field
+       group's 12 columns or size containment, which would keep them from
+       setting its width. */
+    container-type: normal;
+    grid-template-columns: auto;
     max-block-size: calc(500rem / 16);
     overflow-y: auto;
     /* Reaches across the gap to the preview's hairline, so it scrolls right
@@ -170,6 +177,12 @@
 
 .thumb-management > * {
   grid-column: 1 / -1;
+}
+
+/* The Thumb Style radios' illustrations keep their size, rather than shrinking
+   to fit, so they set the settings' width beside the preview. */
+.thumb-management .radio-thumbnail img {
+  max-inline-size: none;
 }
 
 .thumb-management
