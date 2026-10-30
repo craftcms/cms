@@ -22,7 +22,7 @@ export interface CopyTextPromptConfig {
 /**
  * Opens a modal dialog showing `value` in a read-only field with a
  * copy-to-clipboard button — the jQuery-free twin of the legacy
- * `Craft.ui.createCopyTextPrompt`.
+ * `Craft.ui.showCopyTextPrompt`.
  *
  * Built entirely on `@craftcms/ui` components: `<craft-dialog>` (the modal) and
  * `<craft-input-copy>`, or a `<craft-textarea>` with a `<craft-copy-button>` in
@@ -32,9 +32,7 @@ export interface CopyTextPromptConfig {
  * value is copied, and removes itself from the document once it has closed.
  * Returns the dialog element (callers use it fire-and-forget).
  */
-export function createCopyTextPrompt(
-  config: CopyTextPromptConfig
-): CraftDialog {
+export function showCopyTextPrompt(config: CopyTextPromptConfig): CraftDialog {
   const dialog = document.createElement('craft-dialog') as CraftDialog;
   if (config.label) {
     dialog.setAttribute('label', config.label);

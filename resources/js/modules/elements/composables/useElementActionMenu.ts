@@ -1,5 +1,5 @@
 import {router} from '@inertiajs/vue3';
-import {actionClient, t} from '@craftcms/ui';
+import {actionClient, showCopyTextPrompt, t} from '@craftcms/ui';
 import {computed, type ComputedRef} from 'vue';
 import {openSlideout, type SlideoutController} from '@/common/slideouts';
 import type {ActionItem} from '@/common/types';
@@ -248,7 +248,7 @@ export function createElementActionDispatcher({
               behavior.params ?? {}
             );
 
-            Craft.ui.createCopyTextPrompt({
+            showCopyTextPrompt({
               label: behavior.prompt,
               value: data.url,
             });

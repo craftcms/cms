@@ -6,8 +6,8 @@ import {
   createInputPassword as uiCreateInputPassword,
   createSlidePicker as uiCreateSlidePicker,
   createTextInput as uiCreateTextInput,
-  createCopyTextPrompt as uiCreateCopyTextPrompt,
-} from '@craftcms/ui/factory';
+} from '../../../../../resources/js/modules/ui/legacy';
+import {showCopyTextPrompt} from '@craftcms/ui/utilities/copy-text-prompt';
 
 Craft.ui = {
   createButton: function (config) {
@@ -111,8 +111,8 @@ Craft.ui = {
       config
     );
 
-    // The markup is built jQuery-free by @craftcms/ui/factory. This shim keeps
-    // the Garnish-specific pieces the factory deliberately leaves out: mobile
+    // The markup is built jQuery-free by createTextInput(). This adds the
+    // Garnish-specific pieces it deliberately leaves out: mobile
     // autofocus suppression, the NiceText enhancement (placeholder animation /
     // chars-left counter), the `.passwordwrapper` wrapper, and the legacy
     // jQuery return type.
@@ -223,11 +223,9 @@ Craft.ui = {
     return this.createField(this.createCopyTextInput(config), config);
   },
 
-  // The copy prompt is built jQuery-free by @craftcms/ui/factory on
-  // <craft-dialog> + <craft-copy-button> (which owns the clipboard copy and its
-  // own feedback). This shim jQuery-wraps the returned dialog for legacy
-  // callers, who use it fire-and-forget.
-  createCopyTextPrompt: (config) => $(uiCreateCopyTextPrompt(config)),
+  // Callers use the returned dialog fire-and-forget; it's jQuery-wrapped for
+  // the legacy return type.
+  createCopyTextPrompt: (config) => $(showCopyTextPrompt(config)),
 
   createTextarea: function (config) {
     var $textarea = $('<textarea/>', {

@@ -3,10 +3,9 @@ import {
   type GarnishBaseSettings,
   type GarnishEvent,
 } from '@craftcms/garnish';
-import {
-  createTextInput as buildTextInput,
-  createCopyTextPrompt,
-} from '@craftcms/ui/factory';
+import {showCopyTextPrompt} from '@craftcms/ui/utilities/copy-text-prompt';
+// The server sends the text input's settings in the Craft.ui shape
+import {createTextInput as buildTextInput} from '@/modules/ui/legacy/text-input';
 import {resolveElement, type ElementArg} from '@/common/utils/dom';
 import {jq} from '@/common/utils/jquery';
 import punycode from 'punycode/';
@@ -46,8 +45,7 @@ interface LinkInputSettings extends GarnishBaseSettings {
  * built through `addActionsToChip()` (the smart `craft-action-menu` helper,
  * still in the cp bundle — same seam component-select uses), and the paired
  * {@link LinkField} instance is read via the legacy `.data('linkField')` cache.
- * The text input and copy prompt come from `@craftcms/ui/factory`. Booted from
- * `BaseTextLinkType.php`.
+ * Booted from `BaseTextLinkType.php`.
  */
 export class LinkInput extends Base<LinkInputSettings> {
   static defaults: LinkInputSettings = {
@@ -283,7 +281,7 @@ export class LinkInput extends Base<LinkInputSettings> {
         icon: 'link',
         label: t('Copy URL'),
         onActivate: () => {
-          createCopyTextPrompt({
+          showCopyTextPrompt({
             label: 'Full URL',
             value: (this.#hiddenInput?.value ?? '').replace(/ /g, '+'),
           });

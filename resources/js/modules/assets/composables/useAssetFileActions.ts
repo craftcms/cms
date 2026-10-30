@@ -1,4 +1,10 @@
-import {actionClient, getActionUrl, t, isHttpError} from '@craftcms/ui';
+import {
+  actionClient,
+  getActionUrl,
+  isHttpError,
+  showCopyTextPrompt,
+  t,
+} from '@craftcms/ui';
 import {useEventListener} from '@vueuse/core';
 import {shallowRef} from 'vue';
 import {submitNativeForm} from '@/common/utils/forms';
@@ -144,14 +150,14 @@ export function useAssetFileActions(
     const url = assetId === null ? null : rowValue(assetId, 'viewUrl');
     if (typeof url !== 'string') return;
 
-    Craft.ui.createCopyTextPrompt({label: t('Copy the URL'), value: url});
+    showCopyTextPrompt({label: t('Copy the URL'), value: url});
   }
 
   function onCopyReferenceTag(event: Event) {
     const assetId = firstAsset(event);
     if (assetId === null) return;
 
-    Craft.ui.createCopyTextPrompt({
+    showCopyTextPrompt({
       label: t('Copy the reference tag'),
       value: `{asset:${assetId}}`,
     });

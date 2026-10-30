@@ -1,5 +1,5 @@
 import {DragDrop} from '@craftcms/garnish';
-import {createButton, isHttpError, t} from '@craftcms/ui';
+import {create, isHttpError, t} from '@craftcms/ui';
 import {onBeforeUnmount, onMounted, ref} from 'vue';
 import {
   type AssetMoveConflict,
@@ -285,7 +285,7 @@ export function useAssetMoveDrag(index: ElementIndexOperations) {
       return;
     }
 
-    const undoButton = createButton({label: t('Undo')});
+    const undoButton = create('craft-button', {type: 'button'}, t('Undo'));
     const notice = (Craft.cp?.displayNotification?.('notice', message, {
       details: undoButton,
     }) ?? null) as Notice | null;

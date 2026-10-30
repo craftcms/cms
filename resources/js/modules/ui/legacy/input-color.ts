@@ -1,6 +1,6 @@
-import type CraftInputColor from '../components/input-color/input-color.js';
-import {t} from '@src/utilities/translate';
-import {createSlottedInput} from './internal/slotted-input.js';
+import type CraftInputColor from '@craftcms/ui/components/input-color/input-color';
+import {t} from '@craftcms/ui/utilities/translate';
+import {createSlottedInput} from './slotted-input';
 
 export interface InputColorConfig {
   id?: string;
