@@ -38,7 +38,7 @@ trait Localizable
      * @var int|null The site ID the element is associated with
      */
     #[AllowedInSandbox]
-    #[ElementProperty(ElementPropertyType::Int, 'The ID of the site the {element} should be saved to. Defaults to the primary site.')]
+    #[ElementProperty(ElementPropertyType::Int, 'The ID of the site the {element} is associated with.', readable: true)]
     public ?int $siteId = null;
 
     /**
@@ -164,6 +164,7 @@ trait Localizable
         throw new RuntimeException("Invalid site ID: {$this->siteId}");
     }
 
+    #[ElementProperty(ElementPropertyType::String, 'The language of the site the {element} is associated with.', readable: true, writable: false)]
     public function getLanguage(): string
     {
         return $this->getSite()->getLanguage();

@@ -24,7 +24,7 @@ abstract class ElementMutationArguments extends MutationArguments
 
         if ($elementType = static::elementType()) {
             $arguments += static::propertyArguments($elementType, array_values(array_diff(
-                array_keys(ElementProperty::all($elementType)),
+                array_keys(array_filter(ElementProperty::all($elementType), fn (ElementProperty $property): bool => $property->writable)),
                 array_keys(ElementProperty::all(Element::class)),
             )));
         }

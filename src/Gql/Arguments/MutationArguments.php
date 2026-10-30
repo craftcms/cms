@@ -10,7 +10,6 @@ use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Gql\Types\DateTime;
 use GraphQL\Type\Definition\Argument;
 use GraphQL\Type\Definition\Type;
-use LogicException;
 
 /**
  * @phpstan-import-type ArgumentConfig from Argument
@@ -37,19 +36,17 @@ abstract class MutationArguments
     }
 
     /**
-     * Returns arguments for properties that an element type declares with {@see ElementProperty}.
+     * Returns arguments for writable properties that an element type declares with {@see ElementProperty}.
      *
      * @param  class-string<ElementInterface>  $elementType
-     * @param  list<string>  $names  Property names to return, in this order. Every name must be declared.
+     * @param  list<string>  $names  Property names to return, in this order. Every name must be declared as writable.
      * @return array<string, ArgumentConfig>
      */
     protected static function propertyArguments(string $elementType, array $names): array
     {
-        $properties = ElementProperty::all($elementType);
         $arguments = [];
 
-        foreach ($names as $name) {
-            $property = $properties[$name] ?? throw new LogicException("[$elementType] does not declare the element property [$name].");
+        foreach (ElementProperty::only($elementType, $names, 'writable') as $name => $property) {
             $arguments[$name] = [
                 'name' => $name,
                 'type' => match ($property->type) {

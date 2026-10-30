@@ -19,7 +19,6 @@ use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Gate;
-use LogicException;
 use Mcp\Exception\ToolCallException;
 
 /**
@@ -58,40 +57,59 @@ abstract class BaseElementAdapter implements ElementAdapter
     }
 
     /**
-     * Returns JSON Schema properties for element properties declared with {@see ElementProperty}.
+     * Returns JSON Schema properties for writable element properties declared with {@see ElementProperty}.
      *
-     * @param  list<string>  $names  Property names to return. Every name must be declared.
+     * @param  list<string>  $names  Property names to return. Every name must be declared as writable.
      * @param  array<string, string>  $hints  Guidance for MCP clients, appended to property descriptions.
      * @return array<string, array<string, mixed>>
      */
     protected function propertySchemas(array $names, array $hints = []): array
     {
         $elementType = static::elementType();
-        $properties = ElementProperty::all($elementType);
         $schemas = [];
 
-        foreach ($names as $name) {
-            $property = $properties[$name] ?? throw new LogicException("[$elementType] does not declare the element property [$name].");
-            $schema = match ($property->type) {
-                ElementPropertyType::String => ['type' => 'string'],
-                ElementPropertyType::Int, ElementPropertyType::Id => ['type' => 'integer'],
-                ElementPropertyType::IdList => ['type' => 'array', 'items' => ['type' => 'integer']],
-                ElementPropertyType::Boolean => ['type' => 'boolean'],
-                ElementPropertyType::DateTime => ['type' => 'string', 'format' => 'date-time'],
-                ElementPropertyType::Float => ['type' => ['number', 'string']],
-            };
-
-            if ($property->nullable) {
-                $schema['type'] = [...(array) $schema['type'], 'null'];
-            }
-
+        foreach (ElementProperty::only($elementType, $names, 'writable') as $name => $property) {
             $schemas[$name] = [
-                ...$schema,
+                ...$this->propertyType($property, $property->nullable),
                 'description' => trim($property->descriptionFor($elementType).' '.($hints[$name] ?? '')),
             ];
         }
 
         return $schemas;
+    }
+
+    /**
+     * Returns JSON Schema properties describing the element's readable properties, which element reads return.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    protected function readablePropertySchemas(): array
+    {
+        $elementType = static::elementType();
+
+        return array_map(fn (ElementProperty $property): array => [
+            ...$this->propertyType($property, ! $property->nonNull),
+            'description' => $property->descriptionFor($elementType),
+        ], ElementProperty::readable($elementType));
+    }
+
+    /** @return array<string, mixed> */
+    private function propertyType(ElementProperty $property, bool $nullable): array
+    {
+        $schema = match ($property->type) {
+            ElementPropertyType::String => ['type' => 'string'],
+            ElementPropertyType::Int, ElementPropertyType::Id => ['type' => 'integer'],
+            ElementPropertyType::IdList => ['type' => 'array', 'items' => ['type' => 'integer']],
+            ElementPropertyType::Boolean => ['type' => 'boolean'],
+            ElementPropertyType::DateTime => ['type' => 'string', 'format' => 'date-time'],
+            ElementPropertyType::Float => ['type' => ['number', 'string']],
+        };
+
+        if ($nullable) {
+            $schema['type'] = [...(array) $schema['type'], 'null'];
+        }
+
+        return $schema;
     }
 
     /**
@@ -148,6 +166,11 @@ abstract class BaseElementAdapter implements ElementAdapter
                     ...$this->criteriaProperties(),
                 ],
                 'additionalProperties' => true,
+            ],
+            'attributes' => [
+                'type' => 'object',
+                'description' => 'Built-in attributes that element reads return, alongside id, uid, and custom fields.',
+                'properties' => $this->readablePropertySchemas(),
             ],
             'createAttributes' => $this->createAttributesSchema(),
             'updateAttributes' => $this->updateAttributesSchema(),

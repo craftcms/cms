@@ -40,14 +40,19 @@ use CraftCms\Cms\Support\Typecast;
  */
 trait Structurable
 {
+    #[ElementProperty(ElementPropertyType::Int, 'The {element}’s structure ID.', readable: true, writable: false)]
     public ?int $structureId = null;
 
+    #[ElementProperty(ElementPropertyType::Int, 'The {element}’s structure’s root ID.', readable: true, writable: false)]
     public ?int $root = null;
 
+    #[ElementProperty(ElementPropertyType::Int, 'The {element}’s left position within its structure.', readable: true, writable: false)]
     public ?int $lft = null;
 
+    #[ElementProperty(ElementPropertyType::Int, 'The {element}’s right position within its structure.', readable: true, writable: false)]
     public ?int $rgt = null;
 
+    #[ElementProperty(ElementPropertyType::Int, 'The {element}’s level within its structure.', readable: true, writable: false)]
     public ?int $level = null;
 
     private ElementInterface|false|null $_nextElement = null;

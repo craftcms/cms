@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Interfaces;
 
+use CraftCms\Cms\Element\Attributes\ElementProperty;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Element as ElementElement;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Gql\Contracts\SingularTypeInterface;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\GqlHelper;
@@ -72,76 +76,19 @@ class Element extends InterfaceType implements SingularTypeInterface
                 'description' => 'Return a number of related elements for a field.',
                 'complexity' => GqlHelper::eagerLoadComplexity(),
             ],
-            'title' => [
-                'name' => 'title',
-                'type' => Type::string(),
-                'description' => 'The element’s title.',
-            ],
-            'slug' => [
-                'name' => 'slug',
-                'type' => Type::string(),
-                'description' => 'The element’s slug.',
-            ],
-            'uri' => [
-                'name' => 'uri',
-                'type' => Type::string(),
-                'description' => 'The element’s URI.',
-            ],
-            'enabled' => [
-                'name' => 'enabled',
-                'type' => Type::boolean(),
-                'description' => 'Whether the element is enabled.',
-            ],
-            'archived' => [
-                'name' => 'archived',
-                'type' => Type::boolean(),
-                'description' => 'Whether the element is archived.',
-            ],
+            ...static::propertyFields(ElementElement::class, ['title', 'slug', 'uri', 'enabled', 'archived']),
             'siteHandle' => [
                 'name' => 'siteHandle',
                 'type' => Type::string(),
                 'description' => 'The handle of the site the element is associated with.',
             ],
-            'siteId' => [
-                'name' => 'siteId',
-                'type' => Type::int(),
-                'description' => 'The ID of the site the element is associated with.',
-            ],
+            ...static::propertyFields(ElementElement::class, ['siteId']),
             'siteSettingsId' => [
                 'name' => 'siteSettingsId',
                 'type' => Type::id(),
                 'description' => 'The unique identifier for an element-site relation.',
             ],
-            'language' => [
-                'name' => 'language',
-                'type' => Type::string(),
-                'description' => 'The language of the site element is associated with.',
-            ],
-            'searchScore' => [
-                'name' => 'searchScore',
-                'type' => Type::int(),
-                'description' => 'The element’s search score, if the `search` parameter was used when querying for the element.',
-            ],
-            'trashed' => [
-                'name' => 'trashed',
-                'type' => Type::boolean(),
-                'description' => 'Whether the element has been soft-deleted.',
-            ],
-            'status' => [
-                'name' => 'status',
-                'type' => Type::string(),
-                'description' => 'The element’s status.',
-            ],
-            'dateCreated' => [
-                'name' => 'dateCreated',
-                'type' => DateTime::getType(),
-                'description' => 'The date the element was created.',
-            ],
-            'dateUpdated' => [
-                'name' => 'dateUpdated',
-                'type' => DateTime::getType(),
-                'description' => 'The date the element was last updated.',
-            ],
+            ...static::propertyFields(ElementElement::class, ['language', 'searchScore', 'trashed', 'status', 'dateCreated', 'dateUpdated']),
         ]), self::getName());
     }
 
@@ -149,46 +96,7 @@ class Element extends InterfaceType implements SingularTypeInterface
     public static function getDraftFieldDefinitions(): array
     {
         return array_merge([
-            'isDraft' => [
-                'name' => 'isDraft',
-                'type' => Type::boolean(),
-                'description' => 'Returns whether this is a draft.',
-            ],
-            'isRevision' => [
-                'name' => 'isRevision',
-                'type' => Type::boolean(),
-                'description' => 'Returns whether this is a revision.',
-            ],
-            'revisionId' => [
-                'name' => 'revisionId',
-                'type' => Type::int(),
-                'description' => 'The revision ID (from the `revisions` table).',
-            ],
-            'revisionNotes' => [
-                'name' => 'revisionNotes',
-                'type' => Type::String(),
-                'description' => 'The revision notes (from the `revisions` table).',
-            ],
-            'draftId' => [
-                'name' => 'draftId',
-                'type' => Type::int(),
-                'description' => 'The draft ID (from the `drafts` table).',
-            ],
-            'isUnpublishedDraft' => [
-                'name' => 'isUnpublishedDraft',
-                'type' => Type::boolean(),
-                'description' => 'Returns whether this is an unpublished draft.',
-            ],
-            'draftName' => [
-                'name' => 'draftName',
-                'type' => Type::string(),
-                'description' => 'The name of the draft.',
-            ],
-            'draftNotes' => [
-                'name' => 'draftNotes',
-                'type' => Type::string(),
-                'description' => 'The notes for the draft.',
-            ],
+            ...static::propertyFields(ElementElement::class, ['isDraft', 'isRevision', 'revisionId', 'revisionNotes', 'draftId', 'isUnpublishedDraft', 'draftName', 'draftNotes']),
         ], GqlHelper::canQueryReleases() ? [
             'release' => [
                 'name' => 'release',
@@ -202,5 +110,36 @@ class Element extends InterfaceType implements SingularTypeInterface
     public static function getName(): string
     {
         return 'ElementInterface';
+    }
+
+    /**
+     * Returns field definitions for readable properties that an element type declares with {@see ElementProperty}.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     * @param  list<string>  $names  Property names to return, in this order. Every name must be declared as readable.
+     * @return array<string, FieldDefinitionConfig>
+     */
+    protected static function propertyFields(string $elementType, array $names): array
+    {
+        $fields = [];
+
+        foreach (ElementProperty::only($elementType, $names, 'readable') as $name => $property) {
+            $type = match ($property->type) {
+                ElementPropertyType::String => Type::string(),
+                ElementPropertyType::Int, ElementPropertyType::Id => Type::int(),
+                ElementPropertyType::IdList => Type::listOf(Type::int()),
+                ElementPropertyType::Boolean => Type::boolean(),
+                ElementPropertyType::DateTime => DateTime::getType(),
+                ElementPropertyType::Float => Type::float(),
+            };
+
+            $fields[$name] = [
+                'name' => $name,
+                'type' => $property->nonNull ? Type::nonNull($type) : $type,
+                'description' => $property->descriptionFor($elementType),
+            ];
+        }
+
+        return $fields;
     }
 }

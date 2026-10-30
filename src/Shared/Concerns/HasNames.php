@@ -14,13 +14,13 @@ use TheIconic\NameParser\Parser as NameParser;
 
 trait HasNames
 {
-    #[ElementProperty(ElementPropertyType::String, 'The {element}’s full name.', nullable: true)]
+    #[ElementProperty(ElementPropertyType::String, 'The {element}’s full name.', nullable: true, readable: true)]
     public ?string $fullName = null;
 
-    #[ElementProperty(ElementPropertyType::String, 'The {element}’s first name.', nullable: true)]
+    #[ElementProperty(ElementPropertyType::String, 'The {element}’s first name.', nullable: true, readable: true)]
     public ?string $firstName = null;
 
-    #[ElementProperty(ElementPropertyType::String, 'The {element}’s last name.', nullable: true)]
+    #[ElementProperty(ElementPropertyType::String, 'The {element}’s last name.', nullable: true, readable: true)]
     public ?string $lastName = null;
 
     protected function normalizeNames(): void

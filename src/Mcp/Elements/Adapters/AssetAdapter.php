@@ -47,25 +47,18 @@ class AssetAdapter extends BaseElementAdapter
 
     protected function updateAttributesSchema(): array
     {
+        $properties = $this->propertySchemas(['title', 'slug', 'alt', 'enabled', 'filename', 'folderId', 'uploaderId', 'focalPoint'], [
+            'filename' => 'Changing it renames the file.',
+            'folderId' => 'Changing it moves the file.',
+            'uploaderId' => 'Null marks it unknown. Changing it requires permission to save other users’ assets in the volume.',
+        ]);
+
+        // setFocalPoint() quietly clears out-of-range values, so reject them up front.
+        $properties['focalPoint']['pattern'] = '^(0(\.\d+)?|1(\.0+)?);(0(\.\d+)?|1(\.0+)?)$';
+
         return [
             'type' => 'object',
-            'properties' => [
-                ...$this->propertySchemas(['title', 'slug', 'alt', 'enabled', 'filename', 'folderId', 'uploaderId'], [
-                    'filename' => 'Changing it renames the file.',
-                    'folderId' => 'Changing it moves the file.',
-                    'uploaderId' => 'Null marks it unknown. Changing it requires permission to save other users’ assets in the volume.',
-                ]),
-                'focalPoint' => [
-                    'type' => ['object', 'null'],
-                    'description' => 'Image or video focal point, as fractions of the width (x) and height (y) from the top-left corner. Image transforms crop around it. Null clears it.',
-                    'properties' => [
-                        'x' => ['type' => 'number', 'minimum' => 0, 'maximum' => 1],
-                        'y' => ['type' => 'number', 'minimum' => 0, 'maximum' => 1],
-                    ],
-                    'required' => ['x', 'y'],
-                    'additionalProperties' => false,
-                ],
-            ],
+            'properties' => $properties,
             'additionalProperties' => false,
         ];
     }
