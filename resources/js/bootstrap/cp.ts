@@ -11,6 +11,7 @@ import {registerSlideoutGlobals} from '@/common/slideouts';
 import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import {configureIcons} from './icons.js';
 import {installSessionTimeout} from '@/modules/auth/session-timeout';
+import {installClipboard} from '@/modules/elements/clipboard';
 import {config, installCpApp, queue} from './cp-app';
 import {cpComponentRegistry} from './components.js';
 import {assistantApi} from './assistant.js';
@@ -133,6 +134,8 @@ const Cp = {
       appId: config.get('systemUid', ''),
       canAccessQueueManager: config.get('canAccessQueueManager', false),
     });
+
+    installClipboard();
 
     // The command palette's “Run pending queue jobs”.
     window.addEventListener('craft:run-queue', () => {

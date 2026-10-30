@@ -70,7 +70,6 @@ Craft.CP = Garnish.Base.extend(
     checkForUpdatesFailureCallbacks: null,
 
     copyElementCallbacks: null,
-    elementCopyNotification: null,
 
     resizeTimeout: null,
 
@@ -337,16 +336,8 @@ Craft.CP = Garnish.Base.extend(
         this.updateNotificationHeadingDisplay();
       });
 
-      // See if there are any copied elements
+      // Held until the element clipboard module takes over the clipboard methods
       this.copyElementCallbacks = [];
-      if (Craft.username) {
-        const elementInfo = Craft.getLocalStorage('copiedElements');
-        if (elementInfo) {
-          this.showElementCopyNotification(elementInfo, {
-            animate: false,
-          });
-        }
-      }
     },
 
     get $contentHeader() {
@@ -1397,151 +1388,14 @@ Craft.CP = Garnish.Base.extend(
       );
     },
 
-    copyElements(elementInfo) {
-      if (elementInfo instanceof jQuery) {
-        const $elements = elementInfo;
-        elementInfo = [];
-        $elements.each((i, element) => {
-          const $element = $(element);
-          elementInfo.push({
-            type: $element.data('type'),
-            id: $element.data('id'),
-            draftId: $element.data('draftId'),
-            revisionId: $element.data('revisionId'),
-            fieldId: $element.data('fieldId'),
-            ownerId: $element.data('ownerId'),
-            siteId: $element.data('siteId'),
-          });
-        });
-      }
-
-      if (elementInfo.length) {
-        Craft.setLocalStorage('copiedElements', elementInfo);
-      } else {
-        Craft.removeLocalStorage('copiedElements');
-      }
-
-      this.showElementCopyNotification(elementInfo);
-
-      // Tell other browser windows about it
-      if (Craft.broadcaster) {
-        Craft.broadcaster.postMessage({
-          event: 'copyElements',
-        });
-      }
-    },
-
-    clearCopiedElements() {
-      this.copyElements([]);
-    },
-
-    showElementCopyNotification: function (elementInfo = [], settings = {}) {
-      this.closeElementCopyNotification(false);
-
-      if (!elementInfo.length) {
-        this._invokeElementCopyCallbacks(elementInfo);
-        return;
-      }
-
-      this.elementCopyNotification = new Craft.CP.ElementCopyNotification(
-        elementInfo,
-        settings
-      );
-      this.displayNotification(this.elementCopyNotification);
-      this.elementCopyNotification.on('show', () => {
-        // make sure the notification is still there
-        // (it could have been removed if none of the copied elements still exist)
-        if (this.elementCopyNotification) {
-          this._invokeElementCopyCallbacks(
-            this.elementCopyNotification.elementInfo
-          );
-        }
-      });
-    },
-
-    _invokeElementCopyCallbacks: function (elementInfo) {
-      const buttonLabel = this._pasteElementsButtonLabel(elementInfo);
-      for (callback of this.copyElementCallbacks) {
-        callback(elementInfo, buttonLabel);
-      }
-    },
-
-    _pasteElementsButtonLabel: function (elementInfo) {
-      if (!elementInfo.length) {
-        return null;
-      }
-
-      const elementType = elementInfo[0].type;
-
-      return Craft.uppercaseFirst(
-        Craft.t('app', 'Paste {type}', {
-          type:
-            elementInfo.length === 1
-              ? Craft.elementTypeNames[elementType][2]
-              : Craft.elementTypeNames[elementType][3],
-        })
-      );
-    },
-
-    closeElementCopyNotification: function (invokeCallbacks = true) {
-      if (this.elementCopyNotification) {
-        const notification = this.elementCopyNotification;
-        this.elementCopyNotification = null;
-        notification.close();
-
-        if (invokeCallbacks) {
-          this._invokeElementCopyCallbacks([]);
-        }
-      }
-    },
-
+    // The element clipboard module (modules/elements/clipboard) replaces these
+    // with the real thing as it loads.
     onCopyElements: function (callback) {
       this.copyElementCallbacks.push(callback);
-
-      if (this.elementCopyNotification?.loaded) {
-        callback(
-          this.elementCopyNotification.elementInfo,
-          this._pasteElementsButtonLabel(
-            this.elementCopyNotification.elementInfo
-          )
-        );
-      }
     },
 
     getCopiedElements: function () {
-      if (!this.elementCopyNotification?.loaded) {
-        return [];
-      }
-      return this.elementCopyNotification.elementInfo;
-    },
-
-    async pasteElements(newAttributes = {}) {
-      const elementInfo = Craft.getLocalStorage('copiedElements');
-      if (!elementInfo?.length) {
-        return;
-      }
-
-      let data;
-      try {
-        const response = await Craft.sendActionRequest(
-          'POST',
-          'elements/bulk-duplicate',
-          {
-            data: {
-              elements: elementInfo,
-              newAttributes,
-            },
-          }
-        );
-        data = response.data;
-      } catch (e) {
-        Craft.cp.displayError(e?.response?.data?.message);
-        return [];
-      }
-
-      this.clearCopiedElements();
-      this.displaySuccess(data.message);
-      return data.newElements;
+      return [];
     },
 
     fetchAlerts: function () {

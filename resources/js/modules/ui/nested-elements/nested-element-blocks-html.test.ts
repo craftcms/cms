@@ -13,7 +13,7 @@ import {
   type EntryFieldLayoutUiHost,
 } from '../entry-field-layout-ui-host';
 import {registerUiComponents} from '../register';
-import type {CopiedElementInfo} from '@/modules/matrix/clipboard';
+import type {CopiedElementInfo} from '@/modules/elements/clipboard';
 import {fieldId, inputName, valueAt, visitControls} from '../runtime';
 import type {UiControlPayload, UiPayload} from '../types';
 import {
@@ -26,8 +26,23 @@ import {
 const actions = vi.hoisted(() => ({run: vi.fn()}));
 vi.mock('@craftcms/ui/actions.mjs', () => ({runAction: actions.run}));
 
+const clipboard = vi.hoisted(() => ({
+  pasteElements: vi.fn(async (): Promise<{id: number}[]> => []),
+  changed: undefined as ((elements: CopiedElementInfo[]) => void) | undefined,
+}));
+vi.mock('@/modules/elements/clipboard', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  getCopiedElements: () => [],
+  onCopiedElementsChange: (
+    listener: (elements: CopiedElementInfo[]) => void
+  ) => {
+    clipboard.changed = listener;
+    return () => {};
+  },
+  pasteElements: clipboard.pasteElements,
+}));
+
 let restoreInternals = () => {};
-let copiedChanged: ((elements: CopiedElementInfo[]) => void) | undefined;
 beforeEach(async () => {
   localStorage.clear();
   restoreInternals = stubElementInternals();
@@ -37,12 +52,6 @@ beforeEach(async () => {
     systemUid: 'test',
     elementTypeNames: {Entry: ['Entry', 'Entries', 'entry', 'entries']},
     namespaceId: (id: string) => id,
-    cp: {
-      onCopyElements: vi.fn((callback) => {
-        copiedChanged = callback;
-      }),
-      getCopiedElements: () => [],
-    },
   });
   const registry = createCpComponentRegistry();
   registerUiComponents(registry);
@@ -60,7 +69,7 @@ beforeEach(async () => {
 });
 afterEach(() => {
   document.body.replaceChildren();
-  copiedChanged?.([]);
+  clipboard.changed?.([]);
   localStorage.clear();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
@@ -519,13 +528,8 @@ it('retains nested HTML block values and names when its enclosing block moves', 
 it.each(['add', 'duplicate', 'paste'])(
   'prepares the HTML owner and resolves draft identities before block %s',
   async (action) => {
-    const paste = vi.fn(async () => [{id: 202}]);
-    Object.assign(Craft.cp!, {
-      getCopiedElements: () => [
-        {type: 'Entry', id: 101, data: {entryTypeId: 4}},
-      ],
-      pasteElements: paste,
-    });
+    const paste = clipboard.pasteElements;
+    paste.mockReset().mockResolvedValue([{id: 202}]);
     const {form, host, path, fieldName} = await mount(
       'editable',
       false,
@@ -543,7 +547,7 @@ it.each(['add', 'duplicate', 'paste'])(
     });
     (host as EntryFieldLayoutUiHost).payload = payload;
     await nextTick();
-    copiedChanged?.([{type: 'Entry', id: 101, data: {entryTypeId: 4}}]);
+    clipboard.changed?.([{type: 'Entry', id: 101, data: {entryTypeId: 4}}]);
     const input = host.querySelector('craft-input')!;
     input.modelValue = 'Pending duplicate source edit';
     input.dispatchEvent(

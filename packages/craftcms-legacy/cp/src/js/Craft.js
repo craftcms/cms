@@ -1966,11 +1966,6 @@ if (typeof BroadcastChannel !== 'undefined') {
           Craft.cp.trackJobProgress(delay);
         }
         break;
-
-      case 'copyElements':
-        const elementInfo = Craft.getLocalStorage('copiedElements');
-        Craft.cp.showElementCopyNotification(elementInfo || []);
-        break;
     }
   });
 

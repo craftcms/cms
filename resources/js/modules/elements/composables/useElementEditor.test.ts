@@ -287,7 +287,7 @@ describe('useElementEditor', () => {
   it('prepares an unchanged nested owner with the enclosing editable Matrix values', async () => {
     vi.stubGlobal('Craft', {
       systemUid: 'test',
-      cp: {getCopiedElements: () => [], onCopyElements: () => {}},
+      cp: {},
     });
     onTestFinished(() => {
       vi.unstubAllGlobals();
@@ -455,7 +455,7 @@ describe('useElementEditor', () => {
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false}));
       vi.stubGlobal('Craft', {
         systemUid: 'test',
-        cp: {getCopiedElements: () => [], onCopyElements: () => {}},
+        cp: {},
       });
       const components = createCpComponentRegistry();
       registerUiComponents(components);

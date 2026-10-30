@@ -40,7 +40,7 @@ beforeEach(() => {
   vi.stubGlobal('Craft', {
     systemUid: 'test',
     elementTypeNames: {Entry: ['Entry', 'Entries', 'entry', 'entries']},
-    cp: {onCopyElements: vi.fn(), getCopiedElements: () => []},
+    cp: {},
   });
   vi.stubGlobal(
     'fetch',

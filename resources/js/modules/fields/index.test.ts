@@ -10,6 +10,7 @@ vi.mock('@/common/slideouts', () => ({
 vi.mock('@craftcms/ui/utilities/copy-text-prompt', () => ({
   showCopyTextPrompt,
 }));
+vi.mock('@/modules/elements/clipboard', () => ({copyElements}));
 
 describe('field action listeners', () => {
   beforeEach(async () => {
@@ -19,7 +20,6 @@ describe('field action listeners', () => {
     document.body.innerHTML = '';
 
     window.Craft = {
-      cp: {copyElements},
       openSlideout,
       baseCpUrl: '/admin',
     } as never;
@@ -91,7 +91,7 @@ describe('field input action listeners', () => {
     openSlideout.mockReset();
     showCopyTextPrompt.mockReset();
     copyElements.mockReset();
-    window.Craft = {cp: {copyElements}, baseCpUrl: '/admin'} as never;
+    window.Craft = {baseCpUrl: '/admin'} as never;
     await import('./index');
   });
 
