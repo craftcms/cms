@@ -76,6 +76,8 @@
     cardThumbs,
     sortField,
     sortDirection,
+    viewCustomized,
+    resetView,
     tableColumns,
     columnOptions,
     visibleViewModes,
@@ -303,10 +305,12 @@
         :column-options="columnOptions"
         :thumb-size-options="thumbSizeOptions"
         :sort-options="elementIndex.sortOptions"
+        :view-customized="viewCustomized"
         :sites="showSites ? elementIndex.sites : undefined"
         :site-handle="showSites ? activeSiteHandle : undefined"
         @submit="submit"
         @reorder="reorder"
+        @use-default-view="resetView"
         @site-change="emit('site-change', $event)"
       >
         <template

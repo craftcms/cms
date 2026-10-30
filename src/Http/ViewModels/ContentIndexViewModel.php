@@ -599,6 +599,16 @@ abstract class ContentIndexViewModel extends ViewModel
     }
 
     /**
+     * The sort the source falls back to when none is requested.
+     *
+     * @return array<int, array{field: string, direction: string}>
+     */
+    public function defaultSort(): array
+    {
+        return $this->sourceSettings()->defaultSort;
+    }
+
+    /**
      * How the source's cards show their thumbnails, going by its first field
      * layout, so the placeholders drawn while its cards load can match them.
      *
