@@ -799,6 +799,7 @@ return [
     'Entry Types' => 'Indganstyper',
     'Entry URI Format' => 'Postens URI-format',
     'Entry could not be added. Maximum number of entries reached.' => 'Post kunne ikke tilføjes. Det maksimale antal poster nået.',
+    'Entry type icon' => 'Entry type icon',
     'Entry type saved.' => 'Indgangstype gemt.',
     'Entry type settings' => 'Indstillinger for indtastningstype',
     'Entry' => 'Post',
