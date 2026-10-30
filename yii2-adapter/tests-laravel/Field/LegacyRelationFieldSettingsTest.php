@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use craft\fields\Assets;
+use craft\fields\Entries;
 use craft\fields\Users;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\TemplateMode;
@@ -23,6 +25,18 @@ it('renders the shared relation field settings template through craft.cp', funct
         ->toContain('<craft-switch')
         ->not->toContain('&lt;craft-');
 });
+
+it('renders the legacy Entries and Assets settings templates', function(string $class, string $setting) {
+    $html = (new $class())->getSettingsHtml();
+
+    expect($html)
+        ->toContain("name=\"$setting\"")
+        ->not->toContain('showUnpermittedEntries')
+        ->not->toContain('showUnpermittedFiles');
+})->with([
+    'entries' => [Entries::class, 'showUnpermittedSections'],
+    'assets' => [Assets::class, 'showUnpermittedVolumes'],
+]);
 
 it('renders a settings template declared by a subclass', function() {
     $dir = sys_get_temp_dir() . '/relation-settings-' . uniqid();
