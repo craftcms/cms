@@ -487,32 +487,10 @@
   <LayoutSlot
     v-if="
       activity.activity.value.length ||
-      (!isSlideout && payload.workflow.draftReviews.length) ||
-      showViewButtons
+      (!isSlideout && payload.workflow.draftReviews.length)
     "
     name="content-toolbar-meta"
   >
-    <template v-if="showViewButtons">
-      <span
-        v-if="payload.isProvisionalDraft || payload.statusLabelHtml"
-        class="element-editor__toolbar-separator"
-        aria-hidden="true"
-      ></span>
-      <div class="flex gap-sm items-center">
-        <craft-button
-          v-if="canPreview"
-          ref="previewButton"
-          type="button"
-          size="small"
-          variant="plain"
-          icon="eye"
-          @click="livePreview.open()"
-        >
-          {{ t('Preview') }}
-        </craft-button>
-        <ElementViewButtons :targets="payload.previewTargets" />
-      </div>
-    </template>
     <ElementActivityAvatars :entries="activity.activity.value" />
     <WorkflowDraftsStatus
       v-if="!isSlideout && payload.workflow.draftReviews.length"
@@ -535,6 +513,23 @@
       ></craft-icon>
       {{ button.label }}
     </craft-button>
+  </LayoutSlot>
+
+  <LayoutSlot v-if="showViewButtons" name="content-toolbar-actions">
+    <div class="flex gap-sm items-center">
+      <craft-button
+        v-if="canPreview"
+        ref="previewButton"
+        type="button"
+        size="small"
+        variant="plain"
+        icon="eye"
+        @click="livePreview.open()"
+      >
+        {{ t('Preview') }}
+      </craft-button>
+      <ElementViewButtons :targets="payload.previewTargets" />
+    </div>
   </LayoutSlot>
 
   <LayoutSlot
@@ -808,11 +803,5 @@
 <style scoped lang="scss">
   craft-callout {
     --c-callout-padding-inline: calc(var(--cp-container-padding) - 4px);
-  }
-
-  .element-editor__toolbar-separator {
-    align-self: stretch;
-    inline-size: 1px;
-    background-color: var(--c-color-border-quiet);
   }
 </style>

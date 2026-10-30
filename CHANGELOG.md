@@ -63,6 +63,7 @@
 - Image thumbnails’ placeholders now cover the same area as the image, and thumbnails no longer shift once their image loads. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Asset previews’ background gradients are now more transparent, and asset edit pages now have a hairline below the preview. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Edit pages for elements without statuses, such as assets, no longer show a status badge or “Status” metadata, except for drafts. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Element edit pages’ “View” button is now on the right side of the toolbar, beside the action menu.
 - Editable tables’ text and select inputs now fill their cells, and clicking anywhere in a cell focuses its control. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Editable tables’ headers now have a background color, and their checkbox, lightswitch, color, and icon cells are more compact. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Checkboxes and radio buttons now look the same in every browser, and their focus rings follow their rounded shape. ([#19942](https://github.com/craftcms/cms/pull/19942))

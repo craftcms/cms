@@ -144,6 +144,7 @@ function mount(mode: ScreenMode): void {
           ),
           h(LayoutSlotOutlet, {name: 'content-notices'}),
           h(LayoutSlotOutlet, {name: 'content-toolbar-meta'}),
+          h(LayoutSlotOutlet, {name: 'content-toolbar-actions'}),
           h(ElementEditor),
           h(ContentFooter, {
             ...screen.props,
