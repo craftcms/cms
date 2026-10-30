@@ -670,30 +670,35 @@ readonly class FormFields
             $first = false;
         }
 
-        $customOptionTemplate = null;
-
-        if (($config['allowCustomOptions'] ?? false) && $optionName !== null) {
-            $customOptionTemplate = InputNamespace::namespaceInputs(Html::tag(
-                'div',
-                self::checkboxFromConfig([
-                    'id' => '__ID__',
-                    'label' => null,
-                    'value' => '',
-                    'describedBy' => $config['describedBy'] ?? null,
-                    'name' => $optionName,
-                    'checked' => true,
-                    'custom' => true,
-                ])->toHtml(),
-                ['data' => ['custom' => true]],
-            ), InputNamespace::get());
-        }
-
         return CheckboxGroup::make()
             ->id($id)
             ->name($name)
             ->options($checkboxes)
-            ->customOptionTemplate($customOptionTemplate)
+            ->customOptionTemplate(($config['allowCustomOptions'] ?? false) && $optionName !== null
+                ? self::customCheckboxTemplate($optionName, $config['describedBy'] ?? null)
+                : null)
             ->attributes($config['containerAttributes'] ?? []);
+    }
+
+    /**
+     * Returns the HTML a checkbox group's “Add option” button inserts: a checked
+     * custom checkbox, with `__ID__` standing in for its ID.
+     */
+    public static function customCheckboxTemplate(string $optionName, ?string $describedBy = null): string
+    {
+        return InputNamespace::namespaceInputs(Html::tag(
+            'div',
+            self::checkboxFromConfig([
+                'id' => '__ID__',
+                'label' => null,
+                'value' => '',
+                'describedBy' => $describedBy,
+                'name' => $optionName,
+                'checked' => true,
+                'custom' => true,
+            ])->toHtml(),
+            ['data' => ['custom' => true]],
+        ), InputNamespace::get());
     }
 
     /** @param array<string, mixed> $config */

@@ -8,7 +8,6 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use Illuminate\Database\Query\Builder;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * @internal
@@ -67,7 +66,7 @@ trait QueriesRef
         });
 
         if ($joinSections) {
-            $query->join(new Alias(Table::SECTIONS, 'sections'), 'sections.id', '=', 'entries.sectionId');
+            $query->join(Table::SECTIONS.' as sections', 'sections.id', '=', 'entries.sectionId');
         }
     }
 

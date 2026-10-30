@@ -48,13 +48,13 @@ it('forwards the requested mode to configured fields before falling back to nati
     $customField = new CustomField(config: ['fieldUid' => $field->uid, 'uid' => Str::uuid()->toString()]);
     $layout = $this->user->getFieldLayout();
     $layout->tab('Thumbnail', fn (FieldLayoutTab $tab) => $tab->add($customField));
-    $layout->thumbFieldKey = "layoutElement:{$customField->uid}";
+    $layout->thumbSources = ["layoutElement:{$customField->uid}"];
     expect(Fields::saveLayout($layout))->toBeTrue();
     $this->user->setFieldValue('thumbnail', $value);
 
     $html = $this->user->getThumbHtml(120, ImageTransformMode::Letterbox);
 
-    expect(ThumbnailField::$requests)->toBe([[$value === '' ? null : $value, $this->user, 120, ImageTransformMode::Letterbox]]);
+    expect(ThumbnailField::$requests)->toBe($value ? [[$value, $this->user, 120, ImageTransformMode::Letterbox]] : []);
     if ($value) {
         expect($html)->toBe($value)
             ->and($this->driver->requests)->toBeEmpty();

@@ -37,7 +37,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
-use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -723,9 +722,8 @@ class Categories extends Component
 
         // Get the structure ID
         if (!isset($criteria['structureId'])) {
-            $criteria['structureId'] = DB::table(new Alias('categories',
-                'categories'))
-                ->join(new Alias('categorygroups', 'categorygroups'), 'categorygroups.id',
+            $criteria['structureId'] = DB::table('categories')
+                ->join('categorygroups', 'categorygroups.id',
                     'categories.groupId')
                 ->where('categories.id', $categoryId)
                 ->value('categorygroups.structureId');

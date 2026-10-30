@@ -57,6 +57,8 @@
        * keeping the controls in place so the layout doesn't shift.
        */
       interactionsDisabled?: boolean;
+      /** See `DataTable`'s `placeholderRows`. */
+      placeholderRows?: number;
       inlineEditing?: boolean;
       renderCell?: (
         context: CellContext<CraftTableFeatures, TData, unknown>,
@@ -189,6 +191,7 @@
     :appearance="appearance"
     :reorderable="reorderable && !structure"
     :interactions-disabled="interactionsDisabled"
+    :placeholder-rows="placeholderRows"
     :leading-column-tracks="leadingColumnTracks"
     :row-attributes="rowAttributes"
     :row-behavior="itemBehavior"
@@ -281,6 +284,9 @@
     <template #empty-row v-if="$slots['empty-row']"
       ><slot name="empty-row"
     /></template>
+    <template #placeholder-cell="placeholder" v-if="$slots['placeholder-cell']">
+      <slot name="placeholder-cell" v-bind="placeholder" />
+    </template>
   </DataTable>
 </template>
 

@@ -42,7 +42,10 @@ import type {
 } from '@/modules/elements/index/types/model';
 import type {InlineEditingSaveResult} from '@/modules/elements/index/composables/useInlineEditing';
 import type {ElementIndexContext} from '@/modules/elements/index/index-context';
-import type {ViewMode} from '@/modules/elements/types/view-state';
+import type {
+  CardThumbSettings,
+  ViewMode,
+} from '@/modules/elements/types/view-state';
 
 interface UseElementIndexOptions {
   elementIndex: ReturnType<typeof useContentIndexData>;
@@ -90,14 +93,26 @@ export function useElementIndex(options: UseElementIndexOptions) {
   const preferredSort = elementIndex.sort.filter(
     ({field}) => field !== 'score'
   );
+  const sourceKey = () => elementIndex.source?.key ?? '*';
+  const {
+    mode: savedMode,
+    restore: restoreViewMode,
+    persistedMode,
+  } = useElementIndexViewMode(
+    viewState,
+    visitor,
+    sourceKey,
+    () => elementIndex.viewState?.mode,
+    () => visibleViewModes.value.map(({mode}) => mode),
+    (mode) => thumbSizeModeParams(mode)
+  );
   const filters = useElementIndexFilters(visitor, {
     search: elementIndex.search,
     status: elementIndex.status,
     conditions: elementIndex.currentCondition,
     busy: options.busy,
     preferredSort: () => {
-      const sourceKey = elementIndex.source?.key ?? '*';
-      const saved = viewState.value.sources?.[sourceKey]?.sort?.filter(
+      const saved = viewState.value.sources?.[sourceKey()]?.sort?.filter(
         ({field}) => field !== 'score'
       );
 
@@ -105,11 +120,11 @@ export function useElementIndex(options: UseElementIndexOptions) {
         return saved;
       }
 
-      return sourceKey === initialSourceKey ? preferredSort : [];
+      return sourceKey() === initialSourceKey ? preferredSort : [];
     },
     params: () => ({
       source: elementIndex.source?.key,
-      viewMode: viewState.value.mode,
+      viewMode: persistedMode(),
       ...options.filterParams?.(),
     }),
   });
@@ -137,18 +152,20 @@ export function useElementIndex(options: UseElementIndexOptions) {
     elementIndex,
     visitor
   );
-  const {mode: savedMode, restore: restoreViewMode} = useElementIndexViewMode(
-    viewState,
-    visitor,
-    () => elementIndex.viewState?.mode,
-    () => visibleViewModes.value.map(({mode}) => mode),
-    (mode) => thumbSizeModeParams(mode)
-  );
   const visibleViewModes = computed(() =>
     elementIndex.viewModes.filter(
       (viewMode) =>
         !viewMode.structuresOnly || elementIndex.source?.structureId != null
     )
+  );
+  /**
+   * How cards show a thumbnail, as the source's field layout has it, or null
+   * when the index has no thumbnails.
+   */
+  const cardThumbs = computed<CardThumbSettings | null>(() =>
+    visibleViewModes.value.some(({mode}) => mode === 'thumbs')
+      ? (elementIndex.cardThumbs ?? {style: 'normal', alignment: 'end'})
+      : null
   );
   const mode = computed<ViewMode['mode']>({
     get: () =>
@@ -164,17 +181,14 @@ export function useElementIndex(options: UseElementIndexOptions) {
     options: thumbSizeOptions,
     restore: restoreThumbSize,
     modeParams: thumbSizeModeParams,
-  } = useElementIndexThumbSize(viewState, visitor, () => mode.value);
-  const inlineEditingActive = computed({
-    get: () => viewState.value.inlineEditing,
-    set: (value: boolean) => {
-      viewState.value.inlineEditing = value;
-    },
-  });
+  } = useElementIndexThumbSize(viewState, visitor, () => mode.value, sourceKey);
+  // Not persisted: inline editing ends with the page.
+  const inlineEditingActive = shallowRef(false);
   const structureView = useElementIndexStructure(
     elementIndex,
     viewState,
-    visitor
+    visitor,
+    () => mode.value
   );
   const data = computed(() =>
     options.data
@@ -246,10 +260,16 @@ export function useElementIndex(options: UseElementIndexOptions) {
     // created with, which every later source or filter would keep showing as
     // its page count.
     get rowCount() {
-      return elementIndex.pagination.total;
+      return elementIndex.pagination?.total ?? 0;
     },
     enableMultiSort: false,
   });
+
+  /**
+   * Whether the rows are still to come. A page load leaves them out until it
+   * knows the view mode and thumbnail size to render them for; see `restore()`.
+   */
+  const pending = computed(() => elementIndex.data === undefined);
 
   function restore(): void {
     const restores = [
@@ -259,6 +279,17 @@ export function useElementIndex(options: UseElementIndexOptions) {
       restoreThumbSize(),
       ...(options.structure ? [structureView.restore()] : []),
     ].filter((restore): restore is IndexRestore => restore !== null);
+
+    // Requested after the others have read the URL into the view state, so the
+    // mode and size are the ones the index will show. Naming the mode in the
+    // URL also gets the rows rendered along with any later page load. `queue`
+    // reports the thumbnail jobs rendering them queued.
+    if (pending.value) {
+      restores.unshift({
+        params: {viewMode: mode.value, ...thumbSizeModeParams(mode.value)},
+        only: ['data', 'pagination', 'structure', 'queue'],
+      });
+    }
 
     if (restores.length === 0) {
       return;
@@ -292,7 +323,33 @@ export function useElementIndex(options: UseElementIndexOptions) {
 
   function changeSource(key: string): void {
     if (key === elementIndex.source?.key) return;
-    visitor.merge({source: key, viewMode: mode.value}, {resetPage: true});
+    const sourceMode = persistedMode(key);
+
+    // A source without a chosen mode gets its default, which only the server
+    // knows, so its thumbnail size can't be asked for until its rows arrive.
+    visitor.merge(
+      {
+        source: key,
+        viewMode: sourceMode ?? null,
+        ...(sourceMode
+          ? thumbSizeModeParams(sourceMode, key)
+          : {thumbSize: null}),
+      },
+      {
+        resetPage: true,
+        onFinish: ({completed}) => {
+          const thumbSizeRestore =
+            completed && !sourceMode && restoreThumbSize();
+
+          if (thumbSizeRestore) {
+            visitor.merge(thumbSizeRestore.params, {
+              only: thumbSizeRestore.only,
+              replace: true,
+            });
+          }
+        },
+      }
+    );
   }
 
   function changeSite(handle: string): void {
@@ -310,7 +367,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
   }
 
   const processing = computed(
-    () => loading.value || Boolean(toValue(options.busy))
+    () => loading.value || pending.value || Boolean(toValue(options.busy))
   );
   const filterContext = computed<ElementIndexContext | null>(() =>
     elementIndex.source
@@ -358,7 +415,9 @@ export function useElementIndex(options: UseElementIndexOptions) {
     mode,
     thumbSize,
     thumbSizeOptions,
+    cardThumbs,
     loading,
+    pending,
     processing,
     filterContext,
     visibleViewModes,

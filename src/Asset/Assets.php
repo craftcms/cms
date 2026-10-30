@@ -45,7 +45,6 @@ use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 use RuntimeException;
 use Throwable;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
@@ -173,7 +172,7 @@ class Assets
 
         $assets = array_values(array_filter($assets, fn (Asset $asset): bool => $asset::class === Asset::class
             && ! $asset->isFolder
-            && ! $asset->getFieldLayout()?->thumbFieldKey));
+            && empty($asset->getFieldLayout()->thumbSources)));
 
         $this->assetTransformers->preload($assets, fn (Asset $asset): array => array_map(
             fn (int $size): array => ['width' => $size, 'height' => $size, 'mode' => ImageTransformMode::Fit->value],
@@ -304,8 +303,8 @@ class Assets
 
         $baseFileName = $buildFilename(pathinfo($originalFilename, PATHINFO_FILENAME));
 
-        $dbFileList = DB::table(new Alias(Table::ASSETS, 'assets'))
-            ->join(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', 'assets.id')
+        $dbFileList = DB::table(Table::ASSETS, 'assets')
+            ->join(Table::ELEMENTS.' as elements', 'elements.id', 'assets.id')
             ->where('assets.folderId', $folderId)
             ->whereNull('elements.dateDeleted')
             ->whereLike('assets.filename', $baseFileName.'%.'.$extension)

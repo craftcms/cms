@@ -207,6 +207,7 @@ describe('photo selection', function () {
             'sources' => ["volume:{$this->volume->uid}/folder:{$this->folder->uid}"],
             'criteria' => ['volumeId' => $this->volume->id, 'folderId' => $this->folder->id, 'kind' => 'image'],
             'showFolders' => false,
+            'viewMode' => 'table',
         ])->assertOk();
 
         expect(array_column($response->json('props.data'), 'id'))->toBe([$this->photo->id]);

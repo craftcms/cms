@@ -77,8 +77,8 @@ class ServeCommand extends Command
 
         $user = User::query()->find($element->id);
 
-        if (! $user instanceof User || ! $user->can('useCraftMcp')) {
-            return $this->reject("The user [$identifier] does not have permission to use Craft MCP.");
+        if (! $user instanceof User) {
+            return $this->reject("No user exists with the ID, username, or email [$identifier].");
         }
 
         return $user;

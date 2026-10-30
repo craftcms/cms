@@ -56,6 +56,17 @@ it('creates a draft and redirects to it', function () {
         ]);
 });
 
+it('passes the index it was created from on to the editor', function () {
+    Section::factory()->withEntryTypes(EntryType::factory()->create())->create([
+        'handle' => 'blog',
+    ]);
+    $returnUrl = cp_url('content/entries/blog').':QS:sort=title';
+
+    get(cp_url('entries/blog/new').'?'.http_build_query(['returnUrl' => $returnUrl]))
+        ->assertFound()
+        ->assertRedirectContains(http_build_query(['returnUrl' => $returnUrl]));
+});
+
 it('does not assign authors when the section disallows them', function () {
     $section = Section::factory()->withEntryTypes(EntryType::factory()->create())->create([
         'handle' => 'solo',
