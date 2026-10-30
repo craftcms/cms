@@ -799,6 +799,7 @@ return [
     'Entry Types' => 'סוגי רשומות',
     'Entry URI Format' => 'תבנית URI של רשומה',
     'Entry could not be added. Maximum number of entries reached.' => 'לא ניתן להוסיף את הרשומה. הגעת למספר הרשומות המקסימלי.',
+    'Entry type icon' => 'Entry type icon',
     'Entry type saved.' => 'סוג הרשומה נשמר',
     'Entry type settings' => 'הגדרות סוגי הרשומות',
     'Entry' => 'כניסה',
