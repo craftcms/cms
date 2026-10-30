@@ -25,6 +25,7 @@
     computed,
     nextTick,
     onBeforeUnmount,
+    onMounted,
     ref,
     shallowRef,
     useId,
@@ -39,6 +40,8 @@
     blendShapes,
     deviceShape,
     fitDevice,
+    isRotation,
+    rotatesClockwise,
     type DeviceShape,
     type DeviceType,
   } from './devicePreview';
@@ -181,7 +184,15 @@
   const frameOpacity = ref(1);
   // How far the device is from desktop, which has no gutter around it.
   const framing = ref(targetShape.value ? 1 : 0);
+  // Degrees the device is turned, on its way to the other orientation.
+  const rotation = ref(0);
+  const rtl = ref(false);
   let shapeFrame = 0;
+
+  onMounted(() => {
+    rtl.value =
+      !!stage.value && getComputedStyle(stage.value).direction === 'rtl';
+  });
 
   /** Desktop as a device: a bezel-less screen the size of the stage. */
   function stageShape(): DeviceShape {
@@ -194,13 +205,50 @@
 
   // Animates the device's dimensions rather than its rendered size, so it's
   // fitted to the stage on every frame and never outgrows it on the way.
-  watch(targetShape, (to) => {
+  watch(targetShape, (to, old) => {
     cancelAnimationFrame(shapeFrame);
+    rotation.value = 0;
 
     if (reducedMotion.value === 'reduce' || !stageWidth.value) {
       shape.value = frameShape.value = to;
       frameOpacity.value = 1;
       framing.value = to ? 1 : 0;
+      return;
+    }
+
+    // Rotating the device at rest turns it, page and all, then swaps in the
+    // other orientation, which takes up the same box, and fades the page in.
+    if (to && old && shape.value === old && isRotation(old, to)) {
+      const fromOrientation =
+        old.viewport.width < old.viewport.height ? 'portrait' : 'landscape';
+      const turn = rotatesClockwise(fromOrientation, rtl.value) ? 90 : -90;
+      const startOpacity = frameOpacity.value;
+      const start = performance.now();
+      const fadeIn = (from: number) => (now: number) => {
+        const t = Math.min(1, (now - from) / 150);
+        frameOpacity.value = t;
+
+        if (t < 1) {
+          shapeFrame = requestAnimationFrame(fadeIn(from));
+        }
+      };
+      const step = (now: number) => {
+        const t = Math.min(1, (now - start) / 450);
+        const eased = t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2;
+        rotation.value = turn * eased;
+        frameOpacity.value =
+          t < 0.6 ? startOpacity : startOpacity * (1 - (t - 0.6) / 0.4);
+
+        if (t < 1) {
+          shapeFrame = requestAnimationFrame(step);
+          return;
+        }
+
+        rotation.value = 0;
+        shape.value = frameShape.value = to;
+        shapeFrame = requestAnimationFrame(fadeIn(now));
+      };
+      shapeFrame = requestAnimationFrame(step);
       return;
     }
 
@@ -239,7 +287,8 @@
       ? fitDevice(
           shape.value,
           {width: stageWidth.value, height: stageHeight.value},
-          24 * framing.value
+          24 * framing.value,
+          rotation.value
         )
       : null
   );
@@ -299,7 +348,7 @@
     return {
       width: `${value.frame.width}px`,
       height: `${value.frame.height}px`,
-      transform: `scale(${value.zoom})`,
+      transform: `rotate(${rotation.value}deg) scale(${value.zoom})`,
       '--lp-bezel': `${current.bezel}px`,
       '--lp-radius': `${current.radius}px`,
     };
@@ -602,8 +651,9 @@
 
               <craft-button
                 :id="`${controlId}-rotate`"
+                class="lp-rotate"
                 type="button"
-                icon="rotate"
+                icon="custom-icons/device-rotate"
                 :disabled="preview.device.value === 'desktop'"
                 :aria-label="t('Rotate')"
                 @click="rotate"
@@ -876,6 +926,10 @@
     inset-block-start: var(--c-spacing-md);
     inset-inline: var(--c-spacing-md);
     z-index: 1;
+  }
+
+  .lp-rotate:dir(rtl)::part(prefix) {
+    scale: -1 1;
   }
 
   .lp-device {

@@ -55,23 +55,60 @@ export function deviceShape(
   };
 }
 
-/** Sizes a device to fit the available room, keeping a gutter around it. */
+/**
+ * Sizes a device to fit the available room, keeping a gutter around it. A
+ * device turned by `rotation` degrees is fitted by the box it takes up turned,
+ * so it fits on its way from one orientation to the other too.
+ */
 export function fitDevice(
   {viewport, bezel}: DeviceShape,
   available: {width: number; height: number},
-  gutter = 24
+  gutter = 24,
+  rotation = 0
 ): DeviceLayout {
   const frame = {
     width: viewport.width + bezel * 2,
     height: viewport.height + bezel * 2,
   };
+  const radians = (rotation * Math.PI) / 180;
+  const cos = Math.abs(Math.cos(radians));
+  const sin = Math.abs(Math.sin(radians));
   const zoom = Math.min(
     1,
-    Math.max(0, available.width - gutter * 2) / frame.width,
-    Math.max(0, available.height - gutter * 2) / frame.height
+    Math.max(0, available.width - gutter * 2) /
+      (frame.width * cos + frame.height * sin),
+    Math.max(0, available.height - gutter * 2) /
+      (frame.width * sin + frame.height * cos)
   );
 
   return {viewport, frame, zoom};
+}
+
+/**
+ * Whether a device turns clockwise when rotated from `orientation`: on to its
+ * side clockwise and back counterclockwise, mirrored for right-to-left.
+ */
+export function rotatesClockwise(
+  orientation: DeviceOrientation,
+  rtl: boolean
+): boolean {
+  return (orientation === 'portrait') !== rtl;
+}
+
+/** Whether going from one device to the other only turns it a quarter turn. */
+export function isRotation(
+  from: DeviceShape | null,
+  to: DeviceShape | null
+): boolean {
+  return (
+    !!from &&
+    !!to &&
+    from.viewport.width === to.viewport.height &&
+    from.viewport.height === to.viewport.width &&
+    from.bezel === to.bezel &&
+    from.radius === to.radius &&
+    from.viewport.width !== from.viewport.height
+  );
 }
 
 /** The shape `progress` of the way from one device to another. */

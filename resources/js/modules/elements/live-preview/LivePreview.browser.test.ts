@@ -214,6 +214,26 @@ it('tours Live Preview: devices, targets, and a slideout in the editor', async (
   expect(host!.querySelector('#title')).not.toBeNull();
 });
 
+it.each([false, true])(
+  'mirrors the Rotate icon for right-to-left (%s)',
+  async (rtl) => {
+    document.documentElement.dir = rtl ? 'rtl' : '';
+    mount();
+
+    await page.getByRole('button', {name: 'Preview'}).click();
+    await waitForFrame();
+    await page.getByRole('button', {name: 'Tablet', exact: true}).click();
+    const button = document.querySelector<HTMLElement>('.lp-rotate')!;
+
+    expect(
+      getComputedStyle(button.shadowRoot!.querySelector('[part="prefix"]')!)
+        .scale
+    ).toBe(rtl ? '-1 1' : 'none');
+
+    document.documentElement.dir = '';
+  }
+);
+
 it('centers a device that’s wider than the stage', async () => {
   mount();
 
