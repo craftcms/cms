@@ -8,6 +8,7 @@ use CraftCms\Cms\Ai\Assistant\AssistantAgent;
 use CraftCms\Cms\Ai\Assistant\AssistantStreamProtocol;
 use CraftCms\Cms\Ai\Assistant\Content\ElementContexts;
 use CraftCms\Cms\Ai\Assistant\Content\ElementContextType;
+use CraftCms\Cms\Ai\Assistant\Crafty;
 use CraftCms\Cms\Ai\Assistant\McpTools;
 use CraftCms\Cms\Ai\Assistant\MessageContext;
 use CraftCms\Cms\Ai\Assistant\Transcript;
@@ -264,6 +265,22 @@ readonly class AssistantController
         }
 
         return new JsonResponse(array_slice($options, 0, $limit));
+    }
+
+    /**
+     * Starts a new conversation with a reply the assistant didn’t write, for the chat to open with.
+     */
+    public function start(Request $request, Crafty $crafty): JsonResponse
+    {
+        $request->validate(['threadId' => ['required', 'uuid']]);
+
+        $threadId = $request->string('threadId')->value();
+
+        abort_if($this->exists($threadId), 409, 'The conversation has already started.');
+
+        $crafty->start($threadId, $this->user($request));
+
+        return new JsonResponse(['threadId' => $threadId]);
     }
 
     /**

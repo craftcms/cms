@@ -300,6 +300,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
             Route::post('ai/assistant/context-fields', [AssistantController::class, 'contextFields']);
             Route::get('ai/assistant/mentions', [AssistantController::class, 'mentions'])->middleware('throttle:120,1');
             Route::get('ai/assistant/skills', [AssistantController::class, 'skills'])->middleware('throttle:120,1');
+            Route::post('ai/assistant/start', [AssistantController::class, 'start']);
             Route::post('ai/assistant/rename', [AssistantController::class, 'rename']);
             Route::post('ai/assistant/delete', [AssistantController::class, 'destroy']);
         });

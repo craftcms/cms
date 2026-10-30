@@ -8,6 +8,8 @@ export interface CpUser {
   email: string | null;
   id: number | null;
   thumbHtml: string | null;
+  /** The two `--color-{name}-500` palette colors of the user’s default photo’s gradient. */
+  photoColors: [string, string];
   name: string | null;
   admin: boolean;
   /** The "Underline links" accessibility preference. */

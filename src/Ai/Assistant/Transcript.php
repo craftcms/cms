@@ -45,6 +45,8 @@ class Transcript
 
         return [
             'messages' => $rows
+                // Prompts the user didn’t write, which only the model gets.
+                ->reject(static fn (ConversationMessage $message): bool => (bool) ($message->meta[Crafty::QUIET] ?? false))
                 ->map(function (ConversationMessage $message) use ($paused): array {
                     $createdAt = $message->getAttribute($message->getCreatedAtColumn());
 

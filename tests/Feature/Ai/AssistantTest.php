@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Activity\EventTypes\ElementUpdated;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
 use CraftCms\Cms\Ai\Assistant\AssistantAgent;
+use CraftCms\Cms\Ai\Assistant\Crafty;
 use CraftCms\Cms\Ai\Assistant\McpTools;
 use CraftCms\Cms\Ai\Assistant\ShowElements;
 use CraftCms\Cms\Ai\Http\Controllers\AssistantController;
@@ -540,3 +541,18 @@ class ResultContentCapability
         ]);
     }
 }
+
+it('leaves quiet messages out of the conversation the chat shows, while the model still gets them', function () {
+    $threadId = (string) Str::uuid();
+    AssistantAgent::fake(['Hello.', 'Still here.']);
+    chatEvents(chat($threadId, 'Hi.')->assertOk());
+
+    ConversationMessage::query()->where('conversation_id', $threadId)->where('role', 'user')->update(['meta' => Json::encode([Crafty::QUIET => true])]);
+
+    expect(getJson(action([AssistantController::class, 'show'], ['threadId' => $threadId]))->assertOk()->json('messages.*.role'))->toBe(['assistant']);
+
+    chatEvents(chat($threadId, 'Are you there?')->assertOk());
+
+    AssistantAgent::assertPrompted(fn (AgentPrompt $prompt): bool => $prompt->prompt === 'Are you there?'
+        && collect($prompt->agent->messages())->contains(fn ($message): bool => $message->content === 'Hi.'));
+});

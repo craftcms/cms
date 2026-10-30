@@ -67,6 +67,7 @@
   >
     <craft-button
       slot="invoker"
+      class="assistant-context-picker__invoker"
       type="button"
       variant="plain"
       size="small"
@@ -74,7 +75,7 @@
       icon="chevron-down"
       icon-position="suffix"
     >
-      {{ label }}
+      <span class="assistant-context-picker__label">{{ label }}</span>
       <span class="sr-only">{{ t('Choose fields') }}</span>
     </craft-button>
     <div slot="content" class="assistant-context-picker">
@@ -97,6 +98,21 @@
 </template>
 
 <style scoped>
+  .assistant-context-picker__invoker {
+    min-inline-size: 0;
+    max-inline-size: 100%;
+
+    &::part(content) {
+      min-inline-size: 0;
+    }
+  }
+
+  .assistant-context-picker__label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .assistant-context-picker {
     display: flex;
     flex-direction: column;

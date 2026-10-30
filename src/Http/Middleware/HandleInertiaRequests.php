@@ -221,6 +221,8 @@ class HandleInertiaRequests extends Middleware
                     'email' => $currentUser->email,
                     'name' => $currentUser->name,
                     'thumbHtml' => $currentUser->getThumbHtml(30),
+                    // The colors of the user’s default photo, which their own messages and comments are tinted with.
+                    'photoColors' => $currentUser->photoColors(),
                     'admin' => $currentUser->admin,
                     'underlineLinks' => (bool) ($currentUser->getPreference('underlineLinks')
                         ?? $generalConfig->accessibilityDefaults['underlineLinks']

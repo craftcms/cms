@@ -79,16 +79,17 @@ describe('AssistantChat', () => {
   function press(
     textarea: HTMLTextAreaElement,
     modifiers: KeyboardEventInit = {}
-  ): void {
-    textarea.dispatchEvent(
-      new KeyboardEvent('keydown', {
-        key: 'Enter',
-        bubbles: true,
-        composed: true,
-        cancelable: true,
-        ...modifiers,
-      })
-    );
+  ): KeyboardEvent {
+    const event = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      bubbles: true,
+      composed: true,
+      cancelable: true,
+      ...modifiers,
+    });
+    textarea.dispatchEvent(event);
+
+    return event;
   }
 
   /**
@@ -256,12 +257,10 @@ describe('AssistantChat', () => {
   });
 
   // Shift + Enter, and Enter on touch screens, which have no Shift + Enter, are
-  // left to the textarea; it doesn't add a line on Ctrl/Command + Enter itself.
+  // left to the textarea.
   it.each([
     ['Shift + Enter', {shiftKey: true}, false, 'First line'],
     ['Enter on a touch screen', {}, true, 'First line'],
-    ['Ctrl + Enter', {ctrlKey: true}, false, 'First line\n'],
-    ['Command + Enter', {metaKey: true}, false, 'First line\n'],
   ])(
     'starts a new line on %s, rather than sending',
     async (_key, modifiers, touch, value) => {
@@ -279,6 +278,24 @@ describe('AssistantChat', () => {
       expect(textarea.value).toBe(value);
     }
   );
+
+  it.each([
+    ['Ctrl + Enter', {ctrlKey: true}, false],
+    ['Command + Enter', {metaKey: true}, false],
+    ['Command + Enter on a touch screen', {metaKey: true}, true],
+  ])('sends the message on %s', async (_key, modifiers, touch) => {
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: touch && query === '(pointer: coarse)',
+    }));
+    const textarea = await type('First line');
+
+    const event = press(textarea, modifiers);
+    await flush();
+    vi.unstubAllGlobals();
+
+    expect(chat.sendMessage).toHaveBeenCalledWith('First line');
+    expect(event.defaultPrevented).toBe(true);
+  });
 
   function approval(id: string): unknown {
     return {
@@ -554,6 +571,34 @@ describe('AssistantChat', () => {
     await flush();
 
     expect(chat.sendMessage).toHaveBeenCalledWith('The author');
+  });
+
+  it('leaves the open question out of the conversation, as it labels its answers', async () => {
+    await askQuestion();
+
+    const thread = container.querySelector('.assistant-chat__thread')!;
+
+    expect(thread.textContent?.match(/Which one\?/g)).toHaveLength(1);
+    expect(
+      thread.querySelectorAll('.assistant-chat__message')[0]!.textContent
+    ).toContain('Which one?');
+  });
+
+  it('clears the message box’s placeholder once the question is answered', async () => {
+    await askQuestion();
+    const textarea = container.querySelector<HTMLTextAreaElement>(
+      '.assistant-chat__message-box textarea'
+    )!;
+
+    expect(textarea.placeholder).toBe('Type another answer…');
+
+    chat.messages.value = [
+      ...chat.messages.value,
+      {id: 'u2', role: 'user', parts: [{type: 'text', content: 'The page'}]},
+    ];
+    await flush();
+
+    expect(textarea.placeholder).toBe('');
   });
 
   it('chooses the message box as the answer once something is typed in it, and sends that', async () => {

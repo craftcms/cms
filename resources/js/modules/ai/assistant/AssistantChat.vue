@@ -12,7 +12,6 @@
   import {useChat, type UIMessage} from '@tanstack/ai-vue';
   import {usePage} from '@inertiajs/vue3';
   import type {CraftData} from '@/common/composables/useCraftData';
-  import {useElementSize} from '@vueuse/core';
   import type {
     TextExpanderSelectDetail,
     TextExpanderTrigger,
@@ -29,6 +28,7 @@
   } from 'vue';
   import {firstFocusableWithin} from '@/common/utils/dom';
   import {usePinnedScroll} from '@/common/composables/usePinnedScroll';
+  import {usePhotoColors} from '@/common/composables/usePhotoColors';
   import {assistantApi} from '@/bootstrap/assistant';
   import AssistantApprovals, {
     type AssistantApproval,
@@ -88,12 +88,6 @@
   const history = useTemplateRef<HTMLElement>('history');
   const thread = useTemplateRef<HTMLElement>('thread');
   const messageBox = useTemplateRef<CraftTextarea>('messageBox');
-  const composer = useTemplateRef<HTMLElement>('composer');
-  // The composer floats over the end of the conversation, so whatever gets
-  // focus in it is scrolled into view above the composer.
-  const {height: composerHeight} = useElementSize(composer, undefined, {
-    box: 'border-box',
-  });
   const idPrefix = useId();
   const historyScroll = usePinnedScroll(history, thread);
   const context = useAssistantContext();
@@ -104,6 +98,7 @@
    */
   const sent = shallowRef<AssistantContextItem[]>([]);
   const page = usePage<{craft?: CraftData}>();
+  const photoColors = usePhotoColors();
 
   const {
     messages,
@@ -252,13 +247,40 @@
   );
 
   /** Names the triggers, leaving out `{` while there are no fields to offer. */
-  const messageBoxPlaceholder = computed(() =>
+  /**
+   * Clicking the card outside its controls focuses the message box, as
+   * clicking a text field does, unless it's the end of a text selection.
+   */
+  function onCardClick(event: MouseEvent): void {
+    // The whole path, since a click inside a control's shadow root can't see the control with closest().
+    const onControl = event
+      .composedPath()
+      .some(
+        (node) =>
+          node instanceof Element &&
+          node.matches(
+            'a, button, input, label, select, textarea, [role="button"], craft-button, craft-chip, craft-info-icon'
+          )
+      );
+
+    if (onControl || window.getSelection()?.toString()) {
+      return;
+    }
+
+    focus();
+  }
+
+  /** How to choose things to mention in a message, as HTML, with the characters as keys. */
+  const mentionHint = computed(() =>
     textExpanderTriggers.value.some(({trigger}) => trigger === '{')
-      ? t('Ask anything. Type {element} for elements, {field} for fields', {
-          element: '@',
-          field: '{',
-        })
-      : t('Ask anything. Type {element} for elements', {element: '@'})
+      ? t(
+          'Type {element} to choose an element, or {field} to choose a field.',
+          {
+            element: '<kbd>@</kbd>',
+            field: '<kbd>{</kbd>',
+          }
+        )
+      : t('Type {element} to choose an element.', {element: '<kbd>@</kbd>'})
   );
 
   /** Lets the expander whose suggestion was inserted act on it. */
@@ -706,31 +728,23 @@
       event.key !== 'Enter' ||
       event.shiftKey ||
       event.altKey ||
-      event.isComposing ||
+      event.isComposing
+    ) {
+      return;
+    }
+
+    // Touch keyboards have no Shift + Enter, so Enter starts a new line there.
+    if (
+      !event.ctrlKey &&
+      !event.metaKey &&
       window.matchMedia?.('(pointer: coarse)').matches
     ) {
       return;
     }
 
+    // Claimed, so the control panel's Ctrl/Command + Enter doesn't submit the form again.
     event.preventDefault();
-
-    if (!event.ctrlKey && !event.metaKey) {
-      void send();
-
-      return;
-    }
-
-    const [textarea] = event.composedPath();
-
-    if (textarea instanceof HTMLTextAreaElement) {
-      textarea.setRangeText(
-        '\n',
-        textarea.selectionStart,
-        textarea.selectionEnd,
-        'end'
-      );
-      textarea.dispatchEvent(new Event('input', {bubbles: true}));
-    }
+    void send();
   }
 
   function onDraftChange(event: Event): void {
@@ -787,13 +801,7 @@
   <div class="assistant-chat">
     <div role="status" class="sr-only">{{ status }}</div>
 
-    <div
-      ref="history"
-      class="assistant-chat__history"
-      :style="{
-        scrollPaddingBlockEnd: `calc(${composerHeight}px + var(--c-spacing-md))`,
-      }"
-    >
+    <div ref="history" class="assistant-chat__history">
       <ol
         v-if="messages.length || approvals.length"
         ref="thread"
@@ -805,7 +813,7 @@
             v-if="entry.kind === 'prompt'"
             class="assistant-chat__message assistant-chat__message--user"
           >
-            <div class="assistant-chat__prompt">
+            <div class="assistant-chat__prompt" :style="photoColors">
               <span class="sr-only">{{ t('You:') }}</span>
               <ul
                 v-if="entry.context.length"
@@ -973,9 +981,12 @@
                 >
               </craft-chip>
             </p>
+            <!-- The open question is the label of its answers, above the message box. -->
             <p
               v-if="
-                entry.part.name === 'ask_user' && questionOf(entry.part.output)
+                entry.part.name === 'ask_user' &&
+                entry.part.id !== openQuestion?.id &&
+                questionOf(entry.part.output)
               "
               class="assistant-chat__cards"
             >
@@ -1015,186 +1026,189 @@
           }}
         </p>
       </craft-empty>
+    </div>
 
-      <form
-        ref="composer"
-        class="assistant-chat__composer"
-        @submit.prevent="send"
-      >
-        <div role="alert">
-          <craft-callout v-if="errorMessage" variant="danger">{{
-            errorMessage
-          }}</craft-callout>
-          <craft-callout v-else-if="sendBlocked" variant="warning">{{
-            t(
-              'Approve or reject the assistant’s request before you send another message.'
-            )
-          }}</craft-callout>
-        </div>
+    <form class="assistant-chat__composer" @submit.prevent="send">
+      <div role="alert">
+        <craft-callout v-if="errorMessage" variant="danger">{{
+          errorMessage
+        }}</craft-callout>
+        <craft-callout v-else-if="sendBlocked" variant="warning">{{
+          t(
+            'Approve or reject the assistant’s request before you send another message.'
+          )
+        }}</craft-callout>
+      </div>
 
-        <div ref="card" class="assistant-chat__card">
-          <AssistantMentionHighlights
-            v-if="messageBoxInput && card"
-            :target="messageBoxInput"
-            :container="card"
-            :text="draft"
-            :mentions="mentions"
-          />
-          <ul
-            v-if="context.items.value.length"
-            class="assistant-chat__chips"
-            :aria-label="t('Context')"
-          >
-            <li v-for="item in context.items.value" :key="item.ref">
-              <craft-chip
-                :icon="item.status() ? undefined : item.icon"
-                :show-status="!!item.status() || undefined"
+      <div ref="card" class="assistant-chat__card" @click="onCardClick">
+        <AssistantMentionHighlights
+          v-if="messageBoxInput && card"
+          :target="messageBoxInput"
+          :container="card"
+          :text="draft"
+          :mentions="mentions"
+        />
+        <ul
+          v-if="context.items.value.length"
+          class="assistant-chat__chips"
+          :aria-label="t('Context')"
+        >
+          <li v-for="item in context.items.value" :key="item.ref">
+            <craft-chip
+              :icon="item.status() ? undefined : item.icon"
+              :show-status="!!item.status() || undefined"
+            >
+              <AssistantChipStatus
+                v-if="item.status()"
+                :status="item.status()!"
+              />
+              <AssistantContextPicker
+                v-if="elementContextEditor(item)"
+                :editor="elementContextEditor(item)!"
+                :label="item.label"
+              />
+              <template v-else>{{ item.label }}</template>
+              <craft-button
+                slot="suffix"
+                type="button"
+                icon
+                size="small"
+                variant="plain"
+                flush="inline-start"
+                @click="assistantApi.removeContext(item.ref)"
               >
-                <AssistantChipStatus
-                  v-if="item.status()"
-                  :status="item.status()!"
-                />
-                <AssistantContextPicker
-                  v-if="elementContextEditor(item)"
-                  :editor="elementContextEditor(item)!"
-                  :label="item.label"
-                />
-                <template v-else>{{ item.label }}</template>
-                <craft-button
-                  slot="suffix"
-                  type="button"
-                  icon
-                  size="small"
-                  variant="plain"
-                  @click="assistantApi.removeContext(item.ref)"
-                >
-                  <craft-icon
-                    name="xmark"
-                    :label="t('Remove {name}', {name: item.label})"
-                  ></craft-icon>
-                </craft-button>
-              </craft-chip>
-            </li>
-          </ul>
+                <craft-icon
+                  name="xmark"
+                  :label="t('Remove {name}', {name: item.label})"
+                ></craft-icon>
+              </craft-button>
+            </craft-chip>
+          </li>
+        </ul>
 
-          <!-- While the assistant waits for an answer, its answers are radios
+        <!-- While the assistant waits for an answer, its answers are radios
             above the message box, and the box is the last one. They share a
             name, so they're one set for the arrow keys, around the box. -->
-          <div
-            class="assistant-chat__answer"
-            :role="openQuestion ? 'group' : undefined"
-            :aria-labelledby="openQuestion ? `${idPrefix}-question` : undefined"
-          >
-            <template v-if="openQuestion">
-              <p :id="`${idPrefix}-question`" class="assistant-chat__question">
-                {{ openQuestion.question }}
-              </p>
-              <label
-                v-for="(option, index) in openQuestion.options"
-                :key="`${openQuestion.id}-${index}`"
-                class="assistant-chat__option"
-              >
-                <input
-                  type="radio"
-                  :name="`${idPrefix}-answer`"
-                  :checked="answer === index"
-                  @change="answer = index"
-                  @keydown.enter.prevent="send"
-                />
-                {{ option }}
-              </label>
-            </template>
-            <div class="assistant-chat__option">
+        <div
+          class="assistant-chat__answer"
+          :role="openQuestion ? 'group' : undefined"
+          :aria-labelledby="openQuestion ? `${idPrefix}-question` : undefined"
+        >
+          <template v-if="openQuestion">
+            <p :id="`${idPrefix}-question`" class="assistant-chat__question">
+              {{ openQuestion.question }}
+            </p>
+            <label
+              v-for="(option, index) in openQuestion.options"
+              :key="`${openQuestion.id}-${index}`"
+              class="assistant-chat__option"
+            >
               <input
-                v-if="openQuestion"
                 type="radio"
+                class="cp-radio"
                 :name="`${idPrefix}-answer`"
-                :checked="answer === 'other'"
-                :aria-label="t('Another answer')"
-                @click="chooseOtherAnswer"
+                :checked="answer === index"
+                @change="answer = index"
                 @keydown.enter.prevent="send"
               />
-              <craft-textarea
-                ref="messageBox"
-                class="assistant-chat__message-box"
-                :class="{
-                  'assistant-chat__message-box--empty': !draft || openQuestion,
-                }"
-                :label="openQuestion ? t('Another answer') : t('Ask anything')"
-                :placeholder="
-                  openQuestion
-                    ? t('Type another answer…')
-                    : messageBoxPlaceholder
-                "
-                rows="2"
-                .modelValue="draft"
-                @model-value-changed="onDraftChange"
-                @keydown="onDraftKeydown"
-              ></craft-textarea>
-            </div>
+              {{ option }}
+            </label>
+          </template>
+          <!-- Labels the box from outside it, so the info icon beside it
+              isn't part of the box's name. -->
+          <div v-if="!openQuestion" class="assistant-chat__message-label">
+            <label :for="messageBoxInputId ?? undefined">{{
+              t('Ask anything')
+            }}</label>
+            <!-- A translated string with fixed markup for the keys. -->
+            <craft-info-icon
+              ><span v-html="mentionHint"></span
+            ></craft-info-icon>
           </div>
-          <craft-text-expander
-            v-if="messageBoxInputId"
-            :for="messageBoxInputId"
-            .triggers="textExpanderTriggers"
-            @craft-select="onTextExpanderSelect"
-          ></craft-text-expander>
-
-          <div class="assistant-chat__toolbar">
-            <craft-action-menu
-              v-if="addableSources.length"
-              :label="t('Add to context')"
-              .actions="addMenuItems"
-            >
-              <craft-button
-                slot="invoker"
-                type="button"
-                variant="plain"
-                size="small"
-                icon="plus"
-              >
-                {{ t('Add') }}
-              </craft-button>
-            </craft-action-menu>
-            <!-- Icon-only buttons, named by their tooltips, so the names show on
-              hover and focus too. The icons name them until the tooltips do. -->
-            <template v-if="isLoading">
-              <craft-button
-                :id="`${idPrefix}-stop`"
-                key="stop"
-                class="assistant-chat__send"
-                type="button"
-                variant="danger"
-                size="small"
-                icon
-                @click="stop"
-              >
-                <craft-icon name="stop" :label="t('Stop')"></craft-icon>
-              </craft-button>
-              <craft-tooltip :for="`${idPrefix}-stop`" invoker-relation="label">
-                {{ t('Stop') }}
-              </craft-tooltip>
-            </template>
-            <template v-else>
-              <craft-button
-                :id="`${idPrefix}-send`"
-                key="send"
-                class="assistant-chat__send"
-                type="submit"
-                :variant="outgoing ? 'primary' : 'fill'"
-                size="small"
-                icon
-              >
-                <craft-icon name="arrow-up" :label="t('Send')"></craft-icon>
-              </craft-button>
-              <craft-tooltip :for="`${idPrefix}-send`" invoker-relation="label">
-                {{ t('Send') }}
-              </craft-tooltip>
-            </template>
+          <div class="assistant-chat__option">
+            <input
+              v-if="openQuestion"
+              type="radio"
+              class="cp-radio"
+              :name="`${idPrefix}-answer`"
+              :checked="answer === 'other'"
+              :aria-label="t('Another answer')"
+              @click="chooseOtherAnswer"
+              @keydown.enter.prevent="send"
+            />
+            <craft-textarea
+              ref="messageBox"
+              class="assistant-chat__message-box"
+              :label="openQuestion ? t('Another answer') : undefined"
+              :placeholder="openQuestion ? t('Type another answer…') : ''"
+              rows="2"
+              .modelValue="draft"
+              @model-value-changed="onDraftChange"
+              @keydown="onDraftKeydown"
+            ></craft-textarea>
           </div>
         </div>
-      </form>
-    </div>
+        <craft-text-expander
+          v-if="messageBoxInputId"
+          :for="messageBoxInputId"
+          .triggers="textExpanderTriggers"
+          @craft-select="onTextExpanderSelect"
+        ></craft-text-expander>
+
+        <div class="assistant-chat__toolbar">
+          <craft-action-menu
+            v-if="addableSources.length"
+            :label="t('Add to context')"
+            .actions="addMenuItems"
+          >
+            <craft-button
+              slot="invoker"
+              type="button"
+              variant="plain"
+              size="small"
+              icon="plus"
+            >
+              {{ t('Add context') }}
+            </craft-button>
+          </craft-action-menu>
+          <!-- Icon-only buttons, named by their tooltips, so the names show on
+              hover and focus too. The icons name them until the tooltips do. -->
+          <template v-if="isLoading">
+            <craft-button
+              :id="`${idPrefix}-stop`"
+              key="stop"
+              class="assistant-chat__send"
+              type="button"
+              variant="danger"
+              size="small"
+              icon
+              @click="stop"
+            >
+              <craft-icon name="stop" :label="t('Stop')"></craft-icon>
+            </craft-button>
+            <craft-tooltip :for="`${idPrefix}-stop`" invoker-relation="label">
+              {{ t('Stop') }}
+            </craft-tooltip>
+          </template>
+          <template v-else>
+            <craft-button
+              :id="`${idPrefix}-send`"
+              key="send"
+              class="assistant-chat__send"
+              type="submit"
+              :variant="outgoing ? 'primary' : 'fill'"
+              size="small"
+              icon
+            >
+              <craft-icon name="arrow-up" :label="t('Send')"></craft-icon>
+            </craft-button>
+            <craft-tooltip :for="`${idPrefix}-send`" invoker-relation="label">
+              {{ t('Send') }}
+            </craft-tooltip>
+          </template>
+        </div>
+      </div>
+    </form>
   </div>
 </template>
 
@@ -1212,14 +1226,16 @@
     flex: 1;
     min-height: 0;
     overflow-y: auto;
-    padding-block-start: var(--c-spacing-lg);
+    padding-block: var(--c-spacing-lg);
     padding-inline: var(--c-spacing-lg);
+    scroll-padding-block-end: var(--c-spacing-lg);
   }
 
   .assistant-chat__thread {
     display: flex;
     flex-direction: column;
     gap: var(--c-spacing-lg);
+    margin-block-start: auto;
   }
 
   .assistant-chat__message--user {
@@ -1231,11 +1247,24 @@
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: var(--c-spacing-md);
+    gap: var(--c-spacing-sm);
     max-inline-size: 85%;
-    padding: var(--c-spacing-lg);
-    border-radius: var(--c-radius-lg);
+    padding-block: var(--c-spacing-md);
+    padding-inline: calc(var(--c-spacing) * 3);
+    border: 1px solid
+      color-mix(in srgb, var(--c-color-neutral-border-quiet) 50%, transparent);
+    border-radius: var(--c-radius-xl);
     background-color: var(--c-color-neutral-fill-quiet);
+    background-image: linear-gradient(
+      to top right,
+      color-mix(
+        in srgb,
+        var(--photo-color-start, transparent) 15%,
+        transparent
+      ),
+      color-mix(in srgb, var(--photo-color-end, transparent) 15%, transparent)
+    );
+    box-shadow: var(--c-shadow-sm);
     color: var(--c-color-neutral-on-quiet);
   }
 
@@ -1357,16 +1386,22 @@
 
   .assistant-chat__empty {
     flex: 1;
+    display: grid;
   }
 
   .assistant-chat__composer {
-    position: sticky;
-    inset-block-end: 0;
+    position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     gap: var(--c-spacing-sm);
-    margin-block-start: auto;
-    padding-block: var(--c-spacing-lg);
+    margin-block-start: calc(var(--c-spacing-lg) * -1);
+    padding: var(--c-spacing-lg);
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--c-surface-default) 0%, transparent),
+      var(--c-surface-default) var(--c-spacing-lg)
+    );
   }
 
   .assistant-chat__card {
@@ -1383,10 +1418,36 @@
     box-shadow: var(--c-shadow-md);
   }
 
+  .assistant-chat__card {
+    cursor: text;
+
+    & :is(craft-chip, .assistant-chat__message-label label) {
+      cursor: default;
+    }
+
+    &
+      :is(
+        a,
+        button,
+        craft-button,
+        craft-info-icon,
+        label.assistant-chat__option
+      ) {
+      cursor: pointer;
+    }
+  }
+
   .assistant-chat__card:has(textarea:focus-visible) {
     outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
       var(--c-color-focus-outline);
     outline-offset: var(--c-focus-outline-offset);
+  }
+
+  .assistant-chat__message-label {
+    display: flex;
+    align-items: center;
+    gap: var(--c-spacing-xs);
+    font-weight: 600;
   }
 
   .assistant-chat__answer {
@@ -1406,17 +1467,10 @@
     gap: var(--c-spacing-sm);
   }
 
-  .assistant-chat__option > input {
-    flex: none;
-    inline-size: 1em;
-    block-size: 1em;
-    margin: 0;
-    margin-block-start: calc(0.5lh - 0.5em);
-    accent-color: var(--c-color-accent-fill-loud);
-  }
-
   .assistant-chat__option > input:has(+ .assistant-chat__message-box) {
-    margin-block-start: calc(var(--c-spacing-xs) + 0.5lh - 0.5em);
+    margin-block-start: calc(
+      var(--c-spacing-xs) + (1lh - var(--c-checkbox-size)) / 2
+    );
   }
 
   .assistant-chat__option > .assistant-chat__message-box {
@@ -1433,27 +1487,6 @@
     --c-focus-outline-width: 0;
   }
 
-  .assistant-chat__message-box :deep(label) {
-    display: block;
-    max-block-size: 1lh;
-    overflow: clip;
-    transition-property: max-block-size, margin-block-end, opacity;
-    transition-duration: 150ms;
-    transition-timing-function: var(--ease-out);
-  }
-
-  .assistant-chat__message-box--empty :deep(label) {
-    max-block-size: 0;
-    margin-block-end: calc(var(--c-spacing-sm) * -1);
-    opacity: 0;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .assistant-chat__message-box :deep(label) {
-      transition-property: opacity;
-    }
-  }
-
   .assistant-chat__message-box :deep(textarea) {
     padding-block: var(--c-spacing-xs);
     padding-inline: 0;
@@ -1465,6 +1498,11 @@
     flex-wrap: wrap;
     justify-content: flex-end;
     gap: var(--c-spacing-xs);
+
+    & > li {
+      min-inline-size: 0;
+      max-inline-size: 100%;
+    }
   }
 
   .assistant-chat__card > .assistant-chat__chips {

@@ -17,6 +17,7 @@
     useAssistantPanel,
     useAssistantThread,
   } from './assistant';
+  import {useCrafty} from './crafty';
 
   const panel = useAssistantPanel();
   const threadId = useAssistantThread();
@@ -75,6 +76,14 @@
     chat.value?.focus();
   }
 
+  useCrafty(async (id) => {
+    threadId.value = id;
+    panel.opened.value = true;
+    screenPanels.open(ASSISTANT_PANEL_ID, {withFocus: false});
+    await nextTick();
+    await history.value?.refresh();
+  });
+
   function newChat(): Promise<void> {
     return switchTo(crypto.randomUUID());
   }
@@ -109,12 +118,13 @@
 </script>
 
 <template>
+  <!-- Always the last panel, after any a page or plugin adds. -->
   <ScreenPanel
     v-if="showsPanel"
     :id="ASSISTANT_PANEL_ID"
     :label="t('Ask AI')"
     icon="sparkles"
-    :order="50"
+    :order="Infinity"
     persistent
     scrolls-itself
     unlisted-in-palette
