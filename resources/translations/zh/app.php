@@ -1564,6 +1564,7 @@ return [
     'Resaving {type}' => '正在重新保存{type}',
     'Reserved' => '预留',
     'Reset password' => '重置密码',
+    'Resize editor' => 'Resize editor',
     'Resolve now' => '立即解决',
     'Resolved' => '已解决',
     'Response:' => '响应：',

@@ -97,6 +97,26 @@ describe('useFieldHighlight', () => {
     expect(field.hasAttribute('data-highlighted')).toBe(true);
   });
 
+  it('switches to the tab the field is on', async () => {
+    document.body.innerHTML = `
+      <a role="tab" aria-controls="tab-2" aria-selected="false">Details</a>
+      <section id="tab-2" class="hidden"></section>`;
+    const tab = document.querySelector<HTMLElement>('[role="tab"]')!;
+    tab.addEventListener('click', () =>
+      document.getElementById('tab-2')!.classList.remove('hidden')
+    );
+    const field = renderField('ui-maintenanceMode');
+    document.getElementById('tab-2')!.append(field);
+    setHash('#ui-maintenanceMode');
+
+    scope.run(() => useFieldHighlight());
+    await nextTick();
+
+    expect(document.getElementById('tab-2')!.classList.contains('hidden')).toBe(
+      false
+    );
+  });
+
   it('waits for the page an Inertia visit is still swapping in', async () => {
     setHash('#ui-maintenanceMode');
 

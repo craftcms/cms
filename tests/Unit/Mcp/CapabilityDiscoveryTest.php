@@ -129,7 +129,7 @@ it('lets plugins hide capabilities from users, but not approved public capabilit
     $discovery = new CapabilityDiscovery($request, GeneralConfig::create(), new CapabilityRegistry, $discoverer);
 
     expect(array_keys($discovery->discover(__DIR__, ['.'])->getTools()))->toBe(['plugin.read'])
-        ->and(array_keys($discovery->discoverStdio(__DIR__, ['.'])->getTools()))->toBe(['plugin.read'])
+        ->and(array_keys($discovery->discoverWithoutToken(__DIR__, ['.'])->getTools()))->toBe(['plugin.read'])
         ->and(array_keys($discovery->discoverPublic(__DIR__, ['.'])->getTools()))->toBe(['plugin.public'])
         ->and($users)->toContain($user);
 });

@@ -1564,6 +1564,7 @@ return [
     'Resaving {type}' => '{type} yeniden kaydediliyor',
     'Reserved' => 'Atandı',
     'Reset password' => 'Şifreyi sıfırla',
+    'Resize editor' => 'Resize editor',
     'Resolve now' => 'Şimdi çöz',
     'Resolved' => 'Çözüldü',
     'Response:' => 'Yanıt:',

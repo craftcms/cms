@@ -1564,6 +1564,7 @@ return [
     'Resaving {type}' => 'Opätovné ukladanie {type}',
     'Reserved' => 'Rezervované',
     'Reset password' => 'Obnoviť heslo',
+    'Resize editor' => 'Resize editor',
     'Resolve now' => 'Vyriešiť teraz',
     'Resolved' => 'Vyriešené',
     'Response:' => 'Odpoveď:',

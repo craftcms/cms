@@ -1564,6 +1564,7 @@ return [
     'Resaving {type}' => 'Επαναποθήκευση {type}',
     'Reserved' => 'Δεσμευμένο',
     'Reset password' => 'Επαναφορά κωδικού',
+    'Resize editor' => 'Resize editor',
     'Resolve now' => 'Επίλυση τώρα',
     'Resolved' => 'Επιλύθηκε',
     'Response:' => 'Απόκριση:',

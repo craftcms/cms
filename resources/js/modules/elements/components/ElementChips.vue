@@ -9,12 +9,13 @@
   } from '@/common/composables/useReorderableItems';
   import type {Selectable} from '@/common/composables/useSelectable';
   import {isInteractiveClick} from '@/common/utils/dom';
+  import CpLink from '@/common/components/CpLink.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
 
   /**
    * The element data a chip draws. Everything past `id` and `label` is optional.
    */
-  interface ChipElement {
+  export interface ChipElement {
     id: number;
     label: string;
     siteId?: number | string | null;
@@ -26,6 +27,8 @@
     thumbHtml?: string;
     /** A Craft color name, such as an entry's type color. */
     color?: string | null;
+    /** Where the element is edited, which a `linked` chip's label goes to. */
+    cpEditUrl?: string | null;
     /**
      * The element's structure level. Elements deeper than the one before them
      * are nested under it, as a relation field that maintains hierarchy shows
@@ -45,6 +48,8 @@
       inline?: boolean;
       /** Offer drag-and-drop and the reorder button. */
       sortable?: boolean;
+      /** Link each chip's label to its element's edit page. */
+      linked?: boolean;
       /** The chips are nested under another, and draw a branch line to it. */
       nested?: boolean;
     }>(),
@@ -54,6 +59,7 @@
       readOnly: false,
       inline: false,
       sortable: false,
+      linked: false,
       nested: false,
     }
   );
@@ -258,7 +264,13 @@
           ></craft-indicator>
         </div>
 
-        {{ labelFor(element) }}
+        <CpLink
+          v-if="linked && element.cpEditUrl"
+          :href="element.cpEditUrl"
+          bare
+          >{{ labelFor(element) }}</CpLink
+        >
+        <template v-else>{{ labelFor(element) }}</template>
         <slot name="append" :element="element" :index="index"></slot>
 
         <div slot="suffix" class="element-chips__suffix flex items-center">
@@ -294,6 +306,7 @@
         :selection="selection"
         :selectable="selectable"
         :read-only="readOnly"
+        :linked="linked"
         @edit="emit('edit', $event)"
       >
         <template v-if="$slots.prefix" #prefix="slotProps">

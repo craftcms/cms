@@ -1564,6 +1564,7 @@ return [
     'Resaving {type}' => 'Повторне збереження ({type})',
     'Reserved' => 'Зарезервовано',
     'Reset password' => 'Скинути пароль',
+    'Resize editor' => 'Resize editor',
     'Resolve now' => 'Розв\'язати',
     'Resolved' => 'Розв\'язано',
     'Response:' => 'Відповідь:',

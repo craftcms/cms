@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\CommandPalette;
 
+use CraftCms\Cms\Ai\Models\AgentSkill;
+use CraftCms\Cms\Ai\Skills\AgentSkills;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\Volume;
@@ -28,6 +30,8 @@ use CraftCms\Cms\Support\Facades\Workflows;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\EditUserScreens;
+use CraftCms\Cms\Utility\Utilities;
+use CraftCms\Cms\Utility\Utilities\AiGuidance;
 use CraftCms\Cms\Workflow\Models\Workflow;
 use Illuminate\Container\Attributes\Scoped;
 
@@ -50,6 +54,8 @@ class Pages
         private readonly EditUserScreens $editUserScreens,
         private readonly AssetTransformers $assetTransformers,
         private readonly PageRegistry $registry,
+        private readonly Utilities $utilities,
+        private readonly AgentSkills $skills,
     ) {}
 
     /**
@@ -74,7 +80,32 @@ class Pages
             ...$this->accountPages($user),
             ...$this->siteRoots(),
             ...($user->isAdmin() ? $this->settingsPages() : []),
+            ...$this->skillPages(),
         ];
+    }
+
+    /**
+     * Each AI skill’s edit page, for those allowed to use the AI Guidance & Skills utility, hinted by what the skill
+     * is for.
+     *
+     * @return list<CommandPaletteItem>
+     */
+    private function skillPages(): array
+    {
+        if (! $this->utilities->checkAuthorization(AiGuidance::class)) {
+            return [];
+        }
+
+        return $this->skills->all()
+            ->map(fn (AgentSkill $skill): CommandPaletteItem => new CommandPaletteItem()
+                ->id("skill-$skill->id")
+                ->label($skill->title)
+                ->hint($skill->description)
+                ->description(t('Skill'))
+                ->icon('sparkles')
+                ->href(AiGuidance::skillEditUrl($skill)))
+            ->values()
+            ->all();
     }
 
     /**

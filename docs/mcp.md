@@ -185,6 +185,8 @@ public function boot(): void
 
 Craft combines core instructions, site instructions, and plugin contributions in that order, separated by blank lines. Empty contributions are omitted. The event exposes only plugin contributions, so listeners cannot remove core or site instructions. Instructions guide clients; the server still enforces permissions independently. Avoid secrets in instructions because every user who can connect to the admin server receives them.
 
+The `mcp.instructions` setting is for developers. The site’s team writes guidance for content in the control panel’s **AI Guidance & Skills** utility, and each user can add their own. Clients get it with the `guidance.get` tool, and the site’s skills with `skills.list` and `skills.get`. Users who can use the utility can save guidance with `guidance.update` and manage skills with `skills.create`, `skills.update`, and `skills.delete`, and any user can save their own guidance with `guidance.updatePersonal`. The core instructions tell clients to read guidance before writing content. See [Ask AI](ask-ai.md#guidance-and-skills).
+
 Keep site and plugin contributions short. State when they apply and which capability or resource provides the details. Put task-specific procedures beside their tool schemas or in resources so unrelated tasks do not need to load them.
 
 To add short guidance to the startup instructions instead, listen for `CraftCms\Cms\Mcp\Events\CollectingServerInstructions` the same way. Unlike `info.get`, every user who connects receives these, including users without control panel access.

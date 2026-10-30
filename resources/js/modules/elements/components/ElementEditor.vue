@@ -43,6 +43,12 @@
   import CpContainer from '@/common/components/CpContainer.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import {NestedOwnerEditorKey} from '@/modules/elements/nested-owner';
+  import {
+    AssistantEditorKey,
+    assistantContainer,
+    registerAssistantEditor,
+    type AssistantEditor,
+  } from '@/modules/ai/assistant/context';
   import LivePreview from '@/modules/elements/live-preview/LivePreview.vue';
   import {useLivePreview} from '@/modules/elements/live-preview/useLivePreview';
   import {getActivePreview} from '@/modules/elements/live-preview/previews';
@@ -112,6 +118,25 @@
   } = editor;
 
   provide(NestedOwnerEditorKey, editor.nestedOwnerEditor);
+
+  // The AI assistant reads the form's values, and applies the changes it
+  // proposes, through the fields that render each control path.
+  const assistantParams = payload.aiAssistant;
+
+  if (assistantParams) {
+    const assistantEditor: AssistantEditor = {
+      id: crypto.randomUUID(),
+      params: () => payload.aiAssistant ?? assistantParams,
+      label: () => payload.title,
+      scope: () => uiPayload.value?.scope ?? [],
+      values: editor.formValues,
+      container: () =>
+        contentEl.value ? assistantContainer(contentEl.value) : null,
+    };
+
+    provide(AssistantEditorKey, assistantEditor);
+    onBeforeUnmount(registerAssistantEditor(assistantEditor));
+  }
 
   /**
    * Fields outside of a tab — in a field layout whose tab was never saved,

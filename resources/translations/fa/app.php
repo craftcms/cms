@@ -1564,6 +1564,7 @@ return [
     'Resaving {type}' => 'ذخیره کردن دوباره {type}',
     'Reserved' => 'رزروشده',
     'Reset password' => 'بازنشانی رمز عبور',
+    'Resize editor' => 'Resize editor',
     'Resolve now' => 'الان حل کنید',
     'Resolved' => 'برطرف‌شده',
     'Response:' => 'پاسخ: ',

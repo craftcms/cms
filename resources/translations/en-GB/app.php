@@ -1564,6 +1564,7 @@ return [
     'Resaving {type}' => 'Resaving {type}',
     'Reserved' => 'Reserved',
     'Reset password' => 'Reset password',
+    'Resize editor' => 'Resize editor',
     'Resolve now' => 'Resolve now',
     'Resolved' => 'Resolved',
     'Response:' => 'Response:',

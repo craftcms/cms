@@ -1564,6 +1564,7 @@ return [
     'Resaving {type}' => 'Gemmer {type} igen',
     'Reserved' => 'Reserveret',
     'Reset password' => 'Nulstil adgangskode',
+    'Resize editor' => 'Resize editor',
     'Resolve now' => 'Løs nu',
     'Resolved' => 'Løst',
     'Response:' => 'Løsning:',

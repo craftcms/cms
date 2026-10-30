@@ -163,6 +163,8 @@ export interface ElementEditPayload {
   standalonePreview?: {redirect: string; editUrl: string | null} | null;
   elementDisplayName: string;
   activityUrl: string | null;
+  /** Identifies the element to the AI assistant, when the user can add it to the assistant’s context. */
+  aiAssistant: CraftCms.Cms.Ai.Assistant.Data.ElementParams | null;
   activityTimelineUrl: string | null;
   activityPageUrl: string | null;
   updatedTimestamps: {element: number | null; canonical: number | null};
@@ -630,6 +632,14 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
 
   function requestValues(data: object): UiValues {
     return transform?.(data) ?? ({...data} as UiValues);
+  }
+
+  /**
+   * The form's current values, including the sidebar's, as a save would post
+   * them.
+   */
+  function formValues(): UiValues {
+    return {...saveData?.(), ...requestValues(form.data())};
   }
 
   /**
@@ -1234,6 +1244,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     nestedOwnerEditor,
     refreshUi,
     refreshLayout,
+    formValues,
     save,
     sidebarErrors,
     sidebarPayload,

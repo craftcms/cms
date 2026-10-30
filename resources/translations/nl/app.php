@@ -1564,6 +1564,7 @@ return [
     'Resaving {type}' => '{type} opnieuw opslaan',
     'Reserved' => 'Gereserveerd',
     'Reset password' => 'Wachtwoord opnieuw instellen',
+    'Resize editor' => 'Resize editor',
     'Resolve now' => 'Nu oplossen',
     'Resolved' => 'Opgelost',
     'Response:' => 'Reactie:',
