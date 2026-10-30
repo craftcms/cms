@@ -141,6 +141,9 @@
 - The header’s notification button is now a plain icon button, matching the search button beside it. ([#20106](https://github.com/craftcms/cms/pull/20106))
 - Plain links to control panel pages, such as those in elements’ metadata and other server-rendered HTML, now open with Inertia rather than reloading the page. ([#20118](https://github.com/craftcms/cms/pull/20118))
 - Link and Email field values in element indexes and cards now stay on one line, cut off with an ellipsis, after a button that shows the full address with options to open or copy it. Hovering over the link shows the same details. ([#20123](https://github.com/craftcms/cms/pull/20123))
+- Files can now be uploaded to Assets fields by pasting them from the clipboard while the field has focus. ([#20183](https://github.com/craftcms/cms/discussions/20183), [#20212](https://github.com/craftcms/cms/pull/20212))
+- Image data pasted into Markdown fields is now saved as `pasted-image-<timestamp>.<ext>` rather than `image.png`. ([#20212](https://github.com/craftcms/cms/pull/20212))
+- The authenticated MCP server’s connection instructions now only point to `info.get` for users with control panel access.
 - Fixed a bug where legacy buttons and text inputs were unstyled, and `fullwidth` controls didn’t fill their containers, on Twig control panel pages rendered inside the Inertia shell.
 - Fixed a bug where release dates were formatted for the control panel’s language rather than the user’s formatting locale. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Fixed a bug where the User Profile Fields and Address Fields settings pages had no Save button. ([#20085](https://github.com/craftcms/cms/pull/20085))
@@ -402,6 +405,8 @@
 ### Extensibility
 
 - Added the `cp-radio` and `cp-checkbox` classes, which draw native radio buttons and checkboxes like `<craft-radio>` and `<craft-checkbox>` draw theirs.
+- Added `CraftCms\Cms\Mcp\Events\CollectingServerInstructions`, which lets plugins add guidance to the instructions the authenticated and stdio MCP servers send when a client connects.
+- Added `CraftCms\Cms\Mcp\Events\DiscoveringCapability`, which lets plugins hide MCP tools, resources, and prompts from the current user.
 - Added `CraftCms\Cms\User\Elements\User::photoColors()`, which returns the two colors of a user’s default photo’s gradient.
 - Added the `craft:ui-value-change` DOM event and `Cp.$ui.active()` for plugins to observe canonical values from Craft 6 UI-rendered fields. ([#19920](https://github.com/craftcms/cms/discussions/19920))
 - Added `CraftCms\Cms\Cp\CommandPalette\CommandPaletteItem`, `PageRegistry`, `ActionRegistry`, and `SearchProviderRegistry`, which plugins can use to add pages, actions, and search providers to the command palette, and `CraftCms\Cms\Cp\CommandPalette\Contracts\SearchProvider` and `CraftCms\Cms\Cp\CommandPalette\SearchProviders\ElementSearchProvider`, for searching custom content or element types. ([#20081](https://github.com/craftcms/cms/pull/20081))
@@ -764,6 +769,9 @@
 - Fixed a bug where orphaned foreign key rows weren’t deleted during garbage collection when the database connection had a table prefix. ([#20192](https://github.com/craftcms/cms/pull/20192))
 - Fixed an error that occurred when running `craft:up` on PostgreSQL sites that were first installed on Craft 3 or 4. ([#20188](https://github.com/craftcms/cms/pull/20188))
 - Fixed an error that occurred when running `craft:up` or loading entry types on sites upgraded from Craft 5, if an entry type had an empty title or slug translation method. ([#20187](https://github.com/craftcms/cms/pull/20187))
+- Fixed a bug where nested entries added via drafts on multi-site installs could get an incomplete first revision, causing their nested content to be deleted when reverting to it. ([#20151](https://github.com/craftcms/cms/issues/20151))
+- Fixed a bug where nested entries owned by drafts could get their own revisions, which could cause a foreign key error when applying the draft on PostgreSQL. ([#20151](https://github.com/craftcms/cms/issues/20151))
+- Fixed a bug where MCP requests could be rejected when a reverse proxy rewrote the `Host` header. MCP now validates the host resolved through trusted proxies.
 
 ## 6.0.0-alpha.20 - 2026-10-07
 

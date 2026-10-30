@@ -163,7 +163,7 @@ The public server is configured in the control panel. Its settings are stored in
 
 ### Server instructions
 
-The admin server is the authenticated HTTP or stdio server acting as a Craft user, including editors. Its available capabilities depend on that user's permissions and `allowAdminChanges`. HTTP clients receive brief startup instructions through `server/discover`; stdio clients receive them during `initialize`. These direct clients to call `info.get` before using other Craft capabilities.
+The admin server is the authenticated HTTP or stdio server acting as a Craft user, including editors. Its available capabilities depend on that user's permissions and `allowAdminChanges`. HTTP clients receive brief startup instructions through `server/discover`; stdio clients receive them during `initialize`. For users with control panel access, these direct clients to call `info.get` before using other Craft capabilities.
 
 The `instructions` field in the `info.get` result contains the full guidance for discovery, identifiers, reading and editing content, pagination, and destructive operations, followed by site and plugin additions. Startup instructions stay below Claude Code's default 2,048-character limit. Task-specific guidance remains in element schemas and tool descriptions.
 
@@ -187,7 +187,9 @@ Craft combines core instructions, site instructions, and plugin contributions in
 
 Keep site and plugin contributions short. State when they apply and which capability or resource provides the details. Put task-specific procedures beside their tool schemas or in resources so unrelated tasks do not need to load them.
 
-The event runs each time `info.get` is called. Server discovery, stdio initialization, and unauthenticated CORS preflight requests do not collect instructions. Restart stdio clients after changing instruction configuration. The public server keeps separate instructions and receives neither `mcp.instructions` nor these plugin contributions.
+To add short guidance to the startup instructions instead, listen for `CraftCms\Cms\Mcp\Events\CollectingServerInstructions` the same way. Unlike `info.get`, every user who connects receives these, including users without control panel access.
+
+The `CollectingAdminInstructions` event runs each time `info.get` is called. Server discovery, stdio initialization, and unauthenticated CORS preflight requests do not collect instructions. Restart stdio clients after changing instruction configuration. The public server keeps separate instructions and receives neither `mcp.instructions` nor these plugin contributions.
 
 ### Element pagination and permission replacement
 
@@ -515,6 +517,24 @@ Without `createAttributesSchema()`, `elements.create` reports that the type can'
 ### Exposing a custom element type publicly
 
 Registered element types appear under **Public Content → Element Types**. When an administrator approves one, `craft-query` can query it by its `refHandle()`, using the common criteria (`id`, `uid`, `site`, `siteId`, `search`, `status`, `limit`, `offset`, and `orderBy`) plus its custom fields. Entries, assets, and users are controlled by sections, volumes, and user groups instead.
+
+### Hiding capabilities from users
+
+Craft dispatches `CraftCms\Cms\Mcp\Events\DiscoveringCapability` for each tool, resource, and prompt the authenticated or stdio server would expose to the current user, after its own permission and token scope checks. Set `allowed` to `false` to hide one:
+
+```php
+use CraftCms\Cms\Mcp\Events\DiscoveringCapability;
+use Illuminate\Support\Facades\Event;
+use Mcp\Capability\Registry\ToolReference;
+
+Event::listen(DiscoveringCapability::class, function (DiscoveringCapability $event): void {
+    if ($event->reference instanceof ToolReference && $event->reference->tool->name === 'reviews.delete' && ! $event->user?->can('deleteReviews')) {
+        $event->allowed = false;
+    }
+});
+```
+
+The event can't hide capabilities approved for the public server.
 
 ### Changing serialized elements
 

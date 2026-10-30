@@ -14,7 +14,9 @@ use CraftCms\Cms\Mcp\Attributes\RequiresEdition;
 use CraftCms\Cms\Mcp\Attributes\RequiresHttp;
 use CraftCms\Cms\Mcp\Attributes\RequiresPermission;
 use CraftCms\Cms\Mcp\Enums\McpScope;
+use CraftCms\Cms\Mcp\Events\DiscoveringCapability;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Laravel\Passport\Contracts\ScopeAuthorizable;
 use LogicException;
 use Mcp\Capability\Discovery\Discoverer;
@@ -53,7 +55,8 @@ readonly class CapabilityDiscovery implements DiscovererInterface
             $discovered,
             fn (ElementReference $reference): bool => ! $this->isPublic($reference)
                 && $this->allows($reference)
-                && $this->tokenAllows($reference),
+                && $this->tokenAllows($reference)
+                && $this->pluginsAllow($reference),
         );
     }
 
@@ -93,7 +96,8 @@ readonly class CapabilityDiscovery implements DiscovererInterface
             $discovered,
             fn (ElementReference $reference): bool => ! $this->isPublic($reference)
                 && $this->allows($reference)
-                && ($this->reflection($reference->handler)?->getAttributes(RequiresHttp::class) ?? []) === [],
+                && ($this->reflection($reference->handler)?->getAttributes(RequiresHttp::class) ?? []) === []
+                && $this->pluginsAllow($reference),
         );
     }
 
@@ -181,6 +185,19 @@ readonly class CapabilityDiscovery implements DiscovererInterface
         }
 
         return array_all($requiredPermissions, fn ($attribute) => $user->can($attribute->newInstance()->permission));
+    }
+
+    /** Whether plugins allow the capability, via {@see DiscoveringCapability}. */
+    private function pluginsAllow(ElementReference $reference): bool
+    {
+        if (! Event::hasListeners(DiscoveringCapability::class)) {
+            return true;
+        }
+
+        $event = new DiscoveringCapability($reference, $this->request->craftUser());
+        event($event);
+
+        return $event->allowed;
     }
 
     /** Whether the request's access token has the scope the capability requires. */
