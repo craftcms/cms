@@ -6,6 +6,7 @@ import {
   sendLegacyRequest,
   type LegacyRequestOptions,
 } from '@craftcms/ui/utilities/api/legacyRequest';
+import {loadElementThumbs} from '@/modules/element-thumb-loader/globals';
 import {
   addErrorsToField,
   clearErrorsFromField,
@@ -78,9 +79,8 @@ const DEFAULTS: CpModalSettings = {
  *
  * Like its sibling {@link CpScreenSlideout}, it keeps the jQuery seam
  * (`declare const $`) for the form, because the delta-tracking data
- * (`.data('initialSerializedValue' | 'delta-names' | 'serializer')`) and the
- * `Craft.ui.*` field-error helpers share those jQuery conventions with the rest
- * of the CP-screen framework.
+ * (`.data('initialSerializedValue' | 'delta-names' | 'serializer')`) shares
+ * those jQuery conventions with the rest of the CP-screen framework.
  *
  * Emits `beforeLoad`, `load`, `submit`, `close` and `cancel`.
  */
@@ -285,7 +285,7 @@ export class CpModal extends Base {
         );
 
         Craft.initUiElements(this.#$content);
-        Craft.cp.elementThumbLoader.load(this.#$content);
+        loadElementThumbs(this.#$content);
 
         if (!isMobileBrowser()) {
           setFocusWithin(this.#$content[0]!);

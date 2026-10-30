@@ -14,8 +14,7 @@ import {showError} from '@/modules/messages/messages';
 
 /**
  * A single layout element (field or UI element) within a {@link Tab}. Native DOM
- * port of the legacy `Craft.FieldLayoutDesigner.Element`. jQuery survives only at
- * Craft seams (`Craft.ui.*`, `Craft.*Slideout`). The action menu uses the
+ * port of the legacy `Craft.FieldLayoutDesigner.Element`. The action menu uses the
  * `craft-action-menu` web component.
  */
 export class Element extends Base {
