@@ -6,6 +6,7 @@ import type {FieldLayoutDesigner} from './field-layout-designer';
 import type {Element as FldElement} from './element';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {showError} from '@/modules/messages/messages';
 
 declare const Craft: any;
 
@@ -391,7 +392,7 @@ export class CardViewDesigner extends Base {
       );
     } catch (e: any) {
       if (!isCancel(e)) {
-        Craft.cp.displayError(e?.response?.data?.message);
+        showError(e?.response?.data?.message);
         throw e;
       }
       // otherwise the request was canceled by a newer preview — ignore.

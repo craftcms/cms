@@ -2,6 +2,7 @@ import {bod, DOWN_KEY, RETURN_KEY, UP_KEY} from '@craftcms/garnish';
 import {BaseElementSelectInput} from './base-element-select-input';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {showError} from '@/modules/messages/messages';
 
 declare const Craft: any;
 declare const Garnish: any;
@@ -340,7 +341,7 @@ export class TagSelectInput extends BaseElementSelectInput {
         })
         .catch((e: any) => {
           this.removeElement($element);
-          Craft.cp.displayError(e?.response?.data?.message);
+          showError(e?.response?.data?.message);
         });
     }
   }

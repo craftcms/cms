@@ -30,6 +30,19 @@ import {registerUiComponents} from '@/modules/ui/register';
 import type {UiPayload} from '@/modules/ui/types';
 import {useElementEditor, type ElementEditPayload} from './useElementEditor';
 
+const messages = vi.hoisted(() => ({
+  showError: vi.fn(),
+  showNotice: vi.fn(),
+  showSuccess: vi.fn(),
+}));
+vi.mock('@/modules/messages/messages', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  ...messages,
+}));
+beforeEach(() => {
+  Object.values(messages).forEach((fn) => fn.mockReset());
+});
+
 const {postSpy} = vi.hoisted(() => ({postSpy: vi.fn()}));
 
 function deferred<T>() {
@@ -2703,8 +2716,7 @@ describe('useElementEditor', () => {
     });
 
     it('announces invalid nested elements when a save fails', async () => {
-      const displayError = vi.fn();
-      vi.stubGlobal('Craft', {cp: {displayError}});
+      vi.stubGlobal('Craft', {cp: {}});
       const root = document.createElement('div');
       document.body.append(root);
       const listener = vi.fn();
@@ -2736,16 +2748,14 @@ describe('useElementEditor', () => {
       expect((listener.mock.calls[0]![0] as CustomEvent).detail).toEqual({
         ids: [5],
       });
-      expect(displayError).toHaveBeenCalledWith('Couldn’t save entry.');
+      expect(messages.showError).toHaveBeenCalledWith('Couldn’t save entry.');
       root.remove();
     });
 
     it('announces a finished save to the rest of the CP', async () => {
-      const displaySuccess = vi.fn();
       const postMessage = vi.fn();
       const refresh = vi.fn();
       vi.stubGlobal('Craft', {
-        cp: {displaySuccess},
         broadcaster: {
           postMessage,
           addEventListener: vi.fn(),
@@ -2762,8 +2772,8 @@ describe('useElementEditor', () => {
 
       editor.save();
 
-      await vi.waitFor(() => expect(displaySuccess).toHaveBeenCalled());
-      expect(displaySuccess.mock.calls[0]![0]).toBe('Entry saved.');
+      await vi.waitFor(() => expect(messages.showSuccess).toHaveBeenCalled());
+      expect(messages.showSuccess.mock.calls[0]![0]).toBe('Entry saved.');
       expect(postMessage).toHaveBeenCalledWith({
         event: 'saveElement',
         id: 12,

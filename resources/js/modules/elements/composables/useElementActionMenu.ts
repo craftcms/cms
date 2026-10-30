@@ -14,6 +14,7 @@ import {
 } from '@/modules/image-editor/open-image-editor-dialog';
 import {elevatedSessionManager} from '@/modules/auth/elevated-session/manager';
 import {getCpUrl} from '@/common/craft/url';
+import {showError, showNotice} from '@/modules/messages/messages';
 
 /** Identifies an element for the CP clipboard. */
 interface ElementCopyRef {
@@ -253,7 +254,7 @@ export function createElementActionDispatcher({
               value: data.url,
             });
           } catch (error: any) {
-            Craft.cp?.displayError?.(
+            showError(
               error?.response?.data?.message ?? t('A server error occurred.')
             );
           }
@@ -312,7 +313,7 @@ export function createElementActionDispatcher({
       const {data} = await actionClient.post(actionUrl, params);
 
       if (data?.message) {
-        Craft.cp?.displayNotice?.(data.message);
+        showNotice(data.message);
       }
 
       panel.saved(destructive ? {data} : {draft: true, data});
@@ -323,7 +324,7 @@ export function createElementActionDispatcher({
         await panel.reload();
       }
     } catch (error: any) {
-      Craft.cp?.displayError?.(
+      showError(
         error?.response?.data?.message ?? t('A server error occurred.')
       );
     }

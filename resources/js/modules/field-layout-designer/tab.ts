@@ -16,8 +16,8 @@ import {createInitialIcon} from '@/common/utils/initialIcon';
 import {uuid} from '@/common/craft/strings';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {showError} from '@/modules/messages/messages';
 
-declare const Craft: any;
 declare const $: any;
 
 /**
@@ -226,7 +226,7 @@ export class Tab extends Base {
       );
       data = response.data;
     } catch (e: any) {
-      Craft.cp.displayError(e?.response?.data?.message);
+      showError(e?.response?.data?.message);
       throw e;
     }
 

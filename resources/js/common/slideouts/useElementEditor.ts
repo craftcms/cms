@@ -26,6 +26,7 @@ import {
   setFocusOnErrorSummary,
   findTabAnchorForField,
 } from '@/common/craft/field-errors';
+import {showError} from '@/modules/messages/messages';
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- the legacy CP globals
    are untyped, and typing them here would only describe one caller's slice. */
@@ -197,7 +198,6 @@ export function useElementEditor(
    * job — the only difference is where the regions come from.
    */
   function showErrors(errors: Record<string, string[]>): void {
-    const Craft = craft();
     const form = toValue(options.regions.form);
 
     if (!form) {
@@ -253,7 +253,6 @@ export function useElementEditor(
   }
 
   function showErrorSummary(html: string, errorCount: number): void {
-    const Craft = craft();
     const $ = jquery();
     const content = toValue(options.regions.content);
 
@@ -467,7 +466,7 @@ export function useElementEditor(
         };
       }
     } catch (error) {
-      craft().cp.displayError(
+      showError(
         error instanceof Error
           ? error.message
           : craft().t('app', 'Couldn’t save.')

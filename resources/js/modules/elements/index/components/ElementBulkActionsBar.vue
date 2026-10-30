@@ -16,6 +16,7 @@
   import type {ActionItem} from '@/common/types';
   import BulkActionsBarShell from '@/modules/elements/components/BulkActionsBarShell.vue';
   import {useBulkActionSelection} from '@/modules/elements/composables/useBulkActionSelection';
+  import {showError} from '@/modules/messages/messages';
 
   const props = withDefaults(
     defineProps<{
@@ -268,7 +269,7 @@
       try {
         await props.perform(item, run);
       } catch (cause) {
-        window.Craft?.cp?.displayError?.(
+        showError(
           cause instanceof Error ? cause.message : t('A server error occurred.')
         );
       }

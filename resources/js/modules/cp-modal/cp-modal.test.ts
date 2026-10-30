@@ -3,6 +3,19 @@ import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {CpModal} from './cp-modal';
 
+const messages = vi.hoisted(() => ({
+  showError: vi.fn(),
+  showNotice: vi.fn(),
+  showSuccess: vi.fn(),
+}));
+vi.mock('@/modules/messages/messages', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  ...messages,
+}));
+beforeEach(() => {
+  Object.values(messages).forEach((fn) => fn.mockReset());
+});
+
 type Dialog = HTMLElement & {opened: boolean; label: string};
 
 let request: ReturnType<typeof vi.spyOn>;
@@ -30,8 +43,6 @@ describe('CpModal', () => {
     vi.stubGlobal('Craft', {
       t: (_category: string, message: string) => message,
       cp: {
-        displayError: vi.fn(),
-        displaySuccess: vi.fn(),
         elementThumbLoader: {load: vi.fn()},
       },
       baseCpUrl: 'https://example.test/admin',

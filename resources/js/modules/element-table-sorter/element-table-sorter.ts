@@ -2,6 +2,7 @@ import {DragSort} from '@craftcms/garnish';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {isRtl, startSide} from '@/common/craft/direction';
+import {showError, showSuccess} from '@/modules/messages/messages';
 
 // Keeps the `declare const $` / `declare const Craft` seams: the structural
 // row logic is jQuery-heavy and interops with the still-legacy table view
@@ -307,7 +308,7 @@ export class ElementTableSorter extends DragSort {
       actionClient
         .post('structures/move-element', data)
         .then(() => {
-          Craft.cp.displaySuccess(t('New position saved.'));
+          showSuccess(t('New position saved.'));
           this.onPositionChange();
 
           // Were we waiting on this to complete so we can expand the new parent?
@@ -320,7 +321,7 @@ export class ElementTableSorter extends DragSort {
           Craft.cp.runQueue();
         })
         .catch((e: any) => {
-          Craft.cp.displayError(e?.response?.data?.message);
+          showError(e?.response?.data?.message);
           this.tableView.elementIndex.updateElements();
         });
     }

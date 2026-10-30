@@ -2,14 +2,18 @@ import {afterEach, beforeEach, expect, it, vi} from 'vitest';
 import {
   carryOverRecentMessages,
   installLegacyShim,
+  showError,
   showMessage,
   showMessagesFromResponse,
+  showNotice,
   registerMessageOutlet,
   resetMessages,
   restoreCarriedMessages,
 } from './messages';
 
-vi.mock('@craftcms/ui', () => ({t: (message: string) => message}));
+vi.mock('@craftcms/ui/utilities/translate', () => ({
+  t: (message: string) => message,
+}));
 
 interface FakeNotification {
   type: string;
@@ -157,4 +161,27 @@ it('carries messages shown just before the page unloads over to the next page', 
 
   expect(rendered.map((n) => n.message)).toEqual(['Moved.']);
   expect(sessionStorage.getItem('Craft-messages.carry')).toBeNull();
+});
+
+it('returns the notification, and falls back to a generic error message', () => {
+  installFakeCp();
+
+  const notice = showNotice('Moved.', {persist: true});
+  showError();
+
+  expect(notice).toBe(rendered[0]);
+  expect(rendered[0]!.settings).toMatchObject({persist: true, icon: 'info'});
+  expect(rendered[1]).toMatchObject({
+    type: 'error',
+    message: 'A server error occurred.',
+  });
+});
+
+it('returns null when the message goes to an outlet', () => {
+  installFakeCp();
+  registerMessageOutlet('form', () => {});
+
+  expect(
+    showMessage({type: 'error', message: 'Invalid.', target: 'form'})
+  ).toBeNull();
 });

@@ -8,6 +8,7 @@ import {highlightCodeBlocks} from '@/common/utils/highlight-code';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
+import {showError, showNotice} from '@/modules/messages/messages';
 
 declare const Craft: any;
 declare const $: any;
@@ -287,7 +288,7 @@ export class PreviewFileModal {
       .catch(({response}: any) => {
         if (requestId !== this.requestId) return;
         onResponse();
-        Craft.cp.displayError(response?.data?.message);
+        showError(response?.data?.message);
         this.hide();
       });
   }
@@ -329,9 +330,9 @@ export class PreviewFileModal {
       async () => {
         try {
           await navigator.clipboard.writeText(text);
-          Craft.cp.displayNotice(t('Copied to clipboard.'));
+          showNotice(t('Copied to clipboard.'));
         } catch {
-          Craft.cp.displayError(t('Couldn’t copy to the clipboard.'));
+          showError(t('Couldn’t copy to the clipboard.'));
         }
       }
     );

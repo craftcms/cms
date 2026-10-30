@@ -11,6 +11,7 @@
   import {useSlideout} from '@/common/slideouts';
   import {takeOverrideSettingsContext} from './entry-type-override-settings';
   import {addErrorsToField} from '@/common/craft/field-errors';
+  import {showError} from '@/modules/messages/messages';
 
   declare const Craft: any;
   declare const $: any;
@@ -81,7 +82,7 @@
         }
       });
 
-      Craft.cp.displayError(data?.message);
+      showError(data?.message);
 
       return;
     } finally {

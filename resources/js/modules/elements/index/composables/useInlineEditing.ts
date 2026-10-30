@@ -7,6 +7,7 @@ import {useShortcut} from '@/common/shortcuts';
 import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
 import type {InlineAttributeUiHost} from '@/modules/ui/inline-attribute-ui-host';
 import {findDeltaData} from '@/common/craft/delta';
+import {showError, showNotice} from '@/modules/messages/messages';
 
 export type InlineEditingErrors = Record<
   string | number,
@@ -140,7 +141,7 @@ export function useInlineEditing<Row extends InlineEditableRow>(options: {
     );
     if (!body.has('modifiedDeltaNames[]')) {
       clear();
-      window.Craft?.cp?.displayNotice?.(t('No changes to save.'));
+      showNotice(t('No changes to save.'));
 
       return;
     }
@@ -152,7 +153,7 @@ export function useInlineEditing<Row extends InlineEditableRow>(options: {
 
     if (result.errors && Object.keys(result.errors).length) {
       errors.value = result.errors;
-      window.Craft?.cp?.displayError?.(t('Couldn’t save.'));
+      showError(t('Couldn’t save.'));
 
       for (const host of uiHosts) {
         host.errors =
@@ -167,7 +168,7 @@ export function useInlineEditing<Row extends InlineEditableRow>(options: {
     }
 
     clear();
-    window.Craft?.cp?.displayNotice?.(result.message ?? t('Changes saved.'));
+    showNotice(result.message ?? t('Changes saved.'));
   }
 
   function onKeydown(event: KeyboardEvent): void {

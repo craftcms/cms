@@ -60,6 +60,7 @@ import {getCpUrl} from '@/common/craft/url';
 import {t} from '@craftcms/ui/utilities/translate';
 import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
 import {setElementAttributes} from '@/common/craft/attributes';
+import {showError, showSuccess} from '@/modules/messages/messages';
 
 declare const Craft: any;
 declare const $: any;
@@ -388,7 +389,7 @@ export class CpScreenSlideout extends Slideout {
         })
         .catch((e: any) => {
           if (!this.ignoreFailedRequest) {
-            Craft.cp.displayError();
+            showError();
             reject(e);
           }
           this.ignoreFailedRequest = false;
@@ -753,7 +754,7 @@ export class CpScreenSlideout extends Slideout {
     this.clearErrors();
     const data = response.data || {};
     if (data.message) {
-      Craft.cp.displaySuccess(data.message, data.notificationSettings);
+      showSuccess(data.message, data.notificationSettings);
     }
     if (data.modelClass && data.modelId) {
       Craft.refreshComponentInstances(data.modelClass, data.modelId);
@@ -778,12 +779,12 @@ export class CpScreenSlideout extends Slideout {
     // compatibility; the `as any` only silences TS2367, which correctly
     // flags the comparison.
     if (!isHttpError(e) || !e.response) {
-      Craft.cp.displayError();
+      showError();
       throw e;
     }
 
     const data = e.response.data || {};
-    Craft.cp.displayError(data.message);
+    showError(data.message);
     if (data.errors) {
       this.showErrors(data.errors);
     }

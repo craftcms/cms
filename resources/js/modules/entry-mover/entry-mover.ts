@@ -1,6 +1,7 @@
 import {Base, Modal} from '@craftcms/garnish';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {showError, showSuccess} from '@/modules/messages/messages';
 
 /** A `craft-button`, whose `disabled` and `loading` states are properties. */
 type SelectButton = HTMLElement & {disabled: boolean; loading: boolean};
@@ -196,7 +197,7 @@ export class EntryMover extends Base {
         });
       })
       .catch(({response}: {response?: {data?: {message?: string}}}) => {
-        Craft.cp.displayError(response?.data?.message);
+        showError(response?.data?.message);
         this.modal?.hide();
       })
       .finally(() => {
@@ -223,7 +224,7 @@ export class EntryMover extends Base {
     actionClient
       .post('entries/move-to-section', data)
       .then((response: {data: {message: string}}) => {
-        Craft.cp.displaySuccess(response.data.message);
+        showSuccess(response.data.message);
         Craft.cp.announce(response.data.message);
 
         this.elementIndex?.updateElements();
@@ -231,7 +232,7 @@ export class EntryMover extends Base {
         this.modal?.hide();
       })
       .catch((e: {response?: {data?: {message?: string}}}) => {
-        Craft.cp.displayError(e?.response?.data?.message);
+        showError(e?.response?.data?.message);
         Craft.cp.announce(e?.response?.data?.message);
       })
       .finally(() => {

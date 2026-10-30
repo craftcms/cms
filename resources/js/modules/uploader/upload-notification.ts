@@ -11,8 +11,7 @@ import {
   type UploadDuplicate,
   UploadDuplicatesNotificationElement,
 } from './upload-duplicates-notification.ce';
-
-declare const Craft: any;
+import {showNotice} from '@/modules/messages/messages';
 
 /** Uses the existing CP notification for per-file upload controls. */
 export function createFileUploadNotification(
@@ -207,10 +206,13 @@ function createUploadNotice(
 ): () => void {
   let shown = false;
   let finished = false;
-  const notification = Craft.cp.displayNotice(message, {
+  const notification = showNotice(message, {
     details,
     persist: true,
   });
+  if (!notification) {
+    return () => onClose?.();
+  }
   notification.on('show', () => {
     shown = true;
     if (onClose) {

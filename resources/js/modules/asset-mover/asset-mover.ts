@@ -2,6 +2,7 @@ import {Base} from '@craftcms/garnish';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {create} from '@craftcms/ui/utilities/create';
+import {showError, showNotice} from '@/modules/messages/messages';
 
 // Mostly Craft.* runtime seams (the still-legacy element index + prompt handler
 // + progress bar); the only jQuery is via the objects Craft.ui/Craft.cp return
@@ -54,7 +55,7 @@ export class AssetMover extends Base {
         assetIds,
       });
     } catch (e: any) {
-      Craft.cp.displayError(e?.response?.data?.message);
+      showError(e?.response?.data?.message);
       return;
     }
 
@@ -70,7 +71,6 @@ export class AssetMover extends Base {
   }
 
   successNotice(moveParams: any, message: any, allowUndo = true): void {
-    let details = null;
     let $undoBtn = null;
 
     if (allowUndo && this.conflictCount === 0) {
@@ -78,13 +78,12 @@ export class AssetMover extends Base {
     }
 
     // if we didn't reach the limit, so the move was not confirmed, we want to give the option to undo
-    if (!moveParams.confirmed && allowUndo) {
-      details = {
-        details: $undoBtn,
-      };
-    }
-
-    const notice = Craft.cp.displayNotice(message, details);
+    const notice = showNotice(
+      message,
+      !moveParams.confirmed && allowUndo && $undoBtn
+        ? {details: $undoBtn[0]}
+        : undefined
+    );
 
     if (allowUndo) {
       $undoBtn?.on('activate', async () => {
@@ -106,7 +105,7 @@ export class AssetMover extends Base {
           }
         }
         // if no, just close the notice;
-        notice.$closeBtn.trigger('click');
+        notice?.close();
       });
     }
   }
@@ -293,7 +292,7 @@ export class AssetMover extends Base {
           }
 
           if (response.error) {
-            Craft.cp.displayError(response.error);
+            showError(response.error);
           }
         }
 

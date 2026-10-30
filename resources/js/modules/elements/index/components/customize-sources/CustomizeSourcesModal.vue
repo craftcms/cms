@@ -34,6 +34,7 @@
     type SourcesResponse,
     type SourceType,
   } from './types';
+  import {showError} from '@/modules/messages/messages';
 
   const props = defineProps<{
     isActive: boolean;
@@ -175,7 +176,7 @@
       loaded.value = true;
       void select(initialSource());
     } catch (error: any) {
-      Craft.cp?.displayError?.(error?.response?.data?.message);
+      showError(error?.response?.data?.message);
     } finally {
       loading.value = false;
     }
@@ -223,7 +224,7 @@
         ui = await fetchUi(source.key, source.type);
       } catch (error: any) {
         failedUiKey.value = source.key;
-        Craft.cp?.displayError?.(error?.response?.data?.message);
+        showError(error?.response?.data?.message);
         return;
       }
 
@@ -533,7 +534,7 @@
       if (responseErrors) {
         setErrors(responseErrors);
       } else {
-        Craft.cp?.displayError?.(error?.response?.data?.message);
+        showError(error?.response?.data?.message);
       }
 
       saving.value = false;

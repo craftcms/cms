@@ -1,5 +1,18 @@
-import {afterEach, expect, it, vi} from 'vite-plus/test';
+import {afterEach, expect, it, vi, beforeEach} from 'vite-plus/test';
 import './recovery-codes-setup';
+
+const messages = vi.hoisted(() => ({
+  showError: vi.fn(),
+  showNotice: vi.fn(),
+  showSuccess: vi.fn(),
+}));
+vi.mock('@/modules/messages/messages', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  ...messages,
+}));
+beforeEach(() => {
+  Object.values(messages).forEach((fn) => fn.mockReset());
+});
 
 afterEach(() => {
   document.body.innerHTML = '';
@@ -8,7 +21,7 @@ afterEach(() => {
 });
 
 function setup(response: {ok: boolean; status: number; body: unknown}) {
-  const cp = {announce: vi.fn(), displayError: vi.fn()};
+  const cp = {announce: vi.fn()};
   vi.stubGlobal('Craft', {
     cp,
     t: (_category: string, message: string) => message,
@@ -40,15 +53,17 @@ function setup(response: {ok: boolean; status: number; body: unknown}) {
 
 it('keeps the form and shows the error when the elevated session has expired', async () => {
   const message = 'This action may only be performed with an elevated session.';
-  const {cp, host} = setup({ok: false, status: 423, body: {message}});
+  const {host} = setup({ok: false, status: 423, body: {message}});
 
-  await vi.waitFor(() => expect(cp.displayError).toHaveBeenCalledWith(message));
+  await vi.waitFor(() =>
+    expect(messages.showError).toHaveBeenCalledWith(message)
+  );
   expect(host.querySelector('form')).not.toBeNull();
   expect(host.querySelector('.auth-method-setup-success-message')).toBeNull();
 });
 
 it('moves focus to the success heading after generating codes', async () => {
-  const {cp, host} = setup({
+  const {host} = setup({
     ok: true,
     status: 200,
     body: {message: 'Recovery codes generated.', codes: ['abc-123', 'def-456']},
@@ -64,5 +79,5 @@ it('moves focus to the success heading after generating codes', async () => {
     'abc-123',
     'def-456',
   ]);
-  expect(cp.displayError).not.toHaveBeenCalled();
+  expect(messages.showError).not.toHaveBeenCalled();
 });

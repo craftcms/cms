@@ -125,6 +125,17 @@ export type {
   Updater,
 } from '@tanstack/vue-table';
 
+export {
+  showError,
+  showMessage,
+  showNotice,
+  showSuccess,
+  type CpMessage,
+  type CpNotification,
+  type MessageSettings,
+  type MessageType,
+} from './modules/messages/messages';
+export {useMessages} from './modules/messages/useMessages';
 export {highlighter} from './common/utils/highlight-code';
 
 export {CraftAuthChallengeForm as AuthChallengeForm} from './modules/auth/components/auth-challenge-form';

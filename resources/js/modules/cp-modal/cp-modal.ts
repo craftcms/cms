@@ -18,6 +18,7 @@ import {findDeltaData} from '@/common/craft/delta';
 import {t} from '@craftcms/ui/utilities/translate';
 import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
 import {setElementAttributes} from '@/common/craft/attributes';
+import {showError, showSuccess} from '@/modules/messages/messages';
 
 declare const Craft: any;
 declare const $: any;
@@ -241,7 +242,7 @@ export class CpModal extends Base {
         })
         .catch((e: Error) => {
           if (!this.#ignoreFailedRequest) {
-            Craft.cp.displayError();
+            showError();
             reject(e);
           }
           this.#ignoreFailedRequest = false;
@@ -346,7 +347,7 @@ export class CpModal extends Base {
     this.clearErrors();
     const data = response.data || {};
     if (data.message) {
-      Craft.cp.displaySuccess(data.message, data.notificationSettings);
+      showSuccess(data.message, data.notificationSettings);
     }
     if (data.modelClass && data.modelId) {
       Craft.refreshComponentInstances(data.modelClass, data.modelId);
@@ -369,12 +370,12 @@ export class CpModal extends Base {
       !error.response ||
       ![400, 422].includes(error.response.status ?? 0)
     ) {
-      Craft.cp.displayError();
+      showError();
       throw error;
     }
 
     const data = error.response.data || {};
-    Craft.cp.displayError(data.message);
+    showError(data.message);
     if (data.errors) {
       this.showErrors(data.errors);
     }

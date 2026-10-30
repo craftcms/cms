@@ -14,6 +14,7 @@ import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
 import {ConfigService} from '@craftcms/ui/services/Config';
 import {elevatedSessionManager} from '@/modules/auth/elevated-session/manager';
+import {showError} from '@/modules/messages/messages';
 
 declare const Craft: any;
 declare const $: any;
@@ -143,7 +144,7 @@ export class AuthMethodSetup extends Base<AuthMethodSetupSettings> {
             }
           })
           .catch(({response}: any) => {
-            Craft.cp.displayError(response.data.message);
+            showError(response.data.message);
           })
           .finally(() => {
             button.classList.remove('loading');

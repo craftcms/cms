@@ -29,6 +29,10 @@ function displayNotice(message: string, {details}: {details: HTMLElement}) {
     $closeBtn: {hide: () => {}, on: () => {}},
   };
 }
+vi.mock('@/modules/messages/messages', () => ({
+  showNotice: displayNotice,
+  showError: vi.fn(),
+}));
 
 async function clickNotice(index: number, label: string): Promise<void> {
   await Promise.all(
@@ -126,7 +130,7 @@ beforeEach(() => {
   ui.post.mockReset().mockResolvedValue({data: {}});
   vi.stubGlobal('Craft', {
     csrfTokenValue: 'token',
-    cp: {displayNotice, displayError: vi.fn(), runQueue: vi.fn()},
+    cp: {runQueue: vi.fn()},
   });
   queue = new AssetUploadQueue();
 });
