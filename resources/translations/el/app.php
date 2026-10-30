@@ -799,6 +799,7 @@ return [
     'Entry Types' => 'Τύποι καταχώρησης',
     'Entry URI Format' => 'Μορφή URI καταχώρησης',
     'Entry could not be added. Maximum number of entries reached.' => 'Δεν ήταν δυνατή η προσθήκη της καταχώρησης. Έχει επιτευχθεί ο μέγιστος αριθμός καταχωρήσεων.',
+    'Entry type icon' => 'Entry type icon',
     'Entry type saved.' => 'Ο τύπος καταχώρησης αποθηκεύτηκε.',
     'Entry type settings' => 'Ρυθμίσεις τύπου καταχώρησης',
     'Entry' => 'Καταχώρηση',
