@@ -12,8 +12,6 @@ const visitor = {merge, visit: vi.fn(), currentQuery: () => ({})};
 
 function viewStateRef(thumbSizes?: SourceViewState['thumbSizes']) {
   return ref<ViewState>({
-    inlineEditing: false,
-    mode: 'table',
     showHeaderColumn: true,
     static: false,
     ...(thumbSizes ? {sources: {'volume:a': {thumbSizes}}} : {}),

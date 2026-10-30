@@ -34,6 +34,7 @@ import {
   sendLegacyRequest,
   type LegacyRequestOptions,
 } from '@craftcms/ui/utilities/api/legacyRequest';
+import {commandShortcut} from '@/common/utils/keyShortcuts';
 
 declare const Craft: any;
 declare const $: any;
@@ -258,6 +259,7 @@ export class CpScreenSlideout extends Slideout {
           label: Craft.t('app', 'Save'),
           spinner: true,
         })
+        .attr('aria-keyshortcuts', commandShortcut('S'))
         .appendTo($btnContainer);
     }
 

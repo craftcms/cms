@@ -9,7 +9,11 @@ import type {
 } from '../composables/useContentIndexData';
 import type {TableRowSelection} from '@/common/composables/useTableRowSelection';
 import type {StructureMove} from '../composables/useElementIndexStructure';
-import type {ThumbSize, ViewMode} from '@/modules/elements/types/view-state';
+import type {
+  CardThumbSettings,
+  ThumbSize,
+  ViewMode,
+} from '@/modules/elements/types/view-state';
 import type {InlineEditingSaveResult} from '../composables/useInlineEditing';
 import type {ElementIndexExportFormat} from './exporters';
 import type {ElementIndexContext} from '../index-context';
@@ -42,6 +46,8 @@ export interface ElementIndexView {
   thumbSize: Ref<ThumbSize>;
   /** The thumbnail sizes the current view mode offers; empty for cards. */
   thumbSizeOptions: ComputedRef<ThumbSize[]>;
+  /** How cards show a thumbnail, or null when the index has no thumbnails. */
+  cardThumbs: ComputedRef<CardThumbSettings | null>;
   inlineEditing?: ElementIndexInlineEditing;
   sortField: Ref<string>;
   sortDirection: Ref<'asc' | 'desc'>;
@@ -49,6 +55,8 @@ export interface ElementIndexView {
   columnOptions: ComputedRef<CheckboxOption[]>;
   visibleViewModes: ComputedRef<ViewMode[]>;
   loading: Ref<boolean>;
+  /** Whether the rows are still to come, drawn as placeholders until then. */
+  pending: ComputedRef<boolean>;
   processing: ComputedRef<boolean>;
   filterContext: ComputedRef<ElementIndexContext | null>;
   exportElements?: ExportElementIndex;

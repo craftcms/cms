@@ -18,6 +18,14 @@ body {
   color: var(--c-text-default);
 }
 
+/* Selects are transparent, and Chrome on Windows draws their option lists on
+   the select's background, falling back to white, while the options keep the
+   theme's text color, so they'd be light on white in the dark theme. */
+select :is(option, optgroup) {
+  background-color: var(--c-surface-raised);
+  color: var(--c-text-default);
+}
+
 /*
   Placeholders take the quiet text color rather than the browser default, which
   falls short of contrast against dark surfaces. Firefox also dims them with

@@ -1,0 +1,15 @@
+{% extends '_layouts/site' %}
+
+{% block title %}{{ entry.title }} - {{ siteName }}{% endblock %}
+
+{% block content %}
+  <article>
+    <h1 id="title">{{ entry.title }}</h1>
+    {% if entry.postDate %}
+      <time datetime="{{ entry.postDate|atom }}">{{ entry.postDate|date('long') }}</time>
+    {% endif %}
+    {% if entry.body ?? null %}
+      <div>{{ entry.body|md }}</div>
+    {% endif %}
+  </article>
+{% endblock %}

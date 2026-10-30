@@ -25,6 +25,7 @@ A change that needs any of these is a different pattern. Don't add a mode to `cr
 - [ ] In `multiple-choice` mode the listbox carries `aria-multiselectable="true"`. Per WCAG 4.1.2 (Name, Role, Value). Not yet verified.
 - [ ] Known gap: optgroup headings are rendered `aria-hidden="true"` with no `role="group"`, so screen reader users don't hear which group an option belongs to. Per WCAG 1.3.1 (Info and Relationships).
 - [ ] The chevron and the selected option's prefix icon are decorative and hidden from assistive technology. Per WCAG 1.1.1 (Non-text Content). Not yet verified.
+- [x] A `multiple-choice` token shows its option's icon or dot before the label. Both are decorative: the icon is hidden from assistive technology and the dot has no role or name, so the token is announced by its label alone. Per WCAG 1.1.1 (Non-text Content). Verified by `shows each selected option’s icon or dot on its token, hidden from assistive technology` in `combobox-multiple.browser.test.ts`.
 
 ### Keyboard and focus
 

@@ -20,8 +20,8 @@
   <button
     v-if="isSortable"
     type="button"
-    :disabled="disabled"
-    @click="$emit('sortColumn', $event)"
+    :aria-disabled="disabled ? 'true' : undefined"
+    @click="disabled || $emit('sortColumn', $event)"
     :aria-describedby="sortInstructionsId"
   >
     <slot />

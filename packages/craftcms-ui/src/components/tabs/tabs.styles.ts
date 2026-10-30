@@ -67,6 +67,22 @@ export default css`
     flex: none;
   }
 
+  /*
+   * Except the selected tab, which is never collapsed: when it alone is wider
+   * than the strip, it shrinks and truncates its label instead. Not while the
+   * overflow is being measured, which needs every tab's natural width.
+   */
+  :host(
+      :is([placement='block-start'], [placement='block-end']):not([equal-width])
+    )
+    .tabs__tab-group:not(.tabs__tab-group--measuring)
+    ::slotted([slot='tab'][selected]) {
+    flex: 0 1 auto;
+    min-width: 0;
+    --_tab-text-overflow: clip;
+    --_tab-text-wrap: nowrap;
+  }
+
   /* Overrides LionTabs' bold, which would otherwise beat the tab's own
      selected weight and its width-reserving label copy. */
   .tabs__tab-group ::slotted([slot='tab'][selected]) {

@@ -51,6 +51,17 @@ class ModalIndexViewModel extends ContentIndexViewModel
     }
 
     /**
+     * Leaves the rows out of the modal's first payload, as a page load does,
+     * so the modal opens straight away and draws placeholders until its index
+     * requests the rows for its saved view state (see `useModalElementIndex`).
+     */
+    #[\Override]
+    protected function arrayMethodClosures(): array
+    {
+        return $this->withoutDeferredRows(parent::arrayMethodClosures());
+    }
+
+    /**
      * The element metadata a relation field needs back from a selection.
      *
      * Index rows are otherwise column HTML keyed by attribute — enough to render

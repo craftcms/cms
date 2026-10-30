@@ -215,6 +215,215 @@ describe('ChoiceControl', () => {
     expect(buttons.every((b) => b.textContent?.trim() === '')).toBe(true);
   });
 
+  it.each([['checkboxes', true]])(
+    'shows each %s option’s icon or color dot before its label',
+    async (presentation, multiple) => {
+      await mount(
+        {
+          presentation,
+          multiple,
+          options: [
+            {label: 'Icon', value: 'icon', icon: 'star', color: '#ff0000'},
+            {label: 'Color', value: 'color', color: '#00ff00'},
+            {label: 'Plain', value: 'plain'},
+          ],
+        },
+        multiple ? [] : ''
+      );
+
+      const labels = [
+        ...container!.querySelectorAll(
+          ':is(craft-checkbox, craft-radio) > label[slot=label]'
+        ),
+      ];
+      const icon = labels[0]!.querySelector('craft-icon')!;
+
+      expect(icon.getAttribute('name')).toBe('star');
+      expect(icon.hasAttribute('label')).toBe(false);
+      expect((icon as HTMLElement).style.color).toBe('#ff0000');
+      expect(
+        labels[1]!.querySelector('craft-indicator')!.getAttribute('fill')
+      ).toBe('#00ff00');
+      expect(labels[2]!.querySelector('craft-icon, craft-indicator')).toBe(
+        null
+      );
+      expect(labels.map((label) => label.textContent?.trim())).toEqual([
+        'Icon',
+        'Color',
+        'Plain',
+      ]);
+    }
+  );
+
+  it.each([
+    ['single-choice', false, 'craft-radio'],
+    ['multiple-choice', true, 'craft-button'],
+  ])(
+    'shows a %s button’s icon beside its label unless options show only their icons',
+    async (_, multiple, selector) => {
+      await mount(
+        {
+          presentation: 'buttons',
+          multiple,
+          iconsOnly: false,
+          options: [{label: 'Left', value: 'left', icon: 'arrow-left'}],
+        },
+        multiple ? [] : ''
+      );
+
+      const option = container!.querySelector(selector)!;
+
+      expect(option.textContent?.trim()).toBe('Left');
+      expect(option.hasAttribute('title')).toBe(false);
+      expect(option.hasAttribute('aria-label')).toBe(false);
+      expect(option.querySelector('craft-icon[label]')).toBe(null);
+    }
+  );
+
+  describe('custom checkbox options', () => {
+    const customProps = {
+      allowCustom: true,
+      options: [
+        {label: 'A', value: 'a'},
+        {label: 'mine', value: 'mine', custom: true},
+      ],
+    };
+
+    function customRows(): HTMLElement[] {
+      return [...container!.querySelectorAll<HTMLElement>('[data-custom]')];
+    }
+
+    function textInput(row: HTMLElement): HTMLInputElement {
+      return row.querySelector<HTMLInputElement>('input[type=text]')!;
+    }
+
+    function addButton(): HTMLElement {
+      return container!.querySelector<HTMLElement>(
+        'craft-button[data-add-option]'
+      )!;
+    }
+
+    it('shows a saved custom value as a checked “Custom:” option with its text', async () => {
+      await mount(customProps, ['mine']);
+
+      const rows = customRows();
+      const checkbox = rows[0]!.querySelector<HTMLInputElement>(
+        'input[type=checkbox]'
+      )!;
+
+      expect(rows).toHaveLength(1);
+      expect(checkbox.checked).toBe(true);
+      expect(checkbox.value).toBe('mine');
+      expect(rows[0]!.querySelector('label')!.textContent?.trim()).toBe(
+        'Custom:'
+      );
+      expect(textInput(rows[0]!).value).toBe('mine');
+      expect(
+        [
+          ...container!.querySelectorAll(
+            'div:not([data-custom]) > craft-checkbox > label'
+          ),
+        ].map((label) => label.textContent?.trim())
+      ).toEqual(['A']);
+    });
+
+    it('adds a focused custom option, and emits what’s typed into it', async () => {
+      await mount(customProps, ['mine']);
+
+      addButton().click();
+      await nextTick();
+
+      const row = customRows()[1]!;
+      expect(document.activeElement).toBe(textInput(row));
+
+      textInput(row).value = 'new';
+      textInput(row).dispatchEvent(new Event('input', {bubbles: true}));
+      await nextTick();
+
+      expect(emitted.at(-1)).toEqual(['mine', 'new']);
+      expect(
+        row.querySelector<HTMLInputElement>('input[type=checkbox]')!.value
+      ).toBe('new');
+    });
+
+    it('removes an empty custom option when it’s unchecked', async () => {
+      await mount(customProps, []);
+
+      addButton().click();
+      await nextTick();
+
+      const checkbox = customRows()[0]!.querySelector<HTMLInputElement>(
+        'input[type=checkbox]'
+      )!;
+      checkbox.checked = false;
+      checkbox.dispatchEvent(new Event('change', {bubbles: true}));
+      await nextTick();
+
+      expect(customRows()).toHaveLength(0);
+      expect(document.activeElement).toBe(addButton());
+    });
+  });
+
+  describe('custom radio option', () => {
+    function customRadio(): HTMLInputElement {
+      return container!.querySelector<HTMLInputElement>(
+        '[data-custom] input[type=radio]'
+      )!;
+    }
+
+    function customText(): HTMLInputElement {
+      return container!.querySelector<HTMLInputElement>(
+        '[data-custom] input[type=text]'
+      )!;
+    }
+
+    it('shows a saved custom value as the checked “Custom:” radio with its text', async () => {
+      await mount(
+        {
+          multiple: false,
+          presentation: 'radios',
+          allowCustom: true,
+          options: [
+            {label: 'A', value: 'a'},
+            {label: 'mine', value: 'mine', custom: true},
+          ],
+        },
+        'mine'
+      );
+
+      expect(container!.querySelectorAll('input[type=radio]')).toHaveLength(2);
+      expect(customRadio().checked).toBe(true);
+      expect(customRadio().value).toBe('mine');
+      expect(customText().value).toBe('mine');
+      expect(
+        container!.querySelector('[data-custom] label')!.textContent?.trim()
+      ).toBe('Custom:');
+    });
+
+    it('emits what’s typed once the “Custom:” radio is chosen', async () => {
+      await mount(
+        {
+          multiple: false,
+          presentation: 'radios',
+          allowCustom: true,
+          options: [{label: 'A', value: 'a'}],
+        },
+        'a'
+      );
+
+      customText().value = 'new';
+      customText().dispatchEvent(new Event('input', {bubbles: true}));
+      await nextTick();
+      expect(emitted).toEqual([]);
+
+      customRadio().checked = true;
+      customRadio().dispatchEvent(new Event('change', {bubbles: true}));
+      await nextTick();
+      expect(emitted.at(-1)).toBe('new');
+      expect(customRadio().value).toBe('new');
+    });
+  });
+
   const allOption = {allLabel: 'All', allValue: '*', allMode: 'singleValue'};
 
   async function checkboxSelect(): Promise<CraftCheckboxSelect> {

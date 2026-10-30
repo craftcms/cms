@@ -3,4 +3,5 @@ import './matrix/field-actions';
 import './nested-element-manager';
 import './element-editor';
 import './native-field-refresh';
+import './preview';
 import './data-icon';

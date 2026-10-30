@@ -11,6 +11,8 @@ import '../icon/icon.js';
 import '../indicator/indicator.js';
 import '../button/button.js';
 import {HasLabel} from '@src/mixins/HasLabel';
+import {colors} from '@src/constants/colors';
+import {variants} from '@src/constants/variants';
 
 export interface ComboboxOptionData {
   /** Extra text matched against the query, in addition to label/value. */
@@ -18,12 +20,18 @@ export interface ComboboxOptionData {
   /** Secondary text rendered after the label. */
   hint?: string;
   /**
-   * Renders a `craft-indicator` before the label. `fill` takes what the
-   * component's own does: a status variant, a palette swatch, or any colour.
+   * Renders a `craft-indicator` before the label, and on the option's
+   * `multiple-choice` token. `fill` takes what the component's own does: a
+   * status variant, a palette swatch, or any color.
    */
   indicator?: {fill?: string; appearance?: string} & Record<string, unknown>;
-  /** Name of a `craft-icon` rendered before the label, and in the textbox while this option is selected. */
+  /**
+   * Name of a `craft-icon` rendered before the label, and while this option is
+   * selected, in the textbox or on its `multiple-choice` token.
+   */
   icon?: string;
+  /** The icon's color: a status variant, a palette swatch, or any color. */
+  color?: string;
   [key: string]: unknown;
 }
 
@@ -42,6 +50,17 @@ export interface ComboboxOptGroup {
 }
 
 export type ComboboxItem = ComboboxOption | ComboboxOptGroup;
+
+/**
+ * Resolves a palette or variant name to its loud fill token, as
+ * `craft-indicator` does, and passes any other color through.
+ */
+function iconColor(color: string): string {
+  return (colors as string[]).includes(color) ||
+    (variants as string[]).includes(color)
+    ? `var(--c-color-${color}-fill-loud)`
+    : color;
+}
 
 interface VisibleEntry {
   groupLabel?: string;
@@ -649,22 +668,26 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
         ?disabled=${option.disabled ?? false}
       >
         <span class="combobox__option">
-          ${data.indicator
-            ? html`<craft-indicator
-                fill=${data.indicator.fill ?? nothing}
-                appearance=${data.indicator.appearance ?? nothing}
-              ></craft-indicator>`
-            : nothing}
-          ${data.icon
-            ? html`<craft-icon
-                name="${data.icon}"
-                style=${data.color ? `--icon-color: ${data.color}` : nothing}
-              ></craft-icon>`
-            : nothing}
+          ${this.#decorationTemplate(data)}
           ${isEnv ? html`<code>${label}</code>` : label}
         </span>
       </craft-option>
     `;
+  }
+
+  /** The option's dot and icon, which only repeat what its label says. */
+  #decorationTemplate(data: ComboboxOptionData) {
+    return html`${data.indicator
+      ? html`<craft-indicator
+          fill=${data.indicator.fill ?? nothing}
+          appearance=${data.indicator.appearance ?? nothing}
+        ></craft-indicator>`
+      : nothing}${data.icon
+      ? html`<craft-icon
+          name="${data.icon}"
+          style=${data.color ? `color: ${iconColor(data.color)}` : nothing}
+        ></craft-icon>`
+      : nothing}`;
   }
 
   #hasValue(): boolean {
@@ -726,6 +749,7 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
               (value) => value,
               (value) => html`
                 <span class="token">
+                  ${this.#decorationTemplate(this.#option(value)?.data ?? {})}
                   ${this.valueLabel(value)}
                   ${!this.inactive
                     ? html`<button
@@ -795,10 +819,11 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
   }
 
   private valueLabel(value: string): string {
-    return (
-      [...this.#allOptions()].find((option) => option.value === value)?.label ??
-      value
-    );
+    return this.#option(value)?.label ?? value;
+  }
+
+  #option(value: string): ComboboxOption | undefined {
+    return [...this.#allOptions()].find((option) => option.value === value);
   }
 
   /**

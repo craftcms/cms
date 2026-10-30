@@ -1,18 +1,23 @@
-import {ref} from 'vue';
+import {ref, type Ref} from 'vue';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {useElementIndexViewMode} from './useElementIndexViewMode';
-import type {ViewState} from '@/modules/elements/types/view-state';
+import type {ViewMode, ViewState} from '@/modules/elements/types/view-state';
 
 const merge = vi.fn();
 const visitor = {merge, visit: vi.fn(), currentQuery: () => ({})};
 
-function viewStateRef(mode: ViewState['mode']) {
+const sourceA = () => 'section:a';
+
+function viewStateRef(mode?: ViewMode['mode']) {
   return ref<ViewState>({
-    inlineEditing: false,
-    mode,
     showHeaderColumn: true,
     static: false,
+    ...(mode ? {sources: {'section:a': {mode}}} : {}),
   });
+}
+
+function persisted(viewState: Ref<ViewState>) {
+  return viewState.value.sources?.['section:a']?.mode;
 }
 
 describe('useElementIndexViewMode', () => {
@@ -26,11 +31,11 @@ describe('useElementIndexViewMode', () => {
   // their reordering affordances until the next full page load.
   it('refreshes the structure payload when the mode changes', () => {
     const viewState = viewStateRef('table');
-    const {mode} = useElementIndexViewMode(viewState, visitor);
+    const {mode} = useElementIndexViewMode(viewState, visitor, sourceA);
 
     mode.value = 'structure';
 
-    expect(viewState.value.mode).toBe('structure');
+    expect(persisted(viewState)).toBe('structure');
     expect(merge).toHaveBeenCalledWith(
       {viewMode: 'structure'},
       expect.objectContaining({
@@ -42,7 +47,8 @@ describe('useElementIndexViewMode', () => {
   it('asks for the structure payload when restoring a persisted mode', () => {
     const {restore} = useElementIndexViewMode(
       viewStateRef('structure'),
-      visitor
+      visitor,
+      sourceA
     );
 
     expect(restore()).toEqual({
@@ -58,17 +64,19 @@ describe('useElementIndexViewMode', () => {
     const {restore} = useElementIndexViewMode(
       viewState,
       {...visitor, currentQuery: () => ({viewMode: 'table'})},
+      sourceA,
       () => 'table'
     );
 
     expect(restore()).toBeNull();
-    expect(viewState.value.mode).toBe('table');
+    expect(persisted(viewState)).toBe('table');
   });
 
   it('re-requests the persisted mode when the source renders another by default', () => {
     const {restore} = useElementIndexViewMode(
       viewStateRef('table'),
       visitor,
+      sourceA,
       () => 'cards'
     );
 
@@ -82,6 +90,7 @@ describe('useElementIndexViewMode', () => {
     const {restore} = useElementIndexViewMode(
       viewStateRef('cards'),
       visitor,
+      sourceA,
       () => 'cards'
     );
 
@@ -89,10 +98,45 @@ describe('useElementIndexViewMode', () => {
   });
 
   it('stays put when the mode is unchanged', () => {
-    const {mode} = useElementIndexViewMode(viewStateRef('structure'), visitor);
+    const {mode} = useElementIndexViewMode(
+      viewStateRef('structure'),
+      visitor,
+      sourceA
+    );
 
     mode.value = 'structure';
 
     expect(merge).not.toHaveBeenCalled();
+  });
+
+  it('keeps a mode per source, falling back to the one rendered', () => {
+    const source = ref('section:a');
+    const viewState = viewStateRef();
+    const {mode, persistedMode} = useElementIndexViewMode(
+      viewState,
+      visitor,
+      () => source.value,
+      () => 'cards'
+    );
+
+    mode.value = 'thumbs';
+
+    source.value = 'section:b';
+    expect(mode.value).toBe('cards');
+    expect(persistedMode()).toBeUndefined();
+
+    source.value = 'section:a';
+    expect(mode.value).toBe('thumbs');
+  });
+
+  it('leaves a source without a persisted mode at the one rendered', () => {
+    const {restore} = useElementIndexViewMode(
+      viewStateRef(),
+      visitor,
+      sourceA,
+      () => 'cards'
+    );
+
+    expect(restore()).toBeNull();
   });
 });

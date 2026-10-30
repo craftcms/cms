@@ -3,7 +3,10 @@ import {createApp, h, type App} from 'vue';
 import type {ElementPreviewTarget} from '@/modules/elements/composables/useElementEditor';
 import ElementViewButtons from './ElementViewButtons.vue';
 
-vi.mock('@craftcms/ui', () => ({t: (message: string) => message}));
+vi.mock('@craftcms/ui', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@craftcms/ui')>()),
+  t: (message: string) => message,
+}));
 
 let app: App | undefined;
 let container: HTMLElement | undefined;
@@ -38,40 +41,31 @@ describe('ElementViewButtons', () => {
     expect(visibleLabel(link!)).toBe('View');
   });
 
-  it('names each of several targets', () => {
-    const links = mount([
-      {label: 'Entry page', url: '/a'},
-      {label: 'Blog listing', url: '/b'},
-    ]);
+  it('links a lone target in a new window, saying so to screen readers', () => {
+    const [link] = mount([{label: 'Primary entry page', url: '/a'}]);
 
-    expect(links.map(visibleLabel)).toEqual(['Entry page', 'Blog listing']);
+    expect(link).toMatchObject({href: '/a', target: '_blank'});
+    expect(link!.querySelector('.sr-only')?.textContent).toBe(
+      'Opens in a new window'
+    );
   });
 
-  it('links each target in a new window', () => {
-    const links = mount([
+  it('lists several targets in a View menu, each opening in a new window', () => {
+    mount([
       {label: 'Entry page', url: '/a'},
       {label: 'Blog listing', url: '/b'},
     ]);
 
+    const menu = container!.querySelector('craft-action-menu');
+    const invoker = menu?.querySelector('[slot="invoker"]');
+    const items = [...menu!.querySelectorAll('craft-action-item')];
+
+    expect(visibleLabel(invoker as HTMLElement)).toBe('View');
     expect(
-      links.map((link) => [
-        link.getAttribute('href'),
-        link.getAttribute('target'),
-      ])
+      items.map((item) => [item.textContent?.trim(), item.href, item.target])
     ).toEqual([
-      ['/a', '_blank'],
-      ['/b', '_blank'],
+      ['Entry page', '/a', '_blank'],
+      ['Blog listing', '/b', '_blank'],
     ]);
-  });
-
-  it('tells screen reader users each link opens a new window', () => {
-    const links = mount([
-      {label: 'Entry page', url: '/a'},
-      {label: 'Blog listing', url: '/b'},
-    ]);
-
-    expect(
-      links.map((link) => link.querySelector('.sr-only')?.textContent)
-    ).toEqual(['Opens in a new window', 'Opens in a new window']);
   });
 });

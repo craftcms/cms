@@ -134,7 +134,8 @@ const FIT_TOLERANCE = 1;
  * A horizontal strip too narrow for its tabs collapses the ones that don't fit
  * into a `<craft-action-menu>` at the end, rather than scrolling or wrapping.
  * Tabs collapse from the end in document order, and the selected tab is always
- * kept in the strip — picking a tab from the menu swaps it back into view.
+ * kept in the strip — picking a tab from the menu swaps it back into view. A
+ * selected tab that's too wide for the strip on its own truncates its label.
  *
  * Collapsed tabs get the `hidden` attribute, so they leave the accessibility
  * tree along with the layout and are reachable only through the menu. Strips
@@ -692,13 +693,15 @@ export default class CraftTabs extends LionTabs {
       return;
     }
 
-    // Measure from a clean slate — every tab laid out, the menu taking no room
-    // — so a tab that has since been given space comes back.
+    // Measure from a clean slate — every tab laid out at its natural width, the
+    // menu taking no room — so a tab that has since been given space comes back.
     tabs.forEach((tab) => tab.removeAttribute('hidden'));
     menu.hidden = true;
+    group.classList.add('tabs__tab-group--measuring');
 
     const gap = this.#tabGap(group);
     const widths = tabs.map((tab) => tab.offsetWidth);
+    group.classList.remove('tabs__tab-group--measuring');
     const natural = widths.reduce(
       (total, width, index) => total + width + (index ? gap : 0),
       0

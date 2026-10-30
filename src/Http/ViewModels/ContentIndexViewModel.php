@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Data\NavItem;
@@ -33,6 +34,8 @@ use Illuminate\Pagination\LengthAwarePaginator as IlluminatePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
+use Inertia\RenderContext;
+use Inertia\Support\Header;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
@@ -108,6 +111,44 @@ abstract class ContentIndexViewModel extends ViewModel
     protected function defaultSourceKey(): ?string
     {
         return null;
+    }
+
+    /**
+     * Leaves the rows out of a page load that doesn't name a view mode.
+     *
+     * The view mode and thumbnail size the rows are rendered for live in the
+     * browser's view state, which the server can't see. Rows rendered without
+     * them would draw at the defaults until the index re-requested them, so
+     * the page draws placeholders instead and requests the rows itself once it
+     * has read its view state (see `useElementIndex`'s `restore()`). That visit
+     * puts `viewMode` in the URL, so later visits come with rows again.
+     */
+    #[\Override]
+    public function toInertiaProperties(RenderContext $context): array
+    {
+        $properties = parent::toInertiaProperties($context);
+
+        return $context->request->header(Header::PARTIAL_COMPONENT) === $context->component
+            ? $properties
+            : $this->withoutDeferredRows($properties);
+    }
+
+    /**
+     * Leaves the rows out of a payload whose request doesn't name the view
+     * mode they're for.
+     *
+     * @param  array<string, mixed>  $properties
+     * @return array<string, mixed>
+     */
+    protected function withoutDeferredRows(array $properties): array
+    {
+        if ($this->request->filled('viewMode')) {
+            return $properties;
+        }
+
+        unset($properties['data'], $properties['pagination'], $properties['structure']);
+
+        return $properties;
     }
 
     /**
@@ -555,6 +596,24 @@ abstract class ContentIndexViewModel extends ViewModel
     public function defaultTableColumns(): array
     {
         return $this->sourceSettings()->defaultTableColumns;
+    }
+
+    /**
+     * How the source's cards show their thumbnails, going by its first field
+     * layout, so the placeholders drawn while its cards load can match them.
+     *
+     * @return array{style: string, alignment: 'start'|'end'}
+     */
+    public function cardThumbs(): array
+    {
+        $sourceKey = $this->sourceState()[0];
+        $fieldLayout = $this->sourceSettings()->fieldLayouts[0]
+            ?? ($sourceKey !== null ? ElementSources::getFieldLayoutsForSource($this->elementType, $sourceKey)->first() : null);
+
+        return [
+            'style' => $fieldLayout?->getCardThumbStyle() ?? (is_a($this->elementType, Asset::class, true) ? 'cover' : 'normal'),
+            'alignment' => $fieldLayout?->getCardThumbAlignment() === 'start' ? 'start' : 'end',
+        ];
     }
 
     /** @return list<array<string, mixed>> */

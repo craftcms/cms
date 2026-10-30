@@ -4,10 +4,10 @@
 
 ### Semantics
 
-- [x] On Windows, Linux and unknown platforms the modifiers are spelled out as text (`Ctrl+`, `Super+`, `Alt+`, `Shift+`), which screen readers read as words. Per WCAG 1.1.1 (Non-text Content). Verified by `spells the modifiers out elsewhere` and `falls back to Ctrl for an unknown platform` in `shortcut.test.ts`.
+- [x] On Windows, Linux and unknown platforms the modifiers are spelled out as text (`Ctrl`, `Super`, `Alt`, `Shift`), which screen readers read as words. Per WCAG 1.1.1 (Non-text Content). Verified by `spells the modifiers out elsewhere` and `falls back to Ctrl for an unknown platform` in `shortcut.test.ts`.
 - [x] The key itself comes from the default slot as text. Per WCAG 1.3.1 (Info and Relationships). Verified by `renders the key from the default slot` in `shortcut.test.ts`.
-- [ ] On a Mac, the ⌥, ⇧ and ⌘ symbols have a text alternative ("Option", "Shift", "Command"). Per WCAG 1.1.1 (Non-text Content). Known gap: `uses the platform symbols on a Mac` in `shortcut.test.ts` asserts the bare symbols, which some screen readers skip or misread.
-- [ ] The shortcut is marked up as keyboard input. Per WCAG 1.3.1 (Info and Relationships). Known gap: it renders a `<span>`, not `<kbd>`.
+- [x] On a Mac, the ⌥, ⇧ and ⌘ symbols have a text alternative ("Option", "Shift", "Command"), with the symbols hidden from assistive technology. Per WCAG 1.1.1 (Non-text Content). Verified by `names the Mac symbols for assistive technology` in `shortcut.test.ts`.
+- [x] Each key is marked up as keyboard input, in a `<kbd>` of its own. Per WCAG 1.3.1 (Info and Relationships). Verified by `puts each key in a keycap of its own` in `shortcut.test.ts`.
 
 ### Visual
 

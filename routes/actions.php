@@ -384,6 +384,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
 
         // Relational fields
         Route::post('relational-fields/structured-input-html', [RelationalFieldsController::class, 'structuredInputHtml']);
+        Route::post('relational-fields/structured-elements', [RelationalFieldsController::class, 'structuredElements']);
 
         // Widgets
         Route::post('dashboard/create-widget', [WidgetsController::class, 'store']);

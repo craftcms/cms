@@ -499,8 +499,8 @@ importers:
         version: 3.2.7(typescript@6.0.3)
     optionalDependencies:
       '@awesome.me/kit-ddaed3f5c5':
-        specifier: ^1.0.74
-        version: 1.0.74
+        specifier: ^1.0.77
+        version: 1.0.77
 
   packages/craftcms-browserslist-config: {}
 
@@ -706,8 +706,8 @@ importers:
         version: 4.15.2(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)(webpack-cli@5.1.4)(webpack@5.102.1)
     optionalDependencies:
       '@awesome.me/kit-ddaed3f5c5':
-        specifier: ^1.0.74
-        version: 1.0.74
+        specifier: ^1.0.77
+        version: 1.0.77
 
   packages/craftcms-playwright:
     dependencies:
@@ -1051,8 +1051,8 @@ packages:
   '@atlaskit/pragmatic-drag-and-drop@1.8.1':
     resolution: {integrity: sha512-uXWNPpL8n4OmTVbduH7nq8pk8htqGo/prR5cYEE8sVCPJGAUMWn6lzvWTfI+4VCeQvHiDRODVz4YzH06OVAxhw==}
 
-  '@awesome.me/kit-ddaed3f5c5@1.0.74':
-    resolution: {integrity: sha512-/9WEaBdZWJhQPuSW9Kw2XBgit5DI5QxO4tJpxbNz7uUE09kN2+NySWx2NGc5riu36YZVPtAlYiRnWW4A1SSQkQ==}
+  '@awesome.me/kit-ddaed3f5c5@1.0.77':
+    resolution: {integrity: sha512-/KcePg07ok7S6Ei8t0Vu+IDG1gIsGQLKZBqau9EFV55EnB+AsgZuEbOom7rM06/csWfOmS6BTCtm+646rR7ASQ==}
     engines: {node: '>=16'}
 
   '@babel/code-frame@7.27.1':
@@ -10504,7 +10504,7 @@ snapshots:
       bind-event-listener: 3.0.0
       raf-schd: 4.0.3
 
-  '@awesome.me/kit-ddaed3f5c5@1.0.74':
+  '@awesome.me/kit-ddaed3f5c5@1.0.77':
     dependencies:
       '@fortawesome/fontawesome-common-types': 6.7.2
     optional: true
