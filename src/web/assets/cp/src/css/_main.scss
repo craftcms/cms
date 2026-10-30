@@ -5641,6 +5641,12 @@ table.data tbody tr:not(.disabled).active-drop-target {
   display: none;
 }
 
+.elementselect.can-paste:focus {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--small-border-radius);
+}
+
 .elementselect.uploading {
   position: relative;
 }
