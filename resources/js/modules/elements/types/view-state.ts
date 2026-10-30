@@ -38,6 +38,12 @@ export type SourceViewState = {
   thumbSizes?: Partial<Record<'table' | 'thumbs', ThumbSize>>;
 };
 
+/** How cards show a thumbnail, as a source's field layout has it. */
+export interface CardThumbSettings {
+  style: string;
+  alignment: 'start' | 'end';
+}
+
 /** The size of an index's thumbnails: its table rows' or its tiles'. */
 export type ThumbSize = ChipThumbSizeValue;
 

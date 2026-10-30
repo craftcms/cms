@@ -133,7 +133,7 @@ it('preloads existing thumbnail indexes for the displayed assets', function (int
         }
     });
 
-    $response = get(route('craft.cp.assets.index', ['defaultSource' => $volume->handle, 'per_page' => 2]), ['X-Inertia' => 'true'])
+    $response = get(route('craft.cp.assets.index', ['defaultSource' => $volume->handle, 'per_page' => 2, 'viewMode' => 'table']), ['X-Inertia' => 'true'])
         ->assertOk()
         ->assertJsonPath('component', 'assets/Index')
         ->assertJsonCount(2, 'props.data');
@@ -174,7 +174,7 @@ it('preserves custom thumbnail URLs without resolving the configured transformer
         $event->url = 'https://example.test/custom-thumb.jpg';
     });
 
-    get(route('craft.cp.assets.index', ['defaultSource' => $volume->handle]), ['X-Inertia' => 'true'])
+    get(route('craft.cp.assets.index', ['defaultSource' => $volume->handle, 'viewMode' => 'table']), ['X-Inertia' => 'true'])
         ->assertOk()
         ->assertJsonPath('props.data.0.title', fn (string $html): bool => str_contains($html, 'https://example.test/custom-thumb.jpg'));
 
@@ -198,7 +198,7 @@ it('preserves thumbnail overrides on asset subclasses', function () {
         }
     });
 
-    get(route('craft.cp.assets.index', ['defaultSource' => $volume->handle]), ['X-Inertia' => 'true'])
+    get(route('craft.cp.assets.index', ['defaultSource' => $volume->handle, 'viewMode' => 'table']), ['X-Inertia' => 'true'])
         ->assertOk()
         ->assertJsonCount(1, 'props.data')
         ->assertJsonPath('props.data.0.title', fn (string $html): bool => str_contains($html, 'https://example.test/subclass-thumbnail.jpg'));
@@ -226,7 +226,7 @@ it('reports thumbnail jobs created while rendering the requested page data', fun
         ];
     }
 
-    $response = get(route('craft.cp.assets.index', ['defaultSource' => $volume->handle]), $headers)->assertOk();
+    $response = get(route('craft.cp.assets.index', ['defaultSource' => $volume->handle, ...($queueOnly ? [] : ['viewMode' => 'table'])]), $headers)->assertOk();
 
     if (! $inertia) {
         $response->assertInertia(fn (AssertableInertia $page) => $page
@@ -270,7 +270,7 @@ it('includes a volume’s subfolders in the index results', function () {
 
     $cpTrigger = Cms::config()->cpTrigger;
 
-    get("/{$cpTrigger}/assets/{$volumeModel->handle}")
+    get("/{$cpTrigger}/assets/{$volumeModel->handle}?viewMode=table")
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('assets/Index')
@@ -324,7 +324,7 @@ it('scopes the results to the subfolder named in the path', function () {
 
     $cpTrigger = Cms::config()->cpTrigger;
 
-    get("/{$cpTrigger}/assets/{$volumeModel->handle}/parent")
+    get("/{$cpTrigger}/assets/{$volumeModel->handle}/parent?viewMode=table")
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('source.data.folder-id', $parent->id)
@@ -421,6 +421,7 @@ it('optionally searches the current folder’s descendants', function () {
     $url = route('craft.cp.assets.index', [
         'defaultSource' => 'testvolume/parent',
         'search' => 'nested-needle',
+        'viewMode' => 'table',
     ]);
 
     get($url, ['X-Inertia' => 'true'])
@@ -552,7 +553,7 @@ it('gives asset rows what their file actions need', function () {
         'height' => 300,
     ]);
 
-    get(route('craft.cp.assets.index', ['defaultSource' => 'testvolume']))
+    get(route('craft.cp.assets.index', ['defaultSource' => 'testvolume', 'viewMode' => 'table']))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('data.0.assetFilename', 'photo.jpg')
