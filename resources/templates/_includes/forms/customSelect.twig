@@ -39,13 +39,12 @@
   id: id,
   data: {value},
 }|merge(attributes ?? {}, recursive=true) %}
-  {{ craft.cp.button({
+  {{ ui('button', {
     id: buttonId,
-    iconHtml: buttonIconHtml,
+    prefix: buttonIconHtml,
     label: buttonLabel,
-    class: ['menubtn'],
-    attributes: buttonAttributes ?? {},
-  })|raw }}
+    attributes: {class: ['menubtn']}|merge(buttonAttributes ?? {}, recursive=true),
+  }) }}
 
   {% if not disabled %}
     {% tag 'div' with {

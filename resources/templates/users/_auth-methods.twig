@@ -51,16 +51,16 @@
       </div>
 
       {% if not isActive %}
-        {{ craft.cp.button({
-          class: ['auth-method-setup-btn', 'hairline'],
+        {{ ui('button', {
           type: 'button',
           label: 'Set up'|t('app'),
           attributes: {
+            class: ['auth-method-setup-btn', 'hairline'],
             data: {
               method: className(method),
             }
           },
-        })|raw }}
+        }) }}
       {% endif %}
     {% endtag %}
 

@@ -8,11 +8,11 @@
   <div class="flex-1 grid place-items-center">
     <craft-recovery-codes-setup container-id="{{ containerId }}">
       <form action="{{ generateUrl }}" method="post">
-        {{ craft.cp.button({
+        {{ ui('button', {
           type: 'submit',
           label: 'Generate recovery codes'|t('app'),
-          class: 'submit',
-        })|raw }}
+          attributes: {class: ['submit']},
+        }) }}
       </form>
     </craft-recovery-codes-setup>
   </div>

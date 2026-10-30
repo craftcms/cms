@@ -18,43 +18,47 @@
 })();
 {% endjs %}
 
-{{ craft.cp.textField({
+{{ ui('field', {
+  id: 'name-field',
   label: 'Name'|t('app'),
-  id: 'name',
-  name: 'name',
-  value: old('name', entryType.name != entryType.original.name ? entryType.name : null),
-  placeholder: entryType.original.name,
   errors: errors.get('name'),
-  data: {
-    'error-key': 'name',
-  },
-})|raw }}
+  attributes: {data: {attribute: 'name', 'error-key': 'name'}},
+  input: ui('input', {
+    id: 'name',
+    name: 'name',
+    value: old('name', entryType.name != entryType.original.name ? entryType.name : null),
+    placeholder: entryType.original.name,
+  }),
+}) }}
 
-{{ craft.cp.textField({
+{{ ui('field', {
+  id: 'handle-field',
   label: 'Handle'|t('app'),
-  id: 'handle',
-  name: 'handle',
-  class: 'code',
-  autocorrect: false,
-  autocapitalize: false,
-  maxlength: 64,
-  value: old('handle', entryType.handle != entryType.original.handle ? entryType.handle : null),
-  placeholder: entryType.original.handle,
   errors: errors.get('handle'),
-  data: {
-    'error-key': 'handle'
-  },
-})|raw }}
+  attributes: {data: {attribute: 'handle', 'error-key': 'handle'}},
+  input: ui('input', {
+    id: 'handle',
+    name: 'handle',
+    autocorrect: false,
+    autocapitalize: false,
+    maxlength: 64,
+    value: old('handle', entryType.handle != entryType.original.handle ? entryType.handle : null),
+    placeholder: entryType.original.handle,
+    width: 'full',
+    inputAttributes: {class: ['code']},
+  }),
+}) }}
 
-{{ craft.cp.textareaField({
+{{ ui('field', {
+  id: 'description-field',
   label: 'Description'|t('app'),
-  id: 'description',
-  class: 'nicetext',
-  name: 'description',
-  value: old('description', entryType.description != entryType.original.description ? entryType.description : null),
-  placeholder: entryType.original.description,
   errors: errors.get('description'),
-  data: {
-    'error-key': 'description',
-  },
-})|raw }}
+  attributes: {data: {attribute: 'description', 'error-key': 'description'}},
+  input: ui('textarea', {
+    id: 'description',
+    name: 'description',
+    value: old('description', entryType.description != entryType.original.description ? entryType.description : null),
+    placeholder: entryType.original.description,
+    inputAttributes: {class: ['nicetext']},
+  }),
+}) }}

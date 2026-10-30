@@ -136,13 +136,13 @@
             }) }}
             {% if searchCriteria %}
                 <div class="texticon search icon elementselect__search-input-wrapper">
-                    {{ craft.cp.text({
+                    {{ ui('input', {
                         width: 'auto',
                         placeholder: 'Search'|t('app'),
-                        describedBy: describedBy ?? false,
+                        describedBy: (describedBy ?? null) ?: null,
                         role: 'combobox',
-                        labelledBy: labelId ?? false,
-                    })|raw }}
+                        labelledBy: (labelId ?? null) ?: null,
+                    }) }}
                     <craft-spinner class="spinner hidden"></craft-spinner>
                 </div>
             {% endif %}

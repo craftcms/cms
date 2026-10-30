@@ -1,5 +1,5 @@
-
 {%- set disabled = disabled ?? false %}
+{%- set maxlength = not disabled ? field.charLimit : null %}
 
 {%- set class = [
     'nicetext',
@@ -7,22 +7,31 @@
     field.uiMode == 'enlarged' ? 'readable',
 ]|filter %}
 
-{% set config = {
-    id: id ?? field.getInputId(),
-    describedBy: field.describedBy,
-    name: name,
-    value: value,
-    class: class,
-    maxlength: not disabled ? field.charLimit,
-    showCharsLeft: true,
-    placeholder: placeholder,
-    rows: field.initialRows,
-    orientation: orientation ?? null,
-    disabled,
-} %}
-
 {% if field.multiline %}
-    {{ craft.cp.textarea(config)|raw }}
+    {{ ui('textarea', {
+        id: id ?? field.getInputId(),
+        describedBy: field.describedBy ?: null,
+        name: name,
+        value: value,
+        maxlength: maxlength,
+        showCharsLeft: true,
+        placeholder: placeholder,
+        rows: field.initialRows,
+        disabled,
+        inputAttributes: {class: class},
+    }) }}
 {% else %}
-    {{ craft.cp.text(config)|raw }}
+    {{ ui('input', {
+        id: id ?? field.getInputId(),
+        describedBy: field.describedBy ?: null,
+        name: name,
+        value: value,
+        maxlength: maxlength,
+        width: maxlength ? 'full' : null,
+        showCharsLeft: true,
+        placeholder: placeholder,
+        orientation: orientation ?? null,
+        disabled,
+        inputAttributes: {class: class},
+    }) }}
 {% endif %}

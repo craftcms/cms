@@ -12,11 +12,11 @@
     </div>
     {% include 'users/_auth-methods.twig' %}
     <div id="setup-2fa-btn" class="hidden">
-      {{ craft.cp.button({
+      {{ ui('button', {
         type: 'submit',
         label: 'All done'|t('app'),
-        class: ['secondary', 'submit'],
-      })|raw }}
+        attributes: {class: ['secondary', 'submit']},
+      }) }}
     </div>
   </div>
 {% endblock %}

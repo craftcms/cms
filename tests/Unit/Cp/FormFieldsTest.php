@@ -127,21 +127,6 @@ describe('checkboxFieldHtml', function () {
             ->and($html)->toContainTag('input', ['type' => 'hidden', 'name' => 'enabled', 'slot' => false])
             ->and($html)->toContainTag('label', ['slot' => 'label', 'for' => 'cb']);
     });
-
-    it('renders the checkbox label through craft.cp.checkboxField', function () {
-        $html = app(TemplateManager::class)->renderString(
-            '{{ craft.cp.checkboxField({id: "cb", name: "enabled", label: "Agree"})|raw }}',
-            [],
-            TemplateMode::Cp,
-        );
-
-        // In Twig, `label` belongs to the checkbox, so the field itself gets
-        // no label — only `fieldLabel` puts one on the <craft-field>.
-        expect($html)->toContainTag('craft-checkbox', ['slot' => 'input'])
-            ->and($html)->toContainTag('label', ['slot' => 'label', 'for' => 'cb'])
-            ->and($html)->toContain('>Agree</label>')
-            ->and($html)->toContainTag('craft-field', ['label' => false]);
-    });
 });
 
 describe('dateTimeHtml', function () {

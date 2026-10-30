@@ -8,7 +8,9 @@
   renderDefaultInput: false,
   allowOverrides: true,
   create: true,
-  jsClass: false,
+  showHandles: true,
+  showIndicators: true,
+  showDescription: true,
 } %}
 {% set groupedManagerAttributes = {
   class: 'entry-type-manager',
@@ -23,12 +25,12 @@
     {% for groupName, groupEntryTypes in groups %}
       <li class="entry-type-group" data-name="{{ groupName }}">
         <div class="entry-type-group--titlebar"><span>{{ groupName }}</span></div>
-        {{ craft.cp.entryTypeSelect(entryTypeSelectConfig|merge({
+        {{ ui('entry-type-select', entryTypeSelectConfig|merge({
           id: "entry-type-select-#{random()}",
           values: groupEntryTypes,
           includeGroupInValues: true,
-          disabled,
-        }))|raw }}
+          disabled: disabled ? true : false,
+        })) }}
       </li>
     {% endfor %}
   </ul>

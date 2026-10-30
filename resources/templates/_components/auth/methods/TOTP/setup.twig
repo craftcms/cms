@@ -31,12 +31,16 @@
           </craft-field>
         {% endif %}
         {% if secret is defined and secret is not empty %}
-          {{ craft.cp.copyTextField({
-            label: 'Setup Key' | t('app'),
-            name: 'setup-key',
-            class: 'code',
-            value: secret,
-          })|raw }}
+          {{ ui('field', {
+            id: 'setup-key-field',
+            label: 'Setup Key'|t('app'),
+            input: ui('input-copy', {
+              id: 'setup-key',
+              name: 'setup-key',
+              value: secret,
+              inputAttributes: {class: ['code']},
+            }),
+          }) }}
         {% endif %}
       </div>
     {% endif %}

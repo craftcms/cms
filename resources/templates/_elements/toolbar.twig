@@ -40,11 +40,11 @@
 {% endif %}
 <div class="search-container flex-grow texticon has-filter-btn">
     <span class="texticon-icon search icon" aria-hidden="true"></span>
-    {{ craft.cp.text({
-        class: 'clearable',
+    {{ ui('input', {
         placeholder: "Search"|t('app'),
         value: Request.input('search'),
         inputAttributes: {
+            class: ['clearable'],
             aria: {
                 label: 'Search'|t('app'),
             },
@@ -52,7 +52,7 @@
                 lpignore: 'true',
             },
         },
-    })|raw }}
+    }) }}
     {{ tag('button', {
         role: 'button',
         class: 'clear-btn hidden',
