@@ -799,6 +799,7 @@ return [
     'Entry Types' => 'Типи записів',
     'Entry URI Format' => 'Формат URI для запису',
     'Entry could not be added. Maximum number of entries reached.' => 'Запис не можна додати. Досягнуто максимальної кількості записів.',
+    'Entry type icon' => 'Entry type icon',
     'Entry type saved.' => 'Тип запису збережено.',
     'Entry type settings' => 'Налаштування типу запису',
     'Entry' => 'Запис',
