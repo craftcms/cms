@@ -101,6 +101,8 @@
 - Slug fields’ refresh buttons are now drawn within the input’s border. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Date and time inputs’ divider is now softer and spans the full width when they’re stacked, and their clear button stays aligned with the time input. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Keys in instructions and tips, such as “Type <kbd>$</kbd> to choose an environment variable”, are now shown as keycaps. ([#20001](https://github.com/craftcms/cms/pull/20001))
+- Instructions for typing a key, such as in section settings’ URI formats and the System Messages utility, now all read “Type <kbd>…</kbd> to choose…”.
+- Info icons’ tooltips now close when something outside them is clicked.
 - Keyboard shortcuts in menus and tooltips, such as the Save menu’s and the Search button’s, now show each key as a keycap of its own. ([#20219](https://github.com/craftcms/cms/pull/20219))
 - Fields’ tip and warning icons are no longer padded. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Grouped inputs’ sub-labels, such as Field Limit’s “Maximum” and “Unit”, are now smaller and lighter. ([#20001](https://github.com/craftcms/cms/pull/20001))
@@ -148,6 +150,9 @@
 - Fixed a bug where element indexes kept the page count of the listing they first loaded, after switching sources or filtering. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Fixed a bug where changing an element index’s view mode changed it for every source, rather than just the selected one. View modes are now remembered per source, so sources will show their default view mode until a different one is chosen for them. ([#20143](https://github.com/craftcms/cms/issues/20143), [#20200](https://github.com/craftcms/cms/pull/20200))
 - Fixed a bug where element indexes resumed inline editing after the page was reloaded. ([#20200](https://github.com/craftcms/cms/pull/20200))
+- Fixed a bug where choosing a new “Sort by” attribute in element index View menus could switch back to the previous one. ([#20202](https://github.com/craftcms/cms/issues/20202), [#20220](https://github.com/craftcms/cms/pull/20220))
+- Fixed a bug where element index View menus’ sort direction buttons didn’t update until the results had loaded. ([#20203](https://github.com/craftcms/cms/issues/20203), [#20220](https://github.com/craftcms/cms/pull/20220))
+- Fixed a bug where element indexes sorted by a custom field ignored the sort direction. ([#20204](https://github.com/craftcms/cms/issues/20204), [#20220](https://github.com/craftcms/cms/pull/20220))
 - Fixed a bug where submit buttons created by `Craft.ui.createSubmitButton()` and `createSubmitButton()` from `@craftcms/ui` weren’t styled as primary buttons. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Fixed a bug where tooltips within sticky footers could be positioned off-screen or cut off.
 - Fixed a bug where draft name labels in element chips were cut off at the bottom.
