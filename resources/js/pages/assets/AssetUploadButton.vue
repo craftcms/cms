@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {QueueService} from '@/modules/queue/queue';
   import {t} from '@craftcms/ui';
   import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
   import {router} from '@inertiajs/vue3';
@@ -169,7 +170,7 @@
       on: {
         start: () => promptHandler.resetPrompts(),
         done: ({result}: {result: UploadResult}) => {
-          Craft.cp?.runQueue?.();
+          void QueueService.getInstance().runQueue();
 
           if (result.assetId && result.filename && result.conflict) {
             queueConflict(result as Omit<ConflictPrompt, 'prompt'>);

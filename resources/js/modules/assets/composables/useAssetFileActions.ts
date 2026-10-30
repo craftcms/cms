@@ -5,6 +5,7 @@ import {
   showCopyTextPrompt,
   t,
 } from '@craftcms/ui';
+import {QueueService} from '@/modules/queue/queue';
 import {useEventListener} from '@vueuse/core';
 import {shallowRef} from 'vue';
 import {submitNativeForm} from '@/common/utils/forms';
@@ -127,7 +128,7 @@ export function useAssetFileActions(
       onActionPerformed();
       // Renaming onto an existing file merges the two, which can leave
       // reference tags to update.
-      Craft.cp?.runQueue?.();
+      void QueueService.getInstance().runQueue();
     } catch (error) {
       const message = isHttpError<{message?: string}>(error)
         ? (error.response?.data?.message ?? t('A server error occurred.'))

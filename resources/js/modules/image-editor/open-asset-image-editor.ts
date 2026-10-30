@@ -4,6 +4,7 @@ import {
   openImageEditorDialog,
   type ImageEditorSettings,
 } from './open-image-editor-dialog';
+import {QueueService} from '@/modules/queue/queue';
 import {broadcast} from '@/common/craft/broadcast';
 import type {SaveResult} from './useImageEditor';
 import {showError} from '@/modules/messages/messages';
@@ -38,7 +39,7 @@ export async function openAssetImageEditor(
       });
     }
 
-    Craft.cp?.runQueue?.();
+    void QueueService.getInstance().runQueue();
     Craft.Preview?.refresh?.();
     onSaved?.(result);
   });

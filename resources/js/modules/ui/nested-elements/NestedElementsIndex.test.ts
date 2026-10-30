@@ -140,8 +140,6 @@ describe('NestedElementsIndex', () => {
     const craft = {
       cp: {
         copyElements: vi.fn(),
-        displayError: vi.fn(),
-        displayNotice: vi.fn(),
         getCopiedElements: () => [],
         onCopyElements: vi.fn(),
       },

@@ -3,6 +3,10 @@ import type {UploadOptions, UploadState} from '@/upload-client';
 import type {LitElement} from 'lit';
 import type {FileUploadNotificationElement} from './file-upload-notification.ce';
 
+vi.mock('@/modules/queue/queue', () => ({
+  QueueService: {getInstance: () => ({runQueue: vi.fn(async () => {})})},
+}));
+
 const ui = vi.hoisted(() => ({on: vi.fn(), post: vi.fn(), visit: vi.fn()}));
 vi.mock('@inertiajs/vue3', () => ({router: {on: ui.on, visit: ui.visit}}));
 vi.mock('@craftcms/ui', () => ({
@@ -130,7 +134,6 @@ beforeEach(() => {
   ui.post.mockReset().mockResolvedValue({data: {}});
   vi.stubGlobal('Craft', {
     csrfTokenValue: 'token',
-    cp: {runQueue: vi.fn()},
   });
   queue = new AssetUploadQueue();
 });

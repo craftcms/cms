@@ -12,6 +12,7 @@ import {
   uploadDuplicatesMessage,
   createUploadCompleteNotification,
 } from './upload-notification';
+import {QueueService} from '@/modules/queue/queue';
 import {showError} from '@/modules/messages/messages';
 
 declare const Craft: any;
@@ -252,7 +253,7 @@ export class AssetUploadQueue extends UploadQueue<
       this.completedBatches.add(batch);
     }
     batch.notification.update(batch.completed);
-    Craft.cp.runQueue();
+    void QueueService.getInstance().runQueue();
   }
 
   private changed(job: QueuedAssetUpload): void {
