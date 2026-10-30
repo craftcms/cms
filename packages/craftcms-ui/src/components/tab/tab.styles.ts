@@ -75,8 +75,13 @@ export default css`
     margin-inline-start: var(--c-spacing-sm);
   }
 
+  /* Truncated only when <craft-tabs> asks, as it does for a selected tab that
+     doesn't fit; otherwise a label wraps. */
   .tab__text {
     display: block;
+    overflow: var(--_tab-text-overflow, visible);
+    text-overflow: ellipsis;
+    white-space: var(--_tab-text-wrap, normal);
     ${trimmedTextBoxStyles}
   }
 
