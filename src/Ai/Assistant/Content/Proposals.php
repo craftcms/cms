@@ -102,7 +102,7 @@ readonly class Proposals
             $before = data_get($current->values, $controlPath);
             $after = data_get($proposed->values, $controlPath);
 
-            if ($before == $after) {
+            if ($before === $after) {
                 continue;
             }
 

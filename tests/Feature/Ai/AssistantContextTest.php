@@ -128,6 +128,25 @@ it('proposes changes to an element in the context, as the user has it in their e
         ->and(Entry::find()->id($this->entry->id)->one()->getFieldValue('summary'))->toBe('Saved summary');
 });
 
+it('proposes a change between values PHP would loosely compare as equal', function () {
+    AssistantAgent::fake([
+        new ToolCall('call_1', 'propose_changes', ['id' => $this->entry->id, 'fields' => ['summary' => '1e1']]),
+        'Changed it.',
+    ]);
+    $context = entryContext($this->entry);
+    $context[0]['values']['fields']['summary'] = '10';
+
+    postJson(action([AssistantController::class, 'run']), [
+        'threadId' => (string) Str::uuid(),
+        'runId' => (string) Str::uuid(),
+        'messages' => [['id' => (string) Str::uuid(), 'role' => 'user', 'content' => 'Improve this']],
+        'forwardedProps' => ['context' => $context],
+    ])->assertOk()->streamedContent();
+
+    expect(proposeChangesResult()['proposals'])->toHaveCount(1)
+        ->and(proposeChangesResult()['proposals'][0]['diff'])->toBe(['current' => '10', 'proposed' => '1e1']);
+});
+
 it('proposes changes to an element an earlier message was sent with, as its editor last saved it', function () {
     AssistantAgent::fake([
         'Noted.',
