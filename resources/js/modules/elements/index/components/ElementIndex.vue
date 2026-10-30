@@ -18,6 +18,7 @@
   import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
   import ElementIndexExportMenu from '@/modules/elements/index/components/ElementIndexExportMenu.vue';
   import {useInlineEditing} from '@/modules/elements/index/composables/useInlineEditing';
+  import {commandShortcut} from '@/common/utils/keyShortcuts';
   import {resizeThumbs} from '@/modules/elements/index/composables/useElementIndexThumbSize';
   import type {ThumbSize} from '@/modules/elements/types/view-state';
   import {elementIndexContextKey} from '@/modules/elements/index/index-context';
@@ -475,6 +476,7 @@
           type="button"
           :variant="ButtonVariant.Primary"
           .disabled="processing"
+          :aria-keyshortcuts="commandShortcut('S')"
           @click="inlineEditor.save"
           >{{ t('Save') }}</craft-button
         >

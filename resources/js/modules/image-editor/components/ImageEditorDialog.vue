@@ -1,5 +1,6 @@
 <script setup lang="ts">
-  import {computed, ref, useTemplateRef, watch} from 'vue';
+  import {computed, ref, useId, useTemplateRef, watch} from 'vue';
+  import {commandShortcut, usesCommandKey} from '@/common/utils/keyShortcuts';
   import {useEventListener} from '@vueuse/core';
   import {t} from '@craftcms/ui';
   import {
@@ -198,11 +199,14 @@
     }
   );
 
-  const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
-  const undoLabel = computed(() => `${t('Undo')} (${isMac ? '⌘Z' : 'Ctrl+Z'})`);
-  const redoLabel = computed(
-    () => `${t('Redo')} (${isMac ? '⇧⌘Z' : 'Ctrl+Y'})`
-  );
+  const isMac = usesCommandKey();
+  const undoButtonId = `image-editor-undo-${useId()}`;
+  const redoButtonId = `image-editor-redo-${useId()}`;
+  const undoShortcut = commandShortcut('Z');
+  // Each platform's usual redo first; the other one works too.
+  const redoShortcut = isMac
+    ? commandShortcut('Z', {shift: true})
+    : `${commandShortcut('Y')} ${commandShortcut('Z', {shift: true})}`;
 
   /** A field keeps its own undo for the text being typed into it. */
   function isTypingIn(event: KeyboardEvent): boolean {
@@ -724,21 +728,36 @@
     <div slot="footer" class="w-full flex gap-6 items-center justify-between">
       <div class="flex gap-2 items-center">
         <craft-button
+          :id="undoButtonId"
           type="button"
           icon="arrow-turn-left"
-          :aria-label="undoLabel"
-          :title="undoLabel"
+          :aria-keyshortcuts="undoShortcut"
           .disabled="!editor.canUndo.value"
           @click="editor.undo"
         ></craft-button>
+        <!-- Labels the icon-only button; `aria-keyshortcuts` announces the keys. -->
+        <craft-tooltip :for="undoButtonId" invoker-relation="label">
+          <div class="flex gap-md items-center">
+            {{ t('Undo') }}
+            <craft-shortcut aria-hidden="true">Z</craft-shortcut>
+          </div>
+        </craft-tooltip>
         <craft-button
+          :id="redoButtonId"
           type="button"
           icon="arrow-turn-right"
-          :aria-label="redoLabel"
-          :title="redoLabel"
+          :aria-keyshortcuts="redoShortcut"
           .disabled="!editor.canRedo.value"
           @click="editor.redo"
         ></craft-button>
+        <craft-tooltip :for="redoButtonId" invoker-relation="label">
+          <div class="flex gap-md items-center">
+            {{ t('Redo') }}
+            <craft-shortcut :shift="isMac" aria-hidden="true">{{
+              isMac ? 'Z' : 'Y'
+            }}</craft-shortcut>
+          </div>
+        </craft-tooltip>
         <craft-button
           type="button"
           icon="arrow-rotate-left"

@@ -358,6 +358,7 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
             })}"
             href="${this.href}"
             aria-current="${this.current ? 'true' : nothing}"
+            aria-keyshortcuts="${this.shortcutAriaKeys ?? nothing}"
             target="${ifDefined(this.target ?? undefined)}"
             rel="${ifDefined(
               this.rel ??
@@ -377,6 +378,7 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
               'action-item--checkbox': this.type === 'checkbox',
             })}"
             aria-current="${this.current ? 'true' : nothing}"
+            aria-keyshortcuts="${this.shortcutAriaKeys ?? nothing}"
             ?disabled="${this.disabled}"
           >
             ${this.renderBody()}

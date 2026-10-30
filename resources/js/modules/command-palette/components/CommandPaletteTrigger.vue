@@ -3,11 +3,10 @@
   import {ButtonVariant} from '@craftcms/ui';
   import {t} from '@craftcms/ui/utilities/translate';
   import {openCommandPalette} from '@/modules/command-palette/registry';
+  import {commandShortcut} from '@/common/utils/keyShortcuts';
 
   /** The palette opens with Cmd+K on Apple platforms and Ctrl+K elsewhere. */
-  const shortcut = /Mac|iPhone|iPad/.test(navigator.platform)
-    ? 'Meta+K'
-    : 'Control+K';
+  const shortcut = commandShortcut('K');
 </script>
 
 <template>
