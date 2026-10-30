@@ -799,6 +799,7 @@ return [
     'Entry Types' => 'Færslutegundir',
     'Entry URI Format' => 'Entry URI Format',
     'Entry could not be added. Maximum number of entries reached.' => 'Ekki var hægt að bæta við færslu. Hámarksfjölda færslna náð.',
+    'Entry type icon' => 'Entry type icon',
     'Entry type saved.' => 'Tegund færslu vistuð.',
     'Entry type settings' => 'Inngangstegundarstillingar',
     'Entry' => 'Inngangur',
