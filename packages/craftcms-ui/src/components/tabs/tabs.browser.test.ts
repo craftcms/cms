@@ -510,3 +510,18 @@ it('keeps its overflow menu’s events inside the strip', async () => {
     events.forEach((type) => document.removeEventListener(type, record));
   }
 });
+
+it('truncates the selected tab’s label when it alone is too wide for the strip', async () => {
+  const {element, tabs, menu} = await overflowingStrip('12rem');
+  tabs[1]!.textContent = 'An exceptionally long tab label that never fits';
+  element.selectedIndex = 1;
+  await expect.poll(() => tabs[0]!.hidden).toBe(true);
+
+  const selected = tabs[1]!.getBoundingClientRect();
+  const text = tabs[1]!.shadowRoot!.querySelector<HTMLElement>('.tab__text')!;
+
+  expect(selected.right).toBeLessThanOrEqual(
+    menu.getBoundingClientRect().left + 0.5
+  );
+  expect(text.scrollWidth).toBeGreaterThan(text.clientWidth);
+});
