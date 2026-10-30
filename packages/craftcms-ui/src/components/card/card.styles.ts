@@ -367,8 +367,13 @@ export default css`
     pointer-events: none;
   }
 
+  /* Rounded themselves, rather than left to the card's clip, which browsers
+     don't always apply to a layer with a backdrop filter, such as a header
+     bar, or to what's under it. */
   .card--cover .card__header {
     grid-area: 1 / 1;
+    border-start-start-radius: var(--c-card-radius, var(--c-radius-md));
+    border-start-end-radius: var(--c-card-radius, var(--c-radius-md));
     min-height: calc(
       var(--c-card-header-min-height, var(--_header-height)) +
         var(--_cover-edge)
@@ -404,6 +409,7 @@ export default css`
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: inherit;
   }
 
   /* In the card's color, as the page's theme has it, like a normal card's
