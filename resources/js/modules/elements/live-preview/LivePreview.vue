@@ -878,6 +878,14 @@
   .lp-editor__body {
     overflow-y: auto;
     overscroll-behavior: contain;
+
+    & :deep(craft-field.width-100:not(craft-field *)) {
+      --cp-scroll-bleed: var(--cp-container-padding);
+    }
+
+    & :deep(craft-field craft-field) {
+      --cp-scroll-bleed: 0px;
+    }
   }
 
   .lp-editor__footer {
