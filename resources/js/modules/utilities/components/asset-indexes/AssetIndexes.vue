@@ -34,7 +34,7 @@
 </script>
 
 <template>
-  <div class="p-4" v-if="hasSessions">
+  <div class="mb-xl" v-if="hasSessions">
     <IndexingSessions />
   </div>
 
