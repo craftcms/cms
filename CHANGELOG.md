@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added `craft\helpers\Db::isSafeOrderBy()`. ([#19994](https://github.com/craftcms/cms/pull/19994))
+- Fixed a bug where users who logged into the control panel with “Remember me” checked could get logged out after an hour of inactivity.
 - Fixed a bug where default titles of assets with long filenames were taken from the end of the filename. ([#20112](https://github.com/craftcms/cms/pull/20112))
 - Fixed a bug where characters were stripped from text that wasn’t UTF-8 when it was converted to UTF-8, such as alt text read from images’ IPTC captions. ([#20111](https://github.com/craftcms/cms/pull/20111))
 - Fixed a bug where the `fields/merge` and `fields/auto-merge` commands weren’t updating field condition rules that referenced the merged fields. ([#19901](https://github.com/craftcms/cms/issues/19901))
@@ -17,6 +18,11 @@
 - Fixed a bug where eager-loaded elements were getting reversed twice when both `orderBy` and `inReverse` criteria were set. ([#19994](https://github.com/craftcms/cms/pull/19994))
 - Fixed a bug where skipped revisions were getting reported as root element lookup errors when resaving elements. ([#20026](https://github.com/craftcms/cms/pull/20026))
 - Fixed a bug where pruning revisions could delete nested element revisions in other sites that newer revisions still referenced. ([#20042](https://github.com/craftcms/cms/issues/20042))
+- Fixed an error that occurred when logging in with a passkey that was registered with an older version of Craft. ([#20052](https://github.com/craftcms/cms/issues/20052))
+- Fixed a bug where closing an element selector modal while it was loading caused it to keep loading all of the source’s elements in the background. ([#20100](https://github.com/craftcms/cms/issues/20100))
+- Fixed a bug where moving assets and replacing existing files with the same name could fail. ([#20128](https://github.com/craftcms/cms/issues/20128))
+- Fixed a bug where nested entries added via drafts on multi-site installs could get an incomplete first revision, causing their nested content to be deleted when reverting to it. ([#20151](https://github.com/craftcms/cms/issues/20151))
+- Fixed a bug where nested entries owned by drafts could get their own revisions, which could cause a foreign key error when applying the draft on PostgreSQL. ([#20151](https://github.com/craftcms/cms/issues/20151))
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-hgwm-4xxx-w8jq)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-vvm6-wrc8-5fgh)
 

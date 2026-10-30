@@ -1853,6 +1853,7 @@ class Db
         /** @var BatchQueryResult $result */
         $result = Craft::createObject([
             'class' => BatchQueryResult::class,
+            // @phpstan-ignore mspirkovYii2.yiiCreateObjectValidation (Object option "query" for yii\db\BatchQueryResult must be yii\db\Query, yii\db\QueryInterface given.)
             'query' => $query,
             'batchSize' => $batchSize,
             'db' => $db,

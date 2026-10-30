@@ -317,7 +317,6 @@ class ErrorHandler extends \yii\web\ErrorHandler
      */
     protected function shouldRenderSimpleHtml(): bool
     {
-        /** @phpstan-ignore-next-line */
         return YII_ENV_TEST || (Craft::$app->has('request', true) && Craft::$app->request->getIsAjax());
     }
 }

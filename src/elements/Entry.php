@@ -3321,9 +3321,11 @@ JS;
             $this->id &&
             !$this->propagating &&
             !$this->resaving &&
-            !$this->getIsDraft() &&
-            !$this->getIsRevision() &&
-            $this->hasRevisions()
+            $this->getIsCanonical() &&
+            $this->hasRevisions() &&
+            // Nested entries owned by a draft or revision shouldn't get their own revisions
+            // (see https://github.com/craftcms/cms/issues/20151)
+            !ElementHelper::isDraftOrRevision($this)
         );
     }
 

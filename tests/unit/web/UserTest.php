@@ -9,10 +9,12 @@ namespace crafttests\unit\web;
 
 use Craft;
 use craft\elements\User as UserElement;
+use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Session;
 use craft\services\Config;
 use craft\test\TestCase;
+use craft\web\Session as WebSession;
 use craft\web\User as WebUser;
 use UnitTester;
 
@@ -166,6 +168,69 @@ class UserTest extends TestCase
 
         DateTimeHelper::resume();
         Session::reset();
+    }
+
+    /**
+     * Test that logging in with an identity cookie after the PHP session has expired keeps the remembered session duration,
+     * even when the request said not to extend the session.
+     *
+     * @dataProvider cookieLoginDataProvider
+     */
+    public function testCookieLoginKeepsRememberedDuration(bool $extendSession): void
+    {
+        $duration = 1209600;
+        $_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0';
+        $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+        $_SESSION = [];
+
+        Craft::$app->set('session', new class() extends WebSession {
+            public function getIsActive(): bool
+            {
+                return true;
+            }
+
+            public function getHasSessionId(): bool
+            {
+                return true;
+            }
+
+            public function open(): void
+            {
+            }
+
+            public function regenerateID($deleteOldSession = false): void
+            {
+            }
+        });
+        Session::reset();
+
+        // Start a fresh request, so it picks up the user agent, cookie, and query param
+        $cookieValidationKey = Craft::$app->getRequest()->cookieValidationKey;
+        Craft::$app->set('request', array_merge(App::webRequestConfig(), ['cookieValidationKey' => $cookieValidationKey]));
+
+        // Create the identity cookie, then expire the PHP session
+        $this->user->generateToken($this->userElement->id);
+        $identityCookie = $this->user->identityCookie['name'];
+        $cookieValue = json_encode([$this->userElement->id, $this->userElement->getAuthKey(), $duration]);
+        $_SESSION = [];
+
+        $_COOKIE[$identityCookie] = Craft::$app->getSecurity()->hashData(serialize([$identityCookie, $cookieValue]), $cookieValidationKey);
+        if (!$extendSession) {
+            $_GET['dontExtendSession'] = '1';
+        }
+        Craft::$app->set('user', App::userConfig());
+
+        $user = Craft::$app->getUser();
+        self::assertSame($this->userElement->id, $user->getIdentity()?->id);
+        self::assertEqualsWithDelta($duration, $user->getRemainingSessionTime(), 5);
+    }
+
+    public static function cookieLoginDataProvider(): array
+    {
+        return [
+            'extending the session' => [true],
+            'not extending the session' => [false],
+        ];
     }
 
     /**
