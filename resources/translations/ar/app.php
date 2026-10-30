@@ -799,6 +799,7 @@ return [
     'Entry Types' => 'أنواع الإدخال',
     'Entry URI Format' => 'تنسيق عنوان URI للإدخال',
     'Entry could not be added. Maximum number of entries reached.' => 'تعذَّرت إضافة الإدخال. تم بلوغ الحد الأقصى لعدد الإدخالات.',
+    'Entry type icon' => 'Entry type icon',
     'Entry type saved.' => 'تم حفظ نوع الإدخال.',
     'Entry type settings' => 'إعدادات أنواع الإدخال',
     'Entry' => 'إدخال',
