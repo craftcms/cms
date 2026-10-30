@@ -355,6 +355,33 @@ it('defaults to the source’s defaultSort', function () {
         );
 });
 
+it('sorts by a custom field in the requested direction', function () {
+    $fixture = EntryModel::factory()
+        ->withField('director', PlainText::class, value: 'Bong')
+        ->createElementWithFields();
+    $ids = ['Bong' => $fixture->element->id];
+
+    foreach (['Altman', 'Coppola'] as $director) {
+        $entry = EntryModel::factory()
+            ->state(['sectionId' => $fixture->element->sectionId, 'typeId' => $fixture->element->typeId])
+            ->createElement();
+        $entry->setFieldValue('director', $director);
+        app(Elements::class)->saveElement($entry);
+        $ids[$director] = $entry->id;
+    }
+
+    $sortedIds = fn (string $direction) => collect(
+        get(route('craft.cp.content.index', [
+            'page' => 'entries',
+            'viewMode' => 'table',
+            'sort' => [['field' => 'field:'.$fixture->field('director')->uid, 'direction' => $direction]],
+        ]))->assertOk()->viewData('page')['props']['data'],
+    )->pluck('id')->all();
+
+    expect($sortedIds('asc'))->toBe([$ids['Altman'], $ids['Bong'], $ids['Coppola']])
+        ->and($sortedIds('desc'))->toBe([$ids['Coppola'], $ids['Bong'], $ids['Altman']]);
+});
+
 it('clamps per_page to minimum of 1', function () {
     EntryModel::factory()->create();
 

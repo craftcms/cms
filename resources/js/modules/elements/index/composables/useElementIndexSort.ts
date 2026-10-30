@@ -114,6 +114,7 @@ export function useElementIndexSort(
 
     if (requestedPrimary.id === 'score') {
       changeServerSort([{id: 'score', desc: true}]);
+      sortingState.value = [{id: 'score', desc: true}];
       return;
     }
 
@@ -137,6 +138,9 @@ export function useElementIndexSort(
         desc: item.direction === 'desc',
       })),
     ]);
+    // Show the new sort right away rather than when the rows arrive. The View
+    // menu's select would otherwise snap back to the old field and send it.
+    sortingState.value = [primary];
     confirmedSort.value = [
       {
         field: primary.id,
