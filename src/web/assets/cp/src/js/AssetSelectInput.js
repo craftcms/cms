@@ -130,8 +130,12 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
       Garnish.$win.trigger('resize');
     }
 
+    // Make the container focusable on click, so files can be pasted into it
+    this.$container.attr('tabindex', '-1').addClass('can-paste');
+
     var options = {
       dropZone: this.$container,
+      pasteZone: this.$container,
       fileInput: this.$fileInput,
     };
 
