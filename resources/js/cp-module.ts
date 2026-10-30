@@ -116,6 +116,18 @@ export {
   type MessageType,
 } from './modules/messages/messages';
 export {useMessages} from './modules/messages/useMessages';
+export {
+  clearCopiedElements,
+  copyElements,
+  getCopiedElements,
+  onCopiedElementsChange,
+  pasteElements,
+  pasteElementsLabel,
+} from './modules/elements/clipboard';
+export type {
+  CopiedElementInfo,
+  CopiedElementsListener,
+} from './modules/elements/clipboard';
 export {highlighter} from './common/utils/highlight-code';
 
 export {CraftAuthChallengeForm as AuthChallengeForm} from './modules/auth/components/auth-challenge-form';

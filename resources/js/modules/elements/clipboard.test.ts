@@ -1,0 +1,202 @@
+import $ from 'jquery';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import type * as Clipboard from './clipboard';
+
+const messages = vi.hoisted(() => ({
+  showError: vi.fn(),
+  showSuccess: vi.fn(),
+}));
+vi.mock('@/modules/messages/messages', () => messages);
+
+const broadcasts = vi.hoisted(() => ({
+  sent: [] as unknown[],
+  handlers: new Map<string, () => void>(),
+}));
+vi.mock('@/common/craft/broadcast', () => ({
+  broadcast: (message: unknown) => broadcasts.sent.push(message),
+  onBroadcast: (event: string, handler: () => void) => {
+    broadcasts.handlers.set(event, handler);
+    return () => {};
+  },
+}));
+
+const STORAGE_KEY = 'Craft-test.copiedElements';
+const entry = {type: 'Entry', id: 5, siteId: 1};
+
+/** Stands in for the legacy card, which fills the elements in and then fires `show`. */
+class Card {
+  static last: Card | null = null;
+  loaded = false;
+  closed = false;
+  #onShow: Array<() => void> = [];
+
+  constructor(public elementInfo: Clipboard.CopiedElementInfo[]) {
+    Card.last = this;
+  }
+
+  on(_event: 'show', handler: () => void) {
+    this.#onShow.push(handler);
+  }
+
+  load(elements = this.elementInfo) {
+    this.elementInfo = elements;
+    this.loaded = true;
+    this.#onShow.forEach((handler) => handler());
+  }
+
+  close() {
+    this.closed = true;
+  }
+}
+
+/** `Craft.CP` before the clipboard takes its methods over. */
+function legacyCp() {
+  class CP {
+    copyElementCallbacks: unknown[] = [];
+    displayNotification = vi.fn();
+    static ElementCopyNotification = Card;
+
+    onCopyElements(callback: unknown) {
+      this.copyElementCallbacks.push(callback);
+    }
+  }
+
+  return CP;
+}
+
+let clipboard: typeof Clipboard;
+let actionClient: typeof import('@craftcms/ui/utilities/api/actionClient').actionClient;
+let cp: any;
+
+beforeEach(async () => {
+  vi.resetModules();
+  localStorage.clear();
+  broadcasts.sent.length = 0;
+  broadcasts.handlers.clear();
+  Card.last = null;
+  // Fresh copies, so the clipboard's state doesn't carry between tests
+  const {ConfigService} = await import('@craftcms/ui/services/Config');
+  ({actionClient} = await import('@craftcms/ui/utilities/api/actionClient'));
+  ConfigService.getInstance().initialize({
+    userId: 1,
+    elementTypeNames: {Entry: ['Entry', 'Entries', 'entry', 'entries']},
+  });
+  const CP = legacyCp();
+  cp = new CP();
+  vi.stubGlobal('Craft', {systemUid: 'test', CP, cp});
+  clipboard = await import('./clipboard');
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+  Object.values(messages).forEach((fn) => fn.mockReset());
+});
+
+describe('the element clipboard', () => {
+  it('stores copied elements, shows the card and tells other tabs', () => {
+    clipboard.installClipboard();
+    clipboard.copyElements([entry]);
+
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!)).toEqual([entry]);
+    expect(cp.displayNotification).toHaveBeenCalledWith(Card.last);
+    expect(broadcasts.sent).toEqual([{event: 'copyElements'}]);
+  });
+
+  it('tells listeners about the elements once the card has filled them in', () => {
+    clipboard.installClipboard();
+    const listener = vi.fn();
+    clipboard.onCopiedElementsChange(listener);
+    clipboard.copyElements([entry, {...entry, id: 6}]);
+
+    expect(listener).not.toHaveBeenCalled();
+    expect(clipboard.getCopiedElements()).toEqual([]);
+
+    // One of them no longer exists
+    const filled = [{...entry, data: {entryTypeId: 3}}];
+    Card.last!.load(filled);
+
+    expect(listener).toHaveBeenCalledWith(filled, 'Paste entry');
+    expect(clipboard.getCopiedElements()).toEqual(filled);
+  });
+
+  it('clears the clipboard and the card', () => {
+    clipboard.installClipboard();
+    const listener = vi.fn();
+    clipboard.onCopiedElementsChange(listener);
+    clipboard.copyElements([entry]);
+    const card = Card.last!;
+    clipboard.clearCopiedElements();
+
+    expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+    expect(card.closed).toBe(true);
+    expect(listener).toHaveBeenLastCalledWith([], null);
+  });
+
+  it('shows what was copied earlier, and what other tabs copy', () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([entry]));
+    clipboard.installClipboard();
+
+    expect(Card.last?.elementInfo).toEqual([entry]);
+
+    const other = {...entry, id: 9};
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([other]));
+    broadcasts.handlers.get('copyElements')!();
+
+    expect(Card.last?.elementInfo).toEqual([other]);
+  });
+
+  it('duplicates the copied elements when pasting, then clears them', async () => {
+    clipboard.installClipboard();
+    clipboard.copyElements([entry]);
+    const post = vi.spyOn(actionClient, 'post').mockResolvedValue({
+      data: {message: 'Entry pasted.', newElements: [{id: 50}]},
+    } as never);
+
+    const pasted = await clipboard.pasteElements({ownerId: 7});
+
+    expect(post).toHaveBeenCalledWith('elements/bulk-duplicate', {
+      elements: [entry],
+      newAttributes: {ownerId: 7},
+    });
+    expect(pasted).toEqual([{id: 50}]);
+    expect(messages.showSuccess).toHaveBeenCalledWith('Entry pasted.');
+    expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+  });
+
+  it('keeps the clipboard and shows the error when a paste fails', async () => {
+    clipboard.installClipboard();
+    clipboard.copyElements([entry]);
+    vi.spyOn(actionClient, 'post').mockRejectedValue(new Error('offline'));
+
+    await expect(clipboard.pasteElements()).resolves.toEqual([]);
+    expect(messages.showError).toHaveBeenCalledWith(null);
+    expect(localStorage.getItem(STORAGE_KEY)).not.toBeNull();
+  });
+});
+
+describe('Craft.cp', () => {
+  it('copies legacy element markup through the clipboard', () => {
+    vi.stubGlobal('jQuery', $);
+    clipboard.installClipboard();
+    const $element = $(
+      '<div data-type="Entry" data-id="5" data-site-id="1" data-draft-id="2"></div>'
+    );
+
+    cp.copyElements($element);
+
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!)).toEqual([
+      {type: 'Entry', id: 5, siteId: 1, draftId: 2},
+    ]);
+  });
+
+  it('keeps callbacks registered before the clipboard took over', () => {
+    const callback = vi.fn();
+    cp.onCopyElements(callback);
+    clipboard.installClipboard();
+    clipboard.copyElements([entry]);
+    Card.last!.load();
+
+    expect(callback).toHaveBeenCalledWith([entry], 'Paste entry');
+  });
+});

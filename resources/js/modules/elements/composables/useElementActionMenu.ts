@@ -12,6 +12,7 @@ import {
   openImageEditorDialog,
   type ImageEditorSettings,
 } from '@/modules/image-editor/open-image-editor-dialog';
+import {copyElements} from '@/modules/elements/clipboard';
 import {elevatedSessionManager} from '@/modules/auth/elevated-session/manager';
 import {getCpUrl} from '@/common/craft/url';
 import {showError, showNotice} from '@/modules/messages/messages';
@@ -176,8 +177,7 @@ export function createElementActionDispatcher({
       }
 
       case 'copy':
-        // `Craft.cp` owns the clipboard, including its confirmation toast.
-        Craft.cp?.copyElements?.(behavior.elements);
+        copyElements(behavior.elements);
 
         return;
 

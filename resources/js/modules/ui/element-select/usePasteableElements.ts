@@ -1,6 +1,7 @@
 import {actionClient, t} from '@craftcms/ui';
 import {computed, nextTick, shallowRef, watch, type Ref} from 'vue';
-import {craft} from '@/modules/matrix/clipboard';
+import {elementTypeName} from '@/common/craft/element-types';
+import {clearCopiedElements} from '@/modules/elements/clipboard';
 import {useCopiedElements} from '@/modules/matrix/copied-elements';
 import type {ElementPresentation, ElementSelectProps} from './types';
 
@@ -100,9 +101,8 @@ export function usePasteableElements(options: {
 
   const label = computed(() => {
     const field = options.field();
-    const names = craft().elementTypeNames?.[field.elementType];
     const type =
-      (candidates.value.length === 1 ? names?.[2] : names?.[3]) ??
+      elementTypeName(field.elementType, candidates.value.length !== 1) ??
       field.elementDisplayName;
 
     return t('Paste {type}', {type});
@@ -126,7 +126,7 @@ export function usePasteableElements(options: {
     }
 
     const kept = options.relate(pasted);
-    craft().cp?.clearCopiedElements?.();
+    clearCopiedElements();
     await nextTick();
 
     const item = options.container.value?.querySelector<HTMLElement>(

@@ -3,6 +3,7 @@ import {openSlideout} from '@/common/slideouts';
 import type {SlideoutSaveResult} from '@/common/slideouts/types';
 import {matrixField} from '@/modules/matrix/selection-menu';
 import {getCpUrl} from '@/common/craft/url';
+import {copyElements} from '@/modules/elements/clipboard';
 
 /**
  * Window listeners for the declarative actions carried by a field's "⋮" action
@@ -146,5 +147,5 @@ window.addEventListener('craft:copy-nested-elements', ((ev: CustomEvent) => {
     return;
   }
 
-  Craft.cp?.copyElements?.(elements);
+  copyElements(elements);
 }) as EventListener);

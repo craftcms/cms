@@ -13,7 +13,7 @@ import type {
   NestedOwnerEditor,
 } from '@/modules/elements/nested-owner';
 import {useCopiedElements} from '@/modules/matrix/copied-elements';
-import {craft} from '@/modules/matrix/clipboard';
+import {pasteElements} from '@/modules/elements/clipboard';
 import {ELEMENT_QUICK_EDIT_CONTROL_SELECTOR} from '@/modules/elements/composables/useElementQuickEdit';
 import {
   canOpenElement,
@@ -464,7 +464,7 @@ export function useNestedElementOperations(
     await mutate(
       async (preparedOwnerId) => {
         const manager = options.manager.value!;
-        const pasted = await craft().cp.pasteElements({
+        const pasted = await pasteElements({
           primaryOwnerId: preparedOwnerId,
           ownerId: preparedOwnerId,
           fieldId: manager.fieldId,

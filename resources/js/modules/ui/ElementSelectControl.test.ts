@@ -1,5 +1,6 @@
 import {createApp, h, nextTick, ref} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {ConfigService} from '@craftcms/ui/services/Config';
 import type {UiControlPayload} from './types';
 
 const stub = vi.hoisted(() => {
@@ -31,9 +32,21 @@ const stub = vi.hoisted(() => {
     openSlideout,
     post,
     copy: null as ((elementInfo: unknown[]) => void) | null,
+    copyElements: vi.fn(),
     clearCopiedElements: vi.fn(),
   };
 });
+
+vi.mock('@/modules/elements/clipboard', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  copyElements: stub.copyElements,
+  clearCopiedElements: stub.clearCopiedElements,
+  getCopiedElements: () => [],
+  onCopiedElementsChange: (callback: (elementInfo: unknown[]) => void) => {
+    stub.copy = callback;
+    return () => {};
+  },
+}));
 
 vi.mock('@craftcms/ui', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@craftcms/ui')>()),
@@ -128,8 +141,7 @@ describe('ElementSelectControl', () => {
       'fetch',
       vi.fn(async () => new Response('<svg></svg>'))
     );
-    vi.stubGlobal('Craft', {
-      siteId: 1,
+    ConfigService.getInstance().initialize({
       elementTypeNames: {
         'CraftCms\\Cms\\Elements\\Entry': [
           'Entry',
@@ -138,14 +150,8 @@ describe('ElementSelectControl', () => {
           'entries',
         ],
       },
-      cp: {
-        getCopiedElements: () => [],
-        onCopyElements: (callback: (elementInfo: unknown[]) => void) => {
-          stub.copy = callback;
-        },
-        clearCopiedElements: stub.clearCopiedElements,
-      },
     });
+    vi.stubGlobal('Craft', {siteId: 1});
   });
 
   afterEach(() => {
@@ -158,6 +164,8 @@ describe('ElementSelectControl', () => {
     stub.openSlideout.mockClear();
     stub.copy?.([]);
     stub.clearCopiedElements.mockClear();
+    stub.copyElements.mockClear();
+    ConfigService.resetInstance();
     stub.post.mockReset();
     stub.post.mockResolvedValue({data: {elements: []}});
   });
@@ -1345,8 +1353,7 @@ describe('ElementSelectControl', () => {
     });
 
     it('copies the selected elements through the clipboard', async () => {
-      const copyElements = vi.fn();
-      vi.stubGlobal('Craft', {cp: {copyElements}});
+      const copyElements = stub.copyElements;
 
       const root = await mountSelected();
       menuItem(bulkMenu(root)!, 'Copy selected').click();

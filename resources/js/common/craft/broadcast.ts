@@ -7,11 +7,7 @@ export interface BroadcastMessage {
 
 let channel: BroadcastChannel | null | undefined;
 
-/**
- * Tells other control panel tabs, and listeners on `Craft.messageReceiver` in
- * this one, that something changed.
- */
-export function broadcast(message: BroadcastMessage): void {
+function getChannel(): BroadcastChannel | null {
   if (channel === undefined) {
     channel =
       typeof BroadcastChannel === 'undefined'
@@ -21,5 +17,32 @@ export function broadcast(message: BroadcastMessage): void {
           );
   }
 
-  channel?.postMessage(message);
+  return channel;
+}
+
+/**
+ * Tells other control panel tabs, and listeners on `Craft.messageReceiver` in
+ * this one, that something changed.
+ */
+export function broadcast(message: BroadcastMessage): void {
+  getChannel()?.postMessage(message);
+}
+
+/**
+ * Listens for an event broadcast from other tabs. Messages this tab sends
+ * with {@link broadcast} aren't heard.
+ */
+export function onBroadcast(
+  event: string,
+  handler: (message: BroadcastMessage) => void
+): () => void {
+  const listener = (ev: MessageEvent<BroadcastMessage>) => {
+    if (ev.data?.event === event) {
+      handler(ev.data);
+    }
+  };
+
+  getChannel()?.addEventListener('message', listener);
+
+  return () => getChannel()?.removeEventListener('message', listener);
 }

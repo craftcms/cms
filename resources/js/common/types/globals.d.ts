@@ -163,17 +163,6 @@ interface CraftStatic {
     trigger?: (event: string, data?: LegacySettingValue) => void;
     $notificationContainer?: {length: number};
     $notificationHeading?: {length: number};
-    copyElements?: (
-      elementInfo: Array<{
-        type: string;
-        id: string | number;
-        siteId?: number | null;
-        draftId?: number | null;
-        revisionId?: number | null;
-        fieldId?: number | null;
-        ownerId?: number | null;
-      }>
-    ) => void;
     displayNotification: (
       type: any,
       message?: string,
