@@ -14,11 +14,11 @@ use CraftCms\Cms\Ai\Assistant\Transcript;
 use CraftCms\Cms\Ai\AssistantContextTypes;
 use CraftCms\Cms\Ai\Enums\Capability;
 use CraftCms\Cms\Ai\Exceptions\AiUnavailableException;
+use CraftCms\Cms\Ai\Jobs\NameConversation;
 use CraftCms\Cms\Ai\ModelImages;
 use CraftCms\Cms\Ai\Models\AgentSkill;
 use CraftCms\Cms\Ai\Skills\AgentSkills;
 use CraftCms\Cms\Ai\Tasks\Assistant;
-use CraftCms\Cms\Ai\Tasks\GenerateChatTitle;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Cms;
@@ -155,7 +155,8 @@ readonly class AssistantController
             ->catch(fn (Throwable $exception) => $this->logProviderError($threadId, $exception));
 
         if ($firstMessage !== null) {
-            $response->then(fn () => $this->nameConversation($threadId, $firstMessage));
+            // Named by a queued job, so the title model’s request doesn’t hold the reply’s stream open.
+            $response->then(fn () => dispatch(new NameConversation($threadId, $firstMessage)));
         }
 
         return $response
@@ -376,22 +377,6 @@ readonly class AssistantController
             'recoverable' => $exception->error?->recoverable,
             'metadata' => $exception->error?->metadata,
         ]);
-    }
-
-    /**
-     * Replaces a conversation’s title, the start of its first message, with one generated from the message. A title
-     * the user gave it in the meantime stays, as does the one it has if no title can be generated.
-     */
-    private function nameConversation(string $threadId, string $message): void
-    {
-        $title = GenerateChatTitle::generate($message);
-
-        if ($title !== null) {
-            Conversation::query()
-                ->whereKey($threadId)
-                ->where('title', Str::limit($message, 100))
-                ->update(['title' => $title]);
-        }
     }
 
     private function user(Request $request): User

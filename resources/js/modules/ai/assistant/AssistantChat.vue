@@ -77,8 +77,8 @@
   }>();
 
   const emit = defineEmits<{
-    /** A reply has finished. */
-    finish: [];
+    /** A reply has finished, and whether it was the conversation’s first. */
+    finish: [first: boolean];
   }>();
 
   const draft = shallowRef('');
@@ -115,7 +115,10 @@
     persistence: true,
     onFinish: (message) => {
       status.value = textOf(message);
-      emit('finish');
+      emit(
+        'finish',
+        messages.value.filter(({role}) => role === 'user').length === 1
+      );
     },
   });
 

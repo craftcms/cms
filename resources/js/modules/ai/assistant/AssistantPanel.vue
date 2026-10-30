@@ -79,6 +79,28 @@
     return switchTo(crypto.randomUUID());
   }
 
+  /**
+   * Shows the conversation’s title as it is once a reply has finished. A new
+   * conversation’s generated title is saved by a queued job, so it’s looked
+   * for again a few times, until its title changes.
+   */
+  async function onFinish(first: boolean): Promise<void> {
+    await history.value?.refresh();
+
+    const id = threadId.value;
+    const title = history.value?.title;
+
+    for (const delay of first ? [1000, 2000, 4000, 8000] : []) {
+      await new Promise((resolve) => setTimeout(resolve, delay));
+
+      if (threadId.value !== id || history.value?.title !== title) {
+        return;
+      }
+
+      await history.value?.refresh();
+    }
+  }
+
   /** Starts a new conversation in place of the deleted one. */
   async function onDeleted(): Promise<void> {
     await newChat();
@@ -101,7 +123,7 @@
       ref="chat"
       :key="threadId"
       :thread-id="threadId"
-      @finish="history?.refresh()"
+      @finish="onFinish"
     />
     <template #header-actions>
       <AssistantHistory

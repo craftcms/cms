@@ -8,6 +8,7 @@ use CraftCms\Cms\Ai\Assistant\AssistantAgent;
 use CraftCms\Cms\Ai\Assistant\McpTools;
 use CraftCms\Cms\Ai\Assistant\ShowElements;
 use CraftCms\Cms\Ai\Http\Controllers\AssistantController;
+use CraftCms\Cms\Ai\Jobs\NameConversation;
 use CraftCms\Cms\Ai\Settings;
 use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Ai\Tasks\GenerateChatTitle;
@@ -24,6 +25,7 @@ use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Users;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Laravel\Ai\AnonymousAgent;
@@ -410,6 +412,19 @@ it('keeps the title the user gave a conversation when its generated title arrive
     chat($threadId, 'Find the lighthouses')->assertOk()->streamedContent();
 
     expect(Conversation::query()->find($threadId)?->getAttribute('title'))->toBe('Mine');
+});
+
+it('queues naming a new conversation, rather than naming it while its reply streams', function () {
+    Queue::fake();
+    AssistantAgent::fake(['There are four lighthouses.']);
+    AnonymousAgent::fake(['Lighthouse lookup']);
+    $threadId = (string) Str::uuid();
+
+    chat($threadId, 'Find the lighthouses')->assertOk()->streamedContent();
+
+    Queue::assertPushed(NameConversation::class, fn (NameConversation $job): bool => $job->threadId === $threadId);
+    AnonymousAgent::assertNeverPrompted();
+    expect(Conversation::query()->find($threadId)?->getAttribute('title'))->toBe('Find the lighthouses');
 });
 
 it('names a new conversation from its first message’s text once its first reply is done, with the chat titles task’s model', function () {

@@ -16,10 +16,15 @@ vi.mock('@inertiajs/vue3', async () => ({
   ...(await vi.importActual('@inertiajs/vue3')),
   usePage: () => ({props: {craft: {currentUser: {id: 1}}}}),
 }));
+const chat = vi.hoisted(() => ({finish: (_first: boolean) => {}}));
+const history = vi.hoisted(() => ({title: 'New chat', refresh: () => {}}));
+
 vi.mock('./AssistantChat.vue', () => ({
   default: defineComponent({
-    setup: (_, {expose}) => {
+    emits: ['finish'],
+    setup: (_, {expose, emit}) => {
       expose({focus: () => {}, focusTarget: () => null});
+      chat.finish = (first) => emit('finish', first);
 
       return () => h('div', {class: 'chat'});
     },
@@ -28,7 +33,12 @@ vi.mock('./AssistantChat.vue', () => ({
 vi.mock('./AssistantHistory.vue', () => ({
   default: defineComponent({
     setup: (_, {expose}) => {
-      expose({refresh: () => {}});
+      expose({
+        refresh: () => history.refresh(),
+        get title() {
+          return history.title;
+        },
+      });
 
       return () => h('div');
     },
@@ -81,6 +91,8 @@ async function mount(): Promise<void> {
 }
 
 afterEach(() => {
+  vi.useRealTimers();
+  history.refresh = () => {};
   app?.unmount();
   app = undefined;
   document.body.innerHTML = '';
@@ -142,3 +154,24 @@ it('opens a chat left open before the page reloaded, leaving focus where it was'
   expect(useAssistantPanel().isOpen.value).toBe(true);
   expect(document.activeElement).toBe(document.body);
 });
+
+it.each([
+  {first: true, refreshes: 3},
+  {first: false, refreshes: 1},
+])(
+  'looks for a new conversation’s generated title until it arrives ($first)',
+  async ({first, refreshes}) => {
+    pagePanel.value = true;
+    await mount();
+    vi.useFakeTimers();
+    const refresh = vi.fn(() => {
+      history.title = refresh.mock.calls.length >= 3 ? 'Generated' : 'Find…';
+    });
+    history.refresh = refresh;
+
+    chat.finish(first);
+    await vi.runAllTimersAsync();
+
+    expect(refresh).toHaveBeenCalledTimes(refreshes);
+  }
+);
