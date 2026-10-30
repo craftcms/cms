@@ -223,7 +223,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         'slug' => '(?:-[^\/]*)',
     ];
 
-    Route::get('preview/{id}{slug}', PreviewElementController::class)->where($idSlugParams);
+    Route::get('preview/{id}{slug?}', PreviewElementController::class)->where($idSlugParams);
     Route::get('edit/{id}{slug?}', ElementRedirectController::class)->where($idSlugParams);
     Route::get('edit/{uid}', ElementRedirectController::class);
     Route::get('revisions/{id}{slug}', [ElementRevisionsController::class, 'index'])->where($idSlugParams);

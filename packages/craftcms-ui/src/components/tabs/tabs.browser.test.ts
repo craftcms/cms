@@ -375,6 +375,17 @@ it('moves the selection to the first tab when the selected external tab is remov
   expect(sections[0]!.classList.contains('hidden')).toBe(false);
 });
 
+it('still switches external tabs after being moved elsewhere in the document', async () => {
+  const {element, tabs} = await externalStrip();
+  const elsewhere = document.createElement('div');
+  document.body.append(elsewhere);
+
+  elsewhere.append(element);
+  tabs[2]!.click();
+
+  await expect.poll(() => element.selectedIndex).toBe(2);
+});
+
 const OVERFLOW_LABELS = [
   'Content',
   'Metadata',

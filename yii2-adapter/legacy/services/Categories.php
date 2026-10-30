@@ -749,7 +749,7 @@ class Categories extends Component
      */
     public function fillGapsInCategories(array &$categories): void
     {
-        Structures::fillGapsInElements($categories);
+        app(\CraftCms\Cms\Structure\Structures::class)->fillGapsInElements($categories);
     }
 
     /**
@@ -762,7 +762,7 @@ class Categories extends Component
      */
     public function applyBranchLimitToCategories(array &$categories, int $branchLimit): void
     {
-        Structures::applyBranchLimitToElements($categories, $branchLimit);
+        app(\CraftCms\Cms\Structure\Structures::class)->applyBranchLimitToElements($categories, $branchLimit);
     }
 
     /**

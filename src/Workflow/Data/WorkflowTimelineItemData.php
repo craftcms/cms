@@ -10,7 +10,7 @@ namespace CraftCms\Cms\Workflow\Data;
 readonly class WorkflowTimelineItemData
 {
     /**
-     * @param  array{label: string, url: string|null, deleted: bool}  $actor
+     * @param  array{type?: string, id?: int|null, label: string, url: string|null, deleted: bool, photoColors?: list<string>|null}  $actor
      * @param  array{label: string, url: string|null, deleted: bool}|null  $impersonator
      * @param  array{date: string, dateLabel: string, time: string, full: string}  $formattedOccurredAt
      */

@@ -18,6 +18,7 @@ import {
   CpScreenSlideout,
   type CpScreenSlideoutSettings,
 } from './cp-screen-slideout';
+import {refreshPreviews} from '@/modules/elements/live-preview/previews';
 import type {UiValues} from '@/modules/ui/types';
 
 declare const Craft: any;
@@ -193,8 +194,7 @@ export class ElementEditorSlideout extends CpScreenSlideout {
         this.settings!.onSaveElement!(data);
       }
 
-      // Refresh Live Preview
-      Craft.Preview.refresh();
+      refreshPreviews();
     });
   }
 

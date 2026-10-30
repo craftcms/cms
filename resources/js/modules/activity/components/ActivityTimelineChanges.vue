@@ -24,6 +24,7 @@
 <template>
   <craft-card
     data-color="white"
+    class="activity-timeline__changes"
     :class="{'activity-timeline__changes--collapsible': showInline}"
   >
     <craft-disclosure v-if="showInline" appearance="plain">
@@ -83,12 +84,15 @@
 </template>
 
 <style scoped>
-  .activity-timeline__changes--collapsible {
+  .activity-timeline__changes {
     --c-card-padding-inline: var(--c-spacing-md);
     --c-card-padding-block: calc(
       var(--c-spacing-md) - var(--c-spacing-sm) - 1px
     );
+    font-size: 0.875em;
+  }
 
+  .activity-timeline__changes--collapsible {
     craft-disclosure {
       display: flex;
       flex-direction: column;

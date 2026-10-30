@@ -8,6 +8,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\RouteToken\Model\RouteToken;
+use CraftCms\Cms\Support\Config as ConfigHelper;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
@@ -106,11 +107,17 @@ class RouteTokens
      */
     public function createPreviewToken(mixed $route, ?int $usageLimit = null, ?string $token = null): string|false
     {
-        $config = Cms::config();
-        $duration = $config->previewTokenDuration ?? $config->defaultTokenDuration;
-        $expiryDate = now()->addSeconds($duration);
+        return $this->createToken($route, $usageLimit, now()->addSeconds($this->previewTokenDuration()), $token);
+    }
 
-        return $this->createToken($route, $usageLimit, $expiryDate, $token);
+    /**
+     * How long preview tokens last, in seconds.
+     */
+    public function previewTokenDuration(): int
+    {
+        $config = Cms::config();
+
+        return ConfigHelper::durationInSeconds($config->previewTokenDuration ?? $config->defaultTokenDuration);
     }
 
     /**
