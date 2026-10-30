@@ -44,6 +44,7 @@
   import {NestedOwnerEditorKey} from '@/modules/elements/nested-owner';
   import LivePreview from '@/modules/elements/live-preview/LivePreview.vue';
   import {useLivePreview} from '@/modules/elements/live-preview/useLivePreview';
+  import {getActivePreview} from '@/modules/elements/live-preview/previews';
   import ReleaseCallout from '@/modules/releases/components/ReleaseCallout.vue';
   import ReleasePicker from '@/modules/releases/components/ReleasePicker.vue';
   import {provideReleaseEditorActions} from '@/modules/releases/releaseEditor';
@@ -284,9 +285,11 @@
     () => (isSlideout || !page.props.readOnly) && !payload.release
   );
 
-  // Full pages only, as in Craft 5.
+  // A slideout opened from within a preview edits beside that preview, so it
+  // doesn't open one of its own.
+  const inOpenPreview = isSlideout && getActivePreview() !== null;
   const livePreview = useLivePreview(
-    () => (isSlideout ? null : (payload.preview ?? null)),
+    () => (inOpenPreview ? null : (payload.preview ?? null)),
     {
       save: () => autosave.save(),
       get hasPendingChanges() {
@@ -302,7 +305,10 @@
       payload.previewTargets.length > 0
   );
   const canPreview = computed(
-    () => showElementControls.value && Boolean(payload.preview?.targets.length)
+    () =>
+      !inOpenPreview &&
+      (showElementControls.value || (isSlideout && !payload.release)) &&
+      Boolean(payload.preview?.targets.length)
   );
   const livePreviewPane =
     useTemplateRef<InstanceType<typeof LivePreview>>('livePreviewPane');

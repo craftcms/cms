@@ -24,6 +24,7 @@ import ElementEditor from './ElementEditor.vue';
 
 const state = vi.hoisted(() => ({
   editor: null as any,
+  activePreview: null as unknown,
 }));
 
 vi.mock('@inertiajs/vue3', async (importOriginal) => ({
@@ -33,6 +34,15 @@ vi.mock('@inertiajs/vue3', async (importOriginal) => ({
 
 vi.mock('@/modules/elements/composables/useElementEditor', () => ({
   useElementEditor: () => state.editor,
+}));
+
+vi.mock('@/modules/elements/live-preview/previews', async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  getActivePreview: () => state.activePreview,
+}));
+
+vi.mock('@/modules/elements/live-preview/LivePreview.vue', () => ({
+  default: {render: () => null},
 }));
 
 vi.mock('@/bootstrap/element-details-panels', () => ({
@@ -124,6 +134,7 @@ beforeEach(() => {
 afterEach(() => {
   app.unmount();
   container.remove();
+  state.activePreview = null;
 });
 
 function mount(mode: ScreenMode): void {
@@ -271,6 +282,37 @@ it.each<ScreenMode>(['page', 'slideout'])(
     expect(
       container.querySelector('craft-button[href]')?.getAttribute('href')
     ).toBe('/actions/preview/create-token?redirect=x');
+  }
+);
+
+it.each<[ScreenMode, boolean]>([
+  ['page', true],
+  ['slideout', true],
+  ['slideout', false],
+])(
+  'offers Live Preview (%s, with no preview open: %s)',
+  async (mode, noPreviewOpen) => {
+    state.activePreview = noPreviewOpen ? null : {isOpen: {value: true}};
+    state.editor.props.previewTargets = [
+      {label: 'Entry page', url: '/actions/preview/create-token?redirect=x'},
+    ];
+    state.editor.props.preview = {
+      targets: [{label: 'Entry page', url: '/entry', refresh: true}],
+      createTokenUrl: '/actions/preview/create-token',
+      tokenParams: {canonicalId: 1, siteId: 1, previewToken: 'encrypted'},
+      token: 'token',
+      tokenDuration: 86400,
+      tokenParam: 'token',
+      paramValue: 'param',
+      siteTokenParam: 'siteToken',
+      siteToken: null,
+      iframeResizerOptions: false,
+    };
+
+    mount(mode);
+    await nextTick();
+
+    expect(findButton('Preview') !== undefined).toBe(noPreviewOpen);
   }
 );
 
