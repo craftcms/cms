@@ -799,6 +799,7 @@ return [
     'Entry Types' => '条目类型',
     'Entry URI Format' => '条目 URI 格式',
     'Entry could not be added. Maximum number of entries reached.' => '无法添加条目。已达到最大条目数。',
+    'Entry type icon' => 'Entry type icon',
     'Entry type saved.' => '条目类型已保存。',
     'Entry type settings' => '条目类型设置',
     'Entry' => '条目',
