@@ -799,6 +799,7 @@ return [
     'Entry Types' => 'انواع محتوا',
     'Entry URI Format' => 'فرمت URI محتوا',
     'Entry could not be added. Maximum number of entries reached.' => 'ورودی اضافه نشد. به حداکثر تعداد ورودی رسیده است.',
+    'Entry type icon' => 'Entry type icon',
     'Entry type saved.' => 'نوع محتوا ذخیره گردید.',
     'Entry type settings' => 'تنظیمات نوع ورودی',
     'Entry' => 'محتوا',
