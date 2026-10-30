@@ -799,6 +799,7 @@ return [
     'Entry Types' => 'Types d’entrée',
     'Entry URI Format' => 'Format de l’URI de l’entrée',
     'Entry could not be added. Maximum number of entries reached.' => 'L\'entrée n\'a pas pu être ajoutée. Le nombre maximum d\'entrées a été atteint.',
+    'Entry type icon' => 'Entry type icon',
     'Entry type saved.' => 'Type d’entrée enregistré.',
     'Entry type settings' => 'Paramètres du type d\'entrée',
     'Entry' => 'Entrée',
