@@ -149,7 +149,7 @@ it('shows the entry type icon faintly in the entry type’s color, and falls thr
         ->and($thumb->filter('svg')->count())->toBe(1)
         ->and($thumb->attr('data-color'))->toBe($color?->value);
 })->with([
-    'icon and color' => ['star', Color::Violet],
-    'icon without a color' => ['star', null],
+    'icon and color' => ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>', Color::Violet],
+    'icon without a color' => ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>', null],
     'no icon' => [null, null],
 ]);
