@@ -30,6 +30,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Ai;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Ui\Controls\ElementSelect;
 use CraftCms\Cms\User\Elements\User;
@@ -443,14 +444,12 @@ readonly class AssistantController
      */
     private function hasImage(string $conversationId, Asset $asset): bool
     {
+        // Matched in the database, as the attachments hold the images themselves.
         return ConversationMessage::query()
             ->where('conversation_id', $conversationId)
             ->where('role', 'user')
-            ->pluck('attachments')
-            ->contains(static fn (mixed $attachments): bool => array_any(
-                is_array($attachments) ? $attachments : [],
-                static fn (mixed $attachment): bool => is_array($attachment) && ($attachment['name'] ?? null) === ModelImages::name($asset),
-            ));
+            ->where('attachments', 'like', '%"name":'.Json::encode(ModelImages::name($asset)).'%')
+            ->exists();
     }
 
     /**
