@@ -11,7 +11,7 @@
 - Assets in volumes set to let each asset choose which sites it should be saved to now have a “Sites” pane in their edit pages’ sidebars. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - Assets in volumes set to let each asset choose which sites it should be saved to can now be deleted for individual sites, as long as they exist in another site. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - Deleting an element for the only site it exists in now soft-deletes it, unless it’s a draft or nested element. ([#20060](https://github.com/craftcms/cms/pull/20060))
-- Files can now be uploaded to Assets fields by pasting them from the clipboard while the field has focus. ([#20183](https://github.com/craftcms/cms/discussions/20183))
+- Files can now be uploaded to Assets fields by pasting them from the clipboard while the field has focus. ([#20183](https://github.com/craftcms/cms/discussions/20183), [#20212](https://github.com/craftcms/cms/pull/20212))
 
 ### Administration
 
@@ -105,8 +105,8 @@
 - Added `craft\test\ElementFixtureTrait`. ([#19626](https://github.com/craftcms/cms/pull/19626))
 - Added `craft\utilities\ClearCaches::clear()`. ([#20145](https://github.com/craftcms/cms/pull/20145))
 - Added `craft\web\assets\highlight\HighlightAsset`. ([#20088](https://github.com/craftcms/cms/pull/20088))
-- Added `Craft.BaseUploader::addFiles()`. ([#20183](https://github.com/craftcms/cms/discussions/20183))
-- `Craft.BaseUploader` now supports a `pasteZone` setting. Files pasted while focus is within it are passed to `addFiles()`, which custom uploader classes must implement to support pasted files. ([#20183](https://github.com/craftcms/cms/discussions/20183))
+- Added `Craft.BaseUploader::addFiles()`. ([#20183](https://github.com/craftcms/cms/discussions/20183), [#20212](https://github.com/craftcms/cms/pull/20212))
+- `Craft.BaseUploader` now supports a `pasteZone` setting. Files pasted while focus is within it are passed to `addFiles()`, which custom uploader classes must implement to support pasted files. ([#20183](https://github.com/craftcms/cms/discussions/20183), [#20212](https://github.com/craftcms/cms/pull/20212))
 - Plugins can register MCP capabilities via `craft\services\Mcp::EVENT_REGISTER_CAPABILITY_TYPES`, OAuth resources via `craft\services\OAuth::EVENT_REGISTER_RESOURCES`, and personal access token scopes via `craft\services\PersonalAccessTokens::registerScopeGroup()`. ([#20145](https://github.com/craftcms/cms/pull/20145), [#20147](https://github.com/craftcms/cms/pull/20147))
 - Plain Text, Email, Link, Number, Money, Lightswitch, Date, Time, Color, Country, Table, and option fields now implement `craft\base\InputSchemaFieldInterface`. ([#20145](https://github.com/craftcms/cms/pull/20145))
 - `Illuminate\Support\Collection` now has a `render()` macro, which replaces `craft\elements\ElementCollection::render()`. ([#19988](https://github.com/craftcms/cms/pull/19988))
