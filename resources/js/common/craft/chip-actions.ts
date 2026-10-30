@@ -1,5 +1,6 @@
 import {t} from '@craftcms/ui/utilities/translate';
 import {setElementAttributes} from './attributes';
+import {initLegacyUi} from '@/common/craft/legacy-ui';
 
 declare const $: any;
 
@@ -228,7 +229,5 @@ function addActionsToDisclosureMenu(
     );
   }
 
-  (
-    window as {Craft?: {initUiElements?: (container: unknown) => void}}
-  ).Craft?.initUiElements?.(disclosureMenu.$container);
+  initLegacyUi(disclosureMenu.$container);
 }

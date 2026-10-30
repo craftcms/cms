@@ -30,6 +30,7 @@ import {
   isMobileBrowser,
   setFocusWithin,
 } from '@craftcms/garnish';
+import {initLegacyUi} from '@/common/craft/legacy-ui';
 import {loadElementThumbs} from '@/modules/element-thumb-loader/globals';
 import {
   addErrorsToField,
@@ -529,11 +530,11 @@ export class CpScreenSlideout extends Slideout {
           this.inertiaApp.mount(this.$content[0]);
         }
 
-        Craft.initUiElements(this.$content);
+        initLegacyUi(this.$content);
         loadElementThumbs(this.$content);
 
         if (data.sidebar) {
-          Craft.initUiElements(this.$sidebar);
+          initLegacyUi(this.$sidebar);
           loadElementThumbs(this.$sidebar);
         }
 
