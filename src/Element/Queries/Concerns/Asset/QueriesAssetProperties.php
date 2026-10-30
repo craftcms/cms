@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns\Asset;
 
 use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
 use CraftCms\Cms\Element\Queries\AssetQuery;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
@@ -209,6 +211,7 @@ trait QueriesAssetProperties
      *
      * @uses $filename
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the assets’ filenames.')]
     public function filename(mixed $value): static
     {
         $this->filename = $value;
@@ -267,6 +270,7 @@ trait QueriesAssetProperties
      *
      * @uses $kind
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the assets’ file kinds.')]
     public function kind(mixed $value): static
     {
         $this->kind = $value;

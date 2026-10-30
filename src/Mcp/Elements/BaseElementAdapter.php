@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Mcp\Elements;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\UserInitiatedElementSave;
 use CraftCms\Cms\Mcp\ElementLifecycle;
@@ -54,7 +55,8 @@ abstract class BaseElementAdapter implements ElementAdapter
     }
 
     /**
-     * Returns type-specific criteria properties, added to Craft's common element query criteria.
+     * Returns criteria properties for query params that the element query does not declare with
+     * {@see ElementQueryParam}.
      *
      * @return array<string, array<string, mixed>>
      */
@@ -101,6 +103,7 @@ abstract class BaseElementAdapter implements ElementAdapter
             'criteria' => [
                 'type' => 'object',
                 'properties' => [
+                    ...ElementQueryCriteria::properties($elementType),
                     ...ElementQueryCriteria::SchemaProperties,
                     ...$this->criteriaProperties(),
                 ],

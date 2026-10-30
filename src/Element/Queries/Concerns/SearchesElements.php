@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Arr;
@@ -141,6 +143,7 @@ trait SearchesElements
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::String, 'Narrows the query results to only elements that match a search query.')]
     public function search(mixed $value): static
     {
         $this->search = $value;

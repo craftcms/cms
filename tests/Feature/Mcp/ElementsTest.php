@@ -45,7 +45,9 @@ it('describes each element type through elements.schema and the element type res
     ($this->call)('elements.schema', ['type' => 'entries'])
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.createAttributes.required', ['sectionId'])
-        ->assertJsonPath('result.structuredContent.criteria.properties.sectionId.description', 'Section ID or IDs.')
+        ->assertJsonPath('result.structuredContent.criteria.properties.sectionId.description', 'Narrows the query results based on the sections the entries belong to, per the sections’ IDs.')
+        ->assertJsonPath('result.structuredContent.criteria.properties.field.description', 'Narrows the query results based on the field the entries are contained by.')
+        ->assertJsonPath('result.structuredContent.criteria.properties.status.anyOf.2.type', 'null')
         ->assertJsonPath('result.structuredContent.duplicateModes', ['unpublished', 'canonical']);
 });
 

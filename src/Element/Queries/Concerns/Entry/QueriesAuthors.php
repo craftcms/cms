@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Element\Queries\Concerns\Entry;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Facades\UserGroups;
@@ -176,6 +178,7 @@ trait QueriesAuthors
      *
      * @uses $authorId
      */
+    #[ElementQueryParam(ElementQueryParamType::IntOrInts, 'Narrows the query results based on the entries’ authors, per the users’ IDs.')]
     public function authorId(mixed $value): static
     {
         $this->authorId = $value;

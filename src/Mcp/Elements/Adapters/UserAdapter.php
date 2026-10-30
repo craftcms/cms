@@ -9,7 +9,6 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\UserInitiatedElementSave;
 use CraftCms\Cms\Mcp\EditionFeatures;
 use CraftCms\Cms\Mcp\ElementLifecycle;
-use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\Elements\BaseElementAdapter;
 use CraftCms\Cms\Mcp\Serializers\ElementSerializer;
 use CraftCms\Cms\Support\DateTimeHelper;
@@ -54,11 +53,6 @@ class UserAdapter extends BaseElementAdapter
     public static function elementType(): string
     {
         return User::class;
-    }
-
-    protected function criteriaProperties(): array
-    {
-        return ElementQueryCriteria::UserSchemaProperties;
     }
 
     protected function createAttributesSchema(): array

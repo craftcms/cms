@@ -11,7 +11,6 @@ use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\UserInitiatedElementSave;
 use CraftCms\Cms\Mcp\ElementLifecycle;
-use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\Elements\BaseElementAdapter;
 use CraftCms\Cms\Mcp\Serializers\ElementSerializer;
 use CraftCms\Cms\Support\Arr;
@@ -44,11 +43,6 @@ class AssetAdapter extends BaseElementAdapter
     public static function elementType(): string
     {
         return Asset::class;
-    }
-
-    protected function criteriaProperties(): array
-    {
-        return ElementQueryCriteria::AssetSchemaProperties;
     }
 
     protected function updateAttributesSchema(): array

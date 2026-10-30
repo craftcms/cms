@@ -14,7 +14,6 @@ use CraftCms\Cms\Element\UserInitiatedElementSave;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Mcp\ElementLifecycle;
-use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\Elements\BaseElementAdapter;
 use CraftCms\Cms\Mcp\Serializers\ElementSerializer;
 use CraftCms\Cms\Site\Sites;
@@ -55,11 +54,6 @@ class EntryAdapter extends BaseElementAdapter
     public static function elementType(): string
     {
         return Entry::class;
-    }
-
-    protected function criteriaProperties(): array
-    {
-        return ElementQueryCriteria::EntrySchemaProperties;
     }
 
     protected function createAttributesSchema(): array

@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Element\Queries\Concerns\User;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Support\Facades\UserGroups;
@@ -170,6 +172,7 @@ trait QueriesUserGroups
      *
      * @uses $groupId
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the user group the users belong to.')]
     public function group(mixed $value): self
     {
         // If the value is a group handle, swap it with the user group
@@ -229,6 +232,7 @@ trait QueriesUserGroups
      *
      * @uses $groupId
      */
+    #[ElementQueryParam(ElementQueryParamType::IntOrInts, 'Narrows the query results based on the user group the users belong to, per the groups’ IDs.')]
     public function groupId(mixed $value): self
     {
         $this->groupId = $value;

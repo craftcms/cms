@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Element\Queries\Concerns;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Release\Enums\ReleaseStatus;
 use CraftCms\Cms\Support\Arr;
@@ -252,6 +254,7 @@ trait QueriesDraftsAndRevisions
      *     ->one();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether draft elements should be returned.')]
     public function drafts(?bool $value = true): static
     {
         $this->drafts = $value;
@@ -549,6 +552,7 @@ trait QueriesDraftsAndRevisions
      *     ->one();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether revision elements should be returned.')]
     public function revisions(?bool $value = true): static
     {
         $this->revisions = $value;

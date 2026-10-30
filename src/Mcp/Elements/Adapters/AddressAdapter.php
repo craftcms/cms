@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Mcp\Elements\Adapters;
 
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\Elements\BaseElementAdapter;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use Mcp\Exception\ToolCallException;
@@ -16,23 +15,6 @@ use Mcp\Exception\ToolCallException;
  */
 class AddressAdapter extends BaseElementAdapter
 {
-    private const array StringCriteria = [
-        'countryCode' => 'Country code criteria.',
-        'administrativeArea' => 'Administrative area criteria.',
-        'locality' => 'Locality criteria.',
-        'dependentLocality' => 'Dependent locality criteria.',
-        'postalCode' => 'Postal code criteria.',
-        'sortingCode' => 'Sorting code criteria.',
-        'organization' => 'Organization criteria.',
-        'organizationTaxId' => 'Organization tax ID criteria.',
-        'addressLine1' => 'First address line criteria.',
-        'addressLine2' => 'Second address line criteria.',
-        'addressLine3' => 'Third address line criteria.',
-        'firstName' => 'First name criteria.',
-        'lastName' => 'Last name criteria.',
-        'fullName' => 'Full name criteria.',
-    ];
-
     public static function handle(): string
     {
         return 'addresses';
@@ -41,19 +23,6 @@ class AddressAdapter extends BaseElementAdapter
     public static function elementType(): string
     {
         return Address::class;
-    }
-
-    protected function criteriaProperties(): array
-    {
-        $properties = [
-            'ownerId' => [...ElementQueryCriteria::IntegerOrIntegersSchema, 'description' => 'Owner element ID or IDs.'],
-        ];
-
-        foreach (self::StringCriteria as $name => $description) {
-            $properties[$name] = [...ElementQueryCriteria::StringOrStringsSchema, 'description' => $description];
-        }
-
-        return $properties;
     }
 
     protected function createAttributesSchema(): array
