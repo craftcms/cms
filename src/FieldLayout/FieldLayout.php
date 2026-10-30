@@ -7,8 +7,10 @@ namespace CraftCms\Cms\FieldLayout;
 use Closure;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\Thumb;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
@@ -54,6 +56,11 @@ use function CraftCms\Cms\t;
 class FieldLayout extends Component
 {
     use LegacyConstants;
+
+    /**
+     * The thumb source key for an entry’s entry type icon.
+     */
+    public const string ENTRY_TYPE_ICON_THUMB_SOURCE = 'entryTypeIcon';
 
     public ?int $id = null;
 
@@ -1143,11 +1150,15 @@ class FieldLayout extends Component
     }
 
     /**
-     * Returns whether any of the layout’s [[thumbSources]] is a field that can provide thumbnails.
+     * Returns whether any of the layout’s [[thumbSources]] is a field that can provide thumbnails, or the entry type icon.
      */
     public function hasThumbField(): bool
     {
         foreach ($this->thumbSources as $key) {
+            if ($key === self::ENTRY_TYPE_ICON_THUMB_SOURCE) {
+                return true;
+            }
+
             $field = $this->getElementByKey($key);
 
             if ($field instanceof BaseField && $field->thumbable()) {
@@ -1166,6 +1177,10 @@ class FieldLayout extends Component
      */
     public function getThumbHtmlForElement(string $key, ElementInterface $element, int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
+        if ($key === self::ENTRY_TYPE_ICON_THUMB_SOURCE) {
+            return $this->entryTypeIconThumb($element)?->getHtml($size, $mode);
+        }
+
         $source = $this->thumbSource($key, $element);
 
         return $source ? $source[0]->thumbHtml($source[1], $size, $mode) : null;
@@ -1178,9 +1193,34 @@ class FieldLayout extends Component
      */
     public function getThumbForElement(string $key, ElementInterface $element): ?Thumb
     {
+        if ($key === self::ENTRY_TYPE_ICON_THUMB_SOURCE) {
+            return $this->entryTypeIconThumb($element);
+        }
+
         $source = $this->thumbSource($key, $element);
 
         return $source ? $source[0]->thumb($source[1]) : null;
+    }
+
+    /**
+     * Returns a thumbnail showing an entry’s entry type icon, faintly, in the entry type’s color, if it has an icon.
+     */
+    private function entryTypeIconThumb(ElementInterface $element): ?Thumb
+    {
+        if (! $element instanceof Entry) {
+            return null;
+        }
+
+        $entryType = $element->getType();
+
+        if (in_array($entryType->icon, [null, ''], true)) {
+            return null;
+        }
+
+        return new Thumb(fn (): string => Html::tag('div', Icons::svg($entryType->icon), [
+            'class' => ['thumb', 'icon-thumb', 'w-[var(--c-thumb-icon-size,24px)] h-[var(--c-thumb-icon-size,24px)]'],
+            'data-color' => $entryType->color?->value,
+        ]));
     }
 
     /**

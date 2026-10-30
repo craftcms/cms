@@ -20,6 +20,8 @@ export class CardViewDesigner extends Base {
   $libraryContainer: CraftCheckboxSelect;
   $thumbManagementContainer: any = null;
   $thumbSources: CraftCheckboxSelect | null = null;
+  /** The thumb source for the owner's icon, offered while it has one. */
+  iconThumbOption: {label: string; value: string} | null = null;
   alwaysShowThumbAlignmentBtns = false;
   hasThumbAlignment = false;
   abortController: AbortController | null = null;
@@ -55,6 +57,8 @@ export class CardViewDesigner extends Base {
     this.$thumbSources = this.$thumbManagementContainer.querySelector(
       'craft-checkbox-select[id$="thumb-sources"]'
     );
+    const iconOption = this.$thumbManagementContainer.dataset.iconOption;
+    this.iconThumbOption = iconOption ? JSON.parse(iconOption) : null;
     if (this.$thumbSources) {
       this.addListener(this.$thumbSources, 'change', (ev: any) => {
         if (
@@ -102,6 +106,7 @@ export class CardViewDesigner extends Base {
     this.listenToCheckboxEvents();
     this.listenToAppearanceControls();
     this.disablePreviewLinks();
+    this.syncIconThumbOption();
     this.syncPreviewAppearance();
     this.observePreviewCard();
     this.themeObserver.observe(document.documentElement, {
@@ -180,9 +185,42 @@ export class CardViewDesigner extends Base {
         return control !== null && target.contains(control);
       })
     ) {
+      this.syncIconThumbOption();
       this.syncPreviewAppearance();
     }
   };
+
+  /** The value of the Name, Color, or Icon control, or `''` if there isn't one. */
+  appearanceValue(key: 'name' | 'color' | 'icon'): string {
+    return String(
+      (this.appearanceControl(key) as any)?.modelValue ?? ''
+    ).trim();
+  }
+
+  /**
+   * Offers the owner's icon as a thumb source only while an icon is selected.
+   */
+  syncIconThumbOption(): void {
+    const option = this.iconThumbOption;
+    if (!option || !this.$thumbSources) {
+      return;
+    }
+
+    const offered = this.$thumbSources.options.some(
+      ({value}) => value === option.value
+    );
+    if (this.appearanceValue('icon')) {
+      if (!offered) {
+        this.$thumbSources.addOption({checked: false, ...option});
+      }
+    } else if (offered) {
+      const checked = this.thumbSources().includes(option.value);
+      this.$thumbSources.removeOption(option.value);
+      if (checked) {
+        this.manageThumbnails();
+      }
+    }
+  }
 
   /**
    * Gives the preview card the owner's color, and its icon and name in the
@@ -195,19 +233,17 @@ export class CardViewDesigner extends Base {
       return;
     }
 
-    const value = (key: 'name' | 'color' | 'icon'): string =>
-      String((this.appearanceControl(key) as any)?.modelValue ?? '').trim();
     // Only for owners with a color or icon, like entry types, whose elements'
     // cards show the owner in their headers.
     if (!this.appearanceControl('color') && !this.appearanceControl('icon')) {
       return;
     }
 
-    const name = value('name');
+    const name = this.appearanceValue('name');
     // "No color" is the color select's `__blank__` option: no color of the
     // card's own, as the cards of elements without a color have.
-    const color = value('color').replace(/^__blank__$/, '');
-    const icon = value('icon');
+    const color = this.appearanceValue('color').replace(/^__blank__$/, '');
+    const icon = this.appearanceValue('icon');
     // The sample chip takes the color too, but not the icon: chips show a
     // thumbnail or status instead.
     const chip = this.$previewContainer?.querySelector('craft-chip.cvd-chip');
@@ -218,6 +254,8 @@ export class CardViewDesigner extends Base {
         element?.removeAttribute('data-color');
       }
     }
+
+    this.syncPreviewIconThumb(card, chip, icon, color);
 
     const header = card.querySelector(':scope > [slot="header"]');
     if (!header) {
@@ -244,6 +282,56 @@ export class CardViewDesigner extends Base {
       label.append(nameElement);
     }
     header.append(label);
+  }
+
+  /**
+   * Shows the owner's icon as the preview's thumbnail when it's the first
+   * thumb source, as it'll be for every element: faintly, in the owner's
+   * color, beside the content rather than covering the card.
+   */
+  syncPreviewIconThumb(
+    card: Element,
+    chip: Element | null,
+    icon: string,
+    color: string
+  ): void {
+    const option = this.iconThumbOption;
+    if (!icon || !option || this.thumbSources()[0] !== option.value) {
+      return;
+    }
+
+    card.removeAttribute('cover-src');
+    card.removeAttribute('luminance');
+    chip?.setAttribute('show-thumb', '');
+
+    for (const [element, slotClass] of [
+      [card, 'card-thumb'],
+      [chip, ''],
+    ] as const) {
+      if (!element) {
+        continue;
+      }
+
+      let slot = element.querySelector(':scope > [slot="thumbnail"]');
+      if (!slot) {
+        slot = document.createElement('div');
+        slot.setAttribute('slot', 'thumbnail');
+        element.prepend(slot);
+      }
+      slot.className = slotClass;
+
+      const thumb = document.createElement('div');
+      // Sized as the server renders an element's icon thumbnail.
+      thumb.className =
+        'thumb icon-thumb w-[var(--c-thumb-icon-size,24px)] h-[var(--c-thumb-icon-size,24px)]';
+      if (color) {
+        thumb.setAttribute('data-color', color);
+      }
+      const iconElement = document.createElement('craft-icon');
+      iconElement.setAttribute('name', icon);
+      thumb.append(iconElement);
+      slot.replaceChildren(thumb);
+    }
   }
 
   listenToCheckboxEvents(): void {
@@ -460,9 +548,15 @@ export class CardViewDesigner extends Base {
 
   /**
    * Hides Thumb Alignment when there's no thumbnail, or it covers the card.
+   * Icon thumbnails never cover the card, so it stays while one is a source.
    */
   toggleThumbFields(): void {
-    const cover = this.designer.config.cardThumbStyle === 'cover';
+    const cover =
+      this.designer.config.cardThumbStyle === 'cover' &&
+      !(
+        this.iconThumbOption &&
+        this.thumbSources().includes(this.iconThumbOption.value)
+      );
 
     this.$thumbManagementContainer
       .querySelectorAll('[data-attribute="thumb-alignment"]')
