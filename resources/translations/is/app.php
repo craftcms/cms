@@ -1564,6 +1564,7 @@ return [
     'Resaving {type}' => 'Endurvistar {type}',
     'Reserved' => 'Frátekið',
     'Reset password' => 'Endurstilla lykilorð',
+    'Resize editor' => 'Resize editor',
     'Resolve now' => 'Leysið núna',
     'Resolved' => 'Leyst',
     'Response:' => 'Svar:',
