@@ -31,6 +31,7 @@
   } from '@/common/types';
   import ColumnHeaderTitle from '@/common/components/ColumnHeaderTitle.vue';
   import DropIndicator from '@/common/components/DropIndicator.vue';
+  import PlaceholderShape from '@/common/components/PlaceholderShape.vue';
   const props = withDefaults(
     defineProps<{
       table: Table<CraftTableFeatures, TData>;
@@ -68,6 +69,13 @@
        * row doesn't add height above it.
        */
       emptyRow?: boolean;
+      /**
+       * How many placeholder rows to draw in place of the rows, under the real
+       * headers, such as while they load. Takes the place of the loading
+       * spinner. Their cells come from the `placeholder-cell` slot, or else a
+       * line of text.
+       */
+      placeholderRows?: number;
     }>(),
 
     {
@@ -80,6 +88,7 @@
       withBottomBorder: true,
       appearance: TableAppearance.Plain,
       emptyRow: true,
+      placeholderRows: 0,
     }
   );
 
@@ -259,6 +268,13 @@
     return columnCount + leadingColumnTracks.value.length;
   });
 
+  const showPlaceholders = computed(() => props.placeholderRows > 0);
+
+  /** Varies the placeholder lines' lengths, the same way on every render. */
+  function placeholderWidth(rowIdx: number, cellIdx: number): string {
+    return `${50 + ((rowIdx * 7 + cellIdx * 13) % 5) * 10}%`;
+  }
+
   function hideBottomBorder(rowIdx: number) {
     return (
       !props.withBottomBorder &&
@@ -332,8 +348,14 @@
 </script>
 
 <template>
-  <div ref="root-ref" :class="{'flex flex-1 flex-col': loading}">
-    <div v-if="loading" class="grid flex-1 place-items-center min-h-20">
+  <div
+    ref="root-ref"
+    :class="{'flex flex-1 flex-col': loading && !showPlaceholders}"
+  >
+    <div
+      v-if="loading && !showPlaceholders"
+      class="grid flex-1 place-items-center min-h-20"
+    >
       <craft-spinner ref="loading-ref">{{ loadingLabel }}</craft-spinner>
     </div>
     <table
@@ -439,7 +461,41 @@
         </tr>
       </thead>
       <tbody>
-        <template v-if="table.getRowModel().rows.length > 0">
+        <template v-if="showPlaceholders">
+          <tr
+            v-for="rowIdx in placeholderRows"
+            :key="`placeholder-${rowIdx}`"
+            class="cp-table-row"
+            aria-hidden="true"
+          >
+            <td v-if="selectable" class="cp-table-cell cp-table-cell--select">
+              <PlaceholderShape class="cp-table-placeholder-checkbox" />
+            </td>
+            <td v-if="reorderable && !readOnly"></td>
+            <td
+              v-for="(column, cellIdx) in table.getVisibleLeafColumns()"
+              :key="column.id"
+              :class="[
+                'cp-table-cell',
+                `cp-table-cell--${column.id}`,
+                resolveMetaClasses(column.columnDef.meta?.columnClass),
+                resolveMetaClasses(column.columnDef.meta?.cellClass),
+              ]"
+            >
+              <slot
+                name="placeholder-cell"
+                :column="column"
+                :index="cellIdx"
+                :width="placeholderWidth(rowIdx, cellIdx)"
+              >
+                <PlaceholderShape
+                  :style="{maxInlineSize: placeholderWidth(rowIdx, cellIdx)}"
+                />
+              </slot>
+            </td>
+          </tr>
+        </template>
+        <template v-else-if="table.getRowModel().rows.length > 0">
           <tr
             v-for="(row, rowIdx) in table.getRowModel().rows"
             :key="row.id"
@@ -574,6 +630,11 @@
   }
   :deep(.row--dragging) {
     opacity: 0.4;
+  }
+
+  .cp-table-placeholder-checkbox {
+    inline-size: 1rem;
+    block-size: 1rem;
   }
 
   // A click anywhere on the row selects it, so its text shouldn't offer a text

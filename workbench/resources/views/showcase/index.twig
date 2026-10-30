@@ -1,0 +1,16 @@
+{% extends '_layouts/site' %}
+
+{% block title %}Field showcase · {{ parent() }}{% endblock %}
+
+{% block content %}
+  <h1>Field showcase</h1>
+  {% for entry in craft.entries().section('showcase').all() %}
+    <article class="card">
+      <h2><a href="{{ entry.url }}">{{ entry.title }}</a></h2>
+      {% if entry.showcasePlainText %}<p>{{ entry.showcasePlainText }}</p>{% endif %}
+      <time datetime="{{ entry.postDate|atom }}">{{ entry.postDate|date('long') }}</time>
+    </article>
+  {% else %}
+    <p class="muted">No entries yet.</p>
+  {% endfor %}
+{% endblock %}
