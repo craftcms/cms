@@ -111,6 +111,10 @@
 
   .assistant-history__invoker {
     max-inline-size: 100%;
+
+    &::part(content) {
+      min-inline-size: 0;
+    }
   }
 
   .assistant-history__title {
