@@ -19,12 +19,10 @@
 {% endjs %}
 
 {{ ui('field', {
-  id: 'name-field',
+  id: 'name',
   label: 'Name'|t('app'),
   errors: errors.get('name'),
-  attributes: {data: {attribute: 'name', 'error-key': 'name'}},
   input: ui('input', {
-    id: 'name',
     name: 'name',
     value: old('name', entryType.name != entryType.original.name ? entryType.name : null),
     placeholder: entryType.original.name,
@@ -32,12 +30,10 @@
 }) }}
 
 {{ ui('field', {
-  id: 'handle-field',
+  id: 'handle',
   label: 'Handle'|t('app'),
   errors: errors.get('handle'),
-  attributes: {data: {attribute: 'handle', 'error-key': 'handle'}},
   input: ui('input', {
-    id: 'handle',
     name: 'handle',
     autocorrect: false,
     autocapitalize: false,
@@ -50,12 +46,10 @@
 }) }}
 
 {{ ui('field', {
-  id: 'description-field',
+  id: 'description',
   label: 'Description'|t('app'),
   errors: errors.get('description'),
-  attributes: {data: {attribute: 'description', 'error-key': 'description'}},
   input: ui('textarea', {
-    id: 'description',
     name: 'description',
     value: old('description', entryType.description != entryType.original.description ? entryType.description : null),
     placeholder: entryType.original.description,

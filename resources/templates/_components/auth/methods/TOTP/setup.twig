@@ -32,10 +32,9 @@
         {% endif %}
         {% if secret is defined and secret is not empty %}
           {{ ui('field', {
-            id: 'setup-key-field',
+            id: 'setup-key',
             label: 'Setup Key'|t('app'),
             input: ui('input-copy', {
-              id: 'setup-key',
               name: 'setup-key',
               value: secret,
               inputAttributes: {class: ['code']},
