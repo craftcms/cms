@@ -1564,6 +1564,7 @@ return [
     'Resaving {type}' => '{type} újramentése',
     'Reserved' => 'Fenntartva',
     'Reset password' => 'Jelszó visszaállítása',
+    'Resize editor' => 'Resize editor',
     'Resolve now' => 'Megoldás most',
     'Resolved' => 'Megoldva',
     'Response:' => 'Válasz:',
