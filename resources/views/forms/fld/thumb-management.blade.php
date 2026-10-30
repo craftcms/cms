@@ -16,6 +16,7 @@
      * these variables.
      *
      * @var array $options
+     * @var array{label: string, value: string}|null $iconOption The entry type icon option, which the JS keeps only while an icon is selected
      * @var list<string> $thumbSources
      * @var string $thumbAlignment
      * @var string $thumbStyle
@@ -25,7 +26,7 @@
      * @var array $styleOptions
      */
 @endphp
-<div class="thumb-management">
+<div class="thumb-management" @if ($iconOption) data-icon-option="{{ json_encode($iconOption) }}" @endif>
     <h2 class="sr-only">{{ \CraftCms\Cms\t('Manage element thumbnails') }}</h2>
 
     {{-- All thumbable fields, in the order they're tried --}}
