@@ -164,12 +164,10 @@ export function useElementIndex(options: UseElementIndexOptions) {
   );
   /**
    * How cards show a thumbnail, as the source's field layout has it, or null
-   * when the index has no thumbnails.
+   * when the source's elements have no thumbnails.
    */
-  const cardThumbs = computed<CardThumbSettings | null>(() =>
-    visibleViewModes.value.some(({mode}) => mode === 'thumbs')
-      ? (elementIndex.cardThumbs ?? {style: 'normal', alignment: 'end'})
-      : null
+  const cardThumbs = computed<CardThumbSettings | null>(
+    () => elementIndex.cardThumbs ?? null
   );
   const mode = computed<ViewMode['mode']>({
     get: () =>

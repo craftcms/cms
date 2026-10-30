@@ -156,6 +156,25 @@ it('selects fit for index tiles and inline cards', function (string $viewMode, s
     'inline cards' => ['cards', 'cardThumbHtml', 'fit', 120],
 ]);
 
+it('tells the placeholders whether the source’s entries have thumbnails', function () {
+    $entry = EntryModel::factory()->withField('thumbnail', ModeThumbnailField::class, value: 'fit')
+        ->createElementWithFields()->element;
+    $url = "/{$this->cpTrigger}/content/entries?viewMode=table";
+
+    get($url)->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('cardThumbs', null));
+
+    $layout = $entry->getFieldLayout();
+    $layout->thumbSources = ['layoutElement:'.$layout->getCustomFieldElements()[0]->uid];
+    $layout->cardThumbAlignment = 'start';
+    expect(Fields::saveLayout($layout))->toBeTrue();
+
+    get($url)->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('cardThumbs', ['style' => 'normal', 'alignment' => 'start'])
+        );
+});
+
 it('includes public URLs and only authorized edit URLs in every index view mode', function (string $viewMode, bool $canView) {
     $section = Section::factory()->create();
     $section->siteSettings()->update([
@@ -215,7 +234,7 @@ it('leaves the rows out of a page load that names no view mode until they are re
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('content/Index')
             ->has('sources')
-            ->where('cardThumbs', ['style' => 'normal', 'alignment' => 'end'])
+            ->where('cardThumbs', null)
             ->missing('data')
             ->missing('pagination')
             ->missing('structure')

@@ -115,6 +115,7 @@
           <span class="mode-option__label">
             <input
               type="radio"
+              class="cp-radio"
               :name="editable ? inputName(control.path) : ''"
               :value="String(option.value)"
               :checked="value === option.value"
