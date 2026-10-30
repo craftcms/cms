@@ -4,13 +4,16 @@
   asset.mimeType != 'image/svg+xml' and
   can('save', asset)
 ) %}
+{% set editFocal = enableFocalPoint and editFocal|default(false) %}
 
-<div id="{{ containerId }}" class="button-fade asset-image-preview group relative">
-    {% if enableFocalPoint %}
-        <div class="buttons absolute top-(--c-spacing-md) end-(--c-spacing-md) z-raised opacity-0 transition-opacity duration-100 ease-linear motion-reduce:transition-none group-hover:opacity-100 group-focus-within:opacity-100">
-            <craft-button id="{{ toggleId }}" type="button" size="small"></craft-button>
-        </div>
-    {% endif %}
+{% if editFocal %}
+    {# The preview modal moves this into its footer #}
+    <craft-button id="{{ toggleId }}" slot="footer" class="me-auto" type="button" icon="crosshairs" toggle>
+        {{- 'Focal Point'|t('app') -}}
+    </craft-button>
+{% endif %}
+
+<div id="{{ containerId }}" class="asset-image-preview relative">
     {{ tag('img', {
         src: url,
         width: asset.width,
@@ -40,9 +43,8 @@
       }
 
       const $container = $('#{{ containerId }}');
-      const $toggle = $('#{{ toggleId }}');
-      if ($container.length && $toggle.length) {
-        window.imageFocalPoint = new Craft.FocalPoint($container, $toggle, {{ editFocal|default(false) }});
+      if ($container.length) {
+        window.imageFocalPoint = new Craft.FocalPoint($container, $('#{{ toggleId }}'), {{ editFocal ? 'true' : 'false' }});
       }
     })();
   {% endjs %}
