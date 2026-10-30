@@ -17,6 +17,7 @@
   import {commentToolbarButtons} from '@/modules/markdown-field/commentToolbarButtons';
   import ActivityCommentCard from './ActivityCommentCard.vue';
   import ActivityTimelineEvent from './ActivityTimelineEvent.vue';
+  import {commandShortcut} from '@/common/utils/keyShortcuts';
   import '../../markdown-field/markdown-field';
 
   interface ActivityCommentResponse {
@@ -131,6 +132,8 @@
     }
   }
 
+  const postShortcut = commandShortcut('Enter');
+
   /** Ctrl/Command + Enter posts (or saves) the comment from the editor. */
   function onDraftKeydown(event: KeyboardEvent): void {
     if (
@@ -220,6 +223,7 @@
             variant="primary"
             size="small"
             .disabled="draft.trim() === '' || mutating || overage > 0"
+            :aria-keyshortcuts="postShortcut"
             @click="saveComment"
           >
             {{ t('Comment') }}
@@ -249,6 +253,7 @@
           variant="primary"
           size="small"
           .disabled="draft.trim() === '' || mutating || overage > 0"
+          :aria-keyshortcuts="postShortcut"
           @click="saveComment"
         >
           {{ t('Save') }}
