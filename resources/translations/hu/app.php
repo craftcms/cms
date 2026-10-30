@@ -799,6 +799,7 @@ return [
     'Entry Types' => 'Bejegyzéstípus',
     'Entry URI Format' => 'Az URI formátumának megadása',
     'Entry could not be added. Maximum number of entries reached.' => 'A bejegyzés hozzáadása sikertelen volt. Elérte a bejegyzések maximálás számát.',
+    'Entry type icon' => 'Entry type icon',
     'Entry type saved.' => 'Bejegyzés típusa mentve.',
     'Entry type settings' => 'Bejegyzéstípus beállításai',
     'Entry' => 'Bejegyzés',
