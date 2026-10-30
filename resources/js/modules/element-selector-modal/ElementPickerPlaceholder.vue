@@ -1,30 +1,23 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import PlaceholderShape from '@/common/components/PlaceholderShape.vue';
-  import {prefixedKey} from '@/common/composables/useStorage';
-  import type {ViewState} from '@/modules/elements/types/view-state';
+  import {useSelectable} from '@/common/composables/useSelectable';
+  import ElementCards from '@/modules/elements/components/ElementCards.vue';
+  import ElementThumbs from '@/modules/elements/components/ElementThumbs.vue';
+  import {readModalIndexLook} from './modalIndexLook';
 
   /**
-   * Stands in for the picker until the modal's first payload arrives. Nothing
-   * about the index is known yet besides the view mode it was last left in,
-   * which comes from the same storage the index restores it from. Modal
-   * payloads always render in the `modal` context, whatever the opener's.
+   * Stands in for the picker until the modal's first payload arrives, drawn
+   * the way this element type's modal last drew its index. With nothing to go
+   * on, it draws table rows, which every index offers.
    */
   const props = defineProps<{elementType: string}>();
 
-  function storedMode(): ViewState['mode'] {
-    try {
-      const stored = localStorage.getItem(
-        prefixedKey(`elementindex.${props.elementType}.modal`)
-      );
-
-      return (stored && JSON.parse(stored)?.mode) || 'table';
-    } catch {
-      return 'table';
-    }
-  }
-
-  const grid = ['thumbs', 'cards'].includes(storedMode());
+  const look = readModalIndexLook(props.elementType);
+  const mode = look?.mode ?? 'table';
+  const hasThumbs = Boolean(look?.cardThumbs);
+  // The card and thumb bodies need one, though placeholders never select.
+  const selection = useSelectable<string | number>({ids: []});
   const rowWidths = ['60%', '80%', '45%', '70%', '50%'];
 </script>
 
@@ -38,16 +31,42 @@
       />
       <PlaceholderShape class="picker-placeholder__control" />
     </div>
-    <ul v-if="grid" class="picker-placeholder__grid" aria-hidden="true">
-      <li v-for="index in 8" :key="index">
-        <PlaceholderShape class="picker-placeholder__tile" />
-        <PlaceholderShape class="picker-placeholder__label" />
-      </li>
-    </ul>
+    <div v-if="mode === 'cards'" class="picker-placeholder__grid">
+      <ElementCards
+        :selection="selection"
+        :placeholders="8"
+        :placeholder-thumb="look?.cardThumbs ?? null"
+      />
+    </div>
+    <div v-else-if="mode === 'thumbs'" class="picker-placeholder__grid">
+      <ElementThumbs
+        :selection="selection"
+        :placeholders="8"
+        :thumb-size="look?.thumbSize"
+      />
+    </div>
     <ul v-else class="picker-placeholder__rows" aria-hidden="true">
       <li v-for="index in 5" :key="index">
         <PlaceholderShape class="picker-placeholder__checkbox" />
-        <PlaceholderShape :style="{maxInlineSize: rowWidths[index - 1]}" />
+        <craft-chip
+          v-if="hasThumbs"
+          appearance="plain"
+          show-thumb
+          :thumb-size="look?.thumbSize"
+        >
+          <PlaceholderShape
+            slot="thumbnail"
+            class="picker-placeholder__thumb"
+          />
+          <PlaceholderShape
+            class="picker-placeholder__label"
+            :style="{inlineSize: rowWidths[index - 1]}"
+          />
+        </craft-chip>
+        <PlaceholderShape
+          v-else
+          :style="{maxInlineSize: rowWidths[index - 1]}"
+        />
       </li>
     </ul>
   </div>
@@ -81,8 +100,7 @@
     flex: 1;
   }
 
-  .picker-placeholder__rows,
-  .picker-placeholder__grid {
+  .picker-placeholder__rows {
     margin: 0;
     padding-block: var(--c-spacing-md);
     padding-inline: var(--cp-container-padding);
@@ -97,31 +115,27 @@
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
   }
 
+  .picker-placeholder__rows craft-chip {
+    flex: 1;
+  }
+
   .picker-placeholder__checkbox {
     flex: none;
     inline-size: 1rem;
     block-size: 1rem;
   }
 
-  .picker-placeholder__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
-    gap: var(--c-spacing-lg);
-  }
-
-  .picker-placeholder__grid li {
-    display: flex;
-    flex-direction: column;
-    gap: var(--c-spacing-sm);
+  .picker-placeholder__thumb {
+    inline-size: var(--c-thumbnail-size);
+    block-size: var(--c-thumbnail-size);
   }
 
   .picker-placeholder__label {
-    inline-size: 66%;
+    min-inline-size: 8rem;
   }
 
-  .picker-placeholder__tile {
-    aspect-ratio: 4 / 3;
-    block-size: auto;
-    border-radius: var(--c-radius-md);
+  .picker-placeholder__grid {
+    padding-block: var(--c-spacing-lg);
+    padding-inline: var(--cp-container-padding);
   }
 </style>

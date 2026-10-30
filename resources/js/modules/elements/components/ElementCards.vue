@@ -5,17 +5,13 @@
   import SelectableCardList from '@/common/components/SelectableCardList.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import PlaceholderShape from '@/common/components/PlaceholderShape.vue';
+  import type {CardThumbSettings} from '@/modules/elements/types/view-state';
   import type {Selectable} from '@/common/composables/useSelectable';
   import {isInteractiveClick} from '@/common/utils/dom';
   import {
     isInteractiveItemEvent,
     type ElementIndexItemBehavior,
   } from '@/modules/elements/types/item-behavior';
-
-  export interface CardThumbSettings {
-    style: string;
-    alignment: 'start' | 'end';
-  }
 
   interface CardElement {
     id: string | number;

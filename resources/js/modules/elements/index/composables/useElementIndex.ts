@@ -42,7 +42,10 @@ import type {
 } from '@/modules/elements/index/types/model';
 import type {InlineEditingSaveResult} from '@/modules/elements/index/composables/useInlineEditing';
 import type {ElementIndexContext} from '@/modules/elements/index/index-context';
-import type {ViewMode} from '@/modules/elements/types/view-state';
+import type {
+  CardThumbSettings,
+  ViewMode,
+} from '@/modules/elements/types/view-state';
 
 interface UseElementIndexOptions {
   elementIndex: ReturnType<typeof useContentIndexData>;
@@ -149,6 +152,15 @@ export function useElementIndex(options: UseElementIndexOptions) {
       (viewMode) =>
         !viewMode.structuresOnly || elementIndex.source?.structureId != null
     )
+  );
+  /**
+   * How cards show a thumbnail, as the source's field layout has it, or null
+   * when the index has no thumbnails.
+   */
+  const cardThumbs = computed<CardThumbSettings | null>(() =>
+    visibleViewModes.value.some(({mode}) => mode === 'thumbs')
+      ? (elementIndex.cardThumbs ?? {style: 'normal', alignment: 'end'})
+      : null
   );
   const mode = computed<ViewMode['mode']>({
     get: () =>
@@ -387,6 +399,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
     mode,
     thumbSize,
     thumbSizeOptions,
+    cardThumbs,
     loading,
     pending,
     processing,

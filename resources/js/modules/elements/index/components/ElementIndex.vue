@@ -11,7 +11,6 @@
   } from '@/common/types';
   import ElementTable from '@/modules/elements/index/components/ElementTable.vue';
   import ElementCards from '@/modules/elements/components/ElementCards.vue';
-  import type {CardThumbSettings} from '@/modules/elements/components/ElementCards.vue';
   import ElementThumbs from '@/modules/elements/components/ElementThumbs.vue';
   import ElementIndexToolbar from '@/modules/elements/index/components/ElementIndexToolbar.vue';
   import type {ElementIndexView} from '@/modules/elements/index/types/model';
@@ -73,6 +72,7 @@
     mode,
     thumbSize,
     thumbSizeOptions,
+    cardThumbs,
     sortField,
     sortDirection,
     tableColumns,
@@ -129,11 +129,6 @@
   /** Whether the rows have thumbnails, for the placeholders drawn before them. */
   const hasThumbs = computed(() =>
     visibleViewModes.value.some(({mode}) => mode === 'thumbs')
-  );
-  const cardPlaceholderThumb = computed<CardThumbSettings | null>(() =>
-    hasThumbs.value
-      ? (elementIndex.cardThumbs ?? {style: 'normal', alignment: 'end'})
-      : null
   );
   const isInlineEditing = computed(
     () =>
@@ -400,7 +395,7 @@
           :select-all="multiSelect"
           :loading="loading"
           :placeholders="placeholderCount(8)"
-          :placeholder-thumb="cardPlaceholderThumb"
+          :placeholder-thumb="cardThumbs"
           :item-behavior="itemBehavior"
           :sortable="rowReorder?.enabled.value ?? false"
           :interactions-disabled="processing"

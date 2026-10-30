@@ -7,6 +7,7 @@ import {
   type ElementInfo,
 } from '@craftcms/ui';
 import {prefixedKey} from '@/common/composables/useStorage';
+import {writeModalIndexLook} from './modalIndexLook';
 
 /**
  * The real index pulls the whole element-index component tree and its
@@ -175,19 +176,22 @@ describe('ElementSelectorModal', () => {
     unmount();
   });
 
-  it('draws placeholders in the modal index’s stored view mode until the body has loaded', async () => {
+  it('draws placeholders the way the last modal drew its index until the body has loaded', async () => {
     localStorage.setItem(
       prefixedKey('elementindex.CraftCms\\Cms\\Entry\\Elements\\Entry.modal'),
-      JSON.stringify({mode: 'cards'})
+      JSON.stringify({mode: 'thumbs'})
     );
+    writeModalIndexLook('CraftCms\\Cms\\Entry\\Elements\\Entry', {
+      mode: 'cards',
+      thumbSize: 'lg',
+      cardThumbs: null,
+    });
     const instance = controller({context: 'field'});
     const {host, unmount} = await mountModal(instance);
 
     const placeholder = host.querySelector('[slot="loading"]');
-    expect(
-      placeholder?.querySelector('.picker-placeholder__grid')
-    ).not.toBeNull();
-    expect(placeholder?.querySelector('.picker-placeholder__rows')).toBeNull();
+    expect(placeholder?.querySelector('.card-grid')).not.toBeNull();
+    expect(placeholder?.querySelector('.thumbsview')).toBeNull();
 
     await instance.open();
     await nextTick();
