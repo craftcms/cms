@@ -799,6 +799,7 @@ return [
     'Entry Types' => 'Tipi di articolo',
     'Entry URI Format' => 'Formato URI articolo',
     'Entry could not be added. Maximum number of entries reached.' => 'Impossibile aggiungere l\'articolo. Numero massimo di articoli raggiunto.',
+    'Entry type icon' => 'Entry type icon',
     'Entry type saved.' => 'Tipo di articolo salvato.',
     'Entry type settings' => 'Impostazioni del tipo di articolo',
     'Entry' => 'Articolo',
