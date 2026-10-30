@@ -799,6 +799,7 @@ return [
     'Entry Types' => '항목 유형',
     'Entry URI Format' => '항목 URI 형식',
     'Entry could not be added. Maximum number of entries reached.' => '항목을 추가할 수 없습니다. 최대 항목 수에 도달했습니다.',
+    'Entry type icon' => 'Entry type icon',
     'Entry type saved.' => '항목 유형 저장됨.',
     'Entry type settings' => '항목 타입 설정',
     'Entry' => '항목',
