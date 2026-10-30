@@ -45,6 +45,29 @@ it('draws native controls for the dark theme', async () => {
   }
 });
 
+it('gives options an opaque background under their light text in the dark theme', async () => {
+  // Chrome on Windows draws the option list on the transparent select's
+  // background, falling back to white, so options need their own.
+  document.body.innerHTML = `
+    <div data-theme="dark">
+      <craft-select>
+        <select slot="input">
+          <optgroup label="Days"><option>Monday</option></optgroup>
+        </select>
+      </craft-select>
+    </div>`;
+  await document.querySelector('craft-select')!.updateComplete;
+
+  for (const element of document.querySelectorAll('option, optgroup')) {
+    const style = getComputedStyle(element);
+
+    expect(style.backgroundColor, element.localName).not.toMatch(
+      /^rgba\(0, 0, 0, 0\)$|\/ 0\)$|^transparent$/
+    );
+    expect(luminance(style.color), element.localName).toBeGreaterThan(0.5);
+  }
+});
+
 it('keeps native controls light in the light theme', async () => {
   document.body.innerHTML = `
     <div data-theme="light">
