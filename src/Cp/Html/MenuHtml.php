@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Html;
 
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites;
@@ -208,15 +209,9 @@ readonly class MenuHtml
             $totalSites += count($groupSites);
 
             $groupSiteItems = $groupSites->map(function (Site $site) use ($sites, $path, $params, $selectedSite) {
-                if (isset($params['returnUrl'])) {
+                if (isset($params['returnUrl']) && is_string($params['returnUrl'])) {
                     // swap the `site` param in the `returnUrl` URL too
-                    $params['returnUrl'] = str_replace(':QS:', '?', $params['returnUrl'], $count);
-                    $params['returnUrl'] = Url::url($params['returnUrl'], [
-                        'site' => $site->handle,
-                    ]);
-                    if ($count !== 0) {
-                        $params['returnUrl'] = str_replace('?', ':QS:', $params['returnUrl']);
-                    }
+                    $params['returnUrl'] = ElementHelper::returnUrlForSite($params['returnUrl'], $site);
                 }
 
                 return [
