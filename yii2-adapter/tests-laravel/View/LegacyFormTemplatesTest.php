@@ -43,9 +43,11 @@ it('serves the legacy form includes from the adapter', function(string $template
     'languageMenu',
     'lightswitch',
     'money',
+    'multiselect',
     'password',
     'radio',
     'radioGroup',
+    'range',
     'select',
     'selectize',
     'text',
@@ -103,6 +105,11 @@ it('renders errorList markup', function() {
         ->toContain('<strong>value</strong>');
 });
 
+it('serves forms.twig from the adapter', function() {
+    expect(app(TemplateResolver::class)->resolve('_includes/forms', TemplateMode::Cp))
+        ->toBe(realpath(__DIR__ . '/../../resources/templates/_includes/forms.twig'));
+});
+
 it('keeps the forms macros working for plugins', function() {
     $html = renderCpString('{% import "_includes/forms" as forms %}{{ forms.checkboxField({id: "cb", name: "enabled", label: "Agree"}) }}{{ forms.textField({id: "t", name: "title", label: "Title"}) }}');
 
@@ -153,3 +160,13 @@ it('renders select, money and icon picker through their components', function(st
     'money' => ["{% include '_includes/forms/money' with {name: 'price', value: 5, currency: 'EUR'} only %}", 'craft-input-money'],
     'iconPicker' => ["{% include '_includes/forms/iconPicker' with {name: 'icon'} only %}", 'craft-icon-picker'],
 ]);
+
+it('renders the multiselect and range includes', function() {
+    expect(renderCpString("{% include '_includes/forms/multiselect' with {name: 'm', options: {a: 'A'}, values: ['a']} only %}"))
+        ->toContain('name="m[]"')
+        ->toContain('selected');
+
+    expect(renderCpString("{% include '_includes/forms/range' with {id: 'r', name: 'n', min: 0, max: 5} only %}"))
+        ->toContain('type="range"')
+        ->toContain('id="r-num"');
+});

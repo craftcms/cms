@@ -1017,7 +1017,77 @@ readonly class FormFields
     /** @param array<string, mixed> $config */
     public static function rangeHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/range', $config);
+        $id = $config['id'] ?? 'range'.mt_rand();
+        $numberInputId = $config['numberInputId'] ?? "$id-num";
+        $descriptionId = $config['descriptionId'] ?? "$id-desc";
+        $step = $config['step'] ?? 1;
+        $value = $config['value'] ?? null;
+        $inputAttributes = $config['inputAttributes'] ?? [];
+        $labelledBy = empty($inputAttributes['aria']['label'])
+            ? (($config['labelledBy'] ?? $config['labelId'] ?? false) ?: null)
+            : null;
+        $suffix = $config['suffix'] ?? false;
+        $hasSuffix = $suffix !== false;
+
+        $rangeInput = Html::tag('input', '', Arr::merge([
+            'class' => [...Html::explodeClass($config['class'] ?? []), 'range'],
+            'type' => 'range',
+            'id' => $id,
+            'name' => ($config['name'] ?? false) ?: false,
+            'value' => $value,
+            'disabled' => (bool) ($config['disabled'] ?? false),
+            'title' => ($config['title'] ?? false) ?: false,
+            'step' => $step,
+            'min' => $config['min'] ?? null,
+            'max' => $config['max'] ?? null,
+            'dir' => $config['orientation'] ?? $inputAttributes['dir'] ?? I18N::getLocale()->getOrientation(),
+            'aria' => [
+                'labelledby' => $labelledBy ?? false,
+                'describedby' => implode(' ', array_filter([
+                    $config['describedBy'] ?? null,
+                    $hasSuffix ? $descriptionId : null,
+                ])) ?: false,
+            ],
+        ], $inputAttributes));
+
+        $numberInput = self::textHtml([
+            'type' => 'number',
+            'id' => $numberInputId,
+            'descriptionId' => $descriptionId,
+            'value' => $value,
+            'inputmode' => 'numeric',
+            'min' => $config['min'] ?? null,
+            'max' => $config['max'] ?? null,
+            'step' => $step,
+            'suffix' => $suffix,
+            'labelledBy' => $labelledBy,
+        ]);
+
+        // Keep the slider and the number input in step; the number snaps back to the slider's clamped value on blur.
+        HtmlStack::js(sprintf(<<<'JS'
+(() => {
+  const range = document.getElementById(%s);
+  const number = document.getElementById(%s);
+  if (!range || !number) {
+    return;
+  }
+  range.addEventListener('input', () => {
+    number.value = range.value;
+  });
+  number.addEventListener('input', () => {
+    range.value = number.value;
+  });
+  number.addEventListener('blur', () => {
+    number.value = range.value;
+  });
+})();
+JS, Json::encode(InputNamespace::namespaceId($id)), Json::encode(InputNamespace::namespaceId($numberInputId))));
+
+        return Html::tag('div',
+            Html::tag('div', $rangeInput, ['class' => 'range-wrapper']).
+            Html::tag('div', $numberInput),
+            ['class' => 'flex'],
+        );
     }
 
     /** @param array<string, mixed> $config */
@@ -1025,7 +1095,7 @@ readonly class FormFields
     {
         $config['id'] ??= 'range'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/range', $config);
+        return self::fieldHtml(self::rangeHtml(...), $config);
     }
 
     /** @param array<string, mixed> $config */
@@ -1143,7 +1213,45 @@ readonly class FormFields
     /** @param array<string, mixed> $config */
     public static function multiSelectHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/multiselect', $config);
+        $name = ($config['name'] ?? false) ?: null;
+        $values = array_map(strval(...), (array) ($config['values'] ?? []));
+        $options = '';
+        $group = null;
+        $groupHtml = '';
+
+        foreach (self::normalizeSelectOptions($config['options'] ?? []) as $option) {
+            if ($option['group'] !== $group) {
+                $options .= $group === null ? $groupHtml : Html::tag('optgroup', $groupHtml, ['label' => $group]);
+                $group = $option['group'];
+                $groupHtml = '';
+            }
+
+            $groupHtml .= Html::tag('option', Html::encode($option['label']), [
+                'value' => (string) $option['value'],
+                'selected' => in_array((string) $option['value'], $values, true),
+                'disabled' => $option['disabled'] ?? false,
+                'hidden' => $option['hidden'] ?? false,
+                'data' => ($option['data'] ?? []) ?: false,
+            ]);
+        }
+
+        $options .= $group === null ? $groupHtml : Html::tag('optgroup', $groupHtml, ['label' => $group]);
+
+        // The empty hidden input posts the name when nothing is selected.
+        return ($name !== null ? Html::hiddenInput($name, '') : '').
+            Html::tag('div', Html::tag('select', $options, Arr::merge([
+                'multiple' => true,
+                'id' => $config['id'] ?? false,
+                'name' => $name !== null ? "{$name}[]" : false,
+                'autofocus' => ($config['autofocus'] ?? false) && ! request()->isMobileBrowser(true),
+                'disabled' => (bool) ($config['disabled'] ?? false),
+                'size' => $config['size'] ?? false,
+                'aria' => [
+                    'describedby' => ($config['describedBy'] ?? false) ?: false,
+                ],
+            ], $config['inputAttributes'] ?? [])), Arr::merge([
+                'class' => [...Html::explodeClass($config['class'] ?? []), 'multiselect'],
+            ], $config['containerAttributes'] ?? []));
     }
 
     /** @param array<string, mixed> $config */
@@ -1151,7 +1259,7 @@ readonly class FormFields
     {
         $config['id'] ??= 'multiselect'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/multiselect', $config);
+        return self::fieldHtml(self::multiSelectHtml(...), $config);
     }
 
     /** @param array<string, mixed> $config */

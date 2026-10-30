@@ -515,6 +515,16 @@ class Cp extends Component
     }
 
     /**
+     * Renders a range slider and its paired number input from the legacy range variables.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public function range(array $config = []): string
+    {
+        return FormFields::rangeHtml($config);
+    }
+
+    /**
      * Renders a select's HTML from the legacy select variables.
      *
      * Emits a `<craft-select>`; see {@see FormFields::selectFromConfig()} for

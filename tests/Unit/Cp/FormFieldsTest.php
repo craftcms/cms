@@ -10,6 +10,7 @@ use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Cms\View\TemplateMode;
@@ -441,5 +442,60 @@ describe('iconPickerHtml', function () {
     it('maps static onto the disabled state', function () {
         expect(FormFields::iconPickerHtml(['name' => 'icon', 'value' => 'star', 'static' => true]))
             ->toContainTag('craft-icon-picker', ['name' => 'icon', 'value' => 'star', 'disabled' => true]);
+    });
+});
+
+describe('multiSelectHtml', function () {
+    it('posts an array and an empty value when nothing is selected', function () {
+        $html = FormFields::multiSelectHtml([
+            'id' => 'ms',
+            'name' => 'colors',
+            'values' => ['orange'],
+            'options' => [
+                ['optgroup' => 'Warm'],
+                ['label' => 'Red', 'value' => 'red'],
+                ['label' => 'Orange', 'value' => 'orange'],
+                ['optgroup' => 'Cool'],
+                ['label' => 'Blue', 'value' => 'blue'],
+            ],
+            'class' => 'selectize',
+        ]);
+
+        expect($html)
+            ->toContainTag('input', ['type' => 'hidden', 'name' => 'colors', 'value' => ''])
+            ->toContainTag('div', ['class' => 'selectize multiselect'])
+            ->toContainTag('select', ['id' => 'ms', 'name' => 'colors[]', 'multiple' => true])
+            ->toContainTag('optgroup', ['label' => 'Warm'])
+            ->toContainTag('optgroup', ['label' => 'Cool'])
+            ->toContainTag('option', ['value' => 'orange', 'selected' => true])
+            ->toContainTag('option', ['value' => 'red', 'selected' => false]);
+    });
+});
+
+describe('rangeHtml', function () {
+    it('pairs the slider with a number input and syncs them', function () {
+        $html = FormFields::rangeHtml([
+            'id' => 'r',
+            'name' => 'amount',
+            'min' => 0,
+            'max' => 10,
+            'step' => 2,
+            'value' => 4,
+            'suffix' => '%',
+            'labelId' => 'r-label',
+        ]);
+
+        expect($html)
+            ->toContainTag('input', [
+                'type' => 'range',
+                'id' => 'r',
+                'name' => 'amount',
+                'value' => '4',
+                'step' => '2',
+                'aria-labelledby' => 'r-label',
+                'aria-describedby' => 'r-desc',
+            ])
+            ->toContainTag('input', ['type' => 'number', 'id' => 'r-num', 'value' => '4'])
+            ->and(HtmlStack::bodyHtml())->toContain('document.getElementById("r")');
     });
 });
