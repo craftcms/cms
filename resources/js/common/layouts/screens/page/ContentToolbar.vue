@@ -27,14 +27,14 @@
       <LayoutSlotOutlet name="content-toolbar">
         <div
           :id="legacyIds ? 'toolbar' : undefined"
-          class="flex gap-2 items-center"
+          class="flex gap-md items-center"
         >
           <LayoutSlotOutlet name="content-toolbar-meta">
             <slot name="meta"></slot>
           </LayoutSlotOutlet>
         </div>
 
-        <div class="flex gap-2 items-center" data-command-palette-actions>
+        <div class="flex gap-md items-center" data-command-palette-actions>
           <LayoutSlotOutlet name="content-toolbar-actions">
             <slot name="actions"></slot>
           </LayoutSlotOutlet>

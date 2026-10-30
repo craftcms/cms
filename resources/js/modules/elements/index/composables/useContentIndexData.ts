@@ -50,6 +50,7 @@ export type ContentIndexData = Omit<
   | 'actions'
   | 'exporters'
   | 'pagination'
+  | 'cardThumbs'
 > & {
   source: SourceItem | null;
   sources: Source[];
@@ -64,6 +65,8 @@ export type ContentIndexData = Omit<
   actions: BulkActionItem[] | null;
   exporters: Array<{type: string; name: string; formattable: boolean}>;
   pagination: PaginationData;
+  /** How the source's cards show their thumbnails, for card placeholders. */
+  cardThumbs?: {style: string; alignment: 'start' | 'end'};
 };
 
 /**
@@ -87,9 +90,7 @@ export type ContentIndexData = Omit<
  */
 export function useContentIndexData<
   Extra extends object = Record<never, never>,
-  Source extends Omit<ContentIndexData, 'data'> & {
-    data: Array<ElementIndexRow>;
-  } = ContentIndexData,
+  Source extends ContentIndexData = ContentIndexData,
 >(extra?: Extra, source?: MaybeRefOrGetter<Source>) {
   // Indexes that aren't an Inertia page — the element selector modal, which
   // fetches the same payload over XHR — pass their own source. `usePage()` is
@@ -145,6 +146,7 @@ export function useContentIndexData<
     actions: computed(() => props().actions),
     exporters: computed(() => props().exporters),
     pagination: computed(() => props().pagination),
+    cardThumbs: computed(() => props().cardThumbs),
 
     // Merged into the literal rather than `Object.assign`ed onto the result:
     // every key above is a `computed()` ref, and assigning over one after
