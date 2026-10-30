@@ -249,6 +249,12 @@
 - Fixed a bug where changing a field back to the value it had when the edit page loaded wasn’t autosaved, so field layout elements shown or hidden by conditions based on it didn’t update.
 - Fixed a bug where Table fields’ Date and Time cells, and their default row values, shifted by the site’s UTC offset each time they were saved from the control panel.
 - Fixed bugs where Dropdown fields didn’t preserve blank option values and could show duplicate blank placeholders. ([#20140](https://github.com/craftcms/cms/pull/20140))
+- Fixed a bug where Multi-select fields only kept one selected option. They’re now shown as comboboxes, as in Craft 5. ([#20166](https://github.com/craftcms/cms/pull/20166))
+- Fixed a bug where “Allow custom options” had no effect on Checkboxes and Radio Buttons fields, and custom values couldn’t be saved. ([#20166](https://github.com/craftcms/cms/pull/20166))
+- Fixed a bug where options fields accepted values that weren’t among their options. ([#20166](https://github.com/craftcms/cms/pull/20166))
+- Fixed a bug where Checkboxes, Dropdown, Multi-select, and Radio Buttons fields didn’t show their options’ icons and colors, and Dropdown and Multi-select fields didn’t show their option groups. Dropdown fields with option icons or colors are now shown as comboboxes, as in Craft 5. ([#20166](https://github.com/craftcms/cms/pull/20166))
+- Fixed a bug where Button Group fields showed only their options’ icons even when “Icons only” was disabled. ([#20166](https://github.com/craftcms/cms/pull/20166))
+- Fixed a bug where Dropdown fields with option groups didn’t have a leading blank option. ([#20166](https://github.com/craftcms/cms/pull/20166))
 - Fixed a bug where going from one element edit page to another, such as switching sites, opened the next page’s “Revisions” details panel rather than the one that was open.
 - Fixed a bug where viewing an element revision showed three read-only notices, including one about settings changes not being permitted, and no “Revert content from this revision” button. ([#20115](https://github.com/craftcms/cms/pull/20115))
 - Fixed an error that occurred on release pages if one of the release’s drafts belonged to an element that had been deleted, such as along with its section. The draft is now listed as blocked with “The entry has been deleted.”, and can be removed by anyone who can manage the release.
@@ -528,6 +534,9 @@
 - Added the `presentation` config option to the `forms.checkboxSelect` and `forms.checkboxSelectField` macros, `CraftCms\Cms\Cp\FormFields::checkboxSelectFromConfig()`, and `Craft.ui.createCheckboxSelect()`. Sortable checkbox selects still list only the checked options with an “Add item” menu, unless it's set to `checkboxes`. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - `CraftCms\Cms\Cp\Components\CheckboxSelect` now renders a `<craft-checkbox-select>`. While its “All” option is checked, the other options are left checked but unnamed, rather than disabled. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - `CraftCms\Cms\Ui\Controls\Choice::sortable()` no longer implies the “Add item” menu, and can now be combined with `allOption()`. `presentation(ChoicePresentation::AddMenu)` should be used for the menu. ([#20036](https://github.com/craftcms/cms/pull/20036))
+- Added `CraftCms\Cms\Ui\Controls\Choice::allowCustom()` and `iconsOnly()`, and the `color` and `custom` option keys. ([#20166](https://github.com/craftcms/cms/pull/20166))
+- Added `CraftCms\Cms\Cp\FormFields::customCheckboxTemplate()`. ([#20166](https://github.com/craftcms/cms/pull/20166))
+- `<craft-combobox>` now shows selected options’ icons and indicators on `multiple-choice` tokens, and tints option icons with their `color` data. ([#20166](https://github.com/craftcms/cms/pull/20166))
 - Deprecated `CraftCms\Cms\Cp\Components\CheckboxSelect::storageKey()`, which now does nothing. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Deprecated `Craft.SortableCheckboxSelect`. `<craft-checkbox-select>` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Deprecated `CraftCms\Cms\Element\DeletionBlockers\RelationDeletionBlocker::$elementIndexSettings`, which no longer has any effect.
