@@ -34,4 +34,10 @@ export default css`
     overflow-wrap: inherit;
     cursor: pointer;
   }
+
+  button:focus-visible {
+    outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
+      var(--c-color-focus-outline);
+    outline-offset: var(--c-focus-outline-offset);
+  }
 `;

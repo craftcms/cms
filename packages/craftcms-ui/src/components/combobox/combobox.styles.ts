@@ -92,7 +92,7 @@ export default css`
     padding: var(--c-spacing-xs);
   }
 
-  :host([multiple-choice]) .input-group__input:focus-within {
+  :host([multiple-choice][focused]) .input-group__input {
     outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
       var(--c-color-focus-outline);
     outline-offset: var(--c-focus-outline-offset);
@@ -129,7 +129,8 @@ export default css`
     border: 0;
     background: transparent;
     box-shadow: none;
-    outline: none;
+    /* Important so the page's global focus ring can't ring the textbox inside the field's */
+    outline: none !important;
   }
 
   /* The tokens sit in the field's flex row beside the textbox, as list items */

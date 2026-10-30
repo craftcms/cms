@@ -958,8 +958,8 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
 
   /**
    * The selected values, as a list in the light DOM so the textbox's
-   * `aria-labelledby` can reach it. It's an assertive live region, so a value
-   * is announced as it's added.
+   * `aria-labelledby` can reach it. It's a polite live region, so a value is
+   * announced as it's added.
    */
   #selection?: HTMLUListElement;
 
@@ -970,7 +970,7 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
       this.#selection.id = `selection-${this._inputId}`;
       // Safari drops the list role from a list without bullets.
       this.#selection.setAttribute('role', 'list');
-      this.#selection.setAttribute('aria-live', 'assertive');
+      this.#selection.setAttribute('aria-live', 'polite');
       this.#selection.setAttribute('aria-atomic', 'false');
       this.append(this.#selection);
     }

@@ -370,6 +370,30 @@ describe('keyboard and focus', () => {
         }
       }
     );
+
+    it('shows a 3:1 focus ring on a token focused from the keyboard', async () => {
+      const {control, surface, background} = await fixture((c) => {
+        c.multipleChoice = true;
+        c.modelValue = ['apple', 'cherry'];
+      }, theme);
+      const token = control.querySelector('craft-combobox-token')!;
+
+      surface.querySelector('button')!.focus();
+      await userEvent.tab();
+      await settle();
+      const button = token.shadowRoot!.activeElement as HTMLElement | null;
+      expect(button).toBe(token.shadowRoot!.querySelector('button'));
+
+      const style = getComputedStyle(button!);
+      const field = getComputedStyle(
+        control.shadowRoot!.querySelector('.input-group__input')!
+      ).backgroundColor;
+      expect(style.outlineStyle).not.toBe('none');
+      expect(parseFloat(style.outlineWidth)).toBeGreaterThanOrEqual(2);
+      expect(
+        contrast(style.outlineColor, field, background)
+      ).toBeGreaterThanOrEqual(3);
+    });
   });
 });
 
@@ -580,13 +604,13 @@ describe('multiple choice', () => {
     await expect.element(input).toHaveAccessibleName('Fruit');
   });
 
-  it('announces each value as it’s added, through an assertive list that’s there before anything is chosen', async () => {
+  it('announces each value as it’s added, through a polite list that’s there before anything is chosen', async () => {
     const {control} = await fixture((c) => {
       c.multipleChoice = true;
     });
     const list = control.querySelector('ul')!;
 
-    expect(list).toHaveAttribute('aria-live', 'assertive');
+    expect(list).toHaveAttribute('aria-live', 'polite');
     expect(list).toHaveAttribute('aria-atomic', 'false');
     expect(list).toBeEmptyDOMElement();
 
@@ -716,6 +740,84 @@ describe('visual', () => {
       expect(parseFloat(style.borderTopWidth)).toBeGreaterThan(0);
       expect(style.borderTopColor).not.toBe('rgba(0, 0, 0, 0)');
     }
+  });
+
+  it.each([
+    ['a combobox wrapping the textbox', '1.1'],
+    ['the textbox as the combobox', '1.0'],
+  ])(
+    'draws one focus ring, around the field, when the multiple-choice textbox is focused, with %s',
+    async (_, version) => {
+      const {control, input, surface} = await fixture((c) => {
+        (c as unknown as {_ariaVersion: string})._ariaVersion = version;
+        c.multipleChoice = true;
+        c.modelValue = ['apple'];
+      });
+
+      surface.querySelectorAll('button')[1]!.focus();
+      await userEvent.tab({shift: true});
+      await settle();
+      expect(document.activeElement).toBe(input);
+
+      const ringed = [
+        input,
+        ...control.querySelectorAll('[slot=input]'),
+        ...control.shadowRoot!.querySelectorAll('*'),
+      ].filter((element) => getComputedStyle(element).outlineStyle !== 'none');
+      expect(ringed).toEqual([
+        control.shadowRoot!.querySelector('.input-group__input'),
+      ]);
+    }
+  );
+
+  it('rings only the token, not the field, when a token is focused', async () => {
+    const {control, surface} = await fixture((c) => {
+      c.multipleChoice = true;
+      c.modelValue = ['apple'];
+    });
+
+    surface.querySelector('button')!.focus();
+    await userEvent.tab();
+    await settle();
+    expect(document.activeElement).toBe(
+      control.querySelector('craft-combobox-token')
+    );
+
+    expect(
+      getComputedStyle(
+        control.shadowRoot!.querySelector('.input-group__input')!
+      ).outlineStyle
+    ).toBe('none');
+  });
+
+  it('keeps the focus ring on a token in forced colors mode', async () => {
+    await cdp().send('Emulation.setEmulatedMedia', {
+      features: [{name: 'forced-colors', value: 'active'}],
+    });
+    const {control, surface, background} = await fixture((c) => {
+      c.multipleChoice = true;
+      c.modelValue = ['apple'];
+    });
+    const token = control.querySelector('craft-combobox-token')!;
+
+    surface.querySelector('button')!.focus();
+    await userEvent.tab();
+    await settle();
+    const button = token.shadowRoot!.querySelector('button')!;
+    expect(token.shadowRoot!.activeElement).toBe(button);
+
+    const style = getComputedStyle(button);
+    expect(style.outlineStyle).not.toBe('none');
+    expect(parseFloat(style.outlineWidth)).toBeGreaterThanOrEqual(1);
+    expect(
+      contrast(
+        style.outlineColor,
+        getComputedStyle(
+          control.shadowRoot!.querySelector('.input-group__input')!
+        ).backgroundColor,
+        background
+      )
+    ).toBeGreaterThanOrEqual(3);
   });
 
   it.each([
