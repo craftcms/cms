@@ -1564,6 +1564,7 @@ return [
     'Resaving {type}' => '{type}を再保存中',
     'Reserved' => '予約済み',
     'Reset password' => 'パスワードをリセットする',
+    'Resize editor' => 'Resize editor',
     'Resolve now' => '今すぐ解決する',
     'Resolved' => '解決済み',
     'Response:' => 'レスポンス:',
