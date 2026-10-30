@@ -799,6 +799,7 @@ return [
     'Entry Types' => 'エントリタイプ',
     'Entry URI Format' => 'エントリ URI 形式',
     'Entry could not be added. Maximum number of entries reached.' => 'エントリを追加できませんでした。最大エントリ数に到達しました。',
+    'Entry type icon' => 'Entry type icon',
     'Entry type saved.' => '入力タイプを保存しました。',
     'Entry type settings' => 'エントリタイプの設定',
     'Entry' => 'エントリ',
