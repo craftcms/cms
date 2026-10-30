@@ -152,14 +152,11 @@ export class FocalPoint {
       focalEnabled: this.visible,
     };
 
-    this.$button.parents('.buttons').css({opacity: 1});
-
     Craft.sendActionRequest('POST', 'assets/update-focal-position', {
       data,
     }).then((response) => {
       this.saving = false;
       this.shouldSave = false;
-      this.$button.parents('.buttons').css({opacity: ''});
       this.renderButton();
       Craft.cp.announce(Craft.t('app', 'Saved'));
 
@@ -184,16 +181,9 @@ export class FocalPoint {
     this.renderFocal();
   }
 
+  /** Presses the toggle button while the focal point is enabled. */
   protected renderButton() {
-    if (this.saving) {
-      this.$button.text(Craft.t('app', 'Saving…'));
-    } else {
-      if (this.visible) {
-        this.$button.text(Craft.t('app', 'Disable focal point'));
-      } else {
-        this.$button.text(Craft.t('app', 'Enable focal point'));
-      }
-    }
+    this.$button.prop('active', this.visible);
   }
 
   protected renderFocal() {
