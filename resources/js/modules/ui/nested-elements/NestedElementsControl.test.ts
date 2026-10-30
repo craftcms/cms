@@ -173,7 +173,7 @@ describe('NestedElementsControl', () => {
   ) {
     vi.stubGlobal('Craft', {
       openSlideout: vi.fn(),
-      cp: {displayNotice: vi.fn()},
+      cp: {},
       elementTypeNames: {Entry: ['Entry', 'Entries', 'entry', 'entries']},
       Preview: {refresh: vi.fn()},
       broadcaster: new EventTarget(),

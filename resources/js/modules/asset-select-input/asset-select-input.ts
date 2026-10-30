@@ -12,6 +12,7 @@ import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
 import {startSide} from '@/common/craft/direction';
 import {showError} from '@/modules/messages/messages';
+import {QueueService} from '@/modules/queue/queue';
 
 declare const Craft: any;
 declare const Garnish: any;
@@ -309,7 +310,7 @@ export class AssetSelectInput extends BaseElementSelectInput {
         }
       });
 
-    Craft.cp.runQueue();
+    void QueueService.getInstance().runQueue();
   }
 
   _onUploadFailure({

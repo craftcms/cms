@@ -3,6 +3,7 @@ import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {isRtl, startSide} from '@/common/craft/direction';
 import {showError, showSuccess} from '@/modules/messages/messages';
+import {QueueService} from '@/modules/queue/queue';
 
 // Keeps the `declare const $` / `declare const Craft` seams: the structural
 // row logic is jQuery-heavy and interops with the still-legacy table view
@@ -11,7 +12,6 @@ import {showError, showSuccess} from '@/modules/messages/messages';
 // HTMLElement(s) (not jQuery), so those are wrapped with `$(...)` where the
 // legacy jQuery traversal is needed, and findDraggee returns a plain array.
 declare const $: any;
-declare const Craft: any;
 
 const HELPER_MARGIN = 0;
 const LEVEL_INDENT = 44;
@@ -318,7 +318,7 @@ export class ElementTableSorter extends DragSort {
           }
 
           // See if we should run any pending tasks
-          Craft.cp.runQueue();
+          void QueueService.getInstance().runQueue();
         })
         .catch((e: any) => {
           showError(e?.response?.data?.message);

@@ -97,8 +97,6 @@ describe('NestedElementsControl', () => {
         `${after}&modifiedDeltaNames[]=${encodeURIComponent(names[0]!)}`,
       cp: {
         copyElements: vi.fn(),
-        displayError: vi.fn(),
-        displayNotice: vi.fn(),
         getCopiedElements: () => [
           {type: 'Entry', id: 81, data: {entryTypeId: 9}},
         ],

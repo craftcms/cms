@@ -2,6 +2,10 @@ import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {effectScope} from 'vue';
 import {useAssetFileActions} from './useAssetFileActions';
 
+vi.mock('@/modules/queue/queue', () => ({
+  QueueService: {getInstance: () => ({runQueue: vi.fn(async () => {})})},
+}));
+
 const post = vi.hoisted(() => vi.fn());
 const showCopyTextPrompt = vi.hoisted(() => vi.fn());
 const VolumeFolderSelectorModal = vi.hoisted(() => vi.fn());
@@ -33,9 +37,7 @@ beforeEach(() => {
     this.hide = vi.fn();
   });
   showCopyTextPrompt.mockReset();
-  vi.stubGlobal('Craft', {
-    cp: {displayError: vi.fn(), runQueue: vi.fn()},
-  });
+  vi.stubGlobal('Craft', {});
   scope = effectScope();
   scope.run(() => {
     actions = useAssetFileActions(

@@ -3,6 +3,7 @@ import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {create} from '@craftcms/ui/utilities/create';
 import {showError, showNotice} from '@/modules/messages/messages';
+import {QueueService} from '@/modules/queue/queue';
 
 // Mostly Craft.* runtime seams (the still-legacy element index + prompt handler
 // + progress bar); the only jQuery is via the objects Craft.ui/Craft.cp return
@@ -368,7 +369,7 @@ export class AssetMover extends Base {
               Craft.elementIndex.setIndexAvailable();
               Craft.elementIndex.progressBar.hideProgressBar();
               // If assets were just merged we should get the reference tags updated right away
-              Craft.cp.runQueue();
+              void QueueService.getInstance().runQueue();
               resolve(responses);
             } else {
               Craft.elementIndex.progressBar.incrementProcessedItemCount(1);
