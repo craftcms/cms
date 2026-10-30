@@ -170,7 +170,7 @@ class WorkbenchTextGateway implements StepTextGateway
                 return $text("I don’t have a `{$match[1]}` tool. Send `tools` to list the ones I have.");
             }
 
-            $arguments = trim($match[2]) === '' ? [] : json_decode(trim($match[2]), true);
+            $arguments = trim($match[2]) === '' ? [] : Json::decodeIfJson(trim($match[2]));
 
             if (! is_array($arguments)) {
                 return $text("The arguments for `{$match[1]}` aren’t a JSON object.");
