@@ -86,64 +86,77 @@
 
 <template>
   <div class="grid gap-3">
-    <div class="flex flex-wrap items-center justify-between gap-2">
-      <div>
-        <p>
-          {{
-            t(
-              'Instructions for kinds of tasks. The AI assistant follows a skill when a request matches it, and users can choose one by typing / in the chat.'
-            )
-          }}
-        </p>
-      </div>
+    <!-- A translated string with fixed markup for the key. -->
+    <p
+      v-html="
+        t(
+          'Instructions for kinds of tasks. The AI assistant follows a skill when a request matches it, and users can choose one by typing {key} in the chat.',
+          {key: '<kbd>/</kbd>'}
+        )
+      "
+    ></p>
+
+    <!-- New skill comes after the skills, or under the message when there are none, as admin tables' does. -->
+    <craft-empty v-if="skills.length === 0" :label="t('No skills exist yet.')">
       <craft-button
         ref="newSkillButton"
         type="button"
+        variant="dashed"
         icon="plus"
         @click="openEditor(createSkillUrl, $event)"
       >
         {{ t('New skill') }}
       </craft-button>
-    </div>
+    </craft-empty>
 
-    <p v-if="skills.length === 0">{{ t('No skills exist yet.') }}</p>
+    <template v-else>
+      <ul class="grid gap-3" role="list">
+        <li v-for="skill in skills" :key="skill.id">
+          <craft-card>
+            <span slot="label" class="font-medium">{{ skill.title }}</span>
 
-    <ul v-else class="grid gap-3" role="list">
-      <li v-for="skill in skills" :key="skill.id">
-        <craft-card>
-          <span slot="label" class="font-medium">{{ skill.title }}</span>
+            <div slot="actions" class="flex gap-1">
+              <craft-button
+                type="button"
+                variant="plain"
+                icon
+                size="small"
+                @click="openEditor(skill.editUrl, $event)"
+              >
+                <craft-icon
+                  name="pencil"
+                  :label="t('Edit “{name}”', {name: skill.title})"
+                ></craft-icon>
+              </craft-button>
+              <craft-button
+                type="button"
+                variant="plain"
+                icon
+                size="small"
+                @click="deleteSkill(skill)"
+              >
+                <craft-icon
+                  name="trash"
+                  :label="t('Delete “{name}”', {name: skill.title})"
+                ></craft-icon>
+              </craft-button>
+            </div>
 
-          <div slot="actions" class="flex gap-1">
-            <craft-button
-              type="button"
-              variant="plain"
-              icon
-              size="small"
-              @click="openEditor(skill.editUrl, $event)"
-            >
-              <craft-icon
-                name="pencil"
-                :label="t('Edit “{name}”', {name: skill.title})"
-              ></craft-icon>
-            </craft-button>
-            <craft-button
-              type="button"
-              variant="plain"
-              icon
-              size="small"
-              @click="deleteSkill(skill)"
-            >
-              <craft-icon
-                name="trash"
-                :label="t('Delete “{name}”', {name: skill.title})"
-              ></craft-icon>
-            </craft-button>
-          </div>
-
-          <p class="skill-description">{{ skill.description }}</p>
-        </craft-card>
-      </li>
-    </ul>
+            <p class="skill-description">{{ skill.description }}</p>
+          </craft-card>
+        </li>
+      </ul>
+      <craft-button
+        ref="newSkillButton"
+        class="justify-self-start"
+        type="button"
+        variant="dashed"
+        icon="plus"
+        @click="openEditor(createSkillUrl, $event)"
+      >
+        {{ t('New skill') }}
+      </craft-button>
+    </template>
   </div>
 </template>
 
