@@ -799,6 +799,7 @@ return [
     'Entry Types' => 'Artikkeltyper',
     'Entry URI Format' => 'URI-format for artikkel',
     'Entry could not be added. Maximum number of entries reached.' => 'Oppføring kunne ikke legges til. Maks. antall oppføringer nådd.',
+    'Entry type icon' => 'Entry type icon',
     'Entry type saved.' => 'Artikkeltypen er lagret.',
     'Entry type settings' => 'Innstillinger for oppføringstype',
     'Entry' => 'Artikkel',
