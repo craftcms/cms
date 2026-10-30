@@ -39,13 +39,13 @@ use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
+use CraftCms\Cms\Structure\Structures;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
@@ -277,7 +277,10 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             ->selectionLabel($this->selectionLabel ?? static::defaultSelectionLabel())
             ->limit($this->maxRelations)
             ->showSiteMenu($this->showSiteMenu)
-            ->viewMode($this->viewMode())
+            // A hierarchy is drawn as a nested list, whatever the view mode.
+            ->viewMode($this->maintainHierarchy ? self::VIEW_MODE_LIST : $this->viewMode())
+            ->maintainHierarchy($this->maintainHierarchy)
+            ->branchLimit($this->branchLimit)
             ->value($value);
     }
 
@@ -1261,10 +1264,10 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         if ($this->maintainHierarchy) {
             $initialValue = array_map(fn (ElementInterface $element) => $element->id, $value);
             // Fill in any gaps
-            Structures::fillGapsInElements($value);
+            app(Structures::class)->fillGapsInElements($value);
             // Enforce the branch limit
             if ($this->branchLimit) {
-                Structures::applyBranchLimitToElements($value, $this->branchLimit);
+                app(Structures::class)->applyBranchLimitToElements($value, $this->branchLimit);
             }
 
             if (count($initialValue) === count($value)) {
@@ -1538,11 +1541,11 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 ->all();
 
             // Fill in any gaps
-            Structures::fillGapsInElements($structureElements);
+            app(Structures::class)->fillGapsInElements($structureElements);
 
             // Enforce the branch limit
             if ($this->branchLimit) {
-                Structures::applyBranchLimitToElements($structureElements, $this->branchLimit);
+                app(Structures::class)->applyBranchLimitToElements($structureElements, $this->branchLimit);
             }
 
             $targetIds = array_map(fn (ElementInterface $element) => $element->id, $structureElements);

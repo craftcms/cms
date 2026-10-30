@@ -28,6 +28,8 @@
     cardContentHtml?: string;
     cardFooterHtml?: string;
     thumbHtml?: string;
+    /** Nests list chips by structure level; see `ElementChips`. */
+    level?: number | null;
   }
 
   const props = withDefaults(
