@@ -343,7 +343,7 @@ return [
     'Choose the site-specific settings for nested entries.' => 'Wybierz specyficzne dla witryny ustawienia wpisów zagnieżdżonych.',
     'Choose the types of entries that can be created in this field.' => 'Wybierz typy wpisów, które można utworzyć w tym polu.',
     'Choose the types of entries that can be included in this section.' => 'Wybierz typy wpisów, które można umieścić w tej sekcji.',
-    'Choose whether image thumbnails should sit beside the card’s content, or cover the whole card.' => 'Choose whether image thumbnails should sit beside the card’s content, or cover the whole card.',
+    'Choose whether image thumbnails should sit beside the card’s content, cover the whole card, or cover it only when the image is a good fit.' => 'Choose whether image thumbnails should sit beside the card’s content, cover the whole card, or cover it only when the image is a good fit.',
     'Choose which advanced fields should be available when inserting links.' => 'Choose which advanced fields should be available when inserting links.',
     'Choose which buttons should be available in the editor toolbar.' => 'Choose which buttons should be available in the editor toolbar.',
     'Choose which filesystem assets should be stored in.' => 'Wybierz system plików, w którym mają być przechowywane zasoby.',

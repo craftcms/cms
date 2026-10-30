@@ -343,7 +343,7 @@ return [
     'Choose the site-specific settings for nested entries.' => 'Vyberte nastavenia špecifické pre lokalitu pre vložené záznamy.',
     'Choose the types of entries that can be created in this field.' => 'Vyberte typy záznamov, ktoré možno v tomto poli vytvoriť.',
     'Choose the types of entries that can be included in this section.' => 'Vyberte typy záznamov, ktoré môžu byť zahrnuté v tejto časti.',
-    'Choose whether image thumbnails should sit beside the card’s content, or cover the whole card.' => 'Choose whether image thumbnails should sit beside the card’s content, or cover the whole card.',
+    'Choose whether image thumbnails should sit beside the card’s content, cover the whole card, or cover it only when the image is a good fit.' => 'Choose whether image thumbnails should sit beside the card’s content, cover the whole card, or cover it only when the image is a good fit.',
     'Choose which advanced fields should be available when inserting links.' => 'Choose which advanced fields should be available when inserting links.',
     'Choose which buttons should be available in the editor toolbar.' => 'Choose which buttons should be available in the editor toolbar.',
     'Choose which filesystem assets should be stored in.' => 'Vyberte, do ktorého súborového systému sa majú ukladať prostriedky.',

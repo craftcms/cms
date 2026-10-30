@@ -343,7 +343,7 @@ return [
     'Choose the site-specific settings for nested entries.' => 'Yerleştirilmiş kayıtlar için siteye özel ayarları seçin.',
     'Choose the types of entries that can be created in this field.' => 'Bu alanda oluşturulabilecek kayıt türlerini seçin.',
     'Choose the types of entries that can be included in this section.' => 'Bu bölüme eklenebilecek kayıt türlerini seçin.',
-    'Choose whether image thumbnails should sit beside the card’s content, or cover the whole card.' => 'Choose whether image thumbnails should sit beside the card’s content, or cover the whole card.',
+    'Choose whether image thumbnails should sit beside the card’s content, cover the whole card, or cover it only when the image is a good fit.' => 'Choose whether image thumbnails should sit beside the card’s content, cover the whole card, or cover it only when the image is a good fit.',
     'Choose which advanced fields should be available when inserting links.' => 'Choose which advanced fields should be available when inserting links.',
     'Choose which buttons should be available in the editor toolbar.' => 'Choose which buttons should be available in the editor toolbar.',
     'Choose which filesystem assets should be stored in.' => 'Dosyaların hangi dosya sisteminde saklanacağını seçin.',
