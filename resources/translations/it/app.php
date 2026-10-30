@@ -1564,6 +1564,7 @@ return [
     'Resaving {type}' => 'Nuovo salvataggio di {type}',
     'Reserved' => 'Riservato',
     'Reset password' => 'Reimposta password',
+    'Resize editor' => 'Resize editor',
     'Resolve now' => 'Risolvi subito',
     'Resolved' => 'Risolto',
     'Response:' => 'Risposta:',
