@@ -238,7 +238,7 @@
 - Comment fields in the Activity and Workflow details panels now start one line high, keep the Comment button inside the field, and show how many characters a comment is over the limit. ([#19923](https://github.com/craftcms/cms/pull/19923))
 - Comments in the Activity and Workflow details panels are now more compact, with a background tinted by the gradient from their author’s default photo. The Activity panel’s change summaries are more compact too, and its comment field’s “Comment” button is now a round, icon-only button.
 - Workflow review notes can now be up to 10,000 characters long, matching activity comments. ([#19923](https://github.com/craftcms/cms/pull/19923))
-- The Workflow panel’s review action radio buttons now look like the control panel’s other radio buttons.
+- The Workflow panel’s review action radio buttons and image transforms’ “Mode” radio buttons now look like the control panel’s other radio buttons.
 - Table fields now have a “Link” column type, with the same settings as Link fields. Link cells return `CraftCms\Cms\Field\Data\LinkData` objects, and Table fields now track the elements they link to. ([#16009](https://github.com/craftcms/cms/discussions/16009), [#19998](https://github.com/craftcms/cms/pull/19998))
 - Table field column settings now open in a slideout. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Table cell validation errors now name the column. ([#19998](https://github.com/craftcms/cms/pull/19998))
