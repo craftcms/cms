@@ -1,6 +1,7 @@
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
 import {assistantApi} from '@/bootstrap/assistant';
 import {
+  contextRequest,
   registerAssistantEditor,
   revealAssistantField,
   splitMessageContext,
@@ -41,7 +42,6 @@ const intro = {path: 'fields.intro', label: 'Intro'};
 describe('useAssistantContext', () => {
   afterEach(() => {
     useAssistantContext().items.value = [];
-    useAssistantContext().sent.value = [];
   });
 
   it('adds what the { and @ expanders insert to the context', () => {
@@ -74,7 +74,6 @@ describe('useAssistantContext', () => {
       data: {elementType: 'Entry', elementId: 7, siteId: 1, hint: 'Entry'},
     });
 
-    expect(context.request()).toEqual([]);
     expect(context.takeForMessage().at(-1)?.reference()).toEqual({
       elementType: 'Entry',
       elementId: 7,
@@ -144,9 +143,9 @@ describe('useAssistantContext', () => {
     const lighthouses = editor('editor-1', {fields: {summary: 'Unsaved'}});
     const done = registerAssistantEditor(lighthouses);
     addElementField(lighthouses, summary);
-    context.takeForMessage();
+    const sent = context.takeForMessage();
 
-    expect(context.request()).toEqual([
+    expect(contextRequest(sent)).toEqual([
       expect.objectContaining({
         type: 'craft:element',
         elementId: 42,
@@ -158,7 +157,7 @@ describe('useAssistantContext', () => {
 
     done();
 
-    expect(context.request()).toEqual([
+    expect(contextRequest(sent)).toEqual([
       expect.objectContaining({elementId: 42, namespace: [], values: {}}),
     ]);
   });

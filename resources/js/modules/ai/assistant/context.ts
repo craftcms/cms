@@ -175,12 +175,9 @@ export function assistantEditorFor(
 export const useAssistantContext = createGlobalState(() => {
   /** What the user is adding for their next message. */
   const items = shallowRef<AssistantContextItem[]>([]);
-  /** What the latest message was sent with. */
-  const sent = shallowRef<AssistantContextItem[]>([]);
 
   return {
     items,
-    sent,
 
     /**
      * Adds an item, or replaces the one with its key, keeping its place and
@@ -227,26 +224,28 @@ export const useAssistantContext = createGlobalState(() => {
      * composer. Later messages get them from the conversation.
      */
     takeForMessage(): AssistantContextItem[] {
-      sent.value = items.value;
+      const taken = items.value;
       items.value = [];
 
-      return sent.value;
-    },
-
-    /**
-     * The context for a request: each item’s data, with its type and ref, as
-     * the latest message was sent with, so answers to its approval requests
-     * have it too.
-     */
-    request(): Array<Record<string, unknown>> {
-      return sent.value.map((item) => ({
-        ...item.data(),
-        type: item.type,
-        ref: item.ref,
-      }));
+      return taken;
     },
   };
 });
+
+/**
+ * The context for a request: the data of each item a message was sent with,
+ * with its type and ref, so answers to the message’s approval requests have it
+ * too.
+ */
+export function contextRequest(
+  items: readonly AssistantContextItem[]
+): Array<Record<string, unknown>> {
+  return items.map((item) => ({
+    ...item.data(),
+    type: item.type,
+    ref: item.ref,
+  }));
+}
 
 /** How many conversations the applied changes are remembered for. */
 const APPLIED_THREADS = 20;

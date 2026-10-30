@@ -55,10 +55,12 @@
   } from './assistant';
   import {
     assistantFieldUrl,
+    contextRequest,
     revealAssistantField,
     splitMessageContext,
     useAssistantContext,
     withMessageContext,
+    type AssistantContextItem,
     type AssistantFieldTarget,
     type AssistantMessageContext,
     type AssistantProposal,
@@ -95,6 +97,12 @@
   const idPrefix = useId();
   const historyScroll = usePinnedScroll(history, thread);
   const context = useAssistantContext();
+  /**
+   * What this conversation’s latest message was sent with. Another
+   * conversation, or this one after a reload, gets what its messages were sent
+   * with from the server instead.
+   */
+  const sent = shallowRef<AssistantContextItem[]>([]);
   const page = usePage<{craft?: CraftData}>();
 
   const {
@@ -107,7 +115,7 @@
     resumeInterruptsUnsafe,
   } = useChat({
     connection: assistantConnection(() => ({
-      context: [...context.request(), ...openElementRequest()],
+      context: [...contextRequest(sent.value), ...openElementRequest()],
       // The site the control panel is working in, whose guidance applies when no element is open.
       siteId: page.props?.craft?.site?.id ?? null,
     })),
@@ -758,7 +766,8 @@
   async function submit(message: string): Promise<void> {
     status.value = '';
     historyScroll.pin();
-    await sendMessage(withMessageContext(message, context.takeForMessage()));
+    sent.value = context.takeForMessage();
+    await sendMessage(withMessageContext(message, sent.value));
   }
 
   /** The message box’s own control, which gets focus when the chat opens. */

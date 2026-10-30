@@ -5,7 +5,7 @@ import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type {ConnectionAdapter} from '@tanstack/ai-vue';
 import {assistantApi} from '@/bootstrap/assistant';
 import {AssistantRequestError} from './assistant';
-import {registerAssistantEditor, useAssistantContext} from './context';
+import {registerAssistantEditor} from './context';
 import AssistantChat from './AssistantChat.vue';
 
 const chat = vi.hoisted(() => ({
@@ -63,7 +63,6 @@ describe('AssistantChat', () => {
   afterEach(() => {
     app.unmount();
     container.remove();
-    useAssistantContext().sent.value = [];
     ConfigService.resetInstance();
     vi.clearAllMocks();
   });
@@ -162,6 +161,27 @@ describe('AssistantChat', () => {
       [{type: 'commerce:order', ref, orderId: 42}],
     ]);
     expect(bodies[1]!.resume).toHaveLength(1);
+  });
+
+  it('doesn’t send what another conversation’s message was sent with', async () => {
+    assistantApi.addContext({
+      type: 'commerce:order',
+      key: 'order-42',
+      label: 'Order #42',
+      data: () => ({orderId: 42}),
+    });
+    press(await type('Is it shipped?'));
+    await flush();
+    app.unmount();
+    app = createApp(AssistantChat, {threadId: crypto.randomUUID()});
+    app.mount(container);
+    await flush();
+
+    const bodies = await requests([
+      [{interruptId: 'call_1', status: 'resolved'}],
+    ]);
+
+    expect(bodies[0]!.forwardedProps.context).toEqual([]);
   });
 
   it('names the open editor’s element in each request, without a chip', async () => {
