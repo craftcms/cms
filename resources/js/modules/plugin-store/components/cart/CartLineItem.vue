@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/ui';
+  import {formatDate, t} from '@craftcms/ui';
   import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
   import {computed} from 'vue';
   import Select from '@/common/form/Select.vue';
@@ -10,7 +10,7 @@
     usePluginLicenseInfo,
   } from '../../composables/usePluginStoreData';
   import {canExtendUpdates, showError, updateOptions} from '../../cart';
-  import {formatDate} from '../../dates';
+  import {apiDate} from '../../dates';
   import {formatPrice} from '../../pricing';
   import craftIconUrl from '../../images/craft.svg?url';
   import type {CartLineItem} from '../../types';
@@ -120,7 +120,7 @@
         :label="
           t('Auto-renew for {price} annually, starting on {date}.', {
             price: formatPrice(lineItem.purchasable.renewalPrice),
-            date: renewalDate ? formatDate(renewalDate) : '',
+            date: renewalDate ? formatDate(apiDate(renewalDate)) : '',
           })
         "
         :model-value="lineItem.options.autoRenew"

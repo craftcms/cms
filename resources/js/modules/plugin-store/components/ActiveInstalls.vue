@@ -1,9 +1,8 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/ui';
-  import {formatNumber} from '@craftcms/ui/utilities/format';
+  import {formatDate, formatNumber, t} from '@craftcms/ui';
   import {computed, shallowRef} from 'vue';
   import MetaStat from './MetaStat.vue';
-  import {formatDate} from '../dates';
+  import {apiDate} from '../dates';
   import type {Plugin, PluginInstallHistoryPoint} from '../types';
 
   const {plugin} = defineProps<{plugin: Plugin}>();
@@ -69,7 +68,7 @@
 <template>
   <MetaStat>
     <template #label>
-      {{ hovered ? formatDate(hovered.date) : t('Active Installs') }}
+      {{ hovered ? formatDate(apiDate(hovered.date)) : t('Active Installs') }}
     </template>
     <div class="flex items-center gap-md">
       <span class="active-installs__count">

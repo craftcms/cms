@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/ui';
+  import {formatDate, t} from '@craftcms/ui';
   import {computed, ref, useId, watch} from 'vue';
   import {
     developer as developerRoute,
@@ -12,7 +12,7 @@
   import PluginBand from './PluginBand.vue';
   import PluginIcon from './PluginIcon.vue';
   import {usePluginLicenseInfo} from '../composables/usePluginStoreData';
-  import {formatDate} from '../dates';
+  import {apiDate} from '../dates';
   import {hasSingleFreeEdition} from '../pricing';
   import type {Plugin} from '../types';
 
@@ -127,7 +127,7 @@
           </div>
           <div>
             <dt class="cp-group-heading">{{ t('Last release') }}</dt>
-            <dd>{{ formatDate(plugin.lastUpdate) }}</dd>
+            <dd>{{ formatDate(apiDate(plugin.lastUpdate)) }}</dd>
           </div>
         </dl>
       </div>

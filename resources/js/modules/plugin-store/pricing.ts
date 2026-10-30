@@ -1,17 +1,9 @@
-import {t} from '@craftcms/ui';
+import {formatCurrency, t} from '@craftcms/ui';
 import type {PluginEdition, PluginSummary} from './types';
 
-/** Whole amounts drop their cents, as the store has always shown them. */
+/** Store prices read the same for everyone, as they do on craftcms.com. */
 export function formatPrice(value: number | string | null): string {
-  const amount = Number(value ?? 0);
-  const fractionDigits = Number.isInteger(amount) ? 0 : 2;
-
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: fractionDigits,
-    maximumFractionDigits: fractionDigits,
-  }).format(amount);
+  return formatCurrency(value, 'USD', 'en-US');
 }
 
 export function isEditionFree(edition: PluginEdition): boolean {

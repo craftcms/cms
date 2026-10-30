@@ -1,12 +1,12 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/ui';
+  import {formatDate, t} from '@craftcms/ui';
   import {onScopeDispose, reactive, shallowRef, watch} from 'vue';
   import PaginationControls from '@/common/components/PaginationControls.vue';
   import Select from '@/common/form/Select.vue';
   import RatingStars from './RatingStars.vue';
   import ReviewsSummary from './ReviewsSummary.vue';
   import {getPluginReviews, type PluginReviewsQuery} from '../api';
-  import {formatDate} from '../dates';
+  import {apiDate} from '../dates';
   import {reviewUrl} from '../links';
   import type {Plugin, PluginReviewsPage} from '../types';
 
@@ -157,12 +157,12 @@
           <div>
             <strong>{{ review.author.name }}</strong>
             <div class="plugin-reviews__date">
-              {{ formatDate(review.dateCreated) }}
+              {{ formatDate(apiDate(review.dateCreated)) }}
               <template v-if="wasEdited(review)">
                 •
                 {{
                   t('Edited {updated}', {
-                    updated: formatDate(review.dateUpdated),
+                    updated: formatDate(apiDate(review.dateUpdated)),
                   })
                 }}
               </template>
@@ -174,12 +174,12 @@
           <div v-for="comment in review.comments" :key="comment.id">
             {{ comment.comment }}
             <div class="plugin-reviews__date">
-              {{ formatDate(comment.dateCreated) }}
+              {{ formatDate(apiDate(comment.dateCreated)) }}
               <template v-if="wasEdited(comment)">
                 •
                 {{
                   t('Edited {updated}', {
-                    updated: formatDate(comment.dateUpdated),
+                    updated: formatDate(apiDate(comment.dateUpdated)),
                   })
                 }}
               </template>

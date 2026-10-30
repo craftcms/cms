@@ -1,5 +1,11 @@
-import {describe, test, expect} from 'vite-plus/test';
-import {formatNumber} from './format.js';
+import {afterEach, describe, test, expect} from 'vite-plus/test';
+import type {WindowWithCraft} from '../types/globals.js';
+import {
+  formatCurrency,
+  formatDate,
+  formatNumber,
+  formattingLocale,
+} from './format.js';
 
 describe('formatNumber', () => {
   describe('default formatting (no format string)', () => {
@@ -100,5 +106,69 @@ describe('formatNumber', () => {
         formatNumber(input as string | number, format as string | undefined)
       ).toBe(expected);
     });
+  });
+});
+
+describe('formattingLocale', () => {
+  afterEach(() => {
+    delete (window as WindowWithCraft).Craft;
+    document.documentElement.lang = '';
+  });
+
+  test('prefers the user’s formatting locale over the page language', () => {
+    (window as WindowWithCraft).Craft = {
+      setCookie: () => {},
+      formattingLocale: 'de-DE',
+    };
+    document.documentElement.lang = 'fr';
+
+    expect(formattingLocale()).toBe('de-DE');
+    expect(formatCurrency(49, 'USD')).toBe(
+      new Intl.NumberFormat('de-DE', {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 0,
+      }).format(49)
+    );
+  });
+
+  test('falls back to the page language', () => {
+    document.documentElement.lang = 'fr';
+
+    expect(formattingLocale()).toBe('fr');
+  });
+});
+
+describe('formatDate', () => {
+  test('formats long dates by default', () => {
+    expect(formatDate(new Date(2026, 9, 30))).toBe('October 30, 2026');
+  });
+
+  test('takes other formats', () => {
+    expect(formatDate(new Date(2026, 9, 30), {dateStyle: 'medium'})).toBe(
+      'Oct 30, 2026'
+    );
+  });
+});
+
+describe('formatCurrency', () => {
+  test.for([
+    [49, '$49'],
+    ['49.00', '$49'],
+    [49.5, '$49.50'],
+    [null, '$0'],
+  ] as const)('formatCurrency(%s) -> %s', ([value, expected]) => {
+    expect(formatCurrency(value, 'USD')).toBe(expected);
+  });
+
+  test('takes a locale that overrides the user’s', () => {
+    (window as WindowWithCraft).Craft = {
+      setCookie: () => {},
+      formattingLocale: 'de-DE',
+    };
+
+    expect(formatCurrency(49.5, 'USD', 'en-US')).toBe('$49.50');
+
+    delete (window as WindowWithCraft).Craft;
   });
 });

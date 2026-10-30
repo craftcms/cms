@@ -1,8 +1,8 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/ui';
+  import {formatDate, t} from '@craftcms/ui';
   import {onScopeDispose, shallowRef} from 'vue';
   import {getPluginChangelog} from '../api';
-  import {formatDate} from '../dates';
+  import {apiDate} from '../dates';
   import type {ChangelogRelease, Plugin} from '../types';
 
   const {plugin} = defineProps<{plugin: Plugin}>();
@@ -40,7 +40,9 @@
             {{ t('Version {version}', {version: release.version}) }}
           </a>
         </h2>
-        <div class="changelog__date">{{ formatDate(release.date) }}</div>
+        <div class="changelog__date">
+          {{ formatDate(apiDate(release.date)) }}
+        </div>
         <div v-if="release.critical">
           <craft-badge fill="red" size="small">{{ t('Critical') }}</craft-badge>
         </div>
