@@ -402,11 +402,6 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     protected bool $allowLargeThumbsView = false;
 
     /**
-     * @var string Template to use for settings rendering
-     */
-    protected string $settingsTemplate = '_components/fieldtypes/elementfieldsettings.twig';
-
-    /**
      * @var string Template to use for field rendering
      */
     protected string $inputTemplate = '_includes/forms/elementSelect.twig';
