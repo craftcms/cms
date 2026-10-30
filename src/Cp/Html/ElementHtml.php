@@ -975,7 +975,11 @@ readonly class ElementHtml
         }
 
         $elementThumb = $element->getThumb();
-        $coverAsset = $elementThumb?->supportsCover() && $this->cardThumbStyle($element) === 'cover' ? $elementThumb->getAsset() : null;
+        $coverAsset = match ($this->cardThumbStyle($element)) {
+            'cover' => $elementThumb?->getAsset(),
+            'auto' => $elementThumb?->supportsCover() ? $elementThumb->getAsset() : null,
+            default => null,
+        };
         $coverUrl = $coverAsset?->getCardCoverUrl();
         $luminance = $coverUrl !== null ? $coverAsset->analysis?->colors?->luminance : null;
 
@@ -1019,11 +1023,11 @@ readonly class ElementHtml
     }
 
     /**
-     * Returns the thumb style of an element's card: its field layout's, or else `cover` for assets.
+     * Returns the thumb style of an element's card: its field layout's, or else `auto` for assets.
      */
     private function cardThumbStyle(ElementInterface $element): string
     {
-        return $element->getFieldLayout()?->getCardThumbStyle() ?? ($element instanceof Asset ? 'cover' : 'normal');
+        return $element->getFieldLayout()?->getCardThumbStyle() ?? ($element instanceof Asset ? 'auto' : 'normal');
     }
 
     /**

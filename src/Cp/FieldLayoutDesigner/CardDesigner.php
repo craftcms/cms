@@ -107,7 +107,7 @@ class CardDesigner
     {
         $showThumb ??= $fieldLayout->type::hasThumbs() || $fieldLayout->hasThumbField();
         $thumbAlignment = $fieldLayout->getCardThumbAlignment();
-        $cover = $showThumb && $fieldLayout->getCardThumbStyle() === 'cover';
+        $cover = $showThumb && $fieldLayout->getCardThumbStyle() !== 'normal';
         $sampleElement = $this->sampleElement($fieldLayout);
         $sampleUser = $sampleElement instanceof User ? $sampleElement : null;
         $labelText = $sampleUser?->getName() ?? t('The Quick Brown Fox');
@@ -326,6 +326,7 @@ class CardDesigner
             'styleOptions' => [
                 ['value' => 'normal', 'label' => t('Normal')],
                 ['value' => 'cover', 'label' => t('Cover')],
+                ['value' => 'auto', 'label' => t('Auto')],
             ],
             'disabled' => $config['disabled'],
             'alignmentOptions' => [

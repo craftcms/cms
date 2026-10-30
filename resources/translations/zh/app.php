@@ -343,7 +343,7 @@ return [
     'Choose the site-specific settings for nested entries.' => '为嵌套条目选择站点特定的设置。',
     'Choose the types of entries that can be created in this field.' => '选择可在此字段中创建的条目类型。',
     'Choose the types of entries that can be included in this section.' => '选择可包含在此版块中的条目类型。',
-    'Choose whether image thumbnails should sit beside the card’s content, or cover the whole card.' => 'Choose whether image thumbnails should sit beside the card’s content, or cover the whole card.',
+    'Choose whether image thumbnails should sit beside the card’s content, cover the whole card, or cover it only when the image is a good fit.' => 'Choose whether image thumbnails should sit beside the card’s content, cover the whole card, or cover it only when the image is a good fit.',
     'Choose which advanced fields should be available when inserting links.' => 'Choose which advanced fields should be available when inserting links.',
     'Choose which buttons should be available in the editor toolbar.' => 'Choose which buttons should be available in the editor toolbar.',
     'Choose which filesystem assets should be stored in.' => '选择应存储在哪个文件系统资产中。',
