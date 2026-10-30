@@ -147,11 +147,7 @@
   }
 
   .plugin-card__description {
-    display: -webkit-box;
     margin: 0;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
   }
 
   .plugin-card__meta {
