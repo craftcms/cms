@@ -5,6 +5,7 @@ import {
   nearestSibling,
   type GarnishBaseSettings,
 } from '@craftcms/garnish';
+import {create} from '@craftcms/ui/utilities/create';
 import {isRtl} from '@/common/craft/direction';
 import {toHtmlElement} from '@craftcms/garnish/compat';
 import type {ReorderDirection} from '@craftcms/ui';
@@ -499,25 +500,36 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
     ).map((input) => input.value);
 
     try {
-      const {data} = await actionClient.post(
-        'matrix/default-table-column-options',
-        {
-          entryTypeIds: this.selects().flatMap((select) => select.selectedIds),
-        }
-      );
+      const {data} = await actionClient.post<{
+        options: {value: string; label: string}[];
+      }>('matrix/default-table-column-options', {
+        entryTypeIds: this.selects().flatMap((select) => select.selectedIds),
+      });
+      // Checked columns first, in their current order
+      const position = (value: string) => {
+        const index = values.indexOf(value);
+        return index === -1 ? values.length : index;
+      };
+      const options = data.options
+        .map(({value, label}) => ({
+          value: String(value),
+          label,
+          checked: values.includes(String(value)),
+        }))
+        .sort((a, b) => position(a.value) - position(b.value));
 
-      $(container)
-        .empty()
-        .append(
-          Craft.ui.createSortableCheckboxSelect({
-            name: namespaceInputName(
-              'defaultTableColumns',
-              this.settings.namespace ?? null
-            ),
-            options: data.options,
-            values,
-          })
-        );
+      container.replaceChildren(
+        create('craft-checkbox-select', {
+          name: namespaceInputName(
+            'defaultTableColumns',
+            this.settings.namespace ?? null
+          ),
+          sortable: true,
+          presentation: 'add-menu',
+          options,
+          attrs: {class: 'cp-checkbox-select'},
+        })
+      );
     } catch {
       // The next membership change retries.
     }
