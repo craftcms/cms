@@ -466,9 +466,9 @@ describe('ElementSelectControl', () => {
             }),
             value: value.value,
             editable: true,
-            'onUpdate:value': (next: number[]) => {
+            'onUpdate:value': (next: number[] | number | null) => {
               updates.push(next);
-              value.value = next;
+              value.value = next as number[];
             },
           }),
       });

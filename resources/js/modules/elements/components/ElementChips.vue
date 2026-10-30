@@ -64,6 +64,14 @@
     (event: 'reorder', startIndex: number, finishIndex: number): void;
   }>();
 
+  type SlotProps = {element: ChipElement; index: number};
+
+  defineSlots<{
+    prefix?(props: SlotProps): unknown;
+    append?(props: SlotProps): unknown;
+    suffix?(props: SlotProps): unknown;
+  }>();
+
   const ids = computed(() => props.data.map((element) => element.id));
 
   /**
@@ -288,8 +296,14 @@
         :read-only="readOnly"
         @edit="emit('edit', $event)"
       >
-        <template v-for="(_, name) in $slots" #[name]="slotProps">
-          <slot :name="name" v-bind="slotProps ?? {}"></slot>
+        <template v-if="$slots.prefix" #prefix="slotProps">
+          <slot name="prefix" v-bind="slotProps"></slot>
+        </template>
+        <template v-if="$slots.append" #append="slotProps">
+          <slot name="append" v-bind="slotProps"></slot>
+        </template>
+        <template v-if="$slots.suffix" #suffix="slotProps">
+          <slot name="suffix" v-bind="slotProps"></slot>
         </template>
       </ElementChips>
     </li>
