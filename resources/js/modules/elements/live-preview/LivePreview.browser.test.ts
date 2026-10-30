@@ -72,7 +72,7 @@ function mount() {
             Teleport,
             {
               to: pane.value?.editorTarget ?? null,
-              disabled: !pane.value?.shown || !pane.value?.editorTarget,
+              disabled: !pane.value?.holdsEditor || !pane.value?.editorTarget,
               defer: true,
             },
             h('div', [
@@ -262,6 +262,26 @@ it('centers a device that’s wider than the stage', async () => {
   expect(
     Math.abs(center('.lp-device').y - center('.lp-preview__stage').y)
   ).toBeLessThan(1);
+});
+
+it('moves the editor in once the pane has slid in, and back once it has slid out', async () => {
+  mount();
+  const title = () => document.getElementById('title');
+  const spinner = () => document.querySelector('.lp-editor__loading');
+
+  await page.getByRole('button', {name: 'Preview'}).click();
+  expect(host!.contains(title())).toBe(true);
+  expect(spinner()).not.toBeNull();
+
+  await expect
+    .poll(() => document.querySelector('.lp-editor')!.contains(title()))
+    .toBe(true);
+  expect(spinner()).toBeNull();
+
+  await page.getByRole('button', {name: 'Close Preview'}).click();
+  expect(document.querySelector('.lp-editor')!.contains(title())).toBe(true);
+
+  await expect.poll(() => host!.contains(title())).toBe(true);
 });
 
 it('lets go of the page when it goes away while open', async () => {

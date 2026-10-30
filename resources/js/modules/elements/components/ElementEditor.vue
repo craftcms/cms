@@ -12,6 +12,7 @@
     onBeforeUnmount,
     onMounted,
     provide,
+    ref,
     shallowReactive,
     useTemplateRef,
     watch,
@@ -315,10 +316,26 @@
   const livePreviewTarget = computed(
     () => livePreviewPane.value?.editorTarget ?? null
   );
+  /** Whether the editor content is in Live Preview's pane rather than here. */
+  const contentInPreview = computed(
+    () =>
+      Boolean(livePreviewPane.value?.holdsEditor) &&
+      Boolean(livePreviewTarget.value)
+  );
   const livePreviewTabsTarget = computed(() =>
-    livePreviewPane.value?.shown
-      ? (livePreviewPane.value.tabsTarget ?? null)
-      : null
+    contentInPreview.value ? (livePreviewPane.value?.tabsTarget ?? null) : null
+  );
+  // The content's height, kept while it's away so the page doesn't collapse
+  // and lose its scroll position. Read before the content moves.
+  const awayHeight = ref(0);
+  watch(
+    contentInPreview,
+    (away) => {
+      if (away) {
+        awayHeight.value = contentEl.value?.offsetHeight ?? 0;
+      }
+    },
+    {flush: 'pre'}
   );
   const previewButton = useTemplateRef<HTMLElement>('previewButton');
 
@@ -692,11 +709,15 @@
     </div>
   </LayoutSlot>
 
-  <Teleport
-    :to="livePreviewTarget"
-    :disabled="!livePreviewPane?.shown || !livePreviewTarget"
-    defer
+  <!-- While Live Preview holds the content: seen only as it slides out. -->
+  <div
+    v-if="contentInPreview"
+    class="element-editor__loading"
+    :style="{blockSize: `${awayHeight}px`}"
   >
+    <craft-spinner :label="t('Loading')"></craft-spinner>
+  </div>
+  <Teleport :to="livePreviewTarget" :disabled="!contentInPreview" defer>
     <div ref="content" class="py-lg">
       <CpContainer>
         <component
@@ -813,6 +834,18 @@
 </template>
 
 <style scoped lang="scss">
+  .element-editor__loading {
+    display: flex;
+    justify-content: center;
+
+    & craft-spinner {
+      position: sticky;
+      inset-block-start: calc(50% + var(--cp-header-height, 0px) / 2);
+      align-self: flex-start;
+      translate: 0 -50%;
+    }
+  }
+
   craft-callout {
     --c-callout-padding-inline: calc(var(--cp-container-padding) - 4px);
   }

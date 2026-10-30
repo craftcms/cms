@@ -70,9 +70,14 @@
 
   /** Whether the pane is on screen, which outlasts `isOpen` while it slides out. */
   const shown = ref(false);
+  /**
+   * Whether the editor content belongs in the pane: from when it has slid in
+   * until it has slid out, so the content is never seen leaving either place.
+   */
+  const holdsEditor = ref(false);
 
   // An element rather than an id, so the content follows it if it's replaced.
-  defineExpose({editorTarget, tabsTarget, shown});
+  defineExpose({editorTarget, tabsTarget, shown, holdsEditor});
   const preview = props.controller;
 
   /*
@@ -524,7 +529,11 @@
 
 <template>
   <Teleport to="body">
-    <Transition name="live-preview" @after-leave="shown = false">
+    <Transition
+      name="live-preview"
+      @after-enter="holdsEditor = true"
+      @after-leave="((shown = false), (holdsEditor = false))"
+    >
       <div
         v-show="preview.isOpen.value"
         ref="root"
@@ -584,6 +593,9 @@
             novalidate
             @submit.prevent="emit('save')"
           >
+            <div v-if="!holdsEditor" class="lp-editor__loading">
+              <craft-spinner :label="t('Loading')"></craft-spinner>
+            </div>
             <div ref="editorTarget"></div>
           </form>
           <footer class="lp-editor__footer">
@@ -876,6 +888,8 @@
   }
 
   .lp-editor__body {
+    display: flex;
+    flex-direction: column;
     overflow-y: auto;
     overscroll-behavior: contain;
 
@@ -886,6 +900,13 @@
     & :deep(craft-field craft-field) {
       --cp-scroll-bleed: 0px;
     }
+  }
+
+  .lp-editor__loading {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
   }
 
   .lp-editor__footer {
