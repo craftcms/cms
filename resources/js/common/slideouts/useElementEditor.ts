@@ -19,6 +19,13 @@ import {ref, shallowRef, toValue, type MaybeRefOrGetter, type Ref} from 'vue';
 import type {SlideoutController} from './types';
 import type {ScreenPageProps} from '@/common/composables/screen';
 import {t} from '@craftcms/ui/utilities/translate';
+import {
+  addErrorsToField,
+  clearErrorsFromField,
+  clearErrorSummary,
+  setFocusOnErrorSummary,
+  findTabAnchorForField,
+} from '@/common/craft/field-errors';
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- the legacy CP globals
    are untyped, and typing them here would only describe one caller's slice. */
@@ -210,10 +217,10 @@ export function useElementEditor(
         return;
       }
 
-      Craft.ui.addErrorsToField($field, fieldErrors);
+      addErrorsToField($field, fieldErrors);
       fieldsWithErrors.push($field);
 
-      const anchors = Craft.ui.findTabAnchorForField($field, $(form));
+      const anchors = findTabAnchorForField($field, $(form));
 
       if (!anchors.length || !tabManager) {
         return;
@@ -225,8 +232,8 @@ export function useElementEditor(
           .append('<craft-icon name="alert" data-tab-error></craft-icon>');
       }
 
-      for (let i = 0; i < anchors.length; i++) {
-        const $anchor = jquery()(anchors[i]);
+      for (const anchor of anchors) {
+        const $anchor = jquery()(anchor);
 
         if ($anchor.hasClass('error')) {
           continue;
@@ -255,12 +262,12 @@ export function useElementEditor(
     }
 
     const $content = $(content);
-    Craft.ui.clearErrorSummary($content);
+    clearErrorSummary($content);
 
     // One tab: the summary applies to everything on screen, so show it whole.
     if (!tabManager) {
       $(html).prependTo($content);
-      Craft.ui.setFocusOnErrorSummary($content);
+      setFocusOnErrorSummary($content);
 
       return;
     }
@@ -305,19 +312,19 @@ export function useElementEditor(
 
       $summary.prependTo($pane);
       // Also what makes deep-linking to an error work.
-      Craft.ui.setFocusOnErrorSummary($pane);
+      setFocusOnErrorSummary($pane);
     });
   }
 
   function clearErrors(): void {
     while (fieldsWithErrors.length) {
-      craft().ui.clearErrorsFromField(fieldsWithErrors.pop());
+      clearErrorsFromField(fieldsWithErrors.pop()!);
     }
 
     const content = toValue(options.regions.content);
 
     if (content) {
-      craft().ui.clearErrorSummary(jquery()(content));
+      clearErrorSummary(content);
     }
 
     tabManager?.$tabs

@@ -8,6 +8,13 @@ import {
   createTextInput as uiCreateTextInput,
 } from '../../../../../resources/js/modules/ui/legacy';
 import {showCopyTextPrompt} from '@craftcms/ui/utilities/copy-text-prompt';
+import {
+  addErrorsToField,
+  clearErrorSummary,
+  clearErrorsFromField,
+  findTabAnchorForField,
+  setFocusOnErrorSummary,
+} from '../../../../../resources/js/common/craft/field-errors';
 
 Craft.ui = {
   createButton: function (config) {
@@ -1346,58 +1353,19 @@ Craft.ui = {
   },
 
   addErrorsToField: function ($field, errors) {
-    if (!errors) {
-      return;
-    }
-
-    this.clearErrorsFromField($field);
-
-    $field.addClass('has-errors');
-    $field.children('.input').addClass('errors prevalidate');
-
-    const fieldId = $field.attr('id');
-    let fieldErrorsId = '';
-    if (fieldId) {
-      fieldErrorsId = fieldId.replace(new RegExp(`(-field)$`), '-errors');
-    }
-
-    let $errors = $field.children('ul.errors');
-
-    if (!$errors.length) {
-      $errors = this.createErrorList(null, fieldErrorsId).appendTo($field);
-
-      // <craft-field> only renders feedback that's slotted in.
-      if ($field.is('craft-field')) {
-        $errors.attr('slot', 'feedback');
-      }
-    }
-
-    this.addErrorsToList($errors, errors);
+    addErrorsToField($field, errors);
   },
 
   clearErrorsFromField: function ($field) {
-    $field.removeClass('has-errors');
-    $field.children('.input').removeClass('errors prevalidate');
-    $field.children('ul.errors').remove();
+    clearErrorsFromField($field);
   },
 
   clearErrorSummary: function ($body) {
-    $body.find('.error-summary').remove();
+    clearErrorSummary($body);
   },
 
   setFocusOnErrorSummary: function ($body) {
-    const errorSummaryContainer = $body.find('.error-summary');
-    if (errorSummaryContainer.length > 0) {
-      errorSummaryContainer.focus();
-
-      // start listening for clicks on summary errors
-      errorSummaryContainer.find('a').on('click', (ev) => {
-        if ($(ev.currentTarget).hasClass('cross-site-validate') == false) {
-          ev.preventDefault();
-          this.anchorSummaryErrorToField(ev.currentTarget, $body);
-        }
-      });
-    }
+    setFocusOnErrorSummary($body);
   },
 
   findErrorsContainerByErrorKey: function ($body, fieldErrorKey) {
@@ -1468,19 +1436,7 @@ Craft.ui = {
   },
 
   findTabAnchorForField: function ($container, $body) {
-    const fieldTabDivs = $container.parents(
-      `div[data-id^=tab][role="tabpanel"]`
-    );
-
-    let fieldTabAnchors = [];
-    fieldTabDivs.each((i, tabDiv) => {
-      let tabAnchor = $body
-        .find('[role="tablist"]')
-        .find('a[href="#' + $(tabDiv).attr('id') + '"]');
-      fieldTabAnchors.push(tabAnchor);
-    });
-
-    return fieldTabAnchors;
+    return findTabAnchorForField($container, $body).map((anchor) => $(anchor));
   },
 
   getInstructionsId: function (config) {

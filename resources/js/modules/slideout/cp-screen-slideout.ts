@@ -30,6 +30,13 @@ import {
   isMobileBrowser,
   setFocusWithin,
 } from '@craftcms/garnish';
+import {
+  addErrorsToField,
+  clearErrorsFromField,
+  clearErrorSummary,
+  setFocusOnErrorSummary,
+  findTabAnchorForField,
+} from '@/common/craft/field-errors';
 import {bridgeLegacyClasses} from '@/modules/ui/legacy/buttons';
 import {create} from '@craftcms/ui/utilities/create';
 import {installCpApp} from '@/bootstrap/cp-app';
@@ -791,7 +798,7 @@ export class CpScreenSlideout extends Slideout {
 
   showErrorSummary(errorSummary: any, errorCount = 0): void {
     // start by clearing any error summary that might be left
-    Craft.ui.clearErrorSummary(this.$body);
+    clearErrorSummary(this.$body);
 
     // if we have multiple tabs - split the error summary into them
     if (this.tabManager !== null) {
@@ -847,13 +854,13 @@ export class CpScreenSlideout extends Slideout {
           $tabErrorSummary.find('h2').html(headingText);
 
           $tabErrorSummary.prependTo($tabContainer);
-          Craft.ui.setFocusOnErrorSummary($tabContainer); // this also makes the deep linking work
+          setFocusOnErrorSummary($tabContainer); // this also makes the deep linking work
         }
       });
     } else {
       // if we only have one tab - just show the error summary as is
       $(errorSummary).prependTo(this.$content);
-      Craft.ui.setFocusOnErrorSummary(this.$content);
+      setFocusOnErrorSummary(this.$content);
     }
   }
 
@@ -871,14 +878,11 @@ export class CpScreenSlideout extends Slideout {
     Object.entries(errors).forEach(([name, fieldErrors]) => {
       const $field = this.$container.find(`[data-error-key="${name}"]`);
       if ($field) {
-        Craft.ui.addErrorsToField($field, fieldErrors);
+        addErrorsToField($field, fieldErrors);
         this.fieldsWithErrors.push($field);
 
         // find tabs that contain fields with errors
-        const fieldTabAnchors = Craft.ui.findTabAnchorForField(
-          $field,
-          this.$container
-        );
+        const fieldTabAnchors = findTabAnchorForField($field, this.$container);
 
         // add error indicator to tabs
         if (fieldTabAnchors.length > 0) {
@@ -919,7 +923,7 @@ export class CpScreenSlideout extends Slideout {
 
   clearErrors(): void {
     this.fieldsWithErrors.forEach(($field: any) => {
-      Craft.ui.clearErrorsFromField($field);
+      clearErrorsFromField($field);
     });
   }
 

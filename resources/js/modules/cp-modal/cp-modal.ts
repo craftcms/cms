@@ -6,6 +6,10 @@ import {
   sendLegacyRequest,
   type LegacyRequestOptions,
 } from '@craftcms/ui/utilities/api/legacyRequest';
+import {
+  addErrorsToField,
+  clearErrorsFromField,
+} from '@/common/craft/field-errors';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {getCpUrl} from '@/common/craft/url';
 import {commandShortcut} from '@/common/utils/keyShortcuts';
@@ -91,7 +95,7 @@ export class CpModal extends Base {
   #cpSettings: CpModalSettings;
   #abortController: AbortController | null = null;
   #ignoreFailedRequest = false;
-  #fieldsWithErrors: unknown[] = [];
+  #fieldsWithErrors: ArrayLike<Element>[] = [];
   #shortcuts: ShortcutRegistration;
 
   // jQuery refs (form-ops seam), mirroring the legacy `$`-prefixed fields.
@@ -394,7 +398,7 @@ export class CpModal extends Base {
             .closest('craft-field')
         );
       if ($field.length) {
-        Craft.ui.addErrorsToField($field, fieldErrors);
+        addErrorsToField($field, fieldErrors);
         $field
           .filter('craft-field')
           .children('ul.errors')
@@ -406,7 +410,7 @@ export class CpModal extends Base {
 
   clearErrors(): void {
     this.#fieldsWithErrors.forEach(($field) => {
-      Craft.ui.clearErrorsFromField($field);
+      clearErrorsFromField($field);
     });
     this.#fieldsWithErrors = [];
   }

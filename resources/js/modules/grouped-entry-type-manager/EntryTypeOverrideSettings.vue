@@ -10,6 +10,7 @@
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useSlideout} from '@/common/slideouts';
   import {takeOverrideSettingsContext} from './entry-type-override-settings';
+  import {addErrorsToField} from '@/common/craft/field-errors';
 
   declare const Craft: any;
   declare const $: any;
@@ -76,7 +77,7 @@
       Object.entries(data?.errors ?? {}).forEach(([name, fieldErrors]) => {
         const field = container?.querySelector(`[data-error-key="${name}"]`);
         if (field) {
-          Craft.ui.addErrorsToField($(field), fieldErrors);
+          addErrorsToField(field, fieldErrors as string[]);
         }
       });
 

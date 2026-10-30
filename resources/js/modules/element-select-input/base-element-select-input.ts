@@ -14,6 +14,7 @@ import {
   UP_KEY,
   type GarnishBaseSettings,
 } from '@craftcms/garnish';
+import {iconSvg} from '@/common/craft/icon-svg';
 import {elementTypeName} from '@/common/craft/element-types';
 import {isRtl} from '@/common/craft/direction';
 import {elementSelectInputData} from './support';
@@ -783,7 +784,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       const axis = this.getElementSortAxis();
       actions.push({
         icon: async () =>
-          await Craft.ui.icon(
+          await iconSvg(
             axis === 'y' ? 'arrow-up' : isRtl() ? 'arrow-right' : 'arrow-left'
           ),
         label: axis === 'y' ? t('Move up') : t('Move forward'),
@@ -794,7 +795,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       });
       actions.push({
         icon: async () =>
-          await Craft.ui.icon(
+          await iconSvg(
             axis === 'y' ? 'arrow-down' : isRtl() ? 'arrow-left' : 'arrow-right'
           ),
         label: axis === 'y' ? t('Move down') : t('Move backward'),
@@ -808,7 +809,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
     if (this.settings.allowRemove) {
       if (this.settings.elementType) {
         actions.push({
-          icon: async () => await Craft.ui.icon('arrows-rotate'),
+          icon: async () => await iconSvg('arrows-rotate'),
           label: t('Replace'),
           callback: () => {
             this.showReplaceModal($element);
@@ -817,7 +818,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       }
 
       actions.push({
-        icon: async () => await Craft.ui.icon('remove'),
+        icon: async () => await iconSvg('remove'),
         label: t('Remove'),
         callback: () => {
           this.removeElementOrSelection($element);
