@@ -8,10 +8,12 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Mcp\Events\CollectingAdminInstructions;
+use CraftCms\Cms\Mcp\Events\CollectingServerInstructions;
 use CraftCms\Cms\Mcp\RouteRegistrar;
 use CraftCms\Cms\Mcp\Settings;
 use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 use Laravel\Passport\Passport;
@@ -99,3 +101,22 @@ it('tells clients which features need a higher Craft edition', function (Edition
     'Team' => [Edition::Team, true],
     'Pro' => [Edition::Pro, false],
 ]);
+
+it('adds plugin guidance to the startup instructions, and only points users with control panel access to info.get', function (bool $accessCp): void {
+    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
+    $user = User::query()->firstOrFail();
+    $user->admin = false;
+    $user->save();
+    app(UserPermissions::class)->saveUserPermissions($user->id, $accessCp ? ['accessCp'] : []);
+    Passport::actingAs($user, ['mcp:read'], 'craft-mcp');
+
+    Event::listen(CollectingServerInstructions::class, function (CollectingServerInstructions $event): void {
+        $event->instructions[] = 'Use reviews.list to find product reviews.';
+    });
+
+    $brief = McpRequest::send($this, 'server/discover')->assertOk()->json('result.instructions');
+
+    expect($brief)->toEndWith("\n\nUse reviews.list to find product reviews.");
+    $accessCp ? expect($brief)->toContain('info.get') : expect($brief)->not->toContain('info.get');
+})->with(['with control panel access' => true, 'without control panel access' => false]);
