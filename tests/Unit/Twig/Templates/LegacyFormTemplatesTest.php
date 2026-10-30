@@ -21,9 +21,11 @@ it('leaves the legacy form templates to the yii2-adapter', function (string $tem
     '_includes/forms/colorSelect',
     '_includes/forms/componentSelect',
     '_includes/forms/copytext',
+    '_includes/forms/customSelect',
     '_includes/forms/date',
     '_includes/forms/datetime',
     '_includes/forms/editableTable',
+    '_includes/forms/elementSelect',
     '_includes/forms/entryTypeSelect',
     '_includes/forms/field',
     '_includes/forms/iconPicker',
@@ -39,10 +41,9 @@ it('leaves the legacy form templates to the yii2-adapter', function (string $tem
     '_includes/forms/textarea',
     '_includes/forms/time',
     '_includes/forms/timeZone',
+    '_components/fieldtypes/Assets/input',
 ]);
 
-it('ships only the form templates that still need a component', function () {
-    $files = array_map(basename(...), glob(Path::cpTemplates('_includes/forms').'/*') ?: []);
-
-    expect($files)->toEqualCanonicalizing(['customSelect.twig', 'elementSelect.twig']);
+it('ships no legacy form templates', function () {
+    expect(glob(Path::cpTemplates('_includes/forms').'/*') ?: [])->toBe([]);
 });

@@ -15,6 +15,7 @@ use CraftCms\Cms\Cp\Components\CheckboxSelect;
 use CraftCms\Cms\Cp\Components\Combobox;
 use CraftCms\Cms\Cp\Components\ComponentSelect;
 use CraftCms\Cms\Cp\Components\CopyAttribute;
+use CraftCms\Cms\Cp\Components\ElementSelect;
 use CraftCms\Cms\Cp\Components\EntryTypeSelect;
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\FieldGroup;
@@ -30,6 +31,7 @@ use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\Radio;
 use CraftCms\Cms\Cp\Components\RadioGroup;
 use CraftCms\Cms\Cp\Components\Select;
+use CraftCms\Cms\Cp\Components\SelectRich;
 use CraftCms\Cms\Cp\Components\Textarea;
 use CraftCms\Cms\Cp\Enums\CheckboxSelectPresentation;
 use CraftCms\Cms\Cp\Enums\Size;
@@ -1165,7 +1167,7 @@ JS, Json::encode(InputNamespace::namespaceId($id)), Json::encode(InputNamespace:
     /** @param array<string, mixed> $config */
     public static function customSelectHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/customSelect', $config);
+        return self::customSelectFromConfig($config)->toHtml();
     }
 
     /** @param array<string, mixed> $config */
@@ -1173,7 +1175,33 @@ JS, Json::encode(InputNamespace::namespaceId($id)), Json::encode(InputNamespace:
     {
         $config['id'] ??= 'customselect'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/customSelect', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::customSelectFromConfig($c)->toHtml(),
+            $config,
+        );
+    }
+
+    /**
+     * Maps a legacy custom select config onto {@see SelectRich}. The menu and
+     * button attribute keys styled the old menu button and have no equivalent.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public static function customSelectFromConfig(array $config): SelectRich
+    {
+        return SelectRich::make()
+            ->id($config['id'] ?? null)
+            ->name(($config['name'] ?? false) ?: null)
+            ->value(($config['value'] ?? '') === '' ? null : $config['value'])
+            ->options(array_map(fn (array $option): array => [
+                'label' => isset($option['labelHtml']) ? new HtmlString($option['labelHtml']) : (string) ($option['label'] ?? ''),
+                'value' => $option['value'],
+                'icon' => ($option['icon'] ?? '') === '' ? null : (string) $option['icon'],
+                'iconColor' => $option['iconColor'] ?? null,
+                'disabled' => (bool) ($option['disabled'] ?? false),
+            ], array_values($config['options'] ?? [])))
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->attributes($config['attributes'] ?? []);
     }
 
     /** @param array<string, mixed> $config */
@@ -1909,7 +1937,7 @@ JS, Json::encode(InputNamespace::namespaceId($id)), Json::encode(InputNamespace:
     /** @param array<string, mixed> $config */
     public static function elementSelectHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/elementSelect', $config);
+        return self::elementSelectFromConfig($config)->toHtml();
     }
 
     /** @param array<string, mixed> $config */
@@ -1917,7 +1945,66 @@ JS, Json::encode(InputNamespace::namespaceId($id)), Json::encode(InputNamespace:
     {
         $config['id'] ??= 'elementselect'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/elementSelect', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::elementSelectFromConfig($c)->toHtml(),
+            $config,
+        );
+    }
+
+    /**
+     * Maps a legacy element select config onto {@see ElementSelect}. The
+     * selector always boots through its custom element, so `registerJs` and
+     * `useCustomElement` no longer apply; `jsClass` names the class it boots.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public static function elementSelectFromConfig(array $config): ElementSelect
+    {
+        $int = fn (string $key): ?int => ($config[$key] ?? null) === null || $config[$key] === '' ? null : (int) $config[$key];
+
+        return ElementSelect::make()
+            ->id($config['id'] ?? 'elementselect'.mt_rand())
+            ->name(($config['name'] ?? false) ?: null)
+            ->elementType($config['elementType'] ?? null)
+            ->elements($config['elements'] ?? [])
+            ->inputClass(($config['inputClass'] ?? $config['jsClass'] ?? null) ?: null)
+            ->context($config['context'] ?? 'field')
+            ->sources($config['sources'] ?? null)
+            ->condition($config['condition'] ?? null)
+            ->criteria($config['criteria'] ?? null)
+            ->searchCriteria($config['searchCriteria'] ?? null)
+            ->referenceElement($config['referenceElement'] ?? null)
+            ->sourceElementId($int('sourceElementId'))
+            ->storageKey($config['storageKey'] ?? null)
+            ->defaultPlacement($config['defaultPlacement'] ?? 'end')
+            ->viewMode($config['viewMode'] ?? 'list')
+            ->prevalidate((bool) ($config['prevalidate'] ?? false))
+            ->fieldId($int('fieldId'))
+            ->single((bool) ($config['single'] ?? false))
+            ->limit($int('limit'))
+            ->showActionMenu((bool) ($config['showActionMenu'] ?? true))
+            ->sortable((bool) ($config['sortable'] ?? true))
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->maintainHierarchy((bool) ($config['maintainHierarchy'] ?? false))
+            ->branchLimit($int('branchLimit'))
+            ->allowAdd((bool) ($config['allowAdd'] ?? true))
+            ->allowRemove((bool) ($config['allowRemove'] ?? true))
+            ->allowSelfRelations((bool) ($config['allowSelfRelations'] ?? false))
+            ->disabledElementIds($config['disabledElementIds'] ?? null)
+            ->showSiteMenu($config['showSiteMenu'] ?? false)
+            ->siteIds($config['siteIds'] ?? null)
+            ->selectionLabel($config['selectionLabel'] ?? null)
+            ->modalSettings($config['modalSettings'] ?? [])
+            ->settings($config['jsSettings'] ?? [])
+            ->describedBy(($config['describedBy'] ?? false) ?: null)
+            ->labelId(($config['labelId'] ?? false) ?: null)
+            ->size($config['size'] ?? null)
+            ->inline($config['inline'] ?? null)
+            ->showInGrid($config['showInGrid'] ?? null)
+            ->attributes(Arr::merge(
+                ['class' => Html::explodeClass($config['class'] ?? [])],
+                $config['containerAttributes'] ?? [],
+            ));
     }
 
     /**

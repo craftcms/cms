@@ -115,6 +115,41 @@ describe('elementSelectFieldHtml', function () {
     })->with([false, true]);
 });
 
+describe('customSelectFieldHtml', function () {
+    it('renders the legacy config as a rich select in the field', function () {
+        $html = FormFields::customSelectFieldHtml([
+            'id' => 'entryType',
+            'name' => 'typeId',
+            'label' => 'Entry Type',
+            'attribute' => 'typeId',
+            'value' => 2,
+            'options' => [
+                ['label' => 'Article', 'value' => 1, 'icon' => 'newspaper', 'iconColor' => Color::Blue],
+                ['labelHtml' => '<em>News</em>', 'value' => 2],
+            ],
+        ]);
+
+        $crawler = new Crawler($html);
+        $select = $crawler->filter('craft-field[data-attribute="typeId"] > craft-select-rich#entryType[slot="input"][name="typeId"]');
+
+        expect($select)->toHaveCount(1)
+            ->and($select->filter('craft-option[choice-value="1"] craft-icon[name="newspaper"][data-color="blue"]'))->toHaveCount(1)
+            ->and($select->filter('craft-option[checked][choice-value="2"] em')->text())->toBe('News');
+    });
+
+    it('checks nothing for an empty value and disables the select', function () {
+        $html = FormFields::customSelectHtml([
+            'name' => 'typeId',
+            'value' => '',
+            'disabled' => true,
+            'options' => [['label' => 'Article', 'value' => 1]],
+        ]);
+
+        expect($html)->toContainTag('craft-select-rich', ['disabled' => true])
+            ->and($html)->not->toContain(' checked');
+    });
+});
+
 describe('checkboxFieldHtml', function () {
     it('slots the checkbox host, not its always-post hidden input', function () {
         $html = FormFields::checkboxFieldHtml([

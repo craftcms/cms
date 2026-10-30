@@ -8,6 +8,7 @@ use Closure;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\Enums\ChipThumbSize;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Database\ElementRelationParamFilter;
@@ -73,12 +74,12 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
+use LogicException;
 use Override;
 use RuntimeException;
 
 use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * BaseRelationField is the base class for classes representing a relational field.
@@ -400,11 +401,6 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
      * @var bool Whether to allow the “Large Thumbnails” view mode
      */
     protected bool $allowLargeThumbsView = false;
-
-    /**
-     * @var string Template to use for field rendering
-     */
-    protected string $inputTemplate = '_includes/forms/elementSelect.twig';
 
     /**
      * @var string|null The JS class that should be initialized for the input
@@ -1292,17 +1288,33 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         if ($static) {
             $variables['disabled'] = true;
             $variables['allowAdd'] = false;
-            $template = '_includes/forms/elementSelect.twig';
-        } else {
-            $template = $this->inputTemplate;
 
-            if ($initialValue !== null) {
-                // make sure the field gets updated on save, even if it hasn't changed
-                DeltaRegistry::setInitialValue($this->handle, $initialValue);
-            }
+            return FormFields::elementSelectHtml($variables);
         }
 
-        return template($template, $variables);
+        if ($initialValue !== null) {
+            // make sure the field gets updated on save, even if it hasn't changed
+            DeltaRegistry::setInitialValue($this->handle, $initialValue);
+        }
+
+        return $this->elementSelectHtml($variables);
+    }
+
+    /**
+     * Renders the editable input from {@see inputTemplateVariables()}.
+     *
+     * @param  array<string, mixed>  $variables
+     */
+    protected function elementSelectHtml(array $variables): string
+    {
+        if (isset(get_object_vars($this)['inputTemplate'])) {
+            throw new LogicException(sprintf(
+                '%s sets $inputTemplate, which only craftcms/yii2-adapter supports. Override elementSelectHtml() to customize the input instead.',
+                static::class,
+            ));
+        }
+
+        return FormFields::elementSelectHtml($variables);
     }
 
     /**

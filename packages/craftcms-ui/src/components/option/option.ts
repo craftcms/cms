@@ -47,6 +47,26 @@ export default class CraftOption extends LionOption {
 
   #cachedWideThreshold?: number;
 
+  static override get observedAttributes() {
+    return [...super.observedAttributes, 'choice-value'];
+  }
+
+  /**
+   * `choiceValue` parses its attribute as JSON, which server-rendered markup
+   * can't rely on, so `choice-value` sets it as a plain string.
+   */
+  override attributeChangedCallback(
+    name: string,
+    oldValue: string | null,
+    value: string | null
+  ) {
+    super.attributeChangedCallback(name, oldValue, value);
+
+    if (name === 'choice-value' && value !== null) {
+      this.choiceValue = value;
+    }
+  }
+
   #wideThreshold(): number {
     this.#cachedWideThreshold ??= parseInt(
       getComputedStyle(this).getPropertyValue('--c-option-wide-threshold') ||
