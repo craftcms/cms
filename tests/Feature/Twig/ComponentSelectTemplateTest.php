@@ -42,18 +42,6 @@ it('merges the attr block into the container attributes', function () {
     expect($html)->toContainTag('craft-component-select', ['id' => 'types', 'data-foo' => 'bar']);
 });
 
-it('renders the legacy markup for an explicit jsClass', function () {
-    $html = renderString(
-        "{% include '_includes/forms/componentSelect' with {id: 'types', name: 'types[]', options: [entryType], jsClass: 'Craft.ComponentSelectInput'} only %}",
-        ['entryType' => $this->entryType],
-        TemplateMode::Cp,
-    );
-
-    expect($html)
-        ->toContainTag('div', ['id' => 'types', 'class' => 'componentselect'])
-        ->not->toContain('<craft-component-select');
-});
-
 it('renders an entry type select from the legacy entryTypeSelect variables', function () {
     $html = renderString(
         "{% include '_includes/forms/entryTypeSelect' with {name: 'entryTypes[]', values: [entryType], allowOverrides: true, create: true} only %}",

@@ -33,7 +33,7 @@ it('maps readOnly to a disabled button with the read-only class', function () {
 
 it('renders the web component from the legacy buttonGroup variables', function () {
     $html = renderString(
-        "{% include '_includes/forms/buttonGroup' with {id: 'bg', name: 'align', value: 'left', options: [{label: 'Left', value: 'left'}, {label: 'Right', value: 'right'}]} only %}",
+        "{{ craft.cp.buttonGroup({id: 'bg', name: 'align', value: 'left', options: [{label: 'Left', value: 'left'}, {label: 'Right', value: 'right'}]})|raw }}",
         templateMode: TemplateMode::Cp,
     );
 

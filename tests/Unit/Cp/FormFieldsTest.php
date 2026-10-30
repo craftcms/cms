@@ -146,7 +146,7 @@ describe('checkboxFieldHtml', function () {
 describe('dateTimeHtml', function () {
     it('renders native inputs and owns the form metadata', function () {
         $html = app(TemplateManager::class)->renderString(
-            '{% include "_includes/forms/datetime" %}',
+            '{{ craft.cp.dateTime(_context)|raw }}',
             [
                 'id' => 'starts-at',
                 'name' => 'startsAt',
