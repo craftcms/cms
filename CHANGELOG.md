@@ -249,7 +249,7 @@
 - Fixed a bug where “Allow custom options” had no effect on Checkboxes and Radio Buttons fields, and custom values couldn’t be saved. ([#20166](https://github.com/craftcms/cms/pull/20166))
 - Fixed a bug where options fields accepted values that weren’t among their options. ([#20166](https://github.com/craftcms/cms/pull/20166))
 - Fixed a bug where Checkboxes, Dropdown, Multi-select, and Radio Buttons fields didn’t show their options’ icons and colors, and Dropdown and Multi-select fields didn’t show their option groups. Dropdown fields with option icons or colors are now shown as comboboxes, as in Craft 5. ([#20166](https://github.com/craftcms/cms/pull/20166))
-- Fixed a bug where Button Group fields didn’t show their options’ icons. ([#20166](https://github.com/craftcms/cms/pull/20166))
+- Fixed a bug where Button Group fields showed only their options’ icons even when “Icons only” was disabled. ([#20166](https://github.com/craftcms/cms/pull/20166))
 - Fixed a bug where Dropdown fields with option groups didn’t have a leading blank option. ([#20166](https://github.com/craftcms/cms/pull/20166))
 - Fixed a bug where going from one element edit page to another, such as switching sites, opened the next page’s “Revisions” details panel rather than the one that was open.
 - Fixed a bug where viewing an element revision showed three read-only notices, including one about settings changes not being permitted, and no “Revert content from this revision” button. ([#20115](https://github.com/craftcms/cms/pull/20115))
