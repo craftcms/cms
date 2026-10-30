@@ -971,10 +971,17 @@ class ElementEditViewModel extends ViewModel
                 continue;
             }
 
+            $siteParams = $params;
+
+            if (isset($siteParams['returnUrl']) && is_string($siteParams['returnUrl'])) {
+                // return to the index for the site being switched to
+                $siteParams['returnUrl'] = ElementHelper::returnUrlForSite($siteParams['returnUrl'], $site);
+            }
+
             $items[] = [
                 'type' => 'link',
                 'label' => t($site->getName(), category: 'site'),
-                'href' => Url::cpUrl($path, ['site' => $site->handle] + $params),
+                'href' => Url::cpUrl($path, ['site' => $site->handle] + $siteParams),
                 'selected' => $site->id === $currentSite->id,
             ];
         }
