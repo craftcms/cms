@@ -23,6 +23,7 @@ use CraftCms\Cms\Cp\Components\InputColor;
 use CraftCms\Cms\Cp\Components\InputCopy;
 use CraftCms\Cms\Cp\Components\InputDate;
 use CraftCms\Cms\Cp\Components\InputDateTime;
+use CraftCms\Cms\Cp\Components\InputMoney;
 use CraftCms\Cms\Cp\Components\InputPassword;
 use CraftCms\Cms\Cp\Components\InputTime;
 use CraftCms\Cms\Cp\Components\Lightswitch;
@@ -753,13 +754,73 @@ readonly class FormFields
     {
         $config['id'] ??= 'colorselect'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/colorSelect', $config);
+        return self::fieldHtml(self::colorSelectHtml(...), $config);
+    }
+
+    /**
+     * A `<craft-combobox>` of colors, built from the legacy colorSelect
+     * variables. Without `options` it lists the named palette colors.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public static function colorSelectHtml(array $config): string
+    {
+        $withBlankOption = (bool) ($config['withBlankOption'] ?? true);
+        $value = $config['value'] ?? null;
+
+        if ($value instanceof Color) {
+            $value = $value->value;
+        }
+
+        $options = array_map(
+            fn (array $option): array => str_starts_with((string) $option['value'], '_')
+                ? $option
+                : Arr::merge($option, ['data' => ['color' => $option['value']]]),
+            $config['options'] ?? [
+                ['label' => t('Red'), 'value' => 'red'],
+                ['label' => t('Orange'), 'value' => 'orange'],
+                ['label' => t('Amber'), 'value' => 'amber'],
+                ['label' => t('Yellow'), 'value' => 'yellow'],
+                ['label' => t('Lime'), 'value' => 'lime'],
+                ['label' => t('Green'), 'value' => 'green'],
+                ['label' => t('Emerald'), 'value' => 'emerald'],
+                ['label' => t('Teal'), 'value' => 'teal'],
+                ['label' => t('Cyan'), 'value' => 'cyan'],
+                ['label' => t('Sky'), 'value' => 'sky'],
+                ['label' => t('Blue'), 'value' => 'blue'],
+                ['label' => t('Indigo'), 'value' => 'indigo'],
+                ['label' => t('Violet'), 'value' => 'violet'],
+                ['label' => t('Purple'), 'value' => 'purple'],
+                ['label' => t('Fuchsia'), 'value' => 'fuchsia'],
+                ['label' => t('Pink'), 'value' => 'pink'],
+                ['label' => t('Rose'), 'value' => 'rose'],
+            ],
+        );
+
+        if ($withBlankOption) {
+            array_unshift($options, ['label' => t('No color'), 'value' => '__blank__', 'data' => ['color' => '']]);
+        }
+
+        return self::selectizeHtml([
+            ...$config,
+            'id' => $config['id'] ?? 'fs'.mt_rand(),
+            'options' => $options,
+            'value' => $value ?: ($withBlankOption ? '__blank__' : null),
+        ]);
     }
 
     /** @param array<string, mixed> $config */
     public static function iconPickerHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/iconPicker', $config);
+        return Html::tag('craft-icon-picker', '', [
+            'name' => ($config['name'] ?? false) ?: false,
+            'value' => ($config['value'] ?? null) ?: false,
+            'free-only' => (bool) ($config['freeOnly'] ?? false),
+            // `static` (editable table cells) maps to the disabled state.
+            'disabled' => ($config['static'] ?? false) || ($config['disabled'] ?? false),
+            'labelled-by' => ($config['labelledBy'] ?? false) ?: false,
+            'described-by' => ($config['describedBy'] ?? false) ?: false,
+        ]);
     }
 
     /** @param array<string, mixed> $config */
@@ -771,7 +832,7 @@ readonly class FormFields
         // `for=` label — and keep the component itself label-less.
         $config['fieldset'] = true;
 
-        return self::fieldHtml('template:_includes/forms/iconPicker', $config);
+        return self::fieldHtml(self::iconPickerHtml(...), $config);
     }
 
     /** @param array<string, mixed> $config */
@@ -970,7 +1031,40 @@ readonly class FormFields
     /** @param array<string, mixed> $config */
     public static function moneyInputHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/money', $config);
+        return self::moneyFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Maps the legacy money config surface onto the {@see InputMoney}
+     * component, which formats the amount and shows the currency itself.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public static function moneyFromConfig(array $config): InputMoney
+    {
+        self::deprecateConfig('money', $config, [
+            'currencyLabel' => 'is no longer supported. `<craft-input-money>` labels the amount from `currency`.',
+            'jsSettings' => 'is no longer supported. `<craft-input-money>` formats the amount itself.',
+        ]);
+
+        $disabled = (bool) ($config['disabled'] ?? false);
+        $value = $config['value'] ?? null;
+
+        $input = InputMoney::make();
+        self::textFromConfig(array_merge($config, [
+            'id' => $config['id'] ?? 'money'.mt_rand(),
+            'value' => $value === '' || $value === false ? null : $value,
+            'inputmode' => $config['inputmode'] ?? 'decimal',
+        ]), $input);
+
+        return $input
+            ->currency((string) ($config['currency'] ?? 'USD'))
+            ->locale((string) ($config['formattingLocale'] ?? I18N::getFormattingLocale()->id))
+            ->decimals(isset($config['decimals']) ? (int) $config['decimals'] : 2)
+            ->decimalSeparator($config['decimalSeparator'] ?? null)
+            ->groupSeparator($config['groupSeparator'] ?? null)
+            ->showCurrency((bool) ($config['showCurrency'] ?? true))
+            ->clearable(($config['showClear'] ?? true) && ! $disabled);
     }
 
     /** @param array<string, mixed> $config */
@@ -978,13 +1072,13 @@ readonly class FormFields
     {
         $config['id'] ??= 'money'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/money', $config);
+        return self::fieldHtml(self::moneyInputHtml(...), $config);
     }
 
     /** @param array<string, mixed> $config */
     public static function selectHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/select', $config);
+        return self::selectFromConfig($config)->toHtml();
     }
 
     /** @param array<string, mixed> $config */
@@ -992,7 +1086,10 @@ readonly class FormFields
     {
         $config['id'] ??= 'select'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/select', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::selectFromConfig($c)->toHtml(),
+            $config,
+        );
     }
 
     /** @param array<string, mixed> $config */
@@ -1012,7 +1109,27 @@ readonly class FormFields
     /** @param array<string, mixed> $config */
     public static function selectizeHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/selectize', $config);
+        // Multi-selects keep the native `<select name="…[]" multiple>`, which is what posts an array.
+        if ($config['multi'] ?? false) {
+            return self::multiSelectHtml($config);
+        }
+
+        return self::selectizeFromConfig($config)->toHtml();
+    }
+
+    /**
+     * A time zone `<craft-combobox>`, built from the legacy timeZone variables.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public static function timeZoneHtml(array $config): string
+    {
+        $config['options'] ??= array_map(
+            fn (array $option): array => ['label' => $option['label'], 'value' => $option['value'], 'data' => $option['data'] ?? null],
+            SelectOptions::getTimeZoneOptions($config['offsetDate'] ?? null),
+        );
+
+        return self::selectizeHtml($config);
     }
 
     /** @param array<string, mixed> $config */
@@ -1020,7 +1137,7 @@ readonly class FormFields
     {
         $config['id'] ??= 'selectize'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/selectize', $config);
+        return self::fieldHtml(self::selectizeHtml(...), $config);
     }
 
     /** @param array<string, mixed> $config */
@@ -1269,7 +1386,8 @@ readonly class FormFields
             ->disabled((bool) ($config['disabled'] ?? false))
             ->required((bool) ($config['required'] ?? false))
             ->describedBy(($config['describedBy'] ?? false) ?: null)
-            ->labelledBy(empty($config['inputAttributes']['aria']['label'] ?? null) ? (($config['labelledBy'] ?? false) ?: null) : null);
+            ->labelledBy(empty($config['inputAttributes']['aria']['label'] ?? null) ? (($config['labelledBy'] ?? false) ?: null) : null)
+            ->attributes($config['containerAttributes'] ?? []);
 
         /**
          * `toggle` marked the select as driving the visibility of other fields,

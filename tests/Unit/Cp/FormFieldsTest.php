@@ -9,6 +9,7 @@ use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Cms\View\TemplateMode;
@@ -262,7 +263,10 @@ describe('field helper methods', function () {
         ['editable', 'editableTableFieldHtml', ['name' => 'test']],
         ['lightswitch', 'lightswitchFieldHtml'],
         ['<craft-input-password', 'passwordFieldHtml'],
-        ['<select', 'selectFieldHtml'],
+        ['<craft-select', 'selectFieldHtml'],
+        ['<craft-input-money', 'moneyFieldHtml', ['name' => 'price']],
+        ['<craft-icon-picker', 'iconPickerFieldHtml', ['name' => 'icon']],
+        ['<craft-combobox', 'colorSelectFieldHtml', ['name' => 'color']],
         ['type="text"', 'textFieldHtml'],
         ['slot="suffix"', 'textFieldHtml', ['unit' => 'Test unit']],
         ['>Test unit</div>', 'textFieldHtml', ['unit' => 'Test unit']],
@@ -365,5 +369,77 @@ describe('selectizeHtml', function () {
 
         expect($html)->toContain('<craft-combobox')
             ->and($html)->toContain('name="status"');
+    });
+});
+
+describe('selectHtml', function () {
+    it('renders a craft-select with legacy toggle and container attributes', function () {
+        $html = FormFields::selectHtml([
+            'id' => 'type',
+            'name' => 'type',
+            'value' => 'b',
+            'options' => [['optgroup' => 'Group'], 'a' => 'A', 'b' => 'B'],
+            'toggle' => true,
+            'targetPrefix' => 'type-',
+            'containerAttributes' => ['data-foo' => 'bar'],
+        ]);
+
+        expect($html)
+            ->toContainTag('craft-select', ['name' => 'type', 'data-foo' => 'bar'])
+            ->toContainTag('select', ['id' => 'type', 'class' => 'form-control fieldtoggle', 'data-target-prefix' => 'type-'])
+            ->toContainTag('optgroup', ['label' => 'Group'])
+            ->toContainTag('option', ['value' => 'b', 'selected' => true]);
+    });
+});
+
+describe('moneyInputHtml', function () {
+    it('renders a craft-input-money that posts the value and locale', function () {
+        $html = FormFields::moneyInputHtml([
+            'id' => 'price',
+            'name' => 'price',
+            'value' => '12.50',
+            'currency' => 'EUR',
+            'decimals' => 2,
+            'showClear' => false,
+        ]);
+
+        expect($html)
+            ->toContainTag('craft-input-money', ['currency' => 'EUR', 'decimals' => '2', 'clearable' => 'false'])
+            ->toContainTag('input', ['name' => 'price[value]', 'value' => '12.50'])
+            ->toContainTag('input', ['type' => 'hidden', 'name' => 'price[locale]']);
+    });
+});
+
+describe('colorSelectHtml', function () {
+    it('lists the named palette with a blank option by default', function () {
+        $html = html_entity_decode(FormFields::colorSelectHtml(['name' => 'color']));
+
+        expect($html)
+            ->toContain('model-value="__blank__"')
+            ->toContain('"value":"__blank__"')
+            ->toContain('"value":"rose"')
+            ->not->toContain('"value":"gray"');
+    });
+
+    it('selects the value of a Color enum', function () {
+        expect(FormFields::colorSelectHtml(['name' => 'color', 'value' => Color::Teal, 'withBlankOption' => false]))
+            ->toContain('model-value="teal"');
+    });
+});
+
+describe('timeZoneHtml', function () {
+    it('lists every time zone', function () {
+        $html = html_entity_decode(FormFields::timeZoneHtml(['name' => 'tz', 'value' => 'Europe/Brussels']));
+
+        expect($html)
+            ->toContain('model-value="Europe/Brussels"')
+            ->toContain('"value":"America\\/New_York"');
+    });
+});
+
+describe('iconPickerHtml', function () {
+    it('maps static onto the disabled state', function () {
+        expect(FormFields::iconPickerHtml(['name' => 'icon', 'value' => 'star', 'static' => true]))
+            ->toContainTag('craft-icon-picker', ['name' => 'icon', 'value' => 'star', 'disabled' => true]);
     });
 });

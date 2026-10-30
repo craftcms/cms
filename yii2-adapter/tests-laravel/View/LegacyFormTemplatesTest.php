@@ -15,6 +15,7 @@ it('serves the legacy form includes from the adapter', function(string $template
     expect($path)->toStartWith(realpath(__DIR__ . '/../../resources/templates/_includes/forms'));
 })->with([
     'autosuggest',
+    'booleanMenu',
     'button',
     'buttonGroup',
     'cardViewDesigner',
@@ -22,6 +23,7 @@ it('serves the legacy form includes from the adapter', function(string $template
     'checkboxGroup',
     'checkboxSelect',
     'color',
+    'colorSelect',
     'componentSelect',
     'componentSelect/legacy',
     'copytext',
@@ -37,13 +39,20 @@ it('serves the legacy form includes from the adapter', function(string $template
     'file',
     'generatedFieldsTable',
     'hidden',
+    'iconPicker',
+    'languageMenu',
     'lightswitch',
+    'money',
     'password',
     'radio',
     'radioGroup',
+    'select',
+    'selectize',
     'text',
     'textarea',
     'time',
+    'timeZone',
+    'volume',
 ]);
 
 it('renders the legacy markup for an explicit componentSelect jsClass', function() {
@@ -116,3 +125,31 @@ it('routes an entry type select with a jsClass through the legacy template', fun
         ->toContain('class="componentselect"')
         ->not->toContain('<craft-component-select');
 });
+
+it('selects the boolean menu option for the legacy value', function(string $value, string $expected) {
+    expect(renderCpString("{% include '_includes/forms/booleanMenu' with {id: 'bm', name: 'enabled', value: $value} only %}"))
+        ->toContain("model-value=\"$expected\"");
+})->with([
+    'true' => ['true', '1'],
+    'false' => ['false', '0'],
+    'integer' => ['1', '1'],
+    'string one' => ["'1'", '1'],
+    'string zero' => ["'0'", '0'],
+]);
+
+it('renders the selectize wrappers as comboboxes', function(string $include) {
+    expect(renderCpString($include))->toContain('<craft-combobox');
+})->with([
+    'languageMenu' => ["{% include '_includes/forms/languageMenu' with {name: 'lang', options: [{label: 'English', value: 'en'}]} only %}"],
+    'timeZone' => ["{% include '_includes/forms/timeZone' with {name: 'tz'} only %}"],
+    'volume' => ["{% include '_includes/forms/volume' with {name: 'volume', options: []} only %}"],
+    'colorSelect' => ["{% include '_includes/forms/colorSelect' with {name: 'color'} only %}"],
+]);
+
+it('renders select, money and icon picker through their components', function(string $include, string $tag) {
+    expect(renderCpString($include))->toContain("<$tag");
+})->with([
+    'select' => ["{% include '_includes/forms/select' with {name: 's', options: {a: 'A'}} only %}", 'craft-select'],
+    'money' => ["{% include '_includes/forms/money' with {name: 'price', value: 5, currency: 'EUR'} only %}", 'craft-input-money'],
+    'iconPicker' => ["{% include '_includes/forms/iconPicker' with {name: 'icon'} only %}", 'craft-icon-picker'],
+]);

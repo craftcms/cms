@@ -501,16 +501,17 @@ class Cp extends Component
     /** @param array<string, mixed> $config */
     public function selectize(array $config = []): string
     {
-        /**
-         * A multi-select keeps the native `<select name="…[]" multiple>` the
-         * legacy template rendered, which is what posts an array. Only the
-         * single-select case becomes a combobox.
-         */
-        if ($config['multi'] ?? false) {
-            return FormFields::multiSelectHtml($config);
-        }
+        return FormFields::selectizeHtml($config);
+    }
 
-        return FormFields::selectizeFromConfig($config)->toHtml();
+    /**
+     * Renders a money input's HTML from the legacy money variables.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public function money(array $config = []): string
+    {
+        return FormFields::moneyInputHtml($config);
     }
 
     /**

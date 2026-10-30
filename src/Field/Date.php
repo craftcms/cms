@@ -40,7 +40,6 @@ use Illuminate\Support\Facades\Date as DateFacade;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Date represents a Date/Time field.
@@ -291,7 +290,7 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         }
 
         if ($this->showTimeZone) {
-            $components[] = template('_includes/forms/timeZone', [
+            $components[] = FormFields::timeZoneHtml([
                 'describedBy' => $this->describedBy,
                 'name' => "$this->handle[timezone]",
                 'value' => $timezone,
