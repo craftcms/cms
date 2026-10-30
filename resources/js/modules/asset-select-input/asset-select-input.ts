@@ -10,6 +10,7 @@ import './asset-select-input.css';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
+import {startSide} from '@/common/craft/direction';
 
 declare const Craft: any;
 declare const Garnish: any;
@@ -216,10 +217,10 @@ export class AssetSelectInput extends BaseElementSelectInput {
     $newElement.appendTo(this.$elementsContainer);
 
     const margin = -($newElement.outerWidth() + 10);
-    this.$addElementBtn.css('margin-' + Craft.left, margin + 'px');
+    this.$addElementBtn.css('margin-' + startSide(), margin + 'px');
 
     const animateCss: any = {};
-    animateCss['margin-' + Craft.left] = 0;
+    animateCss['margin-' + startSide()] = 0;
     this.$addElementBtn.velocity(animateCss, 'fast');
 
     this.addElements($newElement);

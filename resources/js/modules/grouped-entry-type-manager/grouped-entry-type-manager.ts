@@ -5,6 +5,7 @@ import {
   nearestSibling,
   type GarnishBaseSettings,
 } from '@craftcms/garnish';
+import {isRtl} from '@/common/craft/direction';
 import {toHtmlElement} from '@craftcms/garnish/compat';
 import type {ReorderDirection} from '@craftcms/ui';
 import {html, render, type TemplateResult} from 'lit';
@@ -113,7 +114,7 @@ function handleDefineChipActions(
     });
   }
 
-  const ltr = Craft.orientation !== 'rtl';
+  const ltr = !isRtl();
 
   actions.push(
     {

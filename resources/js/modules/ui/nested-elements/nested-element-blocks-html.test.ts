@@ -35,7 +35,6 @@ beforeEach(async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false}));
   vi.stubGlobal('Craft', {
     systemUid: 'test',
-    pageTrigger: 'p',
     elementTypeNames: {Entry: ['Entry', 'Entries', 'entry', 'entries']},
     namespaceId: (id: string) => id,
     cp: {

@@ -5,6 +5,8 @@ import './element-deletion-manager.css';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
+import {elementTypeName} from '@/common/craft/element-types';
+import {elevatedSessionManager} from '@/modules/auth/elevated-session/manager';
 
 // jQuery-built blocker markup + Craft.ui/Craft.cp seams, shown in a
 // `craft-dialog`.
@@ -173,21 +175,18 @@ export class ElementDeletionManager extends Base {
       return this.settings.confirmationMessage;
     }
 
-    const elementTypeName =
-      totalElements === 1
-        ? Craft.elementTypeNames[this.elementType][2]
-        : Craft.elementTypeNames[this.elementType][3];
+    const typeName = elementTypeName(this.elementType, totalElements !== 1);
 
     if (this.settings.hardDelete) {
       return t(
         'Are you sure you want to permanently delete {numElements, plural, =1{this} other{these}} {type}?',
-        {type: elementTypeName, numElements: totalElements}
+        {type: typeName, numElements: totalElements}
       );
     }
 
     return t(
       'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?',
-      {type: elementTypeName, numElements: totalElements}
+      {type: typeName, numElements: totalElements}
     );
   }
 
@@ -223,10 +222,7 @@ export class ElementDeletionManager extends Base {
     const closeButton = createButton({label: t('Close')});
     this.submitButton = createButton({
       label: t('Delete {type}', {
-        type:
-          this.elementIds.length === 1
-            ? Craft.elementTypeNames[this.elementType][2]
-            : Craft.elementTypeNames[this.elementType][3],
+        type: elementTypeName(this.elementType, this.elementIds.length !== 1),
       }),
       variant: 'danger',
     });
@@ -443,11 +439,10 @@ class Blocker extends Base {
             this.resolve(response.data.message);
           };
 
-          if (action.requireElevatedSession) {
-            Craft.elevatedSessionManager.requireElevatedSession(async () => {
-              await submit();
-            });
-          } else {
+          if (
+            !action.requireElevatedSession ||
+            (await elevatedSessionManager.require())
+          ) {
             await submit();
           }
         });

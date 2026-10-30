@@ -87,7 +87,7 @@ function dblClick(
 }
 
 beforeEach(() => {
-  vi.stubGlobal('Craft', {systemUid: 'test', pageTrigger: 'p'});
+  vi.stubGlobal('Craft', {systemUid: 'test'});
   post.mockResolvedValue({data: {props: assetsData()}});
 });
 

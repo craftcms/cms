@@ -5,6 +5,7 @@ import {
   NestedOwnerEditorKey,
   type NestedOwnerContext,
 } from '@/modules/elements/nested-owner';
+import {ConfigService} from '@craftcms/ui/services/Config';
 import type {BulkActionItem} from '@/modules/elements/types/actions';
 import type {NestedElementsProps, NestedElement} from './nested-elements';
 import NestedElementsIndex from './NestedElementsIndex.vue';
@@ -49,6 +50,7 @@ describe('NestedElementsIndex', () => {
   let restoreElementInternals = () => {};
 
   afterEach(() => {
+    ConfigService.resetInstance();
     openSlideout.mockClear();
     app?.unmount();
     root?.remove();
@@ -151,9 +153,9 @@ describe('NestedElementsIndex', () => {
       elementTypeNames: {Entry: ['Entry', 'Entries', 'entry', 'entries']},
       findDeltaData: (_before: string, after: string, names: string[]) =>
         `${after}&modifiedDeltaNames[]=${encodeURIComponent(names[0]!)}`,
-      pageTrigger: 'p',
       systemUid: 'test',
     };
+    ConfigService.getInstance().initialize({pageTrigger: 'p'});
     vi.stubGlobal('Craft', craft);
     vi.stubGlobal(
       'fetch',

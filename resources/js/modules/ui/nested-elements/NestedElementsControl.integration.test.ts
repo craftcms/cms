@@ -4,6 +4,7 @@ import {
   NestedOwnerEditorKey,
   type NestedOwnerContext,
 } from '@/modules/elements/nested-owner';
+import {ConfigService} from '@craftcms/ui/services/Config';
 import type {UiControlPayload} from '../types';
 import NestedElementsControl from './NestedElementsControl.vue';
 import type {NestedElementsProps} from './nested-elements';
@@ -55,6 +56,7 @@ describe('NestedElementsControl', () => {
   let restoreElementInternals = () => {};
 
   afterEach(() => {
+    ConfigService.resetInstance();
     app?.unmount();
     root?.remove();
     request.post.mockReset();
@@ -84,10 +86,11 @@ describe('NestedElementsControl', () => {
       postMessage: vi.fn(),
     });
 
+    ConfigService.getInstance().initialize({pageTrigger: 'p'});
+
     vi.stubGlobal('Craft', {
       broadcaster,
       pageId: 'owner-page',
-      pageTrigger: 'p',
       systemUid: 'test',
       elementTypeNames: {Entry: ['Entry', 'Entries', 'entry', 'entries']},
       findDeltaData: (_before: string, after: string, names: string[]) =>

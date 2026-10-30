@@ -5,6 +5,7 @@ import {
   openImageEditorDialog,
   type ImageEditorSettings,
 } from './open-image-editor-dialog';
+import {broadcast} from '@/common/craft/broadcast';
 import type {SaveResult} from './useImageEditor';
 
 /**
@@ -31,7 +32,7 @@ export async function openAssetImageEditor(
 
   await openImageEditorDialog(settings, (result) => {
     if (!result.newAssetId) {
-      Craft.broadcaster?.postMessage({
+      broadcast({
         event: 'saveElement',
         id: settings.assetId,
       });

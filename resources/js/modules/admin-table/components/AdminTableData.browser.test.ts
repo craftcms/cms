@@ -4,6 +4,7 @@ import {
   mergeDataIntoQueryString,
   router as inertiaRouter,
 } from '@inertiajs/core';
+import {ConfigService} from '@craftcms/ui/services/Config';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {page, userEvent} from 'vite-plus/test/browser/context';
 import AdminTable from './AdminTable.vue';
@@ -59,6 +60,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   teardown?.();
+  ConfigService.resetInstance();
   document.body.innerHTML = '';
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
@@ -726,7 +728,8 @@ it('loads the requested page and returns to page one when the page size changes'
 });
 
 it('renders the initial server page and updates it through Inertia without echoing restored state', async () => {
-  vi.stubGlobal('Craft', {systemUid: 'admin-table-test', pageTrigger: 'p'});
+  vi.stubGlobal('Craft', {systemUid: 'admin-table-test'});
+  ConfigService.getInstance().initialize({pageTrigger: 'p'});
   const originalPageUrl =
     '/settings/entry-types?site=secondary&p=2&per_page=100&search=Article&sort[0][field]=name&sort[0][direction]=desc';
   inertiaPage.url = originalPageUrl;

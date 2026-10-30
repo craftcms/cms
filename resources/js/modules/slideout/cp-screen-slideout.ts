@@ -23,7 +23,13 @@
  *   `serializer`) that `Craft.ElementEditor` reads and writes.
  */
 
-import {Garnish, ESC_KEY, S_KEY, isMobileBrowser} from '@craftcms/garnish';
+import {
+  Garnish,
+  ESC_KEY,
+  S_KEY,
+  isMobileBrowser,
+  setFocusWithin,
+} from '@craftcms/garnish';
 import {installCpApp} from '@/bootstrap/cp-app';
 import {resolveInertiaPage} from '@/bootstrap/inertia-pages';
 import {createApp, type App} from 'vue';
@@ -35,6 +41,7 @@ import {
   type LegacyRequestOptions,
 } from '@craftcms/ui/utilities/api/legacyRequest';
 import {commandShortcut} from '@/common/utils/keyShortcuts';
+import {getCookie, setCookie} from '@/common/craft/cookies';
 import {
   actionClient,
   actionHeaders,
@@ -227,12 +234,12 @@ export class CpScreenSlideout extends Slideout {
       if (!this.showingSidebar) {
         this.showSidebar();
         if (this.showExpandedView) {
-          Craft.setCookie('sidebar-slideout', 'expanded');
+          setCookie('sidebar-slideout', 'expanded');
         }
       } else {
         this.hideSidebar();
         if (this.showExpandedView) {
-          Craft.setCookie('sidebar-slideout', 'collapsed');
+          setCookie('sidebar-slideout', 'collapsed');
         }
       }
     });
@@ -475,7 +482,7 @@ export class CpScreenSlideout extends Slideout {
 
         if (
           this.showExpandedView &&
-          (Craft.getCookie('sidebar-slideout') || 'expanded') === 'expanded'
+          (getCookie('sidebar-slideout') || 'expanded') === 'expanded'
         ) {
           this.showSidebar(false);
         } else {
@@ -536,7 +543,7 @@ export class CpScreenSlideout extends Slideout {
   }
 
   override setFocusWithin(): void {
-    Craft.setFocusWithin(this.$content);
+    setFocusWithin(this.$content[0]!);
   }
 
   updateTabs(tabs: any): void {
@@ -597,7 +604,7 @@ export class CpScreenSlideout extends Slideout {
 
     if (focus && !isMobileBrowser()) {
       this.$sidebar.one('transitionend.so', () => {
-        Craft.setFocusWithin(this.$sidebar);
+        setFocusWithin(this.$sidebar[0]!);
       });
     }
 

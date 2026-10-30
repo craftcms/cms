@@ -18,6 +18,7 @@ import type {
   EditableTableValue,
   EditableTableSettings,
 } from './types';
+import {HandleGenerator} from '@/modules/input-generators/handle-generator';
 import {type ReorderDirection} from '@craftcms/ui';
 import {trim, uuid} from '@/common/craft/strings';
 import {DataTableSorter} from '@/modules/data-table-sorter/data-table-sorter';
@@ -1112,7 +1113,7 @@ export class Row extends Base {
         !input.val() &&
         !sourceInput.val()
       ) {
-        new Craft.HandleGenerator(input, sourceInput, {
+        new HandleGenerator(input, sourceInput, {
           allowNonAlphaStart: true,
         });
       }

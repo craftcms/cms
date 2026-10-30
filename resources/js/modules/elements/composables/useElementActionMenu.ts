@@ -12,6 +12,7 @@ import {
   openImageEditorDialog,
   type ImageEditorSettings,
 } from '@/modules/image-editor/open-image-editor-dialog';
+import {elevatedSessionManager} from '@/modules/auth/elevated-session/manager';
 import {getCpUrl} from '@/common/craft/url';
 
 /** Identifies an element for the CP clipboard. */
@@ -159,7 +160,11 @@ export function createElementActionDispatcher({
           : () => router.post(behavior.actionUrl, params);
 
         if (behavior.requireElevatedSession) {
-          void Craft.elevatedSessionManager.requireElevatedSession(post);
+          void elevatedSessionManager.require().then((confirmed) => {
+            if (confirmed) {
+              post();
+            }
+          });
 
           return;
         }
@@ -232,7 +237,11 @@ export function createElementActionDispatcher({
         return;
 
       case 'copyUrl':
-        void Craft.elevatedSessionManager.requireElevatedSession(async () => {
+        void elevatedSessionManager.require().then(async (confirmed) => {
+          if (!confirmed) {
+            return;
+          }
+
           try {
             const {data} = await actionClient.post(
               behavior.actionUrl,

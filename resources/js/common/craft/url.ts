@@ -1,5 +1,6 @@
 import {isPlainObject, param} from './params';
 import {rtrim, trim} from './strings';
+import {ConfigService} from '@craftcms/ui/services/Config';
 
 type UrlParams = Record<string, unknown> | string;
 
@@ -133,4 +134,9 @@ export function getSiteUrl(path?: string, params?: UrlParams): string {
 /** A controller action URL, such as `getActionUrl('elements/edit')`. */
 export function getActionUrl(action: string, params?: UrlParams): string {
   return getUrl(action, params, config().actionUrl);
+}
+
+/** The query param the server reads the page number from. */
+export function pageParam(): string {
+  return ConfigService.getInstance().get('pageTrigger', 'page');
 }

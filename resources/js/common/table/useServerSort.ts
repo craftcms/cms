@@ -2,6 +2,7 @@ import {ref} from 'vue';
 import type {QueryParams} from '@/common/types/query';
 import type {SortingState, Updater} from '@tanstack/vue-table';
 import type {SortItem} from '@/common/types';
+import {pageParam} from '@/common/craft/url';
 
 interface OnChangeArgs {
   state: SortingState;
@@ -30,7 +31,7 @@ export function useServerSort({
   onChange,
   currentQuery,
 }: UseServerSortParams) {
-  const pageParam = Craft.pageTrigger ?? 'page';
+  const pageKey = pageParam();
   const sortingState = ref<SortingState>(
     initialState
       ? initialState.map((sort) => ({
@@ -65,7 +66,7 @@ export function useServerSort({
           new URLSearchParams(window.location.search)
         )) as Record<string, string>),
       sort: sortQueryParams,
-      [pageParam]: 1,
+      [pageKey]: 1,
     };
   }
 
