@@ -14,6 +14,7 @@ class ServerFactory
         private CapabilityContainer $container,
         private PublicCapabilityDiscovery $publicCapabilities,
         private StdioCapabilityDiscovery $stdioCapabilities,
+        private AdminInstructions $instructions,
     ) {
     }
 
@@ -22,7 +23,7 @@ class ServerFactory
         $scopes = Craft::$app->get('mcp')->tokenScopes ?? [];
         sort($scopes);
 
-        return $this->builder($this->capabilities, AdminInstructions::Brief)
+        return $this->builder($this->capabilities, $this->instructions->brief())
             ->setSession(new SessionStore(Craft::$app->getCache(), ['authenticated', Craft::$app->getUser()->getId(), $scopes]))
             ->build();
     }
@@ -41,7 +42,7 @@ class ServerFactory
 
     public function stdio(): Server
     {
-        return $this->builder($this->stdioCapabilities, AdminInstructions::Brief)->build();
+        return $this->builder($this->stdioCapabilities, $this->instructions->brief())->build();
     }
 
     private function builder(DiscovererInterface $discoverer, ?string $instructions = null): Builder

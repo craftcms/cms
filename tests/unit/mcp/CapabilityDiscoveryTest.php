@@ -6,12 +6,16 @@ use Craft;
 use craft\config\GeneralConfig;
 use craft\db\Connection;
 use craft\elements\User;
+use craft\mcp\AdminInstructions;
 use craft\mcp\attributes\PublicMcp;
 use craft\mcp\attributes\RequiresAdminChanges;
 use craft\mcp\attributes\RequiresPermission;
 use craft\mcp\CapabilityDiscovery;
 use craft\mcp\CapabilityRegistry;
+use craft\mcp\EditionFeatures;
 use craft\mcp\ElementQueryFactory;
+use craft\mcp\events\CollectingServerInstructions;
+use craft\mcp\events\DiscoveringCapability;
 use craft\mcp\public\Access;
 use craft\mcp\PublicCapabilityDiscovery;
 use craft\mcp\PublicElementTypes;
@@ -20,11 +24,14 @@ use craft\oauth\Resource;
 use craft\services\Elements;
 use craft\services\Mcp as McpService;
 use craft\services\OAuth;
+use craft\services\Users;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Discovery\DiscovererInterface;
 use Mcp\Capability\Discovery\DiscoveryState;
+use Mcp\Capability\Registry\ToolReference;
 use Mcp\Schema\ToolAnnotations;
 use PHPUnit\Framework\TestCase;
+use yii\base\Event;
 use yii\console\Application;
 
 /** Plugin capabilities must follow the same discovery gates as core capabilities. */
@@ -64,6 +71,8 @@ class CapabilityDiscoveryTest extends TestCase
 
     protected function tearDown(): void
     {
+        Event::off(McpService::class, McpService::EVENT_DISCOVERING_CAPABILITY);
+        Event::off(AdminInstructions::class, AdminInstructions::EVENT_COLLECT_SERVER_INSTRUCTIONS);
         Craft::$app = $this->originalApp;
         Craft::$aliases = $this->aliases;
         date_default_timezone_set($this->timezone);
@@ -117,6 +126,57 @@ class CapabilityDiscoveryTest extends TestCase
         $settings->publicTools = ['plugin.public'];
         self::assertSame(['plugin.public'], $this->toolNames($public->discover(__DIR__, [])));
         self::assertNotContains('plugin.public', $this->toolNames($this->discovery->discover(__DIR__, [])));
+    }
+
+    public function testPluginsCanHideCapabilitiesFromUsers(): void
+    {
+        $this->app->identity->allowed = ['editContent'];
+        $users = [];
+        Event::on(McpService::class, McpService::EVENT_DISCOVERING_CAPABILITY, function(DiscoveringCapability $event) use (&$users) {
+            $users[] = $event->user;
+            if ($event->reference instanceof ToolReference && $event->reference->tool->name === 'plugin.edit' && !$event->user?->can('accessCp')) {
+                $event->allowed = false;
+            }
+        });
+
+        self::assertSame(['plugin.read'], $this->toolNames($this->discovery->discover(__DIR__, [])));
+        self::assertSame(['plugin.read'], $this->toolNames($this->discovery->discoverStdio(__DIR__, [])));
+        self::assertContains($this->app->identity, $users);
+
+        $this->app->identity->allowed[] = 'accessCp';
+        self::assertSame(['plugin.edit', 'plugin.read'], $this->toolNames($this->discovery->discover(__DIR__, [])));
+        self::assertSame(['plugin.edit', 'plugin.read'], $this->toolNames($this->discovery->discoverStdio(__DIR__, [])));
+    }
+
+    public function testPluginsCannotHideApprovedPublicCapabilities(): void
+    {
+        Event::on(McpService::class, McpService::EVENT_DISCOVERING_CAPABILITY, function(DiscoveringCapability $event) {
+            $event->allowed = false;
+        });
+        $settings = new Settings(['publicEnabled' => true, 'publicTools' => ['plugin.public']]);
+        $access = new Access($settings, new PublicElementTypes(new ElementQueryFactory(new Elements(['bulkOpDb' => new Connection()]))));
+
+        self::assertSame(['plugin.public'], $this->toolNames((new PublicCapabilityDiscovery($this->discovery, $access))->discover(__DIR__, [])));
+    }
+
+    public function testServerInstructionsOnlyPointToInfoGetForControlPanelUsers(): void
+    {
+        $instructions = new AdminInstructions(
+            new ElementQueryFactory(new Elements(['bulkOpDb' => new Connection()])),
+            new EditionFeatures(new Users()),
+        );
+        Event::on(AdminInstructions::class, AdminInstructions::EVENT_COLLECT_SERVER_INSTRUCTIONS, function(CollectingServerInstructions $event) {
+            $event->instructions[] = 'Start with account.get.';
+        });
+
+        $brief = $instructions->brief();
+        self::assertStringNotContainsString('info.get', $brief);
+        self::assertStringEndsWith("\n\nStart with account.get.", $brief);
+
+        $this->app->identity->allowed = ['accessCp'];
+        $brief = $instructions->brief();
+        self::assertStringStartsWith('Call info.get', $brief);
+        self::assertStringEndsWith("\n\nStart with account.get.", $brief);
     }
 
     private function toolNames(DiscoveryState $state): array

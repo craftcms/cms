@@ -9,6 +9,7 @@ Craft.BaseUploader = Garnish.Base.extend(
     allowedKinds: null,
     $element: null,
     $fileInput: null,
+    $pasteZone: null,
     settings: null,
     fsType: null,
     formData: {},
@@ -39,6 +40,59 @@ Craft.BaseUploader = Garnish.Base.extend(
         this.allowedKinds = this.settings.allowedKinds;
         delete this.settings.allowedKinds;
       }
+
+      if (this.settings.pasteZone) {
+        // Browsers only dispatch paste events to editable elements, so listen
+        // on the document and check whether focus is within the paste zone
+        this.$pasteZone = $(this.settings.pasteZone);
+        this._handlePaste = this._handlePaste.bind(this);
+        Garnish.$doc.on('paste', this._handlePaste);
+      }
+    },
+
+    /**
+     * Uploads the given files.
+     *
+     * Uploader classes must implement this to support pasted files.
+     *
+     * @param {File[]} files
+     */
+    addFiles: function (files) {},
+
+    _handlePaste: function (ev) {
+      if (!$(document.activeElement).closest(this.$pasteZone).length) {
+        return;
+      }
+
+      const files = Array.from(ev.originalEvent.clipboardData?.files || []);
+      if (!files.length) {
+        return;
+      }
+
+      ev.preventDefault();
+
+      // Browsers name pasted image data “image.png”, so give it a unique name
+      // (the sv locale formats local times as YYYY-MM-DD HH:MM:SS)
+      const timestamp = new Date()
+        .toLocaleString('sv')
+        .replace(/[^\d ]/g, '')
+        .replace(' ', '-');
+      this.addFiles(
+        files.map((file, i) => {
+          if (file.name && !/^image\.\w+$/i.test(file.name)) {
+            return file;
+          }
+          const ext =
+            file.name.match(/\.(\w+)$/)?.[1] ||
+            {'image/jpeg': 'jpg', 'image/svg+xml': 'svg'}[file.type] ||
+            file.type.split('/')[1];
+          const suffix = files.length > 1 ? `-${i + 1}` : '';
+          return new File([file], `pasted-image-${timestamp}${suffix}.${ext}`, {
+            type: file.type,
+            lastModified: file.lastModified,
+          });
+        })
+      );
     },
 
     /**
@@ -167,7 +221,11 @@ Craft.BaseUploader = Garnish.Base.extend(
       }
     },
 
-    destroy: $.noop,
+    destroy: function () {
+      if (this.$pasteZone) {
+        Garnish.$doc.off('paste', this._handlePaste);
+      }
+    },
   },
   {
     defaults: {
