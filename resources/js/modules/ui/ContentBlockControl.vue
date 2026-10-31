@@ -20,6 +20,7 @@
     /** The field's View Mode, which picks the block's container. */
     viewMode?: ContentBlockViewMode;
     addLabel: string;
+    /** Absent when the block can't be cleared, which hides its button. */
     clearLabel?: string;
     emptyLabel?: string;
   };
@@ -95,7 +96,7 @@
       </template>
       <craft-spinner v-else :label="t('Loading')" />
       <craft-button
-        v-if="editable"
+        v-if="editable && control.props.clearLabel"
         type="button"
         icon="trash"
         data-content-block-remove

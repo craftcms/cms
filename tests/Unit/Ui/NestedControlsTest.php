@@ -211,3 +211,24 @@ it('tells the Content Block input which view mode to draw', function (string $vi
     expect($input->attr('view-mode'))->toBe($viewMode)
         ->and($input->filter('[data-content-block]')->attr('class'))->toBeNull();
 })->with(['grouped', 'pane', 'inline']);
+
+it('offers to clear a Content Block unless it is not clearable', function (bool $clearable, int $buttons) {
+    $ui = Ui::make([
+        Field::make('Content', ContentBlock::make('content')
+            ->clearable($clearable)
+            ->ui(Ui::make([Field::make('Body', Text::make('body'))]))),
+    ]);
+    $payload = app(UiResolver::class)->resolve($ui, new UiContext(
+        namespace: 'settings',
+        values: ['settings' => ['content' => ['body' => 'Hi']]],
+    ));
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
+
+    expect($crawler->filter('[data-content-block-remove]'))->toHaveCount($buttons)
+        ->and($crawler->filter('craft-content-block-input')->attr('clear-label') !== null)->toBe($clearable)
+        // The block still renders its fields either way.
+        ->and($crawler->filter('[data-content-block] input[name="settings[content][body]"]'))->toHaveCount(1);
+})->with([
+    'clearable' => [true, 1],
+    'not clearable' => [false, 0],
+]);

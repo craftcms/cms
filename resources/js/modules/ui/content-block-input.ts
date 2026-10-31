@@ -45,7 +45,10 @@ class CraftContentBlockInput extends HTMLElement {
     pane.dataset.contentBlock = '';
     const spinner = document.createElement('craft-spinner');
     spinner.setAttribute('label', t('Loading'));
-    pane.append(spinner, this.removeButton());
+    pane.append(spinner);
+    if (this.hasAttribute('clear-label')) {
+      pane.append(this.removeButton());
+    }
     empty.replaceWith(pane);
     this.changed();
   }
