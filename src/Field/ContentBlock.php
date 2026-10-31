@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
@@ -160,11 +161,14 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
             UiField::make(t('View Mode'))
                 ->control(Choice::make('viewMode')
                     ->presentation(ChoicePresentation::Radios)
-                    ->options([
+                    ->options(array_map(fn (array $mode): array => [
+                        ...$mode,
+                        'thumbnail' => Cp::illustration("images/content-block/{$mode['value']}.svg"),
+                    ], [
                         ['label' => t('Grouped'), 'value' => self::VIEW_MODE_GROUPED],
                         ['label' => t('In a pane'), 'value' => 'pane'],
                         ['label' => t('Inline'), 'value' => self::VIEW_MODE_INLINE],
-                    ])
+                    ]))
                     ->value($this->viewMode)),
         ]);
     }
