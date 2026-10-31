@@ -32,7 +32,7 @@ Load and follow the `show-me` skill to create the smallest visual that clearly e
 
 Concrete evidence that the change works. Show a before and after.
 
-Screenshots are S-tier - when the environment is set up for it and the change is visual.
+Screenshots are S-tier - when the environment is set up for it and the change is visual. For visual control panel changes, load the `feature-screenshots` skill to capture the before and after screenshots.
 
 Execution-based evidence is A-tier. Test results, console output. Show the exact test that now fails and passes, using pseudocode.
 
