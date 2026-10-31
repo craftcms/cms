@@ -281,7 +281,7 @@
     <header class="slideout-screen__header">
       <CpContainer>
         <div class="flex items-center gap-sm justify-between">
-          <div class="flex gap-md items-center">
+          <div class="slideout-screen__heading flex gap-md items-center">
             <h2 class="slideout-screen__title">{{ title }}</h2>
             <LayoutSlotOutlet name="content-toolbar-meta">
               <slot name="content-toolbar-meta"></slot>
@@ -460,15 +460,25 @@
     align-items: center;
   }
 
+  /* A long title truncates, so the header keeps to one line. */
+  .slideout-screen__heading {
+    min-width: 0;
+  }
+
   .slideout-screen__title {
+    overflow: hidden;
     font-size: 1.125rem;
     font-weight: 600;
     margin: 0;
     margin-inline-end: auto;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .slideout-screen__actions {
     --_link-min-width: calc(24px + var(--c-spacing-sm));
+
+    flex-shrink: 0;
   }
 
   .slideout-screen__toolbar {
