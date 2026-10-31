@@ -28,14 +28,17 @@ use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
+use CraftCms\Cms\Field\Concerns\ImportableElementContainerField;
 use CraftCms\Cms\Field\Conditions\EmptyFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\EntryTypesForFieldResolving;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Gql\Arguments\Elements\Entry as EntryArguments;
@@ -45,6 +48,8 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Resolvers\Elements\Entry as EntryResolver;
 use CraftCms\Cms\Gql\Types\Generators\EntryType as EntryTypeGenerator;
 use CraftCms\Cms\Gql\Types\Input\Matrix as MatrixInputType;
+use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Route\ElementRoute;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
@@ -55,6 +60,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\GroupedEntryTypeManager;
@@ -81,6 +87,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 use InvalidArgumentException;
 use LogicException;
 use Override;
@@ -102,8 +109,10 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class Matrix extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, GqlInlineFragmentFieldInterface, MergeableFieldInterface
+class Matrix extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, GqlInlineFragmentFieldInterface, ImportableElementContainerFieldInterface, MergeableFieldInterface
 {
+    use ImportableElementContainerField;
+
     public const string VIEW_MODE_CARDS = 'cards';
 
     public const string VIEW_MODE_CARDS_GRID = 'cards-grid';
@@ -1853,6 +1862,18 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     }
 
     #[Override]
+    public function canKeepMissingNestedElements(): bool
+    {
+        return true;
+    }
+
+    #[Override]
+    public function setKeepMissingNestedElements(bool $keep): void
+    {
+        $this->entryManager()->keepOtherNestedElements = $keep;
+    }
+
+    #[Override]
     public function beforeElementDelete(ElementInterface $element): bool
     {
         if (! parent::beforeElementDelete($element)) {
@@ -2120,5 +2141,205 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         /** @var Entry[] $entries */
         return $entries;
+    }
+
+    /**
+     * Normalizes value so that it can be imported into a Matrix-type field.
+     *
+     * The value has to be an array; there are 2 options for this:
+     *   option 1:
+     *     each item in the array represents a nested entry (matrix "block");
+     *     in this case the sort order will follow the order of items this array
+     *   option 2:
+     *     it can contain 'sortOrder' and 'entries' keys (as per https://craftcms.com/docs/5.x/reference/field-types/matrix.html#saving-matrix-fields)
+     *
+     * In either case, each item represents a nested entry:
+     *   - must contain the "type" key, with a value containing the handle of the entry type it uses,
+     *   - should have the custom field values nested under a "fields" key
+     * (just as per the first paragraph here: https://craftcms.com/docs/5.x/reference/field-types/matrix.html#entry-data).
+     *
+     * If you want to update existing nested entries, you can find them via an optional "matchCriteria" key.
+     *
+     * Returned should be an array containing 'sortOrder' and 'entries' keys.
+     * The 'entries' array should be keyed by the entry ID if we're updating an existing entry,
+     * or by "new:X" key where X is an incremented integer
+     *
+     * @return array{sortOrder?: list<int|string>, entries?: array<int|string, array<string, mixed>>}
+     */
+    #[Override]
+    public function normalizeValueForImport(mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null, array $importSettings = []): array
+    {
+        if (! is_array($value)) {
+            return [];
+        }
+
+        $normalizedValue = [
+            'sortOrder' => [],
+            'entries' => [],
+        ];
+        $allowedEntryTypes = Arr::keyBy($this->getEntryTypes(), 'handle');
+
+        $delta = ElementHelper::nestedElementDelta($value);
+        $entries = $delta['entries'];
+        $arrayIsList = array_is_list($entries);
+        $keyMap = [];
+        $i = 0;
+
+        foreach ($entries as $originalKey => $entry) {
+            if (! is_array($entry)) {
+                continue;
+            }
+
+            // skip this node if everything other than the reserved keys (matchCriteria, type) is empty
+            if (ImportHelper::isEmptyImportEntryData(Arr::except($entry, ['matchCriteria', 'type']))) {
+                continue;
+            }
+
+            $entryElement = null;
+            $newKey = null;
+
+            // if there's no type or type is not allowed - bail
+            if (! isset($entry['type'])) {
+                continue;
+            }
+            if (! isset($allowedEntryTypes[$entry['type']])) {
+                continue;
+            }
+
+            $entryType = $allowedEntryTypes[$entry['type']];
+
+            // try to match existing matrix entries,
+            // but only if owner already has an ID; no point trying to match nested entry for a new owner element
+            if (($rootOwner?->id)) {
+                $criteria = [];
+
+                if (! empty($entry['matchCriteria'])) {
+                    $criteria = $entry['matchCriteria'];
+                }
+
+                if (! empty($criteria)) {
+                    // try to find an existing entry
+                    $query = Entry::find()
+                        ->type($entry['type'])
+                        ->fieldId($this->id)
+                        ->ownerId($rootOwner->id)
+                        ->siteId($rootOwner->siteId);
+
+                    Typecast::configure($query, $criteria);
+                    $entryElement = $query->one();
+                }
+
+                if ($entryElement) {
+                    $newKey = $entryElement->id;
+                } else {
+                    $newKey = 'new:'.++$i;
+                }
+            }
+
+            // if we still don't have a key, generate a new one
+            $newKey ??= 'new:'.++$i;
+
+            Arr::forget($entry, [/* 'type', */ 'matchCriteria']);
+
+            $keyMap[$originalKey] = $newKey;
+            $normalizedValue['sortOrder'][] = $newKey;
+            $normalizedValue['entries'][$newKey] = $this->normalizeNestedEntryForImport($entry, $importer, $entryType->getFieldLayout(), $entryElement, $importSettings[$entryType->handle]['fields'] ?? []);
+        }
+
+        // if we have a predefined sort order and entries were not a list - use that predefined sortOrder,
+        // translated to the keys the entries were re-keyed to
+        if (! empty($delta['sortOrder']) && ! $arrayIsList) {
+            $normalizedValue['sortOrder'] = [];
+
+            foreach ($delta['sortOrder'] as $key) {
+                if (isset($keyMap[$key])) {
+                    $normalizedValue['sortOrder'][] = $keyMap[$key];
+                }
+            }
+        }
+
+        return $normalizedValue;
+    }
+
+    /**
+     * Matrix fields can have multiple field layout providers (multiple entry types),
+     * so the prefix needs to account for that.
+     */
+    #[Override]
+    public function getMappingUiPrefix(FieldLayout $fieldLayout, mixed $provider = null, ?string $prefix = null): string
+    {
+        $newPrefix = '';
+
+        if (! empty($prefix)) {
+            $newPrefix = $prefix;
+        }
+
+        // bail silently if we don't have an entry type here
+        if (empty($provider)) {
+            return $newPrefix;
+        }
+
+        // use the entry type’s uid, because its handle can be overridden in each Matrix field
+        return $newPrefix."[$provider->uid]";
+    }
+
+    /**
+     * In a Matrix field’s mapping, each entry type is keyed by its uid. This replaces each uid with the
+     * entry type’s handle in this field, then does the same for the custom fields in that entry type.
+     *
+     * @param  array<mixed>  $tree
+     * @return array<mixed>
+     */
+    #[Override]
+    public function resolveMappingKeys(array $tree): array
+    {
+        $entryTypes = [];
+        foreach ($this->getEntryTypes() as $entryType) {
+            $entryTypes[$entryType->uid] = $entryType;
+        }
+
+        $resolved = [];
+
+        foreach ($tree as $key => $value) {
+            $entryType = $entryTypes[$key] ?? null;
+
+            if (! $entryType || ! is_array($value)) {
+                $resolved[$key] = $value;
+
+                continue;
+            }
+
+            if (is_array($value['fields'] ?? null)) {
+                $value['fields'] = ImportHelper::resolveMappingKeys($value['fields'], $entryType->getFieldLayout());
+            }
+
+            $resolved[$entryType->handle] = $value;
+        }
+
+        return $resolved;
+    }
+
+    #[Override]
+    public function validateMapping(mixed $value, string $attribute, Closure $fail, Validator $validator, array $params = []): bool
+    {
+        $field = $params['field'];
+
+        if (! is_array($value)) {
+            $value = [];
+        }
+
+        // validate that the provider types are allowed
+        $providers = $field->getFieldLayoutProviders();
+        $providerUids = array_map(fn ($provider) => $provider->uid, $providers);
+
+        $typesFromMap = array_unique(array_keys($value));
+
+        if (array_diff($typesFromMap, $providerUids)) {
+            $fail($attribute, t('The map contains mapping for entry types that aren’t allowed for this field.'));
+
+            return false;
+        }
+
+        return true;
     }
 }

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Element\Concerns;
 
 use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Enums\ElementPropertyType;
+use CraftCms\Cms\Support\Attributes\Importable;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 
 use function CraftCms\Cms\t;
@@ -35,6 +36,7 @@ trait HasStatuses
      * @var bool Whether the element is enabled
      */
     #[AllowedInSandbox]
+    #[Importable('enabled', 'Enabled', canBeMatchCriteria: false, canBeCleared: false)]
     #[ElementProperty(ElementPropertyType::Boolean, 'Whether the {element} is enabled.', readable: true)]
     public bool $enabled = true;
 

@@ -14,6 +14,7 @@ use CraftCms\Cms\Element\Events\ElementMovedInStructure;
 use CraftCms\Cms\Element\Events\ElementMovingInStructure;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Support\Attributes\Importable;
 use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Typecast;
 
@@ -59,6 +60,7 @@ trait Structurable
 
     private ElementInterface|false|null $_prevElement = null;
 
+    #[Importable('parentId', 'Parent ID')]
     private int|false|null $_parentId = null;
 
     private ElementInterface|false|null $_parent = null;

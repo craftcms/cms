@@ -28,6 +28,7 @@ $lightIcons = [
     'sliders',
     'sparkles',
     'tags',
+    'upload',
     'user-group',
 ];
 

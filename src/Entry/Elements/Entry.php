@@ -72,6 +72,7 @@ use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Attributes\Importable;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\ElementActions;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -153,6 +154,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *               ```
      */
     #[AllowedInSandbox]
+    #[Importable('sectionId', 'Section ID', excludeFromUiMapping: true, canBeCleared: false)]
     #[ElementProperty(ElementPropertyType::Id, 'The ID of the section that contains the entry.', readable: true)]
     public ?int $sectionId = null;
 
@@ -172,6 +174,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *                             ```
      */
     #[AllowedInSandbox]
+    #[Importable('postDate', 'Post Date')]
     #[ElementProperty(ElementPropertyType::DateTime, 'The entry’s post date.', nullable: true, readable: true)]
     public ?DateTimeInterface $postDate = null;
 
@@ -190,6 +193,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *                             ```
      */
     #[AllowedInSandbox]
+    #[Importable('expiryDate', 'Expiry Date')]
     #[ElementProperty(ElementPropertyType::DateTime, 'The entry’s expiry date.', nullable: true, readable: true)]
     public ?DateTimeInterface $expiryDate = null;
 
@@ -232,6 +236,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      * @see getAuthorIds()
      * @see setAuthorIds()
      */
+    #[Importable('authorIds', 'Author IDs')]
     private array $_authorIds;
 
     /**
@@ -255,6 +260,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *
      * @see getType()
      */
+    #[Importable('typeId', 'Type ID', true)]
     private ?int $_typeId = null;
 
     private ?int $_oldTypeId = null;
@@ -1079,7 +1085,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             $oldAuthorIds = $this->getAuthorIds();
             if (
                 $authorIds !== $oldAuthorIds &&
-                $this->canChangeAuthor()
+                ($this->canChangeAuthor() || $this->importing)
             ) {
                 $this->_oldAuthorIds = $oldAuthorIds;
                 $this->setAuthorIds($authorIds);

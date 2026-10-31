@@ -19,6 +19,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ImportableContainerPropertiesInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Data\Thumb;
 use CraftCms\Cms\Element\DeletionBlockers\Contracts\DeletionBlockerInterface;
@@ -33,14 +34,18 @@ use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\UserQuery;
+use CraftCms\Cms\Field\Addresses;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Http\ViewModels\UserEditViewModel;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
+use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Attributes\Importable;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -115,7 +120,7 @@ use function CraftCms\Cms\t;
  * @since 6.0.0
  */
 #[Ruleset(UserRules::class)]
-class User extends Element implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, CraftUser, HasLocalePreference, MustVerifyEmailContract
+class User extends Element implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, CraftUser, HasLocalePreference, ImportableContainerPropertiesInterface, MustVerifyEmailContract
 {
     use Authenticatable {
         getAuthPassword as getAuthPasswordAuthenticatable;
@@ -197,6 +202,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * @var int|null Photo asset ID
      */
     #[AllowedInSandbox]
+    #[Importable('photoId', 'Photo (ID, URL, or path)')]
     #[ElementProperty(ElementPropertyType::Id, 'The ID of the user’s photo asset.', nullable: true)]
     public ?int $photoId = null;
 
@@ -237,6 +243,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * @var string|null Username
      */
     #[AllowedInSandbox]
+    // imported via Field Layout Element
     #[ElementProperty(ElementPropertyType::String, 'The user’s username.', readable: true)]
     public ?string $username = null;
 
@@ -244,6 +251,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * @var string|null Email
      */
     #[AllowedInSandbox]
+    // imported via Field Layout Element
     #[ElementProperty(ElementPropertyType::String, 'The user’s email address.', readable: true)]
     public ?string $email = null;
 
@@ -256,6 +264,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * @var int|null Affiliated site ID
      */
     #[AllowedInSandbox]
+    #[Importable('affiliatedSiteId', 'Affiliated Site ID', canBeMatchCriteria: false)]
     #[ElementProperty(ElementPropertyType::Id, 'The ID of the site the user is affiliated with.', nullable: true, readable: true)]
     public ?int $affiliatedSiteId = null;
 
@@ -289,6 +298,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     /**
      * @var bool Password reset required
      */
+    #[Importable('passwordResetRequired', 'Password Reset Required?', canBeMatchCriteria: false)]
     public bool $passwordResetRequired = false;
 
     /**
@@ -327,6 +337,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      *
      * @see getAddresses()
      */
+    #[Importable('addresses', 'Addresses', false, true, false)]
     private ElementCollection $_addresses;
 
     /**
@@ -354,6 +365,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     /**
      * @var UserGroup[]|null The cached list of groups the user belongs to. Set by [[getGroups()]].
      */
+    #[Importable('groups', 'User Groups')]
     private ?array $_groups = null;
 
     private ?bool $_hasSsoIdentity = null;
@@ -2379,5 +2391,51 @@ JS, [
         $this->getAddressManager()->deleteNestedElements($this, $this->hardDelete);
 
         return true;
+    }
+
+    #[Override]
+    public static function getDestinationColsForProperty(BaseImporter $importer, string $property): ?array
+    {
+        return match ($property) {
+            'addresses' => ImportHelper::getDestinationColsForFieldLayout(
+                app(Fields::class)->getLayoutByType(Address::class), null, null, $property
+            ),
+            default => null
+        };
+    }
+
+    #[Override]
+    public static function getFieldLayoutForProperty(string $property): ?FieldLayout
+    {
+        return match ($property) {
+            'addresses' => app(Fields::class)->getLayoutByType(Address::class),
+            default => null
+        };
+    }
+
+    #[Override]
+    public function importIntoContainerAttribute(array $attribute, array $item, BaseImporter $importer): void
+    {
+        // user addresses are super-special; they're kind of the same as Addresses field and technically they are nested elements,
+        // but when added to User element, they're not "taken care of" by `NestedElementManager->maintainNestedElements()`;
+        // that's why we have to prep them and then save them once we're sure that the User they belong to actually exists;
+        if ($attribute['name'] === 'addresses' && isset($item['addresses'])) {
+            $addressesField = new Addresses;
+            $addressData = $addressesField->normalizeValueForImport($item['addresses'], $importer, $this);
+
+            if (empty($addressData)) {
+                return;
+            }
+
+            $importer->afterItemImported(function (mixed $user) use ($addressesField, $addressData) {
+                if (! $user instanceof self) {
+                    return;
+                }
+
+                foreach ($addressesField->createAddressesFromSerializedData($addressData, $user, true) as $address) {
+                    Elements::saveElement($address);
+                }
+            });
+        }
     }
 }

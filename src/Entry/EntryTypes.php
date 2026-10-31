@@ -29,6 +29,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Shared\Enums\ModelIdentifier;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -237,6 +238,25 @@ class EntryTypes
     public function getEntryTypeByHandle(string $entryTypeHandle): ?EntryType
     {
         return $this->entryTypes()->firstWhere('handle', $entryTypeHandle, true);
+    }
+
+    /**
+     * Returns an entry type by its ID, UID or handle.
+     *
+     * @param  ModelIdentifier[]|null  $by
+     */
+    public function resolveEntryType(mixed $entryType, ?array $by = null): ?EntryType
+    {
+        if ($entryType instanceof EntryType) {
+            return $entryType;
+        }
+
+        return match (ModelIdentifier::detect($entryType, $by)) {
+            ModelIdentifier::Id => $this->getEntryTypeById((int) $entryType),
+            ModelIdentifier::Uid => $this->getEntryTypeByUid($entryType),
+            ModelIdentifier::Handle => $this->getEntryTypeByHandle($entryType),
+            null => null,
+        };
     }
 
     /**

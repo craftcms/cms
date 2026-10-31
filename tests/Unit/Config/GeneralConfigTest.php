@@ -26,10 +26,13 @@ it('can set compiledTemplatesPath via fluent setter', function () {
 it('normalizes storage disk configuration', function () {
     $config = GeneralConfig::create()
         ->tempAssetUploadDisk('asset-uploads')
-        ->uploadSessionDisk('upload-sessions');
+        ->uploadSessionDisk('upload-sessions')
+        ->importDisk('imports');
 
     expect($config->getTempAssetUploadDisk())->toBe('asset-uploads')
-        ->and($config->getUploadSessionDisk())->toBe('upload-sessions');
+        ->and($config->getUploadSessionDisk())->toBe('upload-sessions')
+        ->and($config->getImportDisk())->toBe('imports')
+        ->and(GeneralConfig::create()->getImportDisk())->toBe('craft-tmp');
 });
 
 it('automatically eager loads elements by default', function () {

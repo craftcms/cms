@@ -14,6 +14,7 @@ use CraftCms\Cms\Element\Jobs\PropagateElements;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Shared\Enums\ModelIdentifier;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Events\PrimarySiteChanged;
 use CraftCms\Cms\Site\Events\SiteDeleted;
@@ -381,6 +382,25 @@ class Sites
     public function getSiteByHandle(string $siteHandle, ?bool $withDisabled = null): ?Site
     {
         return $this->allSites($withDisabled)->firstWhere('handle', $siteHandle);
+    }
+
+    /**
+     * Returns a site by its ID, UID or handle.
+     *
+     * @param  ModelIdentifier[]|null  $by
+     */
+    public function resolveSite(mixed $site, ?array $by = null, ?bool $withDisabled = null): ?Site
+    {
+        if ($site instanceof Site) {
+            return $site;
+        }
+
+        return match (ModelIdentifier::detect($site, $by)) {
+            ModelIdentifier::Id => $this->getSiteById((int) $site, $withDisabled),
+            ModelIdentifier::Uid => $this->allSites($withDisabled)->firstWhere('uid', $site),
+            ModelIdentifier::Handle => $this->getSiteByHandle($site, $withDisabled),
+            null => null,
+        };
     }
 
     /**

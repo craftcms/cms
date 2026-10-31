@@ -10,6 +10,7 @@ use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Shared\Enums\ModelIdentifier;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
@@ -123,14 +124,26 @@ readonly class UserGroups
         return $result ? new UserGroup((array) $result) : null;
     }
 
-    public function resolveGroup(mixed $group): ?UserGroup
+    /**
+     * Returns a user group by its ID, UID or handle.
+     *
+     * @param  ModelIdentifier[]|null  $by
+     */
+    public function resolveGroup(mixed $group, ?array $by = null): ?UserGroup
     {
-        return match (true) {
-            is_int($group) => $this->getGroupById($group),
-            is_string($group) && ctype_digit($group) => $this->getGroupById((int) $group),
-            is_string($group) && Str::isUuid($group) => $this->getGroupByUid($group),
-            is_string($group) && trim($group) !== '' => $this->getGroupByHandle(trim($group)),
-            default => null,
+        if ($group instanceof UserGroup) {
+            return $group;
+        }
+
+        if (is_string($group)) {
+            $group = trim($group);
+        }
+
+        return match (ModelIdentifier::detect($group, $by)) {
+            ModelIdentifier::Id => $this->getGroupById((int) $group),
+            ModelIdentifier::Uid => $this->getGroupByUid($group),
+            ModelIdentifier::Handle => $this->getGroupByHandle($group),
+            null => null,
         };
     }
 

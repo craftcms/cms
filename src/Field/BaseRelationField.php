@@ -38,6 +38,7 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
+use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Structure\Structures;
 use CraftCms\Cms\Support\Arr;
@@ -1164,6 +1165,15 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         }
 
         return true;
+    }
+
+    #[Override]
+    public function normalizeValueForImport(mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null, array $importSettings = []): mixed
+    {
+        // A cleared relation field arrives as null, which normalizeValue() reads as “never set” and
+        // resolves back to the stored relations; an empty list is what actually clears them - the
+        // same translation normalizeValueFromRequest() does for the control panel.
+        return $value ?? [];
     }
 
     #[Override]

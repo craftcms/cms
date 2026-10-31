@@ -13,16 +13,23 @@ use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\MissingField;
+use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
+use CraftCms\Cms\Import\Data\CompoundMappingColumn;
+use CraftCms\Cms\Import\Data\MappingColumn;
+use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Controls\FieldSelect;
@@ -54,7 +61,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class CustomField extends BaseField
+class CustomField extends BaseField implements ImportableFieldLayoutElementInterface
 {
     private static UserCondition $defaultEditCondition;
 
@@ -1045,5 +1052,119 @@ class CustomField extends BaseField
         }
 
         return $items;
+    }
+
+    #[Override]
+    public function getFieldsForMapping(FieldLayout $fieldLayout, ?FieldInterface $ownerField, mixed $provider, ?string $prefix = null): MappingColumn|CompoundMappingColumn|null
+    {
+        try {
+            // getField() needs to be called before label() or we won't always get the label.
+            $field = $this->getField();
+        } catch (FieldNotFoundException) {
+            // skip silently
+            return null;
+        }
+
+        if (method_exists($field, 'getFieldsForImportMapping')) {
+            return $field->getFieldsForImportMapping();
+        }
+
+        $attribute = $this->attribute();
+        $isContainer = $field instanceof ImportableElementContainerFieldInterface;
+
+        // key the mapping by the layout element’s uid, because its handle can be overridden at any time
+        // (see ImportHelper::resolveMappingKeys())
+        return MappingColumn::make(
+            handle: $attribute,
+            label: (string) $this->label(),
+            prefixedHandle: ImportHelper::prefixedHandleForMapping($this->uid ?? $attribute, $ownerField, $field, $fieldLayout, $provider, $prefix),
+            isContainer: $isContainer,
+            canBeMatchCriteria: $this->canBeMatchCriteria(),
+            canBeCleared: $this->canBeCleared(),
+            canKeepMissingNestedElements: $this->canKeepMissingNestedElements(),
+            fieldUid: $isContainer ? $field->uid : null,
+            importSettings: $this->getImportMappingExtraSettings($field),
+            withKeepInputs: $isContainer,
+        );
+    }
+
+    #[Override]
+    public function canBeMatchCriteria(): bool
+    {
+        try {
+            // getField() needs to be called before label() or we won't always get the label.
+            $field = $this->getField();
+        } catch (FieldNotFoundException) {
+            // skip silently
+            return false;
+        }
+
+        if ($field instanceof ImportableElementContainerFieldInterface) {
+            return false;
+        }
+
+        if ($field instanceof BaseRelationField) {
+            return false;
+        }
+
+        if (method_exists($field, 'canBeImportMatchCriteria')) {
+            return $field->canBeImportMatchCriteria();
+        }
+
+        return true;
+    }
+
+    #[Override]
+    public function canBeCleared(): bool
+    {
+        try {
+            // getField() needs to be called before label() or we won't always get the label.
+            $field = $this->getField();
+        } catch (FieldNotFoundException) {
+            // skip silently
+            return false;
+        }
+
+        if ($field instanceof ImportableElementContainerFieldInterface) {
+            return false;
+        }
+
+        if (method_exists($field, 'canBeImportCleared')) {
+            return $field->canBeImportCleared();
+        }
+
+        return true;
+    }
+
+    /**
+     * Returns whether this field supports keeping nested elements missing from imported data.
+     * Only container fields (Matrix, Addresses) that declare support for it do.
+     */
+    public function canKeepMissingNestedElements(): bool
+    {
+        try {
+            // getField() needs to be called before label() or we won't always get the label.
+            $field = $this->getField();
+        } catch (FieldNotFoundException) {
+            // skip silently
+            return false;
+        }
+
+        return $field instanceof ImportableElementContainerFieldInterface && $field->canKeepMissingNestedElements();
+    }
+
+    #[Override]
+    public function getImportMappingExtraSettings(?FieldInterface $field = null): array
+    {
+        if ($field === null) {
+            try {
+                $field = $this->getField();
+            } catch (FieldNotFoundException) {
+                // skip silently
+                return [];
+            }
+        }
+
+        return Import::getFieldImportHandlerFor($field)?->mappingSettings($field) ?? [];
     }
 }
