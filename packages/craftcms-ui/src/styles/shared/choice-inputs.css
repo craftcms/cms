@@ -135,6 +135,110 @@ craft-radio[data-button] > input[type='radio'] {
   }
 }
 
+/* A tile draws the focus ring on its thumbnail box rather than on the input. */
+craft-radio[data-tile] > input[type='radio'] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+
+  &,
+  &:checked {
+    background-color: transparent;
+  }
+
+  &:checked {
+    cursor: default;
+  }
+
+  &::before {
+    display: none;
+  }
+
+  &:disabled {
+    opacity: 1;
+  }
+}
+
+/* Outranks the base `img { height: auto }` reset, which beats `::slotted()`. */
+craft-radio[data-tile] > [slot='thumbnail'] {
+  display: block;
+  block-size: var(--c-radio-tile-thumbnail-height);
+  inline-size: auto;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  object-fit: contain;
+
+  /* An inline SVG fills its wrapper, centered like the image's `contain`. */
+  & > svg {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+  }
+}
+
+/*
+  Inline SVG thumbnails draw with a fixed palette, which these rules swap for
+  the --c-illustration-* tokens. Other colors stay as drawn.
+*/
+craft-radio > [slot='thumbnail'] {
+  & [fill='#F3F7FD' i] {
+    fill: var(--c-illustration-surface);
+  }
+
+  & [fill='#FFFFFF' i] {
+    fill: var(--c-illustration-paper);
+  }
+
+  & [fill='#CDD8E4' i] {
+    fill: var(--c-illustration-solid);
+  }
+
+  & [fill='#A6B2C2' i] {
+    fill: var(--c-illustration-detail);
+  }
+
+  & [stroke='#828FA4' i] {
+    stroke: var(--c-illustration-line);
+  }
+
+  & [fill='#5A6572' i] {
+    fill: var(--c-illustration-ink);
+  }
+
+  & [stroke='#5A6572' i] {
+    stroke: var(--c-illustration-ink);
+  }
+
+  & [fill='#2A3141' i] {
+    fill: var(--c-illustration-backdrop);
+  }
+}
+
+/*
+  A selected tile's illustration turns blue, like its border. Large fills are
+  only tinted, so they don't outshout the border, in the dark theme especially.
+*/
+craft-radio[data-tile][checked] > [slot='thumbnail'] {
+  --c-illustration-surface: var(--color-base-50);
+  --c-illustration-solid: color-mix(
+    in oklab,
+    var(--color-slate-100),
+    var(--color-blue-400) 35%
+  );
+  --c-illustration-detail: color-mix(
+    in oklab,
+    var(--color-slate-300),
+    var(--color-blue-400) 45%
+  );
+  --c-illustration-line: var(--color-blue-400);
+  --c-illustration-ink: var(--color-blue-600);
+}
+
 /*
   The input's corners (and so its focus ring's) follow its button's: rounded
   only on the group's outer ends, and square where options meet. It sits

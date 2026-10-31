@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="80px" height="60px" viewBox="0 0 80 60" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <g id="pane" stroke="none" fill="none" fill-rule="evenodd">
+        <rect fill="#F3F7FD" stroke="#828FA4" x="0.5" y="0.5" width="79" height="59" rx="5"></rect>
+        <rect fill="#CDD8E4" x="8" y="9" width="25.6" height="4" rx="2"></rect>
+        <rect fill="#FFFFFF" stroke="#828FA4" x="8.5" y="15.5" width="63" height="8" rx="2"></rect>
+        <rect fill="#CDD8E4" x="8" y="34" width="25.6" height="4" rx="2"></rect>
+        <rect fill="#FFFFFF" stroke="#828FA4" x="8.5" y="40.5" width="63" height="8" rx="2"></rect>
+    </g>
+</svg>

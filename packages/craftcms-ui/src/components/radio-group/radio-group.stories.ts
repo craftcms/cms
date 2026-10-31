@@ -1,12 +1,14 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
 
 import {html} from 'lit';
+import {unsafeSVG} from 'lit/directives/unsafe-svg.js';
 import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 
 import './radio-group.js';
 import '../radio/radio.js';
 import '../icon/icon.js';
 import type CraftRadioGroup from './radio-group.js';
+import {VIEW_MODES} from '../../../test/radio-tile-fixtures';
 
 /**
  * `args` and `argTypes` are derived from the custom elements manifest, so the
@@ -155,5 +157,48 @@ export const IconButtons: Story = {
             ></label>
           </craft-radio>`
       )}
+    </craft-radio-group>`,
+};
+
+const tiles = (checked: string) =>
+  VIEW_MODES.map(
+    (option) =>
+      html`<craft-radio
+        .choiceValue="${option.value}"
+        ?checked="${option.value === checked}"
+      >
+        <span slot="thumbnail" aria-hidden="true"
+          >${unsafeSVG(option.svg)}</span
+        >
+        <label slot="label">${option.label}</label>
+      </craft-radio>`
+  );
+
+/**
+ * `thumbnails` shows the options as illustrated tiles, joined in one row. Each
+ * radio slots its illustration into `thumbnail`, hidden from assistive tech,
+ * since the label below it already names the option. An inline SVG drawn with
+ * the illustration palette follows the theme and turns blue when selected; an
+ * `<img>` with an empty `alt` works too, but keeps its own colors.
+ */
+export const Thumbnails: Story = {
+  parameters: {controls: {disable: true}},
+  render: () =>
+    html`<craft-radio-group thumbnails>
+      <label slot="label">View Mode</label>
+      ${tiles('cards')}
+    </craft-radio-group>`,
+};
+
+/**
+ * When the row doesn't fit at `--c-radio-tile-min-size` per tile, the tiles
+ * come apart and wrap onto as many rows as they need.
+ */
+export const ThumbnailsWrapped: Story = {
+  parameters: {controls: {disable: true}},
+  render: () =>
+    html`<craft-radio-group thumbnails style="max-inline-size: 18rem">
+      <label slot="label">View Mode</label>
+      ${tiles('cards')}
     </craft-radio-group>`,
 };

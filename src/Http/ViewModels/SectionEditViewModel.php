@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Data\ElementSiteSettings;
@@ -23,6 +24,7 @@ use CraftCms\Cms\Ui\Controls\Lightswitch;
 use CraftCms\Cms\Ui\Controls\Number;
 use CraftCms\Cms\Ui\Controls\Table;
 use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\Group;
@@ -67,7 +69,13 @@ class SectionEditViewModel extends ViewModel
 
         $typeField = Field::make(
             t('Section Type'),
-            Choice::make('type')->options(SectionType::asOptions())->reactive(),
+            Choice::make('type')
+                ->options(array_map(fn (array $option): array => [
+                    ...$option,
+                    'thumbnail' => Cp::illustration("images/section-types/{$option['value']}.svg"),
+                ], SectionType::asOptions()))
+                ->presentation(ChoicePresentation::Radios)
+                ->reactive(),
         )->instructions(t('What type of section is this?'));
 
         if ($this->section->id && $type !== SectionType::Single) {

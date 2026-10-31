@@ -1,6 +1,6 @@
 # `craft-radio-group` accessibility
 
-Follows the WAI-ARIA APG [Radio Group](https://www.w3.org/WAI/ARIA/apg/patterns/radio/) pattern. The options are `craft-radio`s, covered by `radio.a11y.md`. With `buttons`, the radios are drawn as a row of joined buttons, but keep the pattern's roles and keyboard behavior.
+Follows the WAI-ARIA APG [Radio Group](https://www.w3.org/WAI/ARIA/apg/patterns/radio/) pattern. The options are `craft-radio`s, covered by `radio.a11y.md`. With `buttons`, the radios are drawn as a row of joined buttons, and with `thumbnails` as illustrated tiles, but either way they keep the pattern's roles and keyboard behavior.
 
 The group adds `role="radiogroup"` and the label, help text and feedback wiring through Lion's `FormGroupMixin`. The keyboard behavior comes from the browser: each option is a native `<input type="radio">`, and radios that share a `name` form one group. `HasLabel` only reflects `has-label` for spacing; see `input.a11y.md`.
 
@@ -26,7 +26,9 @@ The group adds `role="radiogroup"` and the label, help text and feedback wiring 
 - [ ] The group is one Tab stop: Tab moves to the checked option, or to the first option when none is checked, and the next Tab leaves the group. Per WCAG 2.1.1 (Keyboard) and 2.4.3 (Focus Order). Not yet verified.
 - [ ] Arrow keys move focus to the next or previous option and select it, wrapping at both ends and skipping disabled options. Per WCAG 2.1.1 (Keyboard). Not yet verified.
 - [ ] Space selects the focused option when none is checked. Per WCAG 2.1.1 (Keyboard). Not yet verified.
-- [ ] In `thumbnails` mode, the visual order of the tiles matches the DOM order that the arrow keys follow. Per WCAG 1.3.2 (Meaningful Sequence) and 2.4.3 (Focus Order). Not yet verified.
+- [x] In `thumbnails` mode, the visual order of the tiles matches the DOM order that the arrow keys follow, including once they wrap. Per WCAG 1.3.2 (Meaningful Sequence) and 2.4.3 (Focus Order). Verified by `lays wrapped tiles out in the order the arrow keys follow` in `radio-group.browser.test.ts`.
+- [x] In `thumbnails` mode, the focused option shows a focus ring around its illustration. Per WCAG 2.4.7 (Focus Visible). Verified by `draws the focus ring around the focused tile illustration` in `radio-group.browser.test.ts`.
+- [x] In `thumbnails` mode, clicking an option's illustration selects it. Per WCAG 2.5.8 (Target Size (Minimum)). Verified by `selects an option when its illustration is clicked` in `radio-group.browser.test.ts`.
 - [x] With `buttons`, the group is a single tab stop, and the arrow keys move the selection between the options. Per WCAG 2.1.1 (Keyboard). Verified by `moves the selection with the arrow keys` in `radio-group.browser.test.ts`.
 - [x] With `buttons`, the focused option shows a focus ring around its whole button, drawn above its neighbors. Per WCAG 2.4.7 (Focus Visible). Verified by `draws the focus ring around the focused button` in `radio-group.browser.test.ts`.
 - [x] With `buttons`, clicking anywhere on an option's button selects it. Per WCAG 2.5.8 (Target Size (Minimum)). Verified by `selects an option when its button is clicked` in `radio-group.browser.test.ts`.
@@ -40,7 +42,7 @@ The group adds `role="radiogroup"` and the label, help text and feedback wiring 
 
 ### Reflow and zoom
 
-- [ ] In `thumbnails` mode, the tiles fit a 320px viewport without horizontal scrolling. Per WCAG 1.4.10 (Reflow). Known gap: the tiles are laid out with `grid-auto-flow: column`, which never wraps, so a row of tiles wider than its container overflows.
+- [x] In `thumbnails` mode, the tiles fit a 320px wide container without horizontal scrolling: once the joined row doesn't fit, they come apart and wrap. Per WCAG 1.4.10 (Reflow). Verified by `wraps the tiles into separate tiles when the row does not fit` and `fits the tiles in a 320px wide container without scrolling sideways` in `radio-group.browser.test.ts`.
 - [ ] Option labels wrap rather than clip at 200% zoom and at a 320px viewport. Per WCAG 1.4.4 (Resize Text) and 1.4.10 (Reflow). Not yet verified.
 
 ### Visual
@@ -49,6 +51,8 @@ The group adds `role="radiogroup"` and the label, help text and feedback wiring 
 - [x] With `buttons`, the selected option is filled, and drawn above its neighbors so its whole border shows. Verified by `fills the selected button and raises it` in `radio-group.browser.test.ts`.
 - [x] With `buttons`, an option whose label is only an icon gets a square button at least as large as a control. Per WCAG 2.5.8 (Target Size (Minimum)). Verified by `makes an icon-only option a square button` in `radio-group.browser.test.ts`.
 - [x] With `buttons`, the selected option is distinguishable from the others in forced colors mode, using system colors. Verified by `distinguishes the selected button in forced colors mode` in `radio-group.browser.test.ts`.
+- [x] In `thumbnails` mode, the selected tile has a thicker border and a bold label, so it differs by more than color. Per WCAG 1.4.1 (Use of Color). Verified by `marks the selected tile with a thicker border and a bold label` in `radio-group.browser.test.ts`.
+- [x] In `thumbnails` mode, the selected tile is distinguishable from the others in forced colors mode, using system colors. Verified by `distinguishes the selected tile in forced colors mode` in `radio-group.browser.test.ts`.
 
 ## Depends on usage
 

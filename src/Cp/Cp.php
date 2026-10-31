@@ -94,19 +94,27 @@ readonly class Cp
     /**
      * The illustration for a view mode option, for a Choice Control's `thumbnail`.
      *
-     * @return array{src: string, width: int, height: int, aspectRatio: string}
+     * @return array{svg: string, width: int, height: int, aspectRatio: string}
      */
     public static function viewModeThumbnail(string $viewMode): array
     {
         // The list illustration is narrower than the rest, as in Craft 5.
-        $width = $viewMode === 'list' ? 48 : 80;
+        return static::illustration("images/view-modes/$viewMode.svg", $viewMode === 'list' ? 48 : 80);
+    }
 
+    /**
+     * An illustration under `resources/public`, inlined for a radio's `thumbnail` so the CP can recolor it for the
+     * theme and the selected state.
+     *
+     * @return array{svg: string, width: int, height: int, aspectRatio: string}
+     */
+    public static function illustration(string $path, int $width = 80, int $height = 60): array
+    {
         return [
-            // Illustrations live in Vite's publicDir; see publicAssetUrl().
-            'src' => static::publicAssetUrl("images/view-modes/$viewMode.svg"),
+            'svg' => Html::svg("@resources/public/$path", namespace: true),
             'width' => $width,
-            'height' => 60,
-            'aspectRatio' => "$width / 60",
+            'height' => $height,
+            'aspectRatio' => "$width / $height",
         ];
     }
 

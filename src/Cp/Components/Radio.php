@@ -19,7 +19,7 @@ use function CraftCms\Cms\t;
  */
 class Radio extends Checkbox
 {
-    /** @var array{src: string, width?: int|null, height?: int|null, aspectRatio?: string|null}|null */
+    /** @var array{src?: string, svg?: string, width?: int|null, height?: int|null, aspectRatio?: string|null}|null */
     protected ?array $thumbnail = null;
 
     #[\Override]
@@ -29,14 +29,19 @@ class Radio extends Checkbox
     }
 
     /**
-     * An illustration of what the option looks like, rendered above the radio
-     * by {@see RadioGroup}. Craft 5 built this by hand in the View Mode field.
+     * An illustration of what the option looks like. A {@see RadioGroup} with
+     * thumbnailed options shows each one as a tile, with the illustration in
+     * a button-like box and the label below it.
+     *
+     * Give it an image `src`, or inline `svg` markup. An inline SVG drawn with
+     * the illustration palette follows the CP's theme, and turns blue when its
+     * option is selected (see `--c-illustration-*` in the UI package's tokens).
      *
      * `width` and `height` set the intrinsic size, reserving space before the
      * image loads. `aspectRatio` maps to the CSS property of the same name, and
      * wins over those dimensions for layout when both are given.
      *
-     * @param  array{src: string, width?: int|null, height?: int|null, aspectRatio?: string|null}|null  $thumbnail
+     * @param  array{src?: string, svg?: string, width?: int|null, height?: int|null, aspectRatio?: string|null}|null  $thumbnail
      */
     public function thumbnail(?array $thumbnail): static
     {
@@ -45,10 +50,43 @@ class Radio extends Checkbox
         return $this;
     }
 
-    /** @return array{src: string, width?: int|null, height?: int|null, aspectRatio?: string|null}|null */
+    /** @return array{src?: string, svg?: string, width?: int|null, height?: int|null, aspectRatio?: string|null}|null */
     public function getThumbnail(): ?array
     {
         return $this->thumbnail;
+    }
+
+    /**
+     * Renders the thumbnail into the radio's `thumbnail` slot, which a
+     * `craft-radio-group` with `thumbnails` draws as the tile's illustration.
+     * It's hidden from assistive tech, since the label already names the option.
+     */
+    #[\Override]
+    protected function renderSlots(): string
+    {
+        if ($this->thumbnail === null) {
+            return parent::renderSlots();
+        }
+
+        $aspectRatio = $this->thumbnail['aspectRatio'] ?? null;
+        $style = $aspectRatio !== null ? ['aspect-ratio' => $aspectRatio] : null;
+
+        if (isset($this->thumbnail['svg'])) {
+            return Html::tag('span', $this->thumbnail['svg'], [
+                'slot' => 'thumbnail',
+                'style' => $style,
+                'aria-hidden' => 'true',
+            ]).parent::renderSlots();
+        }
+
+        return Html::tag('img', '', [
+            'slot' => 'thumbnail',
+            'src' => $this->thumbnail['src'] ?? null,
+            'width' => $this->thumbnail['width'] ?? null,
+            'height' => $this->thumbnail['height'] ?? null,
+            'style' => $style,
+            'alt' => '',
+        ]).parent::renderSlots();
     }
 
     /** Radios have no indeterminate state, so drop the Checkbox host attribute. */

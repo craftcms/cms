@@ -11,10 +11,6 @@
   } from '@/modules/ui/types';
   import {inputName} from '@/modules/ui/runtime';
   import UiPage from '@/pages/Ui.vue';
-  import cropImageUrl from '/images/transforms/crop.svg';
-  import fitImageUrl from '/images/transforms/fit.svg';
-  import letterboxImageUrl from '/images/transforms/letterbox.svg';
-  import stretchImageUrl from '/images/transforms/stretch.svg';
 
   type ChoiceValue = boolean | number | string;
   type ChoiceOption = {
@@ -28,26 +24,6 @@
     submit: UrlMethodPair;
     refreshUrl: string | null;
   }>();
-
-  const modeImageUrls = {
-    crop: cropImageUrl,
-    fit: fitImageUrl,
-    letterbox: letterboxImageUrl,
-    stretch: stretchImageUrl,
-  };
-
-  function isTransformMode(value: string): value is keyof typeof modeImageUrls {
-    return Object.hasOwn(modeImageUrls, value);
-  }
-
-  function modeImageUrl(value: UiValue): string {
-    const mode = String(value);
-    if (isTransformMode(mode)) {
-      return modeImageUrls[mode];
-    }
-
-    throw new Error(`Unsupported transform mode: ${mode}`);
-  }
 
   function options(control: UiControlPayload): ChoiceOption[] {
     // SAFETY: choice controls serialize this documented option shape.
@@ -89,46 +65,6 @@
 
 <template>
   <UiPage :ui="ui" :submit="submit" :refresh-url="refreshUrl ?? undefined">
-    <template
-      #mode="{control, value, setValue, editable, invalid, required, label}"
-    >
-      <div
-        class="mode-options"
-        role="radiogroup"
-        :aria-label="label"
-        :aria-invalid="invalid ? 'true' : undefined"
-        :aria-required="required ? 'true' : undefined"
-      >
-        <label
-          v-for="option in options(control)"
-          :key="String(option.value)"
-          class="mode-option"
-          :class="{'mode-option--selected': value === option.value}"
-        >
-          <img
-            class="mode-option__image"
-            :src="modeImageUrl(option.value)"
-            width="113"
-            height="75"
-            alt=""
-          />
-          <span class="mode-option__label">
-            <input
-              type="radio"
-              class="cp-radio"
-              :name="editable ? inputName(control.path) : ''"
-              :value="String(option.value)"
-              :checked="value === option.value"
-              :disabled="!editable || option.disabled"
-              :required="editable && required"
-              @change="setValue(String(option.value), 'discrete')"
-            />
-            {{ option.label }}
-          </span>
-        </label>
-      </div>
-    </template>
-
     <template #position="{control, value, setValue, editable, invalid, label}">
       <div
         class="position-grid"
@@ -196,38 +132,6 @@
 </template>
 
 <style scoped>
-  .mode-options {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--c-spacing-lg);
-  }
-
-  .mode-option {
-    display: grid;
-    gap: var(--c-spacing-xs);
-    inline-size: 113px;
-    cursor: pointer;
-    text-align: center;
-  }
-
-  .mode-option__image {
-    inline-size: 113px;
-    block-size: 75px;
-    border: 1px solid transparent;
-    border-radius: var(--c-radius-md);
-  }
-
-  .mode-option--selected .mode-option__image {
-    border-color: var(--c-color-accent-border-loud);
-  }
-
-  .mode-option__label {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--c-spacing-xs);
-  }
-
   .quality-field {
     display: flex;
     align-items: end;
