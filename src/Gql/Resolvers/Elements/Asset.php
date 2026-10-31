@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Gql\Resolvers\Elements;
 use BadMethodCallException;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Resolvers\ElementResolver;
@@ -55,6 +56,11 @@ class Asset extends ElementResolver
             ->all();
 
         $query->whereIn('assets.volumeId', $volumeIds);
+
+        // Limit authenticated queries to assets the user can view
+        if (GqlHelper::getSchemaUser() && $query instanceof AssetQuery) {
+            $query->editable();
+        }
 
         return $query;
     }

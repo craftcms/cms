@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Gql\Resolvers\Elements;
 use BadMethodCallException;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Resolvers\ElementResolver;
@@ -77,6 +78,12 @@ class Entry extends ElementResolver
                     throw $e;
                 }
             }
+        }
+
+        // Limit authenticated queries to entries the user can view. Nested entries (except at the root level) are
+        // left alone, as their visibility is determined by their owners.
+        if (GqlHelper::getSchemaUser() && $query instanceof EntryQuery && ($source === null || ! $query->fieldId)) {
+            $query->editable();
         }
 
         return $query;

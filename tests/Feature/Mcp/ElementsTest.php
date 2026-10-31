@@ -45,7 +45,14 @@ it('describes each element type through elements.schema and the element type res
     ($this->call)('elements.schema', ['type' => 'entries'])
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.createAttributes.required', ['sectionId'])
-        ->assertJsonPath('result.structuredContent.criteria.properties.sectionId.description', 'Section ID or IDs.')
+        ->assertJsonPath('result.structuredContent.createAttributes.properties.slug.description', 'The entry’s slug.')
+        ->assertJsonPath('result.structuredContent.createAttributes.properties.typeId.description', 'The ID of the entry type that contains the entry. Defaults to the section’s first entry type.')
+        ->assertJsonPath('result.structuredContent.updateAttributes.properties.postDate.type', ['string', 'null'])
+        ->assertJsonPath('result.structuredContent.attributes.properties.postDate.description', 'The entry’s post date.')
+        ->assertJsonPath('result.structuredContent.attributes.properties.typeId.type', 'integer')
+        ->assertJsonPath('result.structuredContent.criteria.properties.sectionId.description', 'Narrows the query results based on the sections the entries belong to, per the sections’ IDs.')
+        ->assertJsonPath('result.structuredContent.criteria.properties.field.description', 'Narrows the query results based on the field the entries are contained by.')
+        ->assertJsonPath('result.structuredContent.criteria.properties.status.anyOf.2.type', 'null')
         ->assertJsonPath('result.structuredContent.duplicateModes', ['unpublished', 'canonical']);
 });
 

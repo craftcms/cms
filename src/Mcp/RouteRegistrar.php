@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Mcp;
 
+use CraftCms\Cms\Auth\OAuthServer\Http\Middleware\AddOAuthChallenge;
+use CraftCms\Cms\Auth\OAuthServer\OAuthResources;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\UploadSessionController;
 use CraftCms\Cms\Http\Middleware\AddLogContext;
+use CraftCms\Cms\Http\Middleware\AuthorizeCpRequests;
 use CraftCms\Cms\Http\Middleware\EnsureInstalled;
 use CraftCms\Cms\Http\Middleware\ForgetTriggerParameters;
 use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
@@ -15,17 +18,10 @@ use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Mcp\Enums\McpScope;
 use CraftCms\Cms\Mcp\Http\Controllers\EndpointPageController;
 use CraftCms\Cms\Mcp\Http\Controllers\McpController;
-use CraftCms\Cms\Mcp\Http\Controllers\OAuthApproveController;
-use CraftCms\Cms\Mcp\Http\Controllers\OAuthAuthorizationController;
-use CraftCms\Cms\Mcp\Http\Controllers\OAuthMetadataController;
-use CraftCms\Cms\Mcp\Http\Controllers\OAuthRegisterController;
-use CraftCms\Cms\Mcp\Http\Middleware\AddOAuthChallenge;
-use CraftCms\Cms\Mcp\Http\Middleware\AuthorizeCpRequests;
 use CraftCms\Cms\Mcp\Http\Middleware\ReorderJsonAccept;
 use CraftCms\Cms\Mcp\Http\Middleware\RequireAccessDuringMaintenance;
 use CraftCms\Cms\Mcp\Http\Middleware\SetActivityOrigin;
 use Illuminate\Routing\Router;
-use Laravel\Passport\Http\Controllers\DenyAuthorizationController;
 use Laravel\Passport\Http\Middleware\CheckTokenForAnyScope;
 
 /**
@@ -41,6 +37,7 @@ readonly class RouteRegistrar
     public function __construct(
         private Router $router,
         private EndpointConflicts $conflicts,
+        private OAuthResources $resources,
     ) {}
 
     /** @return list<mixed> */
@@ -52,7 +49,7 @@ readonly class RouteRegistrar
             AddLogContext::class,
             ResolveSite::class,
             PreventStaleDatabaseReads::class,
-            AddOAuthChallenge::class,
+            AddOAuthChallenge::class.':mcp',
             ReorderJsonAccept::class,
             'auth:craft-mcp',
             CheckTokenForAnyScope::using(McpScope::Read->satisfyingValues()),
@@ -118,7 +115,7 @@ readonly class RouteRegistrar
         }
 
         if ($authorizationRoute !== null) {
-            $this->registerOAuth($authorizationRoute, $settings->isCpRoute($authorizationRoute));
+            $this->resources->routes('mcp');
         }
 
         // Routes are named after they're added, and this can run after the application has booted.
@@ -153,34 +150,5 @@ readonly class RouteRegistrar
         };
 
         $server->defaults('mcp', true)->name($name);
-    }
-
-    private function registerOAuth(string $authorizationRoute, bool $cp): void
-    {
-        $basePath = trim((string) parse_url((string) config('app.url'), PHP_URL_PATH), '/');
-        $resourcePath = ltrim("$basePath/$authorizationRoute", '/');
-
-        $this->router->get(".well-known/oauth-protected-resource/$resourcePath", [OAuthMetadataController::class, 'resource'])
-            ->middleware(EnsureInstalled::class)
-            ->name('craft.mcp.oauth.resource');
-        $this->router->get(".well-known/oauth-authorization-server/$resourcePath", [OAuthMetadataController::class, 'authorizationServer'])
-            ->middleware(EnsureInstalled::class)
-            ->name('craft.mcp.oauth.authorization-server');
-
-        $this->router->prefix("$authorizationRoute/oauth")->name('craft.mcp.oauth.')->group(function (Router $router) use ($cp): void {
-            $router->post('register', OAuthRegisterController::class)
-                ->middleware([EnsureInstalled::class, PreventStaleDatabaseReads::class, 'throttle:60,1'])
-                ->name('register');
-
-            $router->middleware(['web', 'craft', ...($cp ? [HandleInertiaRequests::class] : []), 'throttle:60,1', AuthorizeCpRequests::class])->group(function (Router $router): void {
-                $router->get('authorize', OAuthAuthorizationController::class)
-                    ->name('authorize');
-
-                $router->middleware(['auth:'.Cms::config()->getAuthGuard()])->group(function (Router $router): void {
-                    $router->post('authorize', [OAuthApproveController::class, 'approve'])->name('approve');
-                    $router->delete('authorize', [DenyAuthorizationController::class, 'deny'])->name('deny');
-                });
-            });
-        });
     }
 }

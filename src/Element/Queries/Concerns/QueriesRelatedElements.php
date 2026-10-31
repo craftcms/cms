@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Element\Queries\Concerns;
 
 use CraftCms\Cms\Database\ElementRelationParamFilter;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Support\Arr;
@@ -116,6 +118,7 @@ trait QueriesRelatedElements
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Array, 'Narrows the query results to elements that do not relate to the provided element IDs.')]
     public function notRelatedTo($value): static
     {
         $this->notRelatedTo = $value;
@@ -178,6 +181,7 @@ trait QueriesRelatedElements
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Array, 'Narrows the query results to elements that relate to the provided element IDs.')]
     public function relatedTo($value): static
     {
         $this->relatedTo = $value;

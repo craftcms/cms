@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Mcp\Http\Controllers;
+namespace CraftCms\Cms\Auth\OAuthServer\Http\Controllers;
 
-use CraftCms\Cms\Mcp\Enums\McpScope;
-use CraftCms\Cms\Mcp\Http\Responses\AuthorizationView;
+use CraftCms\Cms\Auth\OAuthServer\Http\Responses\AuthorizationView;
+use CraftCms\Cms\Auth\OAuthServer\OAuthResources;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Http\Request;
@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Date;
 use Laravel\Passport\Client;
 use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Contracts\AuthorizationViewResponse;
-use Laravel\Passport\Http\Controllers\AuthorizationController;
+use Laravel\Passport\Http\Controllers\AuthorizationController as PassportAuthorizationController;
 use Laravel\Passport\Http\Responses\SimpleViewResponse;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\RequestTypes\AuthorizationRequestInterface;
@@ -26,11 +26,12 @@ use Symfony\Component\HttpFoundation\Response;
 use function CraftCms\Cms\craftAuth;
 
 /** @since 6.0.0 */
-class OAuthAuthorizationController extends AuthorizationController
+class AuthorizationController extends PassportAuthorizationController
 {
     public function __construct(
         AuthorizationServer $server,
         ClientRepository $clients,
+        private readonly OAuthResources $resources,
     ) {
         $guard = craftAuth();
 
@@ -60,35 +61,32 @@ class OAuthAuthorizationController extends AuthorizationController
     }
 
     /**
-     * Skips the consent screen when the user already approved this client and the request
-     * overlaps the MCP access level they chose then.
+     * Skips the consent screen when the user already approved this client and the request overlaps the access level
+     * they chose then.
      */
     #[Override]
     protected function hasGrantedScopes(Authenticatable $user, Client $client, array $scopes): bool
     {
         $granted = $this->grantedScopes($user->getAuthIdentifier(), $client);
-        $level = McpScope::highestIn($granted);
+        $resource = $this->resources->forRequest(request());
 
-        if ($level === null) {
+        if ($resource?->highestIn($granted) === null) {
             return parent::hasGrantedScopes($user, $client, $scopes);
         }
 
-        $requested = collect($scopes)->pluck('id');
-        $requestedMcp = $requested->filter(fn (string $id): bool => McpScope::tryFrom($id) !== null);
-
-        return $requested->diff($requestedMcp)->diff($granted)->isEmpty()
-            && ($requestedMcp->isEmpty() || $requestedMcp->intersect($level->grantedValues())->isNotEmpty());
+        return $resource->grantsCover($granted, collect($scopes)->pluck('id')->all());
     }
 
-    /** Keeps an approval without consent within the MCP access level the user last chose for this client. */
+    /** Keeps an approval without consent within the access level the user last chose for this client. */
     #[Override]
     protected function approveRequest(AuthorizationRequestInterface $authRequest, ResponseInterface $psrResponse): Response
     {
         $client = $this->clients->find($authRequest->getClient()->getIdentifier());
-        $level = $client ? McpScope::highestIn($this->grantedScopes($authRequest->getUser()?->getIdentifier(), $client)) : null;
+        $resource = $this->resources->forRequest(request());
+        $level = $client ? $resource?->highestIn($this->grantedScopes($authRequest->getUser()?->getIdentifier(), $client)) : null;
 
-        if ($level !== null) {
-            $authRequest->setScopes(McpScope::narrow($authRequest->getScopes(), $level));
+        if ($resource && $level !== null) {
+            $authRequest->setScopes($resource->narrow($authRequest->getScopes(), $level));
         }
 
         return parent::approveRequest($authRequest, $psrResponse);

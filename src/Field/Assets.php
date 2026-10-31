@@ -722,7 +722,7 @@ class Assets extends BaseRelationField
         parent::afterElementSave($element, $isNew);
     }
 
-    /** @return array{volumeId:list<int>}|null */
+    /** @return array{volumeId:list<int>, editable?:true}|null */
     #[Override]
     public function getEagerLoadingGqlConditions(): ?array
     {
@@ -739,9 +739,16 @@ class Assets extends BaseRelationField
             return $volume->id ?? null;
         }, $volumeUids));
 
-        return [
+        $conditions = [
             'volumeId' => $volumeIds,
         ];
+
+        // Limit authenticated queries to assets the user can view
+        if (Gql::getSchemaUser()) {
+            $conditions['editable'] = true;
+        }
+
+        return $conditions;
     }
 
     /** @return list<string> */
