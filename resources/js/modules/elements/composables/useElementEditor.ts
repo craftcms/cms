@@ -34,6 +34,7 @@ import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
 import {provideUiValueGroup} from '@/modules/ui/uiValueGroup';
 import UpdateFieldLayoutController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/UpdateFieldLayoutController';
 import {attach} from '@actions/ReleasesController';
+import {isReleasePreviewOpen} from '@/modules/releases/releaseEditor';
 
 export interface ElementEditFormData {
   typeId?: string | number | null;
@@ -263,8 +264,18 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   );
 
   const editingDraft = shallowRef(false);
+
+  /**
+   * Whether this is a slideout opened from the preview of the release the draft
+   * belongs to. Its Edit button is how the draft got here, so there's no need
+   * to say it's in the release or to have editing started a second time.
+   */
+  const inReleasePreview = computed(() =>
+    Boolean(slideout && props.release && isReleasePreviewOpen(props.release.id))
+  );
   const releaseDraftLocked = computed(
-    () => Boolean(props.release) && !editingDraft.value
+    () =>
+      Boolean(props.release) && !editingDraft.value && !inReleasePreview.value
   );
 
   watch([() => props.draftId, () => props.release?.id], () => {
@@ -1250,6 +1261,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     sidebarPayload,
     sidebarRenderer,
     releaseDraftLocked,
+    inReleasePreview,
     startEditingDraft,
     updatePayload,
     values,

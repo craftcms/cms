@@ -466,6 +466,7 @@ it('previews every release draft in Live Preview, opening on the one whose View 
             ->where('preview.items.1.preview', null)
             ->where('preview.items.2.preview.targets.0.url', $second->getCanonical()->getUrl())
             ->where('preview.items.2.preview.tokenParams.draftId', $second->draftId)
+            ->where('preview.items.2.editUrl', $second->getCpEditUrl())
             ->etc());
 
     $tokenParams = $page->inertiaProps('preview.items.2.preview.tokenParams');
@@ -478,6 +479,22 @@ it('previews every release draft in Live Preview, opening on the one whose View 
 
     get(route('craft.cp.releases.preview', [$release, 'item' => 0]))
         ->assertInertia(fn (AssertableInertia $page) => $page->where('preview.selectedItemId', $itemIds[0])->etc());
+
+    $viewer = UserModel::factory()->withPermissions([
+        'accessCp',
+        "viewEntries:$section->uid",
+        "viewPeerEntries:$section->uid",
+        "viewPeerEntryDrafts:$section->uid",
+    ])->createElement();
+    $this->flushSession();
+    actingAs($viewer);
+
+    get(route('craft.cp.releases.preview', [$release, 'item' => $itemIds[2]]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('preview.items.0.title', 'First changed')
+            ->where('preview.items.0.editUrl', null)
+            ->etc());
 });
 
 it('has no preview for a release without drafts', function () {

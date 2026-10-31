@@ -1,6 +1,10 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
 
+  withDefaults(defineProps<{canStartEditing?: boolean}>(), {
+    canStartEditing: true,
+  });
+
   defineEmits<{
     startEditing: [];
   }>();
@@ -15,6 +19,7 @@
     }}
 
     <craft-button
+      v-if="canStartEditing"
       slot="action"
       type="button"
       appearance="outline"

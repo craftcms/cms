@@ -6,6 +6,9 @@
    *
    * Without room for the list, the drafts move into a menu in the preview's
    * toolbar, with the selected draft's targets beneath it.
+   *
+   * With room for both, a draft the user can edit opens beside its preview in
+   * a slideout, which refreshes the preview as it autosaves.
    */
   import {router} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
@@ -16,10 +19,12 @@
   import type {ActionItems} from '@/common/types';
   import PreviewLayout from '@/modules/elements/live-preview/PreviewLayout.vue';
   import {useLivePreview} from '@/modules/elements/live-preview/useLivePreview';
+  import {openSlideout} from '@/common/slideouts';
+  import {useReleasePreviewScope} from '../releaseEditor';
   import type {ReleasePreviewItem, ReleasePreviewPayload} from '../types';
 
   const props = defineProps<{
-    release: {name: string};
+    release: {id: number; name: string};
     preview: ReleasePreviewPayload;
   }>();
 
@@ -38,6 +43,20 @@
   });
 
   onMounted(() => void controller.open());
+  useReleasePreviewScope(() => props.release.id);
+
+  function edit(event: Event): void {
+    const url = selected.value?.editUrl;
+
+    if (!url) {
+      return;
+    }
+
+    void openSlideout(url, {
+      opener: event.currentTarget as HTMLElement,
+      onSaved: () => void controller.refresh(),
+    });
+  }
 
   /** Switches drafts in place, keeping the URL in step so a reload stays on it. */
   function select(item: ReleasePreviewItem): void {
@@ -164,6 +183,18 @@
           </craft-button>
         </template>
       </ActionMenu>
+    </template>
+
+    <template v-if="!compact && selected?.editUrl" #toolbar-end>
+      <craft-button
+        type="button"
+        size="small"
+        variant="plain"
+        icon="pen"
+        @click="edit"
+      >
+        {{ t('Edit') }}
+      </craft-button>
     </template>
   </PreviewLayout>
 </template>

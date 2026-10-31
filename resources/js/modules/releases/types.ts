@@ -9,6 +9,8 @@ export interface ReleasePreviewItem {
   title: string;
   /** Where the release preview opens on this draft. */
   url: string;
+  /** The draft's edit screen, when the user can edit it. */
+  editUrl: string | null;
   /** `null` when the draft has no preview targets the user can view. */
   preview: ElementPreview | null;
 }

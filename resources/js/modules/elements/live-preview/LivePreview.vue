@@ -9,11 +9,11 @@
    * closes.
    */
   import {t} from '@craftcms/ui';
-  import {ref, useTemplateRef} from 'vue';
+  import {ref, useTemplateRef, watch} from 'vue';
   import PreviewLayout from './PreviewLayout.vue';
   import type {LivePreviewController} from './useLivePreview';
 
-  defineProps<{
+  const props = defineProps<{
     controller: LivePreviewController;
     title: string;
     /** Set when the screen is only there for the preview, which then can't close. */
@@ -26,6 +26,14 @@
   }>();
 
   const editorTarget = useTemplateRef<HTMLElement>('editorTarget');
+  const layout = useTemplateRef<InstanceType<typeof PreviewLayout>>('layout');
+
+  // Where slideouts opened during the preview edit, beside it.
+  watch(
+    () => layout.value?.pane ?? null,
+    (pane) => (props.controller.editor.value = pane),
+    {immediate: true}
+  );
 
   /**
    * Whether the editor content belongs in the pane: from when it has slid in
@@ -39,6 +47,7 @@
 
 <template>
   <PreviewLayout
+    ref="layout"
     :controller="controller"
     :title="title"
     :closable="!standalone"

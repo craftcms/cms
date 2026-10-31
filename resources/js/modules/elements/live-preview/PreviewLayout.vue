@@ -84,6 +84,7 @@
     default(): unknown;
     footer?(): unknown;
     'toolbar-start'?(): unknown;
+    'toolbar-end'?(): unknown;
   }>();
 
   const root = useTemplateRef<HTMLElement>('root');
@@ -94,6 +95,10 @@
    * Panes
    */
   const editor = useTemplateRef<HTMLElement>('editor');
+
+  // Live Preview registers this as its editor's pane, which slideouts then
+  // open over. A release preview's pane holds no editor, so it doesn't.
+  defineExpose({pane: editor});
   const editorId = `lp-editor-pane-${useId()}`;
   const previewPane = useTemplateRef<HTMLElement>('previewPane');
   const previewPaneId = `lp-preview-pane-${useId()}`;
@@ -115,7 +120,6 @@
     storageKey: 'LivePreview.width',
   });
 
-  watch(editor, (el) => (preview.editor.value = el), {immediate: true});
   watch(resizer.style, () => {
     if (resizer.isResizing.value) {
       preview.emit('drag');
@@ -740,6 +744,8 @@
               <craft-tooltip :for="newTabLinkId">
                 {{ t('Open in a new tab') }}
               </craft-tooltip>
+
+              <slot name="toolbar-end"></slot>
 
               <craft-button
                 v-if="compact && closable"
