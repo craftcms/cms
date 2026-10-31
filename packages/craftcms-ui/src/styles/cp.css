@@ -215,3 +215,28 @@ craft-card > [data-cover][data-cover]:focus-visible {
   outline-offset: var(--c-focus-outline-width);
   box-shadow: 0 0 0 var(--c-focus-outline-width) var(--_cover-solid);
 }
+
+:is(
+  craft-callout[appearance~='fill'][variant='neutral']
+    + craft-callout[appearance~='fill'][variant='neutral'],
+  craft-callout[appearance~='fill'][variant='success']
+    + craft-callout[appearance~='fill'][variant='success'],
+  craft-callout[appearance~='fill'][variant='warning']
+    + craft-callout[appearance~='fill'][variant='warning'],
+  craft-callout[appearance~='fill'][variant='danger']
+    + craft-callout[appearance~='fill'][variant='danger'],
+  craft-callout[appearance~='fill'][variant='info']
+    + craft-callout[appearance~='fill'][variant='info'],
+  craft-callout[appearance~='solid'][variant='neutral']
+    + craft-callout[appearance~='solid'][variant='neutral'],
+  craft-callout[appearance~='solid'][variant='success']
+    + craft-callout[appearance~='solid'][variant='success'],
+  craft-callout[appearance~='solid'][variant='warning']
+    + craft-callout[appearance~='solid'][variant='warning'],
+  craft-callout[appearance~='solid'][variant='danger']
+    + craft-callout[appearance~='solid'][variant='danger'],
+  craft-callout[appearance~='solid'][variant='info']
+    + craft-callout[appearance~='solid'][variant='info']
+)::part(base) {
+  border-block-start-color: var(--c-color-border-quiet);
+}
