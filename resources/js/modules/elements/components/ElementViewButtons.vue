@@ -38,6 +38,7 @@
         variant="plain"
         size="small"
         icon="chevron-down"
+        icon-position="suffix"
       >
         {{ t('View') }}
       </craft-button>
