@@ -22,6 +22,8 @@ class ContentBlock extends Control
 
     private ?string $addLabel = null;
 
+    private string $viewMode = 'grouped';
+
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, UiHtmlRenderer $renderer): string
     {
         $editable = $attributes['name'] !== null;
@@ -39,6 +41,7 @@ class ContentBlock extends Control
             return Html::tag('craft-content-block-input', $clear.Html::tag('craft-empty', $button, [
                 'label' => $control->props['emptyLabel'],
             ]), [
+                'view-mode' => $control->props['viewMode'],
                 'add-label' => $control->props['addLabel'],
                 'clear-label' => $control->props['clearLabel'],
                 'empty-label' => $control->props['emptyLabel'],
@@ -58,9 +61,9 @@ class ContentBlock extends Control
             : '';
 
         return Html::tag('craft-content-block-input', $clear.Html::tag('div', $content.$remove, [
-            'class' => 'pane',
             'data-content-block' => true,
         ]), [
+            'view-mode' => $control->props['viewMode'],
             'add-label' => $control->props['addLabel'],
             'clear-label' => $control->props['clearLabel'],
             'empty-label' => $control->props['emptyLabel'],
@@ -75,6 +78,14 @@ class ContentBlock extends Control
     public function ui(Ui $ui): static
     {
         $this->ui = $ui;
+
+        return $this;
+    }
+
+    /** `grouped`, `pane`, or `inline`, as the Content Block field's View Mode setting. */
+    public function viewMode(string $viewMode): static
+    {
+        $this->viewMode = $viewMode;
 
         return $this;
     }
@@ -94,6 +105,7 @@ class ContentBlock extends Control
         }
 
         return [
+            'viewMode' => $this->viewMode,
             'addLabel' => $this->addLabel ?? t('Add content'),
             'clearLabel' => t('Clear content'),
             'emptyLabel' => t('No content.'),

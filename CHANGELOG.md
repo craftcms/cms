@@ -289,6 +289,7 @@
 - Fixed a bug where relation fields with “Maintain hierarchy” enabled showed their selected elements as a flat, reorderable list, rather than nested under their parents. ([#20201](https://github.com/craftcms/cms/pull/20201))
 - Fixed a bug where relation fields with “Maintain hierarchy” enabled didn’t relate their selected elements’ missing ancestors, or apply their “Branch Limit” setting. ([#20201](https://github.com/craftcms/cms/pull/20201))
 - Fixed an XSS vulnerability where element editors followed unsigned `returnUrl` params pointing outside the control panel and sites. ([#20222](https://github.com/craftcms/cms/pull/20222))
+- Fixed a bug where Content Block fields’ “View Mode” setting had no effect. “Grouped” blocks now have a border, “In a pane” blocks are shown in a filled pane, and “Inline” blocks have no container, as in Craft 5.
 
 ### Accessibility
 

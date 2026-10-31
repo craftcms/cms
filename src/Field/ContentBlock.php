@@ -60,6 +60,8 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
 {
     private const string VIEW_MODE_GROUPED = 'grouped';
 
+    private const string VIEW_MODE_PANE = 'pane';
+
     private const string VIEW_MODE_INLINE = 'inline';
 
     #[Override]
@@ -162,7 +164,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
                     ->presentation(ChoicePresentation::Radios)
                     ->options([
                         ['label' => t('Grouped'), 'value' => self::VIEW_MODE_GROUPED],
-                        ['label' => t('In a pane'), 'value' => 'pane'],
+                        ['label' => t('In a pane'), 'value' => self::VIEW_MODE_PANE],
                         ['label' => t('Inline'), 'value' => self::VIEW_MODE_INLINE],
                     ])
                     ->value($this->viewMode)),
@@ -391,7 +393,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
     #[Override]
     public function uiControl(FieldContext $context): Control
     {
-        $control = ContentBlockControl::make($context->path);
+        $control = ContentBlockControl::make($context->path)->viewMode($this->viewMode);
 
         if (! $context->value instanceof ContentBlockElement) {
             return $control;
