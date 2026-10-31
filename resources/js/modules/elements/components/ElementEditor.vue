@@ -37,6 +37,7 @@
   import type {UiValues} from '@/modules/ui/types';
   import {isSidebarTab, type SidebarTabOutlets} from '@/modules/ui/sidebarTabs';
   import ElementDetailsPanels from '@/modules/elements/components/ElementDetailsPanels.vue';
+  import ScreenPanelsScope from '@/common/components/ScreenPanelsScope.vue';
   import {elementDetailsPanelRegistry} from '@/bootstrap/element-details-panels';
   import type {FormSaveOptions} from '@/common/types';
   import WorkflowEditLockCallout from '@/modules/workflows/components/WorkflowEditLockCallout.vue';
@@ -149,16 +150,11 @@
       false
   );
 
-  /**
-   * Whether the content starts with a tab strip, which sits flush with its
-   * top. In Live Preview, sidebar tabs are in it too.
-   */
+  /** Whether the content starts with a tab strip, which sits flush with its top. */
   const hasContentTabs = computed(
     () =>
       (uiPayload.value?.nodes.filter(
-        (node) =>
-          node.component === 'craft:tab' &&
-          (contentInPreview.value || !isSidebarTab(node))
+        (node) => node.component === 'craft:tab' && !isSidebarTab(node)
       ).length ?? 0) > 1
   );
 
@@ -773,9 +769,7 @@
               :refresh="uiPayload.refreshable ? refreshLayout : undefined"
               :modified="autosave.modified.value"
               :disabled="editorLocked"
-              :sidebar-tab-outlets="
-                contentInPreview ? undefined : sidebarTabOutlets
-              "
+              :sidebar-tab-outlets="sidebarTabOutlets"
               @update:mutation="onMutation"
             />
           </component>
@@ -839,52 +833,58 @@
     </template>
   </LivePreview>
 
-  <ElementDetailsPanels
-    v-if="hasDetails || $slots['details-header']"
-    ref="detailsPanels"
-    :payload="payload"
-    :activity-timeline-version="activityTimelineVersion"
-    :update-payload="updatePayload"
-    :submit-action="submitAction"
-    :sidebar-tabs="sidebarTabs"
+  <!-- In Live Preview's editor while it holds the content. -->
+  <ScreenPanelsScope
+    :key="contentInPreview ? 'preview' : 'page'"
+    :panels="contentInPreview ? livePreviewPane?.panels : null"
   >
-    <template #sidebar-tab="{tab}">
-      <div
-        :ref="sidebarTabOutletRef(tab.uid)"
-        class="py-lg px-(--cp-container-padding)"
-      ></div>
-    </template>
-    <template #info>
-      <!-- Anything the element type shows above its meta fields, e.g. an
+    <ElementDetailsPanels
+      v-if="hasDetails || $slots['details-header']"
+      ref="detailsPanels"
+      :payload="payload"
+      :activity-timeline-version="activityTimelineVersion"
+      :update-payload="updatePayload"
+      :submit-action="submitAction"
+      :sidebar-tabs="sidebarTabs"
+    >
+      <template #sidebar-tab="{tab}">
+        <div
+          :ref="sidebarTabOutletRef(tab.uid)"
+          class="py-lg px-(--cp-container-padding)"
+        ></div>
+      </template>
+      <template #info>
+        <!-- Anything the element type shows above its meta fields, e.g. an
         asset's file preview. -->
-      <slot name="details-header" :payload="payload" />
+        <slot name="details-header" :payload="payload" />
 
-      <MetadataDetailsContent :html="payload.metadataHtml">
-        <!-- Only when there's something to show above the metadata: a form
+        <MetadataDetailsContent :html="payload.metadataHtml">
+          <!-- Only when there's something to show above the metadata: a form
           wrapper has nothing of its own unless it says so through showDetails. -->
-        <template
-          v-if="sidebarPayload || (formWrapper && showDetails)"
-          #default
-        >
-          <component
-            :is="formWrapper ?? 'div'"
-            v-bind="formWrapper ? {editor, region: 'sidebar'} : {}"
+          <template
+            v-if="sidebarPayload || (formWrapper && showDetails)"
+            #default
           >
-            <craft-field-group v-if="sidebarPayload">
-              <UiRenderer
-                ref="sidebarRenderer"
-                :payload="sidebarPayload"
-                :errors="sidebarErrors"
-                :modified="autosave.modified.value"
-                :disabled="editorLocked"
-                @update:mutation="onSidebarMutation"
-              />
-            </craft-field-group>
-          </component>
-        </template>
-      </MetadataDetailsContent>
-    </template>
-  </ElementDetailsPanels>
+            <component
+              :is="formWrapper ?? 'div'"
+              v-bind="formWrapper ? {editor, region: 'sidebar'} : {}"
+            >
+              <craft-field-group v-if="sidebarPayload">
+                <UiRenderer
+                  ref="sidebarRenderer"
+                  :payload="sidebarPayload"
+                  :errors="sidebarErrors"
+                  :modified="autosave.modified.value"
+                  :disabled="editorLocked"
+                  @update:mutation="onSidebarMutation"
+                />
+              </craft-field-group>
+            </component>
+          </template>
+        </MetadataDetailsContent>
+      </template>
+    </ElementDetailsPanels>
+  </ScreenPanelsScope>
 </template>
 
 <style scoped lang="scss">

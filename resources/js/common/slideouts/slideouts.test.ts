@@ -1060,7 +1060,7 @@ describe('SlideoutPanel', () => {
 
     const {root} = await mountPanel(Page);
 
-    const details = root.querySelector('.slideout-screen__details')!;
+    const details = root.querySelector('.screen-details-layout__details')!;
 
     expect(details.querySelector('.detail')?.textContent).toBe('side info');
   });

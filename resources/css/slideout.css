@@ -48,7 +48,8 @@ sidebar, preview thumb, image actions) are not included here.
   --m: var(--c-spacing-md);
   position: fixed;
   inset-block-start: var(--m);
-  inset-inline-start: var(--m);
+  /* The editor's offset is set alongside its width. */
+  inset-inline-start: calc(var(--lp-editor-start, 0px) + var(--m));
   width: calc(100% - var(--m) * 2);
   height: calc(100vh - var(--m) * 2);
 }

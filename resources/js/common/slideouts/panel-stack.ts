@@ -279,6 +279,7 @@ function syncShade(): void {
   el.classList.remove('is-visible');
   // Don't leak a live-preview panel's narrowed shade onto the next slideout.
   el.style.width = '';
+  el.style.insetInlineStart = '';
 }
 
 /**

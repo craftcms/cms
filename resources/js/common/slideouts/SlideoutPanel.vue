@@ -28,7 +28,10 @@
   } from '@craftcms/garnish';
   import {t} from '@craftcms/ui/utilities/translate';
   import {useResizeObserver, useWindowSize} from '@vueuse/core';
-  import {getActivePreview} from '@/modules/elements/live-preview/previews';
+  import {
+    getActivePreview,
+    previewEditorOffset,
+  } from '@/modules/elements/live-preview/previews';
   import AppLayout from '@/common/layouts/AppLayout.vue';
   import ResizeHandle from '@/common/components/ResizeHandle.vue';
   import {useResizable} from '@/common/composables/useResizable';
@@ -98,10 +101,14 @@
    */
   const previewEditor = getActivePreview()?.editor.value ?? null;
   const previewEditorWidth = ref(previewEditor?.clientWidth ?? 0);
+  const previewEditorStart = ref(
+    previewEditor ? previewEditorOffset(previewEditor) : 0
+  );
 
   if (previewEditor) {
     useResizeObserver(previewEditor, () => {
       previewEditorWidth.value = previewEditor.clientWidth;
+      previewEditorStart.value = previewEditorOffset(previewEditor);
     });
   }
 
@@ -217,16 +224,19 @@
 
   function fitShadeToPreviewEditor(): void {
     if (previewEditor) {
-      shadeElement().style.width = `${previewEditorWidth.value}px`;
+      const shade = shadeElement();
+      shade.style.insetInlineStart = `${previewEditorStart.value}px`;
+      shade.style.width = `${previewEditorWidth.value}px`;
     }
   }
 
-  watch(previewEditorWidth, fitShadeToPreviewEditor);
+  watch([previewEditorWidth, previewEditorStart], fitShadeToPreviewEditor);
 
   const panelStyle = computed(() =>
     previewEditor
       ? {
           '--slideout-preview-width': `${previewEditorWidth.value}px`,
+          '--slideout-preview-start': `${previewEditorStart.value}px`,
           insetBlockStart: offset.value,
         }
       : {
@@ -354,7 +364,9 @@
     --slideout-preview-gap: var(--c-spacing-md);
 
     inset-block: auto;
-    inset-inline-start: var(--slideout-preview-gap);
+    inset-inline-start: calc(
+      var(--slideout-preview-start, 0px) + var(--slideout-preview-gap)
+    );
     width: calc(
       var(--slideout-preview-width) - var(--slideout-preview-gap) * 2
     );

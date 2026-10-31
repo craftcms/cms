@@ -38,7 +38,10 @@ import {
   unregisterPanel,
   type StackedPanel,
 } from '@/common/slideouts/panel-stack';
-import {getActivePreview} from '@/modules/elements/live-preview/previews';
+import {
+  getActivePreview,
+  previewEditorOffset,
+} from '@/modules/elements/live-preview/previews';
 import {containerSlideouts} from './support';
 
 declare const Craft: any;
@@ -412,10 +415,15 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
   /** Sizes the slideout to Live Preview's editor pane, which it opens over. */
   updateWidthsForPreviewPane(editor: HTMLElement): void {
     const width = editor.clientWidth - 1;
+    const start = previewEditorOffset(editor);
     if (this.$shade) {
       this.$shade.width(width);
+      this.$shade[0]!.style.insetInlineStart = `${start}px`;
     }
-    this.$outerContainer.css('width', `calc(${width}px - var(--m) * 2)`);
+    this.$outerContainer.css({
+      width: `calc(${width}px - var(--m) * 2)`,
+      '--lp-editor-start': `${start}px`,
+    });
   }
 
   setTriggerElement(trigger: SlideoutTrigger): void {
