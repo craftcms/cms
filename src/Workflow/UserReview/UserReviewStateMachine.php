@@ -65,11 +65,7 @@ readonly class UserReviewStateMachine
             );
         }
 
-        $unapprovedEditorIds = UserReviewDecisions::revokedApprovalIds($this->context->payload)
-            ->diff($this->state->localApprovalIds)
-            ->intersect($this->state->reviewers->pluck('id'));
-
-        if ($unapprovedEditorIds->isNotEmpty()) {
+        if ($this->state->requiredApprovalIds->isNotEmpty()) {
             return new WorkflowStageResult(WorkflowStageStatus::Pending, t('Awaiting approval'), $this->context->payload);
         }
 

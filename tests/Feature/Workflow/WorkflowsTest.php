@@ -568,6 +568,10 @@ it('sends a review back to the earlier stage its editor reviews, keeping the app
         ->and(workflowEvents($this->entry, WorkflowActivityType::SendBack))->toHaveCount(1)
         ->and(stageTimeline($this->workflows, $this->draft, $this->reviewers[0], 1))
         ->toContain('started editing the draft, sending it back to this stage')
+        ->and(collect($review->runs)->firstWhere('current')->stages[1]->summaryProps)->toMatchArray([
+            'requiredReviewers' => [['name' => 'Reviewer One']],
+            'remainingReviewers' => [['name' => 'Reviewer Three']],
+        ])
         ->and($this->reviewers[2]->notifications()->count())->toBe($notifications)
         ->and($this->author->notifications()->count())->toBe(0);
 
