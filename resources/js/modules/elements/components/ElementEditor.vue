@@ -114,6 +114,7 @@
     sidebarRenderer,
     startEditingDraft,
     releaseDraftLocked,
+    inReleasePreview,
     submitAction,
     updatePayload,
     workflowReviewLocked,
@@ -639,7 +640,7 @@
       payload.mergeNotice ||
       payload.workflow.convertedToDraft ||
       workflowReviewLocked ||
-      payload.release
+      (payload.release && !inReleasePreview)
     "
     name="content-notices"
   >
@@ -666,7 +667,7 @@
       />
 
       <ReleaseCallout
-        v-if="payload.release"
+        v-if="payload.release && !inReleasePreview"
         :release="payload.release"
         :can-edit="!payload.readOnly"
         :editing="!releaseDraftLocked"

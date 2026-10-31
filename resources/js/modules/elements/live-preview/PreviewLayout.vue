@@ -63,9 +63,16 @@
        * toolbar's `toolbar-start` slot instead.
        */
       compact?: boolean;
+      /**
+       * What Escape does before it closes the preview, such as closing an
+       * editor that can be closed on its own. Escape closes the preview once
+       * this is unset.
+       */
+      escape?: (() => void) | null;
     }>(),
     {
       title: '',
+      escape: null,
       closable: true,
       compact: false,
     }
@@ -115,9 +122,17 @@
     cssVariable: '--lp-editor-width',
     storageKey: 'LivePreview.width',
   });
+  const {width: editorWidth} = useElementSize(editor, undefined, {
+    box: 'border-box',
+  });
 
   // Where slideouts opened during the preview edit, beside it.
   watch(editor, (el) => (preview.editor.value = el), {immediate: true});
+
+  defineExpose({
+    /** How much of the window the editor takes, or 0 without one. */
+    editorWidth: computed(() => (editor.value ? editorWidth.value : 0)),
+  });
 
   watch(resizer.style, () => {
     if (resizer.isResizing.value) {
@@ -527,7 +542,11 @@
         uiLayerManager().addLayer(el);
         if (props.closable) {
           uiLayerManager().registerShortcut(ESC_KEY, () => {
-            void preview.close();
+            if (props.escape) {
+              props.escape();
+            } else {
+              void preview.close();
+            }
           });
         }
         trapFocusWithin(el);
