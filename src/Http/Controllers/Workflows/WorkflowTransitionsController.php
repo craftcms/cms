@@ -86,6 +86,15 @@ class WorkflowTransitionsController
         return $this->response($draft, t('Workflow restarted.'));
     }
 
+    public function prepareForEditing(WorkflowRun $workflowRun): JsonResponse
+    {
+        $draft = $this->draft();
+
+        $this->workflows->prepareForEditing($draft, $workflowRun->id);
+
+        return $this->response($draft);
+    }
+
     private function draft(): ElementInterface
     {
         $element = $this->request->element();

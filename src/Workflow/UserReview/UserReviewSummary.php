@@ -21,14 +21,28 @@ readonly class UserReviewSummary
     {
         $props = ['approvalMode' => $stage->approvalMode->value, 'approvalsRequired' => $stage->approvalsRequired];
         if ($stage->approvalMode === UserReviewApprovalMode::Total) {
-            return [...$props, 'approvals' => $state->effectiveApprovalIds->count(), 'approvedReviewers' => self::names($state->reviewers->whereIn('id', $state->localApprovalIds)), 'carriedReviewers' => self::names($state->reviewers->whereIn('id', $state->carriedApprovalIds)), 'remainingReviewers' => self::names($state->reviewers->whereNotIn('id', $state->effectiveApprovalIds))];
+            return [...$props, 'approvals' => $state->effectiveApprovalIds->count(), ...self::reviewers($state, $state->reviewers)];
         }
 
         return [...$props, 'groups' => $groups->map(function (UserGroup $group) use ($state): array {
             $reviewers = $state->reviewersForGroup($group);
 
-            return ['name' => $group->name, 'approvals' => $state->effectiveApprovalIds->intersect($reviewers->pluck('id'))->count(), 'approvedReviewers' => self::names($reviewers->whereIn('id', $state->localApprovalIds)), 'carriedReviewers' => self::names($reviewers->whereIn('id', $state->carriedApprovalIds)), 'remainingReviewers' => self::names($reviewers->whereNotIn('id', $state->effectiveApprovalIds))];
+            return ['name' => $group->name, 'approvals' => $state->effectiveApprovalIds->intersect($reviewers->pluck('id'))->count(), ...self::reviewers($state, $reviewers)];
         })->values()->all()];
+    }
+
+    /**
+     * @param  Collection<int, User>  $reviewers
+     * @return array<string, list<array{name: string}>>
+     */
+    private static function reviewers(UserReviewState $state, Collection $reviewers): array
+    {
+        return [
+            'approvedReviewers' => self::names($reviewers->whereIn('id', $state->localApprovalIds)),
+            'carriedReviewers' => self::names($reviewers->whereIn('id', $state->carriedApprovalIds)),
+            'requiredReviewers' => self::names($reviewers->whereIn('id', $state->requiredApprovalIds)),
+            'remainingReviewers' => self::names($reviewers->whereNotIn('id', $state->effectiveApprovalIds->merge($state->requiredApprovalIds))),
+        ];
     }
 
     /**

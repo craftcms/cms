@@ -242,6 +242,54 @@ class Workflows
         return $run;
     }
 
+    /**
+     * Readies a draft in review for the user to edit it. If they review an earlier stage than the current one,
+     * the review goes back to that stage. Otherwise the draft is taken out of review, and has to be submitted again.
+     * The current stage’s reviewers can edit it without either.
+     */
+    public function prepareForEditing(ElementInterface $draft, int $runId): WorkflowRun
+    {
+        $this->ensureAvailable();
+        $actor = $this->actor();
+
+        return DB::transaction(function () use ($draft, $runId, $actor): WorkflowRun {
+            Draft::lockIds((int) $draft->draftId);
+            $draft = $draft::find()
+                ->draftId($draft->draftId)
+                ->provisionalDrafts(null)
+                ->siteId($draft->siteId)
+                ->status(null)
+                ->one()
+                ?? throw new WorkflowException('This draft could not be found.');
+
+            if (! Gate::forUser($actor)->allows('save', $draft)) {
+                throw new WorkflowException('You are not allowed to edit this draft.');
+            }
+
+            $run = $this->latestRun($draft);
+
+            if ($run?->id !== $runId || ! in_array($run->status, [WorkflowStatus::Pending, WorkflowStatus::Approved], true)) {
+                throw new WorkflowException('This review is no longer current. Refresh and try again.');
+            }
+
+            if ($this->isCurrentStageReviewer($draft, $run, $actor)) {
+                return $run;
+            }
+
+            $stageIndex = $this->rollbackStageIndex($draft, $run, $actor);
+
+            if ($stageIndex !== null) {
+                $this->beforeTransition(WorkflowTransition::SendBack, $draft, $actor, $run);
+                $this->rollBackToStage($draft, $run, $stageIndex, $actor);
+            } else {
+                $this->beforeTransition(WorkflowTransition::Withdraw, $draft, $actor, $run);
+                $this->withdrawFromReview($draft, $run, $actor);
+            }
+
+            return $run;
+        });
+    }
+
     /** @param WorkflowStageResult|Closure(WorkflowStageContext): WorkflowStageResult $result */
     public function reportStageResult(
         int $runId,
@@ -373,7 +421,7 @@ class Workflows
                 'status' => WorkflowStatus::Approved,
                 'currentStageResult' => null,
             ]);
-            $this->recordTransition($draft, $actor, $run, WorkflowTransition::Override, note: $reason);
+            $this->recordTransition($draft, $actor, $run, WorkflowTransition::Override, $run->stages()->get($run->currentStage), $reason);
 
             return $run->refresh()->load('activityRootEvent');
         });
@@ -398,7 +446,18 @@ class Workflows
             ->get();
         $timelineItems = collect($this->timelineItems($draft, $viewer, $runs));
 
-        return WorkflowReviewData::from($draft, $viewer, $run, $runs, $timelineItems);
+        $rollbackStageIndex = $run !== null && ! $this->isCurrentStageReviewer($draft, $run, $viewer)
+            ? $this->rollbackStageIndex($draft, $run, $viewer)
+            : null;
+
+        return WorkflowReviewData::from(
+            $draft,
+            $viewer,
+            $run,
+            $runs,
+            $timelineItems,
+            $rollbackStageIndex !== null ? $run?->stages()->get($rollbackStageIndex) : null,
+        );
     }
 
     /**
@@ -430,7 +489,7 @@ class Workflows
 
         $canonical = $apply($draft);
         $run->update(['status' => WorkflowStatus::Published]);
-        $this->recordTransition($draft, $actor, $run, WorkflowTransition::Publish);
+        $this->recordTransition($draft, $actor, $run, WorkflowTransition::Publish, $run->stages()->get($run->currentStage));
 
         return $canonical;
     }
@@ -609,7 +668,7 @@ class Workflows
                     }
 
                     $actor = currentUser();
-                    $this->recordTransition($draft, $actor, $run, WorkflowTransition::Invalidate, note: $reason);
+                    $this->recordTransition($draft, $actor, $run, WorkflowTransition::Invalidate, $run->stages()->get($run->currentStage), $reason);
                     $this->afterTransition(WorkflowTransition::Invalidate, $draft, $actor, $run, $reason);
                 });
         });
@@ -630,6 +689,26 @@ class Workflows
                 $stage = $this->currentStage($run);
                 $component = $stage->component();
                 $context = $this->stageContext($draft, $run, $stage);
+                $actor = currentUser();
+
+                if ($actor !== null && $component instanceof UserReviewStage && $component->isReviewer($context, $actor)) {
+                    $this->revokeEditorApproval($draft, $run, $actor);
+
+                    return;
+                }
+
+                if ($actor !== null) {
+                    $stageIndex = $this->rollbackStageIndex($draft, $run, $actor);
+
+                    if ($stageIndex !== null) {
+                        $this->rollBackToStage($draft, $run, $stageIndex, $actor);
+                    } else {
+                        $this->withdrawFromReview($draft, $run, $actor);
+                    }
+
+                    return;
+                }
+
                 if ($component instanceof UserReviewStage) {
                     $contentChangeResult = $component->contentChanged($context);
                     if ($contentChangeResult === null) {
@@ -653,12 +732,121 @@ class Workflows
                     'payload' => $payload,
                 ]);
 
-                $actor = currentUser();
                 $this->recordTransition($draft, $actor, $run, WorkflowTransition::RequestReview, $stage);
                 $this->advance($draft, $run);
                 $run->refresh();
                 $this->afterTransition(WorkflowTransition::RequestReview, $draft, $actor, $run);
             });
+    }
+
+    /**
+     * Returns the index of the latest stage before the current one that a user reviews, which their edits send the
+     * review back to.
+     */
+    private function rollbackStageIndex(ElementInterface $draft, WorkflowRun $run, CraftUser $user): ?int
+    {
+        if (! in_array($run->status, [WorkflowStatus::Pending, WorkflowStatus::Approved], true)) {
+            return null;
+        }
+
+        for ($index = $run->currentStage - 1; $index >= 0; $index--) {
+            $stage = $run->stages()->get($index);
+            $component = $stage?->component();
+
+            if ($component instanceof UserReviewStage && $component->isReviewer($this->stageContext($draft, $run, $stage), $user)) {
+                return $index;
+            }
+        }
+
+        return null;
+    }
+
+    private function isCurrentStageReviewer(ElementInterface $draft, WorkflowRun $run, CraftUser $user): bool
+    {
+        $stage = $this->currentStage($run);
+        $component = $stage->component();
+
+        return $component instanceof UserReviewStage && $component->isReviewer($this->stageContext($draft, $run, $stage), $user);
+    }
+
+    /**
+     * Sends a review back to an earlier stage that the user reviews. Earlier stages and the other reviewers’
+     * approvals of that stage stand; the user approves it again, and the stages after it start over.
+     */
+    private function rollBackToStage(ElementInterface $draft, WorkflowRun $run, int $stageIndex, CraftUser $actor): void
+    {
+        $stages = $run->stages();
+        $stage = $stages->get($stageIndex) ?? throw new WorkflowException('The workflow stage could not be found.');
+        $component = $stage->component();
+        $payload = $run->payload ?? [];
+
+        foreach ($stages->slice($stageIndex + 1) as $laterStage) {
+            unset($payload[$laterStage->uid]);
+        }
+
+        if ($component instanceof UserReviewStage) {
+            $payload[$stage->uid] = $component->revokeApproval($this->stageContext($draft, $run, $stage), $actor);
+        }
+
+        $run->update([
+            'status' => WorkflowStatus::Pending,
+            'currentStage' => $stageIndex,
+            'currentStageResult' => null,
+            'payload' => $payload,
+        ]);
+
+        $this->recordTransition($draft, $actor, $run, WorkflowTransition::SendBack, $stage);
+        $this->advance($draft, $run);
+        $run->refresh();
+        $this->afterTransition(WorkflowTransition::SendBack, $draft, $actor, $run);
+    }
+
+    /**
+     * Withdraws the approval of a current-stage reviewer who edited the draft, so they have to approve it again.
+     * The other reviewers’ approvals stand.
+     */
+    private function revokeEditorApproval(ElementInterface $draft, WorkflowRun $run, CraftUser $actor): void
+    {
+        $stage = $this->currentStage($run);
+        $component = $stage->component();
+        $context = $this->stageContext($draft, $run, $stage);
+
+        if (! $component instanceof UserReviewStage) {
+            return;
+        }
+
+        $stagePayload = $component->revokeApproval($context, $actor);
+
+        if ($run->isPending() && $stagePayload == $context->payload) {
+            return;
+        }
+
+        $payload = $run->payload ?? [];
+        $payload[$stage->uid] = $stagePayload;
+        $run->update([
+            'status' => WorkflowStatus::Pending,
+            'currentStageResult' => null,
+            'payload' => $payload,
+        ]);
+
+        $this->recordTransition($draft, $actor, $run, WorkflowTransition::Edit, $stage);
+        $this->advance($draft, $run);
+        $run->refresh();
+        $this->afterTransition(WorkflowTransition::Edit, $draft, $actor, $run);
+    }
+
+    /**
+     * Takes a draft out of review because someone outside its review edited it, so it has to be submitted again.
+     */
+    private function withdrawFromReview(ElementInterface $draft, WorkflowRun $run, CraftUser $actor): void
+    {
+        $run->update([
+            'status' => WorkflowStatus::Withdrawn,
+            'currentStageResult' => null,
+        ]);
+
+        $this->recordTransition($draft, $actor, $run, WorkflowTransition::Withdraw, $this->currentStage($run));
+        $this->afterTransition(WorkflowTransition::Withdraw, $draft, $actor, $run);
     }
 
     private function draftForRun(WorkflowRun $run): ?ElementInterface
@@ -859,9 +1047,10 @@ class Workflows
                 icon: match ($type) {
                     WorkflowActivityType::Submit => 'clipboard-list-check',
                     WorkflowActivityType::Comment => 'comment',
-                    WorkflowActivityType::Approve, WorkflowActivityType::StageApproved => 'check',
+                    WorkflowActivityType::Approve, WorkflowActivityType::StageApproved, WorkflowActivityType::Override => 'check',
+                    WorkflowActivityType::Publish => 'arrow-up-from-bracket',
                     WorkflowActivityType::Reject, WorkflowActivityType::StageFailed => 'xmark-large',
-                    WorkflowActivityType::RequestReview, WorkflowActivityType::Restart => 'rotate',
+                    WorkflowActivityType::Edit => 'pencil',
                     default => 'rotate',
                 },
                 description: match ($type) {
@@ -872,14 +1061,24 @@ class Workflows
                     WorkflowActivityType::RequestReview => t('requested another review'),
                     WorkflowActivityType::Restart => t('restarted the workflow'),
                     WorkflowActivityType::StageFailed => t('failed the stage'),
-                    default => t('updated the workflow stage'),
+                    WorkflowActivityType::Override => t('overrode the approval'),
+                    WorkflowActivityType::Publish => t('published the draft'),
+                    WorkflowActivityType::Invalidate => t('reset the review because its workflow changed'),
+                    WorkflowActivityType::Withdraw => t('started editing the draft, withdrawing it from review'),
+                    WorkflowActivityType::SendBack => t('started editing the draft, sending it back to this stage'),
+                    WorkflowActivityType::Edit => t('edited the draft'),
                 },
                 actor: (array) $presentation['actor'],
                 impersonator: is_array($impersonator) ? $impersonator : null,
                 decision: match ($type) {
-                    WorkflowActivityType::Approve, WorkflowActivityType::StageApproved => WorkflowStageStatus::Approved->value,
+                    WorkflowActivityType::Approve, WorkflowActivityType::StageApproved, WorkflowActivityType::Override => WorkflowStageStatus::Approved->value,
                     WorkflowActivityType::Reject => 'rejected',
-                    WorkflowActivityType::RequestReview, WorkflowActivityType::Restart => 'reset',
+                    WorkflowActivityType::RequestReview,
+                    WorkflowActivityType::Restart,
+                    WorkflowActivityType::Invalidate,
+                    WorkflowActivityType::Withdraw,
+                    WorkflowActivityType::SendBack,
+                    WorkflowActivityType::Edit => 'reset',
                     WorkflowActivityType::StageFailed => WorkflowStageStatus::Failed->value,
                     default => null,
                 },

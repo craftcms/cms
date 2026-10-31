@@ -21,6 +21,7 @@ readonly class UserReviewState
      * @param  Collection<int, int>  $localApprovalIds
      * @param  Collection<int, int>  $carriedApprovalIds
      * @param  Collection<int, int>  $effectiveApprovalIds
+     * @param  Collection<int, int>  $requiredApprovalIds  Reviewers whose approval was withdrawn when they edited the draft, and who have to approve it again before the stage can pass.
      */
     private function __construct(
         public Collection $reviewers,
@@ -28,6 +29,7 @@ readonly class UserReviewState
         public Collection $localApprovalIds,
         public Collection $carriedApprovalIds,
         public Collection $effectiveApprovalIds,
+        public Collection $requiredApprovalIds,
     ) {}
 
     /** @param Collection<int, UserGroup> $groups */
@@ -48,6 +50,7 @@ readonly class UserReviewState
             : $context->previousStages
                 ->filter(fn ($previous): bool => $previous->stage->component() instanceof UserReviewStage)
                 ->flatMap(fn ($previous): Collection => UserReviewDecisions::fromPayload($previous->payload)->approvalIds())
+                ->diff(UserReviewDecisions::revokedApprovalIds($context->payload))
                 ->unique()
                 ->values();
 
@@ -59,6 +62,7 @@ readonly class UserReviewState
             $localApprovalIds,
             $carriedApprovalIds->intersect($reviewerIds)->values(),
             $localApprovalIds->merge($carriedApprovalIds)->intersect($reviewerIds)->unique()->values(),
+            UserReviewDecisions::revokedApprovalIds($context->payload)->diff($localApprovalIds)->intersect($reviewerIds)->values(),
         );
     }
 

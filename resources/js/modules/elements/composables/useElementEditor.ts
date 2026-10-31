@@ -271,16 +271,31 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     editingDraft.value = false;
   });
 
-  const workflowReviewLocked = computed(
-    () =>
-      !editingDraft.value &&
-      ['pending', 'approved'].includes(props.workflow?.current?.status ?? '')
-  );
+  /**
+   * Whether the draft's in review or approved, so editing it would undo its
+   * approvals, until the user chooses to edit it. A reviewer of the stage it's
+   * in who hasn't approved it yet can edit it and then approve it, so it isn't
+   * locked for them while it's in review.
+   */
+  const workflowReviewLocked = computed(() => {
+    const current = props.workflow?.current;
+
+    if (editingDraft.value || !current) {
+      return false;
+    }
+
+    return current.status === 'pending'
+      ? !current.isReviewer || current.hasApproved
+      : current.status === 'approved';
+  });
 
   watch(
     () => props.workflow?.current?.status,
     (status, previousStatus) => {
+      // Saving the user's own edits can reopen the review, which mustn't lock
+      // them out of the edits they just chose to make.
       if (
+        !applyingSavedPayload &&
         status !== previousStatus &&
         (status === 'pending' || status === 'approved')
       ) {

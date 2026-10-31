@@ -248,6 +248,10 @@
 - Comments in the Activity and Workflow details panels are now more compact, with a background tinted by the gradient from their author’s default photo. The Activity panel’s change summaries are more compact too, and its comment field’s “Comment” button is now a round, icon-only button.
 - Workflow review notes can now be up to 10,000 characters long, matching activity comments. ([#19923](https://github.com/craftcms/cms/pull/19923))
 - The Workflow panel’s review action radio buttons and image transforms’ “Mode” radio buttons now look like the control panel’s other radio buttons.
+- Pressing “Start editing” on a draft that’s in review now changes its review before unlocking it, so it can’t be approved or published while it’s being edited. Users outside the review withdraw the draft from review, after which it has to be resubmitted. Reviewers of an earlier stage send the review back to that stage, keeping the approvals of the stages before it and the other approvals of that stage, and the stage waits for them to approve it again. Reviewers of the current stage keep the draft in review, and editing it withdraws only their own approval. Saving changes to a draft in review without pressing “Start editing”, such as with MCP tools, does the same. ([#20242](https://github.com/craftcms/cms/pull/20242))
+- The callouts shown on locked drafts in review now say what editing them will do. Reviewers are no longer locked out of drafts that are awaiting their approval, and are told the draft is waiting on them. Withdrawn drafts show a callout with a button that opens the Workflow panel to resubmit them. ([#20242](https://github.com/craftcms/cms/pull/20242))
+- Workflow notifications are now only sent when there’s something to act on, and are never sent to the person who acted. Change request and comment notifications now say who requested the changes or commented, and workflow emails can use a new `{{user}}` variable. ([#20242](https://github.com/craftcms/cms/pull/20242))
+- The Workflow panel’s review history now shows withdrawals, reviews being sent back to an earlier stage, reviewers’ edits, approval overrides, publications, and reviews reset by workflow changes. Stages waiting on an editor to approve their own edits mark them “Approval required”. ([#20242](https://github.com/craftcms/cms/pull/20242))
 - Table fields now have a “Link” column type, with the same settings as Link fields. Link cells return `CraftCms\Cms\Field\Data\LinkData` objects, and Table fields now track the elements they link to. ([#16009](https://github.com/craftcms/cms/discussions/16009), [#19998](https://github.com/craftcms/cms/pull/19998))
 - Table field column settings now open in a slideout. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Table cell validation errors now name the column. ([#19998](https://github.com/craftcms/cms/pull/19998))
@@ -291,6 +295,7 @@
 - Fixed a bug where relation fields with “Maintain hierarchy” enabled didn’t relate their selected elements’ missing ancestors, or apply their “Branch Limit” setting. ([#20201](https://github.com/craftcms/cms/pull/20201))
 - Fixed a bug where relation fields placed more than once in a field layout returned no elements when they were eager-loaded lazily, such as in nested entries’ templates. ([#20235](https://github.com/craftcms/cms/issues/20235), [#20238](https://github.com/craftcms/cms/pull/20238))
 - Fixed a bug where uploading files to an Assets field replaced the assets that were already selected in it. ([#20238](https://github.com/craftcms/cms/pull/20238))
+- Fixed a bug where drafts in review locked themselves again after their first autosave, once “Start editing” had been pressed. ([#20242](https://github.com/craftcms/cms/pull/20242))
 - Fixed an XSS vulnerability where element editors followed unsigned `returnUrl` params pointing outside the control panel and sites. ([#20222](https://github.com/craftcms/cms/pull/20222))
 - Fixed a bug where Content Block fields’ “View Mode” setting had no effect. “Grouped” blocks now have a border, “In a pane” blocks are shown in a filled pane, and “Inline” blocks have no container, as in Craft 5.
 
@@ -692,6 +697,11 @@
 - Fixed a bug where Craft installation could fail to create an admin user when the default SQLite connection changed after boot. ([#20177](https://github.com/craftcms/cms/pull/20177))
 - Fixed a bug where plugin test suites extending `CraftCms\Cms\Plugin\Testing\PluginTestCase` failed without additional service providers. ([#20169](https://github.com/craftcms/cms/pull/20169))
 - Fixed a bug where plugin control panel routes and control panel action routes did not require authentication and the `accessCp` permission. ([#20164](https://github.com/craftcms/cms/pull/20164))
+- Added `CraftCms\Cms\Workflow\Workflows::prepareForEditing()`. ([#20242](https://github.com/craftcms/cms/pull/20242))
+- Added `CraftCms\Cms\Workflow\UserReview\UserReviewStage::hasApproved()`, `isReviewer()`, and `revokeApproval()`. ([#20242](https://github.com/craftcms/cms/pull/20242))
+- Added `CraftCms\Cms\Workflow\Data\WorkflowReviewData::$hasApproved`, `$isReviewer`, and `$rollbackStage`. ([#20242](https://github.com/craftcms/cms/pull/20242))
+- Added `CraftCms\Cms\Workflow\UserReview\UserReviewState::$requiredApprovalIds`. ([#20242](https://github.com/craftcms/cms/pull/20242))
+- Added the `withdrawn` workflow status, and the `withdraw`, `send-back`, and `edit` workflow transitions and activity types. ([#20242](https://github.com/craftcms/cms/pull/20242))
 
 ### System
 

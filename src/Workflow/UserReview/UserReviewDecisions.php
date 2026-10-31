@@ -20,6 +20,19 @@ readonly class UserReviewDecisions
         return new self(array_map(UserReviewDecisionData::fromArray(...), $payload['decisions'] ?? []));
     }
 
+    /**
+     * Returns the reviewers whose approval of the stage was revoked because they edited the draft.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return Collection<int, int>
+     */
+    public static function revokedApprovalIds(array $payload): Collection
+    {
+        $ids = $payload['revokedApprovalIds'] ?? [];
+
+        return collect(is_array($ids) ? array_values(array_filter($ids, is_int(...))) : []);
+    }
+
     public function hasRejection(): bool
     {
         return collect($this->all)->contains(fn (UserReviewDecisionData $decision): bool => $decision->decision === UserReviewDecision::Rejected);
