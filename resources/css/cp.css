@@ -22,6 +22,7 @@ CP Styles
 @import './cvd.css';
 @import './global-sidebar.css';
 @import './matrix.css';
+@import './content-block.css';
 @import './messages.css';
 @import './slideout.css';
 @import './modal.css' layer(cp);

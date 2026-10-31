@@ -14,8 +14,11 @@
     NestedUiPayload,
   } from './types';
   import {inputName} from './runtime';
+  import type {ContentBlockViewMode} from './content-block-input';
 
   type ContentBlockProps = {
+    /** The field's View Mode, which picks the block's container. */
+    viewMode?: ContentBlockViewMode;
     addLabel: string;
     clearLabel?: string;
     emptyLabel?: string;
@@ -62,6 +65,7 @@
 <template>
   <craft-content-block-input
     ref="host"
+    :view-mode="control.props.viewMode"
     :add-label="control.props.addLabel"
     :clear-label="control.props.clearLabel"
     :empty-label="control.props.emptyLabel"
@@ -77,7 +81,7 @@
         {{ control.props.addLabel }}
       </craft-button>
     </craft-empty>
-    <div v-else class="pane" data-content-block>
+    <div v-else data-content-block>
       <template v-if="control.uis?.[0]">
         <UiNodeList
           :nodes="control.uis[0].nodes"

@@ -195,3 +195,19 @@ it('uses explicit empty canonical values', function () {
         'content' => null,
     ]]);
 });
+
+it('tells the Content Block input which view mode to draw', function (string $viewMode) {
+    $ui = Ui::make([
+        Field::make('Content', ContentBlock::make('content')
+            ->viewMode($viewMode)
+            ->ui(Ui::make([Field::make('Body', Text::make('body'))]))),
+    ]);
+    $payload = app(UiResolver::class)->resolve($ui, new UiContext(
+        namespace: 'settings',
+        values: ['settings' => ['content' => ['body' => 'Hi']]],
+    ));
+    $input = new Crawler(app(UiHtmlRenderer::class)->render($payload))->filter('craft-content-block-input');
+
+    expect($input->attr('view-mode'))->toBe($viewMode)
+        ->and($input->filter('[data-content-block]')->attr('class'))->toBeNull();
+})->with(['grouped', 'pane', 'inline']);
