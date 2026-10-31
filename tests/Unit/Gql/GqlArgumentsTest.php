@@ -99,7 +99,7 @@ it('adds the properties of an element type that its mutation arguments class nam
 
     expect($arguments['color']['description'])->toBe('The widget’s color.')
         ->and((string) $arguments['color']['type'])->toBe('String')
-        ->and($arguments['title']['description'])->toBe('The title of the element.')
+        ->and($arguments['title']['description'])->toBe('The element’s title.')
         ->and($arguments)->not()->toHaveKey('slug')
         ->and(GqlArgumentsWidgetMutationArgumentsWithoutElementType::getArguments())->not()->toHaveKey('color');
 });

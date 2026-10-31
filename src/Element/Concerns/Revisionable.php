@@ -28,6 +28,7 @@ trait Revisionable
     /**
      * @var int|null The ID of the revision’s row in the `revisions` table
      */
+    #[ElementProperty(ElementPropertyType::Int, 'The revision ID (from the `revisions` table).', readable: true, writable: false)]
     public ?int $revisionId = null;
 
     /**
@@ -43,7 +44,7 @@ trait Revisionable
     /**
      * @var string|null The revision notes
      */
-    #[ElementProperty(ElementPropertyType::String, 'Revision notes for the {element}.', nullable: true)]
+    #[ElementProperty(ElementPropertyType::String, 'The revision notes (from the `revisions` table).', nullable: true, readable: true)]
     public ?string $revisionNotes = null;
 
     /**
@@ -112,6 +113,7 @@ trait Revisionable
         DB::table(Table::REVISIONS)->delete($this->revisionId);
     }
 
+    #[ElementProperty(ElementPropertyType::Boolean, 'Returns whether this is a revision.', readable: true, writable: false)]
     public function getIsRevision(): bool
     {
         return ! empty($this->revisionId);

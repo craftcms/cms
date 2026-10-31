@@ -153,7 +153,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *               ```
      */
     #[AllowedInSandbox]
-    #[ElementProperty(ElementPropertyType::Id, 'The ID of the section the entry belongs to.')]
+    #[ElementProperty(ElementPropertyType::Id, 'The ID of the section that contains the entry.', readable: true)]
     public ?int $sectionId = null;
 
     /**
@@ -172,7 +172,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *                             ```
      */
     #[AllowedInSandbox]
-    #[ElementProperty(ElementPropertyType::DateTime, 'When the entry should be posted.', nullable: true)]
+    #[ElementProperty(ElementPropertyType::DateTime, 'The entry’s post date.', nullable: true, readable: true)]
     public ?DateTimeInterface $postDate = null;
 
     /**
@@ -190,7 +190,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *                             ```
      */
     #[AllowedInSandbox]
-    #[ElementProperty(ElementPropertyType::DateTime, 'When the entry should expire.', nullable: true)]
+    #[ElementProperty(ElementPropertyType::DateTime, 'The entry’s expiry date.', nullable: true, readable: true)]
     public ?DateTimeInterface $expiryDate = null;
 
     /**
@@ -1578,7 +1578,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $this->getType()->id;
     }
 
-    #[ElementProperty(ElementPropertyType::Id, 'The ID of the entry’s entry type.')]
+    #[ElementProperty(ElementPropertyType::Id, 'The ID of the entry type that contains the entry.', readable: true, nonNull: true)]
     public function setTypeId(int $typeId): void
     {
         $this->_typeId = $typeId;
@@ -1695,7 +1695,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *
      * @param  int|array{0:int}|string|null  $authorId
      */
-    #[ElementProperty(ElementPropertyType::Id, 'The ID of the entry’s author.', nullable: true)]
+    #[ElementProperty(ElementPropertyType::Id, 'The primary entry author’s ID.', nullable: true, readable: true)]
     public function setAuthorId(array|int|string|null $authorId): void
     {
         $authorId = $this->normalizeAuthorIds($authorId)[0] ?? null;
@@ -1724,7 +1724,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *
      * @param  User[]|int[]|string|int|null  $authorIds
      */
-    #[ElementProperty(ElementPropertyType::IdList, 'The IDs of the entry’s authors.')]
+    #[ElementProperty(ElementPropertyType::IdList, 'The entry authors’ IDs.', readable: true)]
     public function setAuthorIds(array|string|int|null $authorIds): void
     {
         $authorIds = $this->normalizeAuthorIds($authorIds);

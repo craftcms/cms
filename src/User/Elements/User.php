@@ -237,14 +237,14 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * @var string|null Username
      */
     #[AllowedInSandbox]
-    #[ElementProperty(ElementPropertyType::String, 'The user’s username.')]
+    #[ElementProperty(ElementPropertyType::String, 'The user’s username.', readable: true)]
     public ?string $username = null;
 
     /**
      * @var string|null Email
      */
     #[AllowedInSandbox]
-    #[ElementProperty(ElementPropertyType::String, 'The user’s email address.')]
+    #[ElementProperty(ElementPropertyType::String, 'The user’s email address.', readable: true)]
     public ?string $email = null;
 
     /**
@@ -256,7 +256,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * @var int|null Affiliated site ID
      */
     #[AllowedInSandbox]
-    #[ElementProperty(ElementPropertyType::Id, 'The ID of the site the user is affiliated with.', nullable: true)]
+    #[ElementProperty(ElementPropertyType::Id, 'The ID of the site the user is affiliated with.', nullable: true, readable: true)]
     public ?int $affiliatedSiteId = null;
 
     /**
@@ -1211,6 +1211,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * Returns the user’s full name or username.
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The user’s full name or username.', readable: true, writable: false, nonNull: true)]
     public function getName(): string
     {
         return $this->_name ??= $this->_defineName();
@@ -1235,6 +1236,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * Returns the user’s first name or username.
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The user’s first name or username.', readable: true, writable: false)]
     public function getFriendlyName(): ?string
     {
         $this->_friendlyName ??= $this->_defineFriendlyName() ?? false;

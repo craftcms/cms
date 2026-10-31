@@ -52,6 +52,7 @@ trait NestedElement
      * @var int|null Field ID
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Int, 'The ID of the field that contains the {element}.', readable: true, writable: false)]
     public ?int $fieldId = null;
 
     /**
@@ -243,7 +244,7 @@ trait NestedElement
         return $this->ownerId ?? $this->primaryOwnerId;
     }
 
-    #[ElementProperty(ElementPropertyType::Id, 'The ID of the {element}’s owner.')]
+    #[ElementProperty(ElementPropertyType::Id, 'The ID of the {element}’s owner element.', readable: true)]
     public function setOwnerId(?int $id): void
     {
         $this->ownerId = $id;
@@ -377,7 +378,7 @@ trait NestedElement
         return $this->sortOrder;
     }
 
-    #[ElementProperty(ElementPropertyType::Int, 'The {element}’s sort order.')]
+    #[ElementProperty(ElementPropertyType::Int, 'The {element}’s position within the field that contains it.', readable: true)]
     public function setSortOrder(?int $sortOrder): void
     {
         $this->sortOrder = $sortOrder;
