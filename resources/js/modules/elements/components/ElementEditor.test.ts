@@ -329,3 +329,64 @@ it('describes a revision with its own notice alone', async () => {
   expect(container.textContent).toContain('You’re viewing a revision.');
   expect(container.textContent).not.toContain('This is a read-only view.');
 });
+
+it('points a withdrawn draft back to the workflow panel to resubmit it', async () => {
+  state.editor.workflowReviewLocked = computed(() => false);
+  state.editor.props.workflow.current = {
+    status: 'withdrawn',
+    canSubmit: true,
+    submitLabel: 'Resubmit for review',
+  };
+
+  mount('page');
+  await nextTick();
+
+  expect(container.textContent).toContain(
+    'This draft was withdrawn from review. Resubmit it when your edits are ready.'
+  );
+  expect(findButton('Resubmit for review')).toBeDefined();
+});
+
+it('says a withdrawn draft is out of review to someone who can’t resubmit it', async () => {
+  state.editor.workflowReviewLocked = computed(() => false);
+  state.editor.props.workflow.current = {
+    status: 'withdrawn',
+    canSubmit: false,
+    submitLabel: 'Resubmit for review',
+  };
+
+  mount('page');
+  await nextTick();
+
+  expect(container.textContent).toContain(
+    'This draft was withdrawn from review.'
+  );
+  expect(container.textContent).not.toContain('Resubmit it when');
+  expect(findButton('Resubmit for review')).toBeUndefined();
+});
+
+it('tells a reviewer the draft is waiting on them until they dismiss it', async () => {
+  state.editor.workflowReviewLocked = computed(() => false);
+  state.editor.props.workflow.current = {
+    status: 'pending',
+    isReviewer: true,
+    hasApproved: false,
+  };
+
+  mount('page');
+  await nextTick();
+
+  expect(container.textContent).toContain(
+    'This draft is waiting on your approval.'
+  );
+
+  container
+    .querySelector<HTMLElement>('craft-icon[name="xmark"]')!
+    .closest('craft-button')!
+    .click();
+  await nextTick();
+
+  expect(container.textContent).not.toContain(
+    'This draft is waiting on your approval.'
+  );
+});

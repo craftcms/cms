@@ -13,6 +13,7 @@ enum WorkflowStatus: string
     case Approved = 'approved';
     case Failed = 'failed';
     case Invalidated = 'invalidated';
+    case Withdrawn = 'withdrawn';
     case Published = 'published';
 
     public function label(): string
@@ -23,6 +24,7 @@ enum WorkflowStatus: string
             self::Approved => t('Approved'),
             self::Failed => t('Changes requested'),
             self::Invalidated => t('Approval reset'),
+            self::Withdrawn => t('Withdrawn'),
             self::Published => t('Published'),
         };
     }
@@ -30,7 +32,7 @@ enum WorkflowStatus: string
     public function indicator(): string
     {
         return match ($this) {
-            self::NotSubmitted => 'disabled',
+            self::NotSubmitted, self::Withdrawn => 'disabled',
             self::Pending => 'pending',
             self::Failed,
             self::Invalidated => 'expired',

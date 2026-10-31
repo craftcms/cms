@@ -36,7 +36,8 @@ export function registerWorkflowComponents(
     visible: (payload) =>
       Boolean(payload.workflow.current || payload.workflow.draftReviews.length),
     status: (payload) =>
-      payload.workflow.current
+      payload.workflow.current &&
+      payload.workflow.current.status !== 'withdrawn'
         ? {
             label: payload.workflow.current.statusLabel,
             indicator: payload.workflow.current.statusIndicator,

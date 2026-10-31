@@ -72,7 +72,10 @@ class WorkflowActivityEvent extends ActivityEventType implements ShouldBeRetaine
             WorkflowActivityType::Restart => t('Restarted the workflow review'),
             WorkflowActivityType::StageApproved => t('The “{stage}” stage was approved', ['stage' => $translatedStage]),
             WorkflowActivityType::StageFailed => t('The “{stage}” stage failed', ['stage' => $translatedStage]),
-            WorkflowActivityType::Invalidate => t('Invalidated the workflow review'),
+            WorkflowActivityType::Invalidate => t('Reset the review because its workflow changed'),
+            WorkflowActivityType::Withdraw => t('Started editing the draft, withdrawing it from review'),
+            WorkflowActivityType::SendBack => t('Started editing the draft, sending it back to the “{stage}” review stage', ['stage' => $translatedStage]),
+            WorkflowActivityType::Edit => t('Edited the draft during the “{stage}” review stage', ['stage' => $translatedStage]),
             WorkflowActivityType::Publish => t('Published the approved draft'),
         };
     }

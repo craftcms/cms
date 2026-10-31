@@ -129,7 +129,7 @@ it('preserves workflow approval when merging live changes but resets it for subs
 
     $merged->title = 'Unreviewed draft edit';
     expect(Elements::saveElement($merged))->toBeTrue()
-        ->and($run->fresh()->status)->toBe(WorkflowStatus::Pending);
+        ->and($run->fresh()->status)->toBe(WorkflowStatus::Withdrawn);
 });
 
 it('excludes carried reviewers from later review actions and notifications', function () {
@@ -277,6 +277,37 @@ it('keeps a user review stage pending when a configured group no longer exists',
 });
 
 /** @param list<array{name: string, type: string, settings: array<string, mixed>}> $stages */
+it('marks the viewer as a reviewer of the current stage, and of the final stage once approved', function () {
+    $workflow = userReviewWorkflow($this->entry, [
+        makeUserReviewStage('Editorial review', userReviewGroup([$this->reviewers[0]])),
+        makeUserReviewStage('Legal review', userReviewGroup([$this->reviewers[1]])),
+    ]);
+    $run = submitUserReview($this->workflows, $this->draft, $this->author);
+
+    expect($this->workflows->reviewData($this->draft, $this->reviewers[0])->isReviewer)->toBeTrue()
+        ->and($this->workflows->reviewData($this->draft, $this->reviewers[1])->isReviewer)->toBeFalse()
+        ->and($this->workflows->reviewData($this->draft, $this->author)->isReviewer)->toBeFalse();
+
+    $run = decideUserReview($this->workflows, $this->reviewers[0], $run, $workflow->stages->first(), UserReviewDecision::Approved);
+    $run = decideUserReview($this->workflows, $this->reviewers[1], $run, $workflow->stages->last(), UserReviewDecision::Approved);
+
+    expect($run->status)->toBe(WorkflowStatus::Approved)
+        ->and($this->workflows->reviewData($this->draft, $this->reviewers[1])->isReviewer)->toBeTrue()
+        ->and($this->workflows->reviewData($this->draft, $this->reviewers[0])->isReviewer)->toBeFalse();
+});
+
+it('marks a reviewer whose approval of the current stage stands', function () {
+    $workflow = userReviewWorkflow($this->entry, [
+        makeUserReviewStage('Editorial review', userReviewGroup([$this->reviewers[0], $this->reviewers[1]]), approvals: 2),
+    ]);
+    $run = submitUserReview($this->workflows, $this->draft, $this->author);
+    $run = decideUserReview($this->workflows, $this->reviewers[0], $run, $workflow->stages->first(), UserReviewDecision::Approved);
+
+    expect($run->status)->toBe(WorkflowStatus::Pending)
+        ->and($this->workflows->reviewData($this->draft, $this->reviewers[0])->hasApproved)->toBeTrue()
+        ->and($this->workflows->reviewData($this->draft, $this->reviewers[1])->hasApproved)->toBeFalse();
+});
+
 function userReviewWorkflow(Entry $entry, array $stages): Workflow
 {
     $workflow = Workflow::query()->create([

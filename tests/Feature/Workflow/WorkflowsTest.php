@@ -325,6 +325,7 @@ it('allows a pending automated stage to complete after content changes', functio
     expect($completed->status)->toBe(WorkflowStatus::Pending)
         ->and($completed->currentStageResult)->toBe('Automated check pending');
 
+    Auth::logout();
     $this->workflows->contentChanged($this->draft);
     $completed = $this->workflows->reportStageResult(
         runId: $run->id,
@@ -479,71 +480,192 @@ it('lets any viewer comment but only the stage offers review actions', function 
     expect(workflowEvents($this->entry, WorkflowActivityType::Comment))->toHaveCount(1);
 });
 
-it('resets current-stage approvals after pending and approved content changes', function () {
-    $firstGroup = reviewerGroup([$this->reviewers[0]]);
-    $finalGroup = reviewerGroup([$this->reviewers[1], $this->reviewers[2]]);
+it('withdraws a draft from review as soon as someone outside its review starts editing it', function () {
+    $workflow = workflowFor($this->entry, [userReviewStage('Review', reviewerGroup([$this->reviewers[0]]))]);
+    $run = submitAs($this->workflows, $this->draft, $this->author);
+    $reviewerNotifications = $this->reviewers[0]->notifications()->count();
+
+    actAs($this->reviewers[1], fn () => $this->workflows->prepareForEditing($this->draft, $run->id));
+
+    $review = $this->workflows->reviewData($this->draft, $this->reviewers[1]);
+    expect($run->fresh()->status)->toBe(WorkflowStatus::Withdrawn)
+        ->and($review->statusLabel)->toBe('Withdrawn')
+        ->and($review->canSubmit)->toBeTrue()
+        ->and($review->submitLabel)->toBe('Resubmit for review')
+        ->and($review->canRestart)->toBeFalse()
+        ->and(workflowEvents($this->entry, WorkflowActivityType::Withdraw))->toHaveCount(1)
+        ->and(stageTimeline($this->workflows, $this->draft, $this->reviewers[1], 0))
+        ->toContain('started editing the draft, withdrawing it from review')
+        ->and($this->author->notifications()->count())->toBe(0)
+        ->and($this->reviewers[0]->notifications()->count())->toBe($reviewerNotifications)
+        ->and($this->reviewers[1]->notifications()->count())->toBe(0);
+
+    expect(fn () => actAs($this->reviewers[1], fn () => $this->workflows->prepareForEditing($this->draft, $run->id)))
+        ->toThrow(WorkflowException::class, 'This review is no longer current. Refresh and try again.');
+});
+
+it('starts a new review from the first stage when a withdrawn draft is resubmitted', function () {
     $workflow = workflowFor($this->entry, [
-        userReviewStage('Editorial review', $firstGroup),
-        userReviewStage('Final review', $finalGroup, approvals: 2),
+        userReviewStage('Editorial review', reviewerGroup([$this->reviewers[0]])),
+        userReviewStage('Final review', reviewerGroup([$this->reviewers[2]])),
     ]);
-    $pending = submitAs($this->workflows, $this->draft, $this->author);
+    $run = submitAs($this->workflows, $this->draft, $this->author);
+    $run = reviewStageAs($this->workflows, $this->reviewers[0], $run, $workflow->stages->first(), UserReviewDecision::Approved);
+    actAs($this->reviewers[1], fn () => $this->workflows->prepareForEditing($this->draft, $run->id));
+    $reviewerNotifications = $this->reviewers[0]->notifications()->count();
 
-    $pending = reviewStageAs(
-        $this->workflows,
-        $this->reviewers[0],
-        $pending,
-        $workflow->stages->first(),
-        UserReviewDecision::Approved,
-    );
-    $pending = reviewStageAs(
-        $this->workflows,
-        $this->reviewers[1],
-        $pending,
-        $workflow->stages->last(),
-        UserReviewDecision::Approved,
-    );
+    $resubmitted = submitAs($this->workflows, $this->draft, $this->reviewers[1]);
+
+    expect($resubmitted->id)->not->toBe($run->id)
+        ->and($resubmitted->status)->toBe(WorkflowStatus::Pending)
+        ->and($resubmitted->currentStage)->toBe(0)
+        ->and($resubmitted->authorId)->toBe($this->reviewers[1]->id)
+        ->and($run->fresh()->status)->toBe(WorkflowStatus::Withdrawn)
+        ->and($this->reviewers[0]->notifications()->count())->toBe($reviewerNotifications + 1);
+});
+
+it('leaves the review alone when one of its current stage’s reviewers starts editing', function () {
+    $workflow = workflowFor($this->entry, [userReviewStage('Review', reviewerGroup([$this->reviewers[0]]))]);
+    $run = submitAs($this->workflows, $this->draft, $this->author);
+
+    actAs($this->reviewers[0], fn () => $this->workflows->prepareForEditing($this->draft, $run->id));
+
+    expect($run->fresh()->status)->toBe(WorkflowStatus::Pending)
+        ->and($this->workflows->reviewData($this->draft, $this->reviewers[0])->rollbackStage)->toBeNull()
+        ->and(workflowEvents($this->entry, WorkflowActivityType::Withdraw))->toHaveCount(0)
+        ->and(workflowEvents($this->entry, WorkflowActivityType::SendBack))->toHaveCount(0);
+});
+
+it('sends a review back to the earlier stage its editor reviews, keeping the approvals before theirs', function () {
+    $workflow = workflowFor($this->entry, [
+        userReviewStage('Editorial review', reviewerGroup([$this->reviewers[1]])),
+        userReviewStage('Copy review', reviewerGroup($this->reviewers->all())),
+        userReviewStage('Final review', reviewerGroup([$this->reviewers[2]])),
+    ]);
+    [$editorial, $copy] = $workflow->stages->all();
+    $run = submitAs($this->workflows, $this->draft, $this->author);
+    $run = reviewStageAs($this->workflows, $this->reviewers[1], $run, $editorial, UserReviewDecision::Approved);
+
+    expect($run->currentStage)->toBe(2)
+        ->and($this->workflows->reviewData($this->draft, $this->reviewers[0])->rollbackStage)->toBe('Copy review')
+        ->and($this->workflows->reviewData($this->draft, $this->reviewers[2])->rollbackStage)->toBeNull()
+        ->and($this->workflows->reviewData($this->draft, $this->author)->rollbackStage)->toBeNull();
+
+    $notifications = $this->reviewers[2]->notifications()->count();
+    actAs($this->reviewers[0], fn () => $this->workflows->prepareForEditing($this->draft, $run->id));
+
+    // The editorial approval carried into the copy stage would pass it on its own; the stage holds for the editor.
+    $rolledBack = $run->fresh();
+    $review = $this->workflows->reviewData($this->draft, $this->reviewers[0]);
+    expect($rolledBack->status)->toBe(WorkflowStatus::Pending)
+        ->and($rolledBack->currentStage)->toBe(1)
+        ->and($rolledBack->authorId)->toBe($this->author->id)
+        ->and($rolledBack->payload[$editorial->uid]['decisions'])->toHaveCount(1)
+        ->and($rolledBack->payload)->not->toHaveKey($workflow->stages->last()->uid)
+        ->and($review->isReviewer)->toBeTrue()
+        ->and($review->hasApproved)->toBeFalse()
+        ->and($review->actionProps['canReview'])->toBeTrue()
+        ->and(workflowEvents($this->entry, WorkflowActivityType::SendBack))->toHaveCount(1)
+        ->and(stageTimeline($this->workflows, $this->draft, $this->reviewers[0], 1))
+        ->toContain('started editing the draft, sending it back to this stage')
+        ->and($this->reviewers[2]->notifications()->count())->toBe($notifications)
+        ->and($this->author->notifications()->count())->toBe(0);
+
+    $approved = reviewStageAs($this->workflows, $this->reviewers[0], $rolledBack, $copy, UserReviewDecision::Approved);
+    expect($approved->currentStage)->toBe(2)
+        ->and($this->reviewers[2]->notifications()->count())->toBe($notifications + 1)
+        ->and($this->reviewers[2]->notifications()->latest()->firstOrFail()->data['title'])->toBe('Review requested');
+});
+
+it('stops holding a sent-back stage for an editor who no longer reviews it', function () {
+    $copyGroup = reviewerGroup([$this->reviewers[0], $this->reviewers[1]]);
+    $workflow = workflowFor($this->entry, [
+        userReviewStage('Copy review', $copyGroup),
+        userReviewStage('Final review', reviewerGroup([$this->reviewers[2]])),
+    ]);
+    $run = submitAs($this->workflows, $this->draft, $this->author);
+    $run = reviewStageAs($this->workflows, $this->reviewers[1], $run, $workflow->stages->first(), UserReviewDecision::Approved);
+    actAs($this->reviewers[0], fn () => $this->workflows->prepareForEditing($this->draft, $run->id));
+    expect($run->fresh()->currentStage)->toBe(0);
+
+    $copyGroup->users()->detach($this->reviewers[0]->id);
+    $this->draft->title = 'Edited by the reviewer’s replacement';
+    expect(actAs($this->reviewers[1], fn () => Elements::saveElement($this->draft, updateSearchIndex: false)))->toBeTrue();
+    $run = reviewStageAs($this->workflows, $this->reviewers[1], $run->fresh(), $workflow->stages->first(), UserReviewDecision::Approved);
+
+    expect($run->currentStage)->toBe(1);
+});
+
+it('withdraws a draft from review when someone outside it saves an edit', function () {
+    $workflow = workflowFor($this->entry, [userReviewStage('Review', reviewerGroup([$this->reviewers[0]]))]);
+    $run = submitAs($this->workflows, $this->draft, $this->author);
+
+    $this->draft->title = 'Changed outside the review';
+    expect(actAs($this->reviewers[1], fn () => Elements::saveElement($this->draft, updateSearchIndex: false)))->toBeTrue();
+
+    $review = $this->workflows->reviewData($this->draft, $this->author);
+    expect($run->fresh()->status)->toBe(WorkflowStatus::Withdrawn)
+        ->and($review->canSubmit)->toBeTrue()
+        ->and($review->submitLabel)->toBe('Resubmit for review')
+        ->and(workflowEvents($this->entry, WorkflowActivityType::Withdraw))->toHaveCount(1)
+        ->and($this->author->notifications()->count())->toBe(0);
+});
+
+it('keeps other reviewers’ approvals when a current-stage reviewer edits the draft', function () {
+    $workflow = workflowFor($this->entry, [
+        userReviewStage('Editorial review', reviewerGroup([$this->reviewers[0]])),
+        userReviewStage('Final review', reviewerGroup([$this->reviewers[1], $this->reviewers[2]]), approvals: 2),
+    ]);
+    [$editorial, $final] = $workflow->stages->all();
+    $run = submitAs($this->workflows, $this->draft, $this->author);
+    $run = reviewStageAs($this->workflows, $this->reviewers[0], $run, $editorial, UserReviewDecision::Approved);
+    $run = reviewStageAs($this->workflows, $this->reviewers[1], $run, $final, UserReviewDecision::Approved);
+    $editorNotifications = $this->reviewers[2]->notifications()->count();
+
     $this->draft->title = 'Changed during review';
-    expect(Elements::saveElement($this->draft, updateSearchIndex: false))->toBeTrue();
+    expect(actAs($this->reviewers[2], fn () => Elements::saveElement($this->draft, updateSearchIndex: false)))->toBeTrue();
+    $this->draft->title = 'Changed again during review';
+    expect(actAs($this->reviewers[2], fn () => Elements::saveElement($this->draft, updateSearchIndex: false)))->toBeTrue();
 
-    $resetPending = $pending->fresh();
-    expect($resetPending->status)->toBe(WorkflowStatus::Pending)
-        ->and($resetPending->currentStage)->toBe(1)
-        ->and($resetPending->payload[$workflow->stages->first()->uid]['decisions'])->toHaveCount(1)
-        ->and($resetPending->payload[$workflow->stages->last()->uid])->toBe([
-            'decisions' => [],
-            'previousApprovalsReset' => true,
-        ])
-        ->and($this->workflows->reviewData($this->draft, $this->reviewers[1])->actionProps['canReview'])->toBeTrue();
+    $edited = $run->fresh();
+    expect($edited->status)->toBe(WorkflowStatus::Pending)
+        ->and($edited->currentStage)->toBe(1)
+        ->and($edited->authorId)->toBe($this->author->id)
+        ->and($edited->payload[$editorial->uid]['decisions'])->toHaveCount(1)
+        ->and(collect($edited->payload[$final->uid]['decisions'])->pluck('reviewerId')->all())->toBe([$this->reviewers[1]->id])
+        ->and(workflowEvents($this->entry, WorkflowActivityType::Edit))->toHaveCount(1)
+        ->and(stageTimeline($this->workflows, $this->draft, $this->reviewers[2], 1))->toContain('edited the draft')
+        ->and($this->reviewers[2]->notifications()->count())->toBe($editorNotifications)
+        ->and($this->author->notifications()->count())->toBe(0);
 
-    $approved = reviewStageAs(
-        $this->workflows,
-        $this->reviewers[1],
-        $resetPending,
-        $workflow->stages->last(),
-        UserReviewDecision::Approved,
-    );
-    $approved = reviewStageAs(
-        $this->workflows,
-        $this->reviewers[2],
-        $approved,
-        $workflow->stages->last(),
-        UserReviewDecision::Approved,
-    );
+    $approved = reviewStageAs($this->workflows, $this->reviewers[2], $edited, $final, UserReviewDecision::Approved);
+    expect($approved->status)->toBe(WorkflowStatus::Approved);
+
     $this->draft->title = 'Changed after approval';
-    expect(Elements::saveElement($this->draft, updateSearchIndex: false))->toBeTrue();
+    expect(actAs($this->reviewers[1], fn () => Elements::saveElement($this->draft, updateSearchIndex: false)))->toBeTrue();
 
     $reopened = $approved->fresh();
     expect($reopened->status)->toBe(WorkflowStatus::Pending)
-        ->and($reopened->currentStage)->toBe(1)
-        ->and($reopened->payload[$workflow->stages->first()->uid]['decisions'])->toHaveCount(1)
-        ->and($reopened->payload[$workflow->stages->last()->uid])->toBe([
-            'decisions' => [],
-            'previousApprovalsReset' => true,
-        ])
-        ->and($this->workflows->reviewData($this->draft, $this->reviewers[1])->actionProps['canReview'])->toBeTrue();
+        ->and(collect($reopened->payload[$final->uid]['decisions'])->pluck('reviewerId')->all())->toBe([$this->reviewers[2]->id])
+        ->and($this->workflows->reviewData($this->draft, $this->reviewers[1])->actionProps['canReview'])->toBeTrue()
+        ->and(workflowEvents($this->entry, WorkflowActivityType::Edit))->toHaveCount(2);
 });
 
-it('invalidates an approved run when its workflow assignment changes', function () {
+it('names who requested changes or commented in their notifications', function () {
+    $workflow = workflowFor($this->entry, [userReviewStage('Review', reviewerGroup([$this->reviewers[0]]))]);
+    $stage = $workflow->stages->sole();
+    $run = submitAs($this->workflows, $this->draft, $this->author);
+
+    actAs($this->reviewers[0], fn () => $this->workflows->addComment($this->draft, $run->id, $stage->uid, 'Looks close.'));
+    reviewStageAs($this->workflows, $this->reviewers[0], $run, $stage, UserReviewDecision::Rejected, 'Tighten the intro.');
+
+    expect($this->author->notifications()->get()->pluck('data.message')->all())->toEqualCanonicalizing([
+        'Reviewer One commented on the review for “Reviewed title”.',
+        'Reviewer One requested changes to “Reviewed title”.',
+    ]);
+});
+
+it('resets an approved run when its workflow assignment changes', function () {
     $group = reviewerGroup([$this->reviewers[0]]);
     $workflow = workflowFor($this->entry, [userReviewStage('Review', $group)]);
     $run = submitAs($this->workflows, $this->draft, $this->author);
@@ -557,9 +679,12 @@ it('invalidates an approved run when its workflow assignment changes', function 
 
     Section::query()->whereKey($this->entry->sectionId)->update(['workflowId' => null]);
     Sections::refreshSections();
-    $this->workflows->invalidateSectionRuns($this->entry->sectionId);
+    actAs($this->reviewers[1], fn () => $this->workflows->invalidateSectionRuns($this->entry->sectionId));
 
-    expect($run->fresh()->status)->toBe(WorkflowStatus::Invalidated);
+    expect($run->fresh()->status)->toBe(WorkflowStatus::Invalidated)
+        ->and(workflowEvents($this->entry, WorkflowActivityType::Invalidate))->toHaveCount(1)
+        ->and($this->author->notifications()->get()->pluck('data.message')->all())
+        ->toContain('The review for “Reviewed title” was reset because its workflow changed.');
 });
 
 it('reloads the draft after locking it for review submission', function () {
@@ -627,7 +752,9 @@ it('gates only draft application and permits an admin override without a reason'
 
     expect($applied)->toBeTrue()
         ->and($run->fresh()->status)->toBe(WorkflowStatus::Published)
-        ->and(workflowEvents($this->entry, WorkflowTransition::Publish))->toHaveCount(1);
+        ->and(workflowEvents($this->entry, WorkflowTransition::Publish))->toHaveCount(1)
+        ->and(stageTimeline($this->workflows, $this->draft, $this->author, 0))
+        ->toContain('overrode the approval', 'published the draft');
 });
 
 it('does not apply an approved draft that became outdated', function () {
@@ -955,6 +1082,14 @@ function actAs(User $actor, Closure $callback): mixed
 }
 
 /** @param list<User> $reviewers */
+/** @return list<string> */
+function stageTimeline(Workflows $workflows, Entry $draft, User $viewer, int $stageIndex): array
+{
+    $run = collect($workflows->reviewData($draft, $viewer)->runs)->firstWhere('current');
+
+    return collect($run->stages[$stageIndex]->events)->pluck('description')->all();
+}
+
 function reviewerGroup(array $reviewers): UserGroup
 {
     $group = UserGroup::factory()->create();

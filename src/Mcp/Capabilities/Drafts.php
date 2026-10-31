@@ -210,7 +210,7 @@ readonly class Drafts
      * @param  array<string, mixed>  $fields
      * @return array{draft: array<string, mixed>}
      */
-    #[McpTool(name: 'drafts.update', description: 'Edits an existing draft without publishing or creating another draft. Uses elements.schema updateAttributes and drafts.field-schema. Saving content can invalidate workflow approval.')]
+    #[McpTool(name: 'drafts.update', description: 'Edits an existing draft without publishing or creating another draft. Uses elements.schema updateAttributes and drafts.field-schema. Saving content of a draft in review can withdraw it from review, send it back to an earlier stage, or withdraw the user’s own approval.')]
     public function update(
         #[Schema(minimum: 1)]
         int $draftId,

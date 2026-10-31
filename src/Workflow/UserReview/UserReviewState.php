@@ -48,6 +48,7 @@ readonly class UserReviewState
             : $context->previousStages
                 ->filter(fn ($previous): bool => $previous->stage->component() instanceof UserReviewStage)
                 ->flatMap(fn ($previous): Collection => UserReviewDecisions::fromPayload($previous->payload)->approvalIds())
+                ->diff(UserReviewDecisions::revokedApprovalIds($context->payload))
                 ->unique()
                 ->values();
 
