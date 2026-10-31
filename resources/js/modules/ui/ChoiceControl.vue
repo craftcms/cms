@@ -41,11 +41,13 @@
     group?: string | null;
     /**
      * Illustration of the choice. Radios with one are shown as tiles, with the
-     * illustration above the label. `aspectRatio` maps to the CSS property of
-     * the same name.
+     * illustration above the label: an image `src`, or inline `svg` markup,
+     * which the CP recolors for the theme and the selected state.
+     * `aspectRatio` maps to the CSS property of the same name.
      */
     thumbnail?: {
-      src: string;
+      src?: string;
+      svg?: string;
       width?: number;
       height?: number;
       aspectRatio?: string;
@@ -607,8 +609,19 @@
         .choiceValue="inputValue(option.value)"
         .checked="selected(option.value)"
       >
+        <span
+          v-if="option.thumbnail?.svg && !control.props.multiple"
+          slot="thumbnail"
+          :style="
+            option.thumbnail.aspectRatio
+              ? {aspectRatio: option.thumbnail.aspectRatio}
+              : undefined
+          "
+          aria-hidden="true"
+          v-html="option.thumbnail.svg"
+        />
         <img
-          v-if="option.thumbnail && !control.props.multiple"
+          v-else-if="option.thumbnail && !control.props.multiple"
           slot="thumbnail"
           :src="option.thumbnail.src"
           :width="option.thumbnail.width"

@@ -1,15 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="80px" height="60px" viewBox="0 0 80 60" version="1.1" xmlns="http://www.w3.org/2000/svg">
-    <title>cover</title>
-    <style>
-        /* Follows the embedding page's color-scheme, so it matches the CP theme. */
-        @media (prefers-color-scheme: dark) {
-            [fill="#F3F7FD" i] { fill: #333D51; }
-            [fill="#CDD8E4" i] { fill: #4E5B71; }
-            [stroke="#828FA4" i] { stroke: #7C899F; }
-            [fill="#A6B2C2" i] { fill: #6B788D; }
-        }
-    </style>
     <defs>
         <linearGradient id="scrim" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0.45" stop-color="#000000" stop-opacity="0"></stop>
@@ -23,8 +13,8 @@
             <path fill="#A6B2C2" d="M0,46 L22,22 L36,37 L48,26 L80,52 L80,60 L0,60 Z"></path>
             <circle fill="#A6B2C2" cx="60" cy="16" r="5"></circle>
             <rect fill="url(#scrim)" x="0" y="0" width="80" height="60"></rect>
-            <rect fill="#FFFFFF" x="6" y="41" width="30" height="5" rx="2.5"></rect>
-            <rect fill="#FFFFFF" fill-opacity="0.8" x="6" y="50" width="22" height="4" rx="2"></rect>
+            <rect fill="white" x="6" y="41" width="30" height="5" rx="2.5"></rect>
+            <rect fill="white" fill-opacity="0.8" x="6" y="50" width="22" height="4" rx="2"></rect>
         </g>
         <rect stroke="#828FA4" x="0.5" y="0.5" width="79" height="59" rx="5"></rect>
     </g>

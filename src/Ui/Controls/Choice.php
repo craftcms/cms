@@ -13,6 +13,7 @@ use CraftCms\Cms\Cp\Components\Icon;
 use CraftCms\Cms\Cp\Components\Radio;
 use CraftCms\Cms\Cp\Components\RadioGroup;
 use CraftCms\Cms\Cp\Components\Select as SelectComponent;
+use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\Enums\CheckboxSelectPresentation;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Support\Arr;
@@ -32,7 +33,7 @@ class Choice extends Control
     /** The token {@see self::allOption()} posts by default. */
     public const string ALL_VALUE = '*';
 
-    /** @var list<array{label: string, labelHtml?: string, icon?: string, color?: string, custom?: bool, value: bool|float|int|string, disabled?: bool, thumbnail?: array{src: string, width?: int, height?: int, aspectRatio?: string}}> */
+    /** @var list<array{label: string, labelHtml?: string, icon?: string, color?: string, custom?: bool, value: bool|float|int|string, disabled?: bool, thumbnail?: array{src?: string, svg?: string, width?: int, height?: int, aspectRatio?: string}}> */
     private array $options = [];
 
     private bool $multiple = false;
@@ -79,8 +80,9 @@ class Choice extends Control
 
     /**
      * An option may carry a `thumbnail` illustrating the choice, rendered above
-     * the radio in the Radios presentation. Its `aspectRatio` maps to the CSS
-     * property of the same name.
+     * the radio in the Radios presentation: an image `src`, or inline `svg`
+     * markup, which the CP recolors (see {@see Cp::illustration()}). Its
+     * `aspectRatio` maps to the CSS property of the same name.
      *
      * `group` heads a run of consecutive options sharing it, when presented as
      * a select; other presentations ignore it.
@@ -88,7 +90,7 @@ class Choice extends Control
      * `icon` and `color` are shown before a checkbox or radio label: the icon tinted
      * with the color, or a color swatch when there's no icon.
      *
-     * @param  list<array{label: string, labelHtml?: string, icon?: string, color?: string, custom?: bool, value: bool|float|int|string, disabled?: bool, group?: string|null, thumbnail?: array{src: string, width?: int, height?: int, aspectRatio?: string}}>  $options
+     * @param  list<array{label: string, labelHtml?: string, icon?: string, color?: string, custom?: bool, value: bool|float|int|string, disabled?: bool, group?: string|null, thumbnail?: array{src?: string, svg?: string, width?: int, height?: int, aspectRatio?: string}}>  $options
      */
     public function options(array $options): static
     {

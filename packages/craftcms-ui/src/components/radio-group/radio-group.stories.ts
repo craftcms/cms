@@ -1,6 +1,7 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
 
 import {html} from 'lit';
+import {unsafeSVG} from 'lit/directives/unsafe-svg.js';
 import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 
 import './radio-group.js';
@@ -166,21 +167,19 @@ const tiles = (checked: string) =>
         .choiceValue="${option.value}"
         ?checked="${option.value === checked}"
       >
-        <img
-          slot="thumbnail"
-          src="${option.src}"
-          width="${option.width}"
-          height="60"
-          alt=""
-        />
+        <span slot="thumbnail" aria-hidden="true"
+          >${unsafeSVG(option.svg)}</span
+        >
         <label slot="label">${option.label}</label>
       </craft-radio>`
   );
 
 /**
  * `thumbnails` shows the options as illustrated tiles, joined in one row. Each
- * radio slots its illustration into `thumbnail`, with an empty `alt`, since
- * the label below it already names the option.
+ * radio slots its illustration into `thumbnail`, hidden from assistive tech,
+ * since the label below it already names the option. An inline SVG drawn with
+ * the illustration palette follows the theme and turns blue when selected; an
+ * `<img>` with an empty `alt` works too, but keeps its own colors.
  */
 export const Thumbnails: Story = {
   parameters: {controls: {disable: true}},

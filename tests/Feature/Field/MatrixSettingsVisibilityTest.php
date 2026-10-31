@@ -63,10 +63,10 @@ it('illustrates each view mode, the way a relation field does', function () {
 
     expect($options)->toHaveCount(4);
 
-    foreach ($options as $option) {
-        expect($option['thumbnail']['src'])
-            ->toContain("images/view-modes/{$option['value']}.svg");
-    }
+    // Inlined, so the CP can recolor them, and one per mode.
+    $illustrations = array_column(array_column($options, 'thumbnail'), 'svg');
+    expect($illustrations)->each->toStartWith('<svg')
+        ->and(array_unique($illustrations))->toHaveCount(4);
 });
 
 it('hides the index-only settings for other view modes', function () {

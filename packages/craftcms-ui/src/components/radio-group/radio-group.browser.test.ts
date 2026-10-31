@@ -207,7 +207,7 @@ async function renderTiles(
         (option) => `
         <div>
           <craft-radio>
-            <img slot="thumbnail" src="${option.src}" width="${option.width}" height="60" alt="">
+            <span slot="thumbnail" aria-hidden="true">${option.svg}</span>
             <input slot="input" type="radio" id="view-${option.value}" name="view" value="${option.value}"${option.value === 'cards' ? ' checked' : ''}>
             <label slot="label" for="view-${option.value}">${option.label}</label>
           </craft-radio>
@@ -354,6 +354,29 @@ it('marks the selected tile with a thicker border and a bold label', async () =>
     parseFloat(unselected!.borderTopWidth)
   );
   expect(weight(radios[1]!)).toBeGreaterThan(weight(radios[2]!));
+});
+
+it('draws the selected illustration in blue, following the selection and the theme', async () => {
+  const {radios, inputs} = await renderTiles('40rem');
+  const hairline = (radio: CraftRadio) =>
+    getComputedStyle(radio.querySelector('[slot="thumbnail"] [stroke]')!)
+      .stroke;
+
+  // blue-400 when selected, slate-400 otherwise
+  expect(hairline(radios[1]!)).toBe('rgb(81, 140, 246)');
+  expect(hairline(radios[2]!)).toBe('rgb(130, 143, 164)');
+
+  await userEvent.click(inputs[2]!);
+  await settle();
+  expect(hairline(radios[2]!)).toBe('rgb(81, 140, 246)');
+  expect(hairline(radios[1]!)).toBe('rgb(130, 143, 164)');
+
+  document.documentElement.dataset.theme = 'dark';
+  try {
+    expect(hairline(radios[1]!)).toBe('rgb(124, 137, 159)');
+  } finally {
+    delete document.documentElement.dataset.theme;
+  }
 });
 
 it('distinguishes the selected tile in forced colors mode', async () => {

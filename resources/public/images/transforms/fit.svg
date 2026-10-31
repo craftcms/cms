@@ -1,18 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="80px" height="60px" viewBox="0 0 80 60" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <title>fit</title>
-    <style>
-        /* Follows the embedding page's color-scheme, so it matches the CP theme. */
-        @media (prefers-color-scheme: dark) {
-            [fill="#F3F7FD" i] { fill: #333D51; }
-            [fill="#CDD8E4" i] { fill: #4E5B71; }
-            [stroke="#828FA4" i] { stroke: #7C899F; }
-            [fill="#5A6572" i] { fill: #A6B2C2; }
-            [stroke="#5A6572" i] { stroke: #A6B2C2; }
-            [fill="#FFFFFF" i] { fill: #273043; }
-            [fill="#A6B2C2" i] { fill: #6B788D; }
-        }
-    </style>
     <defs>
         <path d="M0,0 L80,0 L80,60 L0,60 L0,0 Z" id="path-1"></path>
         <path d="M0,0 L56,0 L56,56 L0,56 L0,0 Z" id="path-2"></path>

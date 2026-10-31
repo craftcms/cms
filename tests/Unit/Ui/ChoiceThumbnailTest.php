@@ -78,3 +78,20 @@ it('marks the group so the options show as tiles', function () {
         ->and($without->filter('craft-radio-group')->attr('thumbnails'))->toBeNull()
         ->and($without->filter('img[slot="thumbnail"]'))->toHaveCount(0);
 });
+
+it('inlines an SVG thumbnail, hidden from assistive tech', function () {
+    $crawler = thumbnailChoiceHtml([
+        ['label' => 'Cards', 'value' => 'cards', 'thumbnail' => [
+            'svg' => '<svg viewBox="0 0 80 60"><rect stroke="#828FA4" width="79" height="59"/></svg>',
+            'aspectRatio' => '80 / 60',
+        ]],
+    ]);
+    $thumbnail = $crawler->filter('craft-radio > [slot="thumbnail"]');
+
+    expect($thumbnail)->toHaveCount(1)
+        ->and($thumbnail->nodeName())->toBe('span')
+        ->and($thumbnail->attr('aria-hidden'))->toBe('true')
+        ->and($thumbnail->attr('style'))->toContain('aspect-ratio: 80 / 60')
+        ->and($thumbnail->filter('svg > rect')->attr('stroke'))->toBe('#828FA4')
+        ->and($crawler->filter('img[slot="thumbnail"]'))->toHaveCount(0);
+});

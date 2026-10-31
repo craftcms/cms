@@ -71,11 +71,7 @@ class ImageTransformEditViewModel extends ViewModel
                 Choice::make('mode')
                     ->options(array_map(fn (array $option): array => [
                         ...$option,
-                        'thumbnail' => [
-                            'src' => Cp::publicAssetUrl("images/transforms/{$option['value']}.svg"),
-                            'width' => 80,
-                            'height' => 60,
-                        ],
+                        'thumbnail' => Cp::illustration("images/transforms/{$option['value']}.svg"),
                     ], ImageTransformMode::asOptions()))
                     ->presentation(ChoicePresentation::Radios)
                     ->reactive(),

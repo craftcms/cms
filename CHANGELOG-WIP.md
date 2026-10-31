@@ -27,7 +27,7 @@
 - Pressing <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>Return</kbd> in a text input or textarea now submits its form. ([#20025](https://github.com/craftcms/cms/pull/20025))
 - Refreshed the control panel’s styling, including modals, buttons, form inputs, editable tables, chips, Matrix blocks, status badges, and file and folder icons. ([#19942](https://github.com/craftcms/cms/pull/19942), [#20008](https://github.com/craftcms/cms/pull/20008), [#20085](https://github.com/craftcms/cms/pull/20085))
 - Link and Email field values in element indexes and cards now stay on one line, cut off with an ellipsis, after a button that shows the full address with options to open or copy it. Hovering over the link shows the same details. ([#20123](https://github.com/craftcms/cms/pull/20123))
-- The “View Mode”, “Thumb Style”, and image transforms’ “Mode” settings now show their options as joined, illustrated buttons, with each option’s label below its illustration. When there isn’t room for them in one row, they wrap as separate buttons. ([#20233](https://github.com/craftcms/cms/pull/20233))
+- The “View Mode”, “Thumb Style”, and image transforms’ “Mode” settings now show their options as joined, illustrated buttons, with each option’s label below its illustration, and the selected option’s illustration drawn in blue. When there isn’t room for them in one row, they wrap as separate buttons. ([#20233](https://github.com/craftcms/cms/pull/20233))
 
 ### Workflows
 - Added publishing workflows, which control when drafts may be applied to entries. Workflows are configured from Settings → Workflows and assigned to sections. (Craft Pro and Enterprise only.) ([#19667](https://github.com/craftcms/cms/pull/19667))
@@ -221,7 +221,7 @@
 ### Extensibility
 
 #### Plugins
-- `craft-radio-group` now shows radios with a `thumbnail` slot as joined, illustrated tiles when `thumbnails` is set, wrapping them when the row doesn’t fit. `Choice` options and `CraftCms\Cms\Cp\Components\Radio` with a `thumbnail` use this automatically. ([#20233](https://github.com/craftcms/cms/pull/20233))
+- `craft-radio-group` now shows radios with a `thumbnail` slot as joined, illustrated tiles when `thumbnails` is set, wrapping them when the row doesn’t fit. `Choice` options and `CraftCms\Cms\Cp\Components\Radio` with a `thumbnail` use this automatically. A thumbnail can be inline `svg` markup, which is recolored for the theme and the selected state; `CraftCms\Cms\Cp\Cp::illustration()` inlines one from `resources/public`. ([#20233](https://github.com/craftcms/cms/pull/20233))
 - Added the `craft:ui-value-change` DOM event and `Cp.$ui.active()` for plugins to observe canonical values from Craft 6 UI-rendered fields. ([#19920](https://github.com/craftcms/cms/discussions/19920))
 - Links to control panel pages in plugins’ server-rendered HTML now open with Inertia. Pages that aren’t Inertia pages still load in full, after an Inertia request. Links to files or other responses that aren’t HTML need `download` or `data-inertia="false"`, on the link or an element around it, as Inertia can’t open them. ([#20118](https://github.com/craftcms/cms/pull/20118))
 - Plugins should no longer define `extra.laravel.providers` in `composer.json`. ([#19263](https://github.com/craftcms/cms/pull/19263))

@@ -45,11 +45,21 @@ The tiles are joined in one row, each between `--c-radio-tile-min-size` and `--c
 
 <Canvas of={RadioGroupStories.ThumbnailsWrapped} sourceState="shown" />
 
-Illustrations are 60px tall by default (`--c-radio-tile-thumbnail-height`), and are scaled to fit the tile. Draw them with the control panel's own colors, such as `--color-slate-400` for hairlines, so they hold up against the selected tile's tint. An SVG loaded through `<img>` can follow the theme with a `prefers-color-scheme` media query inside it.
+Illustrations are 60px tall by default (`--c-radio-tile-thumbnail-height`), and are scaled to fit the tile. Slot an inline SVG, wrapped in a `<span aria-hidden="true">`, and draw it with the illustration palette below. The control panel swaps those colors for its `--c-illustration-*` tokens, so the illustration follows the theme and turns blue when its option is selected. An `<img>` with an empty `alt` works too, but keeps the colors it was drawn with.
+
+| Drawn as                  | Token                       | Used for                                   |
+| ------------------------- | --------------------------- | ------------------------------------------ |
+| `fill="#F3F7FD"`          | `--c-illustration-surface`  | Chips and cards                            |
+| `fill="#FFFFFF"`          | `--c-illustration-paper`    | The lightest surface                       |
+| `fill="#CDD8E4"`          | `--c-illustration-solid`    | Solid shapes, such as text bars and photos |
+| `fill="#A6B2C2"`          | `--c-illustration-detail`   | Detail on solid shapes                     |
+| `stroke="#828FA4"`        | `--c-illustration-line`     | Hairlines                                  |
+| `fill`/`stroke="#5A6572"` | `--c-illustration-ink`      | Marks that stand out, such as crop handles |
+| `fill="#2A3141"`          | `--c-illustration-backdrop` | A dark backdrop                            |
 
 ### Building one in PHP
 
-Give each `Choice` option a `thumbnail`, and the radio group switches to tiles on its own:
+Give each `Choice` option a `thumbnail`, and the radio group switches to tiles on its own. `Cp::illustration()` inlines an SVG from `resources/public`; pass `['src' => $url]` for an image instead:
 
 ```php
 use CraftCms\Cms\Cp\Cp;
@@ -60,11 +70,7 @@ Choice::make('viewMode')
     ->presentation(ChoicePresentation::Radios)
     ->options(array_map(fn (array $option) => [
         ...$option,
-        'thumbnail' => [
-            'src' => Cp::publicAssetUrl("images/view-modes/{$option['value']}.svg"),
-            'width' => 80,
-            'height' => 60,
-        ],
+        'thumbnail' => Cp::illustration("images/view-modes/{$option['value']}.svg"),
     ], [
         ['label' => 'Cards', 'value' => 'cards'],
         ['label' => 'Card grid', 'value' => 'cards-grid'],
