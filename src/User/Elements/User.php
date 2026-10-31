@@ -17,6 +17,7 @@ use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Actions\Restore;
+use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\ImportableContainerPropertiesInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
@@ -26,6 +27,7 @@ use CraftCms\Cms\Element\DeletionBlockers\EntryAuthorsBlocker;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\NestedElementManager;
@@ -201,18 +203,21 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      */
     #[AllowedInSandbox]
     #[Importable('photoId', 'Photo (ID, URL, or path)')]
+    #[ElementProperty(ElementPropertyType::Id, 'The ID of the user’s photo asset.', nullable: true)]
     public ?int $photoId = null;
 
     /**
      * @var bool Active
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Boolean, 'Whether the user is active.')]
     public bool $active = false;
 
     /**
      * @var bool Pending
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Boolean, 'Whether the user is pending activation.')]
     public bool $pending = false;
 
     /**
@@ -231,19 +236,24 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * @var bool Admin
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Boolean, 'Whether the user is an admin.')]
     public bool $admin = false;
 
     /**
      * @var string|null Username
      */
     #[AllowedInSandbox]
-    public ?string $username = null; // imported via Field Layout Element
+    // imported via Field Layout Element
+    #[ElementProperty(ElementPropertyType::String, 'The user’s username.', readable: true)]
+    public ?string $username = null;
 
     /**
      * @var string|null Email
      */
     #[AllowedInSandbox]
-    public ?string $email = null; // imported via Field Layout Element
+    // imported via Field Layout Element
+    #[ElementProperty(ElementPropertyType::String, 'The user’s email address.', readable: true)]
+    public ?string $email = null;
 
     /**
      * @var string|null Password
@@ -255,6 +265,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      */
     #[AllowedInSandbox]
     #[Importable('affiliatedSiteId', 'Affiliated Site ID', canBeMatchCriteria: false)]
+    #[ElementProperty(ElementPropertyType::Id, 'The ID of the site the user is affiliated with.', nullable: true, readable: true)]
     public ?int $affiliatedSiteId = null;
 
     /**
@@ -281,6 +292,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     /**
      * @var bool Whether the user has a dashboard
      */
+    #[ElementProperty(ElementPropertyType::Boolean, 'Whether the user has a dashboard.')]
     public bool $hasDashboard = false;
 
     /**
@@ -302,6 +314,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     /**
      * @var string|null New password
      */
+    #[ElementProperty(ElementPropertyType::String, 'A new password for the user.')]
     public ?string $newPassword = null;
 
     /**
@@ -1210,6 +1223,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * Returns the user’s full name or username.
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The user’s full name or username.', readable: true, writable: false, nonNull: true)]
     public function getName(): string
     {
         return $this->_name ??= $this->_defineName();
@@ -1234,6 +1248,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * Returns the user’s first name or username.
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The user’s first name or username.', readable: true, writable: false)]
     public function getFriendlyName(): ?string
     {
         $this->_friendlyName ??= $this->_defineFriendlyName() ?? false;

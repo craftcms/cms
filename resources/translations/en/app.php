@@ -839,6 +839,7 @@ return [
     'Entry Types' => 'Entry Types',
     'Entry URI Format' => 'Entry URI Format',
     'Entry could not be added. Maximum number of entries reached.' => 'Entry could not be added. Maximum number of entries reached.',
+    'Entry type icon' => 'Entry type icon',
     'Entry type saved.' => 'Entry type saved.',
     'Entry type settings' => 'Entry type settings',
     'Entry' => 'Entry',

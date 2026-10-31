@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Interfaces\Elements;
 
+use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Gql\Arguments\Elements\Asset as AssetArguments;
 use CraftCms\Cms\Gql\Arguments\Elements\User as UserArguments;
 use CraftCms\Cms\Gql\Arguments\Transform;
@@ -11,7 +12,6 @@ use CraftCms\Cms\Gql\Gql as GqlService;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Interfaces\Element;
-use CraftCms\Cms\Gql\Types\DateTime;
 use CraftCms\Cms\Gql\Types\Generators\AssetType;
 use CraftCms\Cms\Gql\Types\Generators\ImageAnalysisType;
 use CraftCms\Cms\Gql\Types\Volume;
@@ -65,36 +65,7 @@ class Asset extends Element
     {
         // @TODO Remove the `uri` field for Assets.
         return Gql::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), self::getConditionalFields(), [
-            'alt' => [
-                'name' => 'alt',
-                'type' => Type::string(),
-                'description' => 'Alternative text for the asset.',
-            ],
-            'volumeId' => [
-                'name' => 'volumeId',
-                'type' => Type::int(),
-                'description' => 'The ID of the volume that the asset belongs to.',
-            ],
-            'folderId' => [
-                'name' => 'folderId',
-                'type' => Type::nonNull(Type::int()),
-                'description' => 'The ID of the folder that the asset belongs to.',
-            ],
-            'filename' => [
-                'name' => 'filename',
-                'type' => Type::nonNull(Type::string()),
-                'description' => 'The filename of the asset file.',
-            ],
-            'extension' => [
-                'name' => 'extension',
-                'type' => Type::nonNull(Type::string()),
-                'description' => 'The file extension for the asset file.',
-            ],
-            'hasFocalPoint' => [
-                'name' => 'hasFocalPoint',
-                'type' => Type::nonNull(Type::boolean()),
-                'description' => 'Whether a user-defined focal point is set on the asset.',
-            ],
+            ...static::propertyFields(AssetElement::class, ['alt', 'volumeId', 'folderId', 'filename', 'extension', 'hasFocalPoint']),
             'focalPoint' => [
                 'name' => 'focalPoint',
                 'type' => Type::listOf(Type::float()),
@@ -105,21 +76,7 @@ class Asset extends Element
                 'type' => ImageAnalysisType::generateType(null),
                 'description' => 'What was found in the image: its colors, and its keywords and the text in it, or null if it’s not an image or nothing has been found yet.',
             ],
-            'blurhash' => [
-                'name' => 'blurhash',
-                'type' => Type::string(),
-                'description' => 'A [BlurHash](https://blurha.sh) string encoded from the image’s colors, or null if it’s not an image or its colors aren’t known.',
-            ],
-            'placeholderDataUrl' => [
-                'name' => 'placeholderDataUrl',
-                'type' => Type::string(),
-                'description' => 'A data URL of a tiny PNG made from the average colors of the image’s regions, which can be scaled up as a blurred placeholder for it, or null if it’s not an image or its colors aren’t known.',
-            ],
-            'kind' => [
-                'name' => 'kind',
-                'type' => Type::nonNull(Type::string()),
-                'description' => 'The file kind.',
-            ],
+            ...static::propertyFields(AssetElement::class, ['blurhash', 'placeholderDataUrl', 'kind']),
             'orientation' => [
                 'name' => 'orientation',
                 'type' => Type::string(),
@@ -201,27 +158,14 @@ class Asset extends Element
                     return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_CPU_HEAVY;
                 },
             ],
-            'mimeType' => [
-                'name' => 'mimeType',
-                'type' => Type::string(),
-                'description' => 'The file’s MIME type, if it can be determined.',
-            ],
+            ...static::propertyFields(AssetElement::class, ['mimeType']),
             'format' => [
                 'name' => 'format',
                 'args' => Transform::getArguments(),
                 'type' => Type::string(),
                 'description' => 'Returns the file’s format.',
             ],
-            'path' => [
-                'name' => 'path',
-                'type' => Type::nonNull(Type::string()),
-                'description' => 'The asset’s path in the volume.',
-            ],
-            'dateModified' => [
-                'name' => 'dateModified',
-                'type' => DateTime::getType(),
-                'description' => 'The date the asset file was last modified.',
-            ],
+            ...static::propertyFields(AssetElement::class, ['path', 'dateModified']),
             'prev' => [
                 'name' => 'prev',
                 'type' => self::getType(),
@@ -254,11 +198,7 @@ class Asset extends Element
 
         if (GqlHelper::canQueryAllUsers()) {
             $fields += [
-                'uploaderId' => [
-                    'name' => 'uploaderId',
-                    'type' => Type::int(),
-                    'description' => 'The ID of the user who first added this asset (if known).',
-                ],
+                ...static::propertyFields(AssetElement::class, ['uploaderId']),
                 'uploader' => [
                     'name' => 'uploader',
                     'type' => User::getType(),

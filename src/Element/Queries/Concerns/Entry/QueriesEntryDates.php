@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns\Entry;
 
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use Illuminate\Contracts\Database\Query\Builder;
 
@@ -149,6 +151,7 @@ trait QueriesEntryDates
      *
      * @uses $postDate
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the entries’ post dates.')]
     public function postDate(mixed $value): static
     {
         $this->postDate = $value;
@@ -189,6 +192,7 @@ trait QueriesEntryDates
      *
      * @uses $before
      */
+    #[ElementQueryParam(ElementQueryParamType::String, 'Narrows the query results to only entries that were posted before a certain date.')]
     public function before(mixed $value): static
     {
         $this->before = $value;
@@ -229,6 +233,7 @@ trait QueriesEntryDates
      *
      * @uses $after
      */
+    #[ElementQueryParam(ElementQueryParamType::String, 'Narrows the query results to only entries that were posted on or after a certain date.')]
     public function after(mixed $value): static
     {
         $this->after = $value;
@@ -272,6 +277,7 @@ trait QueriesEntryDates
      *
      * @uses $expiryDate
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the entries’ expiry dates.')]
     public function expiryDate(mixed $value): static
     {
         $this->expiryDate = $value;

@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Element\Queries;
 use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\Concerns\Entry\QueriesAuthors;
 use CraftCms\Cms\Element\Queries\Concerns\Entry\QueriesEntryDates;
 use CraftCms\Cms\Element\Queries\Concerns\Entry\QueriesEntryTypes;
@@ -182,6 +184,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      * @uses $editable
      */
     /** @return self<T> */
+    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether to only return {elements} that the user has permission to edit.')]
     public function editable(?bool $value = true): self
     {
         $this->editable = $value;

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
+use CraftCms\Cms\Element\Attributes\ElementProperty;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Support\Attributes\Importable;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 
@@ -35,12 +37,14 @@ trait HasStatuses
      */
     #[AllowedInSandbox]
     #[Importable('enabled', 'Enabled', canBeMatchCriteria: false, canBeCleared: false)]
+    #[ElementProperty(ElementPropertyType::Boolean, 'Whether the {element} is enabled.', readable: true)]
     public bool $enabled = true;
 
     /**
      * @var bool Whether the element is archived
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Boolean, 'Whether the {element} is archived.', readable: true, writable: false)]
     public bool $archived = false;
 
     /**
@@ -56,6 +60,7 @@ trait HasStatuses
      *
      * @param  int|null  $siteId  The site ID to check. Defaults to the current site.
      */
+    #[ElementProperty(ElementPropertyType::Boolean, 'Whether the {element} is enabled for the site.', readable: true, writable: false)]
     public function getEnabledForSite(?int $siteId = null): ?bool
     {
         $siteId ??= $this->siteId;
@@ -94,6 +99,7 @@ trait HasStatuses
      *
      * @return string|null The element's status, or null if not applicable.
      */
+    #[ElementProperty(ElementPropertyType::String, 'The {element}’s status.', readable: true, writable: false)]
     public function getStatus(): ?string
     {
         if ($this->getIsDraft() && ! $this->isProvisionalDraft) {

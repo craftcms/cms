@@ -10,6 +10,7 @@ import {
 import {UploadQueue} from './upload-queue';
 import {showUploadDuplicates} from './upload-notification';
 import {imageCompletionData} from './image-completion-data';
+import {namePastedFiles} from './pasted-files';
 import {store} from '@/routes/craft/actions/craft/cp/uploads';
 
 declare const Craft: any;
@@ -158,7 +159,7 @@ export class Uploader extends BaseUploader {
           if (files.length) {
             event.preventDefault();
             event.stopPropagation();
-            this.addFiles(files);
+            this.addFiles(namePastedFiles(files));
           }
         },
         {signal: this.listeners.signal}

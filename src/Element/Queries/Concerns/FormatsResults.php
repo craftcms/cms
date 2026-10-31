@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Element\Queries\Concerns;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use Illuminate\Database\Query\Builder;
@@ -92,6 +94,7 @@ trait FormatsResults
      *
      * @param  bool  $value  The property value
      */
+    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Causes the query results to be returned in reverse order.')]
     public function inReverse(bool $value = true): static
     {
         $this->inReverse = $value;
@@ -154,6 +157,7 @@ trait FormatsResults
      *
      * @param  bool  $value  The property value (defaults to true)
      */
+    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Causes the query results to be returned in the order specified by the `id` argument.')]
     public function fixedOrder(bool $value = true): static
     {
         $this->fixedOrder = $value;

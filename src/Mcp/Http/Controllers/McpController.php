@@ -64,9 +64,13 @@ class McpController
 
     private function handle(Server $server): ResponseInterface
     {
+        // Validate the host Laravel resolved (which respects trusted proxies’ X-Forwarded-Host) rather than the raw
+        // Host header, which reverse proxies like Craft Cloud’s gateway may rewrite.
+        $request = $this->request->withHeader('Host', $this->request->getUri()->getHost());
+
         return $server->run(new StreamableHttpTransport(
-            request: $this->request,
-            middleware: $this->middleware->forRequest($this->request),
+            request: $request,
+            middleware: $this->middleware->forRequest($request),
         ));
     }
 }

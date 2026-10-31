@@ -21,6 +21,7 @@ use CraftCms\Cms\Element\Actions\Delete;
 use CraftCms\Cms\Element\Actions\DeleteForSite;
 use CraftCms\Cms\Element\Actions\Duplicate;
 use CraftCms\Cms\Element\Actions\Restore;
+use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Concerns\NestedElement;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -32,6 +33,7 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\ElementSources as ElementSourcesService;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
@@ -153,6 +155,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      */
     #[AllowedInSandbox]
     #[Importable('sectionId', 'Section ID', excludeFromUiMapping: true, canBeCleared: false)]
+    #[ElementProperty(ElementPropertyType::Id, 'The ID of the section that contains the entry.', readable: true)]
     public ?int $sectionId = null;
 
     /**
@@ -172,6 +175,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      */
     #[AllowedInSandbox]
     #[Importable('postDate', 'Post Date')]
+    #[ElementProperty(ElementPropertyType::DateTime, 'The entry’s post date.', nullable: true, readable: true)]
     public ?DateTimeInterface $postDate = null;
 
     /**
@@ -190,6 +194,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      */
     #[AllowedInSandbox]
     #[Importable('expiryDate', 'Expiry Date')]
+    #[ElementProperty(ElementPropertyType::DateTime, 'The entry’s expiry date.', nullable: true, readable: true)]
     public ?DateTimeInterface $expiryDate = null;
 
     /**
@@ -1579,6 +1584,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $this->getType()->id;
     }
 
+    #[ElementProperty(ElementPropertyType::Id, 'The ID of the entry type that contains the entry.', readable: true, nonNull: true)]
     public function setTypeId(int $typeId): void
     {
         $this->_typeId = $typeId;
@@ -1695,6 +1701,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *
      * @param  int|array{0:int}|string|null  $authorId
      */
+    #[ElementProperty(ElementPropertyType::Id, 'The primary entry author’s ID.', nullable: true, readable: true)]
     public function setAuthorId(array|int|string|null $authorId): void
     {
         $authorId = $this->normalizeAuthorIds($authorId)[0] ?? null;
@@ -1723,6 +1730,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *
      * @param  User[]|int[]|string|int|null  $authorIds
      */
+    #[ElementProperty(ElementPropertyType::IdList, 'The entry authors’ IDs.', readable: true)]
     public function setAuthorIds(array|string|int|null $authorIds): void
     {
         $authorIds = $this->normalizeAuthorIds($authorIds);
@@ -2995,9 +3003,11 @@ JS;
             $this->id &&
             ! $this->propagating &&
             ! $this->resaving &&
-            ! $this->getIsDraft() &&
-            ! $this->getIsRevision() &&
-            $this->hasRevisions();
+            $this->getIsCanonical() &&
+            $this->hasRevisions() &&
+            // Nested entries owned by a draft or revision shouldn't get their own revisions
+            // (see https://github.com/craftcms/cms/issues/20151)
+            ! ElementHelper::isDraftOrRevision($this);
     }
 
     /**

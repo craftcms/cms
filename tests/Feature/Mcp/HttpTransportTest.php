@@ -8,11 +8,13 @@ use CraftCms\Cms\Mcp\Settings;
 use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\Tests\TestCase;
 use CraftCms\Cms\User\Models\User;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Testing\TestResponse;
 use Laravel\Passport\Passport;
+use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 
 beforeEach(function (): void {
     $key = openssl_pkey_new(['private_key_bits' => 2048]);
@@ -152,3 +154,19 @@ it('keeps host checks and origin restrictions for both HTTP protocols', function
     mcpHttpRequest($this, '/_test/dual-protocol-mcp', 'POST', $payload, [...$headers, 'Origin' => 'https://attacker.example'])
         ->assertForbidden()->assertHeaderMissing('Access-Control-Allow-Origin');
 })->with(['handshake' => false, 'modern' => true]);
+
+it('validates the host resolved through trusted proxies rather than the raw Host header', function (bool $trusted): void {
+    $this->beforeApplicationDestroyed(TrustProxies::flushState(...));
+    TrustProxies::at('*');
+    TrustProxies::withHeaders(SymfonyRequest::HEADER_X_FORWARDED_HOST);
+    $path = parse_url(route('craft.mcp.server'), PHP_URL_PATH);
+    Route::getRoutes()->getByName('craft.mcp.server')->flushController();
+
+    $response = $this->postJson(
+        "http://gateway.internal$path",
+        McpRequest::payload('server/discover'),
+        [...McpRequest::headers('server/discover'), ...($trusted ? ['X-Forwarded-Host' => 'localhost'] : [])],
+    );
+
+    $trusted ? $response->assertOk() : $response->assertForbidden();
+})->with(['forwarded by a trusted proxy' => true, 'not forwarded' => false]);

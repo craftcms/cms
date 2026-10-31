@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns\Asset;
 
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
 use CraftCms\Cms\Element\Queries\AssetQuery;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use Illuminate\Database\Query\Builder;
 
@@ -51,6 +53,7 @@ trait QueriesAlt
      *
      * @uses $hasAlt
      */
+    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Narrows the query results based on whether the assets have alternative text.')]
     public function hasAlt(?bool $value = true): static
     {
         $this->hasAlt = $value;

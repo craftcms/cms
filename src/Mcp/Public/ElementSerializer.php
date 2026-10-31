@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Mcp\Public;
 
 use Closure;
+use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Mcp\Serializers\ElementSerializer as BaseElementSerializer;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
+use DateTimeInterface;
 
 /**
  * @since 6.0.0
@@ -26,33 +27,18 @@ class ElementSerializer
      */
     public function serialize(ElementInterface $element, ?array $fields = [], ?Closure $serializeNested = null): array
     {
-        $data = $element instanceof User
-            ? $this->serializeUser($element)
-            : null;
+        $data = ['type' => $element::class, 'id' => $element->id, 'uid' => $element->uid];
+
+        foreach (array_keys(ElementProperty::readable($element::class)) as $name) {
+            $value = $element->$name;
+            $data[$name] = $value instanceof DateTimeInterface ? $this->date($value) : $value;
+        }
+
+        if ($element instanceof User && $element->affiliatedSiteId) {
+            $data['affiliatedSiteHandle'] = Sites::getSiteById($element->affiliatedSiteId, true)?->handle;
+        }
 
         return $this->serializer->serialize($element, $data, public: true, fields: $fields, serializeNested: $serializeNested);
-    }
-
-    /** @return array<string, mixed> */
-    private function serializeUser(User $user): array
-    {
-        return Arr::whereNotNull([
-            'id' => $user->id,
-            'uid' => $user->uid,
-            'username' => $user->username,
-            'email' => $user->email,
-            'name' => $user->getName(),
-            'friendlyName' => $user->getFriendlyName(),
-            'fullName' => $user->fullName,
-            'firstName' => $user->firstName,
-            'lastName' => $user->lastName,
-            'affiliatedSiteId' => $user->affiliatedSiteId,
-            'affiliatedSiteHandle' => $user->affiliatedSiteId
-                ? Sites::getSiteById($user->affiliatedSiteId, true)?->handle
-                : null,
-            'dateCreated' => $this->date($user->dateCreated),
-            'dateUpdated' => $this->date($user->dateUpdated),
-        ]);
     }
 
     private function date(mixed $date): ?string

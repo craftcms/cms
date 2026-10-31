@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns\Entry;
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Data\Section;
@@ -83,6 +85,7 @@ trait QueriesSections
      *
      * @uses $sectionId
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the section handles the entries belong to.')]
     public function section(mixed $value): static
     {
         // If the value is a section handle, swap it with the section
@@ -149,6 +152,7 @@ trait QueriesSections
      *
      * @uses $sectionId
      */
+    #[ElementQueryParam(ElementQueryParamType::IntOrInts, 'Narrows the query results based on the sections the entries belong to, per the sections’ IDs.')]
     public function sectionId(mixed $value): static
     {
         $this->sectionId = $value;
