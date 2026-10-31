@@ -1,13 +1,24 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
+  import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
+  import {computed} from 'vue';
   import {show} from '@actions/ReleasesController';
-  import CpLink from '@/common/components/CpLink.vue';
   import type {AttachedRelease} from '@/modules/elements/composables/useElementEditor';
 
-  defineProps<{release: AttachedRelease; canEdit: boolean; editing: boolean}>();
+  const props = defineProps<{
+    release: AttachedRelease;
+    canEdit: boolean;
+    editing: boolean;
+  }>();
   const emit = defineEmits<{
     'start-editing': [];
   }>();
+
+  /** The release's name, linked to its page. */
+  const nameLink = computed(
+    () =>
+      `<a href="${escapeHtml(show({release: props.release.id}).url)}">${escapeHtml(props.release.name)}</a>`
+  );
 </script>
 
 <template>
@@ -17,34 +28,28 @@
     rounded="none"
     appearance="fill"
   >
-    <template v-if="release.status === 'scheduled'">
-      {{
+    <!-- Translated strings with the linked name as HTML. -->
+    <span
+      v-if="release.status === 'scheduled'"
+      v-html="
         t(
           'This draft belongs to the scheduled release “{name}”. Saved changes will be included when the release publishes.',
-          {name: release.name}
+          {name: nameLink}
         )
-      }}
-    </template>
-    <template v-else>
-      {{
+      "
+    ></span>
+    <span
+      v-else
+      v-html="
         t(
           'This draft belongs to “{name}”. Saved changes will be included when the release publishes.',
-          {name: release.name}
+          {name: nameLink}
         )
-      }}
-    </template>
+      "
+    ></span>
 
-    <div slot="action" class="flex flex-wrap gap-2">
-      <CpLink
-        :href="show({release: release.id}).url"
-        appearance="button"
-        variant="outline"
-        size="small"
-      >
-        {{ t('View release') }}
-      </CpLink>
+    <div v-if="canEdit && !editing" slot="action" class="flex flex-wrap gap-2">
       <craft-button
-        v-if="canEdit && !editing"
         type="button"
         variant="outline"
         size="small"
