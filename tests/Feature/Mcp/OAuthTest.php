@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Settings as CpSettings;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Mcp\Events\CollectingAdminInstructions;
 use CraftCms\Cms\Mcp\McpActor;
+use CraftCms\Cms\Mcp\McpServiceProvider;
 use CraftCms\Cms\Mcp\Public\Access;
 use CraftCms\Cms\Mcp\RouteRegistrar;
 use CraftCms\Cms\Mcp\Settings;
@@ -15,6 +17,7 @@ use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\Tests\TestCase;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\UserPermissions;
+use Illuminate\Routing\RouteCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
@@ -181,6 +184,29 @@ it('uses configured base URLs rather than the request host in OAuth metadata', f
         ->assertJsonPath('token_endpoint', "$base/oauth/token")
         ->assertJsonPath('registration_endpoint', $expectedResource.'/oauth/register');
 })->with(['control panel endpoint' => true, 'site endpoint' => false]);
+
+it('serves the endpoint and OAuth metadata from current settings when routes are cached', function (): void {
+    // Cache routes from before MCP was enabled, then boot again, as the next request would
+    $routes = new RouteCollection;
+
+    foreach (Route::getRoutes()->getRoutes() as $route) {
+        if (($route->defaults['mcp'] ?? false) !== true && ! str_starts_with((string) $route->getName(), 'craft.mcp.')) {
+            $routes->add($route);
+        }
+    }
+
+    Route::setCompiledRoutes($routes->compile());
+    app()->instance('routes.cached', true);
+    app()->forgetInstance(CpSettings::class);
+    app()->call([app()->getProvider(McpServiceProvider::class), 'boot']);
+
+    $this->postJson(route('craft.mcp.server'), McpRequest::payload('initialize'), McpRequest::headers('initialize'))
+        ->assertUnauthorized()
+        ->assertHeader('WWW-Authenticate');
+    $this->getJson(route('craft.mcp.oauth.resource'))
+        ->assertOk()
+        ->assertJsonPath('resource', url('mcp/auth'));
+});
 
 it('restricts dynamic client registration to configured redirect domains', function (): void {
     config()->set('mcp.redirect_domains', ['https://client.example']);
