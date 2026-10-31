@@ -1373,11 +1373,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         foreach ($sourceElements as $sourceElement) {
             $rawValue = $sourceElement->getCustomFieldRawValue($this->handle);
             if ($rawValue instanceof ElementQuery) {
-                $rawValue = $rawValue->where['elements.id'] ?? null;
-            }
-            if ($rawValue instanceof ElementQuery) {
-                $where = Arr::first($rawValue->getQuery()->wheres, fn ($where) => ($where['column'] ?? '') === 'elements.id');
-                $rawValue = $where['value'] ?? null;
+                $rawValue = $rawValue->getWhereForColumn('elements.id')['values'] ?? null;
             }
             if (is_array($rawValue)) {
                 foreach ($rawValue as $targetElementId) {
@@ -1511,12 +1507,6 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             Arr::isNumeric($where['values'])
         ) {
             $targetIds = $where['values'] ?? [];
-        } elseif (
-            $value instanceof ElementQuery &&
-            isset($value->where['elements.id']) &&
-            Arr::isNumeric($value->where['elements.id'])
-        ) {
-            $targetIds = $value->where['elements.id'] ?: [];
         } else {
             // just running $this->_all()->ids() will cause the query to get adjusted
             // see https://github.com/craftcms/cms/issues/14674 for details
