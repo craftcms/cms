@@ -583,21 +583,23 @@ class Releases
     }
 
     /**
-     * Returns why a draft would stop its release from publishing.
+     * Returns why a draft would stop its release from publishing. Only the
+     * draft's own site is validated, as that's the one being edited.
      *
      * @return list<string>
      */
-    public function draftBlockers(Release $release, ElementInterface|int $draft): array
+    public function draftBlockers(Release $release, ElementInterface $draft): array
     {
         $item = $release->items()->where('draftId', $this->draftId($draft))->first();
 
-        return $item !== null ? $this->itemReadiness($release, $item)['errors'] : [];
+        return $item !== null ? $this->itemReadiness($release, $item, siteId: $draft->siteId)['errors'] : [];
     }
 
     /**
+     * @param  int|null  $siteId  The only site to validate, or `null` for all of them.
      * @return array{errors: list<string>, warnings: list<string>}
      */
-    private function itemReadiness(Release $release, ReleaseItem $item, bool $lockWorkflowRun = false): array
+    private function itemReadiness(Release $release, ReleaseItem $item, bool $lockWorkflowRun = false, ?int $siteId = null): array
     {
         $errors = [];
         $warnings = [];
@@ -632,11 +634,10 @@ class Releases
             $errors[] = $exception->getMessage();
         }
 
-        $siteDrafts = $draft::find()
+        $siteDraftQuery = $draft::find()
             ->draftId($draft->draftId)
-            ->site('*')
-            ->status(null)
-            ->all();
+            ->status(null);
+        $siteDrafts = ($siteId !== null ? $siteDraftQuery->siteId($siteId) : $siteDraftQuery->site('*'))->all();
 
         foreach ($siteDrafts as $siteDraft) {
             $candidate = clone $siteDraft;

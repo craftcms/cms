@@ -264,12 +264,17 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
 
   const editingDraft = shallowRef(false);
 
-  watch(
-    () => props.draftId,
-    () => {
-      editingDraft.value = false;
-    }
+  /**
+   * Whether the draft belongs to a scheduled release, so edits that leave it
+   * unready would make the release fail, until the user chooses to edit it.
+   */
+  const releaseDraftLocked = computed(
+    () => props.release?.status === 'scheduled' && !editingDraft.value
   );
+
+  watch([() => props.draftId, () => props.release?.id], () => {
+    editingDraft.value = false;
+  });
 
   /**
    * Whether the draft's in review or approved, so editing it would undo its
@@ -379,7 +384,8 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     siteId: props.siteId,
     draftId: props.draftId,
     isProvisional: props.isProvisionalDraft,
-    enabled: () => props.canAutosave && !props.readOnly,
+    enabled: () =>
+      props.canAutosave && !props.readOnly && !releaseDraftLocked.value,
     transform: (data) =>
       requestValues(
         preparingOwnerGroups.size
@@ -580,6 +586,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     async prepare(path, initialContext) {
       if (
         props.readOnly ||
+        releaseDraftLocked.value ||
         workflowReviewLocked.value ||
         !(nestedOwnerContext(uiPayload.value, path) ?? initialContext)
       ) {
@@ -791,7 +798,8 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       method: 'post' as const,
     }),
     {
-      keyboardShortcutEnabled: () => !props.readOnly,
+      keyboardShortcutEnabled: () =>
+        !props.readOnly && !releaseDraftLocked.value,
       transform: (data) => {
         // Identity first, so the form wins where they overlap: the entry type
         // can be changed in the sidebar, and `saveData()` only knows the one
@@ -1261,6 +1269,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     sidebarErrors,
     sidebarPayload,
     sidebarRenderer,
+    releaseDraftLocked,
     startEditingDraft,
     updatePayload,
     values,

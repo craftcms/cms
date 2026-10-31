@@ -7,8 +7,13 @@
 
   const props = defineProps<{
     release: AttachedRelease;
+    /** Whether the draft is locked until the user chooses to edit it. */
+    locked: boolean;
+    /** Whether to offer the Start editing button while it's locked. */
+    canStartEditing: boolean;
   }>();
   const emit = defineEmits<{
+    'start-editing': [];
     dismiss: [];
   }>();
 
@@ -34,6 +39,13 @@
           );
     }
 
+    if (props.locked) {
+      return t(
+        'This draft is scheduled to publish with “{name}”. If edits leave it unready, the release will fail to publish.',
+        params
+      );
+    }
+
     return scheduled
       ? t(
           'This draft belongs to the scheduled release “{name}”. Saved changes will be included when the release publishes.',
@@ -44,12 +56,20 @@
           params
         );
   });
+
+  const icon = computed(() => {
+    if (props.locked) {
+      return 'lock';
+    }
+
+    return props.release.blocking ? 'triangle-exclamation' : 'calendar';
+  });
 </script>
 
 <template>
   <craft-callout
     :variant="release.blocking ? 'warning' : 'info'"
-    :icon="release.blocking ? 'triangle-exclamation' : 'calendar'"
+    :icon="icon"
     rounded="none"
     appearance="fill"
   >
@@ -57,15 +77,27 @@
     <span v-html="message"></span>
 
     <craft-button
+      v-if="locked && canStartEditing"
       slot="action"
       type="button"
+      variant="outline"
+      size="small"
+      inherit
+      @click="emit('start-editing')"
+    >
+      {{ t('Start editing') }}
+    </craft-button>
+    <craft-button
+      v-else-if="!locked"
+      slot="action"
+      type="button"
+      icon="xmark-large"
+      :aria-label="t('Dismiss')"
       variant="plain"
       size="small"
-      icon
+      flush="inline-end"
       inherit
       @click="emit('dismiss')"
-    >
-      <craft-icon name="xmark" :label="t('Dismiss')"></craft-icon>
-    </craft-button>
+    ></craft-button>
   </craft-callout>
 </template>

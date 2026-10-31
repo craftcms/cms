@@ -15,6 +15,7 @@
     provide,
     ref,
     shallowReactive,
+    shallowRef,
     useTemplateRef,
     watch,
     type Component,
@@ -113,6 +114,7 @@
     sidebarPayload,
     sidebarRenderer,
     startEditingDraft,
+    releaseDraftLocked,
     submitAction,
     updatePayload,
     workflowReviewLocked,
@@ -205,8 +207,29 @@
   );
 
   const editorLocked = computed(
-    () => workflowReviewLocked.value || payload.readOnly
+    () =>
+      workflowReviewLocked.value || payload.readOnly || releaseDraftLocked.value
   );
+
+  /**
+   * Settles the pending “Edit anyway?” question, while the dialog asking it is
+   * open: editing a reviewed draft in a scheduled release undoes its approval,
+   * which will stop the release from publishing.
+   */
+  const settleScheduledEdit = shallowRef<((confirmed: boolean) => void) | null>(
+    null
+  );
+
+  function confirmScheduledEdit(): Promise<boolean> {
+    return new Promise((resolve) => {
+      settleScheduledEdit.value = resolve;
+    });
+  }
+
+  function answerScheduledEdit(confirmed: boolean): void {
+    settleScheduledEdit.value?.(confirmed);
+    settleScheduledEdit.value = null;
+  }
 
   const canChooseRelease = computed(
     () =>
@@ -698,9 +721,45 @@
         v-if="workflowReviewLocked"
         :payload="payload"
         :update-payload="updatePayload"
+        :confirm-editing="
+          payload.release?.status === 'scheduled'
+            ? confirmScheduledEdit
+            : undefined
+        "
         class="mb-4"
         @start-editing="startEditing"
       />
+
+      <craft-dialog
+        :label="t('Edit a draft in a scheduled release?')"
+        .opened="settleScheduledEdit !== null"
+        @craft-hide="answerScheduledEdit(false)"
+      >
+        <p class="m-0">
+          {{
+            t(
+              'Editing this draft will undo its approval. Unless it’s approved again before “{name}” publishes, the release will fail to publish.',
+              {name: payload.release?.name ?? ''}
+            )
+          }}
+        </p>
+        <craft-button
+          slot="footer"
+          type="button"
+          autofocus
+          @click="answerScheduledEdit(false)"
+        >
+          {{ t('Cancel') }}
+        </craft-button>
+        <craft-button
+          slot="footer"
+          type="button"
+          variant="primary"
+          @click="answerScheduledEdit(true)"
+        >
+          {{ t('Edit anyway') }}
+        </craft-button>
+      </craft-dialog>
 
       <craft-callout
         v-if="awaitingUserApproval && !approvalNoticeDismissed"
@@ -714,14 +773,14 @@
         <craft-button
           slot="action"
           type="button"
+          icon="xmark-large"
+          :aria-label="t('Dismiss')"
           variant="plain"
           size="small"
-          icon
+          flush="inline-end"
           inherit
           @click="approvalNoticeDismissed = true"
-        >
-          <craft-icon name="xmark" :label="t('Dismiss')"></craft-icon>
-        </craft-button>
+        ></craft-button>
       </craft-callout>
 
       <craft-callout
@@ -755,7 +814,10 @@
       <ReleaseCallout
         v-if="payload.release && !releaseNoticeDismissed"
         :release="payload.release"
+        :locked="releaseDraftLocked"
+        :can-start-editing="!payload.readOnly && !workflowReviewLocked"
         class="mb-4"
+        @start-editing="startEditing"
         @dismiss="releaseNoticeDismissed = true"
       />
 

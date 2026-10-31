@@ -18,7 +18,15 @@ afterEach(() => {
 
 function mount(
   release: Partial<AttachedRelease>,
-  onDismiss: () => void = () => {}
+  {
+    locked = false,
+    onDismiss = () => {},
+    onStartEditing = () => {},
+  }: {
+    locked?: boolean;
+    onDismiss?: () => void;
+    onStartEditing?: () => void;
+  } = {}
 ): void {
   app = createApp({
     render: () =>
@@ -34,7 +42,10 @@ function mount(
           blocking: false,
           ...release,
         } as AttachedRelease,
+        locked,
+        canStartEditing: true,
         onDismiss,
+        onStartEditing,
       }),
   });
   app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
@@ -92,18 +103,35 @@ it.each([
   }
 );
 
-it('offers a dismiss button instead of Start editing', () => {
+it('offers a dismiss button instead of Start editing while unlocked', () => {
   const onDismiss = vi.fn();
-  mount({}, onDismiss);
+  mount({}, {onDismiss});
 
   const buttons = container.querySelectorAll('craft-button');
   expect(buttons).toHaveLength(1);
   expect(container.textContent).not.toContain('Start editing');
-  expect(
-    buttons[0]!.querySelector<HTMLElement & {label?: string}>('craft-icon')!
-      .label
-  ).toBe('Dismiss');
+  expect(buttons[0]!.getAttribute('aria-label')).toBe('Dismiss');
 
   (buttons[0] as HTMLElement).click();
   expect(onDismiss).toHaveBeenCalledOnce();
+});
+
+it('locks a scheduled release draft behind Start editing, without a dismiss button', () => {
+  const onStartEditing = vi.fn();
+  mount({status: 'scheduled'}, {locked: true, onStartEditing});
+
+  const callout = container.querySelector<HTMLElement & {variant?: string}>(
+    'craft-callout'
+  )!;
+  expect(callout.variant).toBe('info');
+  expect(callout.textContent).toContain(
+    'This draft is scheduled to publish with “Launch”. If edits leave it unready, the release will fail to publish.'
+  );
+
+  const buttons = container.querySelectorAll<HTMLElement>('craft-button');
+  expect(buttons).toHaveLength(1);
+  expect(buttons[0]!.textContent?.trim()).toBe('Start editing');
+
+  buttons[0]!.click();
+  expect(onStartEditing).toHaveBeenCalledOnce();
 });

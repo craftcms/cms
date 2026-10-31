@@ -122,6 +122,7 @@ beforeEach(() => {
     sidebarPayload: computed(() => null),
     sidebarRenderer: shallowRef(null),
     startEditingDraft: vi.fn(),
+    releaseDraftLocked: computed(() => false),
     submitAction: vi.fn(),
     updatePayload: vi.fn(),
     workflowReviewLocked: computed(() => true),
@@ -381,8 +382,7 @@ it('tells a reviewer the draft is waiting on them until they dismiss it', async 
   );
 
   container
-    .querySelector<HTMLElement>('craft-icon[name="xmark"]')!
-    .closest('craft-button')!
+    .querySelector<HTMLElement>('craft-button[aria-label="Dismiss"]')!
     .click();
   await nextTick();
 
@@ -414,8 +414,7 @@ it('shows a dismissed release notice again once the draft blocks the release', a
   );
 
   container
-    .querySelector<HTMLElement>('craft-icon[name="xmark"]')!
-    .closest('craft-button')!
+    .querySelector<HTMLElement>('craft-button[aria-label="Dismiss"]')!
     .click();
   await nextTick();
 
@@ -432,4 +431,35 @@ it('shows a dismissed release notice again once the draft blocks the release', a
   expect(container.textContent).toContain(
     'This draft is blocking “Renamed”, which can’t be published until the draft is ready.'
   );
+});
+
+it('asks before editing a reviewed draft in a scheduled release', async () => {
+  state.editor.props.release = {
+    id: 6,
+    name: 'Spring launch',
+    status: 'scheduled',
+    targetDate: null,
+    canManage: true,
+    draftId: 9,
+    siteId: 1,
+    blocking: false,
+  };
+
+  mount('page');
+  await nextTick();
+
+  const dialog = container.querySelector<HTMLElement & {opened?: boolean}>(
+    'craft-dialog'
+  )!;
+  expect(dialog.opened).toBe(false);
+
+  findButton('Start editing')!.click();
+  await vi.waitFor(() => expect(dialog.opened).toBe(true));
+  expect(dialog.textContent).toContain(
+    'Unless it’s approved again before “Spring launch” publishes, the release will fail to publish.'
+  );
+
+  findButton('Cancel')!.click();
+  await vi.waitFor(() => expect(dialog.opened).toBe(false));
+  expect(state.editor.startEditingDraft).not.toHaveBeenCalled();
 });

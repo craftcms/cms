@@ -727,9 +727,12 @@ describe('useElementEditor', () => {
     expect(editor.workflowReviewLocked.value).toBe(false);
   });
 
-  it.each(['draft', 'scheduled'] as const)(
-    'autosaves a %s release draft without a Start editing step or a visit',
-    async (status) => {
+  it.each([
+    ['draft', false],
+    ['scheduled', true],
+  ] as const)(
+    'autosaves a %s release draft (locked until Start editing: %s) without a visit',
+    async (status, locked) => {
       vi.useFakeTimers();
       onTestFinished(() => {
         vi.useRealTimers();
@@ -754,6 +757,17 @@ describe('useElementEditor', () => {
         ui: fieldLayout('Original'),
       });
       const {editor, page} = mount(screen);
+      expect(editor.releaseDraftLocked.value).toBe(locked);
+
+      if (locked) {
+        await typeTitle('Locked edit');
+        await vi.advanceTimersByTimeAsync(1000);
+        expect(postSpy).not.toHaveBeenCalled();
+
+        editor.startEditingDraft();
+        await nextTick();
+      }
+
       await typeTitle('Updated release content');
       await vi.advanceTimersByTimeAsync(1000);
       expect(postSpy).toHaveBeenCalledTimes(1);
@@ -775,9 +789,10 @@ describe('useElementEditor', () => {
         release: {...release, id: 5, draftId: 8},
       };
       await nextTick();
+      expect(editor.releaseDraftLocked.value).toBe(locked);
       await typeTitle('New release draft');
       await vi.advanceTimersByTimeAsync(1000);
-      expect(postSpy).toHaveBeenCalledTimes(3);
+      expect(postSpy).toHaveBeenCalledTimes(locked ? 2 : 3);
       expect(visit).not.toHaveBeenCalled();
     }
   );

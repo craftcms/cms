@@ -12,6 +12,8 @@
   const props = defineProps<{
     payload: ElementEditPayload;
     updatePayload: ElementEditPayloadUpdater;
+    /** Asked before editing starts; editing only starts if it resolves to `true`. */
+    confirmEditing?: () => Promise<boolean>;
   }>();
 
   const emit = defineEmits<{
@@ -62,6 +64,10 @@
 
   async function startEditing(): Promise<void> {
     if (processing.value) {
+      return;
+    }
+
+    if (props.confirmEditing && !(await props.confirmEditing())) {
       return;
     }
 
