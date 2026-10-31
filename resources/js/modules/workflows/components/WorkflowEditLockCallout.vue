@@ -24,10 +24,9 @@
   const approved = computed(() => review.value?.status === 'approved');
 
   /**
-   * Reviewers of the current stage keep the draft in review while they edit
-   * it. Anyone else sends the review back to the earlier stage they review, or
-   * takes the draft out of review, before editing, so nobody can approve or
-   * publish it while they're editing.
+   * Whether editing takes the draft out of its current stage: back to an
+   * earlier stage the user reviews, or out of review. The current stage's
+   * reviewers keep it in review, and only withdraw their own approval.
    */
   const withdraws = computed(
     () =>
@@ -62,6 +61,10 @@
     }
   });
 
+  /**
+   * Settles the review before unlocking the draft, so nobody can approve or
+   * publish it while it's being edited.
+   */
   async function startEditing(): Promise<void> {
     if (processing.value) {
       return;
@@ -71,21 +74,16 @@
       return;
     }
 
-    if (withdraws.value) {
-      const runId = review.value?.runId;
+    const runId = review.value?.runId;
 
-      if (runId == null) {
-        error.value = t(
-          'This review is no longer current. Refresh and try again.'
-        );
-        return;
-      }
-
-      await transition(controller.prepareForEditing.url({workflowRun: runId}));
+    if (runId == null) {
+      error.value = t(
+        'This review is no longer current. Refresh and try again.'
+      );
       return;
     }
 
-    emit('startEditing');
+    await transition(controller.prepareForEditing.url({workflowRun: runId}));
   }
 </script>
 

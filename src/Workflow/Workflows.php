@@ -243,9 +243,9 @@ class Workflows
     }
 
     /**
-     * Readies a draft in review for the user to edit it. If they review an earlier stage than the current one,
-     * the review goes back to that stage. Otherwise the draft is taken out of review, and has to be submitted again.
-     * The current stage’s reviewers can edit it without either.
+     * Readies a draft in review for the user to edit it. The current stage’s reviewers keep it in review, withdrawing
+     * their approval if they’ve given it, or if the draft is approved. Reviewers of an earlier stage send the review
+     * back to that stage. Anyone else takes the draft out of review, and it has to be submitted again.
      */
     public function prepareForEditing(ElementInterface $draft, int $runId): WorkflowRun
     {
@@ -273,16 +273,18 @@ class Workflows
             }
 
             if ($this->isCurrentStageReviewer($draft, $run, $actor)) {
+                if ($run->status === WorkflowStatus::Approved || $this->hasApprovedCurrentStage($draft, $run, $actor)) {
+                    $this->revokeEditorApproval($draft, $run, $actor);
+                }
+
                 return $run;
             }
 
             $stageIndex = $this->rollbackStageIndex($draft, $run, $actor);
 
             if ($stageIndex !== null) {
-                $this->beforeTransition(WorkflowTransition::SendBack, $draft, $actor, $run);
                 $this->rollBackToStage($draft, $run, $stageIndex, $actor);
             } else {
-                $this->beforeTransition(WorkflowTransition::Withdraw, $draft, $actor, $run);
                 $this->withdrawFromReview($draft, $run, $actor);
             }
 
@@ -761,6 +763,14 @@ class Workflows
         return null;
     }
 
+    private function hasApprovedCurrentStage(ElementInterface $draft, WorkflowRun $run, CraftUser $user): bool
+    {
+        $stage = $this->currentStage($run);
+        $component = $stage->component();
+
+        return $component instanceof UserReviewStage && $component->hasApproved($this->stageContext($draft, $run, $stage), $user);
+    }
+
     private function isCurrentStageReviewer(ElementInterface $draft, WorkflowRun $run, CraftUser $user): bool
     {
         $stage = $this->currentStage($run);
@@ -775,6 +785,7 @@ class Workflows
      */
     private function rollBackToStage(ElementInterface $draft, WorkflowRun $run, int $stageIndex, CraftUser $actor): void
     {
+        $this->beforeTransition(WorkflowTransition::SendBack, $draft, $actor, $run);
         $stages = $run->stages();
         $stage = $stages->get($stageIndex) ?? throw new WorkflowException('The workflow stage could not be found.');
         $component = $stage->component();
@@ -802,8 +813,8 @@ class Workflows
     }
 
     /**
-     * Withdraws the approval of a current-stage reviewer who edited the draft, so they have to approve it again.
-     * The other reviewers’ approvals stand.
+     * Withdraws the approval of a current-stage reviewer who is editing the draft, so the stage waits for them to
+     * approve it again. The other reviewers’ approvals stand.
      */
     private function revokeEditorApproval(ElementInterface $draft, WorkflowRun $run, CraftUser $actor): void
     {
@@ -820,6 +831,8 @@ class Workflows
         if ($run->isPending() && $stagePayload == $context->payload) {
             return;
         }
+
+        $this->beforeTransition(WorkflowTransition::Edit, $draft, $actor, $run);
 
         $payload = $run->payload ?? [];
         $payload[$stage->uid] = $stagePayload;
@@ -840,6 +853,7 @@ class Workflows
      */
     private function withdrawFromReview(ElementInterface $draft, WorkflowRun $run, CraftUser $actor): void
     {
+        $this->beforeTransition(WorkflowTransition::Withdraw, $draft, $actor, $run);
         $run->update([
             'status' => WorkflowStatus::Withdrawn,
             'currentStageResult' => null,
@@ -1066,7 +1080,7 @@ class Workflows
                     WorkflowActivityType::Invalidate => t('reset the review because its workflow changed'),
                     WorkflowActivityType::Withdraw => t('started editing the draft, withdrawing it from review'),
                     WorkflowActivityType::SendBack => t('started editing the draft, sending it back to this stage'),
-                    WorkflowActivityType::Edit => t('edited the draft'),
+                    WorkflowActivityType::Edit => t('started editing the draft'),
                 },
                 actor: (array) $presentation['actor'],
                 impersonator: is_array($impersonator) ? $impersonator : null,
