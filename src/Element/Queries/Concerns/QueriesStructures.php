@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Element\Queries\Concerns;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -154,6 +156,7 @@ trait QueriesStructures
     /**
      * Explicitly determines whether the query should join in the structure data.
      */
+    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Explicitly determines whether the query should join in the structure data.')]
     public function withStructure(bool $value = true): static
     {
         $this->withStructure = $value;
@@ -166,6 +169,7 @@ trait QueriesStructures
      *
      * @internal
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'Determines which structure data should be joined into the query.')]
     public function structureId(?int $value = null): static
     {
         $this->structureId = $value;
@@ -203,6 +207,7 @@ trait QueriesStructures
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::IntOrInts, 'Narrows the query results based on the elements’ level within the structure.')]
     public function level($value = null): static
     {
         $this->level = $value;
@@ -231,6 +236,7 @@ trait QueriesStructures
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Narrows the query results based on whether the elements have any descendants in their structure.')]
     public function hasDescendants(bool $value = true): static
     {
         $this->hasDescendants = $value;
@@ -259,6 +265,7 @@ trait QueriesStructures
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Narrows the query results based on whether the elements are “leaves” in their structure (element with no descendants).')]
     public function leaves(bool $value = true): static
     {
         $this->leaves = $value;
@@ -298,6 +305,7 @@ trait QueriesStructures
      * This can be combined with [[ancestorDist()]] if you want to limit how far away the ancestor {elements} can be.
      * :::
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'Narrows the query results to only elements that are ancestors of another element in its structure, provided by its ID.')]
     public function ancestorOf(ElementInterface|int|null $value): static
     {
         $this->ancestorOf = $value;
@@ -326,6 +334,7 @@ trait QueriesStructures
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'Narrows the query results to only elements that are up to a certain distance away from the element in its structure specified by `ancestorOf`.')]
     public function ancestorDist(?int $value = null): static
     {
         $this->ancestorDist = $value;
@@ -365,6 +374,7 @@ trait QueriesStructures
      * This can be combined with [[descendantDist()]] if you want to limit how far away the descendant {elements} can be.
      * :::
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'Narrows the query results to only elements that are descendants of another element in its structure provided by its ID.')]
     public function descendantOf(ElementInterface|int|null $value): static
     {
         $this->descendantOf = $value;
@@ -393,6 +403,7 @@ trait QueriesStructures
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'Narrows the query results to only elements that are up to a certain distance away from the element in its structure specified by `descendantOf`.')]
     public function descendantDist(?int $value = null): static
     {
         $this->descendantDist = $value;
@@ -459,6 +470,7 @@ trait QueriesStructures
      *     ->one();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'Narrows the query results to only the entry that comes immediately before another element in its structure, provided by its ID.')]
     public function prevSiblingOf(ElementInterface|int|null $value): static
     {
         $this->prevSiblingOf = $value;
@@ -492,6 +504,7 @@ trait QueriesStructures
      *     ->one();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'Narrows the query results to only the entry that comes immediately after another element in its structure, provided by its ID.')]
     public function nextSiblingOf(ElementInterface|int|null $value): static
     {
         $this->nextSiblingOf = $value;
@@ -525,6 +538,7 @@ trait QueriesStructures
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'Narrows the query results to only entries that are positioned before another element in its structure, provided by its ID.')]
     public function positionedBefore(ElementInterface|int|null $value): static
     {
         $this->positionedBefore = $value;
@@ -558,6 +572,7 @@ trait QueriesStructures
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'Narrows the query results to only entries that are positioned after another element in its structure, provided by its ID.')]
     public function positionedAfter(ElementInterface|int|null $value): static
     {
         $this->positionedAfter = $value;

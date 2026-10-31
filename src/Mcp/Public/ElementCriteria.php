@@ -39,7 +39,7 @@ readonly class ElementCriteria
             ...$native,
             ...$this->customFields($type, [
                 ...array_column($native, 'name'),
-                ...($type->is(User::class) ? array_keys(ElementQueryCriteria::UserSchemaProperties) : []),
+                ...($type->is(User::class) ? array_keys(ElementQueryCriteria::properties($type->class)) : []),
             ]),
         ];
 
@@ -75,7 +75,7 @@ readonly class ElementCriteria
     private function native(ElementType $type): array
     {
         $properties = [
-            ...Arr::only(ElementQueryCriteria::SchemaProperties, [
+            ...ElementQueryCriteria::properties($type->class, [
                 'id',
                 'uid',
                 'site',
@@ -83,10 +83,16 @@ readonly class ElementCriteria
                 'search',
                 'status',
                 'archived',
-                'limit',
-                'offset',
-                'orderBy',
+                'drafts',
+                'revisions',
+                ...match (true) {
+                    $type->is(Entry::class) => ['section', 'sectionId', 'slug', 'field', 'fieldId', 'title'],
+                    $type->is(Asset::class) => ['volume', 'volumeId', 'folderId', 'filename', 'kind'],
+                    $type->is(User::class) => ['group', 'groupId', 'username', 'email', 'firstName', 'lastName', 'fullName', 'hasPhoto'],
+                    default => [],
+                },
             ]),
+            ...Arr::only(ElementQueryCriteria::SchemaProperties, ['limit', 'offset']),
             'orderBy' => [
                 'type' => 'string',
                 'description' => 'Comma-separated public sort field names with optional asc or desc. See publicConstraints.orderBy for allowed fields.',
@@ -99,32 +105,11 @@ readonly class ElementCriteria
                 'description' => 'Related public element IDs. Every ID must be queryable in the selected public sites.',
             ],
             'with' => [
-                ...ElementQueryCriteria::SchemaProperties['with'],
+                ...ElementQueryCriteria::properties($type->class, ['with'])['with'],
                 'maxItems' => 5,
                 'description' => 'Eager-loading paths. At most five paths, three levels deep. Targets must be public and are capped at 100 per target query.',
             ],
-            'drafts' => ['type' => 'boolean', 'description' => 'Whether drafts may be returned.'],
-            'revisions' => ['type' => 'boolean', 'description' => 'Whether revisions may be returned.'],
         ];
-
-        $properties = match (true) {
-            $type->is(Entry::class) => [
-                ...$properties,
-                ...Arr::only(ElementQueryCriteria::EntrySchemaProperties, ['section', 'sectionId', 'slug']),
-                'field' => [...ElementQueryCriteria::StringOrStringsSchema, 'description' => 'Nested entry field handle or handles.'],
-                'fieldId' => [...ElementQueryCriteria::IntegerOrIntegersSchema, 'description' => 'Nested entry field ID or IDs.'],
-                'title' => ['type' => 'string', 'description' => 'Entry title criteria.'],
-            ],
-            $type->is(Asset::class) => [
-                ...$properties,
-                ...ElementQueryCriteria::AssetSchemaProperties,
-            ],
-            $type->is(User::class) => [
-                ...$properties,
-                ...Arr::except(ElementQueryCriteria::UserSchemaProperties, ['admin', 'lastLoginDate']),
-            ],
-            default => $properties,
-        };
 
         return $this->elementQueryCriteria->describe($properties);
     }

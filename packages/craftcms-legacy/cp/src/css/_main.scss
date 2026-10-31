@@ -5723,13 +5723,6 @@ $min2ColWidth: 400px;
   }
 }
 
-.button-fade .buttons {
-  /* The rest is in the template's utility classes, but legacy `.buttons` is
-     unlayered, so it would otherwise win over them. */
-  position: absolute;
-  margin: 0;
-}
-
 /* element selector modals */
 .elementselectormodal {
   --content-padding: 24px;
