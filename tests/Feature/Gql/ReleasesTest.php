@@ -14,6 +14,7 @@ use CraftCms\Cms\Gql\Queries\Release as ReleaseQuery;
 use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
 
 use function Pest\Laravel\actingAs;
 
@@ -40,6 +41,15 @@ it('omits the releases component on editions without releases', function () {
 
     expect($elementComponents['elements.drafts:read'])->not->toHaveKey('nested');
 });
+
+it('lets authenticated requests query releases for control panel users', function (array $permissions, bool $expected) {
+    $user = UserModel::factory()->withPermissions($permissions)->createElement(['admin' => false]);
+
+    expect(in_array('elements.releases:read', app(Gql::class)->getSchemaForUser($user, false)->scope, true))->toBe($expected);
+})->with([
+    'control panel access' => [['accessCp'], true],
+    'no control panel access' => [[], false],
+]);
 
 it('requires both the releases and drafts components', function (array $scope, bool $expected) {
     $gql = app(Gql::class);

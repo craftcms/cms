@@ -20,6 +20,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Policies\EntryPolicy;
 use CraftCms\Cms\Field\Elements\ContentBlock;
 use CraftCms\Cms\Field\Policies\ContentBlockPolicy;
+use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Release\Models\Release;
 use CraftCms\Cms\Release\Policies\ReleasePolicy;
 use CraftCms\Cms\Structure\Data\Structure;
@@ -76,6 +77,10 @@ class AuthServiceProvider extends ServiceProvider
             'driver' => 'passport',
             'provider' => 'craft',
         ], $config->get('auth.guards.craft-mcp', [])));
+        $config->set('auth.guards.'.Gql::AUTH_GUARD, array_replace([
+            'driver' => 'passport',
+            'provider' => 'craft',
+        ], $config->get('auth.guards.'.Gql::AUTH_GUARD, [])));
 
         $this->app->bind(SendQueuedNotifications::class, SendQueuedUserNotifications::class);
 

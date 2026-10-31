@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Mcp\Http\Middleware;
+namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
 /**
- * Requires control panel access for signed-in users when an MCP endpoint is in the control panel.
+ * Requires control panel access for signed-in users when an MCP or OAuth endpoint is in the control panel.
  *
  * Guests pass through, so the endpoint can ask them to sign in.
  *

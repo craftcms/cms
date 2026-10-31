@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Mcp\Http\Controllers;
+namespace CraftCms\Cms\Auth\OAuthServer\Http\Controllers;
 
-use CraftCms\Cms\Mcp\Enums\McpScope;
+use CraftCms\Cms\Auth\OAuthServer\OAuthResource;
+use CraftCms\Cms\Auth\OAuthServer\OAuthResources;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,13 +14,22 @@ use Illuminate\Support\Str;
 use Laravel\Passport\ClientRepository;
 use Throwable;
 
-/** @since 6.0.0 */
-readonly class OAuthRegisterController
+/**
+ * Registers OAuth clients for a resource, as described by RFC 7591.
+ *
+ * @since 6.0.0
+ */
+readonly class RegisterClientController
 {
-    public function __construct(private ClientRepository $clients) {}
+    public function __construct(
+        private ClientRepository $clients,
+        private OAuthResources $resources,
+    ) {}
 
     public function __invoke(Request $request): JsonResponse
     {
+        $resource = $this->resources->forRequest($request) ?? abort(404);
+
         $validator = Validator::make($request->all(), [
             'client_name' => ['nullable', 'string', 'min:1', 'max:255'],
             'name' => ['nullable', 'string', 'min:1', 'max:255'],
@@ -70,7 +80,7 @@ readonly class OAuthRegisterController
                 confidential: false,
                 enableDeviceFlow: false,
             );
-            $this->grantMcpScopes($client);
+            $this->grantScopes($client, $resource);
         } catch (Throwable $throwable) {
             report($throwable);
 
@@ -85,12 +95,12 @@ readonly class OAuthRegisterController
             'grant_types' => $client->getAttribute('grant_types'),
             'response_types' => ['code'],
             'redirect_uris' => $client->getAttribute('redirect_uris'),
-            'scope' => implode(' ', McpScope::values()),
+            'scope' => implode(' ', $resource->scopes()),
             'token_endpoint_auth_method' => 'none',
         ], 201);
     }
 
-    private function grantMcpScopes(Model $client): void
+    private function grantScopes(Model $client, OAuthResource $resource): void
     {
         $scopes = $client->refresh()->getAttribute('scopes');
 
@@ -98,7 +108,7 @@ readonly class OAuthRegisterController
             return;
         }
 
-        $client->forceFill(['scopes' => array_values(array_unique([...$scopes, ...McpScope::values()]))])->save();
+        $client->forceFill(['scopes' => array_values(array_unique([...$scopes, ...$resource->scopes()]))])->save();
     }
 
     /** @param array<string, mixed> $validated */
@@ -106,7 +116,7 @@ readonly class OAuthRegisterController
     {
         return $validated['client_name']
             ?? $validated['name']
-            ?? (parse_url((string) ($validated['redirect_uris'][0] ?? ''), PHP_URL_HOST) ?: 'MCP Client');
+            ?? (parse_url((string) ($validated['redirect_uris'][0] ?? ''), PHP_URL_HOST) ?: 'OAuth Client');
     }
 
     private function isValidRedirectUri(string $value): bool
