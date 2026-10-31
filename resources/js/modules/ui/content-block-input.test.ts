@@ -30,3 +30,14 @@ it('adds and explicitly clears a Content Block', () => {
     'Create block'
   );
 });
+
+it('adds a Content Block without a clear button when it has no clear label', () => {
+  const input = document.createElement('craft-content-block-input');
+  input.innerHTML =
+    '<craft-empty><craft-button data-content-block-add></craft-button></craft-empty>';
+  document.body.append(input);
+
+  input.querySelector<HTMLElement>('[data-content-block-add]')!.click();
+  expect(input.querySelector('[data-content-block] craft-spinner')).not.toBeNull();
+  expect(input.querySelector('[data-content-block-remove]')).toBeNull();
+});

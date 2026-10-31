@@ -393,7 +393,9 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
     #[Override]
     public function uiControl(FieldContext $context): Control
     {
-        $control = ContentBlockControl::make($context->path)->viewMode($this->viewMode);
+        $control = ContentBlockControl::make($context->path)
+            ->viewMode($this->viewMode)
+            ->clearable(false);
 
         if (! $context->value instanceof ContentBlockElement) {
             return $control;
