@@ -21,5 +21,7 @@ readonly class ReleaseItemData
         public ?string $chipHtml,
         public ?DateTimeInterface $publishedAt,
         public bool $canDetach,
+        /** Where the release preview opens on this draft, if the user can view it. */
+        public ?string $previewUrl = null,
     ) {}
 }

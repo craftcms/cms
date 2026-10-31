@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Markdown as MarkdownField;
+use CraftCms\Cms\Http\ElementPreview;
 use CraftCms\Cms\Release\Data\ReleaseDetailData;
 use CraftCms\Cms\Release\Data\ReleaseItemData;
 use CraftCms\Cms\Release\Data\ReleaseReadiness;
@@ -45,6 +48,12 @@ use function CraftCms\Cms\t;
  */
 class ReleaseViewModel extends ViewModel
 {
+    /** @var array<int, list<ElementInterface>> */
+    private array $itemElements = [];
+
+    /** @var array<int, array{element: ElementInterface, preview: ElementPreview}|null> */
+    private array $itemPreviews = [];
+
     public function __construct(
         private readonly Release $release,
         private readonly CraftUser $actor,
@@ -134,11 +143,83 @@ class ReleaseViewModel extends ViewModel
     /** @return list<ReleaseItemData> */
     private function items(): array
     {
-        return $this->release->items()
-            ->orderBy('id')
-            ->get()
-            ->map(fn (ReleaseItem $item): ReleaseItemData => $this->itemData($item))
-            ->all();
+        return array_map($this->itemData(...), $this->itemModels());
+    }
+
+    /** @return list<ReleaseItem> */
+    private function itemModels(): array
+    {
+        return once(fn (): array => $this->release->items()->orderBy('id')->get()->all());
+    }
+
+    /**
+     * The release preview: its drafts, each with what Live Preview needs to
+     * load it, and the one it opens on.
+     *
+     * @return array{items: list<array{id: int, title: string, url: string, preview: array<string, mixed>|null}>, selectedItemId: int|null, closeUrl: string}
+     */
+    public function preview(?int $selectedItemId): array
+    {
+        $items = [];
+
+        foreach ($this->itemModels() as $item) {
+            if ($item->draftId === null) {
+                continue;
+            }
+
+            $itemPreview = $this->itemPreview($item);
+
+            if ($itemPreview === null) {
+                continue;
+            }
+
+            $payload = $itemPreview['preview']->payload();
+
+            if ($payload !== null) {
+                // What the preview token is created against, as the edit screen does.
+                SessionAuth::authorize("previewDraft:$item->draftId");
+            }
+
+            $items[] = [
+                'id' => $item->id,
+                'title' => $itemPreview['element']->title ?? t('Untitled'),
+                'url' => route('craft.cp.releases.preview', [$this->release, 'item' => $item->id]),
+                'preview' => $payload,
+            ];
+        }
+
+        $selected = collect($items)->firstWhere('id', $selectedItemId) ?? $items[0] ?? null;
+
+        return [
+            'items' => $items,
+            'selectedItemId' => $selected['id'] ?? null,
+            'closeUrl' => route('craft.cp.releases.show', $this->release),
+        ];
+    }
+
+    /**
+     * The draft a release item is previewed as — in the requested site when
+     * the actor can view it there — and its preview, or `null` when there's no
+     * draft the actor can view. The preview itself may have no targets.
+     *
+     * @return array{element: ElementInterface, preview: ElementPreview}|null
+     */
+    private function itemPreview(ReleaseItem $item): ?array
+    {
+        if (array_key_exists($item->id, $this->itemPreviews)) {
+            return $this->itemPreviews[$item->id];
+        }
+
+        $viewable = $item->draftId === null ? [] : array_values(array_filter(
+            $this->itemElements($item),
+            fn (ElementInterface $element): bool => $this->actor->can('view', $element),
+        ));
+        $siteId = app(RequestedSite::class)->get()?->id;
+        $element = collect($viewable)->firstWhere('siteId', $siteId) ?? $viewable[0] ?? null;
+
+        return $this->itemPreviews[$item->id] = $element === null
+            ? null
+            : ['element' => $element, 'preview' => new ElementPreview($element)];
     }
 
     public function readiness(): ?ReleaseReadiness
@@ -193,6 +274,11 @@ class ReleaseViewModel extends ViewModel
                 'status' => ['html' => Html::tag('craft-badge', Html::encode($label), ['fill' => $color->value])],
                 'issues' => ['html' => $issues === [] ? '' : (string) Html::ul($issues, ['class' => 'grid gap-1'], encode: true)],
                 'publishedAt' => $item->publishedAt === null ? '' : $this->formatDate($item->publishedAt),
+                'view' => ['html' => $item->previewUrl === null ? '' : Html::tag(
+                    'craft-button',
+                    Html::encode(t('View')).Html::tag('span', ' '.Html::encode($item->title), ['class' => 'sr-only']),
+                    ['href' => $item->previewUrl, 'size' => 'small'],
+                )],
                 '_deletable' => $item->canDetach,
                 '_deleteUrl' => $item->canDetach && $item->draftId !== null
                     ? route('craft.cp.releases.detach', [$this->release, $item->draftId])
@@ -200,7 +286,7 @@ class ReleaseViewModel extends ViewModel
                 '_deleteLabel' => t('Remove {title}', ['title' => $item->title]),
                 '_deleteConfirmMessage' => t('Remove “{title}” from this release? The draft will be preserved.', ['title' => $item->title]),
             ];
-        }, $this->items());
+        }, $items = $this->items());
 
         $columns = [
             ['key' => 'title', 'label' => t('Draft'), 'wrap' => true],
@@ -214,6 +300,9 @@ class ReleaseViewModel extends ViewModel
                 ],
                 default => [],
             },
+            ...(array_any($items, fn (ReleaseItemData $item): bool => $item->previewUrl !== null)
+                ? [['key' => 'view', 'label' => t('Preview'), 'thin' => true, 'headerSrOnly' => true]]
+                : []),
         ];
 
         $table = UiTable::make('release-items')
@@ -297,6 +386,9 @@ class ReleaseViewModel extends ViewModel
             canDetach: $element !== null
                 && $item->draftId !== null
                 && $this->actor->can('detach', [$this->release, $element]),
+            previewUrl: $this->itemPreview($item) !== null
+                ? route('craft.cp.releases.preview', [$this->release, 'item' => $item->id])
+                : null,
         );
     }
 
@@ -318,6 +410,12 @@ class ReleaseViewModel extends ViewModel
 
     /** @return list<ElementInterface> */
     private function itemElements(ReleaseItem $item): array
+    {
+        return $this->itemElements[$item->id] ??= $this->queryItemElements($item);
+    }
+
+    /** @return list<ElementInterface> */
+    private function queryItemElements(ReleaseItem $item): array
     {
         $elementQuery = DB::table(Table::ELEMENTS);
         if ($item->draftId !== null) {

@@ -170,6 +170,24 @@ class ReleasesController
         ]);
     }
 
+    /**
+     * The release screen with its preview open: Live Preview's layout, with
+     * the release's drafts to step through in place of the editor.
+     */
+    public function preview(Release $release, Request $request): InertiaResponse
+    {
+        $response = $this->show($release, $request);
+        $preview = app(ReleaseViewModel::class, [
+            'release' => $release,
+            'actor' => $request->craftUser(),
+            'releases' => $this->releases,
+        ])->preview($request->integer('item') ?: null);
+
+        abort_if($preview['selectedItemId'] === null, 404, t('This release has no drafts to preview.'));
+
+        return $response->with('preview', $preview);
+    }
+
     public function store(Request $request): Response
     {
         $data = $this->validateReleaseData($request);

@@ -121,7 +121,9 @@ export function useLivePreview(
   watch(
     preview,
     (data) => {
-      if (data && token.value?.identity !== identityOf(data)) {
+      if (!data) {
+        token.value = null;
+      } else if (token.value?.identity !== identityOf(data)) {
         token.value = {
           identity: identityOf(data),
           value: data.token,
@@ -324,7 +326,7 @@ export function useLivePreview(
   }
 
   async function open(): Promise<void> {
-    if (isOpen.value || !activeTarget.value) {
+    if (isOpen.value) {
       return;
     }
 
@@ -364,25 +366,34 @@ export function useLivePreview(
   }
 
   // The token now points at another element, draft or revision, so the frame
-  // reloads even for a target that doesn't refresh automatically.
+  // reloads even for a target that doesn't refresh automatically. A different
+  // element altogether is another page, so it starts at the top.
   watch(
-    () => token.value?.identity,
-    (identity, previous) => {
-      if (previous !== undefined && identity !== previous) {
-        void refresh({reload: true});
+    () => token.value,
+    (current, previous) => {
+      if (current && current.identity !== previous?.identity) {
+        void refresh({
+          reload: true,
+          resetScroll:
+            !previous ||
+            current.params.canonicalId !== previous.params.canonicalId ||
+            current.params.siteId !== previous.params.siteId,
+        });
       }
     }
   );
 
-  // The page can lose its targets mid-session — a URL format that renders
-  // nothing for the edited values, say.
+  // The targets can go away mid-session — a URL format that renders nothing
+  // for the edited values, say, or a selection that has none — and their page
+  // with them.
   watch(targets, (list) => {
     if (activeIndex.value >= list.length) {
       activeIndex.value = 0;
     }
 
     if (list.length === 0) {
-      void close();
+      frames.value = [];
+      readyFrame.value = null;
     }
   });
 

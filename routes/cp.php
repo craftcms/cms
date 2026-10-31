@@ -145,6 +145,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             ->whereNumber('release');
 
         Route::prefix('releases/{release}')->name('releases.')->whereNumber('release')->group(function () {
+            Route::get('preview', [ReleasesController::class, 'preview'])->name('preview');
             Route::post('validate', [ReleasesController::class, 'validateRelease'])->name('validate');
             Route::get('schedule', [ReleasesController::class, 'scheduleModal'])->name('scheduleModal');
             Route::post('schedule', [ReleasesController::class, 'schedule'])->name('schedule');

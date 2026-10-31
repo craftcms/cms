@@ -13,9 +13,13 @@
   import FormActions from '@/common/components/FormActions.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import UiPage from '@/pages/Ui.vue';
+  import ReleasePreview from '@/modules/releases/components/ReleasePreview.vue';
   import ReleaseStatusBadge from '@/modules/releases/components/ReleaseStatusBadge.vue';
   import {openUiModal} from '@/modules/ui/open-ui-modal';
-  import {formatReleaseDate} from '@/modules/releases/types';
+  import {
+    formatReleaseDate,
+    type ReleasePreviewPayload,
+  } from '@/modules/releases/types';
   import type {UiPayload} from '@/modules/ui/types';
 
   type ReleaseViewModel = CraftCms.Cms.Http.ViewModels.ReleaseViewModel;
@@ -30,6 +34,8 @@
     editUi: UiPayload | null;
     metadataHtml: string | null;
     publishDisabledReason: ReleaseViewModel['publishDisabledReason'];
+    /** Set when the release preview is open over the screen. */
+    preview?: ReleasePreviewPayload | null;
   }>();
 
   const canPublishNow = computed(
@@ -223,5 +229,7 @@
         </craft-button>
       </template>
     </UiPage>
+
+    <ReleasePreview v-if="preview" :release="release" :preview="preview" />
   </div>
 </template>
