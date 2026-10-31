@@ -15,7 +15,6 @@
     onBeforeUnmount,
     onMounted,
     ref,
-    provide,
     useTemplateRef,
     watch,
   } from 'vue';
@@ -32,14 +31,7 @@
   import AppLayout from '@/common/layouts/AppLayout.vue';
   import ResizeHandle from '@/common/components/ResizeHandle.vue';
   import {useResizable} from '@/common/composables/useResizable';
-  import SlideoutScreen from '@/common/layouts/screens/SlideoutScreen.vue';
-  import {
-    createScreenPropsStore,
-    provideScreenContext,
-    ScreenPagePropsKey,
-    ScreenPropsStoreKey,
-    ScreenShellKey,
-  } from '@/common/composables/screen';
+  import {provideSlideoutScreen} from './screenContext';
   import {
     registerPanel,
     shadeElement,
@@ -48,7 +40,7 @@
     type StackedPanel,
   } from './panel-stack';
   import {closeSlideout, notifySlideoutSaved, reloadSlideout} from './store';
-  import {SlideoutControllerKey, type SlideoutInstance} from './types';
+  import type {SlideoutInstance} from './types';
 
   const props = defineProps<{
     instance: SlideoutInstance;
@@ -58,18 +50,7 @@
   /** Room kept beside a slideout. Mirrored by the panel's stylesheet cap. */
   const SLIDEOUT_MIN_GAP = 80;
 
-  provide(ScreenShellKey, SlideoutScreen);
-  provide(ScreenPropsStoreKey, createScreenPropsStore());
-  provideScreenContext('slideout');
-
-  // Without this the shell would read its chrome off `usePage()` — the page
-  // *behind* the slideout — and show that screen's title and edit URL.
-  provide(ScreenPagePropsKey, () => props.instance.props);
-
-  provide(SlideoutControllerKey, {
-    get instance() {
-      return props.instance;
-    },
+  provideSlideoutScreen(() => props.instance, {
     close: (options?: {force?: boolean}) =>
       closeSlideout(props.instance.id, options),
     reload: () => reloadSlideout(props.instance.id),

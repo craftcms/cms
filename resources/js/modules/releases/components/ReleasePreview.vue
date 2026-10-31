@@ -7,19 +7,26 @@
    * Without room for the list, the drafts move into a menu in the preview's
    * toolbar, with the selected draft's targets beneath it.
    *
-   * With room for both, a draft the user can edit opens beside its preview in
-   * a slideout, which refreshes the preview as it autosaves.
+   * From `md` up, a draft the user can edit opens in an editor after the
+   * preview, which reloads as the editor autosaves, as Live Preview's does.
+   * The drafts move into the menu whenever the editor leaves less room than
+   * that beside it.
    */
   import {router} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
-  import {computed, onMounted} from 'vue';
+  import {useWindowSize} from '@vueuse/core';
+  import {computed, onMounted, ref, useTemplateRef, watch} from 'vue';
   import ActionList from '@/common/components/ActionList.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
-  import {cpBreakpoints} from '@/common/composables/useCpBreakpoints';
+  import {
+    cpBreakpoints,
+    cpBreakpointWidth,
+  } from '@/common/composables/useCpBreakpoints';
   import type {ActionItems} from '@/common/types';
   import PreviewLayout from '@/modules/elements/live-preview/PreviewLayout.vue';
   import {useLivePreview} from '@/modules/elements/live-preview/useLivePreview';
-  import {openSlideout} from '@/common/slideouts';
+  import DockedSlideout from '@/common/slideouts/DockedSlideout.vue';
+  import type {SlideoutSaveResult} from '@/common/slideouts';
   import {useReleasePreviewScope} from '../releaseEditor';
   import type {ReleasePreviewItem, ReleasePreviewPayload} from '../types';
 
@@ -27,8 +34,6 @@
     release: {id: number; name: string};
     preview: ReleasePreviewPayload;
   }>();
-
-  const compact = cpBreakpoints.smaller('md');
 
   const selected = computed(
     () =>
@@ -45,18 +50,56 @@
   onMounted(() => void controller.open());
   useReleasePreviewScope(() => props.release.id);
 
-  function edit(event: Event): void {
-    const url = selected.value?.editUrl;
+  /*
+   * Editor
+   */
+  const canEdit = computed(
+    () =>
+      cpBreakpoints.greaterOrEqual('md').value &&
+      Boolean(selected.value?.editUrl)
+  );
+  const editing = ref(false);
+  /** Whether the editor was just opened, rather than moved to another draft. */
+  const editorOpened = ref(false);
+  const editButton = useTemplateRef<HTMLElement>('editButton');
 
-    if (!url) {
-      return;
-    }
-
-    void openSlideout(url, {
-      opener: event.currentTarget as HTMLElement,
-      onSaved: () => void controller.refresh(),
-    });
+  function toggleEditor(): void {
+    editing.value = !editing.value;
+    editorOpened.value = editing.value;
   }
+
+  function closeEditor(): void {
+    editing.value = false;
+    editButton.value?.focus();
+  }
+
+  // A draft the user can't edit, or a window too narrow for an editor.
+  watch(canEdit, (can) => {
+    if (!can) {
+      editing.value = false;
+    }
+  });
+
+  watch(
+    () => selected.value?.id,
+    () => (editorOpened.value = false)
+  );
+
+  /** Shows each autosave in the preview, as Live Preview does. */
+  function onEditorSaved({data}: SlideoutSaveResult): void {
+    controller.draftSaved(data);
+    void controller.refresh();
+  }
+
+  const layout = useTemplateRef<InstanceType<typeof PreviewLayout>>('layout');
+  const {width: windowWidth} = useWindowSize();
+
+  /** The drafts move into the menu once there's less than `md` left for them. */
+  const compact = computed(
+    () =>
+      windowWidth.value - (layout.value?.endWidth ?? 0) <
+      cpBreakpointWidth('md')
+  );
 
   /** Switches drafts in place, keeping the URL in step so a reload stays on it. */
   function select(item: ReleasePreviewItem): void {
@@ -147,6 +190,7 @@
 
 <template>
   <PreviewLayout
+    ref="layout"
     :controller="controller"
     :title="release.name"
     sidebar-width="calc(var(--cp-sidebar-width) + 1px)"
@@ -185,16 +229,28 @@
       </ActionMenu>
     </template>
 
-    <template v-if="!compact && selected?.editUrl" #toolbar-end>
+    <template v-if="canEdit" #toolbar-end>
       <craft-button
+        ref="editButton"
         type="button"
         size="small"
         variant="plain"
         icon="pen"
-        @click="edit"
+        :aria-pressed="editing ? 'true' : 'false'"
+        @click="toggleEditor"
       >
         {{ t('Edit') }}
       </craft-button>
+    </template>
+
+    <template v-if="editing && selected?.editUrl" #end>
+      <DockedSlideout
+        :key="selected.editUrl"
+        :href="selected.editUrl"
+        :focus-on-load="editorOpened"
+        @close="closeEditor"
+        @saved="onEditorSaved"
+      />
     </template>
   </PreviewLayout>
 </template>
