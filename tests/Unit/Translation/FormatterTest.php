@@ -145,6 +145,11 @@ test('asDate', function (int|string|DateTime $input, string $output, ?string $fo
         [$dateTime, '12:00:00', 'php:h:i:s'],
         [$dateTime, '00:00:00', 'php:H:i:s'],
 
+        // https://github.com/craftcms/cms/issues/20234
+        [$dateTime, 'sij 2021', 'php:M Y', 'hr-HR'],
+        [$dateTime, 'siječanj', 'php:F', 'hr-HR'],
+        [$dateTime, 'petak, 1. siječnja 2021. M', 'php:l, j. F Y. \M', 'hr-HR'],
+
         // https://github.com/craftcms/cms/issues/16953
         [new DateTime('1881-01-07 00:00:00', new DateTimeZone('Europe/Amsterdam')), '1/7/81', 'short'],
         [new DateTime('1881-01-07 00:00:00', new DateTimeZone('Europe/Amsterdam')), '07-01-1881', 'short', 'nl'],
