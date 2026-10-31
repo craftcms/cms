@@ -103,8 +103,11 @@ class McpServiceProvider extends ServiceProvider
         $cpSettings->registerSetting('Extend', 'mcp', $settings);
         $cpSettings->registerReadOnlySetting('Extend', 'mcp', $settings);
 
-        if (! $this->app->routesAreCached()) {
-            $mcpRoutes->register();
-        }
+        $this->app->booted(function () use ($mcpRoutes): void {
+            // MCP routes are registered at runtime so cached routes cannot retain stale project config.
+            if (! $this->app->runningConsoleCommand('route:cache')) {
+                $mcpRoutes->register();
+            }
+        });
     }
 }
