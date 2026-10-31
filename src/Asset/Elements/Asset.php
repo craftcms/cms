@@ -52,6 +52,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Actions\DeleteForSite;
 use CraftCms\Cms\Element\Actions\Restore;
+use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\CurrentElementIndex;
@@ -60,6 +61,7 @@ use CraftCms\Cms\Element\Data\Thumb;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Queries\AssetQuery;
@@ -221,12 +223,14 @@ class Asset extends Element
      * @var int|null Folder ID
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Id, 'The ID of the folder that the asset belongs to.', readable: true, nonNull: true)]
     public ?int $folderId = null;
 
     /**
      * @var int|null The ID of the user who first added this asset (if known)
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Id, 'The ID of the user who first added the asset, if known.', nullable: true, readable: true)]
     public ?int $uploaderId = null;
 
     /**
@@ -239,12 +243,14 @@ class Asset extends Element
      * @var string|null Kind
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The file kind.', readable: true, writable: false, nonNull: true)]
     public ?string $kind = null;
 
     /**
      * @var string|null Alternative text
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'Alternative text for the asset.', nullable: true, readable: true)]
     public ?string $alt = null;
 
     /**
@@ -315,6 +321,7 @@ class Asset extends Element
      * @var DateTimeInterface|null Date modified
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::DateTime, 'The date the asset file was last modified.', readable: true, writable: false)]
     public ?DateTimeInterface $dateModified = null;
 
     /**
@@ -339,6 +346,7 @@ class Asset extends Element
     /**
      * @var int|null New folder ID
      */
+    #[ElementProperty(ElementPropertyType::Id, 'The ID of the folder to move the asset to.')]
     public ?int $newFolderId = null;
 
     /**
@@ -1421,6 +1429,7 @@ class Asset extends Element
      * Returns the volume’s ID.
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Id, 'The ID of the volume that the asset belongs to.', readable: true, writable: false)]
     public function getVolumeId(): ?int
     {
         return (int) $this->_volumeId ?: null;
@@ -2489,6 +2498,7 @@ JS, [
     /**
      * Sets the filename (with extension).
      */
+    #[ElementProperty(ElementPropertyType::String, 'The filename of the asset file.', readable: true, nonNull: true)]
     public function setFilename(string $filename): void
     {
         $this->_filename = $filename;
@@ -2498,6 +2508,7 @@ JS, [
      * Returns the file extension.
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The file extension for the asset file.', readable: true, writable: false, nonNull: true)]
     public function getExtension(): string
     {
         return pathinfo($this->_filename, PATHINFO_EXTENSION);
@@ -2523,6 +2534,7 @@ JS, [
      * @throws ImageTransformException if $transform is an invalid transform handle
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The file’s MIME type, if it can be determined.', readable: true, writable: false)]
     public function getMimeType(mixed $transform = null): ?string
     {
         if ($transform !== null) {
@@ -2688,6 +2700,7 @@ JS, [
      * @param  string|null  $filename  Filename to use. If not specified, the asset's filename will be used.
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The asset’s path in the volume.', readable: true, writable: false, nonNull: true)]
     public function getPath(?string $filename = null): string
     {
         return $this->folderPath.($filename ?: $this->_filename);
@@ -2807,6 +2820,7 @@ JS, [
      * @see ColorGrid::interpolate()
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'A data URL of a tiny PNG made from the average colors of the image’s regions, which can be scaled up as a blurred placeholder for it, or null if it’s not an image or its colors aren’t known.', readable: true, writable: false)]
     public function getPlaceholderDataUrl(): ?string
     {
         $grid = $this->kind === FileKind::Image->value ? $this->analysis?->colors?->grid : null;
@@ -2837,6 +2851,7 @@ JS, [
      * @see ImageColors::$grid
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'A [BlurHash](https://blurha.sh) string encoded from the image’s colors, or null if it’s not an image or its colors aren’t known.', readable: true, writable: false)]
     public function getBlurhash(): ?string
     {
         $grid = $this->kind === FileKind::Image->value ? $this->analysis?->colors?->grid : null;
@@ -2904,6 +2919,7 @@ JS, [
      * Returns whether a user-defined focal point is set on the asset.
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Boolean, 'Whether a user-defined focal point is set on the asset.', readable: true, writable: false, nonNull: true)]
     public function getHasFocalPoint(): bool
     {
         return isset($this->_focalPoint);
@@ -2937,6 +2953,7 @@ JS, [
      * @throws InvalidArgumentException if $value is invalid
      */
     /** @param array{x: float|int|string, y: float|int|string}|string|null $value */
+    #[ElementProperty(ElementPropertyType::String, 'The image or video focal point, as fractions of the width and height from the top-left corner in the format of "x;y", such as "0.5;0.5". Image transforms crop around it. Null clears it.', nullable: true)]
     public function setFocalPoint(array|string|null $value): void
     {
         if (is_array($value)) {
