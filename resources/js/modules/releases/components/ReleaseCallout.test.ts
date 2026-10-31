@@ -1,5 +1,5 @@
 import {createApp, h} from 'vue';
-import {afterEach, beforeEach, expect, it} from 'vite-plus/test';
+import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import type {AttachedRelease} from '@/modules/elements/composables/useElementEditor';
 import ReleaseCallout from './ReleaseCallout.vue';
 
@@ -16,7 +16,10 @@ afterEach(() => {
   container.remove();
 });
 
-function mount(release: Partial<AttachedRelease>): void {
+function mount(
+  release: Partial<AttachedRelease>,
+  onDismiss: () => void = () => {}
+): void {
   app = createApp({
     render: () =>
       h(ReleaseCallout, {
@@ -28,10 +31,10 @@ function mount(release: Partial<AttachedRelease>): void {
           canManage: true,
           draftId: 7,
           siteId: 1,
+          blocking: false,
           ...release,
         } as AttachedRelease,
-        canEdit: true,
-        editing: true,
+        onDismiss,
       }),
   });
   app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
@@ -56,3 +59,51 @@ it.each([
     expect(container.textContent).toContain(text);
   }
 );
+
+it.each([
+  [
+    'draft',
+    false,
+    'info',
+    'This draft belongs to “Launch”. Saved changes will be included when the release publishes.',
+  ],
+  [
+    'draft',
+    true,
+    'warning',
+    'This draft is blocking “Launch”, which can’t be published until the draft is ready.',
+  ],
+  [
+    'scheduled',
+    true,
+    'warning',
+    'This draft is blocking the scheduled release “Launch”, which will fail to publish until the draft is ready.',
+  ],
+] as const)(
+  'describes a %s release (blocking: %s) as %s',
+  (status, blocking, variant, text) => {
+    mount({status, blocking});
+
+    const callout = container.querySelector<HTMLElement & {variant?: string}>(
+      'craft-callout'
+    )!;
+    expect(callout.variant).toBe(variant);
+    expect(callout.textContent).toContain(text);
+  }
+);
+
+it('offers a dismiss button instead of Start editing', () => {
+  const onDismiss = vi.fn();
+  mount({}, onDismiss);
+
+  const buttons = container.querySelectorAll('craft-button');
+  expect(buttons).toHaveLength(1);
+  expect(container.textContent).not.toContain('Start editing');
+  expect(
+    buttons[0]!.querySelector<HTMLElement & {label?: string}>('craft-icon')!
+      .label
+  ).toBe('Dismiss');
+
+  (buttons[0] as HTMLElement).click();
+  expect(onDismiss).toHaveBeenCalledOnce();
+});

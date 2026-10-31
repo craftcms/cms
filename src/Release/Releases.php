@@ -564,82 +564,12 @@ class Releases
         }
 
         foreach ($items as $item) {
-            if ($item->draftId === null) {
-                $itemErrors[$item->id][] = t('The draft no longer exists.');
-
-                continue;
+            ['errors' => $errorsForItem, 'warnings' => $warningsForItem] = $this->itemReadiness($release, $item, $lockWorkflowRun);
+            if ($errorsForItem !== []) {
+                $itemErrors[$item->id] = $errorsForItem;
             }
-
-            try {
-                $draft = $this->freshDraft((int) $item->draftId);
-            } catch (ReleaseException $exception) {
-                $itemErrors[$item->id][] = $exception->getMessage();
-
-                continue;
-            }
-
-            // Deleting an element, or the section it's in, leaves its drafts
-            // behind, so the draft loads but there's nothing left to apply it to.
-            if (! $draft->getIsUnpublishedDraft() && $draft->getCanonical(true)->trashed) {
-                $itemErrors[$item->id][] = t('The {type} has been deleted.', ['type' => $draft::lowerDisplayName()]);
-
-                continue;
-            }
-
-            if (ElementHelper::isOutdated($draft)) {
-                if ($draft::trackChanges()) {
-                    $itemWarnings[$item->id][] = t('Live changes will be merged into this draft before publication.');
-                } else {
-                    $itemErrors[$item->id][] = t('The live element changed after this draft was prepared.');
-                }
-            }
-
-            try {
-                $this->ensureReadyWorkflow($draft, $lockWorkflowRun);
-            } catch (ReleaseException $exception) {
-                $itemErrors[$item->id][] = $exception->getMessage();
-            }
-
-            $siteDrafts = $draft::find()
-                ->draftId($draft->draftId)
-                ->site('*')
-                ->status(null)
-                ->all();
-
-            foreach ($siteDrafts as $siteDraft) {
-                $candidate = clone $siteDraft;
-                if ($siteDraft instanceof Entry && $candidate instanceof Entry) {
-                    $candidate->setAuthorIds($siteDraft->getAuthorIds());
-                }
-                if ($candidate::trackChanges() && ElementHelper::isOutdated($candidate)) {
-                    $candidate->mergeCanonicalChanges();
-                }
-                if ($candidate->enabled && $candidate->getEnabledForSite()) {
-                    $candidate->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
-                }
-                if (! $candidate->validate()) {
-                    $itemErrors[$item->id] = [
-                        ...($itemErrors[$item->id] ?? []),
-                        ...$candidate->errors()->all(),
-                    ];
-                }
-            }
-
-            $target = $release->publishedAt ?? now();
-            foreach ($siteDrafts as $siteDraft) {
-                if (! $siteDraft instanceof Entry) {
-                    continue;
-                }
-                if ($siteDraft->postDate !== null && $siteDraft->postDate > $target) {
-                    $itemWarnings[$item->id][] = t('This entry will remain pending in at least one site at the release time.');
-                }
-                if ($siteDraft->expiryDate !== null && $siteDraft->expiryDate <= $target) {
-                    $itemWarnings[$item->id][] = t('This entry will be expired in at least one site at the release time.');
-                }
-            }
-
-            if ($this->hasUnpublishedRelationTargetsOutsideRelease($draft, $release)) {
-                $itemWarnings[$item->id][] = t('This draft links to unpublished content that is not part of the release.');
+            if ($warningsForItem !== []) {
+                $itemWarnings[$item->id] = $warningsForItem;
             }
         }
 
@@ -650,6 +580,98 @@ class Releases
             itemErrors: $itemErrors,
             itemWarnings: $itemWarnings,
         );
+    }
+
+    /**
+     * Returns why a draft would stop its release from publishing.
+     *
+     * @return list<string>
+     */
+    public function draftBlockers(Release $release, ElementInterface|int $draft): array
+    {
+        $item = $release->items()->where('draftId', $this->draftId($draft))->first();
+
+        return $item !== null ? $this->itemReadiness($release, $item)['errors'] : [];
+    }
+
+    /**
+     * @return array{errors: list<string>, warnings: list<string>}
+     */
+    private function itemReadiness(Release $release, ReleaseItem $item, bool $lockWorkflowRun = false): array
+    {
+        $errors = [];
+        $warnings = [];
+
+        if ($item->draftId === null) {
+            return ['errors' => [t('The draft no longer exists.')], 'warnings' => []];
+        }
+
+        try {
+            $draft = $this->freshDraft((int) $item->draftId);
+        } catch (ReleaseException $exception) {
+            return ['errors' => [$exception->getMessage()], 'warnings' => []];
+        }
+
+        // Deleting an element, or the section it's in, leaves its drafts
+        // behind, so the draft loads but there's nothing left to apply it to.
+        if (! $draft->getIsUnpublishedDraft() && $draft->getCanonical(true)->trashed) {
+            return ['errors' => [t('The {type} has been deleted.', ['type' => $draft::lowerDisplayName()])], 'warnings' => []];
+        }
+
+        if (ElementHelper::isOutdated($draft)) {
+            if ($draft::trackChanges()) {
+                $warnings[] = t('Live changes will be merged into this draft before publication.');
+            } else {
+                $errors[] = t('The live element changed after this draft was prepared.');
+            }
+        }
+
+        try {
+            $this->ensureReadyWorkflow($draft, $lockWorkflowRun);
+        } catch (ReleaseException $exception) {
+            $errors[] = $exception->getMessage();
+        }
+
+        $siteDrafts = $draft::find()
+            ->draftId($draft->draftId)
+            ->site('*')
+            ->status(null)
+            ->all();
+
+        foreach ($siteDrafts as $siteDraft) {
+            $candidate = clone $siteDraft;
+            if ($siteDraft instanceof Entry && $candidate instanceof Entry) {
+                $candidate->setAuthorIds($siteDraft->getAuthorIds());
+            }
+            if ($candidate::trackChanges() && ElementHelper::isOutdated($candidate)) {
+                $candidate->mergeCanonicalChanges();
+            }
+            if ($candidate->enabled && $candidate->getEnabledForSite()) {
+                $candidate->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+            }
+            if (! $candidate->validate()) {
+                array_push($errors, ...$candidate->errors()->all());
+            }
+        }
+
+        $target = $release->publishedAt ?? now();
+        foreach ($siteDrafts as $siteDraft) {
+            if (! $siteDraft instanceof Entry) {
+                continue;
+            }
+            if ($siteDraft->postDate !== null && $siteDraft->postDate > $target) {
+                $warnings[] = t('This entry will remain pending in at least one site at the release time.');
+            }
+            if ($siteDraft->expiryDate !== null && $siteDraft->expiryDate <= $target) {
+                $warnings[] = t('This entry will be expired in at least one site at the release time.');
+            }
+        }
+
+        if ($this->hasUnpublishedRelationTargetsOutsideRelease($draft, $release)) {
+            $warnings[] = t('This draft links to unpublished content that is not part of the release.');
+        }
+
+        return ['errors' => $errors, 'warnings' => $warnings];
     }
 
     private function hasUnpublishedRelationTargetsOutsideRelease(ElementInterface $draft, Release $release): bool

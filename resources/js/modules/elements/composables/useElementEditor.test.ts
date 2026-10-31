@@ -728,7 +728,7 @@ describe('useElementEditor', () => {
   });
 
   it.each(['draft', 'scheduled'] as const)(
-    'edits a %s release draft locally and autosaves without changing membership',
+    'autosaves a %s release draft without a Start editing step or a visit',
     async (status) => {
       vi.useFakeTimers();
       onTestFinished(() => {
@@ -744,6 +744,7 @@ describe('useElementEditor', () => {
         canManage: true,
         draftId: 7,
         siteId: 1,
+        blocking: false,
       };
       const screen = payload({
         draftId: 7,
@@ -753,15 +754,6 @@ describe('useElementEditor', () => {
         ui: fieldLayout('Original'),
       });
       const {editor, page} = mount(screen);
-      await typeTitle('Initial edit');
-      await vi.advanceTimersByTimeAsync(1000);
-      expect(postSpy).not.toHaveBeenCalled();
-
-      editor.startEditingDraft();
-      await nextTick();
-      expect(visit).not.toHaveBeenCalled();
-      expect(postSpy).not.toHaveBeenCalled();
-
       await typeTitle('Updated release content');
       await vi.advanceTimersByTimeAsync(1000);
       expect(postSpy).toHaveBeenCalledTimes(1);
@@ -785,7 +777,8 @@ describe('useElementEditor', () => {
       await nextTick();
       await typeTitle('New release draft');
       await vi.advanceTimersByTimeAsync(1000);
-      expect(postSpy).toHaveBeenCalledTimes(2);
+      expect(postSpy).toHaveBeenCalledTimes(3);
+      expect(visit).not.toHaveBeenCalled();
     }
   );
 

@@ -53,6 +53,7 @@
   import LivePreview from '@/modules/elements/live-preview/LivePreview.vue';
   import {useLivePreview} from '@/modules/elements/live-preview/useLivePreview';
   import {getActivePreview} from '@/modules/elements/live-preview/previews';
+  import {useAnnouncer} from '@/common/composables/useAnnouncer';
   import ReleaseCallout from '@/modules/releases/components/ReleaseCallout.vue';
   import ReleasePicker from '@/modules/releases/components/ReleasePicker.vue';
   import {provideReleaseEditorActions} from '@/modules/releases/releaseEditor';
@@ -112,7 +113,6 @@
     sidebarPayload,
     sidebarRenderer,
     startEditingDraft,
-    releaseDraftLocked,
     submitAction,
     updatePayload,
     workflowReviewLocked,
@@ -205,8 +205,7 @@
   );
 
   const editorLocked = computed(
-    () =>
-      workflowReviewLocked.value || payload.readOnly || releaseDraftLocked.value
+    () => workflowReviewLocked.value || payload.readOnly
   );
 
   const canChooseRelease = computed(
@@ -383,6 +382,27 @@
       !payload.workflow.current.hasApproved
   );
   const approvalNoticeDismissed = ref(false);
+  const releaseNoticeDismissed = ref(false);
+  const {announce} = useAnnouncer();
+
+  // Dismissing the release notice only hides it until the draft starts
+  // blocking the release, or the draft belongs to a different release.
+  watch(
+    () => [payload.release?.id, payload.release?.blocking] as const,
+    ([id, blocking], [previousId, wasBlocking]) => {
+      if (id !== previousId || (blocking && !wasBlocking)) {
+        releaseNoticeDismissed.value = false;
+      }
+
+      if (id === previousId && blocking && !wasBlocking) {
+        announce(
+          t('This draft is now blocking “{name}”.', {
+            name: payload.release!.name,
+          })
+        );
+      }
+    }
+  );
   /** Live Preview's two panes don't fit on a phone, so it isn't offered there. */
   const isPhone = cpBreakpoints.smaller('md');
 
@@ -654,7 +674,7 @@
       workflowReviewLocked ||
       (awaitingUserApproval && !approvalNoticeDismissed) ||
       payload.workflow.current?.status === 'withdrawn' ||
-      payload.release
+      (payload.release && !releaseNoticeDismissed)
     "
     name="content-notices"
   >
@@ -733,12 +753,10 @@
       </craft-callout>
 
       <ReleaseCallout
-        v-if="payload.release"
+        v-if="payload.release && !releaseNoticeDismissed"
         :release="payload.release"
-        :can-edit="!payload.readOnly"
-        :editing="!releaseDraftLocked"
-        @start-editing="startEditing"
         class="mb-4"
+        @dismiss="releaseNoticeDismissed = true"
       />
 
       <craft-callout

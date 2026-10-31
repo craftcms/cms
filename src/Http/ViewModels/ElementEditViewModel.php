@@ -343,6 +343,7 @@ class ElementEditViewModel extends ViewModel
             canManage: $actor->can('manage', $release),
             draftId: (int) $this->element->draftId,
             siteId: $this->element->siteId,
+            blocking: app(Releases::class)->draftBlockers($release, $this->element) !== [],
         );
     }
 

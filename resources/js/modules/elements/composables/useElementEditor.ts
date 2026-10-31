@@ -263,13 +263,13 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   );
 
   const editingDraft = shallowRef(false);
-  const releaseDraftLocked = computed(
-    () => Boolean(props.release) && !editingDraft.value
-  );
 
-  watch([() => props.draftId, () => props.release?.id], () => {
-    editingDraft.value = false;
-  });
+  watch(
+    () => props.draftId,
+    () => {
+      editingDraft.value = false;
+    }
+  );
 
   /**
    * Whether the draft's in review or approved, so editing it would undo its
@@ -379,8 +379,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     siteId: props.siteId,
     draftId: props.draftId,
     isProvisional: props.isProvisionalDraft,
-    enabled: () =>
-      props.canAutosave && !props.readOnly && !releaseDraftLocked.value,
+    enabled: () => props.canAutosave && !props.readOnly,
     transform: (data) =>
       requestValues(
         preparingOwnerGroups.size
@@ -581,7 +580,6 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     async prepare(path, initialContext) {
       if (
         props.readOnly ||
-        releaseDraftLocked.value ||
         workflowReviewLocked.value ||
         !(nestedOwnerContext(uiPayload.value, path) ?? initialContext)
       ) {
@@ -793,8 +791,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       method: 'post' as const,
     }),
     {
-      keyboardShortcutEnabled: () =>
-        !props.readOnly && !releaseDraftLocked.value,
+      keyboardShortcutEnabled: () => !props.readOnly,
       transform: (data) => {
         // Identity first, so the form wins where they overlap: the entry type
         // can be changed in the sidebar, and `saveData()` only knows the one
@@ -1264,7 +1261,6 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     sidebarErrors,
     sidebarPayload,
     sidebarRenderer,
-    releaseDraftLocked,
     startEditingDraft,
     updatePayload,
     values,

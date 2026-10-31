@@ -122,7 +122,6 @@ beforeEach(() => {
     sidebarPayload: computed(() => null),
     sidebarRenderer: shallowRef(null),
     startEditingDraft: vi.fn(),
-    releaseDraftLocked: computed(() => false),
     submitAction: vi.fn(),
     updatePayload: vi.fn(),
     workflowReviewLocked: computed(() => true),
@@ -221,6 +220,7 @@ it.each([null, 'draft'] as const)(
         canManage: true,
         draftId: 9,
         siteId: 1,
+        blocking: false,
       };
     }
 
@@ -388,5 +388,48 @@ it('tells a reviewer the draft is waiting on them until they dismiss it', async 
 
   expect(container.textContent).not.toContain(
     'This draft is waiting on your approval.'
+  );
+});
+
+it('shows a dismissed release notice again once the draft blocks the release', async () => {
+  state.editor.workflowReviewLocked = computed(() => false);
+  state.editor.props.workflow.current = null;
+  state.editor.props.canAddToRelease = false;
+  state.editor.props.release = {
+    id: 6,
+    name: 'Spring launch',
+    status: 'draft',
+    targetDate: null,
+    canManage: true,
+    draftId: 9,
+    siteId: 1,
+    blocking: false,
+  };
+
+  mount('page');
+  await nextTick();
+
+  expect(container.textContent).toContain(
+    'This draft belongs to “Spring launch”.'
+  );
+
+  container
+    .querySelector<HTMLElement>('craft-icon[name="xmark"]')!
+    .closest('craft-button')!
+    .click();
+  await nextTick();
+
+  expect(container.textContent).not.toContain('Spring launch');
+
+  state.editor.props.release = {...state.editor.props.release, name: 'Renamed'};
+  await nextTick();
+
+  expect(container.textContent).not.toContain('Renamed');
+
+  state.editor.props.release = {...state.editor.props.release, blocking: true};
+  await nextTick();
+
+  expect(container.textContent).toContain(
+    'This draft is blocking “Renamed”, which can’t be published until the draft is ready.'
   );
 });

@@ -603,11 +603,28 @@ it('saves a released draft that can be submitted for review instead of opening t
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('release.id', $release->id)
+            ->where('release.blocking', true)
             ->where('workflow.current.canSubmit', true)
             ->where('editorActions.primary.label', 'Save draft')
             ->where('editorActions.primary.panelId', null)
             ->etc()
         );
+});
+
+it('reports whether a released draft blocks its release', function () {
+    $draft = app(Drafts::class)->createDraft($this->entry, auth()->id(), name: 'Working Draft');
+    app(Releases::class)->attach(app(Releases::class)->create('Launch', null, auth()->user()), $draft, auth()->user());
+
+    get($draft->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('release.blocking', false)->etc());
+
+    $draft->title = '';
+    expect(Elements::saveElement($draft))->toBeTrue();
+
+    get($draft->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('release.blocking', true)->etc());
 });
 
 it('keeps draft actions visible and disables applying until workflow approval', function () {
