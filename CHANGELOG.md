@@ -813,6 +813,7 @@
 - Fixed a bug where nested entries added via drafts on multi-site installs could get an incomplete first revision, causing their nested content to be deleted when reverting to it. ([#20151](https://github.com/craftcms/cms/issues/20151))
 - Fixed a bug where nested entries owned by drafts could get their own revisions, which could cause a foreign key error when applying the draft on PostgreSQL. ([#20151](https://github.com/craftcms/cms/issues/20151))
 - Fixed a bug where MCP requests could be rejected when a reverse proxy rewrote the `Host` header. MCP now validates the host resolved through trusted proxies.
+- Fixed a bug where PHP-style date formats, such as `{{ date|date('M Y') }}`, always showed month and day names in English, rather than in the formatting locale. ([#20237](https://github.com/craftcms/cms/pull/20237))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 
