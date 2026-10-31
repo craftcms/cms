@@ -16,11 +16,13 @@ use CraftCms\Cms\Release\Enums\ReleaseStatus;
 use CraftCms\Cms\Release\Models\Release;
 use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Tests\TestClasses\Release\DraftableReleaseElement;
 use CraftCms\Cms\Tests\TestClasses\Release\ReleasePermissions;
 use CraftCms\Cms\User\Elements\User;
@@ -403,7 +405,7 @@ it('shows an entry’s publication warnings in its release row, in an Issues col
     $columns = fn () => get(route('craft.cp.releases.show', $release), headers: ['X-Inertia' => 'true'])
         ->json('props.ui.nodes.0.props.columns.*.key');
 
-    expect($columns())->toBe(['title', 'status']);
+    expect($columns())->toBe(['title', 'status', 'view']);
 
     Date::setTestNow(now()->addMinute());
     $canonical = $draft->getCanonical();
@@ -416,7 +418,72 @@ it('shows an entry’s publication warnings in its release row, in an Issues col
             ->where('ui.nodes.0.props.rows.0.status.html', fn (string $html) => str_contains($html, 'Ready with warnings'))
             ->where('ui.nodes.0.props.rows.0.issues.html', fn (string $html) => str_contains($html, 'Live changes will be merged into this draft before publication.')));
 
-    expect($columns())->toBe(['title', 'status', 'issues']);
+    expect($columns())->toBe(['title', 'status', 'issues', 'view']);
+});
+
+it('previews every release draft in Live Preview, opening on the one whose View link was followed', function () {
+    $entryType = EntryType::factory()->create();
+    $section = Section::factory()->withEntryTypes($entryType)->create([
+        'previewTargets' => [['label' => 'Entry page', 'urlFormat' => '{url}', 'refresh' => '1']],
+    ]);
+    SectionSiteSettings::query()->where('sectionId', $section->id)->update([
+        'hasUrls' => true,
+        'uriFormat' => 'news/{slug}',
+        'template' => 'news/_entry',
+    ]);
+    Sections::refreshSections();
+    $previewableDraft = function (string $title) use ($section, $entryType): EntryElement {
+        $canonical = EntryModel::factory()->forSection($section)->forEntryType($entryType)->createElement(['title' => $title]);
+        $draft = app(Drafts::class)->createDraft(canonical: $canonical, creatorId: $this->actor->id, name: "$title draft");
+        $draft->title = "$title changed";
+        expect(Elements::saveElement($draft))->toBeTrue();
+
+        return $draft;
+    };
+    $first = $previewableDraft('First');
+    $second = $previewableDraft('Second');
+    $withoutUrl = releaseControllerDraft($this->actor);
+    $release = $this->releases->create('Previewed release', null, $this->actor);
+    foreach ([$first, $withoutUrl, $second] as $draft) {
+        $this->releases->attach($release, $draft, $this->actor);
+    }
+    $itemIds = $release->items()->orderBy('id')->pluck('id')->all();
+
+    $viewLinks = get(route('craft.cp.releases.show', $release), headers: ['X-Inertia' => 'true'])
+        ->json('props.ui.nodes.0.props.rows.*.view.html');
+
+    expect($viewLinks[0])->toContain('href="'.Html::encode(route('craft.cp.releases.preview', [$release, 'item' => $itemIds[0]])).'"')
+        ->and($viewLinks[1])->toContain('href="'.Html::encode(route('craft.cp.releases.preview', [$release, 'item' => $itemIds[1]])).'"')
+        ->and($viewLinks[2])->toContain('href="'.Html::encode(route('craft.cp.releases.preview', [$release, 'item' => $itemIds[2]])).'"');
+
+    $page = get(route('craft.cp.releases.preview', [$release, 'item' => $itemIds[2]]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('releases/Show')
+            ->where('preview.selectedItemId', $itemIds[2])
+            ->where('preview.closeUrl', route('craft.cp.releases.show', $release))
+            ->where('preview.items', fn ($items) => $items->pluck('title')->all() === ['First changed', 'Controller change', 'Second changed'])
+            ->where('preview.items.1.preview', null)
+            ->where('preview.items.2.preview.targets.0.url', $second->getCanonical()->getUrl())
+            ->where('preview.items.2.preview.tokenParams.draftId', $second->draftId)
+            ->etc());
+
+    $tokenParams = $page->inertiaProps('preview.items.2.preview.tokenParams');
+    postJson(Url::actionUrl('preview/create-token'), $tokenParams)
+        ->assertOk()
+        ->assertJsonPath('token', $page->inertiaProps('preview.items.2.preview.token'));
+
+    get(route('craft.cp.releases.preview', [$release, 'item' => $itemIds[1]]))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('preview.selectedItemId', $itemIds[1])->etc());
+
+    get(route('craft.cp.releases.preview', [$release, 'item' => 0]))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('preview.selectedItemId', $itemIds[0])->etc());
+});
+
+it('has no preview for a release without drafts', function () {
+    $release = $this->releases->create('Empty release', null, $this->actor);
+
+    get(route('craft.cp.releases.preview', $release))->assertNotFound();
 });
 
 it('offers adding to a release only while editing a draft', function (Closure $editedElement, bool $canAddToRelease) {
