@@ -4,7 +4,8 @@
    * its target, device and refresh controls.
    *
    * The side pane's body and footer are slotted, so Live Preview can hold the
-   * element editor in it and a release preview its list of drafts.
+   * element editor in it and a release preview its list of drafts. A second,
+   * resizable pane can follow the preview, through the `end` slot.
    */
   import {t} from '@craftcms/ui';
   import {
@@ -84,6 +85,9 @@
     default(): unknown;
     footer?(): unknown;
     'toolbar-start'?(): unknown;
+    'toolbar-end'?(): unknown;
+    /** A pane after the preview, which it shares the width with. */
+    end?(): unknown;
   }>();
 
   const root = useTemplateRef<HTMLElement>('root');
@@ -94,6 +98,7 @@
    * Panes
    */
   const editor = useTemplateRef<HTMLElement>('editor');
+
   const editorId = `lp-editor-pane-${useId()}`;
   const previewPane = useTemplateRef<HTMLElement>('previewPane');
   const previewPaneId = `lp-preview-pane-${useId()}`;
@@ -115,7 +120,30 @@
     storageKey: 'LivePreview.width',
   });
 
-  watch(editor, (el) => (preview.editor.value = el), {immediate: true});
+  const end = useTemplateRef<HTMLElement>('end');
+  const endId = `lp-end-pane-${useId()}`;
+  /** Sized as Live Preview's editor is, so an editor here starts out the same. */
+  const endResizer = useResizable({
+    target: end,
+    edge: 'inline-start',
+    minWidth: () => Math.min(MIN_PANE_WIDTH, windowWidth.value / 2),
+    maxWidth: () =>
+      Math.max(MIN_PANE_WIDTH, windowWidth.value - MIN_PANE_WIDTH),
+    cssVariable: '--lp-end-width',
+    storageKey: 'LivePreview.width',
+  });
+  const {width: endWidth} = useElementSize(end, undefined, {
+    box: 'border-box',
+  });
+
+  defineExpose({
+    // Live Preview registers this as its editor's pane, which slideouts then
+    // open over. A release preview's pane holds no editor, so it doesn't.
+    pane: editor,
+    /** How much of the window the end pane takes, or 0 without one. */
+    endWidth: computed(() => (end.value ? endWidth.value : 0)),
+  });
+
   watch(resizer.style, () => {
     if (resizer.isResizing.value) {
       preview.emit('drag');
@@ -554,16 +582,21 @@
         ref="root"
         class="live-preview"
         :class="{
-          'live-preview--dragging': handlePressed || resizer.isResizing.value,
+          'live-preview--dragging':
+            handlePressed ||
+            resizer.isResizing.value ||
+            endResizer.isResizing.value,
           'live-preview--compact': compact,
+          'live-preview--with-end': $slots.end,
         }"
         :aria-label="t('Preview')"
         tabindex="-1"
-        :style="
+        :style="[
           sidebarWidth
             ? {'--lp-editor-width': sidebarWidth}
-            : resizer.style.value
-        "
+            : resizer.style.value,
+          endResizer.style.value,
+        ]"
       >
         <section
           v-if="!compact"
@@ -741,6 +774,8 @@
                 {{ t('Open in a new tab') }}
               </craft-tooltip>
 
+              <slot name="toolbar-end"></slot>
+
               <craft-button
                 v-if="compact && closable"
                 type="button"
@@ -826,6 +861,22 @@
           >
 
           <div class="sr-only" role="status">{{ announcement }}</div>
+        </section>
+
+        <section
+          v-if="$slots.end"
+          :id="endId"
+          ref="end"
+          class="lp-end"
+          :aria-label="t('Editor')"
+        >
+          <ResizeHandle
+            :resizer="endResizer"
+            @pointerdown="handlePressed = true"
+            :label="t('Resize editor')"
+            :controls="endId"
+          />
+          <slot name="end"></slot>
         </section>
       </div>
     </Transition>
@@ -1007,6 +1058,25 @@
 
   .live-preview--compact {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .live-preview--with-end {
+    grid-template-columns:
+      var(--lp-editor-width, 33%) minmax(0, 1fr)
+      var(--lp-end-width, 33%);
+  }
+
+  .live-preview--with-end.live-preview--compact {
+    grid-template-columns: minmax(0, 1fr) var(--lp-end-width, 33%);
+  }
+
+  .lp-end {
+    position: relative;
+    display: grid;
+    grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+    min-width: 0;
+    border-inline-start: 1px solid var(--c-color-border-quiet);
+    background-color: var(--c-surface-default);
   }
 
   .live-preview--compact .lp-preview__toolbar {

@@ -156,7 +156,7 @@ class ReleaseViewModel extends ViewModel
      * The release preview: its drafts, each with what Live Preview needs to
      * load it, and the one it opens on.
      *
-     * @return array{items: list<array{id: int, title: string, url: string, preview: array<string, mixed>|null}>, selectedItemId: int|null, closeUrl: string}
+     * @return array{items: list<array{id: int, title: string, url: string, editUrl: string|null, preview: array<string, mixed>|null}>, selectedItemId: int|null, closeUrl: string}
      */
     public function preview(?int $selectedItemId): array
     {
@@ -184,6 +184,9 @@ class ReleaseViewModel extends ViewModel
                 'id' => $item->id,
                 'title' => $itemPreview['element']->title ?? t('Untitled'),
                 'url' => route('craft.cp.releases.preview', [$this->release, 'item' => $item->id]),
+                'editUrl' => $this->actor->can('save', $itemPreview['element'])
+                    ? $itemPreview['element']->getCpEditUrl()
+                    : null,
                 'preview' => $payload,
             ];
         }

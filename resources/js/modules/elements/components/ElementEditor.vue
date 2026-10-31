@@ -113,6 +113,7 @@
     sidebarRenderer,
     startEditingDraft,
     releaseDraftLocked,
+    inReleasePreview,
     submitAction,
     updatePayload,
     workflowReviewLocked,
@@ -643,7 +644,7 @@
       payload.mergeNotice ||
       payload.workflow.convertedToDraft ||
       workflowReviewLocked ||
-      payload.release
+      (payload.release && !inReleasePreview)
     "
     name="content-notices"
   >
@@ -663,14 +664,17 @@
         }}
       </craft-callout>
 
+      <!-- Opened from the release preview, edits that would reopen review
+        belong in the full-page editor. -->
       <WorkflowEditLockCallout
         v-if="workflowReviewLocked"
         class="mb-4"
+        :can-start-editing="!inReleasePreview"
         @start-editing="startEditing"
       />
 
       <ReleaseCallout
-        v-if="payload.release"
+        v-if="payload.release && !inReleasePreview"
         :release="payload.release"
         :can-edit="!payload.readOnly"
         :editing="!releaseDraftLocked"
