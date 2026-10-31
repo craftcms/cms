@@ -38,6 +38,8 @@ it('adds a Content Block without a clear button when it has no clear label', () 
   document.body.append(input);
 
   input.querySelector<HTMLElement>('[data-content-block-add]')!.click();
-  expect(input.querySelector('[data-content-block] craft-spinner')).not.toBeNull();
+  expect(
+    input.querySelector('[data-content-block] craft-spinner')
+  ).not.toBeNull();
   expect(input.querySelector('[data-content-block-remove]')).toBeNull();
 });
