@@ -1,5 +1,5 @@
 import {http} from '@inertiajs/vue3';
-import {createApp, h, nextTick, shallowRef, type ShallowRef} from 'vue';
+import {createApp, h, shallowRef, type ShallowRef} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type {
   ElementEditPayload,
@@ -186,13 +186,19 @@ describe('WorkflowEditLockCallout', () => {
     expect(startEditing).not.toHaveBeenCalled();
   });
 
-  it('unlocks a reviewer’s draft without changing its review', async () => {
+  it('withdraws a reviewer’s own approval before unlocking the draft', async () => {
+    const reopened = review({isReviewer: true, hasApproved: false});
+    requestSpy.mockResolvedValueOnce(
+      response({workflowReview: reopened, editorActions: {}})
+    );
     mount(review({isReviewer: true, hasApproved: true}));
 
     startEditingButton().click();
-    await nextTick();
 
-    expect(startEditing).toHaveBeenCalledOnce();
-    expect(requestSpy).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(startEditing).toHaveBeenCalledOnce());
+    expect(requestSpy.mock.calls.map(([request]) => request.url)).toEqual([
+      '/admin/workflows/41/prepare-for-editing',
+    ]);
+    expect(payload.value.workflow.current).toEqual(reopened);
   });
 });
