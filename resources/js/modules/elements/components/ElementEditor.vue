@@ -5,6 +5,7 @@
    * `useAppLayout()` and `LayoutSlot`, so the shell decides where the header,
    * save controls and details column go.
    */
+  import {cpBreakpoints} from '@/common/composables/useCpBreakpoints';
   import {ButtonVariant, t} from '@craftcms/ui';
   import {
     computed,
@@ -373,6 +374,8 @@
     {flush: 'pre'}
   );
   const previewButton = useTemplateRef<HTMLElement>('previewButton');
+  /** Live Preview's two panes don't fit on a phone, so it isn't offered there. */
+  const isPhone = cpBreakpoints.smaller('md');
 
   watch(autosave.saves, () => {
     livePreview.draftSaved(autosave.lastResponse.value);
@@ -581,7 +584,7 @@
   <LayoutSlot v-if="showViewButtons" name="content-toolbar-actions">
     <div class="flex gap-sm items-center">
       <craft-button
-        v-if="canPreview"
+        v-if="canPreview && !isPhone"
         ref="previewButton"
         type="button"
         size="small"
