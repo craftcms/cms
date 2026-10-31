@@ -114,6 +114,12 @@ class DatabaseSeeder extends Seeder
 
         $this->components->task('Installing test plugin', fn () => Plugins::installPlugin('test-plugin'));
 
+        // The workbench’s scripted provider needs no API key. See Workbench\App\Ai\WorkbenchAiProvider.
+        $this->components->task('Setting the default AI provider', fn () => app(ProjectConfig::class)->set(
+            ProjectConfig::PATH_AI.'.defaults.text',
+            ['provider' => 'workbench', 'model' => null],
+        ));
+
         $this->components->task('Creating notifications', function (): void {
             $user = User::query()->firstOrFail();
 
