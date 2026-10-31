@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Asset\AssetTransformDrivers;
 use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Http\Controllers\Settings\ImageTransformsController;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Enums\ImageTransformFormat;
@@ -68,7 +69,14 @@ class ImageTransformEditViewModel extends ViewModel
             Field::make(
                 t('Mode'),
                 Choice::make('mode')
-                    ->options(ImageTransformMode::asOptions())
+                    ->options(array_map(fn (array $option): array => [
+                        ...$option,
+                        'thumbnail' => [
+                            'src' => Cp::publicAssetUrl("images/transforms/{$option['value']}.svg"),
+                            'width' => 80,
+                            'height' => 60,
+                        ],
+                    ], ImageTransformMode::asOptions()))
                     ->presentation(ChoicePresentation::Radios)
                     ->reactive(),
             )->required(),

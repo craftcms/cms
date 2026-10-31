@@ -254,6 +254,11 @@
   --c-checkbox-radius: var(--c-radius-sm);
   --c-checkbox-group-spacing: calc(20px - var(--c-checkbox-size));
 
+  /* Radio tiles, in a `craft-radio-group` with `thumbnails` */
+  --c-radio-tile-min-size: 5rem;
+  --c-radio-tile-max-size: 7rem;
+  --c-radio-tile-thumbnail-height: 3.75rem;
+
   /* Slide rule */
   --c-slide-rule-height: var(--c-size-touch-target);
   --c-slide-rule-graduation-width: 10px;

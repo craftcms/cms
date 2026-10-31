@@ -7,6 +7,7 @@ import './radio-group.js';
 import '../radio/radio.js';
 import '../icon/icon.js';
 import type CraftRadioGroup from './radio-group.js';
+import {VIEW_MODES} from '../../../test/radio-tile-fixtures';
 
 /**
  * `args` and `argTypes` are derived from the custom elements manifest, so the
@@ -155,5 +156,50 @@ export const IconButtons: Story = {
             ></label>
           </craft-radio>`
       )}
+    </craft-radio-group>`,
+};
+
+const tiles = (checked: string) =>
+  VIEW_MODES.map(
+    (option) =>
+      html`<craft-radio
+        .choiceValue="${option.value}"
+        ?checked="${option.value === checked}"
+      >
+        <img
+          slot="thumbnail"
+          src="${option.src}"
+          width="${option.width}"
+          height="60"
+          alt=""
+        />
+        <label slot="label">${option.label}</label>
+      </craft-radio>`
+  );
+
+/**
+ * `thumbnails` shows the options as illustrated tiles, joined in one row. Each
+ * radio slots its illustration into `thumbnail`, with an empty `alt`, since
+ * the label below it already names the option.
+ */
+export const Thumbnails: Story = {
+  parameters: {controls: {disable: true}},
+  render: () =>
+    html`<craft-radio-group thumbnails>
+      <label slot="label">View Mode</label>
+      ${tiles('cards')}
+    </craft-radio-group>`,
+};
+
+/**
+ * When the row doesn't fit at `--c-radio-tile-min-size` per tile, the tiles
+ * come apart and wrap onto as many rows as they need.
+ */
+export const ThumbnailsWrapped: Story = {
+  parameters: {controls: {disable: true}},
+  render: () =>
+    html`<craft-radio-group thumbnails style="max-inline-size: 18rem">
+      <label slot="label">View Mode</label>
+      ${tiles('cards')}
     </craft-radio-group>`,
 };

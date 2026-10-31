@@ -6,7 +6,7 @@
         @media (prefers-color-scheme: dark) {
             [fill="#F3F7FD" i] { fill: #333D51; }
             [fill="#CDD8E4" i] { fill: #4E5B71; }
-            [stroke="#CDD8E4" i] { stroke: #4E5B71; }
+            [stroke="#828FA4" i] { stroke: #7C899F; }
             [fill="#A6B2C2" i] { fill: #6B788D; }
         }
     </style>
@@ -26,6 +26,6 @@
             <rect fill="#FFFFFF" x="6" y="41" width="30" height="5" rx="2.5"></rect>
             <rect fill="#FFFFFF" fill-opacity="0.8" x="6" y="50" width="22" height="4" rx="2"></rect>
         </g>
-        <rect stroke="#CDD8E4" x="0.5" y="0.5" width="79" height="59" rx="5"></rect>
+        <rect stroke="#828FA4" x="0.5" y="0.5" width="79" height="59" rx="5"></rect>
     </g>
 </svg>

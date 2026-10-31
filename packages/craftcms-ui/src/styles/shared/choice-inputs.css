@@ -135,6 +135,44 @@ craft-radio[data-button] > input[type='radio'] {
   }
 }
 
+/* A tile draws the focus ring on its thumbnail box rather than on the input. */
+craft-radio[data-tile] > input[type='radio'] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+
+  &,
+  &:checked {
+    background-color: transparent;
+  }
+
+  &:checked {
+    cursor: default;
+  }
+
+  &::before {
+    display: none;
+  }
+
+  &:disabled {
+    opacity: 1;
+  }
+}
+
+/* Outranks the base `img { height: auto }` reset, which beats `::slotted()`. */
+craft-radio[data-tile] > [slot='thumbnail'] {
+  display: block;
+  block-size: var(--c-radio-tile-thumbnail-height);
+  inline-size: auto;
+  max-inline-size: 100%;
+  object-fit: contain;
+}
+
 /*
   The input's corners (and so its focus ring's) follow its button's: rounded
   only on the group's outer ends, and square where options meet. It sits

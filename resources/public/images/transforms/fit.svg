@@ -6,7 +6,7 @@
         @media (prefers-color-scheme: dark) {
             [fill="#F3F7FD" i] { fill: #333D51; }
             [fill="#CDD8E4" i] { fill: #4E5B71; }
-            [stroke="#CDD8E4" i] { stroke: #4E5B71; }
+            [stroke="#828FA4" i] { stroke: #7C899F; }
             [fill="#5A6572" i] { fill: #A6B2C2; }
             [stroke="#5A6572" i] { stroke: #A6B2C2; }
             [fill="#FFFFFF" i] { fill: #273043; }

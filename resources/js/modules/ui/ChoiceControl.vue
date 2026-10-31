@@ -40,8 +40,9 @@
      */
     group?: string | null;
     /**
-     * Illustration of the choice, rendered above the radio. `aspectRatio` maps
-     * to the CSS property of the same name.
+     * Illustration of the choice. Radios with one are shown as tiles, with the
+     * illustration above the label. `aspectRatio` maps to the CSS property of
+     * the same name.
      */
     thumbnail?: {
       src: string;
@@ -595,23 +596,6 @@
       v-for="(option, index) in choiceOptions"
       :key="inputValue(option.value)"
     >
-      <label
-        v-if="option.thumbnail"
-        class="radio-thumbnail"
-        :for="optionId(index)"
-      >
-        <img
-          :src="option.thumbnail.src"
-          :width="option.thumbnail.width"
-          :height="option.thumbnail.height"
-          :style="
-            option.thumbnail.aspectRatio
-              ? {aspectRatio: option.thumbnail.aspectRatio}
-              : undefined
-          "
-          alt=""
-        />
-      </label>
       <component
         :is="control.props.multiple ? 'craft-checkbox' : 'craft-radio'"
         :title="
@@ -623,6 +607,19 @@
         .choiceValue="inputValue(option.value)"
         .checked="selected(option.value)"
       >
+        <img
+          v-if="option.thumbnail && !control.props.multiple"
+          slot="thumbnail"
+          :src="option.thumbnail.src"
+          :width="option.thumbnail.width"
+          :height="option.thumbnail.height"
+          :style="
+            option.thumbnail.aspectRatio
+              ? {aspectRatio: option.thumbnail.aspectRatio}
+              : undefined
+          "
+          alt=""
+        />
         <input
           slot="input"
           :id="optionId(index)"

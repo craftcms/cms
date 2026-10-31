@@ -24,7 +24,7 @@ function thumbnailChoiceHtml(array $options): Crawler
     return new Crawler(app(UiHtmlRenderer::class)->render($payload));
 }
 
-it('renders an option thumbnail above its radio, bound to the same input', function () {
+it('renders an option thumbnail into its radio\'s thumbnail slot', function () {
     $crawler = thumbnailChoiceHtml([
         ['label' => 'List', 'value' => 'list', 'thumbnail' => [
             'src' => '/build/images/view-modes/list.svg',
@@ -38,19 +38,15 @@ it('renders an option thumbnail above its radio, bound to the same input', funct
             'height' => 60,
         ]],
     ]);
-    $thumbnails = $crawler->filter('label.radio-thumbnail');
+    $radios = $crawler->filter('craft-radio');
+    $first = $radios->first()->filter('img[slot="thumbnail"]');
 
-    expect($thumbnails)->toHaveCount(2)
-        ->and($thumbnails->first()->filter('img')->attr('src'))->toBe('/build/images/view-modes/list.svg')
-        ->and($thumbnails->first()->filter('img')->attr('width'))->toBe('48')
-        ->and($thumbnails->eq(1)->filter('img')->attr('width'))->toBe('80')
-        // Empty alt: the label text beside the radio already names the choice.
-        ->and($thumbnails->first()->filter('img')->attr('alt'))->toBe('');
-
-    // Clicking the illustration selects its radio, as it did in Craft 5.
-    $for = $thumbnails->first()->attr('for');
-    expect($for)->not->toBeNull()
-        ->and($crawler->filter("input#$for")->attr('value'))->toBe('list');
+    expect($crawler->filter('img[slot="thumbnail"]'))->toHaveCount(2)
+        ->and($first->attr('src'))->toBe('/build/images/view-modes/list.svg')
+        ->and($first->attr('width'))->toBe('48')
+        ->and($radios->eq(1)->filter('img[slot="thumbnail"]')->attr('width'))->toBe('80')
+        ->and($first->attr('alt'))->toBe('')
+        ->and($radios->first()->filter('input[slot="input"]')->attr('value'))->toBe('list');
 });
 
 it('renders an aspect ratio only when the thumbnail asks for one', function () {
@@ -61,7 +57,7 @@ it('renders an aspect ratio only when the thumbnail asks for one', function () {
         ]],
         ['label' => 'Cards', 'value' => 'cards', 'thumbnail' => ['src' => '/build/cards.svg']],
     ]);
-    $images = $crawler->filter('label.radio-thumbnail img');
+    $images = $crawler->filter('img[slot="thumbnail"]');
 
     expect($images->first()->attr('style'))->toContain('aspect-ratio: 4 / 5')
         ->and($images->eq(1)->attr('style'))->toBeNull()
@@ -70,7 +66,7 @@ it('renders an aspect ratio only when the thumbnail asks for one', function () {
         ->and($images->eq(1)->attr('width'))->toBeNull();
 });
 
-it('marks the group so the options lay out as a row', function () {
+it('marks the group so the options show as tiles', function () {
     $withThumbs = thumbnailChoiceHtml([
         ['label' => 'List', 'value' => 'list', 'thumbnail' => ['src' => '/build/list.svg']],
     ]);
@@ -80,5 +76,5 @@ it('marks the group so the options lay out as a row', function () {
 
     expect($withThumbs->filter('craft-radio-group')->attr('thumbnails'))->not->toBeNull()
         ->and($without->filter('craft-radio-group')->attr('thumbnails'))->toBeNull()
-        ->and($without->filter('label.radio-thumbnail'))->toHaveCount(0);
+        ->and($without->filter('img[slot="thumbnail"]'))->toHaveCount(0);
 });

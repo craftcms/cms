@@ -29,8 +29,9 @@ class Radio extends Checkbox
     }
 
     /**
-     * An illustration of what the option looks like, rendered above the radio
-     * by {@see RadioGroup}. Craft 5 built this by hand in the View Mode field.
+     * An illustration of what the option looks like. A {@see RadioGroup} with
+     * thumbnailed options shows each one as a tile, with the illustration in
+     * a button-like box and the label below it.
      *
      * `width` and `height` set the intrinsic size, reserving space before the
      * image loads. `aspectRatio` maps to the CSS property of the same name, and
@@ -49,6 +50,30 @@ class Radio extends Checkbox
     public function getThumbnail(): ?array
     {
         return $this->thumbnail;
+    }
+
+    /**
+     * Renders the thumbnail into the radio's `thumbnail` slot, which a
+     * `craft-radio-group` with `thumbnails` draws as the tile's illustration.
+     * Its `alt` is empty, since the label already names the option.
+     */
+    #[\Override]
+    protected function renderSlots(): string
+    {
+        if ($this->thumbnail === null) {
+            return parent::renderSlots();
+        }
+
+        $aspectRatio = $this->thumbnail['aspectRatio'] ?? null;
+
+        return Html::tag('img', '', [
+            'slot' => 'thumbnail',
+            'src' => $this->thumbnail['src'],
+            'width' => $this->thumbnail['width'] ?? null,
+            'height' => $this->thumbnail['height'] ?? null,
+            'style' => $aspectRatio !== null ? ['aspect-ratio' => $aspectRatio] : null,
+            'alt' => '',
+        ]).parent::renderSlots();
     }
 
     /** Radios have no indeterminate state, so drop the Checkbox host attribute. */

@@ -6,7 +6,7 @@
         @media (prefers-color-scheme: dark) {
             [fill="#F3F7FD" i] { fill: #333D51; }
             [fill="#CDD8E4" i] { fill: #4E5B71; }
-            [stroke="#CDD8E4" i] { stroke: #4E5B71; }
+            [stroke="#828FA4" i] { stroke: #7C899F; }
             [fill="#A6B2C2" i] { fill: #6B788D; }
         }
     </style>
@@ -24,7 +24,7 @@
     <g fill="none" fill-rule="evenodd">
         <g clip-path="url(#normal)">
             <rect fill="#F3F7FD" x="0.5" y="0.5" width="79" height="59" rx="5"></rect>
-            <path d="M0.5,12.5 L79.5,12.5" stroke="#CDD8E4"></path>
+            <path d="M0.5,12.5 L79.5,12.5" stroke="#828FA4"></path>
             <rect fill="#CDD8E4" x="6" y="20" width="30" height="5" rx="2.5"></rect>
             <rect fill="#CDD8E4" x="6" y="30" width="22" height="4" rx="2"></rect>
             <g clip-path="url(#thumb)">
@@ -44,8 +44,8 @@
                 <rect fill="#FFFFFF" x="6" y="41" width="30" height="5" rx="2.5"></rect>
                 <rect fill="#FFFFFF" fill-opacity="0.8" x="6" y="50" width="22" height="4" rx="2"></rect>
             </g>
-            <path d="M80,0 L0,60" stroke="#CDD8E4"></path>
+            <path d="M80,0 L0,60" stroke="#828FA4"></path>
         </g>
-        <rect stroke="#CDD8E4" x="0.5" y="0.5" width="79" height="59" rx="5"></rect>
+        <rect stroke="#828FA4" x="0.5" y="0.5" width="79" height="59" rx="5"></rect>
     </g>
 </svg>

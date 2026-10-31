@@ -35,6 +35,44 @@ An option labeled only by an icon gets a square button. Give the icon a `label`,
 
 Use a [Button Group](?path=/docs/components-button-group--docs) instead when the buttons act immediately, such as switching a view, rather than set a value.
 
+## Thumbnails
+
+`thumbnails` shows the options as illustrated tiles, for a choice that's easier to recognize than to describe, such as a layout or a crop mode. Each radio slots its illustration into `thumbnail`, and the label sits below it. The options are still radios, announced and operated like any other radio group.
+
+<Canvas of={RadioGroupStories.Thumbnails} sourceState="shown" />
+
+The tiles are joined in one row, each between `--c-radio-tile-min-size` and `--c-radio-tile-max-size` wide. When the group is too narrow for every tile at its minimum width, they come apart and wrap onto as many rows as they need, rather than overflowing.
+
+<Canvas of={RadioGroupStories.ThumbnailsWrapped} sourceState="shown" />
+
+Illustrations are 60px tall by default (`--c-radio-tile-thumbnail-height`), and are scaled to fit the tile. Draw them with the control panel's own colors, such as `--color-slate-400` for hairlines, so they hold up against the selected tile's tint. An SVG loaded through `<img>` can follow the theme with a `prefers-color-scheme` media query inside it.
+
+### Building one in PHP
+
+Give each `Choice` option a `thumbnail`, and the radio group switches to tiles on its own:
+
+```php
+use CraftCms\Cms\Cp\Cp;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
+
+Choice::make('viewMode')
+    ->presentation(ChoicePresentation::Radios)
+    ->options(array_map(fn (array $option) => [
+        ...$option,
+        'thumbnail' => [
+            'src' => Cp::publicAssetUrl("images/view-modes/{$option['value']}.svg"),
+            'width' => 80,
+            'height' => 60,
+        ],
+    ], [
+        ['label' => 'Cards', 'value' => 'cards'],
+        ['label' => 'Card grid', 'value' => 'cards-grid'],
+    ]));
+```
+
+`CraftCms\Cms\Cp\Components\Radio::thumbnail()` does the same for a `RadioGroup` component.
+
 ## Server-Rendered Markup
 
 A group rendered by the server adopts the name already present on its inputs, for the same reason as the checkbox group: Lion syncs each child's name to the group's, so upgrading a nameless group would strip the server's names and break native posting.
@@ -67,7 +105,7 @@ Call `fieldset()` on the field, so its label becomes the group's legend.
 
 The group is announced as a radio group named by its label, and takes one Tab stop. The arrow keys move between options and select them as they go, because every option is a native radio sharing the group's name.
 
-Give the group a visible label that names the question, and keep each option's text in its radio's label.
+Give the group a visible label that names the question, and keep each option's text in its radio's label. With `thumbnails`, give each illustration an empty `alt`: the label below it already names the option, so a description would be read twice.
 
 When a choice is required, say so with `craft-field`'s `required` or in the label text, as well as adding the `Required` validator; the validator alone doesn't show anything until an error appears. Write validator messages that say what to choose.
 

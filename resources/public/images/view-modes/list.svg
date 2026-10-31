@@ -6,7 +6,7 @@
         @media (prefers-color-scheme: dark) {
             [fill="#F3F7FD" i] { fill: #333D51; }
             [fill="#CDD8E4" i] { fill: #4E5B71; }
-            [stroke="#CDD8E4" i] { stroke: #4E5B71; }
+            [stroke="#828FA4" i] { stroke: #7C899F; }
             [fill="#5A6572" i] { fill: #A6B2C2; }
             [stroke="#5A6572" i] { stroke: #A6B2C2; }
             [fill="#FFFFFF" i] { fill: #273043; }
@@ -16,10 +16,10 @@
         <path d="M0,0 L48,0 L48,60 L0,60 L0,0 Z" id="path-1"></path>
     </defs>
     <g id="list" stroke="none" fill="none" xlink:href="#path-1" fill-rule="evenodd">
-        <rect id="chip" stroke="#CDD8E4" stroke-width="1" fill="#F3F7FD" x="0.5" y="13.5" width="37" height="7" rx="2"></rect>
-        <rect id="chip-copy-2" stroke="#CDD8E4" stroke-width="1" fill="#F3F7FD" x="0.5" y="26.5" width="47" height="7" rx="2"></rect>
-        <rect id="chip-copy-3" stroke="#CDD8E4" stroke-width="1" fill="#F3F7FD" x="0.5" y="39.5" width="37" height="7" rx="2"></rect>
-        <rect id="chip-copy-4" stroke="#CDD8E4" stroke-width="1" fill="#F3F7FD" x="0.5" y="52.5" width="42" height="7" rx="2"></rect>
-        <rect id="chip-copy" stroke="#CDD8E4" stroke-width="1" fill="#F3F7FD" x="0.5" y="0.5" width="32" height="7" rx="2"></rect>
+        <rect id="chip" stroke="#828FA4" stroke-width="1" fill="#F3F7FD" x="0.5" y="13.5" width="37" height="7" rx="2"></rect>
+        <rect id="chip-copy-2" stroke="#828FA4" stroke-width="1" fill="#F3F7FD" x="0.5" y="26.5" width="47" height="7" rx="2"></rect>
+        <rect id="chip-copy-3" stroke="#828FA4" stroke-width="1" fill="#F3F7FD" x="0.5" y="39.5" width="37" height="7" rx="2"></rect>
+        <rect id="chip-copy-4" stroke="#828FA4" stroke-width="1" fill="#F3F7FD" x="0.5" y="52.5" width="42" height="7" rx="2"></rect>
+        <rect id="chip-copy" stroke="#828FA4" stroke-width="1" fill="#F3F7FD" x="0.5" y="0.5" width="32" height="7" rx="2"></rect>
     </g>
 </svg>
