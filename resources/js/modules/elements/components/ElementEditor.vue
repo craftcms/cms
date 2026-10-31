@@ -148,6 +148,19 @@
       false
   );
 
+  /**
+   * Whether the content starts with a tab strip, which sits flush with its
+   * top. In Live Preview, sidebar tabs are in it too.
+   */
+  const hasContentTabs = computed(
+    () =>
+      (uiPayload.value?.nodes.filter(
+        (node) =>
+          node.component === 'craft:tab' &&
+          (contentInPreview.value || !isSidebarTab(node))
+      ).length ?? 0) > 1
+  );
+
   /** Field layout tabs that render as details panels, rather than tabs. */
   const sidebarTabs = computed(
     () => uiPayload.value?.nodes.filter(isSidebarTab) ?? []
@@ -346,9 +359,6 @@
     () =>
       Boolean(livePreviewPane.value?.holdsEditor) &&
       Boolean(livePreviewTarget.value)
-  );
-  const livePreviewTabsTarget = computed(() =>
-    contentInPreview.value ? (livePreviewPane.value?.tabsTarget ?? null) : null
   );
   // The content's height, kept while it's away so the page doesn't collapse
   // and lose its scroll position. Read before the content moves.
@@ -743,7 +753,7 @@
     <craft-spinner :label="t('Loading')"></craft-spinner>
   </div>
   <Teleport :to="livePreviewTarget" :disabled="!contentInPreview" defer>
-    <div ref="content" class="py-lg">
+    <div ref="content" :class="hasContentTabs ? 'pb-lg' : 'py-lg'">
       <CpContainer>
         <component
           :is="formWrapper ?? 'div'"
@@ -760,8 +770,9 @@
               :refresh="uiPayload.refreshable ? refreshLayout : undefined"
               :modified="autosave.modified.value"
               :disabled="editorLocked"
-              :sidebar-tab-outlets="sidebarTabOutlets"
-              :tabs-outlet="livePreviewTabsTarget"
+              :sidebar-tab-outlets="
+                contentInPreview ? undefined : sidebarTabOutlets
+              "
               @update:mutation="onMutation"
             />
           </component>
@@ -786,6 +797,21 @@
       <ElementActionMenu
         :items="payload.actionMenu"
         :current-entry-type-id="form.typeId"
+      />
+    </template>
+    <!-- The status a slideout's header shows beside its title. -->
+    <template #meta>
+      <craft-badge
+        v-if="payload.isProvisionalDraft"
+        fill="info"
+        class="relative text-sm font-normal inline-flex"
+      >
+        <craft-icon name="pen-circle" slot="prefix"></craft-icon>
+        {{ t('Edited') }}
+      </craft-badge>
+      <DynamicHtmlRenderer
+        v-else-if="payload.statusLabelHtml"
+        :html="payload.statusLabelHtml"
       />
     </template>
     <template #status>
