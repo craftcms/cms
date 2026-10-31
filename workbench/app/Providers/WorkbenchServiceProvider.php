@@ -96,6 +96,10 @@ class WorkbenchServiceProvider extends ServiceProvider
                         ->label('Layout Slots')
                         ->href('workbench/layout-slots')
                         ->icon('table-layout'),
+                    new NavItem()
+                        ->label('Plugin Store cart')
+                        ->href('plugin-store/buy/seomatic')
+                        ->icon('cart-shopping'),
                 ]);
         });
     }

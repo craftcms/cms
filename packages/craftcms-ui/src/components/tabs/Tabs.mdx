@@ -40,6 +40,10 @@ Do not toggle `selected` on a tab — Lion owns that attribute and will overwrit
 
 <Canvas of={TabsStories.Placements} sourceState="shown" />
 
+<Canvas of={TabsStories.Appearances} sourceState="shown" />
+
+`appearance` is `line` by default, which rules the strip off from the panels and underlines the selected tab. `fill` sets the tabs on a quiet track and raises the selected one, for a short strip that sits among other controls, such as an edition picker beside a price. It's drawn for the block placements.
+
 <Canvas of={TabsStories.Sizes} sourceState="shown" />
 
 `size` works by font size, and the tabs are padded in `em`, so the whole strip scales without the tabs being touched individually.

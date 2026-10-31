@@ -2,19 +2,13 @@
 /* globals module, require */
 const {test, expect} = require('../../index');
 
-test('Shoud show a category page', async ({page, context, baseURL}) => {
+test('Shoud show a category page', async ({page}) => {
   await page.goto('./plugin-store/categories/23');
 
-  // Wait for category request listing plugins to be done
-  await page.waitForResponse((response) =>
-    response.url().includes('//api.craftcms.com/v1/plugin-store/plugins')
+  await expect(page.getByRole('heading', {level: 1})).toHaveText(
+    'SEO & Accessibility'
   );
-
-  // Category title
-  const title = page.locator('.ps-wrapper h1');
-  await expect(title).toHaveText('SEO & Accessibility');
-
-  // Plugins
-  const pluginsLength = await page.locator('.plugin-card').count();
-  expect(pluginsLength > 0).toBeTruthy();
+  await expect(
+    page.locator('.plugin-grid').getByRole('link').first()
+  ).toBeVisible();
 });

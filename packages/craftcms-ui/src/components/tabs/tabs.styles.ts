@@ -229,4 +229,54 @@ export default css`
   :host([placement='inline-end']) .tabs__strip {
     border-inline-start-width: 1px;
   }
+
+  /*
+   * Fill: the tabs sit on a quiet track instead of a rule, and the selected
+   * one is raised out of it. Its border carries the selection, so it keeps 3:1
+   * against the track. The underline indicator isn't drawn.
+   */
+  :host([appearance='fill']) {
+    --_track-padding: var(--c-spacing-sm);
+    --_tab-radius: var(--c-form-control-radius);
+    --c-tab-border-active: transparent;
+    --c-tab-spacing-inline: var(--c-spacing-md);
+    --c-tabs-tab-gap: var(--_track-padding);
+  }
+
+  :host([appearance='fill']) .tabs__strip {
+    padding: var(--_track-padding);
+    border-width: 0;
+    border-radius: calc(var(--_tab-radius) + var(--_track-padding));
+    background-color: var(--c-color-neutral-fill-quiet);
+  }
+
+  :host([appearance='fill']) ::slotted([slot='tab']) {
+    border: 1px solid transparent;
+    border-radius: var(--_tab-radius);
+    color: var(--c-color-neutral-on-quiet);
+  }
+
+  @media (hover: hover) {
+    :host([appearance='fill']) ::slotted([slot='tab']:hover:not([selected])) {
+      background-color: color-mix(
+        in srgb,
+        var(--c-surface-raised) 60%,
+        transparent
+      );
+      color: var(--c-color-neutral-on-normal);
+    }
+  }
+
+  :host([appearance='fill']) ::slotted([slot='tab'][selected]) {
+    border-color: var(--color-slate-500);
+    background-color: var(--c-surface-raised);
+    color: var(--c-color-neutral-on-normal);
+    box-shadow: var(--c-shadow-xs);
+  }
+
+  @media (forced-colors: active) {
+    :host([appearance='fill']) ::slotted([slot='tab'][selected]) {
+      border-color: Highlight;
+    }
+  }
 `;

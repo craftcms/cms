@@ -323,6 +323,23 @@
     return action.type === 'group' ? undefined : action.status;
   }
 
+  /** An external link to another site, rather than a full page load within this one. */
+  function leavesSite(action: NavItem): boolean {
+    const href = hrefOf(action);
+
+    if (action.type !== 'link' || !action.external || !href) {
+      return false;
+    }
+
+    try {
+      return (
+        new URL(href, window.location.href).origin !== window.location.origin
+      );
+    } catch {
+      return false;
+    }
+  }
+
   function countOf(action: NavItem): number | undefined {
     return action.type === 'group' ? undefined : action.count;
   }
@@ -458,6 +475,12 @@
       ></craft-indicator>
 
       {{ labelOf(action) }}
+
+      <craft-icon
+        v-if="leavesSite(action)"
+        slot="suffix"
+        name="arrow-up-right-from-square"
+      ></craft-icon>
 
       <craft-badge-indicator
         v-if="countOf(action)"

@@ -440,6 +440,7 @@
       <LayoutSlotOutlet name="content-toolbar" />
       <LayoutSlotOutlet name="content-sidebar" />
       <LayoutSlotOutlet name="subnav-actions" />
+      <LayoutSlotOutlet name="page-header" />
       <LayoutSlotOutlet name="page-footer" />
     </div>
   </form>

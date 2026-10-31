@@ -466,7 +466,18 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
 
             Route::get('{handle}', [PluginsController::class, 'editSettings']);
         });
-        Route::get('plugin-store{any?}', [PluginStoreController::class, 'index'])->where('any', '.*');
+        Route::prefix('plugin-store')->group(function () {
+            Route::get('/', [PluginStoreController::class, 'index']);
+            Route::get('categories/{id}', [PluginStoreController::class, 'category'])->whereNumber('id');
+            Route::get('featured/{handle}', [PluginStoreController::class, 'featured']);
+            Route::get('developer/{id}', [PluginStoreController::class, 'developer'])->whereNumber('id');
+            Route::get('search', [PluginStoreController::class, 'search']);
+            Route::get('buy-all-trials', [PluginStoreController::class, 'buyAllTrials']);
+            Route::get('buy/{handle}/{edition?}', [PluginStoreController::class, 'buy']);
+            Route::get('upgrade-craft', [PluginStoreController::class, 'upgradeCraft']);
+            Route::get('{handle}/{tab?}', [PluginStoreController::class, 'plugin'])
+                ->where('tab', 'reviews|editions|changelog');
+        });
 
         // Rebrand
         // @TODO: Remove when rebrand assets are refactored

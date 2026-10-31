@@ -31,6 +31,16 @@ export const tabsPlacements = Object.values(TabsPlacement);
 export type TabsPlacementValue =
   (typeof TabsPlacement)[keyof typeof TabsPlacement];
 
+export const TabsAppearance = {
+  Line: 'line',
+  Fill: 'fill',
+} as const;
+
+export const tabsAppearances = Object.values(TabsAppearance);
+
+export type TabsAppearanceValue =
+  (typeof TabsAppearance)[keyof typeof TabsAppearance];
+
 /** @deprecated Use {@link TabsPlacement}. */
 export const TabsLayout = {
   Horizontal: 'horizontal',
@@ -207,6 +217,15 @@ export default class CraftTabs extends LionTabs {
    */
   @property({reflect: true}) placement: TabsPlacementValue =
     TabsPlacement.BlockStart;
+  /**
+   * How the strip is drawn: `line` (the default) rules it off from the panels
+   * and underlines the selected tab; `fill` sets the tabs on a quiet track and
+   * raises the selected one, for a strip that sits among other controls, such
+   * as an edition picker in a purchase panel. `fill` is drawn for the block
+   * placements.
+   */
+  @property({reflect: true}) appearance: TabsAppearanceValue =
+    TabsAppearance.Line;
 
   /**
    * The accessible name of the tablist, describing what the tabs switch
