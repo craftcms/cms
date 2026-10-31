@@ -53,7 +53,7 @@ readonly class VerifyEmailController extends AuthenticationController
         );
     }
 
-    public function store(Request $request, Users $users): Response|View
+    public function store(Request $request, Users $users): Response|View|InertiaResponse
     {
         $request->validate([
             'code' => ['required'],
@@ -77,9 +77,10 @@ readonly class VerifyEmailController extends AuthenticationController
             try {
                 $users->verifyEmailForUser($user);
             } catch (InvalidElementException) {
-                return view('_special/emailtaken', [
-                    'email' => $user->unverifiedEmail,
-                ]);
+                return $this->renderViewWithFallback(
+                    inertiaComponent: 'auth/EmailTaken',
+                    data: ['email' => $user->unverifiedEmail],
+                );
             }
         } elseif ($pending) {
             // No unverified email so just get on with activating their account

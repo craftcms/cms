@@ -11,12 +11,9 @@ use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
 use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Composer;
-use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Updates;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Crypt;
-use Inertia\Inertia;
 use Override;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
@@ -49,23 +46,6 @@ class ConfigSyncController extends BaseUpdaterController
         private readonly ProjectConfig $projectConfig,
     ) {
         parent::__construct($request, $generalConfig, $composer, $plugins, $updates);
-    }
-
-    /**
-     * Renders the Config Sync page via Inertia.
-     */
-    #[Override]
-    public function index(): Response
-    {
-        $this->data = $this->initialData();
-        $state = $this->realInitialState();
-        $state['data'] = Crypt::encrypt(Json::encode($this->data));
-
-        return Inertia::render('updater/Index', [
-            'title' => $this->pageTitle(),
-            'initialState' => $this->clientState($state),
-            'returnUrl' => $this->returnUrl(),
-        ])->toResponse($this->request);
     }
 
     /**

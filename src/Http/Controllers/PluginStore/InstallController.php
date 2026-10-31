@@ -15,6 +15,7 @@ use Override;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
+use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
 
 /**
@@ -29,10 +30,6 @@ class InstallController extends BaseUpdaterController
     public const string ACTION_ENABLE = 'enable';
 
     public const string ACTION_MIGRATE = 'migrate';
-
-    // TODO: Remove this once the Plugin Store installer has been ported to Inertia.
-    #[Override]
-    protected bool $usesStepUrls = false;
 
     public function __construct(
         Request $request,
@@ -201,6 +198,6 @@ class InstallController extends BaseUpdaterController
     #[Override]
     protected function returnUrl(): string
     {
-        return $this->data['returnUrl'] ?? 'plugin-store';
+        return cp_url($this->data['returnUrl'] ?? 'plugin-store');
     }
 }

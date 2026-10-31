@@ -1,7 +1,7 @@
 /**
 Legacy compat styles
  */
-@scope (.cp-legacy-screen) {
+.cp-legacy-screen {
   .skip-link {
     position: absolute;
     width: 1px;
@@ -328,4 +328,18 @@ Legacy compat styles
   .draft-notice .discard-changes-btn:active {
     border-color: var(--c-color-accent-border-loud);
   }
+}
+
+/**
+Message pages
+(databse update, can't run craft, verify-email, standalone preview)
+ */
+.message {
+  display: grid;
+  place-content: center;
+  grid-template-columns: min(100%, 20rem);
+}
+
+.modal {
+  box-shadow: var(--c-shadow-overlay);
 }
