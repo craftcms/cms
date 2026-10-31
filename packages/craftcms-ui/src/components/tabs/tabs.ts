@@ -943,6 +943,7 @@ export default class CraftTabs extends LionTabs {
               type="button"
               variant="plain"
               size="small"
+              flush="inline-end"
             >
               <!--
                 The name has to come from the icon: craft-button does not
