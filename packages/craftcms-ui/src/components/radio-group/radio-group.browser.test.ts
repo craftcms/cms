@@ -274,11 +274,6 @@ it('rejoins the tiles when the group widens again', async () => {
   await new Promise((resolve) => requestAnimationFrame(resolve));
   await settle();
 
-  console.log(
-    'SHOWN',
-    group.hasAttribute('data-wrapped'),
-    group.getBoundingClientRect().width
-  );
   expect(group.hasAttribute('data-wrapped')).toBe(false);
 });
 

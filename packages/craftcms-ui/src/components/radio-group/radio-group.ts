@@ -1,7 +1,7 @@
 import {LionRadioGroup} from '@lion/ui/radio-group.js';
 import {inputStyles} from '@src/styles/form.styles';
 import {SsrChoiceGroupMixin} from '@src/mixins/SsrChoiceGroupMixin';
-import {css, type PropertyValues} from 'lit';
+import {css, html, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {HasLabel} from '@src/mixins/HasLabel';
 
@@ -49,11 +49,26 @@ export default class CraftRadioGroup extends HasLabel(
   /** Whether the tiles have come apart and wrapped, because the row didn't fit. */
   private _wrapped = false;
 
+  /**
+   * Watches a zero-height probe as wide as the group, rather than the group
+   * itself. Wrapping changes the group's height, and observing that would
+   * report a resize caused by its own callback (a ResizeObserver loop).
+   */
   private _resizeObserver = new ResizeObserver(() => this._fitTiles());
+
+  override render() {
+    return html`${super.render()}
+      <div class="fit-probe" aria-hidden="true"></div>`;
+  }
 
   override connectedCallback() {
     super.connectedCallback();
-    this._resizeObserver.observe(this);
+    this.updateComplete.then(() => {
+      const probe = this.shadowRoot?.querySelector('.fit-probe');
+      if (probe && this.isConnected) {
+        this._resizeObserver.observe(probe);
+      }
+    });
   }
 
   override disconnectedCallback() {
@@ -147,6 +162,10 @@ export default class CraftRadioGroup extends HasLabel(
       ...super.styles,
       inputStyles,
       css`
+        .fit-probe {
+          block-size: 0;
+        }
+
         .input-group {
           display: grid;
           gap: var(--c-spacing-xs);
