@@ -2601,6 +2601,7 @@ return [
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => '{attribute} باید حداکثر شامل {max, number} {max, plural, one{انتخاب} other{انتخاب}} باشد.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} باید شامل {count, number} {count, plural, one{آیتم} other{آیتم}} باشد.',
     '{count, number} {count, plural, =1{layout} other{layouts}}' => '{count, number} {count, plural, =1{layout} other{layouts}}',
+    '{count, plural, =1{# Draft} other{# Drafts}}' => '{count, plural, =1{# Draft} other{# Drafts}}',
     '{count, spellout} plugin {count, plural, =1{update} other{updates}}' => 'پلاگین {count, spellout} {count, plural, =1{update} other{updates}}',
     '{count, spellout} {count, plural, =1{plugin} other{plugins}}' => '{count, spellout} {count, plural, =1{plugin} other{plugins}}',
     '{delta, plural, =1{1 day} other{# days}}' => '{delta, plural, =1{1 day} other{# days}}',
