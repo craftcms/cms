@@ -2601,6 +2601,7 @@ return [
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => '{attribute} ætti að innihalda í mesta lagi {max, number} {max, plural, one{val} other{völ}}.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{eign} ætti að innihalda {count, number} {count, plural, one{hlut} other{hluti}}.',
     '{count, number} {count, plural, =1{layout} other{layouts}}' => '{count, number} {count, plural, =1{uppsetning} other{uppsetningar}}',
+    '{count, plural, =1{# Draft} other{# Drafts}}' => '{count, plural, =1{# Draft} other{# Drafts}}',
     '{count, spellout} plugin {count, plural, =1{update} other{updates}}' => '{count, spellout} {count, plural, =1{uppfærsla} other{uppfærslur}} á viðbót',
     '{count, spellout} {count, plural, =1{plugin} other{plugins}}' => '{count, plural, =1{viðbót} other{viðbætur}}',
     '{delta, plural, =1{1 day} other{# days}}' => '{delta, plural, =1{1 day} other{# days}}',
