@@ -276,10 +276,30 @@ function syncShade(): void {
     return;
   }
 
+  if (!el.classList.contains('is-visible')) {
+    return;
+  }
+
   el.classList.remove('is-visible');
-  // Don't leak a live-preview panel's narrowed shade onto the next slideout.
-  el.style.width = '';
-  el.style.insetInlineStart = '';
+
+  // Don't leak a live-preview panel's narrowed shade onto the next slideout,
+  // but not before it has faded out, or it fades out across the whole page.
+  const fades = getComputedStyle(el)
+    .transitionDuration.split(',')
+    .some((duration) => parseFloat(duration) > 0);
+
+  if (fades) {
+    el.addEventListener('transitionend', () => unnarrowShade(el), {once: true});
+  } else {
+    unnarrowShade(el);
+  }
+}
+
+function unnarrowShade(el: HTMLElement): void {
+  if (!el.classList.contains('is-visible')) {
+    el.style.width = '';
+    el.style.insetInlineStart = '';
+  }
 }
 
 /**

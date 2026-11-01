@@ -574,17 +574,6 @@
         >
           <header class="lp-preview__toolbar">
             <div class="lp-preview__toolbar-start">
-              <craft-button
-                v-if="closable"
-                type="button"
-                size="small"
-                icon="xmark-large"
-                variant="plain"
-                flush="inline-start"
-                @click="preview.close()"
-              >
-                {{ t('Close') }}
-              </craft-button>
               <ActionMenu
                 v-if="preview.targets.value.length > 1"
                 :key="preview.activeIndex.value"
@@ -819,7 +808,7 @@
 
   /* The panes slide in from the sides, over the page as the backdrop fades
      in: the preview from the start and the editor from the end. They leave
-     together, as one sheet sliding out past the end. */
+     the way they came. */
   @media screen and (prefers-reduced-motion: no-preference) {
     .live-preview-enter-active,
     .live-preview-leave-active {
@@ -835,7 +824,8 @@
       background-color: transparent;
     }
 
-    .live-preview-enter-from {
+    .live-preview-enter-from,
+    .live-preview-leave-to {
       & > .lp-preview {
         translate: -100% 0;
       }
@@ -845,12 +835,9 @@
       }
     }
 
-    .live-preview-leave-to > * {
-      translate: 100vw 0;
-    }
-
     [dir='rtl'] {
-      .live-preview-enter-from {
+      .live-preview-enter-from,
+      .live-preview-leave-to {
         & > .lp-preview {
           translate: 100% 0;
         }
@@ -858,10 +845,6 @@
         & > .lp-editor {
           translate: -100% 0;
         }
-      }
-
-      .live-preview-leave-to > * {
-        translate: -100vw 0;
       }
     }
   }
