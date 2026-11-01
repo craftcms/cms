@@ -42,6 +42,7 @@ use CraftCms\Cms\Http\Controllers\QueueController;
 use CraftCms\Cms\Http\Controllers\ReleasesController;
 use CraftCms\Cms\Http\Controllers\Settings\AddressSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\AssetTransformersController;
+use CraftCms\Cms\Http\Controllers\Settings\CpNavigationController;
 use CraftCms\Cms\Http\Controllers\Settings\EmailSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
@@ -380,6 +381,29 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             });
 
             Route::get('{workflow}', [WorkflowsController::class, 'edit'])->name('edit');
+        });
+
+        // Control panel navigations
+        Route::prefix('settings/cp-nav')->name('settings.cp-nav.')->middleware(RequireEdition::class.':'.Edition::Team->value)->group(function () {
+            Route::get('/', [CpNavigationController::class, 'index'])->name('index');
+            Route::get('default', [CpNavigationController::class, 'editDefault'])->name('default');
+            Route::post('item-settings', [CpNavigationController::class, 'itemSettings'])->name('item-settings');
+            Route::post('item-settings/apply', [CpNavigationController::class, 'applyItemSettings'])
+                ->middleware(RequireAdminChanges::class)
+                ->name('apply-item-settings');
+            Route::put('default', [CpNavigationController::class, 'updateDefault'])
+                ->middleware(RequireAdminChanges::class)
+                ->name('update-default');
+
+            Route::middleware(RequireEdition::class.':'.Edition::Pro->value)->group(function () {
+                Route::middleware(RequireAdminChanges::class)->group(function () {
+                    Route::post('reorder', [CpNavigationController::class, 'reorder'])->name('reorder');
+                    Route::put('{groupUid}', [CpNavigationController::class, 'update'])->name('update');
+                    Route::delete('{groupUid}', [CpNavigationController::class, 'destroy'])->name('destroy');
+                });
+
+                Route::get('{groupUid}', [CpNavigationController::class, 'edit'])->name('edit');
+            });
         });
 
         // Fields

@@ -20,7 +20,9 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\UserPermissions;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Http\Request;
@@ -50,6 +52,8 @@ readonly class Navigation
         private GeneralConfig $generalConfig,
         private ElementSources $elementSources,
         private Settings $settings,
+        private CustomNavigations $customNavigations,
+        private NavCustomizer $navCustomizer,
     ) {}
 
     /**
@@ -109,13 +113,41 @@ readonly class Navigation
     }
 
     /**
-     * The whole navigation tree, without selection or badge counts.
+     * The whole navigation tree, as the current user has it laid out, without
+     * selection or badge counts. Hidden items are left out unless
+     * `$withHidden` keeps them.
      *
      * @return NavItem[]
      */
-    public function getTree(): array
+    public function getTree(bool $withHidden = false): array
+    {
+        return $this->navCustomizer->apply($this->buildTree(), $this->customNavigations->navigationFor(currentUser()), $withHidden);
+    }
+
+    /**
+     * The navigation tree as Craft and plugins build it, before any customization.
+     *
+     * @return NavItem[]
+     */
+    public function getBaseTree(): array
     {
         return $this->buildTree();
+    }
+
+    /**
+     * The navigation tree as a user group's members get it before any
+     * customization: built with the group's permissions, and nobody else's.
+     *
+     * @return NavItem[]
+     */
+    public function getBaseTreeForGroup(UserGroup $group): array
+    {
+        return app(UserPermissions::class)->actingAsGroup(
+            $group,
+            // Element sources are remembered per request, for whoever asked
+            // first, so the group's are worked out afresh.
+            fn () => app()->make(self::class, ['elementSources' => app()->build(ElementSources::class)])->buildTree(),
+        );
     }
 
     /**
