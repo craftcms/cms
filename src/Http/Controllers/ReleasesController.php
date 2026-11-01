@@ -17,6 +17,7 @@ use CraftCms\Cms\Http\ViewModels\ReleaseViewModel;
 use CraftCms\Cms\Release\Enums\ReleaseStatus;
 use CraftCms\Cms\Release\Models\Release;
 use CraftCms\Cms\Release\Releases;
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -77,16 +78,26 @@ class ReleasesController
             ->appends($request->except(Cms::config()->getPageTriggerParam()));
 
         $formatter = new IntlDateFormatter(I18N::getFormattingLocale()->id, IntlDateFormatter::MEDIUM, IntlDateFormatter::SHORT, Cms::timezone(), IntlDateFormatter::TRADITIONAL);
-        $rows = $paginator->getCollection()->map(function (Release $release) use ($formatter): array {
+        $actor = $request->craftUser();
+        $canCheckReadiness = Gate::any(['manageReleases', 'publishReleases']);
+        $rows = $paginator->getCollection()->map(function (Release $release) use ($formatter, $actor, $canCheckReadiness): array {
             $date = $release->publishedAt ?? $release->targetDate;
             $canDelete = $release->status->isMutable() && Gate::allows('manage', $release);
+            $blocked = $canCheckReadiness
+                && $release->status === ReleaseStatus::Scheduled
+                && ! $this->releases->checkReadiness($release, $actor)->ready;
 
             return [
                 'id' => $release->id,
                 'name' => ['label' => $release->name, 'url' => route('craft.cp.releases.show', $release)],
-                'status' => ['html' => Html::tag('craft-badge', Html::encode($release->status->label()), [
-                    'fill' => $release->status->color()->value,
-                ])],
+                'status' => ['html' => Html::tag('div', implode('', array_filter([
+                    Html::tag('craft-badge', Html::encode($release->status->label()), [
+                        'fill' => $release->status->color()->value,
+                    ]),
+                    $blocked ? Html::tag('craft-badge', Html::encode(t('Blocked')), [
+                        'fill' => Color::Red->value,
+                    ]) : null,
+                ])), ['class' => 'flex flex-wrap gap-xs'])],
                 'date' => $date === null ? t('Not set') : ['html' => Html::tag('time',
                     Html::encode(($formatted = $formatter->format($date))
                         ? $formatted.' '.DateTimeHelper::timeZoneAbbreviation(Cms::timezone(), $date)

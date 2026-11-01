@@ -545,6 +545,30 @@ it('lists a release’s drafts for publishing, holding publication until none ar
     getJson(route('craft.cp.releases.publishModal', $release))->assertForbidden();
 });
 
+it('flags blocked drafts on scheduled releases, and blocked scheduled releases on the index', function () {
+    $blocked = releaseControllerDraft($this->actor);
+    $release = $this->releases->create('Blocked schedule', null, $this->actor);
+    $this->releases->attach($release, $blocked, $this->actor);
+    DB::table(Table::ELEMENTS)->where('id', $blocked->getCanonicalId())->softDelete();
+    $indexStatus = fn () => get(route('craft.cp.releases.index'), headers: ['X-Inertia' => 'true'])
+        ->json('props.ui.nodes.0.props.rows.0.status.html');
+
+    expect($indexStatus())->not->toContain('Blocked');
+
+    $release->update(['status' => ReleaseStatus::Scheduled, 'publishedAt' => now()->addDay()]);
+
+    expect($indexStatus())->toContain('Scheduled')->toContain('Blocked');
+
+    get(route('craft.cp.releases.show', $release))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('ui.nodes.0.props.columns.1.key', 'status')
+            ->where('ui.nodes.0.props.columns.2.key', 'issues')
+            ->where('ui.nodes.0.props.rows.0.status.html', fn (string $html) => str_contains($html, 'Blocked'))
+            ->where('ui.nodes.0.props.rows.0.issues.html', fn (string $html) => str_contains($html, 'The entry has been deleted.'))
+            ->where('release.canPublish', false));
+});
+
 it('deletes a mutable release through its advertised action without deleting its draft', function (string $source, ReleaseStatus $status) {
     $draft = releaseControllerDraft($this->actor);
     $release = $this->releases->create('Delete release', null, $this->actor);
