@@ -22,9 +22,24 @@ class Address extends ElementArguments
     public static function getArguments(): array
     {
         return array_merge(parent::getArguments(), self::getContentArguments(), static::queryParamArguments(AddressElement::class, [
+            'field',
+            'fieldId',
+            'primaryOwnerId',
             'ownerId',
             'countryCode',
             'administrativeArea',
+            'locality',
+            'dependentLocality',
+            'postalCode',
+            'sortingCode',
+            'organization',
+            'organizationTaxId',
+            'addressLine1',
+            'addressLine2',
+            'addressLine3',
+            'fullName',
+            'firstName',
+            'lastName',
         ]));
     }
 
