@@ -2601,6 +2601,7 @@ return [
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => '{attribute} debería contener como máximo {max, number} {max, plural, one{selection} other{selections}}.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} debería contener {count, number} {count, plural, one{item} other{items}}.',
     '{count, number} {count, plural, =1{layout} other{layouts}}' => '{count, number} {count, plural, one {}=1{diseño} other{diseños}}',
+    '{count, plural, =1{# Draft} other{# Drafts}}' => '{count, plural, =1{# Draft} other{# Drafts}}',
     '{count, spellout} plugin {count, plural, =1{update} other{updates}}' => '{count, spellout} {count, plural, one {}=1{actualización} other{actualizaciones}} de complementos',
     '{count, spellout} {count, plural, =1{plugin} other{plugins}}' => '{count, spellout} {count, plural, one {}=1{complemento} other{complementos}}',
     '{delta, plural, =1{1 day} other{# days}}' => '{delta, plural, =1{1 day} other{# days}}',
