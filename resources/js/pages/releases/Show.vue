@@ -150,10 +150,7 @@
       v-if="editUi || hasFooterControls"
       :name="editUi ? 'primary-action' : 'footer-meta'"
     >
-      <div
-        v-if="canSchedule || release.canUnschedule"
-        class="flex flex-wrap gap-md"
-      >
+      <div v-if="hasFooterControls" class="flex flex-wrap gap-md">
         <template v-if="canSchedule">
           <craft-button
             id="release-schedule"
@@ -177,23 +174,25 @@
         >
           {{ t('Unschedule') }}
         </craft-button>
+        <template v-if="canPublishNow">
+          <!-- A red outline: the danger palette applied to the outline variant. -->
+          <craft-button
+            id="release-publish-now"
+            type="button"
+            variant="outline"
+            inherit
+            data-color="danger"
+            .disabled="!readiness?.ready"
+            :focusable-when-disabled="publishDisabledReason ? true : undefined"
+            @click="publishRelease"
+          >
+            {{ t('Publish now') }}
+          </craft-button>
+          <craft-tooltip v-if="publishDisabledReason" for="release-publish-now">
+            {{ publishDisabledReason }}
+          </craft-tooltip>
+        </template>
       </div>
-    </LayoutSlot>
-
-    <LayoutSlot v-if="canPublishNow" name="additional-buttons">
-      <craft-button
-        id="release-publish-now"
-        type="button"
-        variant="danger"
-        .disabled="!readiness?.ready"
-        :focusable-when-disabled="publishDisabledReason ? true : undefined"
-        @click="publishRelease"
-      >
-        {{ t('Publish now') }}
-      </craft-button>
-      <craft-tooltip v-if="publishDisabledReason" for="release-publish-now">
-        {{ publishDisabledReason }}
-      </craft-tooltip>
     </LayoutSlot>
 
     <craft-callout
