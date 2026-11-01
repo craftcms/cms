@@ -150,6 +150,9 @@
 - Links to fields, such as those in Ask AI’s replies, now open the tab or details panel the field is in. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - Readable text, such as Ask AI’s replies, now styles ordered lists, task lists, blockquotes, and inline code. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - Comments in the Activity and Workflow details panels, and Ask AI’s messages and replies, are now styled the same, with syntax-highlighted code blocks on a dark background, and inline code in red. ([#20246](https://github.com/craftcms/cms/pull/20246))
+- Comment fields in the Activity and Workflow details panels no longer have a toolbar, and use the body font rather than a monospace one. ([#20249](https://github.com/craftcms/cms/pull/20249))
+- Comment fields in the Activity and Workflow details panels now have a label inside the field rather than placeholder text, with an info icon that says Markdown is supported (and in Activity, how to mention someone), and a round up-arrow button for posting. ([#20249](https://github.com/craftcms/cms/pull/20249))
+- Pressing <kbd>Return</kbd> in a comment field in the Activity and Workflow details panels now posts the comment, except within a code block or on a list item, where it starts a new line. <kbd>Shift</kbd> + <kbd>Return</kbd> starts a new line, and <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>Return</kbd> always posts. ([#20249](https://github.com/craftcms/cms/pull/20249))
 - Pressing <kbd>Return</kbd> in Ask AI’s message box within an unclosed code block now starts a new line, rather than sending the message. ([#20246](https://github.com/craftcms/cms/pull/20246))
 - Fixed a bug where single-value checkbox selects unchecked “All” while their options loaded. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - Fixed a bug where legacy buttons and text inputs were unstyled, and `fullwidth` controls didn’t fill their containers, on Twig control panel pages rendered inside the Inertia shell.
@@ -490,6 +493,7 @@
 - Added `CraftCms\Cms\Element\ElementHelper::returnUrlForSite()`, which sets the `site` param of a `returnUrl` param value, keeping it encrypted if it was. ([#20222](https://github.com/craftcms/cms/pull/20222))
 - `craft\web\assets\prismjs\PrismJsAsset` no longer registers Prism, or Craft 5.12’s Prism shim. Plugins that rely on Prism should bundle it themselves, or use `Craft.highlighter` instead. ([#20088](https://github.com/craftcms/cms/pull/20088))
 - `Craft.highlighter` now highlights Apache, CSS, Dockerfile, `.env`, GraphQL, HTTP, JSX, Nginx, SQL, TOML, TSX, Twig, TypeScript, and Vue code. ([#20245](https://github.com/craftcms/cms/pull/20245))
+- Added the `proportional` property to `<craft-markdown-field>`, which shows the text in the body font, without the Markdown badge. ([#20249](https://github.com/craftcms/cms/pull/20249))
 - Added `CraftCms\Cms\Support\Query::prepareDateForDb()`, which converts a date to the UTC string Craft stores dates as, for writing or comparing it with the query builder. ([#20053](https://github.com/craftcms/cms/pull/20053))
 - Eloquent models that extend `CraftCms\Cms\Shared\BaseModel` now store and read dates in UTC, including their timestamps and soft-delete dates. ([#20053](https://github.com/craftcms/cms/pull/20053))
 - Added `CraftCms\Cms\Ai\Task` and `CraftCms\Cms\Ai\AiTasks`, for registering AI tasks. ([#20006](https://github.com/craftcms/cms/pull/20006))

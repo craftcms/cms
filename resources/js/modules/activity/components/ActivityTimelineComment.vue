@@ -8,17 +8,16 @@
   } from '@actions/Elements/ActivityCommentsController';
   import ActivityMentionSuggestionsController from '@actions/Elements/ActivityMentionSuggestionsController';
   import ActionMenu from '@/common/components/ActionMenu.vue';
+  import CommentField from '@/common/components/CommentField.vue';
   import {
     COMMENT_MAX_LENGTH,
     useCharacterLimit,
   } from '@/common/composables/useCharacterLimit';
   import type {ActionItem} from '@/common/types';
   import type {ActivityEvent} from '@/modules/activity/composables/useActivityTimeline';
-  import {commentToolbarButtons} from '@/modules/markdown-field/toolbarPresets';
   import ActivityCommentCard from './ActivityCommentCard.vue';
   import ActivityTimelineEvent from './ActivityTimelineEvent.vue';
   import {commandShortcut} from '@/common/utils/keyShortcuts';
-  import '../../markdown-field/markdown-field';
 
   interface ActivityCommentResponse {
     event: ActivityEvent;
@@ -64,6 +63,9 @@
       : []),
   ]);
   const editorId = `activity-comment-${useId()}`;
+  const mentionHint = t('Type {user} to mention someone.', {
+    user: '<kbd>@</kbd>',
+  });
   function requestData() {
     return {
       elementType: props.elementType,
@@ -134,18 +136,7 @@
 
   const postShortcut = commandShortcut('Enter');
 
-  /** Ctrl/Command + Enter posts (or saves) the comment from the editor. */
-  function onDraftKeydown(event: KeyboardEvent): void {
-    if (
-      event.key !== 'Enter' ||
-      (!event.metaKey && !event.ctrlKey) ||
-      event.isComposing
-    ) {
-      return;
-    }
-
-    // Claimed even when it can't post, so it doesn't submit the page's form.
-    event.preventDefault();
+  function onDraftSubmit(): void {
     if (!mutating.value && overage.value <= 0) {
       void saveComment();
     }
@@ -190,54 +181,21 @@
       class="activity-timeline__comment-editor"
       :class="{'activity-timeline__comment-edit': !creating}"
     >
-      <label class="visually-hidden" :for="editorId">
-        {{ creating ? t('Add a comment') : t('Edit comment') }}
-      </label>
-      <div
-        class="activity-timeline__comment-field"
-        :class="{
-          'activity-timeline__comment-field--footer':
-            creating || overageMessage,
-        }"
+      <CommentField
+        :id="editorId"
+        v-model="draft"
+        :label="creating ? t('Add a comment') : t('Edit comment')"
+        :overage-message="overageMessage"
+        :submit-button="creating"
+        :submit-label="t('Comment')"
+        :submit-disabled="mutating || overage > 0"
+        @submit="onDraftSubmit"
       >
-        <craft-markdown-field
-          :id="editorId"
-          class="markdown-field"
-          :max-height="200"
-          :rows="1"
-          :placeholder="creating ? t('Add a comment…') : undefined"
-          sanitize-html
-          show-toolbar
-          .toolbarButtons="commentToolbarButtons"
-          .value="draft"
-          @input="draft = ($event.target as HTMLTextAreaElement).value"
-          @keydown="onDraftKeydown"
-        />
-        <div class="activity-timeline__comment-footer">
-          <span class="activity-timeline__comment-overage" aria-live="polite">
-            {{ overageMessage }}
-          </span>
-          <template v-if="creating">
-            <!-- Icon-only, named by its tooltip. -->
-            <craft-button
-              :id="`${editorId}-post`"
-              class="activity-timeline__comment-post"
-              type="button"
-              :variant="draft.trim() === '' ? 'fill' : 'primary'"
-              size="small"
-              icon
-              .disabled="draft.trim() === '' || mutating || overage > 0"
-              :aria-keyshortcuts="postShortcut"
-              @click="saveComment"
-            >
-              <craft-icon name="arrow-up" :label="t('Comment')"></craft-icon>
-            </craft-button>
-            <craft-tooltip :for="`${editorId}-post`" invoker-relation="label">
-              {{ t('Comment') }}
-            </craft-tooltip>
-          </template>
-        </div>
-      </div>
+        <template #info>
+          <!-- A translated string with fixed markup for the key. -->
+          <span v-html="mentionHint"></span>
+        </template>
+      </CommentField>
       <craft-text-expander :for="editorId" .triggers="mentionTriggers" />
       <div v-if="error || !creating" class="activity-timeline__comment-actions">
         <p v-if="error" class="error" role="alert">
@@ -316,40 +274,6 @@
 
   .activity-timeline__comment .error {
     margin: 0;
-  }
-
-  .activity-timeline__comment-editor craft-markdown-field {
-    contain: inline-size;
-    display: block;
-    width: 100%;
-  }
-
-  .activity-timeline__comment-field {
-    position: relative;
-  }
-
-  .activity-timeline__comment-field--footer craft-markdown-field {
-    --markdown-field-footer-height: calc(
-      var(--c-size-control-sm) + var(--c-spacing-md) * 2
-    );
-  }
-
-  .activity-timeline__comment-footer {
-    position: absolute;
-    inset-block-end: var(--c-spacing-md);
-    inset-inline-end: var(--c-spacing-md);
-    display: flex;
-    align-items: center;
-    gap: var(--c-spacing-md);
-  }
-
-  .activity-timeline__comment-post {
-    --c-button-radius: 9999px;
-  }
-
-  .activity-timeline__comment-overage {
-    color: var(--c-color-danger-on-quiet);
-    font-size: var(--c-text-sm);
   }
 
   .activity-timeline__comment-editor .activity-timeline__comment-actions {

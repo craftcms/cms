@@ -210,7 +210,12 @@ describe('WorkflowReviewPanel', () => {
       ...container!.querySelectorAll<HTMLElement>(
         '.workflow-review craft-button'
       ),
-    ].find((element) => element.textContent?.trim() === label)!;
+    ].find(
+      (element) =>
+        (element.textContent?.trim() ||
+          element.querySelector<HTMLElement & {label?: string}>('craft-icon')
+            ?.label) === label
+    )!;
   }
 
   async function enterNote(value: string): Promise<void> {
