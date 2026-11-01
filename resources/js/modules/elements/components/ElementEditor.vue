@@ -58,7 +58,10 @@
   import {useAnnouncer} from '@/common/composables/useAnnouncer';
   import ReleaseCallout from '@/modules/releases/components/ReleaseCallout.vue';
   import ReleasePicker from '@/modules/releases/components/ReleasePicker.vue';
-  import {provideReleaseEditorActions} from '@/modules/releases/releaseEditor';
+  import {
+    isReleasePreviewOpen,
+    provideReleaseEditorActions,
+  } from '@/modules/releases/releaseEditor';
   import type {ReleaseOption} from '@/modules/elements/composables/useElementEditor';
   import {create} from '@actions/ReleasesController';
   import {openSlideout} from '@/common/slideouts';
@@ -248,6 +251,13 @@
     slideout,
   });
 
+  /**
+   * Whether the footer leaves out the saves, as in a release's editor, where
+   * the draft autosaves and the release applies it: only a workflow action,
+   * such as requesting review, is left.
+   */
+  const workflowActionsOnly = slideout?.workflowActionsOnly ?? false;
+
   const saveButtons = computed(() =>
     payload.editorActions.buttons.map((action) => ({
       label: action.label,
@@ -392,6 +402,28 @@
   );
   const approvalNoticeDismissed = ref(false);
   const releaseNoticeDismissed = ref(false);
+
+  /**
+   * Whether the release notice would only repeat what the release's preview
+   * already shows, beside the draft opened from it: that the draft is in an
+   * unscheduled release, which it isn't blocking, and editing it won't reopen
+   * an approved review, leaving it blocking.
+   */
+  const releaseNoticeRedundant = computed(
+    () =>
+      slideout !== null &&
+      payload.release !== null &&
+      isReleasePreviewOpen(payload.release.id) &&
+      payload.release.status !== 'scheduled' &&
+      payload.release.blockers.length === 0 &&
+      payload.workflow.current?.status !== 'approved'
+  );
+  const showReleaseNotice = computed(
+    () =>
+      payload.release !== null &&
+      !releaseNoticeDismissed.value &&
+      !releaseNoticeRedundant.value
+  );
   const {announce} = useAnnouncer();
 
   // Dismissing the release notice only hides it until the draft starts
@@ -547,14 +579,16 @@
     title: payload.title,
     form,
     onSave: editorLocked.value ? undefined : primaryAction,
-    saveDisabled: editorLocked.value,
+    saveDisabled:
+      editorLocked.value ||
+      (workflowActionsOnly && !payload.editorActions.primary.panelId),
     handlesReadOnly: true,
     submitButtonLabel: payload.editorActions.primary.label,
     // The element supplies its own full set of alternate saves — including its
     // own "Save and continue editing" — so the layout's default would duplicate.
     defaultFormActions: [],
-    formActions: formActionItems.value,
-    formAdditionalButtons: saveButtons.value,
+    formActions: workflowActionsOnly ? [] : formActionItems.value,
+    formAdditionalButtons: workflowActionsOnly ? [] : saveButtons.value,
     editUrl: payload.cpEditUrl,
   }));
 </script>
@@ -603,7 +637,10 @@
     />
   </LayoutSlot>
 
-  <LayoutSlot v-if="payload.additionalButtons.length" name="additional-buttons">
+  <LayoutSlot
+    v-if="!workflowActionsOnly && payload.additionalButtons.length"
+    name="additional-buttons"
+  >
     <craft-button
       v-for="button in payload.additionalButtons"
       :key="button.label"
@@ -658,7 +695,7 @@
   </LayoutSlot>
 
   <LayoutSlot
-    v-if="!payload.readOnly && canChooseRelease"
+    v-if="!workflowActionsOnly && !payload.readOnly && canChooseRelease"
     name="additional-buttons"
   >
     <ReleasePicker
@@ -681,7 +718,7 @@
       workflowReviewLocked ||
       (awaitingUserApproval && !approvalNoticeDismissed) ||
       payload.workflow.current?.status === 'withdrawn' ||
-      (payload.release && !releaseNoticeDismissed)
+      showReleaseNotice
     "
     name="content-notices"
   >
@@ -802,7 +839,7 @@
         </craft-callout>
 
         <ReleaseCallout
-          v-if="payload.release && !releaseNoticeDismissed"
+          v-if="payload.release && showReleaseNotice"
           :release="payload.release"
           :locked="releaseDraftLocked"
           :can-start-editing="!payload.readOnly && !workflowReviewLocked"

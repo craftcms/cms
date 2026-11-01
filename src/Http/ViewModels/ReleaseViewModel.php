@@ -171,7 +171,7 @@ class ReleaseViewModel extends ViewModel
      * Each draft carries the issues stopping the release from publishing, as
      * the release's own screen lists them, when the user can check them.
      *
-     * @return array{items: list<array{id: int, title: string, url: string, preview: array<string, mixed>|null, blockers: list<string>}>, selectedItemId: int|null, closeUrl: string}
+     * @return array{items: list<array{id: int, title: string, url: string, editUrl: string|null, preview: array<string, mixed>|null, blockers: list<string>}>, selectedItemId: int|null, closeUrl: string}
      */
     public function preview(?int $selectedItemId): array
     {
@@ -200,6 +200,9 @@ class ReleaseViewModel extends ViewModel
                 'id' => $item->id,
                 'title' => $itemPreview['element']->title ?? t('Untitled'),
                 'url' => route('craft.cp.releases.preview', [$this->release, 'item' => $item->id]),
+                'editUrl' => $this->actor->can('save', $itemPreview['element'])
+                    ? $itemPreview['element']->getCpEditUrl()
+                    : null,
                 'preview' => $payload,
                 'blockers' => $readiness?->itemErrors[$item->id] ?? [],
             ];

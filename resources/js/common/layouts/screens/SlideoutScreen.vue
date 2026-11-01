@@ -357,6 +357,7 @@
       :has-panels="regions.hasPanels()"
     >
       <div
+        v-if="!slideout?.docked"
         v-show="regions.has('content-notices')"
         class="slideout-screen__notices"
         role="status"
@@ -397,6 +398,19 @@
       </LayoutSlotOutlet>
     </ScreenPanel>
 
+    <!-- Docked beside a preview, the notices sit above the footer, as Live
+      Preview's do. -->
+    <div
+      v-if="slideout?.docked"
+      v-show="regions.has('content-notices')"
+      class="slideout-screen__notices"
+      role="status"
+    >
+      <LayoutSlotOutlet name="content-notices">
+        <slot name="content-notices"></slot>
+      </LayoutSlotOutlet>
+    </div>
+
     <footer v-if="!props.hideFooter" class="slideout-screen__footer">
       <ContentFooter
         :read-only="readOnly"
@@ -415,7 +429,7 @@
         <template v-for="name in regions.footerSlots()" :key="name" #[name]>
           <slot :name="name"></slot>
         </template>
-        <template #shell-actions>
+        <template v-if="!slideout?.workflowActionsOnly" #shell-actions>
           <craft-button type="button" @click="close">
             {{ cancelLabel }}
           </craft-button>
