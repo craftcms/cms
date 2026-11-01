@@ -78,7 +78,10 @@ describe('WorkflowEditLockCallout', () => {
     vi.unstubAllGlobals();
   });
 
-  function mount(workflowReview: WorkflowReviewData): void {
+  function mount(
+    workflowReview: WorkflowReviewData,
+    confirmEditing?: () => Promise<boolean>
+  ): void {
     payload = shallowRef({
       elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
       canonicalId: 12,
@@ -103,6 +106,7 @@ describe('WorkflowEditLockCallout', () => {
         h(WorkflowEditLockCallout, {
           payload: payload.value,
           updatePayload,
+          confirmEditing,
           onStartEditing: startEditing,
         }),
     });
@@ -134,13 +138,13 @@ describe('WorkflowEditLockCallout', () => {
     [
       'reopens an approved draft for its final-stage reviewers',
       review({status: 'approved', isReviewer: true, hasApproved: true}),
-      'info',
+      'warning',
       'This draft is approved and ready to be published.',
     ],
     [
       'lets a reviewer edit a draft they approved',
       review({isReviewer: true, hasApproved: true}),
-      'info',
+      'warning',
       'You’ve approved this draft.',
     ],
   ])('%s', (_, workflowReview, variant, text) => {
@@ -185,6 +189,31 @@ describe('WorkflowEditLockCallout', () => {
     );
     expect(startEditing).not.toHaveBeenCalled();
   });
+
+  it.each([
+    [false, 0, 0],
+    [true, 1, 1],
+  ])(
+    'only changes the review once editing is confirmed (confirmed: %s)',
+    async (confirmed, requests, starts) => {
+      requestSpy.mockResolvedValueOnce(
+        response({
+          workflowReview: review({status: 'withdrawn'}),
+          editorActions: {},
+        })
+      );
+      const confirmEditing = vi.fn(async () => confirmed);
+      mount(review({status: 'approved'}), confirmEditing);
+
+      startEditingButton().click();
+
+      await vi.waitFor(() => expect(confirmEditing).toHaveBeenCalledOnce());
+      await vi.waitFor(() =>
+        expect(startEditing).toHaveBeenCalledTimes(starts)
+      );
+      expect(requestSpy).toHaveBeenCalledTimes(requests);
+    }
+  );
 
   it('withdraws a reviewer’s own approval before unlocking the draft', async () => {
     const reopened = review({isReviewer: true, hasApproved: false});

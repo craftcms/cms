@@ -34,7 +34,6 @@ import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
 import {provideUiValueGroup} from '@/modules/ui/uiValueGroup';
 import UpdateFieldLayoutController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/UpdateFieldLayoutController';
 import {attach} from '@actions/ReleasesController';
-import {isReleasePreviewOpen} from '@/modules/releases/releaseEditor';
 
 export interface ElementEditFormData {
   typeId?: string | number | null;
@@ -265,22 +264,34 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
 
   const editingDraft = shallowRef(false);
 
+  const blocksRelease = computed(() => Boolean(props.release?.blockers.length));
+
   /**
-   * Whether this is a slideout opened from the preview of the release the draft
-   * belongs to. Its Edit button is how the draft got here, so there's no need
-   * to say it's in the release or to have editing started a second time.
+   * Whether the draft belongs to a scheduled release, so edits that leave it
+   * unready would make the release fail, until the user chooses to edit it.
+   * A draft that's already blocking the release can't make it any worse.
    */
-  const inReleasePreview = computed(() =>
-    Boolean(slideout && props.release && isReleasePreviewOpen(props.release.id))
-  );
   const releaseDraftLocked = computed(
     () =>
-      Boolean(props.release) && !editingDraft.value && !inReleasePreview.value
+      props.release?.status === 'scheduled' &&
+      !blocksRelease.value &&
+      !editingDraft.value
   );
 
-  watch([() => props.draftId, () => props.release?.id], () => {
-    editingDraft.value = false;
-  });
+  watch(
+    [() => props.draftId, () => props.release?.id, blocksRelease],
+    (
+      [draftId, releaseId, blocking],
+      [previousDraftId, previousReleaseId, wasBlocking]
+    ) => {
+      if (draftId !== previousDraftId || releaseId !== previousReleaseId) {
+        editingDraft.value = false;
+      } else if (wasBlocking && !blocking) {
+        // Fixing the draft's last issue mustn't lock the user out of it.
+        editingDraft.value = true;
+      }
+    }
+  );
 
   /**
    * Whether the draft's in review or approved, so editing it would undo its
@@ -1276,7 +1287,6 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     sidebarPayload,
     sidebarRenderer,
     releaseDraftLocked,
-    inReleasePreview,
     startEditingDraft,
     updatePayload,
     values,
