@@ -45,6 +45,11 @@
       title?: string;
       reorderable?: boolean;
       /**
+       * Whether a row can be moved. Rows that can't keep their place, with no
+       * handle; keep them at the start or end of the table.
+       */
+      canReorderRow?: (row: TData) => boolean;
+      /**
        * Disables selection, sorting and reordering while a request runs,
        * keeping the controls in place so the layout doesn't shift.
        */
@@ -171,7 +176,11 @@
 
   const {setRowRef, setHandleRef, getDragState, getDropState} =
     useReorderableRows({
-      getRowIds: () => props.table.getRowModel().rows.map((row: any) => row.id),
+      getRowIds: () =>
+        props.table
+          .getRowModel()
+          .rows.filter((row) => isRowReorderable(row))
+          .map((row) => row.id),
       onReorder: (startIndex, finishIndex) => {
         emit('reorder', startIndex, finishIndex);
       },
@@ -282,12 +291,30 @@
     );
   }
 
+  function isRowReorderable(row: Row<CraftTableFeatures, TData>): boolean {
+    return props.canReorderRow?.(row.original) ?? true;
+  }
+
+  /** The first and last indexes rows can move between. */
+  const reorderBounds = computed(() => {
+    const indexes = props.table
+      .getRowModel()
+      .rows.filter((row) => isRowReorderable(row))
+      .map((row) => row.index);
+
+    return {first: Math.min(...indexes), last: Math.max(...indexes)};
+  });
+
   function getRowPosition(index: number) {
-    if (index === 0) {
+    if (reorderBounds.value.first === reorderBounds.value.last) {
+      return 'only';
+    }
+
+    if (index === reorderBounds.value.first) {
       return 'first';
     }
 
-    if (index === props.table.getRowModel().rows.length - 1) {
+    if (index === reorderBounds.value.last) {
       return 'last';
     }
 
@@ -543,7 +570,7 @@
             </td>
             <template v-if="reorderable && !readOnly">
               <td :class="{'border-b-0': hideBottomBorder(rowIdx)}">
-                <div>
+                <div v-if="isRowReorderable(row)">
                   <craft-reorder-button
                     .disabled="interactionsDisabled"
                     @craft-reorder="

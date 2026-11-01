@@ -67,6 +67,8 @@
       createMenuItems?: Array<{label: string; url: string}> | null;
       title?: string;
       reorderable?: boolean;
+      /** Whether a row can be moved; see `DataTable`'s `canReorderRow`. */
+      canReorderRow?: (row: TData) => boolean;
       selectable?: boolean;
       actions?: Array<BulkAction> | null;
       statuses?: Array<BulkAction> | null;
@@ -331,6 +333,7 @@
         :table="table"
         :title="title"
         :reorderable="reorderable"
+        :can-reorder-row="canReorderRow"
         :read-only="readOnly"
         :loading="loading"
         :layout="layout"

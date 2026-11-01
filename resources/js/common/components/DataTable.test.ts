@@ -23,6 +23,7 @@ function mountTable(
     interactionsDisabled?: boolean;
     excludeSecond?: boolean;
     rowBehavior?: {onClick: () => boolean};
+    canReorderRow?: (row: {id: number}) => boolean;
   } = {}
 ) {
   const table = useCraftTable({
@@ -56,6 +57,8 @@ function mountTable(
         readOnly: options.readOnly,
         rowBehavior: options.rowBehavior,
         interactionsDisabled: options.interactionsDisabled,
+        reorderable: Boolean(options.canReorderRow),
+        canReorderRow: options.canReorderRow,
       } as never),
   });
   app.mount(root);
@@ -195,4 +198,18 @@ it('leaves ordinary link clicks to the link without selecting its row', async ()
 
   expect(event.defaultPrevented).toBe(false);
   expect(selection.selectedIds.value).toEqual([]);
+});
+
+it('leaves rows that can’t be reordered without a handle, and keeps the others from moving past them', async () => {
+  const {root} = mountTable({canReorderRow: (row) => row.id !== 3});
+  await nextTick();
+
+  const rows = [...root.querySelectorAll('tbody tr')];
+  const positions = rows.map(
+    (row) =>
+      (row.querySelector('craft-reorder-button') as {position?: string} | null)
+        ?.position ?? null
+  );
+
+  expect(positions).toEqual(['first', 'last', null]);
 });
