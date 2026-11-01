@@ -200,7 +200,7 @@
 
   .workflow-user-review-summary__reviewer {
     min-width: 0;
-    gap: var(--c-spacing-xs);
+    gap: var(--c-spacing-sm);
   }
 
   .workflow-user-review-summary__thumb {
