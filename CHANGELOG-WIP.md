@@ -36,7 +36,7 @@
 - Added releases, which group saved drafts of entries and other top-level elements so they can be scheduled and published together, atomically. Drafts in a release can be queried with the `releaseId` element query param and GraphQL argument, and the “Query for releases” GraphQL schema permission adds `releases` and `release` queries.
 
 ### Elements
-- Added Markdown comments to element activity timelines, with support for editing, removing, structured user mentions, and email notifications.
+- Added Markdown comments to element activity timelines, with support for editing, removing, structured user mentions, syntax-highlighted code blocks, and email notifications.
 - Element index searches now update results as users type. ([#19754](https://github.com/craftcms/cms/pull/19754))
 - Clicking anywhere on an element index table row or card (other than an interactive control) now selects it. ([#19351](https://github.com/craftcms/cms/pull/19351))
 - Element index View menus now have a “Thumb Size” setting in table, structure, and thumbnail views, with “Small”, “Medium”, and “Large” options, plus “XL” and “2XL” in thumbnail view. Each view remembers its own size, and chips take a size to suit their thumbnails. ([#20083](https://github.com/craftcms/cms/discussions/20083), [#20124](https://github.com/craftcms/cms/pull/20124))

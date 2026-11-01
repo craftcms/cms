@@ -149,6 +149,8 @@
 - The authenticated MCP server’s connection instructions now only point to `info.get` for users with control panel access.
 - Links to fields, such as those in Ask AI’s replies, now open the tab or details panel the field is in. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - Readable text, such as Ask AI’s replies, now styles ordered lists, task lists, blockquotes, and inline code. ([#20109](https://github.com/craftcms/cms/pull/20109))
+- Comments in the Activity and Workflow details panels, and Ask AI’s messages and replies, are now styled the same, with syntax-highlighted code blocks on a dark background, and inline code in red. ([#20246](https://github.com/craftcms/cms/pull/20246))
+- Pressing <kbd>Return</kbd> in Ask AI’s message box within an unclosed code block now starts a new line, rather than sending the message. ([#20246](https://github.com/craftcms/cms/pull/20246))
 - Fixed a bug where single-value checkbox selects unchecked “All” while their options loaded. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - Fixed a bug where legacy buttons and text inputs were unstyled, and `fullwidth` controls didn’t fill their containers, on Twig control panel pages rendered inside the Inertia shell.
 - Fixed a bug where release dates were formatted for the control panel’s language rather than the user’s formatting locale. ([#20085](https://github.com/craftcms/cms/pull/20085))

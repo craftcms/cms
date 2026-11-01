@@ -261,40 +261,56 @@ describe('AssistantChat', () => {
   it.each([
     ['Shift + Enter', {shiftKey: true}, false, 'First line'],
     ['Enter on a touch screen', {}, true, 'First line'],
+    ['Enter after a code fence', {}, false, 'Try:\n```twig'],
+    ['Enter in a code block', {}, false, 'Try:\n````\n```\n{{ a }}'],
   ])(
     'starts a new line on %s, rather than sending',
     async (_key, modifiers, touch, value) => {
       vi.stubGlobal('matchMedia', (query: string) => ({
         matches: touch && query === '(pointer: coarse)',
       }));
-      const textarea = await type('First line');
+      const textarea = await type(value);
       textarea.setSelectionRange(textarea.value.length, textarea.value.length);
 
-      press(textarea, modifiers);
+      const event = press(textarea, modifiers);
       await flush();
       vi.unstubAllGlobals();
 
       expect(chat.sendMessage).not.toHaveBeenCalled();
+      expect(event.defaultPrevented).toBe(false);
       expect(textarea.value).toBe(value);
     }
   );
 
   it.each([
-    ['Ctrl + Enter', {ctrlKey: true}, false],
-    ['Command + Enter', {metaKey: true}, false],
-    ['Command + Enter on a touch screen', {metaKey: true}, true],
-  ])('sends the message on %s', async (_key, modifiers, touch) => {
+    ['Ctrl + Enter', {ctrlKey: true}, false, 'First line'],
+    ['Command + Enter', {metaKey: true}, false, 'First line'],
+    ['Command + Enter on a touch screen', {metaKey: true}, true, 'First line'],
+    ['Command + Enter in a code block', {metaKey: true}, false, '```\na'],
+    ['Enter after a code block', {}, false, '```\na\n```'],
+    ['Enter after inline code', {}, false, '```a``` b'],
+  ])('sends the message on %s', async (_key, modifiers, touch, value) => {
     vi.stubGlobal('matchMedia', (query: string) => ({
       matches: touch && query === '(pointer: coarse)',
     }));
-    const textarea = await type('First line');
+    const textarea = await type(value);
 
     const event = press(textarea, modifiers);
     await flush();
     vi.unstubAllGlobals();
 
-    expect(chat.sendMessage).toHaveBeenCalledWith('First line');
+    expect(chat.sendMessage).toHaveBeenCalledWith(value);
     expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('sends the message on Enter before a code block', async () => {
+    const textarea = await type('Why?\n```\na');
+    textarea.setSelectionRange(4, 4);
+
+    press(textarea);
+    await flush();
+
+    expect(chat.sendMessage).toHaveBeenCalledWith('Why?\n```\na');
   });
 
   function approval(id: string): unknown {
