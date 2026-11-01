@@ -10,7 +10,7 @@
   import {computed, type HTMLAttributes, type VNodeChild} from 'vue';
   import DataTable from '@/common/components/DataTable.vue';
   import type {TableRowSelection} from '@/common/composables/useTableRowSelection';
-  import type {NestedReorderDirection} from '@craftcms/ui';
+  import type {NestedReorderDirection, ReorderMove} from '@craftcms/ui';
   import type {StructureMove} from '@/modules/elements/index/composables/useElementIndexStructure';
   import {
     type StructureDropType,
@@ -48,6 +48,11 @@
        * structure rows reorder as a tree and emit `moveStructureRow`.
        */
       canMoveRow?: (id: string | number, move: StructureMove) => boolean;
+      /**
+       * Places a structure row can be moved to from its reorder menu, besides
+       * up, down, in and out. Choosing one emits `moveStructureRowTo`.
+       */
+      structureMoves?: (id: string | number) => ReorderMove[];
       itemBehavior?: ElementIndexItemBehavior<any>;
       withBottomBorder?: boolean;
       /** How the table meets its container; see `DataTable`'s `appearance`. */
@@ -75,6 +80,7 @@
       isRowCollapsed: () => false,
       isRowPending: () => false,
       canMoveRow: () => false,
+      structureMoves: () => [],
       withBottomBorder: true,
       appearance: TableAppearance.Flush,
       inlineEditing: false,
@@ -84,6 +90,7 @@
   const emit = defineEmits<{
     toggleStructure: [id: string | number];
     moveStructureRow: [id: string | number, move: StructureMove];
+    moveStructureRowTo: [id: string | number, value: string];
     reorder: [startIndex: number, finishIndex: number];
   }>();
 
@@ -261,8 +268,13 @@
             :position="structurePosition(row.original.id)"
             .canIndent="canMoveRow(row.original.id, {type: 'indent'})"
             .canOutdent="canMoveRow(row.original.id, {type: 'outdent'})"
+            .moves="structureMoves(row.original.id)"
             :ref="(el: any) => structureDrag.setHandleRef(el, row.id)"
             @craft-reorder="onStructureReorder(row.original.id, $event)"
+            @craft-move="
+              (e: CustomEvent<{value: string}>) =>
+                emit('moveStructureRowTo', row.original.id, e.detail.value)
+            "
           ></craft-reorder-button>
         </div>
       </td>
