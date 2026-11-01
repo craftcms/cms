@@ -564,7 +564,7 @@ it('reevaluates stale generation state when retrieving an eager loaded index', f
 
     expect($this->transformer->getTransformIndex($asset, $transform)->inProgress)->toBeFalse();
 
-    $this->travelBack();
+    $this->travel(-31)->seconds();
 
     expect($this->transformer->getTransformIndex($asset, $transform)->inProgress)->toBeTrue();
 })->with(['UTC', 'America/Los_Angeles', 'Asia/Tokyo']);
