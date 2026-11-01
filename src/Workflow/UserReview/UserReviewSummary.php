@@ -33,24 +33,27 @@ readonly class UserReviewSummary
 
     /**
      * @param  Collection<int, User>  $reviewers
-     * @return array<string, list<array{name: string}>>
+     * @return array<string, list<array{name: string, thumbHtml: string|null}>>
      */
     private static function reviewers(UserReviewState $state, Collection $reviewers): array
     {
         return [
-            'approvedReviewers' => self::names($reviewers->whereIn('id', $state->localApprovalIds)),
-            'carriedReviewers' => self::names($reviewers->whereIn('id', $state->carriedApprovalIds)),
-            'requiredReviewers' => self::names($reviewers->whereIn('id', $state->requiredApprovalIds)),
-            'remainingReviewers' => self::names($reviewers->whereNotIn('id', $state->effectiveApprovalIds->merge($state->requiredApprovalIds))),
+            'approvedReviewers' => self::serialize($reviewers->whereIn('id', $state->localApprovalIds)),
+            'carriedReviewers' => self::serialize($reviewers->whereIn('id', $state->carriedApprovalIds)),
+            'requiredReviewers' => self::serialize($reviewers->whereIn('id', $state->requiredApprovalIds)),
+            'remainingReviewers' => self::serialize($reviewers->whereNotIn('id', $state->effectiveApprovalIds->merge($state->requiredApprovalIds))),
         ];
     }
 
     /**
      * @param  Collection<int, User>  $reviewers
-     * @return list<array{name: string}>
+     * @return list<array{name: string, thumbHtml: string|null}>
      */
-    private static function names(Collection $reviewers): array
+    private static function serialize(Collection $reviewers): array
     {
-        return $reviewers->map(fn (User $reviewer): array => ['name' => $reviewer->name])->values()->all();
+        return $reviewers->map(fn (User $reviewer): array => [
+            'name' => $reviewer->name,
+            'thumbHtml' => $reviewer->getThumbHtml(22),
+        ])->values()->all();
     }
 }
