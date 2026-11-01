@@ -226,6 +226,13 @@
     slideout,
   });
 
+  /**
+   * Whether the footer leaves out the saves, as in a release's editor, where
+   * the draft autosaves and the release applies it: only a workflow action,
+   * such as requesting review, is left.
+   */
+  const workflowActionsOnly = slideout?.workflowActionsOnly ?? false;
+
   const saveButtons = computed(() =>
     payload.editorActions.buttons.map((action) => ({
       label: action.label,
@@ -514,14 +521,16 @@
     title: payload.title,
     form,
     onSave: editorLocked.value ? undefined : primaryAction,
-    saveDisabled: editorLocked.value,
+    saveDisabled:
+      editorLocked.value ||
+      (workflowActionsOnly && !payload.editorActions.primary.panelId),
     handlesReadOnly: true,
     submitButtonLabel: payload.editorActions.primary.label,
     // The element supplies its own full set of alternate saves — including its
     // own "Save and continue editing" — so the layout's default would duplicate.
     defaultFormActions: [],
-    formActions: formActionItems.value,
-    formAdditionalButtons: saveButtons.value,
+    formActions: workflowActionsOnly ? [] : formActionItems.value,
+    formAdditionalButtons: workflowActionsOnly ? [] : saveButtons.value,
     editUrl: payload.cpEditUrl,
   }));
 </script>
@@ -570,7 +579,10 @@
     />
   </LayoutSlot>
 
-  <LayoutSlot v-if="payload.additionalButtons.length" name="additional-buttons">
+  <LayoutSlot
+    v-if="!workflowActionsOnly && payload.additionalButtons.length"
+    name="additional-buttons"
+  >
     <craft-button
       v-for="button in payload.additionalButtons"
       :key="button.label"
@@ -628,7 +640,7 @@
   </LayoutSlot>
 
   <LayoutSlot
-    v-if="!payload.readOnly && canChooseRelease"
+    v-if="!workflowActionsOnly && !payload.readOnly && canChooseRelease"
     name="additional-buttons"
   >
     <ReleasePicker

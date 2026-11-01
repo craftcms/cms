@@ -18,6 +18,8 @@
     href: string;
     /** Moves focus into the screen once it has loaded. */
     focusOnLoad?: boolean;
+    /** Leaves the screen's footer only its workflow actions. */
+    workflowActionsOnly?: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -48,6 +50,9 @@
       emit('saved', result);
 
       return true;
+    },
+    get workflowActionsOnly() {
+      return props.workflowActionsOnly;
     },
   });
 

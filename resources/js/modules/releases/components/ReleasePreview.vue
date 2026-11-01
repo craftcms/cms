@@ -252,6 +252,7 @@
         :key="selected.editUrl"
         :href="selected.editUrl"
         :focus-on-load="editorOpened"
+        workflow-actions-only
         @close="closeEditor"
         @saved="onEditorSaved"
       />

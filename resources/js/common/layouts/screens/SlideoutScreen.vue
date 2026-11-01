@@ -415,7 +415,7 @@
         <template v-for="name in regions.footerSlots()" :key="name" #[name]>
           <slot :name="name"></slot>
         </template>
-        <template #shell-actions>
+        <template v-if="!slideout?.workflowActionsOnly" #shell-actions>
           <craft-button type="button" @click="close">
             {{ cancelLabel }}
           </craft-button>

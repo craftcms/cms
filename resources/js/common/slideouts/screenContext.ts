@@ -40,5 +40,8 @@ export function provideSlideoutScreen(
     get coversPreviewEditor() {
       return controller.coversPreviewEditor;
     },
+    get workflowActionsOnly() {
+      return controller.workflowActionsOnly;
+    },
   });
 }

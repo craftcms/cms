@@ -600,7 +600,6 @@
           'live-preview--dragging': handlePressed || resizer.isResizing.value,
           'live-preview--compact': compact,
           'live-preview--with-sidebar': hasSidebar,
-          'live-preview--with-editor': $slots.editor,
         }"
         :aria-label="t('Preview')"
         tabindex="-1"
@@ -842,28 +841,30 @@
           <div class="sr-only" role="status">{{ announcement }}</div>
         </section>
 
-        <section
-          v-if="$slots.editor"
-          :id="editorId"
-          ref="editor"
-          class="lp-editor"
-          :aria-label="t('Editor')"
-        >
-          <!-- `prevent-autofocus`: it comes first in the editor, and opening the
+        <Transition name="lp-editor-slide">
+          <section
+            v-if="$slots.editor"
+            :id="editorId"
+            ref="editor"
+            class="lp-editor"
+            :aria-label="t('Editor')"
+          >
+            <!-- `prevent-autofocus`: it comes first in the editor, and opening the
             preview should land focus in the editor instead. -->
-          <Teleport to="body" :disabled="!handleLifted">
-            <ResizeHandle
-              class="prevent-autofocus"
-              :class="{'lp-lifted-handle': handleLifted}"
-              :style="handleLifted ? liftedHandleStyle : undefined"
-              :resizer="resizer"
-              @pointerdown="handlePressed = true"
-              :label="t('Resize editor')"
-              :controls="editorId"
-            />
-          </Teleport>
-          <slot name="editor"></slot>
-        </section>
+            <Teleport to="body" :disabled="!handleLifted">
+              <ResizeHandle
+                class="prevent-autofocus"
+                :class="{'lp-lifted-handle': handleLifted}"
+                :style="handleLifted ? liftedHandleStyle : undefined"
+                :resizer="resizer"
+                @pointerdown="handlePressed = true"
+                :label="t('Resize editor')"
+                :controls="editorId"
+              />
+            </Teleport>
+            <slot name="editor"></slot>
+          </section>
+        </Transition>
       </div>
     </Transition>
   </Teleport>
@@ -875,25 +876,19 @@
     inset: 0;
     z-index: var(--c-layer-overlay);
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    /* The editor's track is as wide as the editor, and empty without one. */
+    grid-template-columns: minmax(0, 1fr) auto;
     /* Without this the row grows to fit the editor, and the preview with it. */
     grid-template-rows: minmax(0, 1fr);
+    overflow: clip;
     background-color: var(--c-surface-sunken);
   }
 
   /* As wide as the CP's sidebar, border and all. */
   .live-preview--with-sidebar {
-    grid-template-columns: calc(var(--cp-sidebar-width) + 1px) minmax(0, 1fr);
-  }
-
-  .live-preview--with-editor {
-    grid-template-columns: minmax(0, 1fr) var(--lp-editor-width, 33%);
-  }
-
-  .live-preview--with-sidebar.live-preview--with-editor {
     grid-template-columns:
       calc(var(--cp-sidebar-width) + 1px) minmax(0, 1fr)
-      var(--lp-editor-width, 33%);
+      auto;
   }
 
   /* The panes slide in from the sides, over the page as the backdrop fades
@@ -948,6 +943,19 @@
         translate: -100vw 0;
       }
     }
+
+    /* An editor opened or closed within the preview slides in and out past
+       the end, its track growing and shrinking with it so the preview
+       narrows and widens alongside. */
+    .lp-editor-slide-enter-active,
+    .lp-editor-slide-leave-active {
+      transition: margin-inline-end 400ms ease;
+    }
+  }
+
+  .lp-editor-slide-enter-from,
+  .lp-editor-slide-leave-to {
+    margin-inline-end: calc(-1 * var(--lp-editor-width, 33vw));
   }
 
   .lp-sidebar {
@@ -964,6 +972,7 @@
     position: relative;
     display: grid;
     grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+    inline-size: var(--lp-editor-width, 33vw);
     min-width: 0;
     border-inline-start: 1px solid var(--c-color-border-quiet);
     background-color: var(--c-surface-default);
