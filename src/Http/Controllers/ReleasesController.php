@@ -84,8 +84,8 @@ class ReleasesController
             $date = $release->publishedAt ?? $release->targetDate;
             $canDelete = $release->status->isMutable() && Gate::allows('manage', $release);
             $blocked = $canCheckReadiness
-                && $release->status === ReleaseStatus::Scheduled
-                && ! $this->releases->checkReadiness($release, $actor)->ready;
+                && in_array($release->status, [ReleaseStatus::Draft, ReleaseStatus::Scheduled], true)
+                && $this->releases->checkReadiness($release, $actor)->itemErrors !== [];
 
             return [
                 'id' => $release->id,
