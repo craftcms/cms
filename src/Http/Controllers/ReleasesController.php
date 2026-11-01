@@ -208,7 +208,8 @@ class ReleasesController
         $this->releases->update(
             $release,
             $data['name'],
-            $this->dateTime($data['targetDate'] ?? null),
+            // Scheduled releases don't show the Target Date field, so leave it alone when it isn't posted.
+            array_key_exists('targetDate', $data) ? $this->dateTime($data['targetDate']) : $release->targetDate,
             $request->craftUser(),
             $data['description'] ?? null,
         );
@@ -235,7 +236,7 @@ class ReleasesController
 
     public function scheduleModal(Release $release, UiResolver $uiResolver): JsonResponse
     {
-        Gate::authorize('publish', $release);
+        Gate::authorize('schedule', $release);
 
         $ui = $uiResolver->resolve(Ui::make([
             ReleaseDateGroup::dateTimeField('publishAt', t('Publication date'), min: now(Cms::timezone())->format('Y-m-d'))
@@ -286,7 +287,7 @@ class ReleasesController
      */
     public function publishModal(Release $release, Request $request): JsonResponse
     {
-        abort_unless(Gate::check('publishReleases') && $release->status->isMutable(), Response::HTTP_FORBIDDEN);
+        abort_unless(Gate::check('publishReleases') && $release->status->isEditable(), Response::HTTP_FORBIDDEN);
 
         $viewModel = app(ReleaseViewModel::class, [
             'release' => $release,
