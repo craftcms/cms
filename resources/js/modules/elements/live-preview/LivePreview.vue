@@ -13,6 +13,7 @@
   import {ref, useId, useTemplateRef} from 'vue';
   import ScreenDetailsLayout from '@/common/components/ScreenDetailsLayout.vue';
   import {createScreenPanels} from '@/common/composables/screenPanels';
+  import PreviewCloseButton from './PreviewCloseButton.vue';
   import PreviewLayout from './PreviewLayout.vue';
   import type {LivePreviewController} from './useLivePreview';
 
@@ -74,6 +75,7 @@
             {{ t('Edit') }}
             <span class="sr-only">{{ t('Opens in a new window') }}</span>
           </craft-button>
+          <PreviewCloseButton v-else @click="controller.close()" />
         </header>
 
         <ScreenDetailsLayout
