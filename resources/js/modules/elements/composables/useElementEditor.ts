@@ -264,17 +264,34 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
 
   const editingDraft = shallowRef(false);
 
+  const blocksRelease = computed(() => Boolean(props.release?.blockers.length));
+
   /**
    * Whether the draft belongs to a scheduled release, so edits that leave it
    * unready would make the release fail, until the user chooses to edit it.
+   * A draft that's already blocking the release can't make it any worse.
    */
   const releaseDraftLocked = computed(
-    () => props.release?.status === 'scheduled' && !editingDraft.value
+    () =>
+      props.release?.status === 'scheduled' &&
+      !blocksRelease.value &&
+      !editingDraft.value
   );
 
-  watch([() => props.draftId, () => props.release?.id], () => {
-    editingDraft.value = false;
-  });
+  watch(
+    [() => props.draftId, () => props.release?.id, blocksRelease],
+    (
+      [draftId, releaseId, blocking],
+      [previousDraftId, previousReleaseId, wasBlocking]
+    ) => {
+      if (draftId !== previousDraftId || releaseId !== previousReleaseId) {
+        editingDraft.value = false;
+      } else if (wasBlocking && !blocking) {
+        // Fixing the draft's last issue mustn't lock the user out of it.
+        editingDraft.value = true;
+      }
+    }
+  );
 
   /**
    * Whether the draft's in review or approved, so editing it would undo its

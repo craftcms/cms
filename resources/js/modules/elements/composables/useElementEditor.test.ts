@@ -797,6 +797,40 @@ describe('useElementEditor', () => {
     }
   );
 
+  it('leaves a draft already blocking its scheduled release unlocked, even once it stops blocking', async () => {
+    const release = {
+      id: 4,
+      name: 'Campaign',
+      status: 'scheduled',
+      targetDate: null,
+      canManage: true,
+      draftId: 7,
+      siteId: 1,
+      blockers: ['The title field is required.'],
+    } as const;
+    const screen = payload({
+      draftId: 7,
+      canAutosave: true,
+      readOnly: false,
+      release: {...release, blockers: [...release.blockers]},
+      ui: fieldLayout('Original'),
+    });
+    const {editor, page} = mount(screen);
+    expect(editor.releaseDraftLocked.value).toBe(false);
+
+    page.props = {...screen, release: {...release, blockers: []}};
+    await nextTick();
+    expect(editor.releaseDraftLocked.value).toBe(false);
+
+    page.props = {
+      ...screen,
+      draftId: 8,
+      release: {...release, id: 5, draftId: 8, blockers: []},
+    };
+    await nextTick();
+    expect(editor.releaseDraftLocked.value).toBe(true);
+  });
+
   it.each([
     ['pending', false, false],
     ['pending', true, true],
