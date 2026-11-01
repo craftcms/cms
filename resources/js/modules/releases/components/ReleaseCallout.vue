@@ -39,10 +39,7 @@
     if (blocking.value) {
       return scheduled
         ? t('This draft is blocking the scheduled release “{name}”.', params)
-        : t(
-            'This draft is blocking “{name}”, which can’t be published until the draft is ready.',
-            params
-          );
+        : t('This draft is blocking “{name}”.', params);
     }
 
     if (props.locked) {

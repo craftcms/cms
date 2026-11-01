@@ -78,12 +78,7 @@ it.each([
     'info',
     'This draft belongs to “Launch”. Saved changes will be included when the release publishes.',
   ],
-  [
-    'draft',
-    true,
-    'warning',
-    'This draft is blocking “Launch”, which can’t be published until the draft is ready.',
-  ],
+  ['draft', true, 'warning', 'This draft is blocking “Launch”.'],
   [
     'scheduled',
     true,

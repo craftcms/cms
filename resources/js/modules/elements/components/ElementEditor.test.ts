@@ -431,9 +431,7 @@ it('shows a dismissed release notice again once the draft blocks the release', a
   };
   await nextTick();
 
-  expect(container.textContent).toContain(
-    'This draft is blocking “Renamed”, which can’t be published until the draft is ready.'
-  );
+  expect(container.textContent).toContain('This draft is blocking “Renamed”.');
 });
 
 it('asks before editing a reviewed draft in a scheduled release', async () => {
