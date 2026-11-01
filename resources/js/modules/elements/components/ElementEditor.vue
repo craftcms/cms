@@ -15,6 +15,7 @@
     provide,
     ref,
     shallowReactive,
+    shallowRef,
     useTemplateRef,
     watch,
     type Component,
@@ -54,6 +55,7 @@
   import LivePreview from '@/modules/elements/live-preview/LivePreview.vue';
   import {useLivePreview} from '@/modules/elements/live-preview/useLivePreview';
   import {getActivePreview} from '@/modules/elements/live-preview/previews';
+  import {useAnnouncer} from '@/common/composables/useAnnouncer';
   import ReleaseCallout from '@/modules/releases/components/ReleaseCallout.vue';
   import ReleasePicker from '@/modules/releases/components/ReleasePicker.vue';
   import {provideReleaseEditorActions} from '@/modules/releases/releaseEditor';
@@ -204,6 +206,27 @@
     () =>
       workflowReviewLocked.value || payload.readOnly || releaseDraftLocked.value
   );
+
+  /**
+   * Settles the pending “Edit anyway?” question, while the dialog asking it is
+   * open: editing a reviewed draft in a scheduled release undoes its approval,
+   * which will stop the release from publishing. A draft that's already
+   * blocking the release isn't asked about.
+   */
+  const settleScheduledEdit = shallowRef<((confirmed: boolean) => void) | null>(
+    null
+  );
+
+  function confirmScheduledEdit(): Promise<boolean> {
+    return new Promise((resolve) => {
+      settleScheduledEdit.value = resolve;
+    });
+  }
+
+  function answerScheduledEdit(confirmed: boolean): void {
+    settleScheduledEdit.value?.(confirmed);
+    settleScheduledEdit.value = null;
+  }
 
   const canChooseRelease = computed(
     () =>
@@ -379,6 +402,28 @@
       !payload.workflow.current.hasApproved
   );
   const approvalNoticeDismissed = ref(false);
+  const releaseNoticeDismissed = ref(false);
+  const {announce} = useAnnouncer();
+
+  // Dismissing the release notice only hides it until the draft starts
+  // blocking the release, or the draft belongs to a different release.
+  watch(
+    () =>
+      [payload.release?.id, Boolean(payload.release?.blockers.length)] as const,
+    ([id, blocking], [previousId, wasBlocking]) => {
+      if (id !== previousId || (blocking && !wasBlocking)) {
+        releaseNoticeDismissed.value = false;
+      }
+
+      if (id === previousId && blocking && !wasBlocking) {
+        announce(
+          t('This draft is now blocking “{name}”.', {
+            name: payload.release!.name,
+          })
+        );
+      }
+    }
+  );
   /** Live Preview's two panes don't fit on a phone, so it isn't offered there. */
   const isPhone = cpBreakpoints.smaller('md');
 
@@ -650,7 +695,7 @@
       workflowReviewLocked ||
       (awaitingUserApproval && !approvalNoticeDismissed) ||
       payload.workflow.current?.status === 'withdrawn' ||
-      payload.release
+      (payload.release && !releaseNoticeDismissed)
     "
     name="content-notices"
   >
@@ -674,9 +719,46 @@
         v-if="workflowReviewLocked"
         :payload="payload"
         :update-payload="updatePayload"
+        :confirm-editing="
+          payload.release?.status === 'scheduled' &&
+          !payload.release.blockers.length
+            ? confirmScheduledEdit
+            : undefined
+        "
         class="mb-4"
         @start-editing="startEditing"
       />
+
+      <craft-dialog
+        :label="t('Edit a draft in a scheduled release?')"
+        .opened="settleScheduledEdit !== null"
+        @craft-hide="answerScheduledEdit(false)"
+      >
+        <p class="m-0">
+          {{
+            t(
+              'Editing this draft will undo its approval. Unless it’s approved again before “{name}” publishes, the release will fail to publish.',
+              {name: payload.release?.name ?? ''}
+            )
+          }}
+        </p>
+        <craft-button
+          slot="footer"
+          type="button"
+          autofocus
+          @click="answerScheduledEdit(false)"
+        >
+          {{ t('Cancel') }}
+        </craft-button>
+        <craft-button
+          slot="footer"
+          type="button"
+          variant="primary"
+          @click="answerScheduledEdit(true)"
+        >
+          {{ t('Edit anyway') }}
+        </craft-button>
+      </craft-dialog>
 
       <craft-callout
         v-if="awaitingUserApproval && !approvalNoticeDismissed"
@@ -690,14 +772,14 @@
         <craft-button
           slot="action"
           type="button"
+          icon="xmark-large"
+          :aria-label="t('Dismiss')"
           variant="plain"
           size="small"
-          icon
+          flush="inline-end"
           inherit
           @click="approvalNoticeDismissed = true"
-        >
-          <craft-icon name="xmark" :label="t('Dismiss')"></craft-icon>
-        </craft-button>
+        ></craft-button>
       </craft-callout>
 
       <craft-callout
@@ -729,12 +811,13 @@
       </craft-callout>
 
       <ReleaseCallout
-        v-if="payload.release"
+        v-if="payload.release && !releaseNoticeDismissed"
         :release="payload.release"
-        :can-edit="!payload.readOnly"
-        :editing="!releaseDraftLocked"
-        @start-editing="startEditing"
+        :locked="releaseDraftLocked"
+        :can-start-editing="!payload.readOnly && !workflowReviewLocked"
         class="mb-4"
+        @start-editing="startEditing"
+        @dismiss="releaseNoticeDismissed = true"
       />
 
       <craft-callout
