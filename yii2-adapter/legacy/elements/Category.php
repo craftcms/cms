@@ -113,6 +113,14 @@ class Category extends Element
     /**
      * @inheritdoc
      */
+    public static function hasStructures(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function trackChanges(): bool
     {
         return true;
