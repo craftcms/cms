@@ -275,7 +275,7 @@
 - Release pages’ “Publish now” and “Schedule” buttons now have tooltips explaining why they’re disabled, and the page counts blocking drafts rather than entries.
 - The notice on drafts that belong to a release now links the release’s name, in place of a “View release” button.
 - Scheduled release pages now have the same Status and Issues columns as draft release pages, so drafts that would stop the release from publishing are marked “Blocked”.
-- Scheduled releases that are blocked now have a red “Blocked” badge in the Releases index’s Status column.
+- Draft and scheduled releases with blocked drafts now have a red “Blocked” badge in the Releases index’s Status column.
 - Read-only Markdown fields’ values can now be focused, selected, and scrolled, rather than being disabled. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - Fixed a bug where dragging an image’s focal point in its preview sent it to the corner of the image. ([#20213](https://github.com/craftcms/cms/issues/20213))
 - Fixed a bug where typing in a newly added nested entry’s fields could replace the edit form with a “UI array path … must be a row index” error once the entry autosaved.
@@ -290,6 +290,7 @@
 - Fixed a bug where Dropdown fields with option groups didn’t have a leading blank option. ([#20166](https://github.com/craftcms/cms/pull/20166))
 - Fixed a bug where going from one element edit page to another, such as switching sites, opened the next page’s “Revisions” details panel rather than the one that was open.
 - Fixed a bug where viewing an element revision showed three read-only notices, including one about settings changes not being permitted, and no “Revert content from this revision” button. ([#20115](https://github.com/craftcms/cms/pull/20115))
+- Fixed a bug where the notice about a release’s last failed publication attempt wasn’t styled as an error.
 - Fixed an error that occurred on release pages if one of the release’s drafts belonged to an element that had been deleted, such as along with its section. The draft is now listed as blocked with “The entry has been deleted.”, and can be removed by anyone who can manage the release.
 - Fixed a bug where AI-generated alt text and titles replaced the ones filled in from an image’s embedded metadata, for images whose metadata was read by the image analysis queue job, such as indexed images.
 - Fixed a bug where the “Duplicate” and “Delete” element actions didn’t do anything when unpublished drafts were selected, and element actions on element indexes ran for the primary site rather than the selected one.
