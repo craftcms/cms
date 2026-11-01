@@ -20,6 +20,8 @@ import {provideLayoutSlotRegistry} from '@/common/composables/layoutSlots';
 import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
 import ContentFooter from '@/common/layouts/screens/page/ContentFooter.vue';
 import ErrorSummary from '@/common/form/ErrorSummary.vue';
+import {SlideoutControllerKey} from '@/common/slideouts/types';
+import {useReleasePreviewScope} from '@/modules/releases/releaseEditor';
 import ElementEditor from './ElementEditor.vue';
 
 const state = vi.hoisted(() => ({
@@ -138,10 +140,20 @@ afterEach(() => {
   state.activePreview = null;
 });
 
-function mount(mode: ScreenMode): void {
+function mount(
+  mode: ScreenMode,
+  {previewedReleaseId}: {previewedReleaseId?: number} = {}
+): void {
   const Root = defineComponent({
     setup: () => {
       provide(ScreenContextKey, {mode});
+
+      // Edited from the release's preview, as its Edit button does.
+      if (previewedReleaseId !== undefined) {
+        useReleasePreviewScope(() => previewedReleaseId);
+        provide(SlideoutControllerKey, {} as never);
+      }
+
       provideLayoutSlotRegistry();
       const screen = createScreenPropsStore();
       provide(ScreenPropsStoreKey, screen);
@@ -489,3 +501,46 @@ it('doesn’t ask before editing a draft that already blocks its scheduled relea
 
   expect(dialog.opened).toBe(false);
 });
+
+it.each([
+  ['an unscheduled release it isn’t blocking', false, 'draft', [], null],
+  ['a scheduled release', true, 'scheduled', [], null],
+  [
+    'an unscheduled release it’s blocking',
+    true,
+    'draft',
+    ['Title cannot be blank.'],
+    null,
+  ],
+  [
+    'an unscheduled release, with an approved review',
+    true,
+    'draft',
+    [],
+    'approved',
+  ],
+])(
+  'in its release’s preview, a draft in %s shows the release notice: %s',
+  async (_, shown, status, blockers, reviewStatus) => {
+    state.editor.workflowReviewLocked = computed(() => false);
+    state.editor.props.workflow.current = reviewStatus
+      ? {status: reviewStatus}
+      : null;
+    state.editor.props.canAddToRelease = false;
+    state.editor.props.release = {
+      id: 6,
+      name: 'Spring launch',
+      status,
+      targetDate: null,
+      canManage: true,
+      draftId: 9,
+      siteId: 1,
+      blockers,
+    };
+
+    mount('slideout', {previewedReleaseId: 6});
+    await nextTick();
+
+    expect(container.textContent?.includes('Spring launch')).toBe(shown);
+  }
+);
