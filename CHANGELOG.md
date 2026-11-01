@@ -469,6 +469,7 @@
 - Added `CraftCms\Cms\Element\ElementHelper::postEditRedirectUrl()`, which returns the current request’s `returnUrl` param, or else the element’s post-edit URL. ([#20180](https://github.com/craftcms/cms/pull/20180))
 - Added `CraftCms\Cms\Element\ElementHelper::returnUrlForSite()`, which sets the `site` param of a `returnUrl` param value, keeping it encrypted if it was. ([#20222](https://github.com/craftcms/cms/pull/20222))
 - `craft\web\assets\prismjs\PrismJsAsset` no longer registers Prism, or Craft 5.12’s Prism shim. Plugins that rely on Prism should bundle it themselves, or use `Craft.highlighter` instead. ([#20088](https://github.com/craftcms/cms/pull/20088))
+- `Craft.highlighter` now highlights Apache, CSS, Dockerfile, `.env`, GraphQL, HTTP, JSX, Nginx, SQL, TOML, TSX, Twig, TypeScript, and Vue code. ([#20245](https://github.com/craftcms/cms/pull/20245))
 - Added `CraftCms\Cms\Support\Query::prepareDateForDb()`, which converts a date to the UTC string Craft stores dates as, for writing or comparing it with the query builder. ([#20053](https://github.com/craftcms/cms/pull/20053))
 - Eloquent models that extend `CraftCms\Cms\Shared\BaseModel` now store and read dates in UTC, including their timestamps and soft-delete dates. ([#20053](https://github.com/craftcms/cms/pull/20053))
 - Added `CraftCms\Cms\Ai\Task` and `CraftCms\Cms\Ai\AiTasks`, for registering AI tasks. ([#20006](https://github.com/craftcms/cms/pull/20006))
