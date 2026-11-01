@@ -497,18 +497,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     }
 
     #[Override]
-    public static function supportsRevisions(): bool
-    {
-        return false;
-    }
-
-    #[Override]
-    public static function hasStructures(): bool
-    {
-        return false;
-    }
-
-    #[Override]
     public static function trackChanges(): bool
     {
         return true;

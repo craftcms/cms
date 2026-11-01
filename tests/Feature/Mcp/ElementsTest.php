@@ -97,8 +97,8 @@ it('manages element types that plugins register with an adapter', function (): v
         ->assertJsonPath('result.content.0.text', 'Invalid attributes for widgets: Additional object properties are not allowed: ["slug"]. Call elements.schema for the accepted attributes.');
     ($this->call)('elements.schema', ['type' => 'widgets'])
         ->assertJsonPath('result.structuredContent.criteria.properties.level.anyOf.0.type', 'integer')
-        ->assertJsonPath('result.structuredContent.criteria.properties.revisions.type', ['boolean', 'null'])
-        ->assertJsonPath('result.structuredContent.attributes.properties.structureId.type', ['integer', 'null']);
+        ->assertJsonPath('result.structuredContent.attributes.properties.structureId.type', ['integer', 'null'])
+        ->assertJsonMissingPath('result.structuredContent.criteria.properties.revisions');
     ($this->call)('elements.delete', ['type' => 'widgets', 'id' => $created['id']])
         ->assertJsonPath('result.structuredContent.deleted', true);
 
@@ -117,6 +117,12 @@ class TestMcpPluginElement extends BaseElement
     public static function pluralDisplayName(): string
     {
         return 'Widgets';
+    }
+
+    #[Override]
+    public static function hasStructures(): bool
+    {
+        return true;
     }
 
     #[Override]

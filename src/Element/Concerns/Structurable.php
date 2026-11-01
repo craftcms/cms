@@ -72,7 +72,7 @@ trait Structurable
 
     public static function hasStructures(): bool
     {
-        return true;
+        return false;
     }
 
     public function getNext(mixed $criteria = false): ?ElementInterface

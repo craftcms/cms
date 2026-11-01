@@ -201,18 +201,6 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     #[Override]
-    public static function supportsRevisions(): bool
-    {
-        return false;
-    }
-
-    #[Override]
-    public static function hasStructures(): bool
-    {
-        return false;
-    }
-
-    #[Override]
     public static function trackChanges(): bool
     {
         return true;
