@@ -2601,6 +2601,7 @@ return [
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => '{attribute}应最多包含 {max, number} 个{max, plural, other{选择}}。',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute}应包含 {count, number} 个{count, plural, other{条目}}。',
     '{count, number} {count, plural, =1{layout} other{layouts}}' => '{count, number} 个{count, plural, =1{布局} other{布局}}',
+    '{count, plural, =1{# Draft} other{# Drafts}}' => '{count, plural, =1{# Draft} other{# Drafts}}',
     '{count, spellout} plugin {count, plural, =1{update} other{updates}}' => '{count, spellout} 个插件{count, plural, =1{更新} other{更新}}',
     '{count, spellout} {count, plural, =1{plugin} other{plugins}}' => '{count, spellout} 个{count, plural, =1{插件} other{插件}}',
     '{delta, plural, =1{1 day} other{# days}}' => '{delta, plural, =1{1 day} other{# days}}',
