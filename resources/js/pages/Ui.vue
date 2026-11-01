@@ -302,13 +302,22 @@
           :form-action-items="translatedFormActions"
         />
       </template>
-      <!-- Without sidebar controls, the actions follow the metadata instead. -->
-      <template v-else-if="$slots['sidebar-actions']" #actions>
+      <!-- Without sidebar controls, the actions follow the metadata instead,
+      along with any actions meant to always follow it. -->
+      <template
+        v-if="
+          (!sidebarUi && $slots['sidebar-actions']) ||
+          $slots['metadata-actions']
+        "
+        #actions
+      >
         <slot
+          v-if="!sidebarUi"
           name="sidebar-actions"
           :form="inertiaForm"
           :form-action-items="translatedFormActions"
         />
+        <slot name="metadata-actions" />
       </template>
     </MetadataDetails>
   </component>

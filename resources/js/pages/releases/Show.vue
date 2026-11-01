@@ -32,23 +32,37 @@
     publishDisabledReason: ReleaseViewModel['publishDisabledReason'];
   }>();
 
+  /** Draft and failed releases offer Publish now and Schedule in the footer. */
   const canPublishNow = computed(
-    () => props.release.canPublish && !props.readOnly
+    () => props.release.canSchedule && !props.readOnly
   );
+
+  /** Scheduled releases offer Publish now below their schedule instead. */
+  const canPublishScheduled = computed(
+    () => props.release.status === 'scheduled' && props.release.canPublish
+  );
+
+  const blockingSummary = computed((): string | null => {
+    const blocked = Object.keys(props.readiness?.itemErrors ?? {}).length;
+
+    return blocked
+      ? t(
+          '{count, plural, =1{# draft is blocking publication.} other{# drafts are blocking publication.}}',
+          {count: blocked}
+        )
+      : null;
+  });
 
   const readinessSummary = computed((): string | null => {
     const readiness = props.readiness;
 
-    if (!readiness || readiness.errors.length) {
+    // Blocking drafts are called out below the toolbar instead.
+    if (
+      !readiness ||
+      readiness.errors.length ||
+      Object.keys(readiness.itemErrors).length
+    ) {
       return null;
-    }
-
-    const blocked = Object.keys(readiness.itemErrors).length;
-    if (blocked) {
-      return t(
-        '{count, plural, =1{# draft is blocking publication.} other{# drafts are blocking publication.}}',
-        {count: blocked}
-      );
     }
 
     const withWarnings = Object.keys(readiness.itemWarnings).length;
@@ -104,21 +118,14 @@
   <div class="contents">
     <LayoutSlot name="content-toolbar-meta">
       <ReleaseStatusBadge :status="release.status" />
-      <span v-if="release.status === 'scheduled' && release.publishedAt">
-        {{
-          t('Scheduled for {date}', {
-            date: formatReleaseDate(release.publishedAt),
-          })
-        }}
-      </span>
-      <span v-else-if="release.status === 'published' && release.publishedAt">
+      <span v-if="release.status === 'published' && release.publishedAt">
         {{
           t('Published {date}', {
             date: formatReleaseDate(release.publishedAt),
           })
         }}
       </span>
-      <span v-else-if="release.targetDate">
+      <span v-else-if="release.targetDate && release.status !== 'scheduled'">
         {{
           t('Targeted for {date}', {
             date: formatReleaseDate(release.targetDate),
@@ -169,6 +176,16 @@
     </LayoutSlot>
 
     <craft-callout
+      v-if="blockingSummary"
+      variant="danger"
+      icon="triangle-exclamation"
+      rounded="none"
+      appearance="fill"
+    >
+      {{ blockingSummary }}
+    </craft-callout>
+
+    <craft-callout
       v-if="release.lastError"
       variant="danger"
       icon="triangle-exclamation"
@@ -186,30 +203,52 @@
       :ui="ui"
       :submit="editUi ? update({release: release.id}) : undefined"
       :sidebar-ui="editUi ?? undefined"
-      :metadata-html="editUi ? undefined : (metadataHtml ?? undefined)"
+      :metadata-html="metadataHtml ?? undefined"
       :form-actions="formActions"
       form-actions-in-sidebar
       :hide-footer="!canPublishNow"
     >
-      <template
-        v-if="editUi || release.canUnschedule"
-        #sidebar-actions="{form, formActionItems}"
-      >
+      <template v-if="editUi" #sidebar-actions="{form, formActionItems}">
         <FormActions
-          v-if="editUi"
           class="mt-lg"
           :form="form"
           :action-items="formActionItems"
         />
-        <craft-button
-          v-if="release.canUnschedule"
-          :class="{'mt-md': editUi}"
-          type="button"
-          variant="outline"
-          @click="unschedule"
-        >
-          {{ t('Unschedule') }}
-        </craft-button>
+      </template>
+      <template
+        v-if="release.canUnschedule || canPublishScheduled"
+        #metadata-actions
+      >
+        <div class="flex flex-wrap gap-md">
+          <craft-button
+            v-if="release.canUnschedule"
+            type="button"
+            variant="outline"
+            @click="unschedule"
+          >
+            {{ t('Unschedule') }}
+          </craft-button>
+          <template v-if="canPublishScheduled">
+            <craft-button
+              id="release-publish-now"
+              type="button"
+              variant="outline"
+              .disabled="!readiness?.ready"
+              :focusable-when-disabled="
+                publishDisabledReason ? true : undefined
+              "
+              @click="publishRelease"
+            >
+              {{ t('Publish now') }}
+            </craft-button>
+            <craft-tooltip
+              v-if="publishDisabledReason"
+              for="release-publish-now"
+            >
+              {{ publishDisabledReason }}
+            </craft-tooltip>
+          </template>
+        </div>
       </template>
     </UiPage>
   </div>

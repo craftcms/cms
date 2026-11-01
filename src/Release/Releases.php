@@ -439,7 +439,7 @@ class Releases
             $release = $this->lockRelease($release->id);
             $allowedStatuses = $scheduledExecution
                 ? [ReleaseStatus::Scheduled]
-                : [ReleaseStatus::Draft, ReleaseStatus::Failed];
+                : [ReleaseStatus::Draft, ReleaseStatus::Scheduled, ReleaseStatus::Failed];
 
             if (! in_array($release->status, $allowedStatuses, true)) {
                 if ($scheduledExecution) {

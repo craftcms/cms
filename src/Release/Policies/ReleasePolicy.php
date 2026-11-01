@@ -48,8 +48,13 @@ class ReleasePolicy
     public function publish(CraftUser $actor, Release $release): bool
     {
         return $actor->can('publishReleases')
-            && $release->status->isMutable()
+            && $release->status->isEditable()
             && $release->items()->exists();
+    }
+
+    public function schedule(CraftUser $actor, Release $release): bool
+    {
+        return $release->status->isMutable() && $this->publish($actor, $release);
     }
 
     public function publishDraft(CraftUser $actor, ElementInterface $draft): bool

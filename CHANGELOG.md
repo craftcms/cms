@@ -276,7 +276,9 @@
 - The notice on drafts that belong to a release now links the release’s name, in place of a “View release” button.
 - Scheduled release pages now have the same Status and Issues columns as draft release pages, so drafts that would stop the release from publishing are marked “Blocked”.
 - Draft and scheduled releases with blocked drafts now have a red “Blocked” badge in the Releases index’s Status column.
-- Scheduled releases’ names, descriptions, target dates, and drafts can now be changed without unscheduling them. Drafts added to a scheduled release must be ready to publish, and removing a scheduled release’s last draft unschedules it. Scheduled releases are also offered when adding a draft to a release. ([#20252](https://github.com/craftcms/cms/pull/20252))
+- Scheduled releases’ names, descriptions, and drafts can now be changed without unscheduling them. Drafts added to a scheduled release must be ready to publish, and removing a scheduled release’s last draft unschedules it. Scheduled releases are also offered when adding a draft to a release. ([#20252](https://github.com/craftcms/cms/pull/20252))
+- Scheduled releases can now be published right away, from the “Publish now” button below their scheduled time in the Info panel, alongside “Unschedule”. Their Target Date field is no longer shown. ([#20252](https://github.com/craftcms/cms/pull/20252))
+- Release pages now show a red callout when drafts are blocking publication, in place of a note in the header. ([#20252](https://github.com/craftcms/cms/pull/20252))
 - Read-only Markdown fields’ values can now be focused, selected, and scrolled, rather than being disabled. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - Fixed a bug where dragging an image’s focal point in its preview sent it to the corner of the image. ([#20213](https://github.com/craftcms/cms/issues/20213))
 - Fixed a bug where typing in a newly added nested entry’s fields could replace the edit form with a “UI array path … must be a row index” error once the entry autosaved.

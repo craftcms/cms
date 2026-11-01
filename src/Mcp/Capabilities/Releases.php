@@ -183,7 +183,7 @@ readonly class Releases
     }
 
     /** @return array{release: array<string, mixed>} */
-    #[McpTool(name: 'releases.publish', description: 'Publishes a mutable release atomically after merging live changes and checking current workflow approval and validation. Scheduled releases must first be unscheduled. After an uncertain response, use releases.get before retrying.', annotations: new ToolAnnotations(destructiveHint: true))]
+    #[McpTool(name: 'releases.publish', description: 'Publishes a draft, scheduled, or failed release atomically after merging live changes and checking current workflow approval and validation. Publishing a scheduled release publishes it now rather than at its scheduled time. After an uncertain response, use releases.get before retrying.', annotations: new ToolAnnotations(destructiveHint: true))]
     #[RequiresPermission('publishReleases')]
     public function publish(#[Schema(minimum: 1)] int $id): array
     {

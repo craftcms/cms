@@ -21,6 +21,7 @@ use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Tests\TestClasses\Release\DraftableReleaseElement;
 use CraftCms\Cms\Tests\TestClasses\Release\ReleasePermissions;
 use CraftCms\Cms\User\Elements\User;
@@ -35,6 +36,7 @@ use function Pest\Laravel\delete;
 use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\get;
 use function Pest\Laravel\getJson;
+use function Pest\Laravel\patchJson;
 use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
@@ -151,16 +153,25 @@ it('schedules a release at the submitted time in the user’s time zone and requ
             ->where('readOnly', false)
             ->where('actionMenu', [])
             ->where('formActions.0.label', 'Save and continue editing')
-            ->whereNot('editUi', null)
+            ->where('editUi', fn ($editUi) => ! str_contains(Json::encode($editUi), 'targetDate'))
             ->where('release.canUnschedule', true));
 
     getJson(route('craft.cp.releases.scheduleModal', $release))->assertForbidden();
+
+    patchJson(route('craft.cp.releases.update', $release), ['name' => 'Renamed launch'])->assertOk();
+
+    expect($release->fresh()->name)->toBe('Renamed launch')
+        ->and($release->fresh()->targetDate->utc()->toDateTimeString())->toBe('2026-10-02 12:00:00');
 
     get($draft->getCpEditUrl())
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('editorActions.buttons.0.disabled', true)
             ->where('editorActions.buttons.0.disabledReason', 'Cancel the release schedule before applying this draft.'));
+
+    postJson(route('craft.cp.releases.publish', $release))->assertOk();
+
+    expect($release->fresh()->status)->toBe(ReleaseStatus::Published);
 });
 
 it('shows release item counts while restricting management to release managers', function () {
@@ -542,6 +553,10 @@ it('lists a release’s drafts for publishing, holding publication until none ar
 
     $release->update(['status' => ReleaseStatus::Scheduled]);
 
+    getJson(route('craft.cp.releases.publishModal', $release))->assertOk();
+
+    $release->update(['status' => ReleaseStatus::Published]);
+
     getJson(route('craft.cp.releases.publishModal', $release))->assertForbidden();
 });
 
@@ -569,7 +584,9 @@ it('flags blocked drafts on scheduled releases, and blocked releases on the inde
             ->where('ui.nodes.0.props.columns.2.key', 'issues')
             ->where('ui.nodes.0.props.rows.0.status.html', fn (string $html) => str_contains($html, 'Blocked'))
             ->where('ui.nodes.0.props.rows.0.issues.html', fn (string $html) => str_contains($html, 'The entry has been deleted.'))
-            ->where('release.canPublish', false));
+            ->where('release.canPublish', true)
+            ->where('release.canSchedule', false)
+            ->where('publishDisabledReason', '1 draft is blocking publication.'));
 });
 
 it('deletes a mutable release through its advertised action without deleting its draft', function (string $source, ReleaseStatus $status) {
