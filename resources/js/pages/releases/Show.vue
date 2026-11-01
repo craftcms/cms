@@ -148,6 +148,7 @@
         type="button"
         size="small"
         variant="plain"
+        :flush="actionMenu.length ? undefined : 'inline-end'"
         icon="eye"
         @click="openPreview"
       >
