@@ -143,7 +143,7 @@ it('publishes changed disabled and unpublished entries together and retains immu
         ->and($history->items->every(fn ($item): bool => $item->publishedElementId !== null && $item->publishedAt !== null))->toBeTrue()
         ->and(DB::table(Table::DRAFTS)->whereIn('id', $draftIds)->exists())->toBeFalse()
         ->and(fn () => $this->releases->update($published, 'Renamed launch', null, $this->actor))
-        ->toThrow(ReleaseException::class, 'Scheduled and completed releases cannot be changed.')
+        ->toThrow(ReleaseException::class, 'Releases that are publishing or published cannot be changed.')
         ->and(fn () => $this->releases->delete($published, $this->actor))
         ->toThrow(ReleaseException::class, 'Scheduled and completed releases cannot be changed.');
 

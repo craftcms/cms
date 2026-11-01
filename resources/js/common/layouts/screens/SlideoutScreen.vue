@@ -14,7 +14,7 @@
     ScreenPanelsKey,
     createScreenPanels,
   } from '@/common/composables/screenPanels';
-  import DetailsPanels from '@/common/components/DetailsPanels.vue';
+  import ScreenDetailsLayout from '@/common/components/ScreenDetailsLayout.vue';
   import ScreenPanel from '@/common/components/ScreenPanel.vue';
   import {t} from '@craftcms/ui/utilities/translate';
   import {ButtonVariant} from '@craftcms/ui';
@@ -26,8 +26,6 @@
     useId,
     useTemplateRef,
   } from 'vue';
-  import {useElementSize} from '@vueuse/core';
-  import {useDetailsOverlay} from '@/common/composables/useDetailsOverlay';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import PassthroughScreen from './PassthroughScreen.vue';
@@ -36,12 +34,10 @@
   import {provideLayoutSlotRegistry} from '@/common/composables/layoutSlots';
   import {
     ScreenContentReadyKey,
-    ScreenDetailsRailKey,
     ScreenShellKey,
     type ScreenPageProps as GenericScreenPageProps,
     useScreenPageProps,
     useScreenPropsStore,
-    ScreenDetailsOverlayKey,
   } from '@/common/composables/screen';
   import {useSlideout} from '@/common/slideouts/useSlideout';
   import {useElementEditor} from '@/common/slideouts/useElementEditor';
@@ -148,23 +144,10 @@
   const screenAction = computed(() => chrome.value.screen?.action ?? null);
 
   const formEl = useTemplateRef<HTMLFormElement>('formEl');
-  const contentEl = useTemplateRef<HTMLElement>('contentEl');
-  const detailsEl = useTemplateRef<HTMLElement>('detailsEl');
+  const bodyLayout =
+    useTemplateRef<InstanceType<typeof ScreenDetailsLayout>>('bodyLayout');
   const toolbarEl = useTemplateRef<HTMLElement>('toolbarEl');
   const tabsEl = useTemplateRef<HTMLElement>('tabsEl');
-
-  // The overlay threshold lives in the stylesheet below; this reads it back.
-  // Re-read as the slideout's width changes, which is what the container query
-  // measures. The column's own width won't do: folded to its rail, it holds
-  // still as the slideout is resized, so it would never unfold again.
-  const {width: screenWidth} = useElementSize(formEl);
-  provide(
-    ScreenDetailsOverlayKey,
-    useDetailsOverlay(() => detailsEl.value, screenWidth)
-  );
-  // A slideout keeps its details rail beside its panels, even when it
-  // opens over a page that has a rail of its own.
-  provide(ScreenDetailsRailKey, null);
 
   /** Errors for a screen with no Vue form to hang them off. */
   const screenErrors = ref<Record<string, string> | null>(null);
@@ -183,8 +166,8 @@
     slideout,
     regions: {
       form: formEl,
-      content: contentEl,
-      details: detailsEl,
+      content: () => bodyLayout.value?.content ?? null,
+      details: () => bodyLayout.value?.details ?? null,
       toolbar: toolbarEl,
       tabs: tabsEl,
     },
@@ -281,11 +264,26 @@
     <header class="slideout-screen__header">
       <CpContainer>
         <div class="flex items-center gap-sm justify-between">
-          <div class="slideout-screen__heading flex gap-md items-center">
-            <h2 class="slideout-screen__title">{{ title }}</h2>
-            <LayoutSlotOutlet name="content-toolbar-meta">
-              <slot name="content-toolbar-meta"></slot>
-            </LayoutSlotOutlet>
+          <!-- Nested in a preview's editor, the panel is a view to go back
+            from, as the command palette's are. -->
+          <div class="flex gap-lg items-center min-w-0">
+            <craft-button
+              v-if="slideout?.coversPreviewEditor"
+              type="button"
+              size="small"
+              icon="arrow-left"
+              flush="inline-start"
+              :variant="ButtonVariant.Plain"
+              @click="close"
+            >
+              {{ t('Back') }}
+            </craft-button>
+            <div class="slideout-screen__heading flex gap-md items-center">
+              <h2 class="slideout-screen__title">{{ title }}</h2>
+              <LayoutSlotOutlet name="content-toolbar-meta">
+                <slot name="content-toolbar-meta"></slot>
+              </LayoutSlotOutlet>
+            </div>
           </div>
 
           <div class="slideout-screen__actions flex gap-sm items-center">
@@ -324,6 +322,7 @@
             </template>
 
             <craft-button
+              v-if="!slideout?.coversPreviewEditor"
               icon
               type="button"
               size="small"
@@ -349,61 +348,67 @@
       </LayoutSlotOutlet>
     </div>
 
-    <div class="slideout-screen__body">
-      <div ref="contentEl" class="slideout-screen__content">
-        <div
-          v-show="regions.has('content-notices')"
-          class="slideout-screen__notices"
-          role="status"
-        >
-          <LayoutSlotOutlet name="content-notices">
-            <slot name="content-notices"></slot>
-          </LayoutSlotOutlet>
-        </div>
-
-        <LayoutSlotOutlet name="error-summary">
-          <slot name="error-summary">
-            <ErrorSummary v-if="form && form.hasErrors" :errors="form.errors" />
-            <!-- Server-HTML screens have no Vue form to hang errors off. -->
-            <ErrorSummary v-else-if="screenErrors" :errors="screenErrors" />
-          </slot>
+    <ScreenDetailsLayout
+      ref="bodyLayout"
+      class="slideout-screen__body"
+      :panels="panels"
+      :id-prefix="panelIdPrefix"
+      :show-details="regions.hasDetails()"
+      :has-panels="regions.hasPanels()"
+    >
+      <div
+        v-if="!slideout?.docked"
+        v-show="regions.has('content-notices')"
+        class="slideout-screen__notices"
+        role="status"
+      >
+        <LayoutSlotOutlet name="content-notices">
+          <slot name="content-notices"></slot>
         </LayoutSlotOutlet>
-
-        <CalloutReadOnly
-          v-if="readOnly && chrome.showReadOnlyNotice !== false"
-        />
-
-        <craft-field-group>
-          <slot></slot>
-        </craft-field-group>
       </div>
 
-      <!-- v-show, not v-if: the outlet is a teleport target and must stay in
-        the DOM so page content can mount before registration flips hasDetails. -->
-      <aside
-        v-show="regions.hasDetails()"
-        ref="detailsEl"
-        class="slideout-screen__details"
-      >
-        <DetailsPanels
-          v-if="regions.hasPanels()"
-          :registry="panels"
-          :id-prefix="panelIdPrefix"
-        />
-        <LayoutSlotOutlet v-else name="content-details">
-          <slot name="content-details"></slot>
-        </LayoutSlotOutlet>
-      </aside>
-      <ScreenPanel
-        v-if="regions.detailsContentIsPanel()"
-        :id="DETAILS_PANEL_ID"
-        :label="t('Details')"
-        icon="circle-info"
-      >
+      <LayoutSlotOutlet name="error-summary">
+        <slot name="error-summary">
+          <ErrorSummary v-if="form && form.hasErrors" :errors="form.errors" />
+          <!-- Server-HTML screens have no Vue form to hang errors off. -->
+          <ErrorSummary v-else-if="screenErrors" :errors="screenErrors" />
+        </slot>
+      </LayoutSlotOutlet>
+
+      <CalloutReadOnly v-if="readOnly && chrome.showReadOnlyNotice !== false" />
+
+      <craft-field-group>
+        <slot></slot>
+      </craft-field-group>
+
+      <template #details>
         <LayoutSlotOutlet name="content-details">
           <slot name="content-details"></slot>
         </LayoutSlotOutlet>
-      </ScreenPanel>
+      </template>
+    </ScreenDetailsLayout>
+    <ScreenPanel
+      v-if="regions.detailsContentIsPanel()"
+      :id="DETAILS_PANEL_ID"
+      :label="t('Details')"
+      icon="circle-info"
+    >
+      <LayoutSlotOutlet name="content-details">
+        <slot name="content-details"></slot>
+      </LayoutSlotOutlet>
+    </ScreenPanel>
+
+    <!-- Docked beside a preview, the notices sit above the footer, as Live
+      Preview's do. -->
+    <div
+      v-if="slideout?.docked"
+      v-show="regions.has('content-notices')"
+      class="slideout-screen__notices"
+      role="status"
+    >
+      <LayoutSlotOutlet name="content-notices">
+        <slot name="content-notices"></slot>
+      </LayoutSlotOutlet>
     </div>
 
     <footer v-if="!props.hideFooter" class="slideout-screen__footer">
@@ -424,7 +429,7 @@
         <template v-for="name in regions.footerSlots()" :key="name" #[name]>
           <slot :name="name"></slot>
         </template>
-        <template #shell-actions>
+        <template v-if="!slideout?.workflowActionsOnly" #shell-actions>
           <craft-button type="button" @click="close">
             {{ cancelLabel }}
           </craft-button>
@@ -493,93 +498,14 @@
     border-block-end: 1px solid var(--c-color-border-quiet);
   }
 
+  /* Fills the space between the header and footer. */
   .slideout-screen__body {
-    display: flex;
-    /* One layout at every width: the details column collapses to its rail
-       rather than dropping below the content. */
-    flex-direction: row;
     flex: 1;
-    min-height: 0;
-    /* The positioning context for the overlaid column, which is why the content
-       scrolls and not this — an absolutely positioned child of a scroll
-       container scrolls away with it. */
-    position: relative;
-    overflow: hidden;
-    background-color: var(--c-surface-overlay);
   }
 
   .slideout-screen__notices {
     display: grid;
     gap: var(--c-spacing-sm, 0.5rem);
-  }
-
-  .slideout-screen__content {
-    display: grid;
-    gap: var(--c-spacing-md, 1rem);
-    align-content: start;
-    flex: 1;
-    min-width: 0;
-    min-height: 0;
-    overflow-y: auto;
-  }
-
-  .slideout-screen__details {
-    display: grid;
-    gap: var(--c-spacing-md, 1rem);
-    border-inline-start: 1px solid var(--c-color-border-quiet);
-    align-content: stretch;
-    align-self: stretch;
-
-    /* Overlaid by default, a panel being narrower than the threshold more often
-       than not. Only the panels lift out; the rail stays in the flow. The width
-       itself is in the query below. */
-    --cp-details-overlay: 1;
-
-    /* The panels anchor to this, above the scrim so the rail stays lit. */
-    position: relative;
-    z-index: var(--c-layer-sticky);
-
-    &:has(.details-panels__rail[data-open='false']) {
-      border-inline-start-color: transparent;
-    }
-  }
-
-  /* The panels, and only the panels, sit over the content. Flat rather than
-     nested in the rule above, where `:deep()` loses its parent selector and
-     would reach every panel container in the shell. */
-  .slideout-screen__details :deep(.details-panels__content) {
-    position: absolute;
-    inset-block: 0;
-    /* The rail's leading edge: at 0 it would open on top of the rail. */
-    inset-inline-end: 100%;
-    z-index: var(--c-layer-sticky);
-    /* `cqi`, not a percentage: percentages resolve against the rail this hangs
-       off rather than against the content. */
-    inline-size: clamp(calc(300rem / 16), 80cqi, calc(400rem / 16));
-    max-inline-size: 80cqi;
-    background-color: var(--c-surface-overlay);
-    border-inline-start: 1px solid var(--c-color-border-quiet);
-    box-shadow: var(--c-shadow-overlay);
-  }
-
-  /* Wide enough to seat the column in the flow beside the content. */
-  @container slideout (width > 700px) {
-    /* Sized by its panels plus the rail, so closing it hands the room back. */
-    .slideout-screen__details {
-      --cp-details-overlay: 0;
-
-      flex: 0 0 auto;
-    }
-
-    /* Room of its own, so the panels stay in the flow. */
-    .slideout-screen__details :deep(.details-panels__content) {
-      position: static;
-      inline-size: calc(350rem / 16);
-      min-inline-size: 0;
-      max-inline-size: none;
-      border-inline-start: 0;
-      box-shadow: none;
-    }
   }
 
   /* Matches the page shell's `.cp-content__footer`. */

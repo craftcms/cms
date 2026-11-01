@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Markdown as MarkdownField;
+use CraftCms\Cms\Http\ElementPreview;
 use CraftCms\Cms\Release\Data\ReleaseDetailData;
 use CraftCms\Cms\Release\Data\ReleaseItemData;
 use CraftCms\Cms\Release\Data\ReleaseReadiness;
@@ -45,6 +48,12 @@ use function CraftCms\Cms\t;
  */
 class ReleaseViewModel extends ViewModel
 {
+    /** @var array<int, list<ElementInterface>> */
+    private array $itemElements = [];
+
+    /** @var array<int, array{element: ElementInterface, preview: ElementPreview}|null> */
+    private array $itemPreviews = [];
+
     public function __construct(
         private readonly Release $release,
         private readonly CraftUser $actor,
@@ -65,7 +74,7 @@ class ReleaseViewModel extends ViewModel
             publishedAt: $this->release->publishedAt,
             lastError: $canPublish ? $this->release->lastError : null,
             canManage: $canManage,
-            canSchedule: $canPublish,
+            canSchedule: $canPublish && $this->actor->can('schedule', $this->release),
             canPublish: $canPublish,
             canUnschedule: $this->release->status === ReleaseStatus::Scheduled
                 && $this->actor->can('publishReleases'),
@@ -74,7 +83,7 @@ class ReleaseViewModel extends ViewModel
 
     public function readOnly(): bool
     {
-        return ! $this->release->status->isMutable();
+        return ! $this->release->status->isEditable();
     }
 
     /**
@@ -84,7 +93,7 @@ class ReleaseViewModel extends ViewModel
      */
     public function actionMenu(): array
     {
-        if (! $this->editable()) {
+        if (! $this->editable() || ! $this->release->status->isMutable()) {
             return [];
         }
 
@@ -134,16 +143,108 @@ class ReleaseViewModel extends ViewModel
     /** @return list<ReleaseItemData> */
     private function items(): array
     {
-        return $this->release->items()
-            ->orderBy('id')
-            ->get()
-            ->map(fn (ReleaseItem $item): ReleaseItemData => $this->itemData($item))
-            ->all();
+        return array_map($this->itemData(...), $this->itemModels());
+    }
+
+    /** @return list<ReleaseItem> */
+    private function itemModels(): array
+    {
+        return once(fn (): array => $this->release->items()->orderBy('id')->get()->all());
+    }
+
+    /** Where the release preview opens, when the user can view any of its drafts. */
+    public function previewUrl(): ?string
+    {
+        foreach ($this->itemModels() as $item) {
+            if ($item->draftId !== null && $this->itemPreview($item) !== null) {
+                return route('craft.cp.releases.preview', $this->release);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * The release preview: its drafts, each with what Live Preview needs to
+     * load it, and the one it opens on.
+     *
+     * Each draft carries the issues stopping the release from publishing, as
+     * the release's own screen lists them, when the user can check them.
+     *
+     * @return array{items: list<array{id: int, title: string, url: string, editUrl: string|null, preview: array<string, mixed>|null, blockers: list<string>}>, selectedItemId: int|null, closeUrl: string}
+     */
+    public function preview(?int $selectedItemId): array
+    {
+        $items = [];
+        $readiness = $this->readiness();
+
+        foreach ($this->itemModels() as $item) {
+            if ($item->draftId === null) {
+                continue;
+            }
+
+            $itemPreview = $this->itemPreview($item);
+
+            if ($itemPreview === null) {
+                continue;
+            }
+
+            $payload = $itemPreview['preview']->payload();
+
+            if ($payload !== null) {
+                // What the preview token is created against, as the edit screen does.
+                SessionAuth::authorize("previewDraft:$item->draftId");
+            }
+
+            $items[] = [
+                'id' => $item->id,
+                'title' => $itemPreview['element']->title ?? t('Untitled'),
+                'url' => route('craft.cp.releases.preview', [$this->release, 'item' => $item->id]),
+                'editUrl' => $this->actor->can('save', $itemPreview['element'])
+                    ? $itemPreview['element']->getCpEditUrl()
+                    : null,
+                'preview' => $payload,
+                'blockers' => $readiness?->itemErrors[$item->id] ?? [],
+            ];
+        }
+
+        $selected = collect($items)->firstWhere('id', $selectedItemId) ?? $items[0] ?? null;
+
+        return [
+            'items' => $items,
+            'selectedItemId' => $selected['id'] ?? null,
+            'closeUrl' => route('craft.cp.releases.show', $this->release),
+        ];
+    }
+
+    /**
+     * The draft a release item is previewed as — in the requested site when
+     * the actor can view it there — and its preview, or `null` when there's no
+     * draft the actor can view. The preview itself may have no targets.
+     *
+     * @return array{element: ElementInterface, preview: ElementPreview}|null
+     */
+    private function itemPreview(ReleaseItem $item): ?array
+    {
+        if (array_key_exists($item->id, $this->itemPreviews)) {
+            return $this->itemPreviews[$item->id];
+        }
+
+        $viewable = $item->draftId === null ? [] : array_values(array_filter(
+            $this->itemElements($item),
+            fn (ElementInterface $element): bool => $this->actor->can('view', $element),
+        ));
+        $siteId = app(RequestedSite::class)->get()?->id;
+        $element = collect($viewable)->firstWhere('siteId', $siteId) ?? $viewable[0] ?? null;
+
+        return $this->itemPreviews[$item->id] = $element === null
+            ? null
+            : ['element' => $element, 'preview' => new ElementPreview($element)];
     }
 
     public function readiness(): ?ReleaseReadiness
     {
-        return once(fn (): ?ReleaseReadiness => $this->canPublish()
+        return once(fn (): ?ReleaseReadiness => $this->canPublish() || $this->canMonitorSchedule()
             ? $this->releases->checkReadiness($this->release, $this->actor)
             : null);
     }
@@ -151,7 +252,7 @@ class ReleaseViewModel extends ViewModel
     /** Why the release can't be published or scheduled yet, if it can't. */
     public function publishDisabledReason(): ?string
     {
-        $readiness = $this->readiness();
+        $readiness = $this->canPublish() ? $this->readiness() : null;
 
         if ($readiness === null) {
             return $this->release->items()->exists() ? null : t('The release has no drafts.');
@@ -234,13 +335,14 @@ class ReleaseViewModel extends ViewModel
             return null;
         }
 
-        return $this->uiResolver->resolve(Ui::make([
+        return $this->uiResolver->resolve(Ui::make(array_values(array_filter([
             Field::make(t('Name'), Text::make('name'))->required(),
             Field::make(t('Description'), Markdown::make('description')
                 ->toolbarButtons(MarkdownField::DEFAULT_TOOLBAR_BUTTONS)),
-            ReleaseDateGroup::dateTimeField('targetDate', t('Target Date'), fullWidth: true)
+            // A scheduled release's publication date supersedes its target date.
+            $this->release->status === ReleaseStatus::Scheduled ? null : ReleaseDateGroup::dateTimeField('targetDate', t('Target Date'), fullWidth: true)
                 ->instructions(t('This date is for planning only. Scheduling is a separate action.')),
-        ]), new UiContext(values: [
+        ]))), new UiContext(values: [
             'name' => $this->release->name,
             'description' => $this->release->description,
             'targetDate' => ReleaseDateGroup::dateTimeValue($this->release->targetDate),
@@ -258,7 +360,8 @@ class ReleaseViewModel extends ViewModel
                 ? Html::encode($this->formatDate($release->publishedAt))
                 : false,
         ]);
-        $description = $release->description === null
+        // When the release is editable, its description is in the form instead.
+        $description = $release->description === null || $this->editable()
             ? ''
             : Html::tag('section', implode('', [
                 Html::tag('h3', Html::encode(t('Description')), ['class' => 'font-bold text-xs mb-xs']),
@@ -319,6 +422,12 @@ class ReleaseViewModel extends ViewModel
     /** @return list<ElementInterface> */
     private function itemElements(ReleaseItem $item): array
     {
+        return $this->itemElements[$item->id] ??= $this->queryItemElements($item);
+    }
+
+    /** @return list<ElementInterface> */
+    private function queryItemElements(ReleaseItem $item): array
+    {
         $elementQuery = DB::table(Table::ELEMENTS);
         if ($item->draftId !== null) {
             $elementQuery->where('draftId', $item->draftId);
@@ -340,6 +449,13 @@ class ReleaseViewModel extends ViewModel
         return $item->draftId !== null
             ? $query->draftId($item->draftId)->all()
             : $query->id($item->publishedElementId ?? $item->canonicalId)->all();
+    }
+
+    /** Whether the actor can see what would stop a scheduled release from publishing. */
+    private function canMonitorSchedule(): bool
+    {
+        return $this->release->status === ReleaseStatus::Scheduled
+            && ($this->actor->can('manageReleases') || $this->actor->can('publishReleases'));
     }
 
     private function canPublish(): bool

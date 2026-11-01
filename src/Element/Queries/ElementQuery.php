@@ -869,7 +869,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * @param  int|string  $direction
      * @return self<TElement>
      */
-    #[ElementQueryParam(ElementQueryParamType::String, 'Sets the field the returned elements should be ordered by.')]
+    #[ElementQueryParam(ElementQueryParamType::String, 'Sets the field the returned {elements} should be ordered by.')]
     public function orderBy($column, $direction = 'asc'): self
     {
         /**

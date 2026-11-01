@@ -32,3 +32,20 @@ const cpBreakpointValues = Object.fromEntries(
 export const useCpBreakpoints = () => useBreakpoints(cpBreakpointValues);
 
 export const cpBreakpoints = useCpBreakpoints();
+
+/** A breakpoint's width in px, for comparing with something other than the viewport. */
+export function cpBreakpointWidth(name: BreakpointName): number {
+  const value = readBreakpoint(name);
+
+  if (typeof value === 'number') {
+    return value;
+  }
+
+  const rootFontSize = parseFloat(
+    getComputedStyle(document.documentElement).fontSize
+  );
+
+  return value.endsWith('rem')
+    ? parseFloat(value) * rootFontSize
+    : parseFloat(value);
+}

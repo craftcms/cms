@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Enums\ElementCapability;
 use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Events\ElementMovedInStructure;
 use CraftCms\Cms\Element\Events\ElementMovingInStructure;
@@ -40,19 +41,19 @@ use CraftCms\Cms\Support\Typecast;
  */
 trait Structurable
 {
-    #[ElementProperty(ElementPropertyType::Int, 'The {element}’s structure ID.', readable: true, writable: false)]
+    #[ElementProperty(ElementPropertyType::Int, 'The {element}’s structure ID.', readable: true, writable: false, requires: ElementCapability::Structures)]
     public ?int $structureId = null;
 
-    #[ElementProperty(ElementPropertyType::Int, 'The {element}’s structure’s root ID.', readable: true, writable: false)]
+    #[ElementProperty(ElementPropertyType::Int, 'The {element}’s structure’s root ID.', readable: true, writable: false, requires: ElementCapability::Structures)]
     public ?int $root = null;
 
-    #[ElementProperty(ElementPropertyType::Int, 'The {element}’s left position within its structure.', readable: true, writable: false)]
+    #[ElementProperty(ElementPropertyType::Int, 'The {element}’s left position within its structure.', readable: true, writable: false, requires: ElementCapability::Structures)]
     public ?int $lft = null;
 
-    #[ElementProperty(ElementPropertyType::Int, 'The {element}’s right position within its structure.', readable: true, writable: false)]
+    #[ElementProperty(ElementPropertyType::Int, 'The {element}’s right position within its structure.', readable: true, writable: false, requires: ElementCapability::Structures)]
     public ?int $rgt = null;
 
-    #[ElementProperty(ElementPropertyType::Int, 'The {element}’s level within its structure.', readable: true, writable: false)]
+    #[ElementProperty(ElementPropertyType::Int, 'The {element}’s level within its structure.', readable: true, writable: false, requires: ElementCapability::Structures)]
     public ?int $level = null;
 
     private ElementInterface|false|null $_nextElement = null;
@@ -68,6 +69,11 @@ trait Structurable
     private ElementInterface|false|null $_prevSibling = null;
 
     private ElementInterface|false|null $_nextSibling = null;
+
+    public static function hasStructures(): bool
+    {
+        return false;
+    }
 
     public function getNext(mixed $criteria = false): ?ElementInterface
     {

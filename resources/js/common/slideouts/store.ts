@@ -400,7 +400,8 @@ export function closeAllSlideouts(): void {
   }
 }
 
-async function loadInto(panel: SlideoutInstance): Promise<void> {
+/** Fetches a panel's screen into it, as opening or reloading it does. */
+export async function loadInto(panel: SlideoutInstance): Promise<void> {
   panel.loading = true;
   panel.error = null;
 
