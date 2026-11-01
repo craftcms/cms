@@ -2601,6 +2601,7 @@ return [
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => '{attribute} צריך להכיל {max, number} {max, plural, one{בחירה} other{בחירות}} לכל היותר.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} צריך להכיל {count, number} {count, plural, one{פריט} other{פריטים}}.',
     '{count, number} {count, plural, =1{layout} other{layouts}}' => '{count, number} {count, plural, =1{מערך} other{מערכים}}',
+    '{count, plural, =1{# Draft} other{# Drafts}}' => '{count, plural, =1{# Draft} other{# Drafts}}',
     '{count, spellout} plugin {count, plural, =1{update} other{updates}}' => '{count, spellout} {count, plural, =1{עדכון} other{עדכוני}} תוסף/ים',
     '{count, spellout} {count, plural, =1{plugin} other{plugins}}' => '{count, spellout} {count, plural, =1{תוסף} other{תוספים}}',
     '{delta, plural, =1{1 day} other{# days}}' => '{delta, plural, =1{1 day} other{# days}}',
