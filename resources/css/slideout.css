@@ -82,6 +82,8 @@ body.has-debug-toolbar .slideout-container {
   width: 100%;
   height: 100%;
   inset-block-start: 0;
+  /* Over the editor's own border, so it carries one of its own. */
+  border-inline-start: 1px solid var(--c-color-border-quiet);
   box-shadow: none;
 }
 
