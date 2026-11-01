@@ -47,6 +47,12 @@ class Address extends Element
     }
 
     #[Override]
+    protected static function elementType(): string
+    {
+        return AddressElement::class;
+    }
+
+    #[Override]
     public static function getName(): string
     {
         return 'AddressInterface';
@@ -57,8 +63,6 @@ class Address extends Element
     public static function getFieldDefinitions(): array
     {
         return Gql::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
-            ...static::propertyFields(AddressElement::class, ['isDraft', 'draftId', 'isUnpublishedDraft', 'draftName', 'draftNotes', 'canonicalId', 'canonicalUid', 'fieldId', 'ownerId', 'sortOrder']),
-            ...static::propertyFields(AddressElement::class, ['fullName', 'firstName', 'lastName', 'countryCode', 'administrativeArea', 'locality', 'dependentLocality', 'postalCode', 'sortingCode', 'addressLine1', 'addressLine2', 'addressLine3', 'organization', 'organizationTaxId']),
             'latitude' => [
                 'name' => 'latitude',
                 'type' => Type::string(),

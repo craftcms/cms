@@ -71,6 +71,7 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\ViewModels\AssetEditViewModel;
@@ -84,6 +85,7 @@ use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\ImageHash;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Image\ImageTransformHelper;
+use CraftCms\Cms\Mcp\Attributes\Mcp;
 use CraftCms\Cms\Search\SearchQuery;
 use CraftCms\Cms\Search\SearchQueryTerm;
 use CraftCms\Cms\Search\SearchQueryTermGroup;
@@ -224,6 +226,8 @@ class Asset extends Element
      */
     #[AllowedInSandbox]
     #[ElementProperty(ElementPropertyType::Id, 'The ID of the folder that the asset belongs to.', readable: true, nonNull: true)]
+    #[Gql(write: false)]
+    #[Mcp(hint: 'Changing it moves the file.')]
     public ?int $folderId = null;
 
     /**
@@ -231,6 +235,8 @@ class Asset extends Element
      */
     #[AllowedInSandbox]
     #[ElementProperty(ElementPropertyType::Id, 'The ID of the user who first added the asset, if known.', nullable: true, readable: true)]
+    #[Gql(Gql::CanQueryAllUsers)]
+    #[Mcp(hint: 'Null marks it unknown. Changing it requires permission to save other users’ assets in the volume.')]
     public ?int $uploaderId = null;
 
     /**
@@ -347,6 +353,7 @@ class Asset extends Element
      * @var int|null New folder ID
      */
     #[ElementProperty(ElementPropertyType::Id, 'The ID of the folder to move the asset to.')]
+    #[Mcp(create: false, update: false)]
     public ?int $newFolderId = null;
 
     /**
@@ -2499,6 +2506,8 @@ JS, [
      * Sets the filename (with extension).
      */
     #[ElementProperty(ElementPropertyType::String, 'The filename of the asset file.', readable: true, nonNull: true)]
+    #[Gql(write: false)]
+    #[Mcp(hint: 'Changing it renames the file.')]
     public function setFilename(string $filename): void
     {
         $this->_filename = $filename;

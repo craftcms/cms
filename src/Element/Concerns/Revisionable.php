@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Enums\ElementCapability;
 use CraftCms\Cms\Element\Enums\ElementPropertyType;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
@@ -46,6 +47,7 @@ trait Revisionable
      * @var string|null The revision notes
      */
     #[ElementProperty(ElementPropertyType::String, 'The revision notes (from the `revisions` table).', nullable: true, readable: true, requires: ElementCapability::Revisions)]
+    #[Gql(write: false)]
     public ?string $revisionNotes = null;
 
     /**

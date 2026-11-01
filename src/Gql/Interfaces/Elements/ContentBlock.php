@@ -49,6 +49,12 @@ class ContentBlock extends Element
     }
 
     #[Override]
+    protected static function elementType(): string
+    {
+        return ContentBlockElement::class;
+    }
+
+    #[Override]
     public static function getName(): string
     {
         return 'ContentBlockInterface';
@@ -62,14 +68,12 @@ class ContentBlock extends Element
         $allFieldArguments = ContentBlockArguments::getContentArguments();
 
         return Gql::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), static::getDraftFieldDefinitions(), [
-            ...static::propertyFields(ContentBlockElement::class, ['canonicalId', 'canonicalUid', 'fieldId']),
             'fieldHandle' => [
                 'name' => 'fieldHandle',
                 'type' => Type::string(),
                 'description' => 'The handle of the field that contains the content block.',
                 'complexity' => GqlHelper::singleQueryComplexity(),
             ],
-            ...static::propertyFields(ContentBlockElement::class, ['ownerId', 'sortOrder']),
             'localized' => [
                 'name' => 'localized',
                 'args' => [

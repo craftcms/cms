@@ -25,6 +25,7 @@ use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Support\Html;
@@ -135,6 +136,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      */
     #[AllowedInSandbox]
     #[ElementProperty(ElementPropertyType::Float, 'The address’s latitude coordinate.', nullable: true, readable: true)]
+    #[Gql(exclude: true)]
     public ?string $latitude = null;
 
     /**
@@ -142,6 +144,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      */
     #[AllowedInSandbox]
     #[ElementProperty(ElementPropertyType::Float, 'The address’s longitude coordinate.', nullable: true, readable: true)]
+    #[Gql(exclude: true)]
     public ?string $longitude = null;
 
     /** @param array<string, mixed>|object $config */
