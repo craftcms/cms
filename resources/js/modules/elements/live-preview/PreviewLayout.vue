@@ -99,6 +99,24 @@
     storageKey: 'LivePreview.width',
   });
 
+  /** Whether the panes are in place, rather than sliding in or out. */
+  const holdsPanes = ref(false);
+  const {width: editorWidth} = useElementSize(editor, undefined, {
+    box: 'border-box',
+  });
+
+  /**
+   * Whether the resize handle is lifted out to the page, above the slideouts
+   * covering the editor, which would otherwise paint over it: the preview is a
+   * stacking context of its own, opened before they were.
+   */
+  const handleLifted = computed(
+    () => holdsPanes.value && preview.editorCovers.value > 0
+  );
+  const liftedHandleStyle = computed(() => ({
+    insetInlineStart: `${windowWidth.value - editorWidth.value}px`,
+  }));
+
   // Where slideouts opened during the preview edit, beside it.
   watch(editor, (el) => (preview.editor.value = el), {immediate: true});
 
@@ -518,6 +536,11 @@
     }
   );
 
+  function onAfterEnter(): void {
+    holdsPanes.value = true;
+    emit('after-enter');
+  }
+
   // Leaving the page while it's open (saving redirects away, say) never closes it.
   onBeforeUnmount(releasePage);
 </script>
@@ -526,7 +549,8 @@
   <Teleport to="body">
     <Transition
       name="live-preview"
-      @after-enter="emit('after-enter')"
+      @after-enter="onAfterEnter"
+      @before-leave="holdsPanes = false"
       @after-leave="emit('after-leave')"
     >
       <div
@@ -550,6 +574,17 @@
         >
           <header class="lp-preview__toolbar">
             <div class="lp-preview__toolbar-start">
+              <craft-button
+                v-if="closable"
+                type="button"
+                size="small"
+                icon="xmark-large"
+                variant="plain"
+                flush="inline-start"
+                @click="preview.close()"
+              >
+                {{ t('Close') }}
+              </craft-button>
               <ActionMenu
                 v-if="preview.targets.value.length > 1"
                 :key="preview.activeIndex.value"
@@ -673,18 +708,6 @@
               </craft-tooltip>
 
               <slot name="toolbar-end"></slot>
-
-              <craft-button
-                v-if="closable"
-                type="button"
-                size="small"
-                icon="xmark-large"
-                variant="plain"
-                flush="inline-end"
-                @click="preview.close()"
-              >
-                {{ t('Close') }}
-              </craft-button>
             </div>
           </header>
 
@@ -760,13 +783,17 @@
         >
           <!-- `prevent-autofocus`: it comes first in the editor, and opening the
             preview should land focus in the editor instead. -->
-          <ResizeHandle
-            class="prevent-autofocus"
-            :resizer="resizer"
-            @pointerdown="handlePressed = true"
-            :label="t('Resize editor')"
-            :controls="editorId"
-          />
+          <Teleport to="body" :disabled="!handleLifted">
+            <ResizeHandle
+              class="prevent-autofocus"
+              :class="{'lp-lifted-handle': handleLifted}"
+              :style="handleLifted ? liftedHandleStyle : undefined"
+              :resizer="resizer"
+              @pointerdown="handlePressed = true"
+              :label="t('Resize editor')"
+              :controls="editorId"
+            />
+          </Teleport>
           <slot name="editor"></slot>
         </section>
       </div>
@@ -791,14 +818,14 @@
   }
 
   /* The panes slide in from the sides, over the page as the backdrop fades
-     in: the preview from the start and the editor from the end. */
+     in: the preview from the start and the editor from the end. They leave
+     together, as one sheet sliding out past the end. */
   @media screen and (prefers-reduced-motion: no-preference) {
     .live-preview-enter-active,
     .live-preview-leave-active {
       transition: background-color 400ms ease;
 
-      & > .lp-preview,
-      & > .lp-editor {
+      & > * {
         transition: translate 400ms ease;
       }
     }
@@ -806,7 +833,9 @@
     .live-preview-enter-from,
     .live-preview-leave-to {
       background-color: transparent;
+    }
 
+    .live-preview-enter-from {
       & > .lp-preview {
         translate: -100% 0;
       }
@@ -816,9 +845,12 @@
       }
     }
 
+    .live-preview-leave-to > * {
+      translate: 100vw 0;
+    }
+
     [dir='rtl'] {
-      .live-preview-enter-from,
-      .live-preview-leave-to {
+      .live-preview-enter-from {
         & > .lp-preview {
           translate: 100% 0;
         }
@@ -826,6 +858,10 @@
         & > .lp-editor {
           translate: -100% 0;
         }
+      }
+
+      .live-preview-leave-to > * {
+        translate: -100vw 0;
       }
     }
   }
@@ -942,7 +978,17 @@
   }
 
   .lp-preview__toolbar-start {
+    display: flex;
+    align-items: center;
+    gap: var(--c-spacing-sm);
     min-width: 0;
+  }
+
+  /* Over the slideouts covering the editor, at the editor's edge. Doubled to
+     outrank the handle's own positioning. */
+  .lp-lifted-handle.lp-lifted-handle {
+    position: fixed;
+    z-index: calc(var(--c-layer-overlay) + 1);
   }
 
   .lp-preview__error {

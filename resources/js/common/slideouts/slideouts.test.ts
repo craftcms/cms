@@ -753,10 +753,12 @@ describe('SlideoutHost', () => {
   it('covers only Live Preview’s editor pane while a preview is open', async () => {
     await mountHost();
     const editor = document.body.appendChild(document.createElement('div'));
-    Object.defineProperty(editor, 'clientWidth', {value: 480});
+    Object.defineProperty(editor, 'offsetWidth', {value: 480});
+    const editorCovers = ref(0);
     const unregister = registerPreview({
       isOpen: ref(true),
       editor: shallowRef(editor),
+      editorCovers,
     } as unknown as LivePreviewController);
 
     try {
@@ -772,6 +774,8 @@ describe('SlideoutHost', () => {
         document.querySelector<HTMLElement>('.cp-slideout-shade')!.style.width
       ).toBe('480px');
       expect(panel.querySelector('.slideout-panel__resize-handle')).toBeNull();
+      // What lifts the preview's own resize handle over the panel.
+      expect(editorCovers.value).toBe(1);
     } finally {
       unregister();
     }

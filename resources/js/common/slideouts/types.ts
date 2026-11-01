@@ -99,6 +99,11 @@ export interface SlideoutController {
    * and its handler with it.
    */
   saved(result?: SlideoutSaveResult): boolean;
+  /**
+   * Whether the panel covers a preview's editor, as a view nested in it: it
+   * goes back to the editor rather than closing.
+   */
+  readonly coversPreviewEditor?: boolean;
 }
 
 export const SlideoutControllerKey: InjectionKey<SlideoutController> =

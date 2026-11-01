@@ -161,7 +161,9 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
 
     // Park it offscreen on the way out. The shared stack repositions what's
     // left, but a panel it no longer knows about has to see itself off.
-    if (panel.useMobileStyles) {
+    if (panel._inPreview) {
+      panel.$container.css('inset-inline-start', '100%');
+    } else if (panel.useMobileStyles) {
       panel.$container.css('top', '100vh');
     } else {
       panel.$container.css(Slideout.positionProp(), '100vw');
@@ -218,6 +220,13 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
    * runs off the screen however deep it goes.
    */
   position(index: number, total: number): void {
+    if (this._inPreview) {
+      // Over a preview's editor, each covers the one before it.
+      this.$container.css('inset-inline-start', 0);
+
+      return;
+    }
+
     if (this.useMobileStyles) {
       // A full-screen sheet slides up from the bottom; there's no room beside
       // it to stagger anything into.
@@ -348,29 +357,34 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
     if (previewEditor) {
       // keep the width equal to the edit pane width
       this.updateWidthsForPreviewPane(previewEditor);
-      let containerWidth = previewEditor.clientWidth;
+      let containerWidth = previewEditor.offsetWidth;
       const resizeObserver = new ResizeObserver(() => {
         if (
           this.isOpen &&
-          containerWidth !== (containerWidth = previewEditor.clientWidth)
+          containerWidth !== (containerWidth = previewEditor.offsetWidth)
         ) {
           this.updateWidthsForPreviewPane(previewEditor);
         }
       });
       resizeObserver.observe(previewEditor);
-      const stopListening = getActivePreview()!.on('before-close', () =>
+      const preview = getActivePreview()!;
+      const stopListening = preview.on('before-close', () =>
         this._stopFollowingPreview?.()
       );
+      preview.editorCovers.value++;
       this._stopFollowingPreview = () => {
         resizeObserver.disconnect();
         stopListening();
+        preview.editorCovers.value--;
         this._stopFollowingPreview = null;
       };
     }
 
     this.isOpening = true;
 
-    if (this.useMobileStyles) {
+    if (this._inPreview) {
+      this.$container.css({top: '', 'inset-inline-start': '100%'});
+    } else if (this.useMobileStyles) {
       this.$container.css({
         top: '100vh',
         [Slideout.positionProp()]: '',
@@ -412,16 +426,16 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
     Craft.setFocusWithin(this.$container);
   }
 
-  /** Sizes the slideout to Live Preview's editor pane, which it opens over. */
+  /** Sizes the slideout to Live Preview's editor pane, which it covers. */
   updateWidthsForPreviewPane(editor: HTMLElement): void {
-    const width = editor.clientWidth - 1;
+    const width = editor.offsetWidth;
     const start = previewEditorOffset(editor);
     if (this.$shade) {
       this.$shade.width(width);
       this.$shade[0]!.style.insetInlineStart = `${start}px`;
     }
     this.$outerContainer.css({
-      width: `calc(${width}px - var(--m) * 2)`,
+      width: `${width}px`,
       '--lp-editor-start': `${start}px`,
     });
   }
