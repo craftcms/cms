@@ -747,7 +747,7 @@ describe('useElementEditor', () => {
         canManage: true,
         draftId: 7,
         siteId: 1,
-        blocking: false,
+        blockers: [],
       };
       const screen = payload({
         draftId: 7,

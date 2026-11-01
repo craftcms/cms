@@ -221,7 +221,7 @@ it.each([null, 'draft'] as const)(
         canManage: true,
         draftId: 9,
         siteId: 1,
-        blocking: false,
+        blockers: [],
       };
     }
 
@@ -403,7 +403,7 @@ it('shows a dismissed release notice again once the draft blocks the release', a
     canManage: true,
     draftId: 9,
     siteId: 1,
-    blocking: false,
+    blockers: [],
   };
 
   mount('page');
@@ -425,7 +425,10 @@ it('shows a dismissed release notice again once the draft blocks the release', a
 
   expect(container.textContent).not.toContain('Renamed');
 
-  state.editor.props.release = {...state.editor.props.release, blocking: true};
+  state.editor.props.release = {
+    ...state.editor.props.release,
+    blockers: ['Title cannot be blank.'],
+  };
   await nextTick();
 
   expect(container.textContent).toContain(
@@ -442,7 +445,7 @@ it('asks before editing a reviewed draft in a scheduled release', async () => {
     canManage: true,
     draftId: 9,
     siteId: 1,
-    blocking: false,
+    blockers: [],
   };
 
   mount('page');

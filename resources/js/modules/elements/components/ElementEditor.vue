@@ -411,7 +411,8 @@
   // Dismissing the release notice only hides it until the draft starts
   // blocking the release, or the draft belongs to a different release.
   watch(
-    () => [payload.release?.id, payload.release?.blocking] as const,
+    () =>
+      [payload.release?.id, Boolean(payload.release?.blockers.length)] as const,
     ([id, blocking], [previousId, wasBlocking]) => {
       if (id !== previousId || (blocking && !wasBlocking)) {
         releaseNoticeDismissed.value = false;

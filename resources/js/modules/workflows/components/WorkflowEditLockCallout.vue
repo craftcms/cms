@@ -88,12 +88,7 @@
 </script>
 
 <template>
-  <craft-callout
-    :variant="withdraws ? 'warning' : 'info'"
-    icon="lock"
-    appearance="fill"
-    rounded="none"
-  >
+  <craft-callout variant="warning" icon="lock" appearance="fill" rounded="none">
     <template v-if="withdraws && review?.rollbackStage">
       {{
         t('Editing this draft will send it back to the “{stage}” stage.', {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
-  import {computed} from 'vue';
+  import {computed, ref, useId} from 'vue';
   import {show} from '@actions/ReleasesController';
   import type {AttachedRelease} from '@/modules/elements/composables/useElementEditor';
 
@@ -17,6 +17,10 @@
     dismiss: [];
   }>();
 
+  const blocking = computed(() => props.release.blockers.length > 0);
+  const reasonsExpanded = ref(false);
+  const reasonsId = useId();
+
   /** The release's name, linked to its page. */
   const nameLink = computed(
     () =>
@@ -27,7 +31,7 @@
     const scheduled = props.release.status === 'scheduled';
     const params = {name: nameLink.value};
 
-    if (props.release.blocking) {
+    if (blocking.value) {
       return scheduled
         ? t(
             'This draft is blocking the scheduled release “{name}”, which will fail to publish until the draft is ready.',
@@ -62,19 +66,41 @@
       return 'lock';
     }
 
-    return props.release.blocking ? 'triangle-exclamation' : 'calendar';
+    return blocking.value ? 'triangle-exclamation' : 'calendar';
   });
 </script>
 
 <template>
   <craft-callout
-    :variant="release.blocking ? 'warning' : 'info'"
+    :variant="locked || blocking ? 'warning' : 'info'"
     :icon="icon"
     rounded="none"
     appearance="fill"
   >
     <!-- Translated strings with the linked name as HTML. -->
     <span v-html="message"></span>
+
+    <div v-if="blocking" class="release-callout__reasons">
+      <craft-button
+        type="button"
+        variant="plain"
+        size="small"
+        flush="inline"
+        inherit
+        :icon="reasonsExpanded ? 'chevron-down' : 'chevron-right'"
+        icon-position="suffix"
+        :aria-expanded="reasonsExpanded ? 'true' : 'false'"
+        :aria-controls="reasonsId"
+        @click="reasonsExpanded = !reasonsExpanded"
+      >
+        {{ t('Why? ({num, number})', {num: release.blockers.length}) }}
+      </craft-button>
+      <ul v-show="reasonsExpanded" :id="reasonsId">
+        <li v-for="(reason, index) in release.blockers" :key="index">
+          {{ reason }}
+        </li>
+      </ul>
+    </div>
 
     <craft-button
       v-if="locked && canStartEditing"
@@ -101,3 +127,14 @@
     ></craft-button>
   </craft-callout>
 </template>
+
+<style scoped>
+  .release-callout__reasons {
+    font-size: 0.875em;
+  }
+
+  .release-callout__reasons ul {
+    margin: 0;
+    padding-inline-start: 1.25em;
+  }
+</style>

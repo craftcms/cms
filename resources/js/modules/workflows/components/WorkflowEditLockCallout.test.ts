@@ -138,13 +138,13 @@ describe('WorkflowEditLockCallout', () => {
     [
       'reopens an approved draft for its final-stage reviewers',
       review({status: 'approved', isReviewer: true, hasApproved: true}),
-      'info',
+      'warning',
       'This draft is approved and ready to be published.',
     ],
     [
       'lets a reviewer edit a draft they approved',
       review({isReviewer: true, hasApproved: true}),
-      'info',
+      'warning',
       'You’ve approved this draft.',
     ],
   ])('%s', (_, workflowReview, variant, text) => {

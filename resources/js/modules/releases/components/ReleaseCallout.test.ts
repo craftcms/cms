@@ -1,4 +1,4 @@
-import {createApp, h} from 'vue';
+import {createApp, h, nextTick} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import type {AttachedRelease} from '@/modules/elements/composables/useElementEditor';
 import ReleaseCallout from './ReleaseCallout.vue';
@@ -39,7 +39,7 @@ function mount(
           canManage: true,
           draftId: 7,
           siteId: 1,
-          blocking: false,
+          blockers: [],
           ...release,
         } as AttachedRelease,
         locked,
@@ -93,7 +93,7 @@ it.each([
 ] as const)(
   'describes a %s release (blocking: %s) as %s',
   (status, blocking, variant, text) => {
-    mount({status, blocking});
+    mount({status, blockers: blocking ? ['Title cannot be blank.'] : []});
 
     const callout = container.querySelector<HTMLElement & {variant?: string}>(
       'craft-callout'
@@ -123,7 +123,7 @@ it('locks a scheduled release draft behind Start editing, without a dismiss butt
   const callout = container.querySelector<HTMLElement & {variant?: string}>(
     'craft-callout'
   )!;
-  expect(callout.variant).toBe('info');
+  expect(callout.variant).toBe('warning');
   expect(callout.textContent).toContain(
     'This draft is scheduled to publish with “Launch”. If edits leave it unready, the release will fail to publish.'
   );
@@ -134,4 +134,26 @@ it('locks a scheduled release draft behind Start editing, without a dismiss butt
 
   buttons[0]!.click();
   expect(onStartEditing).toHaveBeenCalledOnce();
+});
+
+it('reveals why the draft is blocking the release behind a disclosure', async () => {
+  mount({blockers: ['Title cannot be blank.', 'Slug is invalid.']});
+
+  const toggle = [
+    ...container.querySelectorAll<HTMLElement>('craft-button'),
+  ].find((button) => button.textContent?.trim() === 'Why? (2)')!;
+  const list = container.querySelector<HTMLElement>(
+    `#${toggle.getAttribute('aria-controls')}`
+  )!;
+  expect(toggle.getAttribute('aria-expanded')).toBe('false');
+  expect(list.style.display).toBe('none');
+
+  toggle.click();
+  await nextTick();
+
+  expect(toggle.getAttribute('aria-expanded')).toBe('true');
+  expect(list.style.display).toBe('');
+  expect(
+    [...list.querySelectorAll('li')].map((li) => li.textContent?.trim())
+  ).toEqual(['Title cannot be blank.', 'Slug is invalid.']);
 });
