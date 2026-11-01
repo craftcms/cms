@@ -110,6 +110,23 @@ it('carries the view mode through to its props', function (string $viewMode) {
     expect($control->props()['viewMode'])->toBe($viewMode);
 })->with(ElementSelect::viewModes());
 
+it('resolves the thumb size to one the view mode offers', function (string $viewMode, ?string $thumbSize, ?string $expected) {
+    $control = ElementSelect::make('related')
+        ->elementType(Entry::class)
+        ->viewMode($viewMode)
+        ->thumbSize($thumbSize);
+
+    expect($control->props()['thumbSize'])->toBe($expected);
+})->with([
+    'list default' => [ElementSelect::VIEW_MODE_LIST, null, 'sm'],
+    'list medium' => [ElementSelect::VIEW_MODE_LIST_INLINE, 'md', 'md'],
+    'list caps at large' => [ElementSelect::VIEW_MODE_LIST, 'xl', 'sm'],
+    'thumbs default' => [ElementSelect::VIEW_MODE_THUMBS, null, 'lg'],
+    'thumbs small' => [ElementSelect::VIEW_MODE_THUMBS, 'sm', 'sm'],
+    'thumbs 2xl' => [ElementSelect::VIEW_MODE_THUMBS, '2xl', '2xl'],
+    'cards have none' => [ElementSelect::VIEW_MODE_CARDS, 'md', null],
+]);
+
 it('rejects a view mode the field can’t be set to', function () {
     ElementSelect::make('related')
         ->elementType(Entry::class)

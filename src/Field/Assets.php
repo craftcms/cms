@@ -308,6 +308,7 @@ class Assets extends BaseRelationField
             ...$this->limitFields(),
             $this->defaultPlacementField(),
             $this->viewModeField(),
+            $this->thumbSizeField(),
             $this->selectionLabelField(),
             Group::make('asset-search-settings', [
                 $this->showSearchInputField()->visible($this->canSearchWithinSources()),
