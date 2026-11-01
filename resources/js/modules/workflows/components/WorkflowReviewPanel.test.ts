@@ -139,6 +139,9 @@ function review(
     canOverride: false,
     canRestart: true,
     canApply: false,
+    isReviewer: false,
+    hasApproved: false,
+    rollbackStage: null,
     ...overrides,
   };
 }

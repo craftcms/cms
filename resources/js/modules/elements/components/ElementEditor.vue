@@ -374,6 +374,15 @@
     {flush: 'pre'}
   );
   const previewButton = useTemplateRef<HTMLElement>('previewButton');
+
+  /** Whether the draft is in review, waiting on the user's approval of its current stage. */
+  const awaitingUserApproval = computed(
+    () =>
+      payload.workflow.current?.status === 'pending' &&
+      payload.workflow.current.isReviewer &&
+      !payload.workflow.current.hasApproved
+  );
+  const approvalNoticeDismissed = ref(false);
   /** Live Preview's two panes don't fit on a phone, so it isn't offered there. */
   const isPhone = cpBreakpoints.smaller('md');
 
@@ -643,6 +652,8 @@
       payload.mergeNotice ||
       payload.workflow.convertedToDraft ||
       workflowReviewLocked ||
+      (awaitingUserApproval && !approvalNoticeDismissed) ||
+      payload.workflow.current?.status === 'withdrawn' ||
       payload.release
     "
     name="content-notices"
@@ -665,9 +676,61 @@
 
       <WorkflowEditLockCallout
         v-if="workflowReviewLocked"
+        :payload="payload"
+        :update-payload="updatePayload"
         class="mb-4"
         @start-editing="startEditing"
       />
+
+      <craft-callout
+        v-if="awaitingUserApproval && !approvalNoticeDismissed"
+        variant="info"
+        icon="clipboard-check"
+        class="mb-4"
+        rounded="none"
+        appearance="fill"
+      >
+        {{ t('This draft is waiting on your approval.') }}
+        <craft-button
+          slot="action"
+          type="button"
+          variant="plain"
+          size="small"
+          icon
+          inherit
+          @click="approvalNoticeDismissed = true"
+        >
+          <craft-icon name="xmark" :label="t('Dismiss')"></craft-icon>
+        </craft-button>
+      </craft-callout>
+
+      <craft-callout
+        v-if="payload.workflow.current?.status === 'withdrawn'"
+        variant="info"
+        icon="clipboard-list-check"
+        class="mb-4"
+        rounded="none"
+        appearance="fill"
+      >
+        {{
+          payload.workflow.current.canSubmit
+            ? t(
+                'This draft was withdrawn from review. Resubmit it when your edits are ready.'
+              )
+            : t('This draft was withdrawn from review.')
+        }}
+        <craft-button
+          v-if="payload.workflow.current.canSubmit"
+          slot="action"
+          type="button"
+          variant="outline"
+          size="small"
+          inherit
+          @click="detailsPanels?.select('workflow')"
+        >
+          {{ payload.workflow.current.submitLabel }}
+        </craft-button>
+      </craft-callout>
 
       <ReleaseCallout
         v-if="payload.release"

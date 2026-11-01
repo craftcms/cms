@@ -15,5 +15,8 @@ enum WorkflowTransition: string
     case StageApproved = 'stage-approved';
     case StageFailed = 'stage-failed';
     case Invalidate = 'invalidate';
+    case Withdraw = 'withdraw';
+    case SendBack = 'send-back';
+    case Edit = 'edit';
     case Publish = 'publish';
 }
