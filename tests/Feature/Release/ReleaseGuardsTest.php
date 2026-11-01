@@ -113,7 +113,7 @@ it('removes a draft site while retaining its release membership', function () {
         ->and(EntryElement::find()->draftId($draft->draftId)->siteId($draft->siteId)->status(null)->one())->not()->toBeNull();
 });
 
-it('lets scheduled releases be adjusted, without taking on unready drafts', function () {
+it('lets scheduled releases be adjusted and their drafts applied early, without taking on unready drafts', function () {
     Date::setTestNow('2026-10-01 12:00:00');
 
     $draft = releaseGuardDraft(
@@ -147,27 +147,23 @@ it('lets scheduled releases be adjusted, without taking on unready drafts', func
         ->and(fn () => $this->releases->delete($release, $this->actor))
         ->toThrow(ReleaseException::class, 'Scheduled and completed releases cannot be changed.');
 
-    postJson(action([ElementDraftsController::class, 'apply']), [
-        'elementType' => EntryElement::class,
-        'draftId' => $draft->draftId,
-        'siteId' => $draft->siteId,
-        'title' => 'Premature publication',
-    ])->assertBadRequest();
-
-    expect(EntryElement::find()->draftId($draft->draftId)->status(null)->one()->title)->toBe('Scheduled change')
-        ->and($release->fresh()->status)->toBe(ReleaseStatus::Scheduled);
-
     $this->releases->detach($release, $otherDraft, $this->actor);
 
     expect($release->fresh()->status)->toBe(ReleaseStatus::Scheduled);
 
-    $this->releases->detach($release, $draft, $this->actor);
+    postJson(action([ElementDraftsController::class, 'apply']), [
+        'elementType' => EntryElement::class,
+        'draftId' => $draft->draftId,
+        'siteId' => $draft->siteId,
+        'title' => 'Early publication',
+    ])->assertOk();
     $release->refresh();
 
-    expect($release->status)->toBe(ReleaseStatus::Draft)
+    expect(EntryElement::find()->id($draft->getCanonicalId())->status(null)->one()->title)->toBe('Early publication')
+        ->and($release->items()->count())->toBe(0)
+        ->and($release->status)->toBe(ReleaseStatus::Draft)
         ->and($release->publishedAt)->toBeNull()
-        ->and($release->scheduledById)->toBeNull()
-        ->and($this->releases->releaseForDraft($draft))->toBeNull();
+        ->and($release->scheduledById)->toBeNull();
 });
 
 it('publishes an attached draft early through the ordinary apply endpoint and detaches it', function () {

@@ -399,7 +399,7 @@ class Releases
         try {
             return DB::transaction(function () use ($releaseId, $draftId, $draft, $actor, $apply): mixed {
                 $release = $this->lockRelease($releaseId);
-                $this->ensureMutable($release);
+                $this->ensureEditable($release);
                 $item = ReleaseItem::query()
                     ->where('releaseId', $release->id)
                     ->where('draftId', $draftId)
@@ -425,6 +425,7 @@ class Releases
                 }
 
                 $item->delete();
+                $this->unscheduleIfEmpty($release);
 
                 return $response;
             });

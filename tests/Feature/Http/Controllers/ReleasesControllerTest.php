@@ -166,8 +166,8 @@ it('schedules a release at the submitted time in the user’s time zone and requ
     get($draft->getCpEditUrl())
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('editorActions.buttons.0.disabled', true)
-            ->where('editorActions.buttons.0.disabledReason', 'Cancel the release schedule before applying this draft.'));
+            ->missing('editorActions.buttons.0.disabled')
+            ->missing('editorActions.buttons.0.disabledReason'));
 
     postJson(route('craft.cp.releases.publish', $release))->assertOk();
 
