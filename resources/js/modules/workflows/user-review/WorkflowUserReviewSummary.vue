@@ -204,8 +204,8 @@
   }
 
   .workflow-user-review-summary__thumb {
-    --c-thumb-icon-size: var(--c-size-icon-lg);
-    --c-thumbnail-size: var(--c-size-icon-lg);
+    --c-thumb-icon-size: var(--c-size-control-sm);
+    --c-thumbnail-size: var(--c-size-control-sm);
     display: flex;
     flex: none;
   }

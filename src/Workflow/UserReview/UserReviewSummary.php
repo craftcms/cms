@@ -53,7 +53,7 @@ readonly class UserReviewSummary
     {
         return $reviewers->map(fn (User $reviewer): array => [
             'name' => $reviewer->name,
-            'thumbHtml' => $reviewer->getThumbHtml(22),
+            'thumbHtml' => $reviewer->getThumbHtml(24),
         ])->values()->all();
     }
 }
