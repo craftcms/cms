@@ -53,7 +53,15 @@ it('describes each element type through elements.schema and the element type res
         ->assertJsonPath('result.structuredContent.criteria.properties.sectionId.description', 'Narrows the query results based on the sections the entries belong to, per the sections’ IDs.')
         ->assertJsonPath('result.structuredContent.criteria.properties.field.description', 'Narrows the query results based on the field the entries are contained by.')
         ->assertJsonPath('result.structuredContent.criteria.properties.status.anyOf.2.type', 'null')
+        ->assertJsonPath('result.structuredContent.criteria.properties.level.anyOf.0.type', 'integer')
+        ->assertJsonPath('result.structuredContent.attributes.properties.structureId.type', ['integer', 'null'])
         ->assertJsonPath('result.structuredContent.duplicateModes', ['unpublished', 'canonical']);
+
+    ($this->call)('elements.schema', ['type' => 'assets'])
+        ->assertJsonPath('result.isError', false)
+        ->assertJsonMissingPath('result.structuredContent.criteria.properties.level')
+        ->assertJsonMissingPath('result.structuredContent.criteria.properties.drafts')
+        ->assertJsonMissingPath('result.structuredContent.attributes.properties.structureId');
 });
 
 it('rejects element tool inputs that the type does not accept', function (string $tool, array $arguments, string $message): void {
