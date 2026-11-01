@@ -464,3 +464,28 @@ it('asks before editing a reviewed draft in a scheduled release', async () => {
   await vi.waitFor(() => expect(dialog.opened).toBe(false));
   expect(state.editor.startEditingDraft).not.toHaveBeenCalled();
 });
+
+it('doesn’t ask before editing a draft that already blocks its scheduled release', async () => {
+  state.editor.props.release = {
+    id: 6,
+    name: 'Spring launch',
+    status: 'scheduled',
+    targetDate: null,
+    canManage: true,
+    draftId: 9,
+    siteId: 1,
+    blockers: ['The title field is required.'],
+  };
+
+  mount('page');
+  await nextTick();
+
+  const dialog = container.querySelector<HTMLElement & {opened?: boolean}>(
+    'craft-dialog'
+  )!;
+  findButton('Start editing')!.click();
+  await nextTick();
+  await nextTick();
+
+  expect(dialog.opened).toBe(false);
+});

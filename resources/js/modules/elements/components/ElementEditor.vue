@@ -214,7 +214,8 @@
   /**
    * Settles the pending “Edit anyway?” question, while the dialog asking it is
    * open: editing a reviewed draft in a scheduled release undoes its approval,
-   * which will stop the release from publishing.
+   * which will stop the release from publishing. A draft that's already
+   * blocking the release isn't asked about.
    */
   const settleScheduledEdit = shallowRef<((confirmed: boolean) => void) | null>(
     null
@@ -723,7 +724,8 @@
         :payload="payload"
         :update-payload="updatePayload"
         :confirm-editing="
-          payload.release?.status === 'scheduled'
+          payload.release?.status === 'scheduled' &&
+          !payload.release.blockers.length
             ? confirmScheduledEdit
             : undefined
         "
