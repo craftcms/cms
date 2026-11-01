@@ -95,6 +95,10 @@ it('manages element types that plugins register with an adapter', function (): v
     ($this->call)('elements.update', ['type' => 'widgets', 'id' => $created['id'], 'attributes' => ['slug' => 'cog']])
         ->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'Invalid attributes for widgets: Additional object properties are not allowed: ["slug"]. Call elements.schema for the accepted attributes.');
+    ($this->call)('elements.schema', ['type' => 'widgets'])
+        ->assertJsonPath('result.structuredContent.criteria.properties.level.anyOf.0.type', 'integer')
+        ->assertJsonPath('result.structuredContent.criteria.properties.revisions.type', ['boolean', 'null'])
+        ->assertJsonPath('result.structuredContent.attributes.properties.structureId.type', ['integer', 'null']);
     ($this->call)('elements.delete', ['type' => 'widgets', 'id' => $created['id']])
         ->assertJsonPath('result.structuredContent.deleted', true);
 

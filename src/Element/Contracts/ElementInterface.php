@@ -84,12 +84,17 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     /**
      * Returns whether elements of this type can have revisions.
      *
-     * Whether a given element gets revisions when it’s saved is up to {@see hasRevisions()}.
+     * Whether a given element gets revisions when it’s saved is up to {@see hasRevisions()}. Element types that
+     * extend {@see Element} return `true` unless they override it, so their revision params and
+     * properties stay exposed.
      */
     public static function supportsRevisions(): bool;
 
     /**
      * Returns whether elements of this type can be placed in structures.
+     *
+     * Element types that extend {@see Element} return `true` unless they override it, so their
+     * structure params and properties stay exposed.
      */
     public static function hasStructures(): bool;
 

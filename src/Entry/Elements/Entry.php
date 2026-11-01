@@ -332,18 +332,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     #[Override]
-    public static function supportsRevisions(): bool
-    {
-        return true;
-    }
-
-    #[Override]
-    public static function hasStructures(): bool
-    {
-        return true;
-    }
-
-    #[Override]
     public static function trackChanges(): bool
     {
         return true;

@@ -147,7 +147,7 @@ trait Revisionable
 
     public static function supportsRevisions(): bool
     {
-        return false;
+        return true;
     }
 
     public function hasRevisions(): bool

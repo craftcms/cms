@@ -517,6 +517,18 @@ class Asset extends Element
     }
 
     #[Override]
+    public static function supportsRevisions(): bool
+    {
+        return false;
+    }
+
+    #[Override]
+    public static function hasStructures(): bool
+    {
+        return false;
+    }
+
+    #[Override]
     public static function hasTitles(): bool
     {
         return true;

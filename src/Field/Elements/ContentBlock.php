@@ -68,9 +68,9 @@ class ContentBlock extends Element implements NestedElementInterface
     }
 
     #[Override]
-    public static function supportsRevisions(): bool
+    public static function hasStructures(): bool
     {
-        return true;
+        return false;
     }
 
     #[Override]
