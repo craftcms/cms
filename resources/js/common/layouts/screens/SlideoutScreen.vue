@@ -357,6 +357,7 @@
       :has-panels="regions.hasPanels()"
     >
       <div
+        v-if="!slideout?.docked"
         v-show="regions.has('content-notices')"
         class="slideout-screen__notices"
         role="status"
@@ -396,6 +397,19 @@
         <slot name="content-details"></slot>
       </LayoutSlotOutlet>
     </ScreenPanel>
+
+    <!-- Docked beside a preview, the notices sit above the footer, as Live
+      Preview's do. -->
+    <div
+      v-if="slideout?.docked"
+      v-show="regions.has('content-notices')"
+      class="slideout-screen__notices"
+      role="status"
+    >
+      <LayoutSlotOutlet name="content-notices">
+        <slot name="content-notices"></slot>
+      </LayoutSlotOutlet>
+    </div>
 
     <footer v-if="!props.hideFooter" class="slideout-screen__footer">
       <ContentFooter

@@ -43,5 +43,6 @@ export function provideSlideoutScreen(
     get workflowActionsOnly() {
       return controller.workflowActionsOnly;
     },
+    docked: controller.docked,
   });
 }

@@ -54,6 +54,7 @@
     get workflowActionsOnly() {
       return props.workflowActionsOnly;
     },
+    docked: true,
   });
 
   void loadInto(instance);

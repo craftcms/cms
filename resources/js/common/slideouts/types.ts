@@ -109,6 +109,11 @@ export interface SlideoutController {
    * saves and Cancel, as where its drafts are autosaved and applied elsewhere.
    */
   readonly workflowActionsOnly?: boolean;
+  /**
+   * Whether the screen is docked in place, as beside a preview, rather than
+   * in a panel. Its notices then sit above its footer, as Live Preview's do.
+   */
+  readonly docked?: boolean;
 }
 
 export const SlideoutControllerKey: InjectionKey<SlideoutController> =
