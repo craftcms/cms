@@ -405,7 +405,7 @@ it('shows an entry’s publication warnings in its release row, in an Issues col
     $columns = fn () => get(route('craft.cp.releases.show', $release), headers: ['X-Inertia' => 'true'])
         ->json('props.ui.nodes.0.props.columns.*.key');
 
-    expect($columns())->toBe(['title', 'status', 'view']);
+    expect($columns())->toBe(['title', 'status']);
 
     Date::setTestNow(now()->addMinute());
     $canonical = $draft->getCanonical();
@@ -418,10 +418,10 @@ it('shows an entry’s publication warnings in its release row, in an Issues col
             ->where('ui.nodes.0.props.rows.0.status.html', fn (string $html) => str_contains($html, 'Ready with warnings'))
             ->where('ui.nodes.0.props.rows.0.issues.html', fn (string $html) => str_contains($html, 'Live changes will be merged into this draft before publication.')));
 
-    expect($columns())->toBe(['title', 'status', 'issues', 'view']);
+    expect($columns())->toBe(['title', 'status', 'issues']);
 });
 
-it('previews every release draft in Live Preview, opening on the one whose View link was followed', function () {
+it('previews every release draft in Live Preview, opening on the requested one', function () {
     $entryType = EntryType::factory()->create();
     $section = Section::factory()->withEntryTypes($entryType)->create([
         'previewTargets' => [['label' => 'Entry page', 'urlFormat' => '{url}', 'refresh' => '1']],
@@ -449,12 +449,13 @@ it('previews every release draft in Live Preview, opening on the one whose View 
     }
     $itemIds = $release->items()->orderBy('id')->pluck('id')->all();
 
-    $viewLinks = get(route('craft.cp.releases.show', $release), headers: ['X-Inertia' => 'true'])
-        ->json('props.ui.nodes.0.props.rows.*.view.html');
+    get(route('craft.cp.releases.show', $release))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('previewUrl', route('craft.cp.releases.preview', $release))
+            ->etc());
 
-    expect($viewLinks[0])->toContain('href="'.Html::encode(route('craft.cp.releases.preview', [$release, 'item' => $itemIds[0]])).'"')
-        ->and($viewLinks[1])->toContain('href="'.Html::encode(route('craft.cp.releases.preview', [$release, 'item' => $itemIds[1]])).'"')
-        ->and($viewLinks[2])->toContain('href="'.Html::encode(route('craft.cp.releases.preview', [$release, 'item' => $itemIds[2]])).'"');
+    get(route('craft.cp.releases.preview', $release))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('preview.selectedItemId', $itemIds[0])->etc());
 
     $page = get(route('craft.cp.releases.preview', [$release, 'item' => $itemIds[2]]))
         ->assertOk()
@@ -483,6 +484,8 @@ it('previews every release draft in Live Preview, opening on the one whose View 
 it('has no preview for a release without drafts', function () {
     $release = $this->releases->create('Empty release', null, $this->actor);
 
+    get(route('craft.cp.releases.show', $release))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('previewUrl', null)->etc());
     get(route('craft.cp.releases.preview', $release))->assertNotFound();
 });
 

@@ -34,6 +34,7 @@
     editUi: UiPayload | null;
     metadataHtml: string | null;
     publishDisabledReason: ReleaseViewModel['publishDisabledReason'];
+    previewUrl: ReleaseViewModel['previewUrl'];
     /** Set when the release preview is open over the screen. */
     preview?: ReleasePreviewPayload | null;
   }>();
@@ -102,6 +103,16 @@
       router.visit(unscheduleRelease({release: props.release.id}));
     }
   }
+
+  /** Opens the release preview over the screen, on its first draft. */
+  function openPreview(): void {
+    if (props.previewUrl) {
+      router.visit(props.previewUrl, {
+        preserveState: true,
+        preserveScroll: true,
+      });
+    }
+  }
 </script>
 
 <template>
@@ -130,6 +141,18 @@
         }}
       </span>
       <span v-if="readinessSummary">{{ readinessSummary }}</span>
+    </LayoutSlot>
+
+    <LayoutSlot v-if="previewUrl" name="content-toolbar-actions">
+      <craft-button
+        type="button"
+        size="small"
+        variant="plain"
+        icon="eye"
+        @click="openPreview"
+      >
+        {{ t('Preview') }}
+      </craft-button>
     </LayoutSlot>
 
     <LayoutSlot v-if="actionMenu.length" name="content-toolbar-actions">

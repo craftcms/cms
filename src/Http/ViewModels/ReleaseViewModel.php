@@ -152,6 +152,18 @@ class ReleaseViewModel extends ViewModel
         return once(fn (): array => $this->release->items()->orderBy('id')->get()->all());
     }
 
+    /** Where the release preview opens, when the user can view any of its drafts. */
+    public function previewUrl(): ?string
+    {
+        foreach ($this->itemModels() as $item) {
+            if ($item->draftId !== null && $this->itemPreview($item) !== null) {
+                return route('craft.cp.releases.preview', $this->release);
+            }
+        }
+
+        return null;
+    }
+
     /**
      * The release preview: its drafts, each with what Live Preview needs to
      * load it, and the one it opens on.
@@ -274,11 +286,6 @@ class ReleaseViewModel extends ViewModel
                 'status' => ['html' => Html::tag('craft-badge', Html::encode($label), ['fill' => $color->value])],
                 'issues' => ['html' => $issues === [] ? '' : (string) Html::ul($issues, ['class' => 'grid gap-1'], encode: true)],
                 'publishedAt' => $item->publishedAt === null ? '' : $this->formatDate($item->publishedAt),
-                'view' => ['html' => $item->previewUrl === null ? '' : Html::tag(
-                    'craft-button',
-                    Html::encode(t('View')).Html::tag('span', ' '.Html::encode($item->title), ['class' => 'sr-only']),
-                    ['href' => $item->previewUrl, 'size' => 'small'],
-                )],
                 '_deletable' => $item->canDetach,
                 '_deleteUrl' => $item->canDetach && $item->draftId !== null
                     ? route('craft.cp.releases.detach', [$this->release, $item->draftId])
@@ -286,7 +293,7 @@ class ReleaseViewModel extends ViewModel
                 '_deleteLabel' => t('Remove {title}', ['title' => $item->title]),
                 '_deleteConfirmMessage' => t('Remove “{title}” from this release? The draft will be preserved.', ['title' => $item->title]),
             ];
-        }, $items = $this->items());
+        }, $this->items());
 
         $columns = [
             ['key' => 'title', 'label' => t('Draft'), 'wrap' => true],
@@ -300,9 +307,6 @@ class ReleaseViewModel extends ViewModel
                 ],
                 default => [],
             },
-            ...(array_any($items, fn (ReleaseItemData $item): bool => $item->previewUrl !== null)
-                ? [['key' => 'view', 'label' => t('Preview'), 'thin' => true, 'headerSrOnly' => true]]
-                : []),
         ];
 
         $table = UiTable::make('release-items')
@@ -386,9 +390,6 @@ class ReleaseViewModel extends ViewModel
             canDetach: $element !== null
                 && $item->draftId !== null
                 && $this->actor->can('detach', [$this->release, $element]),
-            previewUrl: $this->itemPreview($item) !== null
-                ? route('craft.cp.releases.preview', [$this->release, 'item' => $item->id])
-                : null,
         );
     }
 
