@@ -906,6 +906,8 @@ return [
     'The AI assistant and MCP clients follow this guidance when they work with content: the guidance for all sites, and the guidance for the site the content is in.' => 'The AI assistant and MCP clients follow this guidance when they work with content: the guidance for all sites, and the guidance for the site the content is in.',
     'Type {element} to choose an element.' => 'Type {element} to choose an element.',
     'Type {element} to choose an element, or {field} to choose a field.' => 'Type {element} to choose an element, or {field} to choose a field.',
+    'Type {user} to mention someone.' => 'Type {user} to mention someone.',
+    'Supports Markdown formatting.' => 'Supports Markdown formatting.',
     'Names the conversations in the control panel’s AI chat after their first message. A small, fast model is enough.' => 'Names the conversations in the control panel’s AI chat after their first message. A small, fast model is enough.',
     'New chat' => 'New chat',
     'Nothing uses AI yet.' => 'Nothing uses AI yet.',
