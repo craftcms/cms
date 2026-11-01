@@ -67,24 +67,31 @@ export function highlightTokens(
 
 /**
  * Highlights the code in each `code[data-language]` element within `root`,
- * such as server-rendered file previews.
+ * such as server-rendered file previews, and in each Markdown code block
+ * with a language, which is a `pre > code.language-*` element.
  */
 export function highlightCodeBlocks(root: ParentNode): void {
   for (const code of root.querySelectorAll<HTMLElement>(
-    'code[data-language]'
+    'code[data-language], pre > code[class*="language-"]'
   )) {
+    const language =
+      code.dataset.language ??
+      code.className.match(/(?:^|\s)language-(\S+)/)?.[1];
+
+    if (!language) {
+      continue;
+    }
+
     code.replaceChildren(
-      ...highlightTokens(code.textContent ?? '', code.dataset.language!).map(
-        (token) => {
-          if (!token.className) {
-            return document.createTextNode(token.value);
-          }
-          const span = document.createElement('span');
-          span.className = `th-${token.className}`;
-          span.textContent = token.value;
-          return span;
+      ...highlightTokens(code.textContent ?? '', language).map((token) => {
+        if (!token.className) {
+          return document.createTextNode(token.value);
         }
-      )
+        const span = document.createElement('span');
+        span.className = `th-${token.className}`;
+        span.textContent = token.value;
+        return span;
+      })
     );
     code.removeAttribute('data-language');
   }

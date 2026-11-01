@@ -72,3 +72,18 @@ it('highlights GraphQL', () => {
     'comment:# all',
   ]);
 });
+
+it('highlights Markdown code blocks by their language class', () => {
+  const root = document.createElement('div');
+  root.innerHTML =
+    '<p><code class="language-php">$a</code></p><pre><code class="language-php">$a = 1;</code></pre><pre><code class="language-">b</code></pre>';
+
+  highlightCodeBlocks(root);
+
+  const [inline, block, empty] = root.querySelectorAll('code');
+  expect(inline!.innerHTML).toBe('$a');
+  expect(block!.textContent).toBe('$a = 1;');
+  expect(block!.querySelector('.th-variable')!.textContent).toBe('$a');
+  expect(block!.querySelector('.th-number')!.textContent).toBe('1');
+  expect(empty!.innerHTML).toBe('b');
+});
