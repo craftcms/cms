@@ -264,11 +264,26 @@
     <header class="slideout-screen__header">
       <CpContainer>
         <div class="flex items-center gap-sm justify-between">
-          <div class="slideout-screen__heading flex gap-md items-center">
-            <h2 class="slideout-screen__title">{{ title }}</h2>
-            <LayoutSlotOutlet name="content-toolbar-meta">
-              <slot name="content-toolbar-meta"></slot>
-            </LayoutSlotOutlet>
+          <!-- Nested in a preview's editor, the panel is a view to go back
+            from, as the command palette's are. -->
+          <div class="flex gap-lg items-center min-w-0">
+            <craft-button
+              v-if="slideout?.coversPreviewEditor"
+              type="button"
+              size="small"
+              icon="arrow-left"
+              flush="inline-start"
+              :variant="ButtonVariant.Plain"
+              @click="close"
+            >
+              {{ t('Back') }}
+            </craft-button>
+            <div class="slideout-screen__heading flex gap-md items-center">
+              <h2 class="slideout-screen__title">{{ title }}</h2>
+              <LayoutSlotOutlet name="content-toolbar-meta">
+                <slot name="content-toolbar-meta"></slot>
+              </LayoutSlotOutlet>
+            </div>
           </div>
 
           <div class="slideout-screen__actions flex gap-sm items-center">
@@ -307,6 +322,7 @@
             </template>
 
             <craft-button
+              v-if="!slideout?.coversPreviewEditor"
               icon
               type="button"
               size="small"

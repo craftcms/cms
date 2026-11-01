@@ -85,6 +85,8 @@ export function useLivePreview(
   );
   /** The editor's pane while the preview is shown, set by the pane itself. */
   const editor = shallowRef<HTMLElement | null>(null);
+  /** How many slideouts are open over the editor's pane. */
+  const editorCovers = ref(0);
   const frames = ref<Array<LivePreviewFrame>>([]);
   const device = useLocalStorage<DeviceType>('LivePreview.device', 'desktop');
   const orientation = useLocalStorage<DeviceOrientation>(
@@ -418,6 +420,7 @@ export function useLivePreview(
     urlFor,
     draftSaved,
     editor,
+    editorCovers,
     /** The frame being shown, once one has loaded. */
     iframe: shallowReadonly(readyFrame),
     on: events.on,
