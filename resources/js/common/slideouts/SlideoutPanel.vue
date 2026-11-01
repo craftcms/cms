@@ -356,6 +356,8 @@
      sliding in from the end. Stacked panels sit on top of each other. */
   .slideout-panel--in-preview {
     width: var(--slideout-preview-width);
+    /* Over the editor's own border, so it carries one of its own. */
+    border-inline-start: 1px solid var(--c-color-border-quiet);
     border-radius: 0;
     box-shadow: none;
 
