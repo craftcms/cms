@@ -254,7 +254,7 @@ trait QueriesDraftsAndRevisions
      *     ->one();
      * ```
      */
-    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether draft elements should be returned.')]
+    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether draft {elements} should be returned.')]
     public function drafts(?bool $value = true): static
     {
         $this->drafts = $value;
@@ -266,7 +266,7 @@ trait QueriesDraftsAndRevisions
      * Causes the query to return provisional drafts for the matching elements,
      * when they exist for the current user.
      */
-    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Whether canonical elements should be replaced with provisional drafts if those exist.')]
+    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Whether canonical {elements} should be replaced with provisional drafts if those exist.')]
     public function withProvisionalDrafts(bool $value = true): static
     {
         $this->withProvisionalDrafts = $value;
@@ -374,7 +374,7 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
-    #[ElementQueryParam(ElementQueryParamType::Scalar, 'Narrows the query results to only drafts of a given element.  Set to `false` to fetch unpublished drafts.')]
+    #[ElementQueryParam(ElementQueryParamType::Scalar, 'Narrows the query results to only drafts of a given {element}. Set to `false` to fetch unpublished drafts.')]
     public function draftOf(mixed $value): static
     {
         if ($value instanceof ElementInterface) {
@@ -558,7 +558,7 @@ trait QueriesDraftsAndRevisions
      *     ->one();
      * ```
      */
-    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether revision elements should be returned.')]
+    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether revision {elements} should be returned.')]
     public function revisions(?bool $value = true): static
     {
         $this->revisions = $value;
@@ -629,7 +629,7 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
-    #[ElementQueryParam(ElementQueryParamType::Scalar, 'The source element ID that revisions should be returned for')]
+    #[ElementQueryParam(ElementQueryParamType::Scalar, 'The source {element} ID that revisions should be returned for.')]
     public function revisionOf(mixed $value): static
     {
         $this->revisionOf = match (true) {

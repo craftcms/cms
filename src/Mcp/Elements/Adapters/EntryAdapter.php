@@ -63,8 +63,8 @@ class EntryAdapter extends BaseElementAdapter
         return [
             'type' => 'object',
             'properties' => $this->propertySchemas(['sectionId', 'typeId', 'siteId', ...self::SharedAttributes], [
-                'typeId' => 'Defaults to the section’s first entry type.',
-                'authorId' => 'Defaults to the acting user.',
+                'typeId' => 'New entries default to the section’s first entry type.',
+                'authorId' => 'New entries default to the acting user.',
             ]),
             'required' => ['sectionId'],
             'additionalProperties' => false,
