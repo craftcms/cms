@@ -131,10 +131,13 @@
     }
   }
 
+  /* Centred over the whole pane body: the content column only grows to fit
+     what's in it, and there's no details rail until the editor arrives. */
   .lp-editor__loading {
+    position: absolute;
+    inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding-block: var(--c-spacing-xl);
   }
 </style>
