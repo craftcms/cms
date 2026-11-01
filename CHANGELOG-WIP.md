@@ -189,6 +189,8 @@
 - OAuth clients can discover and register for the GraphQL API on their own, and users choose “Read only” or “Read and write” access when they authorize one. ([#20231](https://github.com/craftcms/cms/pull/20231))
 - Added the `currentUser` GraphQL query, which returns the user that authenticated the request with an access token. ([#20231](https://github.com/craftcms/cms/pull/20231))
 - The `level` GraphQL argument is now a `[QueryArgument]`, so it accepts the same values as the `level` element query param, such as `">= 2"` or `[1, 2]`. Queries that pass it from an `Int` variable must declare the variable as `[QueryArgument]`. ([#20209](https://github.com/craftcms/cms/pull/20209))
+- Address queries in GraphQL now accept the `addressLine1`, `addressLine2`, `addressLine3`, `dependentLocality`, `field`, `fieldId`, `firstName`, `fullName`, `lastName`, `locality`, `organization`, `organizationTaxId`, `postalCode`, `primaryOwnerId`, and `sortingCode` arguments, like the matching address query params. ([#20251](https://github.com/craftcms/cms/pull/20251))
+- Added the `canonicalId`, `canonicalUid`, `draftId`, `draftName`, `draftNotes`, `fieldId`, `isDraft`, `isUnpublishedDraft`, `ownerId`, and `sortOrder` fields to addresses, and the `sortOrder` field to content blocks, in GraphQL queries. ([#20251](https://github.com/craftcms/cms/pull/20251))
 - GraphQL mutations now return an error when new Matrix entries aren’t listed in `sortOrder`, rather than ignoring them, and each Matrix entry input can only specify one entry type. ([#19965](https://github.com/craftcms/cms/pull/19965))
 
 #### Debugging
