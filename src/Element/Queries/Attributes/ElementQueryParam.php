@@ -14,8 +14,8 @@ use ReflectionMethod;
 /**
  * Describes an element query setter as a param that external APIs can expose.
  *
- * Descriptions shared by several element types can use an `{elements}` placeholder for the element type's plural
- * lowercase name. Overriding methods inherit the attribute from the method they override.
+ * Descriptions shared by several element types can use `{element}` and `{elements}` placeholders for the element
+ * type's lowercase singular and plural names. Overriding methods inherit the attribute from the method they override.
  *
  * @since 6.0.0
  */
@@ -57,13 +57,18 @@ class ElementQueryParam
     }
 
     /**
-     * Returns the description for an element type, replacing `{elements}` with its plural lowercase name.
+     * Returns the description for an element type, replacing `{element}` with its lowercase name and `{elements}` with
+     * its plural lowercase name.
      *
      * @param  class-string<ElementInterface>  $elementType
      */
     public function descriptionFor(string $elementType): string
     {
-        return str_replace('{elements}', $elementType::pluralLowerDisplayName(), $this->description);
+        return str_replace(
+            ['{element}', '{elements}'],
+            [$elementType::lowerDisplayName(), $elementType::pluralLowerDisplayName()],
+            $this->description,
+        );
     }
 
     /**

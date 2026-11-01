@@ -190,6 +190,7 @@
 - OAuth clients can discover and register for the GraphQL API on their own, and users choose “Read only” or “Read and write” access when they authorize one. ([#20231](https://github.com/craftcms/cms/pull/20231))
 - Added the `currentUser` GraphQL query, which returns the user that authenticated the request with an access token. ([#20231](https://github.com/craftcms/cms/pull/20231))
 - The `level` GraphQL argument is now a `[QueryArgument]`, so it accepts the same values as the `level` element query param, such as `">= 2"` or `[1, 2]`. Queries that pass it from an `Int` variable must declare the variable as `[QueryArgument]`. ([#20209](https://github.com/craftcms/cms/pull/20209))
+- Element query argument descriptions in GraphQL, and the `elements.*` MCP tools’ query criteria descriptions, now name the element type, such as “the entries’ statuses”, rather than referring to “elements”. ([#20250](https://github.com/craftcms/cms/pull/20250))
 - GraphQL mutations now return an error when new Matrix entries aren’t listed in `sortOrder`, rather than ignoring them, and each Matrix entry input can only specify one entry type. ([#19965](https://github.com/craftcms/cms/pull/19965))
 
 #### Debugging

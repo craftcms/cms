@@ -545,19 +545,22 @@ it('lists a release’s drafts for publishing, holding publication until none ar
     getJson(route('craft.cp.releases.publishModal', $release))->assertForbidden();
 });
 
-it('flags blocked drafts on scheduled releases, and blocked scheduled releases on the index', function () {
+it('flags blocked drafts on scheduled releases, and blocked releases on the index', function () {
     $blocked = releaseControllerDraft($this->actor);
     $release = $this->releases->create('Blocked schedule', null, $this->actor);
     $this->releases->attach($release, $blocked, $this->actor);
     DB::table(Table::ELEMENTS)->where('id', $blocked->getCanonicalId())->softDelete();
-    $indexStatus = fn () => get(route('craft.cp.releases.index'), headers: ['X-Inertia' => 'true'])
-        ->json('props.ui.nodes.0.props.rows.0.status.html');
+    $this->releases->create('Empty release', null, $this->actor);
+    $indexStatuses = fn () => collect(get(route('craft.cp.releases.index'), headers: ['X-Inertia' => 'true'])
+        ->json('props.ui.nodes.0.props.rows'))
+        ->mapWithKeys(fn (array $row) => [$row['name']['label'] => $row['status']['html']]);
 
-    expect($indexStatus())->not->toContain('Blocked');
+    expect($indexStatuses()['Blocked schedule'])->toContain('Draft')->toContain('Blocked')
+        ->and($indexStatuses()['Empty release'])->not->toContain('Blocked');
 
     $release->update(['status' => ReleaseStatus::Scheduled, 'publishedAt' => now()->addDay()]);
 
-    expect($indexStatus())->toContain('Scheduled')->toContain('Blocked');
+    expect($indexStatuses()['Blocked schedule'])->toContain('Scheduled')->toContain('Blocked');
 
     get(route('craft.cp.releases.show', $release))
         ->assertOk()

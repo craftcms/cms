@@ -255,7 +255,7 @@ trait QueriesDraftsAndRevisions
      *     ->one();
      * ```
      */
-    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether draft elements should be returned.', requires: ElementCapability::Drafts)]
+    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether draft {elements} should be returned.', requires: ElementCapability::Drafts)]
     public function drafts(?bool $value = true): static
     {
         $this->drafts = $value;
@@ -267,7 +267,7 @@ trait QueriesDraftsAndRevisions
      * Causes the query to return provisional drafts for the matching elements,
      * when they exist for the current user.
      */
-    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Whether canonical elements should be replaced with provisional drafts if those exist.', requires: ElementCapability::Drafts)]
+    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Whether canonical {elements} should be replaced with provisional drafts if those exist.', requires: ElementCapability::Drafts)]
     public function withProvisionalDrafts(bool $value = true): static
     {
         $this->withProvisionalDrafts = $value;
@@ -375,7 +375,7 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
-    #[ElementQueryParam(ElementQueryParamType::Scalar, 'Narrows the query results to only drafts of a given element.  Set to `false` to fetch unpublished drafts.', requires: ElementCapability::Drafts)]
+    #[ElementQueryParam(ElementQueryParamType::Scalar, 'Narrows the query results to only drafts of a given {element}. Set to `false` to fetch unpublished drafts.', requires: ElementCapability::Drafts)]
     public function draftOf(mixed $value): static
     {
         if ($value instanceof ElementInterface) {
@@ -559,7 +559,7 @@ trait QueriesDraftsAndRevisions
      *     ->one();
      * ```
      */
-    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether revision elements should be returned.', requires: ElementCapability::Revisions)]
+    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether revision {elements} should be returned.', requires: ElementCapability::Revisions)]
     public function revisions(?bool $value = true): static
     {
         $this->revisions = $value;
@@ -630,7 +630,7 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
-    #[ElementQueryParam(ElementQueryParamType::Scalar, 'The source element ID that revisions should be returned for', requires: ElementCapability::Revisions)]
+    #[ElementQueryParam(ElementQueryParamType::Scalar, 'The source {element} ID that revisions should be returned for.', requires: ElementCapability::Revisions)]
     public function revisionOf(mixed $value): static
     {
         $this->revisionOf = match (true) {
