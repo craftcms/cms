@@ -14,10 +14,10 @@
   } from '@/common/composables/useCharacterLimit';
   import type {ActionItem} from '@/common/types';
   import type {ActivityEvent} from '@/modules/activity/composables/useActivityTimeline';
-  import {commentToolbarButtons} from '@/modules/markdown-field/toolbarPresets';
   import ActivityCommentCard from './ActivityCommentCard.vue';
   import ActivityTimelineEvent from './ActivityTimelineEvent.vue';
   import {commandShortcut} from '@/common/utils/keyShortcuts';
+  import {returnSends} from '@/common/utils/messageReturn';
   import '../../markdown-field/markdown-field';
 
   interface ActivityCommentResponse {
@@ -134,13 +134,9 @@
 
   const postShortcut = commandShortcut('Enter');
 
-  /** Ctrl/Command + Enter posts (or saves) the comment from the editor. */
+  /** Return posts (or saves) the comment, as described by `returnSends()`. */
   function onDraftKeydown(event: KeyboardEvent): void {
-    if (
-      event.key !== 'Enter' ||
-      (!event.metaKey && !event.ctrlKey) ||
-      event.isComposing
-    ) {
+    if (!returnSends(event, event.target as HTMLTextAreaElement)) {
       return;
     }
 
@@ -207,8 +203,7 @@
           :rows="1"
           :placeholder="creating ? t('Add a comment…') : undefined"
           sanitize-html
-          show-toolbar
-          .toolbarButtons="commentToolbarButtons"
+          .proportional="true"
           .value="draft"
           @input="draft = ($event.target as HTMLTextAreaElement).value"
           @keydown="onDraftKeydown"

@@ -147,50 +147,93 @@ it('inserts mentions into the active composer without changing another comment',
   expect(firstEditor.value).toBe('Another comment');
 });
 
-it('posts the comment on Ctrl/Command + Enter', async () => {
-  const post = vi.spyOn(actionClient, 'post').mockResolvedValue({
-    data: {event: {id: 'comment-2'}},
-  });
+it.each([
+  {key: 'Enter', modifiers: {}, markdown: 'Looks good', posts: true},
+  {
+    key: 'Ctrl + Enter',
+    modifiers: {ctrlKey: true},
+    markdown: 'Looks good',
+    posts: true,
+  },
+  {
+    key: 'Command + Enter in a code block',
+    modifiers: {metaKey: true},
+    markdown: '```\na',
+    posts: true,
+  },
+  {
+    key: 'Enter after a code block',
+    modifiers: {},
+    markdown: '```\na\n```',
+    posts: true,
+  },
+  {
+    key: 'Shift + Enter',
+    modifiers: {shiftKey: true},
+    markdown: 'Looks good',
+    posts: false,
+  },
+  {
+    key: 'Enter in a code block',
+    modifiers: {},
+    markdown: 'Try:\n```twig\n{{ a }}',
+    posts: false,
+  },
+  {
+    key: 'Enter on a list item',
+    modifiers: {},
+    markdown: '- First\n- Second',
+    posts: false,
+  },
+  {
+    key: 'Enter on a numbered list item',
+    modifiers: {},
+    markdown: '1. First',
+    posts: false,
+  },
+])(
+  'on $key, posts the comment: $posts',
+  async ({modifiers, markdown, posts}) => {
+    const post = vi.spyOn(actionClient, 'post').mockResolvedValue({
+      data: {event: {id: 'comment-2'}},
+    });
 
-  document.body.append(container);
-  app = createApp({
-    render: () =>
-      h(ActivityTimelineComment, {
-        elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
-        elementId: 12,
-        siteId: 1,
-      }),
-  });
-  app.mount(container);
-  await nextTick();
+    document.body.append(container);
+    app = createApp({
+      render: () =>
+        h(ActivityTimelineComment, {
+          elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+          elementId: 12,
+          siteId: 1,
+        }),
+    });
+    app.mount(container);
+    await nextTick();
 
-  const editor = container.querySelector('textarea')!;
-  editor.value = 'Looks good';
-  editor.dispatchEvent(new InputEvent('input', {bubbles: true}));
-  await nextTick();
-
-  editor.dispatchEvent(
-    new KeyboardEvent('keydown', {key: 'Enter', bubbles: true})
-  );
-  expect(post).not.toHaveBeenCalled();
-
-  for (const modifier of ['metaKey', 'ctrlKey'] as const) {
-    post.mockClear();
-    editor.value = 'Looks good';
+    const editor = container.querySelector('textarea')!;
+    editor.value = markdown;
+    editor.setSelectionRange(markdown.length, markdown.length);
     editor.dispatchEvent(new InputEvent('input', {bubbles: true}));
     await nextTick();
 
-    editor.dispatchEvent(
-      new KeyboardEvent('keydown', {
-        key: 'Enter',
-        [modifier]: true,
-        bubbles: true,
-      })
-    );
-    await vi.waitFor(() => expect(post).toHaveBeenCalledTimes(1));
-    expect(post.mock.calls[0]![1]).toMatchObject({markdown: 'Looks good'});
+    const event = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      bubbles: true,
+      cancelable: true,
+      ...modifiers,
+    });
+    editor.dispatchEvent(event);
+
+    if (posts) {
+      await vi.waitFor(() => expect(post).toHaveBeenCalledTimes(1));
+      expect(post.mock.calls[0]![1]).toMatchObject({markdown});
+    } else {
+      await nextTick();
+      expect(post).not.toHaveBeenCalled();
+    }
+    expect(event.defaultPrevented).toBe(posts);
   }
-});
+);
 
 it('blocks a comment that’s over the length limit', async () => {
   const post = vi.spyOn(actionClient, 'post').mockResolvedValue({

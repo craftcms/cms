@@ -3,7 +3,7 @@
   import {computed, shallowRef, useId} from 'vue';
   import controller from '@/actions/CraftCms/Cms/Http/Controllers/Workflows/WorkflowTransitionsController';
   import type {ElementEditorActions} from '@/modules/elements/composables/useElementEditor';
-  import {commentToolbarButtons} from '@/modules/markdown-field/toolbarPresets';
+  import {returnSends} from '@/common/utils/messageReturn';
   import {
     useWorkflowTransition,
     type WorkflowReleaseState,
@@ -69,15 +69,12 @@
   }
 
   /**
-   * Ctrl/Command + Enter posts the comment that's been written. With nothing
-   * written, it submits for review instead, where the note is optional.
+   * Return posts the comment that's been written, as described by
+   * `returnSends()`. With nothing written, Ctrl/Command + Return submits for
+   * review instead, where the note is optional.
    */
   function onNoteKeydown(event: KeyboardEvent): void {
-    if (
-      event.key !== 'Enter' ||
-      (!event.metaKey && !event.ctrlKey) ||
-      event.isComposing
-    ) {
+    if (!returnSends(event, event.target as HTMLTextAreaElement)) {
       return;
     }
 
@@ -89,7 +86,7 @@
 
     if (props.review.canComment && !noteIsEmpty.value) {
       void addComment();
-    } else if (props.review.canSubmit) {
+    } else if (props.review.canSubmit && (event.metaKey || event.ctrlKey)) {
       void submitForReview();
     }
   }
@@ -138,8 +135,7 @@
         :rows="1"
         :placeholder="t('Leave a comment')"
         sanitize-html
-        show-toolbar
-        .toolbarButtons="commentToolbarButtons"
+        .proportional="true"
         .value="note"
         .disabled="processing"
         @input="note = ($event.target as HTMLTextAreaElement).value"

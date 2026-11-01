@@ -7,8 +7,6 @@
   import {t} from '@craftcms/ui';
   import type {ActionMenuItem} from '@craftcms/ui/components/action-menu/action-menu.types';
   import '@craftcms/ui/components/empty/empty';
-  import '@craftcms/ui/components/textarea/textarea';
-  import type CraftTextarea from '@craftcms/ui/components/textarea/textarea';
   import {useChat, type UIMessage} from '@tanstack/ai-vue';
   import {usePage} from '@inertiajs/vue3';
   import type {CraftData} from '@/common/composables/useCraftData';
@@ -20,6 +18,7 @@
   import '@craftcms/ui/components/text-expander/text-expander';
   import {
     computed,
+    onBeforeUnmount,
     onMounted,
     shallowRef,
     useId,
@@ -41,6 +40,8 @@
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import CpLink from '@/common/components/CpLink.vue';
   import MarkdownHtml from '@/common/components/MarkdownHtml.vue';
+  import {returnSends} from '@/common/utils/messageReturn';
+  import '@/modules/markdown-field/markdown-field';
   import {
     createElementActionMenu,
     type ElementActionMenuItem,
@@ -88,7 +89,7 @@
   const status = shallowRef('');
   const history = useTemplateRef<HTMLElement>('history');
   const thread = useTemplateRef<HTMLElement>('thread');
-  const messageBox = useTemplateRef<CraftTextarea>('messageBox');
+  const messageBox = useTemplateRef<HTMLElement>('messageBox');
   const idPrefix = useId();
   const historyScroll = usePinnedScroll(history, thread);
   const context = useAssistantContext();
@@ -207,14 +208,23 @@
   /** What the text expanders inserted in the message, which is highlighted. */
   const mentions = shallowRef<string[]>([]);
 
-  onMounted(() => {
-    const input = messageBox.value?.querySelector('textarea');
+  /** Finds the message box's textarea, which it replaces when it's moved. */
+  function findMessageBoxInput(): void {
+    messageBoxInput.value = messageBox.value?.querySelector('textarea') ?? null;
+  }
 
-    if (input) {
-      input.id ||= `${idPrefix}-message`;
-      messageBoxInput.value = input;
+  // Watching from mount, as the panel moves the box right after.
+  const messageBoxObserver = new MutationObserver(findMessageBoxInput);
+
+  onMounted(() => {
+    findMessageBoxInput();
+
+    if (messageBox.value) {
+      messageBoxObserver.observe(messageBox.value, {childList: true});
     }
   });
+
+  onBeforeUnmount(() => messageBoxObserver.disconnect());
 
   // The `{` expander offers the open element’s fields.
   watch(
@@ -718,48 +728,10 @@
       )
   );
 
-  /**
-   * Whether the text before the caret opens a fenced code block that it
-   * doesn't close, so the caret is inside it.
-   */
-  function caretInCodeFence(): boolean {
-    const input = messageBox.value?.querySelector('textarea');
-    const before = input
-      ? input.value.slice(0, input.selectionStart)
-      : draft.value;
-    let fence = 0;
-
-    for (const line of before.split('\n')) {
-      if (!fence) {
-        fence = line.match(/^ {0,3}(`{3,})[^`]*$/)?.[1]?.length ?? 0;
-      } else if ((line.match(/^ {0,3}(`+)\s*$/)?.[1]?.length ?? 0) >= fence) {
-        fence = 0;
-      }
-    }
-
-    return fence > 0;
-  }
-
-  /**
-   * Enter sends the message, and Shift + Enter starts a new line. Within a
-   * fenced code block, and on touch screens, whose keyboards have no
-   * Shift + Enter, Enter starts a new line too. Ctrl/Command + Enter always
-   * sends.
-   */
+  /** Return sends the message, as described by `returnSends()`. */
   function onDraftKeydown(event: KeyboardEvent): void {
     if (
-      event.key !== 'Enter' ||
-      event.shiftKey ||
-      event.altKey ||
-      event.isComposing
-    ) {
-      return;
-    }
-
-    if (
-      !event.ctrlKey &&
-      !event.metaKey &&
-      (window.matchMedia?.('(pointer: coarse)').matches || caretInCodeFence())
+      !returnSends(event, messageBox.value?.querySelector('textarea') ?? null)
     ) {
       return;
     }
@@ -769,8 +741,8 @@
     void send();
   }
 
-  function onDraftChange(event: Event): void {
-    draft.value = String((event.target as CraftTextarea).modelValue ?? '');
+  function onDraftInput(event: Event): void {
+    draft.value = (event.target as HTMLTextAreaElement).value;
 
     if (openQuestion.value && draft.value.trim()) {
       answer.value = 'other';
@@ -1158,16 +1130,19 @@
               @click="chooseOtherAnswer"
               @keydown.enter.prevent="send"
             />
-            <craft-textarea
+            <craft-markdown-field
+              :id="`${idPrefix}-message`"
               ref="messageBox"
               class="assistant-chat__message-box"
-              :label="openQuestion ? t('Another answer') : undefined"
-              :placeholder="openQuestion ? t('Type another answer…') : ''"
-              rows="2"
-              .modelValue="draft"
-              @model-value-changed="onDraftChange"
+              :max-height="200"
+              :rows="2"
+              .proportional="true"
+              .label="openQuestion ? t('Another answer') : null"
+              .placeholder="openQuestion ? t('Type another answer…') : ''"
+              .value="draft"
+              @input="onDraftInput"
               @keydown="onDraftKeydown"
-            ></craft-textarea>
+            />
           </div>
         </div>
         <craft-text-expander
@@ -1457,13 +1432,14 @@
     --c-input-border-width: 0;
     --c-input-fill: transparent;
     --c-input-shadow: none;
-    --c-focus-outline-width: 0;
+    --markdown-field-focus-ring: 0 0 transparent;
   }
 
-  .assistant-chat__message-box :deep(textarea) {
-    padding-block: var(--c-spacing-xs);
-    padding-inline: 0;
-    resize: none;
+  .assistant-chat__option
+    > craft-markdown-field.assistant-chat__message-box
+    :deep(:is(.overtype-input, .overtype-preview, .overtype-placeholder)) {
+    padding-block: var(--c-spacing-xs) !important;
+    padding-inline: 0 !important;
   }
 
   .assistant-chat__chips {

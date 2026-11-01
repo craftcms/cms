@@ -8,8 +8,7 @@
     COMMENT_MAX_LENGTH,
     useCharacterLimit,
   } from '@/common/composables/useCharacterLimit';
-  import {commentToolbarButtons} from '@/modules/markdown-field/toolbarPresets';
-  import {isModifierKeyPressed} from '@/modules/markdown-field/behaviors/utilities';
+  import {returnSends} from '@/common/utils/messageReturn';
   import '@/modules/markdown-field/markdown-field';
   import {
     useWorkflowTransition,
@@ -128,7 +127,7 @@
   }
 
   function onMessageKeydown(event: KeyboardEvent): void {
-    if (event.key !== 'Enter' || !isModifierKeyPressed(event)) {
+    if (!returnSends(event, event.target as HTMLTextAreaElement)) {
       return;
     }
 
@@ -192,8 +191,7 @@
         :rows="1"
         :placeholder="t('Review comment')"
         sanitize-html
-        show-toolbar
-        .toolbarButtons="commentToolbarButtons"
+        .proportional="true"
         .value="message"
         .disabled="processing"
         @input="message = ($event.target as HTMLTextAreaElement).value"
