@@ -142,6 +142,7 @@ class WorkflowTransitionsController
         );
 
         return [
+            'release' => $viewModel->release(),
             'canAddToRelease' => $viewModel->canAddToRelease(),
             'canCreateRelease' => $viewModel->canCreateRelease(),
             'releaseOptions' => $viewModel->releaseOptions(),
