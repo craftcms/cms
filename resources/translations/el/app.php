@@ -2601,6 +2601,7 @@ return [
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => '{attribute} πρέπει να περιέχει το πολύ {max, number} {max, plural, one{επιλογή} other{επιλογές}}.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} πρέπει να περιέχει {count, number} {count, plural, one{στοιχείο} other{στοιχεία}}.',
     '{count, number} {count, plural, =1{layout} other{layouts}}' => '{count, number} {count, plural, =1{διάταξη} other{διατάξεις}}',
+    '{count, plural, =1{# Draft} other{# Drafts}}' => '{count, plural, =1{# Draft} other{# Drafts}}',
     '{count, spellout} plugin {count, plural, =1{update} other{updates}}' => '{count, spellout} {count, plural, =1{ενημέρωση} other{ενημερώσεις}} plugin',
     '{count, spellout} {count, plural, =1{plugin} other{plugins}}' => '{count, spellout} {count, plural, =1{plugin} other{plugins}}',
     '{delta, plural, =1{1 day} other{# days}}' => '{delta, plural, =1{1 day} other{# days}}',
