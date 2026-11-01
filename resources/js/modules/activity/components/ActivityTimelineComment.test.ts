@@ -258,7 +258,7 @@ it('blocks a comment that’s over the length limit', async () => {
   await nextTick();
 
   const submit = container.querySelector(
-    '.activity-timeline__comment-post'
+    '.comment-field__submit'
   ) as HTMLElement & {disabled: boolean};
 
   expect(submit.disabled).toBe(true);

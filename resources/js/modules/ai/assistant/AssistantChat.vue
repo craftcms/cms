@@ -40,8 +40,7 @@
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import CpLink from '@/common/components/CpLink.vue';
   import MarkdownHtml from '@/common/components/MarkdownHtml.vue';
-  import {returnSends} from '@/common/utils/messageReturn';
-  import '@/modules/markdown-field/markdown-field';
+  import CommentField from '@/common/components/CommentField.vue';
   import {
     createElementActionMenu,
     type ElementActionMenuItem,
@@ -89,7 +88,10 @@
   const status = shallowRef('');
   const history = useTemplateRef<HTMLElement>('history');
   const thread = useTemplateRef<HTMLElement>('thread');
-  const messageBox = useTemplateRef<HTMLElement>('messageBox');
+  const messageBox =
+    useTemplateRef<InstanceType<typeof CommentField>>('messageBox');
+  /** The message box's Markdown field. */
+  const messageBoxField = computed(() => messageBox.value?.field ?? null);
   const idPrefix = useId();
   const historyScroll = usePinnedScroll(history, thread);
   const context = useAssistantContext();
@@ -210,7 +212,8 @@
 
   /** Finds the message box's textarea, which it replaces when it's moved. */
   function findMessageBoxInput(): void {
-    messageBoxInput.value = messageBox.value?.querySelector('textarea') ?? null;
+    messageBoxInput.value =
+      messageBoxField.value?.querySelector('textarea') ?? null;
   }
 
   // Watching from mount, as the panel moves the box right after.
@@ -219,8 +222,8 @@
   onMounted(() => {
     findMessageBoxInput();
 
-    if (messageBox.value) {
-      messageBoxObserver.observe(messageBox.value, {childList: true});
+    if (messageBoxField.value) {
+      messageBoxObserver.observe(messageBoxField.value, {childList: true});
     }
   });
 
@@ -728,22 +731,7 @@
       )
   );
 
-  /** Return sends the message, as described by `returnSends()`. */
-  function onDraftKeydown(event: KeyboardEvent): void {
-    if (
-      !returnSends(event, messageBox.value?.querySelector('textarea') ?? null)
-    ) {
-      return;
-    }
-
-    // Claimed, so the control panel's Ctrl/Command + Enter doesn't submit the form again.
-    event.preventDefault();
-    void send();
-  }
-
-  function onDraftInput(event: Event): void {
-    draft.value = (event.target as HTMLTextAreaElement).value;
-
+  function onDraftInput(): void {
     if (openQuestion.value && draft.value.trim()) {
       answer.value = 'other';
     }
@@ -780,7 +768,10 @@
 
   /** The message box’s own control, which gets focus when the chat opens. */
   function focusTarget(): HTMLElement | null {
-    return (messageBox.value && firstFocusableWithin(messageBox.value)) || null;
+    return (
+      (messageBoxField.value && firstFocusableWithin(messageBoxField.value)) ||
+      null
+    );
   }
 
   /** Moves focus to the message box. */
@@ -1108,17 +1099,6 @@
               {{ option }}
             </label>
           </template>
-          <!-- Labels the box from outside it, so the info icon beside it
-              isn't part of the box's name. -->
-          <div v-if="!openQuestion" class="assistant-chat__message-label">
-            <label :for="messageBoxInputId ?? undefined">{{
-              t('Ask anything')
-            }}</label>
-            <!-- A translated string with fixed markup for the keys. -->
-            <craft-info-icon
-              ><span v-html="mentionHint"></span
-            ></craft-info-icon>
-          </div>
           <div class="assistant-chat__option">
             <input
               v-if="openQuestion"
@@ -1130,19 +1110,24 @@
               @click="chooseOtherAnswer"
               @keydown.enter.prevent="send"
             />
-            <craft-markdown-field
+            <CommentField
               :id="`${idPrefix}-message`"
               ref="messageBox"
+              v-model="draft"
               class="assistant-chat__message-box"
-              :max-height="200"
               :rows="2"
-              .proportional="true"
-              .label="openQuestion ? t('Another answer') : null"
-              .placeholder="openQuestion ? t('Type another answer…') : ''"
-              .value="draft"
-              @input="onDraftInput"
-              @keydown="onDraftKeydown"
-            />
+              :label="openQuestion ? null : t('Ask anything')"
+              :aria-label="openQuestion ? t('Another answer') : null"
+              :placeholder="openQuestion ? t('Type another answer…') : ''"
+              :submit-button="false"
+              @update:model-value="onDraftInput"
+              @submit="send"
+            >
+              <template #info>
+                <!-- A translated string with fixed markup for the keys. -->
+                <span v-html="mentionHint"></span>
+              </template>
+            </CommentField>
           </div>
         </div>
         <craft-text-expander
@@ -1369,7 +1354,7 @@
   .assistant-chat__card {
     cursor: text;
 
-    & :is(craft-chip, .assistant-chat__message-label label) {
+    & craft-chip {
       cursor: default;
     }
 
@@ -1389,13 +1374,6 @@
     outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
       var(--c-color-focus-outline);
     outline-offset: var(--c-focus-outline-offset);
-  }
-
-  .assistant-chat__message-label {
-    display: flex;
-    align-items: center;
-    gap: var(--c-spacing-xs);
-    font-weight: 600;
   }
 
   .assistant-chat__answer {
@@ -1426,18 +1404,25 @@
     min-inline-size: 0;
   }
 
+  /* The card is the box. */
   .assistant-chat__message-box {
     position: relative;
     z-index: 1;
-    --c-input-border-width: 0;
-    --c-input-fill: transparent;
-    --c-input-shadow: none;
-    --markdown-field-focus-ring: 0 0 transparent;
+    border: 0;
+    background: none;
+    box-shadow: none !important;
+  }
+
+  .assistant-chat__message-box :deep(.comment-field__header) {
+    padding: 0;
   }
 
   .assistant-chat__option
-    > craft-markdown-field.assistant-chat__message-box
-    :deep(:is(.overtype-input, .overtype-preview, .overtype-placeholder)) {
+    > .assistant-chat__message-box
+    :deep(
+      craft-markdown-field:defined
+        :is(.overtype-input, .overtype-preview, .overtype-placeholder)
+    ) {
     padding-block: var(--c-spacing-xs) !important;
     padding-inline: 0 !important;
   }
