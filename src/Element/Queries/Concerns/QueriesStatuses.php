@@ -58,7 +58,7 @@ trait QueriesStatuses
         });
     }
 
-    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Narrows the query results to only elements that have been archived.')]
+    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Narrows the query results to only {elements} that have been archived.')]
     public function archived(bool $value = true): static
     {
         $this->archived = $value;
@@ -95,7 +95,7 @@ trait QueriesStatuses
      *
      * @param  string|string[]|null  $value  The property value
      */
-    #[ElementQueryParam(ElementQueryParamType::NullableStringOrStrings, 'Narrows the query results based on the elements’ statuses.')]
+    #[ElementQueryParam(ElementQueryParamType::NullableStringOrStrings, 'Narrows the query results based on the {elements}’ statuses.')]
     public function status(array|string|null $value): static
     {
         $this->status = $value;

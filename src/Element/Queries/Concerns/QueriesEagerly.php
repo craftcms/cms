@@ -101,7 +101,7 @@ trait QueriesEagerly
      * ```
      */
     /** @param array<array-key, mixed>|string|null $value */
-    #[ElementQueryParam(ElementQueryParamType::StringList, 'Eager-loads the given handles or paths for the returned elements.')]
+    #[ElementQueryParam(ElementQueryParamType::StringList, 'Eager-loads the given handles or paths for the returned {elements}.')]
     public function with(array|string|null $value): static
     {
         $this->with = $value;
