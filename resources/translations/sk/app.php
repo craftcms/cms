@@ -2601,6 +2601,7 @@ return [
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => 'Atribút {attribute} by mal obsahovať maximálne {max, number} {max, plural, one{výber} other{výbery}}.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => 'Atribút {attribute} by mal obsahovať {count, number} {count, plural, one{položku} other{položky}}.',
     '{count, number} {count, plural, =1{layout} other{layouts}}' => '{count, number} {count, plural, =1{rozloženie} other{rozloženia}}',
+    '{count, plural, =1{# Draft} other{# Drafts}}' => '{count, plural, =1{# Draft} other{# Drafts}}',
     '{count, spellout} plugin {count, plural, =1{update} other{updates}}' => '{count, spellout} plugin {count, plural, =1{aktualizácia} few {aktualizácie} other{aktualizácí}} pluginu',
     '{count, spellout} {count, plural, =1{plugin} other{plugins}}' => '{count, spellout} {count, plural, =1{plugin} few {pluginy} other{pluginov}}',
     '{delta, plural, =1{1 day} other{# days}}' => '{delta, plural, =1{1 day} other{# days}}',
