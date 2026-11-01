@@ -141,7 +141,7 @@ it('reveals why the draft is blocking the release behind a disclosure', async ()
 
   const toggle = [
     ...container.querySelectorAll<HTMLElement>('craft-button'),
-  ].find((button) => button.textContent?.trim() === 'Why? (2)')!;
+  ].find((button) => button.textContent?.trim() === '2 issues')!;
   const list = container.querySelector<HTMLElement>(
     `#${toggle.getAttribute('aria-controls')}`
   )!;
@@ -156,4 +156,13 @@ it('reveals why the draft is blocking the release behind a disclosure', async ()
   expect(
     [...list.querySelectorAll('li')].map((li) => li.textContent?.trim())
   ).toEqual(['Title cannot be blank.', 'Slug is invalid.']);
+});
+
+it('shows a single blocking issue without a disclosure', () => {
+  mount({blockers: ['Title cannot be blank.']});
+
+  expect(container.querySelector('[aria-expanded]')).toBeNull();
+  expect(container.querySelector('craft-callout')!.textContent).toContain(
+    'Title cannot be blank.'
+  );
 });

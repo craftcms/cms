@@ -20,6 +20,11 @@
   const blocking = computed(() => props.release.blockers.length > 0);
   const reasonsExpanded = ref(false);
   const reasonsId = useId();
+  const issuesLabel = computed(() =>
+    t('{num, number} {num, plural, =1{issue} other{issues}}', {
+      num: props.release.blockers.length,
+    })
+  );
 
   /** The release's name, linked to its page. */
   const nameLink = computed(
@@ -80,7 +85,13 @@
     <!-- Translated strings with the linked name as HTML. -->
     <span v-html="message"></span>
 
-    <div v-if="blocking" class="release-callout__reasons">
+    <div v-if="release.blockers.length === 1" class="release-callout__reasons">
+      {{ release.blockers[0] }}
+    </div>
+    <div
+      v-else-if="release.blockers.length > 1"
+      class="release-callout__reasons"
+    >
       <craft-button
         type="button"
         variant="plain"
@@ -93,7 +104,7 @@
         :aria-controls="reasonsId"
         @click="reasonsExpanded = !reasonsExpanded"
       >
-        {{ t('Why? ({num, number})', {num: release.blockers.length}) }}
+        {{ issuesLabel }}
       </craft-button>
       <ul v-show="reasonsExpanded" :id="reasonsId">
         <li v-for="(reason, index) in release.blockers" :key="index">
@@ -136,5 +147,6 @@
   .release-callout__reasons ul {
     margin: 0;
     padding-inline-start: 1.25em;
+    list-style: disc;
   }
 </style>
