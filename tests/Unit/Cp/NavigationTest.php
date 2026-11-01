@@ -398,6 +398,7 @@ it('drops a heading whose members all turned out to be unusable', function () {
 
 it('carries a plugin’s own icon into its settings nav item', function () {
     $settings = Mockery::mock(Settings::class, [
+        'sectionName' => 'System',
         'all' => [
             'System' => [
                 'plugins' => ['label' => 'Plugins', 'iconName' => 'light/plug'],
@@ -444,6 +445,7 @@ it('draws settings nav items with solid icons', function () {
     $this->beforeApplicationDestroyed(fn () => File::delete($solidIcon));
 
     $settings = Mockery::mock(Settings::class, [
+        'sectionName' => 'System',
         'all' => [
             'System' => [
                 'with-solid' => ['label' => 'With Solid', 'iconName' => 'light/navigation-test-solid'],
@@ -470,6 +472,7 @@ it('draws settings nav items with solid icons', function () {
 
 it('selects the plugin settings item instead of the Plugins index', function () {
     $settings = Mockery::mock(Settings::class, [
+        'sectionName' => 'System',
         'all' => [
             'System' => [
                 'plugins' => ['label' => 'Plugins', 'iconName' => 'light/plug'],
@@ -694,4 +697,99 @@ it('badges each utility with a count, as well as the Utilities item', function (
     expect($utilities->badgeCount)->toBe(5)
         ->and(collect($utilities->subnav)->pluck('badgeCount', 'label')->all())
         ->toBe(['Updates' => 2, 'Messages' => 3, 'Quiet' => 0]);
+});
+
+it('gives every nav item an id of its own, whichever host its URL was built for', function () {
+    Event::listen(CpNavItemsResolving::class, function (CpNavItemsResolving $event) {
+        $event->navItems[] = new NavItem()->label('Orders')->href('https://cp.example.test/admin/commerce/orders?status=new');
+        $event->navItems[] = new NavItem()->label('Elsewhere')->href('https://elsewhere.example.test/admin/commerce/orders');
+        $event->navItems[] = new NavItem()->label('Refunds')->href('https://cp.example.test/admin/commerce/refunds?site=fr&status=open');
+    });
+
+    $navigation = new Navigation(
+        Request::create('https://cp.example.test/admin/dashboard'),
+        Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
+        Mockery::mock(Utilities::class, [
+            'getAuthorizedUtilityTypes' => new Collection,
+        ]),
+        Cms::config(),
+        Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
+        cpSettings(),
+    );
+
+    $ids = [];
+    $collect = function (array $items) use (&$collect, &$ids): void {
+        foreach ($items as $item) {
+            $ids[] = $item->id;
+            $collect(is_array($item->subnav) ? $item->subnav : []);
+        }
+    };
+    $collect($tree = $navigation->getTree());
+
+    expect($ids)->toBe(array_unique($ids))
+        ->and(findNavItem($tree, 'Orders')->id)->toBe('nav-commerce-ordersstatusnew')
+        ->and(findNavItem($tree, 'Refunds')->id)->toBe('nav-commerce-refundsstatusopen')
+        ->and(findNavItem($tree, 'Elsewhere')->id)->not->toBe('nav-commerce-orders')
+        ->and(collect($tree)->firstWhere('label', 'Administration')->id)->toBe('nav-group-administration');
+});
+
+it('gives settings sections the same id in every language', function () {
+    $headingIds = function (): array {
+        $navigation = new Navigation(
+            Request::create('/admin/settings'),
+            Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
+            Mockery::mock(Utilities::class, ['getAuthorizedUtilityTypes' => new Collection]),
+            Cms::config(),
+            Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
+            cpSettings(),
+        );
+
+        return collect($navigation->getTree())
+            ->flatMap(fn (NavItem $item) => $item->group ? $item->subnav : [$item])
+            ->firstWhere('id', 'nav-settings')
+            ->subnav;
+    };
+
+    $english = $headingIds();
+    $locale = app()->getLocale();
+    app()->setLocale('fr');
+
+    try {
+        expect(array_column($headingIds(), 'id'))->toBe(array_column($english, 'id'))
+            ->and(array_column($english, 'id'))->toContain('nav-settings-group-system')
+            ->and(array_column($headingIds(), 'label'))->toContain('Système');
+    } finally {
+        app()->setLocale($locale);
+    }
+});
+
+it('names source headings by their handle, or else as they were typed, whoever sees them', function () {
+    $this->totalEditableSections = 1;
+
+    $sources = Mockery::mock(ElementSources::class);
+    $sources->shouldReceive('getPages')->andReturn(collect(['Entries']));
+    $sources->shouldReceive('getPageSettings')->andReturn([]);
+    $sources->shouldReceive('getSources')->andReturn(collect([
+        ['type' => ElementSources::TYPE_HEADING, 'heading' => 'Kanäle', 'handle' => 'channel'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => 'section:abc', 'label' => 'Posts'],
+        ['type' => ElementSources::TYPE_HEADING, 'heading' => 'Featured'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => 'section:def', 'label' => 'News'],
+        ['type' => ElementSources::TYPE_HEADING, 'heading' => 'Featured'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => 'section:ghi', 'label' => 'Events'],
+    ]));
+
+    $navigation = new Navigation(
+        Request::create('/admin/content/entries'),
+        Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
+        Mockery::mock(Utilities::class, ['getAuthorizedUtilityTypes' => new Collection]),
+        Cms::config(),
+        $sources,
+        cpSettings(),
+    );
+
+    expect(collect(findNavItem($navigation->getTree(), 'Entries')->subnav)->pluck('id')->all())->toBe([
+        'nav-content-entries-source-heading-channel',
+        'nav-content-entries-source-heading-featured',
+        'nav-content-entries-source-heading-featured-2',
+    ]);
 });

@@ -40,6 +40,9 @@ class Settings
     /** @var array<string, array<string, Closure(): array<string, mixed>>> */
     private array $readonlyProviders = [];
 
+    /** @var array<string, string> Each section's untranslated name, by its label. */
+    private array $sectionNames = [];
+
     public function __construct(
         private readonly GeneralConfig $generalConfig,
         private readonly Plugins $pluginsService,
@@ -70,7 +73,7 @@ class Settings
         $readOnly = ! $this->generalConfig->allowAdminChanges;
         $settings = [];
 
-        $label = t('System');
+        $label = $this->sectionLabel('System');
 
         $settings[$label]['general'] = [
             'url' => route('craft.cp.settings.general.index'),
@@ -108,7 +111,7 @@ class Settings
             ];
         }
 
-        $label = t('Content');
+        $label = $this->sectionLabel('Content');
 
         $settings[$label]['sections'] = [
             'iconName' => 'light/newspaper',
@@ -136,7 +139,7 @@ class Settings
             'label' => t('Fields'),
         ];
 
-        $label = t('Extend');
+        $label = $this->sectionLabel('Extend');
 
         $settings[$label]['plugins'] = [
             'iconName' => 'light/plug',
@@ -150,7 +153,7 @@ class Settings
         ];
 
         // Reserved even if no plugin has settings yet, so sections that plugins register come after it
-        $label = t('Plugins');
+        $label = $this->sectionLabel('Plugins');
         $settings[$label] = [];
 
         foreach ($this->pluginsService->getAllPlugins() as $plugin) {
@@ -173,7 +176,7 @@ class Settings
     public function apply(array $settings, bool $readOnly): array
     {
         foreach ($readOnly ? $this->readonlyProviders : $this->providers as $section => $providers) {
-            $section = t($section);
+            $section = $this->sectionLabel($section);
 
             foreach ($providers as $handle => $provider) {
                 $setting = app()->call($provider);
@@ -195,6 +198,24 @@ class Settings
         }
 
         return $settings;
+    }
+
+    /**
+     * The untranslated name of a section {@see all()} returns, which stays the
+     * same whatever the language.
+     */
+    public function sectionName(string $label): string
+    {
+        return $this->sectionNames[$label] ?? $label;
+    }
+
+    /** Translates a section's name, remembering which name the label came from. */
+    private function sectionLabel(string $name): string
+    {
+        $label = t($name);
+        $this->sectionNames[$label] = $name;
+
+        return $label;
     }
 
     /**
