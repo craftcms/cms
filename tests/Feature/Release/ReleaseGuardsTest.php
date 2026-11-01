@@ -113,7 +113,7 @@ it('removes a draft site while retaining its release membership', function () {
         ->and(EntryElement::find()->draftId($draft->draftId)->siteId($draft->siteId)->status(null)->one())->not()->toBeNull();
 });
 
-it('blocks release and membership mutations while scheduled until a publisher unschedules it', function () {
+it('lets scheduled releases be adjusted, without taking on unready drafts', function () {
     Date::setTestNow('2026-10-01 12:00:00');
 
     $draft = releaseGuardDraft(
@@ -126,18 +126,26 @@ it('blocks release and membership mutations while scheduled until a publisher un
         'Other change',
         $this->actor,
     );
+    $unreadyDraft = releaseGuardDraft(
+        EntryModel::factory()->createElement(['title' => 'Unready original']),
+        '',
+        $this->actor,
+    );
     $release = $this->releases->create('Scheduled release', null, $this->actor);
     $this->releases->attach($release, $draft, $this->actor);
     $release = $this->releases->schedule($release, now()->addHour(), $this->actor);
 
-    expect(fn () => $this->releases->update($release, 'Renamed', null, $this->actor))
-        ->toThrow(ReleaseException::class)
-        ->and(fn () => $this->releases->attach($release, $otherDraft, $this->actor))
-        ->toThrow(ReleaseException::class)
-        ->and(fn () => $this->releases->detach($release, $draft, $this->actor))
-        ->toThrow(ReleaseException::class)
+    $release = $this->releases->update($release, 'Renamed', null, $this->actor, 'Last-minute notes');
+    $this->releases->attach($release, $otherDraft, $this->actor);
+
+    expect($release->name)->toBe('Renamed')
+        ->and($release->description)->toBe('Last-minute notes')
+        ->and($release->items()->count())->toBe(2)
+        ->and(fn () => $this->releases->attach($release, $unreadyDraft, $this->actor))
+        ->toThrow(ReleaseException::class, 'The draft can’t be added to a scheduled release until it’s ready to publish')
+        ->and($this->releases->releaseForDraft($unreadyDraft))->toBeNull()
         ->and(fn () => $this->releases->delete($release, $this->actor))
-        ->toThrow(ReleaseException::class);
+        ->toThrow(ReleaseException::class, 'Scheduled and completed releases cannot be changed.');
 
     postJson(action([ElementDraftsController::class, 'apply']), [
         'elementType' => EntryElement::class,
@@ -147,15 +155,18 @@ it('blocks release and membership mutations while scheduled until a publisher un
     ])->assertBadRequest();
 
     expect(EntryElement::find()->draftId($draft->draftId)->status(null)->one()->title)->toBe('Scheduled change')
-        ->and($release->items()->count())->toBe(1)
         ->and($release->fresh()->status)->toBe(ReleaseStatus::Scheduled);
 
-    $release = $this->releases->unschedule($release, $this->actor);
+    $this->releases->detach($release, $otherDraft, $this->actor);
+
+    expect($release->fresh()->status)->toBe(ReleaseStatus::Scheduled);
+
     $this->releases->detach($release, $draft, $this->actor);
+    $release->refresh();
 
     expect($release->status)->toBe(ReleaseStatus::Draft)
         ->and($release->publishedAt)->toBeNull()
-        ->and($release->targetDate)->toBeNull()
+        ->and($release->scheduledById)->toBeNull()
         ->and($this->releases->releaseForDraft($draft))->toBeNull();
 });
 

@@ -24,7 +24,7 @@ class ReleasePolicy
 
     public function attach(CraftUser $actor, Release $release, ElementInterface $draft): bool
     {
-        return $release->status->isMutable()
+        return $release->status->isEditable()
             && $draft::hasDrafts()
             && (! $draft instanceof NestedElementInterface || $draft->getPrimaryOwnerId() === null)
             && $this->canProspectivelyPublish($draft, $actor);
@@ -32,7 +32,7 @@ class ReleasePolicy
 
     public function detach(CraftUser $actor, Release $release, ElementInterface $draft): bool
     {
-        if (! $release->status->isMutable()) {
+        if (! $release->status->isEditable()) {
             return false;
         }
 

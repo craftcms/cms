@@ -90,7 +90,9 @@
   function unschedule(): void {
     if (
       window.confirm(
-        t('Unschedule this release? The release can then be changed again.')
+        t(
+          'Unschedule this release? It won’t publish until it’s scheduled again.'
+        )
       )
     ) {
       router.visit(unscheduleRelease({release: props.release.id}));
@@ -167,20 +169,6 @@
     </LayoutSlot>
 
     <craft-callout
-      v-if="release.status === 'scheduled'"
-      variant="info"
-      icon="lock"
-      rounded="none"
-      appearance="fill"
-    >
-      {{
-        t(
-          'This release is scheduled. Unschedule it before adding or removing drafts.'
-        )
-      }}
-    </craft-callout>
-
-    <craft-callout
       v-if="release.lastError"
       variant="danger"
       icon="triangle-exclamation"
@@ -214,7 +202,8 @@
           :action-items="formActionItems"
         />
         <craft-button
-          v-else
+          v-if="release.canUnschedule"
+          :class="{'mt-md': editUi}"
           type="button"
           variant="outline"
           @click="unschedule"

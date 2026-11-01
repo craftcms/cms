@@ -90,7 +90,7 @@ class Releases
 
         return DB::transaction(function () use ($release, $changes): Release {
             $release = $this->lockRelease($release->id);
-            $this->ensureMutable($release);
+            $this->ensureEditable($release);
             $release->update($changes);
 
             return $release->refresh();
@@ -114,7 +114,7 @@ class Releases
 
         return DB::transaction(function () use ($release, $draftId, $actor): ReleaseItem {
             $release = $this->lockRelease($release->id);
-            $this->ensureMutable($release);
+            $this->ensureEditable($release);
             Draft::lockIds($draftId);
             $this->ensurePersistedDraftIsSaved($draftId);
             $draft = $this->freshDraft($draftId);
@@ -135,10 +135,19 @@ class Releases
                 throw new ReleaseException(t('This release already contains a draft for that element.'));
             }
 
-            return $release->items()->create([
+            $item = $release->items()->create([
                 'draftId' => $draft->draftId,
                 'canonicalId' => $draft->getCanonicalId(),
             ]);
+
+            // A scheduled release was ready when it was scheduled, so it shouldn't take on a draft that would stop it from publishing.
+            if ($release->status === ReleaseStatus::Scheduled && ($errors = $this->itemReadiness($release, $item)['errors']) !== []) {
+                throw new ReleaseException(t('The draft can’t be added to a scheduled release until it’s ready to publish: {errors}', [
+                    'errors' => implode(' ', $errors),
+                ]));
+            }
+
+            return $item;
         });
     }
 
@@ -148,7 +157,7 @@ class Releases
 
         DB::transaction(function () use ($release, $draftId, $actor): void {
             $release = $this->lockRelease($release->id);
-            $this->ensureMutable($release);
+            $this->ensureEditable($release);
             Draft::lockIds($draftId);
             $draft = $this->freshDraft($draftId);
 
@@ -160,6 +169,8 @@ class Releases
             if ($deleted !== 1) {
                 throw new ReleaseException(t('The draft is not attached to this release.'));
             }
+
+            $this->unscheduleIfEmpty($release);
         });
     }
 
@@ -223,14 +234,7 @@ class Releases
                     if ($deleted) {
                         ReleaseItem::query()->whereIn('draftId', $currentDraftIds)->delete();
                         foreach ($releases as $release) {
-                            if ($release->status === ReleaseStatus::Scheduled && ! $release->items()->exists()) {
-                                $release->update([
-                                    'status' => ReleaseStatus::Draft,
-                                    'publishedAt' => null,
-                                    'scheduledById' => null,
-                                    'lastError' => null,
-                                ]);
-                            }
+                            $this->unscheduleIfEmpty($release);
                         }
                     }
 
@@ -813,6 +817,26 @@ class Releases
     {
         if (! $release->status->isMutable()) {
             throw new ReleaseException(t('Scheduled and completed releases cannot be changed.'));
+        }
+    }
+
+    private function ensureEditable(Release $release): void
+    {
+        if (! $release->status->isEditable()) {
+            throw new ReleaseException(t('Releases that are publishing or published cannot be changed.'));
+        }
+    }
+
+    /** Returns a scheduled release to a draft once it has no drafts left to publish. */
+    private function unscheduleIfEmpty(Release $release): void
+    {
+        if ($release->status === ReleaseStatus::Scheduled && ! $release->items()->exists()) {
+            $release->update([
+                'status' => ReleaseStatus::Draft,
+                'publishedAt' => null,
+                'scheduledById' => null,
+                'lastError' => null,
+            ]);
         }
     }
 

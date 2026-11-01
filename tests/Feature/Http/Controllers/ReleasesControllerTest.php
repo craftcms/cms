@@ -148,11 +148,11 @@ it('schedules a release at the submitted time in the user’s time zone and requ
     get(route('craft.cp.releases.show', $release))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('readOnly', true)
+            ->where('readOnly', false)
             ->where('actionMenu', [])
-            ->where('formActions', [])
-            ->where('redirectUrl', null)
-            ->where('editUi', null));
+            ->where('formActions.0.label', 'Save and continue editing')
+            ->whereNot('editUi', null)
+            ->where('release.canUnschedule', true));
 
     getJson(route('craft.cp.releases.scheduleModal', $release))->assertForbidden();
 

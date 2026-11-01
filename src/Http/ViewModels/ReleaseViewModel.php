@@ -74,7 +74,7 @@ class ReleaseViewModel extends ViewModel
 
     public function readOnly(): bool
     {
-        return ! $this->release->status->isMutable();
+        return ! $this->release->status->isEditable();
     }
 
     /**
@@ -84,7 +84,7 @@ class ReleaseViewModel extends ViewModel
      */
     public function actionMenu(): array
     {
-        if (! $this->editable()) {
+        if (! $this->editable() || ! $this->release->status->isMutable()) {
             return [];
         }
 

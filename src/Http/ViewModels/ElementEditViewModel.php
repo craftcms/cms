@@ -365,7 +365,7 @@ class ElementEditViewModel extends ViewModel
             : [];
 
         return Release::query()
-            ->whereIn('status', [ReleaseStatus::Draft, ReleaseStatus::Failed])
+            ->whereIn('status', [ReleaseStatus::Draft, ReleaseStatus::Scheduled, ReleaseStatus::Failed])
             ->orderBy(new IsNull('targetDate'))
             ->orderBy('targetDate')
             ->orderBy('name')

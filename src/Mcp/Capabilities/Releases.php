@@ -112,7 +112,7 @@ readonly class Releases
      * @param  array<string, mixed>  $changes
      * @return array{release: array<string, mixed>}
      */
-    #[McpTool(name: 'releases.update', description: 'Updates mutable release metadata. Omitted properties are preserved; null clears description or targetDate. Scheduling is separate.')]
+    #[McpTool(name: 'releases.update', description: 'Updates the metadata of a release that isn’t publishing or published. Omitted properties are preserved; null clears description or targetDate. Scheduling is separate.')]
     #[RequiresPermission('manageReleases')]
     public function update(#[Schema(minimum: 1)] int $id, #[Schema(definition: self::MetadataSchema)] array $changes): array
     {
@@ -132,7 +132,7 @@ readonly class Releases
     }
 
     /** @return array{release: array<string, mixed>} */
-    #[McpTool(name: 'releases.attach', description: 'Adds a saved, non-provisional root draft to a mutable release. Uses the draft record ID and checks content publication permission across sites and workflow approval.')]
+    #[McpTool(name: 'releases.attach', description: 'Adds a saved, non-provisional root draft to a release that isn’t publishing or published. Drafts added to a scheduled release must be ready to publish. Uses the draft record ID and checks content publication permission across sites and workflow approval.')]
     public function attach(#[Schema(minimum: 1)] int $id, #[Schema(minimum: 1)] int $draftId): array
     {
         return $this->result(function () use ($id, $draftId): Release {
@@ -145,7 +145,7 @@ readonly class Releases
     }
 
     /** @return array{release: array<string, mixed>} */
-    #[McpTool(name: 'releases.detach', description: 'Removes a draft from a mutable release without deleting it. Scheduled releases must first be unscheduled.')]
+    #[McpTool(name: 'releases.detach', description: 'Removes a draft from a release that isn’t publishing or published, without deleting it. A scheduled release left with no drafts is unscheduled.')]
     public function detach(#[Schema(minimum: 1)] int $id, #[Schema(minimum: 1)] int $draftId): array
     {
         return $this->result(function () use ($id, $draftId): Release {
