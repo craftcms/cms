@@ -211,7 +211,7 @@
 
     <craft-callout
       v-if="release.lastError"
-      variant="error"
+      variant="danger"
       icon="triangle-exclamation"
       rounded="none"
       appearance="fill"

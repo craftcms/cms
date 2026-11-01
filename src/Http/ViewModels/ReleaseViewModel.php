@@ -236,7 +236,7 @@ class ReleaseViewModel extends ViewModel
 
     public function readiness(): ?ReleaseReadiness
     {
-        return once(fn (): ?ReleaseReadiness => $this->canPublish()
+        return once(fn (): ?ReleaseReadiness => $this->canPublish() || $this->canMonitorSchedule()
             ? $this->releases->checkReadiness($this->release, $this->actor)
             : null);
     }
@@ -244,7 +244,7 @@ class ReleaseViewModel extends ViewModel
     /** Why the release can't be published or scheduled yet, if it can't. */
     public function publishDisabledReason(): ?string
     {
-        $readiness = $this->readiness();
+        $readiness = $this->canPublish() ? $this->readiness() : null;
 
         if ($readiness === null) {
             return $this->release->items()->exists() ? null : t('The release has no drafts.');
@@ -439,6 +439,13 @@ class ReleaseViewModel extends ViewModel
         return $item->draftId !== null
             ? $query->draftId($item->draftId)->all()
             : $query->id($item->publishedElementId ?? $item->canonicalId)->all();
+    }
+
+    /** Whether the actor can see what would stop a scheduled release from publishing. */
+    private function canMonitorSchedule(): bool
+    {
+        return $this->release->status === ReleaseStatus::Scheduled
+            && ($this->actor->can('manageReleases') || $this->actor->can('publishReleases'));
     }
 
     private function canPublish(): bool
