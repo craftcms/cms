@@ -55,6 +55,7 @@ it('describes each element type through elements.schema and the element type res
         ->assertJsonPath('result.structuredContent.criteria.properties.status.anyOf.2.type', 'null')
         ->assertJsonPath('result.structuredContent.criteria.properties.status.description', 'Narrows the query results based on the entries’ statuses. Pass null to include all statuses.')
         ->assertJsonPath('result.structuredContent.criteria.properties.level.description', 'Narrows the query results based on the entries’ level within the structure.')
+        ->assertJsonPath('result.structuredContent.criteria.properties.ancestorOf.description', 'Narrows the query results to only entries that are ancestors of another entry in its structure, provided by its ID.')
         ->assertJsonPath('result.structuredContent.duplicateModes', ['unpublished', 'canonical']);
 });
 
