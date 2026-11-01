@@ -39,6 +39,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -195,6 +196,8 @@ it('labels and searches elements by a title column', function () {
 });
 
 it('syncs a model touched by a related model', function () {
+    // Clear of a daylight saving change, where an hour later can read the same.
+    Date::setTestNow('2026-06-15 12:00:00');
     $customer = Customer::create(['name' => 'Ada Lovelace', 'email' => 'ada@example.com']);
     $dateUpdated = CustomerElement::findForModel($customer)->dateUpdated;
 

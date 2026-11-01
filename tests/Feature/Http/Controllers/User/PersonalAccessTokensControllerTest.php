@@ -112,8 +112,8 @@ it('creates Passport personal access tokens that authenticate as the user', func
 
     $stored = Passport::token()->newQuery()->where('name', 'Build script')->sole();
     expect($stored->scopes)->toBe(['test-api:read'])
-        ->and($stored->expires_at->diffInSeconds(now()->addDays(7), true))->toBeLessThan(60)
-        ->and(Passport::token()->newQuery()->where('name', 'Preview')->sole()->expires_at->diffInSeconds(now()->addDays(365), true))->toBeLessThan(60)
+        ->and($stored->expires_at->diffInSeconds(new DateTimeImmutable('+7 days'), true))->toBeLessThan(60)
+        ->and(Passport::token()->newQuery()->where('name', 'Preview')->sole()->expires_at->diffInSeconds(new DateTimeImmutable('+365 days'), true))->toBeLessThan(60)
         ->and(Passport::personalAccessTokensExpireIn()->y)->toBe(1);
 
     $client = app(ClientRepository::class)->personalAccessClient($this->user->getProviderName());
