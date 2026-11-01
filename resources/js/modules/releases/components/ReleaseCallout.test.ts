@@ -88,7 +88,7 @@ it.each([
     'scheduled',
     true,
     'warning',
-    'This draft is blocking the scheduled release “Launch”, which will fail to publish until the draft is ready.',
+    'This draft is blocking the scheduled release “Launch”.',
   ],
 ] as const)(
   'describes a %s release (blocking: %s) as %s',
