@@ -11,6 +11,7 @@
     approvals: number;
     approvedReviewers?: Reviewer[];
     carriedReviewers: Reviewer[];
+    requiredReviewers?: Reviewer[];
     remainingReviewers: Reviewer[];
   };
 
@@ -28,6 +29,7 @@
     approvals?: number;
     approvedReviewers?: Reviewer[];
     carriedReviewers?: Reviewer[];
+    requiredReviewers?: Reviewer[];
     remainingReviewers?: Reviewer[];
     groups?: Group[];
   }>();
@@ -35,6 +37,7 @@
   function reviewerSections(
     approved: Reviewer[] | undefined,
     carried: Reviewer[] | undefined,
+    required: Reviewer[] | undefined,
     remaining: Reviewer[] | undefined
   ): ReviewerSection[] {
     return [
@@ -44,6 +47,11 @@
         label: t('Approved previously'),
         fill: 'green',
       },
+      {
+        reviewers: required ?? [],
+        label: t('Approval required'),
+        fill: 'orange',
+      },
       {reviewers: remaining ?? [], label: t('Pending'), fill: 'orange'},
     ];
   }
@@ -52,6 +60,7 @@
     reviewerSections(
       props.approvedReviewers,
       props.carriedReviewers,
+      props.requiredReviewers,
       props.remainingReviewers
     )
   );
@@ -112,6 +121,7 @@
           v-for="section in reviewerSections(
             group.approvedReviewers,
             group.carriedReviewers,
+            group.requiredReviewers,
             group.remainingReviewers
           )"
           v-show="section.reviewers.length"

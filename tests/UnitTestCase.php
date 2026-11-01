@@ -11,6 +11,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\Support\IsolatesParallelFiles;
 use CraftCms\Cms\Tests\Support\RegistersPackageAliases;
+use CraftCms\Cms\Tests\Support\SkipsRepeatedDstHour;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Foundation\Testing\CachedState;
@@ -64,6 +65,7 @@ class UnitTestCase extends Orchestra
 
         Cms::config()->timezone('America/Los_Angeles');
         Cms::setDefaultTimezone();
+        SkipsRepeatedDstHour::register();
     }
 
     #[Override]

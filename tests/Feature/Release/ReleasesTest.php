@@ -264,11 +264,12 @@ it('publishes an approved draft with Matrix content without resetting its approv
     $approve();
     expect($workflows->latestRun($entry)->status)->toBe(WorkflowStatus::Approved);
 
-    // Editing a block is still a change to the draft, which needs approving again.
+    // Editing a block is still a change to the draft, which takes it out of review until it's resubmitted.
     $block = $entry->getFieldValue('blocks')->one();
     $block->setFieldValue('blockText', 'Doors open at nine.');
     expect(Elements::saveElement($block))->toBeTrue()
-        ->and($workflows->latestRun($entry)->status)->toBe(WorkflowStatus::Pending);
+        ->and($workflows->latestRun($entry)->status)->toBe(WorkflowStatus::Withdrawn);
+    $workflows->submitForReview($entry);
     $approve();
 
     $release = $this->releases->create('Launch', null, $this->actor);

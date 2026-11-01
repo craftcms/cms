@@ -40,6 +40,7 @@
   import {useSelectable} from '@/common/composables/useSelectable';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import CpLink from '@/common/components/CpLink.vue';
+  import MarkdownHtml from '@/common/components/MarkdownHtml.vue';
   import {
     createElementActionMenu,
     type ElementActionMenuItem,
@@ -718,10 +719,32 @@
   );
 
   /**
-   * Enter sends the message. Shift + Enter and Ctrl/Command + Enter start a new
-   * line, which a textarea doesn't do for Ctrl/Command + Enter on its own. On
-   * touch screens, whose keyboards have no Shift + Enter, Enter starts a new
-   * line, and the Send button sends.
+   * Whether the text before the caret opens a fenced code block that it
+   * doesn't close, so the caret is inside it.
+   */
+  function caretInCodeFence(): boolean {
+    const input = messageBox.value?.querySelector('textarea');
+    const before = input
+      ? input.value.slice(0, input.selectionStart)
+      : draft.value;
+    let fence = 0;
+
+    for (const line of before.split('\n')) {
+      if (!fence) {
+        fence = line.match(/^ {0,3}(`{3,})[^`]*$/)?.[1]?.length ?? 0;
+      } else if ((line.match(/^ {0,3}(`+)\s*$/)?.[1]?.length ?? 0) >= fence) {
+        fence = 0;
+      }
+    }
+
+    return fence > 0;
+  }
+
+  /**
+   * Enter sends the message, and Shift + Enter starts a new line. Within a
+   * fenced code block, and on touch screens, whose keyboards have no
+   * Shift + Enter, Enter starts a new line too. Ctrl/Command + Enter always
+   * sends.
    */
   function onDraftKeydown(event: KeyboardEvent): void {
     if (
@@ -733,11 +756,10 @@
       return;
     }
 
-    // Touch keyboards have no Shift + Enter, so Enter starts a new line there.
     if (
       !event.ctrlKey &&
       !event.metaKey &&
-      window.matchMedia?.('(pointer: coarse)').matches
+      (window.matchMedia?.('(pointer: coarse)').matches || caretInCodeFence())
     ) {
       return;
     }
@@ -834,19 +856,19 @@
                   </craft-chip>
                 </li>
               </ul>
-              <div
-                class="prose assistant-chat__prompt-text"
-                v-html="renderMarkdown(entry.text)"
-              ></div>
+              <MarkdownHtml
+                class="assistant-chat__prompt-text"
+                :html="renderMarkdown(entry.text)"
+              />
             </div>
           </li>
           <li v-else-if="entry.kind === 'text'" class="assistant-chat__message">
             <div class="assistant-chat__reply">
               <span class="sr-only">{{ t('AI assistant:') }}</span>
-              <div
-                class="prose assistant-chat__markdown"
-                v-html="renderMarkdown(entry.part.content, inlineImages)"
-              ></div>
+              <MarkdownHtml
+                class="assistant-chat__markdown"
+                :html="renderMarkdown(entry.part.content, inlineImages)"
+              />
             </div>
           </li>
           <li
@@ -1269,12 +1291,8 @@
   }
 
   .assistant-chat__prompt-text {
-    display: flex;
-    flex-direction: column;
-    gap: var(--c-spacing-sm);
     align-self: stretch;
     text-box: trim-both cap alphabetic;
-    overflow-wrap: anywhere;
   }
 
   .assistant-chat__prompt-text :deep(p) {
@@ -1335,53 +1353,8 @@
     font-size: var(--c-text-sm);
   }
 
-  .assistant-chat__markdown {
-    display: flex;
-    flex-direction: column;
+  .assistant-chat__reply .assistant-chat__markdown {
     gap: var(--c-spacing-md);
-  }
-
-  /* Headings in a reply structure a short answer in a narrow panel, so they
-     stay close to the text's size. */
-  .assistant-chat__markdown :deep(:is(h1, h2)) {
-    font-size: var(--c-text-lg);
-    font-weight: 600;
-  }
-
-  .assistant-chat__markdown :deep(:is(h3, h4, h5, h6)) {
-    font-size: var(--c-text-base);
-    font-weight: 600;
-  }
-
-  .assistant-chat__markdown :deep(pre) {
-    overflow-x: auto;
-    padding: var(--c-spacing-sm);
-    border-radius: var(--c-radius-md);
-    background-color: var(--c-surface-sunken);
-  }
-
-  .assistant-chat__markdown :deep(code) {
-    font-family: var(--c-font-mono);
-    font-size: 0.9em;
-  }
-
-  .assistant-chat__markdown :deep(img) {
-    max-inline-size: 100%;
-    block-size: auto;
-  }
-
-  .assistant-chat__markdown :deep(table) {
-    display: block;
-    overflow-x: auto;
-    border-collapse: collapse;
-  }
-
-  .assistant-chat__markdown :deep(th),
-  .assistant-chat__markdown :deep(td) {
-    padding-block: var(--c-spacing-xs);
-    padding-inline: var(--c-spacing-sm);
-    border: 1px solid var(--c-color-neutral-border-quiet);
-    text-align: start;
   }
 
   .assistant-chat__empty {

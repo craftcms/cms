@@ -412,7 +412,7 @@ it('deletes query-backed nested elements that primarily belong to the owner', fu
         ->not->toBeNull();
 });
 
-it('re-evaluates a review when a primary nested element is deleted', function () {
+it('withdraws a review when someone outside it deletes a primary nested element', function () {
     ['owner' => $owner, 'field' => $field, 'entryType' => $entryType] = nestedElementsControllerCreateMatrixOwnerFixture();
     $workflow = Workflow::query()->create([
         'name' => 'Editorial workflow',
@@ -438,12 +438,12 @@ it('re-evaluates a review when a primary nested element is deleted', function ()
         'elementId' => $nestedEntry->id,
     ])->assertOk();
 
-    $stageApprovals = ActivityEvent::query()
+    $withdrawals = ActivityEvent::query()
         ->subject(ActivitySubject::fromElement($owner))
         ->eventTypes(WorkflowActivityEvent::class)
         ->get()
-        ->filter(fn (ActivityEvent $event): bool => $event->data['type'] === WorkflowTransition::StageApproved->value);
+        ->filter(fn (ActivityEvent $event): bool => $event->data['type'] === WorkflowTransition::Withdraw->value);
 
-    expect($run->fresh()->status)->toBe(WorkflowStatus::Approved)
-        ->and($stageApprovals)->toHaveCount(2);
+    expect($run->fresh()->status)->toBe(WorkflowStatus::Withdrawn)
+        ->and($withdrawals)->toHaveCount(1);
 });
