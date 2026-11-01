@@ -171,6 +171,7 @@
                 type="button"
                 size="small"
                 variant="plain"
+                flush="inline-end"
                 icon
                 class="release-preview__blockers"
               >
