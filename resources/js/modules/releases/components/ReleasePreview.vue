@@ -74,6 +74,24 @@
     select(item);
   }
 
+  /** The draft a nav item links to, by its link. */
+  function itemFor(action: unknown): ReleasePreviewItem | null {
+    const href = (action as {href?: string}).href;
+
+    return props.preview.items.find((item) => item.url === href) ?? null;
+  }
+
+  /** The draft a nav item links to, when it's blocking the release. */
+  function blockingItems(action: unknown): Array<ReleasePreviewItem> {
+    const item = itemFor(action);
+
+    return item?.blockers.length ? [item] : [];
+  }
+
+  function blockingSummary(): string {
+    return t('This draft is blocking “{name}”.', {name: props.release.name});
+  }
+
   /** The drafts under a heading, as a secondary nav's groups are. */
   const navItems = computed<ActionItems>(() => [
     {
@@ -142,7 +160,40 @@
   >
     <nav class="lp-pane-body release-preview__drafts" :aria-label="t('Drafts')">
       <craft-nav-list>
-        <ActionList :actions="navItems" as="craft-nav-item" mode="inline" />
+        <ActionList :actions="navItems" as="craft-nav-item" mode="inline">
+          <!-- Named for screen readers by the issues themselves, as the
+            tooltip lists them for everyone else. -->
+          <template #item-actions="{action}">
+            <template v-for="item in blockingItems(action)" :key="item.id">
+              <craft-button
+                :id="`release-preview-blockers-${item.id}`"
+                slot="actions"
+                type="button"
+                size="small"
+                variant="plain"
+                icon
+                class="release-preview__blockers"
+              >
+                <craft-icon
+                  name="triangle-exclamation"
+                  :label="`${blockingSummary()} ${item.blockers.join(' ')}`"
+                ></craft-icon>
+              </craft-button>
+              <craft-tooltip
+                slot="actions"
+                :for="`release-preview-blockers-${item.id}`"
+                placement="right"
+              >
+                <p class="m-0">{{ blockingSummary() }}</p>
+                <ul class="release-preview__blocker-list">
+                  <li v-for="(issue, index) in item.blockers" :key="index">
+                    {{ issue }}
+                  </li>
+                </ul>
+              </craft-tooltip>
+            </template>
+          </template>
+        </ActionList>
       </craft-nav-list>
     </nav>
 
@@ -172,6 +223,16 @@
 </template>
 
 <style scoped>
+  .release-preview__blockers {
+    color: var(--c-color-danger-on-quiet);
+  }
+
+  .release-preview__blocker-list {
+    margin: 0;
+    padding-inline-start: 1.25em;
+    list-style: disc;
+  }
+
   .release-preview__drafts {
     padding: var(--c-spacing-md);
   }

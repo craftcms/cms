@@ -479,6 +479,15 @@ it('previews every release draft in Live Preview, opening on the requested one',
 
     get(route('craft.cp.releases.preview', [$release, 'item' => 0]))
         ->assertInertia(fn (AssertableInertia $page) => $page->where('preview.selectedItemId', $itemIds[0])->etc());
+
+    // Each draft says what's blocking the release, as the release screen does.
+    DB::table(Table::ELEMENTS)->where('id', $second->getCanonicalId())->softDelete();
+
+    get(route('craft.cp.releases.preview', $release))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('preview.items.0.blockers', [])
+            ->where('preview.items.2.blockers', fn ($blockers) => count($blockers) === 1)
+            ->etc());
 });
 
 it('has no preview for a release without drafts', function () {
