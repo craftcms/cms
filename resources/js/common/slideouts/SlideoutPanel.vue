@@ -58,6 +58,9 @@
       closeSlideout(props.instance.id, options),
     reload: () => reloadSlideout(props.instance.id),
     saved: (result) => notifySlideoutSaved(props.instance.id, result),
+    get coversPreviewEditor() {
+      return previewEditor !== null;
+    },
   });
 
   /**
@@ -80,15 +83,16 @@
    * then covers only that pane, as a sheet sliding up from the bottom, and
    * the shade stops at its edge, leaving the preview visible beside it.
    */
-  const previewEditor = getActivePreview()?.editor.value ?? null;
-  const previewEditorWidth = ref(previewEditor?.clientWidth ?? 0);
+  const activePreview = getActivePreview();
+  const previewEditor = activePreview?.editor.value ?? null;
+  const previewEditorWidth = ref(previewEditor?.offsetWidth ?? 0);
   const previewEditorStart = ref(
     previewEditor ? previewEditorOffset(previewEditor) : 0
   );
 
   if (previewEditor) {
     useResizeObserver(previewEditor, () => {
-      previewEditorWidth.value = previewEditor.clientWidth;
+      previewEditorWidth.value = previewEditor.offsetWidth;
       previewEditorStart.value = previewEditorOffset(previewEditor);
     });
   }
@@ -127,7 +131,7 @@
    * forces a reflow before positioning it, so the browser has the `100vw`
    * start value to animate from.
    */
-  const offset = ref(previewEditor ? '100vh' : '100vw');
+  const offset = ref('100vw');
 
   /**
    * The stack's view of this panel. Its `position()` mirrors Craft 5's
@@ -150,8 +154,9 @@
     },
     position(index: number, total: number) {
       if (previewEditor) {
-        // There's no room beside the pane to stagger panels into.
-        offset.value = 'var(--slideout-preview-gap)';
+        // There's no room beside the pane to stagger panels into, so each
+        // covers the one before it.
+        offset.value = 'var(--slideout-preview-start)';
         return;
       }
 
@@ -169,6 +174,10 @@
   };
 
   onMounted(() => {
+    if (previewEditor) {
+      activePreview!.editorCovers.value++;
+    }
+
     const el = panelEl.value!;
 
     addModalAttributes(el);
@@ -218,7 +227,7 @@
       ? {
           '--slideout-preview-width': `${previewEditorWidth.value}px`,
           '--slideout-preview-start': `${previewEditorStart.value}px`,
-          insetBlockStart: offset.value,
+          insetInlineStart: offset.value,
         }
       : {
           ...(props.instance.width
@@ -230,6 +239,10 @@
   );
 
   onBeforeUnmount(() => {
+    if (previewEditor) {
+      activePreview!.editorCovers.value--;
+    }
+
     const el = panelEl.value!;
 
     // By element, not the bare pop: with two slideout stacks interleaving,
@@ -339,23 +352,15 @@
     }
   }
 
-  /* Over Live Preview's editor pane, inset from its edges. Stacked panels sit
-     on top of each other, like the full-width sheet below. */
+  /* Over Live Preview's editor pane, covering it exactly, as a nested view
+     sliding in from the end. Stacked panels sit on top of each other. */
   .slideout-panel--in-preview {
-    --slideout-preview-gap: var(--c-spacing-md);
-
-    inset-block: auto;
-    inset-inline-start: calc(
-      var(--slideout-preview-start, 0px) + var(--slideout-preview-gap)
-    );
-    width: calc(
-      var(--slideout-preview-width) - var(--slideout-preview-gap) * 2
-    );
-    height: calc(100vh - var(--slideout-preview-gap) * 2);
-    border-radius: var(--c-radius-lg, 0.5rem);
+    width: var(--slideout-preview-width);
+    border-radius: 0;
+    box-shadow: none;
 
     @media screen and (prefers-reduced-motion: no-preference) {
-      transition: inset-block-start linear 250ms;
+      transition: inset-inline-start linear 250ms;
     }
   }
 

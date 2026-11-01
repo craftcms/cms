@@ -37,5 +37,8 @@ export function provideSlideoutScreen(
     close: controller.close,
     reload: controller.reload,
     saved: controller.saved,
+    get coversPreviewEditor() {
+      return controller.coversPreviewEditor;
+    },
   });
 }

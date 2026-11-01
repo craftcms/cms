@@ -136,15 +136,22 @@
     select(item);
   }
 
-  const navItems = computed<ActionItems>(() =>
-    props.preview.items.map((item) => ({
-      type: 'link',
-      href: item.url,
-      label: item.title,
-      selected: item.id === props.preview.selectedItemId,
-      onClick: (event: Event) => onLinkClick(event, item),
-    }))
-  );
+  /** The drafts under a heading, as a secondary nav's groups are. */
+  const navItems = computed<ActionItems>(() => [
+    {
+      type: 'group',
+      heading: t('{count, plural, =1{# Draft} other{# Drafts}}', {
+        count: props.preview.items.length,
+      }),
+      items: props.preview.items.map((item) => ({
+        type: 'link',
+        href: item.url,
+        label: item.title,
+        selected: item.id === props.preview.selectedItemId,
+        onClick: (event: Event) => onLinkClick(event, item),
+      })),
+    },
+  ]);
 
   /** The drafts, with the selected one's targets indented beneath it. */
   const menuItems = computed<ActionItems>(() =>
