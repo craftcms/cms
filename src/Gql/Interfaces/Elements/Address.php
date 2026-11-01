@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Interfaces\Elements;
 
+use CraftCms\Cms\Address\Elements\Address as AddressElement;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\Interfaces\Element;
 use CraftCms\Cms\Gql\Types\Generators\AddressType;
@@ -56,76 +57,7 @@ class Address extends Element
     public static function getFieldDefinitions(): array
     {
         return Gql::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
-            'fullName' => [
-                'name' => 'fullName',
-                'type' => Type::string(),
-                'description' => 'The full name on the address.',
-            ],
-            'firstName' => [
-                'name' => 'firstName',
-                'type' => Type::string(),
-                'description' => 'The first name on the address.',
-            ],
-            'lastName' => [
-                'name' => 'lastName',
-                'type' => Type::string(),
-                'description' => 'The last name on the address.',
-            ],
-            'countryCode' => [
-                'name' => 'countryCode',
-                'type' => Type::nonNull(Type::string()),
-                'description' => 'Two-letter country code',
-            ],
-            'administrativeArea' => [
-                'name' => 'administrativeArea',
-                'type' => Type::string(),
-                'description' => 'Administrative area.',
-            ],
-            'locality' => [
-                'name' => 'locality',
-                'type' => Type::string(),
-                'description' => 'Locality',
-            ],
-            'dependentLocality' => [
-                'name' => 'dependentLocality',
-                'type' => Type::string(),
-                'description' => 'Dependent locality',
-            ],
-            'postalCode' => [
-                'name' => 'postalCode',
-                'type' => Type::string(),
-                'description' => 'Postal code',
-            ],
-            'sortingCode' => [
-                'name' => 'sortingCode',
-                'type' => Type::string(),
-                'description' => 'Sorting code',
-            ],
-            'addressLine1' => [
-                'name' => 'addressLine1',
-                'type' => Type::string(),
-                'description' => 'First line of the address',
-            ],
-            'addressLine2' => [
-                'name' => 'addressLine2',
-                'type' => Type::string(),
-                'description' => 'Second line of the address',
-            ],
-            'addressLine3' => [
-                'name' => 'addressLine3',
-                'type' => Type::string(),
-                'description' => 'Third line of the address',
-            ],
-            'organization' => [
-                'name' => 'organization',
-                'type' => Type::string(),
-                'description' => 'Organization name',
-            ],
-            'organizationTaxId' => [
-                'name' => 'organizationTaxId',
-                'type' => Type::string(),
-                'description' => 'Organization tax ID',
-            ],
+            ...static::propertyFields(AddressElement::class, ['fullName', 'firstName', 'lastName', 'countryCode', 'administrativeArea', 'locality', 'dependentLocality', 'postalCode', 'sortingCode', 'addressLine1', 'addressLine2', 'addressLine3', 'organization', 'organizationTaxId']),
             'latitude' => [
                 'name' => 'latitude',
                 'type' => Type::string(),

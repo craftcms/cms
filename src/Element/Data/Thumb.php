@@ -43,7 +43,8 @@ readonly class Thumb
     }
 
     /**
-     * Returns whether the thumbnail’s image can cover an element card.
+     * Returns whether the thumbnail’s image is a good fit for covering an element card, for cards whose thumb style is
+     * `auto`.
      */
     public function supportsCover(): bool
     {

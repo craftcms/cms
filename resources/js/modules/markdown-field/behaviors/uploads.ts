@@ -3,6 +3,7 @@ import type {Options} from 'overtype';
 import {store} from '@/routes/craft/actions/craft/cp/uploads';
 import {FileUpload} from '@/upload-client';
 import {useMessages} from '@/modules/messages/useMessages';
+import {namePastedFiles} from '@/modules/uploader/pasted-files';
 import {escapeMarkdownLabel} from './utilities';
 
 type UploadResult = Omit<CraftCms.Cms.Asset.Data.UploadResult, 'status'>;
@@ -29,7 +30,8 @@ export function fileUploadOptions(
       if (!upload) {
         throw new Error('No file was selected for upload.');
       }
-      return uploadFile(upload, uploadFolderId, uploadSiteId);
+      const [named] = namePastedFiles([upload]);
+      return uploadFile(named!, uploadFolderId, uploadSiteId);
     },
   };
 }

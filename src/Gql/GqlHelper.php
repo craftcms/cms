@@ -20,6 +20,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\User\Elements\User;
 use GraphQL\Error\Error;
 use GraphQL\Executor\Values;
 use GraphQL\Language\Parser;
@@ -58,6 +59,24 @@ class GqlHelper
         }
 
         return true;
+    }
+
+    /**
+     * Returns the user an authenticated schema was created for, if any.
+     *
+     * @param  GqlSchema|null  $schema  The GraphQL schema. If none is provided, the active schema will be used.
+     */
+    public static function getSchemaUser(?GqlSchema $schema = null): ?User
+    {
+        if ($schema !== null) {
+            return $schema->user;
+        }
+
+        try {
+            return app(GqlService::class)->getActiveSchema()->user;
+        } catch (GqlException) {
+            return null;
+        }
     }
 
     /**

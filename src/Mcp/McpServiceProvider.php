@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Mcp;
 
+use CraftCms\Cms\Auth\OAuthServer\Http\Middleware\AddOAuthChallenge;
+use CraftCms\Cms\Auth\OAuthServer\Http\Responses\AuthorizationView;
+use CraftCms\Cms\Auth\OAuthServer\OAuthResource;
+use CraftCms\Cms\Auth\OAuthServer\OAuthResources;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Settings as CpSettings;
 use CraftCms\Cms\Mcp\Commands\ServeCommand;
 use CraftCms\Cms\Mcp\Enums\McpScope;
-use CraftCms\Cms\Mcp\Http\Middleware\AddOAuthChallenge;
 use CraftCms\Cms\Mcp\Http\Middleware\ReorderJsonAccept;
-use CraftCms\Cms\Mcp\Http\Responses\AuthorizationView;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\ServiceProvider;
@@ -57,6 +60,7 @@ class McpServiceProvider extends ServiceProvider
     public function boot(
         CpSettings $cpSettings,
         RouteRegistrar $mcpRoutes,
+        OAuthResources $oauthResources,
     ): void {
         $this->commands([
             ServeCommand::class,
@@ -75,6 +79,22 @@ class McpServiceProvider extends ServiceProvider
             ]);
         });
 
+        $oauthResources->register('mcp', function (): OAuthResource {
+            $settings = $this->app->make(Settings::class);
+
+            return new OAuthResource(
+                handle: 'mcp',
+                levels: collect(McpScope::cases())
+                    ->mapWithKeys(fn (McpScope $scope): array => [$scope->value => ['label' => $scope->label(), 'description' => $scope->description()]])
+                    ->all(),
+                resourceUrl: $settings->url($settings->authorizationRoute),
+                authorizationRoute: $settings->authorizationRoute,
+                baseUrl: $settings->baseUrl($settings->authorizationRoute),
+                userLevels: fn (CraftUser $user): array => $user->isAdmin() ? McpScope::values() : [McpScope::Read->value, McpScope::Write->value],
+                routeName: 'craft.mcp.oauth',
+            );
+        });
+
         $settings = static fn (): array => [
             'label' => t('MCP'),
             'url' => route('craft.cp.settings.mcp.index'),
@@ -83,8 +103,11 @@ class McpServiceProvider extends ServiceProvider
         $cpSettings->registerSetting('Extend', 'mcp', $settings);
         $cpSettings->registerReadOnlySetting('Extend', 'mcp', $settings);
 
-        if (! $this->app->routesAreCached()) {
-            $mcpRoutes->register();
-        }
+        $this->app->booted(function () use ($mcpRoutes): void {
+            // MCP routes are registered at runtime so cached routes cannot retain stale project config.
+            if (! $this->app->runningConsoleCommand('route:cache')) {
+                $mcpRoutes->register();
+            }
+        });
     }
 }

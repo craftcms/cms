@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns\User;
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
@@ -108,6 +110,7 @@ trait QueriesRolesAndPermissions
      *
      * @uses $admin
      */
+    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Narrows the query results to only users that have (or don’t have) admin accounts.')]
     public function admin(bool $value = true): self
     {
         $this->admin = $value;

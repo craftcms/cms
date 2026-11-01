@@ -143,6 +143,7 @@ class Asset extends ElementMutationResolver
 
         $volumeUid = DB::table(Table::VOLUMES)->uidById($asset->getVolumeId());
         $this->requireSchemaAction('volumes.'.$volumeUid, 'delete');
+        $this->requireUserAuthorization($asset, 'delete');
 
         return Elements::deleteElementById($assetId, hardDelete: $hardDelete);
     }

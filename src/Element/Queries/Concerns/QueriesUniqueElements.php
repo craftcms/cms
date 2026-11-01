@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Facades\DB;
@@ -113,6 +115,7 @@ trait QueriesUniqueElements
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Determines whether only elements with unique IDs should be returned by the query.')]
     public function unique(bool $value = true): static
     {
         $this->unique = $value;
@@ -150,6 +153,7 @@ trait QueriesUniqueElements
      * ```
      */
     /** @param array<int, int|string>|null $value */
+    #[ElementQueryParam(ElementQueryParamType::ScalarOrScalars, 'Determines which site should be selected when querying multi-site elements.')]
     public function preferSites(?array $value = null): static
     {
         $this->preferSites = $value;

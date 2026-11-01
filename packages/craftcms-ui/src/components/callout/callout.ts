@@ -63,6 +63,7 @@ import {
  *   the icon. Defaults to `--c-spacing-sm`.
  * @cssproperty --c-callout-text-padding-inline - Inline-axis padding around
  *   the title and description. Defaults to `--c-spacing-sm`.
+ * @csspart base - The callout's box, which carries its fill and border.
  */
 export default class CraftCallout extends Paddable(LitElement, {
   customProperty: ['--_callout-padding-block', '--_callout-padding-inline'],
@@ -165,6 +166,7 @@ export default class CraftCallout extends Paddable(LitElement, {
 
     return html`
       <div
+        part="base"
         data-variant="${this.variant}"
         style="${styleMap(this.paddingStyles)}"
         class="${classMap({

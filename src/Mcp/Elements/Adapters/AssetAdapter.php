@@ -11,7 +11,6 @@ use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\UserInitiatedElementSave;
 use CraftCms\Cms\Mcp\ElementLifecycle;
-use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\Elements\BaseElementAdapter;
 use CraftCms\Cms\Mcp\Serializers\ElementSerializer;
 use CraftCms\Cms\Support\Arr;
@@ -46,34 +45,20 @@ class AssetAdapter extends BaseElementAdapter
         return Asset::class;
     }
 
-    protected function criteriaProperties(): array
-    {
-        return ElementQueryCriteria::AssetSchemaProperties;
-    }
-
     protected function updateAttributesSchema(): array
     {
+        $properties = $this->propertySchemas(['title', 'slug', 'alt', 'enabled', 'filename', 'folderId', 'uploaderId', 'focalPoint'], [
+            'filename' => 'Changing it renames the file.',
+            'folderId' => 'Changing it moves the file.',
+            'uploaderId' => 'Null marks it unknown. Changing it requires permission to save other users’ assets in the volume.',
+        ]);
+
+        // setFocalPoint() quietly clears out-of-range values, so reject them up front.
+        $properties['focalPoint']['pattern'] = '^(0(\.\d+)?|1(\.0+)?);(0(\.\d+)?|1(\.0+)?)$';
+
         return [
             'type' => 'object',
-            'properties' => [
-                'title' => ['type' => ['string', 'null'], 'description' => 'Asset title.'],
-                'slug' => ['type' => ['string', 'null'], 'description' => 'Asset slug.'],
-                'alt' => ['type' => ['string', 'null'], 'description' => 'Alternative text.'],
-                'enabled' => ['type' => 'boolean', 'description' => 'Whether the asset is enabled.'],
-                'filename' => ['type' => 'string', 'description' => 'Asset filename. Changing it renames the file.'],
-                'folderId' => ['type' => 'integer', 'description' => 'Asset folder ID. Changing it moves the file.'],
-                'uploaderId' => ['type' => ['integer', 'null'], 'description' => 'ID of the user who uploaded the asset. Null marks it unknown. Changing it requires permission to save other users’ assets in the volume.'],
-                'focalPoint' => [
-                    'type' => ['object', 'null'],
-                    'description' => 'Image or video focal point, as fractions of the width (x) and height (y) from the top-left corner. Image transforms crop around it. Null clears it.',
-                    'properties' => [
-                        'x' => ['type' => 'number', 'minimum' => 0, 'maximum' => 1],
-                        'y' => ['type' => 'number', 'minimum' => 0, 'maximum' => 1],
-                    ],
-                    'required' => ['x', 'y'],
-                    'additionalProperties' => false,
-                ],
-            ],
+            'properties' => $properties,
             'additionalProperties' => false,
         ];
     }

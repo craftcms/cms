@@ -3,10 +3,10 @@
    * Live Preview: the editor beside the element's front end, which reloads as
    * edits are autosaved.
    *
-   * The editor isn't rendered here. The page's own editor content is moved into
-   * the exposed `editorTarget` while this is open, and its tabs into
-   * `tabsTarget`, so there's one form, one autosave queue, and nothing to
-   * reconcile when it closes.
+   * The editor isn't rendered here. The page's own editor content, tabs and
+   * all, is moved into the exposed `editorTarget` while this is open, so
+   * there's one form, one autosave queue, and nothing to reconcile when it
+   * closes.
    */
   import {t} from '@craftcms/ui';
   import {
@@ -66,7 +66,6 @@
   const root = useTemplateRef<HTMLElement>('root');
   const stage = useTemplateRef<HTMLElement>('stage');
   const editorTarget = useTemplateRef<HTMLElement>('editorTarget');
-  const tabsTarget = useTemplateRef<HTMLElement>('tabsTarget');
 
   /** Whether the pane is on screen, which outlasts `isOpen` while it slides out. */
   const shown = ref(false);
@@ -77,7 +76,7 @@
   const holdsEditor = ref(false);
 
   // An element rather than an id, so the content follows it if it's replaced.
-  defineExpose({editorTarget, tabsTarget, shown, holdsEditor});
+  defineExpose({editorTarget, shown, holdsEditor});
   const preview = props.controller;
 
   /*
@@ -558,7 +557,10 @@
               @click.prevent="skipToPreview"
               >{{ t('Skip to top of preview') }}</a
             >
-            <div ref="tabsTarget" class="lp-editor__tabs"></div>
+            <div class="lp-editor__heading">
+              <h2 class="lp-editor__title">{{ title }}</h2>
+              <slot name="meta"></slot>
+            </div>
             <div class="lp-editor__status">
               <slot name="status"></slot>
             </div>
@@ -567,7 +569,7 @@
               v-if="!standalone"
               type="button"
               size="small"
-              icon="xmark"
+              icon="xmark-large"
               variant="plain"
               flush="inline-end"
               :aria-label="t('Close Preview')"
@@ -629,6 +631,8 @@
                   <craft-button
                     v-bind="attributes"
                     type="button"
+                    size="small"
+                    variant="plain"
                     icon="chevron-down"
                     icon-position="suffix"
                   >
@@ -650,6 +654,8 @@
                   :id="`${controlId}-${type}`"
                   :key="type"
                   :value="type"
+                  class="lp-device-button"
+                  size="small"
                   icon
                 >
                   <craft-icon
@@ -669,7 +675,10 @@
               <craft-button
                 :id="`${controlId}-rotate`"
                 class="lp-rotate"
+                :class="{invisible: preview.device.value === 'desktop'}"
                 type="button"
+                size="small"
+                variant="plain"
                 icon="custom-icons/device-rotate"
                 :disabled="preview.device.value === 'desktop'"
                 :aria-label="t('Rotate')"
@@ -684,6 +693,8 @@
               <craft-button
                 :id="`${controlId}-refresh`"
                 type="button"
+                size="small"
+                variant="plain"
                 icon="arrows-rotate"
                 :disabled="preview.isLoading.value"
                 .loading="preview.isLoading.value"
@@ -698,6 +709,8 @@
               <template v-if="currentUrl">
                 <craft-button
                   :id="newTabLinkId"
+                  size="small"
+                  variant="plain"
                   icon
                   :href="currentUrl"
                   target="_blank"
@@ -858,33 +871,21 @@
     border-block-end: 1px solid var(--c-color-border-quiet);
   }
 
-  .lp-editor__tabs {
+  .lp-editor__heading {
     flex: 1;
-    align-self: stretch;
     display: flex;
+    align-items: center;
+    gap: var(--c-spacing-md);
     min-width: 0;
+  }
 
-    & :deep(craft-tabs) {
-      --c-tabs-gap: 0;
-
-      flex: 1;
-      min-width: 0;
-    }
-
-    & :deep(craft-tabs::part(strip)) {
-      block-size: 100%;
-      align-items: stretch;
-      border-block-end-width: 0;
-    }
-
-    & :deep(craft-tabs::part(tab-group)) {
-      align-items: stretch;
-    }
-
-    & :deep(craft-tab) {
-      align-items: center;
-      padding-block: 0;
-    }
+  .lp-editor__title {
+    margin: 0;
+    overflow: hidden;
+    font-size: 1.125rem;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .lp-editor__body {
@@ -991,6 +992,10 @@
 
   .lp-rotate:dir(rtl)::part(prefix) {
     scale: -1 1;
+  }
+
+  .lp-device-button {
+    inline-size: calc(var(--c-size-control-sm) * 1.25);
   }
 
   .lp-device {

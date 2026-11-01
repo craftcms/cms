@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Element\Queries\Concerns;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Release\Enums\ReleaseStatus;
 use CraftCms\Cms\Support\Arr;
@@ -252,6 +254,7 @@ trait QueriesDraftsAndRevisions
      *     ->one();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether draft elements should be returned.')]
     public function drafts(?bool $value = true): static
     {
         $this->drafts = $value;
@@ -263,6 +266,7 @@ trait QueriesDraftsAndRevisions
      * Causes the query to return provisional drafts for the matching elements,
      * when they exist for the current user.
      */
+    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Whether canonical elements should be replaced with provisional drafts if those exist.')]
     public function withProvisionalDrafts(bool $value = true): static
     {
         $this->withProvisionalDrafts = $value;
@@ -295,6 +299,7 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'The ID of the draft to return (from the `drafts` table)')]
     public function draftId(?int $value = null): static
     {
         $this->draftId = $value;
@@ -327,6 +332,7 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'Narrows the query results to drafts attached to the release with this ID.')]
     public function releaseId(?int $value = null): static
     {
         $this->releaseId = $value;
@@ -368,6 +374,7 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Scalar, 'Narrows the query results to only drafts of a given element.  Set to `false` to fetch unpublished drafts.')]
     public function draftOf(mixed $value): static
     {
         if ($value instanceof ElementInterface) {
@@ -438,6 +445,7 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'The drafts’ creator ID')]
     public function draftCreator(mixed $value): static
     {
         $this->draftCreator = match (true) {
@@ -474,6 +482,7 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether provisional drafts should be returned.')]
     public function provisionalDrafts(?bool $value = true): static
     {
         $this->provisionalDrafts = $value;
@@ -549,6 +558,7 @@ trait QueriesDraftsAndRevisions
      *     ->one();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether revision elements should be returned.')]
     public function revisions(?bool $value = true): static
     {
         $this->revisions = $value;
@@ -581,6 +591,7 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'The ID of the revision to return (from the `revisions` table)')]
     public function revisionId(?int $value = null): static
     {
         $this->revisionId = $value;
@@ -618,6 +629,7 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Scalar, 'The source element ID that revisions should be returned for')]
     public function revisionOf(mixed $value): static
     {
         $this->revisionOf = match (true) {
@@ -659,6 +671,7 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'The revisions’ creator ID')]
     public function revisionCreator(mixed $value): static
     {
         $this->revisionCreator = match (true) {

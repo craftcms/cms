@@ -5,6 +5,7 @@
    * `useAppLayout()` and `LayoutSlot`, so the shell decides where the header,
    * save controls and details column go.
    */
+  import {cpBreakpoints} from '@/common/composables/useCpBreakpoints';
   import {ButtonVariant, t} from '@craftcms/ui';
   import {
     computed,
@@ -146,6 +147,19 @@
     () =>
       uiPayload.value?.nodes.some((node) => node.component !== 'craft:tab') ??
       false
+  );
+
+  /**
+   * Whether the content starts with a tab strip, which sits flush with its
+   * top. In Live Preview, sidebar tabs are in it too.
+   */
+  const hasContentTabs = computed(
+    () =>
+      (uiPayload.value?.nodes.filter(
+        (node) =>
+          node.component === 'craft:tab' &&
+          (contentInPreview.value || !isSidebarTab(node))
+      ).length ?? 0) > 1
   );
 
   /** Field layout tabs that render as details panels, rather than tabs. */
@@ -347,9 +361,6 @@
       Boolean(livePreviewPane.value?.holdsEditor) &&
       Boolean(livePreviewTarget.value)
   );
-  const livePreviewTabsTarget = computed(() =>
-    contentInPreview.value ? (livePreviewPane.value?.tabsTarget ?? null) : null
-  );
   // The content's height, kept while it's away so the page doesn't collapse
   // and lose its scroll position. Read before the content moves.
   const awayHeight = ref(0);
@@ -363,6 +374,17 @@
     {flush: 'pre'}
   );
   const previewButton = useTemplateRef<HTMLElement>('previewButton');
+
+  /** Whether the draft is in review, waiting on the user's approval of its current stage. */
+  const awaitingUserApproval = computed(
+    () =>
+      payload.workflow.current?.status === 'pending' &&
+      payload.workflow.current.isReviewer &&
+      !payload.workflow.current.hasApproved
+  );
+  const approvalNoticeDismissed = ref(false);
+  /** Live Preview's two panes don't fit on a phone, so it isn't offered there. */
+  const isPhone = cpBreakpoints.smaller('md');
 
   watch(autosave.saves, () => {
     livePreview.draftSaved(autosave.lastResponse.value);
@@ -571,7 +593,7 @@
   <LayoutSlot v-if="showViewButtons" name="content-toolbar-actions">
     <div class="flex gap-sm items-center">
       <craft-button
-        v-if="canPreview"
+        v-if="canPreview && !isPhone"
         ref="previewButton"
         type="button"
         size="small"
@@ -630,6 +652,8 @@
       payload.mergeNotice ||
       payload.workflow.convertedToDraft ||
       workflowReviewLocked ||
+      (awaitingUserApproval && !approvalNoticeDismissed) ||
+      payload.workflow.current?.status === 'withdrawn' ||
       payload.release
     "
     name="content-notices"
@@ -652,9 +676,61 @@
 
       <WorkflowEditLockCallout
         v-if="workflowReviewLocked"
+        :payload="payload"
+        :update-payload="updatePayload"
         class="mb-4"
         @start-editing="startEditing"
       />
+
+      <craft-callout
+        v-if="awaitingUserApproval && !approvalNoticeDismissed"
+        variant="info"
+        icon="clipboard-check"
+        class="mb-4"
+        rounded="none"
+        appearance="fill"
+      >
+        {{ t('This draft is waiting on your approval.') }}
+        <craft-button
+          slot="action"
+          type="button"
+          variant="plain"
+          size="small"
+          icon
+          inherit
+          @click="approvalNoticeDismissed = true"
+        >
+          <craft-icon name="xmark" :label="t('Dismiss')"></craft-icon>
+        </craft-button>
+      </craft-callout>
+
+      <craft-callout
+        v-if="payload.workflow.current?.status === 'withdrawn'"
+        variant="info"
+        icon="clipboard-list-check"
+        class="mb-4"
+        rounded="none"
+        appearance="fill"
+      >
+        {{
+          payload.workflow.current.canSubmit
+            ? t(
+                'This draft was withdrawn from review. Resubmit it when your edits are ready.'
+              )
+            : t('This draft was withdrawn from review.')
+        }}
+        <craft-button
+          v-if="payload.workflow.current.canSubmit"
+          slot="action"
+          type="button"
+          variant="outline"
+          size="small"
+          inherit
+          @click="detailsPanels?.select('workflow')"
+        >
+          {{ payload.workflow.current.submitLabel }}
+        </craft-button>
+      </craft-callout>
 
       <ReleaseCallout
         v-if="payload.release"
@@ -743,7 +819,7 @@
     <craft-spinner :label="t('Loading')"></craft-spinner>
   </div>
   <Teleport :to="livePreviewTarget" :disabled="!contentInPreview" defer>
-    <div ref="content" class="py-lg">
+    <div ref="content" :class="hasContentTabs ? 'pb-lg' : 'py-lg'">
       <CpContainer>
         <component
           :is="formWrapper ?? 'div'"
@@ -760,8 +836,9 @@
               :refresh="uiPayload.refreshable ? refreshLayout : undefined"
               :modified="autosave.modified.value"
               :disabled="editorLocked"
-              :sidebar-tab-outlets="sidebarTabOutlets"
-              :tabs-outlet="livePreviewTabsTarget"
+              :sidebar-tab-outlets="
+                contentInPreview ? undefined : sidebarTabOutlets
+              "
               @update:mutation="onMutation"
             />
           </component>
@@ -786,6 +863,21 @@
       <ElementActionMenu
         :items="payload.actionMenu"
         :current-entry-type-id="form.typeId"
+      />
+    </template>
+    <!-- The status a slideout's header shows beside its title. -->
+    <template #meta>
+      <craft-badge
+        v-if="payload.isProvisionalDraft"
+        fill="info"
+        class="relative text-sm font-normal inline-flex"
+      >
+        <craft-icon name="pen-circle" slot="prefix"></craft-icon>
+        {{ t('Edited') }}
+      </craft-badge>
+      <DynamicHtmlRenderer
+        v-else-if="payload.statusLabelHtml"
+        :html="payload.statusLabelHtml"
       />
     </template>
     <template #status>
@@ -872,6 +964,7 @@
   }
 
   craft-callout {
-    --c-callout-padding-inline: calc(var(--cp-container-padding) - 4px);
+    --c-callout-padding-inline: calc(var(--cp-container-padding) - 1px);
+    --c-callout-icon-padding-inline: 0 var(--c-spacing-sm);
   }
 </style>

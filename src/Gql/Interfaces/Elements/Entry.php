@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Interfaces\Elements;
 
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Gql\Arguments\Elements\Entry as EntryArguments;
 use CraftCms\Cms\Gql\Gql as GqlService;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
 use CraftCms\Cms\Gql\Interfaces\Structure;
-use CraftCms\Cms\Gql\Types\DateTime;
 use CraftCms\Cms\Gql\Types\EntryType as EntryTypeGqlType;
 use CraftCms\Cms\Gql\Types\Generators\EntryType;
 use CraftCms\Cms\Gql\Types\Section as SectionGqlType;
@@ -81,16 +81,7 @@ class Entry extends Structure
         }
 
         return Gql::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), static::getDraftFieldDefinitions(), self::getConditionalFields($sectionFieldArguments), [
-            'canonicalId' => [
-                'name' => 'canonicalId',
-                'type' => Type::int(),
-                'description' => 'Returns the entry’s canonical ID.',
-            ],
-            'canonicalUid' => [
-                'name' => 'canonicalUid',
-                'type' => Type::string(),
-                'description' => 'Returns the entry’s canonical UUID.',
-            ],
+            ...static::propertyFields(EntryElement::class, ['canonicalId', 'canonicalUid']),
             'sourceId' => [
                 'name' => 'sourceId',
                 'type' => Type::int(),
@@ -103,59 +94,28 @@ class Entry extends Structure
                 'description' => 'Returns the entry’s canonical UUID.',
                 'deprecationReason' => 'this field has been deprecated since Craft 3.7.7. Use `canonicalUid` instead.',
             ],
-            'sectionId' => [
-                'name' => 'sectionId',
-                'type' => Type::int(),
-                'description' => 'The ID of the section that contains the entry.',
-            ],
+            ...static::propertyFields(EntryElement::class, ['sectionId']),
             'sectionHandle' => [
                 'name' => 'sectionHandle',
                 'type' => Type::string(),
                 'description' => 'The handle of the section that contains the entry.',
                 'complexity' => GqlHelper::singleQueryComplexity(),
             ],
-            'fieldId' => [
-                'name' => 'fieldId',
-                'type' => Type::int(),
-                'description' => 'The ID of the field that contains the entry.',
-            ],
+            ...static::propertyFields(EntryElement::class, ['fieldId']),
             'fieldHandle' => [
                 'name' => 'fieldHandle',
                 'type' => Type::string(),
                 'description' => 'The handle of the field that contains the entry.',
                 'complexity' => GqlHelper::singleQueryComplexity(),
             ],
-            'ownerId' => [
-                'name' => 'ownerId',
-                'type' => Type::int(),
-                'description' => 'The ID of the entry’s owner element.',
-            ],
-            'sortOrder' => [
-                'name' => 'sortOrder',
-                'type' => Type::int(),
-                'description' => 'The entry’s position within the field that contains it.',
-            ],
-            'typeId' => [
-                'name' => 'typeId',
-                'type' => Type::nonNull(Type::int()),
-                'description' => 'The ID of the entry type that contains the entry.',
-            ],
+            ...static::propertyFields(EntryElement::class, ['ownerId', 'sortOrder', 'typeId']),
             'typeHandle' => [
                 'name' => 'typeHandle',
                 'type' => Type::nonNull(Type::string()),
                 'description' => 'The handle of the entry type that contains the entry.',
                 'complexity' => GqlHelper::singleQueryComplexity(),
             ],
-            'postDate' => [
-                'name' => 'postDate',
-                'type' => DateTime::getType(),
-                'description' => 'The entry’s post date.',
-            ],
-            'expiryDate' => [
-                'name' => 'expiryDate',
-                'type' => DateTime::getType(),
-                'description' => 'The expiry date of the entry.',
-            ],
+            ...static::propertyFields(EntryElement::class, ['postDate', 'expiryDate']),
             'children' => [
                 'name' => 'children',
                 'args' => $structureSectionFieldArguments,
@@ -184,11 +144,7 @@ class Entry extends Structure
                 'description' => 'The entry’s ancestors, if the section is a structure. Accepts the same arguments as the `entries` query.',
                 'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
             ],
-            'url' => [
-                'name' => 'url',
-                'type' => Type::string(),
-                'description' => 'The element’s full URL',
-            ],
+            ...static::propertyFields(EntryElement::class, ['url']),
             'localized' => [
                 'name' => 'localized',
                 'args' => [
@@ -219,11 +175,7 @@ class Entry extends Structure
                 'description' => 'Returns the next element relative to this one, from a given set of criteria.',
                 'complexity' => fn ($childrenComplexity, $args) => $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int) ! empty($args),
             ],
-            'enabledForSite' => [
-                'name' => 'enabledForSite',
-                'type' => Type::boolean(),
-                'description' => 'Whether the element is enabled for the site.',
-            ],
+            ...static::propertyFields(EntryElement::class, ['enabledForSite']),
         ]), self::getName());
     }
 
@@ -252,22 +204,14 @@ class Entry extends Structure
 
         if (GqlHelper::canQueryAllUsers()) {
             $fields = array_merge($fields, [
-                'authorId' => [
-                    'name' => 'authorId',
-                    'type' => Type::int(),
-                    'description' => 'The primary entry author’s ID.',
-                ],
+                ...static::propertyFields(EntryElement::class, ['authorId']),
                 'author' => [
                     'name' => 'author',
                     'type' => User::getType(),
                     'description' => 'The primary entry author.',
                     'complexity' => GqlHelper::eagerLoadComplexity(),
                 ],
-                'authorIds' => [
-                    'name' => 'authorIds',
-                    'type' => Type::listOf(Type::int()),
-                    'description' => 'The entry authors’ IDs.',
-                ],
+                ...static::propertyFields(EntryElement::class, ['authorIds']),
                 'authors' => [
                     'name' => 'authors',
                     'type' => Type::listOf(User::getType()),

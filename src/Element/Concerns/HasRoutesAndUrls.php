@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
+use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Events\ElementUrlResolved;
 use CraftCms\Cms\Element\Events\ElementUrlResolving;
 use CraftCms\Cms\Element\Events\SetRoute;
@@ -38,6 +40,7 @@ trait HasRoutesAndUrls
      * @var string|null The element's URI
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The {element}’s URI.', readable: true, writable: false)]
     public ?string $uri = null;
 
     public static function hasUris(): bool
@@ -83,6 +86,7 @@ trait HasRoutesAndUrls
         return $this->uri === Element::HOMEPAGE_URI;
     }
 
+    #[ElementProperty(ElementPropertyType::String, 'The {element}’s full URL.', readable: true, writable: false)]
     public function getUrl(): ?string
     {
         event($beforeEvent = new ElementUrlResolving($this));

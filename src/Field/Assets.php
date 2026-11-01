@@ -632,8 +632,12 @@ class Assets extends BaseRelationField
                         // Add the newly uploaded IDs to the mix.
                         if (is_array($query->id)) {
                             $query = $this->normalizeValue(array_merge($query->id, $assetIds), $element);
-                        } elseif (isset($query->where['elements.id']) && Arr::isNumeric($query->where['elements.id'])) {
-                            $query = $this->normalizeValue(array_merge($query->where['elements.id'], $assetIds), $element);
+                        } elseif (
+                            $query instanceof ElementQuery &&
+                            ($where = $query->getWhereForColumn('elements.id')) !== null &&
+                            Arr::isNumeric($where['values'])
+                        ) {
+                            $query = $this->normalizeValue(array_merge($where['values'], $assetIds), $element);
                         } else {
                             $query = $this->normalizeValue($assetIds, $element);
                         }
@@ -722,7 +726,7 @@ class Assets extends BaseRelationField
         parent::afterElementSave($element, $isNew);
     }
 
-    /** @return array{volumeId:list<int>}|null */
+    /** @return array{volumeId:list<int>, editable?:true}|null */
     #[Override]
     public function getEagerLoadingGqlConditions(): ?array
     {
@@ -739,9 +743,16 @@ class Assets extends BaseRelationField
             return $volume->id ?? null;
         }, $volumeUids));
 
-        return [
+        $conditions = [
             'volumeId' => $volumeIds,
         ];
+
+        // Limit authenticated queries to assets the user can view
+        if (Gql::getSchemaUser()) {
+            $conditions['editable'] = true;
+        }
+
+        return $conditions;
     }
 
     /** @return list<string> */

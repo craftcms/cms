@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Element\Queries;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\EagerloadsTransforms;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesAlt;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesAssetLocation;
@@ -107,6 +109,7 @@ class AssetQuery extends ElementQuery
      *
      * @uses $editable
      */
+    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether to only return {elements} that the user has permission to edit.')]
     public function editable(?bool $value = true): self
     {
         $this->editable = $value;

@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Types\Elements;
 
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
+use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
 use CraftCms\Cms\Gql\Resolvers\Elements\Entry as EntryResolver;
 use GraphQL\Type\Definition\ResolveInfo;
+use Illuminate\Support\Facades\Gate;
 use Override;
 
 /**
@@ -30,7 +33,7 @@ class Entry extends Element
         /** @var EntryElement $source */
         $fieldName = $resolveInfo->fieldName;
 
-        return match ($fieldName) {
+        $value = match ($fieldName) {
             'sectionId' => $source->sectionId,
             'fieldId' => $source->fieldId,
             'ownerId' => $source->ownerId,
@@ -46,6 +49,33 @@ class Entry extends Element
             'revisionCreator' => $source->getIsRevision() ? $source->getRevisionCreator() : null,
             default => parent::resolve($source, $arguments, $context, $resolveInfo),
         };
+
+        // Related entries that are eager-loaded via the entry’s own eager-loading map don’t go through the entry
+        // resolver, so limit them to what an authenticated user can view here
+        if (
+            in_array($fieldName, ['parent', 'ancestors', 'children', 'descendants', 'currentRevision', 'drafts', 'revisions'], true) &&
+            ($user = GqlHelper::getSchemaUser())
+        ) {
+            $gate = Gate::forUser($user);
+
+            if ($value instanceof ElementInterface) {
+                return $gate->allows('view', $value) ? $value : null;
+            }
+
+            if (is_iterable($value)) {
+                $viewable = [];
+
+                foreach ($value as $element) {
+                    if ($gate->allows('view', $element)) {
+                        $viewable[] = $element;
+                    }
+                }
+
+                return $viewable;
+            }
+        }
+
+        return $value;
     }
 
     /**

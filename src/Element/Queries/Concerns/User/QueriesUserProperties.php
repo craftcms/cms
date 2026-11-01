@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns\User;
 
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Support\Query;
 use Illuminate\Contracts\Database\Query\Builder;
@@ -163,6 +165,7 @@ trait QueriesUserProperties
      *
      * @uses $username
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the users’ usernames.')]
     public function username(mixed $value): self
     {
         $this->username = $value;
@@ -200,6 +203,7 @@ trait QueriesUserProperties
      *
      * @uses $fullName
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the users’ full names.')]
     public function fullName(mixed $value): self
     {
         $this->fullName = $value;
@@ -237,6 +241,7 @@ trait QueriesUserProperties
      *
      * @uses $firstName
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the users’ first names.')]
     public function firstName(mixed $value): self
     {
         $this->firstName = $value;
@@ -274,6 +279,7 @@ trait QueriesUserProperties
      *
      * @uses $lastName
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the users’ last names.')]
     public function lastName(mixed $value): self
     {
         $this->lastName = $value;
@@ -313,6 +319,7 @@ trait QueriesUserProperties
      *
      * @uses $email
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the users’ email addresses.')]
     public function email(mixed $value): self
     {
         $this->email = $value;
@@ -356,6 +363,7 @@ trait QueriesUserProperties
      *
      * @uses $lastLoginDate
      */
+    #[ElementQueryParam(ElementQueryParamType::String, 'Narrows the query results based on the users’ last login dates.')]
     public function lastLoginDate(mixed $value): self
     {
         $this->lastLoginDate = $value;
@@ -384,6 +392,7 @@ trait QueriesUserProperties
      *
      * @uses $hasPhoto
      */
+    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Narrows the query results to only users that have (or don’t have) a user photo.')]
     public function hasPhoto(bool $value = true): self
     {
         $this->hasPhoto = $value;

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Mcp\Http\Responses;
+namespace CraftCms\Cms\Auth\OAuthServer\Http\Responses;
 
 use CraftCms\Cms\Auth\AuthenticationViews;
-use CraftCms\Cms\Mcp\Enums\McpScope;
+use CraftCms\Cms\Auth\OAuthServer\OAuthResources;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Laravel\Passport\Client;
@@ -19,6 +19,7 @@ readonly class AuthorizationView
 {
     public function __construct(
         private AuthenticationViews $views,
+        private OAuthResources $resources,
     ) {}
 
     /**
@@ -35,36 +36,35 @@ readonly class AuthorizationView
         $client = $parameters['client'];
         $clientName = (string) $client->getAttribute('name');
         $redirectUri = $request->query('redirect_uri') ?? $client->getAttribute('redirect_uris')[0] ?? null;
-        $isMcp = $request->routeIs('craft.mcp.oauth.*');
+        $resource = $this->resources->forRequest($request);
         $user = $request->craftUser();
-        $accessChoices = $isMcp && $user
-            ? McpScope::choices(array_map(static fn (Scope $scope): string => $scope->id, $parameters['scopes']), $user)
+        $accessChoices = $resource && $user
+            ? $resource->choices(array_map(static fn (Scope $scope): string => $scope->id, $parameters['scopes']), $user)
             : [];
 
         $scopes = collect($parameters['scopes'])
-            ->reject(static fn (Scope $scope): bool => $accessChoices !== [] && McpScope::tryFrom($scope->id) !== null)
+            ->reject(static fn (Scope $scope): bool => $accessChoices !== [] && $resource?->owns($scope->id))
             ->map(static fn (Scope $scope): array => [
                 'id' => $scope->id,
                 'description' => $scope->description,
             ])
             ->values()
             ->all();
-        $accessOptions = array_map(static fn (McpScope $scope): array => [
-            'value' => $scope->value,
-            'label' => $scope->label(),
-            'description' => $scope->description(),
+        $accessOptions = array_map(static fn (string $scope): array => [
+            'value' => $scope,
+            ...$resource->levels[$scope],
         ], $accessChoices);
 
         $authToken = $parameters['authToken'];
         $csrfToken = csrf_token();
-        $routePrefix = $isMcp ? 'craft.mcp.oauth.' : 'passport.authorizations.';
+        $routePrefix = $resource ? "$resource->routeName." : 'passport.authorizations.';
         $approveAction = route($routePrefix.'approve');
         $denyAction = route($routePrefix.'deny');
         $viewData = compact('clientName', 'redirectUri', 'scopes', 'accessOptions', 'authToken', 'csrfToken', 'approveAction', 'denyAction');
 
         $response = $this->views->render(
             request: $request,
-            inertiaComponent: 'auth/McpAuthorization',
+            inertiaComponent: 'auth/OAuthAuthorization',
             inertiaProps: $viewData,
             templateData: $viewData,
         );

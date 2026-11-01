@@ -11,9 +11,11 @@ use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\TestClasses\Field\ThumbnailField;
+use Symfony\Component\DomCrawler\Crawler;
 
 beforeEach(function () {
     ThumbnailField::$requests = [];
@@ -125,3 +127,29 @@ it('defaults custom field dispatch to fit and keeps invalid targets nullable', f
         ->and($layout->getThumbHtmlForElement("contentBlock:{$field->uid}.layoutElement:missing", $entry, 120, ImageTransformMode::Crop))->toBeNull()
         ->and($layout->getThumbHtmlForElement('unknown:missing', $entry, 120, ImageTransformMode::Crop))->toBeNull();
 });
+
+it('shows the entry type icon faintly in the entry type’s color, and falls through without one', function (?string $icon, ?Color $color) {
+    $entry = Entry::factory()->withField('thumbnail', ThumbnailField::class, value: '<b>Field thumbnail</b>')
+        ->createElementWithFields(save: false)->element;
+    $entry->getType()->icon = $icon;
+    $entry->getType()->color = $color;
+    $layout = $entry->getFieldLayout();
+    $layout->thumbSources = [FieldLayout::ENTRY_TYPE_ICON_THUMB_SOURCE, 'layoutElement:'.$layout->getCustomFieldElements()[0]->uid];
+
+    $html = $entry->getThumbHtml(120);
+
+    if ($icon === null) {
+        expect($html)->toBe('<b>Field thumbnail</b>');
+
+        return;
+    }
+
+    $thumb = new Crawler($html)->filter('.icon-thumb');
+    expect($thumb->count())->toBe(1)
+        ->and($thumb->filter('svg')->count())->toBe(1)
+        ->and($thumb->attr('data-color'))->toBe($color?->value);
+})->with([
+    'icon and color' => ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>', Color::Violet],
+    'icon without a color' => ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>', null],
+    'no icon' => [null, null],
+]);

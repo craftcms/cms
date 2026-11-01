@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Mcp\Elements;
 
+use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\UserInitiatedElementSave;
 use CraftCms\Cms\Mcp\ElementLifecycle;
@@ -54,7 +57,64 @@ abstract class BaseElementAdapter implements ElementAdapter
     }
 
     /**
-     * Returns type-specific criteria properties, added to Craft's common element query criteria.
+     * Returns JSON Schema properties for writable element properties declared with {@see ElementProperty}.
+     *
+     * @param  list<string>  $names  Property names to return. Every name must be declared as writable.
+     * @param  array<string, string>  $hints  Guidance for MCP clients, appended to property descriptions.
+     * @return array<string, array<string, mixed>>
+     */
+    protected function propertySchemas(array $names, array $hints = []): array
+    {
+        $elementType = static::elementType();
+        $schemas = [];
+
+        foreach (ElementProperty::only($elementType, $names, 'writable') as $name => $property) {
+            $schemas[$name] = [
+                ...$this->propertyType($property, $property->nullable),
+                'description' => trim($property->descriptionFor($elementType).' '.($hints[$name] ?? '')),
+            ];
+        }
+
+        return $schemas;
+    }
+
+    /**
+     * Returns JSON Schema properties describing the element's readable properties, which element reads return.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    protected function readablePropertySchemas(): array
+    {
+        $elementType = static::elementType();
+
+        return array_map(fn (ElementProperty $property): array => [
+            ...$this->propertyType($property, ! $property->nonNull),
+            'description' => $property->descriptionFor($elementType),
+        ], ElementProperty::readable($elementType));
+    }
+
+    /** @return array<string, mixed> */
+    private function propertyType(ElementProperty $property, bool $nullable): array
+    {
+        $schema = match ($property->type) {
+            ElementPropertyType::String => ['type' => 'string'],
+            ElementPropertyType::Int, ElementPropertyType::Id => ['type' => 'integer'],
+            ElementPropertyType::IdList => ['type' => 'array', 'items' => ['type' => 'integer']],
+            ElementPropertyType::Boolean => ['type' => 'boolean'],
+            ElementPropertyType::DateTime => ['type' => 'string', 'format' => 'date-time'],
+            ElementPropertyType::Float => ['type' => ['number', 'string']],
+        };
+
+        if ($nullable) {
+            $schema['type'] = [...(array) $schema['type'], 'null'];
+        }
+
+        return $schema;
+    }
+
+    /**
+     * Returns criteria properties for query params that the element query does not declare with
+     * {@see ElementQueryParam}.
      *
      * @return array<string, array<string, mixed>>
      */
@@ -101,10 +161,16 @@ abstract class BaseElementAdapter implements ElementAdapter
             'criteria' => [
                 'type' => 'object',
                 'properties' => [
+                    ...ElementQueryCriteria::properties($elementType),
                     ...ElementQueryCriteria::SchemaProperties,
                     ...$this->criteriaProperties(),
                 ],
                 'additionalProperties' => true,
+            ],
+            'attributes' => [
+                'type' => 'object',
+                'description' => 'Built-in attributes that element reads return, alongside id, uid, and custom fields.',
+                'properties' => $this->readablePropertySchemas(),
             ],
             'createAttributes' => $this->createAttributesSchema(),
             'updateAttributes' => $this->updateAttributesSchema(),

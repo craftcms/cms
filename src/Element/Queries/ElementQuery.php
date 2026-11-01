@@ -10,6 +10,8 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
@@ -837,6 +839,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     }
 
     /** @return self<TElement> */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'Sets the limit for paginated results.')]
     public function limit(?int $value): self
     {
         $this->getQuery()->limit = $value;
@@ -853,6 +856,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     }
 
     /** @return self<TElement> */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'Sets the offset for paginated results.')]
     public function offset(?int $value): self
     {
         $this->getQuery()->offset = $value;
@@ -865,6 +869,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * @param  int|string  $direction
      * @return self<TElement>
      */
+    #[ElementQueryParam(ElementQueryParamType::String, 'Sets the field the returned elements should be ordered by.')]
     public function orderBy($column, $direction = 'asc'): self
     {
         /**

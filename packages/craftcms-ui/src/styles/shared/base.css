@@ -210,6 +210,23 @@ craft-chip > [slot='thumbnail'] > .thumb svg {
   height: 100%;
 }
 
+/*
+  An entry type's icon standing in for an entry's thumbnail is drawn faintly,
+  in the entry type's color if it has one, so it reads as decoration rather
+  than content.
+*/
+.icon-thumb {
+  opacity: 0.3;
+}
+
+.icon-thumb[data-color] {
+  color: var(--c-color-fill-loud);
+}
+
+.icon-thumb svg {
+  fill: currentColor;
+}
+
 craft-chip .cp-code {
   /* Block, so the label's line height doesn't add space above it */
   display: block;

@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Arguments;
 
+use CraftCms\Cms\Element\Attributes\ElementProperty;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
+use CraftCms\Cms\Gql\Types\DateTime;
 use GraphQL\Type\Definition\Argument;
 use GraphQL\Type\Definition\Type;
 
@@ -29,5 +33,35 @@ abstract class MutationArguments
                 'description' => 'Set the element’s UID.',
             ],
         ];
+    }
+
+    /**
+     * Returns arguments for writable properties that an element type declares with {@see ElementProperty}.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     * @param  list<string>  $names  Property names to return, in this order. Every name must be declared as writable.
+     * @return array<string, ArgumentConfig>
+     */
+    protected static function propertyArguments(string $elementType, array $names): array
+    {
+        $arguments = [];
+
+        foreach (ElementProperty::only($elementType, $names, 'writable') as $name => $property) {
+            $arguments[$name] = [
+                'name' => $name,
+                'type' => match ($property->type) {
+                    ElementPropertyType::String => Type::string(),
+                    ElementPropertyType::Float => Type::float(),
+                    ElementPropertyType::Int => Type::int(),
+                    ElementPropertyType::Id => Type::id(),
+                    ElementPropertyType::IdList => Type::listOf(Type::id()),
+                    ElementPropertyType::Boolean => Type::boolean(),
+                    ElementPropertyType::DateTime => DateTime::getType(),
+                },
+                'description' => $property->descriptionFor($elementType),
+            ];
+        }
+
+        return $arguments;
     }
 }
