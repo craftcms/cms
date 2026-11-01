@@ -20,7 +20,7 @@
     watch,
     type Component,
   } from 'vue';
-  import {router, usePage} from '@inertiajs/vue3';
+  import {router} from '@inertiajs/vue3';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import MetadataDetailsContent from '@/common/components/MetadataDetailsContent.vue';
   import AutosaveMessage from '@/modules/elements/components/AutosaveMessage.vue';
@@ -38,6 +38,7 @@
   import type {UiValues} from '@/modules/ui/types';
   import {isSidebarTab, type SidebarTabOutlets} from '@/modules/ui/sidebarTabs';
   import ElementDetailsPanels from '@/modules/elements/components/ElementDetailsPanels.vue';
+  import ScreenPanelsScope from '@/common/components/ScreenPanelsScope.vue';
   import {elementDetailsPanelRegistry} from '@/bootstrap/element-details-panels';
   import type {FormSaveOptions} from '@/common/types';
   import WorkflowEditLockCallout from '@/modules/workflows/components/WorkflowEditLockCallout.vue';
@@ -57,7 +58,10 @@
   import {useAnnouncer} from '@/common/composables/useAnnouncer';
   import ReleaseCallout from '@/modules/releases/components/ReleaseCallout.vue';
   import ReleasePicker from '@/modules/releases/components/ReleasePicker.vue';
-  import {provideReleaseEditorActions} from '@/modules/releases/releaseEditor';
+  import {
+    isReleasePreviewOpen,
+    provideReleaseEditorActions,
+  } from '@/modules/releases/releaseEditor';
   import type {ReleaseOption} from '@/modules/elements/composables/useElementEditor';
   import {create} from '@actions/ReleasesController';
   import {openSlideout} from '@/common/slideouts';
@@ -151,16 +155,11 @@
       false
   );
 
-  /**
-   * Whether the content starts with a tab strip, which sits flush with its
-   * top. In Live Preview, sidebar tabs are in it too.
-   */
+  /** Whether the content starts with a tab strip, which sits flush with its top. */
   const hasContentTabs = computed(
     () =>
       (uiPayload.value?.nodes.filter(
-        (node) =>
-          node.component === 'craft:tab' &&
-          (contentInPreview.value || !isSidebarTab(node))
+        (node) => node.component === 'craft:tab' && !isSidebarTab(node)
       ).length ?? 0) > 1
   );
 
@@ -252,6 +251,13 @@
     slideout,
   });
 
+  /**
+   * Whether the footer leaves out the saves, as in a release's editor, where
+   * the draft autosaves and the release applies it: only a workflow action,
+   * such as requesting review, is left.
+   */
+  const workflowActionsOnly = slideout?.workflowActionsOnly ?? false;
+
   const saveButtons = computed(() =>
     payload.editorActions.buttons.map((action) => ({
       label: action.label,
@@ -340,13 +346,6 @@
   });
 
   const isSlideout = useIsSlideout();
-  const page = usePage<{readOnly?: boolean}>();
-  const showElementControls = computed(
-    () => !isSlideout && !page.props.readOnly && !payload.release
-  );
-  const showActionMenu = computed(
-    () => (isSlideout || !page.props.readOnly) && !payload.release
-  );
 
   // A slideout opened from within a preview edits beside that preview, so it
   // doesn't open one of its own.
@@ -360,23 +359,19 @@
       },
     }
   );
-  // Slideouts get View too, as Craft 5's had it in their action menu, which
-  // leaves it out once there are targets.
-  const showViewButtons = computed(
-    () =>
-      (showElementControls.value || (isSlideout && !payload.release)) &&
-      payload.previewTargets.length > 0
-  );
+  // Only a lack of targets leaves these out: previewing changes nothing, and
+  // Live Preview's pane keeps the editor's notices and locks.
+  const showViewButtons = computed(() => payload.previewTargets.length > 0);
   const canPreview = computed(
-    () =>
-      !inOpenPreview &&
-      (showElementControls.value || (isSlideout && !payload.release)) &&
-      Boolean(payload.preview?.targets.length)
+    () => !inOpenPreview && Boolean(payload.preview?.targets.length)
   );
   const livePreviewPane =
     useTemplateRef<InstanceType<typeof LivePreview>>('livePreviewPane');
   const livePreviewTarget = computed(
     () => livePreviewPane.value?.editorTarget ?? null
+  );
+  const livePreviewNoticesTarget = computed(
+    () => livePreviewPane.value?.noticesTarget ?? null
   );
   /** Whether the editor content is in Live Preview's pane rather than here. */
   const contentInPreview = computed(
@@ -407,6 +402,28 @@
   );
   const approvalNoticeDismissed = ref(false);
   const releaseNoticeDismissed = ref(false);
+
+  /**
+   * Whether the release notice would only repeat what the release's preview
+   * already shows, beside the draft opened from it: that the draft is in an
+   * unscheduled release, which it isn't blocking, and editing it won't reopen
+   * an approved review, leaving it blocking.
+   */
+  const releaseNoticeRedundant = computed(
+    () =>
+      slideout !== null &&
+      payload.release !== null &&
+      isReleasePreviewOpen(payload.release.id) &&
+      payload.release.status !== 'scheduled' &&
+      payload.release.blockers.length === 0 &&
+      payload.workflow.current?.status !== 'approved'
+  );
+  const showReleaseNotice = computed(
+    () =>
+      payload.release !== null &&
+      !releaseNoticeDismissed.value &&
+      !releaseNoticeRedundant.value
+  );
   const {announce} = useAnnouncer();
 
   // Dismissing the release notice only hides it until the draft starts
@@ -562,14 +579,16 @@
     title: payload.title,
     form,
     onSave: editorLocked.value ? undefined : primaryAction,
-    saveDisabled: editorLocked.value,
+    saveDisabled:
+      editorLocked.value ||
+      (workflowActionsOnly && !payload.editorActions.primary.panelId),
     handlesReadOnly: true,
     submitButtonLabel: payload.editorActions.primary.label,
     // The element supplies its own full set of alternate saves — including its
     // own "Save and continue editing" — so the layout's default would duplicate.
     defaultFormActions: [],
-    formActions: formActionItems.value,
-    formAdditionalButtons: saveButtons.value,
+    formActions: workflowActionsOnly ? [] : formActionItems.value,
+    formAdditionalButtons: workflowActionsOnly ? [] : saveButtons.value,
     editUrl: payload.cpEditUrl,
   }));
 </script>
@@ -618,7 +637,10 @@
     />
   </LayoutSlot>
 
-  <LayoutSlot v-if="payload.additionalButtons.length" name="additional-buttons">
+  <LayoutSlot
+    v-if="!workflowActionsOnly && payload.additionalButtons.length"
+    name="additional-buttons"
+  >
     <craft-button
       v-for="button in payload.additionalButtons"
       :key="button.label"
@@ -652,10 +674,7 @@
     </div>
   </LayoutSlot>
 
-  <LayoutSlot
-    v-if="showActionMenu && payload.actionMenu.length"
-    name="content-toolbar-actions"
-  >
+  <LayoutSlot v-if="payload.actionMenu.length" name="content-toolbar-actions">
     <ElementActionMenu
       :items="payload.actionMenu"
       :current-entry-type-id="form.typeId"
@@ -676,7 +695,7 @@
   </LayoutSlot>
 
   <LayoutSlot
-    v-if="!payload.readOnly && canChooseRelease"
+    v-if="!workflowActionsOnly && !payload.readOnly && canChooseRelease"
     name="additional-buttons"
   >
     <ReleasePicker
@@ -699,198 +718,204 @@
       workflowReviewLocked ||
       (awaitingUserApproval && !approvalNoticeDismissed) ||
       payload.workflow.current?.status === 'withdrawn' ||
-      (payload.release && !releaseNoticeDismissed)
+      showReleaseNotice
     "
     name="content-notices"
   >
-    <div class="element-notices">
-      <craft-callout
-        v-if="payload.workflow.convertedToDraft && !workflowReviewLocked"
-        variant="warning"
-        icon="triangle-exclamation"
-        class="mb-4"
-        rounded="none"
-        appearance="fill"
-      >
-        {{
-          t(
-            'Your changes are saved in a draft and won’t be published until the draft is approved and applied.'
-          )
-        }}
-      </craft-callout>
-
-      <WorkflowEditLockCallout
-        v-if="workflowReviewLocked"
-        :payload="payload"
-        :update-payload="updatePayload"
-        :confirm-editing="
-          payload.release?.status === 'scheduled' &&
-          !payload.release.blockers.length
-            ? confirmScheduledEdit
-            : undefined
-        "
-        class="mb-4"
-        @start-editing="startEditing"
-      />
-
-      <craft-dialog
-        :label="t('Edit a draft in a scheduled release?')"
-        .opened="settleScheduledEdit !== null"
-        @craft-hide="answerScheduledEdit(false)"
-      >
-        <p class="m-0">
+    <Teleport
+      :to="livePreviewNoticesTarget"
+      :disabled="!contentInPreview"
+      defer
+    >
+      <div class="element-notices">
+        <craft-callout
+          v-if="payload.workflow.convertedToDraft && !workflowReviewLocked"
+          variant="warning"
+          icon="triangle-exclamation"
+          class="mb-4"
+          rounded="none"
+          appearance="fill"
+        >
           {{
             t(
-              'Editing this draft will undo its approval. Unless it’s approved again before “{name}” publishes, the release will fail to publish.',
-              {name: payload.release?.name ?? ''}
+              'Your changes are saved in a draft and won’t be published until the draft is approved and applied.'
             )
           }}
-        </p>
-        <craft-button
-          slot="footer"
-          type="button"
-          autofocus
-          @click="answerScheduledEdit(false)"
-        >
-          {{ t('Cancel') }}
-        </craft-button>
-        <craft-button
-          slot="footer"
-          type="button"
-          variant="primary"
-          @click="answerScheduledEdit(true)"
-        >
-          {{ t('Edit anyway') }}
-        </craft-button>
-      </craft-dialog>
+        </craft-callout>
 
-      <craft-callout
-        v-if="awaitingUserApproval && !approvalNoticeDismissed"
-        variant="info"
-        icon="clipboard-check"
-        class="mb-4"
-        rounded="none"
-        appearance="fill"
-      >
-        {{ t('This draft is waiting on your approval.') }}
-        <craft-button
-          slot="action"
-          type="button"
-          icon="xmark-large"
-          :aria-label="t('Dismiss')"
-          variant="plain"
-          size="small"
-          flush="inline-end"
-          inherit
-          @click="approvalNoticeDismissed = true"
-        ></craft-button>
-      </craft-callout>
+        <WorkflowEditLockCallout
+          v-if="workflowReviewLocked"
+          :payload="payload"
+          :update-payload="updatePayload"
+          :confirm-editing="
+            payload.release?.status === 'scheduled' &&
+            !payload.release.blockers.length
+              ? confirmScheduledEdit
+              : undefined
+          "
+          class="mb-4"
+          @start-editing="startEditing"
+        />
 
-      <craft-callout
-        v-if="payload.workflow.current?.status === 'withdrawn'"
-        variant="info"
-        icon="clipboard-list-check"
-        class="mb-4"
-        rounded="none"
-        appearance="fill"
-      >
-        {{
-          payload.workflow.current.canSubmit
-            ? t(
-                'This draft was withdrawn from review. Resubmit it when your edits are ready.'
+        <craft-dialog
+          :label="t('Edit a draft in a scheduled release?')"
+          .opened="settleScheduledEdit !== null"
+          @craft-hide="answerScheduledEdit(false)"
+        >
+          <p class="m-0">
+            {{
+              t(
+                'Editing this draft will undo its approval. Unless it’s approved again before “{name}” publishes, the release will fail to publish.',
+                {name: payload.release?.name ?? ''}
               )
-            : t('This draft was withdrawn from review.')
-        }}
-        <craft-button
-          v-if="payload.workflow.current.canSubmit"
-          slot="action"
-          type="button"
-          variant="outline"
-          size="small"
-          inherit
-          @click="detailsPanels?.select('workflow')"
+            }}
+          </p>
+          <craft-button
+            slot="footer"
+            type="button"
+            autofocus
+            @click="answerScheduledEdit(false)"
+          >
+            {{ t('Cancel') }}
+          </craft-button>
+          <craft-button
+            slot="footer"
+            type="button"
+            variant="primary"
+            @click="answerScheduledEdit(true)"
+          >
+            {{ t('Edit anyway') }}
+          </craft-button>
+        </craft-dialog>
+
+        <craft-callout
+          v-if="awaitingUserApproval && !approvalNoticeDismissed"
+          variant="info"
+          icon="clipboard-check"
+          class="mb-4"
+          rounded="none"
+          appearance="fill"
         >
-          {{ payload.workflow.current.submitLabel }}
-        </craft-button>
-      </craft-callout>
+          {{ t('This draft is waiting on your approval.') }}
+          <craft-button
+            slot="action"
+            type="button"
+            icon="xmark-large"
+            :aria-label="t('Dismiss')"
+            variant="plain"
+            size="small"
+            flush="inline-end"
+            inherit
+            @click="approvalNoticeDismissed = true"
+          ></craft-button>
+        </craft-callout>
 
-      <ReleaseCallout
-        v-if="payload.release && !releaseNoticeDismissed"
-        :release="payload.release"
-        :locked="releaseDraftLocked"
-        :can-start-editing="!payload.readOnly && !workflowReviewLocked"
-        class="mb-4"
-        @start-editing="startEditing"
-        @dismiss="releaseNoticeDismissed = true"
-      />
-
-      <craft-callout
-        v-if="activity.isStale.value"
-        variant="warning"
-        icon="triangle-exclamation"
-        class="mb-4"
-        appearance="fill"
-        rounded="none"
-      >
-        {{ staleMessage }}
-
-        <craft-button
-          slot="action"
-          type="button"
-          variant="outline"
-          size="small"
-          @click="reload"
-          inherit
+        <craft-callout
+          v-if="payload.workflow.current?.status === 'withdrawn'"
+          variant="info"
+          icon="clipboard-list-check"
+          class="mb-4"
+          rounded="none"
+          appearance="fill"
         >
-          {{ t('Reload') }}
-        </craft-button>
-      </craft-callout>
+          {{
+            payload.workflow.current.canSubmit
+              ? t(
+                  'This draft was withdrawn from review. Resubmit it when your edits are ready.'
+                )
+              : t('This draft was withdrawn from review.')
+          }}
+          <craft-button
+            v-if="payload.workflow.current.canSubmit"
+            slot="action"
+            type="button"
+            variant="outline"
+            size="small"
+            inherit
+            @click="detailsPanels?.select('workflow')"
+          >
+            {{ payload.workflow.current.submitLabel }}
+          </craft-button>
+        </craft-callout>
 
-      <!-- A revision's notice already says why nothing is editable. -->
-      <craft-callout
-        v-if="payload.readOnly && !payload.notice"
-        variant="neutral"
-        rounded="none"
-        appearance="fill"
-        icon="lock"
-      >
-        {{ t('This is a read-only view.') }}
-      </craft-callout>
+        <ReleaseCallout
+          v-if="payload.release && showReleaseNotice"
+          :release="payload.release"
+          :locked="releaseDraftLocked"
+          :can-start-editing="!payload.readOnly && !workflowReviewLocked"
+          class="mb-4"
+          @start-editing="startEditing"
+          @dismiss="releaseNoticeDismissed = true"
+        />
 
-      <craft-callout
-        v-if="payload.notice"
-        variant="accent"
-        icon="edit"
-        class="mb-4"
-        rounded="none"
-        appearance="fill"
-      >
-        {{ payload.notice }}
-
-        <craft-button
-          v-if="payload.canDiscardDraft"
-          slot="action"
-          type="button"
-          variant="outline"
-          size="small"
-          @click="discardDraft"
-          inherit
+        <craft-callout
+          v-if="activity.isStale.value"
+          variant="warning"
+          icon="triangle-exclamation"
+          class="mb-4"
+          appearance="fill"
+          rounded="none"
         >
-          {{ t('Discard changes') }}
-        </craft-button>
-      </craft-callout>
+          {{ staleMessage }}
 
-      <craft-callout
-        v-if="payload.mergeNotice"
-        variant="warning"
-        icon="triangle-exclamation"
-        class="mb-4"
-        rounded="none"
-        appearance="fill"
-      >
-        {{ payload.mergeNotice }}
-      </craft-callout>
-    </div>
+          <craft-button
+            slot="action"
+            type="button"
+            variant="outline"
+            size="small"
+            @click="reload"
+            inherit
+          >
+            {{ t('Reload') }}
+          </craft-button>
+        </craft-callout>
+
+        <!-- A revision's notice already says why nothing is editable. -->
+        <craft-callout
+          v-if="payload.readOnly && !payload.notice"
+          variant="neutral"
+          rounded="none"
+          appearance="fill"
+          icon="lock"
+        >
+          {{ t('This is a read-only view.') }}
+        </craft-callout>
+
+        <craft-callout
+          v-if="payload.notice"
+          variant="accent"
+          icon="edit"
+          class="mb-4"
+          rounded="none"
+          appearance="fill"
+        >
+          {{ payload.notice }}
+
+          <craft-button
+            v-if="payload.canDiscardDraft"
+            slot="action"
+            type="button"
+            variant="outline"
+            size="small"
+            @click="discardDraft"
+            inherit
+          >
+            {{ t('Discard changes') }}
+          </craft-button>
+        </craft-callout>
+
+        <craft-callout
+          v-if="payload.mergeNotice"
+          variant="warning"
+          icon="triangle-exclamation"
+          class="mb-4"
+          rounded="none"
+          appearance="fill"
+        >
+          {{ payload.mergeNotice }}
+        </craft-callout>
+      </div>
+    </Teleport>
   </LayoutSlot>
 
   <!-- While Live Preview holds the content: seen only as it slides out. -->
@@ -919,9 +944,7 @@
               :refresh="uiPayload.refreshable ? refreshLayout : undefined"
               :modified="autosave.modified.value"
               :disabled="editorLocked"
-              :sidebar-tab-outlets="
-                contentInPreview ? undefined : sidebarTabOutlets
-              "
+              :sidebar-tab-outlets="sidebarTabOutlets"
               @update:mutation="onMutation"
             />
           </component>
@@ -938,7 +961,7 @@
     :controller="livePreview"
     :title="payload.title"
     :standalone="payload.standalonePreview ?? null"
-    @save="primaryAction()"
+    @save="editorLocked || primaryAction()"
     @closed="previewButton?.focus()"
   >
     <!-- The standalone page has no other header to reach them from. -->
@@ -973,64 +996,66 @@
         @refresh="reload"
       />
     </template>
-    <template #footer>
-      <craft-button
-        type="button"
-        variant="primary"
-        :disabled="workflowReviewLocked"
-        @click="primaryAction()"
-      >
+    <!-- Left out while the editor is locked, as the page's Save button is. -->
+    <template v-if="!editorLocked" #footer>
+      <craft-button type="button" variant="primary" @click="primaryAction()">
         {{ payload.editorActions.primary.label }}
       </craft-button>
     </template>
   </LivePreview>
 
-  <ElementDetailsPanels
-    v-if="hasDetails || $slots['details-header']"
-    ref="detailsPanels"
-    :payload="payload"
-    :activity-timeline-version="activityTimelineVersion"
-    :update-payload="updatePayload"
-    :submit-action="submitAction"
-    :sidebar-tabs="sidebarTabs"
+  <!-- In Live Preview's editor while it holds the content. -->
+  <ScreenPanelsScope
+    :key="contentInPreview ? 'preview' : 'page'"
+    :panels="contentInPreview ? livePreviewPane?.panels : null"
   >
-    <template #sidebar-tab="{tab}">
-      <div
-        :ref="sidebarTabOutletRef(tab.uid)"
-        class="py-lg px-(--cp-container-padding)"
-      ></div>
-    </template>
-    <template #info>
-      <!-- Anything the element type shows above its meta fields, e.g. an
+    <ElementDetailsPanels
+      v-if="hasDetails || $slots['details-header']"
+      ref="detailsPanels"
+      :payload="payload"
+      :activity-timeline-version="activityTimelineVersion"
+      :update-payload="updatePayload"
+      :submit-action="submitAction"
+      :sidebar-tabs="sidebarTabs"
+    >
+      <template #sidebar-tab="{tab}">
+        <div
+          :ref="sidebarTabOutletRef(tab.uid)"
+          class="py-lg px-(--cp-container-padding)"
+        ></div>
+      </template>
+      <template #info>
+        <!-- Anything the element type shows above its meta fields, e.g. an
         asset's file preview. -->
-      <slot name="details-header" :payload="payload" />
+        <slot name="details-header" :payload="payload" />
 
-      <MetadataDetailsContent :html="payload.metadataHtml">
-        <!-- Only when there's something to show above the metadata: a form
+        <MetadataDetailsContent :html="payload.metadataHtml">
+          <!-- Only when there's something to show above the metadata: a form
           wrapper has nothing of its own unless it says so through showDetails. -->
-        <template
-          v-if="sidebarPayload || (formWrapper && showDetails)"
-          #default
-        >
-          <component
-            :is="formWrapper ?? 'div'"
-            v-bind="formWrapper ? {editor, region: 'sidebar'} : {}"
+          <template
+            v-if="sidebarPayload || (formWrapper && showDetails)"
+            #default
           >
-            <craft-field-group v-if="sidebarPayload">
-              <UiRenderer
-                ref="sidebarRenderer"
-                :payload="sidebarPayload"
-                :errors="sidebarErrors"
-                :modified="autosave.modified.value"
-                :disabled="editorLocked"
-                @update:mutation="onSidebarMutation"
-              />
-            </craft-field-group>
-          </component>
-        </template>
-      </MetadataDetailsContent>
-    </template>
-  </ElementDetailsPanels>
+            <component
+              :is="formWrapper ?? 'div'"
+              v-bind="formWrapper ? {editor, region: 'sidebar'} : {}"
+            >
+              <craft-field-group v-if="sidebarPayload">
+                <UiRenderer
+                  ref="sidebarRenderer"
+                  :payload="sidebarPayload"
+                  :errors="sidebarErrors"
+                  :modified="autosave.modified.value"
+                  :disabled="editorLocked"
+                  @update:mutation="onSidebarMutation"
+                />
+              </craft-field-group>
+            </component>
+          </template>
+        </MetadataDetailsContent>
+      </template>
+    </ElementDetailsPanels>
+  </ScreenPanelsScope>
 </template>
 
 <style scoped lang="scss">

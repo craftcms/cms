@@ -143,7 +143,7 @@ trait SearchesElements
      *     ->all();
      * ```
      */
-    #[ElementQueryParam(ElementQueryParamType::String, 'Narrows the query results to only elements that match a search query.')]
+    #[ElementQueryParam(ElementQueryParamType::String, 'Narrows the query results to only {elements} that match a search query.')]
     public function search(mixed $value): static
     {
         $this->search = $value;

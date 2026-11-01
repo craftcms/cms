@@ -33,7 +33,7 @@
 - Changes to enabled entries in sections with a workflow are now saved as drafts, which must be submitted for review and approved by each workflow stage before they can be applied. ([#19667](https://github.com/craftcms/cms/pull/19667))
 - Added a “Workflow” element details tab, for submitting drafts for review, reviewing them, and viewing workflow activity history. ([#19667](https://github.com/craftcms/cms/pull/19667))
 - Added the “User Review” workflow stage type, which supports per-group approval requirements, carried-over approvals, change requests, and email notifications for reviewers. ([#19667](https://github.com/craftcms/cms/pull/19667))
-- Added releases, which group saved drafts of entries and other top-level elements so they can be scheduled and published together, atomically. Drafts in a release can be queried with the `releaseId` element query param and GraphQL argument, and the “Query for releases” GraphQL schema permission adds `releases` and `release` queries.
+- Added releases, which group saved drafts of entries and other top-level elements so they can be scheduled and published together, atomically. A release’s drafts can be stepped through in a Live Preview–style view, opened from the release screen’s Preview button, with warnings on any drafts that are blocking the release, and edited beside their preview. Drafts in a release can be queried with the `releaseId` element query param and GraphQL argument, and the “Query for releases” GraphQL schema permission adds `releases` and `release` queries.
 
 ### Elements
 - Added Markdown comments to element activity timelines, with support for editing, removing, structured user mentions, syntax-highlighted code blocks, and email notifications.
@@ -49,6 +49,7 @@
 - Live Preview no longer flickers when it reloads. The updated page loads behind the current one and is swapped in once it’s ready, keeping the scroll position. ([#19964](https://github.com/craftcms/cms/pull/19964))
 - Live Preview now fades between device sizes, rather than re-laying out the previewed page throughout the animation. ([#19964](https://github.com/craftcms/cms/pull/19964))
 - Live Preview now reloads once after a run of quick edits, rather than after every autosave. ([#19964](https://github.com/craftcms/cms/pull/19964))
+- Live Preview’s editor is now docked to the right of the preview, with the element’s details panels beside it. Slideouts opened from the editor now cover it as nested views, with a Back button.
 
 #### Entries
 - Added support for disabling Matrix entries for individual sites. ([#19686](https://github.com/craftcms/cms/pull/19686))
@@ -145,6 +146,7 @@
 - Added the `guidance.update`, `skills.create`, `skills.update`, and `skills.delete` MCP tools, which save the AI guidance for the sites the user can edit and manage skills, for users who can use the AI Guidance & Skills utility. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - Added the `guidance.updatePersonal` MCP tool, which saves the user’s own AI guidance. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - The MCP server’s `elements.field-schema` tool now says that Markdown fields take Markdown, rather than HTML. ([#20109](https://github.com/craftcms/cms/pull/20109))
+- The `elements.*` MCP tools no longer list draft, revision, or structure criteria and attributes for element types that don’t support them, such as structure params for assets and users. ([#20254](https://github.com/craftcms/cms/pull/20254))
 
 #### General
 - Replaced Craft’s system status with Laravel maintenance mode, including an admin-only Maintenance Mode control in General Settings.
@@ -189,6 +191,9 @@
 - OAuth clients can discover and register for the GraphQL API on their own, and users choose “Read only” or “Read and write” access when they authorize one. ([#20231](https://github.com/craftcms/cms/pull/20231))
 - Added the `currentUser` GraphQL query, which returns the user that authenticated the request with an access token. ([#20231](https://github.com/craftcms/cms/pull/20231))
 - The `level` GraphQL argument is now a `[QueryArgument]`, so it accepts the same values as the `level` element query param, such as `">= 2"` or `[1, 2]`. Queries that pass it from an `Int` variable must declare the variable as `[QueryArgument]`. ([#20209](https://github.com/craftcms/cms/pull/20209))
+- Address queries in GraphQL now accept the `addressLine1`, `addressLine2`, `addressLine3`, `dependentLocality`, `field`, `fieldId`, `firstName`, `fullName`, `lastName`, `locality`, `organization`, `organizationTaxId`, `postalCode`, `primaryOwnerId`, and `sortingCode` arguments, like the matching address query params. ([#20251](https://github.com/craftcms/cms/pull/20251))
+- Added the `canonicalId`, `canonicalUid`, `draftId`, `draftName`, `draftNotes`, `fieldId`, `isDraft`, `isUnpublishedDraft`, `ownerId`, and `sortOrder` fields to addresses, and the `sortOrder` field to content blocks, in GraphQL queries. ([#20251](https://github.com/craftcms/cms/pull/20251))
+- Element query argument descriptions in GraphQL, and the `elements.*` MCP tools’ query criteria descriptions, now name the element type, such as “the entries’ statuses”, rather than referring to “elements”. ([#20250](https://github.com/craftcms/cms/pull/20250))
 - GraphQL mutations now return an error when new Matrix entries aren’t listed in `sortOrder`, rather than ignoring them, and each Matrix entry input can only specify one entry type. ([#19965](https://github.com/craftcms/cms/pull/19965))
 
 #### Debugging
@@ -241,6 +246,8 @@
 - Plugins can now make their element types available through the `elements.*` MCP tools.
 - Added `CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam`, which element query setters can use to describe their params. Described params are included in the `elements.*` MCP tools’ query criteria, and GraphQL argument classes can build arguments from them with `CraftCms\Cms\Gql\Arguments\Arguments::queryParamArguments()`. Element argument classes that override `CraftCms\Cms\Gql\Arguments\ElementArguments::elementType()` get arguments for their element type’s described query params automatically. ([#20209](https://github.com/craftcms/cms/pull/20209))
 - Added `CraftCms\Cms\Element\Attributes\ElementProperty`, which element properties, setters, and getters can use to describe the values they accept and return. The `elements.*` MCP tools’ create and update attributes, GraphQL mutation arguments, and GraphQL element interface fields are built from them, and element mutation argument classes that override `CraftCms\Cms\Gql\Arguments\ElementMutationArguments::elementType()` get arguments for their element type’s described properties automatically. ([#20216](https://github.com/craftcms/cms/pull/20216), [#20218](https://github.com/craftcms/cms/pull/20218))
+- Added `CraftCms\Cms\Element\Contracts\ElementInterface::supportsRevisions()` and `hasStructures()`, and `CraftCms\Cms\Element\Enums\ElementCapability`. Element properties and query params can require a capability with `requires:`, so the `elements.*` MCP tools only expose them for element types that have drafts, revisions, or structures. Both return `false` by default, like `hasDrafts()`, so element types that support revisions or structures should override them. ([#20254](https://github.com/craftcms/cms/pull/20254))
+- Added `CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam::forElementType()`. `CraftCms\Cms\Element\Attributes\ElementProperty::readable()` now leaves out properties that require a capability the element type lacks. ([#20254](https://github.com/craftcms/cms/pull/20254))
 - Plugins can offer Passport scopes for personal access tokens on the Tokens screen by registering a `CraftCms\Cms\Auth\PersonalAccessTokens\ScopeGroup` with `CraftCms\Cms\Auth\PersonalAccessTokens\PersonalAccessTokens::registerScopeGroup()`. Registered scopes are added to `Passport::tokensCan()`.
 - Plugins can offer their APIs to OAuth clients, with discovery metadata, dynamic client registration, and access levels that users choose when they authorize a client, by registering a `CraftCms\Cms\Auth\OAuthServer\OAuthResource` with `CraftCms\Cms\Auth\OAuthServer\OAuthResources`. ([#20231](https://github.com/craftcms/cms/pull/20231))
 - GraphQL schema components can support requests made with access tokens via an `authenticated` key on their config, set to `true` or a closure that’s passed the user and returns whether the component is available to them. ([#20231](https://github.com/craftcms/cms/pull/20231))

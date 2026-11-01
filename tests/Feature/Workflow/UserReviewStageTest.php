@@ -72,12 +72,12 @@ it('carries eligible approvals into a later user review stage and completes it w
     expect($run->status)->toBe(WorkflowStatus::Approved)
         ->and(userReviewEvents($this->entry, WorkflowTransition::Approve))->toHaveCount(1)
         ->and(userReviewEvents($this->entry, WorkflowTransition::StageApproved))->toHaveCount(0)
-        ->and(collect($this->workflows->reviewData($this->draft, $this->author)->runs)->firstWhere('current')->stages[0]->summaryProps['approvedReviewers'])->toBe([
-            ['name' => $this->reviewers[0]->name],
-        ])
-        ->and(collect($this->workflows->reviewData($this->draft, $this->author)->runs)->firstWhere('current')->stages[1]->summaryProps['carriedReviewers'])->toBe([
-            ['name' => $this->reviewers[0]->name],
-        ])
+        ->and(collect($this->workflows->reviewData($this->draft, $this->author)->runs)->firstWhere('current')->stages[0]->summaryProps['approvedReviewers'])->sequence(
+            fn ($reviewer) => $reviewer->name->toBe($this->reviewers[0]->name)->thumbHtml->toContain('<svg'),
+        )
+        ->and(collect($this->workflows->reviewData($this->draft, $this->author)->runs)->firstWhere('current')->stages[1]->summaryProps['carriedReviewers'])->sequence(
+            fn ($reviewer) => $reviewer->name->toBe($this->reviewers[0]->name)->thumbHtml->toContain('<svg'),
+        )
         ->and($this->reviewers[0]->notifications()->count())->toBe(1);
 });
 

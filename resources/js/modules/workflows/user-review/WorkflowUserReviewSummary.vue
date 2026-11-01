@@ -5,7 +5,7 @@
   type WorkflowReviewData = CraftCms.Cms.Workflow.Data.WorkflowReviewData;
   type WorkflowRun = WorkflowReviewData['runs'][number];
   type WorkflowStage = WorkflowRun['stages'][number];
-  type Reviewer = {name: string};
+  type Reviewer = {name: string; thumbHtml: string | null};
   type Group = {
     name: string;
     approvals: number;
@@ -89,8 +89,12 @@
           class="workflow-user-review-summary__reviewer-row"
         >
           <span class="workflow-user-review-summary__reviewer">
-            <craft-avatar :label="reviewer.name" />
-            <span class="workflow-user-review-summary__name">
+            <span
+              class="workflow-user-review-summary__thumb"
+              aria-hidden="true"
+              v-html="reviewer.thumbHtml"
+            ></span>
+            <span class="workflow-user-review-summary__name text-box-trim">
               {{ reviewer.name }}
             </span>
           </span>
@@ -134,8 +138,12 @@
             class="workflow-user-review-summary__reviewer-row"
           >
             <span class="workflow-user-review-summary__reviewer">
-              <craft-avatar :label="reviewer.name" />
-              <span class="workflow-user-review-summary__name">
+              <span
+                class="workflow-user-review-summary__thumb"
+                aria-hidden="true"
+                v-html="reviewer.thumbHtml"
+              ></span>
+              <span class="workflow-user-review-summary__name text-box-trim">
                 {{ reviewer.name }}
               </span>
             </span>
@@ -195,8 +203,10 @@
     gap: var(--c-spacing-xs);
   }
 
-  .workflow-user-review-summary__reviewer craft-avatar {
-    --size: var(--c-size-icon-lg);
+  .workflow-user-review-summary__thumb {
+    --c-thumb-icon-size: var(--c-size-control-sm);
+    --c-thumbnail-size: var(--c-size-control-sm);
+    display: flex;
     flex: none;
   }
 
