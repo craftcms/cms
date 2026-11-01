@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Element\Queries\Attributes;
 
 use Attribute;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Enums\ElementCapability;
 use CraftCms\Cms\Element\Enums\ElementQueryParamType;
 use ReflectionClass;
 use ReflectionMethod;
@@ -24,10 +25,36 @@ class ElementQueryParam
     /** @var array<class-string, array<string, self>> */
     private static array $params = [];
 
+    /**
+     * @param  ElementCapability|null  $requires  The capability an element type needs for the param to apply to it.
+     */
     public function __construct(
         public readonly ElementQueryParamType $type,
         public readonly string $description,
+        public readonly ?ElementCapability $requires = null,
     ) {}
+
+    /**
+     * Returns whether the param applies to an element type, which it does unless it requires a capability the element
+     * type lacks.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     */
+    public function appliesTo(string $elementType): bool
+    {
+        return $this->requires?->supportedBy($elementType) ?? true;
+    }
+
+    /**
+     * Returns the params an element type’s query declares that apply to the element type, indexed by setter name.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     * @return array<string, self>
+     */
+    public static function forElementType(string $elementType): array
+    {
+        return array_filter(self::all($elementType::find()::class), fn (self $param): bool => $param->appliesTo($elementType));
+    }
 
     /**
      * Returns the description for an element type, replacing `{element}` with its lowercase name and `{elements}` with

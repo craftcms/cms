@@ -69,18 +69,20 @@ class ElementQueryCriteria
     ];
 
     /**
-     * Returns JSON Schema properties for the params an element type's query declares with {@see ElementQueryParam}.
+     * Returns JSON Schema properties for the params an element type's query declares with {@see ElementQueryParam} that
+     * apply to the element type.
      *
      * @param  class-string<ElementInterface>  $elementType
-     * @param  list<string>|null  $only  Param names to return. Every name must be declared.
+     * @param  list<string>|null  $only  Param names to return, whether or not they apply to the element type. Every name must be declared.
      * @return array<string, array<string, mixed>>
      */
     public static function properties(string $elementType, ?array $only = null): array
     {
-        $queryClass = $elementType::find()::class;
-        $params = ElementQueryParam::all($queryClass);
-
-        if ($only !== null) {
+        if ($only === null) {
+            $params = ElementQueryParam::forElementType($elementType);
+        } else {
+            $queryClass = $elementType::find()::class;
+            $params = ElementQueryParam::all($queryClass);
             $missing = array_diff($only, array_keys($params));
 
             if ($missing !== []) {

@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Element\Concerns;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Enums\ElementCapability;
 use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Url;
@@ -28,7 +29,7 @@ trait Revisionable
     /**
      * @var int|null The ID of the revision’s row in the `revisions` table
      */
-    #[ElementProperty(ElementPropertyType::Int, 'The revision ID (from the `revisions` table).', readable: true, writable: false)]
+    #[ElementProperty(ElementPropertyType::Int, 'The revision ID (from the `revisions` table).', readable: true, writable: false, requires: ElementCapability::Revisions)]
     public ?int $revisionId = null;
 
     /**
@@ -44,7 +45,7 @@ trait Revisionable
     /**
      * @var string|null The revision notes
      */
-    #[ElementProperty(ElementPropertyType::String, 'The revision notes (from the `revisions` table).', nullable: true, readable: true)]
+    #[ElementProperty(ElementPropertyType::String, 'The revision notes (from the `revisions` table).', nullable: true, readable: true, requires: ElementCapability::Revisions)]
     public ?string $revisionNotes = null;
 
     /**
@@ -113,7 +114,7 @@ trait Revisionable
         DB::table(Table::REVISIONS)->delete($this->revisionId);
     }
 
-    #[ElementProperty(ElementPropertyType::Boolean, 'Returns whether this is a revision.', readable: true, writable: false)]
+    #[ElementProperty(ElementPropertyType::Boolean, 'Returns whether this is a revision.', readable: true, writable: false, requires: ElementCapability::Revisions)]
     public function getIsRevision(): bool
     {
         return ! empty($this->revisionId);
@@ -142,6 +143,11 @@ trait Revisionable
     protected function cpRevisionsUrl(): ?string
     {
         return null;
+    }
+
+    public static function supportsRevisions(): bool
+    {
+        return false;
     }
 
     public function hasRevisions(): bool

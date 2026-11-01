@@ -82,6 +82,21 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     public static function hasDrafts(): bool;
 
     /**
+     * Returns whether elements of this type can have revisions.
+     *
+     * Whether a given element gets revisions when it’s saved is up to {@see hasRevisions()}. Element types that return
+     * `false` don’t get revision params and properties, such as `revisionId`, in external APIs.
+     */
+    public static function supportsRevisions(): bool;
+
+    /**
+     * Returns whether elements of this type can be placed in structures.
+     *
+     * Element types that return `false` don’t get structure params and properties, such as `level`, in external APIs.
+     */
+    public static function hasStructures(): bool;
+
+    /**
      * Returns whether Craft should keep track of attribute and custom field changes made to this element type,
      * including when the last time they were changed, and who was logged-in at the time.
      *
