@@ -271,13 +271,13 @@ class ElementEditViewModel extends ViewModel
             $actions['primary']['actionUrl'] = $this->autosaveUrl();
             $actions['primary']['panelId'] = null;
 
-            if (! $release->status->isMutable()) {
+            if (! $release->status->isEditable()) {
                 $actions['buttons'] = array_map(
                     fn (array $action): array => $action['actionUrl'] === $this->applyDraftUrl()
                         ? [
                             ...$action,
                             'disabled' => true,
-                            'disabledReason' => t('Cancel the release schedule before applying this draft.'),
+                            'disabledReason' => t('This draft’s release is being published.'),
                         ]
                         : $action,
                     $actions['buttons'],
@@ -357,7 +357,7 @@ class ElementEditViewModel extends ViewModel
             : [];
 
         return Release::query()
-            ->whereIn('status', [ReleaseStatus::Draft, ReleaseStatus::Failed])
+            ->whereIn('status', [ReleaseStatus::Draft, ReleaseStatus::Scheduled, ReleaseStatus::Failed])
             ->orderBy(new IsNull('targetDate'))
             ->orderBy('targetDate')
             ->orderBy('name')

@@ -74,7 +74,7 @@ class ReleaseViewModel extends ViewModel
             publishedAt: $this->release->publishedAt,
             lastError: $canPublish ? $this->release->lastError : null,
             canManage: $canManage,
-            canSchedule: $canPublish,
+            canSchedule: $canPublish && $this->actor->can('schedule', $this->release),
             canPublish: $canPublish,
             canUnschedule: $this->release->status === ReleaseStatus::Scheduled
                 && $this->actor->can('publishReleases'),
@@ -83,7 +83,7 @@ class ReleaseViewModel extends ViewModel
 
     public function readOnly(): bool
     {
-        return ! $this->release->status->isMutable();
+        return ! $this->release->status->isEditable();
     }
 
     /**
@@ -93,7 +93,7 @@ class ReleaseViewModel extends ViewModel
      */
     public function actionMenu(): array
     {
-        if (! $this->editable()) {
+        if (! $this->editable() || ! $this->release->status->isMutable()) {
             return [];
         }
 
@@ -335,13 +335,14 @@ class ReleaseViewModel extends ViewModel
             return null;
         }
 
-        return $this->uiResolver->resolve(Ui::make([
+        return $this->uiResolver->resolve(Ui::make(array_values(array_filter([
             Field::make(t('Name'), Text::make('name'))->required(),
             Field::make(t('Description'), Markdown::make('description')
                 ->toolbarButtons(MarkdownField::DEFAULT_TOOLBAR_BUTTONS)),
-            ReleaseDateGroup::dateTimeField('targetDate', t('Target Date'), fullWidth: true)
+            // A scheduled release's publication date supersedes its target date.
+            $this->release->status === ReleaseStatus::Scheduled ? null : ReleaseDateGroup::dateTimeField('targetDate', t('Target Date'), fullWidth: true)
                 ->instructions(t('This date is for planning only. Scheduling is a separate action.')),
-        ]), new UiContext(values: [
+        ]))), new UiContext(values: [
             'name' => $this->release->name,
             'description' => $this->release->description,
             'targetDate' => ReleaseDateGroup::dateTimeValue($this->release->targetDate),
@@ -359,7 +360,8 @@ class ReleaseViewModel extends ViewModel
                 ? Html::encode($this->formatDate($release->publishedAt))
                 : false,
         ]);
-        $description = $release->description === null
+        // When the release is editable, its description is in the form instead.
+        $description = $release->description === null || $this->editable()
             ? ''
             : Html::tag('section', implode('', [
                 Html::tag('h3', Html::encode(t('Description')), ['class' => 'font-bold text-xs mb-xs']),
