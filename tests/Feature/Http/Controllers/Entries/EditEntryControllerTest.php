@@ -830,7 +830,7 @@ it('gives Live Preview untokenized targets and the token the View links share', 
         );
 });
 
-it('withholds Live Preview from revisions', function () {
+it('gives revisions Live Preview', function () {
     $revision = Elements::getElementById(
         app(Revisions::class)->createRevision($this->entry, auth()->id()),
     );
@@ -843,7 +843,7 @@ it('withholds Live Preview from revisions', function () {
     )))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('preview', null)
+            ->where('preview.tokenParams.revisionId', $revision->revisionId)
             ->etc()
         );
 });

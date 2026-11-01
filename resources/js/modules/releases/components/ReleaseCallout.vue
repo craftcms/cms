@@ -71,7 +71,7 @@
 
 <template>
   <craft-callout
-    :variant="locked || blocking ? 'warning' : 'info'"
+    :variant="blocking ? 'danger' : locked ? 'warning' : 'info'"
     :icon="icon"
     rounded="none"
     appearance="fill"

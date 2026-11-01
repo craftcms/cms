@@ -135,3 +135,23 @@ it('throws BadMethodCallException for invalid non-null argument', function () {
         'nonExistentMethod' => 'some_value',
     ]);
 })->throws(BadMethodCallException::class);
+
+it('filters addresses by their address fields through the schema', function () {
+    $group = UserGroup::factory()->create();
+    $user = UserModel::factory()->active()->createElement();
+    app(Users::class)->assignUserToGroups($user->id, [$group->id]);
+
+    foreach (['Oslo' => '0150', 'Bergen' => '5003'] as $locality => $postalCode) {
+        AddressModel::factory()->create([
+            'primaryOwnerId' => $user->id,
+            'countryCode' => 'NO',
+            'locality' => $locality,
+            'postalCode' => $postalCode,
+        ]);
+    }
+
+    $schema = new GqlSchema(['scope' => ["usergroups.{$group->uid}:read"]]);
+    $result = app(Gql::class)->executeQuery($schema, '{ addresses(locality: "Bergen") { locality postalCode } }');
+
+    expect($result)->toBe(['data' => ['addresses' => [['locality' => 'Bergen', 'postalCode' => '5003']]]]);
+});

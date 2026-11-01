@@ -115,7 +115,7 @@ trait QueriesUniqueElements
      *     ->all();
      * ```
      */
-    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Determines whether only elements with unique IDs should be returned by the query.')]
+    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Determines whether only {elements} with unique IDs should be returned by the query.')]
     public function unique(bool $value = true): static
     {
         $this->unique = $value;
@@ -153,7 +153,7 @@ trait QueriesUniqueElements
      * ```
      */
     /** @param array<int, int|string>|null $value */
-    #[ElementQueryParam(ElementQueryParamType::ScalarOrScalars, 'Determines which site should be selected when querying multi-site elements.')]
+    #[ElementQueryParam(ElementQueryParamType::ScalarOrScalars, 'Determines which site should be selected when querying multi-site {elements}.')]
     public function preferSites(?array $value = null): static
     {
         $this->preferSites = $value;

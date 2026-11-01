@@ -69,7 +69,7 @@ class ContentBlock extends Element
                 'description' => 'The handle of the field that contains the content block.',
                 'complexity' => GqlHelper::singleQueryComplexity(),
             ],
-            ...static::propertyFields(ContentBlockElement::class, ['ownerId']),
+            ...static::propertyFields(ContentBlockElement::class, ['ownerId', 'sortOrder']),
             'localized' => [
                 'name' => 'localized',
                 'args' => [

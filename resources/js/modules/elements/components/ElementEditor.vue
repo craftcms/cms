@@ -20,7 +20,7 @@
     watch,
     type Component,
   } from 'vue';
-  import {router, usePage} from '@inertiajs/vue3';
+  import {router} from '@inertiajs/vue3';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import MetadataDetailsContent from '@/common/components/MetadataDetailsContent.vue';
   import AutosaveMessage from '@/modules/elements/components/AutosaveMessage.vue';
@@ -336,13 +336,6 @@
   });
 
   const isSlideout = useIsSlideout();
-  const page = usePage<{readOnly?: boolean}>();
-  const showElementControls = computed(
-    () => !isSlideout && !page.props.readOnly && !payload.release
-  );
-  const showActionMenu = computed(
-    () => (isSlideout || !page.props.readOnly) && !payload.release
-  );
 
   // A slideout opened from within a preview edits beside that preview, so it
   // doesn't open one of its own.
@@ -356,23 +349,19 @@
       },
     }
   );
-  // Slideouts get View too, as Craft 5's had it in their action menu, which
-  // leaves it out once there are targets.
-  const showViewButtons = computed(
-    () =>
-      (showElementControls.value || (isSlideout && !payload.release)) &&
-      payload.previewTargets.length > 0
-  );
+  // Only a lack of targets leaves these out: previewing changes nothing, and
+  // Live Preview's pane keeps the editor's notices and locks.
+  const showViewButtons = computed(() => payload.previewTargets.length > 0);
   const canPreview = computed(
-    () =>
-      !inOpenPreview &&
-      (showElementControls.value || (isSlideout && !payload.release)) &&
-      Boolean(payload.preview?.targets.length)
+    () => !inOpenPreview && Boolean(payload.preview?.targets.length)
   );
   const livePreviewPane =
     useTemplateRef<InstanceType<typeof LivePreview>>('livePreviewPane');
   const livePreviewTarget = computed(
     () => livePreviewPane.value?.editorTarget ?? null
+  );
+  const livePreviewNoticesTarget = computed(
+    () => livePreviewPane.value?.noticesTarget ?? null
   );
   /** Whether the editor content is in Live Preview's pane rather than here. */
   const contentInPreview = computed(
@@ -648,10 +637,7 @@
     </div>
   </LayoutSlot>
 
-  <LayoutSlot
-    v-if="showActionMenu && payload.actionMenu.length"
-    name="content-toolbar-actions"
-  >
+  <LayoutSlot v-if="payload.actionMenu.length" name="content-toolbar-actions">
     <ElementActionMenu
       :items="payload.actionMenu"
       :current-entry-type-id="form.typeId"
@@ -699,194 +685,200 @@
     "
     name="content-notices"
   >
-    <div class="element-notices">
-      <craft-callout
-        v-if="payload.workflow.convertedToDraft && !workflowReviewLocked"
-        variant="warning"
-        icon="triangle-exclamation"
-        class="mb-4"
-        rounded="none"
-        appearance="fill"
-      >
-        {{
-          t(
-            'Your changes are saved in a draft and won’t be published until the draft is approved and applied.'
-          )
-        }}
-      </craft-callout>
-
-      <WorkflowEditLockCallout
-        v-if="workflowReviewLocked"
-        :payload="payload"
-        :update-payload="updatePayload"
-        :confirm-editing="
-          payload.release?.status === 'scheduled' &&
-          !payload.release.blockers.length
-            ? confirmScheduledEdit
-            : undefined
-        "
-        class="mb-4"
-        @start-editing="startEditing"
-      />
-
-      <craft-dialog
-        :label="t('Edit a draft in a scheduled release?')"
-        .opened="settleScheduledEdit !== null"
-        @craft-hide="answerScheduledEdit(false)"
-      >
-        <p class="m-0">
+    <Teleport
+      :to="livePreviewNoticesTarget"
+      :disabled="!contentInPreview"
+      defer
+    >
+      <div class="element-notices">
+        <craft-callout
+          v-if="payload.workflow.convertedToDraft && !workflowReviewLocked"
+          variant="warning"
+          icon="triangle-exclamation"
+          class="mb-4"
+          rounded="none"
+          appearance="fill"
+        >
           {{
             t(
-              'Editing this draft will undo its approval. Unless it’s approved again before “{name}” publishes, the release will fail to publish.',
-              {name: payload.release?.name ?? ''}
+              'Your changes are saved in a draft and won’t be published until the draft is approved and applied.'
             )
           }}
-        </p>
-        <craft-button
-          slot="footer"
-          type="button"
-          autofocus
-          @click="answerScheduledEdit(false)"
-        >
-          {{ t('Cancel') }}
-        </craft-button>
-        <craft-button
-          slot="footer"
-          type="button"
-          variant="primary"
-          @click="answerScheduledEdit(true)"
-        >
-          {{ t('Edit anyway') }}
-        </craft-button>
-      </craft-dialog>
+        </craft-callout>
 
-      <craft-callout
-        v-if="awaitingUserApproval && !approvalNoticeDismissed"
-        variant="info"
-        icon="clipboard-check"
-        class="mb-4"
-        rounded="none"
-        appearance="fill"
-      >
-        {{ t('This draft is waiting on your approval.') }}
-        <craft-button
-          slot="action"
-          type="button"
-          icon="xmark-large"
-          :aria-label="t('Dismiss')"
-          variant="plain"
-          size="small"
-          flush="inline-end"
-          inherit
-          @click="approvalNoticeDismissed = true"
-        ></craft-button>
-      </craft-callout>
+        <WorkflowEditLockCallout
+          v-if="workflowReviewLocked"
+          :payload="payload"
+          :update-payload="updatePayload"
+          :confirm-editing="
+            payload.release?.status === 'scheduled' &&
+            !payload.release.blockers.length
+              ? confirmScheduledEdit
+              : undefined
+          "
+          class="mb-4"
+          @start-editing="startEditing"
+        />
 
-      <craft-callout
-        v-if="payload.workflow.current?.status === 'withdrawn'"
-        variant="info"
-        icon="clipboard-list-check"
-        class="mb-4"
-        rounded="none"
-        appearance="fill"
-      >
-        {{
-          payload.workflow.current.canSubmit
-            ? t(
-                'This draft was withdrawn from review. Resubmit it when your edits are ready.'
+        <craft-dialog
+          :label="t('Edit a draft in a scheduled release?')"
+          .opened="settleScheduledEdit !== null"
+          @craft-hide="answerScheduledEdit(false)"
+        >
+          <p class="m-0">
+            {{
+              t(
+                'Editing this draft will undo its approval. Unless it’s approved again before “{name}” publishes, the release will fail to publish.',
+                {name: payload.release?.name ?? ''}
               )
-            : t('This draft was withdrawn from review.')
-        }}
-        <craft-button
-          v-if="payload.workflow.current.canSubmit"
-          slot="action"
-          type="button"
-          variant="outline"
-          size="small"
-          inherit
-          @click="detailsPanels?.select('workflow')"
+            }}
+          </p>
+          <craft-button
+            slot="footer"
+            type="button"
+            autofocus
+            @click="answerScheduledEdit(false)"
+          >
+            {{ t('Cancel') }}
+          </craft-button>
+          <craft-button
+            slot="footer"
+            type="button"
+            variant="primary"
+            @click="answerScheduledEdit(true)"
+          >
+            {{ t('Edit anyway') }}
+          </craft-button>
+        </craft-dialog>
+
+        <craft-callout
+          v-if="awaitingUserApproval && !approvalNoticeDismissed"
+          variant="info"
+          icon="clipboard-check"
+          class="mb-4"
+          rounded="none"
+          appearance="fill"
         >
-          {{ payload.workflow.current.submitLabel }}
-        </craft-button>
-      </craft-callout>
+          {{ t('This draft is waiting on your approval.') }}
+          <craft-button
+            slot="action"
+            type="button"
+            icon="xmark-large"
+            :aria-label="t('Dismiss')"
+            variant="plain"
+            size="small"
+            flush="inline-end"
+            inherit
+            @click="approvalNoticeDismissed = true"
+          ></craft-button>
+        </craft-callout>
 
-      <ReleaseCallout
-        v-if="payload.release && !releaseNoticeDismissed"
-        :release="payload.release"
-        :locked="releaseDraftLocked"
-        :can-start-editing="!payload.readOnly && !workflowReviewLocked"
-        class="mb-4"
-        @start-editing="startEditing"
-        @dismiss="releaseNoticeDismissed = true"
-      />
-
-      <craft-callout
-        v-if="activity.isStale.value"
-        variant="warning"
-        icon="triangle-exclamation"
-        class="mb-4"
-        appearance="fill"
-        rounded="none"
-      >
-        {{ staleMessage }}
-
-        <craft-button
-          slot="action"
-          type="button"
-          variant="outline"
-          size="small"
-          @click="reload"
-          inherit
+        <craft-callout
+          v-if="payload.workflow.current?.status === 'withdrawn'"
+          variant="info"
+          icon="clipboard-list-check"
+          class="mb-4"
+          rounded="none"
+          appearance="fill"
         >
-          {{ t('Reload') }}
-        </craft-button>
-      </craft-callout>
+          {{
+            payload.workflow.current.canSubmit
+              ? t(
+                  'This draft was withdrawn from review. Resubmit it when your edits are ready.'
+                )
+              : t('This draft was withdrawn from review.')
+          }}
+          <craft-button
+            v-if="payload.workflow.current.canSubmit"
+            slot="action"
+            type="button"
+            variant="outline"
+            size="small"
+            inherit
+            @click="detailsPanels?.select('workflow')"
+          >
+            {{ payload.workflow.current.submitLabel }}
+          </craft-button>
+        </craft-callout>
 
-      <!-- A revision's notice already says why nothing is editable. -->
-      <craft-callout
-        v-if="payload.readOnly && !payload.notice"
-        variant="neutral"
-        rounded="none"
-        appearance="fill"
-        icon="lock"
-      >
-        {{ t('This is a read-only view.') }}
-      </craft-callout>
+        <ReleaseCallout
+          v-if="payload.release && !releaseNoticeDismissed"
+          :release="payload.release"
+          :locked="releaseDraftLocked"
+          :can-start-editing="!payload.readOnly && !workflowReviewLocked"
+          class="mb-4"
+          @start-editing="startEditing"
+          @dismiss="releaseNoticeDismissed = true"
+        />
 
-      <craft-callout
-        v-if="payload.notice"
-        variant="accent"
-        icon="edit"
-        class="mb-4"
-        rounded="none"
-        appearance="fill"
-      >
-        {{ payload.notice }}
-
-        <craft-button
-          v-if="payload.canDiscardDraft"
-          slot="action"
-          type="button"
-          variant="outline"
-          size="small"
-          @click="discardDraft"
-          inherit
+        <craft-callout
+          v-if="activity.isStale.value"
+          variant="warning"
+          icon="triangle-exclamation"
+          class="mb-4"
+          appearance="fill"
+          rounded="none"
         >
-          {{ t('Discard changes') }}
-        </craft-button>
-      </craft-callout>
+          {{ staleMessage }}
 
-      <craft-callout
-        v-if="payload.mergeNotice"
-        variant="warning"
-        icon="triangle-exclamation"
-        class="mb-4"
-        rounded="none"
-        appearance="fill"
-      >
-        {{ payload.mergeNotice }}
-      </craft-callout>
-    </div>
+          <craft-button
+            slot="action"
+            type="button"
+            variant="outline"
+            size="small"
+            @click="reload"
+            inherit
+          >
+            {{ t('Reload') }}
+          </craft-button>
+        </craft-callout>
+
+        <!-- A revision's notice already says why nothing is editable. -->
+        <craft-callout
+          v-if="payload.readOnly && !payload.notice"
+          variant="neutral"
+          rounded="none"
+          appearance="fill"
+          icon="lock"
+        >
+          {{ t('This is a read-only view.') }}
+        </craft-callout>
+
+        <craft-callout
+          v-if="payload.notice"
+          variant="accent"
+          icon="edit"
+          class="mb-4"
+          rounded="none"
+          appearance="fill"
+        >
+          {{ payload.notice }}
+
+          <craft-button
+            v-if="payload.canDiscardDraft"
+            slot="action"
+            type="button"
+            variant="outline"
+            size="small"
+            @click="discardDraft"
+            inherit
+          >
+            {{ t('Discard changes') }}
+          </craft-button>
+        </craft-callout>
+
+        <craft-callout
+          v-if="payload.mergeNotice"
+          variant="warning"
+          icon="triangle-exclamation"
+          class="mb-4"
+          rounded="none"
+          appearance="fill"
+        >
+          {{ payload.mergeNotice }}
+        </craft-callout>
+      </div>
+    </Teleport>
   </LayoutSlot>
 
   <!-- While Live Preview holds the content: seen only as it slides out. -->
@@ -932,7 +924,7 @@
     :controller="livePreview"
     :title="payload.title"
     :standalone="payload.standalonePreview ?? null"
-    @save="primaryAction()"
+    @save="editorLocked || primaryAction()"
     @closed="previewButton?.focus()"
   >
     <!-- The standalone page has no other header to reach them from. -->
@@ -967,13 +959,9 @@
         @refresh="reload"
       />
     </template>
-    <template #footer>
-      <craft-button
-        type="button"
-        variant="primary"
-        :disabled="workflowReviewLocked"
-        @click="primaryAction()"
-      >
+    <!-- Left out while the editor is locked, as the page's Save button is. -->
+    <template v-if="!editorLocked" #footer>
+      <craft-button type="button" variant="primary" @click="primaryAction()">
         {{ payload.editorActions.primary.label }}
       </craft-button>
     </template>

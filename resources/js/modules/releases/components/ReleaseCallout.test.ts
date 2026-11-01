@@ -78,11 +78,11 @@ it.each([
     'info',
     'This draft belongs to “Launch”. Saved changes will be included when the release publishes.',
   ],
-  ['draft', true, 'warning', 'This draft is blocking “Launch”.'],
+  ['draft', true, 'danger', 'This draft is blocking “Launch”.'],
   [
     'scheduled',
     true,
-    'warning',
+    'danger',
     'This draft is blocking the scheduled release “Launch”.',
   ],
 ] as const)(
