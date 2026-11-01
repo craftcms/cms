@@ -46,6 +46,7 @@
     type DeviceType,
   } from './devicePreview';
   import type {LivePreviewController, LivePreviewFrame} from './useLivePreview';
+  import PreviewCloseButton from './PreviewCloseButton.vue';
 
   /** Room each pane keeps, however far the divider is dragged. */
   const MIN_PANE_WIDTH = 320;
@@ -584,6 +585,7 @@
           'live-preview--dragging': handlePressed || resizer.isResizing.value,
           'live-preview--compact': compact,
           'live-preview--with-sidebar': hasSidebar,
+          'live-preview--with-nav': $slots.default,
           'live-preview--with-editor': $slots.editor,
         }"
         :aria-label="t('Preview')"
@@ -599,6 +601,7 @@
               >{{ t('Skip to top of preview') }}</a
             >
             <h2 class="lp-pane-title">{{ title }}</h2>
+            <PreviewCloseButton v-if="closable" @click="preview.close()" />
           </header>
           <slot></slot>
         </section>
@@ -612,17 +615,6 @@
         >
           <header class="lp-preview__toolbar">
             <div class="lp-preview__toolbar-start">
-              <craft-button
-                v-if="closable"
-                type="button"
-                size="small"
-                icon="xmark-large"
-                variant="plain"
-                flush="inline-start"
-                @click="preview.close()"
-              >
-                {{ t('Close') }}
-              </craft-button>
               <slot name="toolbar-start">
                 <ActionMenu
                   v-if="preview.targets.value.length > 1"
@@ -750,6 +742,12 @@
               </craft-tooltip>
 
               <slot name="toolbar-end"></slot>
+
+              <!-- Without its sidebar, a preview that has one closes from here. -->
+              <PreviewCloseButton
+                v-if="closable && $slots.default && !hasSidebar"
+                @click="preview.close()"
+              />
             </div>
           </header>
 
@@ -882,8 +880,9 @@
 
   /* The panes slide in from the sides, over the page as the backdrop fades
      in: the sidebar from the start, the editor from the end, and the preview
-     from whichever side the sidebar doesn't take. They leave together, as one
-     sheet sliding out past the end. */
+     from whichever side the sidebar doesn't take. They leave the way they
+     came, except that with something to navigate, the preview and editor
+     leave as one sheet, sliding out past the end together. */
   @media screen and (prefers-reduced-motion: no-preference) {
     .live-preview-enter-active,
     .live-preview-leave-active {
@@ -899,7 +898,8 @@
       background-color: transparent;
     }
 
-    .live-preview-enter-from {
+    .live-preview-enter-from,
+    .live-preview-leave-to {
       & > .lp-sidebar,
       &:not(.live-preview--with-sidebar) > .lp-preview {
         translate: -100% 0;
@@ -911,12 +911,17 @@
       }
     }
 
-    .live-preview-leave-to > * {
-      translate: 100vw 0;
+    /* As far as each other, so there's no gap between them. */
+    .live-preview-leave-to.live-preview--with-nav {
+      & > .lp-preview,
+      & > .lp-editor {
+        translate: 100vw 0;
+      }
     }
 
     [dir='rtl'] {
-      .live-preview-enter-from {
+      .live-preview-enter-from,
+      .live-preview-leave-to {
         & > .lp-sidebar,
         &:not(.live-preview--with-sidebar) > .lp-preview {
           translate: 100% 0;
@@ -928,8 +933,11 @@
         }
       }
 
-      .live-preview-leave-to > * {
-        translate: -100vw 0;
+      .live-preview-leave-to.live-preview--with-nav {
+        & > .lp-preview,
+        & > .lp-editor {
+          translate: -100vw 0;
+        }
       }
     }
   }
