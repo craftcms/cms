@@ -2602,6 +2602,7 @@ return [
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => '{attribute} จะต้องเลือกไม่เกิน {max, number} {max, plural, other{รายการ}}',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} จะต้องมี {count, number} {count, plural, other{รายการ}}',
     '{count, number} {count, plural, =1{layout} other{layouts}}' => '{count, number} {count, plural, =1{เค้าโครง} other{เค้าโครง}}',
+    '{count, plural, =1{# Draft} other{# Drafts}}' => '{count, plural, =1{# Draft} other{# Drafts}}',
     '{count, spellout} plugin {count, plural, =1{update} other{updates}}' => '{count, plural, =1{อัปเดต} other{อัปเดต}}ปลั๊กอิน {count, spellout} รายการ',
     '{count, spellout} {count, plural, =1{plugin} other{plugins}}' => '{count, plural, =1{ปลั๊กอิน} other{ปลั๊กอิน}} {count, spellout} รายการ',
     '{delta, plural, =1{1 day} other{# days}}' => '{delta, plural, =1{1 day} other{# days}}',
