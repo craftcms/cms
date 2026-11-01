@@ -1,8 +1,11 @@
 <script setup lang="ts">
   /**
    * The full-screen preview layout: a front-end preview with its target,
-   * device and refresh controls, beside an optional resizable editor.
-   * Slideouts opened during the preview cover the editor.
+   * device and refresh controls, between an optional sidebar, such as a
+   * release's list of drafts, and an optional resizable editor.
+   *
+   * Live Preview and a release preview share it, so both look and load the
+   * same. Slideouts opened during either cover the editor.
    */
   import {t} from '@craftcms/ui';
   import {
@@ -43,6 +46,7 @@
     type DeviceType,
   } from './devicePreview';
   import type {LivePreviewController, LivePreviewFrame} from './useLivePreview';
+  import PreviewCloseButton from './PreviewCloseButton.vue';
 
   /** Room each pane keeps, however far the divider is dragged. */
   const MIN_PANE_WIDTH = 320;
@@ -50,11 +54,21 @@
   const props = withDefaults(
     defineProps<{
       controller: LivePreviewController;
+      /** The sidebar's heading, and its accessible name. */
+      title?: string;
       /** Whether the preview can be closed, with its button or Escape. */
       closable?: boolean;
+      /**
+       * Leaves out the sidebar and the device controls, for screens with no
+       * room for either. Whatever the sidebar offered belongs in the
+       * toolbar's `toolbar-start` slot instead.
+       */
+      compact?: boolean;
     }>(),
     {
+      title: '',
       closable: true,
+      compact: false,
     }
   );
 
@@ -64,7 +78,10 @@
     (e: 'closed'): void;
   }>();
 
-  defineSlots<{
+  const slots = defineSlots<{
+    /** A sidebar before the preview, as wide as the CP's own. */
+    default?(): unknown;
+    'toolbar-start'?(): unknown;
     'toolbar-end'?(): unknown;
     /** An editor after the preview, which it shares the width with. */
     editor?(): unknown;
@@ -77,6 +94,7 @@
   /*
    * Panes
    */
+  const hasSidebar = computed(() => !props.compact && Boolean(slots.default));
   const editor = useTemplateRef<HTMLElement>('editor');
   const editorId = `lp-editor-pane-${useId()}`;
   const previewPane = useTemplateRef<HTMLElement>('previewPane');
@@ -196,8 +214,11 @@
    */
   const {width: stageWidth, height: stageHeight} = useElementSize(stage);
   const reducedMotion = usePreferredReducedMotion();
+  // Compact, there are no device controls, so the page fills the stage.
   const targetShape = computed(() =>
-    deviceShape(preview.device.value, preview.orientation.value)
+    props.compact
+      ? null
+      : deviceShape(preview.device.value, preview.orientation.value)
   );
   const shape = shallowRef<DeviceShape | null>(targetShape.value);
   // The page is resized once, at the midpoint, faded out so it doesn't jump.
@@ -403,6 +424,9 @@
     }))
   );
 
+  /** Whether there's anything to preview; a selection can have no targets. */
+  const hasTarget = computed(() => preview.activeTarget.value !== null);
+
   const currentUrl = computed(
     () =>
       preview.frames.value.find((frame) => frame.ready)?.url ??
@@ -559,12 +583,29 @@
         class="live-preview"
         :class="{
           'live-preview--dragging': handlePressed || resizer.isResizing.value,
+          'live-preview--compact': compact,
+          'live-preview--with-sidebar': hasSidebar,
+          'live-preview--with-nav': $slots.default,
           'live-preview--with-editor': $slots.editor,
         }"
         :aria-label="t('Preview')"
         tabindex="-1"
         :style="resizer.style.value"
       >
+        <section v-if="hasSidebar" class="lp-sidebar" :aria-label="title">
+          <header class="lp-pane-header">
+            <a
+              :href="`#${previewPaneId}`"
+              class="skip-link lp-skip-link"
+              @click.prevent="skipToPreview"
+              >{{ t('Skip to top of preview') }}</a
+            >
+            <h2 class="lp-pane-title">{{ title }}</h2>
+            <PreviewCloseButton v-if="closable" @click="preview.close()" />
+          </header>
+          <slot></slot>
+        </section>
+
         <section
           :id="previewPaneId"
           ref="previewPane"
@@ -574,29 +615,32 @@
         >
           <header class="lp-preview__toolbar">
             <div class="lp-preview__toolbar-start">
-              <ActionMenu
-                v-if="preview.targets.value.length > 1"
-                :key="preview.activeIndex.value"
-                :actions="targetActions"
-                :label="preview.activeTarget.value?.label ?? null"
-                :flush="false"
-              >
-                <template #invoker="{attributes}">
-                  <craft-button
-                    v-bind="attributes"
-                    type="button"
-                    size="small"
-                    variant="plain"
-                    icon="chevron-down"
-                    icon-position="suffix"
-                  >
-                    {{ preview.activeTarget.value?.label }}
-                  </craft-button>
-                </template>
-              </ActionMenu>
+              <slot name="toolbar-start">
+                <ActionMenu
+                  v-if="preview.targets.value.length > 1"
+                  :key="preview.activeIndex.value"
+                  :actions="targetActions"
+                  :label="preview.activeTarget.value?.label ?? null"
+                  :flush="false"
+                >
+                  <template #invoker="{attributes}">
+                    <craft-button
+                      v-bind="attributes"
+                      type="button"
+                      size="small"
+                      variant="plain"
+                      icon="chevron-down"
+                      icon-position="suffix"
+                    >
+                      {{ preview.activeTarget.value?.label }}
+                    </craft-button>
+                  </template>
+                </ActionMenu>
+              </slot>
             </div>
 
-            <div class="flex gap-md items-center">
+            <div v-if="compact"></div>
+            <div v-else class="flex gap-md items-center">
               <craft-button-group
                 name="lp-device"
                 :value="preview.device.value"
@@ -611,6 +655,7 @@
                   class="lp-device-button"
                   size="small"
                   icon
+                  .disabled="!hasTarget"
                 >
                   <craft-icon
                     :name="deviceIcons[type]"
@@ -634,7 +679,7 @@
                 size="small"
                 variant="plain"
                 icon="custom-icons/device-rotate"
-                :disabled="preview.device.value === 'desktop'"
+                :disabled="preview.device.value === 'desktop' || !hasTarget"
                 :aria-label="t('Rotate')"
                 @click="rotate"
               ></craft-button>
@@ -650,7 +695,7 @@
                 size="small"
                 variant="plain"
                 icon
-                :disabled="preview.isLoading.value"
+                :disabled="!hasTarget || preview.isLoading.value"
                 .loading="preview.isLoading.value"
                 @click="preview.refresh({reload: true})"
               >
@@ -664,7 +709,7 @@
               </craft-tooltip>
 
               <craft-button
-                v-if="currentUrl"
+                v-if="hasTarget && currentUrl"
                 :id="newTabLinkId"
                 size="small"
                 variant="plain"
@@ -697,10 +742,25 @@
               </craft-tooltip>
 
               <slot name="toolbar-end"></slot>
+
+              <!-- Without its sidebar, a preview that has one closes from here. -->
+              <PreviewCloseButton
+                v-if="closable && $slots.default && !hasSidebar"
+                @click="preview.close()"
+              />
             </div>
           </header>
 
-          <div ref="stage" class="lp-preview__stage">
+          <div
+            ref="stage"
+            class="lp-preview__stage"
+            :class="{'lp-preview__stage--empty': !hasTarget}"
+          >
+            <craft-empty
+              v-if="!hasTarget"
+              class="lp-preview__empty"
+              :label="t('No preview available.')"
+            ></craft-empty>
             <craft-callout
               v-if="preview.error.value"
               variant="danger"
@@ -710,6 +770,7 @@
               {{ preview.error.value }}
             </craft-callout>
             <div
+              v-show="hasTarget"
               class="lp-device"
               :class="{
                 'lp-device--framed': layout,
@@ -802,13 +863,26 @@
     background-color: var(--c-surface-sunken);
   }
 
+  /* As wide as the CP's sidebar, border and all. */
+  .live-preview--with-sidebar {
+    grid-template-columns: calc(var(--cp-sidebar-width) + 1px) minmax(0, 1fr);
+  }
+
   .live-preview--with-editor {
     grid-template-columns: minmax(0, 1fr) var(--lp-editor-width, 33%);
   }
 
+  .live-preview--with-sidebar.live-preview--with-editor {
+    grid-template-columns:
+      calc(var(--cp-sidebar-width) + 1px) minmax(0, 1fr)
+      var(--lp-editor-width, 33%);
+  }
+
   /* The panes slide in from the sides, over the page as the backdrop fades
-     in: the preview from the start and the editor from the end. They leave
-     the way they came. */
+     in: the sidebar from the start, the editor from the end, and the preview
+     from whichever side the sidebar doesn't take. They leave the way they
+     came, except that with something to navigate, the preview and editor
+     leave as one sheet, sliding out past the end together. */
   @media screen and (prefers-reduced-motion: no-preference) {
     .live-preview-enter-active,
     .live-preview-leave-active {
@@ -826,27 +900,55 @@
 
     .live-preview-enter-from,
     .live-preview-leave-to {
-      & > .lp-preview {
+      & > .lp-sidebar,
+      &:not(.live-preview--with-sidebar) > .lp-preview {
         translate: -100% 0;
       }
 
+      &.live-preview--with-sidebar > .lp-preview,
       & > .lp-editor {
         translate: 100% 0;
+      }
+    }
+
+    /* As far as each other, so there's no gap between them. */
+    .live-preview-leave-to.live-preview--with-nav {
+      & > .lp-preview,
+      & > .lp-editor {
+        translate: 100vw 0;
       }
     }
 
     [dir='rtl'] {
       .live-preview-enter-from,
       .live-preview-leave-to {
-        & > .lp-preview {
+        & > .lp-sidebar,
+        &:not(.live-preview--with-sidebar) > .lp-preview {
           translate: 100% 0;
         }
 
+        &.live-preview--with-sidebar > .lp-preview,
         & > .lp-editor {
           translate: -100% 0;
         }
       }
+
+      .live-preview-leave-to.live-preview--with-nav {
+        & > .lp-preview,
+        & > .lp-editor {
+          translate: -100vw 0;
+        }
+      }
     }
+  }
+
+  .lp-sidebar {
+    display: grid;
+    border-inline-end: 1px solid var(--c-color-border-quiet);
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
+    min-width: 0;
+    background-color: var(--c-surface-default);
   }
 
   /* The editor's own markup lays out its header, body and footer. */
@@ -860,6 +962,7 @@
   }
 
   /* Pane headers and footers, the editor's included, match the toolbar. */
+  .lp-pane-header,
   :slotted(.lp-pane-header),
   :slotted(.lp-pane-footer),
   .lp-preview__toolbar {
@@ -870,12 +973,14 @@
     padding-inline: var(--c-spacing-md);
   }
 
+  .lp-pane-header,
   :slotted(.lp-pane-header) {
     padding-inline: var(--cp-container-padding);
     border-block-end: 1px solid var(--c-color-border-quiet);
   }
 
   /* A long title truncates, so the header keeps to one line. */
+  .lp-pane-title,
   :slotted(.lp-pane-title) {
     flex: 1;
     margin: 0;
@@ -885,6 +990,13 @@
     font-weight: 600;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  :slotted(.lp-pane-body) {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   :slotted(.lp-pane-footer) {
@@ -960,11 +1072,23 @@
     contain: strict;
   }
 
+  .live-preview--compact .lp-preview__toolbar {
+    grid-template-columns: minmax(0, 1fr) 0 auto;
+  }
+
   .lp-preview__toolbar-start {
     display: flex;
     align-items: center;
     gap: var(--c-spacing-sm);
     min-width: 0;
+  }
+
+  .lp-preview__stage--empty {
+    background-color: var(--c-surface-sunken);
+  }
+
+  .lp-preview__empty {
+    place-self: center;
   }
 
   /* Over the slideouts covering the editor, at the editor's edge. Doubled to

@@ -13,9 +13,13 @@
   import FormActions from '@/common/components/FormActions.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import UiPage from '@/pages/Ui.vue';
+  import ReleasePreview from '@/modules/releases/components/ReleasePreview.vue';
   import ReleaseStatusBadge from '@/modules/releases/components/ReleaseStatusBadge.vue';
   import {openUiModal} from '@/modules/ui/open-ui-modal';
-  import {formatReleaseDate} from '@/modules/releases/types';
+  import {
+    formatReleaseDate,
+    type ReleasePreviewPayload,
+  } from '@/modules/releases/types';
   import type {UiPayload} from '@/modules/ui/types';
 
   type ReleaseViewModel = CraftCms.Cms.Http.ViewModels.ReleaseViewModel;
@@ -30,6 +34,9 @@
     editUi: UiPayload | null;
     metadataHtml: string | null;
     publishDisabledReason: ReleaseViewModel['publishDisabledReason'];
+    previewUrl: ReleaseViewModel['previewUrl'];
+    /** Set when the release preview is open over the screen. */
+    preview?: ReleasePreviewPayload | null;
   }>();
 
   /** Draft and failed releases can be scheduled. */
@@ -117,6 +124,16 @@
       router.visit(unscheduleRelease({release: props.release.id}));
     }
   }
+
+  /** Opens the release preview over the screen, on its first draft. */
+  function openPreview(): void {
+    if (props.previewUrl) {
+      router.visit(props.previewUrl, {
+        preserveState: true,
+        preserveScroll: true,
+      });
+    }
+  }
 </script>
 
 <template>
@@ -138,6 +155,19 @@
         }}
       </span>
       <span v-if="readinessSummary">{{ readinessSummary }}</span>
+    </LayoutSlot>
+
+    <LayoutSlot v-if="previewUrl" name="content-toolbar-actions">
+      <craft-button
+        type="button"
+        size="small"
+        variant="plain"
+        :flush="actionMenu.length ? undefined : 'inline-end'"
+        icon="eye"
+        @click="openPreview"
+      >
+        {{ t('Preview') }}
+      </craft-button>
     </LayoutSlot>
 
     <LayoutSlot v-if="actionMenu.length" name="content-toolbar-actions">
@@ -236,5 +266,7 @@
         />
       </template>
     </UiPage>
+
+    <ReleasePreview v-if="preview" :release="release" :preview="preview" />
   </div>
 </template>
