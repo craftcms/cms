@@ -2601,6 +2601,7 @@ return [
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => 'Количество выбранных в {attribute} не должно превышать {max, number}{max, plural, one{} other{}}.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => 'Количество объектов, которое должно находиться в {attribute}: {count, number}{count, plural, one{} other{}}.',
     '{count, number} {count, plural, =1{layout} other{layouts}}' => '{count, number} {count, plural, =1{макет} few{макета} many {макетов} other{макетов}}',
+    '{count, plural, =1{# Draft} other{# Drafts}}' => '{count, plural, =1{# Draft} other{# Drafts}}',
     '{count, spellout} plugin {count, plural, =1{update} other{updates}}' => '{count, spellout} {count, plural, one {} few {обновления} many {обновлений}=1{обновление} other{обновления}} плагинов',
     '{count, spellout} {count, plural, =1{plugin} other{plugins}}' => '{count, spellout} {count, plural, one {} few {плагина} many {плагинов}=1{плагин} other{плагина}}',
     '{delta, plural, =1{1 day} other{# days}}' => '{delta, plural, =1{1 day} other{# days}}',
