@@ -66,6 +66,8 @@
   const root = useTemplateRef<HTMLElement>('root');
   const stage = useTemplateRef<HTMLElement>('stage');
   const editorTarget = useTemplateRef<HTMLElement>('editorTarget');
+  /** Where the editor's notices are moved while it holds the content, as the page shows them above its footer. */
+  const noticesTarget = useTemplateRef<HTMLElement>('noticesTarget');
 
   /** Whether the pane is on screen, which outlasts `isOpen` while it slides out. */
   const shown = ref(false);
@@ -76,7 +78,7 @@
   const holdsEditor = ref(false);
 
   // An element rather than an id, so the content follows it if it's replaced.
-  defineExpose({editorTarget, shown, holdsEditor});
+  defineExpose({editorTarget, noticesTarget, shown, holdsEditor});
   const preview = props.controller;
 
   /*
@@ -600,7 +602,8 @@
             </div>
             <div ref="editorTarget"></div>
           </form>
-          <footer class="lp-editor__footer">
+          <div ref="noticesTarget" role="status"></div>
+          <footer v-if="$slots.footer" class="lp-editor__footer">
             <slot name="footer"></slot>
           </footer>
         </section>
@@ -850,7 +853,7 @@
   .lp-editor {
     display: grid;
     border-inline-end: 1px solid var(--c-color-border-quiet);
-    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
     grid-template-columns: minmax(0, 1fr);
     min-width: 0;
     background-color: var(--c-surface-default);
