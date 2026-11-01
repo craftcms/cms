@@ -168,11 +168,15 @@ class ReleaseViewModel extends ViewModel
      * The release preview: its drafts, each with what Live Preview needs to
      * load it, and the one it opens on.
      *
-     * @return array{items: list<array{id: int, title: string, url: string, editUrl: string|null, preview: array<string, mixed>|null}>, selectedItemId: int|null, closeUrl: string}
+     * Each draft carries the issues stopping the release from publishing, as
+     * the release's own screen lists them, when the user can check them.
+     *
+     * @return array{items: list<array{id: int, title: string, url: string, editUrl: string|null, preview: array<string, mixed>|null, blockers: list<string>}>, selectedItemId: int|null, closeUrl: string}
      */
     public function preview(?int $selectedItemId): array
     {
         $items = [];
+        $readiness = $this->readiness();
 
         foreach ($this->itemModels() as $item) {
             if ($item->draftId === null) {
@@ -200,6 +204,7 @@ class ReleaseViewModel extends ViewModel
                     ? $itemPreview['element']->getCpEditUrl()
                     : null,
                 'preview' => $payload,
+                'blockers' => $readiness?->itemErrors[$item->id] ?? [],
             ];
         }
 

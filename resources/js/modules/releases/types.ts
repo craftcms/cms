@@ -13,6 +13,8 @@ export interface ReleasePreviewItem {
   editUrl: string | null;
   /** `null` when the draft has no preview targets the user can view. */
   preview: ElementPreview | null;
+  /** Why the draft would stop the release from publishing, if it would. */
+  blockers: Array<string>;
 }
 
 export interface ReleasePreviewPayload {
