@@ -32,6 +32,8 @@
   const editorTarget = useTemplateRef<HTMLElement>('editorTarget');
   const panels = createScreenPanels();
   const panelIdPrefix = `lp-details-${useId()}`;
+  /** Where the editor's notices are moved while it holds the content, as the page shows them above its footer. */
+  const noticesTarget = useTemplateRef<HTMLElement>('noticesTarget');
 
   /**
    * Whether the editor content belongs in the pane: from when it has slid in
@@ -40,7 +42,7 @@
   const holdsEditor = ref(false);
 
   // An element rather than an id, so the content follows it if it's replaced.
-  defineExpose({editorTarget, holdsEditor, panels});
+  defineExpose({editorTarget, noticesTarget, holdsEditor, panels});
 </script>
 
 <template>
@@ -94,6 +96,8 @@
             <div ref="editorTarget"></div>
           </form>
         </ScreenDetailsLayout>
+
+        <div ref="noticesTarget" role="status"></div>
 
         <footer v-if="$slots.footer" class="lp-pane-footer">
           <slot name="footer"></slot>

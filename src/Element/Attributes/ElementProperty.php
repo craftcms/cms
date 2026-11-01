@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Element\Attributes;
 
 use Attribute;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Enums\ElementCapability;
 use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use LogicException;
 use ReflectionClass;
@@ -34,6 +35,7 @@ class ElementProperty
      * @param  bool  $readable  Whether the property is part of the element’s documented output, which public APIs may expose.
      * @param  bool  $writable  Whether APIs may set the property.
      * @param  bool  $nonNull  Whether reading the property always returns a value.
+     * @param  ElementCapability|null  $requires  The capability an element type needs for the property to apply to it.
      */
     public function __construct(
         public readonly ElementPropertyType $type,
@@ -42,7 +44,19 @@ class ElementProperty
         public readonly bool $readable = false,
         public readonly bool $writable = true,
         public readonly bool $nonNull = false,
+        public readonly ?ElementCapability $requires = null,
     ) {}
+
+    /**
+     * Returns whether the property applies to an element type, which it does unless it requires a capability the element
+     * type lacks.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     */
+    public function appliesTo(string $elementType): bool
+    {
+        return $this->requires?->supportedBy($elementType) ?? true;
+    }
 
     /**
      * Returns the description for an element type, replacing `{element}` with its lowercase name.
@@ -95,14 +109,14 @@ class ElementProperty
     }
 
     /**
-     * Returns the properties an element type declares as readable, indexed by property name.
+     * Returns the readable properties that apply to an element type, indexed by property name.
      *
      * @param  class-string<ElementInterface>  $elementType
      * @return array<string, self>
      */
     public static function readable(string $elementType): array
     {
-        return array_filter(self::all($elementType), fn (self $property): bool => $property->readable);
+        return array_filter(self::all($elementType), fn (self $property): bool => $property->readable && $property->appliesTo($elementType));
     }
 
     /**

@@ -51,7 +51,6 @@ use CraftCms\Cms\Workflow\Enums\WorkflowStatus;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
 use Tpetry\QueryExpressions\Operator\Comparison\IsNull;
 
 use function CraftCms\Cms\currentUser;
@@ -522,36 +521,17 @@ class ElementEditViewModel extends ViewModel
 
     /**
      * What Live Preview needs to load the element's targets in an iframe, or
-     * `null` when the element can't be previewed from this screen.
+     * `null` when it has none.
      *
      * @return array<string, mixed>|null
      */
     public function preview(): ?array
     {
-        if ($this->elementPreview()->targets() === [] || ! $this->canPreview()) {
+        if ($this->elementPreview()->targets() === []) {
             return null;
         }
 
         return $this->elementPreview()->payload();
-    }
-
-    /**
-     * Craft 5's rule: a draft can be previewed by whoever can save it, and the
-     * current element by whoever can draft it, since previewing it makes one.
-     */
-    protected function canPreview(): bool
-    {
-        $element = $this->element;
-
-        if ($this->request->isMobileBrowser(true) || $element->getIsRevision()) {
-            return false;
-        }
-
-        if ($element->getIsDraft() && ! $element->isProvisionalDraft) {
-            return $this->canSave;
-        }
-
-        return Gate::check('createDrafts', $element->getCanonical(true));
     }
 
     /**

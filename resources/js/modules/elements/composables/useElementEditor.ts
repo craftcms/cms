@@ -154,7 +154,7 @@ export interface ElementEditPayload {
   canDiscardDraft: boolean;
   actionMenu: Array<ElementActionMenuItem>;
   previewTargets: Array<ElementPreviewTarget>;
-  /** What Live Preview needs; `null` when the element can't be previewed here. */
+  /** What Live Preview needs; `null` when the element has no preview targets. */
   preview?: ElementPreview | null;
   /**
    * Set when the screen is only there for Live Preview, which stays open.
