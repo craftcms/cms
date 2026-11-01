@@ -483,7 +483,7 @@ it('requires current workflow approval when the first draft site is disabled and
 
     $canonicalAfterEarlyPublication = EntryElement::find()->id($canonical->id)->status(null)->one();
 
-    expect($run->fresh()->status)->toBe(WorkflowStatus::Pending)
+    expect($run->fresh()->status)->toBe(WorkflowStatus::Withdrawn)
         ->and($canonicalAfterEarlyPublication->title)->toBe('Multi-site workflow canonical')
         ->and(EntryElement::find()->draftId($draft->draftId)->siteId($secondSite->id)->status(null)->one()->title)->toBe('Edited release draft')
         ->and($item->fresh()->draftId)->toBe($draft->draftId)

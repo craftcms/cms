@@ -691,6 +691,42 @@ describe('useElementEditor', () => {
     }
   );
 
+  it('stays unlocked when saving the edits reopens an approved draft', async () => {
+    postSpy.mockResolvedValue({
+      data: {
+        draftId: 7,
+        screen: {
+          draftId: 7,
+          workflow: {
+            current: {
+              status: 'pending',
+            } as CraftCms.Cms.Workflow.Data.WorkflowReviewData,
+            draftReviews: [],
+          },
+        },
+      },
+    });
+    const {editor} = mount(
+      payload({
+        canAutosave: true,
+        draftId: 7,
+        workflow: {
+          current: {
+            status: 'approved',
+          } as CraftCms.Cms.Workflow.Data.WorkflowReviewData,
+          draftReviews: [],
+        },
+      })
+    );
+
+    editor.startEditingDraft();
+    await editor.autosave.save();
+    await nextTick();
+
+    expect(editor.props.workflow.current?.status).toBe('pending');
+    expect(editor.workflowReviewLocked.value).toBe(false);
+  });
+
   it.each(['draft', 'scheduled'] as const)(
     'edits a %s release draft locally and autosaves without changing membership',
     async (status) => {
@@ -750,6 +786,30 @@ describe('useElementEditor', () => {
       await typeTitle('New release draft');
       await vi.advanceTimersByTimeAsync(1000);
       expect(postSpy).toHaveBeenCalledTimes(2);
+    }
+  );
+
+  it.each([
+    ['pending', false, false],
+    ['pending', true, true],
+    ['approved', false, true],
+  ] as const)(
+    'locks a %s workflow review for a reviewer of its current stage (approved: %s): %s',
+    (status, hasApproved, locked) => {
+      const {editor} = mount(
+        payload({
+          workflow: {
+            current: {
+              status,
+              isReviewer: true,
+              hasApproved,
+            } as CraftCms.Cms.Workflow.Data.WorkflowReviewData,
+            draftReviews: [],
+          },
+        })
+      );
+
+      expect(editor.workflowReviewLocked.value).toBe(locked);
     }
   );
 

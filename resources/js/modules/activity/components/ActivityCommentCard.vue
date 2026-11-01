@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
+  import MarkdownHtml from '@/common/components/MarkdownHtml.vue';
   import {usePhotoColors} from '@/common/composables/usePhotoColors';
   import type {ActivityTarget} from '@/modules/activity/composables/useActivityTimeline';
   import ActivityTimelineActor from './ActivityTimelineActor.vue';
@@ -64,7 +65,7 @@
     </div>
 
     <div class="activity-comment-card__body">
-      <div v-html="html" />
+      <MarkdownHtml :html="html" />
 
       <slot />
     </div>
@@ -129,9 +130,5 @@
     padding: var(--c-spacing-md);
     font-size: 0.875em;
     overflow-wrap: anywhere;
-  }
-
-  .activity-comment-card__body :deep(> div > :last-child) {
-    margin: 0;
   }
 </style>

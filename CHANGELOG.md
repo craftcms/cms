@@ -149,6 +149,8 @@
 - The authenticated MCP server’s connection instructions now only point to `info.get` for users with control panel access.
 - Links to fields, such as those in Ask AI’s replies, now open the tab or details panel the field is in. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - Readable text, such as Ask AI’s replies, now styles ordered lists, task lists, blockquotes, and inline code. ([#20109](https://github.com/craftcms/cms/pull/20109))
+- Comments in the Activity and Workflow details panels, and Ask AI’s messages and replies, are now styled the same, with syntax-highlighted code blocks on a dark background, and inline code in red. ([#20246](https://github.com/craftcms/cms/pull/20246))
+- Pressing <kbd>Return</kbd> in Ask AI’s message box within an unclosed code block now starts a new line, rather than sending the message. ([#20246](https://github.com/craftcms/cms/pull/20246))
 - Fixed a bug where single-value checkbox selects unchecked “All” while their options loaded. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - Fixed a bug where legacy buttons and text inputs were unstyled, and `fullwidth` controls didn’t fill their containers, on Twig control panel pages rendered inside the Inertia shell.
 - Fixed a bug where release dates were formatted for the control panel’s language rather than the user’s formatting locale. ([#20085](https://github.com/craftcms/cms/pull/20085))
@@ -248,6 +250,10 @@
 - Comments in the Activity and Workflow details panels are now more compact, with a background tinted by the gradient from their author’s default photo. The Activity panel’s change summaries are more compact too, and its comment field’s “Comment” button is now a round, icon-only button.
 - Workflow review notes can now be up to 10,000 characters long, matching activity comments. ([#19923](https://github.com/craftcms/cms/pull/19923))
 - The Workflow panel’s review action radio buttons and image transforms’ “Mode” radio buttons now look like the control panel’s other radio buttons.
+- Pressing “Start editing” on a draft that’s in review now changes its review before unlocking it, so it can’t be approved or published while it’s being edited. Users outside the review withdraw the draft from review, after which it has to be resubmitted. Reviewers of an earlier stage send the review back to that stage, keeping the approvals of the stages before it and the other approvals of that stage, and the stage waits for them to approve it again. Reviewers of the current stage keep the draft in review, and only their own approval is withdrawn, so the stage waits for them to approve it, even if they hadn’t approved it before. Saving changes to a draft in review without pressing “Start editing”, such as with MCP tools, does the same. Saves with no signed-in user, such as from queue jobs and console commands, still reset the current stage’s approvals. ([#20242](https://github.com/craftcms/cms/pull/20242))
+- The callouts shown on locked drafts in review now say what editing them will do. Reviewers are no longer locked out of drafts that are awaiting their approval, and are told the draft is waiting on them. Withdrawn drafts show a callout with a button that opens the Workflow panel to resubmit them, and have no status badge on the Workflow tab. The Workflow panel’s submit button now says “Resubmit for review” for withdrawn and reset reviews. ([#20242](https://github.com/craftcms/cms/pull/20242))
+- Workflow notifications are now only sent when there’s something to act on, and are never sent to the person who acted. Change request and comment notifications now say who requested the changes or commented, and workflow emails can use a new `{{user}}` variable. “Approval reset” notifications and emails now say the review was reset because its workflow changed, rather than because the draft changed. ([#20242](https://github.com/craftcms/cms/pull/20242))
+- The Workflow panel’s review history now shows withdrawals, reviews being sent back to an earlier stage, reviewers’ edits, approval overrides, publications, and reviews reset by workflow changes. Stages waiting on an editor to approve their own edits mark them “Approval required”. ([#20242](https://github.com/craftcms/cms/pull/20242))
 - Table fields now have a “Link” column type, with the same settings as Link fields. Link cells return `CraftCms\Cms\Field\Data\LinkData` objects, and Table fields now track the elements they link to. ([#16009](https://github.com/craftcms/cms/discussions/16009), [#19998](https://github.com/craftcms/cms/pull/19998))
 - Table field column settings now open in a slideout. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Table cell validation errors now name the column. ([#19998](https://github.com/craftcms/cms/pull/19998))
@@ -291,6 +297,7 @@
 - Fixed a bug where relation fields with “Maintain hierarchy” enabled didn’t relate their selected elements’ missing ancestors, or apply their “Branch Limit” setting. ([#20201](https://github.com/craftcms/cms/pull/20201))
 - Fixed a bug where relation fields placed more than once in a field layout returned no elements when they were eager-loaded lazily, such as in nested entries’ templates. ([#20235](https://github.com/craftcms/cms/issues/20235), [#20238](https://github.com/craftcms/cms/pull/20238))
 - Fixed a bug where uploading files to an Assets field replaced the assets that were already selected in it. ([#20238](https://github.com/craftcms/cms/pull/20238))
+- Fixed a bug where drafts in review locked themselves again after their first autosave, once “Start editing” had been pressed. ([#20242](https://github.com/craftcms/cms/pull/20242))
 - Fixed an XSS vulnerability where element editors followed unsigned `returnUrl` params pointing outside the control panel and sites. ([#20222](https://github.com/craftcms/cms/pull/20222))
 - Fixed a bug where Content Block fields’ “View Mode” setting had no effect. “Grouped” blocks now have a border, “In a pane” blocks are shown in a filled pane, and “Inline” blocks have no container, as in Craft 5.
 
@@ -469,6 +476,7 @@
 - Added `CraftCms\Cms\Element\ElementHelper::postEditRedirectUrl()`, which returns the current request’s `returnUrl` param, or else the element’s post-edit URL. ([#20180](https://github.com/craftcms/cms/pull/20180))
 - Added `CraftCms\Cms\Element\ElementHelper::returnUrlForSite()`, which sets the `site` param of a `returnUrl` param value, keeping it encrypted if it was. ([#20222](https://github.com/craftcms/cms/pull/20222))
 - `craft\web\assets\prismjs\PrismJsAsset` no longer registers Prism, or Craft 5.12’s Prism shim. Plugins that rely on Prism should bundle it themselves, or use `Craft.highlighter` instead. ([#20088](https://github.com/craftcms/cms/pull/20088))
+- `Craft.highlighter` now highlights Apache, CSS, Dockerfile, `.env`, GraphQL, HTTP, JSX, Nginx, SQL, TOML, TSX, Twig, TypeScript, and Vue code. ([#20245](https://github.com/craftcms/cms/pull/20245))
 - Added `CraftCms\Cms\Support\Query::prepareDateForDb()`, which converts a date to the UTC string Craft stores dates as, for writing or comparing it with the query builder. ([#20053](https://github.com/craftcms/cms/pull/20053))
 - Eloquent models that extend `CraftCms\Cms\Shared\BaseModel` now store and read dates in UTC, including their timestamps and soft-delete dates. ([#20053](https://github.com/craftcms/cms/pull/20053))
 - Added `CraftCms\Cms\Ai\Task` and `CraftCms\Cms\Ai\AiTasks`, for registering AI tasks. ([#20006](https://github.com/craftcms/cms/pull/20006))
@@ -686,6 +694,13 @@
 - Added `CraftCms\Cms\Ui\Controls\Textarea::singleLine()`. ([#20074](https://github.com/craftcms/cms/pull/20074))
 - Added `craft\helpers\Db::isSafeOrderBy()`. ([#19994](https://github.com/craftcms/cms/pull/19994))
 - Control panel elements with a `data-icon` attribute, such as those in plugins’ templates and scripts, now show the matching SVG icon via `<craft-icon>` when `craftcms/yii2-adapter` is installed, since the legacy icon font is no longer loaded. Core control panel markup uses `<craft-icon>` instead. ([#20179](https://github.com/craftcms/cms/pull/20179))
+- Added the `workflows/<workflowRunId>/prepare-for-editing` control panel action. ([#20242](https://github.com/craftcms/cms/pull/20242))
+- Added `CraftCms\Cms\Workflow\Workflows::prepareForEditing()`. ([#20242](https://github.com/craftcms/cms/pull/20242))
+- Added `CraftCms\Cms\Workflow\UserReview\UserReviewStage::hasApproved()`, `isReviewer()`, and `revokeApproval()`. ([#20242](https://github.com/craftcms/cms/pull/20242))
+- Added `CraftCms\Cms\Workflow\Data\WorkflowReviewData::$hasApproved`, `$isReviewer`, and `$rollbackStage`. ([#20242](https://github.com/craftcms/cms/pull/20242))
+- Added `CraftCms\Cms\Workflow\UserReview\UserReviewState::$requiredApprovalIds`. ([#20242](https://github.com/craftcms/cms/pull/20242))
+- Added the `withdrawn` workflow status, and the `withdraw`, `send-back`, and `edit` workflow transitions and activity types. ([#20242](https://github.com/craftcms/cms/pull/20242))
+- `CraftCms\Cms\Workflow\Events\WorkflowTransitioning` is now dispatched when saving a draft in review withdraws it, sends it back to an earlier stage, or withdraws a reviewer’s approval. Canceling it causes the save to fail. ([#20242](https://github.com/craftcms/cms/pull/20242))
 - Fixed a bug where `CraftCms\Cms\Plugin\Testing\PluginTestCase` could install plugins twice when workbench project config existed. ([#20177](https://github.com/craftcms/cms/pull/20177))
 - Fixed a bug where plugin tests could overwrite or delete Composer’s plugin manifest. ([#20177](https://github.com/craftcms/cms/pull/20177))
 - Fixed a bug where plugins’ named routes were unavailable in plugin tests. ([#20177](https://github.com/craftcms/cms/pull/20177))
