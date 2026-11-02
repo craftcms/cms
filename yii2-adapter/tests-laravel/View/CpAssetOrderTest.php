@@ -163,6 +163,7 @@ it('renders Craft.js before plugin bundles that depend on the CP asset outside t
 
     expect($html)->toContain('legacy/cpcompat/dist/craft.js')
         ->and(strpos($html, 'legacy/cpcompat/dist/craft.js'))->toBeLessThan(strpos($html, 'https://example.test/assets/dependent.js'))
+        ->and($html)->toContain('legacy/jqueryui/dist/jquery-ui.js')
         ->and($html)->not->toContain('legacy/cpcompat/dist/ui.js');
 });
 
