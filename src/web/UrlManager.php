@@ -478,6 +478,7 @@ class UrlManager extends \yii\web\UrlManager
         return match ($request->getPathInfo()) {
             '.well-known/change-password' => $this->_changePasswordRoute(),
             '.well-known/passkey-endpoints' => $this->_passkeyEndpointsRoute(),
+            '.well-known/ai-catalog.json' => $request->getIsSiteRequest() && Craft::$app->getIsInstalled() && Craft::$app->get('mcp')->getSettings()->discoverableServers() ? ['mcp/catalog', []] : false,
             default => $this->_oauthMetadataRoute($request),
         };
     }

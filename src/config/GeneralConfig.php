@@ -866,6 +866,8 @@ class GeneralConfig extends BaseConfig
      *
      * - `auth/verify-recovery-code`
      * - `auth/verify-totp`
+     * - `mcp/catalog`
+     * - `mcp/server-card`
      * - `users/login` (POST requests only)
      * - `users/send-password-reset-email`
      *
