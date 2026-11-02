@@ -1,6 +1,5 @@
 import {compatify} from '@craftcms/garnish/compat';
 import {Slideout} from './slideout';
-import {CpScreenSlideout} from './cp-screen-slideout';
 import {registerCraftGlobals} from '@/common/craft-global';
 
 // `compatify`, not the plain class: plugins subclass this global via the
@@ -25,13 +24,3 @@ Object.assign(CompatSlideout, {
 });
 
 registerCraftGlobals({Slideout: CompatSlideout});
-
-// Same reasoning one level down: plugins subclass CP screen slideouts via
-// the legacy `.extend()` API.
-const CompatCpScreenSlideout = compatify(CpScreenSlideout);
-
-Object.assign(CompatCpScreenSlideout, {
-  defaults: CpScreenSlideout.defaults,
-});
-
-registerCraftGlobals({CpScreenSlideout: CompatCpScreenSlideout});
