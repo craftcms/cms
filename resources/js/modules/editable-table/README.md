@@ -27,7 +27,7 @@ inputs, and generated fields use UI tables.
   (`Row#init` priming + `importData`) dispatch a native
   `Event('input')` instead, and `handlePaste` reads `ev.clipboardData`
   directly rather than jQuery's `ev.originalEvent.clipboardData`.
-- **ESM/bundle wiring.** Imported from `resources/js/cp.ts`; the legacy
+- **ESM/bundle wiring.** `compat.ts` is imported by the Yii2 adapter; the legacy
   `EditableTable.js` is removed from the legacy `Craft.js` bundle.
 
 ## What deliberately stays jQuery (Craft / Garnish seams)
@@ -83,8 +83,10 @@ from their own leaf constructor.
   `textualColTypes` / `defaults`) and the `Row` class.
 - `types.ts` — settings + column types.
 - `support.ts` — the `.data()`-replacement WeakMaps.
-- `index.ts` — wraps both classes with `compatify` and assigns
-  `window.Craft.EditableTable` (+ `.Row`). Imported from `resources/js/cp.ts`.
+- `index.ts` — exports both classes.
+- `compat.ts` — wraps both classes with `compatify` and assigns
+  `window.Craft.EditableTable` (+ `.Row`). Only the Yii2 adapter loads it, since
+  core's tables are UI tables and only legacy code uses `Craft.EditableTable`.
 
 ## Removability of the legacy file
 
@@ -92,7 +94,7 @@ from their own leaf constructor.
 here. The compat shim is what keeps the separate, still-legacy
 `TableFieldSettings` bundle working against the modern class. When
 `TableFieldSettings` is itself ported to `class extends EditableTable`, the
-`compatify` wrapper in `index.ts` can be dropped in favor of a direct
+`compatify` wrapper in `compat.ts` can be dropped in favor of a direct
 `window.Craft.EditableTable = EditableTable` assignment.
 
 ## Deferred

@@ -1863,10 +1863,9 @@ $('#' + $id).on('activate', () => {
       Craft.sendActionRequest('POST', 'users/get-impersonation-url', {
         data: {userId: $userId},
       }).then((response) => {
-        Craft.ui.createCopyTextPrompt({
-          label: $message,
-          value: response.data.url,
-        })
+        window.dispatchEvent(new CustomEvent('craft:copy-text-prompt', {
+          detail: {label: $message, value: response.data.url},
+        }));
       });
   });
 });
@@ -1954,10 +1953,9 @@ $('#' + $id).on('activate', () => {
     Craft.sendActionRequest('POST', 'users/get-password-reset-url', {
       data: {userId: $userId}
     }).then((response) => {
-      Craft.ui.createCopyTextPrompt({
-        label: $message,
-        value: response.data.url,
-      })
+      window.dispatchEvent(new CustomEvent('craft:copy-text-prompt', {
+        detail: {label: $message, value: response.data.url},
+      }));
     }).catch(({response}) => {
       Craft.cp.displayError(response.data.message);
     });

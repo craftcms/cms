@@ -6,6 +6,7 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     entry: {
+      ui: './ui.js',
       'component-select-input': './component-select-input.js',
       dashboard: require('path').resolve(
         __dirname,

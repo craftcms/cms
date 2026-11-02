@@ -38,7 +38,7 @@ import {defineLayoutComponentSettingsUiHost} from './modules/ui/layout-component
 import './modules/listbox/index';
 import './modules/field-layout-designer/index';
 import './modules/sortable-checkbox-select/index';
-import './modules/editable-table/index';
+import './modules/fields';
 import './modules/grouped-entry-type-manager/index';
 import './modules/queue/index';
 import './modules/slideout/index';
@@ -68,7 +68,6 @@ import './modules/preview-file-modal/index';
 import './modules/asset-select-input/index';
 import './modules/element-deletion-manager/index';
 import './modules/uploader/index';
-import './modules/ui/index';
 
 const {default: Cp} = await import('./bootstrap/cp.js');
 
