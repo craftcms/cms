@@ -279,6 +279,38 @@ it('puts the site menu and the status menu in one cell', () => {
   expect(cell.querySelectorAll('select-rich')).toHaveLength(2);
 });
 
+it.each([
+  {
+    name: 'after the statuses',
+    statusOptions: [
+      {label: 'All', value: ''},
+      {label: 'Live', value: 'live'},
+    ],
+    expected: ['', 'live', 'drafts', 'trashed'],
+  },
+  {
+    name: 'after All, for an index without statuses',
+    statusOptions: [],
+    expected: ['', 'drafts', 'trashed'],
+  },
+])('offers Drafts and Trashed $name', ({statusOptions, expected}) => {
+  mount({
+    statusOptions,
+    draftsAndTrashedOptions: [
+      {label: 'Drafts', value: 'drafts', icon: 'draft'},
+      {label: 'Trashed', value: 'trashed', icon: 'trash'},
+    ],
+  });
+
+  const options = [
+    ...container!.querySelectorAll<HTMLOptionElement>(
+      '.element-toolbar__status option'
+    ),
+  ];
+
+  expect(options.map((option) => option.value)).toEqual(expected);
+});
+
 it('keeps score available until clearing search restores the sort, and locks its direction', async () => {
   const {toolbarProps} = mount({
     search: 'needle',

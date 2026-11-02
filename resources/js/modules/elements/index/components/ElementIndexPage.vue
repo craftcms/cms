@@ -10,6 +10,7 @@
     type SourcesLanding,
   } from '@/modules/elements/index/composables/useCustomizeSources';
   import ElementBulkActionsBar from './ElementBulkActionsBar.vue';
+  import {indexQueryCriteria} from '@/modules/elements/index/index-criteria';
   import {computed, ref} from 'vue';
   import CustomizeSourcesModal from '@/modules/elements/index/components/customize-sources/CustomizeSourcesModal.vue';
   import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
@@ -160,7 +161,7 @@
           :element-type="elementIndex.elementType"
           :source="elementIndex.source?.key"
           :context="elementIndex.context"
-          :params="{baseCriteria: {siteId: elementIndex.siteId}}"
+          :params="indexQueryCriteria(elementIndex)"
           @edit="editElement"
           @view="viewElement"
           @performed="onActionPerformed"

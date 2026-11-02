@@ -263,15 +263,7 @@ it('includes the active source exporters in the page payload', function () {
 });
 
 it('includes saved unpublished drafts in entry indexes', function () {
-    $entry = EntryModel::factory()->createElement();
-    $draft = app(EntryElement::class);
-    $draft->siteId = $entry->siteId;
-    $draft->sectionId = $entry->sectionId;
-    $draft->typeId = $entry->typeId;
-    $draft->title = 'Awaiting Review';
-    $draft->slug = 'awaiting-review';
-    $draft->setAuthorIds([auth()->id()]);
-    app(Drafts::class)->saveElementAsDraft($draft, auth()->id());
+    $draft = saveUnpublishedEntryDraft(EntryModel::factory()->createElement());
 
     get("/{$this->cpTrigger}/content/entries?viewMode=table")
         ->assertOk()
@@ -896,6 +888,86 @@ it('narrows to a specific status when one is requested', function () {
         );
 });
 
+it('leaves unpublished drafts out of a specific status', function () {
+    $section = Section::factory()->create(['type' => SectionType::Channel]);
+    $entry = EntryModel::factory()->forSection($section)->createElement();
+    saveUnpublishedEntryDraft($entry);
+
+    get("/{$this->cpTrigger}/content/entries?".http_build_query([
+        'source' => "section:{$section->uid}",
+        'status' => 'enabled',
+        'viewMode' => 'table',
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('pagination.total', 1)
+            ->where('data.0.id', $entry->id)
+        );
+});
+
+it('lists trashed entries, unlinked, with only Restore and Delete permanently on offer', function () {
+    $section = Section::factory()->create(['type' => SectionType::Channel]);
+    EntryModel::factory()->forSection($section)->create();
+    $trashed = EntryModel::factory()->forSection($section)->createElement();
+    app(Elements::class)->deleteElement($trashed);
+
+    get("/{$this->cpTrigger}/content/entries?".http_build_query([
+        'source' => "section:{$section->uid}",
+        'status' => 'trashed',
+        'viewMode' => 'table',
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('draftsAndTrashedOptions', fn ($options) => collect($options)->pluck('value')->all() === ['drafts', 'trashed'])
+            ->where('statusMenuValue', 'trashed')
+            ->where('status', '')
+            ->where('trashed', true)
+            ->where('pagination.total', 1)
+            ->where('data.0.id', $trashed->id)
+            ->where('data.0.cpEditUrl', null)
+            ->where('actions', fn ($actions) => collect($actions)->pluck('label')->all() === ['Restore', 'Delete permanently'])
+        );
+});
+
+it('lists drafts of published entries when Drafts is selected', function () {
+    $section = Section::factory()->create(['type' => SectionType::Channel]);
+    $entry = EntryModel::factory()->forSection($section)->createElement();
+    $draft = app(Drafts::class)->createDraft($entry, auth()->id(), 'Rework');
+
+    get("/{$this->cpTrigger}/content/entries?".http_build_query([
+        'source' => "section:{$section->uid}",
+        'status' => 'drafts',
+        'viewMode' => 'table',
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('drafts', true)
+            ->where('pagination.total', 1)
+            ->where('data.0.id', $draft->id)
+        );
+});
+
+it('falls back from structure view while listing drafts or trashed entries', function () {
+    $structure = Structure::factory()->create();
+    $section = Section::factory()->create([
+        'type' => SectionType::Structure,
+        'structureId' => $structure->id,
+    ]);
+    $entry = EntryModel::factory()->forSection($section)->create();
+    Structures::appendToRoot($structure->id, EntryElement::find()->id($entry->id)->one());
+
+    get("/{$this->cpTrigger}/content/entries?".http_build_query([
+        'source' => "section:{$section->uid}",
+        'status' => 'drafts',
+        'viewMode' => 'structure',
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('viewState.mode', 'table')
+            ->where('viewModes', fn ($modes) => collect($modes)->doesntContain('mode', 'structure'))
+        );
+});
+
 it('shows a single that was auto-created on section save', function () {
     // Save a Single section through the service, which auto-creates its lone
     // entry via ensureSingleEntry() — the real path a single goes through.
@@ -1483,3 +1555,17 @@ it('carries a source’s status and badge count into its navigation entry', func
             return true;
         });
 });
+
+function saveUnpublishedEntryDraft(EntryElement $sibling): EntryElement
+{
+    $draft = app(EntryElement::class);
+    $draft->siteId = $sibling->siteId;
+    $draft->sectionId = $sibling->sectionId;
+    $draft->typeId = $sibling->typeId;
+    $draft->title = 'Awaiting Review';
+    $draft->slug = 'awaiting-review';
+    $draft->setAuthorIds([auth()->id()]);
+    app(Drafts::class)->saveElementAsDraft($draft, auth()->id());
+
+    return $draft;
+}

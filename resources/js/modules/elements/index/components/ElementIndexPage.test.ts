@@ -129,7 +129,8 @@ async function mountPage(
       inlineEditable: true,
     },
   ],
-  mode = 'table'
+  mode = 'table',
+  elementIndex: Record<string, unknown> = {}
 ) {
   const viewState = reactive({mode});
   const elementTable = useCraftTable({
@@ -170,6 +171,7 @@ async function mountPage(
         data,
         exporters: [{type: 'Expanded', name: 'Expanded', formattable: true}],
         sites: [],
+        ...elementIndex,
       }),
       table: elementTable,
       data: ref(data),
@@ -228,6 +230,56 @@ function clickAction(container: HTMLElement, label: string) {
   expect(item).toBeDefined();
   item!.click();
 }
+
+it.each([
+  {
+    name: 'trashed',
+    elementIndex: {trashed: true, drafts: false},
+    criteria: {status: null, trashed: true},
+  },
+  {
+    name: 'drafts',
+    elementIndex: {trashed: false, drafts: true},
+    criteria: {status: null, drafts: true, draftOf: null},
+  },
+])(
+  'runs element actions against the $name elements it lists',
+  async ({elementIndex, criteria}) => {
+    const container = await mountPage({}, undefined, 'table', {
+      ...elementIndex,
+      status: '',
+      canHaveDrafts: true,
+      siteId: 1,
+      actions: [
+        {
+          key: 'Restore',
+          label: 'Restore',
+          bulk: true,
+          action: {
+            type: 'http',
+            method: 'POST',
+            url: '/actions/element-indexes/perform-action',
+            body: {elementAction: 'Restore'},
+          },
+        },
+      ],
+    });
+
+    const item = Array.from(
+      container.querySelectorAll<HTMLElement & {action?: {body: unknown}}>(
+        'craft-action-item'
+      )
+    ).find((item) => item.textContent?.trim() === 'Restore');
+
+    expect(item?.action?.body).toMatchObject({
+      elementAction: 'Restore',
+      baseCriteria: {siteId: 1},
+    });
+    expect((item?.action?.body as {criteria: unknown}).criteria).toEqual(
+      criteria
+    );
+  }
+);
 
 it('passes the Actions invoker to the bulk Edit slideout', async () => {
   const container = await mountPage();

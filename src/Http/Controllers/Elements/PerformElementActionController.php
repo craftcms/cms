@@ -58,10 +58,14 @@ class PerformElementActionController
             $nestedSource = $nestedElementScope->indexSource($elementType);
             [$sourceKey, $source] = [$nestedSource::NESTED_KEY, $nestedSource->source];
             $owner = $nestedElementScope->owner();
+            // The scope keeps request criteria out, so the status menu's
+            // Drafts and Trashed come from its value alone.
+            $statusSelection = $this->elementIndexes->statusSelection($elementType, $request->input('criteria.status'));
             $elementQuery = $this->elementIndexes->buildQueryState(
                 elementType: $elementType,
                 source: $source,
                 baseCriteria: $nestedSource->criteria,
+                criteria: $this->elementIndexes->statusSelectionCriteria($statusSelection),
             )['query'];
         } else {
             [$sourceKey, $source] = $this->elementIndexes->resolveSource(
@@ -105,7 +109,7 @@ class PerformElementActionController
         }
 
         if ($embedded) {
-            $selectedElements = $nestedElementScope->selectedElements($elementIds, ! $action->isDownload());
+            $selectedElements = $nestedElementScope->selectedElements($elementIds, ! $action->isDownload(), $statusSelection['trashed']);
         }
 
         $actionQuery = (clone $elementQuery)
@@ -137,6 +141,10 @@ class PerformElementActionController
                             ->ids();
                         $positionsByElementId = array_flip(array_map(intval(...), $orderedElementIds));
                     }
+                } elseif ($statusSelection['trashed']) {
+                    // Trashed elements are restored or deleted as they are,
+                    // rather than copied over to the owner first.
+                    $preparedElements = $selectedElements;
                 } else {
                     $preparedElements = $selectedElements
                         ->map(fn (NestedElementInterface $element): NestedElementInterface => NestedElementManager::prepareElementForOwner($element, $owner));

@@ -299,6 +299,7 @@
         :processing="processing"
         :as-form="toolbarAsForm"
         :status-options="elementIndex.statusOptions"
+        :drafts-and-trashed-options="elementIndex.draftsAndTrashedOptions"
         :view-modes="visibleViewModes"
         :column-options="columnOptions"
         :thumb-size-options="thumbSizeOptions"

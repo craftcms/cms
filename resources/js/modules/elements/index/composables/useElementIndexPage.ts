@@ -13,6 +13,7 @@ import {
 } from './useElementIndexVisits';
 import type {ElementIndexModel} from '../types/model';
 import {saveInlineElements} from '../save-inline-elements';
+import {indexQueryCriteria} from '../index-criteria';
 import type {ElementIndexExportFormat} from '../types/exporters';
 
 interface UseElementIndexPageOptions {
@@ -78,6 +79,8 @@ export function useElementIndexPage(
     selectedIds: ReadonlyArray<string | number>,
     limit?: number
   ): Promise<void> {
+    const {baseCriteria, criteria} = indexQueryCriteria(elementIndex);
+
     await runAction({
       type: 'download',
       method: 'POST',
@@ -86,18 +89,10 @@ export function useElementIndexPage(
         elementType: elementIndex.elementType,
         context: elementIndex.context,
         source: elementIndex.source?.key,
-        baseCriteria: {
-          status: null,
-          drafts: elementIndex.canHaveDrafts ? null : false,
-          draftOf: false,
-          savedDraftsOnly: true,
-          siteId: elementIndex.siteId,
-        },
+        baseCriteria,
         criteria: {
           search: elementIndex.search ?? '',
-          status: elementIndex.status || null,
-          ...(elementIndex.drafts ? {drafts: true} : {}),
-          ...(elementIndex.trashed ? {trashed: true} : {}),
+          ...criteria,
           ...(selectedIds.length ? {id: [...selectedIds]} : {}),
           ...(limit ? {limit} : {}),
         },

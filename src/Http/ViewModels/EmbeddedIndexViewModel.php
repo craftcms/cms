@@ -144,7 +144,9 @@ class EmbeddedIndexViewModel extends ContentIndexViewModel
             ! $this->indexSource->sortable ||
             ! $this->scope->canReorder() ||
             ($this->search() !== null && $this->search() !== '') ||
-            $this->status() !== ''
+            $this->status() !== '' ||
+            $this->drafts() ||
+            $this->trashed()
         ) {
             return false;
         }
@@ -195,7 +197,7 @@ class EmbeddedIndexViewModel extends ContentIndexViewModel
     #[Override]
     protected function editUrl(ElementInterface $element): ?string
     {
-        if (! $element instanceof NestedElementInterface) {
+        if (! $element instanceof NestedElementInterface || $element->trashed) {
             return null;
         }
 
@@ -215,10 +217,10 @@ class EmbeddedIndexViewModel extends ContentIndexViewModel
         return [
             'context' => $this->indexSource->fieldId !== null ? 'field' : 'embedded-index',
             'attributes' => ['data' => ['cp-url' => $this->editUrl($element)]],
-            'hyperlink' => true,
+            'hyperlink' => ! $element->trashed,
             'autoReload' => $this->mode() !== ElementIndexViewMode::Cards->value,
             'showStatus' => true,
-            'showActionMenu' => true,
+            'showActionMenu' => ! $element->trashed,
             'showNestedActions' => ! $static,
             'nestedActionEvents' => ! $static,
             'sortable' => ! $static && $this->indexSource->sortable,
