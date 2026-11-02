@@ -9,6 +9,3 @@ import './js/Craft.js';
 
 // Utilities
 import './js/Queue.js';
-
-// Finally load the remaining files
-import './js/CP.js';

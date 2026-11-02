@@ -144,7 +144,11 @@ export class FocalPoint {
     this.saving = true;
 
     this.renderButton();
-    Craft.cp.announce(Craft.t('app', 'Saving…'));
+    window.dispatchEvent(
+      new CustomEvent('craft:announce', {
+        detail: {message: Craft.t('app', 'Saving…')},
+      })
+    );
 
     let data = {
       assetUid: this.assetUid,
@@ -158,7 +162,11 @@ export class FocalPoint {
       this.saving = false;
       this.shouldSave = false;
       this.renderButton();
-      Craft.cp.announce(Craft.t('app', 'Saved'));
+      window.dispatchEvent(
+        new CustomEvent('craft:announce', {
+          detail: {message: Craft.t('app', 'Saved')},
+        })
+      );
 
       // Refresh Live Preview
       window.dispatchEvent(new CustomEvent('craft:refresh-previews'));

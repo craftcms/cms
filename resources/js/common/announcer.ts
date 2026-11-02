@@ -90,8 +90,15 @@ function topModalLayer(): Element | null {
   return element && document.contains(element) ? element : null;
 }
 
-/** Points `Craft.cp.announce()` here. */
+/**
+ * Points `Craft.cp.announce()` here, and listens for `craft:announce` events
+ * from code that can't import this module.
+ */
 export function installAnnouncer(): void {
+  window.addEventListener('craft:announce', (event) => {
+    announce((event as CustomEvent<{message?: string}>).detail?.message);
+  });
+
   const proto = (
     window as {Craft?: {CP?: {prototype: Record<string, unknown>}}}
   ).Craft?.CP?.prototype;

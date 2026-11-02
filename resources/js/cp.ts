@@ -32,6 +32,7 @@ import './modules/slideout';
 import './modules/slideout-actions';
 import './modules/fields';
 import './modules/elements/element-action-events';
+import './common/craft/preview-count-badge';
 import './modules/auth-method-setup';
 import './modules/proxy-scrollbar';
 import './modules/customize-sources';
