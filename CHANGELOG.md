@@ -467,8 +467,8 @@
 
 ### Extensibility
 
-- Added `CraftCms\Cms\Element\Actions\ClientAction`, for element actions the control panel performs in the browser by dispatching a window event. Element types’ `defineActions()` and `CraftCms\Cms\Element\Events\ElementActionsResolving` handlers can return them alongside element actions. ([#{PR}](https://github.com/craftcms/cms/pull/{PR}))
-- Removed the element action classes that only had client-side behavior, including the legacy `craft\elements\actions\Copy`, `Edit`, `View`, `PreviewAsset`, `CopyUrl`, `CopyReferenceTag`, `DownloadAssetFile`, `EditImage`, `MoveAssets`, `RenameFile`, `ReplaceFile`, `ShowInFolder`, `MoveToSection`, `NewChild`, `NewSiblingBefore`, and `NewSiblingAfter` classes. `CraftCms\Cms\Element\Actions\ClientAction` objects should be used instead. ([#{PR}](https://github.com/craftcms/cms/pull/{PR}))
+- Added `CraftCms\Cms\Element\Actions\ClientAction`, for element actions the control panel performs in the browser by dispatching a window event. Element types’ `defineActions()` and `CraftCms\Cms\Element\Events\ElementActionsResolving` handlers can return them alongside element actions. ([#20272](https://github.com/craftcms/cms/pull/20272))
+- Removed the element action classes that only had client-side behavior, including the legacy `craft\elements\actions\Copy`, `Edit`, `View`, `PreviewAsset`, `CopyUrl`, `CopyReferenceTag`, `DownloadAssetFile`, `EditImage`, `MoveAssets`, `RenameFile`, `ReplaceFile`, `ShowInFolder`, `MoveToSection`, `NewChild`, `NewSiblingBefore`, and `NewSiblingAfter` classes. `CraftCms\Cms\Element\Actions\ClientAction` objects should be used instead. ([#20272](https://github.com/craftcms/cms/pull/20272))
 - GraphQL schema components can now support access-token requests via an `authenticated` key on their config, set to `true` or a closure that’s passed the user and returns whether the component is available to them.
 - Added `CraftCms\Cms\Gql\Gql::getSchemaForUser()`.
 - Added `CraftCms\Cms\Gql\GqlHelper::getSchemaUser()`.
@@ -861,7 +861,7 @@
 - When `craftcms/yii2-adapter` is installed and no table prefix is configured, the `CRAFT_DB_TABLE_PREFIX` and `DB_TABLE_PREFIX` environment variables are applied with a trailing underscore, like Craft 5. ([#20192](https://github.com/craftcms/cms/pull/20192))
 - Fixed a bug where Craft couldn’t boot when the database connection had a table prefix, because queries that aliased tables didn’t apply the prefix. ([#20192](https://github.com/craftcms/cms/pull/20192))
 - Fixed a bug where orphaned foreign key rows weren’t deleted during garbage collection when the database connection had a table prefix. ([#20192](https://github.com/craftcms/cms/pull/20192))
-- Fixed a bug where element indexes’ “Create a new {type} before”, “Create a new {type} after”, and “Create a new child {type}” actions didn’t do anything. ([#{PR}](https://github.com/craftcms/cms/pull/{PR}))
+- Fixed a bug where element indexes’ “Create a new {type} before”, “Create a new {type} after”, and “Create a new child {type}” actions didn’t do anything. ([#20272](https://github.com/craftcms/cms/pull/20272))
 - Fixed an error that occurred when running `craft:up` on PostgreSQL sites that were first installed on Craft 3 or 4. ([#20188](https://github.com/craftcms/cms/pull/20188))
 - Fixed an error that occurred when running `craft:up` or loading entry types on sites upgraded from Craft 5, if an entry type had an empty title or slug translation method. ([#20187](https://github.com/craftcms/cms/pull/20187))
 - Fixed a bug where nested entries added via drafts on multi-site installs could get an incomplete first revision, causing their nested content to be deleted when reverting to it. ([#20151](https://github.com/craftcms/cms/issues/20151))
