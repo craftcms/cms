@@ -45,17 +45,44 @@ The tiles are joined in one row, each between `--c-radio-tile-min-size` and `--c
 
 <Canvas of={RadioGroupStories.ThumbnailsWrapped} sourceState="shown" />
 
-Illustrations are 60px tall by default (`--c-radio-tile-thumbnail-height`), and are scaled to fit the tile. Slot an inline SVG, wrapped in a `<span aria-hidden="true">`, and draw it with the illustration palette below. The control panel swaps those colors for its `--c-illustration-*` tokens, so the illustration follows the theme and turns blue when its option is selected. An `<img>` with an empty `alt` works too, but keeps the colors it was drawn with.
+Illustrations are 60px tall by default (`--c-radio-tile-thumbnail-height`), and are scaled to fit the tile. Slot an inline SVG, wrapped in a `<span aria-hidden="true">`, and color each shape with the illustration palette's `--c-illustration-*` tokens in a `style` attribute:
 
-| Drawn as                  | Token                       | Used for                                   |
-| ------------------------- | --------------------------- | ------------------------------------------ |
-| `fill="#F3F7FD"`          | `--c-illustration-surface`  | Chips and cards                            |
-| `fill="#FFFFFF"`          | `--c-illustration-paper`    | The lightest surface                       |
-| `fill="#CDD8E4"`          | `--c-illustration-solid`    | Solid shapes, such as text bars and photos |
-| `fill="#A6B2C2"`          | `--c-illustration-detail`   | Detail on solid shapes                     |
-| `stroke="#828FA4"`        | `--c-illustration-line`     | Hairlines                                  |
-| `fill`/`stroke="#5A6572"` | `--c-illustration-ink`      | Marks that stand out, such as crop handles |
-| `fill="#2A3141"`          | `--c-illustration-backdrop` | A dark backdrop                            |
+```html
+<path d="…" style="fill: var(--c-illustration-figure)" />
+<rect
+  …
+  style="fill: var(--c-illustration-surface); stroke: var(--c-illustration-line)"
+/>
+```
+
+The tokens are palette stops, so the illustration follows the theme, and its outlines turn blue when its option is selected. Put the tokens in `style` rather than in the `fill` and `stroke` attributes, so any `fill` or `stroke` a drawing tool exported can stay: `style` overrides it in the control panel, and it still shows when the file is opened on its own. To make the file preview correctly without one, add the light-theme color as a fallback, as in `var(--c-illustration-figure, #6f7c94)`.
+
+Each row below draws the same sample illustration with everything but that role faded, in the current theme. Roles that are hard to spot are outlined in dashed blue, which isn't part of the palette.
+
+<Canvas of={RadioGroupStories.IllustrationPalette} sourceState="none" />
+
+The parts of an illustration that show what its option means need 3:1 contrast against whatever is directly behind them. The palette guarantees these pairings, at rest, hovered and selected, in both themes:
+
+- A `line` can sit on the tile or on a `surface`.
+- A `figure` can sit on a `field`.
+- A `mark` can sit on a `field`, a `figure` or the tile.
+
+Anything else isn't guaranteed. `subtle` promises no contrast at all, so don't use it for anything that shows meaning. To show where a shape ends, such as a photo's position inside a frame, outline it with `line`.
+
+A dark mark that sits on another dark color, such as a crop frame's corners on letterbox bars, needs a **light edge**: a thin outline in the lightest color, drawn behind the mark so it shows up on dark and light colors alike. Paint the mark's stroke with `paper`, and draw the stroke first:
+
+```html
+<path
+  d="…"
+  style="fill: var(--c-illustration-mark); stroke: var(--c-illustration-paper)"
+  stroke-width="2"
+  paint-order="stroke"
+/>
+```
+
+`paint-order="stroke"` draws the edge before the mark, so only 1px of it shows around the mark.
+
+An `<img>` with an empty `alt` works too, but can't use the tokens: it keeps the colors it was drawn with, so it won't follow the theme, and checking its contrast is up to you.
 
 ### Building one in PHP
 
@@ -111,7 +138,7 @@ Call `fieldset()` on the field, so its label becomes the group's legend.
 
 The group is announced as a radio group named by its label, and takes one Tab stop. The arrow keys move between options and select them as they go, because every option is a native radio sharing the group's name.
 
-Give the group a visible label that names the question, and keep each option's text in its radio's label. With `thumbnails`, give each illustration an empty `alt`: the label below it already names the option, so a description would be read twice.
+Give the group a visible label that names the question, and keep each option's text in its radio's label. With `thumbnails`, hide each illustration from assistive tech, with `aria-hidden="true"` on an inline SVG's wrapper or an empty `alt` on an `<img>`: the label below it already names the option, so a description would be read twice. Color its key parts with the `--c-illustration-*` tokens, in the pairings they promise, so they keep 3:1 contrast; see [Thumbnails](#thumbnails).
 
 When a choice is required, say so with `craft-field`'s `required` or in the label text, as well as adding the `Required` validator; the validator alone doesn't show anything until an error appears. Write validator messages that say what to choose.
 

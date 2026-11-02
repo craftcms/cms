@@ -8,7 +8,11 @@ import './radio-group.js';
 import '../radio/radio.js';
 import '../icon/icon.js';
 import type CraftRadioGroup from './radio-group.js';
-import {VIEW_MODES} from '../../../test/radio-tile-fixtures';
+import {
+  PALETTE_SAMPLE,
+  VIEW_MODES,
+  type IllustrationRole,
+} from '../../../test/radio-tile-fixtures';
 
 /**
  * `args` and `argTypes` are derived from the custom elements manifest, so the
@@ -109,7 +113,7 @@ export const ServerRendered: Story = {
 export const Buttons: Story = {
   parameters: {controls: {disable: true}},
   render: () =>
-    html`<craft-radio-group buttons>
+    html`<craft-radio-group buttons name="alignment">
       <label slot="label">Alignment</label>
       ${['Start', 'Center', 'End'].map(
         (label) =>
@@ -140,7 +144,7 @@ export const IconButtons: Story = {
     },
   },
   render: () =>
-    html`<craft-radio-group buttons>
+    html`<craft-radio-group buttons name="view">
       <label slot="label">View</label>
       ${[
         ['list', 'list-unordered', 'List'],
@@ -184,7 +188,7 @@ const tiles = (checked: string) =>
 export const Thumbnails: Story = {
   parameters: {controls: {disable: true}},
   render: () =>
-    html`<craft-radio-group thumbnails>
+    html`<craft-radio-group thumbnails name="view-mode">
       <label slot="label">View Mode</label>
       ${tiles('cards')}
     </craft-radio-group>`,
@@ -197,8 +201,188 @@ export const Thumbnails: Story = {
 export const ThumbnailsWrapped: Story = {
   parameters: {controls: {disable: true}},
   render: () =>
-    html`<craft-radio-group thumbnails style="max-inline-size: 18rem">
+    html`<craft-radio-group
+      thumbnails
+      name="view-mode-wrapped"
+      style="max-inline-size: 18rem"
+    >
       <label slot="label">View Mode</label>
       ${tiles('cards')}
     </craft-radio-group>`,
+};
+
+interface PaletteRole {
+  token: IllustrationRole;
+  role: string;
+  /** Whether the role is used as a `fill`, a `stroke`, or both. */
+  fill: boolean;
+  stroke: boolean;
+  /** Outlines the role's shapes in blue, since they're hard to spot. */
+  callout?: boolean;
+  /** Fills left unfaded, since the role only shows up on them. */
+  backdrop?: IllustrationRole[];
+}
+
+const PALETTE_ROLES: PaletteRole[] = [
+  {
+    token: 'surface',
+    role: 'Shapes such as chips and cards',
+    fill: true,
+    stroke: false,
+    callout: true,
+  },
+  {
+    token: 'paper',
+    role: 'The lightest color, also used for a mark’s light edge',
+    fill: true,
+    stroke: true,
+    callout: true,
+    backdrop: ['surface'],
+  },
+  {
+    token: 'subtle',
+    role: 'Decoration that carries no meaning, such as placeholder text',
+    fill: true,
+    stroke: false,
+    callout: true,
+  },
+  {
+    token: 'field',
+    role: 'An area that figures sit on, such as a photo’s background',
+    fill: true,
+    stroke: false,
+    callout: true,
+  },
+  {
+    token: 'figure',
+    role: 'Shapes on a field, such as a photo’s mountains',
+    fill: true,
+    stroke: false,
+    backdrop: ['field'],
+  },
+  {
+    token: 'line',
+    role: 'Outlines',
+    fill: false,
+    stroke: true,
+  },
+  {
+    token: 'mark',
+    role: 'The strongest marks, such as a crop frame or letterbox bars',
+    fill: true,
+    stroke: true,
+  },
+];
+
+/** How a role is applied, as it's written in an illustration. */
+const usage = ({token, fill, stroke}: PaletteRole) =>
+  [fill && 'fill', stroke && 'stroke']
+    .filter(Boolean)
+    .map((property) => `${property}: var(--c-illustration-${token})`);
+
+/**
+ * Fades every part of the sample except the ones a role draws (and what it
+ * sits on, if it only shows up there), and outlines a role's shapes in blue
+ * when they're hard to spot.
+ */
+const fadeOthers = ({
+  token,
+  fill,
+  stroke,
+  callout,
+  backdrop = [],
+}: PaletteRole) => {
+  const uses = (property: string, tokens: IllustrationRole[]) =>
+    tokens
+      .map((name) => `[style*='${property}: var(--c-illustration-${name})']`)
+      .join(', ');
+  const except = (property: string, tokens: IllustrationRole[]) =>
+    tokens.length ? `:not(${uses(property, tokens)})` : '';
+  const scope = `[data-palette-role='${token}'] [slot='thumbnail']`;
+  const fills = [...(fill ? [token] : []), ...backdrop];
+  const strokes = stroke ? [token] : [];
+
+  return `
+    ${scope} [style*='fill:']${except('fill', fills)} {
+      fill-opacity: 0.12;
+    }
+    ${scope} [style*='stroke:']${except('stroke', strokes)} {
+      stroke-opacity: 0.12;
+    }
+    ${
+      callout
+        ? `${scope} :is(${uses('fill', [token])}) {
+            stroke: var(--color-blue-500);
+            /* Outranks the fading above, on a shape with another role's outline. */
+            stroke-opacity: 1 !important;
+            stroke-width: 1.5px;
+            stroke-dasharray: 2 1.5;
+          }`
+        : ''
+    }`;
+};
+
+/**
+ * The illustration palette, one role per row. Each example is a real tile,
+ * drawn with the palette's colors in the current theme, with every part but
+ * that role's faded.
+ */
+export const IllustrationPalette: Story = {
+  parameters: {controls: {disable: true}},
+  render: () =>
+    html`<style>
+        ${PALETTE_ROLES.map(fadeOthers).join('')} .illustration-palette {
+          inline-size: auto;
+          border-collapse: collapse;
+          text-align: start;
+        }
+        .illustration-palette :is(th, td) {
+          padding: var(--c-spacing-sm) var(--c-spacing-md);
+          border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+          text-align: start;
+          vertical-align: middle;
+          background: none;
+        }
+        .illustration-palette code {
+          display: block;
+          white-space: nowrap;
+        }
+      </style>
+      <table class="illustration-palette">
+        <thead>
+          <tr>
+            <th scope="col">Example</th>
+            <th scope="col">Token</th>
+            <th scope="col">Use as</th>
+            <th scope="col">Role</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${PALETTE_ROLES.map(
+            (role) =>
+              html`<tr>
+                <td>
+                  <div inert data-palette-role="${role.token}">
+                    <craft-radio-group
+                      thumbnails
+                      name="palette-${role.token}"
+                      style="--c-radio-tile-thumbnail-height: 7.5rem; --c-radio-tile-min-size: 12rem; --c-radio-tile-max-size: 12rem"
+                    >
+                      <craft-radio .choiceValue="${role.token}">
+                        <span slot="thumbnail" aria-hidden="true"
+                          >${unsafeSVG(PALETTE_SAMPLE.svg)}</span
+                        >
+                      </craft-radio>
+                    </craft-radio-group>
+                  </div>
+                </td>
+                <th scope="row">
+                  <code>--c-illustration-${role.token}</code>
+                </th>
+                <td>${usage(role).map((use) => html`<code>${use}</code>`)}</td>
+                <td>${role.role}</td>
+              </tr>`
+          )}
+        </tbody>
+      </table>`,
 };

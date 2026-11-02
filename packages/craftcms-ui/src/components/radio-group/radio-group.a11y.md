@@ -53,10 +53,12 @@ The group adds `role="radiogroup"` and the label, help text and feedback wiring 
 - [x] With `buttons`, the selected option is distinguishable from the others in forced colors mode, using system colors. Verified by `distinguishes the selected button in forced colors mode` in `radio-group.browser.test.ts`.
 - [x] In `thumbnails` mode, the selected tile has a thicker border and a bold label, so it differs by more than color. Per WCAG 1.4.1 (Use of Color). Verified by `marks the selected tile with a thicker border and a bold label` in `radio-group.browser.test.ts`.
 - [x] In `thumbnails` mode, the selected tile is distinguishable from the others in forced colors mode, using system colors. Verified by `distinguishes the selected tile in forced colors mode` in `radio-group.browser.test.ts`.
+- [x] In `thumbnails` mode, the `--c-illustration-*` tokens keep the pairings they promise at 3:1 or more: `line` on the tile and on `surface`, `figure` on `field`, and `mark` on `field`, `figure` and the tile. That holds at rest, hovered and selected, in both themes. Per WCAG 1.4.11 (Non-text Contrast). Verified by `keeps the illustrations' outlines, figures and marks at 3:1 at rest, hovered and selected, in both themes` in `radio-group.browser.test.ts`.
 
 ## Depends on usage
 
 - 3.3.2 (Labels or Instructions): give the group a visible label that names the question. See [Accessibility](./RadioGroup.mdx#accessibility).
 - 3.3.2 (Labels or Instructions): show that a choice is required, with `craft-field`'s `required` or in the label text, alongside the `Required` validator. See [Accessibility](./RadioGroup.mdx#accessibility).
 - 3.3.3 (Error Suggestion): write validator messages that say what to choose. See [Accessibility](./RadioGroup.mdx#accessibility).
+- 1.4.11 (Non-text Contrast): color an illustration's key parts with the `--c-illustration-*` tokens, in the pairings they promise. See [Accessibility](./RadioGroup.mdx#accessibility).
 - 3.2.2 (On Input): don't submit the form or navigate when the selection changes. See [Accessibility](./RadioGroup.mdx#accessibility).

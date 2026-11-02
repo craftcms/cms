@@ -259,17 +259,13 @@
   --c-radio-tile-max-size: 7rem;
   --c-radio-tile-thumbnail-height: 3.75rem;
 
-  /*
-    Colors for inline SVG thumbnails, which draw with the palette below (see
-    choice-inputs.css). They follow the theme, and turn blue when selected.
-  */
-  --c-illustration-surface: #f3f7fd;
+  --c-illustration-surface: var(--color-base-100);
   --c-illustration-paper: var(--color-base-50);
-  --c-illustration-solid: #cdd8e4;
-  --c-illustration-detail: #a6b2c2;
-  --c-illustration-line: var(--color-slate-400);
-  --c-illustration-ink: #5a6572;
-  --c-illustration-backdrop: #2a3141;
+  --c-illustration-subtle: var(--color-slate-100);
+  --c-illustration-field: var(--color-slate-50);
+  --c-illustration-figure: var(--color-slate-500);
+  --c-illustration-line: var(--color-slate-500);
+  --c-illustration-mark: var(--color-base-950);
 
   /* Slide rule */
   --c-slide-rule-height: var(--c-size-touch-target);
@@ -399,11 +395,8 @@
   /* White is a shade of gray here, so a white dot is solid, like a gray one. */
   --c-indicator-white-ring: var(--c-color-white-fill-loud);
 
-  --c-illustration-surface: var(--color-base-100);
-  --c-illustration-solid: var(--color-slate-100);
-  --c-illustration-detail: #6b788d;
-  --c-illustration-ink: var(--color-slate-600);
-  --c-illustration-backdrop: var(--color-black);
+  --c-illustration-field: var(--color-slate-400);
+  --c-illustration-figure: var(--color-base-50);
 }
 
 .underline-links {

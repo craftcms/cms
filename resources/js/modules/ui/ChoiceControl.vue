@@ -42,7 +42,8 @@
     /**
      * Illustration of the choice. Radios with one are shown as tiles, with the
      * illustration above the label: an image `src`, or inline `svg` markup,
-     * which the CP recolors for the theme and the selected state.
+     * colored with the `--c-illustration-*` tokens, so it follows the theme
+     * and the selected state.
      * `aspectRatio` maps to the CSS property of the same name.
      */
     thumbnail?: {

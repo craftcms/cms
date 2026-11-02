@@ -6,7 +6,12 @@ import '../../styles/cp.css';
 import '../icon/icon.js';
 import '../radio/radio.js';
 import './radio-group.js';
-import {VIEW_MODES} from '../../../test/radio-tile-fixtures';
+import {contrast} from '../../../test/contrast';
+import {
+  PALETTE_SAMPLE,
+  VIEW_MODES,
+  type RadioTileOption,
+} from '../../../test/radio-tile-fixtures';
 
 beforeEach(() => {
   document.body.innerHTML = '';
@@ -195,7 +200,8 @@ it('gives only the unchecked buttons a pointer cursor', async () => {
 
 async function renderTiles(
   width: string,
-  wrap: (html: string) => string = (html) => html
+  wrap: (html: string) => string = (html) => html,
+  options: RadioTileOption[] = VIEW_MODES
 ): Promise<{
   group: CraftRadioGroup;
   radios: CraftRadio[];
@@ -203,8 +209,9 @@ async function renderTiles(
 }> {
   document.body.innerHTML = wrap(`
     <craft-radio-group thumbnails label="View Mode" ${width ? `style="inline-size: ${width}"` : ''}>
-      ${VIEW_MODES.map(
-        (option) => `
+      ${options
+        .map(
+          (option) => `
         <div>
           <craft-radio>
             <span slot="thumbnail" aria-hidden="true">${option.svg}</span>
@@ -212,7 +219,8 @@ async function renderTiles(
             <label slot="label" for="view-${option.value}">${option.label}</label>
           </craft-radio>
         </div>`
-      ).join('')}
+        )
+        .join('')}
     </craft-radio-group>`);
   const group = document.querySelector('craft-radio-group')!;
   const radios = Array.from(document.querySelectorAll('craft-radio'));
@@ -352,26 +360,105 @@ it('marks the selected tile with a thicker border and a bold label', async () =>
 });
 
 it('draws the selected illustration in blue, following the selection and the theme', async () => {
+  const BLUE_500 = 'rgb(62, 116, 242)';
+  const SLATE_500 = 'rgb(111, 124, 148)';
+  const SLATE_500_DARK = 'rgb(143, 155, 175)';
   const {radios, inputs} = await renderTiles('40rem');
   const hairline = (radio: CraftRadio) =>
-    getComputedStyle(radio.querySelector('[slot="thumbnail"] [stroke]')!)
-      .stroke;
+    getComputedStyle(
+      radio.querySelector(
+        '[slot="thumbnail"] [style*="stroke: var(--c-illustration-line)"]'
+      )!
+    ).stroke;
 
-  // blue-400 when selected, slate-400 otherwise
-  expect(hairline(radios[1]!)).toBe('rgb(81, 140, 246)');
-  expect(hairline(radios[2]!)).toBe('rgb(130, 143, 164)');
+  expect(hairline(radios[1]!)).toBe(BLUE_500);
+  expect(hairline(radios[2]!)).toBe(SLATE_500);
 
   await userEvent.click(inputs[2]!);
   await settle();
-  expect(hairline(radios[2]!)).toBe('rgb(81, 140, 246)');
-  expect(hairline(radios[1]!)).toBe('rgb(130, 143, 164)');
+  expect(hairline(radios[2]!)).toBe(BLUE_500);
+  expect(hairline(radios[1]!)).toBe(SLATE_500);
 
   document.documentElement.dataset.theme = 'dark';
   try {
-    expect(hairline(radios[1]!)).toBe('rgb(124, 137, 159)');
+    expect(hairline(radios[1]!)).toBe(SLATE_500_DARK);
   } finally {
     delete document.documentElement.dataset.theme;
   }
+});
+
+it("keeps the illustrations' outlines, figures and marks at 3:1 at rest, hovered and selected, in both themes", async () => {
+  const failures: string[] = [];
+
+  for (const theme of ['light', 'dark']) {
+    const {radios, inputs} = await renderTiles(
+      '40rem',
+      (html) =>
+        `<div data-theme="${theme}" style="background-color: var(--c-surface-default)">${html}</div>`,
+      [VIEW_MODES[1]!, PALETTE_SAMPLE]
+    );
+    const sample = radios[1]!;
+    const thumbnail = sample.querySelector('[slot="thumbnail"]')!;
+    const paint = (selector: string, property: 'fill' | 'stroke') =>
+      getComputedStyle(thumbnail.querySelector(selector)!)[property];
+
+    const check = (state: string) => {
+      const backdrop = getComputedStyle(
+        document.querySelector('[data-theme]')!
+      ).backgroundColor;
+      const tile = getComputedStyle(thumbnailBox(sample)).backgroundColor;
+      const field = paint(
+        '[style*="fill: var(--c-illustration-field)"]',
+        'fill'
+      );
+      const figure = paint(
+        '[style*="fill: var(--c-illustration-figure)"]',
+        'fill'
+      );
+      const mark = paint(
+        '[style*="stroke: var(--c-illustration-mark)"]',
+        'stroke'
+      );
+      const pairs: [string, string, string][] = [
+        [
+          'outline / tile',
+          paint('[style*="stroke: var(--c-illustration-line)"]', 'stroke'),
+          tile,
+        ],
+        [
+          'outline / surface',
+          paint('[style*="fill: var(--c-illustration-surface)"]', 'stroke'),
+          paint('[style*="fill: var(--c-illustration-surface)"]', 'fill'),
+        ],
+        ['figure / field', figure, field],
+        ['mark / field', mark, field],
+        ['mark / figure', mark, figure],
+        ['mark / tile', mark, tile],
+        [
+          'mark / light edge',
+          paint('[style*="stroke: var(--c-illustration-paper)"]', 'fill'),
+          paint('[style*="stroke: var(--c-illustration-paper)"]', 'stroke'),
+        ],
+      ];
+
+      for (const [name, foreground, background] of pairs) {
+        const ratio = contrast(foreground, background, backdrop);
+        if (ratio < 3) {
+          failures.push(`${theme}, ${state}, ${name}: ${ratio.toFixed(2)}`);
+        }
+      }
+    };
+
+    check('at rest');
+    await userEvent.hover(inputs[1]!);
+    check('hovered');
+    await userEvent.click(inputs[1]!);
+    await settle();
+    await parkPointer();
+    check('selected');
+  }
+
+  expect(failures).toEqual([]);
 });
 
 it('distinguishes the selected tile in forced colors mode', async () => {
