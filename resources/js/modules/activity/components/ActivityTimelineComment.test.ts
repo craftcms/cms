@@ -29,8 +29,8 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-it('renders an existing comment with its activity metadata', async () => {
-  const event: ActivityEvent = {
+function commentEvent(actor: ActivityEvent['actor']): ActivityEvent {
+  return {
     id: 'comment-1',
     component: 'craft:activity-timeline-comment',
     props: {},
@@ -42,7 +42,7 @@ it('renders an existing comment with its activity metadata', async () => {
       time: '9:41 AM',
       full: 'September 15, 2026 at 9:41 AM UTC',
     },
-    actor: {label: 'Ada', url: null, deleted: false},
+    actor,
     impersonator: null,
     source: {label: 'Craft'},
     description: {text: 'Commented', html: null},
@@ -56,7 +56,9 @@ it('renders an existing comment with its activity metadata', async () => {
       canDelete: false,
     },
   };
+}
 
+async function mountComment(event: ActivityEvent): Promise<void> {
   document.body.append(container);
   app = createApp({
     render: () =>
@@ -69,10 +71,32 @@ it('renders an existing comment with its activity metadata', async () => {
   });
   app.mount(container);
   await nextTick();
+}
+
+it('renders an existing comment with its activity metadata', async () => {
+  await mountComment(commentEvent({label: 'Ada', url: null, deleted: false}));
 
   expect(container.textContent).toContain('Ada commented');
   expect(container.textContent).toContain('Please clarify this.');
   expect(container.textContent).toContain('Edited');
+});
+
+it.each<[string, ActivityEvent['actor'], string]>([
+  [
+    'its author, with their own colors',
+    {label: 'Grace', url: null, deleted: false, photoColors: ['teal', 'amber']},
+    'var(--color-teal-500)',
+  ],
+  [
+    'an author without colors, without any',
+    {label: 'Craft', url: null, deleted: false},
+    '',
+  ],
+])('tints a comment by %s', async (_, actor, startColor) => {
+  await mountComment(commentEvent(actor));
+
+  const bubble = container.querySelector<HTMLElement>('.message-bubble')!;
+  expect(bubble.style.getPropertyValue('--photo-color-start')).toBe(startColor);
 });
 
 it('inserts mentions into the active composer without changing another comment', async () => {

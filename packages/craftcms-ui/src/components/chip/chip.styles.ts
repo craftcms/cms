@@ -378,7 +378,7 @@ export default css`
       'main main main';
     justify-items: center;
     row-gap: var(--_chip-block-padding);
-    padding: var(--_chip-spacing);
+    padding: var(--_chip-block-padding);
   }
 
   :host([full-width]) .cp-chip--stacked {
@@ -390,12 +390,24 @@ export default css`
       'select . suffix'
       'prefix prefix prefix'
       'main main main';
-    padding-block-start: var(--_chip-block-padding);
   }
 
   .cp-chip--stacked .cp-chip__select {
     grid-area: select;
     justify-self: start;
+  }
+
+  /* With a checkbox, the header row is as tall as the checkbox, so it sits as
+     far from the top as from the side, and a taller suffix centers on it,
+     spilling evenly into the padding above and the gap below. */
+  .cp-chip--stacked.cp-chip--has-header.cp-chip--selectable {
+    grid-template-rows: var(--c-chip-checkbox-size, calc(14rem / 16)) auto auto;
+  }
+
+  /* The rows are spaced by the chip's padding and row gap alone, so the
+     parts drop the block padding that insets them in an inline chip. */
+  .cp-chip--stacked :is(.cp-chip__thumbnail, .cp-chip__body, .cp-chip__suffix) {
+    padding-block: 0;
   }
 
   .cp-chip--stacked .cp-chip__prefix {
@@ -422,6 +434,7 @@ export default css`
   .cp-chip--stacked .cp-chip__suffix {
     grid-area: suffix;
     justify-self: end;
+    align-self: center;
     margin-inline-start: 0;
   }
 

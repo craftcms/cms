@@ -78,7 +78,7 @@ it('resolves a chip’s status the way an element index chip does', function (st
     expect($method->invoke(null, $element))->toBe($expected);
 })->with([
     'live' => ['live', ['fill' => 'teal', 'label' => 'Live', 'draft' => false]],
-    'pending' => ['pending', ['fill' => 'orange', 'label' => 'Pending', 'draft' => false]],
+    'pending' => ['pending', ['fill' => 'sky', 'label' => 'Pending', 'draft' => false]],
     'expired' => ['expired', ['fill' => 'red', 'label' => 'Expired', 'draft' => false]],
 ]);
 

@@ -221,7 +221,7 @@ it('records a status change instead of a generic update', function () {
     expect($events)->toHaveCount(1)
         ->and($events->first()->eventType)->toBe(ElementStatusChanged::class)
         ->and($events->first()->data)->toEqual(['oldStatus' => 'live', 'newStatus' => 'disabled'])
-        ->and($this->activities->format($events->first()))->toBe('Status changed from Live to Disabled')
+        ->and($this->activities->format($events->first()))->toBe('Changed the status from Live to Disabled')
         ->and($events->first()->changes)->toContainEqual(
             new ActivityChange($field->name, 'Old body', 'New body'),
         );

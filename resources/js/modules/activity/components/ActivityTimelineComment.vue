@@ -9,13 +9,15 @@
   import ActivityMentionSuggestionsController from '@actions/Elements/ActivityMentionSuggestionsController';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import CommentField from '@/common/components/CommentField.vue';
+  import MarkdownHtml from '@/common/components/MarkdownHtml.vue';
+  import MessageBubble from '@/common/components/MessageBubble.vue';
   import {
     COMMENT_MAX_LENGTH,
     useCharacterLimit,
   } from '@/common/composables/useCharacterLimit';
+  import {usePhotoColors} from '@/common/composables/usePhotoColors';
   import type {ActionItem} from '@/common/types';
   import type {ActivityEvent} from '@/modules/activity/composables/useActivityTimeline';
-  import ActivityCommentCard from './ActivityCommentCard.vue';
   import ActivityTimelineEvent from './ActivityTimelineEvent.vue';
   import {commandShortcut} from '@/common/utils/keyShortcuts';
 
@@ -36,6 +38,7 @@
     updated: [event: ActivityEvent];
   }>();
 
+  const photoColors = usePhotoColors(() => props.event?.actor.photoColors);
   const editing = shallowRef(false);
   const draft = shallowRef('');
   const mutating = shallowRef(false);
@@ -228,28 +231,31 @@
     </div>
   </div>
 
-  <ActivityCommentCard
+  <ActivityTimelineEvent
     v-else-if="event && comment && !comment.deleted"
-    class="activity-timeline__comment"
     data-activity-comment
-    :actor="event.actor"
-    :impersonator="event.impersonator"
-    :origin="event.origin"
-    :description-html="event.description.html"
-    :description-text="event.description.text"
-    :html="comment.html"
-    :occurred-at="event.occurredAt"
-    :formatted-occurred-at="event.formattedOccurredAt"
-    :edited="comment.edited"
+    :event="event"
+    :element-type="elementType"
+    :element-id="elementId"
+    :site-id="siteId"
+    :last="last ?? false"
   >
-    <template v-if="commentActions.length" #actions>
-      <ActionMenu :actions="commentActions" :label="t('Comment actions')" />
+    <template v-if="comment.edited || commentActions.length" #meta-start>
+      <span v-if="comment.edited">{{ t('Edited') }}</span>
+      <ActionMenu
+        v-if="commentActions.length"
+        :actions="commentActions"
+        :label="t('Comment actions')"
+      />
     </template>
 
-    <p v-if="error" class="error" role="alert">
-      {{ t('Couldn’t update comment.') }}
-    </p>
-  </ActivityCommentCard>
+    <MessageBubble class="activity-timeline__comment" :style="photoColors">
+      <MarkdownHtml :html="comment.html" />
+      <p v-if="error" class="error" role="alert">
+        {{ t('Couldn’t update comment.') }}
+      </p>
+    </MessageBubble>
+  </ActivityTimelineEvent>
 
   <ActivityTimelineEvent
     v-else-if="event"
@@ -262,8 +268,9 @@
 </template>
 
 <style scoped>
-  .activity-timeline__comment:not(:last-child) {
-    margin-block-end: var(--c-spacing-md);
+  .activity-timeline__comment {
+    display: grid;
+    gap: var(--c-spacing-md);
   }
 
   .activity-timeline__comment-actions {

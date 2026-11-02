@@ -39,6 +39,7 @@
   import {useSelectable} from '@/common/composables/useSelectable';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import CpLink from '@/common/components/CpLink.vue';
+  import MessageBubble from '@/common/components/MessageBubble.vue';
   import MarkdownHtml from '@/common/components/MarkdownHtml.vue';
   import CommentField from '@/common/components/CommentField.vue';
   import {
@@ -798,7 +799,7 @@
             v-if="entry.kind === 'prompt'"
             class="assistant-chat__message assistant-chat__message--user"
           >
-            <div class="assistant-chat__prompt" :style="photoColors">
+            <MessageBubble class="assistant-chat__prompt" :style="photoColors">
               <span class="sr-only">{{ t('You:') }}</span>
               <ul
                 v-if="entry.context.length"
@@ -823,7 +824,7 @@
                 class="assistant-chat__prompt-text"
                 :html="renderMarkdown(entry.text)"
               />
-            </div>
+            </MessageBubble>
           </li>
           <li v-else-if="entry.kind === 'text'" class="assistant-chat__message">
             <div class="assistant-chat__reply">
@@ -1231,28 +1232,10 @@
     align-items: flex-end;
     gap: var(--c-spacing-sm);
     max-inline-size: 85%;
-    padding-block: var(--c-spacing-md);
-    padding-inline: calc(var(--c-spacing) * 3);
-    border: 1px solid
-      color-mix(in srgb, var(--c-color-neutral-border-quiet) 50%, transparent);
-    border-radius: var(--c-radius-xl);
-    background-color: var(--c-color-neutral-fill-quiet);
-    background-image: linear-gradient(
-      to top right,
-      color-mix(
-        in srgb,
-        var(--photo-color-start, transparent) 15%,
-        transparent
-      ),
-      color-mix(in srgb, var(--photo-color-end, transparent) 15%, transparent)
-    );
-    box-shadow: var(--c-shadow-sm);
-    color: var(--c-color-neutral-on-quiet);
   }
 
   .assistant-chat__prompt-text {
     align-self: stretch;
-    text-box: trim-both cap alphabetic;
   }
 
   .assistant-chat__prompt-text :deep(p) {
