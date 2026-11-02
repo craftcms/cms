@@ -186,12 +186,11 @@ function cpDriftInvokeProtected(ViewComponent $component, string $method): mixed
 function cpDriftWcOnlyAllowlist(): array
 {
     return [
-        // Inherited from <craft-popover>: it stops the overlay writing
-        // `aria-expanded` onto its invoker, for a consumer whose invoker is a
-        // positioning anchor rather than the control. Only something composing
-        // the element in the client can know that, so there's nothing for a
-        // server-rendered menu to set.
-        'craft-action-menu' => ['without-invoker-aria'],
+        // Inherited from <craft-popover>. `without-invoker-aria` is for a
+        // consumer whose invoker is a positioning anchor rather than the
+        // control, which only client-side composition can know. `opened` is
+        // runtime state, and `manual` would stop a menu opening on click.
+        'craft-action-menu' => ['without-invoker-aria', 'opened', 'manual'],
     ];
 }
 

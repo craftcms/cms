@@ -342,3 +342,87 @@ it('keeps to an explicit --popover-max-block-size', async () => {
 
   expect(pane.height).toBe(120);
 });
+
+function offsetFromInvoker(popover: CraftPopover, invoker: Element) {
+  const pane = popover.shadowRoot!.querySelector('.popover-pane')!;
+  const paneRect = pane.getBoundingClientRect();
+  const invokerRect = invoker.getBoundingClientRect();
+
+  return {
+    x: Math.round(paneRect.left - invokerRect.left),
+    y: Math.round(paneRect.top - invokerRect.bottom),
+  };
+}
+
+it('opens below its invoker inside a transformed, clipping ancestor', async () => {
+  document.body.innerHTML = `
+    <div style="overflow: hidden; height: 60px; transform: translateZ(0); container-type: inline-size; margin: 40px">
+      <craft-popover distance="4">
+        <button slot="invoker" type="button">Open</button>
+        <div slot="content" style="height: 150px">Content</div>
+      </craft-popover>
+    </div>`;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  const invoker = popover.querySelector('button')!;
+
+  await popover.show();
+
+  expect(offsetFromInvoker(popover, invoker)).toEqual({x: 0, y: 4});
+  const pane = popover.shadowRoot!.querySelector('.popover-pane')!;
+  const rect = pane.getBoundingClientRect();
+  // Painted on top rather than clipped by the 60px box.
+  expect(
+    pane.contains(
+      popover.shadowRoot!.elementFromPoint(
+        rect.left + 5,
+        rect.bottom - 5
+      ) as Node
+    ) ||
+      popover.contains(
+        document.elementFromPoint(rect.left + 5, rect.bottom - 5) as Node
+      )
+  ).toBe(true);
+});
+
+it('follows its invoker when moved while open', async () => {
+  document.body.innerHTML = `
+    <div id="a" style="padding: 10px">
+      <craft-popover distance="4">
+        <button slot="invoker" type="button">Open</button>
+        <div slot="content">Content</div>
+      </craft-popover>
+    </div>
+    <div id="b" style="padding: 120px"></div>`;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  const invoker = popover.querySelector('button')!;
+  await popover.show();
+
+  document.querySelector('#b')!.append(popover);
+  await popover.updateComplete;
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  expect(popover.opened).toBe(true);
+  expect(offsetFromInvoker(popover, invoker)).toEqual({x: 0, y: 4});
+});
+
+it('closes on a close-overlay from its content, without passing it on', async () => {
+  document.body.innerHTML = `
+    <craft-popover>
+      <button slot="invoker" type="button">Open</button>
+      <div slot="content"><button type="button" class="done">Done</button></div>
+    </craft-popover>`;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  const passedOn: Event[] = [];
+  document.body.addEventListener('close-overlay', (event) =>
+    passedOn.push(event)
+  );
+  await popover.show();
+
+  popover
+    .querySelector('.done')!
+    .dispatchEvent(new Event('close-overlay', {bubbles: true, composed: true}));
+  await popover.updateComplete;
+
+  expect(popover.opened).toBe(false);
+  expect(passedOn).toEqual([]);
+});

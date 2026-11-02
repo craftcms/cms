@@ -70,8 +70,9 @@ function popover(expander: CraftTextExpander): CraftPopover {
   return expander.shadowRoot!.querySelector('craft-popover')!;
 }
 
-function dialog(expander: CraftTextExpander): HTMLDialogElement | null {
-  return popover(expander).shadowRoot!.querySelector('dialog');
+/** The popover's top-layer element, which carries `data-open` while shown. */
+function layer(expander: CraftTextExpander): HTMLElement | null {
+  return popover(expander).shadowRoot!.querySelector('.overlay-layer');
 }
 
 async function waitForFirstOption(expander: CraftTextExpander): Promise<void> {
@@ -197,7 +198,7 @@ describe('craft-text-expander', () => {
     type(target, '@b');
 
     expect(
-      popover(expander).shadowRoot?.querySelectorAll('dialog')
+      popover(expander).shadowRoot?.querySelectorAll('.overlay-layer')
     ).toHaveLength(1);
   });
 
@@ -405,13 +406,11 @@ describe('craft-text-expander', () => {
     vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(
       function (this: HTMLElement) {
         const expander = this.closest('craft-text-expander');
-        const dialog = expander
-          ? popover(expander as CraftTextExpander).shadowRoot?.querySelector(
-              'dialog'
-            )
-          : null;
+        const shown = expander
+          ? layer(expander as CraftTextExpander)?.hasAttribute('data-open')
+          : true;
 
-        return dialog?.style.display === 'none' ? 0 : 1;
+        return shown ? 1 : 0;
       }
     );
     const {expander, target} = await createFixture({
@@ -424,11 +423,11 @@ describe('craft-text-expander', () => {
     });
     type(target, '@z');
     await vi.waitFor(() => {
-      expect(dialog(expander)?.style.display).toBe('none');
+      expect(layer(expander)?.hasAttribute('data-open')).toBe(false);
     });
     type(target, '@b');
     await vi.waitFor(() => {
-      expect(dialog(expander)?.style.display).toBe('');
+      expect(layer(expander)?.hasAttribute('data-open')).toBe(true);
     });
     const enter = new KeyboardEvent('keydown', {
       key: 'Enter',

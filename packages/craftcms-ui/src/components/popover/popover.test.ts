@@ -1,11 +1,7 @@
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import type CraftPopover from './popover.js';
+import styles from './popover.styles.js';
 import './popover.js';
-
-/** Lion keeps the overlay controller protected; its config is what's under test. */
-const overlayZIndex = (popover: CraftPopover) =>
-  (popover as unknown as {_overlayCtrl: {config: {zIndex?: number}}})
-    ._overlayCtrl.config.zIndex;
 
 async function createFixture(
   configure: (popover: CraftPopover, button: HTMLButtonElement) => void = (
@@ -55,25 +51,14 @@ describe('craft-popover', () => {
     ]);
   });
 
-  it('stacks at the popover layer token', async () => {
-    document.documentElement.style.setProperty('--c-layer-popover', '4321');
-
-    try {
-      const {popover} = await createFixture();
-      expect(overlayZIndex(popover)).toBe(4321);
-    } finally {
-      document.documentElement.style.removeProperty('--c-layer-popover');
-    }
-  });
-
-  it("falls back to Lion's layer without the token", async () => {
-    const {popover} = await createFixture();
-    expect(overlayZIndex(popover)).toBe(9999);
+  // Matters where the Popover API is missing and the top layer isn't used.
+  it('stacks at the popover layer token', () => {
+    expect(styles.cssText).toContain('z-index: var(--c-layer-popover, 9999)');
   });
 
   it('resolves the invoker from the for attribute', async () => {
     const {popover, button} = await createFixture();
-    expect(popover._overlayInvokerNode).toBe(button);
+    expect(popover.invoker).toBe(button);
   });
 
   it('prefers an explicit anchor element over for', async () => {
@@ -86,7 +71,7 @@ describe('craft-popover', () => {
       p.anchor = anchor;
     });
 
-    expect(popover._overlayInvokerNode).toBe(anchor);
+    expect(popover.invoker).toBe(anchor);
   });
 
   it('uses a virtual anchor context element as its invoker', async () => {
@@ -104,8 +89,7 @@ describe('craft-popover', () => {
       }
     );
 
-    expect(popover._overlayInvokerNode).toBe(button);
-    expect(popover._overlayReferenceNode).toBe(reference);
+    expect(popover.invoker).toBe(button);
   });
 
   it('marks the invoker as the thing that expands the overlay', async () => {
@@ -162,6 +146,95 @@ describe('craft-popover', () => {
       'craft-hide',
       'craft-after-hide',
     ]);
+  });
+
+  it('returns the invoker to aria-expanded="false" when it closes', async () => {
+    const {popover, button} = await createFixture();
+    await popover.show();
+    await popover.hide();
+
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it("keeps a consumer's own aria-expanded with without-invoker-aria", async () => {
+    const {popover, button} = await createFixture((popover, button) => {
+      popover.setAttribute('for', 'popover-trigger');
+      popover.setAttribute('without-invoker-aria', '');
+      button.setAttribute('aria-expanded', 'false');
+    });
+
+    button.setAttribute('aria-expanded', 'true');
+    await popover.show();
+    await popover.hide();
+
+    expect(button.getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('announces a requested change once, before it happens', async () => {
+    const {popover, button} = await createFixture();
+    const events: string[] = [];
+    for (const type of ['before-opened', 'before-closed', 'opened-changed']) {
+      popover.addEventListener(type, () =>
+        events.push(`${type}:${popover.opened}`)
+      );
+    }
+
+    button.click();
+    await popover.updateComplete;
+    await popover.hide();
+
+    expect(events).toEqual([
+      'before-opened:false',
+      'opened-changed:true',
+      'before-closed:true',
+      'opened-changed:false',
+    ]);
+  });
+
+  it('stays closed when before-opened is cancelled', async () => {
+    const {popover, button} = await createFixture();
+    popover.addEventListener('before-opened', (event) =>
+      event.preventDefault()
+    );
+
+    button.click();
+    await popover.updateComplete;
+
+    expect(popover.opened).toBe(false);
+  });
+
+  it("doesn't open from a disabled invoker", async () => {
+    const {popover, button} = await createFixture((popover, button) => {
+      popover.setAttribute('for', 'popover-trigger');
+      button.setAttribute('aria-disabled', 'true');
+    });
+
+    button.click();
+    await popover.updateComplete;
+
+    expect(popover.opened).toBe(false);
+  });
+
+  it('ignores invoker clicks when manual', async () => {
+    const {popover, button} = await createFixture((popover) => {
+      popover.setAttribute('for', 'popover-trigger');
+      popover.setAttribute('manual', '');
+    });
+
+    button.click();
+    await popover.updateComplete;
+
+    expect(popover.opened).toBe(false);
+  });
+
+  // Its wrapper would otherwise be announced as an unnamed group around the
+  // dialog.
+  it('keeps its top-layer wrapper out of the accessibility tree', async () => {
+    const {popover} = await createFixture();
+
+    expect(
+      popover.shadowRoot!.querySelector('.overlay-layer')!.getAttribute('role')
+    ).toBe('none');
   });
 
   it('toggles on invoker click', async () => {

@@ -92,9 +92,11 @@ export const TextInput: Story = {
     await userEvent.clear(input);
     await userEvent.type(input, '@z');
     await waitFor(() =>
-      expect(popover.shadowRoot!.querySelector('dialog')?.style.display).toBe(
-        'none'
-      )
+      expect(
+        popover
+          .shadowRoot!.querySelector('.overlay-layer')
+          ?.hasAttribute('data-open')
+      ).toBe(false)
     );
     await userEvent.clear(input);
     await userEvent.type(input, '@a');
