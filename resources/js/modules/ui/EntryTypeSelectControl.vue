@@ -10,6 +10,7 @@
   type EntryTypeSelectProps = {
     allowOverrides?: boolean;
     create?: boolean;
+    extraValueKeys?: string[];
   };
 
   const props = defineProps<{
@@ -34,6 +35,7 @@
         value: props.value ?? [],
         allowOverrides: Boolean(props.control.props.allowOverrides),
         create: Boolean(props.control.props.create),
+        extraValueKeys: props.control.props.extraValueKeys ?? [],
         name: inputName(props.control.path),
         disabled: !props.editable,
       });

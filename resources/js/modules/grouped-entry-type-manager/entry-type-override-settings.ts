@@ -161,15 +161,16 @@ function writeOverrides(chip: HTMLElement, data: any): void {
   }
 
   // Write the new override config into the hidden input, preserving the
-  // group the manager stamped (legacy `applySettings`).
+  // group the manager stamped (legacy `applySettings`) and any extra values
+  // the selection holds (see `EntryTypeSelect::extraValueKeys()`).
   const input = chip.querySelector('input');
   if (input) {
-    const config = {...data.config};
+    let config = {...data.config};
     try {
-      const group = JSON.parse(input.value).group;
-      if (group) {
-        config.group = group;
-      }
+      const {id, name, handle, description, ...preserved} = JSON.parse(
+        input.value
+      );
+      config = {...preserved, ...config};
     } catch {
       // Not a JSON value — nothing to preserve.
     }

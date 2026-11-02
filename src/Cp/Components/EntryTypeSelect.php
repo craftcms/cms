@@ -35,6 +35,9 @@ class EntryTypeSelect extends ComponentSelect
 
     protected bool $includeGroupInValues = false;
 
+    /** @var array<int, array<string, mixed>> */
+    protected array $extraValues = [];
+
     /**
      * Whether each selection can override the entry type's name, handle, and
      * description. The chips then post `{id, name?, handle?, description?}`
@@ -56,6 +59,18 @@ class EntryTypeSelect extends ComponentSelect
     }
 
     /** Whether to offer a Create button for new entry types. */
+    /**
+     * Additional values to include in each selection’s value, indexed by entry type ID (requires overrides).
+     *
+     * @param  array<int, array<string, mixed>>  $extraValues
+     */
+    public function extraValues(array $extraValues): static
+    {
+        $this->extraValues = $extraValues;
+
+        return $this;
+    }
+
     public function create(bool $create = true): static
     {
         return $this->createAction($create ? Url::cpUrl('settings/entry-types/new') : null);
@@ -86,7 +101,7 @@ class EntryTypeSelect extends ComponentSelect
 
         return [
             ...$config,
-            'inputValue' => Json::encode([...$value, ...$overrides]),
+            'inputValue' => Json::encode([...$value, ...$overrides, ...($this->extraValues[$component->id] ?? [])]),
             'overrides' => $overrides,
         ];
     }

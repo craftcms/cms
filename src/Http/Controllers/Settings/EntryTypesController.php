@@ -319,6 +319,8 @@ class EntryTypesController
             'create' => ['required', 'boolean'],
             'name' => ['required', 'string'],
             'disabled' => ['required', 'boolean'],
+            'extraValueKeys' => ['sometimes', 'array'],
+            'extraValueKeys.*' => ['string'],
         ]);
 
         $html = EntryTypeSelectControl::selectHtml(
@@ -327,6 +329,7 @@ class EntryTypesController
             $data['create'],
             $data['name'],
             $data['disabled'],
+            $data['extraValueKeys'] ?? [],
         );
 
         return new JsonResponse([
