@@ -34,8 +34,9 @@ class Radio extends Checkbox
      * a button-like box and the label below it.
      *
      * Give it an image `src`, or inline `svg` markup. An inline SVG drawn with
-     * the illustration palette follows the CP's theme, and turns blue when its
-     * option is selected (see `--c-illustration-*` in the UI package's tokens).
+     * the illustration palette follows the CP's theme, and its outlines turn
+     * blue when its option is selected (see `--c-illustration-*` in the UI
+     * package's tokens).
      *
      * `width` and `height` set the intrinsic size, reserving space before the
      * image loads. `aspectRatio` maps to the CSS property of the same name, and

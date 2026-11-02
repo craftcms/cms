@@ -382,7 +382,7 @@ it('draws the selected illustration in blue, following the selection and the the
   }
 });
 
-it("keeps the illustrations' outlines, mountains and crop marks at 3:1 at rest, hovered and selected, in both themes", async () => {
+it("keeps the illustrations' outlines, figures and marks at 3:1 at rest, hovered and selected, in both themes", async () => {
   const failures: string[] = [];
 
   for (const theme of ['light', 'dark']) {
@@ -402,17 +402,17 @@ it("keeps the illustrations' outlines, mountains and crop marks at 3:1 at rest, 
         document.querySelector('[data-theme]')!
       ).backgroundColor;
       const tile = getComputedStyle(thumbnailBox(crop)).backgroundColor;
-      const sky = paint('[fill="#E9EEF3"]', 'fill');
-      const mountain = paint('[fill="#A6B2C2"]', 'fill');
-      const ink = paint('[stroke="#5A6572"]', 'stroke');
+      const field = paint('[fill="#E9EEF3"]', 'fill');
+      const figure = paint('[fill="#A6B2C2"]', 'fill');
+      const mark = paint('[stroke="#5A6572"]', 'stroke');
       const pairs: [string, string, string][] = [
         ['outline / tile', paint('[stroke="#828FA4"]', 'stroke'), tile],
-        ['mountain / sky', mountain, sky],
-        ['crop marks / sky', ink, sky],
-        ['crop marks / mountain', ink, mountain],
-        ['crop marks / tile', ink, tile],
+        ['figure / field', figure, field],
+        ['mark / field', mark, field],
+        ['mark / figure', mark, figure],
+        ['mark / tile', mark, tile],
         [
-          'corner / halo',
+          'mark / light edge',
           paint('[stroke="#FFFFFF"]', 'fill'),
           paint('[stroke="#FFFFFF"]', 'stroke'),
         ],

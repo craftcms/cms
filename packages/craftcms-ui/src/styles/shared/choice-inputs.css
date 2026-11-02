@@ -199,37 +199,34 @@ craft-radio > [slot='thumbnail'] {
   }
 
   & [fill='#E9EEF3' i] {
-    fill: var(--c-illustration-sky);
+    fill: var(--c-illustration-field);
   }
 
   & [fill='#CDD8E4' i] {
-    fill: var(--c-illustration-solid);
+    fill: var(--c-illustration-subtle);
   }
 
   & [fill='#A6B2C2' i] {
-    fill: var(--c-illustration-detail);
+    fill: var(--c-illustration-figure);
   }
 
   & [stroke='#828FA4' i] {
     stroke: var(--c-illustration-line);
   }
 
-  & [fill='#5A6572' i] {
-    fill: var(--c-illustration-ink);
+  & [fill='#5A6572' i],
+  & [fill='#2A3141' i] {
+    fill: var(--c-illustration-mark);
   }
 
   & [stroke='#5A6572' i] {
-    stroke: var(--c-illustration-ink);
-  }
-
-  & [fill='#2A3141' i] {
-    fill: var(--c-illustration-backdrop);
+    stroke: var(--c-illustration-mark);
   }
 }
 
 /*
   A selected tile's outlines turn blue, like its border. Its other colors stay
-  put, so the mountains and crop marks keep their contrast with each other.
+  put, so its figures and marks keep their contrast with each other.
 */
 craft-radio[data-tile][checked] > [slot='thumbnail'] {
   --c-illustration-surface: var(--color-base-50);

@@ -261,18 +261,19 @@
 
   /*
     Colors for inline SVG thumbnails, which draw with a fixed palette that
-    choice-inputs.css swaps for these. Each is a palette stop picked so the
-    outlines, mountains and crop marks keep 3:1 against what they sit on, at
-    rest, hovered and selected. Selected tiles only turn the outlines blue.
+    choice-inputs.css swaps for these. Each is a palette stop, picked so these
+    pairings keep 3:1 at rest, hovered and selected, in both themes:
+    `line` on the tile and on `surface`; `figure` on `field`; `mark` on
+    `field`, `figure` and the tile. `subtle` promises no contrast. Selected
+    tiles only turn the outlines blue.
   */
   --c-illustration-surface: var(--color-base-100);
   --c-illustration-paper: var(--color-base-50);
-  --c-illustration-solid: var(--color-slate-100);
-  --c-illustration-sky: var(--color-slate-50);
-  --c-illustration-detail: var(--color-slate-500);
+  --c-illustration-subtle: var(--color-slate-100);
+  --c-illustration-field: var(--color-slate-50);
+  --c-illustration-figure: var(--color-slate-500);
   --c-illustration-line: var(--color-slate-500);
-  --c-illustration-ink: var(--color-base-950);
-  --c-illustration-backdrop: var(--color-base-950);
+  --c-illustration-mark: var(--color-base-950);
 
   /* Slide rule */
   --c-slide-rule-height: var(--c-size-touch-target);
@@ -402,9 +403,9 @@
   /* White is a shade of gray here, so a white dot is solid, like a gray one. */
   --c-indicator-white-ring: var(--c-color-white-fill-loud);
 
-  /* A light sky behind dark mountains, so both keep 3:1 with the light ink. */
-  --c-illustration-sky: var(--color-slate-400);
-  --c-illustration-detail: var(--color-base-50);
+  /* A light field behind dark figures, so both keep 3:1 with the light marks. */
+  --c-illustration-field: var(--color-slate-400);
+  --c-illustration-figure: var(--color-base-50);
 }
 
 .underline-links {
