@@ -12,16 +12,16 @@ import {isFocusable} from '@src/utilities/focus-return.js';
 import {focusStaysWithin} from '@src/utilities/focus-out.js';
 import {claimEscape, isEscapeClaimed} from '@src/utilities/overlay-escape.js';
 import {wireOverlayLifecycleEvents} from '@src/utilities/overlay-events.js';
-import {viewportEscapingModifiers} from '@src/utilities/overlay-position.js';
+import {
+  hideLayer,
+  layerStyles,
+  overlayModifiers,
+  showLayer,
+  supportsPopover,
+  VIEWPORT_MARGIN,
+} from '@src/utilities/overlay-layer.js';
 import hostStyles from '@src/styles/host.styles';
 import styles from './popover.styles.js';
-
-/**
- * How far the pane stays from the viewport's edge when it's sized to fit,
- * matching the padding `flip` uses. Any less and the fitted pane would count
- * as overflowing, flipping it to the other side.
- */
-const VIEWPORT_MARGIN = 16;
 
 /**
  * Caps the pane at the room left between it and the viewport edge it opens
@@ -29,7 +29,9 @@ const VIEWPORT_MARGIN = 16;
  * below it can use it rather than stopping at the stylesheet's `40vh`. An
  * explicit `--popover-max-block-size` still wins.
  *
- * Measured from where Popper has just placed the pane, so it follows a flip.
+ * Measured from where Popper has just placed the pane, so it follows a flip,
+ * and kept to `flip`'s own margin so the fitted pane doesn't count as
+ * overflowing and flip back.
  * Changing the cap changes the pane's height, which a `top` placement is
  * positioned by, so the popper updates once more when it does.
  */
@@ -98,10 +100,6 @@ if (typeof window !== 'undefined') {
   });
 }
 
-const supportsPopover =
-  typeof HTMLElement !== 'undefined' &&
-  typeof HTMLElement.prototype.showPopover === 'function';
-
 /**
  * @summary A non-modal popover.
  *
@@ -142,7 +140,7 @@ export default class CraftPopover extends LitElement {
   // `hostStyles` for its box-sizing reset, which a shadow root doesn't inherit
   // from the page: without it the pane's 1px border sits outside its width and
   // it overshoots whatever it was sized to.
-  static override styles = [hostStyles, styles];
+  static override styles = [hostStyles, layerStyles, styles];
 
   /** Whether the popover is open. */
   @property({type: Boolean, reflect: true}) opened = false;
@@ -574,14 +572,7 @@ export default class CraftPopover extends LitElement {
       // places against.
       strategy: 'fixed',
       placement: this.placement,
-      modifiers: [
-        {name: 'preventOverflow', options: {padding: 8}},
-        {name: 'flip', options: {padding: VIEWPORT_MARGIN}},
-        {name: 'offset', options: {offset: [0, this.distance]}},
-        {name: 'arrow', enabled: false},
-        ...(viewportEscapingModifiers() as Partial<Modifier<string, object>>[]),
-        fitAvailableBlockSize,
-      ],
+      modifiers: [...overlayModifiers(this.distance), fitAvailableBlockSize],
     };
   }
 
@@ -612,11 +603,7 @@ export default class CraftPopover extends LitElement {
       return;
     }
 
-    layer.toggleAttribute('data-open', true);
-
-    if (supportsPopover && !layer.matches(':popover-open')) {
-      layer.showPopover();
-    }
+    showLayer(layer);
 
     this.#shown = true;
     this.#syncInvokerAria();
@@ -656,11 +643,7 @@ export default class CraftPopover extends LitElement {
     const focusWasInContent = restoreFocus && this.#hasFocusInContent();
     swallowHeldEnterKeyup();
 
-    if (supportsPopover && layer.matches(':popover-open')) {
-      layer.hidePopover();
-    }
-
-    layer.removeAttribute('data-open');
+    hideLayer(layer);
     this.#popper?.destroy();
     this.#popper = null;
     this.#shown = false;
