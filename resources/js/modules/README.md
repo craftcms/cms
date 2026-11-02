@@ -1,9 +1,8 @@
 # CP JavaScript modules
 
-Home for Control-Panel behavior ported out of the legacy jQuery bundle
-(`packages/craftcms-legacy/cp/src/js/*.js`) into modern TypeScript. Each module
-is a self-contained folder that follows one shared pattern so the next port
-looks like the last one.
+Home for Control-Panel behavior ported out of the legacy jQuery bundle into
+modern TypeScript. Each module is a self-contained folder that follows one
+shared pattern so the next port looks like the last one.
 
 Reference implementations, simplest to richest:
 [`listbox`](./listbox/),
@@ -94,10 +93,6 @@ reads it back through a settings callback).
    `{% js %}` boot.
 3. Once core no longer calls `Craft.Thing`, move it from `globals.ts` to
    `compat.ts`.
-4. Delete the legacy `cp/src/js/Thing.js`, remove its `import` from
-   `packages/craftcms-legacy/cp/src/Craft.js`, and **rebuild the legacy bundle**
-   (`cd packages/craftcms-legacy && pnpm run build`) — confirm the built
-   `cms-assets/resources/legacy/cp/dist/cp.js` no longer references it.
 
 ## Verification
 
