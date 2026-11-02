@@ -16,7 +16,7 @@
   --c-text-sm: calc(12rem / 16);
   --c-text-xs: calc(9rem / 16);
 
-  --c-leading-normal: 1.42;
+  --c-leading-normal: 1.5;
 
   /* White cards, chips, badges, and Matrix blocks. */
   --c-surface-white: var(--c-surface-raised);
