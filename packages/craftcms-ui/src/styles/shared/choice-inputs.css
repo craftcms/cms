@@ -181,10 +181,6 @@ craft-radio[data-tile] > [slot='thumbnail'] {
   }
 }
 
-/*
-  A selected tile's outlines turn blue, like its border. Its other colors stay
-  put, so its figures and marks keep their contrast with each other.
-*/
 craft-radio[data-tile][checked] > [slot='thumbnail'] {
   --c-illustration-surface: var(--color-base-50);
   --c-illustration-line: var(--color-blue-500);

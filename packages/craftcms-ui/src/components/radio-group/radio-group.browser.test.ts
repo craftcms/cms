@@ -360,6 +360,9 @@ it('marks the selected tile with a thicker border and a bold label', async () =>
 });
 
 it('draws the selected illustration in blue, following the selection and the theme', async () => {
+  const BLUE_500 = 'rgb(62, 116, 242)';
+  const SLATE_500 = 'rgb(111, 124, 148)';
+  const SLATE_500_DARK = 'rgb(143, 155, 175)';
   const {radios, inputs} = await renderTiles('40rem');
   const hairline = (radio: CraftRadio) =>
     getComputedStyle(
@@ -368,18 +371,17 @@ it('draws the selected illustration in blue, following the selection and the the
       )!
     ).stroke;
 
-  // blue-500 when selected, slate-500 otherwise
-  expect(hairline(radios[1]!)).toBe('rgb(62, 116, 242)');
-  expect(hairline(radios[2]!)).toBe('rgb(111, 124, 148)');
+  expect(hairline(radios[1]!)).toBe(BLUE_500);
+  expect(hairline(radios[2]!)).toBe(SLATE_500);
 
   await userEvent.click(inputs[2]!);
   await settle();
-  expect(hairline(radios[2]!)).toBe('rgb(62, 116, 242)');
-  expect(hairline(radios[1]!)).toBe('rgb(111, 124, 148)');
+  expect(hairline(radios[2]!)).toBe(BLUE_500);
+  expect(hairline(radios[1]!)).toBe(SLATE_500);
 
   document.documentElement.dataset.theme = 'dark';
   try {
-    expect(hairline(radios[1]!)).toBe('rgb(143, 155, 175)');
+    expect(hairline(radios[1]!)).toBe(SLATE_500_DARK);
   } finally {
     delete document.documentElement.dataset.theme;
   }
@@ -422,6 +424,11 @@ it("keeps the illustrations' outlines, figures and marks at 3:1 at rest, hovered
           'outline / tile',
           paint('[style*="stroke: var(--c-illustration-line)"]', 'stroke'),
           tile,
+        ],
+        [
+          'outline / surface',
+          paint('[style*="fill: var(--c-illustration-surface)"]', 'stroke'),
+          paint('[style*="fill: var(--c-illustration-surface)"]', 'fill'),
         ],
         ['figure / field', figure, field],
         ['mark / field', mark, field],

@@ -138,7 +138,7 @@ Call `fieldset()` on the field, so its label becomes the group's legend.
 
 The group is announced as a radio group named by its label, and takes one Tab stop. The arrow keys move between options and select them as they go, because every option is a native radio sharing the group's name.
 
-Give the group a visible label that names the question, and keep each option's text in its radio's label. With `thumbnails`, give each illustration an empty `alt`: the label below it already names the option, so a description would be read twice. Its key parts still need 3:1 contrast; see [Thumbnails](#thumbnails).
+Give the group a visible label that names the question, and keep each option's text in its radio's label. With `thumbnails`, hide each illustration from assistive tech, with `aria-hidden="true"` on an inline SVG's wrapper or an empty `alt` on an `<img>`: the label below it already names the option, so a description would be read twice. Color its key parts with the `--c-illustration-*` tokens, in the pairings they promise, so they keep 3:1 contrast; see [Thumbnails](#thumbnails).
 
 When a choice is required, say so with `craft-field`'s `required` or in the label text, as well as adding the `Required` validator; the validator alone doesn't show anything until an error appears. Write validator messages that say what to choose.
 

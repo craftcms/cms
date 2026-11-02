@@ -78,7 +78,8 @@ export const VIEW_MODES: RadioTileOption[] = [
 /**
  * A photo inside a dashed crop frame with corner marks, like the image
  * transform Mode illustrations: mountains (`figure`) on an outlined sky
- * (`field`), and `mark`s with a light edge that cross both.
+ * (`field`), `mark`s with a light edge that cross both, and an outlined
+ * `surface` chip.
  */
 export const CROP_MODE: RadioTileOption = {
   value: 'crop',
@@ -87,6 +88,7 @@ export const CROP_MODE: RadioTileOption = {
   svg: svg(
     80,
     `<rect x="0.5" y="4.5" width="79" height="51" ${paint('field', 'line')}/>` +
+      `<rect x="68.5" y="0.5" width="11" height="3" rx="1" ${paint('surface', 'line')}/>` +
       `<path d="M1 46 22 22 36 37 48 26 79 51V55H1Z" ${paint('figure')}/>` +
       `<path d="M14.5 2.5H65.5V57.5H14.5Z" fill="none" ${paint(undefined, 'mark')} stroke-dasharray="1"/>` +
       `<path d="M12 0H20V4H16V8H12Z" ${paint('mark', 'paper')} stroke-width="2" paint-order="stroke"/>` +
