@@ -234,11 +234,9 @@ export default class CraftSwitch extends HasLabel(LionSwitch) {
 
   /**
    * Shows/hides the `data-target`/`data-reverse-target` containers, like the
-   * legacy lightswitch's Craft.FieldToggle behavior. On legacy Twig screens
-   * Craft.initUiElements binds Craft.FieldToggle to the switch button (which
-   * reacts to our native change events), so this only kicks in when no
-   * FieldToggle instance is present (e.g. Inertia screens that inject
-   * server-rendered settings HTML without initUiElements).
+   * legacy lightswitch's Craft.FieldToggle behavior. In the control panel a
+   * FieldToggle is bound to the switch button and owns the reveal, so this only
+   * runs where none is (e.g. outside the control panel).
    */
   private __syncToggleTargets(): void {
     const btn = this._inputNode;

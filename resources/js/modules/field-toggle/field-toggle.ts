@@ -169,10 +169,7 @@ export class FieldToggle extends Base {
     }
 
     if (this.type === 'checkbox' && this.targetPrefix === null) {
-      if (toggle instanceof HTMLInputElement) {
-        return toggle.checked;
-      }
-      return toggle.getAttribute('aria-checked') === 'true';
+      return this.#isChecked();
     }
 
     if (this.type === 'booleanMenu') {
@@ -278,7 +275,7 @@ export class FieldToggle extends Base {
       if (this.type === 'button') {
         show = this.#buttonIsCollapsed();
       } else if (this.type === 'checkbox' && this.targetPrefix !== null) {
-        show = this.toggle instanceof HTMLInputElement && this.toggle.checked;
+        show = this.#isChecked();
       } else {
         show = !!this.getToggleVal();
       }
@@ -406,6 +403,15 @@ export class FieldToggle extends Base {
       'aria-expanded',
       this.#buttonIsCollapsed() ? 'false' : 'true'
     );
+  }
+
+  #isChecked(): boolean {
+    const checked = (this.toggle as {checked?: unknown}).checked;
+
+    // Switches update `aria-checked` after their change event, so prefer the property
+    return typeof checked === 'boolean'
+      ? checked
+      : this.toggle!.getAttribute('aria-checked') === 'true';
   }
 
   override destroy(): void {
