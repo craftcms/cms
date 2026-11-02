@@ -17,11 +17,13 @@ use craft\base\InputSchemaFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\elements\Entry;
 use craft\fields\data\ColorData;
+use craft\gql\types\generators\ColorDataType;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\validators\ColorValidator;
+use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Arr;
 use yii\db\Schema;
 
@@ -68,7 +70,7 @@ class Color extends Field implements
      */
     public static function dbType(): string
     {
-        return sprintf('%s(7)', Schema::TYPE_CHAR);
+        return sprintf('%s(9)', Schema::TYPE_CHAR);
     }
 
     /**
@@ -83,6 +85,18 @@ class Color extends Field implements
      * @since 5.6.0
      */
     public bool $allowCustomColors = false;
+
+    /**
+     * @var bool Allow custom colors to have an alpha channel
+     * @since 5.12.0
+     */
+    public bool $allowCustomAlpha = false;
+
+    /**
+     * @var bool Whether GraphQL values should be returned as objects with all the color’s data, rather than just the hex value.
+     * @since 5.12.0
+     */
+    public bool $fullGraphqlData = true;
 
     /**
      * @inheritdoc
@@ -111,6 +125,15 @@ class Color extends Field implements
         // Default allowCustomColors to true for existing fields
         if (isset($config['id']) && !isset($config['allowCustomColors'])) {
             $config['allowCustomColors'] = true;
+        }
+
+        if (isset($config['graphqlMode'])) {
+            $config['fullGraphqlData'] = ArrayHelper::remove($config, 'graphqlMode') === 'full';
+        }
+
+        // Default fullGraphqlData to false for existing fields
+        if (isset($config['id']) && !isset($config['fullGraphqlData'])) {
+            $config['fullGraphqlData'] = false;
         }
 
         parent::__construct($config);
@@ -200,7 +223,7 @@ class Color extends Field implements
 
     private function settingsHtml(bool $readOnly): string
     {
-        return
+        $html =
             Cp::editableTableFieldHtml([
                 'label' => Craft::t('app', 'Palette'),
                 'name' => 'palette',
@@ -209,6 +232,7 @@ class Color extends Field implements
                     'color' => [
                         'type' => 'color',
                         'heading' => Craft::t('app', 'Color'),
+                        'alpha' => true,
                     ],
                     'label' => [
                         'type' => 'singleline',
@@ -235,7 +259,35 @@ class Color extends Field implements
                 'name' => 'allowCustomColors',
                 'on' => $this->allowCustomColors,
                 'disabled' => $readOnly,
+                'toggle' => 'allow-custom-alpha-container',
+            ]) .
+            Html::tag('div', Cp::lightswitchFieldHtml([
+                'label' => Craft::t('app', 'Allow opacity for custom colors'),
+                'instructions' => Craft::t('app', 'Whether authors should be able to set the opacity of custom colors, in browsers that support it.'),
+                'id' => 'allow-custom-alpha',
+                'name' => 'allowCustomAlpha',
+                'on' => $this->allowCustomAlpha,
+                'disabled' => $readOnly,
+            ]), [
+                'id' => 'allow-custom-alpha-container',
+                'class' => array_filter([!$this->allowCustomColors ? 'hidden' : null]),
             ]);
+
+        if (Craft::$app->getConfig()->getGeneral()->enableGql) {
+            $html .= Cp::selectFieldHtml([
+                'label' => Craft::t('app', 'GraphQL Mode'),
+                'id' => 'graphql-mode',
+                'name' => 'graphqlMode',
+                'options' => [
+                    ['label' => Craft::t('app', 'Full data'), 'value' => 'full'],
+                    ['label' => Craft::t('app', 'Hex only'), 'value' => 'hex'],
+                ],
+                'value' => $this->fullGraphqlData ? 'full' : 'hex',
+                'disabled' => $readOnly,
+            ]);
+        }
+
+        return $html;
     }
 
     /**
@@ -252,7 +304,7 @@ class Color extends Field implements
                 'message' => Craft::t('app', 'Palette cannot be blank if custom colors aren’t allowed.'),
             ],
             [['palette'], function() {
-                $validator = new ColorValidator();
+                $validator = new ColorValidator(['allowAlpha' => true]);
                 foreach ($this->palette as $color) {
                     if (!$validator->validate($color['color'], $error)) {
                         $this->addError('palette', Craft::t('yii', '{attribute} is invalid.', [
@@ -325,17 +377,18 @@ class Color extends Field implements
     public function getElementValidationRules(): array
     {
         return [
-            ColorValidator::class,
+            [ColorValidator::class, 'allowAlpha' => true],
             [
                 function(ElementInterface $element) {
-                    if (!$this->allowCustomColors) {
-                        /** @var ColorData $value */
-                        $value = $element->getFieldValue($this->handle);
-                        if (!ArrayHelper::contains($this->palette, fn(array $color) => $color['color'] === $value->getHex())) {
-                            $element->addError("field:$this->handle", Craft::t('yii', '{attribute} is invalid.', [
-                                'attribute' => $this->getUiLabel(),
-                            ]));
-                        }
+                    /** @var ColorData $value */
+                    $value = $element->getFieldValue($this->handle);
+                    if (
+                        (!$this->allowCustomColors || (!$this->allowCustomAlpha && $value->getAlpha() < 1)) &&
+                        !ArrayHelper::contains($this->palette, fn(array $color) => $color['color'] === $value->getHex())
+                    ) {
+                        $element->addError("field:$this->handle", Craft::t('yii', '{attribute} is invalid.', [
+                            'attribute' => $this->getUiLabel(),
+                        ]));
                     }
                 },
             ],
@@ -355,6 +408,7 @@ class Color extends Field implements
                 'describedBy' => $this->describedBy,
                 'name' => $this->handle,
                 'value' => $value?->getHex(),
+                'alpha' => $this->allowCustomAlpha,
             ]);
         }
 
@@ -438,6 +492,7 @@ class Color extends Field implements
                     'describedBy' => $this->describedBy,
                     'name' => "$this->handle[custom]",
                     'value' => $isCustom ? $value->getHex() : null,
+                    'alpha' => $this->allowCustomAlpha,
                 ]) .
                 Html::endTag('div');
         } elseif ($value && !$isInPalette) {
@@ -521,6 +576,18 @@ class Color extends Field implements
         }
 
         return $this->getPreviewHtml($value, $element ?? new Entry());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getContentGqlType(): Type|array
+    {
+        if (!$this->fullGraphqlData) {
+            return parent::getContentGqlType();
+        }
+
+        return ColorDataType::generateType($this);
     }
 
     /**
