@@ -35,8 +35,6 @@ function slotBasedMarkup(attrs = 'searchable'): string {
 }
 
 function getSearchInput(element: CraftActionMenu): HTMLInputElement | null {
-  // Note: Lion moves the content node inside its overlay wrapper and strips
-  // the `slot` attribute, so query by the search container class instead.
   return element.querySelector<HTMLInputElement>('.action-menu__search input');
 }
 
@@ -458,8 +456,6 @@ describe('keyboard navigation', () => {
 
     element.opened = true;
     await element.updateComplete;
-    // Lion dispatches `show` on the overlay controller asynchronously.
-    await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(focused).toEqual(['Two']);
   });
@@ -478,7 +474,7 @@ describe('groups', () => {
     return element;
   }
 
-  /** The generated content container, as Lion leaves it. */
+  /** The generated content container. */
   function contentNode(element: CraftActionMenu): HTMLElement {
     return (
       (element.querySelector<HTMLElement>('.action-menu__search')

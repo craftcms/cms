@@ -78,8 +78,6 @@ class ActionMenu extends ViewComponent
 
     protected bool $matchInvokerWidth = false;
 
-    protected bool $withoutArrow = false;
-
     /**
      * The menu items, already in the client item shape.
      *
@@ -191,14 +189,6 @@ class ActionMenu extends ViewComponent
         return $this;
     }
 
-    /** Accepted for API compatibility; `craft-popover` never renders an arrow. */
-    public function withoutArrow(bool $withoutArrow = true): static
-    {
-        $this->withoutArrow = $withoutArrow;
-
-        return $this;
-    }
-
     protected function hostAttributes(): array
     {
         return [
@@ -214,7 +204,6 @@ class ActionMenu extends ViewComponent
             'placement' => $this->placement,
             'distance' => $this->distance,
             'match-invoker-width' => $this->matchInvokerWidth,
-            'without-arrow' => $this->withoutArrow,
         ];
     }
 
