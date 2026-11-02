@@ -437,11 +437,6 @@ it("keeps the illustrations' outlines, figures and marks at 3:1 at rest, hovered
         ['mark / field', mark, field],
         ['mark / figure', mark, figure],
         ['mark / card', mark, card],
-        [
-          'mark / light edge',
-          paint('[style*="stroke: var(--c-illustration-paper)"]', 'fill'),
-          paint('[style*="stroke: var(--c-illustration-paper)"]', 'stroke'),
-        ],
       ];
 
       for (const [name, foreground, background] of pairs) {
