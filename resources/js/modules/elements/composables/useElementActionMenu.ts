@@ -49,6 +49,7 @@ export type ElementActionBehavior =
       elementType: string;
       elementId: number;
       siteId: number | null;
+      ownerId?: number | null;
       confirm: string;
       redirect: string;
     }
@@ -186,6 +187,7 @@ export function createElementActionDispatcher({
         // references can be reassigned before the element goes.
         new ElementDeletionManager(behavior.elementType, [behavior.elementId], {
           siteId: behavior.siteId,
+          ownerId: behavior.ownerId,
           confirmationMessage: behavior.confirm,
           onSuccess: () => {
             if (slideout) {
