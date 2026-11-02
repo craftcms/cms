@@ -17,14 +17,19 @@ import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {getCpUrl} from '@/common/craft/url';
 import {findDeltaData} from '@/common/craft/delta';
 import {t} from '@craftcms/ui/utilities/translate';
-import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
+import {
+  appendBodyHtml,
+  appendElementHtml,
+  appendHeadHtml,
+  serializeFormInputs,
+} from '@craftcms/ui/utilities/dom';
+import {jq} from '@/common/utils/jquery';
 import {setElementAttributes} from '@/common/craft/attributes';
 import {showError, showSuccess} from '@/modules/messages/messages';
 import {commandShortcut} from '@/common/utils/keyShortcuts';
 import {registerShortcut, type ShortcutRegistration} from '@/common/shortcuts';
 
 declare const Craft: any;
-declare const $: any;
 
 /** A `craft-dialog`. */
 interface CpModalDialog extends HTMLElement {
@@ -81,11 +86,6 @@ const DEFAULTS: CpModalSettings = {
  * and renders validation errors inline. Booted from PHP deletion blockers
  * (`new Craft.CpModal('…', {…})`).
  *
- * Like its sibling {@link CpScreenSlideout}, it keeps the jQuery seam
- * (`declare const $`) for the form, because the delta-tracking data
- * (`.data('initialSerializedValue' | 'delta-names' | 'serializer')`) shares
- * those jQuery conventions with the rest of the CP-screen framework.
- *
  * Emits `beforeLoad`, `load`, `submit`, `close` and `cancel`.
  */
 export class CpModal extends Base {
@@ -101,12 +101,14 @@ export class CpModal extends Base {
   #fieldsWithErrors: ArrayLike<Element>[] = [];
   #shortcuts: ShortcutRegistration;
 
-  // jQuery refs (form-ops seam), mirroring the legacy `$`-prefixed fields.
-  #$container: any = null;
-  #$content: any = null;
-  #$loadSpinner: any = null;
-  #$cancelBtn: any = null;
-  #$saveBtn: any = null;
+  #container: HTMLFormElement;
+  #content: HTMLElement;
+  #loadSpinner: HTMLElement & {hidden: boolean};
+  #cancelBtn: HTMLElement;
+  #saveBtn: (HTMLElement & {loading?: boolean}) | null = null;
+  #deltaNames: string[] = [];
+  #initialDeltaValues: UiValues = {};
+  #initialSerializedValue: string | undefined;
 
   constructor(action?: string, settings?: Partial<CpModalSettings>) {
     super();
@@ -127,52 +129,48 @@ export class CpModal extends Base {
       {id: `cp-modal-${Math.floor(Math.random() * 100000000)}`},
       this.#cpSettings.containerAttributes
     );
-    this.#$container = $(
-      `<${this.#cpSettings.containerElement}/>`,
-      containerAttributes
-    );
-    this.#$container.data('cpModal', this);
+    // SAFETY: The container is a form unless a caller asks for another element.
+    this.#container = document.createElement(
+      this.#cpSettings.containerElement
+    ) as HTMLFormElement;
+    setElementAttributes(this.#container, containerAttributes);
+    jq()?.(this.#container).data('cpModal', this);
 
-    this.#$content = $('<div/>', {class: 'cpmodal-content'}).appendTo(
-      this.#$container
-    );
+    this.#content = document.createElement('div');
+    this.#content.className = 'cpmodal-content';
 
-    this.#$loadSpinner = $('<craft-spinner/>', {
-      class: 'cpmodal-spinner',
-      label: t('Loading'),
-    }).appendTo(this.#$container);
+    this.#loadSpinner = document.createElement(
+      'craft-spinner'
+    ) as HTMLElement & {
+      hidden: boolean;
+    };
+    this.#loadSpinner.className = 'cpmodal-spinner';
+    this.#loadSpinner.setAttribute('label', t('Loading'));
+    this.#container.append(this.#content, this.#loadSpinner);
 
-    this.#$cancelBtn = $('<craft-button/>', {
-      type: 'button',
-      slot: 'footer',
-      text: t('Cancel'),
-    });
+    this.#cancelBtn = this.#footerButton(t('Cancel'));
 
     if (this.#cpSettings.showSubmitButton) {
-      this.#$saveBtn = $('<craft-button/>', {
-        type: 'button',
-        slot: 'footer',
-        variant: 'primary',
-        text: t('Save'),
-        'aria-keyshortcuts': commandShortcut('S'),
-      });
+      this.#saveBtn = this.#footerButton(t('Save'));
+      this.#saveBtn.setAttribute('variant', 'primary');
+      this.#saveBtn.setAttribute('aria-keyshortcuts', commandShortcut('S'));
     }
 
     this.dialog.append(
-      this.#$container[0],
-      this.#$cancelBtn[0],
-      ...(this.#$saveBtn ? [this.#$saveBtn[0]] : [])
+      this.#container,
+      this.#cancelBtn,
+      ...(this.#saveBtn ? [this.#saveBtn] : [])
     );
 
-    this.addListener(this.#$cancelBtn[0], 'click', () => {
+    this.addListener(this.#cancelBtn, 'click', () => {
       this.closeMeMaybe();
     });
-    if (this.#$saveBtn) {
-      this.addListener(this.#$saveBtn[0], 'click', () => {
-        this.#$container[0].requestSubmit();
+    if (this.#saveBtn) {
+      this.addListener(this.#saveBtn, 'click', () => {
+        this.#container.requestSubmit();
       });
     }
-    this.addListener(this.#$container[0], 'submit', 'handleSubmit');
+    this.addListener(this.#container, 'submit', 'handleSubmit');
     this.#shortcuts = registerShortcut('Mod+S', (ev) => this.handleSubmit(ev), {
       target: this.dialog,
       description: () => t('Save'),
@@ -192,6 +190,14 @@ export class CpModal extends Base {
     void this.load();
   }
 
+  #footerButton(label: string): HTMLElement {
+    const button = document.createElement('craft-button');
+    button.setAttribute('type', 'button');
+    button.setAttribute('slot', 'footer');
+    button.textContent = label;
+    return button;
+  }
+
   load(data?: UiValues, refreshInitialData?: boolean): Promise<void> {
     return new Promise((resolve, reject) => {
       this.trigger('beforeLoad');
@@ -206,7 +212,7 @@ export class CpModal extends Base {
 
       sendLegacyRequest(
         actionClient,
-        $.extend(
+        Object.assign(
           {
             params: Object.assign(
               {},
@@ -215,7 +221,7 @@ export class CpModal extends Base {
             ),
             signal: this.#abortController.signal,
             headers: {
-              'X-Craft-Container-Id': this.#$container.attr('id'),
+              'X-Craft-Container-Id': this.#container.id,
             },
           },
           this.#cpSettings.requestOptions,
@@ -226,15 +232,10 @@ export class CpModal extends Base {
           this.update(response.data)
             .then(() => {
               if (refreshInitialData !== false) {
-                this.#$container.data('delta-names', response.data.deltaNames);
-                this.#$container.data(
-                  'initial-delta-values',
-                  response.data.initialDeltaValues
-                );
-                this.#$container.data(
-                  'initialSerializedValue',
-                  this.#$container.serialize()
-                );
+                this.#deltaNames = response.data.deltaNames ?? [];
+                this.#initialDeltaValues =
+                  response.data.initialDeltaValues ?? {};
+                this.#initialSerializedValue = this.#serialize();
               }
               resolve();
             })
@@ -261,41 +262,45 @@ export class CpModal extends Base {
   }
 
   showLoadSpinner(): void {
-    this.#$loadSpinner.prop('hidden', false);
+    this.#loadSpinner.hidden = false;
   }
 
   hideLoadSpinner(): void {
-    this.#$loadSpinner.prop('hidden', true);
+    this.#loadSpinner.hidden = true;
   }
 
-  update(data: any): Promise<void> {
+  async update(data: any): Promise<void> {
+    this.namespace = data.namespace;
+
+    if (data.bodyClass) {
+      this.#content.classList.add(
+        ...String(data.bodyClass).split(/\s+/).filter(Boolean)
+      );
+    }
+
+    // Runs any scripts in the content, as jQuery's `html()` did
+    this.#content.replaceChildren();
+    await appendElementHtml(data.content ?? '', this.#content);
+
+    if (data.submitButtonLabel && this.#saveBtn) {
+      this.#saveBtn.textContent = data.submitButtonLabel;
+    }
+
+    if (data.formAttributes) {
+      setElementAttributes(this.#container, data.formAttributes);
+    }
+
     return new Promise((resolve) => {
-      this.namespace = data.namespace;
-
-      if (data.bodyClass) {
-        this.#$content.addClass(data.bodyClass);
-      }
-
-      this.#$content.html(data.content);
-
-      if (data.submitButtonLabel) {
-        this.#$saveBtn?.text(data.submitButtonLabel);
-      }
-
-      if (data.formAttributes) {
-        setElementAttributes(this.#$container, data.formAttributes);
-      }
-
       requestAnimationFrame(() => {
         void appendHeadHtml(data.headHtml).then(() =>
           appendBodyHtml(data.bodyHtml)
         );
 
-        initLegacyUi(this.#$content);
-        loadElementThumbs(this.#$content);
+        initLegacyUi(this.#content);
+        loadElementThumbs(this.#content);
 
         if (!isMobileBrowser()) {
-          setFocusWithin(this.#$content[0]!);
+          setFocusWithin(this.#content);
         }
 
         resolve();
@@ -305,11 +310,15 @@ export class CpModal extends Base {
   }
 
   showSubmitSpinner(): void {
-    this.#$saveBtn?.prop('loading', true);
+    if (this.#saveBtn) {
+      this.#saveBtn.loading = true;
+    }
   }
 
   hideSubmitSpinner(): void {
-    this.#$saveBtn?.prop('loading', false);
+    if (this.#saveBtn) {
+      this.#saveBtn.loading = false;
+    }
   }
 
   handleSubmit(ev: Event): void {
@@ -321,11 +330,11 @@ export class CpModal extends Base {
     this.showSubmitSpinner();
 
     const data = findDeltaData(
-      this.#$container.data('initialSerializedValue'),
-      this.#$container.serialize(),
-      this.#$container.data('delta-names'),
+      this.#initialSerializedValue ?? '',
+      this.#serialize(),
+      this.#deltaNames,
       null,
-      this.#$container.data('initial-delta-values')
+      this.#initialDeltaValues
     );
 
     actionClient
@@ -391,22 +400,31 @@ export class CpModal extends Base {
         ...(this.namespace ? [this.namespace] : []),
         ...name.split('.'),
       ];
-      const $field = this.#$container
-        .find(
+      const fields = new Set<Element>(
+        this.#container.querySelectorAll(
           `[data-attribute="${CSS.escape(name)}"], [data-error-key="${CSS.escape(name)}"]`
         )
-        .add(
-          this.#$container
-            .find(`[name="${CSS.escape(inputName(path))}"]`)
-            .closest('craft-field')
-        );
-      if ($field.length) {
-        addErrorsToField($field, fieldErrors);
-        $field
-          .filter('craft-field')
-          .children('ul.errors')
-          .attr('slot', 'feedback');
-        this.#fieldsWithErrors.push($field);
+      );
+      for (const input of this.#container.querySelectorAll(
+        `[name="${CSS.escape(inputName(path))}"]`
+      )) {
+        const field = input.closest('craft-field');
+        if (field) {
+          fields.add(field);
+        }
+      }
+      if (fields.size) {
+        const field = [...fields];
+        addErrorsToField(field, fieldErrors);
+        for (const el of field) {
+          if (el.localName === 'craft-field') {
+            el.querySelector(':scope > ul.errors')?.setAttribute(
+              'slot',
+              'feedback'
+            );
+          }
+        }
+        this.#fieldsWithErrors.push(field);
       }
     });
   }
@@ -418,16 +436,20 @@ export class CpModal extends Base {
     this.#fieldsWithErrors = [];
   }
 
+  /** Legacy code can swap in its own serializer through jQuery's `data()`. */
+  #serialize(): string {
+    const serializer = jq()?.(this.#container).data('serializer');
+    return typeof serializer === 'function'
+      ? serializer()
+      : serializeFormInputs(this.#container);
+  }
+
   isDirty(): boolean {
-    const initialValue = this.#$container.data('initialSerializedValue');
-    if (initialValue === undefined) {
+    if (this.#initialSerializedValue === undefined) {
       return false;
     }
 
-    const serializer =
-      this.#$container.data('serializer') ||
-      (() => this.#$container.serialize());
-    return initialValue !== serializer();
+    return this.#initialSerializedValue !== this.#serialize();
   }
 
   closeMeMaybe(): void {
