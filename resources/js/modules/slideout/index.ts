@@ -1,13 +1,5 @@
 import './globals';
 import {Slideout, type SlideoutSettings} from './slideout';
-import {
-  CpScreenSlideout,
-  type CpScreenSlideoutSettings,
-} from './cp-screen-slideout';
-import {
-  ElementEditorSlideout,
-  type ElementEditorSlideoutSettings,
-} from './element-editor-slideout';
 import {containerSlideouts} from './support';
 
 /**
@@ -20,12 +12,4 @@ import {containerSlideouts} from './support';
 // up here, via `Garnish.on(Slideout, 'open close')`. It now lives in the
 // shared panel stack, so Vue slideouts trigger it too.
 
-export {
-  Slideout,
-  type SlideoutSettings,
-  CpScreenSlideout,
-  type CpScreenSlideoutSettings,
-  ElementEditorSlideout,
-  type ElementEditorSlideoutSettings,
-  containerSlideouts,
-};
+export {Slideout, type SlideoutSettings, containerSlideouts};

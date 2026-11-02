@@ -10,6 +10,7 @@ import '@/modules/auth-method-setup/compat';
 import '@/modules/customize-sources/compat';
 import '@/modules/data-table-sorter/compat';
 import '@/modules/editable-table/compat';
+import '@/modules/element-action-trigger/compat';
 import '@/modules/element-select-input/compat';
 import '@/modules/element-selector-modal/compat';
 import '@/modules/element-table-sorter/compat';
