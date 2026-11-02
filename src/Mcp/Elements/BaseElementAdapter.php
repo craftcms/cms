@@ -6,13 +6,15 @@ namespace CraftCms\Cms\Mcp\Elements;
 
 use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Enums\ElementPropertyType;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\UserInitiatedElementSave;
+use CraftCms\Cms\Mcp\Attributes\Mcp;
 use CraftCms\Cms\Mcp\ElementLifecycle;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\Schema\CustomFieldSchema;
+use CraftCms\Cms\Mcp\Schema\ElementSchemaTypes;
 use CraftCms\Cms\Mcp\Serializers\ElementSerializer;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
@@ -57,21 +59,37 @@ abstract class BaseElementAdapter implements ElementAdapter
     }
 
     /**
-     * Returns JSON Schema properties for writable element properties declared with {@see ElementProperty}.
+     * Returns JSON Schema properties for the attributes `elements.create` or `elements.update` accepts.
      *
-     * @param  list<string>  $names  Property names to return. Every name must be declared as writable.
-     * @param  array<string, string>  $hints  Guidance for MCP clients, appended to property descriptions.
+     * These are the given properties, followed by the writable properties that the element type declares with
+     * {@see ElementProperty} beyond those of the base {@see Element}, unless {@see Mcp} excludes them from the operation.
+     *
+     * @param  'create'|'update'  $operation
+     * @param  list<string>  $names  Writable properties to accept first, such as base element properties the type accepts.
+     * @param  array<string, string>  $hints  Guidance for MCP clients that only applies to this element type.
      * @return array<string, array<string, mixed>>
      */
-    protected function propertySchemas(array $names, array $hints = []): array
+    protected function attributeSchemas(string $operation, array $names = [], array $hints = []): array
     {
         $elementType = static::elementType();
+        $properties = ElementProperty::writable($elementType, $names);
+
+        foreach (array_diff_key(ElementProperty::writable($elementType), ElementProperty::all(Element::class)) as $name => $property) {
+            if ($property->companion(Mcp::class)->$operation ?? true) {
+                $properties[$name] = $property;
+            }
+        }
+
         $schemas = [];
 
-        foreach (ElementProperty::only($elementType, $names, 'writable') as $name => $property) {
+        foreach ($properties as $name => $property) {
             $schemas[$name] = [
-                ...$this->propertyType($property, $property->nullable),
-                'description' => trim($property->descriptionFor($elementType).' '.($hints[$name] ?? '')),
+                ...ElementSchemaTypes::property($property->type, $property->nullable),
+                'description' => implode(' ', array_filter([
+                    $property->descriptionFor($elementType),
+                    $property->companion(Mcp::class)?->hint,
+                    $hints[$name] ?? null,
+                ])),
             ];
         }
 
@@ -88,28 +106,9 @@ abstract class BaseElementAdapter implements ElementAdapter
         $elementType = static::elementType();
 
         return array_map(fn (ElementProperty $property): array => [
-            ...$this->propertyType($property, ! $property->nonNull),
+            ...ElementSchemaTypes::property($property->type, ! $property->nonNull),
             'description' => $property->descriptionFor($elementType),
         ], ElementProperty::readable($elementType));
-    }
-
-    /** @return array<string, mixed> */
-    private function propertyType(ElementProperty $property, bool $nullable): array
-    {
-        $schema = match ($property->type) {
-            ElementPropertyType::String => ['type' => 'string'],
-            ElementPropertyType::Int, ElementPropertyType::Id => ['type' => 'integer'],
-            ElementPropertyType::IdList => ['type' => 'array', 'items' => ['type' => 'integer']],
-            ElementPropertyType::Boolean => ['type' => 'boolean'],
-            ElementPropertyType::DateTime => ['type' => 'string', 'format' => 'date-time'],
-            ElementPropertyType::Float => ['type' => ['number', 'string']],
-        };
-
-        if ($nullable) {
-            $schema['type'] = [...(array) $schema['type'], 'null'];
-        }
-
-        return $schema;
     }
 
     /**

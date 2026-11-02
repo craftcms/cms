@@ -60,9 +60,11 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\ViewModels\EntryEditViewModel;
+use CraftCms\Cms\Mcp\Attributes\Mcp;
 use CraftCms\Cms\Route\ElementRoute;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
@@ -154,6 +156,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      */
     #[AllowedInSandbox]
     #[ElementProperty(ElementPropertyType::Id, 'The ID of the section that contains the entry.', readable: true)]
+    #[Gql(write: false)]
+    #[Mcp(update: false)]
     public ?int $sectionId = null;
 
     /**
@@ -1591,6 +1595,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     #[ElementProperty(ElementPropertyType::Id, 'The ID of the entry type that contains the entry.', readable: true, nonNull: true)]
+    #[Gql(write: false)]
+    #[Mcp(hint: 'New entries default to the section’s first entry type.')]
     public function setTypeId(int $typeId): void
     {
         $this->_typeId = $typeId;
@@ -1708,6 +1714,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      * @param  int|array{0:int}|string|null  $authorId
      */
     #[ElementProperty(ElementPropertyType::Id, 'The primary entry author’s ID.', nullable: true, readable: true)]
+    #[Gql(Gql::CanQueryAllUsers)]
+    #[Mcp(hint: 'New entries default to the acting user.')]
     public function setAuthorId(array|int|string|null $authorId): void
     {
         $authorId = $this->normalizeAuthorIds($authorId)[0] ?? null;
@@ -1737,6 +1745,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      * @param  User[]|int[]|string|int|null  $authorIds
      */
     #[ElementProperty(ElementPropertyType::IdList, 'The entry authors’ IDs.', readable: true)]
+    #[Gql(Gql::CanQueryAllUsers)]
     public function setAuthorIds(array|string|int|null $authorIds): void
     {
         $authorIds = $this->normalizeAuthorIds($authorIds);

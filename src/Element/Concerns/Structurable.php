@@ -15,6 +15,7 @@ use CraftCms\Cms\Element\Events\ElementMovedInStructure;
 use CraftCms\Cms\Element\Events\ElementMovingInStructure;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Typecast;
 
@@ -113,6 +114,7 @@ trait Structurable
     }
 
     #[ElementProperty(ElementPropertyType::Id, 'The ID of the {element}’s parent in its structure.', nullable: true)]
+    #[Gql(exclude: true)]
     public function setParentId(mixed $parentId): void
     {
         if (is_array($parentId)) {

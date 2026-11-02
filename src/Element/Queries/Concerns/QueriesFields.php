@@ -9,6 +9,8 @@ use CraftCms\Cms\Element\Enums\ElementQueryParamType;
 use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
+use CraftCms\Cms\Gql\Attributes\Gql;
+use CraftCms\Cms\Mcp\Attributes\Mcp;
 use CraftCms\Cms\Support\Query;
 use Illuminate\Contracts\Database\Query\Builder;
 
@@ -311,6 +313,8 @@ trait QueriesFields
      * @param  bool|null  $value  The property value (defaults to true)
      */
     #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Narrows the query results to only {elements} that have been soft-deleted.')]
+    #[Gql(Gql::CanQueryInactiveElements)]
+    #[Mcp(hint: 'Pass null to include both trashed and non-trashed elements. Use status: null when listing deleted elements.')]
     public function trashed(?bool $value = true): static
     {
         $this->trashed = $value;

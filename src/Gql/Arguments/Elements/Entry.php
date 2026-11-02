@@ -6,39 +6,23 @@ namespace CraftCms\Cms\Gql\Arguments\Elements;
 
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
-use CraftCms\Cms\Gql\Arguments\StructureElementArguments;
+use CraftCms\Cms\Gql\Arguments\ElementArguments;
 use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Support\Facades\Gql;
+use Override;
 
 /**
  * @since 6.0.0
  */
-class Entry extends StructureElementArguments
+class Entry extends ElementArguments
 {
-    #[\Override]
-    public static function getArguments(): array
+    #[Override]
+    protected static function elementType(): string
     {
-        return array_merge(parent::getArguments(), static::queryParamArguments(EntryElement::class, [
-            'editable',
-            'section',
-            'sectionId',
-            'field',
-            'fieldId',
-            'primaryOwnerId',
-            'ownerId',
-            'type',
-            'typeId',
-            'authorId',
-            'authorGroup',
-            'authorGroupId',
-            'postDate',
-            'before',
-            'after',
-            'expiryDate',
-        ]));
+        return EntryElement::class;
     }
 
-    #[\Override]
+    #[Override]
     public static function getContentArguments(): array
     {
         return Gql::getOrSetContentArguments(EntryElement::class, function (): array {

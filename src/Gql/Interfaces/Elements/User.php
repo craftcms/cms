@@ -52,6 +52,12 @@ class User extends Element
     }
 
     #[Override]
+    protected static function elementType(): string
+    {
+        return UserElement::class;
+    }
+
+    #[Override]
     public static function getName(): string
     {
         return 'UserInterface';
@@ -62,7 +68,6 @@ class User extends Element
     public static function getFieldDefinitions(): array
     {
         return Gql::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), self::getConditionalFields(), [
-            ...static::propertyFields(UserElement::class, ['friendlyName', 'fullName', 'name']),
             'preferences' => [
                 'name' => 'preferences',
                 'type' => Type::nonNull(Type::string()),
@@ -75,13 +80,11 @@ class User extends Element
                 'description' => 'The user’s preferred language.',
                 'complexity' => GqlHelper::nPlus1Complexity(),
             ],
-            ...static::propertyFields(UserElement::class, ['username', 'firstName', 'lastName', 'email']),
             'affiliatedSiteHandle' => [
                 'name' => 'affiliatedSiteHandle',
                 'type' => Type::string(),
                 'description' => 'The handle of the site the user is affiliated with.',
             ],
-            ...static::propertyFields(UserElement::class, ['affiliatedSiteId']),
             'addresses' => [
                 'name' => 'addresses',
                 'args' => AddressArguments::getArguments(),

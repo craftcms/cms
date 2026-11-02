@@ -18,6 +18,7 @@ use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Utils;
@@ -120,6 +121,7 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
      */
     #[AllowedInSandbox]
     #[ElementProperty(ElementPropertyType::String, 'The {element}’s slug.', nullable: true, readable: true)]
+    #[Gql(write: false)]
     public ?string $slug = null;
 
     /**

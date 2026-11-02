@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Attributes;
 
 use Attribute;
+use CraftCms\Cms\Element\Attributes\Concerns\DescribesMember;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Enums\ElementCapability;
 use CraftCms\Cms\Element\Enums\ElementQueryParamType;
@@ -22,6 +23,8 @@ use ReflectionMethod;
 #[Attribute(Attribute::TARGET_METHOD)]
 class ElementQueryParam
 {
+    use DescribesMember;
+
     /** @var array<class-string, array<string, self>> */
     private static array $params = [];
 
@@ -35,17 +38,6 @@ class ElementQueryParam
     ) {}
 
     /**
-     * Returns whether the param applies to an element type, which it does unless it requires a capability the element
-     * type lacks.
-     *
-     * @param  class-string<ElementInterface>  $elementType
-     */
-    public function appliesTo(string $elementType): bool
-    {
-        return $this->requires?->supportedBy($elementType) ?? true;
-    }
-
-    /**
      * Returns the params an element type’s query declares that apply to the element type, indexed by setter name.
      *
      * @param  class-string<ElementInterface>  $elementType
@@ -54,21 +46,6 @@ class ElementQueryParam
     public static function forElementType(string $elementType): array
     {
         return array_filter(self::all($elementType::find()::class), fn (self $param): bool => $param->appliesTo($elementType));
-    }
-
-    /**
-     * Returns the description for an element type, replacing `{element}` with its lowercase name and `{elements}` with
-     * its plural lowercase name.
-     *
-     * @param  class-string<ElementInterface>  $elementType
-     */
-    public function descriptionFor(string $elementType): string
-    {
-        return str_replace(
-            ['{element}', '{elements}'],
-            [$elementType::lowerDisplayName(), $elementType::pluralLowerDisplayName()],
-            $this->description,
-        );
     }
 
     /**
@@ -86,26 +63,11 @@ class ElementQueryParam
         $params = [];
 
         foreach (new ReflectionClass($queryClass)->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-            if (! $method->isStatic() && ($param = self::declaredOn($method))) {
-                $params[$method->getName()] = $param;
+            if (! $method->isStatic() && ($declaration = self::declarationOf($method))) {
+                $params[$method->getName()] = self::fromDeclaration($declaration);
             }
         }
 
         return self::$params[$queryClass] = $params;
-    }
-
-    private static function declaredOn(ReflectionMethod $method): ?self
-    {
-        $attribute = $method->getAttributes(self::class)[0] ?? null;
-
-        if ($attribute) {
-            return $attribute->newInstance();
-        }
-
-        $parent = $method->getDeclaringClass()->getParentClass();
-
-        return $parent && $parent->hasMethod($method->getName())
-            ? self::declaredOn($parent->getMethod($method->getName()))
-            : null;
     }
 }

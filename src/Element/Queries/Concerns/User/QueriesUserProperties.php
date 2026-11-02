@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Element\Queries\Concerns\User;
 use CraftCms\Cms\Element\Enums\ElementQueryParamType;
 use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\UserQuery;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Support\Query;
 use Illuminate\Contracts\Database\Query\Builder;
 
@@ -364,6 +365,7 @@ trait QueriesUserProperties
      * @uses $lastLoginDate
      */
     #[ElementQueryParam(ElementQueryParamType::String, 'Narrows the query results based on the users’ last login dates.')]
+    #[Gql(exclude: true)]
     public function lastLoginDate(mixed $value): self
     {
         $this->lastLoginDate = $value;
