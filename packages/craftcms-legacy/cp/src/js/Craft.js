@@ -422,11 +422,7 @@ $.extend(Craft, {
             }
 
             if (jqXHR.status !== 400) {
-              if (typeof Craft.cp !== 'undefined') {
-                Craft.cp.displayError();
-              } else {
-                alert(Craft.t('app', 'A server error occurred.'));
-              }
+              Craft._showError();
             }
 
             if (callback) {
@@ -1362,6 +1358,18 @@ $.extend(Craft, {
     this._authFormHandlers[method] = func;
   },
 
+  // The control panel's messages module shows it
+  _showError(message) {
+    window.dispatchEvent(
+      new CustomEvent('craft-message', {
+        detail: {
+          type: 'error',
+          message: message || Craft.t('app', 'A server error occurred.'),
+        },
+      })
+    );
+  },
+
   /**
    * @deprecated in 6.0. Use event listeners directly.
    */
@@ -1378,9 +1386,7 @@ $.extend(Craft, {
     }
 
     if (!showError) {
-      showError = (error) => {
-        Craft.cp.displayError(error);
-      };
+      showError = (error) => Craft._showError(error);
     }
 
     return new this._authFormHandlers[method](container, onSuccess, showError);
@@ -1661,7 +1667,9 @@ $.extend(Craft, {
             $inputs.appendTo($element);
           }
         }
-        Craft.cp.elementThumbLoader.load($elements);
+        if (Craft.ElementThumbLoader) {
+          new Craft.ElementThumbLoader().load($elements);
+        }
       }
     );
   },
@@ -1945,29 +1953,12 @@ $.extend(Craft, {
 // -------------------------------------------
 
 Craft.pageId = Craft.uuid();
+Garnish.$scrollContainer = Garnish.$win;
 
 if (typeof BroadcastChannel !== 'undefined') {
   const channelName = `CraftCMS:${Craft.appId}`;
   Craft.broadcaster = new BroadcastChannel(channelName);
   Craft.messageReceiver = new BroadcastChannel(channelName);
-
-  Craft.broadcaster.addEventListener('message', (ev) => {
-    switch (ev.data.event) {
-      case 'beforeTrackJobProgress':
-        Craft.cp.cancelJobTracking();
-        break;
-
-      case 'trackJobProgress':
-        Craft.cp.setJobData(ev.data.jobData);
-        if (Craft.cp.jobInfo.length) {
-          // Check again after a longer delay than usual,
-          // as it looks like another browser tab is driving for now
-          const delay = Craft.cp.getNextJobDelay() + 1000;
-          Craft.cp.trackJobProgress(delay);
-        }
-        break;
-    }
-  });
 
   Craft.messageReceiver.addEventListener('message', (ev) => {
     switch (ev.data.event) {

@@ -7,6 +7,7 @@ module.exports = getConfig({
   config: {
     entry: {
       ui: './ui.js',
+      'craft-cp': './craft-cp.js',
       'element-editor': './element-editor.js',
       'component-select-input': './component-select-input.js',
       dashboard: require('path').resolve(
