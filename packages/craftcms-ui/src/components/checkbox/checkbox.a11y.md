@@ -1,6 +1,6 @@
 # `craft-checkbox` accessibility
 
-Follows the WAI-ARIA APG [Checkbox](https://www.w3.org/WAI/ARIA/apg/patterns/checkbox/) pattern (dual-state), using a native `<input type="checkbox">` in the light DOM. Lion's `ChoiceInputMixin` and `FormControlMixin` wire the label, help text and feedback. `SsrChoiceInputMixin` adopts the state of a server-rendered input. For a group of checkboxes see `checkbox-group.a11y.md`; for a "select all" parent see `checkbox-indeterminate.a11y.md`.
+Follows the WAI-ARIA APG [Checkbox](https://www.w3.org/WAI/ARIA/apg/patterns/checkbox/) pattern (dual-state), using a native `<input type="checkbox">` in the light DOM. Lion's `ChoiceInputMixin` and `FormControlMixin` wire the label, help text and feedback. `SsrChoiceInputMixin` adopts the state of a server-rendered input. For a group of checkboxes see `checkbox-group.a11y.md`; for a "select all" option see `checkbox-select.a11y.md`.
 
 **Not for:**
 
@@ -46,5 +46,5 @@ Follows the WAI-ARIA APG [Checkbox](https://www.w3.org/WAI/ARIA/apg/patterns/che
 
 - 3.3.2 (Labels or Instructions): give every checkbox a visible label that says what checking it does. See [Accessibility](./Checkbox.mdx#accessibility).
 - 4.1.2 (Name, Role, Value): use `label-sr-only` only when surrounding content already names the box, such as a table row. See [Accessibility](./Checkbox.mdx#accessibility).
-- 4.1.2 (Name, Role, Value): keep `indeterminate` in step with the items it summarizes, or use `craft-checkbox-indeterminate`. See [Accessibility](./Checkbox.mdx#accessibility).
+- 4.1.2 (Name, Role, Value): keep `indeterminate` in step with the items it summarizes, or use `craft-checkbox-select` with `all-label`. See [Accessibility](./Checkbox.mdx#accessibility).
 - 3.3.3 (Error Suggestion): write validator messages that say how to fix the choice. See [Accessibility](./Checkbox.mdx#accessibility).

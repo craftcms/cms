@@ -190,26 +190,6 @@ const VALUE_COMPONENTS = [
     ],
   },
   {
-    tagName: 'craft-input-file',
-    className: 'CraftInputFile',
-    fileName: 'CraftInputFile',
-    modelType:
-      "import('../components/input-file/input-file.ts.mjs').default['modelValue']",
-    importPath: '../components/input-file/input-file',
-    slots: [
-      'label',
-      'help-text',
-      'input',
-      'feedback',
-      'prefix',
-      'suffix',
-      'before',
-      'after',
-      'file-select-button',
-      'selected-file-list',
-    ],
-  },
-  {
     // Plain LitElement wrapping <craft-select-rich>. Its own modelValue is now
     // kept in sync with the inner select and it re-dispatches a composed
     // `model-value-changed`, so the standard value-wrapper works. Options are
@@ -865,11 +845,6 @@ const ALL_COMPONENTS = [
     className: 'CraftRadio',
     importPath: '../components/radio/radio',
   },
-  {
-    tagName: 'craft-checkbox-indeterminate',
-    className: 'CraftCheckboxIndeterminate',
-    importPath: '../components/checkbox-indeterminate/checkbox-indeterminate',
-  },
   // Select rich
   {
     tagName: 'craft-select-rich',
@@ -1026,11 +1001,6 @@ const ALL_COMPONENTS = [
     tagName: 'craft-tabs',
     className: 'CraftTabs',
     importPath: '../components/tabs/tabs',
-  },
-  {
-    tagName: 'craft-selected-file-list',
-    className: 'CraftSelectedFileList',
-    importPath: '../components/input-file/selected-file-list',
   },
   {
     tagName: 'craft-tooltip',
