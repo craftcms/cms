@@ -64,8 +64,12 @@ class RecoveryCodes extends BaseAuthMethod
             [
                 'label' => t('Download codes'),
                 'icon' => 'download',
-                'action' => 'auth/download-recovery-codes',
-                'requireElevatedSession' => true,
+                'action' => [
+                    'type' => 'download',
+                    'method' => 'POST',
+                    'url' => 'auth/download-recovery-codes',
+                    'requireElevatedSession' => true,
+                ],
             ],
         ];
     }

@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Cp;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Components\ActionMenu;
 use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Components\ButtonGroup;
 use CraftCms\Cms\Cp\Components\Checkbox;
@@ -31,7 +32,6 @@ use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Components\Textarea;
 use CraftCms\Cms\Cp\Enums\CheckboxSelectPresentation;
 use CraftCms\Cms\Cp\Enums\Size;
-use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
@@ -145,12 +145,10 @@ readonly class FormFields
 
         $actions = implode('', array_filter([
             $showActionMenu
-                ? app(MenuHtml::class)->disclosureMenu($config['actionMenuItems'], [
-                    'hiddenLabel' => t('Actions'),
-                    'buttonAttributes' => [
-                        'class' => ['action-btn', 'small', 'prevent-autofocus'],
-                    ],
-                ])
+                ? ActionMenu::make()
+                    ->menuItems($config['actionMenuItems'])
+                    ->label(t('Actions'))
+                    ->toHtml()
                 : null,
             $showAttribute
                 ? self::renderTemplate('_includes/forms/copytextbtn', [
