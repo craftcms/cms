@@ -19,7 +19,6 @@ import {announce} from '@/common/announcer';
 import {initLegacyUi} from '@/common/craft/legacy-ui';
 
 declare const Craft: any;
-declare const $: any;
 
 export interface AuthMethodSetupSettings extends GarnishBaseSettings {
   /** Called after {@link AuthMethodSetup.refresh} re-renders the listing. */
@@ -182,10 +181,17 @@ export class AuthMethodSetup extends Base<AuthMethodSetupSettings> {
           );
         }
 
-        const $container = $('#auth-method-setup').html(
-          $(data.html).children()
-        );
-        initLegacyUi($container);
+        const container = document.getElementById('auth-method-setup');
+        if (container) {
+          const template = document.createElement('template');
+          template.innerHTML = data.html;
+          container.replaceChildren(
+            ...Array.from(template.content.children).flatMap((element) =>
+              Array.from(element.children)
+            )
+          );
+          initLegacyUi(container);
+        }
         await appendHeadHtml(data.headHtml);
         await appendBodyHtml(data.bodyHtml);
         this.initUi();
