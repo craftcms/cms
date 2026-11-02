@@ -1,6 +1,6 @@
 /* jshint esversion: 6 */
 // Load Craft first
-import './js/Craft.js';
+import './Craft.js';
 
 // Utilities
-import './js/Queue.js';
+import './Queue.js';

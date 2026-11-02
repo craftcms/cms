@@ -161,9 +161,9 @@ it('renders Craft.js before plugin bundles that depend on the CP asset outside t
 
     $html = $view->placeholderHtml()['bodyEndHtml'];
 
-    expect($html)->toContain('legacy/cp/dist/cp.js')
-        ->and(strpos($html, 'legacy/cp/dist/cp.js'))->toBeLessThan(strpos($html, 'https://example.test/assets/dependent.js'))
-        ->and($html)->not->toContain('legacy/cpcompat/dist/');
+    expect($html)->toContain('legacy/cpcompat/dist/craft.js')
+        ->and(strpos($html, 'legacy/cpcompat/dist/craft.js'))->toBeLessThan(strpos($html, 'https://example.test/assets/dependent.js'))
+        ->and($html)->not->toContain('legacy/cpcompat/dist/ui.js');
 });
 
 it('renders Craft.js once, before the frozen legacy CP scripts, in the control panel', function() {
@@ -174,8 +174,8 @@ it('renders Craft.js once, before the frozen legacy CP scripts, in the control p
 
     $html = $view->placeholderHtml()['bodyEndHtml'];
 
-    expect(substr_count($html, 'legacy/cp/dist/cp.js'))->toBe(1)
-        ->and(strpos($html, 'legacy/cp/dist/cp.js'))->toBeLessThan(strpos($html, 'legacy/cpcompat/dist/ui.js'));
+    expect(substr_count($html, 'legacy/cpcompat/dist/craft.js'))->toBe(1)
+        ->and(strpos($html, 'legacy/cpcompat/dist/craft.js'))->toBeLessThan(strpos($html, 'legacy/cpcompat/dist/ui.js'));
 });
 
 it('registers the XRegExp compatibility asset', function() {

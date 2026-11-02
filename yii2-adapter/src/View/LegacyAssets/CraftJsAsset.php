@@ -22,6 +22,6 @@ class CraftJsAsset implements LegacyAssetInterface
 
     public function register(HtmlStack $htmlStack): void
     {
-        $htmlStack->jsFile(craftAsset('legacy/cp/dist/cp.js'));
+        $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/craft.js'));
     }
 }

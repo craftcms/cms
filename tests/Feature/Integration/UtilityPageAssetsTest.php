@@ -36,7 +36,7 @@ it('leaves the global CP asset bundle in the root template', function (string $i
     expect($html)
         ->toContain('legacy/jquery/dist/jquery.js')
         ->toContain('legacy/garnish/dist/garnish.js')
-        ->not->toContain('legacy/cp/dist/cp.js');
+        ->not->toContain('legacy/cpcompat/dist/craft.js');
 
     // …while the `window.Craft` config it reads is head JS. It has to land in
     // the root template's <head>, ahead of the module scripts that boot the
