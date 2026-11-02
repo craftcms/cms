@@ -17,27 +17,6 @@ export default css`
     --c-button-group-overlap: initial;
   }
 
-  /* Positioned by Popper. In the top layer where the Popover API exists,
-     and above the page's stacking contexts where it doesn't. The resets undo
-     the UA's popover styles, which would center it and draw a box. */
-  .overlay-layer {
-    position: fixed;
-    inset: auto;
-    z-index: var(--c-layer-popover, 9999);
-    margin: 0;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: inherit;
-    overflow: visible;
-    width: auto;
-    height: auto;
-  }
-
-  .overlay-layer:not([data-open]) {
-    display: none;
-  }
-
   .popover-pane {
     border: 1px solid var(--c-color-neutral-border-quiet);
     border-radius: var(--c-radius-md);

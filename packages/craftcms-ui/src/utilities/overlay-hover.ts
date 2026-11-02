@@ -1,16 +1,18 @@
-type HoverController = {
+type HoverOptions = {
+  /** The element whose hover and keyboard focus show the overlay. */
+  invoker: HTMLElement;
+  /** The overlay's content. Hovering it keeps the overlay showing. */
+  content: HTMLElement;
   show(): void;
   hide(): void;
-  addEventListener(type: string, listener: EventListener): void;
-  removeEventListener(type: string, listener: EventListener): void;
-  contentNode?: EventTarget | null;
-  invokerNode?: EventTarget | null;
-  _hasDisabledInvoker(): boolean;
-};
-
-type HoverInteractionOptions = {
   delayIn?: number;
   delayOut?: number;
+};
+
+export type HoverWatcher = {
+  /** Forgets the hover and focus state, for an overlay closed some other way. */
+  reset(): void;
+  teardown(): void;
 };
 
 /**
@@ -28,114 +30,79 @@ function isFocusVisible(event: Event): boolean {
  * Whether the invoker is disabled outright. One kept focusable while disabled
  * (`focusable-when-disabled`) still shows its overlay, which says why.
  */
-function hasDisabledInvoker(controller: HoverController): boolean {
-  const invoker = controller.invokerNode as
-    | (EventTarget & {focusableWhenDisabled?: boolean})
-    | null
-    | undefined;
+function isDisabled(invoker: HTMLElement): boolean {
+  const node = invoker as HTMLElement & {
+    disabled?: boolean;
+    focusableWhenDisabled?: boolean;
+  };
 
-  return controller._hasDisabledInvoker() && !invoker?.focusableWhenDisabled;
+  return (
+    (node.disabled === true ||
+      invoker.getAttribute('aria-disabled') === 'true') &&
+    !node.focusableWhenDisabled
+  );
 }
 
 /**
- * Lion's `withHoverInteraction`, with the pending show/hide timer cleared on
- * teardown. Lion leaves it armed, so an overlay torn down mid-hover still calls
- * `show()` on its dead controller once the delay elapses.
+ * Shows an overlay while its invoker or content is hovered, or its invoker
+ * has keyboard focus, after `delayIn`, and hides it `delayOut` after neither.
  *
  * Only keyboard focus holds the overlay open. Clicking the invoker focuses it
  * too, and that shouldn't keep it showing once the pointer has left.
  */
-export function withHoverInteraction({
+export function watchHover({
+  invoker,
+  content,
+  show,
+  hide,
   delayIn = 0,
   delayOut = 300,
-}: HoverInteractionOptions = {}) {
+}: HoverOptions): HoverWatcher {
+  let isFocused = false;
+  let isHovered = false;
+  let delay: ReturnType<typeof setTimeout> | undefined;
+
+  const update = (event: Event) => {
+    const {type} = event;
+
+    clearTimeout(delay);
+    isFocused =
+      type === 'focusout'
+        ? false
+        : isFocused || (type === 'focusin' && isFocusVisible(event));
+    isHovered =
+      type === 'mouseleave' ? false : isHovered || type === 'mouseenter';
+
+    if ((isFocused || isHovered) && !isDisabled(invoker)) {
+      delay = setTimeout(show, delayIn);
+    } else {
+      delay = setTimeout(hide, delayOut);
+    }
+  };
+
+  const listeners: [HTMLElement, string][] = [
+    [content, 'mouseenter'],
+    [content, 'mouseleave'],
+    [invoker, 'mouseenter'],
+    [invoker, 'mouseleave'],
+    [invoker, 'focusin'],
+    [invoker, 'focusout'],
+  ];
+
+  for (const [node, type] of listeners) {
+    node.addEventListener(type, update);
+  }
+
   return {
-    visibilityTriggerFunction: ({
-      controller,
-    }: {
-      controller: HoverController;
-    }) => {
-      let isFocused = false;
-      let isHovered = false;
-      let delayTimeout: ReturnType<typeof setTimeout> | undefined;
-
-      const resetActive = () => {
-        isFocused = false;
-        isHovered = false;
-      };
-
-      const handleOpenClosed = (event: Event) => {
-        const {type} = event;
-
-        clearTimeout(delayTimeout);
-        isFocused =
-          type === 'focusout'
-            ? false
-            : isFocused || (type === 'focusin' && isFocusVisible(event));
-        isHovered =
-          type === 'mouseleave' ? false : isHovered || type === 'mouseenter';
-
-        if ((isFocused || isHovered) && !hasDisabledInvoker(controller)) {
-          delayTimeout = setTimeout(() => controller.show(), delayIn);
-        } else {
-          delayTimeout = setTimeout(() => controller.hide(), delayOut);
-        }
-      };
-
-      return {
-        init: () => {
-          controller.addEventListener('hide', resetActive);
-          controller.contentNode?.addEventListener(
-            'mouseenter',
-            handleOpenClosed
-          );
-          controller.contentNode?.addEventListener(
-            'mouseleave',
-            handleOpenClosed
-          );
-          controller.invokerNode?.addEventListener(
-            'mouseenter',
-            handleOpenClosed
-          );
-          controller.invokerNode?.addEventListener(
-            'mouseleave',
-            handleOpenClosed
-          );
-          controller.invokerNode?.addEventListener('focusin', handleOpenClosed);
-          controller.invokerNode?.addEventListener(
-            'focusout',
-            handleOpenClosed
-          );
-        },
-        teardown: () => {
-          clearTimeout(delayTimeout);
-          controller.removeEventListener('hide', resetActive);
-          controller.contentNode?.removeEventListener(
-            'mouseenter',
-            handleOpenClosed
-          );
-          controller.contentNode?.removeEventListener(
-            'mouseleave',
-            handleOpenClosed
-          );
-          controller.invokerNode?.removeEventListener(
-            'mouseenter',
-            handleOpenClosed
-          );
-          controller.invokerNode?.removeEventListener(
-            'mouseleave',
-            handleOpenClosed
-          );
-          controller.invokerNode?.removeEventListener(
-            'focusin',
-            handleOpenClosed
-          );
-          controller.invokerNode?.removeEventListener(
-            'focusout',
-            handleOpenClosed
-          );
-        },
-      };
+    reset() {
+      isFocused = false;
+      isHovered = false;
+    },
+    teardown() {
+      clearTimeout(delay);
+      for (const [node, type] of listeners) {
+        node.removeEventListener(type, update);
+      }
     },
   };
 }

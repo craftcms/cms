@@ -1,7 +1,5 @@
-// `opened` is `unknown` because Lion's JSDoc types it as the boxed `Boolean`;
-// runtime values are primitive booleans.
 type OverlayHost = HTMLElement & {
-  opened: unknown;
+  opened: boolean;
   updateComplete: Promise<boolean>;
 };
 
