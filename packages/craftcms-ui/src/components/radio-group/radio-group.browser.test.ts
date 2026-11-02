@@ -8,7 +8,7 @@ import '../radio/radio.js';
 import './radio-group.js';
 import {contrast} from '../../../test/contrast';
 import {
-  CROP_MODE,
+  PALETTE_SAMPLE,
   VIEW_MODES,
   type RadioTileOption,
 } from '../../../test/radio-tile-fixtures';
@@ -395,10 +395,10 @@ it("keeps the illustrations' outlines, figures and marks at 3:1 at rest, hovered
       '40rem',
       (html) =>
         `<div data-theme="${theme}" style="background-color: var(--c-surface-default)">${html}</div>`,
-      [VIEW_MODES[1]!, CROP_MODE]
+      [VIEW_MODES[1]!, PALETTE_SAMPLE]
     );
-    const crop = radios[1]!;
-    const thumbnail = crop.querySelector('[slot="thumbnail"]')!;
+    const sample = radios[1]!;
+    const thumbnail = sample.querySelector('[slot="thumbnail"]')!;
     const paint = (selector: string, property: 'fill' | 'stroke') =>
       getComputedStyle(thumbnail.querySelector(selector)!)[property];
 
@@ -406,7 +406,7 @@ it("keeps the illustrations' outlines, figures and marks at 3:1 at rest, hovered
       const backdrop = getComputedStyle(
         document.querySelector('[data-theme]')!
       ).backgroundColor;
-      const tile = getComputedStyle(thumbnailBox(crop)).backgroundColor;
+      const tile = getComputedStyle(thumbnailBox(sample)).backgroundColor;
       const field = paint(
         '[style*="fill: var(--c-illustration-field)"]',
         'fill'

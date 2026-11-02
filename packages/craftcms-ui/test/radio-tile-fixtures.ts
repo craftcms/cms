@@ -1,8 +1,18 @@
+/** The roles in the illustration palette, one per `--c-illustration-*` token. */
+export type IllustrationRole =
+  | 'surface'
+  | 'paper'
+  | 'subtle'
+  | 'field'
+  | 'figure'
+  | 'line'
+  | 'mark';
+
 /**
  * A `style` that paints with the `--c-illustration-*` tokens, as the CP's
  * illustrations do: `fill` and `stroke` each name a role, such as `figure`.
  */
-const paint = (fill?: string, stroke?: string) =>
+const paint = (fill?: IllustrationRole, stroke?: IllustrationRole) =>
   `style="${[
     fill && `fill: var(--c-illustration-${fill})`,
     stroke && `stroke: var(--c-illustration-${stroke})`,
@@ -76,22 +86,27 @@ export const VIEW_MODES: RadioTileOption[] = [
 ];
 
 /**
- * A photo inside a dashed crop frame with corner marks, like the image
- * transform Mode illustrations: mountains (`figure`) on an outlined sky
- * (`field`), `mark`s with a light edge that cross both, and an outlined
- * `surface` chip.
+ * A sample illustration that uses every role in the illustration palette, in
+ * every pairing it promises 3:1 for: outlined `surface` and `paper` shapes,
+ * `subtle` bars, mountains (`figure`) on an outlined `field`, and `mark`s that
+ * cross them, with a light edge on the corners.
  */
-export const CROP_MODE: RadioTileOption = {
-  value: 'crop',
-  label: 'Crop',
+export const PALETTE_SAMPLE: RadioTileOption = {
+  value: 'palette',
+  label: 'Palette',
   width: 80,
   svg: svg(
     80,
-    `<rect x="0.5" y="4.5" width="79" height="51" ${paint('field', 'line')}/>` +
-      `<rect x="68.5" y="0.5" width="11" height="3" rx="1" ${paint('surface', 'line')}/>` +
-      `<path d="M1 46 22 22 36 37 48 26 79 51V55H1Z" ${paint('figure')}/>` +
-      `<path d="M14.5 2.5H65.5V57.5H14.5Z" fill="none" ${paint(undefined, 'mark')} stroke-dasharray="1"/>` +
-      `<path d="M12 0H20V4H16V8H12Z" ${paint('mark', 'paper')} stroke-width="2" paint-order="stroke"/>` +
-      `<path d="M68 60H60V56H64V52H68Z" ${paint('mark', 'paper')} stroke-width="2" paint-order="stroke"/>`
+    `<rect x="0.5" y="0.5" width="35" height="59" rx="4" ${paint('surface', 'line')}/>` +
+      `<rect x="5" y="6" width="22" height="4" rx="2" ${paint('subtle')}/>` +
+      `<rect x="5" y="14" width="16" height="4" rx="2" ${paint('subtle')}/>` +
+      `<rect x="5.5" y="24.5" width="25" height="29" rx="2" ${paint('paper', 'line')}/>` +
+      `<rect x="42.5" y="12.5" width="37" height="35" ${paint('field', 'line')}/>` +
+      `<path d="M43 40 52 30 58 36 64 31 79 44V47H43Z" ${paint('figure')}/>` +
+      `<circle cx="72" cy="20" r="3" ${paint('figure')}/>` +
+      `<rect x="43" y="47" width="36" height="5" ${paint('mark')}/>` +
+      `<path d="M47.5 8.5H74.5V55.5H47.5Z" fill="none" ${paint(undefined, 'mark')} stroke-dasharray="1"/>` +
+      `<path d="M46 7H51V9H48V12H46Z" ${paint('mark', 'paper')} stroke-width="2" paint-order="stroke"/>` +
+      `<path d="M76 57H71V55H74V52H76Z" ${paint('mark', 'paper')} stroke-width="2" paint-order="stroke"/>`
   ),
 };

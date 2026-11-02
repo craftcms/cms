@@ -78,7 +78,6 @@ class SectionEditViewModel extends ViewModel
                 ->reactive(),
         )->instructions(t('What type of section is this?'));
 
-        // Keyed to the saved type, not the chosen one, so the warning stays put while the type changes.
         if ($this->section->id && $this->section->type !== SectionType::Single) {
             $typeField->warning(t('Changing this may result in data loss.'));
         }

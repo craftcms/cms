@@ -8,7 +8,11 @@ import './radio-group.js';
 import '../radio/radio.js';
 import '../icon/icon.js';
 import type CraftRadioGroup from './radio-group.js';
-import {VIEW_MODES} from '../../../test/radio-tile-fixtures';
+import {
+  PALETTE_SAMPLE,
+  VIEW_MODES,
+  type IllustrationRole,
+} from '../../../test/radio-tile-fixtures';
 
 /**
  * `args` and `argTypes` are derived from the custom elements manifest, so the
@@ -207,32 +211,8 @@ export const ThumbnailsWrapped: Story = {
     </craft-radio-group>`,
 };
 
-/** A `style` that paints with the illustration palette's tokens. */
-const paint = (fill?: string, stroke?: string) =>
-  `style="${[
-    fill && `fill: var(--c-illustration-${fill})`,
-    stroke && `stroke: var(--c-illustration-${stroke})`,
-  ]
-    .filter(Boolean)
-    .join('; ')}"`;
-
-/** A sample illustration that uses every role in the illustration palette. */
-const paletteSample = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="60" viewBox="0 0 80 60">
-  <rect x="0.5" y="0.5" width="35" height="59" rx="4" ${paint('surface', 'line')}/>
-  <rect x="5" y="6" width="22" height="4" rx="2" ${paint('subtle')}/>
-  <rect x="5" y="14" width="16" height="4" rx="2" ${paint('subtle')}/>
-  <rect x="5.5" y="24.5" width="25" height="29" rx="2" ${paint('paper', 'line')}/>
-  <rect x="42.5" y="12.5" width="37" height="35" ${paint('field', 'line')}/>
-  <path d="M43 40 52 30 58 36 64 31 79 44V47H43Z" ${paint('figure')}/>
-  <circle cx="72" cy="20" r="3" ${paint('figure')}/>
-  <rect x="43" y="47" width="36" height="5" ${paint('mark')}/>
-  <path d="M47.5 8.5H74.5V55.5H47.5Z" fill="none" ${paint(undefined, 'mark')} stroke-dasharray="1"/>
-  <path d="M46 7H51V9H48V12H46Z" ${paint('mark', 'paper')} stroke-width="2" paint-order="stroke"/>
-  <path d="M76 57H71V55H74V52H76Z" ${paint('mark', 'paper')} stroke-width="2" paint-order="stroke"/>
-</svg>`;
-
 interface PaletteRole {
-  token: string;
+  token: IllustrationRole;
   role: string;
   /** Whether the role is used as a `fill`, a `stroke`, or both. */
   fill: boolean;
@@ -240,7 +220,7 @@ interface PaletteRole {
   /** Outlines the role's shapes in blue, since they're hard to spot. */
   callout?: boolean;
   /** Fills left unfaded, since the role only shows up on them. */
-  backdrop?: string[];
+  backdrop?: IllustrationRole[];
 }
 
 const PALETTE_ROLES: PaletteRole[] = [
@@ -312,11 +292,11 @@ const fadeOthers = ({
   callout,
   backdrop = [],
 }: PaletteRole) => {
-  const uses = (property: string, tokens: string[]) =>
+  const uses = (property: string, tokens: IllustrationRole[]) =>
     tokens
       .map((name) => `[style*='${property}: var(--c-illustration-${name})']`)
       .join(', ');
-  const except = (property: string, tokens: string[]) =>
+  const except = (property: string, tokens: IllustrationRole[]) =>
     tokens.length ? `:not(${uses(property, tokens)})` : '';
   const scope = `[data-palette-role='${token}'] [slot='thumbnail']`;
   const fills = [...(fill ? [token] : []), ...backdrop];
@@ -390,7 +370,7 @@ export const IllustrationPalette: Story = {
                     >
                       <craft-radio .choiceValue="${role.token}">
                         <span slot="thumbnail" aria-hidden="true"
-                          >${unsafeSVG(paletteSample)}</span
+                          >${unsafeSVG(PALETTE_SAMPLE.svg)}</span
                         >
                       </craft-radio>
                     </craft-radio-group>
