@@ -12,11 +12,11 @@
 - Assets in volumes set to let each asset choose which sites it should be saved to can now be deleted for individual sites, as long as they exist in another site. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - Deleting an element for the only site it exists in now soft-deletes it, unless it’s a draft or nested element. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - Files can now be uploaded to Assets fields by pasting them from the clipboard while the field has focus. ([#20183](https://github.com/craftcms/cms/discussions/20183), [#20212](https://github.com/craftcms/cms/pull/20212))
+- Color fields now support translucent colors. Authors can choose translucent palette colors, and set custom colors’ opacity when the field allows it, via the color picker in browsers that support it or by entering an 8-digit hex value. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 
 ### Administration
 
 - Custom fields now have “Default Tip” and “Default Warning” settings. ([#19976](https://github.com/craftcms/cms/pull/19976))
-- Color fields’ palette colors can now have an alpha channel, and Color fields have a new “Allow opacity for custom colors” setting. Colors with an alpha channel are stored as 8-digit hex values, and their opacity can be set via the color picker in browsers that support it. ([#8983](https://github.com/craftcms/cms/discussions/8983))
 - Volumes now have a “Propagation Method” setting, which can be set to “Let each asset choose which sites it should be saved to”. New volumes default to this, as do existing volumes on single-site installs. Existing volumes on multi-site installs continue to save assets to all sites. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - A rate limit is now enforced for `users/login`, `auth/verify-totp`, and `auth/verify-recovery-code` requests. ([#20054](https://github.com/craftcms/cms/pull/20054))
 - Added the `defaultRateLimit` and `defaultRateLimitDuration` config settings, which configure the rate limits for `users/login`, `users/send-password-reset-email`, `auth/verify-totp`, and `auth/verify-recovery-code` requests. ([#20054](https://github.com/craftcms/cms/pull/20054))
@@ -28,6 +28,8 @@
 - Added Settings → MCP, where administrators can enable the authenticated and public MCP servers, set their endpoints, and approve the capabilities and content that the public server exposes. ([#20145](https://github.com/craftcms/cms/pull/20145), [#20189](https://github.com/craftcms/cms/pull/20189))
 - Added the `oauth/generate-keys` command, which generates the keys used to sign OAuth access tokens. ([#20145](https://github.com/craftcms/cms/pull/20145))
 - Added support for `config/mcp.php` and `config/oauth.php` config files. ([#20145](https://github.com/craftcms/cms/pull/20145))
+- Color fields’ palette colors can now have an alpha channel, by entering an 8-digit hex value or via the color picker in browsers that support it. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
+- Color fields now have an “Allow opacity for custom colors” setting. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 
 ### Development
 
@@ -51,6 +53,8 @@
 - GraphQL schema components can now support authenticated requests via an `authenticated` key on their config. ([#20147](https://github.com/craftcms/cms/pull/20147))
 - Added the `currentUser` GraphQL query, which returns the user that authenticated the request. ([#20147](https://github.com/craftcms/cms/pull/20147))
 - Added the My Account → Tokens screen, where users can create personal access tokens for the APIs that offer them (such as the GraphQL API), rename them, and revoke tokens and the apps they’ve authorized. ([#20147](https://github.com/craftcms/cms/pull/20147))
+- Color field values’ `hex` properties and GraphQL values now include an alpha channel (e.g. `#0000ff80`) when the color isn’t fully opaque. Fully-opaque colors are still output as 6-digit hex values. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
+- Color field values now have `alpha`, `rgba`, and `hsla` properties. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 
 ### Extensibility
 
@@ -74,10 +78,10 @@
 - Added `craft\events\RegisterOAuthResourcesEvent`. ([#20145](https://github.com/craftcms/cms/pull/20145))
 - Added `craft\fieldlayoutelements\BaseField::defaultTip()`.
 - Added `craft\fieldlayoutelements\BaseField::defaultWarning()`.
-- Added `craft\fields\Color::$allowCustomAlpha`. ([#8983](https://github.com/craftcms/cms/discussions/8983))
-- Added `craft\fields\data\ColorData::getAlpha()`. ([#8983](https://github.com/craftcms/cms/discussions/8983))
-- Added `craft\fields\data\ColorData::getHsla()`. ([#8983](https://github.com/craftcms/cms/discussions/8983))
-- Added `craft\fields\data\ColorData::getRgba()`. ([#8983](https://github.com/craftcms/cms/discussions/8983))
+- Added `craft\fields\Color::$allowCustomAlpha`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
+- Added `craft\fields\data\ColorData::getAlpha()`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
+- Added `craft\fields\data\ColorData::getHsla()`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
+- Added `craft\fields\data\ColorData::getRgba()`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - Added `craft\gql\base\ElementMutationResolver::requireUserAuthorization()`. ([#20147](https://github.com/craftcms/cms/pull/20147))
 - Added `craft\gql\GqlInputSchema`. ([#20145](https://github.com/craftcms/cms/pull/20145))
 - Added `craft\gql\queries\Settings`. ([#20055](https://github.com/craftcms/cms/pull/20055))
@@ -109,17 +113,17 @@
 - Added `craft\services\PersonalAccessTokens`. ([#20147](https://github.com/craftcms/cms/pull/20147))
 - Added `craft\test\ElementFixtureTrait`. ([#19626](https://github.com/craftcms/cms/pull/19626))
 - Added `craft\utilities\ClearCaches::clear()`. ([#20145](https://github.com/craftcms/cms/pull/20145))
-- Added `craft\validators\ColorValidator::$allowAlpha`. ([#8983](https://github.com/craftcms/cms/discussions/8983))
+- Added `craft\validators\ColorValidator::$allowAlpha`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - Added `craft\web\assets\highlight\HighlightAsset`. ([#20088](https://github.com/craftcms/cms/pull/20088))
 - Added `Craft.BaseUploader::addFiles()`. ([#20183](https://github.com/craftcms/cms/discussions/20183), [#20212](https://github.com/craftcms/cms/pull/20212))
 - `Craft.BaseUploader` now supports a `pasteZone` setting. Files pasted while focus is within it are passed to `addFiles()`, which custom uploader classes must implement to support pasted files. ([#20183](https://github.com/craftcms/cms/discussions/20183), [#20212](https://github.com/craftcms/cms/pull/20212))
 - Plugins can register MCP capabilities via `craft\services\Mcp::EVENT_REGISTER_CAPABILITY_TYPES`, OAuth resources via `craft\services\OAuth::EVENT_REGISTER_RESOURCES`, and personal access token scopes via `craft\services\PersonalAccessTokens::registerScopeGroup()`. ([#20145](https://github.com/craftcms/cms/pull/20145), [#20147](https://github.com/craftcms/cms/pull/20147))
 - Plain Text, Email, Link, Number, Money, Lightswitch, Date, Time, Color, Country, Table, and option fields now implement `craft\base\InputSchemaFieldInterface`. ([#20145](https://github.com/craftcms/cms/pull/20145))
 - `Illuminate\Support\Collection` now has a `render()` macro, which replaces `craft\elements\ElementCollection::render()`. ([#19988](https://github.com/craftcms/cms/pull/19988))
-- `craft\fields\data\ColorData::getHex()` now has a `$withAlpha` argument, which defaults to `true`. ([#8983](https://github.com/craftcms/cms/discussions/8983))
+- `craft\fields\data\ColorData::getHex()` now has a `$withAlpha` argument, which defaults to `true`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - `craft\helpers\ElementHelper::normalizeSlug()` now has a `$language` argument, which defaults to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
 - `craft\helpers\StringHelper::toLowerCase()`, `::toTitleCase()`, and `::toUpperCase()` now have `$language` arguments, which default to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
-- `craft\validators\ColorValidator::normalizeColor()` now expands 4-digit hex values to 8 digits, and removes fully-opaque alpha channels from 8-digit hex values. ([#8983](https://github.com/craftcms/cms/discussions/8983))
+- `craft\validators\ColorValidator::normalizeColor()` now expands 4-digit hex values to 8 digits, and removes fully-opaque alpha channels from 8-digit hex values. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - `craft\services\Assets::getAssetById()` now returns the asset in another site if it doesn’t exist in the current site, when no site ID is passed. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - `elements/save-draft` action responses now include a `canDeleteForSite` key. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Deprecated `craft\helpers\ElementHelper::renderElements()`. `craft\helpers\Template::render()` should be used instead. ([#19988](https://github.com/craftcms/cms/pull/19988))
