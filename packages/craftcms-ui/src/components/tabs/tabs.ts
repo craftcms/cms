@@ -1,9 +1,8 @@
-import {uuid} from '@lion/ui/core.js';
-import {LionTabs} from '@lion/ui/tabs.js';
-import {html, nothing, type PropertyValues} from 'lit';
+import {html, LitElement, nothing, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import hostStyles from '@src/styles/host.styles.js';
 import {t} from '@src/utilities/translate.js';
+import {uniqueId} from '@src/utilities/unique-id.js';
 import type CraftActionMenu from '../action-menu/action-menu.js';
 import type {ActionMenuItem} from '../action-menu/action-menu.types.js';
 import type {SizeValue} from '@src/constants/size';
@@ -59,7 +58,7 @@ const INLINE_PLACEMENTS: readonly TabsPlacementValue[] = [
   TabsPlacement.InlineEnd,
 ];
 
-/** Keys that move the selection along the strip (external-panel mode). */
+/** Keys that move the selection along the strip. */
 const NAVIGATION_KEYS = new Set([
   'ArrowLeft',
   'ArrowRight',
@@ -82,9 +81,8 @@ const FIT_TOLERANCE = 1;
  *
  * Tabs and panels are slotted as siblings and paired **by document order** —
  * the first `slot="tab"` child owns the first `slot="panel"` child, and so on.
- * This is Lion's convention, inherited from {@link LionTabs}, and it's what
- * lets a panel be any element (a `<div>`, a `<craft-pane>`, a form section)
- * rather than a wrapper this component defines:
+ * That's what lets a panel be any element (a `<div>`, a `<craft-pane>`, a form
+ * section) rather than a wrapper this component defines:
  *
  *     <craft-tabs label="Entry settings">
  *       <craft-tab slot="tab">Content</craft-tab>
@@ -93,15 +91,13 @@ const FIT_TOLERANCE = 1;
  *       <div slot="panel">…</div>
  *     </craft-tabs>
  *
- * A mismatched count logs a warning and leaves the extras inert. Everything
- * else — the `role`/`aria-controls`/`aria-labelledby` wiring, roving tabindex,
- * arrow/Home/End keyboard navigation, and skipping `disabled` tabs — comes from
- * Lion; this component adds the Craft styling, the `placement`, and the
- * `part`s needed to restyle the strip.
+ * A mismatched count logs a warning and leaves the extras inert. The strip
+ * owns the `role`/`aria-controls`/`aria-labelledby` wiring, the roving
+ * tabindex, arrow/Home/End keyboard navigation, and skipping `disabled` tabs.
  *
  * Selection is a *property*, not slotted state: read or set `selectedIndex`
- * (`selected-index`) rather than toggling `selected` on a tab, which Lion owns
- * and will overwrite.
+ * (`selected-index`) rather than toggling `selected` on a tab, which the strip
+ * owns and will overwrite.
  *
  * ## External-panel mode
  *
@@ -121,10 +117,8 @@ const FIT_TOLERANCE = 1;
  *
  * The mode is chosen from that explicit signal, not inferred from a missing
  * panel count, and it is fixed at first render — a strip is all-`controls` or
- * all-slotted, never a mix. Lion's own pairing is bypassed entirely here (it
- * indexes into a panel list that doesn't exist), so this component owns the
- * keyboard navigation in this mode; `selectedIndex` and `craft-tab-show`
- * behave identically either way.
+ * all-slotted, never a mix. Keyboard navigation, `selectedIndex` and
+ * `craft-tab-show` behave identically either way.
  *
  * Replacing the external panels' markup (re-rendering the fragment they live
  * in) leaves the new elements unwired — call {@link CraftTabs.refresh} after.
@@ -198,9 +192,28 @@ const FIT_TOLERANCE = 1;
  *   scale of everything in it. Set by `size`; override for a scale between the
  *   named ones.
  */
-export default class CraftTabs extends LionTabs {
-  static override get styles() {
-    return [...super.styles, hostStyles, styles];
+export default class CraftTabs extends LitElement {
+  static override styles = [hostStyles, styles];
+
+  #selectedIndex = 0;
+
+  /**
+   * The index of the selected tab. Slotted tabs and panels update as soon as
+   * it's set; external panels update with the next render.
+   */
+  @property({type: Number, attribute: 'selected-index', reflect: true})
+  get selectedIndex(): number {
+    return this.#selectedIndex;
+  }
+
+  set selectedIndex(value: number) {
+    this.#selectedIndex = value;
+
+    // External panels are often also rendered by a framework, whose pending
+    // re-render would overwrite a synchronous change.
+    if (!this.#external) {
+      this.#apply();
+    }
   }
 
   /**
@@ -303,8 +316,8 @@ export default class CraftTabs extends LionTabs {
    */
   @property({reflect: true}) size: SizeValue = 'medium';
 
-  /** Cleanup for the listeners bound to each tab in external-panel mode. */
-  #externalCleanup: Array<() => void> = [];
+  /** Cleanup for the listeners bound to each tab. */
+  #tabCleanup: Array<() => void> = [];
 
   /** Whether this strip drives panels elsewhere in the document. */
   #external = false;
@@ -325,9 +338,26 @@ export default class CraftTabs extends LionTabs {
 
   #measureQueued = false;
 
-  /** The tabs, narrowed — external mode only ever holds `<craft-tab>`s. */
+  /** The slotted tab triggers, in document order. */
+  get tabs(): HTMLElement[] {
+    return this.#slotted('tab');
+  }
+
+  /** The slotted panels, in document order. Empty in external-panel mode. */
+  get panels(): HTMLElement[] {
+    return this.#slotted('panel');
+  }
+
+  #slotted(slot: string): HTMLElement[] {
+    return Array.from(this.children).filter(
+      (child): child is HTMLElement =>
+        child instanceof HTMLElement && child.slot === slot
+    );
+  }
+
+  /** The tabs, narrowed — normally `<craft-tab>`s. */
   get #tabs(): CraftTab[] {
-    return this.tabs as unknown as CraftTab[];
+    return this.tabs as CraftTab[];
   }
 
   get #tabGroup(): HTMLElement | null {
@@ -344,37 +374,25 @@ export default class CraftTabs extends LionTabs {
    * the ids come back identical but the elements are new, so the `role`,
    * `aria-labelledby`, and visibility this strip put on them are gone.
    *
-   * Also re-measures the overflow. A no-op for the panel half outside
-   * external-panel mode.
+   * Also re-measures the overflow.
    */
   refresh() {
-    if (this.#external) {
-      this.#applyExternal();
-    }
-
+    this.#apply();
     this.#measureOverflow();
   }
 
   override firstUpdated(changedProperties: PropertyValues) {
+    super.firstUpdated(changedProperties);
+
     // Decided from an explicit author signal rather than an absent panel
     // count, so a strip that simply hasn't been filled in yet doesn't quietly
     // land in the wrong mode.
     this.#external = this.#tabs.some((tab) => tab.controls);
 
     const tabSlot = this.shadowRoot?.querySelector('slot[name="tab"]');
+    tabSlot?.addEventListener('slotchange', this.#setup);
+    this.#setup();
 
-    if (this.#external) {
-      tabSlot?.addEventListener('slotchange', this.#setupExternal);
-      this.#setupExternal();
-    } else {
-      super.firstUpdated(changedProperties);
-
-      // Registered after Lion's own handler above, and so runs after it: a
-      // removed tab can leave Lion's store with no entry at `selectedIndex`.
-      tabSlot?.addEventListener('slotchange', this.#normalizeAfterSlotChange);
-    }
-
-    this.#normalizeSelection();
     this.#announcedIndex = this.selectedIndex;
 
     if (this.syncLocationHash) {
@@ -400,10 +418,7 @@ export default class CraftTabs extends LionTabs {
     // A strip moved in the DOM is disconnected and reconnected without
     // another first render, so what the disconnect tore down is rebuilt here.
     if (this.hasUpdated) {
-      if (this.#external) {
-        this.#setupExternal();
-      }
-
+      this.#setup();
       this.#connectListeners();
     }
   }
@@ -421,7 +436,7 @@ export default class CraftTabs extends LionTabs {
   override disconnectedCallback() {
     super.disconnectedCallback();
     window.removeEventListener('hashchange', this.#selectFromHash);
-    this.#teardownExternal();
+    this.#teardown();
     this.#resizeObserver?.disconnect();
     this.#resizeObserver = undefined;
   }
@@ -436,13 +451,11 @@ export default class CraftTabs extends LionTabs {
 
     if (changedProperties.has('selectedIndex')) {
       if (this.#external) {
-        this.#applyExternal();
+        this.#apply();
       }
 
-      // Lion announces the selection as `selected-changed`. That is its
-      // protocol, not this component's API, so the public event is emitted
-      // here under our own name. The initial render, and a selection moved
-      // off nothing, are left quiet: neither is a change anyone made.
+      // The initial render, and a selection moved off nothing, are left
+      // quiet: neither is a change anyone made.
       if (
         this.#announcedIndex !== null &&
         this.selectedIndex !== this.#announcedIndex
@@ -493,10 +506,6 @@ export default class CraftTabs extends LionTabs {
     return true;
   }
 
-  #normalizeAfterSlotChange = () => {
-    this.#normalizeSelection();
-  };
-
   /** Exactly one tab is in the tab order: the selected one. */
   #syncTabindex() {
     this.#tabs.forEach((tab, index) => {
@@ -504,7 +513,6 @@ export default class CraftTabs extends LionTabs {
     });
   }
 
-  /**
   /** The hash a tab is reached by: the id of the panel it names. */
   #hashFor(index: number): string | null {
     return this.#tabs[index]?.controls || null;
@@ -553,8 +561,14 @@ export default class CraftTabs extends LionTabs {
    * on every slot change, so it tears down first rather than stacking
    * listeners on the tabs that survived.
    */
-  #setupExternal = () => {
-    this.#teardownExternal();
+  #setup = () => {
+    this.#teardown();
+
+    if (!this.#external && this.tabs.length !== this.panels.length) {
+      console.warn(
+        `The amount of tabs (${this.tabs.length}) doesn't match the amount of panels (${this.panels.length}).`
+      );
+    }
 
     this.#tabs.forEach((tab, index) => {
       const onClick = () => this.#select(index, true);
@@ -570,33 +584,40 @@ export default class CraftTabs extends LionTabs {
       tab.addEventListener('keydown', onKeydown);
       tab.addEventListener('keyup', onKeyup);
 
-      this.#externalCleanup.push(() => {
+      this.#tabCleanup.push(() => {
         tab.removeEventListener('click', onClick);
         tab.removeEventListener('keydown', onKeydown);
         tab.removeEventListener('keyup', onKeyup);
       });
     });
 
-    // A slot change can remove the selected tab, and Lion's first-render move
-    // off a disabled first tab doesn't run in this mode.
-    this.#normalizeSelection();
-    this.#applyExternal();
+    // A slot change can remove the selected tab, or the first can be disabled.
+    if (!this.#normalizeSelection()) {
+      this.#apply();
+    }
   };
 
-  #teardownExternal() {
-    while (this.#externalCleanup.length) {
-      this.#externalCleanup.pop()?.();
+  #teardown() {
+    while (this.#tabCleanup.length) {
+      this.#tabCleanup.pop()?.();
     }
   }
 
   /**
    * Puts the full tab/tabpanel contract on both halves: the accessibility
-   * wiring, the roving tabindex, and the visibility of the external panels.
-   * Idempotent, and re-run rather than diffed — panels can be replaced
-   * wholesale underneath us.
+   * wiring, the roving tabindex, and the panels' visibility. Idempotent, and
+   * re-run rather than diffed — external panels can be replaced wholesale
+   * underneath us.
    */
-  #applyExternal() {
-    const panels = this.#tabs.map((tab) => this.#panelFor(tab));
+  #apply() {
+    if (!this.hasUpdated) {
+      return;
+    }
+
+    const slotted = this.panels;
+    const panels = this.#tabs.map((tab, index) =>
+      this.#external ? this.#panelFor(tab) : (slotted[index] ?? null)
+    );
 
     // A strip whose panels are all missing is the normal state of a page whose
     // panel markup is still being injected, so it stays quiet. Some resolving
@@ -607,13 +628,13 @@ export default class CraftTabs extends LionTabs {
       const selected = index === this.selectedIndex;
       const panel = panels[index];
 
-      tab.id ||= `tab-${uuid()}`;
+      tab.id ||= uniqueId('tab');
       tab.setAttribute('role', 'tab');
       tab.toggleAttribute('selected', selected);
       tab.setAttribute('aria-selected', String(selected));
 
       if (!panel) {
-        if (reportMissing) {
+        if (this.#external && reportMissing) {
           console.error(
             `<craft-tabs> found no panel with id "${tab.controls}".`,
             tab
@@ -622,6 +643,7 @@ export default class CraftTabs extends LionTabs {
         return;
       }
 
+      panel.id ||= uniqueId('panel');
       tab.setAttribute('aria-controls', panel.id);
       panel.setAttribute('role', 'tabpanel');
       panel.setAttribute('aria-labelledby', tab.id);
@@ -632,9 +654,13 @@ export default class CraftTabs extends LionTabs {
         panel.setAttribute('tabindex', '0');
       }
 
-      // Craft's `hidden` class, which is how the server renders these panels
-      // collapsed in the first place.
-      panel.classList.toggle('hidden', !selected);
+      // External panels use Craft's `hidden` class, which is how the server
+      // renders them collapsed in the first place. Slotted ones are hidden by
+      // the stylesheet, from `selected`.
+      if (this.#external) {
+        panel.classList.toggle('hidden', !selected);
+      }
+
       panel.toggleAttribute('selected', selected);
     });
 
@@ -823,8 +849,8 @@ export default class CraftTabs extends LionTabs {
 
     // craft-action-menu closes itself when an item is clicked, but only for
     // items it can still find assigned to its content slot — which isn't the
-    // case once Lion has moved that content into the overlay container. Close
-    // it here rather than leave the menu hanging open over the strip.
+    // case once its overlay has moved that content elsewhere. Close it here
+    // rather than leave the menu hanging open over the strip.
     const menu = this.#overflowMenu;
 
     if (menu) {
@@ -853,8 +879,6 @@ export default class CraftTabs extends LionTabs {
       return;
     }
 
-    // Lion's setter dispatches `selected-changed` and requests an update; the
-    // panel work happens in `updated()`.
     this.selectedIndex = index;
 
     if (withFocus) {
@@ -913,12 +937,6 @@ export default class CraftTabs extends LionTabs {
     return -1;
   }
 
-  /**
-   * Adds the Craft wrapper and `part`s around Lion's two regions. The
-   * `tabs__*` class names and the `slot[name=tab]`/`slot[name=panel]`
-   * structure are load-bearing: `LionTabs` styles against those classes and
-   * queries its own shadow root for the tab slot to observe `slotchange`.
-   */
   override render() {
     return html`
       <div class="tabs" part="base">
@@ -984,6 +1002,9 @@ export default class CraftTabs extends LionTabs {
     `;
   }
 }
+
+// Moving an unusable selection onto a real tab is an update from an update.
+CraftTabs.disableWarning?.('change-in-update');
 
 if (!customElements.get('craft-tabs')) {
   customElements.define('craft-tabs', CraftTabs);

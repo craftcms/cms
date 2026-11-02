@@ -26,8 +26,7 @@ type CraftTabsArgs = CraftTabs & typeof args;
 const meta = {
   title: 'Components/Tabs',
   component: 'craft-tabs',
-  // `selected-index` is Lion's, so it is not in the manifest and is declared
-  // alongside the generated set.
+  // Declared by hand for the number control's minimum.
   argTypes: {
     ...argTypes,
     selectedIndex: {
@@ -71,15 +70,8 @@ const meta = {
 export default meta;
 type Story = StoryObj<CraftTabsArgs>;
 
-/*
- * These play functions are the real test bed for the Lion-driven behavior:
- * it bootstraps from a `slotchange`, which happy-dom never fires, so
- * tabs.test.ts can only cover the wrapper. See the note at the top of that
- * file.
- */
-
 /**
- * Sends an arrow key to a tab. Lion navigates on `keyup`, and this dispatches
+ * Sends an arrow key to a tab. The strip navigates on `keyup`, and this dispatches
  * the event at the tab directly rather than going through `userEvent.keyboard`,
  * which routes to whatever the *browser* considers focused — unreliable here,
  * since the story runs in an iframe that may not hold system focus.
@@ -305,8 +297,8 @@ export const SelectedIndex: Story = {
 };
 
 /**
- * Disabled tabs can't be clicked and are skipped by arrow-key navigation. Lion
- * also moves the initial selection off a disabled first tab.
+ * Disabled tabs can't be clicked and are skipped by arrow-key navigation. The
+ * strip also moves the initial selection off a disabled first tab.
  */
 export const Disabled: Story = {
   render: () => html`
