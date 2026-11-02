@@ -46,3 +46,16 @@ export function onBroadcast(
 
   return () => getChannel()?.removeEventListener('message', listener);
 }
+
+/**
+ * Broadcasts the `detail` of each `craft:broadcast` event, for code that
+ * can't import this module, such as JS the server flashes to the next page.
+ */
+export function relayBroadcastEvents(): void {
+  window.addEventListener('craft:broadcast', (event) => {
+    const message = (event as CustomEvent<BroadcastMessage>).detail;
+    if (message?.event) {
+      broadcast(message);
+    }
+  });
+}

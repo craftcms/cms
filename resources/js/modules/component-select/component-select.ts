@@ -851,7 +851,8 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
       )
       .first();
 
-    return $trigger.length
+    // The legacy menu plugin comes with the Yii2 adapter
+    return $trigger.length && typeof $trigger.disclosureMenu === 'function'
       ? $trigger.disclosureMenu().data('disclosureMenu')
       : null;
   }

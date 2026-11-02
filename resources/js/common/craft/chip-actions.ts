@@ -208,6 +208,11 @@ function addActionsToDisclosureMenu(
       .appendTo(chip);
   }
 
+  // The legacy menu plugin comes with the Yii2 adapter
+  if (typeof $trigger.disclosureMenu !== 'function') {
+    return;
+  }
+
   const disclosureMenu = $trigger.disclosureMenu().data('disclosureMenu');
   const before = prepend
     ? disclosureMenu.$container.children().first().get(0)

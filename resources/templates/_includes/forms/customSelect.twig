@@ -96,9 +96,10 @@
       const $button = $('#{{ buttonId|namespaceInputId }}');
       const $buttonFlex = $button.find('.inline-flex:first');
       const $input = $('#{{ inputId|namespaceInputId }}');
-      const menubtn = $button
-        .menubtn()
-        .data('menubtn');
+      // The legacy menu plugin comes with the Yii2 adapter
+      const menubtn = $button.menubtn
+        ? $button.menubtn().data('menubtn')
+        : null;
         if (menubtn) {
           menubtn
             .on('optionSelect', (ev) => {

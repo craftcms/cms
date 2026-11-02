@@ -27,7 +27,8 @@ use function CraftCms\Cms\craftAsset;
  * that bundle so the core CP bundle can drop it while the `componentSelect.twig`
  * `jsClass` escape hatch keeps working for plugin subclasses. It defines its
  * class at top-level eval, so it is registered ahead of cp-compat.js. So are
- * ui.js, the legacy `Craft.ui` builders, which the rest rely on,
+ * the legacy cp.js bundle (`Craft.js`: the `Craft` helpers and jQuery
+ * plugins), ui.js, the legacy `Craft.ui` builders, which the rest rely on,
  * craft-cp.js, the legacy `Craft.CP` class and `Craft.cp` instance,
  * element-editor.js, the legacy `Craft.ElementEditor`,
  * the relation field settings scripts for the legacy settings templates, and
@@ -42,6 +43,7 @@ class CpCompatAsset implements LegacyAssetInterface
     public function register(HtmlStack $htmlStack): void
     {
         $htmlStack->html(Cp::vite()(['yii2-adapter/resources/js/cp-compat.ts'])->toHtml(), Position::Head);
+        $htmlStack->jsFile(craftAsset('legacy/cp/dist/cp.js'));
         $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/ui.js'));
         $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/craft-cp.js'));
         $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/element-editor.js'));
