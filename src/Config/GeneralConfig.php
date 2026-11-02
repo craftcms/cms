@@ -868,6 +868,7 @@ class GeneralConfig extends BaseConfig
      * - login attempts
      * - two-factor authentication verifications
      * - password reset requests
+     * - MCP discovery requests (`/.well-known/ai-catalog.json` and MCP Server Cards)
      *
      * Login attempts and two-factor authentication verifications are also limited per account, to five a minute.
      *
