@@ -23,7 +23,6 @@ class UpdaterAsset implements LegacyAssetInterface
 
     public function register(HtmlStack $htmlStack): void
     {
-        $htmlStack->jsFile(craftAsset('legacy/updater/dist/Updater.js'));
         $htmlStack->cssFile(craftAsset('legacy/updater/dist/css/Updater.css'));
     }
 }

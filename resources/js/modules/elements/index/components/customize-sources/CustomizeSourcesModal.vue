@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {uuid} from '@/common/craft/strings';
   /**
    * The "Customize sources" modal: a source list on the left and the selected
    * source's settings on the right.
@@ -61,9 +62,6 @@
   };
 
   const {announce} = useAnnouncer();
-
-  // `uuid` lives on the legacy `Craft` global and isn't described by CraftStatic.
-  const craft = Craft as typeof Craft & {uuid(): string};
 
   const loading = ref(false);
   /**
@@ -162,7 +160,7 @@
         // heading instead of being dropped.
         key:
           source.key ??
-          (source.type === 'heading' ? `heading:${craft.uuid()}` : null),
+          (source.type === 'heading' ? `heading:${uuid()}` : null),
         type: source.type,
         label:
           (source.type === 'heading' ? source.heading : source.label) ?? '',
@@ -339,7 +337,7 @@
   }
 
   async function add(type: 'heading' | 'custom'): Promise<void> {
-    const key = `${type}:${craft.uuid()}`;
+    const key = `${type}:${uuid()}`;
 
     // Listed straight away, with its settings loading in beside it.
     sources.value.push({

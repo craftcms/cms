@@ -26,6 +26,7 @@ import {
   mountSessionTimeoutHost,
 } from './modules/auth/session-timeout';
 import {installMessages} from './modules/messages';
+import {bootUpdater} from './modules/updater/updater';
 import {defineDashboardWidgetSettingsUiHost} from './modules/ui/dashboard-widget-settings-ui-host';
 import {defineConditionBuilderHost} from './modules/conditions/condition-builder-host';
 import {defineEntryFieldLayoutUiHost} from './modules/ui/entry-field-layout-ui-host';
@@ -97,6 +98,7 @@ defineFieldSettingsUiHost(Cp.$components);
 defineLayoutComponentSettingsUiHost(Cp.$components);
 
 mountElevatedSessionHost();
+bootUpdater();
 installSessionTimeout();
 mountSessionTimeoutHost();
 
