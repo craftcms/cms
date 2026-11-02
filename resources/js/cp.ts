@@ -31,6 +31,7 @@ import './modules/queue';
 import './modules/slideout';
 import './modules/slideout-actions';
 import './modules/fields';
+import './modules/elements/element-action-events';
 import './modules/auth-method-setup';
 import './modules/proxy-scrollbar';
 import './modules/customize-sources';

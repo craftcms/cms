@@ -39,6 +39,7 @@ import './modules/listbox/index';
 import './modules/field-layout-designer/index';
 import './modules/sortable-checkbox-select/index';
 import './modules/fields';
+import './modules/elements/element-action-events';
 import './modules/grouped-entry-type-manager/index';
 import './modules/queue/index';
 import './modules/slideout/index';
