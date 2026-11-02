@@ -25,6 +25,14 @@ export function mountElevatedSessionHost(): void {
   createApp(ElevatedSessionHost).mount(host);
 }
 
+/** Answers `@craftcms/ui` actions that ask for an elevated session. */
+export function answerElevatedSessionRequests(): void {
+  window.addEventListener('craft:require-elevated-session', (event) => {
+    const {detail} = event as CustomEvent<{confirmed?: Promise<boolean>}>;
+    detail.confirmed = elevatedSessionManager.require();
+  });
+}
+
 export function usePasswordConfirmation() {
   return {
     require: (options?: ElevatedSessionOptions) =>

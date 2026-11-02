@@ -42,10 +42,8 @@ use function CraftCms\Cms\t;
  *   This is how items express behavior that isn't a form post, e.g.
  *   `['type' => 'event', 'name' => 'craft:edit-field', 'detail' => [...]]`.
  *
- * `requireElevatedSession` has no client-side equivalent in
- * `craft-action-item`/`runAction()` — there's no re-auth prompt hook — so it's
- * intentionally dropped. An item that needs it is still rejected server-side;
- * it just won't get the elevated-session modal first.
+ * A string `action` with `requireElevatedSession` asks the user to confirm
+ * their password before the request is sent.
  *
  * This component does **not** namespace the IDs it renders. Callers whose
  * items register JS against those IDs must wrap both item collection and
@@ -381,6 +379,7 @@ class ActionMenu extends ViewComponent
             'url' => Url::actionUrl((string) $action),
             'body' => $body ?: null,
             'confirm' => $item['confirm'] ?? null,
+            'requireElevatedSession' => ($item['requireElevatedSession'] ?? false) ?: null,
         ], fn ($value) => $value !== null);
     }
 

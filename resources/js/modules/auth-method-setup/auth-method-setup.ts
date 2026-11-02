@@ -56,6 +56,21 @@ export class AuthMethodSetup extends Base<AuthMethodSetupSettings> {
   init(settings?: Partial<AuthMethodSetupSettings>): void {
     this.setSettings(settings, AuthMethodSetup.defaults);
     this.initUi();
+
+    // A method's menu posts its actions (e.g. Remove) without reloading the page
+    this.addListener(
+      document.getElementById('auth-method-setup'),
+      'craft-state-change',
+      (event) => {
+        const {detail} = event as unknown as CustomEvent<{
+          state: string;
+          actionType?: string;
+        }>;
+        if (detail.state === 'success' && detail.actionType === 'http') {
+          this.refresh();
+        }
+      }
+    );
   }
 
   initUi(): void {
