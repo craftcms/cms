@@ -16,12 +16,14 @@ use craft\web\twig\AllowedInSandbox;
  *
  * @property string $hex
  * @property string $rgb
+ * @property string $rgba
  * @property int $red
  * @property int $green
  * @property int $blue
  * @property int $r
  * @property int $g
  * @property int $b
+ * @property float $alpha
  * @property float $luma
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Top Shelf Craft <michael@michaelrog.com>
@@ -49,7 +51,8 @@ class ColorData extends Model implements Serializable
     /**
      * Constructor.
      *
-     * @param string $hex hex color value, beginning with `#`. (Shorthand is not supported, e.g. `#f00`.)
+     * @param string $hex hex color value, beginning with `#`, optionally including an alpha channel (e.g. `#ff000080`).
+     * (Shorthand is not supported, e.g. `#f00`.)
      * @param array $config name-value pairs that will be used to initialize the object properties
      */
     public function __construct(string $hex, array $config = [])
@@ -72,12 +75,14 @@ class ColorData extends Model implements Serializable
     public function attributes()
     {
         $attributes = parent::attributes();
+        $attributes[] = 'alpha';
         $attributes[] = 'blue';
         $attributes[] = 'green';
         $attributes[] = 'hex';
         $attributes[] = 'luma';
         $attributes[] = 'red';
         $attributes[] = 'rgb';
+        $attributes[] = 'rgba';
         return $attributes;
     }
 
@@ -92,11 +97,18 @@ class ColorData extends Model implements Serializable
     /**
      * Returns the color as a hex.
      *
+     * The value will only be 8 digits long if the color has an alpha channel that isn’t fully opaque.
+     *
+     * @param bool $withAlpha Whether to include the alpha channel, if the color has one (since 5.12.0)
      * @return string
      */
     #[AllowedInSandbox]
-    public function getHex(): string
+    public function getHex(bool $withAlpha = true): string
     {
+        if (!$withAlpha && strlen($this->_hex) === 9) {
+            return substr($this->_hex, 0, 7);
+        }
+
         return $this->_hex;
     }
 
@@ -112,6 +124,18 @@ class ColorData extends Model implements Serializable
     }
 
     /**
+     * Returns the color in `rgba()` syntax.
+     *
+     * @return string
+     * @since 5.12.0
+     */
+    #[AllowedInSandbox]
+    public function getRgba(): string
+    {
+        return "rgba({$this->getRed()},{$this->getGreen()},{$this->getBlue()},{$this->getAlpha()})";
+    }
+
+    /**
      * Returns the color in `hsl()` syntax.
      *
      * @return string
@@ -122,6 +146,19 @@ class ColorData extends Model implements Serializable
     {
         [$h, $s, $l] = $this->_hsl();
         return "hsl($h,$s%,$l%)";
+    }
+
+    /**
+     * Returns the color in `hsla()` syntax.
+     *
+     * @return string
+     * @since 5.12.0
+     */
+    #[AllowedInSandbox]
+    public function getHsla(): string
+    {
+        [$h, $s, $l] = $this->_hsl();
+        return "hsla($h,$s%,$l%,{$this->getAlpha()})";
     }
 
     /**
@@ -176,6 +213,25 @@ class ColorData extends Model implements Serializable
     public function getB(): int
     {
         return $this->getBlue();
+    }
+
+    /**
+     * Returns the color’s alpha channel, as a number between 0 (fully transparent) and 1 (fully opaque).
+     *
+     * @return float
+     * @since 5.12.0
+     */
+    #[AllowedInSandbox]
+    public function getAlpha(): float
+    {
+        if (strlen($this->_hex) !== 9) {
+            return 1.0;
+        }
+
+        // Use two decimal places if that’s enough to get back to the same 8-bit value
+        $alpha = hexdec(substr($this->_hex, 7, 2));
+        $rounded = round($alpha / 255, 2);
+        return (int)round($rounded * 255) === $alpha ? $rounded : round($alpha / 255, 3);
     }
 
     /**

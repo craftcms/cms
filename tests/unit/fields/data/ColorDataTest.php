@@ -36,6 +36,7 @@ class ColorDataTest extends TestCase
         self::assertSame($g, $color->getG());
         self::assertSame($b, $color->getB());
         self::assertSame("rgb($r,$g,$b)", $color->getRgb());
+        self::assertSame("rgba($r,$g,$b,1)", $color->getRgba());
     }
 
     /**
@@ -55,6 +56,37 @@ class ColorDataTest extends TestCase
         self::assertSame($s, $color->getS());
         self::assertSame($l, $color->getL());
         self::assertSame("hsl($h,$s%,$l%)", $color->getHsl());
+        self::assertSame("hsla($h,$s%,$l%,1)", $color->getHsla());
+    }
+
+    /**
+     * @dataProvider alphaDataProvider
+     * @param float $alpha
+     * @param string $hex
+     * @param string $opaqueHex
+     */
+    public function testAlpha(float $alpha, string $hex, string $opaqueHex): void
+    {
+        $color = new ColorData($hex);
+        self::assertSame($alpha, $color->getAlpha());
+        self::assertSame($hex, $color->getHex());
+        self::assertSame($opaqueHex, $color->getHex(false));
+        self::assertSame("rgb(255,128,0)", $color->getRgb());
+        self::assertSame("rgba(255,128,0,$alpha)", $color->getRgba());
+        self::assertSame("hsla(30,100%,50%,$alpha)", $color->getHsla());
+    }
+
+    public static function alphaDataProvider(): array
+    {
+        return [
+            [1.0, '#ff8000', '#ff8000'],
+            [0.0, '#ff800000', '#ff8000'],
+            [0.5, '#ff800080', '#ff8000'],
+            [0.25, '#ff800040', '#ff8000'],
+            [0.2, '#ff800033', '#ff8000'],
+            // 0x81 / 255 = 0.50588…, and 0.51 would round back to 0x82
+            [0.506, '#ff800081', '#ff8000'],
+        ];
     }
 
     public static function rgbDataProvider(): array

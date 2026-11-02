@@ -68,7 +68,7 @@ class Color extends Field implements
      */
     public static function dbType(): string
     {
-        return sprintf('%s(7)', Schema::TYPE_CHAR);
+        return sprintf('%s(9)', Schema::TYPE_CHAR);
     }
 
     /**
@@ -83,6 +83,12 @@ class Color extends Field implements
      * @since 5.6.0
      */
     public bool $allowCustomColors = false;
+
+    /**
+     * @var bool Allow custom colors to have an alpha channel
+     * @since 5.12.0
+     */
+    public bool $allowCustomAlpha = false;
 
     /**
      * @inheritdoc
@@ -209,6 +215,7 @@ class Color extends Field implements
                     'color' => [
                         'type' => 'color',
                         'heading' => Craft::t('app', 'Color'),
+                        'alpha' => true,
                     ],
                     'label' => [
                         'type' => 'singleline',
@@ -235,6 +242,18 @@ class Color extends Field implements
                 'name' => 'allowCustomColors',
                 'on' => $this->allowCustomColors,
                 'disabled' => $readOnly,
+                'toggle' => 'allow-custom-alpha-container',
+            ]) .
+            Html::tag('div', Cp::lightswitchFieldHtml([
+                'label' => Craft::t('app', 'Allow opacity for custom colors'),
+                'instructions' => Craft::t('app', 'Whether authors should be able to set the opacity of custom colors, in browsers that support it.'),
+                'id' => 'allow-custom-alpha',
+                'name' => 'allowCustomAlpha',
+                'on' => $this->allowCustomAlpha,
+                'disabled' => $readOnly,
+            ]), [
+                'id' => 'allow-custom-alpha-container',
+                'class' => array_filter([!$this->allowCustomColors ? 'hidden' : null]),
             ]);
     }
 
@@ -252,7 +271,7 @@ class Color extends Field implements
                 'message' => Craft::t('app', 'Palette cannot be blank if custom colors aren’t allowed.'),
             ],
             [['palette'], function() {
-                $validator = new ColorValidator();
+                $validator = new ColorValidator(['allowAlpha' => true]);
                 foreach ($this->palette as $color) {
                     if (!$validator->validate($color['color'], $error)) {
                         $this->addError('palette', Craft::t('yii', '{attribute} is invalid.', [
@@ -325,17 +344,18 @@ class Color extends Field implements
     public function getElementValidationRules(): array
     {
         return [
-            ColorValidator::class,
+            [ColorValidator::class, 'allowAlpha' => true],
             [
                 function(ElementInterface $element) {
-                    if (!$this->allowCustomColors) {
-                        /** @var ColorData $value */
-                        $value = $element->getFieldValue($this->handle);
-                        if (!ArrayHelper::contains($this->palette, fn(array $color) => $color['color'] === $value->getHex())) {
-                            $element->addError("field:$this->handle", Craft::t('yii', '{attribute} is invalid.', [
-                                'attribute' => $this->getUiLabel(),
-                            ]));
-                        }
+                    /** @var ColorData $value */
+                    $value = $element->getFieldValue($this->handle);
+                    if (
+                        (!$this->allowCustomColors || (!$this->allowCustomAlpha && $value->getAlpha() < 1)) &&
+                        !ArrayHelper::contains($this->palette, fn(array $color) => $color['color'] === $value->getHex())
+                    ) {
+                        $element->addError("field:$this->handle", Craft::t('yii', '{attribute} is invalid.', [
+                            'attribute' => $this->getUiLabel(),
+                        ]));
                     }
                 },
             ],
@@ -355,6 +375,7 @@ class Color extends Field implements
                 'describedBy' => $this->describedBy,
                 'name' => $this->handle,
                 'value' => $value?->getHex(),
+                'alpha' => $this->allowCustomAlpha,
             ]);
         }
 
@@ -438,6 +459,7 @@ class Color extends Field implements
                     'describedBy' => $this->describedBy,
                     'name' => "$this->handle[custom]",
                     'value' => $isCustom ? $value->getHex() : null,
+                    'alpha' => $this->allowCustomAlpha,
                 ]) .
                 Html::endTag('div');
         } elseif ($value && !$isInPalette) {
