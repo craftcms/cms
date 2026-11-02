@@ -67,3 +67,12 @@ it('puts prepended actions ahead of the existing ones', async () => {
   const menu = el.querySelector('craft-action-menu')!;
   await vi.waitFor(() => expect(itemLabels(menu)).toEqual(['Replace', 'Edit']));
 });
+
+it('leaves a chip without an action container alone when the legacy menu plugin isn’t loaded', () => {
+  const el = document.createElement('div');
+  el.className = 'chip';
+  document.body.append(el);
+
+  expect(() => addActionsToChip(el, [{label: 'Replace'}])).not.toThrow();
+  expect(el.children).toHaveLength(0);
+});

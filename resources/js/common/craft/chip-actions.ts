@@ -2,8 +2,6 @@ import {t} from '@craftcms/ui/utilities/translate';
 import {setElementAttributes} from './attributes';
 import {initLegacyUi} from './legacy-ui';
 
-declare const $: any;
-
 /** An action in the shape the legacy `disclosureMenu()` plugin accepts. */
 export interface ChipAction {
   label?: string;
@@ -172,9 +170,16 @@ function addActionsToDisclosureMenu(
   actions: ChipAction[],
   prepend: boolean
 ): void {
-  let $trigger = $(trigger);
+  // The legacy menu plugin comes with the Yii2 adapter
+  // oxlint-disable-next-line typescript/no-explicit-any
+  const $ = (window as {jQuery?: any}).jQuery;
+  if (typeof $?.fn.disclosureMenu !== 'function') {
+    return;
+  }
 
-  if (!trigger) {
+  let triggerElement = trigger;
+
+  if (!triggerElement) {
     console.warn(
       'A chip was given actions without an action container, so a deprecated ' +
         'disclosure menu was built for it. Render the chip with a ' +
@@ -185,34 +190,31 @@ function addActionsToDisclosureMenu(
 
     const menuId = `actions-${Math.floor(Math.random() * 1000000)}`;
     const labelId = `${menuId}-label`;
-    const $label = $('<label/>', {
-      id: labelId,
-      class: 'visually-hidden',
-      text: t('Actions'),
-    });
-    $trigger = $('<button/>', {
-      class: 'btn action-btn',
-      type: 'button',
-      title: t('Actions'),
-      'aria-controls': menuId,
-      'aria-describedby': labelId,
-      'data-disclosure-trigger': 'true',
-    });
-    const $menu = $('<div/>', {
-      id: menuId,
-      class: 'menu menu--disclosure',
-    });
+    const label = document.createElement('label');
+    label.id = labelId;
+    label.className = 'visually-hidden';
+    label.textContent = t('Actions');
 
-    $('<div/>', {class: 'chip-actions'})
-      .append($label, $trigger, $menu)
-      .appendTo(chip);
+    const button = document.createElement('button');
+    button.className = 'btn action-btn';
+    button.type = 'button';
+    button.title = t('Actions');
+    button.setAttribute('aria-controls', menuId);
+    button.setAttribute('aria-describedby', labelId);
+    button.dataset.disclosureTrigger = 'true';
+
+    const menu = document.createElement('div');
+    menu.id = menuId;
+    menu.className = 'menu menu--disclosure';
+
+    const container = document.createElement('div');
+    container.className = 'chip-actions';
+    container.append(label, button, menu);
+    chip.append(container);
+    triggerElement = button;
   }
 
-  // The legacy menu plugin comes with the Yii2 adapter
-  if (typeof $trigger.disclosureMenu !== 'function') {
-    return;
-  }
-
+  const $trigger = $(triggerElement);
   const disclosureMenu = $trigger.disclosureMenu().data('disclosureMenu');
   const before = prepend
     ? disclosureMenu.$container.children().first().get(0)
