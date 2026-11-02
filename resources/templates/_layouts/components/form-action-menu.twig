@@ -20,13 +20,7 @@
                 } %}
                 <a {{ attr(linkAttributes) }}>
                     {% if action.shortcut ?? false %}
-                        <span class="shortcut">
-                            {%- if Request.clientOs() == 'Mac' -%}
-                                {{ (action.shift ?? false ? '⇧') ~ '⌘S' }}
-                            {%- else -%}
-                                {{ 'Ctrl+' ~ (action.shift ?? false ? 'Shift+') ~ 'S' }}
-                            {%- endif -%}
-                        </span>
+                        <craft-shortcut {{ attr({shift: action.shift ?? false}) }}>S</craft-shortcut>
                     {% endif %}
                     {{ action.label }}
                 </a>
