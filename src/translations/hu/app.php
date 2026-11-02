@@ -1586,7 +1586,7 @@ return [
     'This tab is conditional' => 'Ez a fül feltételes',
     'This update requires PHP {v1}, but your composer.json file is currently set to PHP {v2}.' => 'Ehhez a frissítéshez PHP {v1} szükséges, de a composer.json fájlja jelenleg a PHP {v2} verziójára van beállítva.',
     'This update requires PHP {v1}, but your environment is currently running PHP {v2}.' => 'Ehhez a frissítéshez PHP {v1} szükséges, de a környezetében jelenleg a PHP {v2} verziója fut.',
-    'This user doesn’t have permission to author entries in this section.' => 'A felhasználónak nincs jogosultsága a szerzőről szóló bejegyzésekhez ebben a részben.',
+    'This user doesn’t have permission to author entries in this section.' => 'Ennek a felhasználónak nincs jogosultsága bejegyzéseket létrehozni ebben a szekcióban.',
     'This week' => 'E hét',
     'This year' => 'Idei év',
     'This {type} doesn’t have revisions.' => 'Ez a {type} nem rendelkezik verziókkal.',
