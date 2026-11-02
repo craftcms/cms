@@ -260,16 +260,19 @@
   --c-radio-tile-thumbnail-height: 3.75rem;
 
   /*
-    Colors for inline SVG thumbnails, which draw with the palette below (see
-    choice-inputs.css). They follow the theme, and turn blue when selected.
+    Colors for inline SVG thumbnails, which draw with a fixed palette that
+    choice-inputs.css swaps for these. Each is a palette stop picked so the
+    outlines, mountains and crop marks keep 3:1 against what they sit on, at
+    rest, hovered and selected. Selected tiles only turn the outlines blue.
   */
-  --c-illustration-surface: #f3f7fd;
+  --c-illustration-surface: var(--color-base-100);
   --c-illustration-paper: var(--color-base-50);
-  --c-illustration-solid: #cdd8e4;
-  --c-illustration-detail: #a6b2c2;
-  --c-illustration-line: var(--color-slate-400);
-  --c-illustration-ink: #5a6572;
-  --c-illustration-backdrop: #2a3141;
+  --c-illustration-solid: var(--color-slate-100);
+  --c-illustration-sky: var(--color-slate-50);
+  --c-illustration-detail: var(--color-slate-500);
+  --c-illustration-line: var(--color-slate-500);
+  --c-illustration-ink: var(--color-base-950);
+  --c-illustration-backdrop: var(--color-base-950);
 
   /* Slide rule */
   --c-slide-rule-height: var(--c-size-touch-target);
@@ -399,11 +402,9 @@
   /* White is a shade of gray here, so a white dot is solid, like a gray one. */
   --c-indicator-white-ring: var(--c-color-white-fill-loud);
 
-  --c-illustration-surface: var(--color-base-100);
-  --c-illustration-solid: var(--color-slate-100);
-  --c-illustration-detail: #6b788d;
-  --c-illustration-ink: var(--color-slate-600);
-  --c-illustration-backdrop: var(--color-black);
+  /* A light sky behind dark mountains, so both keep 3:1 with the light ink. */
+  --c-illustration-sky: var(--color-slate-400);
+  --c-illustration-detail: var(--color-base-50);
 }
 
 .underline-links {

@@ -65,3 +65,27 @@ export const VIEW_MODES: RadioTileOption[] = [
     ),
   },
 ];
+
+const SKY = '#E9EEF3';
+const MOUNTAIN = '#A6B2C2';
+const INK = '#5A6572';
+const HALO = '#FFFFFF';
+
+/**
+ * A photo inside a dashed crop frame with corner marks, like the image
+ * transform Mode illustrations: an outlined sky, mountains, and marks that
+ * cross both.
+ */
+export const CROP_MODE: RadioTileOption = {
+  value: 'crop',
+  label: 'Crop',
+  width: 80,
+  svg: svg(
+    80,
+    `<rect x="0.5" y="4.5" width="79" height="51" fill="${SKY}" stroke="${STROKE}"/>` +
+      `<path d="M1 46 22 22 36 37 48 26 79 51V55H1Z" fill="${MOUNTAIN}"/>` +
+      `<path d="M14.5 2.5H65.5V57.5H14.5Z" fill="none" stroke="${INK}" stroke-dasharray="1"/>` +
+      `<path d="M12 0H20V4H16V8H12Z" fill="${INK}" stroke="${HALO}" stroke-width="2" paint-order="stroke"/>` +
+      `<path d="M68 60H60V56H64V52H68Z" fill="${INK}" stroke="${HALO}" stroke-width="2" paint-order="stroke"/>`
+  ),
+};

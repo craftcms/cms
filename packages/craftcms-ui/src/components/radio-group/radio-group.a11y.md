@@ -53,6 +53,7 @@ The group adds `role="radiogroup"` and the label, help text and feedback wiring 
 - [x] With `buttons`, the selected option is distinguishable from the others in forced colors mode, using system colors. Verified by `distinguishes the selected button in forced colors mode` in `radio-group.browser.test.ts`.
 - [x] In `thumbnails` mode, the selected tile has a thicker border and a bold label, so it differs by more than color. Per WCAG 1.4.1 (Use of Color). Verified by `marks the selected tile with a thicker border and a bold label` in `radio-group.browser.test.ts`.
 - [x] In `thumbnails` mode, the selected tile is distinguishable from the others in forced colors mode, using system colors. Verified by `distinguishes the selected tile in forced colors mode` in `radio-group.browser.test.ts`.
+- [x] In `thumbnails` mode, an inline SVG illustration drawn with the illustration palette keeps its outlines, mountains and crop marks at 3:1 against what they sit on, at rest, hovered and selected, in both themes. The illustrations stay hidden from assistive tech, since each tile's label names its option. Per WCAG 1.4.11 (Non-text Contrast). Verified by `keeps the illustrations' outlines, mountains and crop marks at 3:1 at rest, hovered and selected, in both themes` in `radio-group.browser.test.ts`.
 
 ## Depends on usage
 

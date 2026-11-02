@@ -6,7 +6,12 @@ import '../../styles/cp.css';
 import '../icon/icon.js';
 import '../radio/radio.js';
 import './radio-group.js';
-import {VIEW_MODES} from '../../../test/radio-tile-fixtures';
+import {contrast} from '../../../test/contrast';
+import {
+  CROP_MODE,
+  VIEW_MODES,
+  type RadioTileOption,
+} from '../../../test/radio-tile-fixtures';
 
 beforeEach(() => {
   document.body.innerHTML = '';
@@ -195,7 +200,8 @@ it('gives only the unchecked buttons a pointer cursor', async () => {
 
 async function renderTiles(
   width: string,
-  wrap: (html: string) => string = (html) => html
+  wrap: (html: string) => string = (html) => html,
+  options: RadioTileOption[] = VIEW_MODES
 ): Promise<{
   group: CraftRadioGroup;
   radios: CraftRadio[];
@@ -203,8 +209,9 @@ async function renderTiles(
 }> {
   document.body.innerHTML = wrap(`
     <craft-radio-group thumbnails label="View Mode" ${width ? `style="inline-size: ${width}"` : ''}>
-      ${VIEW_MODES.map(
-        (option) => `
+      ${options
+        .map(
+          (option) => `
         <div>
           <craft-radio>
             <span slot="thumbnail" aria-hidden="true">${option.svg}</span>
@@ -212,7 +219,8 @@ async function renderTiles(
             <label slot="label" for="view-${option.value}">${option.label}</label>
           </craft-radio>
         </div>`
-      ).join('')}
+        )
+        .join('')}
     </craft-radio-group>`);
   const group = document.querySelector('craft-radio-group')!;
   const radios = Array.from(document.querySelectorAll('craft-radio'));
@@ -357,21 +365,77 @@ it('draws the selected illustration in blue, following the selection and the the
     getComputedStyle(radio.querySelector('[slot="thumbnail"] [stroke]')!)
       .stroke;
 
-  // blue-400 when selected, slate-400 otherwise
-  expect(hairline(radios[1]!)).toBe('rgb(81, 140, 246)');
-  expect(hairline(radios[2]!)).toBe('rgb(130, 143, 164)');
+  // blue-500 when selected, slate-500 otherwise
+  expect(hairline(radios[1]!)).toBe('rgb(62, 116, 242)');
+  expect(hairline(radios[2]!)).toBe('rgb(111, 124, 148)');
 
   await userEvent.click(inputs[2]!);
   await settle();
-  expect(hairline(radios[2]!)).toBe('rgb(81, 140, 246)');
-  expect(hairline(radios[1]!)).toBe('rgb(130, 143, 164)');
+  expect(hairline(radios[2]!)).toBe('rgb(62, 116, 242)');
+  expect(hairline(radios[1]!)).toBe('rgb(111, 124, 148)');
 
   document.documentElement.dataset.theme = 'dark';
   try {
-    expect(hairline(radios[1]!)).toBe('rgb(124, 137, 159)');
+    expect(hairline(radios[1]!)).toBe('rgb(143, 155, 175)');
   } finally {
     delete document.documentElement.dataset.theme;
   }
+});
+
+it("keeps the illustrations' outlines, mountains and crop marks at 3:1 at rest, hovered and selected, in both themes", async () => {
+  const failures: string[] = [];
+
+  for (const theme of ['light', 'dark']) {
+    const {radios, inputs} = await renderTiles(
+      '40rem',
+      (html) =>
+        `<div data-theme="${theme}" style="background-color: var(--c-surface-default)">${html}</div>`,
+      [VIEW_MODES[1]!, CROP_MODE]
+    );
+    const crop = radios[1]!;
+    const thumbnail = crop.querySelector('[slot="thumbnail"]')!;
+    const paint = (selector: string, property: 'fill' | 'stroke') =>
+      getComputedStyle(thumbnail.querySelector(selector)!)[property];
+
+    const check = (state: string) => {
+      const backdrop = getComputedStyle(
+        document.querySelector('[data-theme]')!
+      ).backgroundColor;
+      const tile = getComputedStyle(thumbnailBox(crop)).backgroundColor;
+      const sky = paint('[fill="#E9EEF3"]', 'fill');
+      const mountain = paint('[fill="#A6B2C2"]', 'fill');
+      const ink = paint('[stroke="#5A6572"]', 'stroke');
+      const pairs: [string, string, string][] = [
+        ['outline / tile', paint('[stroke="#828FA4"]', 'stroke'), tile],
+        ['mountain / sky', mountain, sky],
+        ['crop marks / sky', ink, sky],
+        ['crop marks / mountain', ink, mountain],
+        ['crop marks / tile', ink, tile],
+        [
+          'corner / halo',
+          paint('[stroke="#FFFFFF"]', 'fill'),
+          paint('[stroke="#FFFFFF"]', 'stroke'),
+        ],
+      ];
+
+      for (const [name, foreground, background] of pairs) {
+        const ratio = contrast(foreground, background, backdrop);
+        if (ratio < 3) {
+          failures.push(`${theme}, ${state}, ${name}: ${ratio.toFixed(2)}`);
+        }
+      }
+    };
+
+    check('at rest');
+    await userEvent.hover(inputs[1]!);
+    check('hovered');
+    await userEvent.click(inputs[1]!);
+    await settle();
+    await parkPointer();
+    check('selected');
+  }
+
+  expect(failures).toEqual([]);
 });
 
 it('distinguishes the selected tile in forced colors mode', async () => {

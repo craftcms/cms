@@ -12,23 +12,25 @@
         <g id="image" stroke-width="1" fill-rule="evenodd" transform="translate(0.5, 4)">
             <!-- The photo, as in the thumb style illustrations -->
             <svg x="-0.5" y="0" width="80" height="52" viewBox="0 0 80 60" preserveAspectRatio="xMidYMid slice">
-                <rect fill="#CDD8E4" x="0" y="0" width="80" height="60"></rect>
+                <rect fill="#E9EEF3" x="0" y="0" width="80" height="60"></rect>
                 <path fill="#A6B2C2" d="M0,46 L22,22 L36,37 L48,26 L80,52 L80,60 L0,60 Z"></path>
                 <circle fill="#A6B2C2" cx="60" cy="16" r="5"></circle>
             </svg>
+            <!-- The photo's edge, so its position inside the frame shows -->
+            <rect fill="none" stroke="#828FA4" x="0" y="0.5" width="79" height="51"></rect>
         </g>
         <g transform="translate(12, 2)" xlink:href="#path-2">
             <path d="M2,2 L54,2 L54,54 L2,54 Z" id="crop-border" stroke="#5A6572" stroke-width="1" stroke-dasharray="1"></path>
-            <g id="corner" xlink:href="#path-3" fill="#5A6572" fill-rule="evenodd">
+            <g id="corner" xlink:href="#path-3" fill="#5A6572" stroke="#FFFFFF" stroke-width="2" paint-order="stroke" stroke-linejoin="round" fill-rule="evenodd">
                 <path d="M4,8 L0,8 L0,0 L8,0 L8,4 L4,4 L4,8 Z" id="Combined-Shape"></path>
             </g>
-            <g id="corner-copy" transform="translate(4, 52) rotate(-90) translate(-4, -52)translate(0, 48)" xlink:href="#path-4" fill="#5A6572" fill-rule="evenodd">
+            <g id="corner-copy" transform="translate(4, 52) rotate(-90) translate(-4, -52)translate(0, 48)" xlink:href="#path-4" fill="#5A6572" stroke="#FFFFFF" stroke-width="2" paint-order="stroke" stroke-linejoin="round" fill-rule="evenodd">
                 <path d="M4,8 L0,8 L0,0 L8,0 L8,4 L4,4 L4,8 Z" id="Combined-Shape"></path>
             </g>
-            <g id="corner-copy-3" transform="translate(52, 4) scale(-1, 1) translate(-52, -4)translate(48, 0)" xlink:href="#path-5" fill="#5A6572" fill-rule="evenodd">
+            <g id="corner-copy-3" transform="translate(52, 4) scale(-1, 1) translate(-52, -4)translate(48, 0)" xlink:href="#path-5" fill="#5A6572" stroke="#FFFFFF" stroke-width="2" paint-order="stroke" stroke-linejoin="round" fill-rule="evenodd">
                 <path d="M4,8 L0,8 L0,0 L8,0 L8,4 L4,4 L4,8 Z" id="Combined-Shape"></path>
             </g>
-            <g id="corner-copy-2" transform="translate(52, 52) scale(-1, 1) rotate(-90) translate(-52, -52)translate(48, 48)" xlink:href="#path-6" fill="#5A6572" fill-rule="evenodd">
+            <g id="corner-copy-2" transform="translate(52, 52) scale(-1, 1) rotate(-90) translate(-52, -52)translate(48, 48)" xlink:href="#path-6" fill="#5A6572" stroke="#FFFFFF" stroke-width="2" paint-order="stroke" stroke-linejoin="round" fill-rule="evenodd">
                 <path d="M4,8 L0,8 L0,0 L8,0 L8,4 L4,4 L4,8 Z" id="Combined-Shape"></path>
             </g>
         </g>

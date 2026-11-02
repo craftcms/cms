@@ -113,11 +113,7 @@ export default class CraftRadio extends SsrChoiceInputMixin(LionRadio) {
 
           :host([data-tile]:not([checked]):not([disabled]):hover)
             .choice-field__thumbnail {
-            background-color: color-mix(
-              in oklab,
-              var(--c-color-neutral-fill-quiet),
-              var(--c-color-mix-hover)
-            );
+            background-color: var(--c-color-neutral-fill-quiet);
           }
         }
 
