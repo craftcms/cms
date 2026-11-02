@@ -17,11 +17,13 @@ use craft\base\InputSchemaFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\elements\Entry;
 use craft\fields\data\ColorData;
+use craft\gql\types\generators\ColorDataType;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\validators\ColorValidator;
+use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Arr;
 use yii\db\Schema;
 
@@ -91,6 +93,12 @@ class Color extends Field implements
     public bool $allowCustomAlpha = false;
 
     /**
+     * @var bool Whether GraphQL values should be returned as objects with all the color’s data, rather than just the hex value.
+     * @since 5.12.0
+     */
+    public bool $fullGraphqlData = true;
+
+    /**
      * @inheritdoc
      */
     public function __construct($config = [])
@@ -117,6 +125,15 @@ class Color extends Field implements
         // Default allowCustomColors to true for existing fields
         if (isset($config['id']) && !isset($config['allowCustomColors'])) {
             $config['allowCustomColors'] = true;
+        }
+
+        if (isset($config['graphqlMode'])) {
+            $config['fullGraphqlData'] = ArrayHelper::remove($config, 'graphqlMode') === 'full';
+        }
+
+        // Default fullGraphqlData to false for existing fields
+        if (isset($config['id']) && !isset($config['fullGraphqlData'])) {
+            $config['fullGraphqlData'] = false;
         }
 
         parent::__construct($config);
@@ -206,7 +223,7 @@ class Color extends Field implements
 
     private function settingsHtml(bool $readOnly): string
     {
-        return
+        $html =
             Cp::editableTableFieldHtml([
                 'label' => Craft::t('app', 'Palette'),
                 'name' => 'palette',
@@ -255,6 +272,22 @@ class Color extends Field implements
                 'id' => 'allow-custom-alpha-container',
                 'class' => array_filter([!$this->allowCustomColors ? 'hidden' : null]),
             ]);
+
+        if (Craft::$app->getConfig()->getGeneral()->enableGql) {
+            $html .= Cp::selectFieldHtml([
+                'label' => Craft::t('app', 'GraphQL Mode'),
+                'id' => 'graphql-mode',
+                'name' => 'graphqlMode',
+                'options' => [
+                    ['label' => Craft::t('app', 'Full data'), 'value' => 'full'],
+                    ['label' => Craft::t('app', 'Hex only'), 'value' => 'hex'],
+                ],
+                'value' => $this->fullGraphqlData ? 'full' : 'hex',
+                'disabled' => $readOnly,
+            ]);
+        }
+
+        return $html;
     }
 
     /**
@@ -543,6 +576,18 @@ class Color extends Field implements
         }
 
         return $this->getPreviewHtml($value, $element ?? new Entry());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getContentGqlType(): Type|array
+    {
+        if (!$this->fullGraphqlData) {
+            return parent::getContentGqlType();
+        }
+
+        return ColorDataType::generateType($this);
     }
 
     /**

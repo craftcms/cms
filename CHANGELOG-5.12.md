@@ -30,6 +30,7 @@
 - Added support for `config/mcp.php` and `config/oauth.php` config files. ([#20145](https://github.com/craftcms/cms/pull/20145))
 - Color fields’ palette colors can now have an alpha channel, by entering an 8-digit hex value or via the color picker in browsers that support it. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - Color fields now have an “Allow opacity for custom colors” setting. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
+- Color fields now have a “GraphQL Mode” setting, which can be set to “Full data” or “Hex only”. New Color fields default to “Full data”, and existing Color fields default to “Hex only”. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 
 ### Development
 
@@ -54,7 +55,8 @@
 - Added the `currentUser` GraphQL query, which returns the user that authenticated the request. ([#20147](https://github.com/craftcms/cms/pull/20147))
 - Added the My Account → Tokens screen, where users can create personal access tokens for the APIs that offer them (such as the GraphQL API), rename them, and revoke tokens and the apps they’ve authorized. ([#20147](https://github.com/craftcms/cms/pull/20147))
 - Color field values’ `hex` properties and GraphQL values now include an alpha channel (e.g. `#0000ff80`) when the color isn’t fully opaque. Fully-opaque colors are still output as 6-digit hex values. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
-- Color field values now have `alpha`, `rgba`, and `hsla` properties. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
+- Color field values now have `alpha`, `rgba`, `hsla`, `rgbChannels`, `oklch`, and `contrastColor` properties, and a `contrastRatio()` method. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
+- Color fields set to the “Full data” GraphQL mode now return objects with `hex`, `label`, `red`, `green`, `blue`, `alpha`, `hue`, `saturation`, `lightness`, `luma`, `rgb`, `rgba`, `rgbChannels`, `hsl`, `hsla`, `oklch`, `contrastColor`, and `contrastRatio` fields. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 
 ### Extensibility
 
@@ -79,14 +81,21 @@
 - Added `craft\fieldlayoutelements\BaseField::defaultTip()`.
 - Added `craft\fieldlayoutelements\BaseField::defaultWarning()`.
 - Added `craft\fields\Color::$allowCustomAlpha`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
+- Added `craft\fields\Color::$fullGraphqlData`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - Added `craft\fields\data\ColorData::getAlpha()`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
+- Added `craft\fields\data\ColorData::getContrastColor()`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
+- Added `craft\fields\data\ColorData::getContrastRatio()`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - Added `craft\fields\data\ColorData::getHsla()`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
+- Added `craft\fields\data\ColorData::getOklch()`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
+- Added `craft\fields\data\ColorData::getRgbChannels()`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - Added `craft\fields\data\ColorData::getRgba()`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - Added `craft\gql\base\ElementMutationResolver::requireUserAuthorization()`. ([#20147](https://github.com/craftcms/cms/pull/20147))
 - Added `craft\gql\GqlInputSchema`. ([#20145](https://github.com/craftcms/cms/pull/20145))
 - Added `craft\gql\queries\Settings`. ([#20055](https://github.com/craftcms/cms/pull/20055))
 - Added `craft\gql\types\CategoryGroup`. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Added `craft\gql\types\ColorData`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - Added `craft\gql\types\EntryType`. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Added `craft\gql\types\generators\ColorDataType`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - Added `craft\gql\types\Section`. ([#20055](https://github.com/craftcms/cms/pull/20055))
 - Added `craft\gql\types\Site`. ([#20055](https://github.com/craftcms/cms/pull/20055))
 - Added `craft\gql\types\TagGroup`. ([#20055](https://github.com/craftcms/cms/pull/20055))
