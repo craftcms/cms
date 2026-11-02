@@ -16,4 +16,3 @@ import './js/Queue.js';
 // Finally load the remaining files
 import './js/CP.js';
 import './js/ElementEditor.js';
-import './js/Preview.js';

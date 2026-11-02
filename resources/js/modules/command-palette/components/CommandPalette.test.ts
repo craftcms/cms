@@ -1102,4 +1102,25 @@ describe('CommandPalette', () => {
     document.body.dispatchEvent(handled);
     expect(isCommandPaletteOpen.value).toBe(true);
   });
+
+  it('opens with / unless something that takes typing has focus', async () => {
+    installCommandPaletteShortcut();
+    await open();
+    isCommandPaletteOpen.value = false;
+
+    const field = document.createElement('input');
+    document.body.append(field);
+    expect(press(field, '/').defaultPrevented).toBe(false);
+    expect(isCommandPaletteOpen.value).toBe(false);
+    field.remove();
+    (document.activeElement as HTMLElement | null)?.blur();
+
+    expect(press(document.body, '/', {ctrlKey: true}).defaultPrevented).toBe(
+      false
+    );
+    expect(isCommandPaletteOpen.value).toBe(false);
+
+    expect(press(document.body, '/').defaultPrevented).toBe(true);
+    expect(isCommandPaletteOpen.value).toBe(true);
+  });
 });

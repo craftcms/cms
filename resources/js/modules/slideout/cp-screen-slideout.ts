@@ -62,6 +62,7 @@ import {t} from '@craftcms/ui/utilities/translate';
 import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
 import {setElementAttributes} from '@/common/craft/attributes';
 import {showError, showSuccess} from '@/modules/messages/messages';
+import {commandShortcut} from '@/common/utils/keyShortcuts';
 
 declare const Craft: any;
 declare const $: any;
@@ -286,6 +287,7 @@ export class CpScreenSlideout extends Slideout {
         {type: 'submit', variant: 'primary', className: 'submit'},
         create('span', {className: 'label'}, t('Save'))
       );
+      saveBtn.setAttribute('aria-keyshortcuts', commandShortcut('S'));
       // $saveBtn is public, and callers toggle its `loading` class
       this.$saveBtn = $(bridgeLegacyClasses(saveBtn)).appendTo($btnContainer);
     }
@@ -304,6 +306,8 @@ export class CpScreenSlideout extends Slideout {
       {
         keyCode: S_KEY,
         ctrl: true,
+        description: t('Save'),
+        group: t('Forms'),
       },
       (ev: any) => {
         this.handleSubmit(ev);

@@ -3,16 +3,18 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Mcp\Public\Access;
-use CraftCms\Cms\Mcp\PublicRouteRegistrar;
+use CraftCms\Cms\Mcp\RouteRegistrar;
 use CraftCms\Cms\Mcp\Settings;
 use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\Tests\TestCase;
 use CraftCms\Cms\User\Models\User;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Testing\TestResponse;
 use Laravel\Passport\Passport;
+use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 
 beforeEach(function (): void {
     $key = openssl_pkey_new(['private_key_bits' => 2048]);
@@ -28,7 +30,7 @@ beforeEach(function (): void {
         'publicTools' => ['craft-context-get'],
     ]));
     app()->forgetInstance(Access::class);
-    app(PublicRouteRegistrar::class)->register();
+    app(RouteRegistrar::class)->register();
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:read'], 'craft-mcp');
 });
 
@@ -38,7 +40,7 @@ afterEach(function (): void {
 
 function mcpHttpRequest(TestCase $test, string $endpoint, string $method, array $payload = [], array $headers = []): TestResponse
 {
-    Route::getRoutes()->getByName('craft.cp.mcp.server')->flushController();
+    Route::getRoutes()->getByName('craft.mcp.server')->flushController();
     foreach (Route::getRoutes()->getRoutes() as $route) {
         if ($route->getName() === 'craft.mcp.public') {
             $route->flushController();
@@ -71,7 +73,7 @@ function mcpHttpInitialize(TestCase $test, string $endpoint, string $version = '
 }
 
 it('serves both HTTP protocols and persists handshake sessions until teardown', function (bool $public, string $version): void {
-    $endpoint = $public ? '/_test/dual-protocol-mcp' : route('craft.cp.mcp.server');
+    $endpoint = $public ? '/_test/dual-protocol-mcp' : route('craft.mcp.server');
     $session = mcpHttpInitialize($this, $endpoint, $version);
     $headers = ['Mcp-Session-Id' => $session, 'Mcp-Protocol-Version' => $version];
 
@@ -98,7 +100,7 @@ it('serves both HTTP protocols and persists handshake sessions until teardown', 
 })->with(['admin' => false, 'public' => true])->with(['2025-03-26', '2025-06-18', '2025-11-25']);
 
 it('isolates handshake sessions by endpoint, user, and scopes', function (string $boundary): void {
-    $admin = route('craft.cp.mcp.server');
+    $admin = route('craft.mcp.server');
     $public = '/_test/dual-protocol-mcp';
     $owner = User::query()->firstOrFail();
     $source = $boundary === 'public to admin' ? $public : $admin;
@@ -152,3 +154,19 @@ it('keeps host checks and origin restrictions for both HTTP protocols', function
     mcpHttpRequest($this, '/_test/dual-protocol-mcp', 'POST', $payload, [...$headers, 'Origin' => 'https://attacker.example'])
         ->assertForbidden()->assertHeaderMissing('Access-Control-Allow-Origin');
 })->with(['handshake' => false, 'modern' => true]);
+
+it('validates the host resolved through trusted proxies rather than the raw Host header', function (bool $trusted): void {
+    $this->beforeApplicationDestroyed(TrustProxies::flushState(...));
+    TrustProxies::at('*');
+    TrustProxies::withHeaders(SymfonyRequest::HEADER_X_FORWARDED_HOST);
+    $path = parse_url(route('craft.mcp.server'), PHP_URL_PATH);
+    Route::getRoutes()->getByName('craft.mcp.server')->flushController();
+
+    $response = $this->postJson(
+        "http://gateway.internal$path",
+        McpRequest::payload('server/discover'),
+        [...McpRequest::headers('server/discover'), ...($trusted ? ['X-Forwarded-Host' => 'localhost'] : [])],
+    );
+
+    $trusted ? $response->assertOk() : $response->assertForbidden();
+})->with(['forwarded by a trusted proxy' => true, 'not forwarded' => false]);

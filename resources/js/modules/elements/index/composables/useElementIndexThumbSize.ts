@@ -158,7 +158,30 @@ export function useElementIndexThumbSize(
     return {thumbSize: param(forMode, source)};
   }
 
-  return {thumbSize, options, restore, modeParams};
+  /** Whether the current view's thumbnails are at its default size. */
+  const isDefault = computed(() => {
+    const view = viewFor(mode());
+
+    return !view || sizeFor(view) === defaultSizes[view];
+  });
+
+  /**
+   * Returns the current view's thumbnails to its default size. Folded into one
+   * visit with the other View menu settings (see `useElementIndex`).
+   */
+  function resetToDefault(): IndexRestore | null {
+    const view = viewFor(mode());
+
+    if (!view || isDefault.value) {
+      return null;
+    }
+
+    store(view, defaultSizes[view]);
+
+    return {params: {thumbSize: null}, only: ['data']};
+  }
+
+  return {thumbSize, options, restore, modeParams, isDefault, resetToDefault};
 }
 
 type Chip = HTMLElement & {

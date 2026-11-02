@@ -84,6 +84,16 @@
     iconOnly?: boolean;
   }>();
 
+  defineSlots<{
+    /**
+     * Added to a nav item's row, beside its link. Give it `slot="actions"`.
+     * Passed on to nested items too.
+     */
+    'item-actions'?(props: {
+      action: ActionItemGroup | ActionItemButton | ActionItemLink;
+    }): unknown;
+  }>();
+
   const isNav = computed(() => as === 'craft-nav-item');
 
   function defined(attrs: Record<string, unknown>): Record<string, unknown> {
@@ -480,13 +490,23 @@
         @click="lent.onClick"
       ></craft-button>
 
+      <!-- Whatever the caller adds to the row; give it `slot="actions"`. -->
+      <slot name="item-actions" :action="action"></slot>
+
       <craft-nav-list v-if="childrenOf(action).length" slot="subnav">
         <ActionList
           :actions="childrenOf(action)"
           as="craft-nav-item"
           :mode="iconOnly ? 'flyout' : mode"
           :icon-only="iconOnly && subnavDisplay(action) === 'inline'"
-        />
+        >
+          <template
+            v-if="$slots['item-actions']"
+            #item-actions="{action: child}"
+          >
+            <slot name="item-actions" :action="child"></slot>
+          </template>
+        </ActionList>
       </craft-nav-list>
     </component>
   </template>
@@ -564,11 +584,8 @@
 </template>
 
 <style scoped lang="css">
-  /* `craft-action-menu` styles the separators it generates itself inline, and
-     its shadow `::slotted()` rule can't reach inside the slotted content — so
-     a slotted rule has to bring its own margin and line to match. With the
-     menu's gap between items, the space around it matches the menu's
-     padding. */
+  /* Matching what `craft-action-menu` applies inline to the separators in a
+     menu, for the lists that aren't in one. */
   .action-list__separator {
     margin-block: calc(var(--c-spacing-sm) - var(--c-spacing-xs));
     margin-inline: 0;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User;
 
 use Closure;
+use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -39,7 +40,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use RuntimeException;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
@@ -123,6 +123,7 @@ class UserPermissions
         $this->releasePermissions($permissions);
         $this->volumePermissions($permissions);
         $this->utilityPermissions($permissions);
+        $this->aiPermissions($permissions);
 
         return $this->permissionGroupCatalog->apply($permissions);
     }
@@ -166,7 +167,7 @@ class UserPermissions
         return $this->permissionsByGroupId->getOrPut(
             $groupId,
             fn () => $this->createUserPermissionsQuery()
-                ->join(new Alias(Table::USERPERMISSIONS_USERGROUPS, 'p_g'), 'p_g.permissionId', 'p.id')
+                ->join(Table::USERPERMISSIONS_USERGROUPS.' as p_g', 'p_g.permissionId', 'p.id')
                 ->where('p_g.groupId', $groupId)
                 ->pluck('p.name')
                 ->pipe(fn (Collection $permissions) => collect($this->canonicalPermissionNames($permissions->all()))),
@@ -187,8 +188,8 @@ class UserPermissions
         }
 
         return $this->createUserPermissionsQuery()
-            ->join(new Alias(Table::USERPERMISSIONS_USERGROUPS, 'p_g'), 'p_g.permissionId', 'p.id')
-            ->join(new Alias(Table::USERGROUPS_USERS, 'g_u'), 'g_u.groupId', 'p_g.groupId')
+            ->join(Table::USERPERMISSIONS_USERGROUPS.' as p_g', 'p_g.permissionId', 'p.id')
+            ->join(Table::USERGROUPS_USERS.' as g_u', 'g_u.groupId', 'p_g.groupId')
             ->where('g_u.userId', $userId)
             ->pluck('p.name')
             ->pipe(fn (Collection $permissions) => collect($this->canonicalPermissionNames($permissions->all())));
@@ -263,7 +264,7 @@ class UserPermissions
         }
 
         return $this->createUserPermissionsQuery()
-            ->join(new Alias(Table::USERPERMISSIONS_USERS, 'p_u'), 'p_u.permissionId', 'p.id')
+            ->join(Table::USERPERMISSIONS_USERS.' as p_u', 'p_u.permissionId', 'p.id')
             ->where('p_u.userId', $userId)
             ->pluck('p.name')
             ->pipe(fn (Collection $permissions) => collect($this->canonicalPermissionNames($permissions->all())));
@@ -801,6 +802,18 @@ class UserPermissions
                     label: $class::displayName(),
                 );
             })->filter(),
+        ));
+    }
+
+    /** @param Collection<int, PermissionGroup> $permissions */
+    private function aiPermissions(Collection $permissions): void
+    {
+        $permissions->add(new PermissionGroup(
+            handle: 'ai',
+            heading: t('AI'),
+            permissions: collect([
+                new Permission(key: Assistant::PERMISSION, label: t('Use the AI assistant')),
+            ]),
         ));
     }
 

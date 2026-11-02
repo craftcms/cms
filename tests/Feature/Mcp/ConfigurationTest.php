@@ -246,7 +246,7 @@ it('keeps read-only admin discovery usable while refusing configuration writes',
 });
 
 it('does not expose configuration to users without admin access', function (): void {
-    $user = User::factory()->withPermissions(['accessCp', 'useCraftMcp'])->create(['admin' => false]);
+    $user = User::factory()->withPermissions(['accessCp'])->create(['admin' => false]);
     Passport::actingAs($user, ['mcp:admin'], 'craft-mcp');
 
     McpRequest::send($this, 'tools/call', ['name' => 'configuration.list', 'arguments' => ['type' => 'sites']])

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {computed, ref, useId, watch} from 'vue';
+  import {computed, nextTick, ref, useId, useTemplateRef, watch} from 'vue';
   import {ButtonVariant, t} from '@craftcms/ui';
   import Select from '@/common/form/Select.vue';
   import CheckboxGroup from '@/common/form/CheckboxGroup.vue';
@@ -25,6 +25,8 @@
     thumbSizeOptions?: Array<ThumbSize>;
     /** Whether the active view mode has table columns to choose. */
     showTableColumns?: boolean;
+    /** Whether any setting differs from its default, offering to reset them. */
+    customized?: boolean;
   }>();
 
   const sortField = defineModel<string>('sortField', {required: true});
@@ -69,6 +71,7 @@
 
   const emit = defineEmits<{
     (e: 'reorder', options: Array<CheckboxOption>): void;
+    (e: 'use-defaults'): void;
   }>();
 
   /**
@@ -118,6 +121,16 @@
     if (!props.sortDirectionLocked) {
       sortDirection.value = direction;
     }
+  }
+
+  const closeButton = useTemplateRef<HTMLElement>('closeButton');
+
+  // The button goes away once the settings are back to their defaults, so
+  // focus moves on to the one beside it rather than being lost.
+  async function useDefaults() {
+    emit('use-defaults');
+    await nextTick();
+    closeButton.value?.focus();
   }
 
   function closePopover(event: MouseEvent) {
@@ -215,8 +228,17 @@
       </div>
     </div>
 
-    <div slot="content-footer">
+    <div slot="content-footer" class="flex items-center gap-md">
       <craft-button
+        v-if="customized"
+        type="button"
+        :variant="ButtonVariant.Plain"
+        @click="useDefaults"
+        >{{ t('Use defaults') }}</craft-button
+      >
+      <craft-button
+        ref="closeButton"
+        class="ms-auto"
         type="button"
         @click="closePopover"
         :variant="ButtonVariant.Fill"

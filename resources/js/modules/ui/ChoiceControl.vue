@@ -7,12 +7,14 @@
   import type CraftCheckboxSelect from '@craftcms/ui/components/checkbox-select/checkbox-select';
   import type {CheckboxSelectOption} from '@craftcms/ui/components/checkbox-select/checkbox-select';
   import '@craftcms/ui/components/icon/icon';
+  import '@craftcms/ui/components/indicator/indicator';
+  import '@craftcms/ui/components/input/input';
   import '@craftcms/ui/components/radio/radio';
   import '@craftcms/ui/components/radio-group/radio-group';
   import '@craftcms/ui/components/select/select';
   import {t} from '@craftcms/ui/utilities/translate';
   import {Required} from '@lion/ui/form-core.js';
-  import {computed, inject, ref, watch} from 'vue';
+  import {computed, inject, nextTick, ref, watch} from 'vue';
   import type {UiControlPayload, UiValue} from './types';
   import {FieldLabelSrOnly, inputName, serverErrorValidators} from './runtime';
 
@@ -21,8 +23,15 @@
   type ChoiceOption = {
     label: string;
     labelHtml?: string;
-    /** Icon name; `craft-button` resolves and renders it. */
+    /**
+     * Icon name. A button renders it in place of the label; a checkbox or
+     * radio shows it before the label, tinted with `color`.
+     */
     icon?: string;
+    /** Shown before a checkbox or radio label: tints the icon, or as a dot. */
+    color?: string;
+    /** A value someone added themselves, when custom options are allowed. */
+    custom?: boolean;
     value: ChoiceValue;
     disabled?: boolean;
     /**
@@ -45,6 +54,8 @@
     options: ChoiceOption[];
     multiple: boolean;
     presentation: ChoicePresentation;
+    /** Absent means a button with an icon shows only the icon. */
+    iconsOnly?: false;
     /** Label for the “All” checkbox; absent when there isn't one. */
     allLabel?: string;
     /** What “All” posts in `singleValue` mode. */
@@ -56,6 +67,11 @@
      * or an empty label otherwise; `false` omits the blank option.
      */
     placeholder?: string | false;
+    /**
+     * Whether people can add their own options. Options marked `custom` are
+     * values added that way. Checkboxes and radios only.
+     */
+    allowCustom?: true;
   };
 
   const props = defineProps<{
@@ -70,6 +86,11 @@
     (event: 'update:value', value: string | string[]): void;
   }>();
   const fieldLabelSrOnly = inject(FieldLabelSrOnly, undefined);
+
+  /** Whether a button shows only its option's icon, named by the label. */
+  function iconOnly(option: ChoiceOption): boolean {
+    return option.icon !== undefined && props.control.props.iconsOnly !== false;
+  }
 
   // Lion skips other validators for an empty select. The field renders the
   // server's message; this validator keeps the native invalid state in sync.
@@ -174,6 +195,124 @@
     );
   }
 
+  type CustomOption = {key: number; text: string; checked: boolean};
+
+  const customCheckboxes = computed(
+    () =>
+      props.control.props.allowCustom === true &&
+      props.control.props.multiple &&
+      props.control.props.presentation === 'checkboxes'
+  );
+
+  const customRadio = computed(
+    () =>
+      props.control.props.allowCustom === true &&
+      !props.control.props.multiple &&
+      props.control.props.presentation === 'radios'
+  );
+
+  /** The options shown as checkboxes or radios; custom ones get their own rows. */
+  const choiceOptions = computed(() =>
+    customCheckboxes.value || customRadio.value
+      ? props.control.props.options.filter((option) => !option.custom)
+      : props.control.props.options
+  );
+
+  const savedCustomRadioOption = props.control.props.options.find(
+    (option) => option.custom && selected(option.value)
+  );
+  const customRadioText = ref(
+    savedCustomRadioOption ? inputValue(savedCustomRadioOption.value) : ''
+  );
+  const customRadioSelected = ref(savedCustomRadioOption !== undefined);
+  const customRadioId = computed(
+    () => `ui-${props.control.path.join('-')}-custom`
+  );
+
+  function onCustomRadioChecked(): void {
+    customRadioSelected.value = true;
+    emit('update:value', customRadioText.value);
+  }
+
+  function onCustomRadioInput(event: Event): void {
+    customRadioText.value = (event.target as HTMLInputElement).value;
+
+    if (customRadioSelected.value) {
+      emit('update:value', customRadioText.value);
+    }
+  }
+
+  let customOptionKey = 0;
+  const customOptions = ref<CustomOption[]>(
+    props.control.props.options
+      .filter((option) => option.custom && selected(option.value))
+      .map((option) => ({
+        key: customOptionKey++,
+        text: inputValue(option.value),
+        checked: true,
+      }))
+  );
+  const customOptionInputs = new Map<number, HTMLInputElement>();
+  const addOptionButton = ref<HTMLElement | null>(null);
+
+  function customOptionId(option: CustomOption): string {
+    return `ui-${props.control.path.join('-')}-custom-${option.key}`;
+  }
+
+  /** Emits the checked options followed by the checked custom options' text. */
+  function emitCheckboxes(values: string[]): void {
+    const choiceValues = new Set(
+      choiceOptions.value.map((option) => inputValue(option.value))
+    );
+
+    emit('update:value', [
+      ...values.filter((value) => choiceValues.has(value)),
+      ...customOptions.value
+        .filter((option) => option.checked && option.text !== '')
+        .map((option) => option.text),
+    ]);
+  }
+
+  function currentValues(): string[] {
+    return Array.isArray(props.value) ? props.value.map(inputValue) : [];
+  }
+
+  async function addCustomOption(): Promise<void> {
+    const option = {key: customOptionKey++, text: '', checked: true};
+    customOptions.value.push(option);
+    await nextTick();
+    customOptionInputs.get(option.key)?.focus();
+  }
+
+  async function onCustomOptionChecked(
+    option: CustomOption,
+    event: Event
+  ): Promise<void> {
+    option.checked = (event.target as HTMLInputElement).checked;
+
+    if (!option.checked && option.text === '') {
+      customOptions.value = customOptions.value.filter(
+        (other) => other.key !== option.key
+      );
+      customOptionInputs.delete(option.key);
+      await nextTick();
+      addOptionButton.value?.focus();
+      return;
+    }
+
+    emitCheckboxes(currentValues());
+
+    if (option.checked) {
+      await nextTick();
+      customOptionInputs.get(option.key)?.focus();
+    }
+  }
+
+  function onCustomOptionInput(option: CustomOption, event: Event): void {
+    option.text = (event.target as HTMLInputElement).value;
+    emitCheckboxes(currentValues());
+  }
+
   function onOptionChanged(event: Event): void {
     if (!(event.target instanceof HTMLInputElement)) {
       throw new TypeError('Expected a choice input event target.');
@@ -182,19 +321,21 @@
     const input = event.target;
 
     if (!props.control.props.multiple) {
+      customRadioSelected.value = false;
       emit('update:value', input.value);
       return;
     }
 
-    const values = Array.isArray(props.value)
-      ? props.value.map(inputValue)
-      : [];
-    emit(
-      'update:value',
-      input.checked
-        ? [...values, input.value]
-        : values.filter((value) => value !== input.value)
-    );
+    const values = currentValues();
+    const next = input.checked
+      ? [...values, input.value]
+      : values.filter((value) => value !== input.value);
+
+    if (customCheckboxes.value) {
+      emitCheckboxes(next);
+    } else {
+      emit('update:value', next);
+    }
   }
 
   function onButtonClicked(value: ChoiceValue): void {
@@ -396,13 +537,18 @@
       .active="selected(option.value)"
       .disabled="!editable || option.disabled"
       :icon.attr="option.icon"
-      :aria-label="option.icon || option.labelHtml ? option.label : undefined"
+      :aria-label="
+        iconOnly(option) || option.labelHtml ? option.label : undefined
+      "
       @click="onButtonClicked(option.value)"
     >
-      <!-- An icon option slots nothing: `craft-button` renders the icon
+      <!-- An icon-only option slots nothing: `craft-button` renders the icon
            itself, and only stays square while its light DOM is empty. -->
-      <span v-if="!option.icon && option.labelHtml" v-html="option.labelHtml" />
-      <template v-else-if="!option.icon">{{ option.label }}</template>
+      <span
+        v-if="!iconOnly(option) && option.labelHtml"
+        v-html="option.labelHtml"
+      />
+      <template v-else-if="!iconOnly(option)">{{ option.label }}</template>
     </craft-button>
   </craft-button-group>
   <craft-checkbox-select
@@ -446,7 +592,7 @@
       value=""
     />
     <div
-      v-for="(option, index) in control.props.options"
+      v-for="(option, index) in choiceOptions"
       :key="inputValue(option.value)"
     >
       <label
@@ -469,7 +615,7 @@
       <component
         :is="control.props.multiple ? 'craft-checkbox' : 'craft-radio'"
         :title="
-          control.props.presentation === 'buttons' && option.icon
+          control.props.presentation === 'buttons' && iconOnly(option)
             ? option.label
             : undefined
         "
@@ -495,14 +641,131 @@
         />
         <label slot="label" :for="optionId(index)">
           <craft-icon
-            v-if="control.props.presentation === 'buttons' && option.icon"
+            v-if="control.props.presentation === 'buttons' && iconOnly(option)"
             :name="option.icon"
             :label="option.label"
           />
+          <span
+            v-else-if="option.icon || option.color"
+            class="inline-flex items-center gap-sm"
+          >
+            <craft-icon
+              v-if="option.icon"
+              :name="option.icon"
+              :style="option.color ? {color: option.color} : undefined"
+            />
+            <craft-indicator v-else :fill="option.color" />
+            <span v-if="option.labelHtml" v-html="option.labelHtml" />
+            <template v-else>{{ option.label }}</template>
+          </span>
           <span v-else-if="option.labelHtml" v-html="option.labelHtml" />
           <template v-else>{{ option.label }}</template>
         </label>
       </component>
+    </div>
+    <template v-if="customCheckboxes">
+      <div
+        v-for="option in customOptions"
+        :key="option.key"
+        data-custom
+        class="flex flex-wrap items-center gap-sm"
+      >
+        <craft-checkbox
+          .disabled="!editable"
+          .choiceValue="option.text"
+          .checked="option.checked"
+        >
+          <input
+            slot="input"
+            :id="customOptionId(option)"
+            type="checkbox"
+            :name="editable ? `${inputName(control.path)}[]` : ''"
+            :value="option.text"
+            :checked="option.checked"
+            :disabled="!editable"
+            @change="onCustomOptionChecked(option, $event)"
+          />
+          <label slot="label" :for="customOptionId(option)">
+            {{ t('Custom:') }}
+          </label>
+        </craft-checkbox>
+        <!-- Lion's choice groups only accept checkboxes or radios as
+             registered fields, so the text field mustn't register with it. -->
+        <div @form-element-register.stop>
+          <craft-input
+            :label="t('Custom:')"
+            label-sr-only
+            .inputSize="'small'"
+            .modelValue="option.text"
+            .disabled="!editable || !option.checked"
+          >
+            <input
+              :ref="
+                (el) =>
+                  el
+                    ? customOptionInputs.set(option.key, el as HTMLInputElement)
+                    : customOptionInputs.delete(option.key)
+              "
+              slot="input"
+              type="text"
+              :value="option.text"
+              @input="onCustomOptionInput(option, $event)"
+            />
+          </craft-input>
+        </div>
+      </div>
+      <craft-button
+        v-if="editable"
+        ref="addOptionButton"
+        data-add-option
+        type="button"
+        icon="plus"
+        variant="dashed"
+        size="small"
+        @click="addCustomOption"
+      >
+        {{ t('Add option') }}
+      </craft-button>
+    </template>
+    <div
+      v-if="customRadio"
+      data-custom
+      class="flex flex-wrap items-center gap-sm"
+    >
+      <craft-radio
+        .disabled="!editable"
+        .choiceValue="customRadioText"
+        .checked="customRadioSelected"
+      >
+        <input
+          slot="input"
+          :id="customRadioId"
+          type="radio"
+          :name="editable ? inputName(control.path) : ''"
+          :value="customRadioText"
+          :checked="customRadioSelected"
+          :disabled="!editable"
+          @change="onCustomRadioChecked"
+        />
+        <label slot="label" :for="customRadioId">{{ t('Custom:') }}</label>
+      </craft-radio>
+      <!-- See the custom checkboxes above. -->
+      <div @form-element-register.stop>
+        <craft-input
+          :label="t('Custom:')"
+          label-sr-only
+          .inputSize="'small'"
+          .modelValue="customRadioText"
+          .disabled="!editable"
+        >
+          <input
+            slot="input"
+            type="text"
+            :value="customRadioText"
+            @input="onCustomRadioInput"
+          />
+        </craft-input>
+      </div>
     </div>
   </component>
 </template>

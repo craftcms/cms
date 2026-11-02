@@ -1696,6 +1696,22 @@ describe('UiRenderer', () => {
     expect(container.querySelectorAll('.width-50')).toHaveLength(2);
   });
 
+  it('renders its tab strip in a tabs outlet', async () => {
+    app.unmount();
+    const outlet = document.createElement('div');
+    document.body.append(outlet);
+    await mount(sidebarTabsPayload(), {tabsOutlet: outlet});
+
+    expect(container.querySelector('craft-tabs')).toBeNull();
+    expect(
+      [...outlet.querySelectorAll('craft-tab')].map((tab) =>
+        tab.textContent?.trim()
+      )
+    ).toEqual(['Content', 'Meta']);
+    expect(container.querySelector('[data-ui-tab="tab-meta"]')).not.toBeNull();
+    outlet.remove();
+  });
+
   it('renders FieldLayout tabs and semantic content', async () => {
     app.unmount();
     await mount({
@@ -4737,6 +4753,7 @@ describe('UiRenderer', () => {
         (props: UiControlOverrideProps) => ReturnType<typeof h>
       >;
       sidebarTabOutlets?: Map<string, HTMLElement>;
+      tabsOutlet?: HTMLElement;
     } = {}
   ): Promise<void> {
     currentPayload = shallowRef(uiPayload);
@@ -4754,6 +4771,7 @@ describe('UiRenderer', () => {
             'onUpdate:mutation': options.onMutation,
             onChange: options.onChange,
             sidebarTabOutlets: options.sidebarTabOutlets,
+            tabsOutlet: options.tabsOutlet,
           },
           options.slots
         ),

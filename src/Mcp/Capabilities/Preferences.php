@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Mcp\Capabilities;
 
+use CraftCms\Cms\Mcp\Attributes\RequiresPermission;
 use CraftCms\Cms\Mcp\McpActor;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\User\Users;
@@ -31,6 +32,7 @@ readonly class Preferences
         description: 'Returns the authenticated user’s preferred control panel language and formatting locale. A null locale means dates and numbers are formatted for the language.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
+    #[RequiresPermission('accessCp')]
     public function get(): array
     {
         $preferences = $this->users->getUserPreferences($this->userId());
@@ -51,6 +53,7 @@ readonly class Preferences
         description: 'Changes the authenticated user’s preferred control panel language or formatting locale, as their Preferences page does. Omitted values are left as they are.',
         annotations: new ToolAnnotations(destructiveHint: false, idempotentHint: true),
     )]
+    #[RequiresPermission('accessCp')]
     public function update(RequestContext $context, ?string $language = null, ?string $locale = null): array
     {
         $request = $context->getRequest();

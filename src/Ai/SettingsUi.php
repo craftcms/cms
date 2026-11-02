@@ -59,7 +59,7 @@ readonly class SettingsUi
         if ($tasks === []) {
             return Ui::make([
                 Heading::make('ai-tasks-heading', t('Tasks'))
-                    ->description(t('No installed plugins use AI yet.')),
+                    ->description(t('Nothing uses AI yet.')),
             ]);
         }
 
@@ -113,7 +113,7 @@ readonly class SettingsUi
 
         $nodes[] = Separator::make('ai-tasks-separator');
         $nodes[] = Heading::make('ai-tasks-heading', t('Tasks'))
-            ->description(t('Plugins register tasks for their AI features. Choose a provider and model for each one, or disable it.'));
+            ->description(t('Each AI feature, in Craft or a plugin, is a task. Choose a provider and model for each one, or disable it.'));
 
         $nodes[] = Field::make(t('Tasks'), Table::make('tasks')
             ->keyed()

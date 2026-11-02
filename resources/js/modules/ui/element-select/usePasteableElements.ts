@@ -90,6 +90,7 @@ export function usePasteableElements(options: {
       condition: field.selectionCondition,
       siteId: Craft.siteId ?? null,
       viewMode: field.viewMode,
+      thumbSize: field.thumbSize,
       elementIds: copiedIds.value,
     };
   }

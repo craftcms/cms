@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Ai\Http\Controllers\AssistantController;
+use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Auth\TwoFactorRateLimiter;
 use CraftCms\Cms\Edition;
@@ -84,6 +86,7 @@ use CraftCms\Cms\Http\Controllers\Users\EnableController;
 use CraftCms\Cms\Http\Controllers\Users\ImpersonationController;
 use CraftCms\Cms\Http\Controllers\Users\PasskeysController as UserPasskeysController;
 use CraftCms\Cms\Http\Controllers\Users\PasswordController;
+use CraftCms\Cms\Http\Controllers\Users\PersonalAccessTokensController;
 use CraftCms\Cms\Http\Controllers\Users\PhotoController;
 use CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController;
 use CraftCms\Cms\Http\Controllers\Users\SaveUserController;
@@ -234,6 +237,10 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('auth/verify-passkey-creation', [UserPasskeysController::class, 'verifyCreation']);
         Route::post('auth/delete-passkey', [UserPasskeysController::class, 'delete']);
 
+        Route::post('users/create-token', [PersonalAccessTokensController::class, 'store']);
+        Route::post('users/update-token', [PersonalAccessTokensController::class, 'update']);
+        Route::post('users/revoke-token', [PersonalAccessTokensController::class, 'destroy']);
+
         Route::post('auth/generate-recovery-codes', [RecoveryCodesController::class, 'generate']);
         Route::post('auth/download-recovery-codes', [RecoveryCodesController::class, 'download']);
 
@@ -284,6 +291,19 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('elements/duplicate', [DuplicateElementController::class, 'duplicate']);
         Route::post('elements/bulk-duplicate', [DuplicateElementController::class, 'bulkDuplicate']);
         Route::post('elements/copy-values-from-site', CopyElementValuesController::class);
+
+        // AI assistant
+        Route::middleware('can:'.Assistant::PERMISSION)->group(function () {
+            Route::get('ai/assistant', [AssistantController::class, 'show']);
+            Route::post('ai/assistant', [AssistantController::class, 'run']);
+            Route::get('ai/assistant/conversations', [AssistantController::class, 'conversations']);
+            Route::post('ai/assistant/context-fields', [AssistantController::class, 'contextFields']);
+            Route::get('ai/assistant/mentions', [AssistantController::class, 'mentions'])->middleware('throttle:120,1');
+            Route::get('ai/assistant/skills', [AssistantController::class, 'skills'])->middleware('throttle:120,1');
+            Route::post('ai/assistant/start', [AssistantController::class, 'start']);
+            Route::post('ai/assistant/rename', [AssistantController::class, 'rename']);
+            Route::post('ai/assistant/delete', [AssistantController::class, 'destroy']);
+        });
 
         // Element Indexes
         Route::post('element-indexes/source-path', [ElementIndexSourcesController::class, 'sourcePath']);
@@ -380,6 +400,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
 
         // Relational fields
         Route::post('relational-fields/structured-input-html', [RelationalFieldsController::class, 'structuredInputHtml']);
+        Route::post('relational-fields/structured-elements', [RelationalFieldsController::class, 'structuredElements']);
 
         // Widgets
         Route::post('dashboard/create-widget', [WidgetsController::class, 'store']);

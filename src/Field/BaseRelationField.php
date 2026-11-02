@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Field;
 use Closure;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Cp\Cp;
+use CraftCms\Cms\Cp\Enums\ChipThumbSize;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Database\ElementRelationParamFilter;
@@ -17,6 +18,7 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Data\Thumb;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
@@ -38,13 +40,13 @@ use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
+use CraftCms\Cms\Structure\Structures;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
@@ -69,10 +71,10 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 use Override;
 use RuntimeException;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\t;
@@ -239,8 +241,8 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         $ns = sprintf('%s_%s', $field->handle, Str::random(5));
 
         $query = DB::table(Table::RELATIONS, "relations_$ns")
-            ->join(new Alias(Table::ELEMENTS, "elements_$ns"), "elements_$ns.id", '=', "relations_$ns.targetId")
-            ->leftJoin(new Alias(Table::ELEMENTS_SITES, "elements_sites_$ns"), "elements_sites_$ns.elementId", '=', "elements_$ns.id")
+            ->join(Table::ELEMENTS." as elements_$ns", "elements_$ns.id", '=', "relations_$ns.targetId")
+            ->leftJoin(Table::ELEMENTS_SITES." as elements_sites_$ns", "elements_sites_$ns.elementId", '=', "elements_$ns.id")
             ->whereColumn("relations_$ns.sourceId", 'elements.id')
             ->where("relations_$ns.fieldId", $field->id)
             ->whereNull("elements_$ns.dateDeleted")
@@ -255,7 +257,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         }
 
         if ($inTargetSiteOnly) {
-            $query->where("elements_sites_$ns.siteId", $field->_targetSiteId() ?? DB::raw('elements_sites.siteId'));
+            $query->where("elements_sites_$ns.siteId", $field->_targetSiteId() ?? DB::raw($query->getGrammar()->wrap('elements_sites.siteId')));
         }
 
         return $query;
@@ -277,7 +279,11 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             ->selectionLabel($this->selectionLabel ?? static::defaultSelectionLabel())
             ->limit($this->maxRelations)
             ->showSiteMenu($this->showSiteMenu)
-            ->viewMode($this->viewMode())
+            // A hierarchy is drawn as a nested list, whatever the view mode.
+            ->viewMode($this->maintainHierarchy ? self::VIEW_MODE_LIST : $this->viewMode())
+            ->thumbSize($this->thumbSize)
+            ->maintainHierarchy($this->maintainHierarchy)
+            ->branchLimit($this->branchLimit)
             ->value($value);
     }
 
@@ -335,6 +341,13 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
      * @var string|null The view mode
      */
     public ?string $viewMode = null;
+
+    /**
+     * @var string|null The thumbnail size (`sm`, `md`, `lg`, `xl`, or `2xl`), or `null` for the view mode’s default.
+     *
+     * Which sizes apply depends on the view mode; see {@see ElementSelect::thumbSizes()}.
+     */
+    public ?string $thumbSize = null;
 
     /**
      * @var int|null The maximum number of relations this field can have (used if [[allowLimit]] is set to true).
@@ -483,6 +496,14 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             $config['viewMode'] = self::VIEW_MODE_THUMBS;
         }
 
+        // The settings UI posts a thumbnail size per view mode family (see
+        // thumbSizeField()). The view mode's own becomes the setting.
+        if (isset($config['thumbSizes'])) {
+            $family = self::thumbSizeFamily($config['viewMode']);
+            $config['thumbSize'] = $family !== null ? ($config['thumbSizes'][$family] ?? null) : null;
+            unset($config['thumbSizes']);
+        }
+
         parent::__construct($config);
     }
 
@@ -493,6 +514,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             'minRelations' => ['nullable', 'integer'],
             'maxRelations' => ['nullable', 'integer'],
             'branchLimit' => ['nullable', 'integer'],
+            'thumbSize' => ['nullable', Rule::enum(ChipThumbSize::class)],
         ]);
     }
 
@@ -510,6 +532,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             $this->branchLimitField(),
             $this->defaultPlacementField(),
             $this->viewModeField(),
+            $this->thumbSizeField(),
             $this->selectionLabelField(),
             $this->showSearchInputField(),
             $this->validateRelatedElementsField(),
@@ -688,7 +711,53 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             ->control(Choice::make('viewMode')
                 ->presentation(ChoicePresentation::Radios)
                 ->options($viewModes)
-                ->value($this->viewMode()));
+                ->value($this->viewMode())
+                ->reactive());
+    }
+
+    /**
+     * Returns the “Thumb Size” setting, offering the sizes the view mode has,
+     * as the element index’s View menu does. Card view modes have none, so the
+     * setting is hidden for them.
+     *
+     * Chips and thumbnail tiles offer different sizes with different defaults,
+     * so each family gets its own control (`thumbSizes[list]` and
+     * `thumbSizes[thumbs]`). Switching view modes then starts the other
+     * family at its own default, and switching back finds the size chosen
+     * before, rather than carrying one family’s size over to the other.
+     */
+    protected function thumbSizeField(): Group
+    {
+        $viewMode = $this->viewMode();
+        $labels = [
+            ChipThumbSize::Sm->value => t('Small'),
+            ChipThumbSize::Md->value => t('Medium'),
+            ChipThumbSize::Lg->value => t('Large'),
+            ChipThumbSize::Xl->value => t('XL'),
+            ChipThumbSize::Xxl->value => t('2XL'),
+        ];
+        $sizes = ElementSelect::thumbSizes($viewMode);
+
+        return Group::make('relation-thumb-size-settings', $sizes === [] ? [] : [
+            UiField::make(t('Thumb Size'))
+                ->control(Choice::make(['thumbSizes', self::thumbSizeFamily($viewMode)])
+                    ->presentation(ChoicePresentation::Buttons)
+                    ->options(array_map(fn (ChipThumbSize $size): array => [
+                        'label' => $labels[$size->value],
+                        'value' => $size->value,
+                    ], $sizes))
+                    ->value(ElementSelect::resolveThumbSize($viewMode, ChipThumbSize::tryFrom((string) $this->thumbSize))?->value)),
+        ])->dependsOn('settings.viewMode');
+    }
+
+    /** Which family of thumbnail sizes a view mode uses, or `null` for card view modes. */
+    private static function thumbSizeFamily(string $viewMode): ?string
+    {
+        return match ($viewMode) {
+            self::VIEW_MODE_LIST, self::VIEW_MODE_LIST_INLINE => self::VIEW_MODE_LIST,
+            self::VIEW_MODE_THUMBS => self::VIEW_MODE_THUMBS,
+            default => null,
+        };
     }
 
     /**
@@ -843,6 +912,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         $attributes[] = 'source';
         $attributes[] = 'sources';
         $attributes[] = 'targetSiteId';
+        $attributes[] = 'thumbSize';
         $attributes[] = 'validateRelatedElements';
         $attributes[] = 'viewMode';
 
@@ -1087,7 +1157,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 $query = $elementQuery->getQuery();
 
                 $query->join(
-                    new Alias(Table::RELATIONS, $relationsAlias),
+                    Table::RELATIONS." as $relationsAlias",
                     function (JoinClause $join) use ($element, $relationsAlias) {
                         $join->whereColumn("$relationsAlias.targetId", 'elements.id')
                             ->where("$relationsAlias.sourceId", $element->id)
@@ -1261,10 +1331,10 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         if ($this->maintainHierarchy) {
             $initialValue = array_map(fn (ElementInterface $element) => $element->id, $value);
             // Fill in any gaps
-            Structures::fillGapsInElements($value);
+            app(Structures::class)->fillGapsInElements($value);
             // Enforce the branch limit
             if ($this->branchLimit) {
-                Structures::applyBranchLimitToElements($value, $this->branchLimit);
+                app(Structures::class)->applyBranchLimitToElements($value, $this->branchLimit);
             }
 
             if (count($initialValue) === count($value)) {
@@ -1333,13 +1403,20 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
 
     public function getThumbHtml(mixed $value, ElementInterface $element, int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
+        return $this->getThumb($value)?->getHtml($size, $mode);
+    }
+
+    /**
+     * Returns the field’s thumbnail for a value: the first related element’s thumbnail.
+     */
+    public function getThumb(mixed $value): ?Thumb
+    {
         /** @var ElementQueryInterface|ElementCollection<int, ElementInterface> $value */
         if ($value instanceof ElementQueryInterface) {
-            $handle = sprintf('%s-%s-%s', preg_replace('/:+/', '-', __METHOD__), $this->id, $size);
-            $value = (clone $value)->eagerly($handle);
+            $value = (clone $value)->eagerly(sprintf('%s-%s', preg_replace('/:+/', '-', __METHOD__), $this->id));
         }
 
-        return $value->one()?->getThumbHtml($size, $mode);
+        return $value->one()?->getThumb();
     }
 
     /**
@@ -1363,11 +1440,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         foreach ($sourceElements as $sourceElement) {
             $rawValue = $sourceElement->getCustomFieldRawValue($this->handle);
             if ($rawValue instanceof ElementQuery) {
-                $rawValue = $rawValue->where['elements.id'] ?? null;
-            }
-            if ($rawValue instanceof ElementQuery) {
-                $where = Arr::first($rawValue->getQuery()->wheres, fn ($where) => ($where['column'] ?? '') === 'elements.id');
-                $rawValue = $where['value'] ?? null;
+                $rawValue = $rawValue->getWhereForColumn('elements.id')['values'] ?? null;
             }
             if (is_array($rawValue)) {
                 foreach ($rawValue as $targetElementId) {
@@ -1411,7 +1484,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         }
 
         if ($this->maintainHierarchy) {
-            $criteria['orderBy'] = ['structureelements.lft' => SORT_ASC];
+            $criteria['orderBy'] = 'structureelements.lft';
         }
 
         return [
@@ -1501,12 +1574,6 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             Arr::isNumeric($where['values'])
         ) {
             $targetIds = $where['values'] ?? [];
-        } elseif (
-            $value instanceof ElementQuery &&
-            isset($value->where['elements.id']) &&
-            Arr::isNumeric($value->where['elements.id'])
-        ) {
-            $targetIds = $value->where['elements.id'] ?: [];
         } else {
             // just running $this->_all()->ids() will cause the query to get adjusted
             // see https://github.com/craftcms/cms/issues/14674 for details
@@ -1531,11 +1598,11 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 ->all();
 
             // Fill in any gaps
-            Structures::fillGapsInElements($structureElements);
+            app(Structures::class)->fillGapsInElements($structureElements);
 
             // Enforce the branch limit
             if ($this->branchLimit) {
-                Structures::applyBranchLimitToElements($structureElements, $this->branchLimit);
+                app(Structures::class)->applyBranchLimitToElements($structureElements, $this->branchLimit);
             }
 
             $targetIds = array_map(fn (ElementInterface $element) => $element->id, $structureElements);

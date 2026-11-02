@@ -615,6 +615,8 @@ export default css`
       --c-button-spacing-inline,
       var(--c-form-control-spacing-inline)
     );
+    border-radius: inherit;
+    outline: none;
 
     /* Same minimum click area as Lion's :host::before (WCAG 2.5.5), but as
        part of the anchor so clicks on it follow the link. */
@@ -634,6 +636,13 @@ export default css`
       width: 100%;
       height: 100%;
     }
+  }
+
+  /* The anchor takes focus instead of the host, so it draws the host's ring.
+     The browser's own ring would also wrap the click-area overlay above. */
+  .link:focus-visible {
+    outline: var(--c-focus-outline-width) solid var(--c-color-focus-outline);
+    outline-offset: calc(var(--c-focus-outline-offset) + var(--_border-width));
   }
 
   :host([href][size~='xsmall']:not([disabled])) .link {

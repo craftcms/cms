@@ -1,3 +1,4 @@
+import type {ChipThumbSizeValue} from '@craftcms/ui';
 import type {ElementActionMenuItem} from '@/modules/elements/composables/useElementActionMenu';
 import type {UiProperties} from '../types';
 
@@ -40,6 +41,8 @@ export type ElementPresentation = {
   cardContentHtml?: string;
   cardFooterHtml?: string;
   thumbHtml?: string;
+  /** How deep the element sits in its structure; drawn when the field maintains hierarchy. */
+  level?: number | null;
 };
 
 /** Mirrors `ElementSelect::viewModes()`, itself a mirror of the field setting. */
@@ -68,6 +71,17 @@ export type ElementSelectProps = {
   single?: boolean;
   showSiteMenu: boolean;
   viewMode: ElementSelectViewMode;
+  /**
+   * The thumbnail size, already resolved for the view mode — chips offer `sm`
+   * to `lg`, thumbnail tiles every size. Absent for card view modes.
+   */
+  thumbSize?: ChipThumbSizeValue | null;
+  /**
+   * Nests the selection by structure level. Choosing an element fills in its
+   * missing ancestors, and removing one removes its descendants.
+   */
+  maintainHierarchy?: boolean;
+  branchLimit?: number | null;
   /** Lower-cased, for "Edit entry" / "Copy entry". */
   elementDisplayName: string;
   /** `AssetSelect` only; absent for every other element type. */

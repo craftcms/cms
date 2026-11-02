@@ -3,23 +3,9 @@ import type {HttpClient} from '@craftcms/ui/utilities/api/http';
 import {http, router} from '@inertiajs/vue3';
 import {createApp} from 'vue';
 import SessionTimeoutHost from './SessionTimeoutHost.vue';
-import {expiryFromHeaders, sessionTimeoutManager} from './manager';
+import {noteHeaders, noteStatus, sessionTimeoutManager} from './manager';
 
 let installed = false;
-
-function noteHeaders(headers: Record<string, unknown> | undefined): void {
-  const expiresAt = expiryFromHeaders(headers);
-
-  if (expiresAt !== undefined) {
-    sessionTimeoutManager.update(expiresAt);
-  }
-}
-
-function noteStatus(status: number | undefined): void {
-  if (status === 401) {
-    void sessionTimeoutManager.check();
-  }
-}
 
 function watchClient(client: HttpClient): void {
   client.interceptors.response.use(

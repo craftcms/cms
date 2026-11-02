@@ -4,7 +4,9 @@ import {
 } from '@craftcms/ui/utilities/focus-return';
 import {announce} from '@/common/announcer';
 import {hasAttr} from '@craftcms/garnish';
+import {submitNativeForm} from '@/common/utils/forms';
 import {highlightCodeBlocks} from '@/common/utils/highlight-code';
+import {getActionUrl} from '@/common/craft/url';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
@@ -19,6 +21,7 @@ interface PreviewDialog extends HTMLElement {
   noHeader: boolean;
   closeOnOutsideClick: boolean;
   label: string;
+  updateComplete?: Promise<boolean>;
 }
 
 interface PreviewFileModalSettings {
@@ -46,7 +49,9 @@ const EMPTY_CLASSES = 'zilch flex items-center justify-center';
  * Preview templates reach the open preview through
  * `Craft.PreviewFileModal.openInstance`: `$container` is the jQuery-wrapped
  * element holding the preview HTML, and `resizePreviewImage()` fits an
- * image preview to the viewport once it has loaded.
+ * image preview to the viewport once it has loaded. Top-level
+ * `slot="footer"` elements in a preview's HTML move to the start of the
+ * dialog's footer, ahead of its Download and Close buttons.
  */
 export class PreviewFileModal {
   static openInstance: PreviewFileModal | null = null;
@@ -62,14 +67,25 @@ export class PreviewFileModal {
   $container: any;
   visible = false;
   requestId = 0;
-  /** The footer's Copy and Close buttons, while a text preview is showing. */
-  #footerButtons: HTMLElement[] = [];
+  #downloadButton: HTMLElement;
+  /** Footer controls that belong to the current preview. */
+  #previewFooterItems: HTMLElement[] = [];
+  /** The size last given to the preview, before the footer's height. */
+  #previewSize: [number, number] = [0, 0];
 
   /** Finds the opener again, or its menu's button once the menu has closed. */
   #returnFocus: FocusReturnResolver = () => null;
   /** Keeps the content's tab stop in step with whether it overflows. */
   #overflowObserver = new ResizeObserver(() => {
     this.container.tabIndex = this.#overflows() ? 0 : -1;
+  });
+  /** Keeps the dialog tall enough for both the preview and the footer. */
+  #footerObserver = new ResizeObserver(() => {
+    if (this.container.querySelector('img[data-maxwidth]')) {
+      PreviewFileModal.resizePreviewImage();
+    } else {
+      this._resizeContainer(...this.#previewSize);
+    }
   });
   #destroyed = false;
 
@@ -115,12 +131,27 @@ export class PreviewFileModal {
     }).on('click', () => this.hide());
     this.$bumperButtonEnd = this.$bumperButtonStart.clone(true);
 
+    this.#downloadButton = this.#footerButton(t('Download'), 'download', () => {
+      // A real form post: the response is the file.
+      submitNativeForm(getActionUrl('assets/download-asset'), {
+        assetId: this.assetId,
+      });
+    });
+    const closeButton = this.#footerButton(t('Close'), null, () => this.hide());
+    this.dialog.append(this.#downloadButton, closeButton);
+
     this.dialog.addEventListener('keydown', this.#onKeydown);
     this.dialog.addEventListener('craft-after-hide', this.#onAfterHide);
     window.addEventListener('resize', this.#onWindowResize);
 
     document.body.append(this.dialog);
     this.dialog.opened = true;
+    void this.dialog.updateComplete?.then(() => {
+      const footer = this.dialog.shadowRoot?.querySelector('[part="footer"]');
+      if (footer && !this.#destroyed) {
+        this.#footerObserver.observe(footer);
+      }
+    });
     this.visible = true;
     announce(t('Loading'));
 
@@ -189,6 +220,7 @@ export class PreviewFileModal {
     this.dialog.removeEventListener('craft-after-hide', this.#onAfterHide);
     window.removeEventListener('resize', this.#onWindowResize);
     this.#overflowObserver.disconnect();
+    this.#footerObserver.disconnect();
     this.dialog.remove();
 
     if (PreviewFileModal.openInstance === this) {
@@ -206,7 +238,7 @@ export class PreviewFileModal {
   ): void {
     this.assetId = assetId;
     this.$container.empty().removeClass(EMPTY_CLASSES);
-    this.#removeFooterButtons();
+    this.#removePreviewFooterItems();
 
     const [width, height] =
       startingWidth && startingHeight
@@ -243,9 +275,7 @@ export class PreviewFileModal {
         this.$container.append(response.data.previewHtml);
         const text = this.container.querySelector('pre > code')?.textContent;
         highlightCodeBlocks(this.container);
-        if (text !== undefined) {
-          this.#addFooterButtons(text);
-        }
+        this.#addPreviewFooterItems(text);
         this._addBumperButtons();
         this.#focusContent();
         await appendHeadHtml(response.data.headHtml);
@@ -259,38 +289,58 @@ export class PreviewFileModal {
       });
   }
 
-  /** Offers to copy a text preview, and a visible way to close it. */
-  #addFooterButtons(text: string): void {
-    const copyButton = document.createElement('craft-button');
-    copyButton.setAttribute('type', 'button');
-    copyButton.setAttribute('icon', 'custom-icons/clone-dashed');
-    copyButton.textContent = t('Copy');
-    copyButton.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(text);
-        showNotice(t('Copied to clipboard.'));
-      } catch {
-        showError(t('Couldn’t copy to the clipboard.'));
-      }
-    });
-
-    const closeButton = document.createElement('craft-button');
-    closeButton.setAttribute('type', 'button');
-    closeButton.textContent = t('Close');
-    closeButton.addEventListener('click', () => this.hide());
-
-    this.#footerButtons = [copyButton, closeButton];
-    for (const button of this.#footerButtons) {
-      button.slot = 'footer';
-      this.dialog.append(button);
+  #footerButton(
+    label: string,
+    icon: string | null,
+    onClick: () => void
+  ): HTMLElement {
+    const button = document.createElement('craft-button');
+    button.setAttribute('type', 'button');
+    if (icon) {
+      button.setAttribute('icon', icon);
     }
+    button.slot = 'footer';
+    button.textContent = label;
+    button.addEventListener('click', onClick);
+    return button;
   }
 
-  #removeFooterButtons(): void {
-    for (const button of this.#footerButtons) {
-      button.remove();
+  /**
+   * Moves the preview's own footer controls ahead of the Download button, and
+   * offers to copy a text preview after it.
+   */
+  #addPreviewFooterItems(text: string | undefined): void {
+    const items = [
+      ...this.container.querySelectorAll<HTMLElement>(
+        ':scope > [slot="footer"]'
+      ),
+    ];
+    this.#downloadButton.before(...items);
+    this.#previewFooterItems = items;
+
+    if (text === undefined) return;
+
+    const copyButton = this.#footerButton(
+      t('Copy'),
+      'custom-icons/clone-dashed',
+      async () => {
+        try {
+          await navigator.clipboard.writeText(text);
+          showNotice(t('Copied to clipboard.'));
+        } catch {
+          showError(t('Couldn’t copy to the clipboard.'));
+        }
+      }
+    );
+    this.#downloadButton.after(copyButton);
+    this.#previewFooterItems.push(copyButton);
+  }
+
+  #removePreviewFooterItems(): void {
+    for (const item of this.#previewFooterItems) {
+      item.remove();
     }
-    this.#footerButtons = [];
+    this.#previewFooterItems = [];
   }
 
   _addBumperButtons(): void {
@@ -299,13 +349,23 @@ export class PreviewFileModal {
       .append(this.$bumperButtonEnd);
   }
 
+  /** Sizes the dialog to fit a `width` × `height` preview above its footer. */
   _resizeContainer(width: number, height: number): void {
+    this.#previewSize = [width, height];
+    const blockSize = height + this.#footerHeight();
     for (const prop of ['inline-size', 'min-inline-size', 'max-inline-size']) {
       this.dialog.style.setProperty(`--c-dialog-${prop}`, `${width}px`);
     }
     for (const prop of ['block-size', 'max-block-size']) {
-      this.dialog.style.setProperty(`--c-dialog-${prop}`, `${height}px`);
+      this.dialog.style.setProperty(`--c-dialog-${prop}`, `${blockSize}px`);
     }
+  }
+
+  #footerHeight(): number {
+    return (
+      this.dialog.shadowRoot?.querySelector<HTMLElement>('[part="footer"]')
+        ?.offsetHeight ?? 0
+    );
   }
 
   /** A 4:3 box two thirds the viewport's height, within the gutters. */
@@ -317,13 +377,16 @@ export class PreviewFileModal {
     return [Math.round(width), Math.round((width / 4) * 3)];
   }
 
-  /** Scales `width` × `height` down, never up, to fit within the gutters. */
+  /**
+   * Scales `width` × `height` down, never up, to fit within the gutters
+   * above the footer.
+   */
   #fit(width: number, height: number): [number, number] {
     const gutter = this.settings.minGutter * 2;
     const scale = Math.min(
       1,
       (window.innerWidth - gutter) / width,
-      (window.innerHeight - gutter) / height
+      (window.innerHeight - gutter - this.#footerHeight()) / height
     );
     return [Math.round(width * scale), Math.round(height * scale)];
   }

@@ -187,11 +187,17 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
                     $options[] = [
                         'optgroup' => $option['label'],
                     ];
+                } elseif (isset($option['optgroup'])) {
+                    $options[] = ['optgroup' => $option['optgroup']];
                 } else {
                     unset($option['isOptgroup']);
                     // Blank cells are posted as null (ConvertEmptyStringsToNull), and null keys don't survive saving
                     $option['label'] = (string) ($option['label'] ?? '');
                     $option['value'] = (string) ($option['value'] ?? '');
+                    // The color input posts hex values without a leading #
+                    if (is_string($option['color'] ?? null) && $option['color'] !== '') {
+                        $option['color'] = ColorRule::normalizeColor($option['color']);
+                    }
                     $options[] = $option;
                 }
             }
@@ -360,17 +366,75 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     #[Override]
     public function uiControl(FieldContext $context): Control
     {
-        $options = collect($this->translatedOptions(true, $context->value, $context->element))
-            ->filter(fn (array $option): bool => array_key_exists('value', $option))
-            ->map(fn (array $option): array => Arr::only($option, ['label', 'value', 'disabled']))
-            ->values()
-            ->all();
+        $options = [];
+        $group = null;
+
+        foreach ($this->translatedOptions(true, $context->value, $context->element) as $option) {
+            if (isset($option['optgroup'])) {
+                $group = $option['optgroup'];
+
+                continue;
+            }
+
+            $options[] = Arr::whereNotNull([
+                ...Arr::only($option, ['label', 'value', 'disabled', 'icon', 'color', 'custom']),
+                'group' => $group,
+            ]);
+        }
 
         return Choice::make($context->path)
             ->options($options)
             ->multiple(static::$multi)
             ->presentation($this->uiPresentation())
+            ->allowCustom(static::$allowCustomOptions && $this->customOptions)
             ->value($this->encodeValue($context->value));
+    }
+
+    /**
+     * Returns the field's options for a combobox, with each optgroup's options nested in it.
+     *
+     * @return list<array<string, mixed>>
+     */
+    protected function comboboxOptions(FieldContext $context): array
+    {
+        $options = [];
+        $group = null;
+
+        foreach ($this->translatedOptions(true, $context->value, $context->element) as $option) {
+            if (isset($option['optgroup'])) {
+                if ($group !== null) {
+                    $options[] = $group;
+                }
+
+                $group = ['type' => 'optgroup', 'label' => $option['optgroup'], 'options' => []];
+
+                continue;
+            }
+
+            $data = match (true) {
+                isset($option['icon']) => array_filter(['icon' => $option['icon'], 'color' => $option['color'] ?? null]),
+                isset($option['color']) => ['indicator' => ['fill' => $option['color']]],
+                default => null,
+            };
+
+            $comboboxOption = array_filter([
+                'label' => $option['label'],
+                'value' => $option['value'],
+                'data' => $data,
+            ], fn (mixed $value): bool => $value !== null);
+
+            if ($group !== null) {
+                $group['options'][] = $comboboxOption;
+            } else {
+                $options[] = $comboboxOption;
+            }
+        }
+
+        if ($group !== null) {
+            $options[] = $group;
+        }
+
+        return $options;
     }
 
     protected function uiPresentation(): ChoicePresentation
@@ -535,12 +599,17 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
-        if (! $this->customOptions) {
+        // Custom options are, by definition, not among the field's options
+        if ($this->customOptions) {
             return [];
         }
 
         return [
-            function ($attribute, $value, $fail) {
+            function ($attribute, $value, $fail) use ($element) {
+                if ($this->isValueEmpty($value, $element)) {
+                    return;
+                }
+
                 $options = $value instanceof MultiOptionsFieldData ? $value : [$value];
 
                 if (Collection::make($options)->contains(fn (OptionData $option) => ! $option->valid)) {

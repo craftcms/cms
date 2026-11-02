@@ -189,6 +189,8 @@ Craft.CP = Garnish.Base.extend(
             {
               keyCode: Garnish.S_KEY,
               ctrl: true,
+              description: Craft.t('app', 'Save'),
+              group: Craft.t('app', 'Forms'),
             },
             {
               redirect: this.$primaryForm.data('saveshortcut-redirect'),
@@ -209,6 +211,8 @@ Craft.CP = Garnish.Base.extend(
                 keyCode: Garnish.S_KEY,
                 ctrl: true,
                 shift: !!action.shift,
+                description: action.label || Craft.t('app', 'Save'),
+                group: Craft.t('app', 'Forms'),
               },
               {
                 action: action.action,
@@ -387,24 +391,17 @@ Craft.CP = Garnish.Base.extend(
 
       this.addListener(Garnish.$win, 'beforeunload', function (ev) {
         let confirmUnload = false;
-        if (
-          typeof Craft.livePreview !== 'undefined' &&
-          Craft.livePreview.inPreviewMode
-        ) {
-          confirmUnload = true;
-        } else {
-          for (let i = 0; i < this.$confirmUnloadForms.length; i++) {
-            const $form = this.$confirmUnloadForms.eq(i);
-            let serialized;
-            if (typeof $form.data('serializer') === 'function') {
-              serialized = $form.data('serializer')();
-            } else {
-              serialized = $form.serialize();
-            }
-            if ($form.data('initialSerializedValue') !== serialized) {
-              confirmUnload = true;
-              break;
-            }
+        for (let i = 0; i < this.$confirmUnloadForms.length; i++) {
+          const $form = this.$confirmUnloadForms.eq(i);
+          let serialized;
+          if (typeof $form.data('serializer') === 'function') {
+            serialized = $form.data('serializer')();
+          } else {
+            serialized = $form.serialize();
+          }
+          if ($form.data('initialSerializedValue') !== serialized) {
+            confirmUnload = true;
+            break;
           }
         }
 

@@ -43,7 +43,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use InvalidArgumentException;
 use Throwable;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\currentUser;
@@ -880,7 +879,7 @@ class Sites
                 's.dateCreated',
                 's.dateUpdated',
             ])
-            ->join(new Alias(Table::SITEGROUPS, 'sg'), 'sg.id', 's.groupId')
+            ->join(Table::SITEGROUPS.' as sg', 'sg.id', 's.groupId')
             ->whereNull(['s.dateDeleted', 'sg.dateDeleted'])
             ->orderBy('sg.name')
             ->orderBy('s.sortOrder')

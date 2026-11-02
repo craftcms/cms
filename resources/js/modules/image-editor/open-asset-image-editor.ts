@@ -1,4 +1,5 @@
 import {actionClient} from '@craftcms/ui';
+import {refreshPreviews} from '@/modules/elements/live-preview/previews';
 import {show} from '@actions/Assets/ImageEditorController';
 import {
   openImageEditorDialog,
@@ -40,7 +41,7 @@ export async function openAssetImageEditor(
     }
 
     void QueueService.getInstance().runQueue();
-    Craft.Preview?.refresh?.();
+    refreshPreviews();
     onSaved?.(result);
   });
 }

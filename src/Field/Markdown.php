@@ -863,9 +863,17 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
         return (string) $value;
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * The values are Markdown, which the schema says, so AI clients don’t write HTML.
+     *
+     * @return array<string, mixed>
+     */
     public function getInputSchema(): array
     {
-        return ['type' => 'string'];
+        return [
+            'type' => 'string',
+            'contentMediaType' => 'text/markdown',
+            'description' => 'Markdown, such as **bold**, _italic_, [links](https://example.com), and lists. Not HTML.',
+        ];
     }
 }

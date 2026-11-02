@@ -55,7 +55,7 @@ export const semanticColors = {
 
 /** Status name → palette color. */
 export const statusColors = {
-  pending: 'orange',
+  pending: 'sky',
   off: 'red',
   suspended: 'red',
   expired: 'red',

@@ -124,6 +124,28 @@ describe('craft-button shortcut', () => {
     expect(shortcut(element)?.shift).toBe(true);
   });
 
+  it('announces its shortcut with aria-keyshortcuts', async () => {
+    vi.spyOn(navigator, 'platform', 'get').mockReturnValue('MacIntel');
+    const element = await createButton(
+      {shortcut: '{"key": "s", "shift": true}'},
+      'Save'
+    );
+    expect(element.getAttribute('aria-keyshortcuts')).toBe('Meta+Shift+S');
+
+    element.shortcut = null;
+    await element.updateComplete;
+    expect(element.hasAttribute('aria-keyshortcuts')).toBe(false);
+    vi.restoreAllMocks();
+  });
+
+  it('keeps an aria-keyshortcuts its author set', async () => {
+    const element = await createButton(
+      {shortcut: 'S', 'aria-keyshortcuts': 'Control+Enter'},
+      'Save'
+    );
+    expect(element.getAttribute('aria-keyshortcuts')).toBe('Control+Enter');
+  });
+
   /** Vue's in-DOM compiler sets attribute values as string properties. */
   it('reads modifiers from JSON set as a property', async () => {
     const element = await createButton({}, 'Save');

@@ -1,5 +1,11 @@
 import {expect, it, vi} from 'vite-plus/test';
-import {createDetachedIndexVisitor} from './useElementIndexVisits';
+import {router} from '@inertiajs/vue3';
+import {
+  createDetachedIndexVisitor,
+  createIndexVisitor,
+} from './useElementIndexVisits';
+
+vi.mock('@inertiajs/vue3', () => ({router: {visit: vi.fn()}}));
 
 it('keeps its query locally rather than in the page URL', () => {
   const load = vi.fn().mockResolvedValue(true);
@@ -119,4 +125,41 @@ it('keeps the last applied query when a newer request fails', async () => {
   await expect(next).rejects.toBe(error);
 
   expect(visitor.currentQuery()).toEqual({search: 'foo'});
+});
+
+it('cancels its Inertia visit in flight', () => {
+  const cancel = vi.fn();
+  vi.mocked(router).visit.mockImplementationOnce((_url, options) => {
+    options?.onCancelToken?.({cancel});
+  });
+  const visitor = createIndexVisitor({url: () => '/cp/entries'});
+
+  visitor.merge({page: 3});
+  visitor.cancel?.();
+
+  expect(cancel).toHaveBeenCalledOnce();
+});
+
+it('drops a cancelled request and keeps the last applied query', async () => {
+  let isLoadCurrent: () => boolean = () => true;
+  let finishLoad: () => void = () => {};
+  const visitor = createDetachedIndexVisitor(
+    (_query, isCurrent) =>
+      new Promise<boolean>((resolve) => {
+        isLoadCurrent = isCurrent;
+        finishLoad = () => resolve(isCurrent());
+      }),
+    {page: '2'}
+  );
+  const onFinish = vi.fn();
+
+  visitor.merge({page: '3'}, {onFinish});
+  visitor.cancel?.();
+  finishLoad();
+  await Promise.resolve();
+  await Promise.resolve();
+
+  expect(isLoadCurrent()).toBe(false);
+  expect(visitor.currentQuery()).toEqual({page: '2'});
+  expect(onFinish).toHaveBeenCalledWith({completed: false});
 });

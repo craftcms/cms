@@ -30,6 +30,10 @@ function openDialogs(): HTMLElement[] {
   return [...document.body.querySelectorAll<HTMLElement>('craft-dialog')];
 }
 
+function footerItems(dialog: HTMLElement): HTMLElement[] {
+  return [...dialog.querySelectorAll<HTMLElement>(':scope > [slot="footer"]')];
+}
+
 async function settle(): Promise<void> {
   for (let i = 0; i < 4; i++) {
     await Promise.resolve();
@@ -134,7 +138,7 @@ describe('PreviewFileModal', () => {
     expect(code.querySelector('.th-string')!.textContent).toBe('"<b>"');
   });
 
-  it('offers to copy a text preview’s text, and a button to close it', async () => {
+  it('offers to download, copy, and close a text preview', async () => {
     const writeText = vi
       .spyOn(navigator.clipboard, 'writeText')
       .mockResolvedValue(undefined);
@@ -149,20 +153,19 @@ describe('PreviewFileModal', () => {
     await settle();
 
     const [dialog] = openDialogs();
-    const buttons = [
-      ...dialog!.querySelectorAll<HTMLElement>(':scope > [slot="footer"]'),
-    ];
+    const buttons = footerItems(dialog!);
     expect(buttons.map((button) => button.textContent)).toEqual([
+      'Download',
       'Copy',
       'Close',
     ]);
 
-    buttons[0]!.click();
+    buttons[1]!.click();
     await settle();
     expect(writeText).toHaveBeenCalledWith('a <b> c');
     expect(messages.showNotice).toHaveBeenCalledWith('Copied to clipboard.');
 
-    buttons[1]!.click();
+    buttons[2]!.click();
     expect(modal.visible).toBe(false);
   });
 
@@ -179,7 +182,7 @@ describe('PreviewFileModal', () => {
     new PreviewFileModal(5);
     await settle();
 
-    openDialogs()[0]!.querySelector<HTMLElement>('[slot="footer"]')!.click();
+    footerItems(openDialogs()[0]!)[1]!.click();
     await settle();
 
     expect(messages.showError).toHaveBeenCalledWith(
@@ -187,14 +190,52 @@ describe('PreviewFileModal', () => {
     );
   });
 
-  it('drops the footer buttons for previews that aren’t text', async () => {
+  it('moves a preview’s own footer controls into the footer, until the next asset loads', async () => {
+    const select = elementSelect([1, 2, 3]);
+    post
+      .mockResolvedValueOnce({
+        data: {
+          requestId: 1,
+          previewHtml: '<button slot="footer">Focal Point</button><img alt="">',
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          requestId: 2,
+          previewHtml: '<pre><code data-language="text">abc</code></pre>',
+        },
+      });
+    PreviewFileModal.showForAsset(select.$items.eq(0), select);
+    await settle();
+
+    const [dialog] = openDialogs();
+    const labels = () => footerItems(dialog!).map((item) => item.textContent);
+    expect(labels()).toEqual(['Focal Point', 'Download', 'Close']);
+
+    const right = () =>
+      dialog!.dispatchEvent(
+        new KeyboardEvent('keydown', {key: 'ArrowRight', cancelable: true})
+      );
+    right();
+    await settle();
+    expect(labels()).toEqual(['Download', 'Copy', 'Close']);
+
+    right();
+    await settle();
+    expect(dialog!.querySelector('.preview')!.textContent).toBe('3');
+    expect(labels()).toEqual(['Download', 'Close']);
+  });
+
+  it('downloads the asset being previewed', async () => {
+    const submit = vi
+      .spyOn(HTMLFormElement.prototype, 'submit')
+      .mockImplementation(function (this: HTMLFormElement) {
+        expect(this.action).toContain('assets/download-asset');
+        expect(
+          this.querySelector<HTMLInputElement>('[name="assetId"]')!.value
+        ).toBe('2');
+      });
     const select = elementSelect([1, 2]);
-    post.mockResolvedValueOnce({
-      data: {
-        requestId: 1,
-        previewHtml: '<pre><code data-language="text">abc</code></pre>',
-      },
-    });
     PreviewFileModal.showForAsset(select.$items.eq(0), select);
     await settle();
 
@@ -203,9 +244,9 @@ describe('PreviewFileModal', () => {
       new KeyboardEvent('keydown', {key: 'ArrowRight', cancelable: true})
     );
     await settle();
+    footerItems(dialog!)[0]!.click();
 
-    expect(dialog!.querySelector('.preview')!.textContent).toBe('2');
-    expect(dialog!.querySelector('[slot="footer"]')).toBeNull();
+    expect(submit).toHaveBeenCalledOnce();
   });
 
   it('moves between the assets of its element select in the same dialog', async () => {

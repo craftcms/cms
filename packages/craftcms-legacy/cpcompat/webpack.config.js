@@ -13,7 +13,6 @@ module.exports = getConfig({
       ),
       'cp-compat': './cp-compat.js',
       'legacy-html-control': './legacy-html-control.js',
-      'live-preview': './live-preview.js',
       'assets-field-settings': './assets-field-settings.js',
       'element-field-settings': './element-field-settings.js',
       'element-index': './element-index/index.js',

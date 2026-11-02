@@ -28,6 +28,7 @@ beforeEach(function () {
         array_merge([
             'context' => ElementSources::CONTEXT_MODAL,
             'elementType' => Entry::class,
+            'viewMode' => 'table',
         ], $payload),
         ['Accept' => 'application/json'],
     );
@@ -45,6 +46,16 @@ it('serves the index props the modal renders from', function () {
     expect($props['sources'])->toBeArray()->not->toBeEmpty();
 });
 
+it('leaves the rows out of a first payload that names no view mode', function () {
+    EntryModel::factory()->createElement();
+
+    $props = ($this->postBody)(['viewMode' => null])->assertOk()->json('props');
+
+    expect($props['sources'])->not->toBeEmpty()
+        ->and($props)->not->toHaveKeys(['data', 'pagination', 'structure']);
+    expect(($this->postBody)()->json('props.data'))->toHaveCount(1);
+});
+
 it('resolves sources in the modal context, not the index context', function () {
     $props = ($this->postBody)()->json('props');
 
@@ -55,7 +66,7 @@ it('uses fit for modal thumbnail presence and list rendering', function (string 
     $entry = EntryModel::factory()->withField('thumbnail', ModeThumbnailField::class, value: $supportedMode)
         ->createElementWithFields()->element;
     $layout = $entry->getFieldLayout();
-    $layout->thumbFieldKey = 'layoutElement:'.$layout->getCustomFieldElements()[0]->uid;
+    $layout->thumbSources = ['layoutElement:'.$layout->getCustomFieldElements()[0]->uid];
     expect(Fields::saveLayout($layout))->toBeTrue();
 
     $response = ($this->postBody)()->assertOk();

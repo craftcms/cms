@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Mcp\Http\Controllers;
 
 use CraftCms\Cms\Auth\AuthenticationViews;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Mcp\Settings;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -26,14 +27,15 @@ readonly class EndpointPageController
         private AuthenticationViews $views,
     ) {}
 
-    public function admin(Request $request): View|InertiaResponse|Response
+    /** Shows the authorization endpoint's URL, which MCP clients that sign in with OAuth should use. */
+    public function authenticated(Request $request, Settings $settings): View|InertiaResponse|Response
     {
-        return $this->render($request, $this->serverName().'-admin', false);
+        return $this->render($request, $settings->url($settings->authorizationRoute), $this->serverName().'-admin', false);
     }
 
     public function public(Request $request): View|InertiaResponse|Response
     {
-        return $this->render($request, $this->serverName(), true);
+        return $this->render($request, $request->url(), $this->serverName(), true);
     }
 
     private function serverName(): string
@@ -41,14 +43,14 @@ readonly class EndpointPageController
         return Str::slug(Cms::systemName()) ?: 'craft';
     }
 
-    private function render(Request $request, string $serverName, bool $isPublic): View|InertiaResponse|Response
+    private function render(Request $request, string $url, string $serverName, bool $isPublic): View|InertiaResponse|Response
     {
         if ($request->prefers(['text/html', 'text/event-stream', 'application/json']) !== 'text/html') {
             throw new MethodNotAllowedHttpException(['POST', 'OPTIONS']);
         }
 
         $viewData = [
-            'url' => $request->url(),
+            'url' => $url,
             'serverName' => $serverName,
             'isPublic' => $isPublic,
         ];

@@ -265,6 +265,16 @@
     };
   }
 
+  /** Whether a block's fields start with a tab strip, which sits right under its header. */
+  function hasTabs(uid: string): boolean {
+    return (
+      (uis.value
+        .get(uid)
+        ?.nodes.filter((node) => node.component === 'craft:tab').length ?? 0) >
+      1
+    );
+  }
+
   function blockIcon(uid: string): {name: string; family: string} | null {
     return block(uid)?.icon ?? null;
   }
@@ -411,6 +421,7 @@
           <div
             class="flex flex-nowrap gap-sm items-center"
             data-matrix-block-titlebar
+            data-card-label
           >
             <craft-icon v-if="blockIcon(uid)" v-bind="blockIcon(uid)!" />
             {{ entryType(uid)?.label ?? uid }}
@@ -470,7 +481,10 @@
               "
             />
           </template>
-          <div data-matrix-block-fields>
+          <div
+            data-matrix-block-fields
+            :class="{'matrix-block-fields--tabbed': hasTabs(id)}"
+          >
             <template v-if="uis.get(id)">
               <UiNodeList
                 :nodes="uis.get(id)!.nodes"
@@ -514,3 +528,15 @@
     </div>
   </div>
 </template>
+
+<style scoped>
+  .matrix-block-fields--tabbed {
+    margin-block-start: calc(
+      var(
+          --c-card-padding-block,
+          var(--cp-container-padding, var(--c-spacing-lg))
+        ) *
+        -1
+    );
+  }
+</style>

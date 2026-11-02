@@ -130,7 +130,7 @@ readonly class StatusHtml
     public function editedStatusLabelHtml(): string
     {
         return $this->statusLabelHtml([
-            'color' => Color::Blue,
+            'color' => Color::Violet,
             'icon' => 'pen-circle',
             'label' => t('Edited'),
         ]);

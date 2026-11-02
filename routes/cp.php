@@ -2,7 +2,11 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Ai\Http\Controllers\AccountController as AiAccountController;
+use CraftCms\Cms\Ai\Http\Controllers\GuidanceController as AiGuidanceController;
 use CraftCms\Cms\Ai\Http\Controllers\SettingsController as AiSettingsController;
+use CraftCms\Cms\Ai\Http\Controllers\SkillsController as AiSkillsController;
+use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Edition;
@@ -58,6 +62,7 @@ use CraftCms\Cms\Http\Controllers\Users\IndexController as UsersIndexController;
 use CraftCms\Cms\Http\Controllers\Users\PasskeysController;
 use CraftCms\Cms\Http\Controllers\Users\PasswordController;
 use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
+use CraftCms\Cms\Http\Controllers\Users\PersonalAccessTokensController;
 use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
 use CraftCms\Cms\Http\Controllers\Users\SignInProvidersController;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
@@ -140,6 +145,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             ->whereNumber('release');
 
         Route::prefix('releases/{release}')->name('releases.')->whereNumber('release')->group(function () {
+            Route::get('preview', [ReleasesController::class, 'preview'])->name('preview');
             Route::post('validate', [ReleasesController::class, 'validateRelease'])->name('validate');
             Route::get('schedule', [ReleasesController::class, 'scheduleModal'])->name('scheduleModal');
             Route::post('schedule', [ReleasesController::class, 'schedule'])->name('schedule');
@@ -155,6 +161,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::post('submit', [WorkflowTransitionsController::class, 'submit']);
         Route::post('{workflowRun}/override', [WorkflowTransitionsController::class, 'override']);
         Route::post('{workflowRun}/restart', [WorkflowTransitionsController::class, 'restart']);
+        Route::post('{workflowRun}/prepare-for-editing', [WorkflowTransitionsController::class, 'prepareForEditing']);
         Route::prefix('{workflowRun}/stages/{stage}')->group(function () {
             Route::post('comment', [WorkflowTransitionsController::class, 'comment']);
             Route::post('user-review/approve', [UserReviewController::class, 'approve']);
@@ -200,6 +207,15 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('system-messages/{key}', [SystemMessagesController::class, 'show']);
     Route::post('system-messages', [SystemMessagesController::class, 'store']);
 
+    // AI Guidance
+    Route::post('ai-guidance', [AiGuidanceController::class, 'store']);
+    Route::get('ai-skills', [AiSkillsController::class, 'index']);
+    Route::get('ai-skills/new', [AiSkillsController::class, 'create']);
+    Route::get('ai-skills/{skillId}', [AiSkillsController::class, 'edit'])->whereNumber('skillId');
+    Route::post('ai-skills', [AiSkillsController::class, 'store']);
+    Route::patch('ai-skills/{skillId}', [AiSkillsController::class, 'update'])->whereNumber('skillId');
+    Route::delete('ai-skills/{skillId}', [AiSkillsController::class, 'destroy'])->whereNumber('skillId');
+
     Route::middleware(RequireAdminChanges::class)->group(function () {
         Route::get('settings/addresses', [AddressSettingsController::class, 'index']);
         Route::post('settings/addresses', [AddressSettingsController::class, 'store']);
@@ -222,7 +238,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         'slug' => '(?:-[^\/]*)',
     ];
 
-    Route::get('preview/{id}{slug}', PreviewElementController::class)->where($idSlugParams);
+    Route::get('preview/{id}{slug?}', PreviewElementController::class)->where($idSlugParams);
     Route::get('edit/{id}{slug?}', ElementRedirectController::class)->where($idSlugParams);
     Route::get('edit/{uid}', ElementRedirectController::class);
     Route::get('revisions/{id}{slug}', [ElementRevisionsController::class, 'index'])->where($idSlugParams);
@@ -269,6 +285,11 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('myaccount/password', [PasswordController::class, 'index']);
     Route::get('myaccount/preferences', [PreferencesController::class, 'index']);
     Route::patch('myaccount/preferences', [PreferencesController::class, 'update']);
+    Route::get('myaccount/tokens', [PersonalAccessTokensController::class, 'index']);
+    Route::middleware('can:'.Assistant::PERMISSION)->group(function () {
+        Route::get('myaccount/ai-assistant', [AiAccountController::class, 'index']);
+        Route::patch('myaccount/ai-assistant', [AiAccountController::class, 'update']);
+    });
     Route::get('myaccount/sign-in-providers', [SignInProvidersController::class, 'index']);
     Route::post('myaccount/sign-in-providers/{provider}/connect', [SignInProvidersController::class, 'connect']);
     Route::delete('myaccount/sign-in-providers/{provider}', [SignInProvidersController::class, 'destroy']);
@@ -331,6 +352,9 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::post('settings/mcp', [McpSettingsController::class, 'store'])
             ->middleware(RequireAdminChanges::class)
             ->name('settings.mcp.store');
+        Route::post('settings/mcp/render-ui', [McpSettingsController::class, 'renderUi'])
+            ->middleware(RequireAdminChanges::class)
+            ->name('settings.mcp.render-ui');
 
         // Entry types
         Route::prefix('settings/entry-types')->name('settings.entry-types.')->group(function () {

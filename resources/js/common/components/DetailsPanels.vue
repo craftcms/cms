@@ -113,12 +113,13 @@
   const overlaid = useScreenDetailsOverlay();
 
   /**
-   * On a page, a panel that overlays the content is modal: the panels move
-   * into a `craft-dialog`, which makes the rest of the page inert, stops it
-   * scrolling, and closes on Escape or a click outside. A slideout's panels
-   * stay as they are.
+   * With the rail kept apart from the panels, as on a page, a panel that
+   * overlays the content is modal: the panels move into a `craft-dialog`,
+   * which makes the rest of the page inert, stops it scrolling, and closes on
+   * Escape or a click outside. Panels beside their rail, as in a slideout or
+   * a preview's editor, stay as they are.
    */
-  const isModal = computed(() => !isSlideout && (overlaid?.value ?? false));
+  const isModal = computed(() => rail !== null && (overlaid?.value ?? false));
   const dialogBody = useTemplateRef<HTMLElement>('dialogBody');
 
   const openPanel = computed(() => findPanel(openPanelId.value));
@@ -410,6 +411,7 @@
             type="button"
             class="details-panels__trigger"
             :aria-controls="panelElementId(panel.id)"
+            :data-unlisted-in-palette="panel.unlistedInPalette || undefined"
           >
             <template v-if="panel.initialIcon">
               <span class="initial-icon" aria-hidden="true">{{

@@ -157,7 +157,9 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
                   this.elementIndex.settings.context === 'embedded-index'
                     ? () => {
                         slideout.elementEditor.on('update', () => {
-                          Craft.Preview.refresh();
+                          window.dispatchEvent(
+                            new CustomEvent('craft:refresh-previews')
+                          );
                         });
                       }
                     : null,

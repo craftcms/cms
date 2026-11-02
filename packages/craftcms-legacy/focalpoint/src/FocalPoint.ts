@@ -108,26 +108,21 @@ export class FocalPoint {
     this.lastX = ev.pageX!;
     this.lastY = ev.pageY!;
 
-    // Figure out where we want to drag the focal
-    const currentPosition = this.$focal.position();
-
-    // Make sure to account for the positioning offset
-    const desiredLeft =
-      currentPosition.left + deltaX + this.$focal.outerWidth()! / 2;
-    const desiredTop =
-      currentPosition.top + deltaY + this.$focal.outerHeight()! / 2;
-
-    // Make it fit the actual container
+    // Moved from where the focal point is, rather than where the marker is
+    // measured to be: in a dialog, the marker's offset parent isn't the
+    // element it's positioned in, so measuring it added the dialog's offset
+    // on every move.
     const containerWidth = this.$target.width()!;
     const containerHeight = this.$target.height()!;
+    const desiredLeft = containerWidth * Number(this.focalPos[0]) + deltaX;
+    const desiredTop = containerHeight * Number(this.focalPos[1]) + deltaY;
+
+    // Make it fit the actual container
     const actualLeft = Math.min(Math.max(0, desiredLeft), containerWidth);
     const actualTop = Math.min(Math.max(0, desiredTop), containerHeight);
 
     // convert to percentage, as that's going to be reliable after resizing, too
-    this.focalPos = [
-      1 / (containerWidth / actualLeft),
-      1 / (containerHeight / actualTop),
-    ];
+    this.focalPos = [actualLeft / containerWidth, actualTop / containerHeight];
 
     this.debouncedSave();
     this.positionFocal();
@@ -157,19 +152,16 @@ export class FocalPoint {
       focalEnabled: this.visible,
     };
 
-    this.$button.parents('.buttons').css({opacity: 1});
-
     Craft.sendActionRequest('POST', 'assets/update-focal-position', {
       data,
     }).then((response) => {
       this.saving = false;
       this.shouldSave = false;
-      this.$button.parents('.buttons').css({opacity: ''});
       this.renderButton();
       Craft.cp.announce(Craft.t('app', 'Saved'));
 
       // Refresh Live Preview
-      Craft.Preview.refresh();
+      window.dispatchEvent(new CustomEvent('craft:refresh-previews'));
     });
   }
 
@@ -189,16 +181,9 @@ export class FocalPoint {
     this.renderFocal();
   }
 
+  /** Presses the toggle button while the focal point is enabled. */
   protected renderButton() {
-    if (this.saving) {
-      this.$button.text(Craft.t('app', 'Saving…'));
-    } else {
-      if (this.visible) {
-        this.$button.text(Craft.t('app', 'Disable focal point'));
-      } else {
-        this.$button.text(Craft.t('app', 'Enable focal point'));
-      }
-    }
+    this.$button.prop('active', this.visible);
   }
 
   protected renderFocal() {

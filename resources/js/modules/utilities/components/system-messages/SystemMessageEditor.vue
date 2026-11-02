@@ -19,7 +19,7 @@
   import type CraftInput from '@craftcms/ui/components/input/input';
   import '@craftcms/ui/components/input/input';
   import CpContainer from '@/common/components/CpContainer.vue';
-  import {commentToolbarButtons} from '@/modules/markdown-field/commentToolbarButtons';
+  import {commentToolbarButtons} from '@/modules/markdown-field/toolbarPresets';
   import '@/modules/markdown-field/markdown-field';
   import '@craftcms/ui/components/text-expander/text-expander';
 
@@ -136,7 +136,7 @@
         />
         <span
           slot="tip"
-          v-html="t('Type <kbd>{{</kbd> to insert a message variable.')"
+          v-html="t('Type <kbd>{{</kbd> to choose a message variable.')"
         ></span>
         <ul v-if="form.errors.subject" slot="feedback" class="error-list">
           <li>{{ form.errors.subject }}</li>
@@ -170,7 +170,7 @@
         />
         <span
           slot="tip"
-          v-html="t('Type <kbd>{{</kbd> to insert a message variable.')"
+          v-html="t('Type <kbd>{{</kbd> to choose a message variable.')"
         ></span>
         <ul v-if="form.errors.body" slot="feedback" class="error-list">
           <li>{{ form.errors.body }}</li>

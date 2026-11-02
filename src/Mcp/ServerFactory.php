@@ -29,17 +29,18 @@ readonly class ServerFactory
         private StdioCapabilityDiscovery $stdioCapabilities,
         private Repository $cache,
         private Request $request,
+        private AdminInstructions $instructions,
     ) {}
 
-    public function admin(): Server
+    public function authenticated(): Server
     {
         $user = $this->request->user('craft-mcp');
         assert($user instanceof OAuthenticatable);
         $scopes = array_filter(McpScope::values(), $user->tokenCan(...));
         $identity = hash('sha256', Json::encode([$user->getAuthIdentifier(), $scopes], JSON_THROW_ON_ERROR));
 
-        return $this->builder($this->capabilities, AdminInstructions::Brief)
-            ->setSession(new Psr16SessionStore($this->cache, "craft-mcp-admin-$identity-"))
+        return $this->builder($this->capabilities, $this->instructions->brief())
+            ->setSession(new Psr16SessionStore($this->cache, "craft-mcp-authenticated-$identity-"))
             ->build();
     }
 
@@ -58,7 +59,7 @@ readonly class ServerFactory
 
     public function stdio(): Server
     {
-        return $this->builder($this->stdioCapabilities, AdminInstructions::Brief)->build();
+        return $this->builder($this->stdioCapabilities, $this->instructions->brief())->build();
     }
 
     private function builder(DiscovererInterface $discoverer, ?string $instructions = null): Builder

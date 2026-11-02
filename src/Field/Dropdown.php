@@ -15,6 +15,7 @@ use CraftCms\Cms\Field\Data\SingleOptionFieldData;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Combobox;
 
 use function CraftCms\Cms\t;
 
@@ -67,10 +68,24 @@ class Dropdown extends BaseOptionsField implements InlineEditableFieldInterface,
     #[\Override]
     public function uiControl(FieldContext $context): Control
     {
+        $hasBlankOption = collect($this->options)->contains(fn (array $option): bool => ($option['value'] ?? null) === '');
+
+        // A native select can't show icons or colors
+        if (collect($this->options)->contains(fn (array $option): bool => ($option['icon'] ?? '') !== '' || ($option['color'] ?? '') !== '')) {
+            $value = $this->encodeValue($context->value);
+
+            return Combobox::make($context->path)
+                ->requireOptionMatch()
+                ->showAllOnEmpty()
+                ->clearable(! $hasBlankOption)
+                ->options($this->comboboxOptions($context))
+                ->value($value === '__blank__' && ! $hasBlankOption ? null : $value);
+        }
+
         $control = parent::uiControl($context);
 
         // A blank option is encoded as __blank__, so Choice can't tell it supplies its own empty state
-        if ($control instanceof Choice && collect($this->options)->contains(fn (array $option): bool => ($option['value'] ?? null) === '')) {
+        if ($control instanceof Choice && $hasBlankOption) {
             $control->withoutPlaceholder();
         }
 

@@ -18,6 +18,14 @@ body {
   color: var(--c-text-default);
 }
 
+/* Selects are transparent, and Chrome on Windows draws their option lists on
+   the select's background, falling back to white, while the options keep the
+   theme's text color, so they'd be light on white in the dark theme. */
+select :is(option, optgroup) {
+  background-color: var(--c-surface-raised);
+  color: var(--c-text-default);
+}
+
 /*
   Placeholders take the quiet text color rather than the browser default, which
   falls short of contrast against dark surfaces. Firefox also dims them with
@@ -155,8 +163,8 @@ kbd {
   --_colorable-on-loud: var(--c-color-on-loud);
 }
 
-/* A card's attribute previews are capped at two lines, unless they opt out
-   with `no-truncate` (generated fields, chips, addresses). */
+/* A card's attribute previews are capped at two lines, or one on a cover card,
+   unless they opt out with `no-truncate` (generated fields, chips, addresses). */
 .card-attribute-preview:not(:has(> .no-truncate)) {
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -168,6 +176,12 @@ kbd {
   /* Long unbroken strings (URLs) wrap into the clamp, rather than being
      clipped mid-line with no ellipsis. */
   overflow-wrap: anywhere;
+}
+
+[data-cover='body'] .card-attribute-preview:not(:has(> .no-truncate)) {
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  max-block-size: 1lh;
 }
 
 /* A table column grows to fit its widest content, so an uncapped link would
@@ -194,6 +208,23 @@ craft-chip > [slot='thumbnail'] {
 craft-chip > [slot='thumbnail'] > .thumb svg {
   width: 100%;
   height: 100%;
+}
+
+/*
+  An entry type's icon standing in for an entry's thumbnail is drawn faintly,
+  in the entry type's color if it has one, so it reads as decoration rather
+  than content.
+*/
+.icon-thumb {
+  opacity: 0.3;
+}
+
+.icon-thumb[data-color] {
+  color: var(--c-color-fill-loud);
+}
+
+.icon-thumb svg {
+  fill: currentColor;
 }
 
 craft-chip .cp-code {
@@ -296,6 +327,30 @@ Previously `.readable`
   ul {
     list-style: disc;
   }
+
+  ol {
+    list-style: decimal;
+  }
+
+  li:has(> input[type='checkbox']) {
+    list-style: none;
+    margin-inline-start: -1.25em;
+  }
+
+  blockquote {
+    display: grid;
+    gap: 0.5em;
+    margin-inline: 0;
+    padding-inline-start: 0.75em;
+    border-inline-start: 3px solid var(--c-color-neutral-border-normal);
+    color: var(--c-text-quiet);
+  }
+
+  :not(pre) > code {
+    padding-inline: 0.25em;
+    border-radius: var(--c-radius-sm);
+    background-color: var(--c-surface-sunken);
+  }
 }
 
 /**
@@ -367,8 +422,9 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
     height: var(--_row-height);
   }
 
-  th {
-    height: calc(var(--_row-height) * 0.8);
+  thead th {
+    height: calc(var(--c-size-header) + 1px);
+    padding-block: var(--c-spacing-sm);
   }
 
   tbody th {

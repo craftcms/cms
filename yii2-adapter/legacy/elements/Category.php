@@ -45,7 +45,6 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
@@ -107,6 +106,14 @@ class Category extends Element
      * @inheritdoc
      */
     public static function hasDrafts(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function hasStructures(): bool
     {
         return true;
     }
@@ -994,7 +1001,7 @@ class Category extends Element
         /** @var self|null $parent */
         $parent = self::find()
             ->structureId($structureId)
-            ->join(new Alias(DeprecatedTable::CATEGORIES, 'j'), 'j.parentId', 'elements.id')
+            ->join(DeprecatedTable::CATEGORIES . ' as j', 'j.parentId', 'elements.id')
             ->where('j.id', $this->id)
             ->one();
 

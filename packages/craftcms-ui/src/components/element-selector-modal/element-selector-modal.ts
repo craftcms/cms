@@ -31,6 +31,7 @@ const NARROW_THRESHOLD = 550;
  * declaratively in Storybook or by a consumer that only wants the chrome.
  *
  * @slot - The element index.
+ * @slot loading - Shown in place of the spinner while the index first loads.
  * @slot secondary-actions - Footer content pinned left.
  * @slot primary-actions - Footer buttons placed before Cancel and Select.
  * @csspart footer - The footer row.
@@ -263,7 +264,9 @@ export default class CraftElementSelectorModal extends CraftDialog {
     return html`
       <div class="body" part="body" ?inert=${this.busy}>
         ${this.loading && !this.hasIndex
-          ? html`<div class="loading"><craft-spinner></craft-spinner></div>`
+          ? html`<slot name="loading"
+              ><div class="loading"><craft-spinner></craft-spinner></div
+            ></slot>`
           : nothing}
         <slot></slot>
       </div>

@@ -3,6 +3,7 @@ import {firstFocusableWithin} from '@/common/utils/dom';
 import type {CellContext} from '@tanstack/vue-table';
 import type {CraftTableFeatures} from '@/common/table/craftTable';
 import {h, nextTick, ref, toValue, type MaybeRefOrGetter, type Ref} from 'vue';
+import {useShortcut} from '@/common/shortcuts';
 import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
 import type {InlineAttributeUiHost} from '@/modules/ui/inline-attribute-ui-host';
 import {findDeltaData} from '@/common/craft/delta';
@@ -33,6 +34,12 @@ export function useInlineEditing<Row extends InlineEditableRow>(options: {
   save(body: URLSearchParams): Promise<InlineEditingSaveResult | false>;
 }) {
   const editingIds = ref<Array<string | number>>([]);
+
+  useShortcut('Mod+S', () => void save(), {
+    description: () => t('Save'),
+    group: () => t('Forms'),
+    isAvailable: () => editingIds.value.length > 0,
+  });
   const errors = ref<InlineEditingErrors>({});
   let initialInputs = '';
 
