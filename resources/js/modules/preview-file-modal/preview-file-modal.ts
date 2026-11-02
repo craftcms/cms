@@ -9,11 +9,16 @@ import {highlightCodeBlocks} from '@/common/utils/highlight-code';
 import {bootFocalPoint} from '@/modules/focal-point/focal-point';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
-import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
+import {
+  appendBodyHtml,
+  appendElementHtml,
+  appendHeadHtml,
+} from '@craftcms/ui/utilities/dom';
+import {isPlainObject} from '@craftcms/garnish';
+import {jq} from '@/common/utils/jquery';
 import {showError, showNotice} from '@/modules/messages/messages';
 
 declare const Craft: any;
-declare const $: any;
 
 /** A `craft-dialog`. */
 interface PreviewDialog extends HTMLElement {
@@ -47,8 +52,8 @@ const EMPTY_CLASSES = 'zilch flex items-center justify-center';
  * element select.
  *
  * Preview templates reach the open preview through
- * `Craft.PreviewFileModal.openInstance`: `$container` is the jQuery-wrapped
- * element holding the preview HTML, and `resizePreviewImage()` fits an
+ * `Craft.PreviewFileModal.openInstance`: `container` is the element holding
+ * the preview HTML (`$container` wraps it in jQuery when that's loaded), and `resizePreviewImage()` fits an
  * image preview to the viewport once it has loaded. Top-level
  * `slot="footer"` elements in a preview's HTML move to the start of the
  * dialog's footer, ahead of its Download and Close buttons.
@@ -60,11 +65,10 @@ export class PreviewFileModal {
   assetId: number | null = null;
   elementSelect: any = null;
   $triggerElement: HTMLElement | null = null;
-  $bumperButtonStart: any = null;
-  $bumperButtonEnd: any = null;
+  $bumperButtonStart: HTMLButtonElement;
+  $bumperButtonEnd: HTMLButtonElement;
   dialog: PreviewDialog;
   container: HTMLElement;
-  $container: any;
   visible = false;
   requestId = 0;
   #downloadButton: HTMLElement;
@@ -89,13 +93,18 @@ export class PreviewFileModal {
   });
   #destroyed = false;
 
+  /** The preview's container as a jQuery collection, for legacy preview templates. */
+  get $container(): any {
+    return jq()?.(this.container) ?? null;
+  }
+
   constructor(
     assetId: number,
     elementSelectOrSettings?: any,
     settings?: Partial<PreviewFileModalSettings>
   ) {
     // (assetId, settings) overload
-    if (settings === undefined && $.isPlainObject(elementSelectOrSettings)) {
+    if (settings === undefined && isPlainObject(elementSelectOrSettings)) {
       settings = elementSelectOrSettings;
       elementSelectOrSettings = null;
     }
@@ -121,15 +130,18 @@ export class PreviewFileModal {
     this.container.tabIndex = -1;
     this.container.setAttribute('role', 'region');
     this.container.setAttribute('aria-label', this.dialog.label);
-    this.$container = $(this.container);
     this.dialog.append(this.container);
 
-    this.$bumperButtonStart = $('<button/>', {
-      type: 'button',
-      class: 'skip-link top-0 start-0',
-      text: t('Close Preview'),
-    }).on('click', () => this.hide());
-    this.$bumperButtonEnd = this.$bumperButtonStart.clone(true);
+    const bumperButton = () => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'skip-link top-0 start-0';
+      button.textContent = t('Close Preview');
+      button.addEventListener('click', () => this.hide());
+      return button;
+    };
+    this.$bumperButtonStart = bumperButton();
+    this.$bumperButtonEnd = bumperButton();
 
     this.#downloadButton = this.#footerButton(
       t('Download'),
@@ -243,7 +255,8 @@ export class PreviewFileModal {
     startingHeight?: number | null
   ): void {
     this.assetId = assetId;
-    this.$container.empty().removeClass(EMPTY_CLASSES);
+    this.container.replaceChildren();
+    this.container.classList.remove(...EMPTY_CLASSES.split(' '));
     this.#removePreviewFooterItems();
 
     const [width, height] =
@@ -270,15 +283,16 @@ export class PreviewFileModal {
         onResponse();
 
         if (!response.data.previewHtml) {
-          this.$container
-            .addClass(EMPTY_CLASSES)
-            .append($('<p/>', {text: t('No preview available.')}));
+          const message = document.createElement('p');
+          message.textContent = t('No preview available.');
+          this.container.classList.add(...EMPTY_CLASSES.split(' '));
+          this.container.append(message);
           this._addBumperButtons();
           return;
         }
 
         this.container.dataset.assetId = String(assetId);
-        this.$container.append(response.data.previewHtml);
+        await appendElementHtml(response.data.previewHtml, this.container);
         bootFocalPoint(this.container);
         const text = this.container.querySelector('pre > code')?.textContent;
         highlightCodeBlocks(this.container);
@@ -351,9 +365,8 @@ export class PreviewFileModal {
   }
 
   _addBumperButtons(): void {
-    this.$container
-      .prepend(this.$bumperButtonStart)
-      .append(this.$bumperButtonEnd);
+    this.container.prepend(this.$bumperButtonStart);
+    this.container.append(this.$bumperButtonEnd);
   }
 
   /** Sizes the dialog to fit a `width` × `height` preview above its footer. */

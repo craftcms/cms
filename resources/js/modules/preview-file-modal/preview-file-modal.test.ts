@@ -68,7 +68,6 @@ function elementSelect(ids: number[]) {
 
 describe('PreviewFileModal', () => {
   beforeEach(() => {
-    vi.stubGlobal('$', $);
     vi.stubGlobal('Craft', {
       t: (_category: string, message: string) => message,
       getActionUrl: (action: string) => `/actions/${action}`,

@@ -4,14 +4,25 @@ import {t} from '@craftcms/ui/utilities/translate';
 import {announce} from '@/common/announcer';
 import {refreshPreviews} from '@/modules/elements/live-preview/previews';
 
-declare const $: any;
-
-type JQEvent = any;
+/** The content box size, without padding. */
+function contentSize(el: HTMLElement): {width: number; height: number} {
+  const style = getComputedStyle(el);
+  return {
+    width:
+      el.clientWidth -
+      parseFloat(style.paddingLeft || '0') -
+      parseFloat(style.paddingRight || '0'),
+    height:
+      el.clientHeight -
+      parseFloat(style.paddingTop || '0') -
+      parseFloat(style.paddingBottom || '0'),
+  };
+}
 
 export class FocalPoint {
-  private readonly $target: JQuery;
-  private readonly $focal: JQuery;
-  private readonly $button: JQuery;
+  private readonly target: HTMLElement;
+  private readonly focal: HTMLElement;
+  private readonly button: HTMLElement | null;
   private readonly focalId: string;
   private readonly movable: boolean;
 
@@ -28,47 +39,54 @@ export class FocalPoint {
   private debounceTimer?: number;
   private debounceTimeout = 1500;
 
-  constructor($target: JQuery, $button: JQuery, movable: boolean) {
+  readonly #onDragStart = (ev: PointerEvent) => this.handleDragStart(ev);
+  readonly #onDragEnd = () => this.handleDragEnd();
+  readonly #onMove = (ev: PointerEvent) => this.handleMove(ev);
+
+  constructor(
+    target: HTMLElement,
+    button: HTMLElement | null,
+    movable: boolean
+  ) {
     this.focalId = 'focal-point-' + Math.floor(Math.random() * 99999);
-    this.$target = $target;
-    this.$focal = $(
-      '<div class="preview-focal-point" id="' +
-        this.focalId +
-        '"><div class="inner"></div></div>'
-    )
-      .hide()
-      .appendTo(this.$target);
+    this.target = target;
+    this.focal = document.createElement('div');
+    this.focal.className = 'preview-focal-point';
+    this.focal.id = this.focalId;
+    this.focal.innerHTML = '<div class="inner"></div>';
+    this.focal.style.display = 'none';
+    this.target.append(this.focal);
 
-    const initialPosition = this.$target.find('img').data('focal');
-    this.focalPos = initialPosition.split(';');
-    this.assetUid = this.$target.find('img').data('uid');
+    const img = this.target.querySelector('img');
+    const initialPosition = img?.dataset.focal ?? '0.5;0.5';
+    const [x = 0.5, y = 0.5] = initialPosition.split(';').map(Number);
+    this.focalPos = [x, y];
+    this.assetUid = img?.dataset.uid ?? '';
 
-    if (this.isCentered()) {
-      this.visible = false;
-    } else {
-      this.visible = true;
-    }
-
+    this.visible = !this.isCentered();
     this.movable = movable;
-    this.$button = $button;
+    this.button = button;
 
     if (this.movable) {
-      this.$button.on('click', () => {
+      this.button?.addEventListener('click', () => {
         this.toggleFocal();
       });
 
       this.addFocalMoveListeners();
     } else {
-      this.$focal.css({cursor: 'auto'});
+      this.focal.style.cursor = 'auto';
     }
 
     this.renderFocal();
   }
 
   protected addFocalMoveListeners() {
-    this.$focal.on('mousedown touchstart', this.handleDragStart.bind(this));
-    $(window).on('mouseup touchend', this.handleDragEnd.bind(this));
-    $(window).on('mousemove touchmove', this.handleMove.bind(this));
+    // Pointer events cover touch too, once the browser stops panning on it
+    this.focal.style.touchAction = 'none';
+    this.focal.addEventListener('pointerdown', this.#onDragStart);
+    window.addEventListener('pointerup', this.#onDragEnd);
+    window.addEventListener('pointercancel', this.#onDragEnd);
+    window.addEventListener('pointermove', this.#onMove);
   }
 
   public destruct() {
@@ -76,51 +94,53 @@ export class FocalPoint {
       this.storeFocalPosition();
     }
 
-    this.$focal.off('mousedown touchstart', this.handleDragStart.bind(this));
-    $(window).off('mouseup touchend', this.handleDragEnd.bind(this));
-    $(window).off('mousemove touchmove', this.handleMove.bind(this));
+    this.focal.removeEventListener('pointerdown', this.#onDragStart);
+    window.removeEventListener('pointerup', this.#onDragEnd);
+    window.removeEventListener('pointercancel', this.#onDragEnd);
+    window.removeEventListener('pointermove', this.#onMove);
   }
 
-  public handleDragStart(ev: JQEvent) {
+  public handleDragStart(ev: PointerEvent) {
     this.dragging = this.movable;
-    this.lastX = ev.pageX!;
-    this.lastY = ev.pageY!;
+    this.lastX = ev.clientX;
+    this.lastY = ev.clientY;
   }
 
   protected isCentered() {
-    return this.focalPos[0] == 0.5 && this.focalPos[1] == 0.5;
+    return this.focalPos[0] === 0.5 && this.focalPos[1] === 0.5;
   }
 
   protected handleDragEnd() {
     this.dragging = false;
   }
 
-  protected handleMove(ev: JQEvent) {
-    ev.preventDefault();
-
+  protected handleMove(ev: PointerEvent) {
     if (!this.dragging || this.saving) {
       return;
     }
 
-    const deltaX = ev.pageX! - this.lastX;
-    const deltaY = ev.pageY! - this.lastY;
+    ev.preventDefault();
+
+    const deltaX = ev.clientX - this.lastX;
+    const deltaY = ev.clientY - this.lastY;
 
     if (deltaY !== 0 || deltaX !== 0) {
       this.shouldSave = true;
     }
 
     // Update last position
-    this.lastX = ev.pageX!;
-    this.lastY = ev.pageY!;
+    this.lastX = ev.clientX;
+    this.lastY = ev.clientY;
 
     // Moved from where the focal point is, rather than where the marker is
     // measured to be: in a dialog, the marker's offset parent isn't the
     // element it's positioned in, so measuring it added the dialog's offset
     // on every move.
-    const containerWidth = this.$target.width()!;
-    const containerHeight = this.$target.height()!;
-    const desiredLeft = containerWidth * Number(this.focalPos[0]) + deltaX;
-    const desiredTop = containerHeight * Number(this.focalPos[1]) + deltaY;
+    const {width: containerWidth, height: containerHeight} = contentSize(
+      this.target
+    );
+    const desiredLeft = containerWidth * this.focalPos[0] + deltaX;
+    const desiredTop = containerHeight * this.focalPos[1] + deltaY;
 
     // Make it fit the actual container
     const actualLeft = Math.min(Math.max(0, desiredLeft), containerWidth);
@@ -184,15 +204,15 @@ export class FocalPoint {
 
   /** Presses the toggle button while the focal point is enabled. */
   protected renderButton() {
-    this.$button.prop('active', this.visible);
+    if (this.button) {
+      (this.button as HTMLElement & {active?: boolean}).active = this.visible;
+    }
   }
 
   protected renderFocal() {
+    this.focal.style.display = this.visible ? '' : 'none';
     if (this.visible) {
-      this.$focal.show();
       this.positionFocal();
-    } else {
-      this.$focal.hide();
     }
 
     this.renderButton();
@@ -203,14 +223,9 @@ export class FocalPoint {
    * @protected
    */
   protected positionFocal() {
-    this.$focal.css({
-      left:
-        this.$target.width()! * this.focalPos[0] -
-        this.$focal.outerWidth()! / 2,
-      top:
-        this.$target.height()! * this.focalPos[1] -
-        this.$focal.outerHeight()! / 2,
-    });
+    const {width, height} = contentSize(this.target);
+    this.focal.style.left = `${width * this.focalPos[0] - this.focal.offsetWidth / 2}px`;
+    this.focal.style.top = `${height * this.focalPos[1] - this.focal.offsetHeight / 2}px`;
   }
 }
 
@@ -226,12 +241,10 @@ export function bootFocalPoint(root: Element): void {
 
   current?.destruct();
   current = new FocalPoint(
-    $(container),
-    $(
-      container.dataset.focalPointToggle
-        ? `#${container.dataset.focalPointToggle}`
-        : []
-    ),
+    container,
+    container.dataset.focalPointToggle
+      ? document.getElementById(container.dataset.focalPointToggle)
+      : null,
     container.dataset.focalPoint === 'edit'
   );
 }
