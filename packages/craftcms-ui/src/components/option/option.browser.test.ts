@@ -159,14 +159,29 @@ describe('visual', () => {
   });
 
   it('marks only the selected option with a check mark, hidden from assistive technology', async () => {
-    const {options} = await openCombobox((c) => (c.modelValue = 'cherry'));
+    const {control, options} = await openCombobox(
+      (c) => (c.modelValue = 'cherry')
+    );
     const [apple, , cherry] = options;
     const check = cherry!.shadowRoot!.querySelector<HTMLElement>('.check');
 
     expect(check).not.toBeNull();
     expect(check!.getBoundingClientRect().width).toBeGreaterThan(0);
-    expect(check).toHaveAttribute('aria-hidden', 'true');
+    await expect.element(cherry!).toHaveAccessibleName('Cherry Prunus');
+    await expect
+      .element(
+        page
+          .getByRole('option', {name: 'Cherry Prunus', exact: true})
+          .getByRole('img')
+      )
+      .not.toBeInTheDocument();
     expect(apple!.shadowRoot!.querySelector('.check')).toBeNull();
+
+    control.modelValue = 'apple';
+    await settle();
+
+    expect(apple!.shadowRoot!.querySelector('.check')).not.toBeNull();
+    expect(cherry!.shadowRoot!.querySelector('.check')).toBeNull();
   });
 
   describe.each(['light', 'dark'])('in the %s theme', (theme) => {
@@ -189,6 +204,13 @@ describe('visual', () => {
       expect(
         contrast(getComputedStyle(check).color, background(cherry!, popup))
       ).toBeGreaterThanOrEqual(3);
+
+      await userEvent.hover(cherry!);
+      await settle();
+      expect(
+        contrast(getComputedStyle(check).color, background(cherry!, popup))
+      ).toBeGreaterThanOrEqual(3);
+      await userEvent.unhover(cherry!);
 
       while (!cherry!.hasAttribute('active')) {
         await userEvent.keyboard('{ArrowDown}');
