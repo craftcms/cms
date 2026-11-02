@@ -325,6 +325,63 @@ class NestedElementManagerTest extends TestCase
         self::assertSame('v3', $finalNested[0]->getFieldValue('nemText'));
     }
 
+    // Fixed #20226: "Save as a new draft" from an explicit draft (ElementsController::actionDuplicate()
+    // passing the source draft's draftId) produced a new draft with no nested elements, because
+    // maintainNestedElements() skipped drafts and expected Drafts::createDraft() to copy them.
+    public function testDuplicatingDraftAsNewDraftKeepsNestedElements(): void
+    {
+        $owner = $this->_makeOwner([
+            'new1' => ['type' => 'nemBlock', 'fields' => ['nemText' => 'Shared']],
+            'new2' => ['type' => 'nemBlock', 'fields' => ['nemText' => 'Original']],
+        ]);
+        [$canonicalShared, $canonicalEdited] = $this->_nestedEntries($owner);
+
+        /** @var Entry $draft */
+        $draft = $this->drafts->createDraft($owner, 1);
+        $draft->setFieldValue('nemMatrix', [
+            $canonicalShared->id => [],
+            $canonicalEdited->id => ['type' => 'nemBlock', 'fields' => ['nemText' => 'Edited']],
+            'new1' => ['type' => 'nemBlock', 'fields' => ['nemText' => 'Added']],
+        ]);
+        if (!$this->elements->saveElement($draft)) {
+            throw new InvalidElementException($draft);
+        }
+        $draft = Entry::find()->id($draft->id)->drafts()->one();
+        $draftNested = $this->_nestedEntries($draft);
+        $draftAdded = $draftNested[2];
+
+        /** @var Entry $newDraft */
+        $newDraft = $this->elements->duplicateElement($draft, [
+            'isProvisionalDraft' => false,
+            'draftId' => $draft->draftId,
+        ], copyModifiedFields: true);
+        self::assertNotSame($draft->draftId, $newDraft->draftId);
+        self::assertSame($owner->id, $newDraft->getCanonicalId());
+
+        // Discard the source draft so nothing it owns can leak into the new draft
+        $this->elements->deleteElement($draft, true);
+
+        $newDraft = Entry::find()->id($newDraft->id)->drafts()->one();
+        $newNested = $this->_nestedEntries($newDraft);
+        self::assertSame(['Shared', 'Edited', 'Added'], array_map(fn(Entry $e) => $e->getFieldValue('nemText'), $newNested));
+        // Unmodified nested entries stay shared with the canonical owner
+        self::assertSame($canonicalShared->id, $newNested[0]->id);
+        // Modified ones are the new draft's own, still derived from the canonical nested entry
+        self::assertSame($newDraft->id, $newNested[1]->getPrimaryOwnerId());
+        self::assertSame($canonicalEdited->id, $newNested[1]->getCanonicalId());
+        // Entries added in the source draft must not point back at the source draft's copies
+        self::assertSame($newDraft->id, $newNested[2]->getPrimaryOwnerId());
+        self::assertNotSame($draftAdded->id, $newNested[2]->getCanonicalId());
+
+        $this->drafts->applyDraft($newDraft);
+
+        $owner = Entry::find()->id($owner->id)->one();
+        $finalNested = $this->_nestedEntries($owner);
+        self::assertSame(['Shared', 'Edited', 'Added'], array_map(fn(Entry $e) => $e->getFieldValue('nemText'), $finalNested));
+        self::assertSame($canonicalShared->id, $finalNested[0]->id);
+        self::assertSame($canonicalEdited->id, $finalNested[1]->id);
+    }
+
     // Models "fixes an issue where nested content could be lost or overwritten when adding new
     // site" (e2e4698) and d39f1f9: with a Matrix field whose propagation method is more restrictive
     // than its owner, adding a new site to the owner must duplicate the nested elements into that

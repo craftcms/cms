@@ -1708,6 +1708,8 @@ JS, [
                 $element,
                 $newAttributes,
                 asUnpublishedDraft: $asUnpublishedDraft,
+                // keep track of what the source draft changed, so the new draft can be applied correctly
+                copyModifiedFields: $isExplicitDraft && !$asUnpublishedDraft,
             );
         } catch (InvalidElementException $e) {
             return $this->_asFailure($e->element, Craft::t('app', 'Couldn’t duplicate {type}.', [
