@@ -202,8 +202,13 @@ class PerformElementActionController
             return $this->asFailure($result['message']);
         }
 
+        // A JSON request's body carries the action's own settings, which can
+        // include a plain `successMessage`, so it skips asSuccess()'s signed
+        // message override.
         if ($embedded) {
-            return $this->asSuccess($result['message']);
+            return $request->expectsJson()
+                ? $this->asJsonSuccess($result['message'])
+                : $this->asSuccess($result['message']);
         }
 
         $responseData = new ElementIndexResource()->toArray($request);
@@ -220,7 +225,9 @@ class PerformElementActionController
                 : null;
         }
 
-        return $this->asSuccess($result['message'], $responseData, $this->actionRedirect($action));
+        return $request->expectsJson()
+            ? $this->asJsonSuccess($result['message'], $responseData, $this->actionRedirect($action))
+            : $this->asSuccess($result['message'], $responseData, $this->actionRedirect($action));
     }
 
     /**
