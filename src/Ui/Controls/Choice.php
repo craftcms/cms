@@ -79,11 +79,11 @@ class Choice extends Control
     }
 
     /**
-     * An option may carry a `thumbnail` illustrating the choice, rendered above
-     * the radio in the Radios presentation: an image `src`, or inline `svg`
-     * markup colored with the `--c-illustration-*` tokens (see
-     * {@see Cp::illustration()}). Its `aspectRatio` maps to the CSS property of
-     * the same name.
+     * An option may carry a `thumbnail` illustrating the choice, which shows the
+     * Radios presentation as cards with the illustration above the label: an
+     * image `src`, or inline `svg` markup colored with the `--c-illustration-*`
+     * tokens (see {@see Cp::illustration()}). Its `aspectRatio` maps to the CSS
+     * property of the same name.
      *
      * `group` heads a run of consecutive options sharing it, when presented as
      * a select; other presentations ignore it.
@@ -525,7 +525,7 @@ class Choice extends Control
 
         return RadioGroup::make()
             ->id($attributes['id'])
-            ->buttons($buttons)
+            ->appearance($buttons ? 'button-group' : null)
             ->options($radios)
             ->attributes(self::groupAttributes($attributes, 'radiogroup'))
             ->toHtml();

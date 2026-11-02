@@ -23,11 +23,24 @@ A radio group also cannot be cleared once an option is chosen. When "none of the
 
 The group takes its own `label`, `help-text`, and `feedback`. The radios name the options; only the group can name the question.
 
-## Buttons
+## Icons
 
-`buttons` shows the options as a row of joined buttons, for a short choice that reads better side by side. The options are still radios: they're announced as radios, the group is a single tab stop, and the arrow keys move the selection.
+A radio's `icon` slot shows an icon or illustration before its label, `--c-radio-icon-size` tall.
 
-<Canvas of={RadioGroupStories.Buttons} sourceState="shown" />
+<Canvas of={RadioGroupStories.Icons} sourceState="shown" />
+
+## Appearance
+
+`appearance` draws the options as buttons or cards rather than a stacked list. The options are still radios: they're announced as radios, the group is a single tab stop, and the arrow keys move the selection.
+
+- `buttons` shows separate buttons, for a short choice that reads better side by side. `button-group` joins them in one row, like a Button Group.
+- `cards` shows separate cards, for a choice that's easier to recognize than to describe, such as a layout or a crop mode. Each radio's `icon` is drawn large, with the label below it, inside a button-like box. `card-group` joins them in one row.
+
+Every appearance wraps onto more rows when the options don't fit in one, rather than overflowing. A joined group comes apart as it wraps, so a wrapped `button-group` looks like `buttons`, and a wrapped `card-group` like `cards`.
+
+<Canvas of={RadioGroupStories.Appearance} sourceState="shown" />
+
+### Buttons
 
 An option labeled only by an icon gets a square button. Give the icon a `label`, so the radio has a name.
 
@@ -35,17 +48,13 @@ An option labeled only by an icon gets a square button. Give the icon a `label`,
 
 Use a [Button Group](?path=/docs/components-button-group--docs) instead when the buttons act immediately, such as switching a view, rather than set a value.
 
-## Thumbnails
+### Cards
 
-`thumbnails` shows the options as illustrated tiles, for a choice that's easier to recognize than to describe, such as a layout or a crop mode. Each radio slots its illustration into `thumbnail`, and the label sits below it. The options are still radios, announced and operated like any other radio group.
+Each card is between `--c-radio-card-min-size` and `--c-radio-card-max-size` wide. A `card-group` comes apart once it's too narrow for every card at its minimum width.
 
-<Canvas of={RadioGroupStories.Thumbnails} sourceState="shown" />
+<Canvas of={RadioGroupStories.CardGroupWrapped} sourceState="shown" />
 
-The tiles are joined in one row, each between `--c-radio-tile-min-size` and `--c-radio-tile-max-size` wide. When the group is too narrow for every tile at its minimum width, they come apart and wrap onto as many rows as they need, rather than overflowing.
-
-<Canvas of={RadioGroupStories.ThumbnailsWrapped} sourceState="shown" />
-
-Illustrations are 60px tall by default (`--c-radio-tile-thumbnail-height`), and are scaled to fit the tile. Slot an inline SVG, wrapped in a `<span aria-hidden="true">`, and color each shape with the illustration palette's `--c-illustration-*` tokens in a `style` attribute:
+Icons on a card are 60px tall by default (`--c-radio-card-icon-size`), and are scaled to fit the card. Slot an inline SVG, wrapped in a `<span aria-hidden="true">`, and color each shape with the illustration palette's `--c-illustration-*` tokens in a `style` attribute:
 
 ```html
 <path d="…" style="fill: var(--c-illustration-figure)" />
@@ -63,9 +72,9 @@ Each row below draws the same sample illustration with everything but that role 
 
 The parts of an illustration that show what its option means need 3:1 contrast against whatever is directly behind them. The palette guarantees these pairings, at rest, hovered and selected, in both themes:
 
-- A `line` can sit on the tile or on a `surface`.
+- A `line` can sit on the card or on a `surface`.
 - A `figure` can sit on a `field`.
-- A `mark` can sit on a `field`, a `figure` or the tile.
+- A `mark` can sit on a `field`, a `figure` or the card.
 
 Anything else isn't guaranteed. `subtle` promises no contrast at all, so don't use it for anything that shows meaning. To show where a shape ends, such as a photo's position inside a frame, outline it with `line`.
 
@@ -73,7 +82,7 @@ An `<img>` with an empty `alt` works too, but can't use the tokens: it keeps the
 
 ### Building one in PHP
 
-Give each `Choice` option a `thumbnail`, and the radio group switches to tiles on its own. `Cp::illustration()` inlines an SVG from `resources/public`; pass `['src' => $url]` for an image instead:
+Give each `Choice` option a `thumbnail`, and the radio group switches to a card group on its own. `Cp::illustration()` inlines an SVG from `resources/public`; pass `['src' => $url]` for an image instead:
 
 ```php
 use CraftCms\Cms\Cp\Cp;
@@ -125,7 +134,7 @@ Call `fieldset()` on the field, so its label becomes the group's legend.
 
 The group is announced as a radio group named by its label, and takes one Tab stop. The arrow keys move between options and select them as they go, because every option is a native radio sharing the group's name.
 
-Give the group a visible label that names the question, and keep each option's text in its radio's label. With `thumbnails`, hide each illustration from assistive tech, with `aria-hidden="true"` on an inline SVG's wrapper or an empty `alt` on an `<img>`: the label below it already names the option, so a description would be read twice. Color its key parts with the `--c-illustration-*` tokens, in the pairings they promise, so they keep 3:1 contrast; see [Thumbnails](#thumbnails).
+Give the group a visible label that names the question, and keep each option's text in its radio's label. Hide each radio's icon from assistive tech, with `aria-hidden="true"` on an inline SVG's wrapper or an empty `alt` on an `<img>`: the label already names the option, so a description would be read twice. On a card, color the illustration's key parts with the `--c-illustration-*` tokens, in the pairings they promise, so they keep 3:1 contrast; see [Cards](#cards).
 
 When a choice is required, say so with `craft-field`'s `required` or in the label text, as well as adding the `Required` validator; the validator alone doesn't show anything until an error appears. Write validator messages that say what to choose.
 

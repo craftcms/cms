@@ -10,8 +10,8 @@ import {contrast} from '../../../test/contrast';
 import {
   PALETTE_SAMPLE,
   VIEW_MODES,
-  type RadioTileOption,
-} from '../../../test/radio-tile-fixtures';
+  type RadioCardOption,
+} from '../../../test/radio-card-fixtures';
 
 beforeEach(() => {
   document.body.innerHTML = '';
@@ -33,13 +33,16 @@ async function parkPointer(): Promise<void> {
   spot.remove();
 }
 
-async function render(): Promise<{
+async function render(
+  appearance = 'button-group',
+  width = ''
+): Promise<{
   group: CraftRadioGroup;
   radios: CraftRadio[];
   inputs: HTMLInputElement[];
 }> {
   document.body.innerHTML = `
-    <craft-radio-group buttons label="Position" style="--c-button-radius: 4px">
+    <craft-radio-group appearance="${appearance}" label="Position" style="--c-button-radius: 4px;${width ? ` inline-size: ${width}` : ''}">
       ${['start', 'center', 'end']
         .map(
           (value) => `
@@ -58,6 +61,7 @@ async function render(): Promise<{
     group.updateComplete,
     ...radios.map((radio) => radio.updateComplete),
   ]);
+  await new Promise((resolve) => requestAnimationFrame(resolve));
   await settle();
 
   return {
@@ -144,7 +148,7 @@ it('fills the selected button and raises it', async () => {
 
 it('makes an icon-only option a square button', async () => {
   document.body.innerHTML = `
-    <craft-radio-group buttons label="Position">
+    <craft-radio-group appearance="button-group" label="Position">
       <craft-radio>
         <input slot="input" type="radio" id="corner" name="corner" value="top">
         <label slot="label" for="corner"><craft-icon name="arrow-up" label="Top"></craft-icon></label>
@@ -198,23 +202,24 @@ it('gives only the unchecked buttons a pointer cursor', async () => {
   ]);
 });
 
-async function renderTiles(
+async function renderCards(
   width: string,
   wrap: (html: string) => string = (html) => html,
-  options: RadioTileOption[] = VIEW_MODES
+  appearance = 'card-group',
+  options: RadioCardOption[] = VIEW_MODES
 ): Promise<{
   group: CraftRadioGroup;
   radios: CraftRadio[];
   inputs: HTMLInputElement[];
 }> {
   document.body.innerHTML = wrap(`
-    <craft-radio-group thumbnails label="View Mode" ${width ? `style="inline-size: ${width}"` : ''}>
+    <craft-radio-group appearance="${appearance}" label="View Mode" ${width ? `style="inline-size: ${width}"` : ''}>
       ${options
         .map(
           (option) => `
         <div>
           <craft-radio>
-            <span slot="thumbnail" aria-hidden="true">${option.svg}</span>
+            <span slot="icon" aria-hidden="true">${option.svg}</span>
             <input slot="input" type="radio" id="view-${option.value}" name="view" value="${option.value}"${option.value === 'cards' ? ' checked' : ''}>
             <label slot="label" for="view-${option.value}">${option.label}</label>
           </craft-radio>
@@ -238,16 +243,11 @@ async function renderTiles(
   };
 }
 
-const thumbnailBox = (radio: CraftRadio) =>
-  radio.shadowRoot!.querySelector<HTMLElement>('[part="thumbnail"]')!;
-
-it('joins the tiles in one row, rounding only the outer corners', async () => {
-  const {group, radios} = await renderTiles('40rem');
-  const rects = radios.map((radio) =>
-    thumbnailBox(radio).getBoundingClientRect()
-  );
+it('joins the cards in one row, rounding only the outer corners', async () => {
+  const {group, radios} = await renderCards('40rem');
+  const rects = radios.map((radio) => radio.getBoundingClientRect());
   const radius = (radio: CraftRadio, corner: string) =>
-    parseFloat(getComputedStyle(thumbnailBox(radio)).getPropertyValue(corner));
+    parseFloat(getComputedStyle(radio).getPropertyValue(corner));
 
   expect(group.hasAttribute('data-wrapped')).toBe(false);
   rects.slice(1).forEach((rect, i) => {
@@ -260,8 +260,8 @@ it('joins the tiles in one row, rounding only the outer corners', async () => {
   expect(radius(radios[4]!, 'border-start-end-radius')).toBeGreaterThan(0);
 });
 
-it('wraps the tiles into separate tiles when the row does not fit', async () => {
-  const {group, radios} = await renderTiles('18rem');
+it('wraps the cards into separate cards when the row does not fit', async () => {
+  const {group, radios} = await renderCards('18rem');
   const tops = new Set(
     radios.map((radio) => Math.round(radio.getBoundingClientRect().top))
   );
@@ -269,14 +269,14 @@ it('wraps the tiles into separate tiles when the row does not fit', async () => 
   expect(group.hasAttribute('data-wrapped')).toBe(true);
   expect(tops.size).toBeGreaterThan(1);
   for (const radio of radios) {
-    const style = getComputedStyle(thumbnailBox(radio));
+    const style = getComputedStyle(radio);
     expect(parseFloat(style.borderStartStartRadius)).toBeGreaterThan(0);
     expect(parseFloat(style.borderEndEndRadius)).toBeGreaterThan(0);
   }
 });
 
-it('rejoins the tiles when the group widens again', async () => {
-  const {group} = await renderTiles('18rem');
+it('rejoins the cards when the group widens again', async () => {
+  const {group} = await renderCards('18rem');
 
   group.style.inlineSize = '40rem';
   await new Promise((resolve) => requestAnimationFrame(resolve));
@@ -285,8 +285,8 @@ it('rejoins the tiles when the group widens again', async () => {
   expect(group.hasAttribute('data-wrapped')).toBe(false);
 });
 
-it('fits the tiles in a 320px wide container without scrolling sideways', async () => {
-  const {group, radios} = await renderTiles('320px');
+it('fits the cards in a 320px wide container without scrolling sideways', async () => {
+  const {group, radios} = await renderCards('320px');
   const {right} = group.getBoundingClientRect();
 
   for (const radio of radios) {
@@ -296,8 +296,8 @@ it('fits the tiles in a 320px wide container without scrolling sideways', async 
   }
 });
 
-it('lays wrapped tiles out in the order the arrow keys follow', async () => {
-  const {group, radios, inputs} = await renderTiles('18rem');
+it('lays wrapped cards out in the order the arrow keys follow', async () => {
+  const {group, radios, inputs} = await renderCards('18rem');
   const visual = [...radios].sort((a, b) => {
     const ra = a.getBoundingClientRect();
     const rb = b.getBoundingClientRect();
@@ -314,9 +314,11 @@ it('lays wrapped tiles out in the order the arrow keys follow', async () => {
 });
 
 it('selects an option when its illustration is clicked', async () => {
-  const {group, radios} = await renderTiles('40rem');
+  const {group, radios} = await renderCards('40rem');
 
-  const box = thumbnailBox(radios[3]!).getBoundingClientRect();
+  const box = radios[3]!
+    .querySelector('[slot="icon"]')!
+    .getBoundingClientRect();
   const host = radios[3]!.getBoundingClientRect();
   await userEvent.click(radios[3]!, {
     position: {
@@ -330,22 +332,22 @@ it('selects an option when its illustration is clicked', async () => {
   expect(group.modelValue).toBe('blocks');
 });
 
-it('draws the focus ring around the focused tile illustration', async () => {
-  const {radios} = await renderTiles('40rem');
+it('draws the focus ring around the focused card', async () => {
+  const {radios} = await renderCards('40rem');
 
   await userEvent.tab();
   await settle();
 
-  const style = getComputedStyle(thumbnailBox(radios[1]!));
+  const style = getComputedStyle(radios[1]!);
   expect(style.outlineStyle).toBe('solid');
   expect(parseFloat(style.outlineWidth)).toBeGreaterThan(0);
-  expect(getComputedStyle(thumbnailBox(radios[0]!)).outlineStyle).toBe('none');
+  expect(getComputedStyle(radios[0]!).outlineStyle).toBe('none');
 });
 
-it('marks the selected tile with a thicker border and a bold label', async () => {
-  const {radios} = await renderTiles('40rem');
+it('marks the selected card with a thicker border and a bold label', async () => {
+  const {radios} = await renderCards('40rem');
   const [selected, unselected] = [radios[1]!, radios[2]!].map((radio) =>
-    getComputedStyle(thumbnailBox(radio))
+    getComputedStyle(radio)
   );
   const weight = (radio: CraftRadio) =>
     Number(
@@ -363,11 +365,11 @@ it('draws the selected illustration in blue, following the selection and the the
   const BLUE_500 = 'rgb(62, 116, 242)';
   const SLATE_500 = 'rgb(111, 124, 148)';
   const SLATE_500_DARK = 'rgb(143, 155, 175)';
-  const {radios, inputs} = await renderTiles('40rem');
+  const {radios, inputs} = await renderCards('40rem');
   const hairline = (radio: CraftRadio) =>
     getComputedStyle(
       radio.querySelector(
-        '[slot="thumbnail"] [style*="stroke: var(--c-illustration-line)"]'
+        '[slot="icon"] [style*="stroke: var(--c-illustration-line)"]'
       )!
     ).stroke;
 
@@ -391,22 +393,23 @@ it("keeps the illustrations' outlines, figures and marks at 3:1 at rest, hovered
   const failures: string[] = [];
 
   for (const theme of ['light', 'dark']) {
-    const {radios, inputs} = await renderTiles(
+    const {radios, inputs} = await renderCards(
       '40rem',
       (html) =>
         `<div data-theme="${theme}" style="background-color: var(--c-surface-default)">${html}</div>`,
+      'card-group',
       [VIEW_MODES[1]!, PALETTE_SAMPLE]
     );
     const sample = radios[1]!;
-    const thumbnail = sample.querySelector('[slot="thumbnail"]')!;
+    const icon = sample.querySelector('[slot="icon"]')!;
     const paint = (selector: string, property: 'fill' | 'stroke') =>
-      getComputedStyle(thumbnail.querySelector(selector)!)[property];
+      getComputedStyle(icon.querySelector(selector)!)[property];
 
     const check = (state: string) => {
       const backdrop = getComputedStyle(
         document.querySelector('[data-theme]')!
       ).backgroundColor;
-      const tile = getComputedStyle(thumbnailBox(sample)).backgroundColor;
+      const card = getComputedStyle(sample).backgroundColor;
       const field = paint(
         '[style*="fill: var(--c-illustration-field)"]',
         'fill'
@@ -421,9 +424,9 @@ it("keeps the illustrations' outlines, figures and marks at 3:1 at rest, hovered
       );
       const pairs: [string, string, string][] = [
         [
-          'outline / tile',
+          'outline / card',
           paint('[style*="stroke: var(--c-illustration-line)"]', 'stroke'),
-          tile,
+          card,
         ],
         [
           'outline / surface',
@@ -433,7 +436,7 @@ it("keeps the illustrations' outlines, figures and marks at 3:1 at rest, hovered
         ['figure / field', figure, field],
         ['mark / field', mark, field],
         ['mark / figure', mark, figure],
-        ['mark / tile', mark, tile],
+        ['mark / card', mark, card],
       ];
 
       for (const [name, foreground, background] of pairs) {
@@ -456,20 +459,20 @@ it("keeps the illustrations' outlines, figures and marks at 3:1 at rest, hovered
   expect(failures).toEqual([]);
 });
 
-it('distinguishes the selected tile in forced colors mode', async () => {
+it('distinguishes the selected card in forced colors mode', async () => {
   await cdp().send('Emulation.setEmulatedMedia', {
     features: [{name: 'forced-colors', value: 'active'}],
   });
-  const {radios} = await renderTiles('40rem');
+  const {radios} = await renderCards('40rem');
   const [selected, unselected] = [radios[1]!, radios[2]!].map((radio) =>
-    getComputedStyle(thumbnailBox(radio))
+    getComputedStyle(radio)
   );
 
   expect(selected!.borderTopColor).not.toBe(unselected!.borderTopColor);
 });
 
-it('joins the tiles once shown in a container that sizes to its content', async () => {
-  const {group} = await renderTiles(
+it('joins the cards once shown in a container that sizes to its content', async () => {
+  const {group} = await renderCards(
     '',
     (html) =>
       `<div style="display: none; grid-template-columns: min-content">${html}</div>`
@@ -482,3 +485,88 @@ it('joins the tiles once shown in a container that sizes to its content', async 
 
   expect(group.hasAttribute('data-wrapped')).toBe(false);
 });
+
+it.each([
+  ['buttons', () => render('buttons')],
+  ['cards', () => renderCards('40rem', undefined, 'cards')],
+])(
+  'draws %s as separate, fully rounded options',
+  async (_appearance, renderGroup) => {
+    const {radios} = await renderGroup();
+    const rects = radios.map((radio) => radio.getBoundingClientRect());
+
+    const neighbors = rects
+      .slice(1)
+      .map((rect, i) => [rects[i]!, rect] as const)
+      .filter(([before, after]) => after.top === before.top);
+
+    expect(neighbors.length).toBeGreaterThan(0);
+    for (const [before, after] of neighbors) {
+      expect(after.left).toBeGreaterThan(before.right);
+    }
+    for (const radio of radios) {
+      const style = getComputedStyle(radio);
+      expect(parseFloat(style.borderStartStartRadius)).toBeGreaterThan(0);
+      expect(parseFloat(style.borderStartEndRadius)).toBeGreaterThan(0);
+    }
+  }
+);
+
+const rows = (radios: CraftRadio[]) =>
+  new Set(radios.map((radio) => Math.round(radio.getBoundingClientRect().top)))
+    .size;
+
+it.each([
+  ['buttons', () => render('buttons', '6rem')],
+  ['button-group', () => render('button-group', '6rem')],
+  ['cards', () => renderCards('12rem', undefined, 'cards')],
+  ['card-group', () => renderCards('12rem')],
+])('wraps %s that do not fit in one row', async (_appearance, renderGroup) => {
+  const {group, radios} = await renderGroup();
+  const {right} = group.getBoundingClientRect();
+
+  expect(rows(radios)).toBeGreaterThan(1);
+  for (const radio of radios) {
+    expect(radio.getBoundingClientRect().right).toBeLessThanOrEqual(
+      right + 0.5
+    );
+  }
+});
+
+it('draws a wrapped button group as separate buttons', async () => {
+  const {group, radios} = await render('button-group', '6rem');
+
+  expect(group.hasAttribute('data-wrapped')).toBe(true);
+  for (const radio of radios) {
+    const style = getComputedStyle(radio);
+    expect(parseFloat(style.borderStartStartRadius)).toBeGreaterThan(0);
+    expect(parseFloat(style.borderEndEndRadius)).toBeGreaterThan(0);
+  }
+
+  group.style.inlineSize = '40rem';
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  await settle();
+
+  expect(group.hasAttribute('data-wrapped')).toBe(false);
+  expect(rows(radios)).toBe(1);
+  expect(parseFloat(getComputedStyle(radios[1]!).borderStartStartRadius)).toBe(
+    0
+  );
+});
+
+it.each(['cards', 'card-group'])(
+  'shrinks %s to fit a grid parent narrower than the row',
+  async (appearance) => {
+    const {group, radios} = await renderCards(
+      '',
+      (html) => `<div style="display: grid; inline-size: 18rem">${html}</div>`,
+      appearance
+    );
+    const {right} = group.parentElement!.getBoundingClientRect();
+
+    expect(group.getBoundingClientRect().right).toBeLessThanOrEqual(
+      right + 0.5
+    );
+    expect(rows(radios)).toBeGreaterThan(1);
+  }
+);

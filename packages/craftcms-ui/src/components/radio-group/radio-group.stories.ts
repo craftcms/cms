@@ -12,7 +12,7 @@ import {
   PALETTE_SAMPLE,
   VIEW_MODES,
   type IllustrationRole,
-} from '../../../test/radio-tile-fixtures';
+} from '../../../test/radio-card-fixtures';
 
 /**
  * `args` and `argTypes` are derived from the custom elements manifest, so the
@@ -106,25 +106,64 @@ export const ServerRendered: Story = {
     </craft-radio-group>`,
 };
 
+const alignments = () =>
+  ['Start', 'Center', 'End'].map(
+    (label) =>
+      html`<craft-radio
+        .choiceValue="${label.toLowerCase()}"
+        ?checked="${label === 'Center'}"
+      >
+        <label slot="label">${label}</label>
+      </craft-radio>`
+  );
+
+const withIcons = (checked: string) =>
+  VIEW_MODES.map(
+    (option) =>
+      html`<craft-radio
+        .choiceValue="${option.value}"
+        ?checked="${option.value === checked}"
+      >
+        <span slot="icon" aria-hidden="true">${unsafeSVG(option.svg)}</span>
+        <label slot="label">${option.label}</label>
+      </craft-radio>`
+  );
+
 /**
- * `buttons` shows the options as a row of joined buttons. They're still
- * radios: the group is one tab stop, and the arrow keys move the selection.
+ * `appearance` draws the options as buttons or cards, separate or joined,
+ * rather than a stacked list. They're still radios: the group is one tab stop,
+ * and the arrow keys move the selection.
+ *
+ * - `buttons`: separate buttons, wrapping onto more rows as needed.
+ * - `button-group`: buttons joined in one row, like a `craft-button-group`.
+ * - `cards`: separate cards, each radio's `icon` drawn large above its label.
+ * - `card-group`: cards joined in one row, which come apart when the row
+ *   doesn't fit.
  */
-export const Buttons: Story = {
+export const Appearance: Story = {
   parameters: {controls: {disable: true}},
   render: () =>
-    html`<craft-radio-group buttons name="alignment">
-      <label slot="label">Alignment</label>
-      ${['Start', 'Center', 'End'].map(
-        (label) =>
-          html`<craft-radio
-            .choiceValue="${label.toLowerCase()}"
-            ?checked="${label === 'Center'}"
-          >
-            <label slot="label">${label}</label>
-          </craft-radio>`
-      )}
-    </craft-radio-group>`,
+    html`<div style="display: grid; gap: var(--c-spacing-xl, 1.5rem)">
+      <craft-radio-group appearance="buttons" name="alignment-buttons">
+        <label slot="label"><code>buttons</code></label>
+        ${alignments()}
+      </craft-radio-group>
+      <craft-radio-group
+        appearance="button-group"
+        name="alignment-button-group"
+      >
+        <label slot="label"><code>button-group</code></label>
+        ${alignments()}
+      </craft-radio-group>
+      <craft-radio-group appearance="cards" name="view-mode-cards">
+        <label slot="label"><code>cards</code></label>
+        ${withIcons('cards')}
+      </craft-radio-group>
+      <craft-radio-group appearance="card-group" name="view-mode-card-group">
+        <label slot="label"><code>card-group</code></label>
+        ${withIcons('cards')}
+      </craft-radio-group>
+    </div>`,
 };
 
 /**
@@ -144,7 +183,7 @@ export const IconButtons: Story = {
     },
   },
   render: () =>
-    html`<craft-radio-group buttons name="view">
+    html`<craft-radio-group appearance="button-group" name="view">
       <label slot="label">View</label>
       ${[
         ['list', 'list-unordered', 'List'],
@@ -164,50 +203,35 @@ export const IconButtons: Story = {
     </craft-radio-group>`,
 };
 
-const tiles = (checked: string) =>
-  VIEW_MODES.map(
-    (option) =>
-      html`<craft-radio
-        .choiceValue="${option.value}"
-        ?checked="${option.value === checked}"
-      >
-        <span slot="thumbnail" aria-hidden="true"
-          >${unsafeSVG(option.svg)}</span
-        >
-        <label slot="label">${option.label}</label>
-      </craft-radio>`
-  );
-
 /**
- * `thumbnails` shows the options as illustrated tiles, joined in one row. Each
- * radio slots its illustration into `thumbnail`, hidden from assistive tech,
- * since the label below it already names the option. An inline SVG drawn with
- * the illustration palette follows the theme and turns blue when selected; an
- * `<img>` with an empty `alt` works too, but keeps its own colors.
+ * A radio's `icon` is shown before its label, hidden from assistive tech,
+ * since the label already names the option. An inline SVG drawn with the
+ * illustration palette follows the theme; an `<img>` with an empty `alt` works
+ * too, but keeps its own colors.
  */
-export const Thumbnails: Story = {
+export const Icons: Story = {
   parameters: {controls: {disable: true}},
   render: () =>
-    html`<craft-radio-group thumbnails name="view-mode">
+    html`<craft-radio-group name="view-mode">
       <label slot="label">View Mode</label>
-      ${tiles('cards')}
+      ${withIcons('cards')}
     </craft-radio-group>`,
 };
 
 /**
- * When the row doesn't fit at `--c-radio-tile-min-size` per tile, the tiles
- * come apart and wrap onto as many rows as they need.
+ * When a card group's row doesn't fit at `--c-radio-card-min-size` per card,
+ * the cards come apart and wrap onto as many rows as they need.
  */
-export const ThumbnailsWrapped: Story = {
+export const CardGroupWrapped: Story = {
   parameters: {controls: {disable: true}},
   render: () =>
     html`<craft-radio-group
-      thumbnails
+      appearance="card-group"
       name="view-mode-wrapped"
       style="max-inline-size: 18rem"
     >
       <label slot="label">View Mode</label>
-      ${tiles('cards')}
+      ${withIcons('cards')}
     </craft-radio-group>`,
 };
 
@@ -298,7 +322,7 @@ const fadeOthers = ({
       .join(', ');
   const except = (property: string, tokens: IllustrationRole[]) =>
     tokens.length ? `:not(${uses(property, tokens)})` : '';
-  const scope = `[data-palette-role='${token}'] [slot='thumbnail']`;
+  const scope = `[data-palette-role='${token}'] [slot='icon']`;
   const fills = [...(fill ? [token] : []), ...backdrop];
   const strokes = stroke ? [token] : [];
 
@@ -323,7 +347,7 @@ const fadeOthers = ({
 };
 
 /**
- * The illustration palette, one role per row. Each example is a real tile,
+ * The illustration palette, one role per row. Each example is a real card,
  * drawn with the palette's colors in the current theme, with every part but
  * that role's faded.
  */
@@ -364,12 +388,12 @@ export const IllustrationPalette: Story = {
                 <td>
                   <div inert data-palette-role="${role.token}">
                     <craft-radio-group
-                      thumbnails
+                      appearance="card-group"
                       name="palette-${role.token}"
-                      style="--c-radio-tile-thumbnail-height: 7.5rem; --c-radio-tile-min-size: 12rem; --c-radio-tile-max-size: 12rem"
+                      style="--c-radio-card-icon-size: 7.5rem; --c-radio-card-min-size: 12rem; --c-radio-card-max-size: 12rem"
                     >
                       <craft-radio .choiceValue="${role.token}">
-                        <span slot="thumbnail" aria-hidden="true"
+                        <span slot="icon" aria-hidden="true"
                           >${unsafeSVG(PALETTE_SAMPLE.svg)}</span
                         >
                       </craft-radio>

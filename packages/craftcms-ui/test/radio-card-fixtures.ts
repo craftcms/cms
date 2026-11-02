@@ -27,7 +27,7 @@ const svg = (width: number, shapes: string) =>
 const chip = (x: number, y: number, width: number, height: number) =>
   `<rect x="${x + 0.5}" y="${y + 0.5}" width="${width - 1}" height="${height - 1}" rx="${height > 10 ? 5 : 2}" ${paint('surface', 'line')}/>`;
 
-export interface RadioTileOption {
+export interface RadioCardOption {
   value: string;
   label: string;
   svg: string;
@@ -38,7 +38,7 @@ export interface RadioTileOption {
  * Layout illustrations like the ones Craft's View Mode setting uses, one per
  * option. The list is narrower than the rest, as the real one is.
  */
-export const VIEW_MODES: RadioTileOption[] = [
+export const VIEW_MODES: RadioCardOption[] = [
   {
     value: 'list',
     label: 'List',
@@ -91,7 +91,7 @@ export const VIEW_MODES: RadioTileOption[] = [
  * `subtle` bars, mountains (`figure`) on an outlined `field`, and `mark`s that
  * cross them.
  */
-export const PALETTE_SAMPLE: RadioTileOption = {
+export const PALETTE_SAMPLE: RadioCardOption = {
   value: 'palette',
   label: 'Palette',
   width: 80,
