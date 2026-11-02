@@ -1,9 +1,6 @@
 import {html, nothing, type TemplateResult} from 'lit';
 import {unsafeSVG} from 'lit/directives/unsafe-svg.js';
 
-/** @deprecated No longer used; icons resolve through {@link setIconResolver}. */
-export const CRAFT_ICON_NAMESPACE = 'craft';
-
 type ResolvedIcon = TemplateResult | typeof nothing;
 
 export type CraftIconResolver = (
