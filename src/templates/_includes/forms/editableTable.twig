@@ -173,6 +173,7 @@
                                         {% include "_includes/forms/color" with {
                                             name: cellName,
                                             value: value,
+                                            alpha: col.alpha ?? false,
                                             small: true,
                                             disabled: static,
                                             labelledBy: headingId,

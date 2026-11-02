@@ -878,7 +878,7 @@ class DateTimeHelperTest extends TestCase
             ['PST', 'America/Los_Angeles', new DateTime('2026-03-08 01:00:00-08:00')],
             ['PDT', 'America/Los_Angeles', new DateTime('2026-03-08 02:00:00-08:00')],
             ['-08:00', '-08:00'],
-            ['CDT', 'CDT'],
+            ['CDT', 'CDT', new DateTime('2026-07-01 12:00:00-05:00')],
             [false, 'InvalidTimeZone'],
         ];
     }

@@ -12,6 +12,7 @@
 - Assets in volumes set to let each asset choose which sites it should be saved to can now be deleted for individual sites, as long as they exist in another site. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - Deleting an element for the only site it exists in now soft-deletes it, unless it’s a draft or nested element. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - Files can now be uploaded to Assets fields by pasting them from the clipboard while the field has focus. ([#20183](https://github.com/craftcms/cms/discussions/20183), [#20212](https://github.com/craftcms/cms/pull/20212))
+- Color fields now support translucent colors. Authors can choose translucent palette colors, and set custom colors’ opacity when the field allows it, via the color picker in browsers that support it or by entering an 8-digit hex value. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 
 ### Administration
 
@@ -27,6 +28,9 @@
 - Added Settings → MCP, where administrators can enable the authenticated and public MCP servers, set their endpoints, and approve the capabilities and content that the public server exposes. ([#20145](https://github.com/craftcms/cms/pull/20145), [#20189](https://github.com/craftcms/cms/pull/20189))
 - Added the `oauth/generate-keys` command, which generates the keys used to sign OAuth access tokens. ([#20145](https://github.com/craftcms/cms/pull/20145))
 - Added support for `config/mcp.php` and `config/oauth.php` config files. ([#20145](https://github.com/craftcms/cms/pull/20145))
+- Color fields’ palette colors can now have an alpha channel, by entering an 8-digit hex value or via the color picker in browsers that support it. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
+- Color fields now have an “Allow opacity for custom colors” setting. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
+- Color fields now have a “GraphQL Mode” setting, which can be set to “Full data” or “Hex only”. New Color fields default to “Full data”, and existing Color fields default to “Hex only”. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - Icon pickers can now include icons from custom icon sets. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
 - Icon fields now have an “Icon Sets” setting, when any custom icon sets are registered, which determines which icon sets are selectable and in what order. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
 - Added the `customIconPath` config setting, which registers a “Custom” icon set made up of the SVG files within a directory, such as `@config/icons`. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
@@ -57,6 +61,9 @@
 - GraphQL schema components can now support authenticated requests via an `authenticated` key on their config. ([#20147](https://github.com/craftcms/cms/pull/20147))
 - Added the `currentUser` GraphQL query, which returns the user that authenticated the request. ([#20147](https://github.com/craftcms/cms/pull/20147))
 - Added the My Account → Tokens screen, where users can create personal access tokens for the APIs that offer them (such as the GraphQL API), rename them, and revoke tokens and the apps they’ve authorized. ([#20147](https://github.com/craftcms/cms/pull/20147))
+- Color field values’ `hex` properties and GraphQL values now include an alpha channel (e.g. `#0000ff80`) when the color isn’t fully opaque. Fully-opaque colors are still output as 6-digit hex values. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
+- Color field values now have `alpha`, `rgba`, `hsla`, `rgbChannels`, `oklch`, and `contrastColor` properties, and a `contrastRatio()` method. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
+- Color fields set to the “Full data” GraphQL mode now return objects with `hex`, `label`, `red`, `green`, `blue`, `alpha`, `hue`, `saturation`, `lightness`, `luma`, `rgb`, `rgba`, `rgbChannels`, `hsl`, `hsla`, `oklch`, `contrastColor`, and `contrastRatio` fields. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 
 ### Extensibility
 
@@ -86,11 +93,22 @@
 - Added `craft\fields\Icon::$iconSets`. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
 - Added `craft\fieldlayoutelements\BaseField::defaultTip()`.
 - Added `craft\fieldlayoutelements\BaseField::defaultWarning()`.
+- Added `craft\fields\Color::$allowCustomAlpha`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
+- Added `craft\fields\Color::$fullGraphqlData`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
+- Added `craft\fields\data\ColorData::getAlpha()`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
+- Added `craft\fields\data\ColorData::getContrastColor()`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
+- Added `craft\fields\data\ColorData::getContrastRatio()`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
+- Added `craft\fields\data\ColorData::getHsla()`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
+- Added `craft\fields\data\ColorData::getOklch()`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
+- Added `craft\fields\data\ColorData::getRgbChannels()`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
+- Added `craft\fields\data\ColorData::getRgba()`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - Added `craft\gql\base\ElementMutationResolver::requireUserAuthorization()`. ([#20147](https://github.com/craftcms/cms/pull/20147))
 - Added `craft\gql\GqlInputSchema`. ([#20145](https://github.com/craftcms/cms/pull/20145))
 - Added `craft\gql\queries\Settings`. ([#20055](https://github.com/craftcms/cms/pull/20055))
 - Added `craft\gql\types\CategoryGroup`. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Added `craft\gql\types\ColorData`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - Added `craft\gql\types\EntryType`. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Added `craft\gql\types\generators\ColorDataType`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - Added `craft\gql\types\Section`. ([#20055](https://github.com/craftcms/cms/pull/20055))
 - Added `craft\gql\types\Site`. ([#20055](https://github.com/craftcms/cms/pull/20055))
 - Added `craft\gql\types\TagGroup`. ([#20055](https://github.com/craftcms/cms/pull/20055))
@@ -120,6 +138,7 @@
 - Added `craft\services\PersonalAccessTokens`. ([#20147](https://github.com/craftcms/cms/pull/20147))
 - Added `craft\test\ElementFixtureTrait`. ([#19626](https://github.com/craftcms/cms/pull/19626))
 - Added `craft\utilities\ClearCaches::clear()`. ([#20145](https://github.com/craftcms/cms/pull/20145))
+- Added `craft\validators\ColorValidator::$allowAlpha`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - Added `craft\web\assets\highlight\HighlightAsset`. ([#20088](https://github.com/craftcms/cms/pull/20088))
 - Added `Craft.BaseUploader::addFiles()`. ([#20183](https://github.com/craftcms/cms/discussions/20183), [#20212](https://github.com/craftcms/cms/pull/20212))
 - `Craft.BaseUploader` now supports a `pasteZone` setting. Files pasted while focus is within it are passed to `addFiles()`, which custom uploader classes must implement to support pasted files. ([#20183](https://github.com/craftcms/cms/discussions/20183), [#20212](https://github.com/craftcms/cms/pull/20212))
@@ -129,8 +148,10 @@
 - `craft\helpers\Cp::iconSvg()` now supports `set-handle:icon-name` values. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
 - `Craft.IconPicker` now supports a `sets` setting, which can be set to an array of icon set handles (`fontawesome` for Font Awesome), or `'*'` for all icon sets. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
 - `Illuminate\Support\Collection` now has a `render()` macro, which replaces `craft\elements\ElementCollection::render()`. ([#19988](https://github.com/craftcms/cms/pull/19988))
+- `craft\fields\data\ColorData::getHex()` now has a `$withAlpha` argument, which defaults to `true`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - `craft\helpers\ElementHelper::normalizeSlug()` now has a `$language` argument, which defaults to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
 - `craft\helpers\StringHelper::toLowerCase()`, `::toTitleCase()`, and `::toUpperCase()` now have `$language` arguments, which default to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
+- `craft\validators\ColorValidator::normalizeColor()` now expands 4-digit hex values to 8 digits, and removes fully-opaque alpha channels from 8-digit hex values. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - `craft\services\Assets::getAssetById()` now returns the asset in another site if it doesn’t exist in the current site, when no site ID is passed. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - `elements/save-draft` action responses now include a `canDeleteForSite` key. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Deprecated `craft\helpers\ElementHelper::renderElements()`. `craft\helpers\Template::render()` should be used instead. ([#19988](https://github.com/craftcms/cms/pull/19988))

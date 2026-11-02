@@ -831,7 +831,9 @@ Craft.ui = {
       'aria-label': Craft.t('app', 'Color hex value'),
     }).appendTo($inputContainer);
 
-    new Craft.ColorInput($container);
+    new Craft.ColorInput($container, {
+      alpha: config.alpha || false,
+    });
     return $container;
   },
 
