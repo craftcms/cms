@@ -40,8 +40,6 @@ const CHEVRONS = [
  *   bubble, so listen on the disclosure itself.
  * @fires craft-hide - The content was collapsed, in either mode. Doesn't
  *   bubble, so listen on the disclosure itself.
- * @fires opened-changed - `opened` changed in slotted mode, including on the
- *   first render. Prefer `craft-show`/`craft-hide`.
  */
 export default class CraftDisclosure extends LitElement {
   static override styles = css`
@@ -94,11 +92,6 @@ export default class CraftDisclosure extends LitElement {
    */
   private __announcedOpened: boolean | null = null;
 
-  constructor() {
-    super();
-    this.addEventListener('opened-changed', this.__announceOpenedChange);
-  }
-
   /** Shows the content (slotted mode). */
   show() {
     this.opened = true;
@@ -114,11 +107,11 @@ export default class CraftDisclosure extends LitElement {
     this.opened = !this.opened;
   };
 
-  protected get _invokerNode(): HTMLElement | undefined {
+  private get __invoker(): HTMLElement | undefined {
     return this.__slotted('invoker');
   }
 
-  protected get _contentNode(): HTMLElement | undefined {
+  private get __content(): HTMLElement | undefined {
     return this.__slotted('content');
   }
 
@@ -161,7 +154,7 @@ export default class CraftDisclosure extends LitElement {
 
   override disconnectedCallback() {
     super.disconnectedCallback();
-    this._invokerNode?.removeEventListener('click', this.toggle);
+    this.__invoker?.removeEventListener('click', this.toggle);
 
     if (this.__externalTrigger) {
       // Leave the target visible when the disclosure goes away (parity with
@@ -188,7 +181,7 @@ export default class CraftDisclosure extends LitElement {
     if (changedProperties.has('opened') && !this.__externalTrigger) {
       this.__syncSlottedState();
       this.__syncInvokerChevron();
-      this.dispatchEvent(new CustomEvent('opened-changed'));
+      this.__announceOpenedChange();
     }
 
     if (changedProperties.has('state') && this.__externalTrigger) {
@@ -200,12 +193,8 @@ export default class CraftDisclosure extends LitElement {
     }
   }
 
-  /** `opened-changed`, reported as the public events in slotted mode. */
-  private __announceOpenedChange = () => {
-    if (this.__externalTrigger) {
-      return;
-    }
-
+  /** Reports a slotted-mode change of `opened` as the public events. */
+  private __announceOpenedChange() {
     const opened = Boolean(this.opened);
     const previous = this.__announcedOpened;
     this.__announcedOpened = opened;
@@ -213,13 +202,13 @@ export default class CraftDisclosure extends LitElement {
     if (previous !== null && previous !== opened) {
       this.dispatchEvent(new CustomEvent(opened ? 'craft-show' : 'craft-hide'));
     }
-  };
+  }
 
   private __setupSlottedMode() {
     this.__ensureDefaultInvoker();
 
-    const invoker = this._invokerNode;
-    const content = this._contentNode;
+    const invoker = this.__invoker;
+    const content = this.__content;
 
     if (content) {
       content.id ||= uniqueId('collapsible-content');
@@ -237,15 +226,12 @@ export default class CraftDisclosure extends LitElement {
   }
 
   private __syncSlottedState() {
-    this._invokerNode?.setAttribute(
-      'aria-expanded',
-      String(Boolean(this.opened))
-    );
-    this._contentNode?.style.setProperty('display', this.opened ? '' : 'none');
+    this.__invoker?.setAttribute('aria-expanded', String(Boolean(this.opened)));
+    this.__content?.style.setProperty('display', this.opened ? '' : 'none');
   }
 
   private __ensureDefaultInvoker() {
-    if (this._invokerNode) {
+    if (this.__invoker) {
       return;
     }
 
@@ -269,7 +255,7 @@ export default class CraftDisclosure extends LitElement {
    * property and `craft-button` doesn't reflect it.
    */
   private __syncInvokerChevron() {
-    const invoker = this._invokerNode;
+    const invoker = this.__invoker;
 
     if (!(invoker instanceof CraftButton) || !invoker.icon) {
       return;
