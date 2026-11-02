@@ -2294,6 +2294,57 @@ describe('useElementEditor', () => {
     save.restore();
   });
 
+  it('submits the Save menu’s Shift shortcut action with Cmd+Shift+S', async () => {
+    mount(
+      payload({
+        editorActions: {
+          primary: {
+            label: 'Save',
+            actionUrl: null,
+            params: {},
+            redirect: null,
+            panelId: null,
+          },
+          menu: [
+            {
+              label: 'Save and continue editing',
+              actionUrl: null,
+              params: {},
+              redirect: 'continue',
+              shortcut: true,
+            },
+            {
+              label: 'Save and add another',
+              actionUrl: null,
+              params: {addAnother: 1},
+              redirect: null,
+              shortcut: true,
+              shift: true,
+            },
+          ],
+          buttons: [],
+        },
+      })
+    );
+    const save = interceptSave();
+    onTestFinished(save.restore);
+
+    window.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 'S', metaKey: true, shiftKey: true})
+    );
+
+    expect(save.calls()).toBe(1);
+    expect(save.last().data).toMatchObject({addAnother: 1});
+
+    await nextTick();
+    window.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 's', metaKey: true})
+    );
+
+    expect(save.calls()).toBe(2);
+    expect(save.last().data).not.toHaveProperty('addAnother');
+  });
+
   /** Same for "Save and continue editing", which stays on the screen. */
   it('drops the provisional draft state when saving without redirecting', async () => {
     postSpy.mockResolvedValue({
