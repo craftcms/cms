@@ -204,8 +204,8 @@ class InputDateTime extends ViewComponent
     protected function hostAttributes(): array
     {
         return [
-            'class' => ['datetimewrapper'],
             'name' => $this->name,
+            'clearable' => true,
             'date-value' => $this->dateValue,
             'time-value' => $this->timeValue,
             'locale' => $this->locale,
