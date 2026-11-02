@@ -29,7 +29,7 @@ use Laravel\Ai\Skills\Skill;
 
 /**
  * The control panel’s AI assistant. It answers the current user’s questions, looking things up with Craft’s MCP
- * tools, and remembers each conversation.
+ * tools and craftcms.com’s, and remembers each conversation.
  *
  * @internal
  *
@@ -49,6 +49,7 @@ class AssistantAgent implements Agent, Conversational, HasMiddleware, HasSkills,
      */
     public function __construct(
         private readonly McpTools $tools,
+        private readonly CraftcmsMcpTools $craftcmsTools,
         private readonly User $user,
         private readonly array $contexts = [],
         private readonly ?Site $site = null,
@@ -92,6 +93,7 @@ class AssistantAgent implements Agent, Conversational, HasMiddleware, HasSkills,
             ## Craft’s MCP tools
 
             {$this->tools->instructions()}
+            {$this->craftcmsToolsSection()}
             MARKDOWN;
     }
 
@@ -115,6 +117,7 @@ class AssistantAgent implements Agent, Conversational, HasMiddleware, HasSkills,
     {
         return [
             ...$this->tools->tools(),
+            ...$this->craftcmsTools->tools(),
             app(ShowElements::class),
             app(ShowField::class),
             app(AskUser::class),
@@ -156,6 +159,15 @@ class AssistantAgent implements Agent, Conversational, HasMiddleware, HasSkills,
             : "This is the guidance for every site, and from {$name}. Before writing content for a particular site, call guidance_get with its siteId for that site’s own guidance.";
 
         return "\n## Guidance\n\n".($guidance !== '' ? $guidance : 'There’s none yet.')."\n\n{$covers}\n";
+    }
+
+    private function craftcmsToolsSection(): string
+    {
+        if ($this->craftcmsTools->tools() === []) {
+            return '';
+        }
+
+        return "\n## craftcms.com’s tools\n\nThe tools starting with craftcms_ search Craft’s documentation, Knowledge Base, and glossary on craftcms.com. When the user asks how Craft works, or how to do something in it, look it up with them rather than answering from memory, and link to the pages you used. Don’t send them anything from the site’s content.\n";
     }
 
     private function chosenSkillsSection(): string
