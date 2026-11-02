@@ -24,7 +24,7 @@ describe('ShortcutsView', () => {
   function listed(): Record<string, string[]> {
     return Object.fromEntries(
       [...container.querySelectorAll('section')].map((section) => [
-        section.querySelector('h3')!.textContent!.trim(),
+        section.querySelector('h3')?.textContent!.trim() ?? '',
         [...section.querySelectorAll('tbody td')].map((cell) =>
           cell.textContent!.trim()
         ),
@@ -42,7 +42,7 @@ describe('ShortcutsView', () => {
     mount();
 
     expect(listed()).toEqual({
-      General: [
+      '': [
         'Open the command palette',
         'Open the command palette when not typing in a field',
         'Close the current modal or slideout',
@@ -64,11 +64,7 @@ describe('ShortcutsView', () => {
 
     mount();
 
-    expect(Object.keys(listed())).toEqual([
-      'General',
-      'Forms',
-      'Markdown fields',
-    ]);
+    expect(Object.keys(listed())).toEqual(['', 'Forms', 'Markdown fields']);
     expect(listed().Forms).toEqual([
       'Save and add another',
       'Submit the form a text field is in',

@@ -90,9 +90,9 @@
 
   const available = new Set([...availableShortcuts(), ...garnishShortcuts()]);
 
-  const allGroups: Array<{heading: string; shortcuts: Shortcut[]}> = [
+  /** The shortcuts that work everywhere come first, without a heading. */
+  const allGroups: Array<{heading?: string; shortcuts: Shortcut[]}> = [
     {
-      heading: t('General'),
       shortcuts: [
         {
           keys: combo(letter('K')),
@@ -192,10 +192,11 @@
   <div class="command-palette-shortcuts">
     <section
       v-for="(group, groupIndex) in groups"
-      :key="group.heading"
+      :key="group.heading ?? ''"
       class="command-palette-shortcuts__group"
     >
       <h3
+        v-if="group.heading"
         :id="`${id}-${groupIndex}`"
         class="command-palette-shortcuts__heading"
       >
@@ -203,7 +204,7 @@
       </h3>
       <table
         class="cp-table cp-table--auto"
-        :aria-labelledby="`${id}-${groupIndex}`"
+        :aria-labelledby="group.heading ? `${id}-${groupIndex}` : undefined"
       >
         <thead :class="{'sr-only': groupIndex > 0}">
           <tr>
