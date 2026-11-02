@@ -216,9 +216,9 @@ function createUploadNotice(
   notification.on('show', () => {
     shown = true;
     if (onClose) {
-      notification.$closeBtn.on('click', onClose);
+      notification.closeButton?.addEventListener('click', onClose);
     } else {
-      notification.$closeBtn.hide();
+      notification.closeButton?.setAttribute('hidden', '');
     }
     if (finished) {
       notification.close();

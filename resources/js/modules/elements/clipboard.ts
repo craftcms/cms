@@ -3,10 +3,9 @@
  *
  * Copied elements are kept in localStorage, so they outlast the page and are
  * shared with other tabs, which are told about each change. The "copied" card
- * is still the legacy `Craft.CP.ElementCopyNotification`, which also fills in
- * each element's chip data (where an entry's `entryTypeId` comes from) and
- * drops elements that no longer exist; listeners hear about the elements once
- * it has.
+ * ({@link CopiedElementsNotification}) also fills in each element's chip data
+ * (where an entry's `entryTypeId` comes from) and drops elements that no
+ * longer exist; listeners hear about the elements once it has.
  */
 
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
@@ -18,6 +17,7 @@ import {elementTypeName} from '@/common/craft/element-types';
 import {uppercaseFirst} from '@/common/craft/strings';
 import {prefixedKey} from '@/common/composables/useStorage';
 import {showError, showSuccess} from '@/modules/messages/messages';
+import {CopiedElementsNotification} from './copied-elements-notification';
 
 export interface CopiedElementInfo {
   type: string;
@@ -46,34 +46,16 @@ export type CopiedElementsListener = (
   pasteLabel: string | null
 ) => void;
 
-interface CopyCard {
-  elementInfo: CopiedElementInfo[];
-  loaded: boolean;
-  close(): void;
-  on(event: 'show', handler: () => void): void;
-}
-
-interface LegacyCp {
-  displayNotification(card: CopyCard): unknown;
-  copyElementCallbacks?: CopiedElementsListener[];
-}
-
 interface LegacyCraft {
-  cp?: LegacyCp;
-  CP?: {
-    prototype: Record<string, unknown>;
-    ElementCopyNotification?: new (
-      elements: CopiedElementInfo[],
-      settings?: Record<string, unknown>
-    ) => CopyCard;
-  };
+  cp?: {copyElementCallbacks?: CopiedElementsListener[]};
+  CP?: {prototype: Record<string, unknown>};
 }
 
 const STORAGE_KEY = 'copiedElements';
 const BROADCAST_EVENT = 'copyElements';
 
 const listeners = new Set<CopiedElementsListener>();
-let card: CopyCard | null = null;
+let card: CopiedElementsNotification | null = null;
 let installed = false;
 
 /** Puts elements on the clipboard, replacing what was there. */
@@ -183,17 +165,18 @@ function show(
 ): void {
   close();
 
-  const Craft = window.Craft as LegacyCraft | undefined;
-  const Card = Craft?.CP?.ElementCopyNotification;
-
-  if (!elements.length || !Card || !Craft?.cp) {
+  if (!elements.length) {
     notify([]);
     return;
   }
 
-  const next = new Card(elements, settings);
+  const next = new CopiedElementsNotification(
+    elements,
+    clearCopiedElements,
+    settings
+  );
   card = next;
-  Craft.cp.displayNotification(next);
+  void next.show();
   next.on('show', () => {
     // The card clears the clipboard when none of the elements still exist
     if (card === next) {
