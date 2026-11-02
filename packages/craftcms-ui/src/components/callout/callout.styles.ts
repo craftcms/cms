@@ -16,8 +16,7 @@ export default css`
       var(--c-spacing-sm)
     );
     display: grid;
-    grid-template-areas: 'icon description action';
-    grid-template-columns: auto 1fr minmax(0, max-content);
+    grid-template-columns: minmax(0, 1fr) minmax(0, max-content);
     align-items: start;
     padding-block: var(--_callout-padding-block);
     padding-inline: var(--_callout-padding-inline);
@@ -26,26 +25,30 @@ export default css`
     grid-column: 1 / -1;
   }
 
-  .callout--title {
-    grid-template-areas: 'icon title action' 'icon description action';
+  .callout__body {
+    display: flex;
+    align-items: start;
+    align-self: center;
+    min-width: 0;
   }
 
-  .callout--hide-icon {
-    grid-template-areas: 'description action';
-    grid-template-columns: 1fr minmax(0, max-content);
-
-    .callout__icon {
-      display: none;
-    }
+  .callout__text {
+    display: grid;
+    flex: 1;
+    min-width: 0;
   }
 
-  .callout--hide-icon.callout--title {
-    grid-template-areas: 'title action' 'description action';
+  .callout--hide-icon .callout__icon {
+    display: none;
   }
 
   .callout--small {
     font-size: var(--c-text-sm);
-    gap: 0 var(--c-spacing-xs);
+    column-gap: var(--c-spacing-xs);
+
+    .callout__body {
+      column-gap: var(--c-spacing-xs);
+    }
   }
 
   .callout__title,
@@ -58,16 +61,9 @@ export default css`
   .callout__title {
     display: flex;
     font-weight: bold;
-    grid-area: title;
-  }
-
-  .callout__description {
-    grid-area: description;
-    align-self: center;
   }
 
   .callout__action {
-    grid-area: action;
     margin-inline-start: auto;
   }
 
@@ -78,7 +74,6 @@ export default css`
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    grid-area: icon;
     padding-inline: var(--c-callout-icon-padding-inline, var(--c-spacing-sm));
   }
 
@@ -120,7 +115,11 @@ export default css`
 
   :host([appearance~='solid']) .callout {
     --c-text-link: var(--c-color-on-loud);
-    background-color: var(--c-color-fill-loud);
+    background-color: color-mix(
+      in oklab,
+      var(--c-color-fill-loud),
+      var(--c-surface-default) var(--c-callout-fill-mute, 0%)
+    );
     color: var(--c-color-on-loud);
     border-color: var(--c-color-border-loud);
   }
@@ -128,14 +127,22 @@ export default css`
   :host([appearance~='fill']) .callout {
     --c-text-link: var(--c-color-on-normal);
     border-color: transparent;
-    background-color: var(--c-color-fill-normal);
+    background-color: color-mix(
+      in oklab,
+      var(--c-color-fill-normal),
+      var(--c-surface-default) var(--c-callout-fill-mute, 0%)
+    );
     color: var(--c-color-on-normal);
   }
 
   :host([appearance~='outline-fill']) .callout {
     --c-text-link: var(--c-color-on-normal);
     border-color: var(--c-color-border-normal);
-    background-color: var(--c-color-fill-normal);
+    background-color: color-mix(
+      in oklab,
+      var(--c-color-fill-normal),
+      var(--c-surface-default) var(--c-callout-fill-mute, 0%)
+    );
     color: var(--c-color-on-normal);
   }
 

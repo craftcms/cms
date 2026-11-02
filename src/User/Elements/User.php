@@ -523,7 +523,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
             ],
             self::STATUS_PENDING => [
                 'label' => t('Pending'),
-                'color' => Color::Orange,
+                'color' => Color::Sky,
             ],
             self::STATUS_SUSPENDED => [
                 'label' => t('Suspended'),

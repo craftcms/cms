@@ -167,10 +167,16 @@
   --c-status-enabled-border: var(--color-emerald-700);
   --c-status-enabled-text: var(--color-emerald-700);
 
+  /* A field whose value differs from the canonical element's */
+  --c-field-modified-indicator: var(--color-violet-600);
+
+  /* How far filled callouts blend toward the surface */
+  --c-callout-fill-mute: 0%;
+
   /* Pending */
-  --c-status-pending-fill: var(--color-orange-400);
-  --c-status-pending-text: var(--color-orange-700);
-  --c-status-pending-border: var(--color-orange-700);
+  --c-status-pending-fill: var(--color-sky-400);
+  --c-status-pending-text: var(--color-sky-700);
+  --c-status-pending-border: var(--color-sky-700);
 
   /* Expired */
   --c-status-expired-fill: var(--color-red-400);
@@ -346,6 +352,10 @@
   craft-badge[fill='black'] > *
 ) {
   color-scheme: dark;
+  /* The dark palette's 600 is pale; its 400 keeps the bar vivid. */
+  --c-field-modified-indicator: var(--color-violet-400);
+  /* Filled callouts read loud against a dark surface. */
+  --c-callout-fill-mute: 30%;
   /* Like other hairlines here, so the no-color swatch keeps an edge. */
   --c-select-color-swatch-edge: var(--c-color-neutral-border-quiet);
   /* Color swatches get a faint ring only here, to stand off the dark surface. */

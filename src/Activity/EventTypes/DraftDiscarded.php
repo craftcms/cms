@@ -11,7 +11,7 @@ use CraftCms\Cms\Activity\ActivityEventType;
  */
 class DraftDiscarded extends ActivityEventType
 {
-    protected const string LABEL = 'Draft discarded';
+    protected const string LABEL = 'Discarded a draft';
 
     protected const string ICON = 'trash';
 }

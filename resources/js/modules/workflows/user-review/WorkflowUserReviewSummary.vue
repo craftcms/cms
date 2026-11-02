@@ -18,7 +18,7 @@
   type ReviewerSection = {
     reviewers: Reviewer[];
     label: string;
-    fill: 'green' | 'orange';
+    fill: 'teal' | 'sky';
   };
 
   const props = defineProps<{
@@ -41,18 +41,18 @@
     remaining: Reviewer[] | undefined
   ): ReviewerSection[] {
     return [
-      {reviewers: approved ?? [], label: t('Approved'), fill: 'green'},
+      {reviewers: approved ?? [], label: t('Approved'), fill: 'teal'},
       {
         reviewers: carried ?? [],
         label: t('Approved previously'),
-        fill: 'green',
+        fill: 'teal',
       },
       {
         reviewers: required ?? [],
         label: t('Approval required'),
-        fill: 'orange',
+        fill: 'sky',
       },
-      {reviewers: remaining ?? [], label: t('Pending'), fill: 'orange'},
+      {reviewers: remaining ?? [], label: t('Pending'), fill: 'sky'},
     ];
   }
 
@@ -110,17 +110,19 @@
         :key="group.name"
         class="workflow-user-review-summary__group"
       >
-        <span class="workflow-user-review-summary__group-label">{{
-          group.name
-        }}</span>
-        <span>
-          {{
-            t('{count} of {required} approved', {
-              count: group.approvals,
-              required: approvalsRequired,
-            })
-          }}
-        </span>
+        <div class="workflow-user-review-summary__group-heading">
+          <span class="workflow-user-review-summary__group-label">{{
+            group.name
+          }}</span>
+          <span class="workflow-user-review-summary__group-count">
+            {{
+              t('{count} of {required} approved', {
+                count: group.approvals,
+                required: approvalsRequired,
+              })
+            }}
+          </span>
+        </div>
         <ul
           v-for="section in reviewerSections(
             group.approvedReviewers,
@@ -158,8 +160,8 @@
 </template>
 
 <style scoped>
-  .workflow-user-review-summary {
-    margin-inline: var(--c-spacing-xs);
+  .workflow-user-review-summary::part(body) {
+    padding: var(--c-spacing-md);
   }
 
   .workflow-user-review-summary__reviewers {
@@ -172,7 +174,7 @@
 
   .workflow-user-review-summary__groups {
     display: grid;
-    gap: var(--c-spacing-md);
+    gap: calc(var(--c-spacing) * 3.5);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -183,8 +185,27 @@
     gap: var(--c-spacing-xs);
   }
 
+  .workflow-user-review-summary__group-label,
+  .workflow-user-review-summary__group-count {
+    font-size: var(--c-text-sm);
+    text-box: trim-both cap alphabetic;
+  }
+
   .workflow-user-review-summary__group-label {
-    font-weight: var(--c-font-weight-semibold);
+    font-weight: bold;
+  }
+
+  .workflow-user-review-summary__group-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--c-spacing-sm) var(--c-spacing-md);
+    margin-block-end: var(--c-spacing-sm);
+  }
+
+  .workflow-user-review-summary__group-count {
+    margin-inline-start: auto;
+    color: var(--c-text-quiet);
   }
 
   .workflow-user-review-summary__reviewer-row,

@@ -564,7 +564,7 @@
                   list.isList.value
                     ? 'inline-start'
                     : list.isThumbs.value
-                      ? false
+                      ? 'inline-end'
                       : undefined
                 "
               />
