@@ -7,18 +7,8 @@ import '../tab/tab.js';
 import './tabs.js';
 
 /*
- * SCOPE: this covers what `CraftTabs` adds on top of `LionTabs` — the wrapper
- * and parts, `placement`, selection normalization, the tab's own state, and
- * external-panel mode (which this component implements itself, so it is fully
- * covered here).
- *
- * Lion's *slotted* selection machinery is NOT exercised here, and can't be: it
- * bootstraps from a `slotchange` on the shadow tab slot, and happy-dom never
- * fires one (nodes are assigned — `assignedNodes()` is correct — but the event
- * isn't dispatched). Nothing gets wired, so every selection assertion would
- * fail against a component that works fine in a browser. Slotted selection,
- * keyboard navigation, and disabled-tab skipping are covered by the play
- * functions in tabs.stories.ts, which run in real Chromium.
+ * happy-dom never fires `slotchange`, so slot-change rewiring is covered by
+ * tabs.browser.test.ts and the play functions in tabs.stories.ts.
  */
 
 /** Builds a strip of `count` tabs and matching panels. */
@@ -148,12 +138,9 @@ describe('structure', () => {
     expect(tablist.hasAttribute('aria-label')).toBe(false);
   });
 
-  it('keeps the class names and slots Lion depends on', async () => {
+  it('slots the tabs and panels into their regions', async () => {
     const element = await createTabs();
 
-    // LionTabs styles against these classes and queries its own shadow root
-    // for `slot[name=tab]` to observe slot changes — renaming either breaks
-    // selection silently.
     const tabSlot = shadow(element, '.tabs__tab-group slot[name="tab"]');
     const panelSlot = shadow(element, '.tabs__panels slot[name="panel"]');
 
@@ -386,14 +373,123 @@ describe('craft-tab', () => {
 
   it('reads selection off the attribute the strip writes', async () => {
     const element = await createTabs();
-    const tab = element.querySelector('craft-tab') as CraftTab;
+    const tab = element.querySelectorAll('craft-tab')[1] as CraftTab;
 
     expect(tab.selected).toBe(false);
 
-    // Stand in for LionTabs, which sets this directly rather than via a
-    // property.
-    tab.setAttribute('selected', 'true');
+    tab.setAttribute('selected', '');
     expect(tab.selected).toBe(true);
+  });
+});
+
+describe('slotted mode', () => {
+  function parts(element: CraftTabs) {
+    return {
+      tabs: [...element.querySelectorAll('craft-tab')] as CraftTab[],
+      panels: [
+        ...element.querySelectorAll(':scope > [slot="panel"]'),
+      ] as HTMLElement[],
+    };
+  }
+
+  it('pairs tabs with panels by order', async () => {
+    const element = await createTabs();
+    const {tabs, panels} = parts(element);
+
+    tabs.forEach((tab, index) => {
+      const panel = panels[index]!;
+
+      expect(tab.getAttribute('role')).toBe('tab');
+      expect(tab.getAttribute('aria-controls')).toBe(panel.id);
+      expect(panel.getAttribute('role')).toBe('tabpanel');
+      expect(panel.getAttribute('aria-labelledby')).toBe(tab.id);
+      expect(panel.getAttribute('tabindex')).toBe('0');
+    });
+  });
+
+  it('keeps ids the author gave', async () => {
+    const element = document.createElement('craft-tabs') as CraftTabs;
+    element.label = 'Tabs';
+    element.innerHTML = `
+      <craft-tab slot="tab" id="my-tab">One</craft-tab>
+      <div slot="panel" id="my-panel">One</div>
+    `;
+    document.body.append(element);
+    await element.updateComplete;
+
+    expect(
+      element.querySelector('#my-tab')!.getAttribute('aria-controls')
+    ).toBe('my-panel');
+  });
+
+  it('selects the first tab and its panel', async () => {
+    const element = await createTabs();
+    const {tabs, panels} = parts(element);
+
+    expect(tabs.map((tab) => tab.selected)).toEqual([true, false, false]);
+    expect(panels.map((panel) => panel.hasAttribute('selected'))).toEqual([
+      true,
+      false,
+      false,
+    ]);
+    expect(tabs.map((tab) => tab.getAttribute('tabindex'))).toEqual([
+      '0',
+      '-1',
+      '-1',
+    ]);
+  });
+
+  it('switches panels on click and fires craft-tab-show', async () => {
+    const element = await createTabs();
+    const {tabs, panels} = parts(element);
+    let fired = 0;
+    element.addEventListener('craft-tab-show', () => {
+      fired++;
+    });
+
+    tabs[2]!.click();
+    await element.updateComplete;
+
+    expect(fired).toBe(1);
+    expect(element.selectedIndex).toBe(2);
+    expect(panels[0]!.hasAttribute('selected')).toBe(false);
+    expect(panels[2]!.hasAttribute('selected')).toBe(true);
+    expect(tabs[2]!.getAttribute('aria-selected')).toBe('true');
+  });
+
+  it('navigates with the arrow keys', async () => {
+    const element = await createTabs();
+    const {tabs} = parts(element);
+
+    arrow(tabs[0]!, 'ArrowLeft');
+    await element.updateComplete;
+    expect(element.selectedIndex).toBe(2);
+
+    arrow(tabs[2]!, 'Home');
+    await element.updateComplete;
+    expect(element.selectedIndex).toBe(0);
+  });
+
+  it('warns when the tab and panel counts differ', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const element = document.createElement('craft-tabs') as CraftTabs;
+    element.label = 'Tabs';
+    element.innerHTML = `
+      <craft-tab slot="tab">One</craft-tab>
+      <craft-tab slot="tab">Two</craft-tab>
+      <div slot="panel">One</div>
+    `;
+    document.body.append(element);
+    await element.updateComplete;
+
+    expect(warn).toHaveBeenCalledOnce();
+    warn.mockRestore();
+  });
+
+  it('hides the unselected panels', () => {
+    expect(rules().get(".tabs__panels ::slotted([slot='panel'])")).toContain(
+      'display: none'
+    );
   });
 });
 
@@ -482,8 +578,8 @@ describe('external-panel mode', () => {
   });
 
   it('leaves the panels’ ids alone', async () => {
-    // Lion's own pairing renames the panels it sets up; these ids come from
-    // the server and are what `controls` (and other code) references.
+    // These ids come from the server and are what `controls` (and other
+    // code) references.
     const {sections} = await createExternalTabs();
 
     expect(sections.map((section) => section.id)).toEqual([

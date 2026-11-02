@@ -73,7 +73,7 @@ describe('craft-icon', () => {
     expect(svg!.getAttribute('fill')).toBe('currentColor');
   });
 
-  it('resolves icons through the configured Lion icon resolver', async () => {
+  it('resolves icons through the configured icon resolver', async () => {
     const fetchMock = stubFetch();
     setIconResolver(
       (name, family, variant) => html`

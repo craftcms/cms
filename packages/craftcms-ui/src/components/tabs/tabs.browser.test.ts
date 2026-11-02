@@ -447,6 +447,20 @@ async function overflowingStrip(width: string): Promise<{
   };
 }
 
+it('keeps focus on the tab End selects in an overflowing strip', async () => {
+  const {element, tabs} = await overflowingStrip('26rem');
+  const {userEvent} = await import('vite-plus/test/browser');
+  await expect.poll(() => tabs.some((tab) => tab.hidden)).toBe(true);
+
+  tabs[0]!.focus();
+  await userEvent.keyboard('{End}');
+  await element.updateComplete;
+
+  const selected = tabs[element.selectedIndex]!;
+  expect(selected.hidden).toBe(false);
+  expect(document.activeElement).toBe(selected);
+});
+
 describe('after it is moved in the document', () => {
   beforeEach(() => {
     window.history.replaceState(null, '', window.location.pathname);

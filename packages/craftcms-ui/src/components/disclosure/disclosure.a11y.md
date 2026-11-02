@@ -16,16 +16,16 @@ More than one panel open at once, a trigger that closes its own panel when click
 ### Semantics
 
 - [x] In external-target mode, `aria-expanded` on the wrapped button reflects the state: `true` by default, `false` when `state="collapsed"`, and it flips on each click. Per WCAG 4.1.2 (Name, Role, Value). Verified by `defaults to expanded`, `honors a collapsed state set on the host`, `collapses the target it controls` and `expands again` in `disclosure.test.ts`, and by the `Collapsed` and `Expanded` stories.
-- [x] In slotted mode, `aria-expanded` on the invoker reflects `opened` and flips on click. Per WCAG 4.1.2 (Name, Role, Value). Verified for the default invoker by the `DefaultInvoker` story. An element passed in `slot="invoker"` isn't covered.
+- [x] In slotted mode, `aria-expanded` on the invoker reflects `opened` and flips on click. Per WCAG 4.1.2 (Name, Role, Value). Verified for the default invoker by the `DefaultInvoker` story, and for a slotted button by `reports and applies the expanded state` and `reports collapsed when opened is cleared` in `disclosure.test.ts`.
 - [ ] The trigger the component manages is a real button: in external-target mode it only picks up a `button[type="button"]`, and the default invoker is a `craft-button` (`role="button"`). An element passed in `slot="invoker"` isn't checked. Per WCAG 4.1.2 (Name, Role, Value). Not yet verified.
-- [ ] In slotted mode the invoker gets an `aria-controls` that names the content, which gets a generated `id`. Per WCAG 1.3.1 (Info and Relationships). Not yet verified. In external-target mode the component logs an error when the button's `aria-controls` names no element.
-- [ ] In slotted mode, collapsed content gets `display: none`, so it leaves the accessibility tree and the Tab order. Per WCAG 1.3.2 (Meaningful Sequence) and 2.4.3 (Focus Order). No test asserts it. In external-target mode the component only sets `data-state="collapsed"` on the target.
+- [x] In slotted mode the invoker gets an `aria-controls` that names the content, which keeps its own `id` or gets a generated one. Per WCAG 1.3.1 (Info and Relationships). Verified by `points the invoker at the content` and `keeps an id the content already has` in `disclosure.test.ts`. In external-target mode the component logs an error when the button's `aria-controls` names no element.
+- [x] In slotted mode, collapsed content gets `display: none`, so it leaves the accessibility tree and the Tab order. Per WCAG 1.3.2 (Meaningful Sequence) and 2.4.3 (Focus Order). Verified by `reports and applies the expanded state` in `disclosure.test.ts` and `toggles from the keyboard, leaving focus on the invoker` in `disclosure.browser.test.ts`. In external-target mode the component only sets `data-state="collapsed"` on the target.
 - [ ] Known gap: the component has no heading support for the Accordion pattern. In slotted mode the invoker must be a direct child with `slot="invoker"`, so wrapping the button in a heading puts `aria-expanded` and the click listener on the heading instead. The `Accordion` story uses no headings. Per WCAG 1.3.1 (Info and Relationships).
 
 ### Keyboard and focus
 
-- [ ] Enter and Space toggle the disclosure. Per WCAG 2.1.1 (Keyboard). This comes from the native button or `craft-button`, but no test or story presses a key; every existing check uses a click.
-- [ ] Toggling leaves focus on the trigger, and in slotted mode the expanded content follows the trigger in the Tab order. Per WCAG 2.4.3 (Focus Order). Not yet verified.
+- [x] Enter and Space toggle the disclosure. Per WCAG 2.1.1 (Keyboard). This comes from the native button or `craft-button`. Verified for the default invoker by `toggles from the keyboard, leaving focus on the invoker` in `disclosure.browser.test.ts`.
+- [x] Toggling leaves focus on the trigger, and in slotted mode the expanded content follows the trigger in the Tab order. Per WCAG 2.4.3 (Focus Order). Verified in slotted mode by `toggles from the keyboard, leaving focus on the invoker` in `disclosure.browser.test.ts`.
 - [ ] The default invoker shows a visible focus indicator that isn't hidden by other content. Per WCAG 2.4.7 (Focus Visible) and 2.4.11 (Focus Not Obscured (Minimum)). It inherits `craft-button`'s ring (see `button/button.a11y.md`). Not yet verified for the disclosure.
 
 ### Visual
@@ -36,7 +36,7 @@ More than one panel open at once, a trigger that closes its own panel when click
 
 ### Motion
 
-- [ ] Expanding and collapsing don't animate, so there's no motion to reduce. Per WCAG 2.3.3 (Animation from Interactions). This holds because Lion's `_showAnimation` and `_hideAnimation` are empty and `craft-disclosure` doesn't override them; nothing guards it. An animation added later needs a `prefers-reduced-motion` fallback.
+- [ ] Expanding and collapsing don't animate, so there's no motion to reduce. Per WCAG 2.3.3 (Animation from Interactions). This holds because `craft-disclosure` shows and hides its content by toggling `display`; nothing guards it. An animation added later needs a `prefers-reduced-motion` fallback.
 
 ## Depends on usage
 
