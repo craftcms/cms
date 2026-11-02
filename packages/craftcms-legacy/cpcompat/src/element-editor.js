@@ -2,8 +2,8 @@
 /** global: Garnish */
 /** global: $ */
 /** global: jQuery */
-import {createSwitch} from '../../../../../resources/js/modules/ui/legacy';
-import {setFocusOnErrorSummary} from '../../../../../resources/js/common/craft/field-errors';
+import {createSwitch} from '../../../../resources/js/modules/ui/legacy';
+import {setFocusOnErrorSummary} from '../../../../resources/js/common/craft/field-errors';
 
 /**
  * Element Editor

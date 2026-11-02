@@ -226,12 +226,11 @@ trait HasControlPanelUI
                 ]),
             ];
 
-            HtmlStack::jsWithVars(fn ($id) => <<<JS
+            HtmlStack::jsWithVars(fn ($id, $elementId) => <<<JS
 (() => {
   const btn = $('#' + $id);
   btn.on('activate', () => {
-    const elementId = btn.closest('.menu').data('disclosureMenu').\$trigger
-      .closest('form').data('elementEditor').settings.elementId;
+    const elementId = $elementId;
     const form = Craft.createForm()
       .addClass('hidden')
       .append(Craft.getCsrfInput())
@@ -248,6 +247,7 @@ trait HasControlPanelUI
 })();
 JS, [
                 InputNamespace::namespaceId($validateId),
+                $this->id,
             ]);
         }
 
