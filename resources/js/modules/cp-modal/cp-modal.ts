@@ -4,6 +4,10 @@ import type {UiValues} from '@/modules/ui/types';
 import {isHttpError} from '@craftcms/ui/utilities/api/http';
 import type {LegacyRequestOptions} from '@craftcms/ui/utilities/api/legacyRequest';
 import {commandShortcut} from '@/common/utils/keyShortcuts';
+import {
+  registerShortcuts,
+  type CommandPaletteRegistration,
+} from '@/modules/command-palette/registry';
 
 declare const Craft: any;
 declare const $: any;
@@ -82,6 +86,7 @@ export class CpModal extends Base {
   #abortController: AbortController | null = null;
   #ignoreFailedRequest = false;
   #fieldsWithErrors: unknown[] = [];
+  #shortcuts: CommandPaletteRegistration;
 
   // jQuery refs (form-ops seam), mirroring the legacy `$`-prefixed fields.
   #$container: any = null;
@@ -160,6 +165,7 @@ export class CpModal extends Base {
         this.handleSubmit(ev);
       }
     });
+    this.#shortcuts = registerShortcuts(() => (this.visible ? ['save'] : []));
     this.dialog.addEventListener('craft-before-hide', (ev) => {
       if (ev.target !== this.dialog) return;
       ev.preventDefault();
@@ -433,6 +439,7 @@ export class CpModal extends Base {
       return;
     }
     this.visible = false;
+    this.#shortcuts.unregister();
 
     if (this.#abortController) {
       this.#ignoreFailedRequest = true;

@@ -1,6 +1,6 @@
 import {useEventListener} from '@vueuse/core';
 import {type InertiaForm, router, usePage} from '@inertiajs/vue3';
-import {computed, type Ref} from 'vue';
+import {computed, onScopeDispose, type Ref} from 'vue';
 import {http, isHttpError} from '@craftcms/ui/utilities/api/http';
 import type {FormSaveOptions} from '@/common/types';
 import {elevatedSessionManager} from '@/modules/auth/elevated-session';
@@ -9,6 +9,7 @@ import {firstMessages} from '@/common/slideouts/errors';
 import type {SlideoutInstance, SlideoutSaveResult} from '@/common/slideouts';
 import {topStackedPanel} from '@/common/slideouts/panel-stack';
 import {showMessagesFromResponse} from '@/modules/messages';
+import {registerShortcuts} from '@/modules/command-palette/registry';
 
 interface PasswordConfirmationOptions<T> {
   required: (data: T) => boolean;
@@ -21,6 +22,8 @@ export interface UseSettingsSaveOptions<T extends object> {
   keyboardShortcutEnabled?: () => boolean;
   /** Uses the existing topmost-panel save listener for alternate submissions. */
   onSaveShortcut?: (event: KeyboardEvent) => void;
+  /** Whether {@link onSaveShortcut} has a submission for cmd/ctrl + shift + S. */
+  hasShiftSaveShortcut?: () => boolean;
   /** Receives the response data when saving from a slideout. */
   onSuccess?: (data?: any) => void;
   /**
@@ -96,6 +99,16 @@ export function useSettingsSave<T extends object>(
     options.passwordConfirmation ??
     elevatedFieldsConfirmation(form, options.elevatedFields);
 
+  /** Whether this is the topmost panel, or the page when none is open. Only it saves. */
+  function isTopmost(): boolean {
+    const top = topStackedPanel();
+
+    return top
+      ? !!slideout &&
+          top.element.dataset.slideoutId === slideout.instance.containerId
+      : !slideout;
+  }
+
   // Handle cmd + s events
   useEventListener('keydown', (event) => {
     if (
@@ -103,14 +116,7 @@ export function useSettingsSave<T extends object>(
       event.key.toLowerCase() === 's' &&
       !event.altKey
     ) {
-      // Only the topmost panel (or the page, when none is open) saves.
-      const top = topStackedPanel();
-      const isTopmost = top
-        ? slideout &&
-          top.element.dataset.slideoutId === slideout.instance.containerId
-        : !slideout;
-
-      if (!isTopmost) {
+      if (!isTopmost()) {
         return;
       }
 
@@ -128,6 +134,19 @@ export function useSettingsSave<T extends object>(
       }
     }
   });
+
+  onScopeDispose(
+    registerShortcuts(() =>
+      isTopmost() && options.keyboardShortcutEnabled?.() !== false
+        ? [
+            'save' as const,
+            ...(options.hasShiftSaveShortcut?.()
+              ? ['saveAndAddAnother' as const]
+              : []),
+          ]
+        : []
+    ).unregister
+  );
 
   function save({
     redirect = true,
