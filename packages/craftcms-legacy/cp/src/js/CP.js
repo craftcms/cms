@@ -1363,20 +1363,18 @@ Craft.CP = Garnish.Base.extend(
         '.resolvable-alert-buttons'
       );
       if ($resolvableButtonsContainer.length) {
-        const $refreshBtn = Craft.ui
-          .createButton({
-            label: Craft.t('app', 'Refresh'),
-            spinner: true,
-          })
-          .appendTo($resolvableButtonsContainer);
+        const $refreshBtn = $('<craft-button/>', {
+          type: 'button',
+          text: Craft.t('app', 'Refresh'),
+        }).appendTo($resolvableButtonsContainer);
         $refreshBtn.on('click', async () => {
-          $refreshBtn.addClass('loading');
+          $refreshBtn.prop('loading', true);
           try {
             await Craft.sendApiRequest('GET', 'ping');
             const alerts = await this.fetchAlerts();
             this.displayAlerts(alerts, false);
           } finally {
-            $refreshBtn.removeClass('loading');
+            $refreshBtn.prop('loading', false);
           }
         });
       }
@@ -1902,7 +1900,7 @@ Craft.CP.Notification = Garnish.Base.extend(
         this.$innerContainer
       );
 
-      // `Craft.ui.icon()` resolves legacy icon names and custom icons;
+      // `app/icon-svg` resolves legacy icon names and custom icons;
       // `<craft-icon>` sizes the SVG and makes it an image or decorative
       // depending on whether it has a label.
       const icon = document.createElement('craft-icon');
@@ -1910,10 +1908,10 @@ Craft.CP.Notification = Garnish.Base.extend(
       if (this.settings.iconLabel) {
         icon.setAttribute('label', this.settings.iconLabel);
       }
-      const svg = await Craft.ui.icon(this.settings.icon);
-      if (svg) {
-        icon.append(svg);
-      }
+      const {data} = await Craft.sendActionRequest('POST', 'app/icon-svg', {
+        data: {icon: this.settings.icon},
+      });
+      icon.innerHTML = data.iconSvg;
       $body.append(icon);
 
       this.$main = $('<div class="notification-main"/>').appendTo($body);

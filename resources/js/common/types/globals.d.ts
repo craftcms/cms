@@ -259,7 +259,8 @@ declare global {
     bootingCallbacks: Array<(craft: CraftStatic) => void>;
     CpConfig: LegacyWidgetSettings;
     Cp: CpStatic;
-    Craft: CraftStatic;
+    // Untyped until CraftStatic covers what's still reached through it
+    Craft: any;
     $?: JQueryStatic;
     jQuery?: JQueryStatic;
     Garnish: GarnishStatic;

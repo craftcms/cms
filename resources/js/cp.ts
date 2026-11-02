@@ -1,6 +1,5 @@
 import './bootstrap/seed-translations';
 import '@craftcms/ui';
-import '../../packages/craftcms-legacy/cp/src/js/UI.js';
 import Cp from './bootstrap/cp.js';
 import {defineConditionBuilderHost} from './modules/conditions/condition-builder-host';
 import {defineEntryFieldLayoutUiHost} from './modules/ui/entry-field-layout-ui-host';
@@ -22,7 +21,6 @@ import './modules/sortable-checkbox-select';
 import './modules/listbox';
 import './modules/auth/elevated-session';
 import './modules/field-layout-designer';
-import './modules/editable-table';
 import './modules/generated-fields';
 import './modules/component-select';
 import './modules/input-generators';
@@ -58,7 +56,6 @@ import './modules/preview-file-modal';
 import './modules/asset-select-input';
 import './modules/element-deletion-manager';
 import './modules/uploader';
-import './modules/ui';
 import {installLegacyAdminTableShim} from './modules/admin-table/legacy-admin-table';
 
 window.Cp = Cp;

@@ -7,9 +7,6 @@ import './css/charts.scss';
 // Load Craft first
 import './js/Craft.js';
 
-// UI
-import './js/UI.js';
-
 // Utilities
 import './js/Queue.js';
 

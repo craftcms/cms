@@ -2,6 +2,8 @@
 /** global: Garnish */
 /** global: $ */
 /** global: jQuery */
+import {createSwitch} from '../../../../../resources/js/modules/ui/legacy';
+import {setFocusOnErrorSummary} from '../../../../../resources/js/common/craft/field-errors';
 
 /**
  * Element Editor
@@ -309,7 +311,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
 
       if (this.isFullPage) {
-        Craft.ui.setFocusOnErrorSummary(this.$container);
+        setFocusOnErrorSummary(this.$container);
       }
     },
 
@@ -551,12 +553,10 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
 
       $enabledForSiteField.addClass('nested');
-      const $globalField = Craft.ui
-        .createLightswitchField({
-          label: Craft.t('app', 'Enabled for all sites'),
-          name: this.namespaceInputName('enabled'),
-        })
-        .insertBefore($enabledForSiteField);
+      const $globalField = this._createLightswitchField({
+        label: Craft.t('app', 'Enabled for all sites'),
+        name: this.namespaceInputName('enabled'),
+      }).insertBefore($enabledForSiteField);
       $globalField.find('label').css('font-weight', 'bold');
       this.$globalLightswitch = $globalField.find('craft-switch');
 
@@ -697,7 +697,7 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     _createSiteStatusField: function (site, status) {
-      const $field = Craft.ui.createLightswitchField({
+      const $field = this._createLightswitchField({
         fieldClass: `enabled-for-site-${site.id}-field`,
         label: site.name,
         name: this.namespaceInputName(`enabledForSite[${site.id}]`),
@@ -729,6 +729,22 @@ Craft.ElementEditor = Garnish.Base.extend(
       return $field;
     },
 
+    // Matches the server-rendered lightswitch fields
+    _createLightswitchField: function ({fieldClass, label, ...config}) {
+      const id = `lightswitch${Math.floor(Math.random() * 1000000000)}`;
+      const lightswitch = createSwitch({id, ...config});
+      lightswitch.slot = 'input';
+
+      return $('<craft-field/>', {
+        class: ['field', 'lightswitch-field', fieldClass]
+          .filter(Boolean)
+          .join(' '),
+        id: `${id}-field`,
+      })
+        .append($('<label/>', {slot: 'label', for: id, text: label}))
+        .append(lightswitch);
+    },
+
     _createSiteField: function (site) {
       const nameId = `site-name-${Math.floor(Math.random() * 1000000000)}`;
       const $field = $('<div/>', {
@@ -751,7 +767,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         );
         $('<div/>', {class: 'input'})
           .append(
-            Craft.ui.createLightswitch({
+            createSwitch({
               name,
               on: addlSiteInfo?.enabledByDefault ?? true,
               labelId: nameId,
@@ -901,21 +917,19 @@ Craft.ElementEditor = Garnish.Base.extend(
         id: selectLabelId,
       });
 
-      const $addlSiteSelectContainer = Craft.ui
-        .createSelect({
-          options: [
-            {label: Craft.t('app', 'Add a site…')},
-            ...additionalSites.map((s) => {
-              return {label: s.name, value: s.id};
-            }),
-          ],
-          labelledBy: selectLabelId,
-        })
-        .addClass('fullwidth');
+      const $addlSiteSelectContainer = $('<div/>', {
+        class: 'select fullwidth',
+      }).append(
+        $('<select/>', {'aria-labelledby': selectLabelId}).append(
+          $('<option/>', {text: Craft.t('app', 'Add a site…')}),
+          ...additionalSites.map((s) =>
+            $('<option/>', {text: s.name, value: s.id})
+          )
+        )
+      );
 
-      this.$additionalSiteField = Craft.ui
-        .createField($addlSiteSelectContainer, {})
-        .addClass('nested add')
+      this.$additionalSiteField = $('<div/>', {class: 'field nested add'})
+        .append($('<div/>', {class: 'input'}).append($addlSiteSelectContainer))
         .appendTo(this.$siteStatusPane);
 
       if (this.sitesPaneOnly) {

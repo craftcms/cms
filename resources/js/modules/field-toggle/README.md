@@ -27,7 +27,7 @@ Logic-class + global-shim port (no custom element; `observe.ts` binds it):
 `observe.ts` binds a FieldToggle to every `.fieldtoggle` on the page, and to each
 one added later, so inserted markup needs no `Craft.initUiElements()` call.
 `Cp.init()` starts it. Toggles already bound (by `$.fn.fieldtoggle`,
-`new Craft.FieldToggle(...)` in `UI.js`, or `LinkField`) are left alone.
+`new Craft.FieldToggle(...)` in the adapter's `ui.js`, or `LinkField`) are left alone.
 
 ## jQuery + global seams
 
