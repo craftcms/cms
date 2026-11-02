@@ -193,3 +193,88 @@ describe('craft-disclosure invoker', () => {
     expect(invoker.icon).toBe('gear');
   });
 });
+
+describe('craft-disclosure slotted semantics', () => {
+  async function create(opened = false): Promise<{
+    element: CraftDisclosure;
+    invoker: HTMLElement;
+    content: HTMLElement;
+  }> {
+    const element = document.createElement(
+      'craft-disclosure'
+    ) as CraftDisclosure;
+    element.innerHTML =
+      '<button slot="invoker" type="button">More</button><div slot="content">Settings</div>';
+    element.opened = opened;
+    document.body.append(element);
+    await element.updateComplete;
+
+    return {
+      element,
+      invoker: element.querySelector('[slot="invoker"]')!,
+      content: element.querySelector('[slot="content"]')!,
+    };
+  }
+
+  it('points the invoker at the content', async () => {
+    const {invoker, content} = await create();
+
+    expect(content.id).not.toBe('');
+    expect(invoker.getAttribute('aria-controls')).toBe(content.id);
+  });
+
+  it('keeps an id the content already has', async () => {
+    const element = document.createElement('craft-disclosure');
+    element.innerHTML =
+      '<button slot="invoker" type="button">More</button><div slot="content" id="own">Settings</div>';
+    document.body.append(element);
+
+    expect(element.querySelector('#own')).not.toBeNull();
+    expect(
+      element.querySelector('[slot="invoker"]')!.getAttribute('aria-controls')
+    ).toBe('own');
+  });
+
+  it('reports and applies the expanded state', async () => {
+    const {element, invoker, content} = await create();
+
+    expect(invoker.getAttribute('aria-expanded')).toBe('false');
+    expect(content.style.display).toBe('none');
+
+    invoker.click();
+    await element.updateComplete;
+
+    expect(element.opened).toBe(true);
+    expect(invoker.getAttribute('aria-expanded')).toBe('true');
+    expect(content.style.display).toBe('');
+  });
+
+  it('starts expanded when opened', async () => {
+    const {invoker, content} = await create(true);
+
+    expect(invoker.getAttribute('aria-expanded')).toBe('true');
+    expect(content.style.display).toBe('');
+  });
+
+  // Vue binds `undefined` to mean "not set".
+  it('reports collapsed when opened is cleared', async () => {
+    const {element, invoker} = await create(true);
+
+    (element as {opened: boolean | undefined}).opened = undefined;
+    await element.updateComplete;
+
+    expect(invoker.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('toggles once per click after being moved', async () => {
+    const {element, invoker} = await create();
+    const elsewhere = document.createElement('div');
+    document.body.append(elsewhere);
+    elsewhere.append(element);
+
+    invoker.click();
+    await element.updateComplete;
+
+    expect(element.opened).toBe(true);
+  });
+});

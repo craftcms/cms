@@ -11,7 +11,7 @@ import styles from './tab.styles.js';
  *
  *     <craft-tab slot="tab">Content</craft-tab>
  *
- * Deliberately thin: `<craft-tabs>` (via Lion) owns the accessibility
+ * Deliberately thin: `<craft-tabs>` owns the accessibility
  * contract, assigning this element its `id`, `role="tab"`, `aria-controls`,
  * `aria-selected`, and `tabindex`, and toggling the `selected` attribute. The
  * only state this component owns is `disabled`.
