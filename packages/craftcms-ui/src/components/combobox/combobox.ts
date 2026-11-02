@@ -861,6 +861,7 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
   override _inputGroupInputTemplate() {
     const selectedData = this.#selectedOption()?.data;
     const icon = selectedData?.icon;
+    const color = selectedData?.color;
     const indicator = selectedData?.indicator;
 
     return html`
@@ -868,7 +869,11 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
         <slot name="selection"></slot>
         <div class="combobox__textbox">
           ${icon
-            ? html`<craft-icon class="prefix" name=${icon}></craft-icon>`
+            ? html`<craft-icon
+                class="prefix"
+                name=${icon}
+                style=${color ? `color: ${iconColor(color)}` : nothing}
+              ></craft-icon>`
             : indicator
               ? html`<span class="prefix prefix--indicator">
                   <craft-indicator

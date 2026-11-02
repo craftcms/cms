@@ -77,7 +77,6 @@ A change that needs any of these is a different pattern. Don't add a mode to `cr
 
 ### Visual
 
-- [ ] The active option and selected values are styled by `craft-option`; see `option.a11y.md` for their contrast and forced colors requirements. Per WCAG 1.4.11 (Non-text Contrast). Known gap: the option's states are marked by background color only, which forced colors mode removes.
 - [x] The textbox border and popup border reach 3:1 against the surface, and the footer text (`--c-text-quiet`) reaches 4.5:1 against the popup, in the light and dark themes. Per WCAG 1.4.11 (Non-text Contrast) and 1.4.3 (Contrast (Minimum)). Verified by `draws the textbox and popup borders at 3:1, and the footer text at 4.5:1 inside the popup (multiple choice: %s)` in `combobox-a11y.browser.test.ts`.
 - [x] In forced colors mode the textbox border and popup border stay visible. Verified by `keeps the textbox border and popup border in forced colors mode` in `combobox-a11y.browser.test.ts`.
 - [x] The popup opens below the field, or flips above it, without covering the textbox. Per WCAG 2.4.11 (Focus Not Obscured (Minimum)). Verified by `opens the popup %s the field without covering the textbox` in `combobox-a11y.browser.test.ts`.

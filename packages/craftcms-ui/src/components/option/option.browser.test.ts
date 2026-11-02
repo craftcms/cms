@@ -6,7 +6,7 @@ import {
   expect,
   it,
 } from 'vite-plus/test';
-import {page, userEvent} from 'vite-plus/test/browser';
+import {cdp, page, userEvent} from 'vite-plus/test/browser';
 import {contrast, loadTokens} from '../../../test/contrast';
 import type CraftCombobox from '../combobox/combobox.js';
 import '../combobox/combobox.js';
@@ -22,8 +22,9 @@ beforeEach(async () => {
   await page.viewport(1280, 720);
 });
 
-afterEach(() => {
+afterEach(async () => {
   document.documentElement.style.fontSize = '';
+  await cdp().send('Emulation.setEmulatedMedia', {features: []});
 });
 
 async function settle() {
@@ -155,6 +156,76 @@ describe('visual', () => {
         'highlighted'
       );
     });
+  });
+
+  it('marks only the selected option with a check mark, hidden from assistive technology', async () => {
+    const {options} = await openCombobox((c) => (c.modelValue = 'cherry'));
+    const [apple, , cherry] = options;
+    const check = cherry!.shadowRoot!.querySelector<HTMLElement>('.check');
+
+    expect(check).not.toBeNull();
+    expect(check!.getBoundingClientRect().width).toBeGreaterThan(0);
+    expect(check).toHaveAttribute('aria-hidden', 'true');
+    expect(apple!.shadowRoot!.querySelector('.check')).toBeNull();
+  });
+
+  describe.each(['light', 'dark'])('in the %s theme', (theme) => {
+    it('fills the highlighted option but not the selected one, whose check mark reaches 3:1', async () => {
+      const {options, popup} = await openCombobox(
+        (c) => (c.modelValue = 'cherry'),
+        theme
+      );
+      const [apple, , cherry] = options;
+      await userEvent.keyboard('{ArrowDown}');
+      await settle();
+      expect(apple).toHaveAttribute('active');
+
+      expect(background(cherry!, popup)).toBe(
+        getComputedStyle(popup).backgroundColor
+      );
+      expect(background(apple!, popup)).not.toBe(background(cherry!, popup));
+
+      const check = cherry!.shadowRoot!.querySelector<HTMLElement>('.check')!;
+      expect(
+        contrast(getComputedStyle(check).color, background(cherry!, popup))
+      ).toBeGreaterThanOrEqual(3);
+
+      while (!cherry!.hasAttribute('active')) {
+        await userEvent.keyboard('{ArrowDown}');
+        await settle();
+      }
+      expect(
+        contrast(getComputedStyle(check).color, background(cherry!, popup))
+      ).toBeGreaterThanOrEqual(3);
+    });
+  });
+
+  it('keeps the highlighted and selected options visible in forced colors mode', async () => {
+    await cdp().send('Emulation.setEmulatedMedia', {
+      features: [{name: 'forced-colors', value: 'active'}],
+    });
+    const {options, popup} = await openCombobox(
+      (c) => (c.modelValue = 'cherry')
+    );
+    const [apple, , cherry] = options;
+    await userEvent.keyboard('{ArrowDown}');
+    await settle();
+    expect(apple).toHaveAttribute('active');
+    const outline = getComputedStyle(apple!);
+    const check = cherry!.shadowRoot!.querySelector<HTMLElement>('.check')!;
+
+    expect(outline.outlineStyle).not.toBe('none');
+    expect(parseFloat(outline.outlineWidth)).toBeGreaterThanOrEqual(2);
+    expect(
+      contrast(outline.outlineColor, getComputedStyle(popup).backgroundColor)
+    ).toBeGreaterThanOrEqual(3);
+    expect(check.getBoundingClientRect().width).toBeGreaterThan(0);
+    expect(
+      contrast(
+        getComputedStyle(check).color,
+        getComputedStyle(popup).backgroundColor
+      )
+    ).toBeGreaterThanOrEqual(3);
   });
 
   it('spaces an icon from the label beside it', async () => {

@@ -2,11 +2,15 @@ import styles from './option.styles.js';
 import {LionOption} from '@lion/ui/listbox.js';
 import {html, nothing} from 'lit';
 import {property} from 'lit/decorators.js';
+import '../icon/icon.js';
 
 /**
  * @summary One option inside `craft-select-rich` or `craft-combobox`. Unlike a
  * native `<option>` it can hold arbitrary markup — an icon, a status, a
  * thumbnail — alongside its label.
+ *
+ * A selected option ends in a check mark, so it's told apart from the
+ * highlighted option by shape as well as fill, including in forced colors.
  *
  * Options widen their layout once they have room for it, measured against the
  * option rather than the viewport, so the same list reads sensibly in a narrow
@@ -74,6 +78,9 @@ export default class CraftOption extends LionOption {
         ${this.hint ? html`<span class="hint">${this.hint}</span>` : nothing}
         <slot name="suffix"></slot>
       </div>
+      ${this.checked
+        ? html`<craft-icon class="check" name="check"></craft-icon>`
+        : nothing}
     `;
   }
 }
