@@ -21,7 +21,7 @@ export interface TwoFactorData {
 }
 
 declare const Craft: {
-  createAuthFormHandler: (
+  createAuthFormHandler?: (
     method: string,
     container: Element,
     onSuccess: () => void,
@@ -90,7 +90,8 @@ export default class CraftLoginChallenge extends LitElement {
     }
     initLegacyUi($authForm);
 
-    Craft.createAuthFormHandler(
+    // Auth methods registered with the Yii2 adapter's legacy handler API
+    Craft.createAuthFormHandler?.(
       this.data.authMethod,
       $authForm,
       () => {

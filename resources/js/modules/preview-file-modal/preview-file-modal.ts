@@ -6,6 +6,7 @@ import {announce} from '@/common/announcer';
 import {hasAttr} from '@craftcms/garnish';
 import {submitNativeForm} from '@/common/utils/forms';
 import {highlightCodeBlocks} from '@/common/utils/highlight-code';
+import {bootFocalPoint} from '@/modules/focal-point/focal-point';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
@@ -278,6 +279,7 @@ export class PreviewFileModal {
 
         this.container.dataset.assetId = String(assetId);
         this.$container.append(response.data.previewHtml);
+        bootFocalPoint(this.container);
         const text = this.container.querySelector('pre > code')?.textContent;
         highlightCodeBlocks(this.container);
         this.#addPreviewFooterItems(text);

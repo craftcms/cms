@@ -1,5 +1,10 @@
-// @ts-ignore
 import './focal.scss';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {t} from '@craftcms/ui/utilities/translate';
+import {announce} from '@/common/announcer';
+import {refreshPreviews} from '@/modules/elements/live-preview/previews';
+
+declare const $: any;
 
 type JQEvent = any;
 
@@ -144,11 +149,7 @@ export class FocalPoint {
     this.saving = true;
 
     this.renderButton();
-    window.dispatchEvent(
-      new CustomEvent('craft:announce', {
-        detail: {message: Craft.t('app', 'Saving…')},
-      })
-    );
+    announce(t('Saving…'));
 
     let data = {
       assetUid: this.assetUid,
@@ -156,20 +157,12 @@ export class FocalPoint {
       focalEnabled: this.visible,
     };
 
-    Craft.sendActionRequest('POST', 'assets/update-focal-position', {
-      data,
-    }).then((response) => {
+    void actionClient.post('assets/update-focal-position', data).then(() => {
       this.saving = false;
       this.shouldSave = false;
       this.renderButton();
-      window.dispatchEvent(
-        new CustomEvent('craft:announce', {
-          detail: {message: Craft.t('app', 'Saved')},
-        })
-      );
-
-      // Refresh Live Preview
-      window.dispatchEvent(new CustomEvent('craft:refresh-previews'));
+      announce(t('Saved'));
+      refreshPreviews();
     });
   }
 
@@ -219,4 +212,26 @@ export class FocalPoint {
         this.$focal.outerHeight()! / 2,
     });
   }
+}
+
+let current: FocalPoint | null = null;
+
+/** Starts the focal point editor on an image preview inside `root`, if it has one. */
+export function bootFocalPoint(root: Element): void {
+  const container = root.querySelector<HTMLElement>('[data-focal-point]');
+
+  if (!container) {
+    return;
+  }
+
+  current?.destruct();
+  current = new FocalPoint(
+    $(container),
+    $(
+      container.dataset.focalPointToggle
+        ? `#${container.dataset.focalPointToggle}`
+        : []
+    ),
+    container.dataset.focalPoint === 'edit'
+  );
 }
