@@ -106,7 +106,7 @@ export default class CraftCopyButton extends LitElement {
     clearTimeout(this.#restTimer);
     this.status = status;
     await this.updateComplete;
-    this.tooltipEl?.repositionOverlay();
+    this.tooltipEl?.reposition();
 
     this.#restTimer = setTimeout(() => {
       this.status = 'rest';
