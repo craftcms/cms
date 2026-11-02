@@ -37,6 +37,7 @@ import type {
 import {useTableRowSelection} from '@/common/composables/useTableRowSelection';
 import type {
   ElementIndexModel,
+  ElementIndexSelectAll,
   ElementIndexView,
   ExportElementIndex,
 } from '@/modules/elements/index/types/model';
@@ -231,8 +232,34 @@ export function useElementIndex(options: UseElementIndexOptions) {
         : (elementIndex.data ?? [])
   );
   const rowSelection = shallowRef<RowSelectionState>({});
+  /**
+   * Whether every element the index lists is selected, including those on
+   * pages that haven't been loaded, other than any deselected since.
+   */
+  const selectsAll = shallowRef(false);
+  const deselectedIds = shallowRef<ReadonlySet<string>>(new Set());
+
+  function selectRows(rows: ElementIndexRow[], selection = rowSelection.value) {
+    const next = {...selection};
+
+    for (const row of rows) {
+      const id = String(row.id);
+      if (
+        !deselectedIds.value.has(id) &&
+        (options.enableRowSelection?.(row) ?? true)
+      ) {
+        next[id] = true;
+      }
+    }
+
+    return next;
+  }
 
   watch(data, (rows) => {
+    if (selectsAll.value) {
+      rowSelection.value = selectRows(rows);
+    }
+
     if (options.structure && structureView.isStructure.value) {
       rowSelection.value = selectDescendantsOfSelected(
         rowSelection.value,
@@ -286,6 +313,32 @@ export function useElementIndex(options: UseElementIndexOptions) {
         options.structure && structureView.isStructure.value
           ? cascadeStructureSelection(rowSelection.value, next, data.value)
           : next;
+
+      // Deselecting the whole page, as the select-all checkbox does, ends
+      // the selection of every result, not just this page's share of it.
+      if (
+        selectsAll.value &&
+        !data.value.some((row) => rowSelection.value[String(row.id)])
+      ) {
+        selectsAll.value = false;
+        deselectedIds.value = new Set();
+        rowSelection.value = {};
+      }
+
+      if (selectsAll.value) {
+        const deselected = new Set(deselectedIds.value);
+
+        for (const row of data.value) {
+          const id = String(row.id);
+          if (rowSelection.value[id]) {
+            deselected.delete(id);
+          } else {
+            deselected.add(id);
+          }
+        }
+
+        deselectedIds.value = deselected;
+      }
     },
     ...sortingConfig,
     ...paginationConfig,
@@ -337,21 +390,119 @@ export function useElementIndex(options: UseElementIndexOptions) {
     );
   }
 
+  /**
+   * The selected rows on every page, by row id. The table only holds the page
+   * on screen, so rows selected on other pages are remembered as they were
+   * when last shown.
+   */
+  const selectedRowsById = shallowRef(new Map<string, ElementIndexRow>());
+
+  watch(
+    [rowSelection, data],
+    ([selected, rows]) => {
+      const shown = new Map(rows.map((row) => [String(row.id), row]));
+      const next = new Map<string, ElementIndexRow>();
+
+      for (const [id, isSelected] of Object.entries(selected)) {
+        const row = isSelected
+          ? (shown.get(id) ?? selectedRowsById.value.get(id))
+          : undefined;
+
+        if (row) next.set(id, row);
+      }
+
+      selectedRowsById.value = next;
+    },
+    {immediate: true, flush: 'sync'}
+  );
+
   const selection = useTableRowSelection(table, {
     selectable: true,
     readOnly: options.readOnly ?? false,
+    selectedRows: () => [...selectedRowsById.value.values()],
+    onClear: () => {
+      selectsAll.value = false;
+      deselectedIds.value = new Set();
+    },
   });
 
+  const selectAll: ElementIndexSelectAll = {
+    active: selectsAll,
+    exceptIds: computed(() => [...deselectedIds.value]),
+    count: computed(() =>
+      selectsAll.value
+        ? Math.max(
+            0,
+            (elementIndex.pagination?.total ?? 0) - deselectedIds.value.size
+          )
+        : selection.selectedIds.value.length
+    ),
+    selectAll: () => {
+      deselectedIds.value = new Set();
+      selectsAll.value = true;
+      rowSelection.value = selectRows(data.value);
+    },
+    selectPage: () => {
+      selection.clearSelection();
+      rowSelection.value = selectRows(data.value);
+    },
+  };
+
+  // A selection belongs to the elements the index lists, so it's dropped when
+  // they change, but kept across pages and sort orders. With every result
+  // selected, the server would otherwise act on whatever the new search or
+  // filters list.
   watch(
-    () => elementIndex.source?.key,
+    () =>
+      JSON.stringify([
+        elementIndex.source?.key,
+        elementIndex.siteId,
+        elementIndex.search,
+        elementIndex.status,
+        elementIndex.currentCondition,
+        elementIndex.drafts,
+        elementIndex.trashed,
+      ]),
     () => selection.clearSelection()
   );
+
+  const listing = () =>
+    JSON.stringify([
+      elementIndex.pagination?.current_page,
+      elementIndex.pagination?.per_page,
+      elementIndex.sort,
+    ]);
+  let previousListing = listing();
+
   watch(data, (rows, previous) => {
+    const currentListing = listing();
+    const samePage = currentListing === previousListing;
+    previousListing = currentListing;
+
     if (
-      rows.length !== previous.length ||
-      rows.some((row, index) => row.id !== previous[index]?.id)
+      rows.length === previous.length &&
+      rows.every((row, index) => row.id === previous[index]?.id)
     )
-      selection.selection.prune();
+      return;
+
+    selection.anchorIndex.value = null;
+
+    // When the same page reloads, rows that left it are gone, not on another
+    // page, so they leave the selection too.
+    if (!samePage || pending.value) return;
+
+    const kept = new Set(rows.map((row) => String(row.id)));
+    const departed = new Set(
+      previous
+        .map((row) => String(row.id))
+        .filter((id) => !kept.has(id) && rowSelection.value[id])
+    );
+
+    if (departed.size) {
+      rowSelection.value = Object.fromEntries(
+        Object.entries(rowSelection.value).filter(([id]) => !departed.has(id))
+      );
+    }
   });
 
   function changeSource(key: string): void {
@@ -417,6 +568,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
     table,
     data,
     selection,
+    selectAll,
     search: filters.search,
     status: filters.status,
     conditions: filters.conditions,

@@ -40,6 +40,9 @@
 - Added Markdown comments to element activity timelines, with support for editing, removing, structured user mentions, syntax-highlighted code blocks, and email notifications.
 - Element index searches now update results as users type. ([#19754](https://github.com/craftcms/cms/pull/19754))
 - Clicking anywhere on an element index table row or card (other than an interactive control) now selects it. ([#19351](https://github.com/craftcms/cms/pull/19351))
+- Element index selections now carry across pages, and bulk actions apply to all of them. Selections are cleared when the search, status, filters, source, or site change. ([#20262](https://github.com/craftcms/cms/pull/20262))
+- Selecting every result on an element index page now shows a banner under the header that offers to select all of the index’s results, on every page. Bulk actions apply to them all, other than any deselected afterwards. The page controls now stay in the element index footer while elements are selected. ([#20262](https://github.com/craftcms/cms/pull/20262))
+- Bulk element actions on more than 100 elements now run from a queue job. Actions that can’t, such as downloads and duplicating with descendants, are hidden once more than 100 elements are selected. ([#20262](https://github.com/craftcms/cms/pull/20262))
 - Element index View menus now have a “Thumb Size” setting in table, structure, and thumbnail views, with “Small”, “Medium”, and “Large” options, plus “XL” and “2XL” in thumbnail view. Each view remembers its own size, and chips take a size to suit their thumbnails. ([#20083](https://github.com/craftcms/cms/discussions/20083), [#20124](https://github.com/craftcms/cms/pull/20124))
 - Element indexes now show placeholders while their results load, rather than a spinner. Placeholders match the view mode and thumbnail size the results will be shown at, and the source’s card thumbnail style and alignment, so results no longer show at the default thumbnail size before switching to the chosen one. ([#20199](https://github.com/craftcms/cms/pull/20199), [#20142](https://github.com/craftcms/cms/issues/20142))
 - Thumbnail views in element indexes and relational fields now show each element as a chip, with its thumbnail above its label. ([#20083](https://github.com/craftcms/cms/discussions/20083), [#20124](https://github.com/craftcms/cms/pull/20124))
@@ -232,6 +235,7 @@
 ### Extensibility
 
 #### Plugins
+- Added `CraftCms\Cms\Element\Contracts\ElementActionInterface::supportsQueue()`, which determines whether an element action can be performed on more than `CraftCms\Cms\Element\ElementActions::SYNC_LIMIT` elements from a queue job. `CraftCms\Cms\Element\Actions\ElementAction` returns `true` unless the action is a download. ([#20262](https://github.com/craftcms/cms/pull/20262))
 - Added the `craft:ui-value-change` DOM event and `Cp.$ui.active()` for plugins to observe canonical values from Craft 6 UI-rendered fields. ([#19920](https://github.com/craftcms/cms/discussions/19920))
 - Links to control panel pages in plugins’ server-rendered HTML now open with Inertia. Pages that aren’t Inertia pages still load in full, after an Inertia request. Links to files or other responses that aren’t HTML need `download` or `data-inertia="false"`, on the link or an element around it, as Inertia can’t open them. ([#20118](https://github.com/craftcms/cms/pull/20118))
 - Plugins should no longer define `extra.laravel.providers` in `composer.json`. ([#19263](https://github.com/craftcms/cms/pull/19263))

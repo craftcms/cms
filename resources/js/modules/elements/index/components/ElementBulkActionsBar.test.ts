@@ -272,3 +272,27 @@ it.each(['edit', 'view'] as const)(
     expect(globalAction).not.toHaveBeenCalled();
   }
 );
+
+it.each([
+  [100, false, true],
+  [101, false, false],
+  [101, true, true],
+])(
+  'with %i selected, an action that can be queued (%s) is listed: %s',
+  async (selectedCount, queueable, listed) => {
+    const container = mount(
+      {
+        key: 'plugin\\Archive',
+        label: 'Archive',
+        syncLimit: 100,
+        queueable,
+        action: {type: 'http', url: '/perform', body: {}},
+      },
+      {},
+      {selectedCount}
+    );
+    await nextTick();
+
+    expect(container.querySelector('craft-action-item') !== null).toBe(listed);
+  }
+);
