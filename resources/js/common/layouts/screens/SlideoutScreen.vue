@@ -33,14 +33,12 @@
   import {useAppendHtml} from '@/common/composables/useAppendHtml';
   import {provideLayoutSlotRegistry} from '@/common/composables/layoutSlots';
   import {
-    ScreenContentReadyKey,
     ScreenShellKey,
     type ScreenPageProps as GenericScreenPageProps,
     useScreenPageProps,
     useScreenPropsStore,
   } from '@/common/composables/screen';
   import {useSlideout} from '@/common/slideouts/useSlideout';
-  import {useElementEditor} from '@/common/slideouts/useElementEditor';
   import type {FormSaveOptions} from '@/common/types';
   import type {ScreenProps, ScreenSlots} from './types';
   import {useScreenRegions} from './useScreenRegions';
@@ -97,8 +95,6 @@
       /** Present on screens that submit server-rendered HTML (`cp/Screen`). */
       action?: string | null;
       namespace?: string | null;
-      /** Present only on the element-edit screen. See `useElementEditor()`. */
-      elementEditorSettings?: GenericScreenPageProps | null;
     };
   }
 
@@ -151,60 +147,19 @@
 
   /** Errors for a screen with no Vue form to hang them off. */
   const screenErrors = ref<Record<string, string> | null>(null);
-  const saveHandlers = useSlideoutSaveHandlers({
-    slideout,
-    errors: screenErrors,
-  });
-
-  /**
-   * The element-edit screen brings its own controller: drafts, autosaving and
-   * delta submission are `Craft.ElementEditor`'s, not the shell's.
-   */
-  const elementEditor = useElementEditor({
-    settings: () => chrome.value.screen?.elementEditorSettings,
-    namespace: () => chrome.value.screen?.namespace,
-    slideout,
-    regions: {
-      form: formEl,
-      content: () => bodyLayout.value?.content ?? null,
-      details: () => bodyLayout.value?.details ?? null,
-      toolbar: toolbarEl,
-      tabs: tabsEl,
-    },
-    onSaved: saveHandlers.onElementSaved,
-    onDraftSaved: saveHandlers.onElementDraftSaved,
-    onError: saveHandlers.onElementSaveError,
-  });
-
-  // The editor snapshots the form to detect changes, so it can't be built
-  // until the screen's server-rendered HTML is really in the document.
-  provide(ScreenContentReadyKey, elementEditor.start);
-
-  onBeforeUnmount(elementEditor.destroy);
+  const saveHandlers = useSlideoutSaveHandlers({slideout});
 
   const canSave = computed(
-    () =>
-      !elementEditor.isStatic.value &&
-      (Boolean(form.value) ||
-        Boolean(screenAction.value) ||
-        elementEditor.active.value)
+    () => Boolean(form.value) || Boolean(screenAction.value)
   );
 
-  /**
-   * A revision — or an element already autosaved to a provisional draft — has
-   * nothing to cancel; the only thing left to do is leave.
-   */
-  const cancelLabel = computed(
-    () =>
-      elementEditor.cancelLabel.value ??
-      (elementEditor.isStatic.value ? t('Close') : t('Cancel'))
-  );
+  const cancelLabel = computed(() => t('Cancel'));
 
   useSlideoutDirtyCheck({
     slideout,
     formEl,
     form,
-    autosaves: elementEditor.autosaves,
+    autosaves: false,
   });
 
   const htmlScreen = useHtmlScreenSubmit({
@@ -218,12 +173,6 @@
 
   function save(event: Event) {
     if (props.value.saveDisabled) {
-      return;
-    }
-
-    if (elementEditor.active.value) {
-      void elementEditor.submit(event);
-
       return;
     }
 
@@ -422,7 +371,7 @@
         :full-page-form="canSave && !props.saveDisabled"
         :submit-button-label="submitLabel"
         :primary-action-html="chrome.primaryAction"
-        :submitting="htmlScreen.submitting.value || elementEditor.saving.value"
+        :submitting="htmlScreen.submitting.value"
         :save-disabled="props.saveDisabled"
         @save="saveWithOptions"
       >

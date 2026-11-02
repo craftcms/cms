@@ -1,7 +1,6 @@
 import {compatify} from '@craftcms/garnish/compat';
 import {Slideout} from './slideout';
 import {CpScreenSlideout} from './cp-screen-slideout';
-import {ElementEditorSlideout} from './element-editor-slideout';
 import {registerCraftGlobals} from '@/common/craft-global';
 
 // `compatify`, not the plain class: plugins subclass this global via the
@@ -31,20 +30,8 @@ registerCraftGlobals({Slideout: CompatSlideout});
 // the legacy `.extend()` API.
 const CompatCpScreenSlideout = compatify(CpScreenSlideout);
 
-// `Craft.ElementEditorSlideout.defaults` is a separate object built by that
-// file's own `.extend()` call; only this one needs mirroring here.
 Object.assign(CompatCpScreenSlideout, {
   defaults: CpScreenSlideout.defaults,
 });
 
 registerCraftGlobals({CpScreenSlideout: CompatCpScreenSlideout});
-
-// And once more for element editors — nothing in core `.extend()`s this
-// anymore, but it stays compatified so plugin subclasses keep working.
-const CompatElementEditorSlideout = compatify(ElementEditorSlideout);
-
-Object.assign(CompatElementEditorSlideout, {
-  defaults: ElementEditorSlideout.defaults,
-});
-
-registerCraftGlobals({ElementEditorSlideout: CompatElementEditorSlideout});
