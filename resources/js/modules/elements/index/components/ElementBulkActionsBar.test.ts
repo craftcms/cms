@@ -217,6 +217,31 @@ it('previews the selected asset', async () => {
   expect(PreviewFileModal).toHaveBeenCalledWith(11);
 });
 
+it('opens a new element placed by the selected one', async () => {
+  const assign = vi.fn();
+  vi.stubGlobal('location', {...window.location, assign});
+  const container = mount({
+    key: 'new-child',
+    label: 'Create a new child entry',
+    bulk: false,
+    action: {
+      type: 'event',
+      name: 'craft:new-element',
+      detail: {
+        url: 'https://example.com/admin/entries/blog/new?site=en',
+        param: 'parentId',
+      },
+    },
+  });
+  await nextTick();
+
+  container.querySelector('craft-action-item')!.click();
+
+  expect(assign).toHaveBeenCalledWith(
+    'https://example.com/admin/entries/blog/new?site=en&parentId=11'
+  );
+});
+
 it.each(['edit', 'view'] as const)(
   'emits %s only from the bulk bar that triggered it',
   async (type) => {

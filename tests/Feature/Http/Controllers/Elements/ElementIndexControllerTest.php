@@ -7,7 +7,6 @@ use CraftCms\Cms\Address\Models\Address as AddressModel;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Actions\Copy;
 use CraftCms\Cms\Element\Actions\Delete;
 use CraftCms\Cms\Element\Actions\Duplicate;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
@@ -462,8 +461,8 @@ it('uses posted Matrix index presentation settings while retaining the owner sco
         ->and($response->json('defaultTableColumns'))->toBe(['dateUpdated'])
         ->and(array_column($response->json('tableColumns'), 'value'))->toContain("field:{$fixture['columnField']->uid}")
         ->and(array_column($response->json('viewModes'), 'mode'))->toBe(['table'])
-        ->and($actions->keys()->all())->toContain(Copy::class, Duplicate::class, Delete::class)
-        ->and($actions[Copy::class]['selectionAttribute'])->toBe('copyable')
+        ->and($actions->keys()->all())->toContain('copy', Duplicate::class, Delete::class)
+        ->and($actions['copy']['selectionAttribute'])->toBe('copyable')
         ->and($actions[Duplicate::class]['selectionAttribute'])->toBe('duplicatable')
         ->and($actions[Delete::class]['selectionAttribute'])->toBe('deletable');
 });

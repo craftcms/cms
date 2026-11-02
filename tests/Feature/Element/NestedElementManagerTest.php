@@ -7,7 +7,6 @@ use CraftCms\Cms\Address\Models\Address as AddressModel;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Actions\Copy;
 use CraftCms\Cms\Element\Actions\Delete;
 use CraftCms\Cms\Element\Actions\Duplicate;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -527,13 +526,13 @@ it('provides permitted card menu events for the hosting field', function (bool $
     }
 
     if ($static) {
-        expect($elementActions->keys()->all())->toBe([Copy::class])
+        expect($elementActions->keys()->all())->toBe(['copy'])
             ->and($nestedActions)->toBeEmpty();
 
         return;
     }
 
-    expect($elementActions->keys()->all())->toEqualCanonicalizing([Copy::class, Duplicate::class, Delete::class])
+    expect($elementActions->keys()->all())->toEqualCanonicalizing(['copy', Duplicate::class, Delete::class])
         ->and($nestedActions->keys()->all())->toEqualCanonicalizing(['move-forward', 'move-backward', 'paste']);
 
     foreach ($elementActions as $actionClass => $item) {
@@ -544,7 +543,7 @@ it('provides permitted card menu events for the hosting field', function (bool $
             ->and($item['action']['detail']['item']['key'])->toBe($actionClass);
     }
 
-    expect($elementActions[Copy::class]['action']['detail']['item']['action']['detail']['elements'])->toBe([[
+    expect($elementActions['copy']['action']['detail']['item']['action']['detail']['elements'])->toBe([[
         'type' => AddressElement::class,
         'id' => $address->id,
         'siteId' => $address->siteId,

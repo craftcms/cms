@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use CraftCms\Cms\Asset\Actions\PreviewAsset;
 use CraftCms\Cms\Component\ComponentHelper;
-use CraftCms\Cms\Element\Actions\Copy;
+use CraftCms\Cms\Element\Actions\ClientAction;
 use CraftCms\Cms\Element\Actions\Delete;
 use CraftCms\Cms\Element\Actions\Duplicate;
 use CraftCms\Cms\Element\Actions\Restore;
@@ -16,7 +15,6 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Events\ElementActionPerformed;
 use CraftCms\Cms\Element\Events\ElementActionPerforming;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Entry\Actions\MoveToSection;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Container\Attributes\Singleton;
 
@@ -28,49 +26,30 @@ class ElementActions
 {
     /** @var array<class-string<ElementActionInterface>, string> */
     private const array SELECTION_ATTRIBUTES = [
-        Copy::class => 'copyable',
         Duplicate::class => 'duplicatable',
         Delete::class => 'deletable',
     ];
 
     /**
-     * Actions whose interaction (a status picker, a section picker, …) hasn't
-     * been ported to the Inertia CP yet. They're serialized for the bulk-actions
-     * bar but flagged `disabled` until each gets a native Vue control, rather
-     * than performing silently with a default. Referenced by class string to
-     * avoid coupling this Element-layer service to Entry-layer actions.
+     * The element type's actions for a source: element actions, created and
+     * ready to perform, and {@see ClientAction}s, as they were defined.
      *
-     * @var list<class-string<ElementActionInterface>>
-     */
-    private const array INTERACTIVE_ACTIONS = [
-        MoveToSection::class,
-    ];
-
-    /**
-     * Actions that run entirely client-side, serialized as `event` actions:
-     * clicking one dispatches the mapped window event (with the live selection
-     * in its detail) instead of POSTing to the perform endpoint. Copy mirrors
-     * Craft 5, where it stores the selection in localStorage for paste targets.
-     * Preview has nothing to perform; its only behavior is the modal.
-     *
-     * @var array<class-string<ElementActionInterface>, string>
-     */
-    private const array CLIENT_EVENT_ACTIONS = [
-        Copy::class => 'craft:copy-elements',
-        Actions\Edit::class => 'craft:edit-element',
-        Actions\View::class => 'craft:view-element',
-        PreviewAsset::class => 'craft:preview-file',
-    ];
-
-    /**
      * @param  class-string<ElementInterface>  $elementType
-     * @return ElementActionInterface[]
+     * @return list<ElementActionInterface|ClientAction>
      */
     public function availableActions(string $elementType, string $sourceKey, ElementQueryInterface $elementQuery): array
     {
         $actions = $this->withCurrentQuery($elementQuery, fn (): array => $elementType::actions($sourceKey));
 
         foreach ($actions as $index => $action) {
+            if ($action instanceof ClientAction) {
+                if ($elementQuery->trashed) {
+                    unset($actions[$index]);
+                }
+
+                continue;
+            }
+
             $actions[$index] = $this->createAction($action, $elementType);
 
             if ($elementQuery->trashed) {
@@ -87,7 +66,7 @@ class ElementActions
         $actions = array_values($actions);
 
         if ($elementQuery->trashed) {
-            usort($actions, fn (ElementActionInterface $a, ElementActionInterface $b) => match (true) {
+            usort($actions, fn (ElementActionInterface|ClientAction $a, ElementActionInterface|ClientAction $b) => match (true) {
                 $a instanceof Restore => -1,
                 $b instanceof Restore => 1,
                 default => 0,
@@ -159,8 +138,11 @@ class ElementActions
     {
         $data = [];
 
+        // Client actions have no legacy trigger to serialize
         foreach ($actions as $action) {
-            $data[] = ElementHelper::actionConfig($action);
+            if ($action instanceof ElementActionInterface) {
+                $data[] = ElementHelper::actionConfig($action);
+            }
         }
 
         return $data;
@@ -178,7 +160,10 @@ class ElementActions
      * are reconstructed). The client merges in the live selection (`elementIds`)
      * and index context (`elementType`, `source`, `context`) before performing.
      *
-     * @param  iterable<ElementActionInterface>  $actions
+     * Client actions serialize as `event` actions instead: choosing one
+     * dispatches its window event, with the selection in its detail.
+     *
+     * @param  iterable<ElementActionInterface|ClientAction>  $actions
      * @return list<array<string, mixed>>
      */
     public function serializeActionItems(iterable $actions): array
@@ -187,6 +172,12 @@ class ElementActions
         $items = [];
 
         foreach ($actions as $action) {
+            if ($action instanceof ClientAction) {
+                $items[] = $action->toItem();
+
+                continue;
+            }
+
             $destructive = $action::isDestructive();
 
             $item = [
@@ -208,25 +199,6 @@ class ElementActions
                 $item['bulk'] = false;
             }
 
-            // Interactive actions still need a native Vue picker before they can
-            // submit; surface them disabled until ported (see INTERACTIVE_ACTIONS).
-            if (in_array($action::class, self::INTERACTIVE_ACTIONS, true)) {
-                $item['disabled'] = true;
-                $items[] = $item;
-
-                continue;
-            }
-
-            if (isset(self::CLIENT_EVENT_ACTIONS[$action::class])) {
-                $item['action'] = [
-                    'type' => 'event',
-                    'name' => self::CLIENT_EVENT_ACTIONS[$action::class],
-                ];
-                $items[] = $item;
-
-                continue;
-            }
-
             $item['action'] = [
                 'type' => $action::isDownload() ? 'download' : 'http',
                 'method' => 'POST',
@@ -245,12 +217,12 @@ class ElementActions
     }
 
     /**
-     * @param  iterable<ElementActionInterface>  $actions
+     * @param  iterable<ElementActionInterface|ClientAction>  $actions
      */
     public function resolveAction(iterable $actions, string $actionClass): ?ElementActionInterface
     {
         foreach ($actions as $availableAction) {
-            if ($availableAction::class === $actionClass) {
+            if ($availableAction instanceof ElementActionInterface && $availableAction::class === $actionClass) {
                 return clone $availableAction;
             }
         }
