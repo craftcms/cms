@@ -11,10 +11,8 @@ namespace craft\services;
 
 use Craft;
 use craft\events\RegisterIconSetsEvent;
-use CraftCms\Cms\Cp\Events\IconSetsResolving;
 use CraftCms\Cms\Cp\IconSets;
 use CraftCms\Cms\Cp\IconSets\IconSet;
-use Illuminate\Support\Facades\Event;
 use yii\base\Component;
 
 /**
@@ -49,7 +47,7 @@ class Icons extends Component
      * );
      * ```
      *
-     * @deprecated in 6.0.0. Listen for {@see IconSetsResolving} instead.
+     * @deprecated in 6.0.0. Call {@see IconSets::register()} instead.
      */
     public const EVENT_REGISTER_ICON_SETS = 'registerIconSets';
 
@@ -65,16 +63,18 @@ class Icons extends Component
 
     public static function registerEvents(): void
     {
-        Event::listen(function(IconSetsResolving $event) {
-            $service = Craft::$app->getIcons();
+        app()->afterResolving(IconSets::class, function(IconSets $iconSets) {
+            $iconSets->defer(function(IconSets $iconSets) {
+                $service = Craft::$app->getIcons();
 
-            if (!$service->hasEventHandlers(self::EVENT_REGISTER_ICON_SETS)) {
-                return;
-            }
+                if (!$service->hasEventHandlers(self::EVENT_REGISTER_ICON_SETS)) {
+                    return;
+                }
 
-            $yiiEvent = new RegisterIconSetsEvent(['iconSets' => $event->iconSets]);
-            $service->trigger(self::EVENT_REGISTER_ICON_SETS, $yiiEvent);
-            $event->iconSets = array_values($yiiEvent->iconSets);
+                $event = new RegisterIconSetsEvent(['iconSets' => array_values($iconSets->getIconSets())]);
+                $service->trigger(self::EVENT_REGISTER_ICON_SETS, $event);
+                $iconSets->register(...$event->iconSets);
+            });
         });
     }
 

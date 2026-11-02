@@ -18,7 +18,7 @@ use CraftCms\Cms\Cp\IconSets\IconSet;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
  * @since 5.12.0
- * @deprecated in 6.0.0. Use {@see \CraftCms\Cms\Cp\Events\IconSetsResolving} instead.
+ * @deprecated in 6.0.0. Call {@see \CraftCms\Cms\Cp\IconSets::register()} instead.
  */
 class RegisterIconSetsEvent extends Event
 {

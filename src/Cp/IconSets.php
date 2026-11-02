@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp;
 
+use Closure;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Cp\Events\IconSetsResolving;
 use CraftCms\Cms\Cp\IconSets\DirectoryIconSet;
 use CraftCms\Cms\Cp\IconSets\IconSet;
 use Illuminate\Container\Attributes\Singleton;
@@ -16,10 +16,16 @@ use function CraftCms\Cms\t;
 /**
  * Manages the custom icon sets that icon pickers can offer alongside Font Awesome.
  *
- * Custom icon sets are registered via the {@see IconSetsResolving} event, or the
- * <config5:customIconPath> config setting.
+ * Custom icon sets are registered via {@see register()}, or the <config5:customIconPath> config setting.
  *
- * @since 5.12.0
+ * ```php
+ * public function boot(IconSets $iconSets): void
+ * {
+ *     $iconSets->register(new DirectoryIconSet('my-icons', 'My Icons', __DIR__.'/icons'));
+ * }
+ * ```
+ *
+ * @since 6.0.0
  */
 #[Singleton]
 class IconSets
@@ -34,12 +40,13 @@ class IconSets
     /** The handle of the icon set registered via the <config5:customIconPath> config setting. */
     public const string CUSTOM = 'custom';
 
-    /**
-     * @var array<string, IconSet>
-     *
-     * @see getIconSets()
-     */
-    private array $iconSets;
+    /** @var array<string, IconSet> */
+    private array $iconSets = [];
+
+    /** @var list<Closure(self): void> */
+    private array $deferred = [];
+
+    private bool $resolved = false;
 
     /**
      * Parses an icon value into its set handle and icon name, if it references a custom icon set.
@@ -58,30 +65,15 @@ class IconSets
     }
 
     /**
-     * Returns all registered custom icon sets, indexed by their handles.
+     * Registers custom icon sets.
      *
-     * @return array<string, IconSet>
+     * An icon set replaces any previously-registered icon set with the same handle.
      *
      * @throws InvalidArgumentException if an icon set has an invalid handle
      */
-    public function getIconSets(): array
+    public function register(IconSet ...$iconSets): void
     {
-        if (isset($this->iconSets)) {
-            return $this->iconSets;
-        }
-
-        $iconSets = [];
-        $customIconPath = Cms::config()->customIconPath;
-
-        if ($customIconPath) {
-            $iconSets[] = new DirectoryIconSet(self::CUSTOM, t('Custom'), $customIconPath);
-        }
-
-        event($event = new IconSetsResolving($iconSets));
-
-        $this->iconSets = [];
-
-        foreach ($event->iconSets as $iconSet) {
+        foreach ($iconSets as $iconSet) {
             if (
                 ! preg_match('/^[a-zA-Z][\w\-]*$/', $iconSet->handle) ||
                 $iconSet->handle === self::FONT_AWESOME
@@ -90,6 +82,43 @@ class IconSets
             }
 
             $this->iconSets[$iconSet->handle] = $iconSet;
+        }
+    }
+
+    /**
+     * Defers a callback until the icon sets are first read, for registration that
+     * needs request state. It runs once.
+     *
+     * @param  Closure(self): void  $callback
+     */
+    public function defer(Closure $callback): void
+    {
+        $this->deferred[] = $callback;
+    }
+
+    /**
+     * Returns all registered custom icon sets, indexed by their handles.
+     *
+     * @return array<string, IconSet>
+     */
+    public function getIconSets(): array
+    {
+        if (! $this->resolved) {
+            $this->resolved = true;
+
+            $customIconPath = Cms::config()->customIconPath;
+
+            if ($customIconPath) {
+                $this->iconSets = [
+                    self::CUSTOM => new DirectoryIconSet(self::CUSTOM, t('Custom'), $customIconPath),
+                ] + $this->iconSets;
+            }
+
+            foreach ($this->deferred as $callback) {
+                $callback($this);
+            }
+
+            $this->deferred = [];
         }
 
         return $this->iconSets;

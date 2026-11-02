@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\IconSets;
 
-use CraftCms\Cms\Cp\Events\IconSetsResolving;
+use CraftCms\Cms\Cp\IconSets;
 
 /**
  * IconSet is the base class for custom icon sets, which can be registered via
- * the {@see IconSetsResolving} event.
+ * {@see IconSets::register()}.
  *
  * Icons selected from a custom icon set are stored as `set-handle:icon-name`.
  *
- * @since 5.12.0
+ * @since 6.0.0
  */
 abstract class IconSet
 {

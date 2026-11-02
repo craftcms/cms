@@ -13,7 +13,7 @@ use Override;
  *
  * Each file’s name (sans `.svg` extension) becomes its icon name.
  *
- * @since 5.12.0
+ * @since 6.0.0
  */
 class DirectoryIconSet extends IconSet
 {

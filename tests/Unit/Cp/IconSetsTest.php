@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Cp\Events\IconSetsResolving;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\IconSets;
 use CraftCms\Cms\Cp\IconSets\IconSet;
@@ -12,7 +11,6 @@ use CraftCms\Cms\Field\Icon;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
-use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
     $this->iconDir = storage_path('framework/testing/custom-icons-'.Str::uuid());
@@ -63,25 +61,23 @@ it('registers a Custom icon set from customIconPath', function () {
         ->and(Icons::svg('unknown-set:Arrow Thing'))->toBe('');
 });
 
-it('registers icon sets via the IconSetsResolving event', function () {
-    Event::listen(function (IconSetsResolving $event) {
-        $event->iconSets[] = new class('my-icons', 'My Icons') extends IconSet
+it('registers icon sets', function () {
+    app(IconSets::class)->register(new class('my-icons', 'My Icons') extends IconSet
+    {
+        public function getIcons(): array
         {
-            public function getIcons(): array
-            {
-                return ['dot'];
-            }
+            return ['dot'];
+        }
 
-            public function getKeywords(string $icon): array
-            {
-                return ['circle'];
-            }
+        public function getKeywords(string $icon): array
+        {
+            return ['circle'];
+        }
 
-            public function getSvg(string $icon): ?string
-            {
-                return $icon === 'dot' ? '<svg viewBox="0 0 1 1"><circle cx="0.5" cy="0.5" r="0.5"/></svg>' : null;
-            }
-        };
+        public function getSvg(string $icon): ?string
+        {
+            return $icon === 'dot' ? '<svg viewBox="0 0 1 1"><circle cx="0.5" cy="0.5" r="0.5"/></svg>' : null;
+        }
     });
 
     expect(app(IconSets::class)->getIconSetNames())->toBe([
@@ -94,22 +90,18 @@ it('registers icon sets via the IconSetsResolving event', function () {
 });
 
 it('rejects icon sets with invalid handles', function (string $handle) {
-    Event::listen(function (IconSetsResolving $event) use ($handle) {
-        $event->iconSets[] = new class($handle, 'Bad') extends IconSet
+    app(IconSets::class)->register(new class($handle, 'Bad') extends IconSet
+    {
+        public function getIcons(): array
         {
-            public function getIcons(): array
-            {
-                return [];
-            }
+            return [];
+        }
 
-            public function getSvg(string $icon): ?string
-            {
-                return null;
-            }
-        };
+        public function getSvg(string $icon): ?string
+        {
+            return null;
+        }
     });
-
-    app(IconSets::class)->getIconSets();
 })->with([IconSets::FONT_AWESOME, '1set', 'bad:handle'])->throws(InvalidArgumentException::class);
 
 it('normalizes and serializes Icon field values', function () {
