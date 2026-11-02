@@ -42,6 +42,7 @@ use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\models\Site;
 use craft\services\ElementSources;
+use craft\services\Icons;
 use craft\utilities\ProjectConfig as ProjectConfigUtility;
 use craft\utilities\Updates;
 use craft\web\twig\TemplateLoaderException;
@@ -3945,8 +3946,16 @@ JS, [
         };
 
         try {
-            // system icon name?
-            if (preg_match('/^[\da-z\-]+$/', $icon)) {
+            // custom icon set icon?
+            if ($customIcon = Icons::parse($icon)) {
+                [$setHandle, $name] = $customIcon;
+                $svg = Craft::$app->getIcons()->getIconSetByHandle($setHandle)?->getSvg($name);
+                if ($svg === null) {
+                    throw new InvalidArgumentException("Invalid custom icon: $icon");
+                }
+                $svg = Html::svg($svg, throwException: true);
+            } elseif (preg_match('/^[\da-z\-]+$/', $icon)) {
+                // system icon name
                 $path = match ($icon) {
                     'asterisk-slash',
                     'diamond-slash',

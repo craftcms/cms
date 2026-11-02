@@ -31,12 +31,19 @@
 - Color fields’ palette colors can now have an alpha channel, by entering an 8-digit hex value or via the color picker in browsers that support it. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - Color fields now have an “Allow opacity for custom colors” setting. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - Color fields now have a “GraphQL Mode” setting, which can be set to “Full data” or “Hex only”. New Color fields default to “Full data”, and existing Color fields default to “Hex only”. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
+- Icon pickers can now include icons from custom icon sets. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
+- Icon fields now have an “Icon Sets” setting, when any custom icon sets are registered, which determines which icon sets are selectable and in what order. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
+- Added the `customIconPath` config setting, which registers a “Custom” icon set made up of the SVG files within a directory, such as `@config/icons`. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
 
 ### Development
 
 - The `capitalize`, `lower`, `title`, and `upper` Twig filters now have `language` arguments, which default to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
 - Added the `project-config/check` command, which checks project config schema compatibility without applying changes.
 - Added the `{% render %}` Twig tag. ([#19988](https://github.com/craftcms/cms/pull/19988))
+- Icon field values now have a `set` property, set to the handle of the custom icon set the icon was selected from (or `null` for Font Awesome icons). ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
+- Icons selected from custom icon sets are stored as `set-handle:icon-name`. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
+- `IconData` GraphQL objects now have `set`, `svg`, and `keywords` fields. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
+- Icon field values now have `getSvg()` and `getKeywords()` methods. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
 - `{% render %}` tags and `render()` methods are allowed within the Twig sandbox. ([#19988](https://github.com/craftcms/cms/pull/19988))
 - GraphQL schemas can now include read-only components for sites, sections, entry types, volumes, user groups, category groups, and tag groups. ([#20055](https://github.com/craftcms/cms/pull/20055))
 - Added the `sites`, `site`, `sections`, `section`, `entryTypes`, `entryType`, `volumes`, `volume`, `userGroups`, `userGroup`, `categoryGroups`, `categoryGroup`, `tagGroups`, and `tagGroup` GraphQL queries, which are available when the schema includes the corresponding components. ([#20055](https://github.com/craftcms/cms/pull/20055))
@@ -63,6 +70,7 @@
 - Addresses now support drafts.
 - Element fixtures no longer create revisions by default. Set their `createRevisions` property to `true` to retain the previous behavior. ([#19626](https://github.com/craftcms/cms/pull/19626))
 - Added `craft\base\ApplicationTrait::getOAuth()`. ([#20145](https://github.com/craftcms/cms/pull/20145))
+- Added `craft\base\ApplicationTrait::getIcons()`. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
 - Added `craft\base\ApplicationTrait::getPersonalAccessTokens()`. ([#20147](https://github.com/craftcms/cms/pull/20147))
 - Added `craft\base\Element::showSitesField()`. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Added `craft\base\Element::sitesFieldHtml()`. ([#20061](https://github.com/craftcms/cms/pull/20061))
@@ -78,6 +86,11 @@
 - Added `craft\elements\db\NestedElementQueryTrait::mustHaveField()`.
 - Added `craft\elements\db\NestedElementQueryTrait::mustHaveOwner()`.
 - Added `craft\events\RegisterOAuthResourcesEvent`. ([#20145](https://github.com/craftcms/cms/pull/20145))
+- Added `craft\events\RegisterIconSetsEvent`. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
+- Added `craft\fields\data\IconData::$set`. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
+- Added `craft\fields\data\IconData::getKeywords()`. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
+- Added `craft\fields\data\IconData::getSvg()`. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
+- Added `craft\fields\Icon::$iconSets`. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
 - Added `craft\fieldlayoutelements\BaseField::defaultTip()`.
 - Added `craft\fieldlayoutelements\BaseField::defaultWarning()`.
 - Added `craft\fields\Color::$allowCustomAlpha`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
@@ -103,6 +116,8 @@
 - Added `craft\gql\types\Volume`. ([#20055](https://github.com/craftcms/cms/pull/20055))
 - Added `craft\helpers\Gql::getSchemaUser()`. ([#20147](https://github.com/craftcms/cms/pull/20147))
 - Added `craft\helpers\Template::render()`. ([#19988](https://github.com/craftcms/cms/pull/19988))
+- Added `craft\icons\DirectoryIconSet`. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
+- Added `craft\icons\IconSet`. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
 - Added `craft\i18n\Locale::languageId()`.
 - Added the `craft\mcp` and `craft\oauth` namespaces. ([#20145](https://github.com/craftcms/cms/pull/20145), [#20147](https://github.com/craftcms/cms/pull/20147))
 - Added `craft\models\GqlSchema::$user`. ([#20147](https://github.com/craftcms/cms/pull/20147))
@@ -117,6 +132,7 @@
 - Added `craft\services\Gql::SCOPE_WRITE`. ([#20147](https://github.com/craftcms/cms/pull/20147))
 - Added `craft\services\Images::getSupportsBmp()`.
 - Added `craft\services\Images::getSupportsJxl()`.
+- Added `craft\services\Icons`. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
 - Added `craft\services\Mcp`. ([#20145](https://github.com/craftcms/cms/pull/20145))
 - Added `craft\services\OAuth`. ([#20145](https://github.com/craftcms/cms/pull/20145))
 - Added `craft\services\PersonalAccessTokens`. ([#20147](https://github.com/craftcms/cms/pull/20147))
@@ -128,6 +144,9 @@
 - `Craft.BaseUploader` now supports a `pasteZone` setting. Files pasted while focus is within it are passed to `addFiles()`, which custom uploader classes must implement to support pasted files. ([#20183](https://github.com/craftcms/cms/discussions/20183), [#20212](https://github.com/craftcms/cms/pull/20212))
 - Plugins can register MCP capabilities via `craft\services\Mcp::EVENT_REGISTER_CAPABILITY_TYPES`, OAuth resources via `craft\services\OAuth::EVENT_REGISTER_RESOURCES`, and personal access token scopes via `craft\services\PersonalAccessTokens::registerScopeGroup()`. ([#20145](https://github.com/craftcms/cms/pull/20145), [#20147](https://github.com/craftcms/cms/pull/20147))
 - Plain Text, Email, Link, Number, Money, Lightswitch, Date, Time, Color, Country, Table, and option fields now implement `craft\base\InputSchemaFieldInterface`. ([#20145](https://github.com/craftcms/cms/pull/20145))
+- Plugins can register custom icon sets via `craft\services\Icons::EVENT_REGISTER_ICON_SETS`. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
+- `craft\helpers\Cp::iconSvg()` now supports `set-handle:icon-name` values. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
+- `Craft.IconPicker` now supports a `sets` setting, which can be set to an array of icon set handles (`fontawesome` for Font Awesome), or `'*'` for all icon sets. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
 - `Illuminate\Support\Collection` now has a `render()` macro, which replaces `craft\elements\ElementCollection::render()`. ([#19988](https://github.com/craftcms/cms/pull/19988))
 - `craft\fields\data\ColorData::getHex()` now has a `$withAlpha` argument, which defaults to `true`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - `craft\helpers\ElementHelper::normalizeSlug()` now has a `$language` argument, which defaults to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))

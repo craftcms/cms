@@ -77,6 +77,9 @@ return [
         'gql' => [
             'class' => craft\services\Gql::class,
         ],
+        'icons' => [
+            'class' => craft\services\Icons::class,
+        ],
         'images' => [
             'class' => craft\services\Images::class,
         ],

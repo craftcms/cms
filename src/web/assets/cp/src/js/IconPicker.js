@@ -19,7 +19,7 @@ Craft.IconPicker = Craft.BaseInputGenerator.extend(
     defaultListHtml: null,
 
     get listLength() {
-      return this.$iconList.find('li').length;
+      return this.$iconList.find('li:not(.icon-picker-modal--heading)').length;
     },
 
     init(container, settings) {
@@ -163,6 +163,7 @@ Craft.IconPicker = Craft.BaseInputGenerator.extend(
             data: {
               search,
               freeOnly: this.settings.freeOnly,
+              sets: this.settings.sets,
             },
             cancelToken: this.cancelToken.token,
           }
@@ -196,7 +197,7 @@ Craft.IconPicker = Craft.BaseInputGenerator.extend(
         name = icon;
         html = (await Craft.ui.icon(icon)).outerHTML;
       } else {
-        name = icon.attr('title');
+        name = icon.attr('data-icon') || icon.attr('title');
         html = $(icon).html();
       }
 
@@ -241,6 +242,7 @@ Craft.IconPicker = Craft.BaseInputGenerator.extend(
   {
     defaults: {
       freeOnly: false,
+      sets: null,
     },
   }
 );

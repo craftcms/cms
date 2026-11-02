@@ -763,6 +763,7 @@ Craft.ui = {
 
     const iconPicker = new Craft.IconPicker($container, {
       freeOnly: config.freeOnly,
+      sets: config.sets,
     });
 
     if (config.value) {

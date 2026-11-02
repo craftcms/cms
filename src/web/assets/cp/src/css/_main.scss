@@ -9738,6 +9738,18 @@ body {
             background-color: var(--blue-100);
           }
         }
+
+        .icon-picker-modal--heading {
+          flex-basis: 100%;
+
+          &:not(:first-child) {
+            margin-block-start: var(--s);
+          }
+
+          h3 {
+            margin: 0;
+          }
+        }
       }
     }
   }
