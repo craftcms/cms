@@ -98,7 +98,7 @@ class McpServiceProvider extends ServiceProvider
         $settings = static fn (): array => [
             'label' => t('MCP'),
             'url' => route('craft.cp.settings.mcp.index'),
-            'iconName' => 'light/robot',
+            'iconName' => 'robot',
         ];
         $cpSettings->registerSetting('Extend', 'mcp', $settings);
         $cpSettings->registerReadOnlySetting('Extend', 'mcp', $settings);
