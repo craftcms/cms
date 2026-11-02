@@ -66,6 +66,7 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('ui', \CraftCms\Cms\ui(...), ['is_safe' => ['html']]),
             new TwigFunction('readOnlyNotice', app(ContentHtml::class)->readOnlyNoticeHtml(...), ['is_safe' => ['html']]),
             new TwigFunction('cpVite', $this->vite(...), ['is_safe' => ['html']]),
+            new TwigFunction('cpPublicAssetUrl', Cp::publicAssetUrl(...)),
             new TwigFunction('cpEnvOptions', $this->envOptions(...)),
             new TwigFunction('cpEnvSuggestions', $this->envSuggestions(...)),
             new TwigFunction('cpTemplateSuggestions', $this->templateSuggestions(...)),
