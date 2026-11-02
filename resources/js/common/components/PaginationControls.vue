@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {computed} from 'vue';
+  import {computed, onBeforeUnmount, shallowRef, watch} from 'vue';
   import {ButtonVariant, t} from '@craftcms/ui';
   import Text from '@/common/components/Text.vue';
   import Select from '@/common/form/Select.vue';
@@ -27,14 +27,59 @@
   const emit = defineEmits<{
     'page-change': [index: number];
     'page-size-change': [size: number];
+    /** A new page number is being typed, before it’s committed. */
+    'page-input': [];
   }>();
-  const pageIndexProxy = computed({
-    get: () => props.pageIndex + 1,
-    set: (value) => {
-      const index = Number(value) - 1;
-      if (Number.isInteger(index) && index >= 0 && index < props.pageCount)
+
+  /** How long typing pauses before a typed page number is committed. */
+  const PAGE_INPUT_DELAY = 500;
+
+  // What the page input shows: the typed number while it's being entered, and
+  // the current page otherwise. It stays editable while a page loads.
+  const pageDraft = shallowRef(String(props.pageIndex + 1));
+  let commitTimer: ReturnType<typeof setTimeout> | null = null;
+
+  watch(
+    () => props.pageIndex,
+    (index) => {
+      if (commitTimer === null) {
+        pageDraft.value = String(index + 1);
+      }
+    }
+  );
+
+  function onPageInput(event: Event): void {
+    pageDraft.value = (event.target as HTMLInputElement).value;
+    emit('page-input');
+
+    if (commitTimer !== null) {
+      clearTimeout(commitTimer);
+    }
+    commitTimer = setTimeout(commitPage, PAGE_INPUT_DELAY);
+  }
+
+  function commitPage(): void {
+    if (commitTimer !== null) {
+      clearTimeout(commitTimer);
+      commitTimer = null;
+    }
+
+    const index = Number(pageDraft.value.trim()) - 1;
+
+    if (Number.isInteger(index) && index >= 0 && index < props.pageCount) {
+      if (index !== props.pageIndex) {
         emit('page-change', index);
-    },
+      }
+      return;
+    }
+
+    pageDraft.value = String(props.pageIndex + 1);
+  }
+
+  onBeforeUnmount(() => {
+    if (commitTimer !== null) {
+      clearTimeout(commitTimer);
+    }
   });
   const pageSizeProxy = computed({
     get: () => props.pageSize,
@@ -75,8 +120,11 @@
           {{ t('Page') }}
           <craft-input
             type="text"
-            v-model="pageIndexProxy"
-            .disabled="disabled"
+            inputmode="numeric"
+            :value="pageDraft"
+            @input="onPageInput"
+            @change="commitPage"
+            @keydown.enter="commitPage"
             maxlength="3"
             :label="t('Current page')"
             label-sr-only

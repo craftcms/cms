@@ -62,6 +62,8 @@ export interface ElementIndexView {
   /** Whether the rows are still to come, drawn as placeholders until then. */
   pending: ComputedRef<boolean>;
   processing: ComputedRef<boolean>;
+  /** Drops a page load in flight, such as while a new page number is typed. */
+  cancelPageLoad(this: void): void;
   filterContext: ComputedRef<ElementIndexContext | null>;
   exportElements?: ExportElementIndex;
   submit(this: void): void;

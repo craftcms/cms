@@ -454,6 +454,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
     loading,
     pending,
     processing,
+    cancelPageLoad: () => visitor.cancel?.(),
     filterContext,
     visibleViewModes,
     structureView,

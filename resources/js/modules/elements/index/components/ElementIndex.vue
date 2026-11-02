@@ -511,6 +511,7 @@
         :total="elementIndex.pagination.total"
         :enable-adjust-page-size="enableAdjustPageSize"
         :disabled="processing"
+        @page-input="view.cancelPageLoad()"
         @page-change="table.setPageIndex"
         @page-size-change="table.setPageSize"
       />
