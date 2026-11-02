@@ -40,7 +40,7 @@
      */
     group?: string | null;
     /**
-     * Illustration of the choice. Radios with one are shown as tiles, with the
+     * Illustration of the choice. Radios with one are shown as cards, with the
      * illustration above the label: an image `src`, or inline `svg` markup,
      * colored with the `--c-illustration-*` tokens, so it follows the theme
      * and the selected state.
@@ -374,8 +374,14 @@
     return props.control.props.allValue ?? '*';
   }
 
-  function hasThumbnails(): boolean {
-    return props.control.props.options.some((option) => option.thumbnail);
+  function groupAppearance(): 'button-group' | 'card-group' | undefined {
+    if (props.control.props.presentation === 'buttons') {
+      return 'button-group';
+    }
+
+    return props.control.props.options.some((option) => option.thumbnail)
+      ? 'card-group'
+      : undefined;
   }
 
   // Sorting, an “All” option, and the “Add item” menu render through
@@ -576,8 +582,7 @@
   <component
     :is="control.props.multiple ? 'craft-checkbox-group' : 'craft-radio-group'"
     v-else
-    :thumbnails="hasThumbnails() || undefined"
-    :buttons="control.props.presentation === 'buttons' || undefined"
+    :appearance="groupAppearance()"
     :name="
       editable
         ? `${inputName(control.path)}${control.props.multiple ? '[]' : ''}`
@@ -612,7 +617,7 @@
       >
         <span
           v-if="option.thumbnail?.svg && !control.props.multiple"
-          slot="thumbnail"
+          slot="icon"
           :style="
             option.thumbnail.aspectRatio
               ? {aspectRatio: option.thumbnail.aspectRatio}
@@ -623,7 +628,7 @@
         />
         <img
           v-else-if="option.thumbnail && !control.props.multiple"
-          slot="thumbnail"
+          slot="icon"
           :src="option.thumbnail.src"
           :width="option.thumbnail.width"
           :height="option.thumbnail.height"

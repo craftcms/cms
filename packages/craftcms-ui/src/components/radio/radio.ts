@@ -10,30 +10,38 @@ import {SsrChoiceInputMixin} from '@src/mixins/SsrChoiceInputMixin';
  * `disabled`, and `name` of a server-rendered input rather than resetting them
  * on upgrade.
  *
- * In a `craft-radio-group` with `buttons`, it's drawn as one of a row of joined
- * buttons, with the native input stretched transparently over it. The input
- * still takes the clicks, focus and keyboard, so it stays a radio.
+ * In a `craft-radio-group` with `appearance="buttons"` or `"button-group"`,
+ * it's drawn as a button, with the native input stretched transparently over
+ * it. The input still takes the clicks, focus and keyboard, so it stays a
+ * radio.
  *
- * In a `craft-radio-group` with `thumbnails`, it's drawn as a tile: its
- * `thumbnail` illustration in a button-like box, with the label below it. The
- * native input is stretched over the whole tile in the same way.
+ * With `appearance="cards"` or `"card-group"`, it's drawn as a card: a
+ * button-like box with its `icon` drawn large and the label below it. The
+ * native input is stretched over the whole card in the same way.
  *
  * @slot label - The option's label, as an alternative to the `label`
  *   attribute.
  * @slot help-text - Guidance shown below the label. Not shown on a button or a
- *   tile.
- * @slot thumbnail - An illustration of the option, such as an `<img>` with an
- *   empty `alt`, since the label already names the option. Shown only in a
- *   `craft-radio-group` with `thumbnails`.
+ *   card.
+ * @slot icon - An icon or illustration of the option, such as an `<img>` with
+ *   an empty `alt`, since the label already names the option. Shown before the
+ *   label, and drawn large above it on a card.
  *
- * @csspart thumbnail - The box around the illustration, on a tile.
+ * @csspart icon - The wrapper around the icon.
  */
 export default class CraftRadio extends SsrChoiceInputMixin(LionRadio) {
   override render() {
-    return html`<div class="choice-field__thumbnail" part="thumbnail">
-        <slot name="thumbnail"></slot>
+    return html`<slot name="input"></slot>
+      <div class="choice-field__icon" part="icon">
+        <slot name="icon"></slot>
       </div>
-      ${super.render()}`;
+      <div class="choice-field__label">
+        <slot name="label"></slot>
+      </div>
+      <small class="choice-field__help-text">
+        <slot name="help-text"></slot>
+      </small>
+      ${this._afterTemplate()}`;
   }
 
   static override get styles() {
@@ -48,11 +56,12 @@ export default class CraftRadio extends SsrChoiceInputMixin(LionRadio) {
           gap: 0 var(--c-spacing-md);
         }
 
-        .choice-field__thumbnail {
-          display: none;
+        /* Without a box of its own, an empty icon slot takes up no space. */
+        .choice-field__icon {
+          display: contents;
         }
 
-        :host([data-tile]) {
+        :host([data-card]) {
           --_radius: var(--c-radius-lg);
           --_padding: calc(var(--c-spacing) * 3);
           position: relative;
@@ -60,102 +69,92 @@ export default class CraftRadio extends SsrChoiceInputMixin(LionRadio) {
           grid-template-columns: minmax(0, 1fr);
           justify-items: center;
           align-content: start;
-          gap: var(--c-spacing-xs);
-          min-inline-size: var(--c-radio-tile-min-size);
+          gap: var(--c-spacing-md);
+          box-sizing: border-box;
+          min-inline-size: var(--c-radio-card-min-size);
+          padding-block: var(--_padding) var(--c-spacing-md);
+          padding-inline: var(--c-spacing-md);
+          border: 1px solid var(--c-form-control-border-color);
+          background-color: transparent;
           text-align: center;
         }
 
-        :host([data-tile]) .choice-field__thumbnail {
+        :host([data-card]) .choice-field__icon {
           display: grid;
           place-items: center;
-          box-sizing: border-box;
           inline-size: 100%;
-          padding: var(--_padding);
-          border: 1px solid var(--c-form-control-border-color);
-          background-color: transparent;
         }
 
-        :host([data-tile]:not([data-tile-start])) {
+        :host([data-card]:not([data-card-start])) {
           margin-inline-start: -1px;
-        }
-
-        :host([data-tile]:not([data-tile-start])) .choice-field__thumbnail {
           border-inline-start-color: var(--c-color-neutral-border-quiet);
         }
 
-        :host([data-tile]:not([data-tile-end])) .choice-field__thumbnail {
+        :host([data-card]:not([data-card-end])) {
           border-inline-end-color: var(--c-color-neutral-border-quiet);
         }
 
-        :host([data-tile][data-tile-start]) .choice-field__thumbnail {
+        :host([data-card][data-card-start]) {
           border-start-start-radius: var(--_radius);
           border-end-start-radius: var(--_radius);
         }
 
-        :host([data-tile][data-tile-end]) .choice-field__thumbnail {
+        :host([data-card][data-card-end]) {
           border-start-end-radius: var(--_radius);
           border-end-end-radius: var(--_radius);
         }
 
-        :host([data-tile]) .choice-field__label {
+        :host([data-card]) .choice-field__label {
           font-size: var(--c-text-sm);
           color: var(--c-text-quiet);
         }
 
-        :host([data-tile]) .choice-field__help-text {
+        :host([data-card]) .choice-field__help-text {
           display: none;
         }
 
         @media (hover: hover) {
-          :host([data-tile]:not([checked]):not([disabled]):hover) {
+          :host([data-card]:not([checked]):not([disabled]):hover) {
             z-index: 1;
-          }
-
-          :host([data-tile]:not([checked]):not([disabled]):hover)
-            .choice-field__thumbnail {
             background-color: var(--c-color-neutral-fill-quiet);
           }
         }
 
-        :host([data-tile][checked]) {
+        :host([data-card][checked]) {
           z-index: 1;
-        }
-
-        :host([data-tile][checked]) .choice-field__thumbnail {
-          padding: calc(var(--_padding) - 1px);
+          padding-block: calc(var(--_padding) - 1px)
+            calc(var(--c-spacing-md) - 1px);
+          padding-inline: calc(var(--c-spacing-md) - 1px);
           border: 2px solid var(--c-color-accent-border-normal);
           background-color: var(--c-color-accent-fill-quiet);
         }
 
-        :host([data-tile][checked]) .choice-field__label {
+        :host([data-card][checked]) .choice-field__label {
           color: var(--c-text-default);
           font-weight: bold;
         }
 
-        :host([data-tile][focused-visible]) {
+        :host([data-card][focused-visible]) {
           z-index: 2;
-        }
-
-        :host([data-tile][focused-visible]) .choice-field__thumbnail {
           outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
             var(--c-color-focus-outline);
           outline-offset: 1px;
         }
 
-        :host([data-tile][disabled]) {
+        :host([data-card][disabled]) {
           opacity: 0.5;
         }
 
         @media (forced-colors: active) {
-          :host([data-tile]) .choice-field__thumbnail {
+          :host([data-card]) {
             border-color: ButtonBorder;
           }
 
-          :host([data-tile][checked]) .choice-field__thumbnail {
+          :host([data-card][checked]) {
             border-color: Highlight;
           }
 
-          :host([data-tile][checked]) .choice-field__label {
+          :host([data-card][checked]) .choice-field__label {
             color: CanvasText;
           }
         }
@@ -258,7 +257,7 @@ export default class CraftRadio extends SsrChoiceInputMixin(LionRadio) {
 
   /**
    * Marks a radio whose label has no text, such as a labeled `craft-icon`, so
-   * it draws a square button in a `craft-radio-group` with `buttons`.
+   * it draws a square button.
    */
   private _syncIconOnly = () => {
     const label = this.querySelector(':scope > [slot="label"]');

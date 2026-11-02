@@ -24,7 +24,7 @@ function thumbnailChoiceHtml(array $options): Crawler
     return new Crawler(app(UiHtmlRenderer::class)->render($payload));
 }
 
-it('renders an option thumbnail into its radio\'s thumbnail slot', function () {
+it('renders an option thumbnail into its radio\'s icon slot', function () {
     $crawler = thumbnailChoiceHtml([
         ['label' => 'List', 'value' => 'list', 'thumbnail' => [
             'src' => '/build/images/view-modes/list.svg',
@@ -39,12 +39,12 @@ it('renders an option thumbnail into its radio\'s thumbnail slot', function () {
         ]],
     ]);
     $radios = $crawler->filter('craft-radio');
-    $first = $radios->first()->filter('img[slot="thumbnail"]');
+    $first = $radios->first()->filter('img[slot="icon"]');
 
-    expect($crawler->filter('img[slot="thumbnail"]'))->toHaveCount(2)
+    expect($crawler->filter('img[slot="icon"]'))->toHaveCount(2)
         ->and($first->attr('src'))->toBe('/build/images/view-modes/list.svg')
         ->and($first->attr('width'))->toBe('48')
-        ->and($radios->eq(1)->filter('img[slot="thumbnail"]')->attr('width'))->toBe('80')
+        ->and($radios->eq(1)->filter('img[slot="icon"]')->attr('width'))->toBe('80')
         ->and($first->attr('alt'))->toBe('')
         ->and($radios->first()->filter('input[slot="input"]')->attr('value'))->toBe('list');
 });
@@ -57,7 +57,7 @@ it('renders an aspect ratio only when the thumbnail asks for one', function () {
         ]],
         ['label' => 'Cards', 'value' => 'cards', 'thumbnail' => ['src' => '/build/cards.svg']],
     ]);
-    $images = $crawler->filter('img[slot="thumbnail"]');
+    $images = $crawler->filter('img[slot="icon"]');
 
     expect($images->first()->attr('style'))->toContain('aspect-ratio: 4 / 5')
         ->and($images->eq(1)->attr('style'))->toBeNull()
@@ -66,7 +66,7 @@ it('renders an aspect ratio only when the thumbnail asks for one', function () {
         ->and($images->eq(1)->attr('width'))->toBeNull();
 });
 
-it('marks the group so the options show as tiles', function () {
+it('marks the group so the options show as cards', function () {
     $withThumbs = thumbnailChoiceHtml([
         ['label' => 'List', 'value' => 'list', 'thumbnail' => ['src' => '/build/list.svg']],
     ]);
@@ -74,9 +74,9 @@ it('marks the group so the options show as tiles', function () {
         ['label' => 'List', 'value' => 'list'],
     ]);
 
-    expect($withThumbs->filter('craft-radio-group')->attr('thumbnails'))->not->toBeNull()
-        ->and($without->filter('craft-radio-group')->attr('thumbnails'))->toBeNull()
-        ->and($without->filter('img[slot="thumbnail"]'))->toHaveCount(0);
+    expect($withThumbs->filter('craft-radio-group')->attr('appearance'))->toBe('card-group')
+        ->and($without->filter('craft-radio-group')->attr('appearance'))->toBeNull()
+        ->and($without->filter('img[slot="icon"]'))->toHaveCount(0);
 });
 
 it('inlines an SVG thumbnail, hidden from assistive tech', function () {
@@ -86,12 +86,12 @@ it('inlines an SVG thumbnail, hidden from assistive tech', function () {
             'aspectRatio' => '80 / 60',
         ]],
     ]);
-    $thumbnail = $crawler->filter('craft-radio > [slot="thumbnail"]');
+    $thumbnail = $crawler->filter('craft-radio > [slot="icon"]');
 
     expect($thumbnail)->toHaveCount(1)
         ->and($thumbnail->nodeName())->toBe('span')
         ->and($thumbnail->attr('aria-hidden'))->toBe('true')
         ->and($thumbnail->attr('style'))->toContain('aspect-ratio: 80 / 60')
         ->and($thumbnail->filter('svg > rect')->attr('stroke'))->toBe('#828FA4')
-        ->and($crawler->filter('img[slot="thumbnail"]'))->toHaveCount(0);
+        ->and($crawler->filter('img[slot="icon"]'))->toHaveCount(0);
 });
