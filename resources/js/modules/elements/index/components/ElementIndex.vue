@@ -37,6 +37,11 @@
       view: ElementIndexView;
       contained?: boolean;
       footerActive?: boolean;
+      /**
+       * Keeps the pagination controls above the active footer, for an index
+       * whose selection carries across pages.
+       */
+      paginateWithFooter?: boolean;
       itemBehavior?: ElementIndexItemBehavior;
       showSites?: boolean;
       enableAdjustPageSize?: boolean;
@@ -53,6 +58,7 @@
     {
       contained: false,
       footerActive: false,
+      paginateWithFooter: false,
       enableAdjustPageSize: false,
       withBottomBorder: true,
       tableAppearance: TableAppearance.Flush,
@@ -155,6 +161,13 @@
       props.enableAdjustPageSize ||
       pending.value ||
       (elementIndex.pagination?.total ?? 0) > 0 ||
+      table.getPageCount() > 1
+  );
+  const footerPaginated = computed(
+    () =>
+      props.footerActive &&
+      props.paginateWithFooter &&
+      !isInlineEditing.value &&
       table.getPageCount() > 1
   );
   const itemBehavior = computed<ElementIndexItemBehavior>(() => ({
@@ -472,7 +485,13 @@
         </ElementTable>
       </div>
     </div>
-    <div class="element-index__footer" v-if="showFooter">
+    <div
+      v-if="showFooter"
+      :class="[
+        'element-index__footer',
+        {'element-index__footer--stacked': footerPaginated},
+      ]"
+    >
       <div v-if="isInlineEditing" class="flex gap-md">
         <craft-button
           type="button"
@@ -490,7 +509,7 @@
           >{{ t('Cancel') }}</craft-button
         >
       </div>
-      <slot v-else-if="footerActive" name="footer" />
+      <slot v-else-if="footerActive && !footerPaginated" name="footer" />
       <PlaceholderShape
         v-else-if="pending"
         class="element-index__count-placeholder"
@@ -514,6 +533,7 @@
         @page-change="table.setPageIndex"
         @page-size-change="table.setPageSize"
       />
+      <slot v-if="footerPaginated" name="footer" />
     </div>
     <span class="sr-only" role="status" aria-live="polite">{{
       liveMessage
@@ -593,6 +613,13 @@
     border-block-start: 1px solid var(--c-color-neutral-border-quiet);
     min-height: var(--cp-footer-height);
     background-color: var(--c-surface-default);
+  }
+
+  .element-index__footer--stacked {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--c-spacing-sm);
+    padding-block: var(--c-spacing-sm);
   }
 
   .element-index__thumb-placeholder {

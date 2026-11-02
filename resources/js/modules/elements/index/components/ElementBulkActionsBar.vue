@@ -21,6 +21,8 @@
     defineProps<{
       /** The ids of the elements currently selected in the index. */
       selectedIds: ReadonlyArray<string | number>;
+      /** How many of the selected elements are on the page on screen. */
+      onPageCount?: number;
       /** Selected row data used by capability checks and client actions. */
       selectedElements?: ReadonlyArray<ElementActionSelection>;
       /** The serialized bulk action descriptors for the active source. */
@@ -276,6 +278,7 @@
   <BulkActionsBarShell
     ref="bar"
     :selected-count="selectedCount"
+    :on-page-count="onPageCount"
     :actions="menuActions"
     @performed="emit('performed')"
     @clear="emit('clear')"

@@ -135,6 +135,7 @@
       :view="page.view"
       :item-behavior="itemBehavior"
       :footer-active="footerActive"
+      paginate-with-footer
       :enable-adjust-page-size="true"
       :with-bottom-border="false"
       :quick-edit="quickEdit"
@@ -151,11 +152,8 @@
       <template #footer>
         <ElementBulkActionsBar
           :selected-ids="selection.selectedIds.value"
-          :selected-elements="
-            page.view.table
-              .getSelectedRowModel()
-              .rows.map(({original}) => original)
-          "
+          :on-page-count="page.view.table.getSelectedRowModel().rows.length"
+          :selected-elements="selection.selectedRows.value"
           :actions="elementIndex.actions"
           :element-type="elementIndex.elementType"
           :source="elementIndex.source?.key"

@@ -337,21 +337,91 @@ export function useElementIndex(options: UseElementIndexOptions) {
     );
   }
 
+  /**
+   * The selected rows on every page, by row id. The table only holds the page
+   * on screen, so rows selected on other pages are remembered as they were
+   * when last shown.
+   */
+  const selectedRowsById = shallowRef(new Map<string, ElementIndexRow>());
+
+  watch(
+    [rowSelection, data],
+    ([selected, rows]) => {
+      const shown = new Map(rows.map((row) => [String(row.id), row]));
+      const next = new Map<string, ElementIndexRow>();
+
+      for (const [id, isSelected] of Object.entries(selected)) {
+        const row = isSelected
+          ? (shown.get(id) ?? selectedRowsById.value.get(id))
+          : undefined;
+
+        if (row) next.set(id, row);
+      }
+
+      selectedRowsById.value = next;
+    },
+    {immediate: true, flush: 'sync'}
+  );
+
   const selection = useTableRowSelection(table, {
     selectable: true,
     readOnly: options.readOnly ?? false,
+    selectedRows: () => [...selectedRowsById.value.values()],
   });
 
+  // A selection belongs to the elements the index lists, so it's dropped when
+  // they change, but kept across pages and sort orders.
   watch(
-    () => elementIndex.source?.key,
+    () =>
+      JSON.stringify([
+        elementIndex.source?.key,
+        elementIndex.siteId,
+        elementIndex.search,
+        elementIndex.status,
+        elementIndex.currentCondition,
+        elementIndex.drafts,
+        elementIndex.trashed,
+      ]),
     () => selection.clearSelection()
   );
+
+  const listing = () =>
+    JSON.stringify([
+      elementIndex.pagination?.current_page,
+      elementIndex.pagination?.per_page,
+      elementIndex.sort,
+    ]);
+  let previousListing = listing();
+
   watch(data, (rows, previous) => {
+    const currentListing = listing();
+    const samePage = currentListing === previousListing;
+    previousListing = currentListing;
+
     if (
-      rows.length !== previous.length ||
-      rows.some((row, index) => row.id !== previous[index]?.id)
+      rows.length === previous.length &&
+      rows.every((row, index) => row.id === previous[index]?.id)
     )
-      selection.selection.prune();
+      return;
+
+    selection.anchorIndex.value = null;
+
+    // When the same page reloads, rows that left it are gone, not on another
+    // page, so they leave the selection too.
+    if (!samePage || pending.value) return;
+
+    const kept = new Set(rows.map((row) => String(row.id)));
+    const departed = new Set(
+      previous
+        .map((row) => String(row.id))
+        .filter((id) => !kept.has(id) && rowSelection.value[id])
+    );
+
+    if (departed.size) {
+      rowSelection.value = Object.fromEntries(
+        Object.entries(rowSelection.value).filter(([id]) => !departed.has(id))
+      );
+    }
   });
 
   function changeSource(key: string): void {

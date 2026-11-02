@@ -125,6 +125,16 @@
     );
   }
 
+  /**
+   * Whether any listed row is selected. Rows kept selected on other pages
+   * don't make this page's select-all checkbox partly checked.
+   */
+  function someListedRowsSelected(): boolean {
+    return props.table
+      .getFilteredRowModel()
+      .flatRows.some((row) => row.getIsSelected());
+  }
+
   function toggleAllSelected(event: Event): void {
     if (selectionDisabled.value) return;
     props.selection?.onToggleAllSelected(
@@ -392,7 +402,7 @@
               label-sr-only
               .checked="table.getIsAllRowsSelected()"
               .indeterminate="
-                table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
+                someListedRowsSelected() && !table.getIsAllRowsSelected()
               "
               .disabled="selectionDisabled"
               @model-value-changed="toggleAllSelected"

@@ -13,6 +13,11 @@
 
   defineProps<{
     selectedCount: number;
+    /**
+     * How many of the selected rows are on the page on screen, for a list that
+     * keeps selections made on other pages.
+     */
+    onPageCount?: number;
     /** The "Actions" menu's items; the menu is left out when there are none. */
     actions: ActionItems;
   }>();
@@ -57,6 +62,16 @@
         template="{count, plural, =1{# selected} other{# selected}}"
         :params="{count: selectedCount}"
       />
+      <span
+        v-if="onPageCount !== undefined && onPageCount < selectedCount"
+        class="bulk-actions-bar__pages"
+        >{{
+          t('{onPage, number} on this page, {offPage, number} on other pages', {
+            onPage: onPageCount,
+            offPage: selectedCount - onPageCount,
+          })
+        }}</span
+      >
       <craft-button
         type="button"
         size="small"
@@ -102,6 +117,10 @@
 
   .bulk-actions-bar__count {
     font-weight: 600;
+  }
+
+  .bulk-actions-bar__pages {
+    color: var(--c-text-quiet);
   }
 
   .bulk-actions-bar__actions {

@@ -7,9 +7,15 @@ import {
   useSelectable,
 } from '@/common/composables/useSelectable';
 
-export interface TableRowSelectionOptions {
+export interface TableRowSelectionOptions<TData = any> {
   selectable: MaybeRefOrGetter<boolean>;
   readOnly: MaybeRefOrGetter<boolean>;
+  /**
+   * The selected rows, for a table that only holds one page of a longer list
+   * and remembers selections made on other pages. Defaults to the selected rows
+   * the table holds.
+   */
+  selectedRows?: MaybeRefOrGetter<readonly TData[]>;
 }
 
 /**
@@ -23,10 +29,17 @@ export interface TableRowSelectionOptions {
  */
 export function useTableRowSelection<TData extends Record<string, any>>(
   table: MaybeRefOrGetter<Table<CraftTableFeatures, TData>>,
-  options: TableRowSelectionOptions
+  options: TableRowSelectionOptions<NoInfer<TData>>
 ) {
   const readOnly = computed(() => toValue(options.readOnly));
   const selectable = computed(() => toValue(options.selectable));
+  const selectedRows = computed<readonly TData[]>(
+    () =>
+      toValue(options.selectedRows) ??
+      toValue(table)
+        .getSelectedRowModel()
+        .rows.map((row) => row.original)
+  );
 
   const rows = (): Array<Row<CraftTableFeatures, TData>> =>
     toValue(table).getRowModel().rows;
@@ -46,10 +59,7 @@ export function useTableRowSelection<TData extends Record<string, any>>(
     store: {
       isSelected: (id) => rowFor(id)?.getIsSelected() ?? false,
       setSelected: (id, selected) => rowFor(id)?.toggleSelected(selected),
-      selectedIds: () =>
-        toValue(table)
-          .getSelectedRowModel()
-          .rows.map((row) => row.original.id),
+      selectedIds: () => selectedRows.value.map((row) => row.id),
       clear: () => toValue(table).resetRowSelection(),
     },
   });
@@ -115,6 +125,7 @@ export function useTableRowSelection<TData extends Record<string, any>>(
     // `selection` prop (ElementCards, ElementThumbs, …).
     selection,
     selectedIds,
+    selectedRows,
     hasSelection,
     readOnly,
     anchorIndex,

@@ -213,6 +213,58 @@ it('returns the sort, columns and thumb size to their defaults in one request', 
   expect(fetch.mock.calls[0]![0]).not.toHaveProperty('thumbSize');
 });
 
+it('keeps rows selected on other pages until the listed elements change', async () => {
+  vi.stubGlobal('Craft', {systemUid: 'test', pageTrigger: 'p'});
+  const page = (current: number, ids: number[], search = '') =>
+    indexData(undefined, {
+      search,
+      data: ids.map((id) => ({id, label: `Entry ${id}`})),
+      pagination: {
+        total: 4,
+        per_page: 2,
+        current_page: current,
+        last_page: 2,
+        next_page_url: null,
+        prev_page_url: null,
+        from: current * 2 - 1,
+        to: current * 2,
+      },
+    } as Partial<ContentIndexData>);
+  const fetch = vi
+    .fn()
+    .mockResolvedValueOnce(page(2, [3, 4]))
+    .mockResolvedValueOnce(page(2, [4]))
+    .mockResolvedValueOnce(page(1, [1, 2], 'Entry'));
+  scope = effectScope();
+  const index = scope.run(() =>
+    useDetachedElementIndex({initial: page(1, [1, 2]), fetch})
+  )!;
+  const {table, selection} = index.view;
+  const row = (id: number) =>
+    table.getRowModel().rows.find(({original}) => original.id === id)!;
+
+  selection.selectRow(row(1), {checked: true});
+  table.setPageIndex(1);
+  await vi.waitFor(() => expect(row(3)).toBeDefined());
+  selection.selectRow(row(3), {checked: true});
+
+  expect(selection.selectedIds.value).toEqual([1, 3]);
+  expect(selection.selectedRows.value.map(({label}) => label)).toEqual([
+    'Entry 1',
+    'Entry 3',
+  ]);
+
+  await index.refresh();
+
+  expect(selection.selectedIds.value).toEqual([1]);
+
+  index.view.search.value = 'Entry';
+  await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(3));
+  await vi.waitFor(() => expect(index.view.elementIndex.search).toBe('Entry'));
+
+  expect(selection.selectedIds.value).toEqual([]);
+});
+
 function deferred<Value>() {
   let resolve!: (value: Value) => void;
   let reject!: (reason?: unknown) => void;
