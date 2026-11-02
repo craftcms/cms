@@ -69,19 +69,6 @@ The parts of an illustration that show what its option means need 3:1 contrast a
 
 Anything else isn't guaranteed. `subtle` promises no contrast at all, so don't use it for anything that shows meaning. To show where a shape ends, such as a photo's position inside a frame, outline it with `line`.
 
-A dark mark that sits on another dark color, such as a crop frame's corners on letterbox bars, needs a **light edge**: a thin outline in the lightest color, drawn behind the mark so it shows up on dark and light colors alike. Paint the mark's stroke with `paper`, and draw the stroke first:
-
-```html
-<path
-  d="…"
-  style="fill: var(--c-illustration-mark); stroke: var(--c-illustration-paper)"
-  stroke-width="2"
-  paint-order="stroke"
-/>
-```
-
-`paint-order="stroke"` draws the edge before the mark, so only 1px of it shows around the mark.
-
 An `<img>` with an empty `alt` works too, but can't use the tokens: it keeps the colors it was drawn with, so it won't follow the theme, and checking its contrast is up to you.
 
 ### Building one in PHP

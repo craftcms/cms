@@ -233,9 +233,9 @@ const PALETTE_ROLES: PaletteRole[] = [
   },
   {
     token: 'paper',
-    role: 'The lightest color, also used for a mark’s light edge',
+    role: 'The lightest color',
     fill: true,
-    stroke: true,
+    stroke: false,
     callout: true,
     backdrop: ['surface'],
   },
