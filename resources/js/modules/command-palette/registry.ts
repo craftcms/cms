@@ -139,6 +139,41 @@ export function registerActions(
   };
 }
 
+/** A keyboard shortcut, or a set of them, that works only in some contexts. */
+export type ContextualShortcut =
+  | 'save'
+  | 'saveAndAddAnother'
+  | 'applyDraft'
+  | 'markdown'
+  | 'imageEditor';
+
+const shortcutSources: Array<() => ContextualShortcut[]> = [];
+
+/**
+ * Adds keyboard shortcuts to the palette's “Keyboard shortcuts” list. The
+ * source is called each time the list opens, and returns the shortcuts that
+ * work right now, so the list leaves out the ones that don't.
+ */
+export function registerShortcuts(
+  source: () => ContextualShortcut[]
+): CommandPaletteRegistration {
+  shortcutSources.push(source);
+
+  return {
+    unregister: () => {
+      const index = shortcutSources.indexOf(source);
+
+      if (index !== -1) {
+        shortcutSources.splice(index, 1);
+      }
+    },
+  };
+}
+
+export function availableShortcuts(): Set<ContextualShortcut> {
+  return new Set(shortcutSources.flatMap((source) => source()));
+}
+
 export function clientActions(): CommandPaletteItem[] {
   return actionSources.flatMap((source) => {
     try {

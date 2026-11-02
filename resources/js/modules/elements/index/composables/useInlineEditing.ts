@@ -2,7 +2,16 @@ import {serializeFormInputs, t} from '@craftcms/ui';
 import {firstFocusableWithin} from '@/common/utils/dom';
 import type {CellContext} from '@tanstack/vue-table';
 import type {CraftTableFeatures} from '@/common/table/craftTable';
-import {h, nextTick, ref, toValue, type MaybeRefOrGetter, type Ref} from 'vue';
+import {
+  h,
+  nextTick,
+  onScopeDispose,
+  ref,
+  toValue,
+  type MaybeRefOrGetter,
+  type Ref,
+} from 'vue';
+import {registerShortcuts} from '@/modules/command-palette/registry';
 import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
 import type {InlineAttributeUiHost} from '@/modules/ui/inline-attribute-ui-host';
 
@@ -31,6 +40,11 @@ export function useInlineEditing<Row extends InlineEditableRow>(options: {
   save(body: URLSearchParams): Promise<InlineEditingSaveResult | false>;
 }) {
   const editingIds = ref<Array<string | number>>([]);
+
+  onScopeDispose(
+    registerShortcuts(() => (editingIds.value.length ? ['save'] : []))
+      .unregister
+  );
   const errors = ref<InlineEditingErrors>({});
   let initialInputs = '';
 

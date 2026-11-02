@@ -1,7 +1,15 @@
 <script setup lang="ts">
-  import {computed, ref, useId, useTemplateRef, watch} from 'vue';
+  import {
+    computed,
+    onScopeDispose,
+    ref,
+    useId,
+    useTemplateRef,
+    watch,
+  } from 'vue';
   import {commandShortcut, usesCommandKey} from '@/common/utils/keyShortcuts';
   import {useEventListener} from '@vueuse/core';
+  import {registerShortcuts} from '@/modules/command-palette/registry';
   import {t} from '@craftcms/ui';
   import {
     useImageEditor,
@@ -245,6 +253,9 @@
   }
 
   useEventListener(document, 'keydown', onHistoryShortcut);
+  onScopeDispose(
+    registerShortcuts(() => (opened.value ? ['imageEditor'] : [])).unregister
+  );
 
   /** Discards every edit, after asking. The dialog stays open. */
   function onReset(): void {
