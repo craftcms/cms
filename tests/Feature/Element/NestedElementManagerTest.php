@@ -1196,3 +1196,121 @@ it('restores a nested entry when reverting to an old revision without an integri
     expect($restoredNested)->toHaveCount(1)
         ->and($restoredNested[0]->title)->toBe('Revision 1 content');
 });
+
+it('keeps nested entries when saving a draft as a new draft', function () {
+    ['owner' => $owner, 'field' => $field, 'entryType' => $entryType] = createMatrixOwnerFixture();
+
+    $canonicalShared = createMatrixNestedEntry($owner, $field, $entryType, 1, 'Shared');
+    $canonicalEdited = createMatrixNestedEntry($owner, $field, $entryType, 2, 'Original');
+    $owner = EntryElement::find()->id($owner->id)->one();
+
+    /** @var EntryElement $draft */
+    $draft = app(Drafts::class)->createDraft($owner, auth()->id());
+    $draft->setFieldValue($field->handle, [
+        $canonicalShared->id => [],
+        $canonicalEdited->id => ['type' => $entryType->handle, 'title' => 'Edited'],
+        'new1' => ['type' => $entryType->handle, 'title' => 'Added'],
+    ]);
+    expect(app(Elements::class)->saveElement($draft))->toBeTrue();
+
+    $draft = EntryElement::find()->id($draft->id)->drafts()->status(null)->one();
+    $draftAdded = EntryElement::find()->fieldId($field->id)->ownerId($draft->id)->status(null)->all()[2];
+
+    // What the “Save as a new draft” action does
+    /** @var EntryElement $newDraft */
+    $newDraft = app(Elements::class)->duplicateElement($draft, [
+        'isProvisionalDraft' => false,
+        'draftId' => $draft->draftId,
+    ], copyModifiedFields: true);
+
+    // Discard the source draft so nothing it owns can leak into the new draft
+    app(Elements::class)->deleteElement($draft, true);
+
+    $newDraft = EntryElement::find()->id($newDraft->id)->drafts()->status(null)->one();
+    $newNested = EntryElement::find()->fieldId($field->id)->ownerId($newDraft->id)->status(null)->all();
+
+    expect($newDraft->getCanonicalId())->toBe($owner->id)
+        ->and(array_map(fn (EntryElement $entry) => $entry->title, $newNested))->toBe(['Shared', 'Edited', 'Added'])
+        // Unmodified nested entries stay shared with the canonical owner
+        ->and($newNested[0]->id)->toBe($canonicalShared->id)
+        // Modified ones belong to the new draft, still derived from the canonical nested entry
+        ->and($newNested[1]->getPrimaryOwnerId())->toBe($newDraft->id)
+        ->and($newNested[1]->getCanonicalId())->toBe($canonicalEdited->id)
+        // Entries added in the source draft must not point back at the source draft’s copies
+        ->and($newNested[2]->getPrimaryOwnerId())->toBe($newDraft->id)
+        ->and($newNested[2]->getCanonicalId())->not->toBe($draftAdded->id);
+
+    app(Drafts::class)->applyDraft($newDraft);
+
+    $finalNested = EntryElement::find()->fieldId($field->id)->ownerId($owner->id)->status(null)->all();
+
+    expect(array_map(fn (EntryElement $entry) => $entry->title, $finalNested))->toBe(['Shared', 'Edited', 'Added'])
+        ->and($finalNested[0]->id)->toBe($canonicalShared->id)
+        ->and($finalNested[1]->id)->toBe($canonicalEdited->id);
+});
+
+it('keeps doubly-nested edits when saving a draft as a new draft', function () {
+    $leafEntryType = createMatrixEntryType();
+    $innerFieldModel = Field::factory()->create([
+        'name' => 'Inner Matrix',
+        'handle' => 'innerMatrix',
+        'type' => Matrix::class,
+        'settings' => ['entryTypes' => [$leafEntryType->id]],
+    ]);
+    $middleEntryType = EntryTypeModel::factory()
+        ->withField($innerFieldModel)
+        ->create(['name' => 'BlockWithInner', 'handle' => 'blockWithInner', 'hasTitleField' => true]);
+    $ownerType = createMatrixEntryType();
+    $section = SectionModel::factory()->withEntryTypes($ownerType, $middleEntryType, $leafEntryType)->create();
+
+    $result = EntryModel::factory()
+        ->forSection($section)
+        ->forEntryType($ownerType)
+        ->withField('matrixField', Matrix::class, ['entryTypes' => [$middleEntryType->id]])
+        ->createElementWithFields();
+
+    Sections::refreshSections();
+    Fields::refreshFields();
+
+    /** @var Matrix $field */
+    $field = Fields::getFieldById($result->field('matrixField')->id);
+    /** @var Matrix $innerField */
+    $innerField = Fields::getFieldById($innerFieldModel->id);
+    $owner = EntryElement::find()->id($result->element->id)->one();
+
+    $blockA = createMatrixNestedEntry($owner, $field, $middleEntryType, 1, 'A', $section);
+    $originalInnerId = createMatrixNestedEntry($blockA, $innerField, $leafEntryType, 1, 'v1', $section)->id;
+
+    /** @var EntryElement $draft */
+    $draft = app(Drafts::class)->createDraft($owner, auth()->id());
+    $draftBlockA = EntryElement::find()->fieldId($field->id)->ownerId($draft->id)->status(null)->one();
+    $draft->setFieldValue($field->handle, [
+        $draftBlockA->id => [
+            'type' => $middleEntryType->handle,
+            'fields' => [
+                'innerMatrix' => [
+                    $originalInnerId => ['type' => $leafEntryType->handle, 'title' => 'v2'],
+                ],
+            ],
+        ],
+    ]);
+    expect(app(Elements::class)->saveElement($draft))->toBeTrue();
+    $draft = EntryElement::find()->id($draft->id)->drafts()->status(null)->one();
+
+    /** @var EntryElement $newDraft */
+    $newDraft = app(Elements::class)->duplicateElement($draft, [
+        'isProvisionalDraft' => false,
+        'draftId' => $draft->draftId,
+    ], copyModifiedFields: true);
+    app(Elements::class)->deleteElement($draft, true);
+
+    $newDraft = EntryElement::find()->id($newDraft->id)->drafts()->status(null)->one();
+    app(Drafts::class)->applyDraft($newDraft);
+
+    $finalBlockA = EntryElement::find()->fieldId($field->id)->ownerId($owner->id)->status(null)->one();
+    $finalInner = EntryElement::find()->fieldId($innerField->id)->ownerId($finalBlockA->id)->status(null)->all();
+
+    expect($finalInner)->toHaveCount(1)
+        ->and($finalInner[0]->title)->toBe('v2')
+        ->and($finalInner[0]->id)->toBe($originalInnerId);
+});

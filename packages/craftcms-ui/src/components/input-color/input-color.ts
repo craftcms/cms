@@ -4,8 +4,10 @@ import CraftInput from '../input/input.js';
 import {t} from '@src/utilities/translate';
 import styles from './input-color.styles.js';
 
-const HEX_COLOR_PATTERN = /^[0-9a-f]{6}$/i;
-const SHORT_HEX_COLOR_PATTERN = /^[0-9a-f]{3}$/i;
+const HEX_COLOR_PATTERN = /^[0-9a-f]{6}(?:[0-9a-f]{2})?$/i;
+const SHORT_HEX_COLOR_PATTERN = /^[0-9a-f]{3,4}$/i;
+const SRGB_COLOR_PATTERN =
+  /^color\(srgb\s+([\d.e+-]+)\s+([\d.e+-]+)\s+([\d.e+-]+)(?:\s*\/\s*([\d.e+-]+))?\)$/;
 
 const presetsConverter = {
   fromAttribute(value: string | null): string[] {
@@ -51,14 +53,45 @@ function expandedHexValue(value: unknown): string | null {
 }
 
 /**
+ * Converts a native color input's value to a bare hex value. Color inputs with
+ * the `alpha` attribute serialize their values as `color(srgb r g b / a)`; the
+ * alpha channel is only included when the color isn't fully opaque.
+ */
+export function colorPickerValueToHex(value: string): string {
+  if (value.startsWith('#')) {
+    return value.substring(1);
+  }
+
+  const match = value.match(SRGB_COLOR_PATTERN);
+  if (!match) {
+    return value;
+  }
+
+  const hex = (n: string) =>
+    Math.round(Math.min(Math.max(parseFloat(n), 0), 1) * 255)
+      .toString(16)
+      .padStart(2, '0');
+
+  let hexValue = hex(match[1]) + hex(match[2]) + hex(match[3]);
+  if (match[4] !== undefined && parseFloat(match[4]) < 1) {
+    hexValue += hex(match[4]);
+  }
+
+  return hexValue;
+}
+
+/**
  * @summary A color input built on top of `craft-input`. Pairs a free
  * text field (prefixed with `#`) with a native `<input type="color">` swatch and
  * an optional datalist of preset colors.
  *
  * Values are normalized to bare lowercase-friendly hex throughout (the leading
- * `#` is stripped and 3-digit shorthand is expanded to 6 digits for the picker),
- * so the model value is always store-ready. The native picker is only rendered
- * when the browser supports `<input type="color">`.
+ * `#` is stripped and 3- or 4-digit shorthand is expanded to 6 or 8 digits for
+ * the picker), so the model value is always store-ready. The native picker is
+ * only rendered when the browser supports `<input type="color">`.
+ *
+ * 8-digit hex values include an alpha channel. With `alpha` set, the picker
+ * offers opacity too, in browsers that support its `alpha` attribute.
  *
  * @slot input - The text input element (provided by default; override to
  * customize).
@@ -80,12 +113,25 @@ export default class CraftInputColor extends CraftInput {
   static _browserSupportsColorInputs: boolean | null = null;
 
   /**
+   * Cached result of {@link doesBrowserSupportAlphaColorInputs} (`null` until
+   * first probed).
+   */
+  static _browserSupportsAlphaColorInputs: boolean | null = null;
+
+  /**
    * Preset colors offered in the picker's datalist. Accepts an array, or a JSON
    * array string via the `presets` attribute. Each value may be `#`-prefixed or
    * bare, 3- or 6-digit hex; invalid entries are dropped.
    */
   @property({converter: presetsConverter})
   presets: string[] = [];
+
+  /**
+   * Whether the native picker should let authors set the color's opacity, in
+   * browsers that support the color input's `alpha` attribute.
+   */
+  @property({type: Boolean, reflect: true})
+  alpha = false;
 
   protected _pickerListId = `${this._inputId}-presets`;
 
@@ -113,6 +159,20 @@ export default class CraftInputColor extends CraftInput {
     }
 
     return CraftInputColor._browserSupportsColorInputs;
+  }
+
+  /**
+   * Whether the browser supports the `alpha` attribute on
+   * `<input type="color">`. Probed once and cached on
+   * {@link _browserSupportsAlphaColorInputs}.
+   */
+  static doesBrowserSupportAlphaColorInputs(): boolean {
+    if (CraftInputColor._browserSupportsAlphaColorInputs === null) {
+      CraftInputColor._browserSupportsAlphaColorInputs =
+        'alpha' in document.createElement('input');
+    }
+
+    return CraftInputColor._browserSupportsAlphaColorInputs;
   }
 
   /**
@@ -186,20 +246,34 @@ export default class CraftInputColor extends CraftInput {
     return expandedHexValue(this.modelValue);
   }
 
+  /**
+   * Browsers that don't support the picker's `alpha` attribute only accept
+   * 6-digit hex values.
+   */
+  protected _pickerHex(hex: string): string {
+    return this.alpha && CraftInputColor.doesBrowserSupportAlphaColorInputs()
+      ? hex
+      : hex.substring(0, 6);
+  }
+
   protected get _pickerValue(): string {
-    return this._expandedHexValue ? `#${this._expandedHexValue}` : '#ffffff';
+    return this._expandedHexValue
+      ? `#${this._pickerHex(this._expandedHexValue)}`
+      : '#ffffff';
   }
 
   protected get _validPresets(): string[] {
     return this.presets
       .map((preset) => expandedHexValue(preset))
       .filter((preset): preset is string => preset !== null)
-      .map((preset) => `#${preset}`);
+      .map((preset) => `#${this._pickerHex(preset)}`);
   }
 
   protected _handlePickerInput(event: Event) {
     const input = event.target as HTMLInputElement;
-    const normalizedValue = normalizeColorValue(input.value);
+    const normalizedValue = normalizeColorValue(
+      colorPickerValueToHex(input.value)
+    );
     const wasHandlingUserInput = this._isHandlingUserInput;
 
     this._isHandlingUserInput = true;
@@ -220,6 +294,7 @@ export default class CraftInputColor extends CraftInput {
         class="input-color__picker"
         type="color"
         aria-label="${t('Color picker')}"
+        ?alpha="${this.alpha}"
         .value="${this._pickerValue}"
         ?disabled="${this.disabled}"
         list=${presets.length ? this._pickerListId : nothing}
