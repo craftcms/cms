@@ -18,8 +18,6 @@ import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {showError} from '@/modules/messages/messages';
 
-declare const $: any;
-
 /**
  * A single tab within the {@link FieldLayoutDesigner}. Native DOM port of the
  * legacy `Craft.FieldLayoutDesigner.Tab`. jQuery survives only at the Craft
@@ -67,7 +65,7 @@ export class Tab extends Base {
     );
 
     this.addListener($tabContent, 'resize', () => {
-      this.designer.tabGrid.refreshCols(true);
+      this.designer.tabGrid?.refreshCols(true);
     });
 
     this.$addBtn = $tabContent.querySelector('[command="--add-field"]');
@@ -328,16 +326,16 @@ export class Tab extends Base {
 
     // The grid only lays out the content column.
     if (type === 'sidebar') {
-      this.designer.tabGrid.removeItems($(this.$container));
+      this.designer.tabGrid?.removeItems(this.$container);
       this.designer.$sidebarTabContainer.appendChild(this.$container);
     } else {
       this.designer.$contentTabContainer.appendChild(this.$container);
-      this.designer.tabGrid.addItems($(this.$container));
+      this.designer.tabGrid?.addItems(this.$container);
     }
 
     this.syncTypeWithColumn();
     this.updatePositionInConfig();
-    this.designer.tabGrid.refreshCols(true);
+    this.designer.tabGrid?.refreshCols(true);
     this.$actionBtn?.querySelector(':scope > [slot="invoker"]')?.focus();
   }
 
@@ -531,7 +529,7 @@ export class Tab extends Base {
       this.designer.$newTabBtn.focus();
     }
 
-    this.designer.tabGrid.removeItems($(this.$container));
+    this.designer.tabGrid?.removeItems(this.$container);
     this.designer.tabDrag!.removeItems(this.$container);
     this.$container.remove();
     this.designer.refreshSelectedFields();
