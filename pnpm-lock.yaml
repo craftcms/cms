@@ -400,6 +400,9 @@ importers:
       fabric:
         specifier: ^7.4.0
         version: 7.4.0(supports-color@10.2.2)
+      iframe-resizer:
+        specifier: ^4.4.5
+        version: 4.4.5
       laravel-vite-plugin:
         specifier: ^3.1.0
         version: 3.1.0(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))

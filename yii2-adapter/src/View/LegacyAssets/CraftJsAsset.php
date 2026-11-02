@@ -7,10 +7,12 @@ namespace CraftCms\Yii2Adapter\View\LegacyAssets;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\LegacyAssets\CpAsset;
 use CraftCms\Cms\View\LegacyAssets\DatepickerI18nAsset;
+use CraftCms\Cms\View\LegacyAssets\IframeResizerAsset;
 use CraftCms\Cms\View\LegacyAssets\JqueryPaymentAsset;
 use CraftCms\Cms\View\LegacyAssets\JqueryUiAsset;
 use CraftCms\Cms\View\LegacyAssets\LegacyAssetInterface;
 use CraftCms\Cms\View\LegacyAssets\PicturefillAsset;
+use CraftCms\Cms\View\LegacyAssets\SelectizeAsset;
 
 use function CraftCms\Cms\craftAsset;
 
@@ -29,6 +31,8 @@ class CraftJsAsset implements LegacyAssetInterface
         JqueryPaymentAsset::class,
         DatepickerI18nAsset::class,
         PicturefillAsset::class,
+        SelectizeAsset::class,
+        IframeResizerAsset::class,
     ];
 
     public function register(HtmlStack $htmlStack): void

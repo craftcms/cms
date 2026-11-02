@@ -58,15 +58,6 @@ export interface LivePreviewDependencies {
   post: (url: string, data: object) => Promise<unknown>;
 }
 
-declare global {
-  interface Window {
-    iFrameResize?: (
-      options: Record<string, unknown>,
-      target: HTMLIFrameElement
-    ) => unknown;
-  }
-}
-
 /**
  * Drives Live Preview for an element editor: the token, the frames, and the
  * preferences that outlive it (device, orientation).
