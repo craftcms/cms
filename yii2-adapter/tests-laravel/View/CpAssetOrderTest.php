@@ -153,6 +153,31 @@ it('does not register the global axios outside the control panel', function() {
     expect($view->placeholderHtml()['bodyEndHtml'])->not->toContain('legacy/axios/dist/axios.js');
 });
 
+it('renders Craft.js before plugin bundles that depend on the CP asset outside the control panel', function() {
+    app(RegisterLegacyCompatAssets::class)->handle(Request::create('/'), fn() => null);
+
+    $view = Craft::$app->getView();
+    $view->registerAssetBundle(CpAssetDependentAssetBundle::class);
+
+    $html = $view->placeholderHtml()['bodyEndHtml'];
+
+    expect($html)->toContain('legacy/cp/dist/cp.js')
+        ->and(strpos($html, 'legacy/cp/dist/cp.js'))->toBeLessThan(strpos($html, 'https://example.test/assets/dependent.js'))
+        ->and($html)->not->toContain('legacy/cpcompat/dist/');
+});
+
+it('renders Craft.js once, before the frozen legacy CP scripts, in the control panel', function() {
+    app(RegisterLegacyCompatAssets::class)->handle(Request::create(cp_url('dashboard')), fn() => null);
+
+    $view = Craft::$app->getView();
+    $view->registerAssetBundle(CpAssetDependentAssetBundle::class);
+
+    $html = $view->placeholderHtml()['bodyEndHtml'];
+
+    expect(substr_count($html, 'legacy/cp/dist/cp.js'))->toBe(1)
+        ->and(strpos($html, 'legacy/cp/dist/cp.js'))->toBeLessThan(strpos($html, 'legacy/cpcompat/dist/ui.js'));
+});
+
 it('registers the XRegExp compatibility asset', function() {
     $view = Craft::$app->getView();
 
