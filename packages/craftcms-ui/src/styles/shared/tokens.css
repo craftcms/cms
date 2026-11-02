@@ -260,6 +260,19 @@
   --c-checkbox-radius: var(--c-radius-sm);
   --c-checkbox-group-spacing: calc(20px - var(--c-checkbox-size));
 
+  /* Radio tiles, in a `craft-radio-group` with `thumbnails` */
+  --c-radio-tile-min-size: 5rem;
+  --c-radio-tile-max-size: 7rem;
+  --c-radio-tile-thumbnail-height: 3.75rem;
+
+  --c-illustration-surface: var(--color-base-100);
+  --c-illustration-paper: var(--color-base-50);
+  --c-illustration-subtle: var(--color-slate-100);
+  --c-illustration-field: var(--color-slate-50);
+  --c-illustration-figure: var(--color-slate-500);
+  --c-illustration-line: var(--color-slate-500);
+  --c-illustration-mark: var(--color-base-950);
+
   /* Slide rule */
   --c-slide-rule-height: var(--c-size-touch-target);
   --c-slide-rule-graduation-width: 10px;
@@ -391,6 +404,9 @@
   );
   /* White is a shade of gray here, so a white dot is solid, like a gray one. */
   --c-indicator-white-ring: var(--c-color-white-fill-loud);
+
+  --c-illustration-field: var(--color-slate-400);
+  --c-illustration-figure: var(--color-base-50);
 }
 
 .underline-links {

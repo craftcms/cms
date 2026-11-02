@@ -6,6 +6,12 @@ import '../../styles/cp.css';
 import '../icon/icon.js';
 import '../radio/radio.js';
 import './radio-group.js';
+import {contrast} from '../../../test/contrast';
+import {
+  PALETTE_SAMPLE,
+  VIEW_MODES,
+  type RadioTileOption,
+} from '../../../test/radio-tile-fixtures';
 
 beforeEach(() => {
   document.body.innerHTML = '';
@@ -190,4 +196,294 @@ it('gives only the unchecked buttons a pointer cursor', async () => {
     'default',
     'pointer',
   ]);
+});
+
+async function renderTiles(
+  width: string,
+  wrap: (html: string) => string = (html) => html,
+  options: RadioTileOption[] = VIEW_MODES
+): Promise<{
+  group: CraftRadioGroup;
+  radios: CraftRadio[];
+  inputs: HTMLInputElement[];
+}> {
+  document.body.innerHTML = wrap(`
+    <craft-radio-group thumbnails label="View Mode" ${width ? `style="inline-size: ${width}"` : ''}>
+      ${options
+        .map(
+          (option) => `
+        <div>
+          <craft-radio>
+            <span slot="thumbnail" aria-hidden="true">${option.svg}</span>
+            <input slot="input" type="radio" id="view-${option.value}" name="view" value="${option.value}"${option.value === 'cards' ? ' checked' : ''}>
+            <label slot="label" for="view-${option.value}">${option.label}</label>
+          </craft-radio>
+        </div>`
+        )
+        .join('')}
+    </craft-radio-group>`);
+  const group = document.querySelector('craft-radio-group')!;
+  const radios = Array.from(document.querySelectorAll('craft-radio'));
+  await Promise.all([
+    group.updateComplete,
+    ...radios.map((radio) => radio.updateComplete),
+  ]);
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  await settle();
+
+  return {
+    group,
+    radios,
+    inputs: radios.map((radio) => radio.querySelector('input')!),
+  };
+}
+
+const thumbnailBox = (radio: CraftRadio) =>
+  radio.shadowRoot!.querySelector<HTMLElement>('[part="thumbnail"]')!;
+
+it('joins the tiles in one row, rounding only the outer corners', async () => {
+  const {group, radios} = await renderTiles('40rem');
+  const rects = radios.map((radio) =>
+    thumbnailBox(radio).getBoundingClientRect()
+  );
+  const radius = (radio: CraftRadio, corner: string) =>
+    parseFloat(getComputedStyle(thumbnailBox(radio)).getPropertyValue(corner));
+
+  expect(group.hasAttribute('data-wrapped')).toBe(false);
+  rects.slice(1).forEach((rect, i) => {
+    expect(rect.top).toBeCloseTo(rects[0]!.top);
+    expect(rect.left).toBeCloseTo(rects[i]!.right - 1);
+  });
+  expect(radius(radios[0]!, 'border-start-start-radius')).toBeGreaterThan(0);
+  expect(radius(radios[0]!, 'border-start-end-radius')).toBe(0);
+  expect(radius(radios[2]!, 'border-start-start-radius')).toBe(0);
+  expect(radius(radios[4]!, 'border-start-end-radius')).toBeGreaterThan(0);
+});
+
+it('wraps the tiles into separate tiles when the row does not fit', async () => {
+  const {group, radios} = await renderTiles('18rem');
+  const tops = new Set(
+    radios.map((radio) => Math.round(radio.getBoundingClientRect().top))
+  );
+
+  expect(group.hasAttribute('data-wrapped')).toBe(true);
+  expect(tops.size).toBeGreaterThan(1);
+  for (const radio of radios) {
+    const style = getComputedStyle(thumbnailBox(radio));
+    expect(parseFloat(style.borderStartStartRadius)).toBeGreaterThan(0);
+    expect(parseFloat(style.borderEndEndRadius)).toBeGreaterThan(0);
+  }
+});
+
+it('rejoins the tiles when the group widens again', async () => {
+  const {group} = await renderTiles('18rem');
+
+  group.style.inlineSize = '40rem';
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  await settle();
+
+  expect(group.hasAttribute('data-wrapped')).toBe(false);
+});
+
+it('fits the tiles in a 320px wide container without scrolling sideways', async () => {
+  const {group, radios} = await renderTiles('320px');
+  const {right} = group.getBoundingClientRect();
+
+  for (const radio of radios) {
+    expect(radio.getBoundingClientRect().right).toBeLessThanOrEqual(
+      right + 0.5
+    );
+  }
+});
+
+it('lays wrapped tiles out in the order the arrow keys follow', async () => {
+  const {group, radios, inputs} = await renderTiles('18rem');
+  const visual = [...radios].sort((a, b) => {
+    const ra = a.getBoundingClientRect();
+    const rb = b.getBoundingClientRect();
+    return Math.round(ra.top - rb.top) || ra.left - rb.left;
+  });
+
+  expect(visual).toEqual(radios);
+
+  await userEvent.tab();
+  expect(document.activeElement).toBe(inputs[1]);
+  await userEvent.keyboard('{ArrowRight}');
+  await settle();
+  expect(group.modelValue).toBe('cards-grid');
+});
+
+it('selects an option when its illustration is clicked', async () => {
+  const {group, radios} = await renderTiles('40rem');
+
+  const box = thumbnailBox(radios[3]!).getBoundingClientRect();
+  const host = radios[3]!.getBoundingClientRect();
+  await userEvent.click(radios[3]!, {
+    position: {
+      x: box.left - host.left + box.width / 2,
+      y: box.top - host.top + box.height / 2,
+    },
+  });
+  await parkPointer();
+  await settle();
+
+  expect(group.modelValue).toBe('blocks');
+});
+
+it('draws the focus ring around the focused tile illustration', async () => {
+  const {radios} = await renderTiles('40rem');
+
+  await userEvent.tab();
+  await settle();
+
+  const style = getComputedStyle(thumbnailBox(radios[1]!));
+  expect(style.outlineStyle).toBe('solid');
+  expect(parseFloat(style.outlineWidth)).toBeGreaterThan(0);
+  expect(getComputedStyle(thumbnailBox(radios[0]!)).outlineStyle).toBe('none');
+});
+
+it('marks the selected tile with a thicker border and a bold label', async () => {
+  const {radios} = await renderTiles('40rem');
+  const [selected, unselected] = [radios[1]!, radios[2]!].map((radio) =>
+    getComputedStyle(thumbnailBox(radio))
+  );
+  const weight = (radio: CraftRadio) =>
+    Number(
+      getComputedStyle(radio.shadowRoot!.querySelector('.choice-field__label')!)
+        .fontWeight
+    );
+
+  expect(parseFloat(selected!.borderTopWidth)).toBeGreaterThan(
+    parseFloat(unselected!.borderTopWidth)
+  );
+  expect(weight(radios[1]!)).toBeGreaterThan(weight(radios[2]!));
+});
+
+it('draws the selected illustration in blue, following the selection and the theme', async () => {
+  const BLUE_500 = 'rgb(62, 116, 242)';
+  const SLATE_500 = 'rgb(111, 124, 148)';
+  const SLATE_500_DARK = 'rgb(143, 155, 175)';
+  const {radios, inputs} = await renderTiles('40rem');
+  const hairline = (radio: CraftRadio) =>
+    getComputedStyle(
+      radio.querySelector(
+        '[slot="thumbnail"] [style*="stroke: var(--c-illustration-line)"]'
+      )!
+    ).stroke;
+
+  expect(hairline(radios[1]!)).toBe(BLUE_500);
+  expect(hairline(radios[2]!)).toBe(SLATE_500);
+
+  await userEvent.click(inputs[2]!);
+  await settle();
+  expect(hairline(radios[2]!)).toBe(BLUE_500);
+  expect(hairline(radios[1]!)).toBe(SLATE_500);
+
+  document.documentElement.dataset.theme = 'dark';
+  try {
+    expect(hairline(radios[1]!)).toBe(SLATE_500_DARK);
+  } finally {
+    delete document.documentElement.dataset.theme;
+  }
+});
+
+it("keeps the illustrations' outlines, figures and marks at 3:1 at rest, hovered and selected, in both themes", async () => {
+  const failures: string[] = [];
+
+  for (const theme of ['light', 'dark']) {
+    const {radios, inputs} = await renderTiles(
+      '40rem',
+      (html) =>
+        `<div data-theme="${theme}" style="background-color: var(--c-surface-default)">${html}</div>`,
+      [VIEW_MODES[1]!, PALETTE_SAMPLE]
+    );
+    const sample = radios[1]!;
+    const thumbnail = sample.querySelector('[slot="thumbnail"]')!;
+    const paint = (selector: string, property: 'fill' | 'stroke') =>
+      getComputedStyle(thumbnail.querySelector(selector)!)[property];
+
+    const check = (state: string) => {
+      const backdrop = getComputedStyle(
+        document.querySelector('[data-theme]')!
+      ).backgroundColor;
+      const tile = getComputedStyle(thumbnailBox(sample)).backgroundColor;
+      const field = paint(
+        '[style*="fill: var(--c-illustration-field)"]',
+        'fill'
+      );
+      const figure = paint(
+        '[style*="fill: var(--c-illustration-figure)"]',
+        'fill'
+      );
+      const mark = paint(
+        '[style*="stroke: var(--c-illustration-mark)"]',
+        'stroke'
+      );
+      const pairs: [string, string, string][] = [
+        [
+          'outline / tile',
+          paint('[style*="stroke: var(--c-illustration-line)"]', 'stroke'),
+          tile,
+        ],
+        [
+          'outline / surface',
+          paint('[style*="fill: var(--c-illustration-surface)"]', 'stroke'),
+          paint('[style*="fill: var(--c-illustration-surface)"]', 'fill'),
+        ],
+        ['figure / field', figure, field],
+        ['mark / field', mark, field],
+        ['mark / figure', mark, figure],
+        ['mark / tile', mark, tile],
+        [
+          'mark / light edge',
+          paint('[style*="stroke: var(--c-illustration-paper)"]', 'fill'),
+          paint('[style*="stroke: var(--c-illustration-paper)"]', 'stroke'),
+        ],
+      ];
+
+      for (const [name, foreground, background] of pairs) {
+        const ratio = contrast(foreground, background, backdrop);
+        if (ratio < 3) {
+          failures.push(`${theme}, ${state}, ${name}: ${ratio.toFixed(2)}`);
+        }
+      }
+    };
+
+    check('at rest');
+    await userEvent.hover(inputs[1]!);
+    check('hovered');
+    await userEvent.click(inputs[1]!);
+    await settle();
+    await parkPointer();
+    check('selected');
+  }
+
+  expect(failures).toEqual([]);
+});
+
+it('distinguishes the selected tile in forced colors mode', async () => {
+  await cdp().send('Emulation.setEmulatedMedia', {
+    features: [{name: 'forced-colors', value: 'active'}],
+  });
+  const {radios} = await renderTiles('40rem');
+  const [selected, unselected] = [radios[1]!, radios[2]!].map((radio) =>
+    getComputedStyle(thumbnailBox(radio))
+  );
+
+  expect(selected!.borderTopColor).not.toBe(unselected!.borderTopColor);
+});
+
+it('joins the tiles once shown in a container that sizes to its content', async () => {
+  const {group} = await renderTiles(
+    '',
+    (html) =>
+      `<div style="display: none; grid-template-columns: min-content">${html}</div>`
+  );
+  const container = group.parentElement!;
+
+  container.style.display = 'grid';
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  await settle();
+
+  expect(group.hasAttribute('data-wrapped')).toBe(false);
 });

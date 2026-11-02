@@ -35,6 +35,77 @@ An option labeled only by an icon gets a square button. Give the icon a `label`,
 
 Use a [Button Group](?path=/docs/components-button-group--docs) instead when the buttons act immediately, such as switching a view, rather than set a value.
 
+## Thumbnails
+
+`thumbnails` shows the options as illustrated tiles, for a choice that's easier to recognize than to describe, such as a layout or a crop mode. Each radio slots its illustration into `thumbnail`, and the label sits below it. The options are still radios, announced and operated like any other radio group.
+
+<Canvas of={RadioGroupStories.Thumbnails} sourceState="shown" />
+
+The tiles are joined in one row, each between `--c-radio-tile-min-size` and `--c-radio-tile-max-size` wide. When the group is too narrow for every tile at its minimum width, they come apart and wrap onto as many rows as they need, rather than overflowing.
+
+<Canvas of={RadioGroupStories.ThumbnailsWrapped} sourceState="shown" />
+
+Illustrations are 60px tall by default (`--c-radio-tile-thumbnail-height`), and are scaled to fit the tile. Slot an inline SVG, wrapped in a `<span aria-hidden="true">`, and color each shape with the illustration palette's `--c-illustration-*` tokens in a `style` attribute:
+
+```html
+<path d="…" style="fill: var(--c-illustration-figure)" />
+<rect
+  …
+  style="fill: var(--c-illustration-surface); stroke: var(--c-illustration-line)"
+/>
+```
+
+The tokens are palette stops, so the illustration follows the theme, and its outlines turn blue when its option is selected. Put the tokens in `style` rather than in the `fill` and `stroke` attributes, so any `fill` or `stroke` a drawing tool exported can stay: `style` overrides it in the control panel, and it still shows when the file is opened on its own. To make the file preview correctly without one, add the light-theme color as a fallback, as in `var(--c-illustration-figure, #6f7c94)`.
+
+Each row below draws the same sample illustration with everything but that role faded, in the current theme. Roles that are hard to spot are outlined in dashed blue, which isn't part of the palette.
+
+<Canvas of={RadioGroupStories.IllustrationPalette} sourceState="none" />
+
+The parts of an illustration that show what its option means need 3:1 contrast against whatever is directly behind them. The palette guarantees these pairings, at rest, hovered and selected, in both themes:
+
+- A `line` can sit on the tile or on a `surface`.
+- A `figure` can sit on a `field`.
+- A `mark` can sit on a `field`, a `figure` or the tile.
+
+Anything else isn't guaranteed. `subtle` promises no contrast at all, so don't use it for anything that shows meaning. To show where a shape ends, such as a photo's position inside a frame, outline it with `line`.
+
+A dark mark that sits on another dark color, such as a crop frame's corners on letterbox bars, needs a **light edge**: a thin outline in the lightest color, drawn behind the mark so it shows up on dark and light colors alike. Paint the mark's stroke with `paper`, and draw the stroke first:
+
+```html
+<path
+  d="…"
+  style="fill: var(--c-illustration-mark); stroke: var(--c-illustration-paper)"
+  stroke-width="2"
+  paint-order="stroke"
+/>
+```
+
+`paint-order="stroke"` draws the edge before the mark, so only 1px of it shows around the mark.
+
+An `<img>` with an empty `alt` works too, but can't use the tokens: it keeps the colors it was drawn with, so it won't follow the theme, and checking its contrast is up to you.
+
+### Building one in PHP
+
+Give each `Choice` option a `thumbnail`, and the radio group switches to tiles on its own. `Cp::illustration()` inlines an SVG from `resources/public`; pass `['src' => $url]` for an image instead:
+
+```php
+use CraftCms\Cms\Cp\Cp;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
+
+Choice::make('viewMode')
+    ->presentation(ChoicePresentation::Radios)
+    ->options(array_map(fn (array $option) => [
+        ...$option,
+        'thumbnail' => Cp::illustration("images/view-modes/{$option['value']}.svg"),
+    ], [
+        ['label' => 'Cards', 'value' => 'cards'],
+        ['label' => 'Card grid', 'value' => 'cards-grid'],
+    ]));
+```
+
+`CraftCms\Cms\Cp\Components\Radio::thumbnail()` does the same for a `RadioGroup` component.
+
 ## Server-Rendered Markup
 
 A group rendered by the server adopts the name already present on its inputs, for the same reason as the checkbox group: Lion syncs each child's name to the group's, so upgrading a nameless group would strip the server's names and break native posting.
@@ -67,7 +138,7 @@ Call `fieldset()` on the field, so its label becomes the group's legend.
 
 The group is announced as a radio group named by its label, and takes one Tab stop. The arrow keys move between options and select them as they go, because every option is a native radio sharing the group's name.
 
-Give the group a visible label that names the question, and keep each option's text in its radio's label.
+Give the group a visible label that names the question, and keep each option's text in its radio's label. With `thumbnails`, hide each illustration from assistive tech, with `aria-hidden="true"` on an inline SVG's wrapper or an empty `alt` on an `<img>`: the label below it already names the option, so a description would be read twice. Color its key parts with the `--c-illustration-*` tokens, in the pairings they promise, so they keep 3:1 contrast; see [Thumbnails](#thumbnails).
 
 When a choice is required, say so with `craft-field`'s `required` or in the label text, as well as adding the `Required` validator; the validator alone doesn't show anything until an error appears. Write validator messages that say what to choose.
 
