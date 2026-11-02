@@ -229,6 +229,14 @@
     font-weight: inherit;
   }
 
+  /* Closes off each group's table but the last. */
+  .command-palette-shortcuts__group:not(:last-child)
+    tbody
+    tr:last-child
+    > :is(th, td) {
+    border-block-end: 1px solid var(--c-table-border-color);
+  }
+
   .command-palette-shortcuts__group + .command-palette-shortcuts__group {
     margin-block-start: var(--c-spacing-lg);
   }
