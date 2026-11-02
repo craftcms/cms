@@ -7,6 +7,7 @@ import {
 } from '@craftcms/garnish';
 // Listbox was migrated out of `@craftcms/garnish` into the app.
 import {Listbox} from '@/modules/listbox/listbox';
+import {Grid} from '@/modules/grid/grid';
 import {Tab} from './tab';
 import {CardViewDesigner} from './card-view-designer';
 import {ElementDrag, TabDrag} from './drags';
@@ -28,7 +29,6 @@ import {escapeHtml} from '@/common/craft/attributes';
 // used ONLY at the Craft-interop seams (Craft.ui/Grid/listbox/Slideout return or
 // require jQuery). Everywhere else FLD uses native DOM.
 declare const Craft: any;
-declare const $: any;
 
 /**
  * Field Layout Designer — a port of the legacy `Craft.FieldLayoutDesigner` onto
@@ -68,7 +68,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
   $createFieldBtn: any = null;
 
   libraryPicker: Listbox | null = null;
-  tabGrid: any = null;
+  tabGrid: Grid | null = null;
   /** Keeps the workspace a whole number of grid cells tall. */
   workspaceHeightObserver: ResizeObserver | null = null;
   sidebarTabHeightObserver: ResizeObserver | null = null;
@@ -154,7 +154,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
   }
 
   deferredInit(): void {
-    // Set up the layout grids — Craft.Grid is a jQuery seam.
+    // Set up the layout grids.
     // Tabs are 18 cells of the workspace's background grid wide, and each row
     // of them is snapped to a whole number of cells tall, so later rows and
     // the New Tab button land on the grid too.
@@ -163,7 +163,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
         getComputedStyle(this.$contentTabContainer.parentElement).backgroundSize
       ) || 16;
     // Only content tabs wrap into rows; sidebar tabs stack in their column.
-    this.tabGrid = new Craft.Grid($(this.$contentTabContainer), {
+    this.tabGrid = new Grid(this.$contentTabContainer, {
       itemSelector: '.fld-tab',
       minColWidth: gridSize * 18,
       fillMode: 'grid',
@@ -417,8 +417,8 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     this.libraryPicker?.destroy();
     this.libraryPicker = null;
 
-    // Craft.Grid binds a window `resize` listener — dispose it explicitly.
-    this.tabGrid?.destroy?.();
+    // The grid binds a window `resize` listener — dispose it explicitly.
+    this.tabGrid?.destroy();
     this.tabGrid = null;
 
     // Each tab's HUD lives in <body>, so it won't be GC'd with the detached
@@ -481,7 +481,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     } else {
       // Only content tabs wrap into the grid's rows.
       this.$contentTabContainer.appendChild($tab);
-      this.tabGrid.addItems($($tab));
+      this.tabGrid?.addItems($tab);
     }
     this.tabDrag!.addItems($tab);
 
