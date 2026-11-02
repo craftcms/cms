@@ -1199,7 +1199,12 @@ JS, [
                     ], updateTimestamp: false);
                     $newElementId = $element->id;
                 } else {
-                    $newElementId = $elementsService->duplicateElement($element, $newAttributes)->id;
+                    $newElementId = $elementsService->duplicateElement(
+                        $element,
+                        $newAttributes,
+                        // if the duplicate derives from the same canonical element, it should keep track of the same changes
+                        copyModifiedFields: $canonicalId !== null && $element->getIsDerivative(),
+                    )->id;
                 }
 
                 $newElementIds[$element->id] = $newElementId;

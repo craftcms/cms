@@ -382,6 +382,58 @@ class NestedElementManagerTest extends TestCase
         self::assertSame($canonicalEdited->id, $finalNested[1]->id);
     }
 
+    // #20226 follow-up: the draft’s own nested entries must keep their modified-field tracking when duplicated,
+    // or edits to doubly-nested entries get dropped when the new draft is applied.
+    public function testDuplicatingDraftAsNewDraftKeepsDoublyNestedEdits(): void
+    {
+        $owner = $this->_makeOwner([
+            'new1' => [
+                'type' => 'nemBlock',
+                'fields' => [
+                    'nemText' => 'A',
+                    'nemInnerMatrix' => [
+                        'new1' => ['type' => 'nemBlock', 'fields' => ['nemText' => 'v1']],
+                    ],
+                ],
+            ],
+        ]);
+        $originalInnerId = $this->_nestedEntries($this->_nestedEntries($owner)[0])[0]->id;
+
+        /** @var Entry $draft */
+        $draft = $this->drafts->createDraft($owner, 1);
+        $blockA = $this->_nestedEntries($draft)[0];
+        $draft->setFieldValue('nemMatrix', [
+            $blockA->id => [
+                'type' => 'nemBlock',
+                'fields' => [
+                    'nemInnerMatrix' => [
+                        $originalInnerId => ['type' => 'nemBlock', 'fields' => ['nemText' => 'v2']],
+                    ],
+                ],
+            ],
+        ]);
+        if (!$this->elements->saveElement($draft)) {
+            throw new InvalidElementException($draft);
+        }
+        $draft = Entry::find()->id($draft->id)->drafts()->one();
+
+        /** @var Entry $newDraft */
+        $newDraft = $this->elements->duplicateElement($draft, [
+            'isProvisionalDraft' => false,
+            'draftId' => $draft->draftId,
+        ], copyModifiedFields: true);
+        $this->elements->deleteElement($draft, true);
+
+        $newDraft = Entry::find()->id($newDraft->id)->drafts()->one();
+        $this->drafts->applyDraft($newDraft);
+
+        $owner = Entry::find()->id($owner->id)->one();
+        $finalInner = $this->_nestedEntries($this->_nestedEntries($owner)[0]);
+        self::assertCount(1, $finalInner);
+        self::assertSame('v2', $finalInner[0]->getFieldValue('nemText'));
+        self::assertSame($originalInnerId, $finalInner[0]->id);
+    }
+
     // Models "fixes an issue where nested content could be lost or overwritten when adding new
     // site" (e2e4698) and d39f1f9: with a Matrix field whose propagation method is more restrictive
     // than its owner, adding a new site to the owner must duplicate the nested elements into that
