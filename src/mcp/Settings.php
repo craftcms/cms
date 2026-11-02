@@ -6,6 +6,7 @@ use Craft;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\Model;
 use craft\helpers\UrlHelper;
+use craft\services\ProjectConfig;
 use craft\web\Request;
 
 /** MCP server settings and public approvals, stored in project config. @since 5.12.0 */
@@ -56,6 +57,12 @@ class Settings extends Model
         // Control panel requests match their full path, so authenticated routes can begin with the control panel
         // trigger, or live on the control panel’s own domain.
         $path = $request->getIsCpRequest() ? $request->getFullPath() : $request->getPathInfo();
+
+        // Discoverable servers serve their Server Card at `<server-url>/server-card`, per SEP-2127.
+        if (!$request->getIsCpRequest() && str_ends_with($path, '/server-card') && isset($this->discoverableServers()[substr($path, 0, -strlen('/server-card'))])) {
+            return ['mcp/server-card', []];
+        }
+
         $authenticated = $this->enabled && in_array($path, [trim($this->route, '/'), trim($this->authorizationRoute, '/')], true);
         $public = $this->publicEnabled && !$request->getIsCpRequest() && $path === trim($this->publicRoute, '/');
 
@@ -71,6 +78,76 @@ class Settings extends Model
     {
         $cpTrigger = Craft::$app->getConfig()->getGeneral()->cpTrigger;
         return $cpTrigger && str_starts_with(trim($route, '/') . '/', $cpTrigger . '/');
+    }
+
+    /**
+     * Returns the servers that `/.well-known/ai-catalog.json` advertises, as app-relative paths mapped to whether
+     * each is the public server.
+     *
+     * Servers on control panel URLs are never advertised, and the authenticated server is only advertised when
+     * people can register for an account on the front end.
+     */
+    public function discoverableServers(): array
+    {
+        $servers = [];
+
+        if ($this->publicEnabled && !$this->routesToCp($this->publicRoute)) {
+            $servers[trim($this->publicRoute, '/')] = true;
+        }
+
+        if (
+            $this->enabled &&
+            Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_USERS . '.allowPublicRegistration') &&
+            !$this->routesToCp($this->authorizationRoute)
+        ) {
+            $servers[trim($this->authorizationRoute, '/')] ??= false;
+        }
+
+        return $servers;
+    }
+
+    /** Whether a request to a route’s URL would be a control panel request, following craft\web\Request::init(). */
+    private function routesToCp(string $route): bool
+    {
+        if ($this->isCpRoute($route)) {
+            return true;
+        }
+
+        $general = Craft::$app->getConfig()->getGeneral();
+        if (!$general->baseCpUrl) {
+            return false;
+        }
+
+        // Requests go to the control panel when its base URL matches them more closely than the site’s does
+        $url = $this->url($route);
+        $site = Craft::$app->getSites()->getCurrentSite();
+        $siteScore = ($site->getBaseUrl() ? $this->scoreBaseUrl($site->getBaseUrl(), $url) : 0) + ($site->primary ? 1 : 0);
+        $cpBaseUrl = implode('/', array_filter([rtrim($general->baseCpUrl, '/'), $general->cpTrigger]));
+
+        return $this->scoreBaseUrl($cpBaseUrl, $url) > $siteScore;
+    }
+
+    /** Scores how closely a base URL matches a URL, the way craft\web\Request scores site and control panel base URLs. */
+    private function scoreBaseUrl(string $baseUrl, string $url): int
+    {
+        $base = parse_url($baseUrl) ?: [];
+        $target = parse_url($url) ?: [];
+
+        if (!empty($base['host']) && strcasecmp($base['host'], $target['host'] ?? '') !== 0) {
+            return 0;
+        }
+
+        $basePath = preg_replace('/\/\/+/', '/', trim($base['path'] ?? '', '/'));
+        if ($basePath !== '' && !str_starts_with(trim($target['path'] ?? '', '/') . '/', "$basePath/")) {
+            return 0;
+        }
+
+        $scheme = strtolower($target['scheme'] ?? 'https');
+        $baseScheme = strtolower($base['scheme'] ?? $scheme);
+        $port = $target['port'] ?? ($scheme === 'https' ? 443 : 80);
+        $basePort = $base['port'] ?? ($baseScheme === 'https' ? 443 : 80);
+
+        return 1000 + strlen($basePath) * 100 + ($basePort == $port ? 100 : 0) + ($baseScheme === $scheme ? 10 : 0);
     }
 
     /** Returns the absolute URL for a route. */
