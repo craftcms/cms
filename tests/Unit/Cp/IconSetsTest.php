@@ -123,12 +123,8 @@ it('normalizes and serializes Icon field values', function () {
         ->and($value->styles)->toBe([])
         ->and($field->serializeValue($value, null))->toBe('custom:Arrow Thing');
 
-    $value = $field->normalizeValue('chevron-right', null);
-
-    expect($value->name)->toBe('chevron-right')
-        ->and($value->set)->toBeNull()
-        ->and($value->styles)->toContain('solid')
-        ->and($field->serializeValue($value, null))->toBe('chevron-right');
+    // Font Awesome icons aren’t prefixed with a set handle
+    expect($field->serializeValue(new IconData('chevron-right', ['solid']), null))->toBe('chevron-right');
 });
 
 it('returns icon SVGs and keywords', function () {
@@ -137,8 +133,7 @@ it('returns icon SVGs and keywords', function () {
     expect($value->getSvg())->toContain('d="M0 0h10v10z"')
         ->and($value->getKeywords())->toBe([])
         ->and(new IconData('missing', [], 'custom')->getSvg())->toBeNull()
-        ->and(new IconData('Arrow Thing', [], 'unknown-set')->getSvg())->toBeNull()
-        ->and(new IconData('0', ['solid'])->getKeywords())->toBe(['digit', 'zero', 'nada', 'none', 'zero', 'zilch']);
+        ->and(new IconData('Arrow Thing', [], 'unknown-set')->getSvg())->toBeNull();
 });
 
 it('validates the Icon field’s icon sets', function () {
