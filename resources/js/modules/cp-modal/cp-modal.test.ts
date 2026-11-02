@@ -1,4 +1,3 @@
-import $ from 'jquery';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {CpModal} from './cp-modal';
@@ -39,7 +38,6 @@ async function loaded(): Promise<void> {
 
 describe('CpModal', () => {
   beforeEach(() => {
-    vi.stubGlobal('$', $);
     vi.stubGlobal('Craft', {
       t: (_category: string, message: string) => message,
       baseCpUrl: 'https://example.test/admin',
