@@ -127,8 +127,7 @@
         }
       }
 
-      // Upgrade legacy UI elements (lightswitches, menus, …)
-      // the same way CpScreenSlideout does after injecting fragment content.
+      // Plugin markup in the fragment may still use legacy UI hooks
       if (html) {
         initLegacyUi(element);
       }

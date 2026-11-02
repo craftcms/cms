@@ -1725,11 +1725,9 @@ JS, Json::encode(InputNamespace::namespaceId($id)), Json::encode(InputNamespace:
     /** @param array<string, mixed> $config */
     public static function dateHtml(array $config): string
     {
-        $html = self::dateFromConfig($config)->toHtml();
-
         return ($config['hasOuterContainer'] ?? false)
-            ? $html
-            : Html::tag('craft-input-date-time', $html, ['class' => 'datetimewrapper']);
+            ? self::dateFromConfig($config)->toHtml()
+            : self::dateTimeFromConfig($config)->showTime(false)->toHtml();
     }
 
     /** @param array<string, mixed> $config */
@@ -1780,11 +1778,9 @@ JS, Json::encode(InputNamespace::namespaceId($id)), Json::encode(InputNamespace:
     /** @param array<string, mixed> $config */
     public static function timeHtml(array $config): string
     {
-        $html = self::timeFromConfig($config)->toHtml();
-
         return ($config['hasOuterContainer'] ?? false)
-            ? $html
-            : Html::tag('craft-input-date-time', $html, ['class' => 'datetimewrapper']);
+            ? self::timeFromConfig($config)->toHtml()
+            : self::dateTimeFromConfig($config)->showDate(false)->toHtml();
     }
 
     /** @param array<string, mixed> $config */

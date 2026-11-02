@@ -1368,7 +1368,7 @@ JS,
         return FormFields::textareaFieldHtml([
             'label' => t('Notes About Your Changes'),
             'labelClass' => 'h6',
-            'class' => ['nicetext', 'notes'],
+            'class' => ['notes'],
             'name' => 'notes',
             'value' => $this->getIsDraft() ? $this->draftNotes : $this->revisionNotes,
             'rows' => 1,

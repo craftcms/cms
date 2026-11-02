@@ -1,9 +1,10 @@
 /**
- * Starts the legacy jQuery UI (menus, form-submit links, date pickers, …) in
+ * Starts the legacy jQuery UI (menus, form-submit links, outbound links, …) in
  * server-rendered markup that was just added to the page.
  *
- * The legacy bundle provides it; markup that uses only custom elements needs
- * none of this.
+ * Core's own markup uses custom elements and needs none of it; this is for
+ * plugin markup inside what core inserts. It does nothing without the legacy
+ * bundle.
  */
 export function initLegacyUi(
   container: Element | JQuery | null | undefined
