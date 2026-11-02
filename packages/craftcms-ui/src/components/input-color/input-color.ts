@@ -72,9 +72,10 @@ export function colorPickerValueToHex(value: string): string {
       .toString(16)
       .padStart(2, '0');
 
-  let hexValue = hex(match[1]) + hex(match[2]) + hex(match[3]);
-  if (match[4] !== undefined && parseFloat(match[4]) < 1) {
-    hexValue += hex(match[4]);
+  const [, red = '', green = '', blue = '', alpha] = match;
+  let hexValue = hex(red) + hex(green) + hex(blue);
+  if (alpha !== undefined && parseFloat(alpha) < 1) {
+    hexValue += hex(alpha);
   }
 
   return hexValue;
