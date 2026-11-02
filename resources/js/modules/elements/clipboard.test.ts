@@ -23,38 +23,51 @@ vi.mock('@/common/craft/broadcast', () => ({
 const STORAGE_KEY = 'Craft-test.copiedElements';
 const entry = {type: 'Entry', id: 5, siteId: 1};
 
-/** Stands in for the legacy card, which fills the elements in and then fires `show`. */
-class Card {
-  static last: Card | null = null;
-  loaded = false;
-  closed = false;
-  #onShow: Array<() => void> = [];
+/** Stands in for the card, which fills the elements in and then fires `show`. */
+const {Card} = vi.hoisted(() => {
+  class Card {
+    static last: Card | null = null;
+    loaded = false;
+    closed = false;
+    shown = false;
+    #onShow: Array<() => void> = [];
 
-  constructor(public elementInfo: Clipboard.CopiedElementInfo[]) {
-    Card.last = this;
+    constructor(
+      public elementInfo: Clipboard.CopiedElementInfo[],
+      public onCancel: () => void
+    ) {
+      Card.last = this;
+    }
+
+    show() {
+      this.shown = true;
+    }
+
+    on(_event: 'show', handler: () => void) {
+      this.#onShow.push(handler);
+    }
+
+    load(elements = this.elementInfo) {
+      this.elementInfo = elements;
+      this.loaded = true;
+      this.#onShow.forEach((handler) => handler());
+    }
+
+    close() {
+      this.closed = true;
+    }
   }
 
-  on(_event: 'show', handler: () => void) {
-    this.#onShow.push(handler);
-  }
-
-  load(elements = this.elementInfo) {
-    this.elementInfo = elements;
-    this.loaded = true;
-    this.#onShow.forEach((handler) => handler());
-  }
-
-  close() {
-    this.closed = true;
-  }
-}
+  return {Card};
+});
+vi.mock('./copied-elements-notification', () => ({
+  CopiedElementsNotification: Card,
+}));
 
 /** `Craft.CP` before the clipboard takes its methods over. */
 function legacyCp() {
   class CP {
     copyElementCallbacks: unknown[] = [];
-    displayNotification = vi.fn();
-    static ElementCopyNotification = Card;
 
     onCopyElements(callback: unknown) {
       this.copyElementCallbacks.push(callback);
@@ -99,7 +112,7 @@ describe('the element clipboard', () => {
     clipboard.copyElements([entry]);
 
     expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!)).toEqual([entry]);
-    expect(cp.displayNotification).toHaveBeenCalledWith(Card.last);
+    expect(Card.last?.shown).toBe(true);
     expect(broadcasts.sent).toEqual([{event: 'copyElements'}]);
   });
 
