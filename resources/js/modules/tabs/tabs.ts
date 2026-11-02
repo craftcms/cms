@@ -98,8 +98,8 @@ export class Tabs extends Base<TabsSettings> {
     const $ = jq();
     this.#menuBtnEl =
       this.container.querySelector<HTMLElement>(':scope > .menubtn');
-    if ($ && this.#menuBtnEl) {
-      // SAFETY: CP pages install the disclosureMenu jQuery plugin before Tabs boots.
+    // The legacy menu plugin comes with the Yii2 adapter
+    if ($ && this.#menuBtnEl && 'disclosureMenu' in $.fn) {
       const $menuBtn = $(this.#menuBtnEl) as JQuery<HTMLElement> & {
         disclosureMenu(): JQuery<HTMLElement>;
       };

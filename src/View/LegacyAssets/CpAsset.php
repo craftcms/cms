@@ -9,7 +9,6 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\HtmlStack;
 
-use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\craftAuth;
 
 /**
@@ -40,9 +39,6 @@ class CpAsset implements LegacyAssetInterface
 
     public function register(HtmlStack $htmlStack): void
     {
-        // CP
-        $htmlStack->jsFile(craftAsset('legacy/cp/dist/cp.js'));
-
         $htmlStack->icons([
             'arrow-down',
             'arrow-left',
