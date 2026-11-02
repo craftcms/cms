@@ -16,6 +16,13 @@ export interface ShortcutDef {
   ctrl?: boolean;
   shift?: boolean;
   alt?: boolean;
+  /**
+   * What the shortcut does, for the command palette's “Keyboard shortcuts”
+   * list. Shortcuts without one aren't listed.
+   */
+  description?: string;
+  /** The list's heading to show it under. */
+  group?: string;
 }
 
 interface NormalizedShortcut {
@@ -29,6 +36,8 @@ interface RegisteredShortcut {
   key: string;
   shortcut: NormalizedShortcut;
   callback: (ev: KeyboardEvent) => void;
+  description?: string;
+  group?: string;
 }
 
 interface LayerOptions {
@@ -195,15 +204,21 @@ export class UiLayerManager extends Base {
   /**
    * Register a keyboard shortcut on a layer (the current one by default).
    *
-   * @param shortcut - A key code, or a `{keyCode, ctrl?, shift?, alt?}` definition.
+   * @param shortcut - A key code, or a `{keyCode, ctrl?, shift?, alt?}` definition,
+   *   optionally with a `description` and `group` to list it in the command
+   *   palette's “Keyboard shortcuts”.
    * @param callback - Invoked (after `preventDefault`) when the shortcut matches.
    * @param layer - Layer index to scope the shortcut to; defaults to the current layer.
    * @returns `this`, for chaining.
    *
    * @example
    * ```ts
-   * import {Garnish, ESC_KEY} from '@craftcms/garnish';
+   * import {Garnish, ESC_KEY, S_KEY} from '@craftcms/garnish';
    * Garnish.uiLayerManager!.registerShortcut(ESC_KEY, () => closeThing());
+   * Garnish.uiLayerManager!.registerShortcut(
+   *   {keyCode: S_KEY, ctrl: true, description: 'Save', group: 'Forms'},
+   *   () => save()
+   * );
    * ```
    */
   registerShortcut(
@@ -219,6 +234,9 @@ export class UiLayerManager extends Base {
       key: JSON.stringify(normalized),
       shortcut: normalized,
       callback,
+      ...(typeof shortcut === 'object'
+        ? {description: shortcut.description, group: shortcut.group}
+        : {}),
     });
     return this;
   }

@@ -4,10 +4,7 @@ import type {UiValues} from '@/modules/ui/types';
 import {isHttpError} from '@craftcms/ui/utilities/api/http';
 import type {LegacyRequestOptions} from '@craftcms/ui/utilities/api/legacyRequest';
 import {commandShortcut} from '@/common/utils/keyShortcuts';
-import {
-  registerShortcuts,
-  type CommandPaletteRegistration,
-} from '@/modules/command-palette/registry';
+import {registerShortcut, type ShortcutRegistration} from '@/common/shortcuts';
 
 declare const Craft: any;
 declare const $: any;
@@ -86,7 +83,7 @@ export class CpModal extends Base {
   #abortController: AbortController | null = null;
   #ignoreFailedRequest = false;
   #fieldsWithErrors: unknown[] = [];
-  #shortcuts: CommandPaletteRegistration;
+  #shortcuts: ShortcutRegistration;
 
   // jQuery refs (form-ops seam), mirroring the legacy `$`-prefixed fields.
   #$container: any = null;
@@ -160,12 +157,12 @@ export class CpModal extends Base {
       });
     }
     this.addListener(this.#$container[0], 'submit', 'handleSubmit');
-    this.dialog.addEventListener('keydown', (ev) => {
-      if ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === 's') {
-        this.handleSubmit(ev);
-      }
+    this.#shortcuts = registerShortcut('Mod+S', (ev) => this.handleSubmit(ev), {
+      target: this.dialog,
+      description: () => Craft.t('app', 'Save'),
+      group: () => Craft.t('app', 'Forms'),
+      isAvailable: () => this.visible,
     });
-    this.#shortcuts = registerShortcuts(() => (this.visible ? ['save'] : []));
     this.dialog.addEventListener('craft-before-hide', (ev) => {
       if (ev.target !== this.dialog) return;
       ev.preventDefault();

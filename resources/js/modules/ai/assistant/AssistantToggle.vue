@@ -1,7 +1,7 @@
 <script setup lang="ts">
   /** The header button that opens and folds the AI assistant’s panel. */
   import {ButtonVariant, t} from '@craftcms/ui';
-  import {useEventListener} from '@vueuse/core';
+  import {useShortcut} from '@/common/shortcuts';
   import {nextTick, onBeforeUnmount} from 'vue';
   import {registerActions} from '@/modules/command-palette/registry';
   import {screenPanels} from '@/common/composables/screenPanels';
@@ -46,33 +46,28 @@
    * field's italic command — handles them first and cancels them, so they're
    * left alone then.
    */
-  useEventListener(window, 'keydown', (event: KeyboardEvent) => {
-    if (
-      event.key.toLowerCase() !== 'i' ||
-      event.shiftKey ||
-      event.altKey ||
-      !(event.metaKey || event.ctrlKey) ||
-      event.defaultPrevented
-    ) {
-      return;
-    }
-
-    event.preventDefault();
-
-    if (panel.isOpen.value && messageBox()?.contains(document.activeElement)) {
-      screenPanels.close(ASSISTANT_PANEL_ID);
-      return;
-    }
-
-    panel.show();
-    // An open panel doesn't move focus again when it's shown.
-    void nextTick(() => {
-      const box = messageBox();
-      if (box && !box.contains(document.activeElement)) {
-        firstFocusableWithin(box)?.focus();
+  useShortcut(
+    'Mod+I',
+    () => {
+      if (
+        panel.isOpen.value &&
+        messageBox()?.contains(document.activeElement)
+      ) {
+        screenPanels.close(ASSISTANT_PANEL_ID);
+        return;
       }
-    });
-  });
+
+      panel.show();
+      // An open panel doesn't move focus again when it's shown.
+      void nextTick(() => {
+        const box = messageBox();
+        if (box && !box.contains(document.activeElement)) {
+          firstFocusableWithin(box)?.focus();
+        }
+      });
+    },
+    {description: () => t('Ask AI'), ignoreInputs: false}
+  );
 </script>
 
 <template>

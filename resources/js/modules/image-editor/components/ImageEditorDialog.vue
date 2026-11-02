@@ -1,15 +1,7 @@
 <script setup lang="ts">
-  import {
-    computed,
-    onScopeDispose,
-    ref,
-    useId,
-    useTemplateRef,
-    watch,
-  } from 'vue';
+  import {computed, ref, useId, useTemplateRef, watch} from 'vue';
   import {commandShortcut, usesCommandKey} from '@/common/utils/keyShortcuts';
-  import {useEventListener} from '@vueuse/core';
-  import {registerShortcuts} from '@/modules/command-palette/registry';
+  import {useShortcut} from '@/common/shortcuts';
   import {t} from '@craftcms/ui';
   import {
     useImageEditor,
@@ -216,46 +208,21 @@
     ? commandShortcut('Z', {shift: true})
     : `${commandShortcut('Y')} ${commandShortcut('Z', {shift: true})}`;
 
-  /** A field keeps its own undo for the text being typed into it. */
-  function isTypingIn(event: KeyboardEvent): boolean {
-    const target = event.composedPath()[0];
-
-    return (
-      target instanceof HTMLElement &&
-      (target.isContentEditable ||
-        ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
-    );
-  }
-
-  function onHistoryShortcut(event: KeyboardEvent): void {
-    if (
-      !opened.value ||
-      event.defaultPrevented ||
-      event.altKey ||
-      !(event.metaKey || event.ctrlKey) ||
-      isTypingIn(event)
-    ) {
-      return;
-    }
-
-    const key = event.key.toLowerCase();
-
-    if (key === 'z' && !event.shiftKey) {
-      event.preventDefault();
-      editor.undo();
-    } else if (
-      (key === 'z' && event.shiftKey) ||
-      (key === 'y' && event.ctrlKey && !event.metaKey)
-    ) {
-      event.preventDefault();
-      editor.redo();
-    }
-  }
-
-  useEventListener(document, 'keydown', onHistoryShortcut);
-  onScopeDispose(
-    registerShortcuts(() => (opened.value ? ['imageEditor'] : [])).unregister
-  );
+  /** Undo and redo, while the dialog is open. A field keeps its own undo for the text being typed into it. */
+  const historyShortcut = {
+    group: () => t('Image editor'),
+    isAvailable: () => opened.value,
+    ignoreInputs: true,
+  };
+  useShortcut('Mod+Z', () => editor.undo(), {
+    ...historyShortcut,
+    description: () => t('Undo'),
+  });
+  useShortcut('Mod+Shift+Z', () => editor.redo(), {
+    ...historyShortcut,
+    description: () => t('Redo'),
+  });
+  useShortcut('Control+Y', () => editor.redo(), historyShortcut);
 
   /** Discards every edit, after asking. The dialog stays open. */
   function onReset(): void {

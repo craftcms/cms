@@ -19,10 +19,6 @@ import {registerShortcutBehavior} from './behaviors/shortcuts';
 import {themeOptions} from './behaviors/theme';
 import {replaceMarkdownGuideButton, toolbarItems} from './behaviors/toolbar';
 import {fileUploadOptions} from './behaviors/uploads';
-import {
-  registerShortcuts,
-  type CommandPaletteRegistration,
-} from '@/modules/command-palette/registry';
 import './markdown-field.css';
 
 type RenderOptions = Options & {
@@ -168,22 +164,16 @@ class MarkdownField extends LitElement {
     this.updateCharCounter?.();
   }
 
-  private shortcuts?: CommandPaletteRegistration;
-
   override connectedCallback(): void {
     super.connectedCallback();
 
     this.initializeEditor();
-    this.shortcuts = registerShortcuts(() =>
-      this.checkVisibility() ? ['markdown'] : []
-    );
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
 
     this.destroy();
-    this.shortcuts?.unregister();
   }
 
   private initializeEditor(): void {

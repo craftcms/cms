@@ -1,15 +1,17 @@
 <script setup lang="ts">
   /**
    * The control panel's keyboard shortcuts, for the palette's “Keyboard
-   * shortcuts” item. Each key is shown as its symbol on the platform it's
-   * pressed on, and named for screen readers.
+   * shortcuts” item: the ones registered with `registerShortcut()` that work
+   * where the palette was opened, and the described shortcuts of Garnish's
+   * layers.
+   * Each key is shown as its symbol on the platform it's pressed on, and named
+   * for screen readers.
    */
   import {t} from '@craftcms/ui';
-  import {usePage} from '@inertiajs/vue3';
+  import {detectPlatform, type ParsedHotkeyChord} from '@tanstack/hotkeys';
   import {useId} from 'vue';
-  import {S_KEY} from '@craftcms/garnish';
   import {uiLayerManager} from '@/common/slideouts/panel-stack';
-  import {availableShortcuts, type ContextualShortcut} from '../registry';
+  import {listedShortcuts, type ListedShortcut} from '@/common/shortcuts';
 
   defineEmits<{
     (event: 'back'): void;
@@ -20,63 +22,87 @@
     name: string;
   }
 
-  interface Shortcut {
-    keys: Key[];
-    description: string;
-    /** Listed only where this works. Always listed without one. */
-    when?: ContextualShortcut;
+  const isMac = detectPlatform() === 'mac';
+
+  /** The keys of a chord, modifiers first, in the platform's usual order. */
+  function keysOf(chord: ParsedHotkeyChord): Key[] {
+    const modifiers: Key[] = isMac
+      ? [
+          ...(chord.ctrl ? [{symbol: '⌃', name: t('Control')}] : []),
+          ...(chord.alt ? [{symbol: '⌥', name: t('Option')}] : []),
+          ...(chord.shift ? [{symbol: '⇧', name: t('Shift')}] : []),
+          ...(chord.meta ? [{symbol: '⌘', name: t('Command')}] : []),
+        ]
+      : [
+          ...(chord.ctrl ? [{symbol: 'Ctrl', name: t('Control')}] : []),
+          ...(chord.alt ? [{symbol: 'Alt', name: t('Alt')}] : []),
+          ...(chord.shift ? [{symbol: 'Shift', name: t('Shift')}] : []),
+          ...(chord.meta ? [{symbol: 'Meta', name: t('Meta')}] : []),
+        ];
+
+    return [...modifiers, keyOf(chord.key ?? chord.code ?? '')];
   }
 
-  const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
+  /** Key names for Garnish's key codes that aren't a character's. */
+  const keyCodeKeys: Record<number, string> = {
+    13: 'Enter',
+    27: 'Escape',
+    191: '/',
+    190: '.',
+    219: '[',
+    221: ']',
+  };
 
-  const modifier: Key = isMac
-    ? {symbol: '⌘', name: t('Command')}
-    : {symbol: 'Ctrl', name: t('Control')};
+  function keyOf(key: string): Key {
+    switch (key) {
+      case 'Enter':
+        return isMac
+          ? {symbol: '↩', name: t('Return')}
+          : {symbol: 'Enter', name: t('Enter')};
+      case 'Escape':
+        return {symbol: 'Esc', name: t('Escape')};
+      case '/':
+        return {symbol: '/', name: t('Slash')};
+      case '.':
+        return {symbol: '.', name: t('Period')};
+      case '[':
+        return {symbol: '[', name: t('Left bracket')};
+      case ']':
+        return {symbol: ']', name: t('Right bracket')};
+      default:
+        return {symbol: key, name: key};
+    }
+  }
 
   /**
-   * Command/Ctrl with a key, and any other modifiers in the platform's usual
-   * order: ⌥⇧⌘ on a Mac, Ctrl+Alt+Shift elsewhere.
+   * The described shortcuts registered with Garnish's layers — by legacy
+   * pages, element editors and slideouts — that a press would reach now: the
+   * top layer's, and those of the layers below it that it lets shortcuts
+   * through to.
    */
-  function combo(key: Key, {alt = false, shift = false} = {}): Key[] {
-    const altKey: Key = isMac
-      ? {symbol: '⌥', name: t('Option')}
-      : {symbol: 'Alt', name: t('Alt')};
-    const shiftKey: Key = isMac
-      ? {symbol: '⇧', name: t('Shift')}
-      : {symbol: 'Shift', name: t('Shift')};
-    const others = [...(alt ? [altKey] : []), ...(shift ? [shiftKey] : [])];
-
-    return isMac ? [...others, modifier, key] : [modifier, ...others, key];
-  }
-
-  /** A key named for screen readers by its own label, such as a letter. */
-  function letter(symbol: string): Key {
-    return {symbol, name: symbol};
-  }
-
-  /**
-   * The save shortcuts registered with Garnish's layers — by legacy pages,
-   * element editors and slideouts — that a press would reach now: the top
-   * layer's, and those of the layers below it that it lets shortcuts through to.
-   */
-  function garnishShortcuts(): ContextualShortcut[] {
+  function garnishShortcuts(): ListedShortcut[] {
     const manager = uiLayerManager();
-    const found: ContextualShortcut[] = [];
+    const found: ListedShortcut[] = [];
 
     for (let index = manager.layer; index >= 0; index--) {
       const layer = manager.layers[index]!;
 
-      for (const {shortcut} of layer.shortcuts) {
-        if (shortcut.keyCode !== S_KEY || !shortcut.ctrl) {
-          continue;
-        }
-
-        if (shortcut.alt && !shortcut.shift) {
-          found.push('applyDraft');
-        } else if (shortcut.shift && !shortcut.alt) {
-          found.push('saveAndAddAnother');
-        } else if (!shortcut.shift && !shortcut.alt) {
-          found.push('save');
+      for (const {shortcut, description, group} of layer.shortcuts) {
+        if (description) {
+          found.push({
+            keys: {
+              key:
+                keyCodeKeys[shortcut.keyCode] ??
+                String.fromCharCode(shortcut.keyCode),
+              ctrl: shortcut.ctrl && !isMac,
+              meta: shortcut.ctrl && isMac,
+              alt: shortcut.alt,
+              shift: shortcut.shift,
+              modifiers: [],
+            },
+            description,
+            group,
+          });
         }
       }
 
@@ -88,102 +114,47 @@
     return found;
   }
 
-  const available = new Set([...availableShortcuts(), ...garnishShortcuts()]);
+  const escape: ListedShortcut = {
+    keys: {
+      key: 'Escape',
+      ctrl: false,
+      meta: false,
+      alt: false,
+      shift: false,
+      modifiers: [],
+    },
+    description: t('Close the current modal or slideout'),
+  };
 
-  /** The shortcuts that work everywhere come first, without a heading. */
-  const allGroups: Array<{heading?: string; shortcuts: Shortcut[]}> = [
-    {
-      shortcuts: [
-        {
-          keys: combo(letter('K')),
-          description: t('Open the command palette'),
-        },
-        {
-          keys: [{symbol: '/', name: t('Slash')}],
-          description: t('Open the command palette when not typing in a field'),
-        },
-        // Only for users the AI assistant is available to.
-        ...(usePage<{craft?: {currentUser?: {aiAssistant?: boolean} | null}}>()
-          .props.craft?.currentUser?.aiAssistant
-          ? [
-              {
-                keys: combo(letter('I')),
-                description: t('Ask AI'),
-              },
-            ]
-          : []),
-        {
-          keys: [{symbol: 'Esc', name: t('Escape')}],
-          description: t('Close the current modal or slideout'),
-        },
-      ],
-    },
-    {
-      heading: t('Forms'),
-      shortcuts: [
-        {
-          keys: combo(letter('S')),
-          description: t('Save'),
-          when: 'save',
-        },
-        {
-          keys: combo(letter('S'), {shift: true}),
-          description: t('Save and add another'),
-          when: 'saveAndAddAnother',
-        },
-        {
-          keys: combo(letter('S'), {alt: true}),
-          description: t('Apply draft'),
-          when: 'applyDraft',
-        },
-        {
-          keys: combo(
-            isMac
-              ? {symbol: '↩', name: t('Return')}
-              : {symbol: 'Enter', name: t('Enter')}
-          ),
-          description: t('Submit the form a text field is in'),
-        },
-      ],
-    },
-    {
-      heading: t('Markdown fields'),
-      shortcuts: [
-        {keys: combo(letter('B')), description: t('Bold')},
-        {keys: combo(letter('I')), description: t('Italic')},
-        {keys: combo(letter('E')), description: t('Code')},
-        {keys: combo(letter('K')), description: t('Insert a link')},
-        {
-          keys: combo({symbol: ']', name: t('Right bracket')}),
-          description: t('Indent'),
-        },
-        {
-          keys: combo({symbol: '[', name: t('Left bracket')}),
-          description: t('Outdent'),
-        },
-        {
-          keys: combo(letter('P'), {shift: true}),
-          description: t('Show or hide the preview'),
-        },
-      ].map((shortcut) => ({...shortcut, when: 'markdown' as const})),
-    },
-    {
-      heading: t('Image editor'),
-      shortcuts: [
-        {keys: combo(letter('Z')), description: t('Undo')},
-        {keys: combo(letter('Z'), {shift: true}), description: t('Redo')},
-      ].map((shortcut) => ({...shortcut, when: 'imageEditor' as const})),
-    },
-  ];
+  /** Shortcuts without a group lead the list; groups follow in the order they're first seen. */
+  const groups: Array<{
+    heading?: string;
+    shortcuts: Array<{id: string; keys: Key[]; description: string}>;
+  }> = [];
 
-  const groups = allGroups
-    .map((group) => ({
-      ...group,
-      shortcuts: group.shortcuts.filter(
-        ({when}) => when === undefined || available.has(when)
-      ),
-    }))
-    .filter((group) => group.shortcuts.length > 0);
+  for (const shortcut of [
+    ...listedShortcuts(),
+    escape,
+    ...garnishShortcuts(),
+  ]) {
+    const keys = keysOf(shortcut.keys);
+    const id = `${keys.map(({symbol}) => symbol).join('+')}|${shortcut.description}`;
+    let group = groups.find(({heading}) => heading === shortcut.group);
+
+    if (!group) {
+      group = {heading: shortcut.group, shortcuts: []};
+
+      if (shortcut.group) {
+        groups.push(group);
+      } else {
+        groups.unshift(group);
+      }
+    }
+
+    if (!group.shortcuts.some((existing) => existing.id === id)) {
+      group.shortcuts.push({id, keys, description: shortcut.description});
+    }
+  }
 
   const id = useId();
 </script>
@@ -213,7 +184,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="shortcut in group.shortcuts" :key="shortcut.description">
+          <tr v-for="shortcut in group.shortcuts" :key="shortcut.id">
             <th scope="row">
               <span class="command-palette-shortcuts__keys">
                 <template v-for="(key, index) in shortcut.keys" :key="index">

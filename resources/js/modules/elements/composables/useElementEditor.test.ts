@@ -235,7 +235,7 @@ describe('useElementEditor', () => {
     return {editor, page};
   }
 
-  it.each(['metaKey', 'ctrlKey'] as const)(
+  it.each(['ctrlKey'] as const)(
     'only submits %s+S while the element is editable',
     async (modifier) => {
       const {page} = mount(payload({readOnly: true}));
@@ -249,7 +249,7 @@ describe('useElementEditor', () => {
           [modifier]: true,
           cancelable: true,
         });
-        window.dispatchEvent(event);
+        document.dispatchEvent(event);
         expect(event.defaultPrevented).toBe(true);
       };
 
@@ -2280,8 +2280,8 @@ describe('useElementEditor', () => {
     );
     const save = interceptSave();
 
-    window.dispatchEvent(
-      new KeyboardEvent('keydown', {key: 's', metaKey: true})
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 's', ctrlKey: true})
     );
 
     expect(save.last().url).toBe('/actions/elements/save-draft');
@@ -2329,16 +2329,16 @@ describe('useElementEditor', () => {
     const save = interceptSave();
     onTestFinished(save.restore);
 
-    window.dispatchEvent(
-      new KeyboardEvent('keydown', {key: 'S', metaKey: true, shiftKey: true})
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 'S', ctrlKey: true, shiftKey: true})
     );
 
     expect(save.calls()).toBe(1);
     expect(save.last().data).toMatchObject({addAnother: 1});
 
     await nextTick();
-    window.dispatchEvent(
-      new KeyboardEvent('keydown', {key: 's', metaKey: true})
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 's', ctrlKey: true})
     );
 
     expect(save.calls()).toBe(2);

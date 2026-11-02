@@ -101,8 +101,8 @@ describe('save shortcut with an open editor', () => {
       run(() => useTestSettingsSave(form));
       layers.top = panelOpen ? {element: document.createElement('div')} : null;
 
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', {key: 's', metaKey: true})
+      document.dispatchEvent(
+        new KeyboardEvent('keydown', {key: 's', ctrlKey: true})
       );
 
       expect(form.submit).toHaveBeenCalledTimes(panelOpen ? 0 : 1);
@@ -128,7 +128,7 @@ describe('save shortcut with an open editor', () => {
     layers.top = {element};
 
     try {
-      window.dispatchEvent(
+      document.dispatchEvent(
         new KeyboardEvent('keydown', {key: 's', ctrlKey: true})
       );
       await vi.waitFor(() => expect(httpRequest).toHaveBeenCalledOnce());
