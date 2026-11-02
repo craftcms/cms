@@ -692,6 +692,7 @@ Craft.CustomizeSourcesModal.PageSettingsModal = Garnish.Modal.extend({
       .createIconPickerField({
         label: Craft.t('app', 'Icon'),
         value: this.icon,
+        sets: '*',
       })
       .appendTo($body);
     const $footer = $(

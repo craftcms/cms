@@ -33,8 +33,10 @@ use craft\helpers\Search;
 use craft\helpers\StringHelper;
 use craft\helpers\Update as UpdateHelper;
 use craft\helpers\UrlHelper;
+use craft\icons\IconSet;
 use craft\models\Update;
 use craft\models\Updates;
+use craft\services\Icons;
 use craft\utilities\Updates as UpdatesUtility;
 use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
@@ -123,7 +125,7 @@ class AppController extends Controller
 
         $icon = $this->request->getRequiredParam('icon');
 
-        if (!preg_match('/^[\w\-]+$/', $icon)) {
+        if (!preg_match('/^[\w\-]+$/', $icon) && !Icons::parse($icon)) {
             throw new BadRequestHttpException("Invalid icon: $icon");
         }
 
@@ -926,20 +928,55 @@ class AppController extends Controller
 
         $search = $this->request->getRequiredBodyParam('search');
         $freeOnly = (bool)($this->request->getBodyParam('freeOnly') ?? false);
-        $noSearch = $search === '';
+        $iconsService = Craft::$app->getIcons();
+        $setHandles = $this->request->getBodyParam('sets') ?? [Icons::FONT_AWESOME];
+        $setNames = $iconsService->getIconSetNames();
 
-        if ($noSearch) {
+        if ($setHandles === '*') {
+            $setHandles = array_keys($setNames);
+        } else {
+            // Preserve the requested order
+            $setHandles = array_values(array_unique(array_filter((array)$setHandles, fn($handle) => isset($setNames[$handle]))));
+        }
+
+        $searchTerms = $search !== '' ? explode(' ', Search::normalizeKeywords($search)) : null;
+        $listHtml = '';
+
+        foreach ($setHandles as $handle) {
+            if ($handle === Icons::FONT_AWESOME) {
+                $setHtml = $this->fontAwesomeIconListHtml($searchTerms, $freeOnly);
+            } else {
+                $setHtml = $this->customIconListHtml($iconsService->getIconSetByHandle($handle), $searchTerms);
+            }
+
+            if ($setHtml === '') {
+                continue;
+            }
+
+            if (count($setHandles) > 1) {
+                $listHtml .= Html::tag('li', Html::tag('h3', Html::encode($setNames[$handle])), [
+                    'class' => 'icon-picker-modal--heading',
+                    'role' => 'presentation',
+                ]);
+            }
+
+            $listHtml .= $setHtml;
+        }
+
+        return $this->asJson([
+            'listHtml' => $listHtml,
+        ]);
+    }
+
+    private function fontAwesomeIconListHtml(?array $searchTerms, bool $freeOnly): string
+    {
+        if (!$searchTerms) {
             $cache = Craft::$app->getCache();
             $cacheKey = sprintf('icon-picker-options-list-html%s', $freeOnly ? ':free' : '');
             $listHtml = $cache->get($cacheKey);
             if ($listHtml !== false) {
-                return $this->asJson([
-                    'listHtml' => $listHtml,
-                ]);
+                return $listHtml;
             }
-            $searchTerms = null;
-        } else {
-            $searchTerms = explode(' ', Search::normalizeKeywords($search));
         }
 
         $indexPath = '@app/icons/index.php';
@@ -961,15 +998,7 @@ class AppController extends Controller
             }
 
             $file = Craft::getAlias("@appicons/$name.svg");
-            $output[] = Html::beginTag('li') .
-                Html::button(file_get_contents($file), [
-                    'class' => 'icon-picker--icon',
-                    'title' => $name,
-                    'aria' => [
-                        'label' => $name,
-                    ],
-                ]) .
-                Html::endTag('li');
+            $output[] = $this->iconPickerOptionHtml((string)$name, (string)$name, file_get_contents($file));
         }
 
         if ($searchTerms) {
@@ -978,16 +1007,62 @@ class AppController extends Controller
 
         $listHtml = implode('', $output);
 
-        if ($noSearch) {
+        if (!$searchTerms) {
             /** @phpstan-ignore-next-line */
             $cache->set($cacheKey, $listHtml, dependency: new FileDependency([
                 'fileName' => $indexPath,
             ]));
         }
 
-        return $this->asJson([
-            'listHtml' => $listHtml,
-        ]);
+        return $listHtml;
+    }
+
+    private function customIconListHtml(IconSet $iconSet, ?array $searchTerms): string
+    {
+        $output = [];
+        $scores = [];
+
+        foreach ($iconSet->getIcons() as $name) {
+            if ($searchTerms) {
+                $nameTerms = sprintf(' %s ', Search::normalizeKeywords(str_replace(['-', '_'], ' ', $name)));
+                $keywords = sprintf(' %s ', Search::normalizeKeywords(implode(' ', $iconSet->getKeywords($name))));
+                $score = $this->matchTerms($searchTerms, $nameTerms) * 5 + $this->matchTerms($searchTerms, $keywords);
+                if ($score === 0) {
+                    continue;
+                }
+                $scores[] = $score;
+            }
+
+            $value = "$iconSet->handle:$name";
+            $svg = Cp::iconSvg($value);
+            if ($svg) {
+                $output[] = $this->iconPickerOptionHtml($value, $name, $svg);
+            } elseif ($searchTerms) {
+                array_pop($scores);
+            }
+        }
+
+        if ($searchTerms) {
+            array_multisort($scores, SORT_DESC, $output);
+        }
+
+        return implode('', $output);
+    }
+
+    private function iconPickerOptionHtml(string $value, string $name, string $svg): string
+    {
+        return Html::beginTag('li') .
+            Html::button($svg, [
+                'class' => 'icon-picker--icon',
+                'title' => $name,
+                'aria' => [
+                    'label' => $name,
+                ],
+                'data' => [
+                    'icon' => $value,
+                ],
+            ]) .
+            Html::endTag('li');
     }
 
     private function matchTerms(array $searchTerms, string $indexTerms): int

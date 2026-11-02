@@ -83,6 +83,7 @@ use craft\services\Fs;
 use craft\services\Gc;
 use craft\services\Globals;
 use craft\services\Gql;
+use craft\services\Icons;
 use craft\services\Images;
 use craft\services\ImageTransforms;
 use craft\services\Path;
@@ -164,6 +165,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read Globals $globals The globals service
  * @property-read Gql $gql The GraphQl service
  * @property-read I18N $i18n The internationalization (i18n) component
+ * @property-read Icons $icons The icons service
  * @property-read Images $images The images service
  * @property-read ImageTransforms $imageTransforms The image transforms service
  * @property-read Locale $formattingLocale The Locale object that should be used to define the formatter
@@ -1299,6 +1301,17 @@ trait ApplicationTrait
     public function getGql(): Gql
     {
         return $this->get('gql');
+    }
+
+    /**
+     * Returns the icons service.
+     *
+     * @return Icons The icons service
+     * @since 5.12.0
+     */
+    public function getIcons(): Icons
+    {
+        return $this->get('icons');
     }
 
     /**
