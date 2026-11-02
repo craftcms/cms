@@ -301,23 +301,24 @@ describe('NestedElementsIndex', () => {
 
     const release = holdLoads();
     button(root, 'Refresh').click();
-    await vi.waitFor(() => expect(pageInput(root).disabled).toBe(true));
-    expect(previous().disabled).toBe(true);
+    await vi.waitFor(() => expect(previous().disabled).toBe(true));
     expect(next().disabled).toBe(true);
     expect(button(root, 'Export').disabled).toBe(true);
+    expect(pageInput(root).disabled).toBeFalsy();
     release();
-    await vi.waitFor(() => expect(pageInput(root).disabled).toBe(false));
+    await vi.waitFor(() => expect(previous().disabled).toBe(false));
+    expect(button(root, 'Export').disabled).toBe(false);
 
     let finishExport!: () => void;
     actions.run.mockImplementationOnce(
       () => new Promise<void>((resolve) => (finishExport = resolve))
     );
     exportButton(root, 'XLSX').click();
-    await vi.waitFor(() => expect(pageInput(root).disabled).toBe(true));
-    expect(previous().disabled).toBe(true);
+    await vi.waitFor(() => expect(previous().disabled).toBe(true));
     expect(button(root, 'Export').disabled).toBe(true);
+    expect(pageInput(root).disabled).toBeFalsy();
     finishExport();
-    await vi.waitFor(() => expect(pageInput(root).disabled).toBe(false));
+    await vi.waitFor(() => expect(previous().disabled).toBe(false));
   });
 
   it('stops Enter in embedded pager and export inputs from reaching the owner', async () => {
