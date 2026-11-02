@@ -35,6 +35,30 @@ const messages = vi.hoisted(() => ({
   showNotice: vi.fn(),
   showSuccess: vi.fn(),
 }));
+const broadcasts = vi.hoisted(() => ({
+  handlers: new Map<string, Set<(message: any) => void>>(),
+  sent: [] as unknown[],
+}));
+vi.mock('@/common/craft/broadcast', () => ({
+  broadcast: (message: unknown) => broadcasts.sent.push(message),
+  onBroadcast: (event: string, handler: (message: any) => void) => {
+    const handlers = broadcasts.handlers.get(event) ?? new Set();
+    handlers.add(handler);
+    broadcasts.handlers.set(event, handlers);
+    return () => handlers.delete(handler);
+  },
+}));
+const refreshPreviews = vi.hoisted(() => vi.fn());
+vi.mock('@/modules/elements/live-preview/previews', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  refreshPreviews,
+}));
+
+/** A broadcast from another control panel tab. */
+function fromOtherTab(message: Record<string, unknown>): void {
+  broadcasts.handlers.get(message.event as string)?.forEach((h) => h(message));
+}
+
 vi.mock('@/modules/messages/messages', async (importOriginal) => ({
   ...(await importOriginal<object>()),
   ...messages,
@@ -1377,8 +1401,6 @@ describe('useElementEditor', () => {
   });
 
   it('reloads the owner when another tab reorders the same draft, but not an unrelated draft', async () => {
-    const broadcaster = new EventTarget();
-    vi.stubGlobal('Craft', {broadcaster});
     const slideout = slideoutController();
     mount(payload({draftId: 7}), slideout);
     await nextTick();
@@ -1387,26 +1409,16 @@ describe('useElementEditor', () => {
       {canonicalId: 12, draftId: 8},
       {canonicalId: 13, draftId: 7},
     ]) {
-      broadcaster.dispatchEvent(
-        new MessageEvent('message', {
-          data: {event: 'reorderNestedElements', ...data},
-        })
-      );
+      fromOtherTab({event: 'reorderNestedElements', ...data});
     }
     expect(slideout.reload).not.toHaveBeenCalled();
 
-    broadcaster.dispatchEvent(
-      new MessageEvent('message', {
-        data: {event: 'reorderNestedElements', canonicalId: 12, draftId: 7},
-      })
-    );
+    fromOtherTab({event: 'reorderNestedElements', canonicalId: 12, draftId: 7});
     expect(slideout.reload).toHaveBeenCalledOnce();
     vi.unstubAllGlobals();
   });
 
   it('defers a matching reorder reload while a slideout has unsaved changes', async () => {
-    const broadcaster = new EventTarget();
-    vi.stubGlobal('Craft', {broadcaster});
     const slideout = slideoutController();
     const {editor} = mount(
       payload({
@@ -1418,11 +1430,7 @@ describe('useElementEditor', () => {
     );
     await typeTitle('Unsaved title');
 
-    broadcaster.dispatchEvent(
-      new MessageEvent('message', {
-        data: {event: 'reorderNestedElements', canonicalId: 12, draftId: 7},
-      })
-    );
+    fromOtherTab({event: 'reorderNestedElements', canonicalId: 12, draftId: 7});
     await nextTick();
 
     expect(slideout.reload).not.toHaveBeenCalled();
@@ -1432,8 +1440,6 @@ describe('useElementEditor', () => {
   });
 
   it('defers a matching reorder reload until the latest autosave is acknowledged', async () => {
-    const broadcaster = new EventTarget();
-    vi.stubGlobal('Craft', {broadcaster});
     const slideout = slideoutController();
     const {editor} = mount(
       payload({
@@ -1448,11 +1454,7 @@ describe('useElementEditor', () => {
     await editor.autosave.save();
     await typeTitle('Pending title');
 
-    broadcaster.dispatchEvent(
-      new MessageEvent('message', {
-        data: {event: 'reorderNestedElements', canonicalId: 12, draftId: 7},
-      })
-    );
+    fromOtherTab({event: 'reorderNestedElements', canonicalId: 12, draftId: 7});
     await nextTick();
 
     expect(editor.autosave.status.value).toBe('saved');
@@ -2720,16 +2722,6 @@ describe('useElementEditor', () => {
     });
 
     it('announces a finished save to the rest of the CP', async () => {
-      const postMessage = vi.fn();
-      const refresh = vi.fn();
-      vi.stubGlobal('Craft', {
-        broadcaster: {
-          postMessage,
-          addEventListener: vi.fn(),
-          removeEventListener: vi.fn(),
-        },
-        Preview: {refresh},
-      });
       stubSaveRequest(() =>
         Promise.resolve({
           data: {message: 'Entry saved.', element: {id: 12}},
@@ -2741,11 +2733,8 @@ describe('useElementEditor', () => {
 
       await vi.waitFor(() => expect(messages.showSuccess).toHaveBeenCalled());
       expect(messages.showSuccess.mock.calls[0]![0]).toBe('Entry saved.');
-      expect(postMessage).toHaveBeenCalledWith({
-        event: 'saveElement',
-        id: 12,
-      });
-      expect(refresh).toHaveBeenCalled();
+      expect(broadcasts.sent).toContainEqual({event: 'saveElement', id: 12});
+      expect(refreshPreviews).toHaveBeenCalled();
     });
   });
 });

@@ -12,6 +12,8 @@
   import type {AuthMethod, AuthMethodAction} from './types';
   import '@/modules/auth-method-setup/recovery-codes-setup';
   import {showError} from '@/modules/messages/messages';
+  import {runAction as runUiAction} from '@craftcms/ui/actions.mjs';
+  import {AuthMethodSetupSlideout} from '@/modules/auth-method-setup/auth-method-setup-slideout';
 
   const props = defineProps<{
     methods: AuthMethod[];
@@ -83,11 +85,9 @@
 
     const run = () => {
       if (action.download) {
-        return craft
-          .downloadFromUrl('post', craft.getActionUrl(url), {
-            [craft.csrfTokenName]: craft.csrfTokenValue,
-          })
-          .catch((e: any) => showError(e?.response?.data?.message));
+        return runUiAction({type: 'download', method: 'POST', url}).catch(
+          (e: any) => showError(e?.response?.data?.message)
+        );
       }
 
       // Generic POST action (plugin-provided).
@@ -111,7 +111,7 @@
       method: method.type,
     });
 
-    const slideout = new craft.AuthMethodSetup.Slideout(data);
+    const slideout = new AuthMethodSetupSlideout(data);
     await appendHeadHtml(data.headHtml);
     await appendBodyHtml(data.bodyHtml);
     slideout.$container

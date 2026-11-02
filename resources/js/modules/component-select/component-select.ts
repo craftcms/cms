@@ -755,10 +755,6 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
    * at event time.
    */
   #addChipActions(chip: HTMLElement): void {
-    if (!Craft?.addActionsToChip) {
-      return;
-    }
-
     const owner = (): ComponentSelect =>
       closestRegistered(chip, componentSelectData) ?? this;
 
