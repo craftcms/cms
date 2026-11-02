@@ -98,7 +98,10 @@ export default class CraftSelectRich extends FormAssociated(
     return null;
   }
 
-  // Replaces the mixin's reset, which restores what `_formValue()` returned.
+  /**
+   * Called when the owning form resets. Checks the option that was checked
+   * on load, replacing the mixin's reset of `_formValue()`.
+   */
   formResetCallback() {
     const option = this.formElements.find(
       (element) => String(element.choiceValue) === this.#defaultValue

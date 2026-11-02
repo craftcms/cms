@@ -15,6 +15,9 @@ import {property} from 'lit/decorators.js';
  * @slot - The option's label and any markup that goes with it.
  * @slot suffix - Trailing content, shown after the label and hint.
  *
+ * @attr {string} choice-value - The value the option selects, as a plain
+ *   string. Use it in server-rendered markup.
+ *
  * @cssproperty --c-option-wide-threshold - Width, in pixels, past which the
  *   option switches to its wide layout. Defaults to `640`.
  */
