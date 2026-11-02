@@ -259,6 +259,27 @@
     }
   });
 
+  /**
+   * New sibling and new child actions open the new element's edit page, with
+   * the selected element as the one to place it by.
+   */
+  onOwnedEvent('craft:new-element', (event) => {
+    const [id] = event.detail.elementIds ?? props.selectedIds;
+    const {url, param}: Record<string, unknown> = event.detail;
+
+    if (
+      id === undefined ||
+      typeof url !== 'string' ||
+      typeof param !== 'string'
+    ) {
+      return;
+    }
+
+    const target = new URL(url, window.location.origin);
+    target.searchParams.set(param, String(id));
+    window.location.assign(target.href);
+  });
+
   function setStatus(status: 'enabled' | 'disabled') {
     const item = setStatusAction.value;
     if (!item?.action || item.action.type !== 'http') {

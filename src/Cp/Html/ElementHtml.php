@@ -24,7 +24,7 @@ use CraftCms\Cms\Cp\Enums\ChipThumbSize;
 use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
 use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
 use CraftCms\Cms\Cp\Icons;
-use CraftCms\Cms\Element\Actions\Copy;
+use CraftCms\Cms\Element\Actions\ClientAction;
 use CraftCms\Cms\Element\Actions\Delete;
 use CraftCms\Cms\Element\Actions\Duplicate;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -451,7 +451,7 @@ readonly class ElementHtml
 
         foreach ($items as &$item) {
             if ($config['nestedActionEvents'] && str_starts_with($item['id'] ?? '', 'action-copy-')) {
-                $item['action'] = $this->nestedElementAction($element, Copy::class);
+                $item['action'] = $this->nestedElementAction($element, ClientAction::copy());
             }
         }
         unset($item);
@@ -925,17 +925,17 @@ readonly class ElementHtml
     }
 
     /**
-     * @param  class-string<Copy|Duplicate|Delete>  $actionClass
+     * @param  ClientAction|class-string<Duplicate|Delete>  $action
      * @return array{type: string, name: string, detail: array{action: string, elementId: int|null, item: array<string, mixed>}}
      */
-    private function nestedElementAction(ElementInterface $element, string $actionClass): array
+    private function nestedElementAction(ElementInterface $element, ClientAction|string $action): array
     {
         $elementActions = app(ElementActions::class);
         $item = $elementActions->serializeActionItems([
-            $elementActions->createAction($actionClass, $element::class),
+            $action instanceof ClientAction ? $action : $elementActions->createAction($action, $element::class),
         ])[0];
 
-        if ($actionClass === Copy::class) {
+        if ($action instanceof ClientAction && $action->key === 'copy') {
             $item['action']['detail']['elements'] = [[
                 'type' => $element::class,
                 'id' => $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id,

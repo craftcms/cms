@@ -2,11 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Asset\Actions\CopyReferenceTag;
-use CraftCms\Cms\Asset\Actions\EditImage;
-use CraftCms\Cms\Asset\Actions\MoveAssets;
-use CraftCms\Cms\Asset\Actions\RenameFile;
-use CraftCms\Cms\Asset\Actions\ShowInFolder;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
 use CraftCms\Cms\Asset\Models\Asset;
@@ -506,13 +501,13 @@ it('hands asset file actions to the page as client events', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('actions', function ($actions) use ($root): bool {
                 $actions = $actions->keyBy('key');
-                $move = $actions->get(MoveAssets::class);
+                $move = $actions->get('move-assets');
 
-                return $actions->get(RenameFile::class)['action'] === ['type' => 'event', 'name' => 'assets:rename-file']
-                    && $actions->get(RenameFile::class)['selectionAttribute'] === 'movable'
-                    && $actions->get(CopyReferenceTag::class)['action'] === ['type' => 'event', 'name' => 'assets:copy-reference-tag']
-                    && $actions->get(EditImage::class)['selectionAttribute'] === 'imageEditable'
-                    && array_key_exists('imageEditorRatios', $actions->get(EditImage::class)['action']['detail'])
+                return $actions->get('rename-file')['action'] === ['type' => 'event', 'name' => 'assets:rename-file']
+                    && $actions->get('rename-file')['selectionAttribute'] === 'movable'
+                    && $actions->get('copy-reference-tag')['action'] === ['type' => 'event', 'name' => 'assets:copy-reference-tag']
+                    && $actions->get('edit-image')['selectionAttribute'] === 'imageEditable'
+                    && array_key_exists('imageEditorRatios', $actions->get('edit-image')['action']['detail'])
                     && $move['action']['name'] === 'assets:move-assets'
                     && $move['action']['detail']['sources'] !== []
                     && $move['action']['detail']['disabledFolderIds'] === [$root->id];
@@ -529,7 +524,7 @@ it('offers Show in folder only when searching subfolders', function (array $quer
     get(route('craft.cp.assets.index', ['defaultSource' => 'testvolume', ...$query]))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('actions', fn ($actions): bool => $actions->contains('key', ShowInFolder::class) === $offered)
+            ->where('actions', fn ($actions): bool => $actions->contains('key', 'show-in-folder') === $offered)
         );
 })->with([
     'browsing' => [[], false],

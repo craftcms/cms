@@ -11,7 +11,9 @@ import NestedElementsIndex from './NestedElementsIndex.vue';
 import {NestedElementsControlKey} from './nested-elements-context';
 import {
   button,
+  COPY_ACTION,
   DELETE_ACTION,
+  DUPLICATE_ACTION,
   goToPage,
   inlineTitleInput,
   nestedElement,
@@ -93,14 +95,14 @@ describe('NestedElementsIndex', () => {
     action: string,
     label: string
   ): ActionItemButton {
-    const item = standardNestedActions.find((candidate) =>
-      candidate.key.endsWith(
-        action === 'copy'
-          ? '\\Copy'
-          : action === 'duplicate'
-            ? '\\Duplicate'
-            : '\\Delete'
-      )
+    const key =
+      action === 'copy'
+        ? COPY_ACTION
+        : action === 'duplicate'
+          ? DUPLICATE_ACTION
+          : DELETE_ACTION;
+    const item = standardNestedActions.find(
+      (candidate) => candidate.key === key
     )!;
 
     return nestedElementAction(elementId, item, label) as ActionItemButton;
