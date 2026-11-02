@@ -918,7 +918,7 @@ it('lists trashed entries, unlinked, with only Restore and Delete permanently on
     ]))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('draftsAndTrashedOptions', fn ($options) => collect($options)->pluck('value')->all() === ['drafts', 'trashed'])
+            ->where('statusOptions', fn ($options) => collect($options)->pluck('value')->take(-2)->values()->all() === ['drafts', 'trashed'])
             ->where('statusMenuValue', 'trashed')
             ->where('status', '')
             ->where('trashed', true)

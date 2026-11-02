@@ -258,7 +258,7 @@ abstract class ContentIndexViewModel extends ViewModel
      *
      * @return list<array{label: string, value: string, icon: string}>
      */
-    public function draftsAndTrashedOptions(): array
+    private function draftsAndTrashedOptions(): array
     {
         if (! $this->offersDraftsAndTrashed()) {
             return [];
@@ -371,20 +371,32 @@ abstract class ContentIndexViewModel extends ViewModel
         ];
     }
 
-    /** @return array<int, array{label: string, value: string}> */
+    /**
+     * The status menu's options: All, the element statuses, then Drafts and
+     * Trashed. Element types without statuses only get All, Drafts and
+     * Trashed, since filtering by status is a no-op for them.
+     *
+     * @return list<array{label: string, value: string, icon?: string}>
+     */
     public function statusOptions(): array
     {
-        // Status filtering is a no-op for element types without statuses
-        // (QueriesStatuses ignores it), so don't offer the filter at all.
-        if (! $this->showStatusMenu()) {
+        $showStatusMenu = $this->showStatusMenu();
+        $draftsAndTrashedOptions = $this->draftsAndTrashedOptions();
+
+        if (! $showStatusMenu && ! $draftsAndTrashedOptions) {
             return [];
         }
 
-        return collect($this->elementType::statuses())
-            ->map(fn ($label, $value) => ['label' => $label, 'value' => $value])
-            ->prepend(['label' => t('All'), 'value' => ''])
-            ->values()
-            ->all();
+        return [
+            ['label' => t('All'), 'value' => ''],
+            ...($showStatusMenu
+                ? collect($this->elementType::statuses())
+                    ->map(fn ($label, $value) => ['label' => $label, 'value' => $value])
+                    ->values()
+                    ->all()
+                : []),
+            ...$draftsAndTrashedOptions,
+        ];
     }
 
     public function showStatusMenu(): bool

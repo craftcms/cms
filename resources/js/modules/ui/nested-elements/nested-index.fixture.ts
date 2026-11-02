@@ -154,7 +154,6 @@ export function nestedIndexPayload(
     status: '',
     statusMenuValue: options.statusMenuValue ?? '',
     statusOptions: [],
-    draftsAndTrashedOptions: [],
     search: '',
     currentCondition: null,
     viewState: {mode: options.mode ?? 'table', showHeaderColumn: true},

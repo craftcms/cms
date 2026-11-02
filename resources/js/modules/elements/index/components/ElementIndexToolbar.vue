@@ -18,13 +18,7 @@
 
   const props = withDefaults(
     defineProps<{
-      statusOptions?: Array<{label: string; value: string}>;
-      /** The status menu's options for listing drafts or trashed elements. */
-      draftsAndTrashedOptions?: Array<{
-        label: string;
-        value: string;
-        icon: string;
-      }>;
+      statusOptions?: Array<{label: string; value: string; icon?: string}>;
       viewModes?: Array<ViewMode>;
       columnOptions: Array<CheckboxOption>;
       /** The thumbnail sizes the active view mode offers. */
@@ -93,30 +87,8 @@
     ['score', 'sortOrder'].includes(sortField.value)
   );
 
-  /**
-   * The element statuses, then Drafts and Trashed. An index whose elements
-   * have no statuses still gets All, to go back to its canonical elements.
-   */
-  const statusMenuOptions = computed(() => {
-    const statusOptions = props.statusOptions ?? [];
-    const draftsAndTrashedOptions = props.draftsAndTrashedOptions ?? [];
-
-    if (!draftsAndTrashedOptions.length) {
-      return statusOptions;
-    }
-
-    return [
-      ...(statusOptions.length
-        ? statusOptions
-        : [{label: t('All'), value: ''}]),
-      ...draftsAndTrashedOptions,
-    ];
-  });
-
-  function draftsOrTrashedIcon(value: string | number): string | undefined {
-    return props.draftsAndTrashedOptions?.find(
-      (option) => option.value === value
-    )?.icon;
+  function statusOptionIcon(value: string | number): string | undefined {
+    return props.statusOptions?.find((option) => option.value === value)?.icon;
   }
 
   const siteOptions = computed(() =>
@@ -151,7 +123,7 @@
       }"
     >
       <div
-        v-if="showSiteMenu || statusMenuOptions.length"
+        v-if="showSiteMenu || statusOptions?.length"
         class="element-toolbar__status"
       >
         <div v-if="showSiteMenu" class="element-toolbar__site">
@@ -191,9 +163,9 @@
         </div>
 
         <CraftSelectRich
-          v-if="statusMenuOptions.length"
+          v-if="statusOptions?.length"
           v-model="status"
-          :options="statusMenuOptions"
+          :options="statusOptions"
           :label="t('Status')"
           label-sr-only
           .disabled="processing"
@@ -207,7 +179,7 @@
         >
           <template #option="{option}">
             <span
-              v-if="draftsOrTrashedIcon(option.value)"
+              v-if="statusOptionIcon(option.value)"
               style="
                 display: inline-flex;
                 align-items: center;
@@ -215,7 +187,7 @@
               "
             >
               <craft-icon
-                :name.attr="draftsOrTrashedIcon(option.value)"
+                :name.attr="statusOptionIcon(option.value)"
               ></craft-icon>
               {{ option.label }}
             </span>

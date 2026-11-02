@@ -580,7 +580,7 @@ it('lists trashed nested entries in an embedded index, unlinked and without acti
         'viewMode' => 'table',
     ])->assertOk();
 
-    expect($response->json('draftsAndTrashedOptions.*.value'))->toBe(['drafts', 'trashed'])
+    expect(array_slice($response->json('statusOptions.*.value'), -2))->toBe(['drafts', 'trashed'])
         ->and($response->json('data.*.id'))->toBe([$trashed->id])
         ->and($response->json('data.0.cpEditUrl'))->toBeNull()
         ->and($response->json('data.0.editUrl'))->toBeNull()
