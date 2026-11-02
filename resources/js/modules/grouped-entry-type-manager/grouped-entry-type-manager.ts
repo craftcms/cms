@@ -23,8 +23,6 @@ import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {hasMousePointerEvents} from '@/common/craft/pointer';
 
 declare const Craft: any;
-declare const $: any;
-
 /** `$defaultColumnsContainer` is accepted as a jQuery alias. */
 export interface GroupedEntryTypeManagerSettings extends GarnishBaseSettings {
   /** Applied to cloned select ids and the default-columns inputs. */

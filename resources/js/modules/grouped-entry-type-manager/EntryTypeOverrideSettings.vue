@@ -5,6 +5,7 @@
    */
   import {useForm} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
+  import {serializeFormInputs} from '@craftcms/ui/utilities/dom';
   import CpContainer from '@/common/components/CpContainer.vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
@@ -14,7 +15,6 @@
   import {showError} from '@/modules/messages/messages';
 
   declare const Craft: any;
-  declare const $: any;
 
   const props = defineProps<{
     contextId: string;
@@ -37,7 +37,7 @@
   }));
 
   function serialize(): string {
-    return container ? $(container).find(':input').serialize() : '';
+    return container ? serializeFormInputs(container) : '';
   }
 
   function onReady(element: HTMLElement): void {
