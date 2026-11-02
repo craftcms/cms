@@ -260,11 +260,11 @@
   --c-radio-tile-thumbnail-height: 3.75rem;
 
   /*
-    Colors for inline SVG thumbnails, which draw with a fixed palette that
-    choice-inputs.css swaps for these. Each is a palette stop, picked so these
-    pairings keep 3:1 at rest, hovered and selected, in both themes:
-    `line` on the tile and on `surface`; `figure` on `field`; `mark` on
-    `field`, `figure` and the tile. `subtle` promises no contrast. Selected
+    Colors for inline SVG thumbnails, which use these directly, as in
+    `style="fill: var(--c-illustration-figure)"`. Each is a palette stop,
+    picked so these pairings keep 3:1 at rest, hovered and selected, in both
+    themes: `line` on the tile and on `surface`; `figure` on `field`; `mark`
+    on `field`, `figure` and the tile. `subtle` promises no contrast. Selected
     tiles only turn the outlines blue.
   */
   --c-illustration-surface: var(--color-base-100);

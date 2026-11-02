@@ -103,8 +103,8 @@ readonly class Cp
     }
 
     /**
-     * An illustration under `resources/public`, inlined for a radio's `thumbnail` so the CP can recolor it for the
-     * theme and the selected state.
+     * An illustration under `resources/public`, inlined for a radio's `thumbnail` so its `--c-illustration-*` colors
+     * follow the theme and the selected state.
      *
      * @return array{svg: string, width: int, height: int, aspectRatio: string}
      */

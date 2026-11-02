@@ -182,49 +182,6 @@ craft-radio[data-tile] > [slot='thumbnail'] {
 }
 
 /*
-  Inline SVG thumbnails draw with a fixed palette, which these rules swap for
-  the --c-illustration-* tokens. Other colors stay as drawn.
-*/
-craft-radio > [slot='thumbnail'] {
-  & [fill='#F3F7FD' i] {
-    fill: var(--c-illustration-surface);
-  }
-
-  & [fill='#FFFFFF' i] {
-    fill: var(--c-illustration-paper);
-  }
-
-  & [stroke='#FFFFFF' i] {
-    stroke: var(--c-illustration-paper);
-  }
-
-  & [fill='#E9EEF3' i] {
-    fill: var(--c-illustration-field);
-  }
-
-  & [fill='#CDD8E4' i] {
-    fill: var(--c-illustration-subtle);
-  }
-
-  & [fill='#A6B2C2' i] {
-    fill: var(--c-illustration-figure);
-  }
-
-  & [stroke='#828FA4' i] {
-    stroke: var(--c-illustration-line);
-  }
-
-  & [fill='#5A6572' i],
-  & [fill='#2A3141' i] {
-    fill: var(--c-illustration-mark);
-  }
-
-  & [stroke='#5A6572' i] {
-    stroke: var(--c-illustration-mark);
-  }
-}
-
-/*
   A selected tile's outlines turn blue, like its border. Its other colors stay
   put, so its figures and marks keep their contrast with each other.
 */

@@ -362,8 +362,11 @@ it('marks the selected tile with a thicker border and a bold label', async () =>
 it('draws the selected illustration in blue, following the selection and the theme', async () => {
   const {radios, inputs} = await renderTiles('40rem');
   const hairline = (radio: CraftRadio) =>
-    getComputedStyle(radio.querySelector('[slot="thumbnail"] [stroke]')!)
-      .stroke;
+    getComputedStyle(
+      radio.querySelector(
+        '[slot="thumbnail"] [style*="stroke: var(--c-illustration-line)"]'
+      )!
+    ).stroke;
 
   // blue-500 when selected, slate-500 otherwise
   expect(hairline(radios[1]!)).toBe('rgb(62, 116, 242)');
@@ -402,19 +405,32 @@ it("keeps the illustrations' outlines, figures and marks at 3:1 at rest, hovered
         document.querySelector('[data-theme]')!
       ).backgroundColor;
       const tile = getComputedStyle(thumbnailBox(crop)).backgroundColor;
-      const field = paint('[fill="#E9EEF3"]', 'fill');
-      const figure = paint('[fill="#A6B2C2"]', 'fill');
-      const mark = paint('[stroke="#5A6572"]', 'stroke');
+      const field = paint(
+        '[style*="fill: var(--c-illustration-field)"]',
+        'fill'
+      );
+      const figure = paint(
+        '[style*="fill: var(--c-illustration-figure)"]',
+        'fill'
+      );
+      const mark = paint(
+        '[style*="stroke: var(--c-illustration-mark)"]',
+        'stroke'
+      );
       const pairs: [string, string, string][] = [
-        ['outline / tile', paint('[stroke="#828FA4"]', 'stroke'), tile],
+        [
+          'outline / tile',
+          paint('[style*="stroke: var(--c-illustration-line)"]', 'stroke'),
+          tile,
+        ],
         ['figure / field', figure, field],
         ['mark / field', mark, field],
         ['mark / figure', mark, figure],
         ['mark / tile', mark, tile],
         [
           'mark / light edge',
-          paint('[stroke="#FFFFFF"]', 'fill'),
-          paint('[stroke="#FFFFFF"]', 'stroke'),
+          paint('[style*="stroke: var(--c-illustration-paper)"]', 'fill'),
+          paint('[style*="stroke: var(--c-illustration-paper)"]', 'stroke'),
         ],
       ];
 

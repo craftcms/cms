@@ -81,8 +81,9 @@ class Choice extends Control
     /**
      * An option may carry a `thumbnail` illustrating the choice, rendered above
      * the radio in the Radios presentation: an image `src`, or inline `svg`
-     * markup, which the CP recolors (see {@see Cp::illustration()}). Its
-     * `aspectRatio` maps to the CSS property of the same name.
+     * markup colored with the `--c-illustration-*` tokens (see
+     * {@see Cp::illustration()}). Its `aspectRatio` maps to the CSS property of
+     * the same name.
      *
      * `group` heads a run of consecutive options sharing it, when presented as
      * a select; other presentations ignore it.

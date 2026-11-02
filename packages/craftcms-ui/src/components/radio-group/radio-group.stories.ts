@@ -207,29 +207,37 @@ export const ThumbnailsWrapped: Story = {
     </craft-radio-group>`,
 };
 
+/** A `style` that paints with the illustration palette's tokens. */
+const paint = (fill?: string, stroke?: string) =>
+  `style="${[
+    fill && `fill: var(--c-illustration-${fill})`,
+    stroke && `stroke: var(--c-illustration-${stroke})`,
+  ]
+    .filter(Boolean)
+    .join('; ')}"`;
+
 /** A sample illustration that uses every role in the illustration palette. */
 const paletteSample = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="60" viewBox="0 0 80 60">
-  <rect x="0.5" y="0.5" width="35" height="59" rx="4" fill="#F3F7FD" stroke="#828FA4"/>
-  <rect x="5" y="6" width="22" height="4" rx="2" fill="#CDD8E4"/>
-  <rect x="5" y="14" width="16" height="4" rx="2" fill="#CDD8E4"/>
-  <rect x="5.5" y="24.5" width="25" height="29" rx="2" fill="#FFFFFF" stroke="#828FA4"/>
-  <rect x="42.5" y="12.5" width="37" height="35" fill="#E9EEF3" stroke="#828FA4"/>
-  <path d="M43 40 52 30 58 36 64 31 79 44V47H43Z" fill="#A6B2C2"/>
-  <circle cx="72" cy="20" r="3" fill="#A6B2C2"/>
-  <rect x="43" y="47" width="36" height="5" fill="#2A3141"/>
-  <path d="M47.5 8.5H74.5V55.5H47.5Z" fill="none" stroke="#5A6572" stroke-dasharray="1"/>
-  <path d="M46 7H51V9H48V12H46Z" fill="#5A6572" stroke="#FFFFFF" stroke-width="2" paint-order="stroke"/>
-  <path d="M76 57H71V55H74V52H76Z" fill="#5A6572" stroke="#FFFFFF" stroke-width="2" paint-order="stroke"/>
+  <rect x="0.5" y="0.5" width="35" height="59" rx="4" ${paint('surface', 'line')}/>
+  <rect x="5" y="6" width="22" height="4" rx="2" ${paint('subtle')}/>
+  <rect x="5" y="14" width="16" height="4" rx="2" ${paint('subtle')}/>
+  <rect x="5.5" y="24.5" width="25" height="29" rx="2" ${paint('paper', 'line')}/>
+  <rect x="42.5" y="12.5" width="37" height="35" ${paint('field', 'line')}/>
+  <path d="M43 40 52 30 58 36 64 31 79 44V47H43Z" ${paint('figure')}/>
+  <circle cx="72" cy="20" r="3" ${paint('figure')}/>
+  <rect x="43" y="47" width="36" height="5" ${paint('mark')}/>
+  <path d="M47.5 8.5H74.5V55.5H47.5Z" fill="none" ${paint(undefined, 'mark')} stroke-dasharray="1"/>
+  <path d="M46 7H51V9H48V12H46Z" ${paint('mark', 'paper')} stroke-width="2" paint-order="stroke"/>
+  <path d="M76 57H71V55H74V52H76Z" ${paint('mark', 'paper')} stroke-width="2" paint-order="stroke"/>
 </svg>`;
 
 interface PaletteRole {
   token: string;
-  drawnAs: string[];
   role: string;
-  /** The `fill` and `stroke` colors that draw this role. */
-  fills: string[];
-  strokes: string[];
-  /** Outlines the role's shapes in blue, since it's too pale to spot. */
+  /** Whether the role is used as a `fill`, a `stroke`, or both. */
+  fill: boolean;
+  stroke: boolean;
+  /** Outlines the role's shapes in blue, since they're hard to spot. */
   callout?: boolean;
   /** Fills left unfaded, since the role only shows up on them. */
   backdrop?: string[];
@@ -238,88 +246,92 @@ interface PaletteRole {
 const PALETTE_ROLES: PaletteRole[] = [
   {
     token: 'surface',
-    drawnAs: ['fill="#F3F7FD"'],
     role: 'Shapes such as chips and cards',
-    fills: ['#F3F7FD'],
-    strokes: [],
+    fill: true,
+    stroke: false,
     callout: true,
   },
   {
     token: 'paper',
-    drawnAs: ['fill="#FFFFFF"', 'stroke="#FFFFFF"'],
     role: 'The lightest color, also used for a mark’s light edge',
-    fills: ['#FFFFFF'],
-    strokes: ['#FFFFFF'],
+    fill: true,
+    stroke: true,
     callout: true,
-    backdrop: ['#F3F7FD'],
+    backdrop: ['surface'],
   },
   {
     token: 'subtle',
-    drawnAs: ['fill="#CDD8E4"'],
     role: 'Decoration that carries no meaning, such as placeholder text',
-    fills: ['#CDD8E4'],
-    strokes: [],
+    fill: true,
+    stroke: false,
     callout: true,
   },
   {
     token: 'field',
-    drawnAs: ['fill="#E9EEF3"'],
     role: 'An area that figures sit on, such as a photo’s background',
-    fills: ['#E9EEF3'],
-    strokes: [],
+    fill: true,
+    stroke: false,
     callout: true,
   },
   {
     token: 'figure',
-    drawnAs: ['fill="#A6B2C2"'],
     role: 'Shapes on a field, such as a photo’s mountains',
-    fills: ['#A6B2C2'],
-    strokes: [],
-    backdrop: ['#E9EEF3'],
+    fill: true,
+    stroke: false,
+    backdrop: ['field'],
   },
   {
     token: 'line',
-    drawnAs: ['stroke="#828FA4"'],
     role: 'Outlines',
-    fills: [],
-    strokes: ['#828FA4'],
+    fill: false,
+    stroke: true,
   },
   {
     token: 'mark',
-    drawnAs: ['fill="#5A6572"', 'stroke="#5A6572"', 'fill="#2A3141"'],
     role: 'The strongest marks, such as a crop frame or letterbox bars',
-    fills: ['#5A6572', '#2A3141'],
-    strokes: ['#5A6572'],
+    fill: true,
+    stroke: true,
   },
 ];
 
+/** How a role is applied, as it's written in an illustration. */
+const usage = ({token, fill, stroke}: PaletteRole) =>
+  [fill && 'fill', stroke && 'stroke']
+    .filter(Boolean)
+    .map((property) => `${property}: var(--c-illustration-${token})`);
+
 /**
  * Fades every part of the sample except the ones a role draws (and what it
- * sits on, if it only shows up there), and outlines a pale role's shapes in
- * blue so they can be found.
+ * sits on, if it only shows up there), and outlines a role's shapes in blue
+ * when they're hard to spot.
  */
 const fadeOthers = ({
   token,
-  fills,
-  strokes,
+  fill,
+  stroke,
   callout,
   backdrop = [],
 }: PaletteRole) => {
-  const keep = (attribute: string, colors: string[]) =>
-    colors.map((color) => `[${attribute}='${color}' i]`).join(', ');
+  const uses = (property: string, tokens: string[]) =>
+    tokens
+      .map((name) => `[style*='${property}: var(--c-illustration-${name})']`)
+      .join(', ');
+  const except = (property: string, tokens: string[]) =>
+    tokens.length ? `:not(${uses(property, tokens)})` : '';
   const scope = `[data-palette-role='${token}'] [slot='thumbnail']`;
-  const unfaded = [...fills, ...backdrop];
+  const fills = [...(fill ? [token] : []), ...backdrop];
+  const strokes = stroke ? [token] : [];
 
   return `
-    ${scope} [fill]${unfaded.length ? `:not(${keep('fill', unfaded)})` : ''} {
+    ${scope} [style*='fill:']${except('fill', fills)} {
       fill-opacity: 0.12;
     }
-    ${scope} [stroke]${strokes.length ? `:not(${keep('stroke', strokes)})` : ''} {
+    ${scope} [style*='stroke:']${except('stroke', strokes)} {
       stroke-opacity: 0.12;
     }
     ${
       callout
-        ? `${scope} :is(${keep('fill', fills)}) {
+        ? `${scope} :is(${uses('fill', [token])}) {
             stroke: var(--color-blue-500);
             /* Outranks the fading above, on a shape with another role's outline. */
             stroke-opacity: 1 !important;
@@ -361,7 +373,7 @@ export const IllustrationPalette: Story = {
           <tr>
             <th scope="col">Example</th>
             <th scope="col">Token</th>
-            <th scope="col">Drawn as</th>
+            <th scope="col">Use as</th>
             <th scope="col">Role</th>
           </tr>
         </thead>
@@ -387,9 +399,7 @@ export const IllustrationPalette: Story = {
                 <th scope="row">
                   <code>--c-illustration-${role.token}</code>
                 </th>
-                <td>
-                  ${role.drawnAs.map((drawn) => html`<code>${drawn}</code>`)}
-                </td>
+                <td>${usage(role).map((use) => html`<code>${use}</code>`)}</td>
                 <td>${role.role}</td>
               </tr>`
           )}

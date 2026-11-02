@@ -45,7 +45,17 @@ The tiles are joined in one row, each between `--c-radio-tile-min-size` and `--c
 
 <Canvas of={RadioGroupStories.ThumbnailsWrapped} sourceState="shown" />
 
-Illustrations are 60px tall by default (`--c-radio-tile-thumbnail-height`), and are scaled to fit the tile. Slot an inline SVG, wrapped in a `<span aria-hidden="true">`, and draw it with the illustration palette below. The control panel swaps those colors for its `--c-illustration-*` tokens, which are palette stops, so the illustration follows the theme and its outlines turn blue when its option is selected. An `<img>` with an empty `alt` works too, but keeps the colors it was drawn with.
+Illustrations are 60px tall by default (`--c-radio-tile-thumbnail-height`), and are scaled to fit the tile. Slot an inline SVG, wrapped in a `<span aria-hidden="true">`, and color each shape with the illustration palette's `--c-illustration-*` tokens in a `style` attribute:
+
+```html
+<path d="…" style="fill: var(--c-illustration-figure)" />
+<rect
+  …
+  style="fill: var(--c-illustration-surface); stroke: var(--c-illustration-line)"
+/>
+```
+
+The tokens are palette stops, so the illustration follows the theme, and its outlines turn blue when its option is selected. Put the tokens in `style` rather than in the `fill` and `stroke` attributes, so any `fill` or `stroke` a drawing tool exported can stay: `style` overrides it in the control panel, and it still shows when the file is opened on its own. To make the file preview correctly without one, add the light-theme color as a fallback, as in `var(--c-illustration-figure, #6f7c94)`.
 
 Each row below draws the same sample illustration with everything but that role faded, in the current theme. Roles that are hard to spot are outlined in dashed blue, which isn't part of the palette.
 
@@ -59,9 +69,20 @@ The parts of an illustration that show what its option means need 3:1 contrast a
 
 Anything else isn't guaranteed. `subtle` promises no contrast at all, so don't use it for anything that shows meaning. To show where a shape ends, such as a photo's position inside a frame, outline it with `line`.
 
-A dark mark that sits on another dark color, such as a crop frame's corners on letterbox bars, needs a **light edge**: a thin outline in the lightest color, drawn behind the mark so it shows up on dark and light colors alike. Add `stroke="#FFFFFF" stroke-width="2" paint-order="stroke"` to the mark. `paint-order="stroke"` draws the edge first, so only 1px of it shows around the mark.
+A dark mark that sits on another dark color, such as a crop frame's corners on letterbox bars, needs a **light edge**: a thin outline in the lightest color, drawn behind the mark so it shows up on dark and light colors alike. Paint the mark's stroke with `paper`, and draw the stroke first:
 
-An `<img>` keeps its own colors, so with one, checking contrast is up to you.
+```html
+<path
+  d="…"
+  style="fill: var(--c-illustration-mark); stroke: var(--c-illustration-paper)"
+  stroke-width="2"
+  paint-order="stroke"
+/>
+```
+
+`paint-order="stroke"` draws the edge before the mark, so only 1px of it shows around the mark.
+
+An `<img>` with an empty `alt` works too, but can't use the tokens: it keeps the colors it was drawn with, so it won't follow the theme, and checking its contrast is up to you.
 
 ### Building one in PHP
 
