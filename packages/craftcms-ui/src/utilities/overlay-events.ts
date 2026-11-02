@@ -6,7 +6,7 @@ type OverlayHost = HTMLElement & {
 };
 
 /**
- * Bridges Lion's `opened-changed` event to the package's public overlay
+ * Bridges an overlay's `opened-changed` event to the package's public overlay
  * lifecycle events. `craft-show`/`craft-hide` fire synchronously when the
  * `opened` state flips; `craft-after-show`/`craft-after-hide` fire once the
  * host's update has completed.
