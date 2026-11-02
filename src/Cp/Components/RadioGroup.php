@@ -26,7 +26,8 @@ class RadioGroup extends ChoiceGroup
 
     protected ?string $targetPrefix = null;
 
-    protected bool $buttons = false;
+    /** @var 'buttons'|'button-group'|'cards'|'card-group'|null */
+    protected ?string $appearance = null;
 
     protected function tagName(): string
     {
@@ -49,12 +50,17 @@ class RadioGroup extends ChoiceGroup
     }
 
     /**
-     * Shows the options as a row of joined buttons. They're still radios, so
-     * they're announced as radios and the arrow keys move the selection.
+     * Draws the options as separate `buttons` or `cards`, or joined in a
+     * `button-group` or `card-group`, rather than a stacked list. Cards show
+     * each option's thumbnail large. They're still radios, so they're announced
+     * as radios and the arrow keys move the selection. Options with a thumbnail
+     * default to `card-group`.
+     *
+     * @param  'buttons'|'button-group'|'cards'|'card-group'|null  $appearance
      */
-    public function buttons(bool $buttons = true): static
+    public function appearance(?string $appearance): static
     {
-        $this->buttons = $buttons;
+        $this->appearance = $appearance;
 
         return $this;
     }
@@ -68,9 +74,7 @@ class RadioGroup extends ChoiceGroup
                 'radio-group',
                 $this->toggle ? 'fieldtoggle' : null,
             ]),
-            // Shows the options as illustrated tiles; see `craft-radio-group`.
-            'thumbnails' => $this->hasThumbnails(),
-            'buttons' => $this->buttons,
+            'appearance' => $this->appearance ?? ($this->hasThumbnails() ? 'card-group' : null),
             'data' => [
                 'target-prefix' => $this->toggle ? ($this->targetPrefix ?? '#') : null,
             ],

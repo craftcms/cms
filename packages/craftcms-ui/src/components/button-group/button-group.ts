@@ -16,8 +16,8 @@ const DIVIDER_END_ATTRIBUTE = 'data-button-group-divider-end';
  * A group that holds a selection is a group of toggle buttons: each button
  * keeps its role and its own tab stop, and reports its state with
  * `aria-pressed`. For a form setting that picks one value from a set of
- * options, use `craft-radio-group` with `buttons` instead, which looks the
- * same but is announced and operated as radios.
+ * options, use `craft-radio-group` with `appearance="button-group"` instead,
+ * which looks the same but is announced and operated as radios.
  *
  * @slot - The default slot.
  *

@@ -135,8 +135,8 @@ craft-radio[data-button] > input[type='radio'] {
   }
 }
 
-/* A tile draws the focus ring on its thumbnail box rather than on the input. */
-craft-radio[data-tile] > input[type='radio'] {
+/* A card draws the focus ring on its box rather than on the input. */
+craft-radio[data-card] > input[type='radio'] {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -164,13 +164,18 @@ craft-radio[data-tile] > input[type='radio'] {
   }
 }
 
-/* Outranks the base `img { height: auto }` reset, which beats `::slotted()`. */
-craft-radio[data-tile] > [slot='thumbnail'] {
+/*
+  Outranks the base `img { height: auto }` reset, which beats `::slotted()`.
+  Beside the label, the icon is centered on its first line, like the input.
+*/
+craft-radio > [slot='icon'] {
   display: block;
-  block-size: var(--c-radio-tile-thumbnail-height);
+  flex-shrink: 0;
+  block-size: var(--c-radio-icon-size);
   inline-size: auto;
   min-inline-size: 0;
   max-inline-size: 100%;
+  margin-block: calc((1lh - var(--c-radio-icon-size)) / 2);
   object-fit: contain;
 
   /* An inline SVG fills its wrapper, centered like the image's `contain`. */
@@ -181,7 +186,12 @@ craft-radio[data-tile] > [slot='thumbnail'] {
   }
 }
 
-craft-radio[data-tile][checked] > [slot='thumbnail'] {
+craft-radio[data-card] > [slot='icon'] {
+  block-size: var(--c-radio-card-icon-size);
+  margin-block: 0;
+}
+
+craft-radio[data-card][checked] > [slot='icon'] {
   --c-illustration-surface: var(--color-base-50);
   --c-illustration-line: var(--color-blue-500);
 }

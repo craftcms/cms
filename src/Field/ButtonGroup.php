@@ -121,7 +121,7 @@ class ButtonGroup extends BaseOptionsField implements SortableFieldInterface
 
         return RadioGroup::make()
             ->id($id)
-            ->buttons()
+            ->appearance('button-group')
             ->options($radios)
             ->toHtml();
     }

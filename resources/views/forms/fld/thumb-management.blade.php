@@ -91,7 +91,7 @@
 
             return \CraftCms\Cms\Cp\Components\RadioGroup::make()
                 ->id('thumb-alignment')
-                ->buttons()
+                ->appearance('button-group')
                 ->options($radios)
                 ->toHtml().$tooltips;
         },

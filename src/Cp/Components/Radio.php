@@ -29,9 +29,10 @@ class Radio extends Checkbox
     }
 
     /**
-     * An illustration of what the option looks like. A {@see RadioGroup} with
-     * thumbnailed options shows each one as a tile, with the illustration in
-     * a button-like box and the label below it.
+     * An illustration of what the option looks like, rendered as the radio's
+     * icon. A {@see RadioGroup} with thumbnailed options shows each one as a
+     * card, with the illustration drawn large in a button-like box and the
+     * label below it.
      *
      * Give it an image `src`, or inline `svg` markup. An inline SVG drawn with
      * the illustration palette follows the CP's theme, and its outlines turn
@@ -58,8 +59,8 @@ class Radio extends Checkbox
     }
 
     /**
-     * Renders the thumbnail into the radio's `thumbnail` slot, which a
-     * `craft-radio-group` with `thumbnails` draws as the tile's illustration.
+     * Renders the thumbnail into the radio's `icon` slot, which a
+     * `craft-radio-group` with `appearance="cards"` draws large on the card.
      * It's hidden from assistive tech, since the label already names the option.
      */
     #[\Override]
@@ -74,14 +75,14 @@ class Radio extends Checkbox
 
         if (isset($this->thumbnail['svg'])) {
             return Html::tag('span', $this->thumbnail['svg'], [
-                'slot' => 'thumbnail',
+                'slot' => 'icon',
                 'style' => $style,
                 'aria-hidden' => 'true',
             ]).parent::renderSlots();
         }
 
         return Html::tag('img', '', [
-            'slot' => 'thumbnail',
+            'slot' => 'icon',
             'src' => $this->thumbnail['src'] ?? null,
             'width' => $this->thumbnail['width'] ?? null,
             'height' => $this->thumbnail['height'] ?? null,
