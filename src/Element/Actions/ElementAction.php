@@ -42,6 +42,15 @@ abstract class ElementAction extends Component implements ElementActionInterface
         return true;
     }
 
+    /**
+     * Element actions can be performed from a queue job, unless they're
+     * downloads, which need the request to send their file back to.
+     */
+    public function supportsQueue(): bool
+    {
+        return ! static::isDownload();
+    }
+
     public function setElementType(string $elementType): void
     {
         $this->elementType = $elementType;

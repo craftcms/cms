@@ -24,6 +24,13 @@ use Illuminate\Container\Attributes\Singleton;
 #[Singleton]
 class ElementActions
 {
+    /**
+     * The most elements an element index performs an action on within the
+     * request. Above it, actions run from a queue job, and actions that don't
+     * support that can't be performed.
+     */
+    public const int SYNC_LIMIT = 100;
+
     /** @var array<class-string<ElementActionInterface>, string> */
     private const array SELECTION_ATTRIBUTES = [
         Duplicate::class => 'duplicatable',
@@ -197,6 +204,9 @@ class ElementActions
 
             if (! $action::supportsBulk()) {
                 $item['bulk'] = false;
+            } else {
+                $item['syncLimit'] = self::SYNC_LIMIT;
+                $item['queueable'] = $action->supportsQueue();
             }
 
             $item['action'] = [

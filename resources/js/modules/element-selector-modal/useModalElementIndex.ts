@@ -143,9 +143,8 @@ export function useModalElementIndex(options: Options) {
   /**
    * Lists a folder's contents in place of the current listing.
    *
-   * The selection is cleared first: it can only hand back rows that are on
-   * screen, so one made in the old listing would linger in the table's state
-   * without being selectable or submitted.
+   * The selection is cleared first, like on a source switch: it belongs to the
+   * listing it was made in.
    */
   function openFolder(folderId: number): void {
     index.clearSelection();
@@ -253,7 +252,7 @@ export function useModalElementIndex(options: Options) {
    * because `onModalSelect` and `app/render-elements` both consume it.
    */
   const selectedElements = computed<SelectedElement[]>(() =>
-    table.getSelectedRowModel().rows.map(({original}) => {
+    index.view.selection.selectedRows.value.map((original) => {
       const info = elementInfo(original);
 
       return {

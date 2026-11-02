@@ -243,6 +243,9 @@
 - Element edit forms now show sidebar field layout tabs as panels in the details sidebar, between Info and Activity, using the tab’s icon (or its name’s first letter) and name. ([#20005](https://github.com/craftcms/cms/pull/20005))
 - Double-clicking an element chip in an element index now opens the chip’s own element in a slideout, rather than the row’s element or the chip’s link. ([#19907](https://github.com/craftcms/cms/pull/19907))
 - In element index tables, only an element’s title now links to it, rather than its whole chip, and clicking a link or button no longer waits to rule out a double-click. ([#19932](https://github.com/craftcms/cms/pull/19932))
+- Element index selections now carry across pages, and bulk actions apply to all of them. Selections are cleared when the search, status, filters, source, or site change. ([#20262](https://github.com/craftcms/cms/pull/20262))
+- Selecting every result on an element index page now shows a banner under the header that offers to select all of the index’s results, on every page. Bulk actions apply to them all, other than any deselected afterwards. The page controls now stay in the element index footer while elements are selected. ([#20262](https://github.com/craftcms/cms/pull/20262))
+- Bulk element actions on more than 100 elements now run from a queue job. Actions that can’t, such as downloads and duplicating with descendants, are hidden once more than 100 elements are selected. ([#20262](https://github.com/craftcms/cms/pull/20262))
 - In element index thumbnail views, only an element’s label now links to it. Clicking anywhere else on a thumbnail, card, or table row selects it, including for asset folders, which now only open from their links. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Matrix fields’ blocks views now outline the block that’s being edited. ([#19974](https://github.com/craftcms/cms/pull/19974))
 - Clicking a Matrix block in blocks view no longer selects it. Blocks are selected with their checkboxes instead. ([#19974](https://github.com/craftcms/cms/pull/19974))
@@ -476,6 +479,7 @@
 - Added `CraftCms\Cms\Gql\GqlHelper::getSchemaUser()`.
 - Added `CraftCms\Cms\Gql\Data\GqlSchema::$user`.
 - Added `CraftCms\Cms\Auth\OAuthServer\OAuthResource` and `CraftCms\Cms\Auth\OAuthServer\OAuthResources`, which let plugins offer their APIs to OAuth clients with discovery metadata, dynamic client registration, and access levels that users choose when they authorize a client. ([#20231](https://github.com/craftcms/cms/pull/20231))
+- Added `CraftCms\Cms\Element\Contracts\ElementActionInterface::supportsQueue()`, which determines whether an element action can be performed on more than `CraftCms\Cms\Element\ElementActions::SYNC_LIMIT` elements from a queue job. `CraftCms\Cms\Element\Actions\ElementAction` returns `true` unless the action is a download. ([#20262](https://github.com/craftcms/cms/pull/20262))
 - Added `CraftCms\Cms\Ai\Contracts\AssistantContextTypeInterface` and `CraftCms\Cms\Ai\AssistantContextTypes`, for adding context types to Ask AI. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - Added `CraftCms\Cms\Ai\Task::optionalCapabilities()` and `CraftCms\Cms\Ai\Ai::supports()`, for AI tasks that use model capabilities, such as vision, when their model has them. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - Added `CraftCms\Cms\Ai\ModelImages`, which prepares asset images for AI models. ([#20109](https://github.com/craftcms/cms/pull/20109))
