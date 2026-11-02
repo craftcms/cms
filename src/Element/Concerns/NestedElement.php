@@ -14,6 +14,8 @@ use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Gql\Attributes\Gql;
+use CraftCms\Cms\Mcp\Attributes\Mcp;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
@@ -245,6 +247,8 @@ trait NestedElement
     }
 
     #[ElementProperty(ElementPropertyType::Id, 'The ID of the {element}’s owner element.', readable: true)]
+    #[Gql(write: false)]
+    #[Mcp(create: false, update: false)]
     public function setOwnerId(?int $id): void
     {
         $this->ownerId = $id;
@@ -379,6 +383,8 @@ trait NestedElement
     }
 
     #[ElementProperty(ElementPropertyType::Int, 'The {element}’s position within the field that contains it.', readable: true)]
+    #[Gql(write: false)]
+    #[Mcp(create: false, update: false)]
     public function setSortOrder(?int $sortOrder): void
     {
         $this->sortOrder = $sortOrder;

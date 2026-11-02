@@ -21,6 +21,7 @@ The swatch is a native `<input type="color">`, made transparent and laid over a 
 ### Use of color
 
 - [x] A color chosen with the picker is written into the text field as hex, so the value is always readable as text and not by the swatch alone. Per WCAG 1.4.1 (Use of Color). Verified by `updates the model from the native color picker without a # prefix` in `input-color.test.ts`.
+- [ ] With `alpha`, a translucent color chosen with the picker is written into the text field as an 8-digit hex value, so its opacity is readable as text too. Per WCAG 1.4.1 (Use of Color). Not yet verified.
 - [x] A value that isn't a valid hex color stays in the text field as typed and clears the preview, rather than showing a color the value doesn't name. Per WCAG 1.4.1 (Use of Color). Verified by `keeps invalid text values and clears the preview` in `input-color.test.ts`.
 - [ ] A value that isn't a valid hex color is identified in text in `feedback`. Per WCAG 3.3.1 (Error Identification). Known gap: the field has no built-in hex validator, so an invalid value only empties the swatch, which doesn't say what's wrong.
 

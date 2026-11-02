@@ -58,19 +58,18 @@ it('offers no release tools below Craft Pro', function (): void {
         ->and($tools->filter(fn (string $name): bool => str_starts_with($name, 'releases.')))->toBeEmpty();
 });
 
-it('refuses the shipped draft apply tool on a scheduled release member', function (): void {
+it('applies a scheduled release member early and unschedules the emptied release', function (): void {
     $this->draft->title = 'Prepared release title';
     expect(Elements::saveElement($this->draft))->toBeTrue();
     $this->releases->schedule($this->release, now()->addDay(), $this->actor);
 
     ($this->callRelease)('drafts.apply', ['type' => 'entries', 'id' => $this->draft->id])
-        ->assertJsonPath('result.isError', true)
-        ->assertJsonPath('result.content.0.text', 'Scheduled and completed releases cannot be changed.');
+        ->assertJsonPath('result.isError', false);
 
-    expect(Entry::find()->id($this->entry->id)->status(null)->one()->title)->toBe('Live title')
-        ->and(Draft::find($this->draft->draftId))->not->toBeNull()
-        ->and($this->release->items()->pluck('draftId')->all())->toBe([$this->draft->draftId])
-        ->and($this->release->fresh()->status)->toBe(ReleaseStatus::Scheduled);
+    expect(Entry::find()->id($this->entry->id)->status(null)->one()->title)->toBe('Prepared release title')
+        ->and(Draft::find($this->draft->draftId))->toBeNull()
+        ->and($this->release->items()->exists())->toBeFalse()
+        ->and($this->release->fresh()->status)->toBe(ReleaseStatus::Draft);
 });
 
 it('edits the explicitly selected draft and applies it ahead of its mutable release', function (): void {

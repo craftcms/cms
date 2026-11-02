@@ -437,3 +437,34 @@ class MockMutation extends BaseMutation
         ];
     }
 }
+
+it('exposes the expected element arguments and fields', function () {
+    CraftCms\Cms\Section\Models\Section::factory()
+        ->withEntryTypes(CraftCms\Cms\Entry\Models\EntryType::factory()->create(['handle' => 'article']))
+        ->create(['handle' => 'news', 'type' => SectionType::Channel->value]);
+    CraftCms\Cms\Section\Models\Section::factory()
+        ->withEntryTypes(CraftCms\Cms\Entry\Models\EntryType::factory()->create(['handle' => 'page']))
+        ->create(['handle' => 'pages', 'type' => SectionType::Structure->value]);
+    Volume::factory()->create(['handle' => 'images']);
+    app(Gql::class)->flushCaches();
+
+    $schema = app(Gql::class)->getSchemaDef(GqlHelper::createFullAccessSchema(), true);
+    $names = fn (array $items): array => collect($items)->map(fn ($item) => $item->name)->sort()->values()->all();
+    $args = fn (ObjectType $type, string $field): array => $names($type->getField($field)->args);
+
+    $snapshot = [];
+
+    foreach (['ElementInterface', 'EntryInterface', 'AssetInterface', 'UserInterface', 'AddressInterface'] as $interface) {
+        $snapshot["fields: $interface"] = $names($schema->getType($interface)->getFields());
+    }
+
+    foreach (['entries', 'assets', 'users', 'addresses'] as $query) {
+        $snapshot["query: $query"] = $args($schema->getQueryType(), $query);
+    }
+
+    foreach (['save_news_article_Entry', 'save_news_article_Draft', 'save_pages_page_Entry', 'save_images_Asset'] as $mutation) {
+        $snapshot["mutation: $mutation"] = $args($schema->getMutationType(), $mutation);
+    }
+
+    expect(json_encode($snapshot, JSON_PRETTY_PRINT))->toMatchSnapshot();
+});

@@ -72,6 +72,7 @@
       <IndexViewSettings
         :options="viewColumnOptions"
         :sort-options="viewSortOptions"
+        show-table-columns
         v-model:sort-field="viewSortField"
         v-model:sort-direction="viewSortDirection"
         v-model:table-columns="viewTableColumns"

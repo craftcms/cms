@@ -139,6 +139,15 @@ class MarkdownField extends LitElement {
   @property({attribute: 'show-toolbar', type: Boolean})
   showToolbar = false;
 
+  /**
+   * Shows the text in the body font rather than monospace, without the
+   * Markdown badge, for short text such as comments. Bold text is drawn with
+   * a stroke and italic text stays upright, so the text keeps its width and
+   * the caret stays in line with it.
+   */
+  @property({type: Boolean})
+  proportional = false;
+
   @property({attribute: 'upload-folder-id', type: Number})
   uploadFolderId: number | null = null;
 
@@ -290,7 +299,7 @@ class MarkdownField extends LitElement {
   ): Options {
     const options: RenderOptions = {
       autoResize: true,
-      fontFamily: 'var(--c-font-mono)',
+      fontFamily: 'var(--markdown-field-font-family)',
       // Set on the editor's layers, so `--markdown-field-font-size` on an ancestor can change it.
       fontSize: 'var(--markdown-field-font-size, var(--c-text-base))',
       lineHeight: 'var(--c-leading-normal)',
@@ -331,7 +340,7 @@ class MarkdownField extends LitElement {
   };
 
   private addTypeIndicator(editor: OverTypeInstance): void {
-    if (this.showToolbar) {
+    if (this.showToolbar || this.proportional) {
       return;
     }
 
@@ -515,6 +524,13 @@ class MarkdownField extends LitElement {
     }
 
     this.editor.textarea.name = this.name ?? '';
+    this.editor.textarea.placeholder = this.placeholder ?? '';
+    const placeholder = this.editor.wrapper.querySelector(
+      '.overtype-placeholder'
+    );
+    if (placeholder) {
+      placeholder.textContent = this.placeholder ?? '';
+    }
     this.editor.textarea.disabled = this.disabled;
     this.editor.textarea.readOnly = this.readonly;
     this.editor.textarea.required = this.required;
@@ -540,6 +556,7 @@ class MarkdownField extends LitElement {
 
   protected override shouldUpdate(): boolean {
     this.toggleAttribute('show-toolbar', this.showToolbar);
+    this.toggleAttribute('proportional', this.proportional);
     this.syncEditorState();
 
     return false;

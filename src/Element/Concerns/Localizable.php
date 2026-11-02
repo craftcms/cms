@@ -12,6 +12,7 @@ use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
@@ -39,6 +40,7 @@ trait Localizable
      */
     #[AllowedInSandbox]
     #[ElementProperty(ElementPropertyType::Int, 'The ID of the site the {element} is associated with.', readable: true)]
+    #[Gql(write: false)]
     public ?int $siteId = null;
 
     /**

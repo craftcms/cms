@@ -54,6 +54,12 @@ class Asset extends Element
     }
 
     #[Override]
+    protected static function elementType(): string
+    {
+        return AssetElement::class;
+    }
+
+    #[Override]
     public static function getName(): string
     {
         return 'AssetInterface';
@@ -65,7 +71,6 @@ class Asset extends Element
     {
         // @TODO Remove the `uri` field for Assets.
         return Gql::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), self::getConditionalFields(), [
-            ...static::propertyFields(AssetElement::class, ['alt', 'volumeId', 'folderId', 'filename', 'extension', 'hasFocalPoint']),
             'focalPoint' => [
                 'name' => 'focalPoint',
                 'type' => Type::listOf(Type::float()),
@@ -76,7 +81,6 @@ class Asset extends Element
                 'type' => ImageAnalysisType::generateType(null),
                 'description' => 'What was found in the image: its colors, and its keywords and the text in it, or null if it’s not an image or nothing has been found yet.',
             ],
-            ...static::propertyFields(AssetElement::class, ['blurhash', 'placeholderDataUrl', 'kind']),
             'orientation' => [
                 'name' => 'orientation',
                 'type' => Type::string(),
@@ -158,14 +162,12 @@ class Asset extends Element
                     return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_CPU_HEAVY;
                 },
             ],
-            ...static::propertyFields(AssetElement::class, ['mimeType']),
             'format' => [
                 'name' => 'format',
                 'args' => Transform::getArguments(),
                 'type' => Type::string(),
                 'description' => 'Returns the file’s format.',
             ],
-            ...static::propertyFields(AssetElement::class, ['path', 'dateModified']),
             'prev' => [
                 'name' => 'prev',
                 'type' => self::getType(),
@@ -198,7 +200,6 @@ class Asset extends Element
 
         if (GqlHelper::canQueryAllUsers()) {
             $fields += [
-                ...static::propertyFields(AssetElement::class, ['uploaderId']),
                 'uploader' => [
                     'name' => 'uploader',
                     'type' => User::getType(),

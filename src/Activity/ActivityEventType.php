@@ -15,6 +15,8 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use Illuminate\Contracts\Support\Htmlable;
 
+use function CraftCms\Cms\t;
+
 /**
  * @since 6.0.0
  */
@@ -80,6 +82,19 @@ abstract class ActivityEventType implements ActivityEventTypeInterface
     public static function icon(): ?string
     {
         return static::ICON;
+    }
+
+    /**
+     * The event's element type in lowercase, as in “this entry”, for
+     * descriptions that would otherwise say “it”.
+     */
+    protected static function subjectTypeName(ActivityEvent $event): string
+    {
+        $type = $event->subjectType;
+
+        return is_string($type) && is_a($type, ElementInterface::class, true)
+            ? $type::lowerDisplayName()
+            : t('element');
     }
 
     public static function format(ActivityEvent $event): string|Htmlable|null

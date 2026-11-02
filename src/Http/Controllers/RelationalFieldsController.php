@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
+use CraftCms\Cms\Cp\Enums\ChipThumbSize;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
@@ -12,6 +13,7 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Ui\Controls\ElementSelect;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 use function CraftCms\Cms\template;
 
@@ -69,11 +71,13 @@ readonly class RelationalFieldsController
             'elementIds.*' => ['integer'],
             'siteId' => ['nullable', 'integer'],
             'branchLimit' => ['nullable', 'integer'],
+            'thumbSize' => ['nullable', Rule::enum(ChipThumbSize::class)],
         ]);
+        $thumbSize = $request->enum('thumbSize', ChipThumbSize::class);
 
         return new JsonResponse([
             'elements' => array_map(
-                fn (ElementInterface $element): array => ElementSelect::presentation($element),
+                fn (ElementInterface $element): array => ElementSelect::presentation($element, thumbSize: $thumbSize),
                 $this->normalizedElements($request, $structures),
             ),
         ]);

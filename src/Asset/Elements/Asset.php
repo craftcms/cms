@@ -7,16 +7,7 @@ namespace CraftCms\Cms\Asset\Elements;
 use Closure;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Actions\AnalyzeImages;
-use CraftCms\Cms\Asset\Actions\CopyReferenceTag;
-use CraftCms\Cms\Asset\Actions\CopyUrl;
 use CraftCms\Cms\Asset\Actions\DeleteAssets;
-use CraftCms\Cms\Asset\Actions\DownloadAssetFile;
-use CraftCms\Cms\Asset\Actions\EditImage;
-use CraftCms\Cms\Asset\Actions\MoveAssets;
-use CraftCms\Cms\Asset\Actions\PreviewAsset;
-use CraftCms\Cms\Asset\Actions\RenameFile;
-use CraftCms\Cms\Asset\Actions\ReplaceFile;
-use CraftCms\Cms\Asset\Actions\ShowInFolder;
 use CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis;
 use CraftCms\Cms\Asset\Analysis\ImageAnalyzer;
 use CraftCms\Cms\Asset\Analysis\Tasks\TagImage;
@@ -50,6 +41,7 @@ use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Actions\ClientAction;
 use CraftCms\Cms\Element\Actions\DeleteForSite;
 use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Attributes\ElementProperty;
@@ -71,6 +63,7 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\ViewModels\AssetEditViewModel;
@@ -84,6 +77,7 @@ use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\ImageHash;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Image\ImageTransformHelper;
+use CraftCms\Cms\Mcp\Attributes\Mcp;
 use CraftCms\Cms\Search\SearchQuery;
 use CraftCms\Cms\Search\SearchQueryTerm;
 use CraftCms\Cms\Search\SearchQueryTermGroup;
@@ -224,6 +218,8 @@ class Asset extends Element
      */
     #[AllowedInSandbox]
     #[ElementProperty(ElementPropertyType::Id, 'The ID of the folder that the asset belongs to.', readable: true, nonNull: true)]
+    #[Gql(write: false)]
+    #[Mcp(hint: 'Changing it moves the file.')]
     public ?int $folderId = null;
 
     /**
@@ -231,6 +227,8 @@ class Asset extends Element
      */
     #[AllowedInSandbox]
     #[ElementProperty(ElementPropertyType::Id, 'The ID of the user who first added the asset, if known.', nullable: true, readable: true)]
+    #[Gql(Gql::CanQueryAllUsers)]
+    #[Mcp(hint: 'Null marks it unknown. Changing it requires permission to save other users’ assets in the volume.')]
     public ?int $uploaderId = null;
 
     /**
@@ -347,6 +345,7 @@ class Asset extends Element
      * @var int|null New folder ID
      */
     #[ElementProperty(ElementPropertyType::Id, 'The ID of the folder to move the asset to.')]
+    #[Mcp(create: false, update: false)]
     public ?int $newFolderId = null;
 
     /**
@@ -783,7 +782,7 @@ class Asset extends Element
         return array_map(fn (Volume $volume) => $volume->getFieldLayout(), $volumes);
     }
 
-    /** @return list<class-string|array{type: class-string, label?: string, restorableElementsOnly?: bool}> */
+    /** @return list<class-string|array{type: class-string, restorableElementsOnly?: bool}|ClientAction> */
     #[Override]
     protected static function defineActions(string $source): array
     {
@@ -800,23 +799,45 @@ class Asset extends Element
         if (isset($volume)) {
             $isTemp = $volume->isTemporary();
 
-            $actions[] = [
-                'type' => PreviewAsset::class,
-                'label' => t('Preview file'),
-            ];
+            $actions[] = new ClientAction(
+                key: 'preview-file',
+                label: t('Preview file'),
+                event: 'craft:preview-file',
+                bulk: false,
+            );
 
-            // Download
-            $actions[] = DownloadAssetFile::class;
+            $actions[] = new ClientAction(
+                key: 'download-file',
+                label: t('Download'),
+                event: 'assets:download-file',
+                bulk: false,
+            );
 
             if ($isTemp || Gate::check("replaceFiles:$volume->uid")) {
-                // Rename/Replace File
-                $actions[] = RenameFile::class;
-                $actions[] = ReplaceFile::class;
+                $actions[] = new ClientAction(
+                    key: 'rename-file',
+                    label: t('Rename file'),
+                    event: 'assets:rename-file',
+                    bulk: false,
+                    selectionAttribute: 'movable',
+                );
+                $actions[] = new ClientAction(
+                    key: 'replace-file',
+                    label: t('Replace file'),
+                    event: 'assets:replace-file',
+                    bulk: false,
+                    selectionAttribute: 'replaceable',
+                );
             }
 
-            // Copy URL
             if ($volume->sourceHasUrls()) {
-                $actions[] = CopyUrl::class;
+                $actions[] = new ClientAction(
+                    key: 'copy-url',
+                    label: t('Copy URL'),
+                    event: 'assets:copy-url',
+                    bulk: false,
+                    selectionAttribute: 'hasUrl',
+                );
             }
 
             // Show in folder
@@ -828,23 +849,43 @@ class Asset extends Element
                 isset($query->search) &&
                 $query->includeSubfolders
             ) {
-                $actions[] = ShowInFolder::class;
+                $actions[] = new ClientAction(
+                    key: 'show-in-folder',
+                    label: t('Show in folder'),
+                    event: 'assets:show-in-folder',
+                    bulk: false,
+                );
             }
 
-            // Copy Reference Tag
-            $actions[] = CopyReferenceTag::class;
+            $actions[] = new ClientAction(
+                key: 'copy-reference-tag',
+                label: t('Copy reference tag'),
+                event: 'assets:copy-reference-tag',
+                bulk: false,
+            );
 
-            // Edit Image
             if ($isTemp || Gate::check("editImages:$volume->uid")) {
-                $actions[] = EditImage::class;
+                $actions[] = new ClientAction(
+                    key: 'edit-image',
+                    label: t('Edit Image'),
+                    event: 'assets:edit-image',
+                    detail: self::sharedImageEditorSettings(),
+                    bulk: false,
+                    selectionAttribute: 'imageEditable',
+                );
             }
 
             if (app(ImageAnalyzer::class)->available()) {
                 $actions[] = AnalyzeImages::class;
             }
 
-            // Move
-            $actions[] = MoveAssets::class;
+            // The index adds the folders the assets can move to
+            $actions[] = new ClientAction(
+                key: 'move-assets',
+                label: t('Move…'),
+                event: 'assets:move-assets',
+                selectionAttribute: 'movable',
+            );
 
             // Restore
             $actions[] = [
@@ -2499,6 +2540,8 @@ JS, [
      * Sets the filename (with extension).
      */
     #[ElementProperty(ElementPropertyType::String, 'The filename of the asset file.', readable: true, nonNull: true)]
+    #[Gql(write: false)]
+    #[Mcp(hint: 'Changing it renames the file.')]
     public function setFilename(string $filename): void
     {
         $this->_filename = $filename;

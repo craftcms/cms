@@ -118,6 +118,7 @@
   <!-- UiNodeList -->
   <Teleport v-if="tabs.length > 1" :to="tabsOutlet" :disabled="!tabsOutlet">
     <craft-tabs
+      class="ui-node-list__tabs"
       :label="t('Primary fields')"
       :sync-location-hash="isSlideout ? 'false' : null"
       @craft-tab-show="onSelectionChanged"
@@ -182,3 +183,20 @@
     />
   </template>
 </template>
+
+<style scoped>
+  .ui-node-list__tabs::part(strip) {
+    box-sizing: border-box;
+    block-size: var(--cp-header-height);
+    align-items: stretch;
+  }
+
+  .ui-node-list__tabs::part(tab-group) {
+    align-items: stretch;
+  }
+
+  .ui-node-list__tabs craft-tab {
+    align-items: center;
+    padding-block: 0;
+  }
+</style>

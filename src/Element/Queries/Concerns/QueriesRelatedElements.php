@@ -118,7 +118,7 @@ trait QueriesRelatedElements
      *     ->all();
      * ```
      */
-    #[ElementQueryParam(ElementQueryParamType::Array, 'Narrows the query results to elements that do not relate to the provided element IDs.')]
+    #[ElementQueryParam(ElementQueryParamType::Array, 'Narrows the query results to {elements} that do not relate to the provided element IDs.')]
     public function notRelatedTo($value): static
     {
         $this->notRelatedTo = $value;
@@ -181,7 +181,7 @@ trait QueriesRelatedElements
      *     ->all();
      * ```
      */
-    #[ElementQueryParam(ElementQueryParamType::Array, 'Narrows the query results to elements that relate to the provided element IDs.')]
+    #[ElementQueryParam(ElementQueryParamType::Array, 'Narrows the query results to {elements} that relate to the provided element IDs.')]
     public function relatedTo($value): static
     {
         $this->relatedTo = $value;

@@ -145,6 +145,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             ->whereNumber('release');
 
         Route::prefix('releases/{release}')->name('releases.')->whereNumber('release')->group(function () {
+            Route::get('preview', [ReleasesController::class, 'preview'])->name('preview');
             Route::post('validate', [ReleasesController::class, 'validateRelease'])->name('validate');
             Route::get('schedule', [ReleasesController::class, 'scheduleModal'])->name('scheduleModal');
             Route::post('schedule', [ReleasesController::class, 'schedule'])->name('schedule');
@@ -160,6 +161,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::post('submit', [WorkflowTransitionsController::class, 'submit']);
         Route::post('{workflowRun}/override', [WorkflowTransitionsController::class, 'override']);
         Route::post('{workflowRun}/restart', [WorkflowTransitionsController::class, 'restart']);
+        Route::post('{workflowRun}/prepare-for-editing', [WorkflowTransitionsController::class, 'prepareForEditing']);
         Route::prefix('{workflowRun}/stages/{stage}')->group(function () {
             Route::post('comment', [WorkflowTransitionsController::class, 'comment']);
             Route::post('user-review/approve', [UserReviewController::class, 'approve']);

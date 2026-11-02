@@ -154,7 +154,7 @@ export interface ElementEditPayload {
   canDiscardDraft: boolean;
   actionMenu: Array<ElementActionMenuItem>;
   previewTargets: Array<ElementPreviewTarget>;
-  /** What Live Preview needs; `null` when the element can't be previewed here. */
+  /** What Live Preview needs; `null` when the element has no preview targets. */
   preview?: ElementPreview | null;
   /**
    * Set when the screen is only there for Live Preview, which stays open.
@@ -263,24 +263,61 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   );
 
   const editingDraft = shallowRef(false);
+
+  const blocksRelease = computed(() => Boolean(props.release?.blockers.length));
+
+  /**
+   * Whether the draft belongs to a scheduled release, so edits that leave it
+   * unready would make the release fail, until the user chooses to edit it.
+   * A draft that's already blocking the release can't make it any worse.
+   */
   const releaseDraftLocked = computed(
-    () => Boolean(props.release) && !editingDraft.value
-  );
-
-  watch([() => props.draftId, () => props.release?.id], () => {
-    editingDraft.value = false;
-  });
-
-  const workflowReviewLocked = computed(
     () =>
-      !editingDraft.value &&
-      ['pending', 'approved'].includes(props.workflow?.current?.status ?? '')
+      props.release?.status === 'scheduled' &&
+      !blocksRelease.value &&
+      !editingDraft.value
   );
+
+  watch(
+    [() => props.draftId, () => props.release?.id, blocksRelease],
+    (
+      [draftId, releaseId, blocking],
+      [previousDraftId, previousReleaseId, wasBlocking]
+    ) => {
+      if (draftId !== previousDraftId || releaseId !== previousReleaseId) {
+        editingDraft.value = false;
+      } else if (wasBlocking && !blocking) {
+        // Fixing the draft's last issue mustn't lock the user out of it.
+        editingDraft.value = true;
+      }
+    }
+  );
+
+  /**
+   * Whether the draft's in review or approved, so editing it would undo its
+   * approvals, until the user chooses to edit it. A reviewer of the stage it's
+   * in who hasn't approved it yet can edit it and then approve it, so it isn't
+   * locked for them while it's in review.
+   */
+  const workflowReviewLocked = computed(() => {
+    const current = props.workflow?.current;
+
+    if (editingDraft.value || !current) {
+      return false;
+    }
+
+    return current.status === 'pending'
+      ? !current.isReviewer || current.hasApproved
+      : current.status === 'approved';
+  });
 
   watch(
     () => props.workflow?.current?.status,
     (status, previousStatus) => {
+      // Saving the user's own edits can reopen the review, which mustn't lock
+      // them out of the edits they just chose to make.
       if (
+        !applyingSavedPayload &&
         status !== previousStatus &&
         (status === 'pending' || status === 'approved')
       ) {
@@ -780,6 +817,25 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     {
       keyboardShortcutEnabled: () =>
         !props.readOnly && !releaseDraftLocked.value,
+      // Cmd/Ctrl + Shift + S submits the Save menu's shortcut action that
+      // takes Shift, such as “Save and add another”, as clicking it would.
+      onSaveShortcut: (event) => {
+        const action = event.shiftKey
+          ? props.editorActions.menu.find(
+              (item) => item.shortcut && item.shift && !item.disabled
+            )
+          : undefined;
+
+        if (action) {
+          submitAction(action);
+        } else if (!event.shiftKey) {
+          save({redirect: false});
+        }
+      },
+      hasShiftSaveShortcut: () =>
+        props.editorActions.menu.some(
+          (item) => item.shortcut && item.shift && !item.disabled
+        ),
       transform: (data) => {
         // Identity first, so the form wins where they overlap: the entry type
         // can be changed in the sidebar, and `saveData()` only knows the one

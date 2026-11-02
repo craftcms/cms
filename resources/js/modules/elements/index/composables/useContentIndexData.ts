@@ -161,3 +161,31 @@ export function useContentIndexData<
 
   return data;
 }
+
+/**
+ * The params that rebuild the index's query on the server, for requests that
+ * act on everything it lists, such as exports.
+ */
+export function elementIndexQueryParams(
+  elementIndex: Readonly<ReturnType<typeof useContentIndexData>>
+) {
+  return {
+    elementType: elementIndex.elementType,
+    context: elementIndex.context,
+    source: elementIndex.source?.key,
+    baseCriteria: {
+      status: null,
+      drafts: elementIndex.canHaveDrafts ? null : false,
+      draftOf: false,
+      savedDraftsOnly: true,
+      siteId: elementIndex.siteId,
+    },
+    criteria: {
+      search: elementIndex.search ?? '',
+      status: elementIndex.status || null,
+      ...(elementIndex.drafts ? {drafts: true} : {}),
+      ...(elementIndex.trashed ? {trashed: true} : {}),
+    },
+    condition: elementIndex.currentCondition,
+  };
+}

@@ -31,7 +31,7 @@ use RuntimeException;
  */
 class EntryAdapter extends BaseElementAdapter
 {
-    private const array SharedAttributes = ['title', 'slug', 'enabled', 'authorId', 'authorIds', 'postDate', 'expiryDate', 'parentId'];
+    private const array SharedAttributes = ['title', 'slug', 'enabled', 'parentId'];
 
     private const array DuplicateModes = ['unpublished', 'canonical'];
 
@@ -62,10 +62,7 @@ class EntryAdapter extends BaseElementAdapter
     {
         return [
             'type' => 'object',
-            'properties' => $this->propertySchemas(['sectionId', 'typeId', 'siteId', ...self::SharedAttributes], [
-                'typeId' => 'Defaults to the section’s first entry type.',
-                'authorId' => 'Defaults to the acting user.',
-            ]),
+            'properties' => $this->attributeSchemas('create', ['siteId', ...self::SharedAttributes]),
             'required' => ['sectionId'],
             'additionalProperties' => false,
         ];
@@ -75,7 +72,7 @@ class EntryAdapter extends BaseElementAdapter
     {
         return [
             'type' => 'object',
-            'properties' => $this->propertySchemas(['typeId', ...self::SharedAttributes]),
+            'properties' => $this->attributeSchemas('update', self::SharedAttributes),
             'additionalProperties' => false,
         ];
     }

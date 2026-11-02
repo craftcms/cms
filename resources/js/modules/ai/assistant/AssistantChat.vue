@@ -7,8 +7,6 @@
   import {t} from '@craftcms/ui';
   import type {ActionMenuItem} from '@craftcms/ui/components/action-menu/action-menu.types';
   import '@craftcms/ui/components/empty/empty';
-  import '@craftcms/ui/components/textarea/textarea';
-  import type CraftTextarea from '@craftcms/ui/components/textarea/textarea';
   import {useChat, type UIMessage} from '@tanstack/ai-vue';
   import {usePage} from '@inertiajs/vue3';
   import type {CraftData} from '@/common/composables/useCraftData';
@@ -20,6 +18,7 @@
   import '@craftcms/ui/components/text-expander/text-expander';
   import {
     computed,
+    onBeforeUnmount,
     onMounted,
     shallowRef,
     useId,
@@ -40,6 +39,9 @@
   import {useSelectable} from '@/common/composables/useSelectable';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import CpLink from '@/common/components/CpLink.vue';
+  import MessageBubble from '@/common/components/MessageBubble.vue';
+  import MarkdownHtml from '@/common/components/MarkdownHtml.vue';
+  import CommentField from '@/common/components/CommentField.vue';
   import {
     createElementActionMenu,
     type ElementActionMenuItem,
@@ -87,7 +89,10 @@
   const status = shallowRef('');
   const history = useTemplateRef<HTMLElement>('history');
   const thread = useTemplateRef<HTMLElement>('thread');
-  const messageBox = useTemplateRef<CraftTextarea>('messageBox');
+  const messageBox =
+    useTemplateRef<InstanceType<typeof CommentField>>('messageBox');
+  /** The message box's Markdown field. */
+  const messageBoxField = computed(() => messageBox.value?.field ?? null);
   const idPrefix = useId();
   const historyScroll = usePinnedScroll(history, thread);
   const context = useAssistantContext();
@@ -206,14 +211,24 @@
   /** What the text expanders inserted in the message, which is highlighted. */
   const mentions = shallowRef<string[]>([]);
 
-  onMounted(() => {
-    const input = messageBox.value?.querySelector('textarea');
+  /** Finds the message box's textarea, which it replaces when it's moved. */
+  function findMessageBoxInput(): void {
+    messageBoxInput.value =
+      messageBoxField.value?.querySelector('textarea') ?? null;
+  }
 
-    if (input) {
-      input.id ||= `${idPrefix}-message`;
-      messageBoxInput.value = input;
+  // Watching from mount, as the panel moves the box right after.
+  const messageBoxObserver = new MutationObserver(findMessageBoxInput);
+
+  onMounted(() => {
+    findMessageBoxInput();
+
+    if (messageBoxField.value) {
+      messageBoxObserver.observe(messageBoxField.value, {childList: true});
     }
   });
+
+  onBeforeUnmount(() => messageBoxObserver.disconnect());
 
   // The `{` expander offers the open element’s fields.
   watch(
@@ -717,39 +732,7 @@
       )
   );
 
-  /**
-   * Enter sends the message. Shift + Enter and Ctrl/Command + Enter start a new
-   * line, which a textarea doesn't do for Ctrl/Command + Enter on its own. On
-   * touch screens, whose keyboards have no Shift + Enter, Enter starts a new
-   * line, and the Send button sends.
-   */
-  function onDraftKeydown(event: KeyboardEvent): void {
-    if (
-      event.key !== 'Enter' ||
-      event.shiftKey ||
-      event.altKey ||
-      event.isComposing
-    ) {
-      return;
-    }
-
-    // Touch keyboards have no Shift + Enter, so Enter starts a new line there.
-    if (
-      !event.ctrlKey &&
-      !event.metaKey &&
-      window.matchMedia?.('(pointer: coarse)').matches
-    ) {
-      return;
-    }
-
-    // Claimed, so the control panel's Ctrl/Command + Enter doesn't submit the form again.
-    event.preventDefault();
-    void send();
-  }
-
-  function onDraftChange(event: Event): void {
-    draft.value = String((event.target as CraftTextarea).modelValue ?? '');
-
+  function onDraftInput(): void {
     if (openQuestion.value && draft.value.trim()) {
       answer.value = 'other';
     }
@@ -786,7 +769,10 @@
 
   /** The message box’s own control, which gets focus when the chat opens. */
   function focusTarget(): HTMLElement | null {
-    return (messageBox.value && firstFocusableWithin(messageBox.value)) || null;
+    return (
+      (messageBoxField.value && firstFocusableWithin(messageBoxField.value)) ||
+      null
+    );
   }
 
   /** Moves focus to the message box. */
@@ -813,7 +799,7 @@
             v-if="entry.kind === 'prompt'"
             class="assistant-chat__message assistant-chat__message--user"
           >
-            <div class="assistant-chat__prompt" :style="photoColors">
+            <MessageBubble class="assistant-chat__prompt" :style="photoColors">
               <span class="sr-only">{{ t('You:') }}</span>
               <ul
                 v-if="entry.context.length"
@@ -834,19 +820,19 @@
                   </craft-chip>
                 </li>
               </ul>
-              <div
-                class="prose assistant-chat__prompt-text"
-                v-html="renderMarkdown(entry.text)"
-              ></div>
-            </div>
+              <MarkdownHtml
+                class="assistant-chat__prompt-text"
+                :html="renderMarkdown(entry.text)"
+              />
+            </MessageBubble>
           </li>
           <li v-else-if="entry.kind === 'text'" class="assistant-chat__message">
             <div class="assistant-chat__reply">
               <span class="sr-only">{{ t('AI assistant:') }}</span>
-              <div
-                class="prose assistant-chat__markdown"
-                v-html="renderMarkdown(entry.part.content, inlineImages)"
-              ></div>
+              <MarkdownHtml
+                class="assistant-chat__markdown"
+                :html="renderMarkdown(entry.part.content, inlineImages)"
+              />
             </div>
           </li>
           <li
@@ -1114,17 +1100,6 @@
               {{ option }}
             </label>
           </template>
-          <!-- Labels the box from outside it, so the info icon beside it
-              isn't part of the box's name. -->
-          <div v-if="!openQuestion" class="assistant-chat__message-label">
-            <label :for="messageBoxInputId ?? undefined">{{
-              t('Ask anything')
-            }}</label>
-            <!-- A translated string with fixed markup for the keys. -->
-            <craft-info-icon
-              ><span v-html="mentionHint"></span
-            ></craft-info-icon>
-          </div>
           <div class="assistant-chat__option">
             <input
               v-if="openQuestion"
@@ -1136,16 +1111,24 @@
               @click="chooseOtherAnswer"
               @keydown.enter.prevent="send"
             />
-            <craft-textarea
+            <CommentField
+              :id="`${idPrefix}-message`"
               ref="messageBox"
+              v-model="draft"
               class="assistant-chat__message-box"
-              :label="openQuestion ? t('Another answer') : undefined"
+              :rows="2"
+              :label="openQuestion ? null : t('Ask anything')"
+              :aria-label="openQuestion ? t('Another answer') : null"
               :placeholder="openQuestion ? t('Type another answer…') : ''"
-              rows="2"
-              .modelValue="draft"
-              @model-value-changed="onDraftChange"
-              @keydown="onDraftKeydown"
-            ></craft-textarea>
+              :submit-button="false"
+              @update:model-value="onDraftInput"
+              @submit="send"
+            >
+              <template #info>
+                <!-- A translated string with fixed markup for the keys. -->
+                <span v-html="mentionHint"></span>
+              </template>
+            </CommentField>
           </div>
         </div>
         <craft-text-expander
@@ -1249,32 +1232,10 @@
     align-items: flex-end;
     gap: var(--c-spacing-sm);
     max-inline-size: 85%;
-    padding-block: var(--c-spacing-md);
-    padding-inline: calc(var(--c-spacing) * 3);
-    border: 1px solid
-      color-mix(in srgb, var(--c-color-neutral-border-quiet) 50%, transparent);
-    border-radius: var(--c-radius-xl);
-    background-color: var(--c-color-neutral-fill-quiet);
-    background-image: linear-gradient(
-      to top right,
-      color-mix(
-        in srgb,
-        var(--photo-color-start, transparent) 15%,
-        transparent
-      ),
-      color-mix(in srgb, var(--photo-color-end, transparent) 15%, transparent)
-    );
-    box-shadow: var(--c-shadow-sm);
-    color: var(--c-color-neutral-on-quiet);
   }
 
   .assistant-chat__prompt-text {
-    display: flex;
-    flex-direction: column;
-    gap: var(--c-spacing-sm);
     align-self: stretch;
-    text-box: trim-both cap alphabetic;
-    overflow-wrap: anywhere;
   }
 
   .assistant-chat__prompt-text :deep(p) {
@@ -1335,53 +1296,8 @@
     font-size: var(--c-text-sm);
   }
 
-  .assistant-chat__markdown {
-    display: flex;
-    flex-direction: column;
+  .assistant-chat__reply .assistant-chat__markdown {
     gap: var(--c-spacing-md);
-  }
-
-  /* Headings in a reply structure a short answer in a narrow panel, so they
-     stay close to the text's size. */
-  .assistant-chat__markdown :deep(:is(h1, h2)) {
-    font-size: var(--c-text-lg);
-    font-weight: 600;
-  }
-
-  .assistant-chat__markdown :deep(:is(h3, h4, h5, h6)) {
-    font-size: var(--c-text-base);
-    font-weight: 600;
-  }
-
-  .assistant-chat__markdown :deep(pre) {
-    overflow-x: auto;
-    padding: var(--c-spacing-sm);
-    border-radius: var(--c-radius-md);
-    background-color: var(--c-surface-sunken);
-  }
-
-  .assistant-chat__markdown :deep(code) {
-    font-family: var(--c-font-mono);
-    font-size: 0.9em;
-  }
-
-  .assistant-chat__markdown :deep(img) {
-    max-inline-size: 100%;
-    block-size: auto;
-  }
-
-  .assistant-chat__markdown :deep(table) {
-    display: block;
-    overflow-x: auto;
-    border-collapse: collapse;
-  }
-
-  .assistant-chat__markdown :deep(th),
-  .assistant-chat__markdown :deep(td) {
-    padding-block: var(--c-spacing-xs);
-    padding-inline: var(--c-spacing-sm);
-    border: 1px solid var(--c-color-neutral-border-quiet);
-    text-align: start;
   }
 
   .assistant-chat__empty {
@@ -1421,7 +1337,7 @@
   .assistant-chat__card {
     cursor: text;
 
-    & :is(craft-chip, .assistant-chat__message-label label) {
+    & craft-chip {
       cursor: default;
     }
 
@@ -1441,13 +1357,6 @@
     outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
       var(--c-color-focus-outline);
     outline-offset: var(--c-focus-outline-offset);
-  }
-
-  .assistant-chat__message-label {
-    display: flex;
-    align-items: center;
-    gap: var(--c-spacing-xs);
-    font-weight: 600;
   }
 
   .assistant-chat__answer {
@@ -1478,19 +1387,27 @@
     min-inline-size: 0;
   }
 
+  /* The card is the box. */
   .assistant-chat__message-box {
     position: relative;
     z-index: 1;
-    --c-input-border-width: 0;
-    --c-input-fill: transparent;
-    --c-input-shadow: none;
-    --c-focus-outline-width: 0;
+    border: 0;
+    background: none;
+    box-shadow: none !important;
   }
 
-  .assistant-chat__message-box :deep(textarea) {
-    padding-block: var(--c-spacing-xs);
-    padding-inline: 0;
-    resize: none;
+  .assistant-chat__message-box :deep(.comment-field__header) {
+    padding: 0;
+  }
+
+  .assistant-chat__option
+    > .assistant-chat__message-box
+    :deep(
+      craft-markdown-field:defined
+        :is(.overtype-input, .overtype-preview, .overtype-placeholder)
+    ) {
+    padding-block: var(--c-spacing-xs) !important;
+    padding-inline: 0 !important;
   }
 
   .assistant-chat__chips {

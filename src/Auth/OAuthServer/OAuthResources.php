@@ -86,36 +86,30 @@ class OAuthResources
         $resource = $this->get($handle) ?? throw new InvalidArgumentException("OAuth resource [$handle] isn’t registered.");
         $cp = $this->isCpPath($resource->authorizationRoute);
 
-        $this->router->get($this->wellKnownPath($resource->resourceMetadataUrl()), [MetadataController::class, 'resource'])
+        $this->router->name("$resource->routeName.resource")->get($this->wellKnownPath($resource->resourceMetadataUrl()), [MetadataController::class, 'resource'])
             ->middleware(EnsureInstalled::class)
-            ->defaults('oauthResource', $handle)
-            ->name("$resource->routeName.resource");
-        $this->router->get($this->wellKnownPath($resource->authorizationServerMetadataUrl()), [MetadataController::class, 'authorizationServer'])
+            ->defaults('oauthResource', $handle);
+        $this->router->name("$resource->routeName.authorization-server")->get($this->wellKnownPath($resource->authorizationServerMetadataUrl()), [MetadataController::class, 'authorizationServer'])
             ->middleware(EnsureInstalled::class)
-            ->defaults('oauthResource', $handle)
-            ->name("$resource->routeName.authorization-server");
+            ->defaults('oauthResource', $handle);
 
         $this->router->prefix(trim($resource->authorizationRoute, '/').'/oauth')
             ->name("$resource->routeName.")
             ->group(function (Router $router) use ($cp, $handle): void {
-                $router->post('register', RegisterClientController::class)
+                $router->name('register')->post('register', RegisterClientController::class)
                     ->middleware([EnsureInstalled::class, PreventStaleDatabaseReads::class, 'throttle:60,1'])
-                    ->defaults('oauthResource', $handle)
-                    ->name('register');
+                    ->defaults('oauthResource', $handle);
 
                 $router->middleware(['web', 'craft', ...($cp ? [HandleInertiaRequests::class] : []), 'throttle:60,1', AuthorizeCpRequests::class])
                     ->group(function (Router $router) use ($handle): void {
-                        $router->get('authorize', AuthorizationController::class)
-                            ->defaults('oauthResource', $handle)
-                            ->name('authorize');
+                        $router->name('authorize')->get('authorize', AuthorizationController::class)
+                            ->defaults('oauthResource', $handle);
 
                         $router->middleware(['auth:'.Cms::config()->getAuthGuard()])->group(function (Router $router) use ($handle): void {
-                            $router->post('authorize', [ApproveAuthorizationController::class, 'approve'])
-                                ->defaults('oauthResource', $handle)
-                                ->name('approve');
-                            $router->delete('authorize', [DenyAuthorizationController::class, 'deny'])
-                                ->defaults('oauthResource', $handle)
-                                ->name('deny');
+                            $router->name('approve')->post('authorize', [ApproveAuthorizationController::class, 'approve'])
+                                ->defaults('oauthResource', $handle);
+                            $router->name('deny')->delete('authorize', [DenyAuthorizationController::class, 'deny'])
+                                ->defaults('oauthResource', $handle);
                         });
                     });
             });

@@ -517,6 +517,8 @@ Craft.ElementEditor = Garnish.Base.extend(
             keyCode: Garnish.S_KEY,
             ctrl: true,
             alt: true,
+            description: Craft.t('app', 'Apply draft'),
+            group: Craft.t('app', 'Forms'),
           },
           () => {
             Craft.submitForm(this.$container, {

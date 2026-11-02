@@ -16,6 +16,7 @@ use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\PreventStaleDatabaseReads;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Mcp\Enums\McpScope;
+use CraftCms\Cms\Mcp\Http\Controllers\DiscoveryController;
 use CraftCms\Cms\Mcp\Http\Controllers\EndpointPageController;
 use CraftCms\Cms\Mcp\Http\Controllers\McpController;
 use CraftCms\Cms\Mcp\Http\Middleware\ReorderJsonAccept;
@@ -34,6 +35,9 @@ use Laravel\Passport\Http\Middleware\CheckTokenForAnyScope;
  */
 readonly class RouteRegistrar
 {
+    /** The rate limiter for discovery requests, which applies the `defaultRateLimit` config setting. */
+    public const string DISCOVERY_RATE_LIMITER = 'mcp-discovery';
+
     public function __construct(
         private Router $router,
         private EndpointConflicts $conflicts,
@@ -102,15 +106,12 @@ readonly class RouteRegistrar
                 ->name('craft.mcp.uploads.')
                 ->middleware([...self::authenticatedMiddleware(), CheckTokenForAnyScope::using(McpScope::Write->satisfyingValues())])
                 ->group(function (Router $router): void {
-                    $router->any('{upload}/transfer', [UploadSessionController::class, 'transfer'])
-                        ->whereUuid('upload')
-                        ->name('transfer');
-                    $router->get('{upload}', [UploadSessionController::class, 'status'])
-                        ->whereUuid('upload')
-                        ->name('status');
-                    $router->delete('{upload}', [UploadSessionController::class, 'destroy'])
-                        ->whereUuid('upload')
-                        ->name('destroy');
+                    $router->name('transfer')->any('{upload}/transfer', [UploadSessionController::class, 'transfer'])
+                        ->whereUuid('upload');
+                    $router->name('status')->get('{upload}', [UploadSessionController::class, 'status'])
+                        ->whereUuid('upload');
+                    $router->name('destroy')->delete('{upload}', [UploadSessionController::class, 'destroy'])
+                        ->whereUuid('upload');
                 });
         }
 
@@ -118,9 +119,31 @@ readonly class RouteRegistrar
             $this->resources->routes('mcp');
         }
 
-        // Routes are named after they're added, and this can run after the application has booted.
-        $this->router->getRoutes()->refreshNameLookups();
-        $this->router->getRoutes()->refreshActionLookups();
+        $this->registerDiscovery($settings);
+    }
+
+    /** Registers the AI Catalog and Server Card routes for the discoverable servers, per SEP-2127. */
+    private function registerDiscovery(Settings $settings): void
+    {
+        $servers = $settings->discoverableServers();
+
+        if ($servers === []) {
+            return;
+        }
+
+        $middleware = [EnsureInstalled::class, ResolveSite::class, 'throttle:'.self::DISCOVERY_RATE_LIMITER];
+
+        $this->router->name('craft.mcp.catalog')->get('.well-known/ai-catalog.json', [DiscoveryController::class, 'catalog'])
+            ->middleware($middleware)
+            ->defaults('mcp', true);
+
+        foreach ($servers as $path => $isPublic) {
+            $this->router->name(sprintf('craft.mcp.%s.server-card', $isPublic ? 'public' : 'authorization'))
+                ->match(['GET', 'HEAD', 'OPTIONS'], "$path/server-card", [DiscoveryController::class, 'serverCard'])
+                ->middleware($middleware)
+                ->defaults('mcp', true)
+                ->defaults('endpoint', $path);
+        }
     }
 
     private function path(bool $enabled, string $route): ?string
@@ -132,23 +155,22 @@ readonly class RouteRegistrar
 
     private function registerEndpoint(string $name, string $path, bool $authenticated, bool $public, bool $cp): void
     {
-        $this->router->get($path, [EndpointPageController::class, $authenticated ? 'authenticated' : 'public'])
+        $this->router->name("$name.page")->get($path, [EndpointPageController::class, $authenticated ? 'authenticated' : 'public'])
             ->middleware(['web', 'craft', ...($cp ? [HandleInertiaRequests::class] : []), ...($authenticated ? [] : ['throttle:60,1'])])
-            ->defaults('mcp', true)
-            ->name("$name.page");
+            ->defaults('mcp', true);
 
         $this->router->options($path, [McpController::class, 'preflight'])
             ->middleware(self::publicMiddleware())
             ->defaults('mcp', true);
 
         $server = match (true) {
-            $authenticated && $public => $this->router->allowDuringMaintenance()->match(['POST', 'DELETE'], $path, [McpController::class, 'shared']),
-            $authenticated => $this->router->allowDuringMaintenance()->match(['POST', 'DELETE'], $path, [McpController::class, 'authenticated'])
+            $authenticated && $public => $this->router->allowDuringMaintenance()->name($name)->match(['POST', 'DELETE'], $path, [McpController::class, 'shared']),
+            $authenticated => $this->router->allowDuringMaintenance()->name($name)->match(['POST', 'DELETE'], $path, [McpController::class, 'authenticated'])
                 ->middleware(self::authenticatedMiddleware()),
-            default => $this->router->match(['POST', 'DELETE'], $path, [McpController::class, 'public'])
+            default => $this->router->name($name)->match(['POST', 'DELETE'], $path, [McpController::class, 'public'])
                 ->middleware(self::publicMiddleware()),
         };
 
-        $server->defaults('mcp', true)->name($name);
+        $server->defaults('mcp', true);
     }
 }

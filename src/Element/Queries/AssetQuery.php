@@ -17,6 +17,7 @@ use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesImageType;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesOrientation;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesSizes;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
@@ -110,6 +111,7 @@ class AssetQuery extends ElementQuery
      * @uses $editable
      */
     #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether to only return {elements} that the user has permission to edit.')]
+    #[Gql(exclude: true)]
     public function editable(?bool $value = true): self
     {
         $this->editable = $value;

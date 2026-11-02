@@ -26,6 +26,12 @@ class Asset extends ElementMutationArguments
                 'description' => 'The file to use for this asset',
                 'type' => File::getType(),
             ],
-        ], static::propertyArguments(AssetElement::class, ['alt', 'newFolderId', 'uploaderId', 'focalPoint']));
+        ]);
+    }
+
+    #[\Override]
+    protected static function elementType(): string
+    {
+        return AssetElement::class;
     }
 }

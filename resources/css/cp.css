@@ -341,6 +341,13 @@ ul.path > li:not(:last-child)::after {
   text-decoration: none;
   border: 1px solid color-mix(in srgb, currentColor 40%, transparent);
   border-radius: var(--c-radius-full);
+
+  /* Centered on its capitals, as `craft-badge` is, rather than on a line box
+     whose descender room depends on the font's metrics. */
+  @supports (text-box: trim-both cap alphabetic) {
+    text-box: trim-both cap alphabetic;
+    padding-block: calc((1lh - 1cap) / 2);
+  }
 }
 
 .label:has(.context-label),

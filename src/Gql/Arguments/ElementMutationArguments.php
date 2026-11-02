@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Gql\Arguments;
 use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use GraphQL\Type\Definition\Argument;
 
 /**
@@ -20,23 +21,14 @@ abstract class ElementMutationArguments extends MutationArguments
     #[\Override]
     public static function getArguments(): array
     {
-        $arguments = array_merge(parent::getArguments(), static::propertyArguments(Element::class, ['title', 'enabled']));
-
-        if ($elementType = static::elementType()) {
-            $arguments += static::propertyArguments($elementType, array_values(array_diff(
-                array_keys(array_filter(ElementProperty::all($elementType), fn (ElementProperty $property): bool => $property->writable)),
-                array_keys(ElementProperty::all(Element::class)),
-            )));
-        }
-
-        return $arguments;
+        return array_merge(parent::getArguments(), static::gqlPropertyArguments(static::elementType() ?? Element::class));
     }
 
     /**
      * Returns the element type whose properties should be added as arguments automatically.
      *
-     * Every property that the element type declares with {@see ElementProperty} is added, except for properties that
-     * the base {@see Element} declares.
+     * Every writable property that the element type declares with {@see ElementProperty} and doesn’t exclude
+     * with {@see Gql} is added. Without an element type, only the base {@see Element}’s properties are added.
      *
      * @return class-string<ElementInterface>|null
      */

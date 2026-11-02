@@ -4,16 +4,20 @@
   import {t} from '@craftcms/ui';
   import Modal from '@/common/components/Modal.vue';
   import CraftInputSearch from '@craftcms/ui/vue/CraftInputSearch.vue';
-  import {computed, nextTick, ref, watch} from 'vue';
+  import {computed, nextTick, ref, useId, watch} from 'vue';
   import {watchDebounced} from '@vueuse/core';
   import {useHttp} from '@inertiajs/vue3';
   import {useAnnouncer} from '@/common/composables/useAnnouncer';
   import {useAsyncIcon} from '../composables/useAsyncIcon';
   import IconController from '@actions/IconController';
 
-  /** An icon the picker offers: its name, and the SVG it's drawn with. */
-  type IconOption = {name: string; svg: string};
-  type PickerOptionsResponse = {icons: IconOption[]};
+  /**
+   * An icon the picker offers: its name, the SVG it's drawn with, the value
+   * it's stored as (`set-handle:name` for custom icon sets), and its set.
+   */
+  type IconOption = {name: string; svg: string; value: string; set: string};
+  type IconSetInfo = {handle: string; name: string};
+  type PickerOptionsResponse = {icons: IconOption[]; sets: IconSetInfo[]};
 
   const model = defineModel<string>();
   const props = withDefaults(
@@ -22,6 +26,11 @@
       name?: string;
       error?: string;
       freeOnly?: boolean;
+      /**
+       * The icon sets to offer, in order (`fontawesome` for Font Awesome), or
+       * `'*'` for all of them. Font Awesome alone when unset.
+       */
+      sets?: string[] | '*' | null;
       disabled?: boolean;
       // Used by the legacy `<craft-icon-picker>` mount bridge: `id` lets a
       // wrapping `craft-field` label associate with the control, and
@@ -41,6 +50,8 @@
   const modalActive = ref<boolean>(false);
   /** The icons on offer, or null before the first load. */
   const icons = ref<IconOption[] | null>(null);
+  const iconSets = ref<IconSetInfo[]>([]);
+  const headingIdPrefix = `icon-picker-set-${useId()}`;
   const chooseButton = ref<HTMLElement | null>(null);
   const searchForm = ref<HTMLFormElement | null>(null);
 
@@ -61,11 +72,16 @@
   function loadIcons() {
     http.get(
       IconController.pickerOptions(undefined, {
-        query: {search: query.value, freeOnly: props.freeOnly},
+        query: {
+          search: query.value,
+          freeOnly: props.freeOnly,
+          ...(props.sets ? {sets: props.sets} : {}),
+        },
       }).url,
       {
         onSuccess: (response) => {
           icons.value = response.icons;
+          iconSets.value = response.sets ?? [];
 
           announce(
             `${t('Loading complete')} - ${t(
@@ -99,6 +115,16 @@
       loadIcons();
     },
     {debounce: 300}
+  );
+
+  /** The icons grouped by set, in the sets' order, leaving out empty sets. */
+  const iconGroups = computed(() =>
+    iconSets.value
+      .map((set) => ({
+        ...set,
+        icons: (icons.value ?? []).filter((icon) => icon.set === set.handle),
+      }))
+      .filter((group) => group.icons.length)
   );
 
   const buttonLabel = computed(() => (model.value ? t('Change') : t('Choose')));
@@ -202,18 +228,36 @@
           </template>
 
           <template v-else>
-            <ul class="icon-grid" :lang="contentLang">
-              <li v-for="icon in icons" :key="icon.name">
-                <button
-                  type="button"
-                  class="icon-picker--icon"
-                  :title="icon.name"
-                  :aria-label="icon.name"
-                  @click="choose(icon.name)"
-                  v-html="icon.svg"
-                ></button>
-              </li>
-            </ul>
+            <section
+              v-for="group in iconGroups"
+              :key="group.handle"
+              class="icon-group"
+              :aria-labelledby="
+                iconGroups.length > 1
+                  ? `${headingIdPrefix}-${group.handle}`
+                  : undefined
+              "
+            >
+              <h3
+                v-if="iconGroups.length > 1"
+                :id="`${headingIdPrefix}-${group.handle}`"
+                class="mt-0 mb-sm text-base font-semibold"
+              >
+                {{ group.name }}
+              </h3>
+              <ul class="icon-grid" :lang="contentLang">
+                <li v-for="icon in group.icons" :key="icon.value">
+                  <button
+                    type="button"
+                    class="icon-picker--icon"
+                    :title="icon.name"
+                    :aria-label="icon.name"
+                    @click="choose(icon.value)"
+                    v-html="icon.svg"
+                  ></button>
+                </li>
+              </ul>
+            </section>
           </template>
         </div>
       </craft-pane>
@@ -255,6 +299,10 @@
     grid-template-columns: repeat(auto-fill, var(--c-size-control-md));
     justify-content: center;
     gap: var(--c-spacing-sm);
+  }
+
+  .icon-group + .icon-group {
+    margin-block-start: var(--c-spacing-lg);
   }
 
   .icon-picker--icon {

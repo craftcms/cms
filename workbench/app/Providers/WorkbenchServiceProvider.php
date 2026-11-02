@@ -14,9 +14,13 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Workflow\WorkflowStageTypes;
 use Illuminate\Console\Events\CommandStarting;
+use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Ai\AiManager;
+use Workbench\App\Ai\WorkbenchAiProvider;
 use Workbench\App\Ui\UiKitchenSink;
 use Workbench\App\Widgets\HtmlExample;
 use Workbench\App\Widgets\LayoutSlotsDemo;
@@ -64,6 +68,15 @@ class WorkbenchServiceProvider extends ServiceProvider
             app()->setBasePath(package_path());
             app()->useAppPath(package_path('src'));
         });
+
+        // A scripted AI provider, so the AI features can be tried without an API key.
+        if (! $this->app->runningUnitTests()) {
+            config(['ai.providers.workbench' => ['driver' => 'workbench']]);
+            $this->callAfterResolving(AiManager::class, fn (AiManager $manager) => $manager->extend(
+                'workbench',
+                fn (Application $app, array $config) => new WorkbenchAiProvider($config, $app->make(Dispatcher::class)),
+            ));
+        }
 
         app(Plugins::class)->addViteConfig('workbench', [
             'hotFile' => CmsAssets::resourcesPath('hot'),

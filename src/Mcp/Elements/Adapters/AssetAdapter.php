@@ -47,11 +47,7 @@ class AssetAdapter extends BaseElementAdapter
 
     protected function updateAttributesSchema(): array
     {
-        $properties = $this->propertySchemas(['title', 'slug', 'alt', 'enabled', 'filename', 'folderId', 'uploaderId', 'focalPoint'], [
-            'filename' => 'Changing it renames the file.',
-            'folderId' => 'Changing it moves the file.',
-            'uploaderId' => 'Null marks it unknown. Changing it requires permission to save other users’ assets in the volume.',
-        ]);
+        $properties = $this->attributeSchemas('update', ['title', 'slug', 'enabled']);
 
         // setFocalPoint() quietly clears out-of-range values, so reject them up front.
         $properties['focalPoint']['pattern'] = '^(0(\.\d+)?|1(\.0+)?);(0(\.\d+)?|1(\.0+)?)$';

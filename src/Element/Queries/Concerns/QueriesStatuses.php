@@ -11,6 +11,8 @@ use CraftCms\Cms\Element\Enums\ElementQueryParamType;
 use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
+use CraftCms\Cms\Gql\Attributes\Gql;
+use CraftCms\Cms\Mcp\Attributes\Mcp;
 use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use Illuminate\Database\Query\Builder;
 
@@ -58,7 +60,8 @@ trait QueriesStatuses
         });
     }
 
-    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Narrows the query results to only elements that have been archived.')]
+    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Narrows the query results to only {elements} that have been archived.')]
+    #[Gql(Gql::CanQueryInactiveElements)]
     public function archived(bool $value = true): static
     {
         $this->archived = $value;
@@ -95,7 +98,9 @@ trait QueriesStatuses
      *
      * @param  string|string[]|null  $value  The property value
      */
-    #[ElementQueryParam(ElementQueryParamType::NullableStringOrStrings, 'Narrows the query results based on the elements’ statuses.')]
+    #[ElementQueryParam(ElementQueryParamType::NullableStringOrStrings, 'Narrows the query results based on the {elements}’ statuses.')]
+    #[Gql(Gql::CanQueryInactiveElements)]
+    #[Mcp(hint: 'Pass null to include all statuses.')]
     public function status(array|string|null $value): static
     {
         $this->status = $value;

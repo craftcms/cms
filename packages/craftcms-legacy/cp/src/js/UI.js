@@ -601,6 +601,9 @@ Craft.ui = {
     if (config.freeOnly) {
       $el.attr('free-only', '');
     }
+    if (config.sets) {
+      $el.attr('sets', config.sets === '*' ? '*' : JSON.stringify(config.sets));
+    }
     if (config.static || config.disabled) {
       $el.attr('disabled', '');
     }

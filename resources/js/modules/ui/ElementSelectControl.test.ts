@@ -935,7 +935,7 @@ describe('ElementSelectControl', () => {
      * A thumbnail's menu sits in its corner, padded like a chip's, so a flush
      * button would bleed its hover to the tile's edge.
      */
-    it('keeps a thumbnail’s action menu within its padding', async () => {
+    it('lines a thumbnail’s action menu up with its edge', async () => {
       const root = await mount({
         props: {viewMode: 'thumbs', limit: 3},
         value: [5, 6],
@@ -945,9 +945,10 @@ describe('ElementSelectControl', () => {
       ];
 
       expect(invokers).toHaveLength(2);
-      expect(invokers.some((invoker) => invoker.hasAttribute('flush'))).toBe(
-        false
-      );
+      expect(invokers.map((invoker) => invoker.getAttribute('flush'))).toEqual([
+        'inline-end',
+        'inline-end',
+      ]);
     });
 
     it('selects a card through its checkbox too', async () => {
