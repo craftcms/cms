@@ -832,6 +832,10 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
           save({redirect: false});
         }
       },
+      hasShiftSaveShortcut: () =>
+        props.editorActions.menu.some(
+          (item) => item.shortcut && item.shift && !item.disabled
+        ),
       transform: (data) => {
         // Identity first, so the form wins where they overlap: the entry type
         // can be changed in the sidebar, and `saveData()` only knows the one
