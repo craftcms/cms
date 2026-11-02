@@ -27,14 +27,10 @@ class CpAsset implements LegacyAssetInterface
         GarnishAsset::class,
         JqueryAsset::class,
         JqueryTouchEventsAsset::class,
-        JqueryUiAsset::class,
-        JqueryPaymentAsset::class,
-        DatepickerI18nAsset::class,
         SelectizeAsset::class,
         VelocityAsset::class,
         IframeResizerAsset::class,
         ThemeAsset::class,
-        PicturefillAsset::class,
     ];
 
     public function register(HtmlStack $htmlStack): void
