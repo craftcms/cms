@@ -1,6 +1,6 @@
 import {t} from '@craftcms/ui/utilities/translate';
 import {setElementAttributes} from './attributes';
-import {initLegacyUi} from '@/common/craft/legacy-ui';
+import {initLegacyUi} from './legacy-ui';
 
 declare const $: any;
 
