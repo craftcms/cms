@@ -28,8 +28,11 @@ import {
   ESC_KEY,
   S_KEY,
   isMobileBrowser,
+  releaseFocusWithin,
   setFocusWithin,
+  trapFocusWithin,
 } from '@craftcms/garnish';
+import {refreshComponentInstances} from '@/common/craft/component-instances';
 import {initLegacyUi} from '@/common/craft/legacy-ui';
 import {loadElementThumbs} from '@/modules/element-thumb-loader/globals';
 import {
@@ -623,7 +626,7 @@ export class CpScreenSlideout extends Slideout {
     }
 
     if (!this.showExpandedView) {
-      Craft.trapFocusWithin(this.$sidebar);
+      trapFocusWithin(this.$sidebar[0]);
     }
 
     this.$sidebarBtn.addClass('active').attr({
@@ -666,7 +669,7 @@ export class CpScreenSlideout extends Slideout {
         this.$sidebarBtn.focus();
       });
 
-    Craft.releaseFocusWithin(this.$sidebar);
+    releaseFocusWithin(this.$sidebar[0]);
 
     this.$sidebarBtn.removeClass('active').attr({
       'aria-expanded': 'false',
@@ -759,7 +762,7 @@ export class CpScreenSlideout extends Slideout {
       showSuccess(data.message, data.notificationSettings);
     }
     if (data.modelClass && data.modelId) {
-      Craft.refreshComponentInstances(data.modelClass, data.modelId);
+      void refreshComponentInstances(data.modelClass, data.modelId);
     }
     const ev = {
       response: response,

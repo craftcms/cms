@@ -14,7 +14,17 @@ import {
   t,
   type ButtonVariant,
 } from '@craftcms/ui';
-import {computed, nextTick, onBeforeUnmount, ref, shallowRef, watch} from 'vue';
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onScopeDispose,
+  ref,
+  shallowRef,
+  watch,
+} from 'vue';
+import {broadcast, onBroadcast} from '@/common/craft/broadcast';
+import {refreshPreviews} from '@/modules/elements/live-preview/previews';
 import {
   useScreenPageProps,
   type ScreenPageProps,
@@ -520,11 +530,9 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     updatedTimestamps: props.updatedTimestamps,
   });
 
-  useEventListener(
-    () => window.Craft?.broadcaster,
-    'message',
-    (event: MessageEvent) => {
-      const data = event.data;
+  // Other tabs that reorder these nested elements
+  onScopeDispose(
+    onBroadcast('reorderNestedElements', (data: any) => {
       const draftId = autosave.draftId.value ?? props.draftId;
       if (
         data.event === 'reorderNestedElements' &&
@@ -546,7 +554,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
           router.reload();
         }
       }
-    }
+    })
   );
 
   // Applying a draft consumes it, and Inertia preserves this component across
@@ -1190,24 +1198,19 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   /**
    * What a save from inside a panel tells the rest of the CP, since the page
    * behind it isn't reloaded: the confirmation, other tabs and element indexes
-   * (via the broadcaster), and Live Preview.
+   * (via a broadcast), and Live Preview.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function announceSaved(data: any): void {
-    const craft = window.Craft;
-
     if (data?.message) {
       showSuccess(data.message, data.notificationSettings);
     }
 
     if (data?.element?.id) {
-      craft?.broadcaster?.postMessage({
-        event: 'saveElement',
-        id: data.element.id,
-      });
+      broadcast({event: 'saveElement', id: data.element.id});
     }
 
-    craft?.Preview?.refresh?.();
+    refreshPreviews();
   }
 
   /** Throws away the provisional draft, reverting to the canonical element. */

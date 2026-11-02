@@ -1,6 +1,14 @@
 import {actionClient, t} from '@craftcms/ui';
-import {useEventListener, useTimeoutFn} from '@vueuse/core';
-import {computed, nextTick, shallowRef, watch, type Ref} from 'vue';
+import {useTimeoutFn} from '@vueuse/core';
+import {
+  computed,
+  nextTick,
+  onScopeDispose,
+  shallowRef,
+  watch,
+  type Ref,
+} from 'vue';
+import {broadcast, onBroadcast} from '@/common/craft/broadcast';
 import CreateElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/CreateElementController';
 import EditElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/EditElementController';
 import NestedElementsController from '@/actions/CraftCms/Cms/Http/Controllers/NestedElementsController';
@@ -560,8 +568,8 @@ export function useNestedElementOperations(
       );
       reordered = true;
       showNotice(data.message);
-      window.Craft?.broadcaster?.postMessage({
-        pageId: window.Craft.pageId,
+      broadcast({
+        pageId: window.Craft?.pageId,
         event: 'reorderNestedElements',
         canonicalId: preparedOwner.value?.canonicalId,
         draftId: preparedOwner.value?.draftId,
@@ -609,11 +617,9 @@ export function useNestedElementOperations(
     await options.refresh();
   }
 
-  useEventListener(
-    () => window.Craft?.broadcaster,
-    'message',
-    (event: MessageEvent) => {
-      const data = event.data;
+  // Other tabs that reorder these nested elements
+  onScopeDispose(
+    onBroadcast('reorderNestedElements', (data: any) => {
       if (
         data.event === 'reorderNestedElements' &&
         data.ownerId ===
@@ -623,7 +629,7 @@ export function useNestedElementOperations(
       ) {
         void refreshFromBroadcaster().catch(setError);
       }
-    }
+    })
   );
 
   watch(

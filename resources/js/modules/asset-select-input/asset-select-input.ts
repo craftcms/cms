@@ -14,6 +14,7 @@ import {startSide} from '@/common/craft/direction';
 import {showError} from '@/modules/messages/messages';
 import {QueueService} from '@/modules/queue/queue';
 import {announce} from '@/common/announcer';
+import {getElementInfo} from '@/common/craft/element-markup';
 
 declare const Craft: any;
 declare const Garnish: any;
@@ -289,9 +290,7 @@ export class AssetSelectInput extends BaseElementSelectInput {
         ],
       })
       .then(async ({data}: any) => {
-        const elementInfo = Craft.getElementInfo(
-          data.elements[result.assetId][0]
-        );
+        const elementInfo = getElementInfo(data.elements[result.assetId][0]);
         this.selectElements([elementInfo]);
 
         await appendHeadHtml(data.headHtml);

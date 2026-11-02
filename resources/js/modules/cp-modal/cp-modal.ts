@@ -6,6 +6,7 @@ import {
   sendLegacyRequest,
   type LegacyRequestOptions,
 } from '@craftcms/ui/utilities/api/legacyRequest';
+import {refreshComponentInstances} from '@/common/craft/component-instances';
 import {initLegacyUi} from '@/common/craft/legacy-ui';
 import {loadElementThumbs} from '@/modules/element-thumb-loader/globals';
 import {
@@ -351,7 +352,7 @@ export class CpModal extends Base {
       showSuccess(data.message, data.notificationSettings);
     }
     if (data.modelClass && data.modelId) {
-      Craft.refreshComponentInstances(data.modelClass, data.modelId);
+      void refreshComponentInstances(data.modelClass, data.modelId);
     }
     this.succeeded = true;
     const ev = {

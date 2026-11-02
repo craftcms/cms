@@ -28,6 +28,8 @@ import {
   addModalAttributes,
   prefersReducedMotion,
   setFocusWithin,
+  isMobileBrowser,
+  trapFocusWithin,
   type GarnishBaseSettings,
 } from '@craftcms/garnish';
 import {announce} from '@/common/announcer';
@@ -311,7 +313,7 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
 
     addModalAttributes(this.$outerContainer[0]);
 
-    Craft.trapFocusWithin(this.$container);
+    trapFocusWithin(this.$container[0]);
 
     // `appendChild` moves the one shared node, same as `appendTo` did.
     this.$liveRegion = sharedLiveRegion;
@@ -334,7 +336,8 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
 
     const previewEditor = getActivePreview()?.editor.value ?? null;
     this._inPreview = !!previewEditor;
-    this.useMobileStyles = !!previewEditor || Craft.useMobileStyles();
+    this.useMobileStyles =
+      !!previewEditor || isMobileBrowser() || document.body.clientWidth < 600;
 
     this.$outerContainer.removeClass('so-mobile so-lp');
     this.$container.removeClass('so-mobile so-lp');

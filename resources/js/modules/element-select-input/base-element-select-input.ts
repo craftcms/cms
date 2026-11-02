@@ -14,6 +14,12 @@ import {
   UP_KEY,
   type GarnishBaseSettings,
 } from '@craftcms/garnish';
+import {
+  animate,
+  animateAll,
+  getElementInfo,
+  setElementSize,
+} from '@/common/craft/element-markup';
 import {announce} from '@/common/announcer';
 import {loadElementThumbs} from '@/modules/element-thumb-loader/globals';
 import {iconSvg} from '@/common/craft/icon-svg';
@@ -927,9 +933,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
         })
         .then(async ({data}: any) => {
           this.removeElement($existing);
-          const elementInfo = Craft.getElementInfo(
-            data.elements[replacementId][0]
-          );
+          const elementInfo = getElementInfo(data.elements[replacementId][0]);
           this.selectElements([elementInfo]).then(resolve);
           await appendHeadHtml(data.headHtml);
           await appendBodyHtml(data.bodyHtml);
@@ -1059,7 +1063,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       maxWidth: width + 'px',
     });
 
-    await Craft.animate($element, {
+    await animate($element, {
       opacity: -1,
       left: offset.left + 100 * (isRtl() ? 1 : -1),
     });
@@ -1361,7 +1365,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
 
   createNewElement(elementInfo: any): any {
     const $element = elementInfo.$element.clone();
-    Craft.setElementSize(
+    setElementSize(
       $element,
       ['thumbs', 'large'].includes(this.settings.viewMode) ? 'large' : 'small'
     );
@@ -1417,7 +1421,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       animations.push([$helper, {top: newOffset.top, left: newOffset.left}]);
     }
 
-    await Craft.animateAll(animations);
+    await animateAll(animations);
 
     for (const [$helper] of animations) {
       $helper.remove();
