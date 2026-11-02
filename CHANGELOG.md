@@ -289,6 +289,7 @@
 - Scheduled releases can now be published right away. Release pages now show their publication buttons below the drafts table, with “Schedule” or “Unschedule” followed by a red outline “Publish now” button. Scheduled releases show their scheduled time in the Info panel, and their Target Date field is no longer shown. ([#20252](https://github.com/craftcms/cms/pull/20252))
 - Release pages now show a red callout when drafts are blocking publication, in place of a note in the header. ([#20252](https://github.com/craftcms/cms/pull/20252))
 - Read-only Markdown fields’ values can now be focused, selected, and scrolled, rather than being disabled. ([#20109](https://github.com/craftcms/cms/pull/20109))
+- Fixed a bug where pressing <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd> on element edit pages didn’t save and add another. ([#20260](https://github.com/craftcms/cms/pull/20260))
 - Fixed a bug where dragging an image’s focal point in its preview sent it to the corner of the image. ([#20213](https://github.com/craftcms/cms/issues/20213))
 - Fixed a bug where typing in a newly added nested entry’s fields could replace the edit form with a “UI array path … must be a row index” error once the entry autosaved.
 - Fixed a bug where changing a field back to the value it had when the edit page loaded wasn’t autosaved, so field layout elements shown or hidden by conditions based on it didn’t update.

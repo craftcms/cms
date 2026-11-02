@@ -817,6 +817,21 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     {
       keyboardShortcutEnabled: () =>
         !props.readOnly && !releaseDraftLocked.value,
+      // Cmd/Ctrl + Shift + S submits the Save menu's shortcut action that
+      // takes Shift, such as “Save and add another”, as clicking it would.
+      onSaveShortcut: (event) => {
+        const action = event.shiftKey
+          ? props.editorActions.menu.find(
+              (item) => item.shortcut && item.shift && !item.disabled
+            )
+          : undefined;
+
+        if (action) {
+          submitAction(action);
+        } else if (!event.shiftKey) {
+          save({redirect: false});
+        }
+      },
       transform: (data) => {
         // Identity first, so the form wins where they overlap: the entry type
         // can be changed in the sidebar, and `saveData()` only knows the one
