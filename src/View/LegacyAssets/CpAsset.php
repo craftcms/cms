@@ -27,9 +27,7 @@ class CpAsset implements LegacyAssetInterface
         GarnishAsset::class,
         JqueryAsset::class,
         JqueryTouchEventsAsset::class,
-        SelectizeAsset::class,
         VelocityAsset::class,
-        IframeResizerAsset::class,
         ThemeAsset::class,
     ];
 

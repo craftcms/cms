@@ -111,6 +111,7 @@
     "@vueuse/shared": "^14.3.0",
     "d3": "catalog:",
     "fabric": "^7.4.0",
+    "iframe-resizer": "^4.4.5",
     "laravel-vite-plugin": "^3.1.0",
     "lit": "catalog:",
     "overtype": "^2.4.0",
