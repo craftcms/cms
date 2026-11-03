@@ -236,8 +236,6 @@
 - Fixed a bug where legacy menus, such as the Tags field’s suggestions, were shown below the page instead of positioned beside their trigger. ([#20179](https://github.com/craftcms/cms/pull/20179))
 - Fixed a bug where typing in an element index’s page number field disabled it and reset it to the current page until the new page loaded, so page numbers with more than one digit couldn’t be entered. The field now stays editable while a page loads, and goes to the typed page after a short pause.
 - Fixed a bug where changing an element index’s view mode in one browser tab switched other tabs showing the same index to that mode, with empty rows, cards, or chips.
-- Fixed a bug where element index status menus showed “Pending” in yellow and “Live” in green, rather than in the status colors used elsewhere in the control panel. ([#20270](https://github.com/craftcms/cms/pull/20270))
-- Fixed a bug where the indicator beside fields that were updated in the Current revision was orange in drafts, rather than the pending status color. ([#20270](https://github.com/craftcms/cms/pull/20270))
 
 ### Content Management
 
