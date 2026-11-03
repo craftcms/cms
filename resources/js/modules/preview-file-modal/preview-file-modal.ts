@@ -16,7 +16,6 @@ import {
   appendHeadHtml,
 } from '@craftcms/ui/utilities/dom';
 import {isPlainObject} from '@craftcms/garnish';
-import {jq} from '@/common/utils/jquery';
 import {showError, showNotice} from '@/modules/messages/messages';
 
 declare const Craft: any;
@@ -93,11 +92,6 @@ export class PreviewFileModal {
     }
   });
   #destroyed = false;
-
-  /** The preview's container as a jQuery collection, for legacy preview templates. */
-  get $container(): any {
-    return jq()?.(this.container) ?? null;
-  }
 
   constructor(
     assetId: number,

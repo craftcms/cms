@@ -10,7 +10,6 @@ import {
   appendHeadHtml,
 } from '@craftcms/ui/utilities/dom';
 import {setElementAttributes} from '@/common/craft/attributes';
-import {jq} from '@/common/utils/jquery';
 import {elementTypeName} from '@/common/craft/element-types';
 import {elevatedSessionManager} from '@/modules/auth/elevated-session/manager';
 import {create} from '@craftcms/ui/utilities/create';
@@ -49,10 +48,6 @@ export class ElementDeletionManager extends Base {
   modal: CraftDialog | null = null;
   blockersContainer: HTMLElement | null = null;
 
-  /** The blockers' container as a jQuery collection, for legacy code. */
-  get $blockersContainer(): any {
-    return this.blockersContainer ? jq()?.(this.blockersContainer) : null;
-  }
   submitButton: CraftButton | null = null;
   blockers: any = null;
   succeeded = false;
@@ -269,10 +264,6 @@ class Blocker extends Base {
   id: any = null;
   container: HTMLElement | null = null;
 
-  /** The blocker's container as a jQuery collection, for legacy code. */
-  get $container(): any {
-    return this.container ? jq()?.(this.container) : null;
-  }
   buttons: CraftButton[] = [];
 
   constructor(manager?: any, data?: any) {

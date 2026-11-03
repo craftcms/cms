@@ -836,6 +836,7 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - `Craft.AdminTable` and `Craft.DataTableSorter` are now provided by the Yii2 adapter.
 - `Craft.ui` and `Craft.EditableTable` are now provided by the Yii2 adapter.
 - `Craft.CpScreenSlideout`, `Craft.ElementActionTrigger`, and `Craft.createElementEditor()` are now provided by the Yii2 adapter.
+- `Craft.Slideout`, `Craft.Grid`, `Craft.PreviewFileModal`, `Craft.ElementDeletionManager`, and the `Craft.charts` classes now store plain elements (`container`, `items`, etc.) instead of jQuery collections, and no longer have `$container`, `$items`, `$outerContainer`, `$shade`, `$chart`, or other `$`-prefixed properties.
 - `Craft.ElementEditor` and `Craft.ElementEditorSlideout` are now provided by the Yii2 adapter. Core’s element editors, slideouts included, all use the Vue editor.
 - `Craft.CP` and `Craft.cp` are now provided by the Yii2 adapter. Control panel messages, the element clipboard and screen reader announcements no longer use them. `showNotice()`, `showSuccess()`, `showError()`, `copyElements()` and `announce()` are exported from `@craftcms/cp`.
 - The legacy `Craft` helpers (`Craft.t()`, `Craft.sendActionRequest()`, `Craft.getUrl()`, `Craft.initUiElements()` and the rest of `Craft.js`), its jQuery plugins (`$.fn.disclosureMenu()`, `$.fn.menubtn()`, `$.fn.formsubmit()`…) and `Craft.queue` are now provided by the Yii2 adapter. Core uses `@craftcms/cp` and `@craftcms/ui` modules instead.

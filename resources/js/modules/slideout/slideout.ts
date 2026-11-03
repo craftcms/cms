@@ -211,25 +211,6 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
   $liveRegion: HTMLElement | null = null;
   triggerElement: HTMLElement | null = null;
 
-  /** The outer container as a jQuery collection, for legacy code. */
-  get $outerContainer(): any {
-    return this.outerContainer ? jq()?.(this.outerContainer) : null;
-  }
-
-  /** The container as a jQuery collection, for legacy code. */
-  get $container(): any {
-    return this.container ? jq()?.(this.container) : null;
-  }
-
-  /** The shade as a jQuery collection, for legacy code. */
-  get $shade(): any {
-    return this.shade ? jq()?.(this.shade) : null;
-  }
-
-  /** The trigger element as a jQuery collection, for legacy code. */
-  get $triggerElement(): any {
-    return this.triggerElement ? jq()?.(this.triggerElement) : null;
-  }
   isOpen = false;
   isOpening = false;
   useMobileStyles: boolean | null = null;

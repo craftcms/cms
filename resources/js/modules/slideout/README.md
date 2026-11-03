@@ -125,10 +125,10 @@ saved model's payload).
 
 ## The jQuery API surface
 
-The `$`-prefixed instance members are jQuery collections and are public API —
-external code reads them directly: `$container`, `$outerContainer`, `$shade`
-(the shade shared with every other open panel — don't remove it),
-and on CP screens `$header`, `$toolbar`, `$content`, `$sidebar`, `$footer`,
+The base slideout stores plain elements: `container`, `outerContainer` and
+`shade` (the shade shared with every other open panel — don't remove it).
+On CP screens the `$`-prefixed members are jQuery collections and are public
+API — external code reads them directly: `$container`, `$header`, `$toolbar`, `$content`, `$sidebar`, `$footer`,
 `$saveBtn`, etc. The same goes for the jQuery data entries the submit flow
 maintains: `data('initialSerializedValue')`, `data('delta-names')`,
 `data('initial-delta-values')`, and the optional `data('serializer')`
