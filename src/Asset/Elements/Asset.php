@@ -191,6 +191,9 @@ class Asset extends Element
 
     public const string ERROR_FILENAME_CONFLICT = 'filename_conflict';
 
+    /** The width and height of the image that covers element cards, from {@see getCardCoverUrl()}. */
+    public const array CARD_COVER_SIZE = [800, 600];
+
     /** How many times the color grid is scaled up for {@see getPlaceholderDataUrl()}. */
     private const int PLACEHOLDER_SCALE = 3;
 
@@ -2831,7 +2834,7 @@ JS, [
      */
     public function getCardCoverUrl(): ?string
     {
-        return AssetsService::getThumbUrl($this, 800, 600, false, ImageTransformMode::Crop);
+        return AssetsService::getThumbUrl($this, ...self::CARD_COVER_SIZE, iconFallback: false, mode: ImageTransformMode::Crop);
     }
 
     /**
