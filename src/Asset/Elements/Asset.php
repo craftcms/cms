@@ -126,7 +126,6 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Imagick;
-use Intervention\Image\Encoders\PngEncoder;
 use InvalidArgumentException;
 use League\Flysystem\MountManager;
 use League\Flysystem\UnableToDeleteFile;
@@ -444,6 +443,9 @@ class Asset extends Element
      * @var array{x: float, y: float}|null Focal point
      */
     private ?array $_focalPoint = null;
+
+    /** @var array{list<list<string>>, string}|null The color grid {@see getPlaceholderDataUrl()} last painted, and its data URL */
+    private ?array $_placeholder = null;
 
     private ?Volume $_volume = null;
 
@@ -2872,16 +2874,36 @@ JS, [
             return null;
         }
 
-        $pixels = ColorGrid::interpolate($grid, self::PLACEHOLDER_SCALE);
-        $image = Images::getManager()->createImage(count($pixels[0]), count($pixels));
+        // Cards show it twice: behind their cover image and their thumbnail
+        if ($this->_placeholder !== null && $this->_placeholder[0] === $grid) {
+            return $this->_placeholder[1];
+        }
 
-        foreach ($pixels as $y => $row) {
-            foreach ($row as $x => $color) {
-                $image->drawPixel($x, $y, $color);
+        $pixels = ColorGrid::interpolate($grid, self::PLACEHOLDER_SCALE);
+
+        // Encoded by hand: drawing it pixel by pixel with an image library took ~20ms per image, and element
+        // indexes show one for every image on the page.
+        $data = '';
+
+        foreach ($pixels as $row) {
+            // Each scanline starts with its filter type: none
+            $data .= "\0";
+
+            foreach ($row as $color) {
+                [$red, $green, $blue, $alpha] = ColorGrid::parse($color);
+                $data .= pack('C4', $red, $green, $blue, (int) round($alpha * 255));
             }
         }
 
-        return $image->encode(new PngEncoder)->toDataUri()->toString();
+        $chunk = fn (string $type, string $body): string => pack('N', strlen($body)).$type.$body.pack('N', crc32($type.$body));
+        // 8-bit RGBA, with default compression, filtering, and no interlacing
+        $header = pack('N2C5', count($pixels[0]), count($pixels), 8, 6, 0, 0, 0);
+        $png = "\x89PNG\r\n\x1a\n".$chunk('IHDR', $header).$chunk('IDAT', (string) gzcompress($data)).$chunk('IEND', '');
+
+        $url = 'data:image/png;base64,'.base64_encode($png);
+        $this->_placeholder = [$grid, $url];
+
+        return $url;
     }
 
     /**
