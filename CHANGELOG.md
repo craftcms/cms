@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.12.0.1 - 2026-11-03
 
 - Fixed a bug where icon pickers were showing duplicate icons.
 
