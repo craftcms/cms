@@ -6,10 +6,10 @@
 
 - Added an authenticated HTTP MCP server, which MCP clients can connect to after a user signs in and authorizes them via OAuth. Clients act as that user, within their permissions and the access level they grant (read only, read and write, or full access for admins). ([#20145](https://github.com/craftcms/cms/pull/20145), [#20189](https://github.com/craftcms/cms/pull/20189))
 - The authenticated MCP server’s endpoints default to `/{cpTrigger}/mcp` and `/{cpTrigger}/mcp/auth`, or `/mcp` and `/mcp/auth` when public registration is enabled. Endpoints within the control panel can only be used by users with control panel access. ([#20189](https://github.com/craftcms/cms/pull/20189))
-- Added a public HTTP MCP server, which exposes only the capabilities and content approved from Settings → MCP, without signing in. Its endpoint defaults to `/mcp`. ([#20145](https://github.com/craftcms/cms/pull/20145), [#20189](https://github.com/craftcms/cms/pull/20189))
+- Added a public HTTP MCP server, which exposes only the capabilities and content approved from **Settings** → **MCP**, without signing in. Its endpoint defaults to `/mcp`. ([#20145](https://github.com/craftcms/cms/pull/20145), [#20189](https://github.com/craftcms/cms/pull/20189))
 - The HTTP MCP servers are discoverable via `/.well-known/ai-catalog.json` and a Server Card at `<endpoint>/server-card`, per [SEP-2127](https://modelcontextprotocol.io/seps/2127-mcp-server-cards). Servers on control panel URLs are never advertised, and the authenticated server is only advertised when public registration is enabled. ([#20283](https://github.com/craftcms/cms/pull/20283))
 - Added the `mcp/serve` command, which runs a stdio MCP server acting as a given user. ([#20145](https://github.com/craftcms/cms/pull/20145))
-- Added Settings → MCP, where administrators can enable the authenticated and public MCP servers, set their endpoints, and approve the capabilities and content that the public server exposes. ([#20145](https://github.com/craftcms/cms/pull/20145), [#20189](https://github.com/craftcms/cms/pull/20189))
+- Added **Settings** → **MCP**, where administrators can enable the authenticated and public MCP servers, set their endpoints, and approve the capabilities and content that the public server exposes. ([#20145](https://github.com/craftcms/cms/pull/20145), [#20189](https://github.com/craftcms/cms/pull/20189))
 - Added support for `config/mcp.php` and `config/oauth.php` config files. ([#20145](https://github.com/craftcms/cms/pull/20145))
 - Added the `oauth/generate-keys` command, which generates the keys used to sign OAuth access tokens. ([#20145](https://github.com/craftcms/cms/pull/20145))
 - Added an OAuth authorization server, with discovery metadata, dynamic client registration, PKCE, and refresh token rotation, which the MCP servers and GraphQL API use. ([#20145](https://github.com/craftcms/cms/pull/20145))
@@ -34,8 +34,8 @@
 
 ### Personal Access Tokens
 
-- Added the My Account → Tokens screen, where users can create personal access tokens for the APIs that offer them (such as the GraphQL API), rename them, and revoke tokens and the apps they’ve authorized. ([#20147](https://github.com/craftcms/cms/pull/20147))
-- MCP clients that users have authorized are listed on their My Account → Tokens screen, where they can be revoked. ([#20291](https://github.com/craftcms/cms/pull/20291))
+- Added the My **Account** → **Tokens** screen, where users can create personal access tokens for the APIs that offer them (such as the GraphQL API), rename them, and revoke tokens and the apps they’ve authorized. ([#20147](https://github.com/craftcms/cms/pull/20147))
+- MCP clients that users have authorized are listed on their **My Account** → **Tokens** screen, where they can be revoked. ([#20291](https://github.com/craftcms/cms/pull/20291))
 - Added `craft\base\ApplicationTrait::getPersonalAccessTokens()`. ([#20147](https://github.com/craftcms/cms/pull/20147))
 - Added `craft\services\PersonalAccessTokens`. ([#20147](https://github.com/craftcms/cms/pull/20147))
 
@@ -98,6 +98,11 @@
 - `Craft.BaseUploader` now supports a `pasteZone` setting. Files pasted while focus is within it are passed to `addFiles()`, which custom uploader classes must implement to support pasted files. ([#20183](https://github.com/craftcms/cms/discussions/20183), [#20212](https://github.com/craftcms/cms/pull/20212))
 - `craft\services\Assets::getAssetById()` now returns the asset in another site if it doesn’t exist in the current site, when no site ID is passed. ([#20060](https://github.com/craftcms/cms/pull/20060))
 
+### Addresses
+
+- Addresses within Addresses fields can now be edited from drafts of their owner elements, by users who can save the drafts but not the canonical owner elements. ([#19881](https://github.com/craftcms/cms/issues/19881))
+- Addresses now support drafts.
+
 ### Color Fields
 
 - Color fields now support translucent colors. Authors can choose translucent palette colors, and set custom colors’ opacity when the field allows it, via the color picker in browsers that support it or by entering an 8-digit hex value. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
@@ -144,11 +149,9 @@
 - `craft\helpers\Cp::iconSvg()` now supports `set-handle:icon-name` values. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
 - `Craft.IconPicker` now supports a `sets` setting, which can be set to an array of icon set handles (`fontawesome` for Font Awesome), or `'*'` for all icon sets. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
 
-### Fields
+### Custom Fields
 
 - Custom fields now have “Default Tip” and “Default Warning” settings. ([#19976](https://github.com/craftcms/cms/pull/19976))
-- Addresses within Addresses fields can now be edited from drafts of their owner elements, by users who can save the drafts but not the canonical owner elements. ([#19881](https://github.com/craftcms/cms/issues/19881))
-- Addresses now support drafts.
 - Added `craft\base\FieldTrait::$tip`.
 - Added `craft\base\FieldTrait::$warning`.
 - Added `craft\fieldlayoutelements\BaseField::defaultTip()`.
@@ -171,7 +174,7 @@
 
 - The global Settings page now has an “Extend” section, which contains Plugins and MCP.
 - Assets settings are now in the “Content” section of the global Settings page, and the “Media” section has been removed.
-- Filesystem settings are now within Assets settings, at Settings → Assets → Filesystems.
+- Filesystem settings are now within Assets settings, at **Settings** → **Assets** → **Filesystems**.
 - Queue jobs’ Job Data is now syntax-highlighted in the Queue Manager utility.
 - The Project Config utility’s “Loaded Project Config Data” is now syntax-highlighted.
 - Asset previews and the Project Config utility now use TanStack Highlight for syntax highlighting, rather than Prism. ([#20088](https://github.com/craftcms/cms/pull/20088))
@@ -2664,7 +2667,7 @@
 
 ## 5.5.0.1 - 2024-11-13
 
-- Fixed an error that prevented custom fields from loading on the Settings → Fields.
+- Fixed an error that prevented custom fields from loading on the **Settings** → **Fields** screen.
 
 ## 5.5.0 - 2024-11-12
 
