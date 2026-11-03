@@ -117,10 +117,12 @@ describe('FieldNode change comparisons', () => {
   it('shows a word diff of the field’s text', async () => {
     post.mockResolvedValue({
       data: {
-        from: {label: 'Current', value: 'Old summary'},
-        to: {label: 'Draft 1', value: 'New summary'},
+        fromLabel: 'Current',
+        toLabel: 'Draft 1',
         hasBase: true,
         unchanged: false,
+        diff: {current: 'Old summary', proposed: 'New summary'},
+        preview: null,
       },
     });
 
@@ -158,10 +160,12 @@ describe('FieldNode change comparisons', () => {
   it('says when both values are the same', async () => {
     post.mockResolvedValue({
       data: {
-        from: {label: 'Revision 4', value: 'Same'},
-        to: {label: 'Revision 5', value: 'Same'},
+        fromLabel: 'Revision 4',
+        toLabel: 'Revision 5',
         hasBase: true,
         unchanged: true,
+        diff: {current: 'Same', proposed: 'Same'},
+        preview: null,
       },
     });
 
@@ -175,13 +179,37 @@ describe('FieldNode change comparisons', () => {
     expect(modal.querySelector('craft-text-diff')).toBeNull();
   });
 
-  it('lists values that aren’t text side by side', async () => {
+  it('previews fields that aren’t text side by side', async () => {
+    const preview = (label: string) => ({
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'Field',
+          component: 'craft:field',
+          props: {label, labelSrOnly: true},
+          control: {
+            type: 'Text',
+            component: 'craft:text',
+            path: ['preview', label],
+            deltaGroup: ['preview', label],
+            mode: 'readOnly',
+            props: {},
+          },
+        },
+      ],
+      values: {preview: {[label]: label}},
+      errors: [],
+      globalErrors: [],
+    });
     post.mockResolvedValue({
       data: {
-        from: {label: 'Current', value: null},
-        to: {label: 'Draft 1', value: true},
+        fromLabel: 'Current',
+        toLabel: 'Draft 1',
         hasBase: true,
         unchanged: false,
+        diff: null,
+        preview: {current: preview('old'), proposed: preview('new')},
       },
     });
 
@@ -190,10 +218,9 @@ describe('FieldNode change comparisons', () => {
     await vi.waitFor(() => expect(modal.querySelector('dl')).not.toBeNull());
     expect(
       [...modal.querySelectorAll('dt')].map((dt) => dt.textContent?.trim())
-    ).toEqual(['Current', 'Draft 1']);
-    expect(
-      [...modal.querySelectorAll('dd')].map((dd) => dd.textContent?.trim())
-    ).toEqual(['None', 'Yes']);
+    ).toEqual(['Current Summary', 'Draft 1 Summary']);
+    expect(modal.querySelectorAll('dd')).toHaveLength(2);
+    expect(modal.querySelector('craft-text-diff')).toBeNull();
   });
 
   it('shows the server’s error', async () => {

@@ -95,6 +95,36 @@ class Html
      */
     private static array $_sortedDataAttributes;
 
+    /**
+     * Reduces HTML to its text: block ends become line breaks, and list items get bullets. Entities are decoded, so
+     * the text can still contain tags; check it with {@see isPlainText()} before showing it as text.
+     *
+     * @since 6.0.0
+     */
+    public static function toText(string $html): string
+    {
+        if (strip_tags($html) === $html) {
+            return $html;
+        }
+
+        $text = preg_replace('/<li\\b[^>]*>/i', '• ', $html) ?? $html;
+        $text = preg_replace('/<br\\s*\\/?>|<\\/(p|div|li|h[1-6]|blockquote|pre|tr|figure)>/i', "\n", $text) ?? $text;
+        $text = html_entity_decode(strip_tags($text), ENT_QUOTES | ENT_HTML5);
+        $text = preg_replace("/[ \t]+\n/", "\n", $text) ?? $text;
+
+        return trim(preg_replace("/\n{3,}/", "\n\n", $text) ?? $text);
+    }
+
+    /**
+     * Returns whether a string is valid UTF-8 without HTML tags, so it’s safe to show as text, such as in a diff.
+     *
+     * @since 6.0.0
+     */
+    public static function isPlainText(string $value): bool
+    {
+        return mb_check_encoding($value, 'UTF-8') && strip_tags($value) === $value;
+    }
+
     public static function decode(string $content): string
     {
         return htmlspecialchars_decode($content, ENT_QUOTES | ENT_HTML5);

@@ -12,7 +12,7 @@ use CraftCms\Cms\Element\Data\Thumb;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
-use CraftCms\Cms\Element\FieldValueComparisons;
+use CraftCms\Cms\Element\FieldChangeComparisons;
 use CraftCms\Cms\Field\Icon;
 use CraftCms\Cms\Field\Markdown as MarkdownField;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentActionMenuItemsResolving;
@@ -602,7 +602,7 @@ abstract class BaseField extends FieldLayoutElement
             ! $this->uid ||
             $element === null ||
             ! $this->showStatus() ||
-            ! FieldValueComparisons::isComparable($element)
+            ! FieldChangeComparisons::isComparable($element)
         ) {
             return null;
         }

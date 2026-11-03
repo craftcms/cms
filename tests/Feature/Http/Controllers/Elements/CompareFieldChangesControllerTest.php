@@ -7,20 +7,24 @@ use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Dropdown;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
-use CraftCms\Cms\Http\Controllers\Elements\CompareFieldValuesController;
+use CraftCms\Cms\Http\Controllers\Elements\CompareFieldChangesController;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Tests\Support\Fields\HtmlText;
 use CraftCms\Cms\Ui\Nodes\ActionMenu;
+use CraftCms\Cms\Ui\Nodes\Field as FieldNode;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
@@ -39,6 +43,17 @@ beforeEach(function () {
         'name' => 'Summary',
         'handle' => 'summary',
         'type' => PlainText::class,
+    ]);
+    $this->bodyField = Field::factory()->create([
+        'name' => 'Body',
+        'handle' => 'body',
+        'type' => HtmlText::class,
+    ]);
+    $this->colorField = Field::factory()->create([
+        'name' => 'Color',
+        'handle' => 'color',
+        'type' => Dropdown::class,
+        'settings' => ['options' => [['label' => 'Red', 'value' => 'red'], ['label' => 'Blue', 'value' => 'blue']]],
     ]);
     $this->headingField = Field::factory()->create([
         'name' => 'Heading',
@@ -61,6 +76,8 @@ beforeEach(function () {
     $this->entryType = EntryType::factory()
         ->withFieldLayout(FieldLayout::factory()->withContentTab([
             new CustomField(config: ['fieldUid' => $this->summaryField->uid]),
+            new CustomField(config: ['fieldUid' => $this->bodyField->uid]),
+            new CustomField(config: ['fieldUid' => $this->colorField->uid]),
             new CustomField(config: ['fieldUid' => $this->blocksField->uid]),
         ]))
         ->create(['hasTitleField' => true]);
@@ -161,7 +178,7 @@ function latestRevision(Entry $entry): Entry
 it('requires authentication', function () {
     Auth::logout();
 
-    postJson(action(CompareFieldValuesController::class), [
+    postJson(action(CompareFieldChangesController::class), [
         'elementType' => Entry::class,
     ])->assertUnauthorized();
 });
@@ -169,7 +186,7 @@ it('requires authentication', function () {
 it('returns 400 for canonical elements', function () {
     $entry = comparisonEntry();
 
-    postJson(action(CompareFieldValuesController::class), [
+    postJson(action(CompareFieldChangesController::class), [
         'elementType' => Entry::class,
         'elementId' => $entry->id,
         'siteId' => $entry->siteId,
@@ -180,7 +197,7 @@ it('returns 400 for canonical elements', function () {
 it('validates the request payload', function () {
     $draft = draftWithSummary(comparisonEntry(), 'New summary');
 
-    postJson(action(CompareFieldValuesController::class), [
+    postJson(action(CompareFieldChangesController::class), [
         'elementType' => Entry::class,
         'elementId' => $draft->id,
         'siteId' => $draft->siteId,
@@ -192,7 +209,7 @@ it('validates the request payload', function () {
 it('returns 400 for invalid layout element uuids', function () {
     $draft = draftWithSummary(comparisonEntry(), 'New summary');
 
-    postJson(action(CompareFieldValuesController::class), [
+    postJson(action(CompareFieldChangesController::class), [
         'elementType' => Entry::class,
         'elementId' => $draft->id,
         'siteId' => $draft->siteId,
@@ -212,7 +229,7 @@ it('forbids comparing drafts the user cannot view', function () {
         ])
         ->createElement());
 
-    postJson(action(CompareFieldValuesController::class), [
+    postJson(action(CompareFieldChangesController::class), [
         'elementType' => Entry::class,
         'elementId' => $draft->id,
         'siteId' => $draft->siteId,
@@ -223,37 +240,39 @@ it('forbids comparing drafts the user cannot view', function () {
 it('compares a draft with the current entry', function () {
     $draft = draftWithSummary(comparisonEntry(), 'New summary');
 
-    postJson(action(CompareFieldValuesController::class), [
+    postJson(action(CompareFieldChangesController::class), [
         'elementType' => Entry::class,
         'elementId' => $draft->id,
         'siteId' => $draft->siteId,
         'layoutElementUid' => comparisonFieldUid($draft, 'summary'),
     ])->assertOk()
-        ->assertExactJson([
-            'from' => ['label' => t('Current'), 'value' => 'Old summary'],
-            'to' => ['label' => $draft->draftName, 'value' => 'New summary'],
+        ->assertJson([
+            'fromLabel' => t('Current'),
+            'toLabel' => $draft->draftName,
             'hasBase' => true,
             'unchanged' => false,
+            'diff' => ['current' => 'Old summary', 'proposed' => 'New summary'],
+            'preview' => null,
         ]);
 });
 
 it('calls a provisional draft the user’s changes', function () {
     $draft = draftWithSummary(comparisonEntry(), 'New summary', provisional: true);
 
-    postJson(action(CompareFieldValuesController::class), [
+    postJson(action(CompareFieldChangesController::class), [
         'elementType' => Entry::class,
         'elementId' => $draft->id,
         'siteId' => $draft->siteId,
         'layoutElementUid' => comparisonFieldUid($draft, 'summary'),
     ])->assertOk()
-        ->assertJsonPath('to.label', t('Your changes'))
-        ->assertJsonPath('to.value', 'New summary');
+        ->assertJsonPath('toLabel', t('Your changes'))
+        ->assertJsonPath('diff.proposed', 'New summary');
 });
 
 it('reports values that are the same on both sides', function () {
     $draft = draftWithSummary(comparisonEntry(), 'Old summary');
 
-    postJson(action(CompareFieldValuesController::class), [
+    postJson(action(CompareFieldChangesController::class), [
         'elementType' => Entry::class,
         'elementId' => $draft->id,
         'siteId' => $draft->siteId,
@@ -271,17 +290,19 @@ it('compares a revision with the revision before it', function () {
     expect(Elements::saveElement($entry))->toBeTrue();
     $second = latestRevision($entry);
 
-    postJson(action(CompareFieldValuesController::class), [
+    postJson(action(CompareFieldChangesController::class), [
         'elementType' => Entry::class,
         'elementId' => $second->id,
         'siteId' => $second->siteId,
         'layoutElementUid' => comparisonFieldUid($second, 'summary'),
     ])->assertOk()
-        ->assertExactJson([
-            'from' => ['label' => t('Revision {num}', ['num' => $first->revisionNum]), 'value' => 'First summary'],
-            'to' => ['label' => t('Revision {num}', ['num' => $second->revisionNum]), 'value' => 'Second summary'],
+        ->assertJson([
+            'fromLabel' => $first->getRevisionLabel(),
+            'toLabel' => $second->getRevisionLabel(),
             'hasBase' => true,
             'unchanged' => false,
+            'diff' => ['current' => 'First summary', 'proposed' => 'Second summary'],
+            'preview' => null,
         ]);
 });
 
@@ -292,15 +313,16 @@ it('has nothing to compare an entry’s first revision with', function () {
         ->orderBy('revisions.num')
         ->one();
 
-    postJson(action(CompareFieldValuesController::class), [
+    postJson(action(CompareFieldChangesController::class), [
         'elementType' => Entry::class,
         'elementId' => $revision->id,
         'siteId' => $revision->siteId,
         'layoutElementUid' => comparisonFieldUid($revision, 'summary'),
     ])->assertOk()
-        ->assertJsonPath('from.label', t('No earlier revision'))
-        ->assertJsonPath('from.value', null)
-        ->assertJsonPath('hasBase', false);
+        ->assertJsonPath('fromLabel', t('No earlier revision'))
+        ->assertJsonPath('hasBase', false)
+        ->assertJsonPath('preview.current', null)
+        ->assertJsonCount(1, 'preview.proposed.nodes');
 });
 
 it('compares an outdated field’s change on the current entry', function () {
@@ -315,25 +337,27 @@ it('compares an outdated field’s change on the current entry', function () {
     expect(Elements::saveElement($entry))->toBeTrue();
     latestRevision($entry);
 
-    postJson(action(CompareFieldValuesController::class), [
+    postJson(action(CompareFieldChangesController::class), [
         'elementType' => Entry::class,
         'elementId' => $draft->id,
         'siteId' => $draft->siteId,
         'layoutElementUid' => comparisonFieldUid($draft, 'summary'),
         'status' => 'outdated',
     ])->assertOk()
-        ->assertExactJson([
-            'from' => ['label' => t('Revision {num}', ['num' => $before->revisionNum]), 'value' => 'Old summary'],
-            'to' => ['label' => t('Current'), 'value' => 'Updated summary'],
+        ->assertJson([
+            'fromLabel' => $before->getRevisionLabel(),
+            'toLabel' => t('Current'),
             'hasBase' => true,
             'unchanged' => false,
+            'diff' => ['current' => 'Old summary', 'proposed' => 'Updated summary'],
+            'preview' => null,
         ]);
 });
 
 it('compares a field in a nested entry with the current entry’s', function () {
     [$draft, $draftBlock] = draftWithEditedBlock();
 
-    postJson(action(CompareFieldValuesController::class), [
+    postJson(action(CompareFieldChangesController::class), [
         'elementType' => Entry::class,
         'elementId' => $draftBlock->id,
         'ownerId' => $draft->id,
@@ -341,88 +365,43 @@ it('compares a field in a nested entry with the current entry’s', function () 
         'siteId' => $draftBlock->siteId,
         'layoutElementUid' => comparisonFieldUid($draftBlock, 'heading'),
     ])->assertOk()
-        ->assertExactJson([
-            'from' => ['label' => t('Current'), 'value' => 'Old heading'],
-            'to' => ['label' => $draft->draftName, 'value' => 'New heading'],
+        ->assertJson([
+            'fromLabel' => t('Current'),
+            'toLabel' => $draft->draftName,
             'hasBase' => true,
             'unchanged' => false,
+            'diff' => ['current' => 'Old heading', 'proposed' => 'New heading'],
+            'preview' => null,
         ]);
 });
 
-it('lists nested entries’ fields when comparing the field that holds them', function () {
+it('previews fields that aren’t text, such as Matrix fields, read-only on both sides', function () {
+    // Inline blocks nest their entries’ fields in the preview.
+    $this->blocksField->update(['settings' => [...$this->blocksField->settings, 'viewMode' => Matrix::VIEW_MODE_BLOCKS]]);
+    Fields::refreshFields();
     [$draft] = draftWithEditedBlock();
 
-    postJson(action(CompareFieldValuesController::class), [
+    $response = postJson(action(CompareFieldChangesController::class), [
         'elementType' => Entry::class,
         'elementId' => $draft->id,
         'siteId' => $draft->siteId,
         'layoutElementUid' => comparisonFieldUid($draft, 'blocks'),
     ])->assertOk()
-        ->assertJsonPath('from.value', "Block\nTitle: Intro\nHeading: Old heading")
-        ->assertJsonPath('to.value', "Block\nTitle: Intro\nHeading: New heading");
-});
+        ->assertJsonPath('diff', null)
+        ->assertJsonPath('unchanged', false)
+        ->assertJsonCount(1, 'preview.current.nodes')
+        ->assertJsonCount(1, 'preview.proposed.nodes');
 
-it('starts the lines of entries nested further down with the path to them', function () {
-    $childType = EntryType::factory()->create(['name' => 'Child', 'handle' => 'child', 'hasTitleField' => true]);
-    $innerField = Field::factory()->create([
-        'name' => 'Inner blocks',
-        'handle' => 'innerBlocks',
-        'type' => Matrix::class,
-        'settings' => ['entryTypes' => [$childType->id]],
-    ]);
-    Fields::refreshFields();
+    // There’s nothing to act on in a preview, so neither the field nor its entries’ fields have action menus.
+    $types = fn (string $side): array => array_values(array_filter(
+        Arr::flatten($response->json("preview.$side.nodes")),
+        fn ($value) => is_string($value) && str_starts_with($value, 'CraftCms\\Cms\\Ui\\Nodes\\'),
+    ));
 
-    $sectionType = EntryType::factory()
-        ->withField($innerField)
-        ->create(['name' => 'Section', 'handle' => 'section', 'hasTitleField' => true]);
-    $outerField = Field::factory()->create([
-        'name' => 'Sections',
-        'handle' => 'sections',
-        'type' => Matrix::class,
-        'settings' => ['entryTypes' => [$sectionType->id]],
-    ]);
-    Fields::refreshFields();
-
-    $pageType = EntryType::factory()
-        ->withFieldLayout(FieldLayout::factory()->withContentTab([
-            new CustomField(config: ['fieldUid' => $this->summaryField->uid]),
-            new CustomField(config: ['fieldUid' => $outerField->uid]),
-        ]))
-        ->create(['hasTitleField' => true]);
-    EntryTypes::refreshEntryTypes();
-
-    $page = EntryModel::factory()
-        ->forSection(Section::factory()->withEntryTypes($pageType)->create(['handle' => 'pages', 'type' => SectionType::Channel]))
-        ->forEntryType($pageType)
-        ->createElement(['title' => 'Page']);
-    $page->setFieldValue('sections', [
-        'new1' => [
-            'type' => 'section',
-            'title' => 'Intro',
-            'fields' => [
-                'innerBlocks' => [
-                    'new1' => ['type' => 'child', 'title' => 'First child'],
-                    'new2' => ['type' => 'child', 'title' => 'Second child', 'enabled' => false],
-                ],
-            ],
-        ],
-    ]);
-    expect(Elements::saveElement($page))->toBeTrue();
-
-    $draft = draftWithSummary($page, 'New summary');
-
-    postJson(action(CompareFieldValuesController::class), [
-        'elementType' => Entry::class,
-        'elementId' => $draft->id,
-        'siteId' => $draft->siteId,
-        'layoutElementUid' => comparisonFieldUid($draft, 'sections'),
-    ])->assertOk()
-        ->assertJsonPath('from.value', implode("\n", [
-            'Section',
-            'Title: Intro',
-            'Inner blocks › Child 1 › Title: First child',
-            'Inner blocks › Child 2 (Disabled) › Title: Second child',
-        ]));
+    expect($response->json('preview.current.nodes.0.control.mode'))->toBe('readOnly')
+        ->and($response->json('preview.proposed.nodes.0.control.uis.0.nodes'))->not->toBeEmpty()
+        ->and($types('current'))->toContain(FieldNode::class)->not->toContain(ActionMenu::class)
+        ->and($types('proposed'))->toContain(FieldNode::class)->not->toContain(ActionMenu::class);
 });
 
 it('compares a field in a nested entry with the owner’s previous revision', function () {
@@ -451,7 +430,7 @@ it('compares a field in a nested entry with the owner’s previous revision', fu
         ->one();
     expect($revisionBlock->getIsRevision())->toBeTrue();
 
-    postJson(action(CompareFieldValuesController::class), [
+    postJson(action(CompareFieldChangesController::class), [
         'elementType' => Entry::class,
         'elementId' => $revisionBlock->id,
         'ownerId' => $second->id,
@@ -459,11 +438,13 @@ it('compares a field in a nested entry with the owner’s previous revision', fu
         'siteId' => $revisionBlock->siteId,
         'layoutElementUid' => comparisonFieldUid($revisionBlock, 'heading'),
     ])->assertOk()
-        ->assertExactJson([
-            'from' => ['label' => t('Revision {num}', ['num' => $first->revisionNum]), 'value' => 'Old heading'],
-            'to' => ['label' => t('Revision {num}', ['num' => $second->revisionNum]), 'value' => 'New heading'],
+        ->assertJson([
+            'fromLabel' => $first->getRevisionLabel(),
+            'toLabel' => $second->getRevisionLabel(),
             'hasBase' => true,
             'unchanged' => false,
+            'diff' => ['current' => 'Old heading', 'proposed' => 'New heading'],
+            'preview' => null,
         ]);
 });
 
@@ -488,7 +469,7 @@ it('reports a nested entry shared by its owner’s revisions as unchanged', func
         ->status(null)
         ->one();
 
-    postJson(action(CompareFieldValuesController::class), [
+    postJson(action(CompareFieldChangesController::class), [
         'elementType' => Entry::class,
         'elementId' => $revisionBlock->id,
         'ownerId' => $second->id,
@@ -518,7 +499,7 @@ it('compares a nested entry added since the owner’s previous revision with not
         ->status(null)
         ->one();
 
-    postJson(action(CompareFieldValuesController::class), [
+    postJson(action(CompareFieldChangesController::class), [
         'elementType' => Entry::class,
         'elementId' => $revisionBlock->id,
         'ownerId' => $second->id,
@@ -526,25 +507,54 @@ it('compares a nested entry added since the owner’s previous revision with not
         'siteId' => $revisionBlock->siteId,
         'layoutElementUid' => comparisonFieldUid($revisionBlock, 'heading'),
     ])->assertOk()
-        ->assertExactJson([
-            'from' => ['label' => t('Revision {num}', ['num' => $first->revisionNum]), 'value' => null],
-            'to' => ['label' => t('Revision {num}', ['num' => $second->revisionNum]), 'value' => 'Heading'],
-            'hasBase' => true,
-            'unchanged' => false,
-        ]);
+        ->assertJsonPath('fromLabel', $first->getRevisionLabel())
+        ->assertJsonPath('hasBase', true)
+        ->assertJsonPath('unchanged', false)
+        ->assertJsonPath('diff', null)
+        ->assertJsonPath('preview.current', null)
+        ->assertJsonCount(1, 'preview.proposed.nodes');
 });
 
-it('compares rich text by its text', function () {
-    $draft = draftWithSummary(comparisonEntry('<p>Old</p><ul><li>One</li></ul>'), '<p>New</p><ul><li>One</li></ul>');
+it('compares HTML fields by their text, and previews ones that are still HTML or text with tags', function (string $handle, string $old, string $new, ?array $diff) {
+    $entry = comparisonEntry();
+    $entry->setFieldValue($handle, $old);
+    expect(Elements::saveElement($entry))->toBeTrue();
 
-    postJson(action(CompareFieldValuesController::class), [
+    /** @var Entry $draft */
+    $draft = app(Drafts::class)->createDraft($entry, auth()->id());
+    $draft->setFieldValue($handle, $new);
+    expect(Elements::saveElement($draft))->toBeTrue();
+
+    $response = postJson(action(CompareFieldChangesController::class), [
+        'elementType' => Entry::class,
+        'elementId' => $draft->id,
+        'siteId' => $draft->siteId,
+        'layoutElementUid' => comparisonFieldUid($draft, $handle),
+    ])->assertOk()
+        ->assertJsonPath('diff', $diff);
+
+    if ($diff === null) {
+        $response->assertJsonCount(1, 'preview.current.nodes')->assertJsonCount(1, 'preview.proposed.nodes');
+    }
+})->with([
+    'rich text' => ['body', '<p>Old</p><ul><li>One</li></ul>', '<p>New</p><ul><li>One</li></ul>', ['current' => "Old\n• One", 'proposed' => "New\n• One"]],
+    'rich text markup only' => ['body', '<p>Same</p>', '<p><strong>Same</strong></p>', null],
+    'rich text with tags once decoded' => ['body', '<p>Old</p>', '<p>&lt;img src=x onerror=alert(1)&gt;</p>', null],
+    'plain text with tags' => ['summary', 'Old summary', '<img src=x onerror=alert(1)>', null],
+    'options field' => ['color', 'red', 'blue', null],
+]);
+
+it('previews values that are still HTML once reduced to text, instead of diffing them', function () {
+    $draft = draftWithSummary(comparisonEntry(), '<p>&lt;img src=x onerror=alert(1)&gt;</p>');
+
+    postJson(action(CompareFieldChangesController::class), [
         'elementType' => Entry::class,
         'elementId' => $draft->id,
         'siteId' => $draft->siteId,
         'layoutElementUid' => comparisonFieldUid($draft, 'summary'),
     ])->assertOk()
-        ->assertJsonPath('from.value', "Old\n• One")
-        ->assertJsonPath('to.value', "New\n• One");
+        ->assertJsonPath('diff', null)
+        ->assertJsonCount(1, 'preview.proposed.nodes');
 });
 
 it('offers to compare modified fields on drafts', function () {

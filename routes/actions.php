@@ -39,7 +39,7 @@ use CraftCms\Cms\Http\Controllers\EditionController;
 use CraftCms\Cms\Http\Controllers\Elements\ActivityCommentsController;
 use CraftCms\Cms\Http\Controllers\Elements\ActivityMentionSuggestionsController;
 use CraftCms\Cms\Http\Controllers\Elements\ActivityTimelineController;
-use CraftCms\Cms\Http\Controllers\Elements\CompareFieldValuesController;
+use CraftCms\Cms\Http\Controllers\Elements\CompareFieldChangesController;
 use CraftCms\Cms\Http\Controllers\Elements\CopyElementValuesController;
 use CraftCms\Cms\Http\Controllers\Elements\CreateElementController;
 use CraftCms\Cms\Http\Controllers\Elements\DeleteElementController;
@@ -292,7 +292,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('elements/duplicate', [DuplicateElementController::class, 'duplicate']);
         Route::post('elements/bulk-duplicate', [DuplicateElementController::class, 'bulkDuplicate']);
         Route::post('elements/copy-values-from-site', CopyElementValuesController::class);
-        Route::post('elements/compare-field-values', CompareFieldValuesController::class);
+        Route::post('elements/compare-field-changes', CompareFieldChangesController::class);
 
         // AI assistant
         Route::middleware('can:'.Assistant::PERMISSION)->group(function () {

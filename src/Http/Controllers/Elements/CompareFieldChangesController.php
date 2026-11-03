@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
 use CraftCms\Cms\Element\Enums\AttributeStatus;
-use CraftCms\Cms\Element\FieldValueComparisons;
+use CraftCms\Cms\Element\FieldChangeComparisons;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use Illuminate\Http\JsonResponse;
@@ -13,16 +13,16 @@ use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Returns a field’s value on a draft, revision, or nested element, along with the value it’s compared with, for
- * the “Compare changes” field action.
+ * Returns how a field on a draft, revision, or nested element differs from what it was based on, for the
+ * “Compare changes” field action.
  *
  * @since 6.0.0
  */
-readonly class CompareFieldValuesController
+readonly class CompareFieldChangesController
 {
     public function __construct(
         private ElementRequest $request,
-        private FieldValueComparisons $comparisons,
+        private FieldChangeComparisons $comparisons,
     ) {}
 
     public function __invoke(): Response
@@ -33,7 +33,7 @@ readonly class CompareFieldValuesController
             return $element;
         }
 
-        if (! $element || ! FieldValueComparisons::isComparable($element)) {
+        if (! $element || ! FieldChangeComparisons::isComparable($element)) {
             abort(400, 'No draft or revision was identified by the request.');
         }
 
@@ -57,6 +57,8 @@ readonly class CompareFieldValuesController
 
         $status = $this->request->enum('status', AttributeStatus::class) ?? AttributeStatus::Modified;
 
-        return new JsonResponse($this->comparisons->compare($element, $layoutElement, $status)->toArray());
+        $comparison = $this->comparisons->compare($element, $layoutElement, $status);
+
+        return new JsonResponse($comparison->toArray());
     }
 }

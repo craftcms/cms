@@ -5,12 +5,12 @@
    * anything else, such as relations.
    */
   import '@craftcms/ui/components/spinner/spinner';
-  import '@craftcms/ui/components/text-diff/text-diff';
   import {actionClient, isHttpError, t} from '@craftcms/ui';
   import {computed, shallowRef, watch} from 'vue';
-  import CompareFieldValuesController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/CompareFieldValuesController';
+  import CompareFieldChangesController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/CompareFieldChangesController';
   import Modal from '@/common/components/Modal.vue';
-  import ChangeValue from './ChangeValue.vue';
+  import ChangeComparison from './ChangeComparison.vue';
+  import type {UiPayload} from './types';
 
   /** The `craft:compare-field-changes` field action’s detail. */
   export interface CompareFieldChangesDetail {
@@ -25,11 +25,13 @@
     label?: string | null;
   }
 
-  interface FieldValueComparison {
-    from: {label: string; value: unknown};
-    to: {label: string; value: unknown};
+  interface FieldChangeComparison {
+    fromLabel: string;
+    toLabel: string;
     hasBase: boolean;
     unchanged: boolean;
+    diff: {current: string; proposed: string} | null;
+    preview: {current: UiPayload | null; proposed: UiPayload} | null;
   }
 
   const props = defineProps<{
@@ -39,7 +41,7 @@
     (event: 'close'): void;
   }>();
 
-  const comparison = shallowRef<FieldValueComparison>();
+  const comparison = shallowRef<FieldChangeComparison>();
   const error = shallowRef<string>();
   let request = 0;
 
@@ -48,19 +50,6 @@
       ? t('Compare “{name}”', {name: props.detail.label})
       : t('Compare changes')
   );
-
-  /** Whether both values are text, which show as one word diff. */
-  const isTextChange = computed(() => {
-    const from = comparison.value?.from.value;
-    const to = comparison.value?.to.value;
-
-    return (
-      typeof from === 'string' &&
-      typeof to === 'string' &&
-      from !== '' &&
-      to !== ''
-    );
-  });
 
   watch(
     () => props.detail,
@@ -74,8 +63,8 @@
       }
 
       try {
-        const {data} = await actionClient.post<FieldValueComparison>(
-          CompareFieldValuesController.url(),
+        const {data} = await actionClient.post<FieldChangeComparison>(
+          CompareFieldChangesController.url(),
           {
             elementType: detail.elementType,
             elementId: detail.elementId,
@@ -106,7 +95,7 @@
   <Modal
     :is-active="Boolean(detail)"
     :label="title"
-    width="lg"
+    width="2xl"
     @close="emit('close')"
   >
     <craft-pane :label="title">
@@ -132,9 +121,9 @@
         ></craft-spinner>
         <template v-else>
           <p v-if="comparison.hasBase" class="field-changes__versions">
-            <del>{{ comparison.from.label }}</del>
+            <del>{{ comparison.fromLabel }}</del>
             <span aria-hidden="true">→</span>
-            <ins>{{ comparison.to.label }}</ins>
+            <ins>{{ comparison.toLabel }}</ins>
           </p>
           <p
             v-if="detail?.status === 'outdated'"
@@ -150,39 +139,29 @@
           <p v-if="comparison.unchanged" class="field-changes__message">
             {{
               t('{from} and {to} have the same value.', {
-                from: comparison.from.label,
-                to: comparison.to.label,
+                from: comparison.fromLabel,
+                to: comparison.toLabel,
               })
             }}
           </p>
-          <p v-else-if="!comparison.hasBase" class="field-changes__message">
-            {{ comparison.from.label }}
-          </p>
-
-          <craft-text-diff
-            v-if="!comparison.unchanged && isTextChange"
-            :current="comparison.from.value as string"
-            :proposed="comparison.to.value as string"
-            :label="detail?.label ?? undefined"
-            collapse
-          ></craft-text-diff>
-          <dl
-            v-else-if="!comparison.unchanged"
-            class="field-changes__comparison"
-          >
-            <div v-if="comparison.hasBase">
-              <dt>{{ comparison.from.label }}</dt>
-              <dd>
-                <ChangeValue :value="comparison.from.value" />
-              </dd>
-            </div>
-            <div>
-              <dt>{{ comparison.to.label }}</dt>
-              <dd>
-                <ChangeValue :value="comparison.to.value" />
-              </dd>
-            </div>
-          </dl>
+          <template v-else>
+            <p v-if="!comparison.hasBase" class="field-changes__message">
+              {{ comparison.fromLabel }}
+            </p>
+            <ChangeComparison
+              :diff="comparison.diff"
+              :from="
+                comparison.preview?.current && {
+                  payload: comparison.preview.current,
+                }
+              "
+              :to="comparison.preview && {payload: comparison.preview.proposed}"
+              :from-label="comparison.fromLabel"
+              :to-label="comparison.toLabel"
+              :label="detail?.label ?? undefined"
+              collapse
+            />
+          </template>
         </template>
       </div>
     </craft-pane>
@@ -209,27 +188,5 @@
     align-items: baseline;
     color: var(--c-text-quiet);
     font-size: var(--c-text-sm);
-  }
-
-  .field-changes__comparison {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-    gap: var(--c-spacing-md);
-    margin: 0;
-  }
-
-  .field-changes__comparison div {
-    min-width: 0;
-  }
-
-  .field-changes__comparison dt {
-    color: var(--c-text-quiet);
-    font-size: var(--c-text-xs);
-    font-weight: 600;
-  }
-
-  .field-changes__comparison dd {
-    margin-block: var(--c-spacing-xs) 0;
-    margin-inline: 0;
   }
 </style>
