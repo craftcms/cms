@@ -49,8 +49,10 @@ in development builds. This keeps a plugin from replacing the chrome of a page i
 ```
 +----------------------------------------------------------------------------------------------------------------------+
 | Crumb / Crumb / Crumb    [context-menu]                                                                              |
-+----------+-------------------------+-------------------------------------------------------+-------------------------+
-| CP nav   | content-sidebar         | error-summary                                         | content-details         |
++----------+-----------------------------------------------------------------------------------------------------------+
+| CP nav   | page-header                                                                                               |
+|          +-------------------------+-------------------------------------------------------+-------------------------+
+|          | content-sidebar         | error-summary                                         | content-details         |
 |          |                         | +- content-toolbar ---------------------------------+ |                         |
 |          |   (secondary nav)       | | content-toolbar-meta    content-toolbar-actions   | |                         |
 |          |                         | +---------------------------------------------------+ |                         |
@@ -73,7 +75,8 @@ in development builds. This keeps a plugin from replacing the chrome of a page i
 +----------+-----------------------------------------------------------------------------------------------------------+
 ```
 
-The details pane only appears once `content-details` is filled or the screen has
+`page-header` is the panel's first row, spanning the secondary nav, the content and the details
+pane, and only appears once it's filled. The details pane only appears once `content-details` is filled or the screen has
 [details panels](#details-panels); the sidebar shows the secondary nav
 unless `content-sidebar` replaces it, which also removes `subnav-actions`. The toolbar row and
 sticky footer appear once something in them is filled.
@@ -100,8 +103,8 @@ sticky footer appear once something in them is filled.
 +----------------------------------------------------------------------------------------------------------------------+
 ```
 
-`context-menu`, `content-toolbar`, `title`, `content-sidebar`, `subnav-actions` and `page-footer`
-have no place in a slideout. Their content is kept but not shown.
+`context-menu`, `content-toolbar`, `title`, `content-sidebar`, `subnav-actions`, `page-header` and
+`page-footer` have no place in a slideout. Their content is kept but not shown.
 
 The Save menu (`[primary-action | v]`) is the same in both: the primary action, which is a Save
 button by default, then a menu of the `defaultFormActions` (Save and continue editing, unless the
@@ -143,6 +146,7 @@ The slot wins over the response's button.
 | `content-footer`          |                                           |
 | `additional-buttons`      | In the footer, beside the Save menu.      |
 | `primary-action`          | The Save button; its menu stays.          |
+| `page-header`             | Atop the panel. Hidden until filled.      |
 | `page-footer`             |                                           |
 
 See [slideouts](slideouts.md) for how a page renders in a slideout.

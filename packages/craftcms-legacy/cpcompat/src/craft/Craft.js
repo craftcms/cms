@@ -2,6 +2,7 @@ import {formatMessage, t} from '@craftcms/ui/utilities/translate';
 import {createHttpClient, isCancel} from '@craftcms/ui/utilities/api/http';
 import {sendLegacyRequest} from '@craftcms/ui/utilities/api/legacyRequest';
 import {appendElementHtml} from '@craftcms/ui/utilities/dom';
+import {openExternalLinksInNewTabs} from '@craftcms/ui/utilities/external-links';
 import * as d3 from 'd3';
 import {
   escapeHtml,
@@ -1341,19 +1342,9 @@ $.extend(Craft, {
       });
 
     // Open outbound links in new windows
-    // hat tip: https://stackoverflow.com/a/2911045/1688568
-    // ignore items in contenteditable divs (like redactor or ckeditor fields)
-    $('a', $container)
-      .not('[contenteditable="true"] a')
-      .each(function () {
-        if (
-          this.hostname.length &&
-          this.hostname !== location.hostname &&
-          typeof $(this).attr('target') === 'undefined'
-        ) {
-          $(this).attr('rel', 'noopener').attr('target', '_blank');
-        }
-      });
+    $($container || document).each(function () {
+      openExternalLinksInNewTabs(this);
+    });
   },
 
   _elementEditorClasses: {},

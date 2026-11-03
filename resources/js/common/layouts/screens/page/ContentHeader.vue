@@ -7,6 +7,11 @@
   import CpContainer from '@/common/components/CpContainer.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
 
+  const {ruled = false} = defineProps<{
+    /** Ends the row with a rule, with no padding below it. */
+    ruled?: boolean;
+  }>();
+
   defineSlots<{
     /** The heading; the shell passes the page title by default. */
     title(): unknown;
@@ -15,14 +20,18 @@
 </script>
 
 <template>
-  <div id="cp-content-header" class="pt-lg pb-md">
+  <div id="cp-content-header" class="pt-lg" :class="{'pb-md': !ruled}">
     <CpContainer>
-      <div class="flex flex-wrap gap-md items-center justify-between">
+      <div
+        class="flex flex-wrap gap-md items-center justify-between"
+        :class="{'pb-md border-b border-b-quiet': ruled}"
+      >
         <LayoutSlotOutlet name="title">
           <slot name="title"></slot>
         </LayoutSlotOutlet>
 
-        <div class="flex gap-2 items-center">
+        <!-- Kept at the end even when it wraps below the title. -->
+        <div class="flex gap-md items-center ms-auto">
           <LayoutSlotOutlet name="content-actions">
             <slot name="actions"></slot>
           </LayoutSlotOutlet>

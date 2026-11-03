@@ -93,6 +93,37 @@ it('flags an unnamed button that is visible from the start', async () => {
   await vi.waitFor(() => expect(isFlagged(button)).toBe(true));
 });
 
+it.each([
+  [
+    'aria-labelledby',
+    (button: CraftButton) => {
+      const label = document.createElement('span');
+      label.id = 'late-label';
+      label.textContent = 'Search';
+      document.body.append(label);
+      button.setAttribute('aria-labelledby', label.id);
+    },
+  ],
+  [
+    'aria-label',
+    (button: CraftButton) => button.setAttribute('aria-label', 'Search'),
+  ],
+])(
+  'clears the flag once %s names the button after it first renders',
+  async (_attribute, name) => {
+    const button = document.createElement('craft-button') as CraftButton;
+    button.setAttribute('icon', 'image-landscape');
+    document.body.append(button);
+    await button.updateComplete;
+    await vi.waitFor(() => expect(isFlagged(button)).toBe(true));
+
+    name(button);
+
+    await vi.waitFor(() => expect(isFlagged(button)).toBe(false));
+    expect(computedName(button)).toBe('Search');
+  }
+);
+
 describe('flush', () => {
   /**
    * A button at the top-left corner of a container, with the tokens and

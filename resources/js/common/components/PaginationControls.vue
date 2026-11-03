@@ -16,12 +16,15 @@
       enableAdjustPageSize?: boolean;
       pageSizeOptions?: number[];
       disabled?: boolean;
+      /** Leaves out the item count and page size, for the page controls alone. */
+      controlsOnly?: boolean;
     }>(),
     {
       paginated: true,
       enableAdjustPageSize: false,
       pageSizeOptions: () => [50, 100, 250],
       disabled: false,
+      controlsOnly: false,
     }
   );
   const emit = defineEmits<{
@@ -93,8 +96,8 @@
 </script>
 
 <template>
-  <div class="flex justify-between items-center w-full">
-    <div>
+  <div :class="{'flex justify-between items-center w-full': !controlsOnly}">
+    <div v-if="!controlsOnly">
       <Text
         v-if="showDisplayedRows"
         template="{from} – {to} of {total, plural, =1{# item} other{# items}}"
@@ -146,7 +149,7 @@
         </craft-button>
       </template>
     </div>
-    <div class="flex gap-md items-center">
+    <div v-if="!controlsOnly" class="flex gap-md items-center">
       <template v-if="enableAdjustPageSize">
         <span aria-hidden="true">{{ pageSizeLabel }}</span>
         <Select

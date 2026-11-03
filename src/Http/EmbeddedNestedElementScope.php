@@ -199,19 +199,24 @@ class EmbeddedNestedElementScope
      * @param  list<int|string>  $elementIds
      * @return Collection<int, NestedElementInterface>
      */
-    public function selectedElements(array $elementIds, bool $authorizeSave = true): Collection
+    public function selectedElements(array $elementIds, bool $authorizeSave = true, bool $trashed = false): Collection
     {
         $ids = array_values(array_unique(array_map(intval(...), $elementIds)));
         abort_if($ids === [], 400, 'Invalid elementIds param');
 
         $elements = $this->elements();
         if ($elements instanceof ElementQueryInterface) {
-            $selectedElements = (clone $elements)
+            $query = (clone $elements)
                 ->id($ids)
                 ->status(null)
                 ->drafts(null)
-                ->provisionalDrafts(null)
-                ->get();
+                ->provisionalDrafts(null);
+
+            if ($trashed) {
+                $query->trashed();
+            }
+
+            $selectedElements = $query->get();
         } else {
             $selectedElements = $elements->filter(
                 fn (ElementInterface $element): bool => in_array($element->id, $ids, true),

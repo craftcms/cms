@@ -7,16 +7,7 @@ namespace CraftCms\Cms\Asset\Elements;
 use Closure;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Actions\AnalyzeImages;
-use CraftCms\Cms\Asset\Actions\CopyReferenceTag;
-use CraftCms\Cms\Asset\Actions\CopyUrl;
 use CraftCms\Cms\Asset\Actions\DeleteAssets;
-use CraftCms\Cms\Asset\Actions\DownloadAssetFile;
-use CraftCms\Cms\Asset\Actions\EditImage;
-use CraftCms\Cms\Asset\Actions\MoveAssets;
-use CraftCms\Cms\Asset\Actions\PreviewAsset;
-use CraftCms\Cms\Asset\Actions\RenameFile;
-use CraftCms\Cms\Asset\Actions\ReplaceFile;
-use CraftCms\Cms\Asset\Actions\ShowInFolder;
 use CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis;
 use CraftCms\Cms\Asset\Analysis\ImageAnalyzer;
 use CraftCms\Cms\Asset\Analysis\Tasks\TagImage;
@@ -50,6 +41,7 @@ use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Actions\ClientAction;
 use CraftCms\Cms\Element\Actions\DeleteForSite;
 use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Attributes\ElementProperty;
@@ -788,7 +780,7 @@ class Asset extends Element
         return array_map(fn (Volume $volume) => $volume->getFieldLayout(), $volumes);
     }
 
-    /** @return list<class-string|array{type: class-string, label?: string, restorableElementsOnly?: bool}> */
+    /** @return list<class-string|array{type: class-string, restorableElementsOnly?: bool}|ClientAction> */
     #[Override]
     protected static function defineActions(string $source): array
     {
@@ -805,23 +797,45 @@ class Asset extends Element
         if (isset($volume)) {
             $isTemp = $volume->isTemporary();
 
-            $actions[] = [
-                'type' => PreviewAsset::class,
-                'label' => t('Preview file'),
-            ];
+            $actions[] = new ClientAction(
+                key: 'preview-file',
+                label: t('Preview file'),
+                event: 'craft:preview-file',
+                bulk: false,
+            );
 
-            // Download
-            $actions[] = DownloadAssetFile::class;
+            $actions[] = new ClientAction(
+                key: 'download-file',
+                label: t('Download'),
+                event: 'assets:download-file',
+                bulk: false,
+            );
 
             if ($isTemp || Gate::check("replaceFiles:$volume->uid")) {
-                // Rename/Replace File
-                $actions[] = RenameFile::class;
-                $actions[] = ReplaceFile::class;
+                $actions[] = new ClientAction(
+                    key: 'rename-file',
+                    label: t('Rename file'),
+                    event: 'assets:rename-file',
+                    bulk: false,
+                    selectionAttribute: 'movable',
+                );
+                $actions[] = new ClientAction(
+                    key: 'replace-file',
+                    label: t('Replace file'),
+                    event: 'assets:replace-file',
+                    bulk: false,
+                    selectionAttribute: 'replaceable',
+                );
             }
 
-            // Copy URL
             if ($volume->sourceHasUrls()) {
-                $actions[] = CopyUrl::class;
+                $actions[] = new ClientAction(
+                    key: 'copy-url',
+                    label: t('Copy URL'),
+                    event: 'assets:copy-url',
+                    bulk: false,
+                    selectionAttribute: 'hasUrl',
+                );
             }
 
             // Show in folder
@@ -833,23 +847,43 @@ class Asset extends Element
                 isset($query->search) &&
                 $query->includeSubfolders
             ) {
-                $actions[] = ShowInFolder::class;
+                $actions[] = new ClientAction(
+                    key: 'show-in-folder',
+                    label: t('Show in folder'),
+                    event: 'assets:show-in-folder',
+                    bulk: false,
+                );
             }
 
-            // Copy Reference Tag
-            $actions[] = CopyReferenceTag::class;
+            $actions[] = new ClientAction(
+                key: 'copy-reference-tag',
+                label: t('Copy reference tag'),
+                event: 'assets:copy-reference-tag',
+                bulk: false,
+            );
 
-            // Edit Image
             if ($isTemp || Gate::check("editImages:$volume->uid")) {
-                $actions[] = EditImage::class;
+                $actions[] = new ClientAction(
+                    key: 'edit-image',
+                    label: t('Edit Image'),
+                    event: 'assets:edit-image',
+                    detail: self::sharedImageEditorSettings(),
+                    bulk: false,
+                    selectionAttribute: 'imageEditable',
+                );
             }
 
             if (app(ImageAnalyzer::class)->available()) {
                 $actions[] = AnalyzeImages::class;
             }
 
-            // Move
-            $actions[] = MoveAssets::class;
+            // The index adds the folders the assets can move to
+            $actions[] = new ClientAction(
+                key: 'move-assets',
+                label: t('Move…'),
+                event: 'assets:move-assets',
+                selectionAttribute: 'movable',
+            );
 
             // Restore
             $actions[] = [

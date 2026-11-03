@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Mcp\Http\Controllers;
 
 use CraftCms\Cms\Auth\AuthenticationViews;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Mcp\Settings;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
@@ -30,17 +28,12 @@ readonly class EndpointPageController
     /** Shows the authorization endpoint's URL, which MCP clients that sign in with OAuth should use. */
     public function authenticated(Request $request, Settings $settings): View|InertiaResponse|Response
     {
-        return $this->render($request, $settings->url($settings->authorizationRoute), $this->serverName().'-admin', false);
+        return $this->render($request, $settings->url($settings->authorizationRoute), $settings->serverName(false), false);
     }
 
-    public function public(Request $request): View|InertiaResponse|Response
+    public function public(Request $request, Settings $settings): View|InertiaResponse|Response
     {
-        return $this->render($request, $request->url(), $this->serverName(), true);
-    }
-
-    private function serverName(): string
-    {
-        return Str::slug(Cms::systemName()) ?: 'craft';
+        return $this->render($request, $request->url(), $settings->serverName(true), true);
     }
 
     private function render(Request $request, string $url, string $serverName, bool $isPublic): View|InertiaResponse|Response

@@ -52,8 +52,13 @@ export default css`
   }
 
   .form-field--outdated .form-field__status-indicator {
-    background-color: var(--bg-pending, #c96a11);
-    box-shadow: 0 0 5px hsl(27deg 96% 61% / 15%);
+    background-color: var(--bg-pending, var(--c-status-pending-fill));
+    box-shadow: 0 0 5px
+      color-mix(
+        in srgb,
+        var(--bg-pending, var(--c-status-pending-fill)) 15%,
+        transparent
+      );
   }
 
   /* Heading row (the CP's .field > .heading) */

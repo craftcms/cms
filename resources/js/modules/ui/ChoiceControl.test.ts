@@ -180,7 +180,7 @@ describe('ChoiceControl', () => {
     const icon = group.querySelector('label craft-icon');
 
     expect(container!.querySelector('craft-button-group')).toBeNull();
-    expect(group.hasAttribute('buttons')).toBe(true);
+    expect(group.getAttribute('appearance')).toBe('button-group');
     expect(inputs.map((input) => input.value)).toEqual(['asc', 'desc']);
     expect(inputs.map((input) => input.checked)).toEqual([true, false]);
     expect(icon?.getAttribute('name')).toBe('asc');

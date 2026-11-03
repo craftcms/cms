@@ -111,7 +111,7 @@ function mountSelectionTable(selectable: boolean, statuses: BulkAction[] = []) {
 
 it('preserves status colors in bulk-action menus after selecting a row', async () => {
   const {host, rows} = mountSelectionTable(true, [
-    {key: 'pending', label: 'Pending', fill: 'orange', onClick: () => {}},
+    {key: 'pending', label: 'Pending', fill: 'sky', onClick: () => {}},
     {
       key: 'enabled',
       label: 'Enabled',
@@ -140,7 +140,7 @@ it('preserves status colors in bulk-action menus after selecting a row', async (
           }
         )?.fill
     )
-  ).toEqual(['orange', 'green']);
+  ).toEqual(['sky', 'green']);
 });
 
 it('connects selectable rows and their labelled controls to the table selection', async () => {

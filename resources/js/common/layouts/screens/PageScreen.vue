@@ -81,6 +81,7 @@
     defaultFormActions: () => DEFAULT_FORM_ACTIONS,
     formAdditionalButtons: () => [],
     contentMaxWidth: false,
+    headerRule: false,
     fillViewport: false,
   });
 
@@ -170,6 +171,7 @@
     regions.has('content-actions');
   provide(ScreenPanelsKey, screenPanels);
   const hasTabs = () => regions.has('content-tabs');
+  const hasPageHeader = () => regions.has('page-header');
   // Decided here rather than inside `ContentFooter`, so the sticky wrapper
   // around it and the notices can be hidden together rather than left
   // standing empty.
@@ -339,6 +341,15 @@
                         }"
                         :style="detailsResizer.style.value"
                       >
+                        <!-- Spans the secondary nav and the content, above both. -->
+                        <div
+                          v-show="hasPageHeader()"
+                          class="cp-content__header"
+                        >
+                          <LayoutSlotOutlet name="page-header">
+                            <slot name="page-header"></slot>
+                          </LayoutSlotOutlet>
+                        </div>
                         <div
                           v-show="hasSidebar()"
                           id="content-sidebar"
@@ -407,7 +418,10 @@
                             </slot>
 
                             <slot name="content-header">
-                              <ContentHeader v-show="hasHeader()">
+                              <ContentHeader
+                                v-show="hasHeader()"
+                                :ruled="headerRule"
+                              >
                                 <template #title>
                                   <slot name="title">
                                     <h1 class="text-xl">{{ pageTitle }}</h1>
@@ -637,9 +651,13 @@ Content: the secondary nav, content, and details panes
     display: grid;
     /* Three columns at every width; the nav spans them while it's stacked above
        the content, and an area nothing occupies collapses to nothing. */
-    grid-template-areas: 'sidebar sidebar sidebar' '. main details';
-    /* The nav's row, empty or not, keeps to its content; the rest goes below. */
-    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'header header header'
+      'sidebar sidebar sidebar'
+      '. main details';
+    /* The header's and nav's rows, empty or not, keep to their content; the
+       rest goes below. */
+    grid-template-rows: auto auto 1fr;
     grid-template-columns:
       auto
       minmax(var(--cp-content-main-min), 1fr)
@@ -658,8 +676,10 @@ Content: the secondary nav, content, and details panes
     --cp-content-main-min: 0px;
 
     @media (width >= var(--breakpoint-lg)) {
-      grid-template-areas: 'sidebar main details';
-      grid-template-rows: none;
+      grid-template-areas:
+        'header header header'
+        'sidebar main details';
+      grid-template-rows: auto 1fr;
     }
   }
 
@@ -692,6 +712,13 @@ Content: the secondary nav, content, and details panes
       border-inline-start: none;
       box-shadow: none;
     }
+  }
+
+  .cp-content__header {
+    grid-area: header;
+    padding-block: var(--c-spacing-md);
+    padding-inline: var(--cp-container-padding);
+    border-block-end: 1px solid var(--c-color-border-quiet);
   }
 
   .cp-content__sidebar {

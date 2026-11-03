@@ -15,7 +15,7 @@ use CraftCms\Cms\Address\Models\Address as AddressModel;
 use CraftCms\Cms\Address\Validation\AddressRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Actions\Copy;
+use CraftCms\Cms\Element\Actions\ClientAction;
 use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Concerns\NestedElement;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
@@ -233,12 +233,12 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         return new AddressCondition(self::class);
     }
 
-    /** @return list<class-string<Copy>> */
+    /** @return list<ClientAction> */
     #[Override]
     protected static function defineActions(string $source): array
     {
         return [
-            Copy::class,
+            ClientAction::copy(),
         ];
     }
 

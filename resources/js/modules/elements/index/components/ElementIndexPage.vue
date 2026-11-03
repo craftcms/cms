@@ -3,6 +3,7 @@
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import ElementIndex from '@/modules/elements/index/components/ElementIndex.vue';
   import {useElementIndexPage} from '@/modules/elements/index/composables/useElementIndexPage';
+  import {elementIndexQueryParams} from '@/modules/elements/index/composables/useContentIndexData';
   import {useElementQuickEdit} from '@/modules/elements/composables/useElementQuickEdit';
   import type {ElementIndexRoute} from '@/modules/elements/index/composables/useElementIndexVisits';
   import {
@@ -10,6 +11,7 @@
     type SourcesLanding,
   } from '@/modules/elements/index/composables/useCustomizeSources';
   import ElementBulkActionsBar from './ElementBulkActionsBar.vue';
+  import {indexQueryCriteria} from '@/modules/elements/index/index-criteria';
   import {computed, ref} from 'vue';
   import CustomizeSourcesModal from '@/modules/elements/index/components/customize-sources/CustomizeSourcesModal.vue';
   import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
@@ -55,9 +57,22 @@
     },
   });
 
-  const {elementIndex, selection} = page.view;
+  const {elementIndex, selection, selectAll} = page.view;
   const footerActive = computed(
-    () => Boolean(elementIndex.actions?.length) && selection.hasSelection.value
+    () => Boolean(elementIndex.actions?.length) && selectAll.count.value > 0
+  );
+  /**
+   * With every result selected, the server rebuilds the index's query rather
+   * than taking the IDs, since most of the rows were never loaded.
+   */
+  const actionParams = computed(() =>
+    selectAll.active.value
+      ? {
+          ...elementIndexQueryParams(elementIndex),
+          selectAll: true,
+          exceptIds: selectAll.exceptIds.value,
+        }
+      : indexQueryCriteria(elementIndex)
   );
 
   function onActionPerformed(): void {
@@ -135,6 +150,7 @@
       :view="page.view"
       :item-behavior="itemBehavior"
       :footer-active="footerActive"
+      offers-select-all
       :enable-adjust-page-size="true"
       :with-bottom-border="false"
       :quick-edit="quickEdit"
@@ -148,24 +164,26 @@
       <template #navbar v-if="$slots.navbar">
         <slot name="navbar" />
       </template>
-      <template #footer>
+      <template #footer="{pagination}">
         <ElementBulkActionsBar
           :selected-ids="selection.selectedIds.value"
-          :selected-elements="
-            page.view.table
-              .getSelectedRowModel()
-              .rows.map(({original}) => original)
-          "
+          :selected-count="selectAll.count.value"
+          :selects-all="selectAll.active.value"
+          :selected-elements="selection.selectedRows.value"
           :actions="elementIndex.actions"
           :element-type="elementIndex.elementType"
           :source="elementIndex.source?.key"
           :context="elementIndex.context"
-          :params="{baseCriteria: {siteId: elementIndex.siteId}}"
+          :params="actionParams"
           @edit="editElement"
           @view="viewElement"
           @performed="onActionPerformed"
           @clear="page.clearSelection"
-        />
+        >
+          <template #center>
+            <component :is="pagination" />
+          </template>
+        </ElementBulkActionsBar>
       </template>
     </ElementIndex>
 

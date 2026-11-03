@@ -1,0 +1,240 @@
+<script setup lang="ts">
+  import {t} from '@craftcms/ui';
+  import {router, usePage} from '@inertiajs/vue3';
+  import {computed, shallowRef} from 'vue';
+  import InstallController from '@actions/PluginStore/InstallController';
+  import PluginsController from '@actions/PluginsController';
+  import useCraftData from '@/common/composables/useCraftData';
+  import {useCart} from '../composables/useCart';
+  import {usePluginLicenseInfo} from '../composables/usePluginStoreData';
+  import {isPluginInCart, showError} from '../cart';
+  import {resolveEditionActions, upgradePrice} from '../editionActions';
+  import {formatPrice} from '../pricing';
+  import type {Plugin, PluginEdition, PluginStoreContext} from '../types';
+
+  const {
+    plugin,
+    edition,
+    showPrice = true,
+  } = defineProps<{
+    plugin: Plugin;
+    edition: PluginEdition;
+    /** Off where the price is shown beside the button rather than on it. */
+    showPrice?: boolean;
+  }>();
+
+  const page = usePage<{context: PluginStoreContext}>();
+  const {csrfTokenName, csrfTokenValue} = useCraftData();
+  const {licenseInfoFor, refresh} = usePluginLicenseInfo();
+
+  const {cart, opened: cartOpened, add} = useCart();
+
+  const licenseInfo = computed(() => licenseInfoFor(plugin.handle));
+
+  const actions = computed(() =>
+    resolveEditionActions({
+      plugin,
+      edition,
+      licenseInfo: licenseInfo.value,
+      context: page.props.context,
+      inCart: isPluginInCart(cart.value, plugin.id, edition.handle),
+    })
+  );
+
+  /** What the edition costs as an upgrade from the one already licensed. */
+  const upgrade = computed(() =>
+    upgradePrice(plugin, edition, licenseInfo.value)
+  );
+
+  const installedLabel = computed(() => {
+    switch (actions.value.install?.kind) {
+      case 'installed':
+        return t('Installed');
+      case 'installed-trial':
+        return t('Installed as a trial');
+      default:
+        return null;
+    }
+  });
+
+  const installButton = computed(() => {
+    const install = actions.value.install;
+    return install && 'method' in install ? install : null;
+  });
+
+  const installLabels = {
+    install: t('Install'),
+    try: t('Try'),
+    reactivate: t('Reactivate'),
+  };
+
+  const noticeText = computed(() => {
+    const notice = actions.value.notice;
+
+    switch (notice?.kind) {
+      case 'partially-compatible':
+        return t(
+          'Only up to {version} is compatible with your version of Craft.',
+          {
+            version: notice.version,
+          }
+        );
+      case 'incompatible':
+        return t('This plugin isn’t compatible with your version of Craft.');
+      case 'php':
+        return t(
+          'This plugin requires PHP {v1}, but your environment is currently running {v2}.',
+          {v1: notice.required, v2: notice.current}
+        );
+      case 'composer-php':
+        return t(
+          'This plugin requires PHP {v1}, but your composer.json file is currently set to {v2}.',
+          {v1: notice.required, v2: notice.current}
+        );
+      case 'cms-edition':
+        return t('This plugin requires Craft CMS {name} edition.', {
+          name:
+            notice.edition.charAt(0).toUpperCase() + notice.edition.slice(1),
+        });
+      case 'abandoned':
+        return t('This plugin is no longer maintained.');
+      default:
+        return null;
+    }
+  });
+
+  function openCart(): void {
+    cartOpened.value = true;
+  }
+
+  const addingToCart = shallowRef(false);
+
+  async function addToCart(): Promise<void> {
+    addingToCart.value = true;
+
+    try {
+      await add([
+        {
+          type: 'plugin-edition',
+          plugin: plugin.handle,
+          edition: edition.handle,
+        },
+      ]);
+      openCart();
+    } catch (error) {
+      showError(error, t('Couldn’t add item to cart.'));
+    } finally {
+      addingToCart.value = false;
+    }
+  }
+
+  const switching = shallowRef(false);
+  const installing = shallowRef(false);
+
+  function switchEdition(): void {
+    router.post(
+      PluginsController.switchEdition({handle: plugin.handle}).url,
+      {edition: edition.handle},
+      {
+        preserveState: true,
+        preserveScroll: true,
+        onStart: () => (switching.value = true),
+        onFinish: () => {
+          switching.value = false;
+          void refresh();
+        },
+      }
+    );
+  }
+</script>
+
+<template>
+  <div class="grid gap-sm">
+    <template v-if="actions.purchase">
+      <craft-button
+        v-if="actions.purchase.kind === 'add-to-cart'"
+        variant="primary"
+        .disabled="actions.purchase.disabled"
+        .loading="addingToCart"
+        @click="addToCart"
+      >
+        <template v-if="!showPrice">{{ t('Add to cart') }}</template>
+        <template v-else>
+          <template v-if="upgrade !== null">
+            <del>{{ formatPrice(edition.price) }}</del>
+            {{ formatPrice(upgrade) }}
+          </template>
+          <template v-else>{{ formatPrice(edition.price) }}</template>
+          <span class="sr-only">{{ t('Add to cart') }}</span>
+        </template>
+      </craft-button>
+      <craft-button
+        v-else-if="actions.purchase.kind === 'licensed'"
+        variant="primary"
+        disabled
+      >
+        {{ t('Licensed') }}
+      </craft-button>
+      <craft-button v-else variant="primary" icon="check" @click="openCart">
+        {{ t('Already in your cart') }}
+      </craft-button>
+    </template>
+
+    <craft-button v-if="installedLabel" icon="check" disabled>
+      {{ installedLabel }}
+    </craft-button>
+
+    <template v-else-if="installButton">
+      <craft-button
+        v-if="installButton.method === 'switch'"
+        :variant="installButton.primary ? 'primary' : 'outline'"
+        .disabled="installButton.disabled"
+        .loading="switching"
+        @click="switchEdition"
+      >
+        {{ installLabels[installButton.kind] }}
+      </craft-button>
+
+      <!-- The installer is a full page of its own, so this posts rather than visits. -->
+      <form
+        v-else
+        method="post"
+        :action="InstallController.index().url"
+        class="grid"
+        @submit="installing = true"
+      >
+        <input
+          v-if="csrfTokenName && csrfTokenValue"
+          type="hidden"
+          :name="csrfTokenName"
+          :value="csrfTokenValue"
+        />
+        <input type="hidden" name="packageName" :value="plugin.packageName" />
+        <input type="hidden" name="handle" :value="plugin.handle" />
+        <input type="hidden" name="edition" :value="edition.handle" />
+        <input
+          type="hidden"
+          name="version"
+          :value="`^${plugin.latestCompatibleVersion}`"
+        />
+        <craft-button
+          type="submit"
+          :variant="installButton.primary ? 'primary' : 'outline'"
+          .disabled="installButton.disabled"
+          .loading="installing"
+        >
+          {{ installLabels[installButton.kind] }}
+        </craft-button>
+      </form>
+    </template>
+
+    <p v-if="noticeText" class="edition-actions__notice">{{ noticeText }}</p>
+  </div>
+</template>
+
+<style scoped>
+  .edition-actions__notice {
+    margin: 0;
+    color: var(--c-text-quiet);
+  }
+</style>

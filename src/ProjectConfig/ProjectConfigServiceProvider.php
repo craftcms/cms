@@ -60,11 +60,7 @@ class ProjectConfigServiceProvider extends ServiceProvider
             return;
         }
 
-        app(ProjectConfig::class)->flush();
-
-        if (app(ProjectConfig::class)->waitingToUpdateParsedConfigTimes) {
-            app(ProjectConfig::class)->updateParsedConfigTimes();
-        }
+        app(ProjectConfig::class)->flushChanges();
     }
 
     public function boot(ProjectConfig $projectConfig): void

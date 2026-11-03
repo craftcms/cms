@@ -179,12 +179,6 @@
   grid-column: 1 / -1;
 }
 
-/* The Thumb Style radios' illustrations keep their size, rather than shrinking
-   to fit, so they set the settings' width beside the preview. */
-.thumb-management .radio-thumbnail img {
-  max-inline-size: none;
-}
-
 .thumb-management
   craft-field[data-attribute='thumb-source']
   :is(.cp-select, select) {

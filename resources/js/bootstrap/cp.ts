@@ -1,5 +1,6 @@
 import {createInertiaApp, router} from '@inertiajs/vue3';
 import {handleControlPanelLinks} from '@/common/inertia-links';
+import {observeExternalLinks} from '@craftcms/ui/utilities/external-links';
 import type {DefineComponent} from 'vue';
 import {setTranslations, t} from '@craftcms/ui/utilities/translate';
 import {http} from '@craftcms/ui/utilities/api/http';
@@ -183,6 +184,7 @@ const Cp = {
 
     handleNonInertiaRequests();
     handleControlPanelLinks();
+    observeExternalLinks();
     handleAccessibleRouting();
     registerSlideoutGlobals();
     registerSubmitShortcut();

@@ -1,11 +1,13 @@
 <script setup lang="ts">
   import {ref} from 'vue';
   import {t} from '@craftcms/ui';
+  import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
   import AuthBase from '@/common/layouts/AuthBase.vue';
 
   const props = defineProps<{
     clientName: string;
     redirectUri: string | null;
+    redirectHost: string | null;
     scopes: Array<{
       id: string;
       description: string;
@@ -25,10 +27,12 @@
 </script>
 
 <template>
-  <AuthBase :title="t('Authorize access')">
+  <AuthBase :title="t('Authorize “{client}”', {client: clientName})">
     <craft-pane
       class="authorization"
-      :label="t('{name} wants to access your account', {name: clientName})"
+      :label="
+        t('“{client}” wants to access your account', {client: clientName})
+      "
     >
       <div class="authorization__content">
         <craft-radio-group
@@ -58,12 +62,16 @@
           </ul>
         </template>
 
-        <p v-if="redirectUri" class="authorization__redirect">
-          {{ t('You will be redirected to {url}', {url: redirectUri}) }}
-        </p>
-
-        <p class="authorization__warning">
-          {{ t('Only continue if you trust this application.') }}
+        <p class="authorization__redirect">
+          {{ t('Only authorize apps you trust.') }}
+          <span
+            v-if="redirectHost"
+            v-html="
+              t('You will be redirected to {host}.', {
+                host: `<strong>${escapeHtml(redirectHost)}</strong>`,
+              })
+            "
+          ></span>
         </p>
       </div>
 
@@ -119,9 +127,5 @@
 
   .authorization__redirect {
     overflow-wrap: anywhere;
-  }
-
-  .authorization__warning {
-    color: var(--c-text-quiet);
   }
 </style>

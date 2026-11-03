@@ -18,7 +18,7 @@
 
   const props = withDefaults(
     defineProps<{
-      statusOptions?: Array<{label: string; value: string}>;
+      statusOptions?: Array<{label: string; value: string; icon?: string}>;
       viewModes?: Array<ViewMode>;
       columnOptions: Array<CheckboxOption>;
       /** The thumbnail sizes the active view mode offers. */
@@ -86,6 +86,10 @@
   const sortDirectionLocked = computed(() =>
     ['score', 'sortOrder'].includes(sortField.value)
   );
+
+  function statusOptionIcon(value: string | number): string | undefined {
+    return props.statusOptions?.find((option) => option.value === value)?.icon;
+  }
 
   const siteOptions = computed(() =>
     (props.sites ?? []).map((site) => ({label: site.name, value: site.handle}))
@@ -174,7 +178,20 @@
           "
         >
           <template #option="{option}">
-            <ElementStatus :label="option.label" :value="option.value" />
+            <span
+              v-if="statusOptionIcon(option.value)"
+              style="
+                display: inline-flex;
+                align-items: center;
+                gap: var(--c-spacing-sm);
+              "
+            >
+              <craft-icon
+                :name.attr="statusOptionIcon(option.value)"
+              ></craft-icon>
+              {{ option.label }}
+            </span>
+            <ElementStatus v-else :label="option.label" :value="option.value" />
           </template>
         </CraftSelectRich>
       </div>
