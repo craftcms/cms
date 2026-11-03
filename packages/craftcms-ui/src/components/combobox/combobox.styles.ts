@@ -133,7 +133,6 @@ export default css`
     outline: none !important;
   }
 
-  /* The tokens sit in the field's flex row beside the textbox, as list items */
   ::slotted([slot='selection']) {
     display: contents;
     list-style: none;

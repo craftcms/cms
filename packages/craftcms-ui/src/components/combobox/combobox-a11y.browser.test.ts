@@ -207,9 +207,9 @@ describe('semantics', () => {
     const icons = control.shadowRoot!.querySelectorAll('.indicator, .prefix');
 
     expect(icons).toHaveLength(2);
-    for (const icon of icons) {
-      expect(icon).toHaveAttribute('aria-hidden', 'true');
-    }
+    await expect
+      .element(page.elementLocator(control).getByRole('img'))
+      .not.toBeInTheDocument();
     await expect
       .element(page.getByRole('combobox', {name: 'Fruit'}))
       .toBeInTheDocument();
@@ -255,7 +255,7 @@ describe('keyboard and focus', () => {
     expect(visited).toEqual(['Apple', 'Cherry', 'Damson', 'Apple', 'Damson']);
   });
 
-  it('stops on a disabled option, marked aria-disabled, without selecting it', async () => {
+  it('stops on a disabled option, exposed as unavailable, without selecting it', async () => {
     const {control, input} = await fixture();
 
     await open(input);
@@ -263,7 +263,9 @@ describe('keyboard and focus', () => {
     const banana = option(control, 'Banana');
 
     expect(activeOption(control)).toBe('Banana');
-    expect(banana).toHaveAttribute('aria-disabled', 'true');
+    await expect
+      .element(page.getByRole('option', {name: 'Banana', disabled: true}))
+      .toBeInTheDocument();
     expect(input).toHaveAttribute('aria-activedescendant', banana.id);
 
     await userEvent.keyboard('{Enter}');

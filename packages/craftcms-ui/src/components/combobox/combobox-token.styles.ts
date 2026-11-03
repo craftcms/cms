@@ -13,7 +13,6 @@ export default css`
     overflow-wrap: anywhere;
   }
 
-  /* The button fills the token, so the whole token is its target */
   :host([removable]) {
     padding: 0;
   }

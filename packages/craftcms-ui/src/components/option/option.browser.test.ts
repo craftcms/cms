@@ -185,7 +185,7 @@ describe('visual', () => {
   });
 
   describe.each(['light', 'dark'])('in the %s theme', (theme) => {
-    it('fills the highlighted option but not the selected one, whose check mark reaches 3:1', async () => {
+    it('fills the highlighted option at 3:1 against the rest, but not the selected one, whose check mark reaches 3:1', async () => {
       const {options, popup} = await openCombobox(
         (c) => (c.modelValue = 'cherry'),
         theme
@@ -198,7 +198,9 @@ describe('visual', () => {
       expect(background(cherry!, popup)).toBe(
         getComputedStyle(popup).backgroundColor
       );
-      expect(background(apple!, popup)).not.toBe(background(cherry!, popup));
+      expect(
+        contrast(background(apple!, popup), background(cherry!, popup))
+      ).toBeGreaterThanOrEqual(3);
 
       const check = cherry!.shadowRoot!.querySelector<HTMLElement>('.check')!;
       expect(
