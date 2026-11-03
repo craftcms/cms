@@ -20,10 +20,10 @@ use CraftCms\Cms\Ui\Controls\Lightswitch;
 use CraftCms\Cms\Ui\Controls\Text;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\Nodes\Field;
-use CraftCms\Cms\Ui\Nodes\MarkdownContent;
 use CraftCms\Cms\Ui\Nodes\Table;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiPayload;
 use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Data\UserGroup;
@@ -58,13 +58,27 @@ class CpNavigationController
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
 
-    public function index(): CpScreenResponse|RedirectResponse
+    /**
+     * The default navigation's builder, which is also where user group
+     * navigations are listed, in a tab beside it, on editions that have them.
+     */
+    public function index(): CpScreenResponse
     {
-        // Without group navigations, the default one is all there is to list.
-        if (! Edition::isAtLeast(Edition::Pro)) {
-            return to_route('craft.cp.settings.cp-nav.default');
-        }
+        return $this->form(null, $this->customNavigations->getDefault());
+    }
 
+    /** Where the default navigation's builder used to live. */
+    public function editDefault(): RedirectResponse
+    {
+        return to_route('craft.cp.settings.cp-nav.index');
+    }
+
+    /**
+     * The user group navigations, as a table that lists them in the order
+     * they apply.
+     */
+    private function groupsTable(): UiPayload
+    {
         $groupNavigations = $this->customNavigations->getGroupNavigations();
         $taken = $groupNavigations->map(fn (array $navigation) => $navigation['userGroup']->uid)->all();
         $newItems = $this->userGroups->getAllGroups()
@@ -87,51 +101,25 @@ class CpNavigationController
                 '_deleteUrl' => route('craft.cp.settings.cp-nav.destroy', ['groupUid' => $navigation['userGroup']->uid]),
                 '_deleteConfirmMessage' => t('Are you sure you want to delete the navigation for “{name}”?', ['name' => $navigation['userGroup']->name]),
             ]),
-        ])->push([
-            'id' => 'default',
-            'name' => [
-                'label' => $groupNavigations->isEmpty() ? t('Everyone') : t('Everyone else'),
-                'url' => route('craft.cp.settings.cp-nav.default'),
-            ],
-            'changes' => $this->navCustomizer->summarize($this->customNavigations->getDefault()),
-            '_reorderable' => false,
-            '_deletable' => false,
         ]);
 
-        return new CpScreenResponse()
-            ->title(t('CP Navigation'))
-            ->crumbs([
-                ['label' => t('Settings'), 'href' => route('craft.cp.settings.index')],
-                ['label' => t('CP Navigation')],
-            ])
-            ->ui(Ui::make([
-                MarkdownContent::make('cp-nav-intro', t('People in more than one user group get the first of their groups’ navigations below. Each one builds on the default navigation, which everyone else gets.'))
-                    ->displayInPane(false),
-                Table::make('cp-navigations')
-                    ->columns([
-                        ['key' => 'name', 'label' => t('User group')],
-                        ['key' => 'changes', 'label' => t('Changes')],
-                    ])
-                    ->rows($rows)
-                    ->appearance(TableAppearance::Aligned)
-                    ->unless($this->readOnly, fn (Table $table) => $table
-                        ->when(
-                            $newItems !== [],
-                            fn (Table $table) => $table
-                                ->createActionMenu(t('New navigation'), $newItems)
-                                ->createActionInPageHeader(),
-                        )
-                        ->when(
-                            $groupNavigations->count() > 1,
-                            fn (Table $table) => $table->reorderable(route('craft.cp.settings.cp-nav.reorder'), t('New order saved.')),
-                        )
-                        ->when($groupNavigations->isNotEmpty(), fn (Table $table) => $table->deletable())),
-            ]));
-    }
-
-    public function editDefault(): CpScreenResponse
-    {
-        return $this->form(null, $this->customNavigations->getDefault());
+        return $this->uiResolver->resolve(Ui::make([
+            Table::make('cp-navigations')
+                ->columns([
+                    ['key' => 'name', 'label' => t('User group')],
+                    ['key' => 'changes', 'label' => t('Changes')],
+                ])
+                ->rows($rows)
+                ->emptyMessage(t('No user groups have their own navigation yet.'))
+                ->appearance(TableAppearance::Aligned)
+                ->unless($this->readOnly, fn (Table $table) => $table
+                    ->when($newItems !== [], fn (Table $table) => $table->createActionMenu(t('New navigation'), $newItems))
+                    ->when(
+                        $groupNavigations->count() > 1,
+                        fn (Table $table) => $table->reorderable(route('craft.cp.settings.cp-nav.reorder'), t('New order saved.')),
+                    )
+                    ->when($groupNavigations->isNotEmpty(), fn (Table $table) => $table->deletable())),
+        ]), new UiContext);
     }
 
     public function updateDefault(NavCustomizationRequest $request): Response
@@ -142,7 +130,7 @@ class CpNavigationController
 
         return $this->asSuccess(
             t('Navigation saved.'),
-            redirect: $this->getPostedRedirectUrl() ?? route('craft.cp.settings.cp-nav.default'),
+            redirect: $this->getPostedRedirectUrl() ?? route('craft.cp.settings.cp-nav.index'),
         );
     }
 
@@ -298,16 +286,21 @@ class CpNavigationController
      */
     private function form(?UserGroup $group, array $nav): CpScreenResponse
     {
-        $title = $group === null ? t('Default navigation') : (string) $group->name;
+        $title = $group === null ? t('CP Navigation') : (string) $group->name;
         $baseTree = $group === null
             ? $this->navigation->getBaseTree()
             : $this->navigation->getBaseTreeForGroup($group);
         $base = $group === null ? [] : $this->customNavigations->getDefault();
 
-        return new CpScreenResponse()
+        $response = new CpScreenResponse()
             ->title($title)
-            ->addCrumb(t('Settings'), 'settings')
-            ->addCrumb(t('CP Navigation'), 'settings/cp-nav')
+            ->addCrumb(t('Settings'), 'settings');
+
+        if ($group !== null) {
+            $response->addCrumb(t('CP Navigation'), 'settings/cp-nav#cp-nav-groups');
+        }
+
+        return $response
             ->addCrumb($title)
             ->inertiaPage('settings/cp-nav/Edit', [
                 'isDefault' => $group === null,
@@ -317,7 +310,11 @@ class CpNavigationController
                 'saveUrl' => $group === null
                     ? route('craft.cp.settings.cp-nav.update-default')
                     : route('craft.cp.settings.cp-nav.update', ['groupUid' => $group->uid]),
+                // Group navigations get a tab beside the default one's builder.
+                'groupsTable' => $group === null && Edition::isAtLeast(Edition::Pro)
+                    ? $this->groupsTable(...)
+                    : null,
             ])
-            ->redirectUrl('settings/cp-nav');
+            ->redirectUrl($group === null ? 'settings/cp-nav' : 'settings/cp-nav#cp-nav-groups');
     }
 }

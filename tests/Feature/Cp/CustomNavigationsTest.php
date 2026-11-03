@@ -37,7 +37,9 @@ beforeEach(function () {
 it('saves the default navigation from the builder, and resets it', function () {
     actingAs(UserModel::factory()->admin()->createElement());
 
-    $tree = get(cp_url('settings/cp-nav/default'))
+    get(cp_url('settings/cp-nav/default'))->assertRedirect(route('craft.cp.settings.cp-nav.index'));
+
+    $tree = get(cp_url('settings/cp-nav'))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page->component('settings/cp-nav/Edit'))
         ->viewData('page')['props']['tree'];
@@ -46,7 +48,7 @@ it('saves the default navigation from the builder, and resets it', function () {
     $tree[0]['label'] = 'Home';
 
     $this->put(cp_url('settings/cp-nav/default'), ['nav' => $tree])
-        ->assertRedirect(cp_url('settings/cp-nav/default'));
+        ->assertRedirect(cp_url('settings/cp-nav'));
 
     expect(app(CustomNavigations::class)->getDefault())
         ->toEqual(['items' => ['nav-dashboard' => ['label' => 'Home', 'hidden' => true]]])
@@ -143,7 +145,7 @@ it('lays out a group’s navigation from what the group can see, and saves only 
     $labels = fn (array $tree): array => collect($tree)
         ->flatMap(fn (array $node) => [$node['label'], ...array_column($node['children'], 'label')])
         ->all();
-    $adminTree = get(cp_url('settings/cp-nav/default'))->viewData('page')['props']['tree'];
+    $adminTree = get(cp_url('settings/cp-nav'))->viewData('page')['props']['tree'];
     $groupTree = get(cp_url('settings/cp-nav/'.$group->uid))
         ->assertOk()
         ->viewData('page')['props']['tree'];
@@ -168,7 +170,7 @@ it('lays out a group’s navigation from what the group can see, and saves only 
         ->not->toContain($settingsId);
 });
 
-it('lists group navigations in the order they apply, with the default navigation last', function () {
+it('lists group navigations in the order they apply, in a tab beside the default navigation’s builder', function () {
     actingAs(UserModel::factory()->admin()->createElement());
     $navigations = app(CustomNavigations::class);
     $editors = UserGroups::getGroupByUid(UserGroup::factory()->create(['name' => 'Editors'])->uid);
@@ -179,19 +181,20 @@ it('lists group navigations in the order they apply, with the default navigation
 
     UserGroup::factory()->create(['name' => 'Writers']);
 
-    $table = collect(get(cp_url('settings/cp-nav'))->assertOk()->inertiaProps('ui.nodes'))
-        ->firstWhere('uid', 'cp-navigations')['props'];
+    $table = get(cp_url('settings/cp-nav'))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('settings/cp-nav/Edit'))
+        ->inertiaProps('groupsTable.nodes.0.props');
 
     expect(array_column($table['createMenuItems'], 'label'))->toContain('Writers')->not->toContain('Editors', 'Contractors')
-        ->and(array_map(fn (array $row) => [$row['name']['label'], $row['changes'], $row['_reorderable'] ?? true], $table['rows']))->toBe([
-            ['Contractors', 'No changes', true],
-            ['Editors', '1 hidden', true],
-            ['Everyone else', 'No changes', false],
+        ->and(array_map(fn (array $row) => [$row['name']['label'], $row['changes']], $table['rows']))->toBe([
+            ['Contractors', 'No changes'],
+            ['Editors', '1 hidden'],
         ]);
 
     Edition::set(Edition::Team);
 
-    get(cp_url('settings/cp-nav'))->assertRedirect(route('craft.cp.settings.cp-nav.default'));
+    expect(get(cp_url('settings/cp-nav'))->assertOk()->inertiaProps('groupsTable'))->toBeNull();
 });
 
 it('only offers reordering and deleting the navigations that can be', function (int $groupCount, bool $reorderable, bool $deletable) {
@@ -202,14 +205,13 @@ it('only offers reordering and deleting the navigations that can be', function (
         app(CustomNavigations::class)->saveGroupNavigation($group, []);
     }
 
-    $table = collect(get(cp_url('settings/cp-nav'))->assertOk()->inertiaProps('ui.nodes'))
-        ->firstWhere('uid', 'cp-navigations')['props'];
+    $table = get(cp_url('settings/cp-nav'))->assertOk()->inertiaProps('groupsTable.nodes.0.props');
 
     expect($table['reorderUrl'] !== null)->toBe($reorderable)
         ->and($table['deletable'])->toBe($deletable)
         ->and($table['appearance'])->toBe('aligned');
 })->with([
-    'only the default navigation' => [0, false, false],
+    'no group navigations' => [0, false, false],
     'one group navigation' => [1, false, true],
     'several group navigations' => [2, true, true],
 ]);
@@ -229,7 +231,7 @@ it('shows added sections and links only to users who match their user condition,
     $condition = fn (array $rules): array => ['class' => UserCondition::class, 'conditionRules' => $rules];
 
     actingAs(UserModel::factory()->admin()->createElement());
-    $tree = get(cp_url('settings/cp-nav/default'))->viewData('page')['props']['tree'];
+    $tree = get(cp_url('settings/cp-nav'))->viewData('page')['props']['tree'];
 
     $this->put(cp_url('settings/cp-nav/default'), ['nav' => [
         ...$tree,

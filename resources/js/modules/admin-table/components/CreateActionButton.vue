@@ -6,11 +6,16 @@
   import type {ActionItemLink} from '@/common/types';
   import {AdminTableCreateSlideout} from '../create-slideout';
 
-  const props = defineProps<{
-    label: string | null;
-    url?: string | null;
-    menuItems?: Array<{label: string; url: string}> | null;
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      label: string | null;
+      url?: string | null;
+      menuItems?: Array<{label: string; url: string}> | null;
+      /** The button's style. Defaults to `primary`. */
+      variant?: string;
+    }>(),
+    {variant: 'primary'}
+  );
 
   const menuActions = computed<ActionItemLink[]>(
     () =>
@@ -49,21 +54,21 @@
 <template>
   <CpButtonLink
     v-if="url && slideout"
-    variant="primary"
+    :variant="variant"
     icon="plus"
     :href="url"
     :inertia="false"
     @click="openInSlideout"
     >{{ label }}</CpButtonLink
   >
-  <CpButtonLink v-else-if="url" variant="primary" icon="plus" :href="url">{{
+  <CpButtonLink v-else-if="url" :variant="variant" icon="plus" :href="url">{{
     label
   }}</CpButtonLink>
   <ActionMenu v-else-if="menuActions.length" :actions="menuActions">
     <template #invoker="{attributes}">
       <craft-button
         type="button"
-        variant="primary"
+        :variant="variant"
         icon="plus"
         v-bind="attributes"
       >
