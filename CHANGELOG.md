@@ -161,6 +161,7 @@
 - Activity descriptions now read as complete sentences, such as “saved a draft” and “added this entry to Secondary Site”, and activity and workflow descriptions are now translated. ([#20258](https://github.com/craftcms/cms/pull/20258))
 - Workflow review stages now show their status in words beside a status dot, and a stage where a withdrawn review stopped now says “Withdrawn” rather than looking unstarted. ([#20258](https://github.com/craftcms/cms/pull/20258))
 - Filled callouts are now softer in the dark theme, and their icons line up with the first line of text. ([#20258](https://github.com/craftcms/cms/pull/20258))
+- Fixed a bug where fields on revisions were disabled, rather than read-only. ([#20297](https://github.com/craftcms/cms/pull/20297))
 - Fixed a bug where single-value checkbox selects unchecked “All” while their options loaded. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - Fixed a bug where legacy buttons and text inputs were unstyled, and `fullwidth` controls didn’t fill their containers, on Twig control panel pages rendered inside the Inertia shell.
 - Fixed a bug where release dates were formatted for the control panel’s language rather than the user’s formatting locale. ([#20085](https://github.com/craftcms/cms/pull/20085))
