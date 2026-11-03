@@ -84,6 +84,16 @@
     iconOnly?: boolean;
   }>();
 
+  defineSlots<{
+    /**
+     * Added to a nav item's row, beside its link. Give it `slot="actions"`.
+     * Passed on to nested items too.
+     */
+    'item-actions'?(props: {
+      action: ActionItemGroup | ActionItemButton | ActionItemLink;
+    }): unknown;
+  }>();
+
   const isNav = computed(() => as === 'craft-nav-item');
 
   function defined(attrs: Record<string, unknown>): Record<string, unknown> {
@@ -323,6 +333,31 @@
     return action.type === 'group' ? undefined : action.status;
   }
 
+  /**
+   * An external link to another site, rather than a full page load within this
+   * one. A branch keeps its suffix slot for the toggle, so it isn't marked.
+   */
+  function leavesSite(action: NavItem): boolean {
+    const href = hrefOf(action);
+
+    if (
+      action.type !== 'link' ||
+      !action.external ||
+      !href ||
+      childrenOf(action).length
+    ) {
+      return false;
+    }
+
+    try {
+      return (
+        new URL(href, window.location.href).origin !== window.location.origin
+      );
+    } catch {
+      return false;
+    }
+  }
+
   function countOf(action: NavItem): number | undefined {
     return action.type === 'group' ? undefined : action.count;
   }
@@ -459,6 +494,13 @@
 
       {{ labelOf(action) }}
 
+      <craft-icon
+        v-if="leavesSite(action)"
+        slot="suffix"
+        name="arrow-up-right-from-square"
+        :label="t('External site')"
+      ></craft-icon>
+
       <craft-badge-indicator
         v-if="countOf(action)"
         slot="actions"
@@ -480,13 +522,23 @@
         @click="lent.onClick"
       ></craft-button>
 
+      <!-- Whatever the caller adds to the row; give it `slot="actions"`. -->
+      <slot name="item-actions" :action="action"></slot>
+
       <craft-nav-list v-if="childrenOf(action).length" slot="subnav">
         <ActionList
           :actions="childrenOf(action)"
           as="craft-nav-item"
           :mode="iconOnly ? 'flyout' : mode"
           :icon-only="iconOnly && subnavDisplay(action) === 'inline'"
-        />
+        >
+          <template
+            v-if="$slots['item-actions']"
+            #item-actions="{action: child}"
+          >
+            <slot name="item-actions" :action="child"></slot>
+          </template>
+        </ActionList>
       </craft-nav-list>
     </component>
   </template>

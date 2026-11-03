@@ -16,6 +16,7 @@
      * these variables.
      *
      * @var array $options
+     * @var array{label: string, value: string}|null $iconOption The entry type icon option, which the JS keeps only while an icon is selected
      * @var list<string> $thumbSources
      * @var string $thumbAlignment
      * @var string $thumbStyle
@@ -25,7 +26,7 @@
      * @var array $styleOptions
      */
 @endphp
-<div class="thumb-management">
+<div class="thumb-management" @if ($iconOption) data-icon-option="{{ json_encode($iconOption) }}" @endif>
     <h2 class="sr-only">{{ \CraftCms\Cms\t('Manage element thumbnails') }}</h2>
 
     {{-- All thumbable fields, in the order they're tried --}}
@@ -52,12 +53,7 @@
                         ->checked($option['value'] === $thumbStyle)
                         ->disabled($disabled)
                         ->label($option['label'])
-                        ->thumbnail([
-                            'src' => \CraftCms\Cms\Cp\Cp::publicAssetUrl("images/thumb-styles/{$option['value']}.svg"),
-                            'width' => 80,
-                            'height' => 60,
-                            'aspectRatio' => '80 / 60',
-                        ]),
+                        ->thumbnail(\CraftCms\Cms\Cp\Cp::illustration("images/thumb-styles/{$option['value']}.svg")),
                     $styleOptions,
                 ))
                 ->toHtml();
@@ -95,7 +91,7 @@
 
             return \CraftCms\Cms\Cp\Components\RadioGroup::make()
                 ->id('thumb-alignment')
-                ->buttons()
+                ->appearance('button-group')
                 ->options($radios)
                 ->toHtml().$tooltips;
         },

@@ -65,9 +65,9 @@ describe('craft-shortcut', () => {
       'Ctrl',
       'Alt',
     ]);
-    expect(modifiers(await createShortcut({os: 'Linux'}))).toEqual(['Super']);
+    expect(modifiers(await createShortcut({os: 'Linux'}))).toEqual(['Ctrl']);
     expect(modifiers(await createShortcut({os: 'Linux', shift: ''}))).toEqual([
-      'Super',
+      'Ctrl',
       'Shift',
     ]);
   });

@@ -191,7 +191,14 @@ class EditUserScreens
 
     public function showTokensScreen(User $user): bool
     {
-        return $user->getIsCurrent() && app(PersonalAccessTokens::class)->scopeGroupsFor($user)->isNotEmpty();
+        if (! $user->getIsCurrent()) {
+            return false;
+        }
+
+        // Users who can’t create tokens still see the apps they’ve authorized.
+        $tokens = app(PersonalAccessTokens::class);
+
+        return $tokens->scopeGroupsFor($user)->isNotEmpty() || $tokens->grants($user) !== [];
     }
 
     public function showSignInProvidersScreen(User $user): bool

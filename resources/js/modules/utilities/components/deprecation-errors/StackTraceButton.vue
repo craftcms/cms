@@ -20,11 +20,11 @@
     <Modal
       :is-active="isActive"
       :label="t('Stack Trace')"
+      width="5xl"
+      resizable
       @close="isActive = false"
     >
-      <StackTrace :log-id="logId" />
+      <StackTrace :log-id="logId" @close="isActive = false" />
     </Modal>
   </Teleport>
 </template>
-
-<style scoped lang="scss"></style>

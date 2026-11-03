@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Ai\Assistant;
 
 use Closure;
+use CraftCms\Cms\Support\Json;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\JsonSchema as JsonSchemaFactory;
 use Illuminate\JsonSchema\Types\Type;
@@ -14,6 +15,14 @@ use Laravel\Ai\Contracts\Approvable;
 use Laravel\Ai\Contracts\Tool;
 use Laravel\Ai\Schema\SchemaNormalizer;
 use Laravel\Ai\Tools\Request;
+use Mcp\Schema\Content\AudioContent;
+use Mcp\Schema\Content\Content;
+use Mcp\Schema\Content\EmbeddedResource;
+use Mcp\Schema\Content\ImageContent;
+use Mcp\Schema\Content\ResourceLink;
+use Mcp\Schema\Content\TextContent;
+use Mcp\Schema\Content\TextResourceContents;
+use Mcp\Schema\Result\CallToolResult;
 use Mcp\Schema\Tool as ToolDefinition;
 
 use function CraftCms\Cms\t;
@@ -22,7 +31,7 @@ use function CraftCms\Cms\t;
  * An MCP tool, as a `laravel/ai` tool for the AI assistant.
  *
  * Tools that can change anything only run once the user approves the call. Calls go to wherever the tool is, such as
- * {@see McpTools} for Craft’s own tools.
+ * {@see McpTools} for Craft’s own tools, or {@see CraftcmsMcpTools} for craftcms.com’s.
  *
  * @internal
  *
@@ -71,6 +80,29 @@ class McpTool implements Approvable, Tool
     public function handle(Request $request): string
     {
         return ($this->call)($request->all());
+    }
+
+    /**
+     * Returns a tool result as text for the model.
+     *
+     * Structured content comes first, as JSON, since tools that return it repeat it in their content blocks. Content
+     * the model can’t read as text, such as images, is described instead.
+     */
+    public static function resultText(CallToolResult $result): string
+    {
+        if ($result->structuredContent !== null) {
+            return (string) Json::encode($result->structuredContent, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        }
+
+        return implode("\n", array_map(static fn (Content $content): string => match (true) {
+            $content instanceof TextContent => (string) $content->text,
+            $content instanceof EmbeddedResource && $content->resource instanceof TextResourceContents => $content->resource->text,
+            $content instanceof EmbeddedResource => "[Binary resource: {$content->resource->uri}]",
+            $content instanceof ResourceLink => "[Resource: {$content->name} ({$content->uri})]",
+            $content instanceof ImageContent => "[Image: {$content->mimeType}]",
+            $content instanceof AudioContent => "[Audio: {$content->mimeType}]",
+            default => '',
+        }, $result->content));
     }
 
     protected function needsApproval(Request $request): Approval|bool

@@ -80,7 +80,7 @@ it('renders the thumbnail alignment setting as radios shown as buttons', functio
 
     // Radios, rather than toggle buttons, so the whole setting is one tab stop
     // whose selection the arrow keys move.
-    $group = $designer->filter('craft-radio-group#thumb-alignment[buttons]');
+    $group = $designer->filter('craft-radio-group#thumb-alignment[appearance="button-group"]');
     $radios = $group->filter('input[type="radio"][name="thumb-alignment"]');
 
     expect($group->count())->toBe(1)
@@ -167,3 +167,26 @@ it('gives only entry cards a header in the preview, for their entry type’s lab
     'asset volume' => [Asset::class, false],
     'user fields' => [User::class, false],
 ]);
+
+it('offers the entry type icon as a thumb source only for entry types', function (string $type, bool $offered) {
+    $designer = new Crawler('<div>'.app(CardDesigner::class)->html(new FieldLayout(['type' => $type])).'</div>');
+    $option = $designer->filter('.thumb-management')->attr('data-icon-option');
+
+    expect($option !== null)->toBe($offered);
+
+    if ($offered) {
+        expect(json_decode($option, true))->toBe(['label' => 'Entry type icon', 'value' => FieldLayout::ENTRY_TYPE_ICON_THUMB_SOURCE]);
+    }
+})->with([
+    'entry type' => [Entry::class, true],
+    'user fields' => [User::class, false],
+]);
+
+it('keeps thumb alignment for covered cards while the entry type icon is a thumb source', function () {
+    $layout = new FieldLayout(['type' => Entry::class]);
+    $layout->thumbSources = [FieldLayout::ENTRY_TYPE_ICON_THUMB_SOURCE];
+    $layout->setCardThumbStyle('cover');
+    $designer = new Crawler('<div>'.app(CardDesigner::class)->html($layout).'</div>');
+
+    expect(str_contains((string) $designer->filter('craft-field[data-attribute="thumb-alignment"]')->attr('class'), 'hidden'))->toBeFalse();
+});

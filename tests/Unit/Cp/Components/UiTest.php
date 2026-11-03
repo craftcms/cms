@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cp\Components\Callout;
 use CraftCms\Cms\Cp\Components\ComponentRegistry;
+use CraftCms\Cms\Cp\Components\ComponentSelect;
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\MissingComponent;
 use CraftCms\Cms\Cp\Components\ViewComponent;
@@ -42,7 +43,12 @@ describe('configure', function () {
     it('rejects getter and rendering method names as config keys', function (string $key) {
         expect(fn () => Callout::make()->configure([$key => 'x']))
             ->toThrow(InvalidArgumentException::class, $key);
-    })->with(['getVariant', 'isDisabled', 'toHtml', 'renderSlots']);
+    })->with(['getVariant', 'isDisabled', 'toHtml', 'renderSlots', 'make']);
+
+    it('accepts public setters whose names start with render', function () {
+        expect(fn () => ComponentSelect::make()->configure(['renderDefaultInput' => false]))
+            ->not->toThrow(InvalidArgumentException::class);
+    });
 });
 
 describe('ui()', function () {

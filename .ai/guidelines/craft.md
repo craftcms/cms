@@ -30,6 +30,8 @@ All UI — PHP view components, Twig templates, Vue components, and the Lit web 
 - Access trait-provided constants through a class that uses the trait; PHP 8.2 and later do not support accessing them on the trait itself.
 - Classes are non-final by default. Use `readonly` when it fits.
 - Let Pint remove unused imports.
+- Never call `json_encode()` or `json_decode()` directly; use `CraftCms\Cms\Support\Json`.
+- Never import `Illuminate\Support\Env`; use `CraftCms\Cms\Support\Env`. In `src/`, also use `CraftCms\Cms\Support\Arr`, `Str`, and `File` instead of `Illuminate\Support\Arr`, `Illuminate\Support\Str`, and `Illuminate\Support\Facades\File`. Each Craft helper extends its Laravel equivalent.
 
 Some files contain Unicode characters in comments and strings. If a text edit fails, inspect the exact bytes or copy the surrounding text from the file.
 

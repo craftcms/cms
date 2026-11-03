@@ -146,6 +146,8 @@ class Table implements Node
      * `_deleteLabel` customizes the delete button's accessible name.
      * `_deletable => false` suppresses deletion of one row. `_deleteDisabledReason`
      * shows a disabled delete button with an explanation instead of hiding it.
+     * `_reorderable => false` keeps a row in place, with no drag handle; keep such rows
+     * at the start or end. They're still included in the posted `ids`.
      * `_status` accepts a
      * boolean or status string and renders an indicator in the first column.
      * `_search` overrides client-side search text; otherwise columns' text is used.

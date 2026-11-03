@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User;
 
+use CraftCms\Cms\Cp\CustomNavigations;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
@@ -356,6 +357,9 @@ readonly class UserGroups
             ProjectConfig::PATH_USER_GROUPS.'.'.$group->uid,
             "Delete the “{$group->handle}” user group",
         );
+
+        // Resolved here, since it depends on this service.
+        app(CustomNavigations::class)->deleteGroupNavigation((string) $group->uid);
 
         return true;
     }

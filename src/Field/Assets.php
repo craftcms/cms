@@ -39,6 +39,7 @@ use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Folders;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
@@ -172,12 +173,6 @@ class Assets extends BaseRelationField
     protected bool $allowLargeThumbsView = true;
 
     #[Override]
-    protected string $settingsTemplate = '_components/fieldtypes/Assets/settings.twig';
-
-    #[Override]
-    protected string $inputTemplate = '_components/fieldtypes/Assets/input.twig';
-
-    #[Override]
     protected ?string $inputJsClass = 'Craft.AssetSelectInput';
 
     /** @var array{data:array<array-key, string>, filename:array<array-key, string>}|null References for files uploaded as data strings for this field. */
@@ -308,6 +303,7 @@ class Assets extends BaseRelationField
             ...$this->limitFields(),
             $this->defaultPlacementField(),
             $this->viewModeField(),
+            $this->thumbSizeField(),
             $this->selectionLabelField(),
             Group::make('asset-search-settings', [
                 $this->showSearchInputField()->visible($this->canSearchWithinSources()),
@@ -632,8 +628,12 @@ class Assets extends BaseRelationField
                         // Add the newly uploaded IDs to the mix.
                         if (is_array($query->id)) {
                             $query = $this->normalizeValue(array_merge($query->id, $assetIds), $element);
-                        } elseif (isset($query->where['elements.id']) && Arr::isNumeric($query->where['elements.id'])) {
-                            $query = $this->normalizeValue(array_merge($query->where['elements.id'], $assetIds), $element);
+                        } elseif (
+                            $query instanceof ElementQuery &&
+                            ($where = $query->getWhereForColumn('elements.id')) !== null &&
+                            Arr::isNumeric($where['values'])
+                        ) {
+                            $query = $this->normalizeValue(array_merge($where['values'], $assetIds), $element);
                         } else {
                             $query = $this->normalizeValue($assetIds, $element);
                         }
@@ -722,7 +722,7 @@ class Assets extends BaseRelationField
         parent::afterElementSave($element, $isNew);
     }
 
-    /** @return array{volumeId:list<int>}|null */
+    /** @return array{volumeId:list<int>, editable?:true}|null */
     #[Override]
     public function getEagerLoadingGqlConditions(): ?array
     {
@@ -739,9 +739,16 @@ class Assets extends BaseRelationField
             return $volume->id ?? null;
         }, $volumeUids));
 
-        return [
+        $conditions = [
             'volumeId' => $volumeIds,
         ];
+
+        // Limit authenticated queries to assets the user can view
+        if (Gql::getSchemaUser()) {
+            $conditions['editable'] = true;
+        }
+
+        return $conditions;
     }
 
     /** @return list<string> */
@@ -923,6 +930,30 @@ class Assets extends BaseRelationField
         }
 
         return $variables;
+    }
+
+    /** @param array<string, mixed> $variables */
+    #[Override]
+    protected function elementSelectHtml(array $variables): string
+    {
+        $variables['jsSettings'] = [
+            'canUpload' => $variables['canUpload'],
+            'defaultFieldLayoutId' => $variables['defaultFieldLayoutId'],
+            'describedBy' => $variables['describedBy']
+                ? implode(' ', array_map(InputNamespace::namespaceId(...), explode(' ', $variables['describedBy'])))
+                : null,
+        ];
+        $variables['modalSettings'] = [
+            ...$variables['modalSettings'],
+            'hideSidebar' => $variables['hideSidebar'] ?? false,
+            'defaultSource' => $variables['defaultSource'] ?? null,
+            'defaultSourcePath' => $variables['defaultSourcePath'] ?? null,
+            'preferStoredSource' => $variables['preferStoredSource'] ?? false,
+            'showSourcePath' => $variables['showSourcePath'] ?? true,
+            'indexSettings' => ['showFolders' => $variables['showFolders']],
+        ];
+
+        return parent::elementSelectHtml($variables);
     }
 
     /** @return array<string, mixed> */

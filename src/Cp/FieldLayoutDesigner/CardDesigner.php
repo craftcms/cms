@@ -310,15 +310,24 @@ class CardDesigner
         ];
 
         $options = array_values($this->thumbOptions($fieldLayout));
+
+        // Entries can show their entry type’s icon. The card view designer only keeps the option while an icon is selected.
+        $iconOption = $fieldLayout->type === Entry::class
+            ? ['label' => t('Entry type icon'), 'value' => FieldLayout::ENTRY_TYPE_ICON_THUMB_SOURCE]
+            : null;
+        $options = array_filter([...$options, $iconOption]);
         usort($options, fn (array $a, array $b) => $a['label'] <=> $b['label']);
 
         // radio button switch that lets you choose whether the thumb alignment should be start or end
         $orientation = I18N::getLocale()->getOrientation();
         $showThumb = $fieldLayout->type::hasThumbs() || $fieldLayout->hasThumbField();
-        $cover = $fieldLayout->getCardThumbStyle() === 'cover';
+        // Icon thumbnails never cover the card, so they keep their alignment.
+        $cover = $fieldLayout->getCardThumbStyle() === 'cover'
+            && ! in_array(FieldLayout::ENTRY_TYPE_ICON_THUMB_SOURCE, $fieldLayout->thumbSources, true);
 
         return view('c::forms.fld.thumb-management', [
             'options' => $options,
+            'iconOption' => $iconOption,
             'thumbSources' => $fieldLayout->thumbSources,
             'thumbAlignment' => $fieldLayout->getCardThumbAlignment(),
             'thumbStyle' => $fieldLayout->getCardThumbStyle(),

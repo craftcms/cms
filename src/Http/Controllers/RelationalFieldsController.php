@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
+use CraftCms\Cms\Cp\Enums\ChipThumbSize;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
@@ -12,8 +14,7 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Ui\Controls\ElementSelect;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-
-use function CraftCms\Cms\template;
+use Illuminate\Validation\Rule;
 
 /**
  * @since 6.0.0
@@ -39,14 +40,13 @@ readonly class RelationalFieldsController
 
         $drafts->loadProvisionalChanges($elements);
 
-        $html = template('_includes/forms/elementSelect', [
+        $html = FormFields::elementSelectHtml([
             'elements' => $elements,
             'id' => $request->input('containerId'),
             'name' => $request->input('name'),
             'selectionLabel' => $request->input('selectionLabel'),
             'elementType' => $request->input('elementType'),
             'maintainHierarchy' => true,
-            'registerJs' => false,
         ]);
 
         return new JsonResponse([
@@ -69,11 +69,13 @@ readonly class RelationalFieldsController
             'elementIds.*' => ['integer'],
             'siteId' => ['nullable', 'integer'],
             'branchLimit' => ['nullable', 'integer'],
+            'thumbSize' => ['nullable', Rule::enum(ChipThumbSize::class)],
         ]);
+        $thumbSize = $request->enum('thumbSize', ChipThumbSize::class);
 
         return new JsonResponse([
             'elements' => array_map(
-                fn (ElementInterface $element): array => ElementSelect::presentation($element),
+                fn (ElementInterface $element): array => ElementSelect::presentation($element, thumbSize: $thumbSize),
                 $this->normalizedElements($request, $structures),
             ),
         ]);

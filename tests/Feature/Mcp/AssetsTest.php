@@ -160,13 +160,13 @@ it('sets and clears an image’s focal point through elements.update', function 
         'arguments' => ['type' => 'assets', 'id' => $id, 'attributes' => ['focalPoint' => $focalPoint]],
     ])->assertOk();
 
-    $update(['x' => 0.25, 'y' => 0.8])
+    $update('0.25;0.8')
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.element.hasFocalPoint', true);
 
     expect(Asset::findOne($id)->getFocalPoint())->toEqual(['x' => 0.25, 'y' => 0.8]);
 
-    $update(['x' => 1.5, 'y' => 0.5])->assertJsonPath('result.isError', true);
+    $update('1.5;0.5')->assertJsonPath('result.isError', true);
     $update(null)->assertJsonPath('result.isError', false);
 
     expect(Asset::findOne($id)->getHasFocalPoint())->toBeFalse();

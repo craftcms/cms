@@ -10,6 +10,7 @@ use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\ElementCaches;
@@ -131,3 +132,38 @@ it('applies custom ordering, offset, and limit to elements eager-loaded via eage
     'limit' => [fn (EntryQuery $query) => $query->limit(1), fn (array $ids) => [$ids[0]]],
     'replaced orderBy and one()' => [fn (EntryQuery $query) => $query->reorder()->orderBy('elements.id', 'desc'), fn (array $ids) => [$ids[1]], true],
 ]);
+
+it('lazily eager-loads every instance of a multi-instance relation field', function () {
+    $field = Field::where('handle', 'entriesField')->firstOrFail();
+    $fieldLayout = FieldLayout::factory()->withContentTab([
+        new CustomField(config: ['fieldUid' => $field->uid, 'handle' => 'firstEntries']),
+        new CustomField(config: ['fieldUid' => $field->uid, 'handle' => 'secondEntries']),
+    ]);
+    [$targetA, $targetB, $targetC, $targetD] = EntryModel::factory(4)->create()->pluck('id')->all();
+    $values = [
+        ['firstEntries' => [$targetA], 'secondEntries' => [$targetB, $targetC]],
+        ['firstEntries' => [$targetD], 'secondEntries' => [$targetA]],
+    ];
+
+    $sourceIds = array_map(function (array $values) use ($fieldLayout) {
+        $entry = EntryModel::factory()->withFieldLayout($fieldLayout)->createElement();
+        $entry->setFieldValues($values);
+        Elements::saveElement($entry);
+
+        return $entry->id;
+    }, $values);
+    ElementCaches::invalidateAll();
+
+    $entries = entryQuery()->id($sourceIds)->orderBy('elements.id')->all();
+
+    foreach (['firstEntries', 'secondEntries'] as $handle) {
+        foreach ($entries as $i => $entry) {
+            /** @var EntryQuery $query */
+            $query = $entry->getFieldValue($handle)->eagerly();
+
+            expect($query->ids())->toBe($values[$i][$handle])
+                ->and(array_map(fn (Entry $related) => $related->id, $query->all()))->toBe($values[$i][$handle])
+                ->and($query->wasEagerLoaded("eagerly:$query->eagerLoadHandle"))->toBeTrue();
+        }
+    }
+});

@@ -252,6 +252,9 @@
         <label slot="label">{{ t('Select all') }}</label>
       </craft-checkbox>
     </div>
+    <div v-if="$slots['header-after']" class="thumbsview-header-after">
+      <slot name="header-after" />
+    </div>
 
     <ul class="thumbsview" :data-thumb-size="thumbSize">
       <li

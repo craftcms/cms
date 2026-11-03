@@ -42,6 +42,7 @@ use CraftCms\Cms\Http\Controllers\QueueController;
 use CraftCms\Cms\Http\Controllers\ReleasesController;
 use CraftCms\Cms\Http\Controllers\Settings\AddressSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\AssetTransformersController;
+use CraftCms\Cms\Http\Controllers\Settings\CpNavigationController;
 use CraftCms\Cms\Http\Controllers\Settings\EmailSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
@@ -145,6 +146,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             ->whereNumber('release');
 
         Route::prefix('releases/{release}')->name('releases.')->whereNumber('release')->group(function () {
+            Route::get('preview', [ReleasesController::class, 'preview'])->name('preview');
             Route::post('validate', [ReleasesController::class, 'validateRelease'])->name('validate');
             Route::get('schedule', [ReleasesController::class, 'scheduleModal'])->name('scheduleModal');
             Route::post('schedule', [ReleasesController::class, 'schedule'])->name('schedule');
@@ -160,6 +162,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::post('submit', [WorkflowTransitionsController::class, 'submit']);
         Route::post('{workflowRun}/override', [WorkflowTransitionsController::class, 'override']);
         Route::post('{workflowRun}/restart', [WorkflowTransitionsController::class, 'restart']);
+        Route::post('{workflowRun}/prepare-for-editing', [WorkflowTransitionsController::class, 'prepareForEditing']);
         Route::prefix('{workflowRun}/stages/{stage}')->group(function () {
             Route::post('comment', [WorkflowTransitionsController::class, 'comment']);
             Route::post('user-review/approve', [UserReviewController::class, 'approve']);
@@ -381,6 +384,29 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             Route::get('{workflow}', [WorkflowsController::class, 'edit'])->name('edit');
         });
 
+        // Control panel navigations
+        Route::prefix('settings/cp-nav')->name('settings.cp-nav.')->middleware(RequireEdition::class.':'.Edition::Team->value)->group(function () {
+            Route::get('/', [CpNavigationController::class, 'index'])->name('index');
+            Route::get('default', [CpNavigationController::class, 'editDefault'])->name('default');
+            Route::post('item-settings', [CpNavigationController::class, 'itemSettings'])->name('item-settings');
+            Route::post('item-settings/apply', [CpNavigationController::class, 'applyItemSettings'])
+                ->middleware(RequireAdminChanges::class)
+                ->name('apply-item-settings');
+            Route::put('default', [CpNavigationController::class, 'updateDefault'])
+                ->middleware(RequireAdminChanges::class)
+                ->name('update-default');
+
+            Route::middleware(RequireEdition::class.':'.Edition::Pro->value)->group(function () {
+                Route::middleware(RequireAdminChanges::class)->group(function () {
+                    Route::post('reorder', [CpNavigationController::class, 'reorder'])->name('reorder');
+                    Route::put('{groupUid}', [CpNavigationController::class, 'update'])->name('update');
+                    Route::delete('{groupUid}', [CpNavigationController::class, 'destroy'])->name('destroy');
+                });
+
+                Route::get('{groupUid}', [CpNavigationController::class, 'edit'])->name('edit');
+            });
+        });
+
         // Fields
         Route::prefix('settings/fields')->name('settings.fields.')->group(function () {
             Route::get('/', [FieldsController::class, 'index'])->name('index');
@@ -466,7 +492,18 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
 
             Route::get('{handle}', [PluginsController::class, 'editSettings']);
         });
-        Route::get('plugin-store{any?}', [PluginStoreController::class, 'index'])->where('any', '.*');
+        Route::prefix('plugin-store')->group(function () {
+            Route::get('/', [PluginStoreController::class, 'index']);
+            Route::get('categories/{id}', [PluginStoreController::class, 'category'])->whereNumber('id');
+            Route::get('featured/{handle}', [PluginStoreController::class, 'featured']);
+            Route::get('developer/{id}', [PluginStoreController::class, 'developer'])->whereNumber('id');
+            Route::get('search', [PluginStoreController::class, 'search']);
+            Route::get('buy-all-trials', [PluginStoreController::class, 'buyAllTrials']);
+            Route::get('buy/{handle}/{edition?}', [PluginStoreController::class, 'buy']);
+            Route::get('upgrade-craft', [PluginStoreController::class, 'upgradeCraft']);
+            Route::get('{handle}/{tab?}', [PluginStoreController::class, 'plugin'])
+                ->where('tab', 'reviews|editions|changelog');
+        });
 
         // Rebrand
         // @TODO: Remove when rebrand assets are refactored

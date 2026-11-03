@@ -282,6 +282,25 @@ describe.each(themes)('in the %s theme', (theme) => {
       expect(bar(tabs[1]!).backgroundColor).toBe('rgba(0, 0, 0, 0)');
     }
   );
+
+  it('marks the selected fill tab with a border at 3:1 against the track, and only that tab', async () => {
+    const wrapper = surface(theme);
+    const {element, tabs} = await strip({
+      parent: wrapper,
+      attrs: {appearance: 'fill'},
+    });
+
+    await expect.poll(() => tabs[0]!.hasAttribute('selected')).toBe(true);
+
+    const track = getComputedStyle(
+      element.shadowRoot!.querySelector('[part="strip"]')!
+    ).backgroundColor;
+    const selected = getComputedStyle(tabs[0]!);
+
+    expect(parseFloat(selected.borderTopWidth)).toBeGreaterThanOrEqual(1);
+    expect(contrast(selected.borderTopColor, track)).toBeGreaterThanOrEqual(3);
+    expect(getComputedStyle(tabs[1]!).borderTopColor).toBe('rgba(0, 0, 0, 0)');
+  });
 });
 
 /** Whether a 24px circle centered on `rect` stays clear of every other target. */

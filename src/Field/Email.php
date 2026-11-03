@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
@@ -23,7 +24,6 @@ use Override;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Email represents an Email field.
@@ -103,7 +103,7 @@ class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        return template('_includes/forms/text', [
+        return FormFields::textHtml([
             'type' => 'email',
             'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,

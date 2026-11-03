@@ -10,6 +10,7 @@ use CraftCms\Cms\Cp\CommandPalette\Contracts\SearchProvider;
 use CraftCms\Cms\Cp\CommandPalette\DocsSearch;
 use CraftCms\Cms\Cp\CommandPalette\PageRegistry;
 use CraftCms\Cms\Cp\CommandPalette\SearchProviderRegistry;
+use CraftCms\Cms\Cp\CustomNavigations;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
@@ -142,6 +143,19 @@ it('gives nav pages without icons their parent’s', function () {
     expect($users['icon'])->not->toBeNull()
         ->and($allUsers['icon'])->toBe($users['icon'])
         ->and($utilities['nav-utilities-updates']['icon'])->not->toBe($utilities['nav-utilities']['icon']);
+});
+
+it('leaves out what the navigation hides, and finds what it renames or adds, by its new name or its old one', function () {
+    app(CustomNavigations::class)->saveDefault(['items' => [
+        'nav-plugin-store' => ['hidden' => true],
+        'nav-utilities' => ['label' => 'Toolbox'],
+        'custom-docs00' => ['type' => 'link', 'label' => 'Handbook', 'url' => 'https://docs.example.com'],
+    ]]);
+
+    expect(collect(paletteSearch('pages', 'plugin store'))->pluck('id'))->not->toContain('nav-plugin-store')
+        ->and(collect(paletteSearch('pages', 'toolbox'))->firstWhere('id', 'nav-utilities')['label'] ?? null)->toBe('Toolbox')
+        ->and(collect(paletteSearch('pages', 'utilities'))->pluck('id'))->toContain('nav-utilities')
+        ->and(collect(paletteSearch('pages', 'handbook'))->pluck('id'))->toContain('custom-docs00');
 });
 
 it('lists settings edit pages for admins, findable by handle', function () {

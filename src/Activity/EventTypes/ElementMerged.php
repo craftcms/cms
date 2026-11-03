@@ -42,11 +42,14 @@ class ElementMerged extends ActivityEventType
 
     public static function format(ActivityEvent $event): string
     {
-        $other = $event->data['other']['label'];
+        $params = [
+            'type' => self::subjectTypeName($event),
+            'other' => $event->data['other']['label'],
+        ];
 
         return match ($event->data['role']) {
-            'merged' => t('Merged into {other}', compact('other')),
-            'prevailing' => t('Merged {other} into this element', compact('other')),
+            'merged' => t('Merged this {type} into {other}', $params),
+            'prevailing' => t('Merged {other} into this {type}', $params),
             default => throw new UnexpectedValueException('Unknown activity merge role.'),
         };
     }

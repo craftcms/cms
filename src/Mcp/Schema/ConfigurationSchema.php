@@ -75,6 +75,10 @@ readonly class ConfigurationSchema
             return ['uid', 'uri'];
         }
 
+        if ($type === ConfigurationType::CpNavigations) {
+            return ['userGroup'];
+        }
+
         if ($type === ConfigurationType::AssetTransformers) {
             return ['uid', $operation === ConfigurationOperation::Update ? 'currentHandle' : 'handle'];
         }

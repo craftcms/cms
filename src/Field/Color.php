@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use Closure;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -13,22 +15,24 @@ use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
+use CraftCms\Cms\Gql\Types\Generators\ColorDataType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\Color as ColorControl;
 use CraftCms\Cms\Ui\Controls\Lightswitch;
 use CraftCms\Cms\Ui\Controls\Table;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Nodes\Group;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Validation\Rules\ColorRule;
 use Deprecated;
+use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
-use Illuminate\Validation\ConditionalRules;
-use Illuminate\Validation\Rule;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -63,7 +67,7 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     #[Override]
     public static function dbType(): string
     {
-        return sprintf('%s(7)', Query::TYPE_CHAR);
+        return sprintf('%s(9)', Query::TYPE_CHAR);
     }
 
     /**
@@ -77,6 +81,16 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
      * @var bool Allow custom culors
      */
     public bool $allowCustomColors = false;
+
+    /**
+     * @var bool Allow custom colors to have an alpha channel
+     */
+    public bool $allowCustomAlpha = false;
+
+    /**
+     * @var bool Whether GraphQL values should be returned as objects with all the color’s data, rather than just the hex value.
+     */
+    public bool $fullGraphqlData = true;
 
     public function __construct($config = [])
     {
@@ -104,6 +118,15 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             $config['allowCustomColors'] = true;
         }
 
+        if (isset($config['graphqlMode'])) {
+            $config['fullGraphqlData'] = Arr::pull($config, 'graphqlMode') === 'full';
+        }
+
+        // Default fullGraphqlData to false for existing fields
+        if (isset($config['id']) && ! isset($config['fullGraphqlData'])) {
+            $config['fullGraphqlData'] = false;
+        }
+
         parent::__construct($config);
     }
 
@@ -128,7 +151,7 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                 ->instructions(t('Define the available colors to choose from.'))
                 ->control(Table::make('palette')
                     ->columns([
-                        'color' => ['heading' => t('Color'), 'type' => 'color'],
+                        'color' => ['heading' => t('Color'), 'type' => 'color', 'alpha' => true],
                         'label' => ['heading' => t('Label'), 'type' => 'singleline'],
                         'default' => ['heading' => t('Default'), 'type' => 'checkbox', 'radioMode' => true],
                     ])
@@ -137,14 +160,32 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                     ->allowReorder()
                     ->value($this->palette)),
             UiField::make(t('Allow custom colors'))
-                ->control(Lightswitch::make('allowCustomColors')->value($this->allowCustomColors)),
-        ]);
+                ->control(Lightswitch::make('allowCustomColors')
+                    ->value($this->allowCustomColors)
+                    ->reactive()),
+        ])->when($this->allowCustomColors, fn (Ui $ui) => $ui->add(
+            Group::make('color-custom-color-settings', [
+                UiField::make(t('Allow opacity for custom colors'))
+                    ->instructions(t('Whether authors should be able to set the opacity of custom colors, in browsers that support it.'))
+                    ->control(Lightswitch::make('allowCustomAlpha')->value($this->allowCustomAlpha)),
+            ])->dependsOn('settings.allowCustomColors'),
+        ))->when(
+            Cms::config()->enableGql,
+            fn (Ui $ui): Ui => $ui->add(
+                UiField::make(t('GraphQL Mode'))
+                    ->control(Choice::make('graphqlMode')->options([
+                        ['label' => t('Full data'), 'value' => 'full'],
+                        ['label' => t('Hex only'), 'value' => 'hex'],
+                    ])->value($this->fullGraphqlData ? 'full' : 'hex')),
+            ),
+        );
     }
 
     #[Override]
     public function uiControl(FieldContext $context): Control
     {
         return ColorControl::make($context->path)
+            ->alpha($this->allowCustomAlpha)
             ->presets(array_values(array_filter(array_column($this->palette, 'color'))))
             ->value($context->value instanceof ColorData ? $context->value->getHex() : $context->value);
     }
@@ -200,7 +241,7 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             'palette' => ['nullable', 'required_if:allowCustomColors,false'],
             'palette.*.label' => ['string'],
             'palette.*.default' => ['nullable', 'boolean'],
-            'palette.*.color' => [new ColorRule],
+            'palette.*.color' => [new ColorRule(allowAlpha: true)],
         ]);
     }
 
@@ -263,21 +304,22 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         return $value;
     }
 
-    /** @return list<ColorRule|ConditionalRules> */
+    /** @return list<ColorRule|Closure> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
         return [
-            new ColorRule,
-            Rule::when(! $this->allowCustomColors, [
-                function ($attribute, ColorData $value, $fail) {
-                    if (Collection::make($this->palette)->doesntContain(fn (array $color) => $color['color'] === $value->getHex())) {
-                        $fail(t('{attribute} is invalid.', [
-                            'attribute' => $this->getUiLabel(),
-                        ]));
-                    }
-                },
-            ]),
+            new ColorRule(allowAlpha: true),
+            function ($attribute, ColorData $value, $fail) {
+                if (
+                    (! $this->allowCustomColors || (! $this->allowCustomAlpha && $value->getAlpha() < 1)) &&
+                    Collection::make($this->palette)->doesntContain(fn (array $color) => $color['color'] === $value->getHex())
+                ) {
+                    $fail(t('{attribute} is invalid.', [
+                        'attribute' => $this->getUiLabel(),
+                    ]));
+                }
+            },
         ];
     }
 
@@ -292,6 +334,7 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                 'describedBy' => $this->describedBy,
                 'name' => $this->handle,
                 'value' => $value?->getHex(),
+                'alpha' => $this->allowCustomAlpha,
             ]);
         }
 
@@ -378,6 +421,7 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                     'describedBy' => $this->describedBy,
                     'name' => "$this->handle[custom]",
                     'value' => $isCustom ? $value->getHex() : null,
+                    'alpha' => $this->allowCustomAlpha,
                 ]).
                 Html::endTag('div');
         } elseif ($value && ! $isInPalette) {
@@ -429,6 +473,16 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         }
 
         return $this->getPreviewHtml($value, $element ?? new Entry);
+    }
+
+    #[Override]
+    public function getContentGqlType(): Type|array
+    {
+        if (! $this->fullGraphqlData) {
+            return parent::getContentGqlType();
+        }
+
+        return ColorDataType::generateType($this);
     }
 
     /** @return array<string, mixed> */

@@ -113,6 +113,7 @@ class Entry extends ElementMutationResolver
 
         if (array_key_exists('asUnpublishedDraft', $arguments) && $arguments['asUnpublishedDraft']) {
             $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+            $this->requireUserAuthorization($entry, 'save');
             Drafts::saveElementAsDraft(
                 $entry,
                 creatorId: craftAuth()->id(),
@@ -164,6 +165,7 @@ class Entry extends ElementMutationResolver
         $section = $entry->getSection();
         $this->requireSchemaAction("sections.$section->uid", 'delete');
         $this->requireAllowedSitesForElement($entry);
+        $this->requireUserAuthorization($entry, 'delete');
 
         return Elements::deleteElementById($entryId, hardDelete: $hardDelete);
     }
@@ -196,9 +198,12 @@ class Entry extends ElementMutationResolver
             throw new Error('Unable to perform the action.');
         }
 
+        $this->requireUserAuthorization($entry, 'createDrafts');
+
         return Drafts::createDraft(
             canonical: $entry,
-            creatorId: $arguments['creatorId'] ?? $entry->getAuthorId(),
+            // Authenticated users can only create drafts for themselves
+            creatorId: GqlHelper::getSchemaUser()->id ?? $arguments['creatorId'] ?? $entry->getAuthorId(),
             name: $arguments['name'] ?? '',
             notes: $arguments['notes'] ?? '',
             provisional: $arguments['provisional'] ?? false,
@@ -232,6 +237,8 @@ class Entry extends ElementMutationResolver
 
         // Publishing the draft affects every site its canonical entry is saved in
         $this->requireAllowedSitesForElement($draft);
+        $this->requireUserAuthorization($draft, 'save');
+        $this->requireUserAuthorization($draft, 'saveCanonical');
 
         /** @var EntryElement $draft */
         $draft = Drafts::applyDraft($draft);

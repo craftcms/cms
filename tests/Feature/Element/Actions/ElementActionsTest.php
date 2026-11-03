@@ -3,19 +3,12 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Address\Elements\Address;
-use CraftCms\Cms\Asset\Actions\PreviewAsset;
-use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Element\Actions\ChangeSortOrder;
-use CraftCms\Cms\Element\Actions\Copy;
+use CraftCms\Cms\Element\Actions\ClientAction;
 use CraftCms\Cms\Element\Actions\Delete;
 use CraftCms\Cms\Element\Actions\Duplicate;
-use CraftCms\Cms\Element\Actions\Edit;
 use CraftCms\Cms\Element\Actions\ElementAction;
-use CraftCms\Cms\Element\Actions\MoveDown;
-use CraftCms\Cms\Element\Actions\MoveUp;
 use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Actions\SetStatus;
-use CraftCms\Cms\Element\Actions\View;
 use CraftCms\Cms\Element\ElementActions;
 use CraftCms\Cms\Element\Events\ElementActionPerformed;
 use CraftCms\Cms\Element\Events\ElementActionPerforming;
@@ -35,6 +28,14 @@ beforeEach(function () {
     $this->elementActions = app(ElementActions::class);
 });
 
+/**
+ * Element actions by class, client actions by key.
+ */
+function elementActionIds(array $actions): array
+{
+    return array_map(fn ($action) => $action instanceof ClientAction ? $action->key : $action::class, $actions);
+}
+
 it('creates actions from strings, arrays, and existing instances', function () {
     $fromString = $this->elementActions->createAction(Delete::class, Entry::class);
     $fromArray = $this->elementActions->createAction([
@@ -53,11 +54,10 @@ it('creates actions from strings, arrays, and existing instances', function () {
 });
 
 it('resolves canonical entry actions for non-trashed queries', function () {
-    $actions = $this->elementActions->availableActions(Entry::class, '*', Entry::find());
-    $types = array_map(fn ($action) => $action::class, $actions);
+    $types = elementActionIds($this->elementActions->availableActions(Entry::class, '*', Entry::find()));
 
-    expect($types)->toContain(View::class)
-        ->and($types)->toContain(Edit::class)
+    expect($types)->toContain('view')
+        ->and($types)->toContain('edit')
         ->and($types)->toContain(Duplicate::class)
         ->and($types)->toContain(SetStatus::class)
         ->and($types)->toContain(Delete::class)
@@ -69,8 +69,8 @@ it('flags non-bulk actions when serializing action items', function () {
     $items = $this->elementActions->serializeActionItems($actions);
     $flags = array_column($items, 'bulk', 'key');
 
-    expect($flags[View::class])->toBeFalse()
-        ->and($flags[Edit::class])->toBeFalse()
+    expect($flags['view'])->toBeFalse()
+        ->and($flags['edit'])->toBeFalse()
         ->and($flags[Duplicate::class] ?? null)->toBeNull()
         ->and($flags[Delete::class] ?? null)->toBeNull();
 });
@@ -79,13 +79,13 @@ it('serializes client-owned element actions as events', function () {
     $actions = $this->elementActions->availableActions(Entry::class, '*', Entry::find());
     $items = collect($this->elementActions->serializeActionItems($actions))->keyBy('key');
 
-    expect($items[Copy::class]['action'])->toBe([
+    expect($items['copy']['action'])->toBe([
         'type' => 'event',
         'name' => 'craft:copy-elements',
-    ])->and($items[Edit::class]['action'])->toBe([
+    ])->and($items['edit']['action'])->toBe([
         'type' => 'event',
         'name' => 'craft:edit-element',
-    ])->and($items[View::class]['action'])->toBe([
+    ])->and($items['view']['action'])->toBe([
         'type' => 'event',
         'name' => 'craft:view-element',
     ]);
@@ -96,21 +96,39 @@ it('serializes client-owned element actions as events', function () {
         ->and($duplicate['action']['url'])->toContain('element-indexes/perform-action');
 });
 
-it('serializes Preview file as an event, since it has nothing to perform', function () {
-    $action = $this->elementActions->createAction(PreviewAsset::class, Asset::class);
-    $items = $this->elementActions->serializeActionItems([$action]);
-
-    expect($items[0]['action'])->toBe([
-        'type' => 'event',
-        'name' => 'craft:preview-file',
+it('serializes a client action with its detail and the capability it needs', function () {
+    $items = $this->elementActions->serializeActionItems([
+        new ClientAction(
+            key: 'plugin:archive',
+            label: 'Archive',
+            event: 'plugin:archive',
+            detail: ['folderId' => 3],
+            bulk: false,
+            destructive: true,
+            selectionAttribute: 'archivable',
+        ),
     ]);
+
+    expect($items)->toBe([[
+        'key' => 'plugin:archive',
+        'label' => 'Archive',
+        'destructive' => true,
+        'variant' => 'danger',
+        'bulk' => false,
+        'selectionAttribute' => 'archivable',
+        'action' => [
+            'type' => 'event',
+            'name' => 'plugin:archive',
+            'detail' => ['folderId' => 3],
+        ],
+    ]]);
 });
 
 it('serializes standard selection capabilities for page bulk actions', function () {
     $actions = $this->elementActions->availableActions(Entry::class, '*', Entry::find());
     $items = collect($this->elementActions->serializeActionItems($actions))->keyBy('key');
 
-    expect($items[Copy::class]['selectionAttribute'])->toBe('copyable')
+    expect($items['copy']['selectionAttribute'])->toBe('copyable')
         ->and($items[Duplicate::class]['selectionAttribute'])->toBe('duplicatable')
         ->and($items[Delete::class]['selectionAttribute'])->toBe('deletable');
 });
@@ -154,35 +172,27 @@ it('puts restore first for trashed queries', function () {
 });
 
 it('resolves canonical user and address actions', function () {
-    $userActions = array_map(
-        fn ($action) => $action::class,
-        $this->elementActions->availableActions(User::class, '*', User::find()->status(null)),
-    );
-
-    $addressActions = array_map(
-        fn ($action) => $action::class,
-        $this->elementActions->availableActions(Address::class, '*', Address::find()),
-    );
+    $userActions = elementActionIds($this->elementActions->availableActions(User::class, '*', User::find()->status(null)));
+    $addressActions = elementActionIds($this->elementActions->availableActions(Address::class, '*', Address::find()));
 
     expect($userActions)->toContain(SuspendUsers::class)
         ->and($userActions)->toContain(UnsuspendUsers::class)
-        ->and($addressActions)->toContain(Copy::class);
+        ->and($addressActions)->toContain('copy');
 });
 
-it('serializes nested-manager action configs with canonical types', function () {
-    $owner = User::findOne();
-
+it('leaves client actions out of the legacy index action configs', function () {
     $serialized = $this->elementActions->serializeActions([
-        new ChangeSortOrder($owner, 'addresses'),
-        new MoveUp($owner, 'addresses'),
-        new MoveDown($owner, 'addresses'),
+        ClientAction::copy(),
+        $this->elementActions->createAction(Delete::class, Entry::class),
     ]);
 
-    expect(array_column($serialized, 'type'))->toBe([
-        ChangeSortOrder::class,
-        MoveUp::class,
-        MoveDown::class,
-    ]);
+    expect(array_column($serialized, 'type'))->toBe([Delete::class]);
+});
+
+it('never resolves a client action to perform', function () {
+    $actions = $this->elementActions->availableActions(Entry::class, '*', Entry::find());
+
+    expect($this->elementActions->resolveAction($actions, ClientAction::class))->toBeNull();
 });
 
 it('resolves a cloned matching action and returns null when missing', function () {

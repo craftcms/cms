@@ -43,3 +43,40 @@ it.each([
     expect(drawn(native)).toEqual(drawn(inComponent));
   }
 );
+
+it('shows its icon between the input and the label, sized to the text', async () => {
+  document.body.innerHTML = `
+    <craft-radio>
+      <input slot="input" type="radio" id="cards" />
+      <span slot="icon" aria-hidden="true"
+        ><svg viewBox="0 0 80 60"><rect width="80" height="60" /></svg
+      ></span>
+      <label slot="label" for="cards">Cards</label>
+    </craft-radio>`;
+  const radio = document.querySelector('craft-radio')!;
+  await radio.updateComplete;
+
+  const [input, icon, label] = ['input', '[slot="icon"]', 'label'].map(
+    (selector) => radio.querySelector(selector)!.getBoundingClientRect()
+  );
+
+  expect(icon!.left).toBeGreaterThanOrEqual(input!.right);
+  expect(label!.left).toBeGreaterThanOrEqual(icon!.right);
+  expect(icon!.height).toBeLessThan(label!.height * 1.5);
+});
+
+it('takes no space without an icon', async () => {
+  document.body.innerHTML = `
+    <craft-radio>
+      <input slot="input" type="radio" id="list" />
+      <label slot="label" for="list">List</label>
+    </craft-radio>`;
+  const radio = document.querySelector('craft-radio')!;
+  await radio.updateComplete;
+
+  const input = radio.querySelector('input')!.getBoundingClientRect();
+  const label = radio.querySelector('label')!.getBoundingClientRect();
+  const gap = parseFloat(getComputedStyle(radio).columnGap);
+
+  expect(label.left - input.right).toBeCloseTo(gap, 0);
+});

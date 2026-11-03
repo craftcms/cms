@@ -27,6 +27,7 @@ use CraftCms\Cms\Tests\Support\DatabaseLock;
 use CraftCms\Cms\Tests\Support\GuardsUtcDateBindings;
 use CraftCms\Cms\Tests\Support\IsolatesParallelFiles;
 use CraftCms\Cms\Tests\Support\RegistersPackageAliases;
+use CraftCms\Cms\Tests\Support\SkipsRepeatedDstHour;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
@@ -120,6 +121,7 @@ class TestCase extends Orchestra
         Cms::config()->timezone('America/Los_Angeles');
         Cms::setDefaultTimezone();
 
+        SkipsRepeatedDstHour::register();
         GuardsUtcDateBindings::register();
 
         // Tests run in Cp by default

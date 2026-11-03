@@ -20,16 +20,16 @@ export default css`
   /* Lion sets the field's width as an inline min-width, which wins over this cap on wider fields */
   #overlay-content-node-wrapper {
     max-inline-size: min(calc(360rem / 16), calc(100vw - var(--c-spacing-lg)));
+    border: 1px solid var(--c-form-control-border-color);
+    border-radius: var(--c-radius-md);
+    background-color: var(--c-surface-overlay);
+    box-shadow: var(--c-shadow-sm);
   }
 
   ::slotted([slot='listbox']) {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: var(--c-spacing-xs);
-    border: 1px solid var(--c-color-neutral-border-quiet);
-    border-radius: var(--c-radius-md);
-    background-color: var(--c-surface-overlay);
-    box-shadow: var(--c-shadow-sm);
     padding: var(--c-spacing-sm);
   }
 
@@ -92,7 +92,7 @@ export default css`
     padding: var(--c-spacing-xs);
   }
 
-  :host([multiple-choice]) .input-group__input:focus-within {
+  :host([multiple-choice][focused]) .input-group__input {
     outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
       var(--c-color-focus-outline);
     outline-offset: var(--c-focus-outline-offset);
@@ -129,42 +129,13 @@ export default css`
     border: 0;
     background: transparent;
     box-shadow: none;
-    outline: none;
+    /* Important so the page's global focus ring can't ring the textbox inside the field's */
+    outline: none !important;
   }
 
-  .token {
-    box-sizing: border-box;
-    max-width: 100%;
-    display: inline-flex;
-    align-items: center;
-    gap: var(--c-spacing-xs);
-    padding: var(--c-spacing-xs);
-    border-radius: var(--c-radius-sm);
-    background: var(--c-color-neutral-fill-quiet);
-    overflow-wrap: anywhere;
-  }
-
-  .token button {
-    border: 0;
-    background: transparent;
-    font: inherit;
-    color: inherit;
-    cursor: pointer;
-  }
-
-  .combobox__option {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--c-spacing-sm);
-  }
-
-  .combobox__optgroup {
-    padding-inline: var(--c-spacing-md);
-    padding-block: var(--c-spacing-sm);
-    font-size: 0.8em;
-    text-transform: uppercase;
-    color: var(--c-color-neutral-on-normal);
-    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+  ::slotted([slot='selection']) {
+    display: contents;
+    list-style: none;
   }
 
   .combobox__footer {

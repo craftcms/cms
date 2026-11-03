@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns\Asset;
 
 use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
 use CraftCms\Cms\Element\Queries\AssetQuery;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
@@ -161,6 +163,7 @@ trait QueriesAssetProperties
      *
      * @uses $uploaderId
      */
+    #[ElementQueryParam(ElementQueryParamType::Scalar, 'Narrows the query results based on the user the assets were uploaded by, per the user’s ID.')]
     public function uploader(int|User|UserModel|null $value): static
     {
         if ($value instanceof User || $value instanceof UserModel) {
@@ -209,6 +212,7 @@ trait QueriesAssetProperties
      *
      * @uses $filename
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the assets’ filenames.')]
     public function filename(mixed $value): static
     {
         $this->filename = $value;
@@ -267,6 +271,7 @@ trait QueriesAssetProperties
      *
      * @uses $kind
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the assets’ file kinds.')]
     public function kind(mixed $value): static
     {
         $this->kind = $value;
@@ -308,6 +313,7 @@ trait QueriesAssetProperties
      *
      * @uses $dateModified
      */
+    #[ElementQueryParam(ElementQueryParamType::String, 'Narrows the query results based on the assets’ files’ last-modified dates.')]
     public function dateModified(mixed $value): static
     {
         $this->dateModified = $value;

@@ -63,8 +63,9 @@ export default css`
   .timeline-item__header {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
+    align-items: start;
     column-gap: var(--c-spacing-xs);
+    padding-block-start: max(0px, (1.75rem - 1lh) / 2);
   }
 
   .timeline-item__meta {
@@ -74,10 +75,14 @@ export default css`
     flex: none;
     align-items: center;
     gap: var(--c-spacing-xs);
+    block-size: 1lh;
     color: var(--c-text-quiet);
+    white-space: nowrap;
+  }
+
+  .timeline-item__meta slot {
     font-size: var(--c-text-xs);
     line-height: 1;
-    white-space: nowrap;
   }
 
   .timeline-item__footer {

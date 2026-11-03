@@ -14,6 +14,7 @@ use Override;
  * @method static \Illuminate\Support\Collection getAssignablePermissions(\CraftCms\Cms\User\Elements\User|null $user = null)
  * @method static \Illuminate\Support\Collection getPermissionsByGroupId(int $groupId)
  * @method static \Illuminate\Support\Collection getGroupPermissionsByUserId(int $userId)
+ * @method static mixed actingAsGroup(\CraftCms\Cms\User\Data\UserGroup $group, \Closure $callback)
  * @method static bool doesGroupHavePermission(int $groupId, string $checkPermission)
  * @method static bool saveGroupPermissions(int $groupId, string[] $permissions)
  * @method static \Illuminate\Support\Collection getPermissionsByUserId(int $userId)

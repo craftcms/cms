@@ -73,6 +73,13 @@ export default class CraftReorderButton extends LitElement {
   @property({reflect: true}) variant: string = 'plain';
 
   /**
+   * Forwarded to the underlying invoker button, to pull it out by the space
+   * around its icon so the icon lines up with the content beside it. See
+   * `craft-button`'s `flush`.
+   */
+  @property({reflect: true}) flush?: string;
+
+  /**
    * Disables the button: blocks pointer interaction (so it can't open the menu or
    * act as a drag handle), prevents reorder actions, and visually dims it. Defaults
    * to `false`.
@@ -269,6 +276,7 @@ export default class CraftReorderButton extends LitElement {
           inherit
           size="small"
           variant="${this.variant}"
+          flush=${ifDefined(this.flush)}
           ?disabled="${this.disabled}"
         >
           <craft-icon label="${label}">
