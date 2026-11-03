@@ -244,6 +244,11 @@ class CustomFieldSchema
             $schema = [];
         }
 
+        // Unlike the GraphQL API, MCP adds new entries when sortOrder is omitted. {@see sortNewEntries()}
+        if ($field instanceof Matrix && isset($schema['properties']['sortOrder'])) {
+            $schema['properties']['sortOrder']['description'] = trim(($schema['properties']['sortOrder']['description'] ?? '') . ' If omitted, existing entries are kept and new entries are added after them, in the order they appear in `entries`.');
+        }
+
         $schema = $required ? GqlInputSchema::withoutNull($schema) : GqlInputSchema::withNull($schema);
         $schema['title'] = $field->name;
 
