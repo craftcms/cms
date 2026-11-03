@@ -117,12 +117,14 @@ describe('NestedElementsIndex', () => {
     ],
     reorderable = true,
     actions,
+    statusMenuValue,
   }: {
     editable?: boolean;
     mode?: 'table' | 'cards';
     pages?: NestedElement[][];
     reorderable?: boolean;
     actions?: BulkActionItem[] | null;
+    statusMenuValue?: string;
   } = {}) {
     restoreElementInternals = stubElementInternals();
     const server = {reorderable};
@@ -136,6 +138,7 @@ describe('NestedElementsIndex', () => {
         mode: viewMode,
         reorderable: server.reorderable,
         actions,
+        statusMenuValue,
       });
     const craft = {
       cp: {
@@ -649,6 +652,37 @@ describe('NestedElementsIndex', () => {
     await vi.waitFor(() =>
       expect(indexRequests()).toHaveLength(readsBeforeAction + 1)
     );
+  });
+
+  it('runs server bulk actions against the status menu’s selection', async () => {
+    const {root} = mount({
+      statusMenuValue: 'trashed',
+      actions: [
+        {
+          key: 'Restore',
+          label: 'Restore',
+          action: {
+            type: 'http',
+            method: 'POST',
+            url: '/actions/element-indexes/perform-action',
+            body: {elementAction: 'Restore'},
+          },
+        },
+      ],
+    });
+    selectRow(root, 11);
+    await nextTick();
+
+    actionItem(root, 'Restore').click();
+    await vi.waitFor(() => expect(actions.run).toHaveBeenCalledOnce());
+
+    expect(actions.run.mock.calls[0]![0]).toMatchObject({
+      body: {
+        elementAction: 'Restore',
+        elementIds: [11],
+        criteria: {status: 'trashed'},
+      },
+    });
   });
 
   it('preserves server table actions and intercepts only the primary edit link', async () => {

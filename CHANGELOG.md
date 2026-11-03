@@ -56,6 +56,7 @@
 - Thumbnail views in element indexes and relational fields now show each element as a chip, with its thumbnail above its label. ([#20083](https://github.com/craftcms/cms/discussions/20083), [#20124](https://github.com/craftcms/cms/pull/20124))
 - Element index View menus now only show “Table Columns” in table and structure views. ([#20124](https://github.com/craftcms/cms/pull/20124))
 - Element index View menus now have a “Use defaults” button, like Craft 5, which shows when the sort, table columns, or thumb size differ from the source’s defaults and restores them. ([#20205](https://github.com/craftcms/cms/issues/20205), [#20223](https://github.com/craftcms/cms/pull/20223))
+- Element index status menus, including embedded indexes’, now have “Drafts” and “Trashed” options, like Craft 5. “Drafts” lists drafts in place of the source’s elements, including drafts of published ones, and “Trashed” lists soft-deleted elements, which can be restored with the “Restore” action or deleted for good with “Delete permanently”. Choosing a status on an element index page now leaves unpublished drafts out. ([#20267](https://github.com/craftcms/cms/pull/20267))
 - Popovers, such as element index View menus, now grow into the room below or above them, rather than stopping at 40% of the window’s height. ([#20124](https://github.com/craftcms/cms/pull/20124))
 - The control panel’s navigation and details panes now have thin scrollbars, and scrolling past their ends no longer scrolls the page. ([#20011](https://github.com/craftcms/cms/issues/20011))
 - Empty states’ messages and icons are now lighter. ([#19942](https://github.com/craftcms/cms/pull/19942))
@@ -176,6 +177,7 @@
 - Fixed a bug where choosing a new “Sort by” attribute in element index View menus could switch back to the previous one. ([#20202](https://github.com/craftcms/cms/issues/20202), [#20220](https://github.com/craftcms/cms/pull/20220))
 - Fixed a bug where element index View menus’ sort direction buttons didn’t update until the results had loaded. ([#20203](https://github.com/craftcms/cms/issues/20203), [#20220](https://github.com/craftcms/cms/pull/20220))
 - Fixed a bug where element indexes sorted by a custom field ignored the sort direction. ([#20204](https://github.com/craftcms/cms/issues/20204), [#20220](https://github.com/craftcms/cms/pull/20220))
+- Fixed an error that occurred after running element actions with a success message, such as “Restore”, which kept element indexes from refreshing. ([#20267](https://github.com/craftcms/cms/pull/20267))
 - Fixed a bug where submit buttons created by `Craft.ui.createSubmitButton()` and `createSubmitButton()` from `@craftcms/ui` weren’t styled as primary buttons. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Fixed a bug where tooltips within sticky footers could be positioned off-screen or cut off.
 - Fixed a bug where draft name labels in element chips were cut off at the bottom.
@@ -604,6 +606,8 @@
 - Added `CraftCms\Cms\Element\Contracts\ElementInterface::supportsSourceBadgeCounts()`, `sourceSupportsBadgeCount()`, and `sourceBadgeCount()`, and the `defaultBadgeCount` source key, for element types whose sources can show a count of their elements. ([#19967](https://github.com/craftcms/cms/pull/19967))
 - Added `CraftCms\Cms\Cp\Data\ActionItem::$badgeLabel`. Element sources’ `badgeLabel` keys are now passed to screen readers in the control panel nav. ([#19967](https://github.com/craftcms/cms/pull/19967))
 - Added the `<craft-text-diff>` web component, which shows two versions of a text as one word-level diff, with each rewritten phrase as one deletion and one insertion. It can collapse long unchanged stretches, and mark passages of the text.
+- Added `statusColor()`, `Status`, `statuses`, and `StatusKey` to `@craftcms/ui`. `statusColor()` returns the palette color for an element status, matching `CraftCms\Cms\Shared\Enums\Color::tryFromStatus()`. ([#20270](https://github.com/craftcms/cms/pull/20270))
+- Updated `Color.On` from `@craftcms/ui` to `teal`, rather than `emerald`, to match `CraftCms\Cms\Shared\Enums\Color::tryFromStatus()`. ([#20270](https://github.com/craftcms/cms/pull/20270))
 - Fixed a bug where `t()` from `@craftcms/ui` failed to format a message with a comma inside a plural or select option.
 - `<craft-badge-indicator>` now has a `max` property, which sets the largest count shown before it’s shortened to “99+”. Set it to `Infinity` to show the whole count. Counts are now formatted for the page’s language. ([#19967](https://github.com/craftcms/cms/pull/19967))
 - Added `CraftCms\Cms\Asset\Elements\Asset::$trashedFileExists` and `getTrashedFilePath()`. ([#20093](https://github.com/craftcms/cms/pull/20093))
