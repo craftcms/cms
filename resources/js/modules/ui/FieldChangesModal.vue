@@ -10,7 +10,7 @@
   import {computed, shallowRef, watch} from 'vue';
   import CompareFieldValuesController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/CompareFieldValuesController';
   import Modal from '@/common/components/Modal.vue';
-  import ActivityTimelineChangeValue from '@/modules/activity/components/ActivityTimelineChangeValue.vue';
+  import ChangeValue from './ChangeValue.vue';
 
   /** The `craft:compare-field-changes` field action’s detail. */
   export interface CompareFieldChangesDetail {
@@ -173,13 +173,13 @@
             <div v-if="comparison.hasBase">
               <dt>{{ comparison.from.label }}</dt>
               <dd>
-                <ActivityTimelineChangeValue :value="comparison.from.value" />
+                <ChangeValue :value="comparison.from.value" />
               </dd>
             </div>
             <div>
               <dt>{{ comparison.to.label }}</dt>
               <dd>
-                <ActivityTimelineChangeValue :value="comparison.to.value" />
+                <ChangeValue :value="comparison.to.value" />
               </dd>
             </div>
           </dl>
