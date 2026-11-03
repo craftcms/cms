@@ -17,6 +17,9 @@ import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
 import {addActionsToChip} from '@/common/craft/chip-actions';
 import {hasMousePointerEvents} from '@/common/craft/pointer';
+import {resolveElement} from '@/common/utils/dom';
+import {jq} from '@/common/utils/jquery';
+import {onLongPress} from '@vueuse/core';
 
 // `Craft` and `$` (jQuery) remain page globals. The Choose menu and the
 // *chip* action menus are both modern, self-booting `craft-action-menu`s
@@ -24,7 +27,6 @@ import {hasMousePointerEvents} from '@/common/craft/pointer';
 // keeps a jQuery `disclosureMenu()` fallback for old/plugin-rendered chip
 // markup.
 declare const Craft: any;
-declare const $: any;
 
 /** Removal fade duration, ms (legacy `Craft.ComponentSelectInput.REMOVE_FX_DURATION`). */
 const REMOVE_FX_DURATION = 200;
@@ -171,7 +173,6 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
   #replacing: HTMLElement | null = null;
 
   /** jQuery-wrapped Create button the activate handler is bound to. */
-  #$createBtn: any = null;
 
   #initialized = false;
 
@@ -258,8 +259,8 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
     );
 
     if (this.#createBtn && this.settings.createAction) {
-      this.#$createBtn = $(this.#createBtn);
-      this.#$createBtn.on('activate', this.#handleCreateActivate);
+      // A craft-button clicks on Enter and Space too
+      this.#createBtn.addEventListener('click', this.#handleCreateActivate);
     }
 
     this.#initialized = true;
@@ -288,8 +289,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
       this.#handleReplaceComponent
     );
 
-    this.#$createBtn?.off('activate', this.#handleCreateActivate);
-    this.#$createBtn = null;
+    this.#createBtn?.removeEventListener('click', this.#handleCreateActivate);
 
     this.#initialized = false;
     componentSelectData.delete(this.container);
@@ -797,29 +797,35 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
       destructive: true,
     });
 
-    addActionsToChip($(chip), actions);
+    addActionsToChip(chip, actions);
   }
 
   /**
-   * dblclick — and taphold, via the jQuery Touch Events plugin the CP loads —
-   * on a chip triggers its action menu's `[data-edit-action]` item, matching
-   * the legacy port. The listeners live on the chip itself, so they need no
-   * teardown; they go away with the chip.
+   * Double-clicking a chip, or long-pressing it on a touch screen, triggers
+   * its action menu's `[data-edit-action]` item. The listeners live on the
+   * chip itself, so they go away with it.
    */
   #initChipEditShortcut(chip: HTMLElement): void {
-    $(chip).on('dblclick taphold', (ev: any) => {
-      // Don't open the edit screen when tapholding a button — that's a drag.
-      if (ev.type === 'taphold' && ev.target.nodeName === 'BUTTON') {
-        return;
-      }
-
+    const edit = () => {
       const menu = this.#chipDisclosureMenu(chip);
-      if (menu) {
-        // `$container` is jQuery on the legacy DisclosureMenu and a native
-        // element on the modern port; `$()` normalizes both.
-        $(menu.$container).find('[data-edit-action]').trigger('click');
-      }
-    });
+      const container = resolveElement(menu?.$container);
+      container?.querySelector<HTMLElement>('[data-edit-action]')?.click();
+    };
+
+    chip.addEventListener('dblclick', edit);
+    onLongPress(
+      chip,
+      (ev) => {
+        // A long press on a button is a drag
+        if (
+          ev.pointerType === 'touch' &&
+          (ev.target as Element | null)?.nodeName !== 'BUTTON'
+        ) {
+          edit();
+        }
+      },
+      {delay: 750}
+    );
   }
 
   /**
@@ -845,16 +851,18 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
       return {$container: container};
     }
 
-    const $trigger = $(chip)
-      .find(
-        '[slot="suffix"] [data-disclosure-trigger], .chip-actions .action-btn'
-      )
-      .first();
+    const trigger = chip.querySelector(
+      '[slot="suffix"] [data-disclosure-trigger], .chip-actions .action-btn'
+    );
 
     // The legacy menu plugin comes with the Yii2 adapter
-    return $trigger.length && typeof $trigger.disclosureMenu === 'function'
-      ? $trigger.disclosureMenu().data('disclosureMenu')
-      : null;
+    const $ = jq();
+    if (!trigger || !$ || !('disclosureMenu' in $.fn)) {
+      return null;
+    }
+
+    // oxlint-disable-next-line typescript/no-explicit-any
+    return ($(trigger) as any).disclosureMenu().data('disclosureMenu');
   }
 
   /**
