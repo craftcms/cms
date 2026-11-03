@@ -6,6 +6,7 @@
   import PluginMeta from './PluginMeta.vue';
   import PluginScreenshots from './PluginScreenshots.vue';
   import {usePluginLicenseInfo} from '../composables/usePluginStoreData';
+  import {withScrollableTables} from '../prose';
   import type {Plugin} from '../types';
 
   const {plugin} = defineProps<{plugin: Plugin}>();
@@ -22,6 +23,10 @@
       accountLink:
         '<a href="https://console.craftcms.com" rel="noopener" target="_blank">console.craftcms.com</a>',
     }
+  );
+
+  const descriptionHtml = computed(() =>
+    plugin.longDescription ? withScrollableTables(plugin.longDescription) : null
   );
 
   const replacementHtml = computed(() =>
@@ -63,9 +68,9 @@
     <div class="plugin-overview">
       <!-- The description is HTML the Plugin Store renders from the developer's Markdown. -->
       <div
-        v-if="plugin.longDescription"
+        v-if="descriptionHtml"
         class="cp-prose"
-        v-html="plugin.longDescription"
+        v-html="descriptionHtml"
       ></div>
       <div v-else-if="plugin.shortDescription" class="cp-prose">
         <p>{{ plugin.shortDescription }}</p>

@@ -485,10 +485,12 @@ Previously `.readable`
     text-decoration: underline;
   }
 
+  .cp-prose-table {
+    overflow-x: auto;
+    contain: inline-size;
+  }
+
   table {
-    display: block;
-    overflow: auto;
-    inline-size: 100%;
     border-collapse: collapse;
   }
 
