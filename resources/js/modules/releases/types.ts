@@ -1,3 +1,4 @@
+import {formatDate} from '@craftcms/ui/utilities/format';
 import type {ElementPreview} from '@/modules/elements/live-preview/useLivePreview';
 
 export type ReleaseStatus = CraftCms.Cms.Release.Enums.ReleaseStatus;
@@ -35,11 +36,11 @@ export function formatReleaseDate(value: string | null): string {
 
   const date = new Date(value);
   const timeZone = window.Craft?.timezone;
-  const formatted = new Intl.DateTimeFormat(window.Craft?.formattingLocale, {
+  const formatted = formatDate(date, {
     dateStyle: 'medium',
     timeStyle: 'short',
     timeZone,
-  }).format(date);
+  });
   // `dateStyle` can't be combined with `timeZoneName`, so it's read separately.
   const zone = new Intl.DateTimeFormat('en-US', {
     timeZone,

@@ -202,6 +202,9 @@ it('gives only the unchecked buttons a pointer cursor', async () => {
   ]);
 });
 
+const cardBox = (radio: CraftRadio) =>
+  radio.shadowRoot!.querySelector<HTMLElement>('[part="icon"]')!;
+
 async function renderCards(
   width: string,
   wrap: (html: string) => string = (html) => html,
@@ -245,9 +248,9 @@ async function renderCards(
 
 it('joins the cards in one row, rounding only the outer corners', async () => {
   const {group, radios} = await renderCards('40rem');
-  const rects = radios.map((radio) => radio.getBoundingClientRect());
+  const rects = radios.map((radio) => cardBox(radio).getBoundingClientRect());
   const radius = (radio: CraftRadio, corner: string) =>
-    parseFloat(getComputedStyle(radio).getPropertyValue(corner));
+    parseFloat(getComputedStyle(cardBox(radio)).getPropertyValue(corner));
 
   expect(group.hasAttribute('data-wrapped')).toBe(false);
   rects.slice(1).forEach((rect, i) => {
@@ -269,7 +272,7 @@ it('wraps the cards into separate cards when the row does not fit', async () => 
   expect(group.hasAttribute('data-wrapped')).toBe(true);
   expect(tops.size).toBeGreaterThan(1);
   for (const radio of radios) {
-    const style = getComputedStyle(radio);
+    const style = getComputedStyle(cardBox(radio));
     expect(parseFloat(style.borderStartStartRadius)).toBeGreaterThan(0);
     expect(parseFloat(style.borderEndEndRadius)).toBeGreaterThan(0);
   }
@@ -338,16 +341,16 @@ it('draws the focus ring around the focused card', async () => {
   await userEvent.tab();
   await settle();
 
-  const style = getComputedStyle(radios[1]!);
+  const style = getComputedStyle(cardBox(radios[1]!));
   expect(style.outlineStyle).toBe('solid');
   expect(parseFloat(style.outlineWidth)).toBeGreaterThan(0);
-  expect(getComputedStyle(radios[0]!).outlineStyle).toBe('none');
+  expect(getComputedStyle(cardBox(radios[0]!)).outlineStyle).toBe('none');
 });
 
 it('marks the selected card with a thicker border and a bold label', async () => {
   const {radios} = await renderCards('40rem');
   const [selected, unselected] = [radios[1]!, radios[2]!].map((radio) =>
-    getComputedStyle(radio)
+    getComputedStyle(cardBox(radio))
   );
   const weight = (radio: CraftRadio) =>
     Number(
@@ -409,7 +412,7 @@ it("keeps the illustrations' outlines, figures and marks at 3:1 at rest, hovered
       const backdrop = getComputedStyle(
         document.querySelector('[data-theme]')!
       ).backgroundColor;
-      const card = getComputedStyle(sample).backgroundColor;
+      const card = getComputedStyle(cardBox(sample)).backgroundColor;
       const field = paint(
         '[style*="fill: var(--c-illustration-field)"]',
         'fill'
@@ -465,7 +468,7 @@ it('distinguishes the selected card in forced colors mode', async () => {
   });
   const {radios} = await renderCards('40rem');
   const [selected, unselected] = [radios[1]!, radios[2]!].map((radio) =>
-    getComputedStyle(radio)
+    getComputedStyle(cardBox(radio))
   );
 
   expect(selected!.borderTopColor).not.toBe(unselected!.borderTopColor);
@@ -487,13 +490,13 @@ it('joins the cards once shown in a container that sizes to its content', async 
 });
 
 it.each([
-  ['buttons', () => render('buttons')],
-  ['cards', () => renderCards('40rem', undefined, 'cards')],
+  ['buttons', () => render('buttons'), (radio: CraftRadio) => radio],
+  ['cards', () => renderCards('40rem', undefined, 'cards'), cardBox],
 ])(
   'draws %s as separate, fully rounded options',
-  async (_appearance, renderGroup) => {
+  async (_appearance, renderGroup, box) => {
     const {radios} = await renderGroup();
-    const rects = radios.map((radio) => radio.getBoundingClientRect());
+    const rects = radios.map((radio) => box(radio).getBoundingClientRect());
 
     const neighbors = rects
       .slice(1)
@@ -505,7 +508,7 @@ it.each([
       expect(after.left).toBeGreaterThan(before.right);
     }
     for (const radio of radios) {
-      const style = getComputedStyle(radio);
+      const style = getComputedStyle(box(radio));
       expect(parseFloat(style.borderStartStartRadius)).toBeGreaterThan(0);
       expect(parseFloat(style.borderStartEndRadius)).toBeGreaterThan(0);
     }

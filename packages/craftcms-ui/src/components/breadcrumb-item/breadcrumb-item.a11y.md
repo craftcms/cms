@@ -8,6 +8,7 @@ Used inside `craft-breadcrumbs`; see `breadcrumbs.a11y.md` for the pattern.
 
 - [x] A crumb with `href` renders a native `<a href>`, so it's exposed as a link. Per WCAG 4.1.2 (Name, Role, Value). Verified by `renders a link when href is set` in `breadcrumb-item.test.ts`.
 - [x] A crumb without `href` renders a `<span>`, never a link or other interactive element. Per WCAG 4.1.2 (Name, Role, Value). Verified by `renders a span label without href` in `breadcrumb-item.test.ts`.
+- [x] A crumb linking to another host with no `target` opens in a new tab with `rel="noopener"`, and says it opens in a new window in hidden text. A crumb linking to the same host opens in the same tab. Per WCAG 3.2.5 (Change on Request). Verified by `opens a link to another host in a new tab and says so` and `opens a link to this host in the same tab` in `breadcrumb-item.test.ts`.
 - [ ] Content in the `separator` slot isn't read out. Per WCAG 1.3.1 (Info and Relationships). Not yet verified. The `<slot>` carries `aria-hidden="true"`; `has a separator slot for breadcrumbs to fill` in `breadcrumb-item.test.ts` checks the slot is filled, not that it's hidden.
 
 ### Keyboard and focus

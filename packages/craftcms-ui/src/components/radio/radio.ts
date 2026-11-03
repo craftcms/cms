@@ -15,8 +15,8 @@ import {SsrChoiceInputMixin} from '@src/mixins/SsrChoiceInputMixin';
  * it. The input still takes the clicks, focus and keyboard, so it stays a
  * radio.
  *
- * With `appearance="cards"` or `"card-group"`, it's drawn as a card: a
- * button-like box with its `icon` drawn large and the label below it. The
+ * With `appearance="cards"` or `"card-group"`, it's drawn as a card: its
+ * `icon` drawn large in a button-like box, with the label below the box. The
  * native input is stretched over the whole card in the same way.
  *
  * @slot label - The option's label, as an alternative to the `label`
@@ -27,7 +27,7 @@ import {SsrChoiceInputMixin} from '@src/mixins/SsrChoiceInputMixin';
  *   an empty `alt`, since the label already names the option. Shown before the
  *   label, and drawn large above it on a card.
  *
- * @csspart icon - The wrapper around the icon.
+ * @csspart icon - The wrapper around the icon, which is the box on a card.
  */
 export default class CraftRadio extends SsrChoiceInputMixin(LionRadio) {
   override render() {
@@ -69,37 +69,39 @@ export default class CraftRadio extends SsrChoiceInputMixin(LionRadio) {
           grid-template-columns: minmax(0, 1fr);
           justify-items: center;
           align-content: start;
-          gap: var(--c-spacing-md);
-          box-sizing: border-box;
+          gap: var(--c-spacing-xs);
           min-inline-size: var(--c-radio-card-min-size);
-          padding-block: var(--_padding) var(--c-spacing-md);
-          padding-inline: var(--c-spacing-md);
-          border: 1px solid var(--c-form-control-border-color);
-          background-color: transparent;
           text-align: center;
         }
 
         :host([data-card]) .choice-field__icon {
           display: grid;
           place-items: center;
+          box-sizing: border-box;
           inline-size: 100%;
+          padding: var(--_padding);
+          border: 1px solid var(--c-form-control-border-color);
+          background-color: transparent;
         }
 
         :host([data-card]:not([data-card-start])) {
           margin-inline-start: -1px;
+        }
+
+        :host([data-card]:not([data-card-start])) .choice-field__icon {
           border-inline-start-color: var(--c-color-neutral-border-quiet);
         }
 
-        :host([data-card]:not([data-card-end])) {
+        :host([data-card]:not([data-card-end])) .choice-field__icon {
           border-inline-end-color: var(--c-color-neutral-border-quiet);
         }
 
-        :host([data-card][data-card-start]) {
+        :host([data-card][data-card-start]) .choice-field__icon {
           border-start-start-radius: var(--_radius);
           border-end-start-radius: var(--_radius);
         }
 
-        :host([data-card][data-card-end]) {
+        :host([data-card][data-card-end]) .choice-field__icon {
           border-start-end-radius: var(--_radius);
           border-end-end-radius: var(--_radius);
         }
@@ -116,15 +118,20 @@ export default class CraftRadio extends SsrChoiceInputMixin(LionRadio) {
         @media (hover: hover) {
           :host([data-card]:not([checked]):not([disabled]):hover) {
             z-index: 1;
+          }
+
+          :host([data-card]:not([checked]):not([disabled]):hover)
+            .choice-field__icon {
             background-color: var(--c-color-neutral-fill-quiet);
           }
         }
 
         :host([data-card][checked]) {
           z-index: 1;
-          padding-block: calc(var(--_padding) - 1px)
-            calc(var(--c-spacing-md) - 1px);
-          padding-inline: calc(var(--c-spacing-md) - 1px);
+        }
+
+        :host([data-card][checked]) .choice-field__icon {
+          padding: calc(var(--_padding) - 1px);
           border: 2px solid var(--c-color-accent-border-normal);
           background-color: var(--c-color-accent-fill-quiet);
         }
@@ -136,6 +143,9 @@ export default class CraftRadio extends SsrChoiceInputMixin(LionRadio) {
 
         :host([data-card][focused-visible]) {
           z-index: 2;
+        }
+
+        :host([data-card][focused-visible]) .choice-field__icon {
           outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
             var(--c-color-focus-outline);
           outline-offset: 1px;
@@ -146,11 +156,11 @@ export default class CraftRadio extends SsrChoiceInputMixin(LionRadio) {
         }
 
         @media (forced-colors: active) {
-          :host([data-card]) {
+          :host([data-card]) .choice-field__icon {
             border-color: ButtonBorder;
           }
 
-          :host([data-card][checked]) {
+          :host([data-card][checked]) .choice-field__icon {
             border-color: Highlight;
           }
 

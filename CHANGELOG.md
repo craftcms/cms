@@ -46,6 +46,7 @@
 - Links are no longer underlined until they’re hovered, unless the “Underline links” accessibility preference is enabled, in which case they’re underlined until hovered. ([#19905](https://github.com/craftcms/cms/pull/19905))
 - Folder names in asset indexes are now links.
 - The “License purchase required” screen is now shown in a centered pane, like other message pages.
+- The Plugin Store is now part of the control panel rather than a standalone app, with the store’s categories in the secondary nav, plugin pages whose Overview, Reviews, Editions, and Changelog tabs each have their own URL, and a cart that opens in a dialog from the store’s toolbar.
 - Field labels and headings throughout the control panel now consistently use title case.
 - Element index tables and padded admin tables now span the page’s inline padding, with their outer cells padded to match. ([#19906](https://github.com/craftcms/cms/pull/19906), [#19936](https://github.com/craftcms/cms/pull/19936))
 - Link fields now show their Link Type and destination inputs side by side, with their other settings nested under an “Advanced” section, within an outlined pane. ([#19942](https://github.com/craftcms/cms/pull/19942))
@@ -335,6 +336,7 @@
 
 ### Accessibility
 
+- Links to other sites now show an external-link icon and tell screen readers that they open in a new window. They open in a new tab on every control panel page again, including links in Ask AI replies, Vue-rendered pages, and `<craft-button>`, `<craft-action-item>`, `<craft-breadcrumb-item>`, and `<craft-nav-item>` components. ([#20306](https://github.com/craftcms/cms/pull/20306))
 - Search fields’ clear buttons are no longer in the <kbd>Tab</kbd> order. <kbd>Esc</kbd> clears the field from the keyboard. ([#20127](https://github.com/craftcms/cms/pull/20127))
 - Improved labeling and keyboard focus management in shared control panel modals. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Buttons and menu items with keyboard shortcuts now announce them to assistive technology, including the Save menu’s items, inline editing’s and modals’ Save buttons, and comments’ Comment buttons. On a Mac, the ⌥, ⇧, and ⌘ symbols are read as “Option”, “Shift”, and “Command”. ([#20219](https://github.com/craftcms/cms/pull/20219))
@@ -540,6 +542,12 @@
 - Added `CraftCms\Cms\Element\ElementHelper::postEditRedirectUrl()`, which returns the current request’s `returnUrl` param, or else the element’s post-edit URL. ([#20180](https://github.com/craftcms/cms/pull/20180))
 - Added `CraftCms\Cms\Element\ElementHelper::returnUrlForSite()`, which sets the `site` param of a `returnUrl` param value, keeping it encrypted if it was. ([#20222](https://github.com/craftcms/cms/pull/20222))
 - `craft\web\assets\prismjs\PrismJsAsset` no longer registers Prism, or Craft 5.12’s Prism shim. Plugins that rely on Prism should bundle it themselves, or use `Craft.highlighter` instead. ([#20088](https://github.com/craftcms/cms/pull/20088))
+- `craft\web\assets\pluginstore\PluginStoreAsset` is now deprecated and does nothing.
+- Removed the `plugin-store/craft-data` and `plugin-store/save-plugin-license-keys` actions.
+- Added the `page-header` layout slot, a row atop the screen’s panel that spans the secondary nav and the content.
+- Added the `appearance` property to `<craft-tabs>`, and `CraftCms\Cms\Cp\Components\Tabs::appearance()`. `line` is the default; `fill` sets the tabs on a quiet track with the selected one raised out of it.
+- Added `formatDate()`, `formatCurrency()`, and `formattingLocale()` to `@craftcms/ui`, which format dates and amounts of money in the user’s formatting locale. `formatNumber()` now uses it too, rather than always formatting numbers in English.
+- Added the `.cp-prose` and `.cp-group-heading` CSS classes, for long-form text and group headings in control panel screens. A table in `.cp-prose` scrolls sideways when it’s wrapped in a `.cp-prose-table` element.
 - `Craft.highlighter` now highlights Apache, CSS, Dockerfile, `.env`, GraphQL, HTTP, JSX, Nginx, SQL, TOML, TSX, Twig, TypeScript, and Vue code. ([#20245](https://github.com/craftcms/cms/pull/20245))
 - Added the `proportional` property to `<craft-markdown-field>`, which shows the text in the body font, without the Markdown badge. ([#20249](https://github.com/craftcms/cms/pull/20249))
 - Added `CraftCms\Cms\Support\Query::prepareDateForDb()`, which converts a date to the UTC string Craft stores dates as, for writing or comparing it with the query builder. ([#20053](https://github.com/craftcms/cms/pull/20053))
