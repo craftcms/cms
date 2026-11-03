@@ -527,7 +527,7 @@ return [
     'Create a new section' => 'Skapa en ny sektion',
     'Create a new site' => 'Skapa en ny webbplats',
     'Create a new tag group' => 'Skapa en ny taggrupp',
-    'Create a new token' => 'Create a new token',
+    'Create a new token' => 'Skapa en ny token',
     'Create a new user group' => 'Skapa en ny grupp av användare',
     'Create a new volume…' => 'Skapa en ny volym …',
     'Create a new {section} entry' => 'Skapa ett nytt {section}-inlägg',
