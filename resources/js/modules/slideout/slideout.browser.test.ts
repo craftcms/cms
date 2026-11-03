@@ -35,3 +35,23 @@ it('opens around its contents and tears down without jQuery', () => {
   expect(document.getElementById('my-slideout')).toBeNull();
   expect(Slideout.instances['my-slideout']).toBeUndefined();
 });
+
+it('returns focus to the menu that opened it once the menu has closed', async () => {
+  document.body.innerHTML = `
+    <craft-action-menu>
+      <button type="button" slot="invoker">Actions</button>
+      <div slot="content"><button type="button" id="item">Edit</button></div>
+    </craft-action-menu>`;
+  const item = document.getElementById('item')!;
+  item.focus();
+
+  const slideout = new Slideout('<div class="so-body"></div>');
+  // The menu closes as the slideout opens, hiding the item
+  item.hidden = true;
+  slideout.close();
+
+  await vi.waitFor(() =>
+    expect(document.activeElement?.textContent).toBe('Actions')
+  );
+  slideout.destroy();
+});

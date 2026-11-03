@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Html;
 
+use CraftCms\Cms\Cp\Components\ActionMenu;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\SiteGroups;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
+use Illuminate\Support\HtmlString;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -29,10 +32,52 @@ readonly class MenuHtml
     ) {}
 
     /**
+     * Renders a menu as a `<craft-action-menu>`.
+     *
+     * Takes the legacy disclosure menu config: `id`, `class`, `withButton`,
+     * `buttonLabel`/`buttonHtml`, `autoLabel` (label the button with the
+     * selected item), `hiddenLabel`, `buttonAttributes`, `buttonSpinner`,
+     * `disabled` and `withSearchInput`. Without a button, `invoker` supplies the
+     * element that opens it.
+     *
      * @param  list<array<string, mixed>>  $items
      * @param  array<string, mixed>  $config
      */
     public function disclosureMenu(array $items, array $config = []): string
+    {
+        $config = $this->disclosureMenuConfig($items, $config);
+
+        if ($config === null) {
+            return '';
+        }
+
+        $menu = ActionMenu::make()
+            ->menuItems($config['items'], normalize: false)
+            ->label($config['hiddenLabel'])
+            ->searchable((bool) ($config['withSearchInput'] ?? false))
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->attributes(array_filter([
+                'id' => $config['id'],
+                'class' => $config['class'],
+            ]));
+
+        $invoker = $config['withButton'] ? $this->menuButtonHtml($config) : ($config['invoker'] ?? null);
+        if ($invoker !== null) {
+            $menu->invoker(new HtmlString((string) $invoker));
+        }
+
+        return $menu->toHtml();
+    }
+
+    /**
+     * The menu config with its defaults and normalized `items`, or null when
+     * there are no items and the menu should be omitted.
+     *
+     * @param  list<array<string, mixed>>  $items
+     * @param  array<string, mixed>  $config
+     * @return array<string, mixed>|null
+     */
+    protected function disclosureMenuConfig(array $items, array $config): ?array
     {
         $config += [
             'id' => sprintf('menu-%s', mt_rand()),
@@ -48,9 +93,8 @@ readonly class MenuHtml
 
         $items = Collection::make($this->disclosureMenuItems($items));
 
-        // If we're left without any items, just return an empty string
         if ($config['omitIfEmpty'] && $items->isEmpty()) {
-            return '';
+            return null;
         }
 
         $config['items'] = $items->all();
@@ -68,7 +112,53 @@ readonly class MenuHtml
             }
         }
 
-        return template('_includes/disclosuremenu', $config, templateMode: TemplateMode::Cp);
+        return $config;
+    }
+
+    /** @param  array<string, mixed>  $config */
+    private function menuButtonHtml(array $config): string
+    {
+        $labelHtml = match (true) {
+            isset($config['html']) => (string) $config['html'],
+            isset($config['label']) => Html::encode((string) $config['label']),
+            default => '',
+        };
+        $buttonLabelHtml = match (true) {
+            isset($config['buttonHtml']) => (string) $config['buttonHtml'],
+            isset($config['buttonLabel']) => Html::encode((string) $config['buttonLabel']),
+            default => '',
+        };
+        $contentHtml = trim($labelHtml.$buttonLabelHtml);
+        $iconOnly = $contentHtml === '' || ($labelHtml === '' && str_contains($buttonLabelHtml, 'craft-icon'));
+
+        $ariaLabel = $config['hiddenLabel'];
+
+        if ($contentHtml === '') {
+            $contentHtml = Html::tag('craft-icon', '', ['name' => 'ellipsis']);
+        } elseif (! $iconOnly && $ariaLabel !== null) {
+            // An aria-label would hide the visible text from assistive tech
+            $contentHtml = Html::tag('span', Html::encode((string) $ariaLabel), ['class' => 'sr-only']).' '.$contentHtml;
+            $ariaLabel = null;
+        }
+
+        if ($config['buttonSpinner'] ?? false) {
+            $contentHtml .= Html::tag('craft-spinner', '', ['class' => ['spinner', 'hidden']]);
+        }
+
+        $buttonAttributes = $config['buttonAttributes'];
+        unset($buttonAttributes['removeClass']);
+
+        return Html::tag('craft-button', $contentHtml, Arr::merge([
+            'type' => 'button',
+            'variant' => 'plain',
+            'inherit' => true,
+            'size' => 'small',
+            'icon' => $iconOnly,
+            'disabled' => (bool) ($config['disabled'] ?? false),
+            'aria' => [
+                'label' => $ariaLabel,
+            ],
+        ], $buttonAttributes));
     }
 
     /**
