@@ -301,6 +301,7 @@
 - Fixed a bug where pressing <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>7</kbd>, <kbd>8</kbd>, or <kbd>.</kbd> in Markdown fields didn’t do anything. ([#20263](https://github.com/craftcms/cms/pull/20263))
 - Fixed a bug where dragging an image’s focal point in its preview sent it to the corner of the image. ([#20213](https://github.com/craftcms/cms/issues/20213))
 - Fixed a bug where typing in a newly added nested entry’s fields could replace the edit form with a “UI array path … must be a row index” error once the entry autosaved.
+- Fixed a bug where nested entries couldn’t be autosaved after the first time they were edited in a slideout, if their owner hadn’t been saved since.
 - Fixed a bug where changing a field back to the value it had when the edit page loaded wasn’t autosaved, so field layout elements shown or hidden by conditions based on it didn’t update.
 - Fixed a bug where Table fields’ Date and Time cells, and their default row values, shifted by the site’s UTC offset each time they were saved from the control panel.
 - Fixed bugs where Dropdown fields didn’t preserve blank option values and could show duplicate blank placeholders. ([#20140](https://github.com/craftcms/cms/pull/20140))
