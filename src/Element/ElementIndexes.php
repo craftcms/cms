@@ -86,6 +86,42 @@ class ElementIndexes
     }
 
     /**
+     * Splits an index's `status` param into the element status to filter by
+     * and the status menu's Drafts and Trashed options, which share the param
+     * but aren't element statuses.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     * @return array{status: string, drafts: bool, trashed: bool}
+     */
+    public function statusSelection(string $elementType, mixed $status): array
+    {
+        $status = is_string($status) ? $status : '';
+
+        return match ($status) {
+            'drafts' => ['status' => '', 'drafts' => $elementType::hasDrafts(), 'trashed' => false],
+            'trashed' => ['status' => '', 'drafts' => false, 'trashed' => true],
+            default => ['status' => $status, 'drafts' => false, 'trashed' => false],
+        };
+    }
+
+    /**
+     * The criteria the status menu's Drafts and Trashed options add to an
+     * index query, as Craft 5's index sets them. Drafts list in place of the
+     * canonical elements, including drafts of published ones.
+     *
+     * @param  array{status: string, drafts: bool, trashed: bool}  $statusSelection
+     * @return array<string, mixed>
+     */
+    public function statusSelectionCriteria(array $statusSelection): array
+    {
+        return match (true) {
+            $statusSelection['trashed'] => ['trashed' => true],
+            $statusSelection['drafts'] => ['drafts' => true, 'draftOf' => null, 'canonicalsOnly' => false],
+            default => [],
+        };
+    }
+
+    /**
      * Builds the element query state for a source, applying the source's own
      * condition/criteria plus any client-supplied condition, criteria, filter
      * condition, and collapsed-element exclusions.

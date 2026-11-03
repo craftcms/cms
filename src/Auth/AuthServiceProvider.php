@@ -48,6 +48,8 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Passport\Events\AccessTokenCreated;
+use Laravel\Passport\Passport;
 use Override;
 
 /**
@@ -151,6 +153,14 @@ class AuthServiceProvider extends ServiceProvider
 
     private function registerEvents(): void
     {
+        // Clients registered through an OAuth resource have no `updated_at` value until they’re authorized, so garbage
+        // collection can delete the ones that never are.
+        Event::listen(fn (AccessTokenCreated $event) => Passport::client()->newQuery()
+            ->whereKey($event->clientId)
+            ->whereNull('updated_at')
+            ->toBase()
+            ->update(['updated_at' => Passport::client()->freshTimestampString()]));
+
         Event::listen(function (Authenticated $event) {
             if ($event->guard !== Cms::config()->getAuthGuard()) {
                 return;

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Route;
 
 use CraftCms\Cms\Auth\DefaultRateLimit;
 use CraftCms\Cms\Auth\LoginRateLimiter;
+use CraftCms\Cms\Auth\OAuthServer\OAuthResources;
 use CraftCms\Cms\Auth\TwoFactorRateLimiter;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\AddLogContext;
@@ -153,6 +154,11 @@ class RouteServiceProvider extends ServiceProvider
             // Throttle to prevent enumeration attacks
             return DefaultRateLimit::for($request) ?? Limit::none();
         });
+
+        RateLimiter::for(
+            OAuthResources::REGISTRATION_RATE_LIMITER,
+            fn (Request $request) => Limit::perHour(10)->by($request->ip() ?? 'unknown'),
+        );
 
         RateLimiter::for(
             LoginRateLimiter::NAME,
