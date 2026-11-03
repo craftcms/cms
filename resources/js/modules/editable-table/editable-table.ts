@@ -679,6 +679,7 @@ export class EditableTable extends Base<EditableTableSettings> {
                 name: name,
                 value: value instanceof Object ? null : value,
                 small: true,
+                sets: '*',
               })
               .appendTo($cell);
             break;
@@ -688,6 +689,7 @@ export class EditableTable extends Base<EditableTableSettings> {
               .createColorInput({
                 name: name,
                 value: value instanceof Object ? null : value,
+                alpha: col.alpha,
                 small: true,
               })
               .appendTo($cell);

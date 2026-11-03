@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
+use CraftCms\Cms\Element\Actions\ClientAction;
 use CraftCms\Cms\Element\Actions\Delete;
 use CraftCms\Cms\Element\Actions\Duplicate;
-use CraftCms\Cms\Element\Actions\Edit;
 use CraftCms\Cms\Element\Actions\SetStatus;
-use CraftCms\Cms\Element\Actions\View as ViewAction;
 use CraftCms\Cms\Element\Contracts\DeleteActionInterface;
 use CraftCms\Cms\Element\Events\ElementActionsResolving;
 use Illuminate\Support\Collection;
@@ -42,29 +41,27 @@ trait HasActions
             ),
         );
 
+        $hasClientAction = fn (string $key) => $actions->contains(
+            fn ($action) => $action instanceof ClientAction && $action->key === $key,
+        );
+
         // Prepend Duplicate?
         if (! $hasActionType(Duplicate::class)) {
             $actions->prepend(Duplicate::class);
         }
 
         // Prepend Edit?
-        if (! $hasActionType(Edit::class)) {
-            $actions->prepend([
-                'type' => Edit::class,
-                'label' => mb_ucfirst(t('Edit {type}', [
-                    'type' => static::lowerDisplayName(),
-                ])),
-            ]);
+        if (! $hasClientAction('edit')) {
+            $actions->prepend(ClientAction::edit(mb_ucfirst(t('Edit {type}', [
+                'type' => static::lowerDisplayName(),
+            ]))));
         }
 
         // Prepend View?
-        if (static::hasUris() && ! $hasActionType(ViewAction::class)) {
-            $actions->prepend([
-                'type' => ViewAction::class,
-                'label' => mb_ucfirst(t('View {type}', [
-                    'type' => static::lowerDisplayName(),
-                ])),
-            ]);
+        if (static::hasUris() && ! $hasClientAction('view')) {
+            $actions->prepend(ClientAction::view(mb_ucfirst(t('View {type}', [
+                'type' => static::lowerDisplayName(),
+            ]))));
         }
 
         // Prepend Set Status?

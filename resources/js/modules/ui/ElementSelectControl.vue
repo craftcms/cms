@@ -206,6 +206,7 @@
         elementIds: next,
         siteId: siteId ?? null,
         branchLimit: props.control.props.branchLimit ?? null,
+        thumbSize: props.control.props.thumbSize ?? null,
       });
       elements = data.elements ?? [];
     } catch {
@@ -525,6 +526,7 @@
           <ElementList
             :data="listData"
             :view-mode="viewMode"
+            :thumb-size="control.props.thumbSize ?? undefined"
             :selection="list.selection"
             :selectable="selectable"
             :select-all="false"
@@ -562,7 +564,7 @@
                   list.isList.value
                     ? 'inline-start'
                     : list.isThumbs.value
-                      ? false
+                      ? 'inline-end'
                       : undefined
                 "
               />

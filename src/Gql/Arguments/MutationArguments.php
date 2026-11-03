@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Gql\Arguments;
 
 use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Enums\ElementPropertyType;
-use CraftCms\Cms\Gql\Types\DateTime;
+use CraftCms\Cms\Gql\Attributes\Gql;
+use CraftCms\Cms\Gql\ElementSchemaTypes;
 use GraphQL\Type\Definition\Argument;
 use GraphQL\Type\Definition\Type;
 
@@ -36,6 +36,23 @@ abstract class MutationArguments
     }
 
     /**
+     * Returns arguments for an element type’s writable properties that {@see Gql} doesn’t exclude, unless they opt
+     * out of mutations.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     * @return array<string, ArgumentConfig>
+     */
+    protected static function gqlPropertyArguments(string $elementType): array
+    {
+        $properties = array_filter(
+            ElementProperty::writable($elementType),
+            fn (ElementProperty $property): bool => (bool) Gql::of($property)?->write,
+        );
+
+        return static::propertyArguments($elementType, array_keys($properties));
+    }
+
+    /**
      * Returns arguments for writable properties that an element type declares with {@see ElementProperty}.
      *
      * @param  class-string<ElementInterface>  $elementType
@@ -46,18 +63,10 @@ abstract class MutationArguments
     {
         $arguments = [];
 
-        foreach (ElementProperty::only($elementType, $names, 'writable') as $name => $property) {
+        foreach (ElementProperty::writable($elementType, $names) as $name => $property) {
             $arguments[$name] = [
                 'name' => $name,
-                'type' => match ($property->type) {
-                    ElementPropertyType::String => Type::string(),
-                    ElementPropertyType::Float => Type::float(),
-                    ElementPropertyType::Int => Type::int(),
-                    ElementPropertyType::Id => Type::id(),
-                    ElementPropertyType::IdList => Type::listOf(Type::id()),
-                    ElementPropertyType::Boolean => Type::boolean(),
-                    ElementPropertyType::DateTime => DateTime::getType(),
-                },
+                'type' => ElementSchemaTypes::property($property->type, input: true),
                 'description' => $property->descriptionFor($elementType),
             ];
         }

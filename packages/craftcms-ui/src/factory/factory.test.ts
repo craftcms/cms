@@ -213,6 +213,11 @@ describe('createInputColor', () => {
     expect(input?.getAttribute('value')).toBe('7ab55c');
     expect(input?.classList.contains('color-input')).toBe(true);
   });
+
+  it('sets alpha only when requested', () => {
+    expect(createInputColor({alpha: true}).hasAttribute('alpha')).toBe(true);
+    expect(createInputColor().hasAttribute('alpha')).toBe(false);
+  });
 });
 
 describe('createInputPassword', () => {

@@ -84,8 +84,8 @@ function workflowRun(overrides: Partial<WorkflowRun> = {}): WorkflowRun {
         name: 'Publishers',
         current: true,
         approved: false,
-        icon: 'clock',
-        iconColor: 'warning',
+        status: 'pending',
+        statusLabel: 'Awaiting approval',
         message: null,
         summaryComponent: 'craft:user-review-workflow-stage-summary',
         summaryProps: {
@@ -210,7 +210,12 @@ describe('WorkflowReviewPanel', () => {
       ...container!.querySelectorAll<HTMLElement>(
         '.workflow-review craft-button'
       ),
-    ].find((element) => element.textContent?.trim() === label)!;
+    ].find(
+      (element) =>
+        (element.textContent?.trim() ||
+          element.querySelector<HTMLElement & {label?: string}>('craft-icon')
+            ?.label) === label
+    )!;
   }
 
   async function enterNote(value: string): Promise<void> {
@@ -686,8 +691,8 @@ describe('WorkflowReviewPanel', () => {
                 name: 'Editorial',
                 current: false,
                 approved: false,
-                icon: 'xmark-large',
-                iconColor: 'danger',
+                status: 'expired',
+                statusLabel: 'Changes requested',
                 message: 'Changes requested',
                 summaryComponent: 'craft:user-review-workflow-stage-summary',
                 summaryProps: {
@@ -763,8 +768,8 @@ describe('WorkflowReviewPanel', () => {
                 name: 'Editorial',
                 current: false,
                 approved: true,
-                icon: 'check',
-                iconColor: 'success',
+                status: 'enabled',
+                statusLabel: 'Approved',
                 message: null,
                 summaryComponent: 'craft:user-review-workflow-stage-summary',
                 summaryProps: {
@@ -786,8 +791,8 @@ describe('WorkflowReviewPanel', () => {
                 name: 'Legal',
                 current: true,
                 approved: false,
-                icon: 'clock',
-                iconColor: 'warning',
+                status: 'pending',
+                statusLabel: 'Awaiting approval',
                 message: null,
                 summaryComponent: 'craft:user-review-workflow-stage-summary',
                 summaryProps: {
@@ -802,8 +807,8 @@ describe('WorkflowReviewPanel', () => {
                 name: 'Automated policy check',
                 current: false,
                 approved: false,
-                icon: 'minus',
-                iconColor: 'neutral',
+                status: 'disabled',
+                statusLabel: 'Not started',
                 message: 'Waiting for the external policy service.',
                 summaryComponent: null,
                 summaryProps: {},
@@ -829,7 +834,9 @@ describe('WorkflowReviewPanel', () => {
 
     expect(editorial.opened).toBe(false);
     expect(editorial.textContent).toContain('Ada');
-    expect(editorial.textContent).toContain('Approved');
+    expect(
+      editorial.querySelector('.workflow-review-stage__content')?.textContent
+    ).toContain('Approved');
     expect(legal.opened).toBe(true);
     expect(legal.textContent).toContain('Grace');
     expect(legal.textContent).toContain('Lin');
@@ -837,6 +844,21 @@ describe('WorkflowReviewPanel', () => {
     expect(automatedCheck.textContent).toContain(
       'Waiting for the external policy service.'
     );
+  });
+
+  it('names each stage’s status in its heading, beside a hidden dot', async () => {
+    mount(review({runs: [workflowRun()]}));
+    await nextTick();
+
+    const heading = container!.querySelector(
+      '.workflow-review-stage__heading'
+    )!;
+    expect(heading.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+      '1. Publishers, Awaiting approval'
+    );
+    expect(
+      heading.querySelector('craft-status')?.closest('[aria-hidden="true"]')
+    ).not.toBeNull();
   });
 
   it('renders stages without details as static status rows', async () => {
@@ -850,8 +872,8 @@ describe('WorkflowReviewPanel', () => {
                 name: 'External review',
                 current: false,
                 approved: true,
-                icon: 'check',
-                iconColor: 'success',
+                status: 'enabled',
+                statusLabel: 'Approved',
                 message: null,
                 summaryComponent: null,
                 summaryProps: {},

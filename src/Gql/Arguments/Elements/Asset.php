@@ -22,23 +22,14 @@ class Asset extends ElementArguments
     #[Override]
     public static function getArguments(): array
     {
-        return array_merge(parent::getArguments(), self::getContentArguments(), static::queryParamArguments(AssetElement::class, [
-            'volumeId',
-            'volume',
-            'folderId',
-            'filename',
-            'kind',
-            'orientation',
-            'imageType',
-            'height',
-            'width',
-            'size',
-            'dateModified',
-            'hasAlt',
-            'includeSubfolders',
-            'withTransforms',
-            'uploader',
-        ]));
+        // Custom field arguments can’t shadow the asset’s own arguments.
+        return array_merge(self::getContentArguments(), parent::getArguments());
+    }
+
+    #[Override]
+    protected static function elementType(): string
+    {
+        return AssetElement::class;
     }
 
     #[Override]
@@ -50,19 +41,5 @@ class Asset extends ElementArguments
         );
 
         return array_merge(parent::getContentArguments(), $volumeFieldArguments);
-    }
-
-    #[Override]
-    /** @return array<string, ArgumentConfig> */
-    public static function getDraftArguments(): array
-    {
-        return [];
-    }
-
-    #[Override]
-    /** @return array<string, ArgumentConfig> */
-    public static function getRevisionArguments(): array
-    {
-        return [];
     }
 }

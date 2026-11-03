@@ -6,11 +6,10 @@ namespace CraftCms\Cms\Gql\Arguments;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
-use CraftCms\Cms\Element\Enums\ElementQueryParamType;
 use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
-use CraftCms\Cms\Gql\Types\QueryArgument;
+use CraftCms\Cms\Gql\Attributes\Gql;
+use CraftCms\Cms\Gql\ElementSchemaTypes;
 use GraphQL\Type\Definition\Argument;
-use GraphQL\Type\Definition\Type;
 use LogicException;
 
 /**
@@ -33,6 +32,23 @@ abstract class Arguments
     }
 
     /**
+     * Returns arguments for the query params of an element type’s query that apply to it and that {@see Gql} doesn’t
+     * exclude, if their gates allow the element type.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     * @return array<string, ArgumentConfig>
+     */
+    protected static function gqlQueryParamArguments(string $elementType): array
+    {
+        $params = array_filter(
+            ElementQueryParam::forElementType($elementType),
+            fn (ElementQueryParam $param): bool => (bool) Gql::of($param)?->allows($elementType),
+        );
+
+        return static::queryParamArguments($elementType, array_keys($params));
+    }
+
+    /**
      * Returns arguments for params that an element type's query declares with {@see ElementQueryParam}.
      *
      * @param  class-string<ElementInterface>  $elementType
@@ -48,19 +64,7 @@ abstract class Arguments
             $param = $params[$name] ?? throw new LogicException("[$elementType] does not declare the query param [$name].");
             $arguments[$name] = [
                 'name' => $name,
-                'type' => match ($param->type) {
-                    ElementQueryParamType::String => Type::string(),
-                    ElementQueryParamType::StringOrStrings,
-                    ElementQueryParamType::NullableStringOrStrings,
-                    ElementQueryParamType::StringList => Type::listOf(Type::string()),
-                    ElementQueryParamType::Int => Type::int(),
-                    ElementQueryParamType::IntOrInts,
-                    ElementQueryParamType::ScalarOrScalars,
-                    ElementQueryParamType::Array => Type::listOf(QueryArgument::getType()),
-                    ElementQueryParamType::Boolean,
-                    ElementQueryParamType::NullableBoolean => Type::boolean(),
-                    ElementQueryParamType::Scalar => QueryArgument::getType(),
-                },
+                'type' => ElementSchemaTypes::queryParam($param->type),
                 'description' => $param->descriptionFor($elementType),
             ];
         }

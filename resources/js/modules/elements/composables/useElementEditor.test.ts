@@ -235,7 +235,7 @@ describe('useElementEditor', () => {
     return {editor, page};
   }
 
-  it.each(['metaKey', 'ctrlKey'] as const)(
+  it.each(['ctrlKey'] as const)(
     'only submits %s+S while the element is editable',
     async (modifier) => {
       const {page} = mount(payload({readOnly: true}));
@@ -249,7 +249,7 @@ describe('useElementEditor', () => {
           [modifier]: true,
           cancelable: true,
         });
-        window.dispatchEvent(event);
+        document.dispatchEvent(event);
         expect(event.defaultPrevented).toBe(true);
       };
 
@@ -727,9 +727,12 @@ describe('useElementEditor', () => {
     expect(editor.workflowReviewLocked.value).toBe(false);
   });
 
-  it.each(['draft', 'scheduled'] as const)(
-    'edits a %s release draft locally and autosaves without changing membership',
-    async (status) => {
+  it.each([
+    ['draft', false],
+    ['scheduled', true],
+  ] as const)(
+    'autosaves a %s release draft (locked until Start editing: %s) without a visit',
+    async (status, locked) => {
       vi.useFakeTimers();
       onTestFinished(() => {
         vi.useRealTimers();
@@ -744,6 +747,7 @@ describe('useElementEditor', () => {
         canManage: true,
         draftId: 7,
         siteId: 1,
+        blockers: [],
       };
       const screen = payload({
         draftId: 7,
@@ -753,14 +757,16 @@ describe('useElementEditor', () => {
         ui: fieldLayout('Original'),
       });
       const {editor, page} = mount(screen);
-      await typeTitle('Initial edit');
-      await vi.advanceTimersByTimeAsync(1000);
-      expect(postSpy).not.toHaveBeenCalled();
+      expect(editor.releaseDraftLocked.value).toBe(locked);
 
-      editor.startEditingDraft();
-      await nextTick();
-      expect(visit).not.toHaveBeenCalled();
-      expect(postSpy).not.toHaveBeenCalled();
+      if (locked) {
+        await typeTitle('Locked edit');
+        await vi.advanceTimersByTimeAsync(1000);
+        expect(postSpy).not.toHaveBeenCalled();
+
+        editor.startEditingDraft();
+        await nextTick();
+      }
 
       await typeTitle('Updated release content');
       await vi.advanceTimersByTimeAsync(1000);
@@ -783,11 +789,47 @@ describe('useElementEditor', () => {
         release: {...release, id: 5, draftId: 8},
       };
       await nextTick();
+      expect(editor.releaseDraftLocked.value).toBe(locked);
       await typeTitle('New release draft');
       await vi.advanceTimersByTimeAsync(1000);
-      expect(postSpy).toHaveBeenCalledTimes(2);
+      expect(postSpy).toHaveBeenCalledTimes(locked ? 2 : 3);
+      expect(visit).not.toHaveBeenCalled();
     }
   );
+
+  it('leaves a draft already blocking its scheduled release unlocked, even once it stops blocking', async () => {
+    const release = {
+      id: 4,
+      name: 'Campaign',
+      status: 'scheduled',
+      targetDate: null,
+      canManage: true,
+      draftId: 7,
+      siteId: 1,
+      blockers: ['The title field is required.'],
+    } as const;
+    const screen = payload({
+      draftId: 7,
+      canAutosave: true,
+      readOnly: false,
+      release: {...release, blockers: [...release.blockers]},
+      ui: fieldLayout('Original'),
+    });
+    const {editor, page} = mount(screen);
+    expect(editor.releaseDraftLocked.value).toBe(false);
+
+    page.props = {...screen, release: {...release, blockers: []}};
+    await nextTick();
+    expect(editor.releaseDraftLocked.value).toBe(false);
+
+    page.props = {
+      ...screen,
+      draftId: 8,
+      release: {...release, id: 5, draftId: 8, blockers: []},
+    };
+    await nextTick();
+    expect(editor.releaseDraftLocked.value).toBe(true);
+  });
 
   it.each([
     ['pending', false, false],
@@ -2238,8 +2280,8 @@ describe('useElementEditor', () => {
     );
     const save = interceptSave();
 
-    window.dispatchEvent(
-      new KeyboardEvent('keydown', {key: 's', metaKey: true})
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 's', ctrlKey: true})
     );
 
     expect(save.last().url).toBe('/actions/elements/save-draft');
@@ -2250,6 +2292,57 @@ describe('useElementEditor', () => {
     });
 
     save.restore();
+  });
+
+  it('submits the Save menu’s Shift shortcut action with Cmd+Shift+S', async () => {
+    mount(
+      payload({
+        editorActions: {
+          primary: {
+            label: 'Save',
+            actionUrl: null,
+            params: {},
+            redirect: null,
+            panelId: null,
+          },
+          menu: [
+            {
+              label: 'Save and continue editing',
+              actionUrl: null,
+              params: {},
+              redirect: 'continue',
+              shortcut: true,
+            },
+            {
+              label: 'Save and add another',
+              actionUrl: null,
+              params: {addAnother: 1},
+              redirect: null,
+              shortcut: true,
+              shift: true,
+            },
+          ],
+          buttons: [],
+        },
+      })
+    );
+    const save = interceptSave();
+    onTestFinished(save.restore);
+
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 'S', ctrlKey: true, shiftKey: true})
+    );
+
+    expect(save.calls()).toBe(1);
+    expect(save.last().data).toMatchObject({addAnother: 1});
+
+    await nextTick();
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 's', ctrlKey: true})
+    );
+
+    expect(save.calls()).toBe(2);
+    expect(save.last().data).not.toHaveProperty('addAnother');
   });
 
   /** Same for "Save and continue editing", which stays on the screen. */

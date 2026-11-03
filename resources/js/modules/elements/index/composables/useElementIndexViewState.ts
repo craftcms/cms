@@ -16,6 +16,10 @@ interface ElementIndexViewStateContext {
  * Column visibility and sort are resolved per-source by their respective
  * composables (source `tableAttributes` / `defaultSort` → element-type
  * defaults), so only the user's explicit overrides live in `sources`.
+ *
+ * Changes made in other tabs aren't followed: the rows on screen were
+ * rendered for this tab's view state, and table rows can't draw as cards (nor
+ * columns or sort change) without a new request. They apply on the next load.
  */
 export function useElementIndexViewState(
   props: ElementIndexViewStateContext,
@@ -28,5 +32,7 @@ export function useElementIndexViewState(
     ...props.viewState,
   };
 
-  return useLocalStorage<ViewState>(storageKey, initialViewState);
+  return useLocalStorage<ViewState>(storageKey, initialViewState, {
+    listenToStorageChanges: false,
+  });
 }

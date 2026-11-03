@@ -24,7 +24,9 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Users;
+use Illuminate\Http\Client\Request as HttpRequest;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
@@ -282,6 +284,43 @@ it('gives the model a tool’s structured content, or describes the content it c
     'structured content' => ['test_result_structured', '{"url":"https://example.com/a","title":"Café"}'],
     'content blocks' => ['test_result_blocks', "Found it\nThe readme\n[Resource: Lighthouse (craft://entries/1/sites/1)]\n[Image: image/png]"],
 ]);
+
+it('searches craftcms.com’s docs without asking for approval, offering its tools from the cache on later turns', function () {
+    Http::fake(['craftcms.com/mcp' => static function (HttpRequest $request) {
+        $message = $request->data();
+
+        return match ($message['method']) {
+            'initialize' => Http::response(['jsonrpc' => '2.0', 'id' => $message['id'], 'result' => [
+                'protocolVersion' => '2025-06-18',
+                'capabilities' => ['tools' => (object) []],
+                'serverInfo' => ['name' => 'Craft CMS', 'version' => '5'],
+            ]], 200, ['Mcp-Session-Id' => 'session']),
+            'tools/list' => Http::response(['jsonrpc' => '2.0', 'id' => $message['id'], 'result' => ['tools' => [[
+                'name' => 'docs-search',
+                'description' => 'Searches the docs.',
+                'inputSchema' => ['type' => 'object', 'properties' => ['query' => ['type' => 'string']], 'required' => ['query']],
+                'annotations' => ['readOnlyHint' => true],
+            ]]]]),
+            'tools/call' => Http::response(['jsonrpc' => '2.0', 'id' => $message['id'], 'result' => [
+                'content' => [['type' => 'text', 'text' => "Results for {$message['params']['arguments']['query']}"]],
+            ]]),
+            default => Http::response(status: 202),
+        };
+    }]);
+
+    offeredTools();
+    $tool = offeredTools()['craftcms_docs_search'];
+
+    expect($tool->shouldRequestApproval(new ToolRequest(['query' => 'eager loading'])))->toBeNull()
+        ->and($tool->handle(new ToolRequest(['query' => 'eager loading'])))->toBe('Results for eager loading');
+    expect(Http::recorded(static fn (HttpRequest $request): bool => ($request->data()['method'] ?? null) === 'tools/list'))->toHaveCount(1);
+});
+
+it('goes without craftcms.com’s tools while craftcms.com can’t be reached', function () {
+    Http::fake(['craftcms.com/mcp' => Http::failedConnection()]);
+
+    expect(array_filter(array_keys(offeredTools()), static fn (string $name): bool => str_starts_with($name, 'craftcms_')))->toBe([]);
+});
 
 /**
  * Stores a turn that paused for the user to approve `call_pending`, after they rejected `call_rejected`.

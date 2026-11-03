@@ -130,6 +130,16 @@
     );
   }
 
+  /**
+   * Whether any listed row is selected. Rows kept selected on other pages
+   * don't make this page's select-all checkbox partly checked.
+   */
+  function someListedRowsSelected(): boolean {
+    return props.table
+      .getFilteredRowModel()
+      .flatRows.some((row) => row.getIsSelected());
+  }
+
   function toggleAllSelected(event: Event): void {
     if (selectionDisabled.value) return;
     props.selection?.onToggleAllSelected(
@@ -419,7 +429,7 @@
               label-sr-only
               .checked="table.getIsAllRowsSelected()"
               .indeterminate="
-                table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
+                someListedRowsSelected() && !table.getIsAllRowsSelected()
               "
               .disabled="selectionDisabled"
               @model-value-changed="toggleAllSelected"
@@ -485,6 +495,11 @@
               </template>
             </div>
           </th>
+        </tr>
+        <tr v-if="$slots['header-after']" class="cp-table-header-after">
+          <td :colspan="visibleColumnCount" class="cp-table-cell">
+            <slot name="header-after" />
+          </td>
         </tr>
       </thead>
       <tbody>
@@ -654,6 +669,13 @@
   :deep(.cp-table-cell.thin) {
     width: 1px;
     white-space: nowrap;
+  }
+  .cp-table-header-after > .cp-table-cell {
+    width: auto;
+    height: auto;
+    padding-block: var(--c-spacing-sm);
+    white-space: normal;
+    background-color: var(--c-surface-sunken);
   }
   :deep(.row--dragging) {
     opacity: 0.4;

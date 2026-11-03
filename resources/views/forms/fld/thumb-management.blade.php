@@ -53,12 +53,7 @@
                         ->checked($option['value'] === $thumbStyle)
                         ->disabled($disabled)
                         ->label($option['label'])
-                        ->thumbnail([
-                            'src' => \CraftCms\Cms\Cp\Cp::publicAssetUrl("images/thumb-styles/{$option['value']}.svg"),
-                            'width' => 80,
-                            'height' => 60,
-                            'aspectRatio' => '80 / 60',
-                        ]),
+                        ->thumbnail(\CraftCms\Cms\Cp\Cp::illustration("images/thumb-styles/{$option['value']}.svg")),
                     $styleOptions,
                 ))
                 ->toHtml();
@@ -96,7 +91,7 @@
 
             return \CraftCms\Cms\Cp\Components\RadioGroup::make()
                 ->id('thumb-alignment')
-                ->buttons()
+                ->appearance('button-group')
                 ->options($radios)
                 ->toHtml().$tooltips;
         },

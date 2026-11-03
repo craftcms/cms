@@ -56,6 +56,12 @@ class Entry extends Structure
     }
 
     #[Override]
+    protected static function elementType(): string
+    {
+        return EntryElement::class;
+    }
+
+    #[Override]
     public static function getName(): string
     {
         return 'EntryInterface';
@@ -81,7 +87,6 @@ class Entry extends Structure
         }
 
         return Gql::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), static::getDraftFieldDefinitions(), self::getConditionalFields($sectionFieldArguments), [
-            ...static::propertyFields(EntryElement::class, ['canonicalId', 'canonicalUid']),
             'sourceId' => [
                 'name' => 'sourceId',
                 'type' => Type::int(),
@@ -94,28 +99,24 @@ class Entry extends Structure
                 'description' => 'Returns the entry’s canonical UUID.',
                 'deprecationReason' => 'this field has been deprecated since Craft 3.7.7. Use `canonicalUid` instead.',
             ],
-            ...static::propertyFields(EntryElement::class, ['sectionId']),
             'sectionHandle' => [
                 'name' => 'sectionHandle',
                 'type' => Type::string(),
                 'description' => 'The handle of the section that contains the entry.',
                 'complexity' => GqlHelper::singleQueryComplexity(),
             ],
-            ...static::propertyFields(EntryElement::class, ['fieldId']),
             'fieldHandle' => [
                 'name' => 'fieldHandle',
                 'type' => Type::string(),
                 'description' => 'The handle of the field that contains the entry.',
                 'complexity' => GqlHelper::singleQueryComplexity(),
             ],
-            ...static::propertyFields(EntryElement::class, ['ownerId', 'sortOrder', 'typeId']),
             'typeHandle' => [
                 'name' => 'typeHandle',
                 'type' => Type::nonNull(Type::string()),
                 'description' => 'The handle of the entry type that contains the entry.',
                 'complexity' => GqlHelper::singleQueryComplexity(),
             ],
-            ...static::propertyFields(EntryElement::class, ['postDate', 'expiryDate']),
             'children' => [
                 'name' => 'children',
                 'args' => $structureSectionFieldArguments,
@@ -144,7 +145,6 @@ class Entry extends Structure
                 'description' => 'The entry’s ancestors, if the section is a structure. Accepts the same arguments as the `entries` query.',
                 'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
             ],
-            ...static::propertyFields(EntryElement::class, ['url']),
             'localized' => [
                 'name' => 'localized',
                 'args' => [
@@ -204,14 +204,12 @@ class Entry extends Structure
 
         if (GqlHelper::canQueryAllUsers()) {
             $fields = array_merge($fields, [
-                ...static::propertyFields(EntryElement::class, ['authorId']),
                 'author' => [
                     'name' => 'author',
                     'type' => User::getType(),
                     'description' => 'The primary entry author.',
                     'complexity' => GqlHelper::eagerLoadComplexity(),
                 ],
-                ...static::propertyFields(EntryElement::class, ['authorIds']),
                 'authors' => [
                     'name' => 'authors',
                     'type' => Type::listOf(User::getType()),

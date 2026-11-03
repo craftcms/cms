@@ -23,8 +23,9 @@ readonly class WorkflowRunStageData
         public string $name,
         public bool $current,
         public bool $approved,
-        public string $icon,
-        public string $iconColor,
+        /** @var 'enabled'|'pending'|'expired'|'disabled' The `craft-status` state its dot shows. */
+        public string $status,
+        public string $statusLabel,
         public ?string $message,
         public ?string $summaryComponent,
         /** @var array<string, mixed> */
@@ -46,23 +47,24 @@ readonly class WorkflowRunStageData
             ->values();
         $lastReset = $events->search(fn (WorkflowTimelineItemData $event): bool => $event->decision === 'reset');
         $currentEvents = $lastReset === false ? $events : $events->slice($lastReset + 1);
-        $failed = $currentEvents->contains(fn (WorkflowTimelineItemData $event): bool => in_array($event->decision, [WorkflowStageStatus::Failed->value, 'rejected'], true));
+        $failed = ($isCurrent && $run->status === WorkflowStatus::Failed)
+            || $currentEvents->contains(fn (WorkflowTimelineItemData $event): bool => in_array($event->decision, [WorkflowStageStatus::Failed->value, 'rejected'], true));
 
         return new self(
             name: t($stage->name),
             current: $run->isPending() && $isCurrent,
             approved: $isApproved,
-            icon: match (true) {
-                $failed => 'xmark-large',
-                $isApproved => 'check',
-                $run->isPending() && $isCurrent => 'clock',
-                default => 'minus',
+            status: match (true) {
+                $failed => 'expired',
+                $isApproved => 'enabled',
+                $run->isPending() && $isCurrent => 'pending',
+                default => 'disabled',
             },
-            iconColor: match (true) {
-                $failed => 'danger',
-                $isApproved => 'success',
-                $run->isPending() && $isCurrent => 'warning',
-                default => 'neutral',
+            statusLabel: match (true) {
+                $failed => WorkflowStatus::Failed->label(),
+                $isApproved => WorkflowStatus::Approved->label(),
+                $isCurrent => $run->status->label(),
+                default => t('Not started'),
             },
             message: $isCurrent && $summaryComponent === null ? $run->currentStageResult : null,
             summaryComponent: $summaryComponent,

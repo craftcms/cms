@@ -10,6 +10,7 @@ use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentFieldInterface;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use GraphQL\Type\Definition\Argument;
 use GraphQL\Type\Definition\Type;
+use Override;
 
 /**
  * @phpstan-import-type ArgumentConfig from Argument
@@ -18,26 +19,20 @@ use GraphQL\Type\Definition\Type;
  */
 class User extends ElementArguments
 {
-    #[\Override]
+    #[Override]
     public static function getArguments(): array
     {
-        return array_merge(parent::getArguments(), self::getContentArguments(), static::queryParamArguments(UserElement::class, [
-            'email',
-            'username',
-            'fullName',
-            'firstName',
-            'lastName',
-            'hasPhoto',
-            'assetUploaders',
-            'authors',
-            'groupId',
-            'group',
-            'affiliatedSite',
-            'affiliatedSiteId',
-        ]));
+        // Custom field arguments can’t shadow the user’s own arguments.
+        return array_merge(self::getContentArguments(), parent::getArguments());
     }
 
-    #[\Override]
+    #[Override]
+    protected static function elementType(): string
+    {
+        return UserElement::class;
+    }
+
+    #[Override]
     public static function getContentArguments(): array
     {
         $contentArguments = [];
@@ -51,19 +46,5 @@ class User extends ElementArguments
         }
 
         return array_merge(parent::getContentArguments(), $contentArguments);
-    }
-
-    #[\Override]
-    /** @return array<string, ArgumentConfig> */
-    public static function getDraftArguments(): array
-    {
-        return [];
-    }
-
-    #[\Override]
-    /** @return array<string, ArgumentConfig> */
-    public static function getRevisionArguments(): array
-    {
-        return [];
     }
 }

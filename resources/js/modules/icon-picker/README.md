@@ -27,7 +27,8 @@ the Wayfinder `IconController.pickerOptions` URL helper) is standalone.
 
 ## Attributes → props
 
-`name`, `value` (→ `modelValue`), `free-only`, `disabled`, `label`, `error`,
+`name`, `value` (→ `modelValue`), `free-only`, `sets` (`*` or a JSON array of
+icon set handles), `disabled`, `label`, `error`,
 `labelled-by`, `described-by`. The component owns its label (matching the modern
 entry-types page), so field surfaces pass `label`; label-less table cells pass
 `labelled-by`. The component renders its own `craft-input` with `hidden-input` +

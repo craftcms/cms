@@ -16,7 +16,7 @@ use function CraftCms\Cms\t;
  */
 class AssetFileReplaced extends ActivityEventType
 {
-    protected const string LABEL = 'File replaced';
+    protected const string LABEL = 'Replaced the file';
 
     protected const string ICON = 'file-arrow-up';
 

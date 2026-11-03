@@ -16,6 +16,7 @@
   name: name ?? false,
   value: value ?: false,
   'free-only': freeOnly ?? false,
+  sets: (sets ?? null) is not null ? sets|json_encode : false,
   disabled: (static ?? false) or (disabled ?? false),
   'labelled-by': labelledBy ?? false,
   'described-by': describedBy ?? false,

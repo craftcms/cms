@@ -28,6 +28,7 @@ use craft\services\Fields;
 use craft\services\Fs;
 use craft\services\Gc;
 use craft\services\Gql as LegacyGql;
+use craft\services\Icons;
 use craft\services\ImageTransforms;
 use craft\services\Plugins as LegacyPlugins;
 use craft\services\ProjectConfig as LegacyProjectConfig;
@@ -104,6 +105,7 @@ readonly class EventCompatibility
         Fields::registerEvents();
         Fs::registerEvents();
         Gc::registerEvents();
+        Icons::registerEvents();
         LegacyGql::registerEvents();
         LegacySearch::registerEvents();
         Dashboard::registerEvents();

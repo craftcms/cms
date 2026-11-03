@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Mcp;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Enums\ElementQueryParamType;
 use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Mcp\Attributes\Mcp;
+use CraftCms\Cms\Mcp\Schema\ElementSchemaTypes;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
-use Illuminate\Support\Arr;
 use LogicException;
 use Mcp\Exception\ToolCallException;
 
@@ -36,16 +37,11 @@ class ElementQueryCriteria
         ],
     ];
 
-    private const string NumericParamToken = '((not |!=|<=|>=|<|>|=)?\s*-?\d+|:empty:|:notempty:|not :empty:)';
-
-    /** A numeric query param string, such as `'not 1'`, `'>= 3'`, `'1, 2'`, or `':empty:'`. */
-    private const string NumericParamPattern = '^\s*'.self::NumericParamToken.'(\s*,\s*'.self::NumericParamToken.')*\s*$';
-
     /** Paging and sorting properties that MCP tools add to element query params. */
     public const array SchemaProperties = [
         'orderBy' => [
             'type' => 'string',
-            'description' => 'Native Craft element order expression.',
+            'description' => 'Comma-separated columns to order by, each optionally followed by `asc` or `desc`, such as `postDate desc, title`.',
         ],
         'offset' => [
             'type' => 'integer',
@@ -62,25 +58,21 @@ class ElementQueryCriteria
         ],
     ];
 
-    /** Guidance for MCP clients, appended to query param descriptions. */
-    private const array Hints = [
-        'status' => 'Pass null to include all statuses.',
-        'trashed' => 'Pass null to include both trashed and non-trashed elements. Use status: null when listing deleted elements.',
-    ];
-
     /**
-     * Returns JSON Schema properties for the params an element type's query declares with {@see ElementQueryParam}.
+     * Returns JSON Schema properties for the params an element type's query declares with {@see ElementQueryParam} that
+     * apply to the element type.
      *
      * @param  class-string<ElementInterface>  $elementType
-     * @param  list<string>|null  $only  Param names to return. Every name must be declared.
+     * @param  list<string>|null  $only  Param names to return, whether or not they apply to the element type. Every name must be declared.
      * @return array<string, array<string, mixed>>
      */
     public static function properties(string $elementType, ?array $only = null): array
     {
-        $queryClass = $elementType::find()::class;
-        $params = ElementQueryParam::all($queryClass);
-
-        if ($only !== null) {
+        if ($only === null) {
+            $params = ElementQueryParam::forElementType($elementType);
+        } else {
+            $queryClass = $elementType::find()::class;
+            $params = ElementQueryParam::all($queryClass);
             $missing = array_diff($only, array_keys($params));
 
             if ($missing !== []) {
@@ -91,31 +83,8 @@ class ElementQueryCriteria
         }
 
         return collect($params)->map(fn (ElementQueryParam $param, string $name): array => [
-            ...match ($param->type) {
-                ElementQueryParamType::String => ['type' => 'string'],
-                ElementQueryParamType::StringOrStrings => self::StringOrStringsSchema,
-                ElementQueryParamType::NullableStringOrStrings => ['anyOf' => [...self::StringOrStringsSchema['anyOf'], ['type' => 'null']]],
-                ElementQueryParamType::StringList => ['type' => 'array', 'items' => ['type' => 'string']],
-                ElementQueryParamType::Int => ['type' => 'integer'],
-                ElementQueryParamType::IntOrInts => ['anyOf' => [
-                    ['type' => 'integer'],
-                    ['type' => 'string', 'pattern' => self::NumericParamPattern],
-                    ['type' => 'array', 'items' => ['anyOf' => [
-                        ['type' => ['integer', 'null']],
-                        ['type' => 'string', 'pattern' => self::NumericParamPattern],
-                        ['enum' => ['and', 'or', 'not']],
-                    ]]],
-                ]],
-                ElementQueryParamType::Boolean => ['type' => 'boolean'],
-                ElementQueryParamType::NullableBoolean => ['type' => ['boolean', 'null']],
-                ElementQueryParamType::Scalar => ['type' => ['integer', 'string', 'boolean']],
-                ElementQueryParamType::ScalarOrScalars => ['anyOf' => [
-                    ['type' => ['integer', 'string']],
-                    ['type' => 'array', 'items' => ['type' => ['integer', 'string']]],
-                ]],
-                ElementQueryParamType::Array => ['type' => 'array'],
-            },
-            'description' => trim($param->descriptionFor($elementType).' '.(self::Hints[$name] ?? '')),
+            ...ElementSchemaTypes::queryParam($param->type),
+            'description' => trim($param->descriptionFor($elementType).' '.$param->companion(Mcp::class)?->hint),
         ])->all();
     }
 
@@ -143,10 +112,33 @@ class ElementQueryCriteria
     {
         $criteria['limit'] = $this->limit($criteria['limit'] ?? self::DefaultLimit);
         $criteria['offset'] = $this->offset($criteria['offset'] ?? 0);
+        $orderBy = Arr::pull($criteria, 'orderBy');
 
         Typecast::configure($query, $criteria);
 
+        if ($orderBy !== null) {
+            $this->orderBy($query, $orderBy);
+            $criteria['orderBy'] = $orderBy;
+        }
+
         return $criteria;
+    }
+
+    /**
+     * Applies each column of a `column [asc|desc], ...` string on its own, since
+     * element queries deprecate directions and column lists in one string.
+     */
+    private function orderBy(ElementQueryInterface $query, mixed $orderBy): void
+    {
+        if (! is_string($orderBy)) {
+            throw new ToolCallException('Element query criteria.orderBy must be a string.');
+        }
+
+        foreach (explode(',', $orderBy) as $column) {
+            if (preg_match('/^\s*(\S.*?)(?:\s+(asc|desc))?\s*$/i', $column, $matches)) {
+                $query->orderBy($matches[1], strtolower($matches[2] ?? 'asc'));
+            }
+        }
     }
 
     /**

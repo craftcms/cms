@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Attributes;
 
 use Attribute;
+use CraftCms\Cms\Element\Attributes\Concerns\DescribesMember;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Enums\ElementCapability;
 use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use LogicException;
 use ReflectionClass;
@@ -18,14 +20,16 @@ use ReflectionProperty;
  * The attribute can be placed on a public property, on its setter, or on a getter for a computed value. Overriding
  * methods inherit the attribute from the method they override.
  *
- * Descriptions shared by several element types can use an `{element}` placeholder for the element type's lowercase
- * name.
+ * Descriptions shared by several element types can use `{element}` and `{elements}` placeholders for the element
+ * type's lowercase singular and plural names.
  *
  * @since 6.0.0
  */
 #[Attribute(Attribute::TARGET_PROPERTY | Attribute::TARGET_METHOD)]
 class ElementProperty
 {
+    use DescribesMember;
+
     /** @var array<class-string, array<string, self>> */
     private static array $properties = [];
 
@@ -34,6 +38,7 @@ class ElementProperty
      * @param  bool  $readable  Whether the property is part of the element’s documented output, which public APIs may expose.
      * @param  bool  $writable  Whether APIs may set the property.
      * @param  bool  $nonNull  Whether reading the property always returns a value.
+     * @param  ElementCapability|null  $requires  The capability an element type needs for the property to apply to it.
      */
     public function __construct(
         public readonly ElementPropertyType $type,
@@ -42,17 +47,8 @@ class ElementProperty
         public readonly bool $readable = false,
         public readonly bool $writable = true,
         public readonly bool $nonNull = false,
+        public readonly ?ElementCapability $requires = null,
     ) {}
-
-    /**
-     * Returns the description for an element type, replacing `{element}` with its lowercase name.
-     *
-     * @param  class-string<ElementInterface>  $elementType
-     */
-    public function descriptionFor(string $elementType): string
-    {
-        return str_replace('{element}', $elementType::lowerDisplayName(), $this->description);
-    }
 
     /**
      * Returns the properties an element type declares, indexed by property name.
@@ -70,15 +66,15 @@ class ElementProperty
         $properties = [];
 
         foreach ($class->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
-            if (! $property->isStatic() && ($attribute = $property->getAttributes(self::class)[0] ?? null)) {
-                $properties[$property->getName()] = $attribute->newInstance();
+            if (! $property->isStatic() && $property->getAttributes(self::class)) {
+                $properties[$property->getName()] = self::fromDeclaration($property);
             }
         }
 
         foreach ($class->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
             $name = $method->getName();
 
-            if ($method->isStatic() || ! preg_match('/^[gs]et[A-Z]/', $name) || ! ($property = self::declaredOn($method))) {
+            if ($method->isStatic() || ! preg_match('/^[gs]et[A-Z]/', $name) || ! ($declaration = self::declarationOf($method))) {
                 continue;
             }
 
@@ -88,61 +84,56 @@ class ElementProperty
                 throw new LogicException("[$elementType] declares the element property [$propertyName] more than once.");
             }
 
-            $properties[$propertyName] = $property;
+            $properties[$propertyName] = self::fromDeclaration($declaration);
         }
 
         return self::$properties[$elementType] = $properties;
     }
 
     /**
-     * Returns the properties an element type declares as readable, indexed by property name.
+     * Returns the readable properties that apply to an element type, indexed by property name.
      *
      * @param  class-string<ElementInterface>  $elementType
+     * @param  list<string>|null  $names  Property names to return, in this order, whether or not they apply to the element type. Every name must be declared as readable.
      * @return array<string, self>
      */
-    public static function readable(string $elementType): array
+    public static function readable(string $elementType, ?array $names = null): array
     {
-        return array_filter(self::all($elementType), fn (self $property): bool => $property->readable);
+        return self::withAccess($elementType, 'readable', $names);
     }
 
     /**
-     * Returns the given properties of an element type, ensuring that each is declared with the given access.
+     * Returns the writable properties that apply to an element type, indexed by property name.
      *
      * @param  class-string<ElementInterface>  $elementType
-     * @param  list<string>  $names
-     * @param  'readable'|'writable'  $access
+     * @param  list<string>|null  $names  Property names to return, in this order, whether or not they apply to the element type. Every name must be declared as writable.
      * @return array<string, self>
      */
-    public static function only(string $elementType, array $names, string $access): array
+    public static function writable(string $elementType, ?array $names = null): array
     {
-        $properties = self::all($elementType);
+        return self::withAccess($elementType, 'writable', $names);
+    }
+
+    /**
+     * @param  class-string<ElementInterface>  $elementType
+     * @param  'readable'|'writable'  $access
+     * @param  list<string>|null  $names
+     * @return array<string, self>
+     */
+    private static function withAccess(string $elementType, string $access, ?array $names): array
+    {
+        $properties = array_filter(self::all($elementType), fn (self $property): bool => $property->$access);
+
+        if ($names === null) {
+            return array_filter($properties, fn (self $property): bool => $property->appliesTo($elementType));
+        }
+
         $only = [];
 
         foreach ($names as $name) {
-            $property = $properties[$name] ?? null;
-
-            if (! $property?->$access) {
-                throw new LogicException("[$elementType] does not declare a $access element property [$name].");
-            }
-
-            $only[$name] = $property;
+            $only[$name] = $properties[$name] ?? throw new LogicException("[$elementType] does not declare a $access element property [$name].");
         }
 
         return $only;
-    }
-
-    private static function declaredOn(ReflectionMethod $method): ?self
-    {
-        $attribute = $method->getAttributes(self::class)[0] ?? null;
-
-        if ($attribute) {
-            return $attribute->newInstance();
-        }
-
-        $parent = $method->getDeclaringClass()->getParentClass();
-
-        return $parent && $parent->hasMethod($method->getName())
-            ? self::declaredOn($parent->getMethod($method->getName()))
-            : null;
     }
 }

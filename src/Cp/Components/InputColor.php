@@ -29,6 +29,8 @@ class InputColor extends Input
     /** @var array<int, string> */
     protected array $presets = [];
 
+    protected bool $alpha = false;
+
     #[\Override]
     protected function tagName(): string
     {
@@ -48,6 +50,18 @@ class InputColor extends Input
         return $this;
     }
 
+    /**
+     * Whether the color can have an alpha channel. The native picker only
+     * offers opacity in browsers that support its `alpha` attribute; 8-digit hex
+     * values can be typed anywhere.
+     */
+    public function alpha(bool $alpha = true): static
+    {
+        $this->alpha = $alpha;
+
+        return $this;
+    }
+
     #[\Override]
     protected function hostAttributes(): array
     {
@@ -59,6 +73,7 @@ class InputColor extends Input
 
         $presets = array_values(array_filter($this->presets));
         $attributes['presets'] = $presets !== [] ? Json::encode($presets) : null;
+        $attributes['alpha'] = $this->alpha;
 
         return $attributes;
     }
