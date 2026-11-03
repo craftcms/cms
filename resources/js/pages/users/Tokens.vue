@@ -73,11 +73,7 @@
   });
   const editingApp = computed(() => !!editing.value && !editing.value.personal);
   const modalTitle = computed(() => {
-    if (!editing.value) {
-      return t('New token');
-    }
-
-    return editing.value.personal ? t('Edit token') : editing.value.name;
+    return editing.value ? editing.value.name : t('Create a new token');
   });
   const expiryOptions = [
     {label: t('7 days'), value: '7'},
