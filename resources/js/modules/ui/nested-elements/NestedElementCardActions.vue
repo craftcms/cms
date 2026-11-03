@@ -2,7 +2,7 @@
   import {t} from '@craftcms/ui';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {Selectable} from '@/common/composables/useSelectable';
-  import {canOpenElement, type NestedElement} from './nested-elements';
+  import type {NestedElement} from './nested-elements';
   import {nestedElementActions} from './nested-element-actions';
   import type {
     NestedElementOperations,
@@ -71,7 +71,7 @@
 
 <template>
   <craft-button
-    v-if="canOpenElement(element)"
+    v-if="quickEdit.canOpen(element)"
     data-edit-element
     variant="plain"
     inherit

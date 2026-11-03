@@ -19,6 +19,7 @@
   import {computed} from 'vue';
   import ChangeValue from './ChangeValue.vue';
   import UiRenderer from './UiRenderer.vue';
+  import {provideUiPreview} from './uiPreview';
   import {provideUiValueGroup} from './uiValueGroup';
 
   const props = defineProps<{
@@ -38,6 +39,7 @@
 
   // Previews’ values are their own, not the page’s.
   provideUiValueGroup();
+  provideUiPreview();
 
   const sides = computed(() =>
     [
