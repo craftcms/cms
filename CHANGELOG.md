@@ -426,6 +426,7 @@
 - Fixed a bug where the Asset Indexes utility’s indexing sessions were inset from the rest of the page, and their “Last update” dates showed “Invalid Date”. ([#20215](https://github.com/craftcms/cms/issues/20215), [#20221](https://github.com/craftcms/cms/pull/20221))
 - Fixed an error that occurred when editing an entry type that was in use. ([#20138](https://github.com/craftcms/cms/issues/20138))
 - Fixed a bug where the HTTP MCP servers rejected handshake-based clients. Both handshake sessions and per-request protocol metadata are now supported.
+- Fixed a bug where Craft couldn’t check whether Anthropic models support tool calling, so the “AI assistant” task was unavailable with them. ([#20266](https://github.com/craftcms/cms/issues/20266), [#20298](https://github.com/craftcms/cms/pull/20298))
 - The MCP server’s `mcp:use` OAuth scope has been replaced with `mcp:read`, `mcp:write`, and `mcp:admin`. Users now choose an access level when they authorize an MCP client, defaulting to read only, and only administrators are offered full access. Clients that authorize again keep the earlier level without another prompt. ([#20080](https://github.com/craftcms/cms/pull/20080))
 - The MCP server now only shows and accepts the custom fields that users can see and edit in an element’s edit form, as field layouts’ conditions allow. ([#20091](https://github.com/craftcms/cms/pull/20091))
 - The public MCP server now returns elements’ documented attributes and custom fields, rather than all of their properties. ([#20218](https://github.com/craftcms/cms/pull/20218))
