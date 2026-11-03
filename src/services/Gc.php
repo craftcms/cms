@@ -479,7 +479,8 @@ class Gc extends Component
         ]);
 
         // Dynamically registered clients (which have no provider) that have nothing live left, and were either revoked,
-        // or registered over a day ago but never authorized. Registration is anonymous, so these would otherwise pile up.
+        // or registered over a day ago but never authorized (`updated_at` is null until a client is first authorized).
+        // Registration is anonymous, so these would otherwise pile up.
         Db::delete(Table::OAUTH_CLIENTS, [
             'and',
             ['provider' => null],
