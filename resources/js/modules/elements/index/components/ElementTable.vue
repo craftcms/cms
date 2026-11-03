@@ -248,6 +248,9 @@
           type="button"
           variant="plain"
           size="small"
+          :flush="
+            appearance === TableAppearance.Aligned ? 'inline-start' : undefined
+          "
           icon
           .loading="isRowPending(row.original.id)"
           :aria-expanded="String(!isRowCollapsed(row.original.id))"

@@ -9,7 +9,7 @@
   import {computed, h, nextTick, ref, useTemplateRef} from 'vue';
   import {t} from '@craftcms/ui';
   import type {ReorderMove} from '@craftcms/ui';
-  import type {ActionItem} from '@/common/types';
+  import {TableAppearance, type ActionItem} from '@/common/types';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import {useAnnouncer} from '@/common/composables/useAnnouncer';
   import {useCraftTable} from '@/common/table/craftTable';
@@ -322,6 +322,7 @@
       :table="table"
       :selection="selection"
       :title="t('Navigation')"
+      :appearance="TableAppearance.Aligned"
       structure
       reorderable
       :is-row-collapsed="(id) => collapsed.has(String(id))"
