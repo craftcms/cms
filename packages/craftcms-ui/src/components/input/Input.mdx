@@ -6,7 +6,7 @@ import * as InputStories from './input.stories';
 # Input
 
 `<craft-input>` is a single-line text input, and the base every other `craft-input-*` control extends.
-It is built on [Lion's input](https://lion.js.org/components/input/overview/), so it brings a label, help text, validation, and a `modelValue` alongside the native field.
+It brings a label and help text alongside a native `<input>`. Its `value`, and the native `input` and `change` events, are the component's; set `invalid` while an error is shown.
 
 <Canvas of={InputStories.Default} sourceState="shown" />
 
@@ -63,7 +63,7 @@ Reach for it when a field is populated programmatically but has to round-trip wi
 
 ## Slots
 
-The control has eight slots, four of which are Lion's own plumbing.
+The control has eight slots, four of which are the field's own plumbing.
 `prefix` and `suffix` sit _inside_ the control, alongside the input:
 
 <Canvas of={InputStories.WithPrefix} sourceState="shown" />
@@ -110,7 +110,7 @@ Ui::make([
 
 ## Accessibility
 
-Lion wires the label, help text, and validation feedback to the input with `aria-labelledby` and `aria-describedby`, so a labeled input is announced correctly without further work.
+The label, help text, and feedback are wired to the input with `aria-labelledby` and `aria-describedby`, so a labeled input is announced correctly without further work.
 
 The thing to watch is an input with no label at all.
 Nothing stops you rendering one, and it is not announced as anything — so either set `label`, slot one, or wrap the control in `craft-field`.

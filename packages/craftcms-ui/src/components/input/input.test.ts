@@ -1,5 +1,4 @@
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
-import {Required} from '@lion/ui/form-core.js';
 
 import './input.js';
 import type CraftInput from './input.js';
@@ -37,8 +36,8 @@ describe('craft-input', () => {
     const label = element.querySelector('label')!;
 
     expect(native(element)).toBeTruthy();
-    // Lion rewrites the label's `for` to the id it generated for the input,
-    // which is what makes clicking the label focus the field.
+    // The label points at the input's id, which is what makes clicking the
+    // label focus the field.
     expect(label.getAttribute('for')).toBe(native(element).id);
     expect(native(element).id).not.toBe('');
   });
@@ -47,10 +46,10 @@ describe('craft-input', () => {
     expect((await createInput()).size).toBe('medium');
   });
 
-  it('carries the value as Lion s modelValue', async () => {
+  it('writes its value to the native input', async () => {
     const element = await createInput();
 
-    element.modelValue = 'entryType';
+    element.value = 'entryType';
     await element.updateComplete;
 
     expect(native(element).value).toBe('entryType');
@@ -142,41 +141,66 @@ describe('craft-input', () => {
   });
 });
 
-describe('craft-input aria-invalid', () => {
-  it('synchronizes aria-invalid with the native input', async () => {
+describe('craft-input invalid', () => {
+  it('marks the native input invalid', async () => {
     const element = await createInput();
     const input = native(element);
 
-    element.setAttribute('aria-invalid', 'true');
+    element.invalid = true;
     await element.updateComplete;
     expect(input.getAttribute('aria-invalid')).toBe('true');
+    expect(element.hasAttribute('invalid')).toBe(true);
 
-    element.setAttribute('aria-invalid', 'false');
+    element.invalid = false;
     await element.updateComplete;
-    expect(input.getAttribute('aria-invalid')).toBe('false');
+    expect(input.hasAttribute('aria-invalid')).toBe(false);
+  });
+});
+
+describe('craft-input server-rendered control', () => {
+  async function createServerRendered(
+    hostAttributes: string,
+    inputAttributes: string
+  ): Promise<{element: CraftInput; input: HTMLInputElement}> {
+    // Parsed before it's connected, as a server-rendered page is by the time
+    // the component's script runs.
+    const container = document.createElement('div');
+    container.innerHTML = `
+      <craft-input ${hostAttributes}>
+        <input slot="input" ${inputAttributes}>
+      </craft-input>`;
+    document.body.append(...container.childNodes);
+    const element = document.querySelector('craft-input') as CraftInput;
+    await element.updateComplete;
+
+    return {element, input: element.querySelector('input')!};
+  }
+
+  it("keeps the control's own attributes the host doesn't set", async () => {
+    const {input} = await createServerRendered(
+      '',
+      'type="password" name="secret" placeholder="Hidden" readonly disabled required'
+    );
+
+    expect(input.type).toBe('password');
+    expect(input.name).toBe('secret');
+    expect(input.placeholder).toBe('Hidden');
+    expect(input.readOnly).toBe(true);
+    expect(input.disabled).toBe(true);
+    expect(input.required).toBe(true);
   });
 
-  it('preserves validation-managed aria-invalid without an override', async () => {
-    const element = await createInput();
-    const input = native(element);
-    element.modelValue = '';
-    element.validators = [new Required()];
-    element.submitted = true;
-    await element.updateComplete;
-    await element.updateComplete;
+  it('applies what the host does set', async () => {
+    const {element, input} = await createServerRendered(
+      'name="title" placeholder="Title"',
+      'name="old"'
+    );
 
-    expect(input.getAttribute('aria-invalid')).toBe('true');
+    expect(input.name).toBe('title');
+    expect(input.placeholder).toBe('Title');
 
-    element.setAttribute('aria-invalid', 'false');
+    element.disabled = true;
     await element.updateComplete;
-    expect(input.getAttribute('aria-invalid')).toBe('false');
-
-    element.removeAttribute('aria-invalid');
-    await element.updateComplete;
-    expect(input.getAttribute('aria-invalid')).toBe('true');
-
-    element.placeholder = 'Unrelated update';
-    await element.updateComplete;
-    expect(input.getAttribute('aria-invalid')).toBe('true');
+    expect(input.disabled).toBe(true);
   });
 });

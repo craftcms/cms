@@ -72,7 +72,7 @@ function buildInputField(config: CopyTextPromptConfig): HTMLElement {
   const field = document.createElement('craft-input-copy') as CraftInputCopy;
   field.label = config.label ?? '';
   field.labelSrOnly = true;
-  field.modelValue = config.value;
+  field.value = config.value;
   // Legacy sizing: fit the value, clamped to [25, 50].
   field.inputSize =
     config.size ?? Math.max(Math.min(config.value.length, 50), 25);
@@ -88,7 +88,7 @@ function buildTextareaField(config: CopyTextPromptConfig): HTMLElement[] {
   const field = document.createElement('craft-textarea') as CraftTextarea;
   field.label = config.label ?? '';
   field.labelSrOnly = true;
-  field.modelValue = config.value;
+  field.value = config.value;
   field.readOnly = true;
   field.rows = config.rows ?? 2;
   if (config.id) {

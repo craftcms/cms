@@ -187,6 +187,12 @@ function cpDriftWcOnlyAllowlist(): array
         // control, which only client-side composition can know. `opened` is
         // runtime state, and `manual` would stop a menu opening on click.
         'craft-action-menu' => ['without-invoker-aria', 'opened', 'manual'],
+        // The reveal toggle owns `type`, switching it between password and
+        // text, so the server leaves it to the component.
+        'craft-input-password' => ['type'],
+        // How far a textarea grows before it scrolls is a client-side limit;
+        // server-rendered textareas use the default.
+        'craft-textarea' => ['max-rows'],
     ];
 }
 

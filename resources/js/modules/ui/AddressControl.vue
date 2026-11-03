@@ -86,21 +86,12 @@
     event: Event,
     kind: UiChangeKind
   ): void {
-    if (event instanceof CustomEvent && event.detail?.initialize) {
-      return;
-    }
-
-    if (
-      !(
-        event.target instanceof CraftInput ||
-        event.target instanceof CraftSelect
-      )
-    ) {
+    const target = event.currentTarget;
+    if (!(target instanceof CraftInput || target instanceof CraftSelect)) {
       throw new TypeError('Expected an address input event target.');
     }
 
-    const target = event.target;
-    const fieldValue = String(target.modelValue ?? '');
+    const fieldValue = target.value;
     if (value.value[field.name] === fieldValue) {
       return;
     }
@@ -221,10 +212,10 @@
         <craft-select
           v-if="field.type === 'select'"
           :name="editable ? inputName([...control.path, field.name]) : ''"
-          .modelValue="value[field.name] ?? ''"
+          .value="value[field.name] ?? ''"
           :required="editable && field.required"
           .disabled="!editable"
-          @model-value-changed="change(field, $event, 'discrete')"
+          @input="change(field, $event, 'discrete')"
         >
           <select slot="input" :autocomplete="field.autocomplete">
             <option
@@ -240,12 +231,12 @@
           v-else
           :name="editable ? inputName([...control.path, field.name]) : ''"
           type="text"
-          .modelValue="value[field.name] ?? ''"
+          .value="value[field.name] ?? ''"
           :autocomplete="field.autocomplete"
           :required="editable && field.required"
           :readonly="control.mode === 'readOnly'"
           .disabled="control.mode === 'disabled'"
-          @model-value-changed="change(field, $event, 'typing')"
+          @input="change(field, $event, 'typing')"
         />
         <div
           v-if="field.spinner"

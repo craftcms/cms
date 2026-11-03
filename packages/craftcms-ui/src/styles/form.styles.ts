@@ -85,6 +85,7 @@ export const baseComboboxStyles = css`
 `;
 
 export const baseFieldStyles = css`
+  :host([invalid]),
   :host([has-feedback-for='error']) {
     color: var(--c-color-danger-on-normal);
 

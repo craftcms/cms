@@ -201,50 +201,39 @@ export default class CraftInputColor extends CraftInput {
     };
   }
 
-  /**
-   * Parses the typed hex string into the model value.
-   */
-  override parser(value: string) {
-    return normalizeColorValue(value);
+  /** The color as hex digits, without a leading `#`. */
+  override get value(): string {
+    return super.value;
+  }
+
+  override set value(value: string) {
+    super.value = normalizeColorValue(value);
+  }
+
+  override connectedCallback() {
+    super.connectedCallback();
+    this._inputNode?.addEventListener('input', this.#normalizeTyped);
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    this._inputNode?.removeEventListener('input', this.#normalizeTyped);
   }
 
   /**
-   * Formats the model value for display in the field.
+   * Normalizes what is typed as it arrives, so a value pasted with or without
+   * a leading `#` lands the same way.
    */
-  override formatter(value: unknown) {
-    return normalizeColorValue(value);
-  }
+  #normalizeTyped = (): void => {
+    const input = this._inputNode;
 
-  /**
-   * Serializes the model value for form submission.
-   */
-  override serializer(value: unknown) {
-    return normalizeColorValue(value);
-  }
-
-  /**
-   * Restores a model value from its serialized form.
-   */
-  override deserializer(value: string) {
-    return normalizeColorValue(value);
-  }
-
-  /**
-   * Normalizes what is typed before it is parsed, so a value pasted with or
-   * without a leading `#` lands the same way.
-   */
-  override preprocessor(value: string) {
-    const normalizedValue = normalizeColorValue(value);
-
-    if (normalizedValue === value) {
-      return undefined;
+    if (input && normalizeColorValue(input.value) !== input.value) {
+      this.value = input.value;
     }
-
-    return normalizedValue;
-  }
+  };
 
   protected get _expandedHexValue(): string | null {
-    return expandedHexValue(this.modelValue);
+    return expandedHexValue(this.value);
   }
 
   /**
@@ -271,16 +260,11 @@ export default class CraftInputColor extends CraftInput {
   }
 
   protected _handlePickerInput(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const normalizedValue = normalizeColorValue(
-      colorPickerValueToHex(input.value)
+    // The picker's own `input` event then carries on out of the shadow root,
+    // with this component as its target.
+    this.value = colorPickerValueToHex(
+      (event.target as HTMLInputElement).value
     );
-    const wasHandlingUserInput = this._isHandlingUserInput;
-
-    this._isHandlingUserInput = true;
-    this.modelValue = normalizedValue;
-    this.value = normalizedValue;
-    this._isHandlingUserInput = wasHandlingUserInput;
   }
 
   protected _pickerTemplate() {

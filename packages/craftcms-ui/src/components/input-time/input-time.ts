@@ -82,8 +82,6 @@ export default class CraftInputTime extends CraftInput {
 
     if (this.forceRoundTime) {
       const rounded = this.#round(event.target.value);
-      event.target.value = rounded;
-      this.modelValue = rounded;
       this.value = rounded;
     }
 

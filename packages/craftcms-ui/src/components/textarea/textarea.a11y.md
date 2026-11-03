@@ -14,7 +14,7 @@ Shares `HasLabel` with `craft-input`; see `input.a11y.md` for label, help text a
 ### Forms and validation
 
 - [ ] Help text and validation messages are referenced by the textarea's `aria-describedby`. Per WCAG 1.3.1 (Info and Relationships) and 3.3.1 (Error Identification). Not yet verified.
-- [ ] While an error is shown, the textarea carries `aria-invalid="true"`. Lion's `ValidateMixin` sets it here, not `CraftInput`'s sync, so an `aria-invalid` on the host doesn't override it. Per WCAG 3.3.1 (Error Identification) and 4.1.2 (Name, Role, Value). Not yet verified.
+- [ ] While an error is shown, the textarea carries `aria-invalid="true"`, from the host's `invalid` property. Per WCAG 3.3.1 (Error Identification) and 4.1.2 (Name, Role, Value). Not yet verified.
 
 ### Reflow and zoom
 

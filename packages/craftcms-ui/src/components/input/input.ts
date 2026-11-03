@@ -1,14 +1,15 @@
-import {LionInput} from '@lion/ui/input.js';
 import {inputStyles} from '@src/styles/form.styles';
 import styles from './input.styles.js';
-import type {PropertyValues} from 'lit';
+import {LitElement, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {HasLabel} from '@src/mixins/HasLabel';
+import {formControlStyles, type SlotFactory} from '@src/mixins/FormControl';
+import {NativeField} from '@src/mixins/NativeField';
 
 /**
  * @summary A single-line text input, and the base every other `craft-input-*`
- * control extends. Built on Lion's input, so it brings a label, help text,
- * validation, and a `modelValue` alongside the native field.
+ * control extends. It brings a label and help text alongside a native
+ * `<input>`, whose `value`, `input` and `change` are the component's.
  *
  * Set `label` and `help-text` as attributes for plain text, or slot them when
  * they need markup. Change `type` to get any of the native input types —
@@ -24,24 +25,39 @@ import {HasLabel} from '@src/mixins/HasLabel';
  *   attribute.
  * @slot help-text - Guidance shown below the label, as an alternative to the
  *   `help-text` attribute.
- * @slot feedback - Validation messages. Lion fills this from the control's
- *   validators.
+ * @slot feedback - Validation messages. Set `invalid` alongside them.
  * @slot prefix - Content inside the control, before the input.
  * @slot suffix - Content inside the control, after the input, in its own
  *   segment. See `inline-suffix`.
  * @slot before - Content outside the control, before it.
  * @slot after - Content outside the control, after it.
  */
-export default class CraftInput extends HasLabel(LionInput) {
-  /**
-   * Visually hides the label, keeping it available to screen readers.
-   * `FormControlMixin` declares this property (`label-sr-only`), but its
-   * types leave it out.
-   */
-  declare labelSrOnly: boolean;
+export default class CraftInput extends HasLabel(NativeField(LitElement)) {
+  static override styles = [formControlStyles, inputStyles, styles];
 
-  static override get styles() {
-    return [...super.styles, inputStyles, styles];
+  /** The native input's type. Leaves the control's own when unset. */
+  @property({reflect: true}) type?: string;
+
+  /** Creates the native input when none is slotted. */
+  override get slots(): Record<string, SlotFactory> {
+    return {
+      ...super.slots,
+      input: () => {
+        const input = document.createElement('input');
+        const value = this.getAttribute('value');
+
+        input.type = this.type ?? 'text';
+        if (value) {
+          input.setAttribute('value', value);
+        }
+
+        return input;
+      },
+    };
+  }
+
+  override get _inputNode(): HTMLInputElement | undefined {
+    return super._inputNode as HTMLInputElement | undefined;
   }
 
   /** Maximum number of characters, applied to the native input's `maxLength`. */
@@ -65,10 +81,6 @@ export default class CraftInput extends HasLabel(LionInput) {
 
   /** Native virtual keyboard hint. */
   @property({attribute: false}) override inputMode = '';
-
-  /** Whether the input has failed validation. */
-  @property({attribute: 'aria-invalid', reflect: true})
-  override ariaInvalid: string | null = null;
 
   /** Whether the native input allows browser autocorrection. */
   @property({attribute: false}) autoCorrect = true;
@@ -113,7 +125,14 @@ export default class CraftInput extends HasLabel(LionInput) {
   override connectedCallback() {
     super.connectedCallback();
     this.syncNativeAttributes();
-    this.syncAriaInvalid();
+  }
+
+  protected override _pushToControl(changed: PropertyValues): void {
+    super._pushToControl(changed);
+
+    if (changed.has('type') && this.type && this._inputNode) {
+      this._inputNode.type = this.type;
+    }
   }
 
   override updated(changedProperties: PropertyValues) {
@@ -132,15 +151,6 @@ export default class CraftInput extends HasLabel(LionInput) {
     ) {
       this.syncNativeAttributes();
     }
-
-    this.syncAriaInvalid();
-  }
-
-  private syncAriaInvalid() {
-    this._inputNode?.setAttribute(
-      'aria-invalid',
-      this.ariaInvalid ?? String(this._hasFeedbackVisibleFor('error'))
-    );
   }
 
   /**

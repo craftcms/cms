@@ -3,11 +3,7 @@
   import '@craftcms/ui/components/text-expander/text-expander';
   import {useId} from 'vue';
   import type {UiChangeKind, UiControlPayload, TextControlProps} from './types';
-  import {
-    ignoreModelValueInitialization,
-    inputName,
-    serverErrorValidators,
-  } from './runtime';
+  import {inputName} from './runtime';
 
   defineProps<{
     control: UiControlPayload<TextControlProps>;
@@ -30,21 +26,22 @@
     return value === true ? 'on' : 'off';
   }
 
-  const onModelValueChanged = ignoreModelValueInitialization((event) => {
-    if (!(event.target instanceof CraftInput)) {
+  function onInput(event: Event): void {
+    const input = event.currentTarget;
+    if (!(input instanceof CraftInput)) {
       throw new TypeError('Expected a craft input event target.');
     }
 
     emit(
       'update:value',
-      String(event.target.modelValue ?? ''),
+      input.value,
       ['text', 'email', 'url', 'tel', 'password', 'number'].includes(
-        String(event.target.type)
+        input.type ?? 'text'
       )
         ? 'typing'
         : 'discrete'
     );
-  });
+  }
 </script>
 
 <template>
@@ -52,7 +49,7 @@
     v-bind="$attrs"
     :name="editable ? inputName(control.path) : ''"
     :type="control.props.inputType ?? 'text'"
-    .modelValue="String(value ?? '')"
+    .value="String(value ?? '')"
     :min="control.props.min"
     :max="control.props.max"
     :step="control.props.step"
@@ -72,8 +69,8 @@
       control.mode === 'disabled' ||
       (control.mode === 'readOnly' && control.props.inputType === 'range')
     "
-    .validators="serverErrorValidators(invalid)"
-    @model-value-changed="onModelValueChanged"
+    :invalid="invalid"
+    @input="onInput"
   >
     <input :id="inputId" slot="input" />
     <slot name="suffix">

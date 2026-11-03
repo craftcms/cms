@@ -1,13 +1,16 @@
 import styles from './textarea.styles.js';
 import {inputStyles} from '../../styles/form.styles.js';
-import {LionTextarea} from '@lion/ui/textarea.js';
+import {css, LitElement, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import autosize from 'autosize';
 import {HasLabel} from '@src/mixins/HasLabel';
+import {formControlStyles, type SlotFactory} from '@src/mixins/FormControl';
+import {NativeField} from '@src/mixins/NativeField';
 
 /**
- * @summary A multi-line text input, with the same label, help text, and
- * validation as `craft-input`.
+ * @summary A multi-line text input, with the same label and help text as
+ * `craft-input`. It grows with its content, up to `max-rows`, until it's
+ * resized by hand.
  *
  * Use it where the value is genuinely prose — a description, a note. A
  * textarea for something short trains people to expect more room than the
@@ -17,17 +20,41 @@ import {HasLabel} from '@src/mixins/HasLabel';
  * @slot help-text - Guidance shown below the label.
  * @slot feedback - Validation messages.
  */
-export default class CraftTextarea extends HasLabel(LionTextarea) {
-  static override get styles() {
-    return [...super.styles, inputStyles, styles];
+export default class CraftTextarea extends HasLabel(NativeField(LitElement)) {
+  static override styles = [
+    formControlStyles,
+    css`
+      .input-group__container > .input-group__input ::slotted(.form-control) {
+        box-sizing: content-box;
+        /* Keeps Firefox from reserving height for a horizontal scrollbar. */
+        overflow-x: hidden;
+      }
+
+      :host([disabled]) ::slotted(textarea) {
+        user-select: none;
+      }
+    `,
+    inputStyles,
+    styles,
+  ];
+
+  /** Rows shown before it grows. */
+  @property({type: Number, reflect: true}) rows = 2;
+
+  /** Rows it grows to before scrolling. */
+  @property({type: Number, attribute: 'max-rows'}) maxRows = 6;
+
+  /** Creates the native textarea when none is slotted. */
+  override get slots(): Record<string, SlotFactory> {
+    return {
+      ...super.slots,
+      input: () => document.createElement('textarea'),
+    };
   }
 
-  /**
-   * Visually hides the label, keeping it available to screen readers.
-   * `FormControlMixin` declares this property (`label-sr-only`), but its
-   * types leave it out.
-   */
-  declare labelSrOnly: boolean;
+  override get _inputNode(): HTMLTextAreaElement | undefined {
+    return super._inputNode as HTMLTextAreaElement | undefined;
+  }
 
   /** Renders the value in a monospace font, for code or structured text. */
   @property({type: Boolean, reflect: true})
@@ -35,15 +62,83 @@ export default class CraftTextarea extends HasLabel(LionTextarea) {
 
   #resizeObserver?: ResizeObserver;
   #styleObserver?: MutationObserver;
+  #intersectionObserver?: IntersectionObserver;
   #lastAutosizeHeight: string | null = null;
 
   override connectedCallback() {
     super.connectedCallback();
+
+    const input = this._inputNode;
+    if (input) {
+      autosize(input);
+      // Grows once it's laid out, which it may not be yet.
+      this.#intersectionObserver = new IntersectionObserver(() =>
+        this.resizeTextarea()
+      );
+      this.#intersectionObserver.observe(this);
+    }
+
     this.#watchForManualResize();
+  }
+
+  protected override _pushToControl(changed: PropertyValues): void {
+    super._pushToControl(changed);
+
+    if (changed.has('rows') && this._inputNode) {
+      this._inputNode.rows = this.rows;
+    }
+  }
+
+  override updated(changed: PropertyValues) {
+    super.updated(changed);
+
+    if (changed.has('value')) {
+      this.resizeTextarea();
+    }
+
+    if (changed.has('rows') || changed.has('maxRows')) {
+      this.#setMaxHeight();
+    }
+  }
+
+  /** Re-measures the height for the current value. */
+  resizeTextarea(): void {
+    if (this._inputNode) {
+      autosize.update(this._inputNode);
+    }
+  }
+
+  /** Caps the height at `max-rows`, measured from an empty textarea. */
+  #setMaxHeight(): void {
+    const input = this._inputNode;
+    if (!input) {
+      return;
+    }
+
+    const {value} = input;
+    input.value = '';
+    this.resizeTextarea();
+
+    const cs = getComputedStyle(input);
+    const lineHeight =
+      parseFloat(cs.lineHeight) || parseFloat(cs.height) / this.rows;
+    const padding = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+    const border =
+      parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth);
+    const offset = cs.boxSizing === 'border-box' ? padding + border : 0;
+
+    input.style.maxHeight = `${lineHeight * this.maxRows + offset}px`;
+    input.value = value;
+    this.resizeTextarea();
   }
 
   override disconnectedCallback() {
     super.disconnectedCallback();
+    this.#intersectionObserver?.disconnect();
+    this.#intersectionObserver = undefined;
+    if (this._inputNode) {
+      autosize.destroy(this._inputNode);
+    }
     this.#resizeObserver?.disconnect();
     this.#resizeObserver = undefined;
     this.#styleObserver?.disconnect();
@@ -61,7 +156,7 @@ export default class CraftTextarea extends HasLabel(LionTextarea) {
   };
 
   /**
-   * `autosize` (used by `LionTextarea`) auto-grows the textarea and disables
+   * `autosize` auto-grows the textarea and disables
    * native vertical resize on every recalculation, to avoid fighting a
    * manual drag. We want the opposite: auto-grow stays on until the user
    * manually resizes, then `autosize` is destroyed for good so their choice
@@ -81,9 +176,7 @@ export default class CraftTextarea extends HasLabel(LionTextarea) {
    *   both are fixed up manually right after destroying.
    */
   #watchForManualResize() {
-    // Narrowed from Lion's general form-control union — always the textarea
-    // itself for CraftTextarea.
-    const input = this._inputNode as HTMLTextAreaElement | undefined;
+    const input = this._inputNode;
     if (
       !input ||
       typeof ResizeObserver === 'undefined' ||
@@ -92,8 +185,8 @@ export default class CraftTextarea extends HasLabel(LionTextarea) {
       return;
     }
 
-    // autosize already ran once, synchronously, inside super.connectedCallback()
-    // — seed our baseline from it and undo its first resize:none stamp.
+    // autosize already ran once, synchronously, in connectedCallback() — seed
+    // our baseline from it and undo its first resize:none stamp.
     this.#lastAutosizeHeight = input.style.height;
     input.style.removeProperty('resize');
 
