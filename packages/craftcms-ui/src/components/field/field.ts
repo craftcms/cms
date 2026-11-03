@@ -8,14 +8,11 @@ import {
 import {property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
-import {FormControlMixin} from '@lion/ui/form-core.js';
-// Named explicitly so the emitted .d.ts can reference Lion's mixin
-// constructor by package specifier instead of a pnpm store path (TS2883).
-import type {} from '@open-wc/dedupe-mixin';
 import '../tooltip/tooltip.js';
 import '../button/button.js';
 import {baseFieldStyles} from '@src/styles/form.styles';
 import {FieldNotices} from '@src/mixins/FieldNotices';
+import {FormControl} from '@src/mixins/FormControl';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import styles from './field.styles.js';
 import {HasSlotController} from '@src/utilities/slot';
@@ -40,7 +37,7 @@ type FormControlTarget = HTMLElement & {
  *
  * The shell never touches the slotted input's value, validation or events —
  * it only provides the surrounding chrome and the label/description aria
- * wiring supplied by Lion's `FormControlMixin`.
+ * wiring.
  *
  * @slot input - The wrapped control. Required.
  * @slot label - The field label. Alternative to the `label` attribute.
@@ -56,12 +53,8 @@ type FormControlTarget = HTMLElement & {
  * @slot actions - Field-level actions (hide-label toggles, copy-value buttons,
  *   field settings menus), rendered as a group at the end of the heading.
  */
-export default class CraftField extends FieldNotices(
-  FormControlMixin(LitElement)
-) {
-  static override get styles() {
-    return [visuallyHiddenStyles, baseFieldStyles, styles];
-  }
+export default class CraftField extends FieldNotices(FormControl(LitElement)) {
+  static override styles = [visuallyHiddenStyles, baseFieldStyles, styles];
 
   /** Renders the required indicator inside the label. */
   @property({type: Boolean, reflect: true}) required = false;
@@ -122,13 +115,6 @@ export default class CraftField extends FieldNotices(
    */
   @property({type: String, reflect: true}) width?: 'full' | 'auto';
 
-  /**
-   * Visually hides the label, keeping it available to screen readers.
-   * `FormControlMixin` declares this property (`label-sr-only`), but its
-   * types leave it out.
-   */
-  declare labelSrOnly: boolean;
-
   private readonly __hasSlot = new HasSlotController(
     this,
     'heading-prefix',
@@ -153,7 +139,9 @@ export default class CraftField extends FieldNotices(
     this.__syncControlWidth();
     void this.updateComplete.then(() => {
       // Nested controls initialize their ARIA references after the field connects.
-      this.addToAriaLabelledBy(this._labelNode);
+      if (this._labelNode) {
+        this.addToAriaLabelledBy(this._labelNode);
+      }
       this.__wireDescribedBy();
     });
   }
@@ -203,13 +191,6 @@ export default class CraftField extends FieldNotices(
   override updated(changedProperties: PropertyValues): void {
     super.updated(changedProperties);
 
-    if (changedProperties.has('disabled')) {
-      // FormControlMixin reflects `aria-disabled` onto the slotted input, but
-      // the shell doesn't own the input (its disabled state is the input's
-      // own business), so undo that.
-      this._inputNode?.removeAttribute('aria-disabled');
-    }
-
     if (changedProperties.has('fieldset')) {
       this.__syncFieldsetSemantics();
     }
@@ -220,8 +201,8 @@ export default class CraftField extends FieldNotices(
       changedProperties.has('translatable') ||
       changedProperties.has('translationDescription')
     ) {
-      // FormControlMixin rewrites the label node's textContent when the label
-      // property changes, wiping any decorations, so re-sync afterwards.
+      // Setting `label` rewrites the label node's textContent, wiping any
+      // decorations, so re-sync afterwards.
       this.__syncLabelDecorations();
     }
   }
@@ -255,16 +236,13 @@ export default class CraftField extends FieldNotices(
     this.__syncFieldsetSemantics();
   }
 
-  protected _onLabelClick(): void {
+  protected override _onLabelClick(): void {
     this.__formControlTarget()?.focus();
   }
 
   /**
-   * Registers aria references in insertion order instead of Lion's
-   * DOM-order reordering. The reorder implementation depends on
-   * `Element.assignedSlot`, which happy-dom doesn't populate, and insertion
-   * order already matches the template order here (label; help-text,
-   * feedback, tip, warning).
+   * Hands the label to the slotted control when it manages its own
+   * references, and otherwise names the control, or the field as a group.
    */
   override addToAriaLabelledBy(
     element: HTMLElement,
@@ -284,7 +262,7 @@ export default class CraftField extends FieldNotices(
       return;
     }
 
-    super.addToAriaLabelledBy(element, {...customConfig, reorder: false});
+    super.addToAriaLabelledBy(element, customConfig);
   }
 
   /**
@@ -313,11 +291,11 @@ export default class CraftField extends FieldNotices(
       return;
     }
 
-    super.addToAriaDescribedBy(element, {...customConfig, reorder: false});
+    super.addToAriaDescribedBy(element, customConfig);
   }
 
-  // `readOnly` (attribute: `readonly`) is inherited from FormControlMixin
-  // and renders the read-only badge in the heading.
+  // `readOnly` (attribute: `readonly`) renders the read-only badge in the
+  // heading.
 
   override render() {
     return html`
@@ -444,8 +422,8 @@ export default class CraftField extends FieldNotices(
 
   /**
    * The input container, mirroring the server-side
-   * `.input.{orientation}.errors.disabled` classes while keeping Lion's
-   * `input-group` structure.
+   * `.input.{orientation}.errors.disabled` classes around the `input-group`
+   * structure.
    */
   protected override _inputGroupTemplate() {
     const classes = {
@@ -483,10 +461,10 @@ export default class CraftField extends FieldNotices(
   }
 
   /**
-   * Whether there's a label to show. Lion's `SlotMixin` always generates a
-   * light-DOM label node (empty when there's no `label`), so the node's
-   * presence says nothing — its text does. `label` reads that text back when
-   * a consumer slots their own label instead of setting the attribute.
+   * Whether there's a label to show. A light-DOM label node is always
+   * generated (empty when there's no `label`), so the node's presence says
+   * nothing — its text does. `label` reads that text back when a consumer
+   * slots their own label instead of setting the attribute.
    */
   private get __hasLabel(): boolean {
     return this.label.trim() !== '';
@@ -527,7 +505,7 @@ export default class CraftField extends FieldNotices(
   }
 
   /**
-   * FormControlMixin wires up the slotted control once, when the field
+   * FormControl wires up the slotted control once, when the field
    * connects. A control swapped in afterward, as when a server-driven UI
    * refresh replaces a hidden input with a textarea, gets the same treatment
    * here: the `form-control` class that sizes it, an id for the label, and the
@@ -540,7 +518,7 @@ export default class CraftField extends FieldNotices(
     }
 
     this.__enhancedInput = input;
-    this._enhanceLightDomClasses();
+    input.classList.add('form-control');
     input.id ||= this._inputId;
 
     if (this.__formControlTarget()) {
@@ -550,10 +528,7 @@ export default class CraftField extends FieldNotices(
       return;
     }
 
-    // Lion only reflects these lists when they change, so reassign them to
-    // write them onto the new input.
-    this._ariaLabelledNodes = [...this._ariaLabelledNodes];
-    this._ariaDescribedNodes = [...this._ariaDescribedNodes];
+    this._reflectAriaReferences();
   }
 
   private __formControlTarget(): FormControlTarget | undefined {
