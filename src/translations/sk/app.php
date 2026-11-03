@@ -527,7 +527,7 @@ return [
     'Create a new section' => 'Vytvoriť novú sekciu',
     'Create a new site' => 'Vytvoriť nový web',
     'Create a new tag group' => 'Vytvoriť novú skupinu tagov',
-    'Create a new token' => 'Create a new token',
+    'Create a new token' => 'Vytvoriť nový token',
     'Create a new user group' => 'Vytvoriť novú skupinu používateľov',
     'Create a new volume…' => 'Vytvoriť nový zväzok…',
     'Create a new {section} entry' => 'Vytvoriť nový záznam {section}',
