@@ -79,7 +79,7 @@ class EntryTypeEditViewModel extends ViewModel
                     ->blankLabel(t('No color'))
                     // The component's own palette is wider than the Color enum.
                     ->colors(array_column(Color::cases(), 'value'))),
-                Field::make(t('Icon'), IconPicker::make('icon')),
+                Field::make(t('Icon'), IconPicker::make('icon')->sets('*')),
             ])->outlet('field-layout-designer.appearance'),
             Field::make(t('UI Label Format'), Text::make('uiLabelFormat')
                 ->monospace()

@@ -109,13 +109,20 @@ export default class CraftButton extends HasShortcut(
     this.addEventListener('click', this.#handleToggleClick);
 
     this.#syncContent();
-    this.#contentObserver = new MutationObserver(() => this.#syncContent());
+    // A name can arrive after the first render, as when a tooltip labels its
+    // invoker once its overlay sets up, so content and naming changes recheck it.
+    this.#contentObserver = new MutationObserver(() => {
+      this.#syncContent();
+      if (this.hasUpdated) {
+        this.#checkAccessibleName();
+      }
+    });
     this.#contentObserver.observe(this, {
       childList: true,
       characterData: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ['slot'],
+      attributeFilter: ['slot', 'aria-label', 'aria-labelledby', 'title'],
     });
 
     // Moved while it was still waiting to be shown: disconnecting dropped the

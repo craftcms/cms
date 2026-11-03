@@ -53,6 +53,13 @@ use Laravel\Passport\Http\Controllers\DenyAuthorizationController;
 #[Singleton]
 class OAuthResources
 {
+    /**
+     * The rate limiter for client registration. Registration is anonymous and stores a client, and legitimate clients
+     * only register once per install, so each IP address can register 10 clients an hour. Apps can redefine it with
+     * `RateLimiter::for()`.
+     */
+    public const string REGISTRATION_RATE_LIMITER = 'oauth-registration';
+
     /** @var array<string, Closure(): (OAuthResource|null)> */
     private array $factories = [];
 
@@ -97,7 +104,7 @@ class OAuthResources
             ->name("$resource->routeName.")
             ->group(function (Router $router) use ($cp, $handle): void {
                 $router->name('register')->post('register', RegisterClientController::class)
-                    ->middleware([EnsureInstalled::class, PreventStaleDatabaseReads::class, 'throttle:60,1'])
+                    ->middleware([EnsureInstalled::class, PreventStaleDatabaseReads::class, 'throttle:60,1', 'throttle:'.self::REGISTRATION_RATE_LIMITER])
                     ->defaults('oauthResource', $handle);
 
                 $router->middleware(['web', 'craft', ...($cp ? [HandleInertiaRequests::class] : []), 'throttle:60,1', AuthorizeCpRequests::class])

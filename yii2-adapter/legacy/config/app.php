@@ -23,6 +23,7 @@ use craft\services\Fs;
 use craft\services\Gc;
 use craft\services\Globals;
 use craft\services\Gql;
+use craft\services\Icons;
 use craft\services\Images;
 use craft\services\ImageTransforms;
 use craft\services\Path;
@@ -118,6 +119,9 @@ return [
         ],
         'gql' => [
             'class' => Gql::class,
+        ],
+        'icons' => [
+            'class' => Icons::class,
         ],
         'images' => [
             'class' => Images::class,

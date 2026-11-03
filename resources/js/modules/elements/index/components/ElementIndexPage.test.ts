@@ -1,4 +1,4 @@
-import {createApp, h, nextTick, reactive, ref, type Slots} from 'vue';
+import {computed, createApp, h, nextTick, reactive, ref, type Slots} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import type {Table} from '@tanstack/vue-table';
 import {
@@ -143,14 +143,23 @@ async function mountPage(
     },
   });
 
+  const selection = useTableRowSelection(elementTable, {
+    selectable: true,
+    readOnly: false,
+  });
+
   page.elementIndex = {
     clearSelection: vi.fn(),
     refresh: vi.fn(),
     view: {
-      selection: useTableRowSelection(elementTable, {
-        selectable: true,
-        readOnly: false,
-      }),
+      selection,
+      selectAll: {
+        active: ref(false),
+        exceptIds: computed(() => []),
+        count: computed(() => selection.selectedIds.value.length),
+        selectAll: vi.fn(),
+        selectPage: vi.fn(),
+      },
       elementIndex: reactive({
         sources: [
           {type: 'native', key: '*', label: 'All entries'},

@@ -11,7 +11,6 @@ use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Events\ElementSourcesResolving;
 use CraftCms\Cms\Element\Exporters\Raw;
-use CraftCms\Cms\Entry\Actions\MoveToSection;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -1051,7 +1050,7 @@ it('offers Move to as the section picker on a section source', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('data.0.capabilities.movable', true)
             ->where('actions', function ($actions) use ($section): bool {
-                $move = collect($actions)->firstWhere('key', MoveToSection::class);
+                $move = collect($actions)->firstWhere('key', 'move-to-section');
 
                 return $move !== null
                     && ! isset($move['disabled'])

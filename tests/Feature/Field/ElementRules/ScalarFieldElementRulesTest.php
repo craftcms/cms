@@ -35,6 +35,9 @@ test('valid scalar field values pass element validation', function (string $hand
     ['jsonField', Json::class, [], new JsonData(['foo' => 'bar'])],
     ['plainTextField', PlainText::class, ['byteLimit' => 4], 'Okay'],
     ['colorField', Color::class, ['allowCustomColors' => false, 'palette' => [['color' => '#000000']]], '#000000'],
+    ['colorField', Color::class, ['allowCustomColors' => false, 'palette' => [['color' => '#00000080']]], '#00000080'],
+    ['colorField', Color::class, ['allowCustomColors' => true, 'allowCustomAlpha' => true], '#ff000080'],
+    ['colorField', Color::class, ['allowCustomColors' => true, 'palette' => [['color' => '#ff000080']]], '#ff000080'],
 ]);
 
 test('invalid scalar field values add element errors', function (string $handle, string $fieldType, array $settings, mixed $value) {
@@ -55,6 +58,8 @@ test('invalid scalar field values add element errors', function (string $handle,
     ['jsonField', Json::class, [], new Json()->normalizeValueFromRequest('{invalid', null)],
     ['plainTextField', PlainText::class, ['byteLimit' => 2], 'Too long'],
     ['colorField', Color::class, ['allowCustomColors' => false, 'palette' => [['color' => '#000000']]], '#ffffff'],
+    ['colorField', Color::class, ['allowCustomColors' => true], '#ff000080'],
+    ['colorField', Color::class, ['allowCustomColors' => true, 'allowCustomAlpha' => true], '#ff00008'],
 ]);
 
 test('JSON request values preserve user data and reject malformed input', function (string $raw, bool $valid) {

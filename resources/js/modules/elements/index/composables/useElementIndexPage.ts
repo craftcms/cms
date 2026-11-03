@@ -2,7 +2,10 @@ import {router, usePage} from '@inertiajs/vue3';
 import {runAction} from '@craftcms/ui/actions.mjs';
 import {onMounted, onScopeDispose} from 'vue';
 import exportIndex from '@/actions/CraftCms/Cms/Http/Controllers/Elements/ElementIndex/ExportElementIndexController';
-import {useContentIndexData} from './useContentIndexData';
+import {
+  elementIndexQueryParams,
+  useContentIndexData,
+} from './useContentIndexData';
 import {useElementIndex} from './useElementIndex';
 import {useElementIndexLoading} from './useElementIndexLoading';
 import {useElementStructureMoves} from './useElementStructureMoves';
@@ -13,7 +16,6 @@ import {
 } from './useElementIndexVisits';
 import type {ElementIndexModel} from '../types/model';
 import {saveInlineElements} from '../save-inline-elements';
-import {indexQueryCriteria} from '../index-criteria';
 import type {ElementIndexExportFormat} from '../types/exporters';
 
 interface UseElementIndexPageOptions {
@@ -79,24 +81,19 @@ export function useElementIndexPage(
     selectedIds: ReadonlyArray<string | number>,
     limit?: number
   ): Promise<void> {
-    const {baseCriteria, criteria} = indexQueryCriteria(elementIndex);
+    const params = elementIndexQueryParams(elementIndex);
 
     await runAction({
       type: 'download',
       method: 'POST',
       url: exportIndex.url(),
       body: {
-        elementType: elementIndex.elementType,
-        context: elementIndex.context,
-        source: elementIndex.source?.key,
-        baseCriteria,
+        ...params,
         criteria: {
-          search: elementIndex.search ?? '',
-          ...criteria,
+          ...params.criteria,
           ...(selectedIds.length ? {id: [...selectedIds]} : {}),
           ...(limit ? {limit} : {}),
         },
-        condition: elementIndex.currentCondition,
         sort: elementIndex.sort,
         type,
         format,

@@ -47,7 +47,7 @@ class MessageProcessor implements ProcessorInterface
         return $record;
     }
 
-    private function _filterEmptyContext(Collection $record, string $key = null): Collection
+    private function _filterEmptyContext(Collection $record, ?string $key = null): Collection
     {
         $context = Collection::make($record->get('context'))
             ->reject(fn($v, $k) => ($key === null || $k === $key) && empty($v));

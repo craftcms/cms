@@ -1,5 +1,6 @@
 import {ref} from 'vue';
 import {router} from '@inertiajs/vue3';
+import type {CancelToken} from '@inertiajs/core';
 
 import type {
   QueryParams as IndexQueryParams,
@@ -98,12 +99,15 @@ export interface IndexVisitor {
   currentQuery(replacing?: Array<string>): IndexQueryParams;
   visit(query: IndexQueryParams, options?: IndexVisitOptions): void;
   merge(params: IndexQueryParams, options?: IndexVisitOptions): void;
+  /** Drops the visit in flight, if any, so its response is never applied. */
+  cancel?(): void;
 }
 
 /** Shared query replacement and page reset for every index transport. */
 export function createElementIndexVisitor(
   readQuery: () => IndexQueryParams,
-  visit: IndexVisitor['visit']
+  visit: IndexVisitor['visit'],
+  cancel: () => void = () => {}
 ): IndexVisitor {
   function currentQuery(replacing: Array<string> = []): IndexQueryParams {
     return Object.fromEntries(
@@ -135,15 +139,18 @@ export function createElementIndexVisitor(
     visit(query, options);
   }
 
-  return {currentQuery, visit, merge};
+  return {currentQuery, visit, merge, cancel};
 }
 
 /** State- and scroll-preserving Inertia visits for a page index. */
 export function createIndexVisitor(route: ElementIndexRoute): IndexVisitor {
+  let inFlight: CancelToken | null = null;
+
   return createElementIndexVisitor(
     () => Object.fromEntries(new URLSearchParams(window.location.search)),
     (query, options = {}) => {
       let succeeded = false;
+      let token: CancelToken | null = null;
 
       router.visit(route.url(query), {
         only: options.only ?? [],
@@ -151,11 +158,23 @@ export function createIndexVisitor(route: ElementIndexRoute): IndexVisitor {
         preserveScroll: true,
         replace: options.replace ?? false,
         showProgress: !options.silent,
+        onCancelToken: (cancelToken) => {
+          token = inFlight = cancelToken;
+        },
         onSuccess: () => {
           succeeded = true;
         },
-        onFinish: () => options.onFinish?.({completed: succeeded}),
+        onFinish: () => {
+          if (inFlight === token) {
+            inFlight = null;
+          }
+          options.onFinish?.({completed: succeeded});
+        },
       });
+    },
+    () => {
+      inFlight?.cancel();
+      inFlight = null;
     }
   );
 }
@@ -223,5 +242,16 @@ export function createDetachedIndexVisitor(
     }
   }
 
-  return {...createElementIndexVisitor(() => query.value, visit), visit, query};
+  // Supersedes the request in flight: its response is dropped, as if a newer
+  // visit had started, and the query goes back to the last one applied.
+  function cancel(): void {
+    latestRequest++;
+    query.value = confirmedQuery;
+  }
+
+  return {
+    ...createElementIndexVisitor(() => query.value, visit, cancel),
+    visit,
+    query,
+  };
 }

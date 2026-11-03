@@ -61,5 +61,5 @@ export const statusColors = {
   expired: 'red',
   disabled: 'gray',
   inactive: 'gray',
-  on: 'emerald',
+  on: 'teal',
 } as const;

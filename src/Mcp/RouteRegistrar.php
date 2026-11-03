@@ -16,6 +16,7 @@ use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\PreventStaleDatabaseReads;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Mcp\Enums\McpScope;
+use CraftCms\Cms\Mcp\Http\Controllers\DiscoveryController;
 use CraftCms\Cms\Mcp\Http\Controllers\EndpointPageController;
 use CraftCms\Cms\Mcp\Http\Controllers\McpController;
 use CraftCms\Cms\Mcp\Http\Middleware\ReorderJsonAccept;
@@ -34,6 +35,9 @@ use Laravel\Passport\Http\Middleware\CheckTokenForAnyScope;
  */
 readonly class RouteRegistrar
 {
+    /** The rate limiter for discovery requests, which applies the `defaultRateLimit` config setting. */
+    public const string DISCOVERY_RATE_LIMITER = 'mcp-discovery';
+
     public function __construct(
         private Router $router,
         private EndpointConflicts $conflicts,
@@ -113,6 +117,32 @@ readonly class RouteRegistrar
 
         if ($authorizationRoute !== null) {
             $this->resources->routes('mcp');
+        }
+
+        $this->registerDiscovery($settings);
+    }
+
+    /** Registers the AI Catalog and Server Card routes for the discoverable servers, per SEP-2127. */
+    private function registerDiscovery(Settings $settings): void
+    {
+        $servers = $settings->discoverableServers();
+
+        if ($servers === []) {
+            return;
+        }
+
+        $middleware = [EnsureInstalled::class, ResolveSite::class, 'throttle:'.self::DISCOVERY_RATE_LIMITER];
+
+        $this->router->name('craft.mcp.catalog')->get('.well-known/ai-catalog.json', [DiscoveryController::class, 'catalog'])
+            ->middleware($middleware)
+            ->defaults('mcp', true);
+
+        foreach ($servers as $path => $isPublic) {
+            $this->router->name(sprintf('craft.mcp.%s.server-card', $isPublic ? 'public' : 'authorization'))
+                ->match(['GET', 'HEAD', 'OPTIONS'], "$path/server-card", [DiscoveryController::class, 'serverCard'])
+                ->middleware($middleware)
+                ->defaults('mcp', true)
+                ->defaults('endpoint', $path);
         }
     }
 

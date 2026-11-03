@@ -13,14 +13,20 @@ use CraftCms\Cms\Element\ElementActions;
 use CraftCms\Cms\Element\ElementIndexes;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\Jobs\PerformElementAction;
 use CraftCms\Cms\Element\NestedElementManager;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Http\EmbeddedNestedElementScope;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\Resources\ElementIndexResource;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Translation\I18N as TranslationI18N;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+
+use function CraftCms\Cms\craftAuth;
+use function CraftCms\Cms\t;
 
 /**
  * @since 6.0.0
@@ -43,15 +49,19 @@ class PerformElementActionController
     ): SymfonyResponse {
         $validated = $request->validate([
             'elementAction' => ['required', 'string'],
-            'elementIds' => ['required', 'array'],
+            'elementIds' => ['required_without:selectAll', 'array'],
+            'selectAll' => ['boolean'],
+            'exceptIds' => ['array'],
         ]);
 
         /** @var class-string<ElementInterface> $elementType */
         $elementType = $request->elementType();
         $actionClass = $validated['elementAction'];
-        $elementIds = $validated['elementIds'];
+        $elementIds = $validated['elementIds'] ?? [];
         $context = $request->context();
         $embedded = $context === ElementSources::CONTEXT_EMBEDDED_INDEX;
+        // Every element the index lists, other than any deselected since
+        $selectAll = ! $embedded && $request->boolean('selectAll');
 
         if ($embedded) {
             $nestedElementScope = new EmbeddedNestedElementScope($request);
@@ -117,9 +127,28 @@ class PerformElementActionController
             ->limit(null)
             ->reorder()
             ->positionedAfter(null)
-            ->positionedBefore(null)
-            ->id($elementIds)
-            ->status(null);
+            ->positionedBefore(null);
+
+        if ($selectAll) {
+            if ($exceptIds = $validated['exceptIds'] ?? []) {
+                $actionQuery->id(['not', ...$exceptIds]);
+            }
+        } else {
+            $actionQuery->id($elementIds)->status(null);
+        }
+
+        $count = $selectAll ? (clone $actionQuery)->count() : count($elementIds);
+
+        if ($count > ElementActions::SYNC_LIMIT) {
+            abort_if(! $action->supportsQueue(), 400, t('{action} can only be performed on up to {limit, number} elements at a time.', [
+                'action' => $action->getTriggerLabel(),
+                'limit' => ElementActions::SYNC_LIMIT,
+            ]));
+
+            if (! $embedded) {
+                return $this->queueAction($request, $action, $elementType, $actionQuery);
+            }
+        }
 
         if ($embedded && ! $action->isDownload()) {
             DB::beginTransaction();
@@ -211,8 +240,86 @@ class PerformElementActionController
                 : $this->asSuccess($result['message']);
         }
 
-        $responseData = new ElementIndexResource()->toArray($request);
+        $data = $this->indexData($request, $elementType, $context);
 
+        return $request->expectsJson()
+            ? $this->asJsonSuccess($result['message'], $data, $this->actionRedirect($action))
+            : $this->asSuccess($result['message'], $data, $this->actionRedirect($action));
+    }
+
+    /**
+     * Performs the action from a queue job, for more elements than a request
+     * should take on.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     */
+    private function queueAction(
+        ElementIndexRequest $request,
+        ElementActionInterface $action,
+        string $elementType,
+        ElementQueryInterface $actionQuery,
+    ): SymfonyResponse {
+        abort_if(! $action->validate(), 400, 'Element action params did not validate');
+
+        $elementIds = array_map(intval(...), (clone $actionQuery)->ids());
+        $label = $action->getTriggerLabel();
+
+        dispatch(new PerformElementAction(
+            elementType: $elementType,
+            action: ['type' => $action::class, ...$action->getSettings()],
+            elementIds: $elementIds,
+            criteria: $this->jobCriteria($actionQuery),
+            userId: (int) craftAuth()->id(),
+            description: $this->i18N->prep('{action} ({count, number} {type})', [
+                'action' => $label,
+                'count' => count($elementIds),
+                'type' => $elementType::pluralLowerDisplayName(),
+            ]),
+        ));
+
+        $message = t('{action} will run in the background for {count, number} {type}.', [
+            'action' => $label,
+            'count' => count($elementIds),
+            'type' => $elementType::pluralLowerDisplayName(),
+        ]);
+        $data = [...$this->indexData($request, $elementType, $request->context()), 'queued' => true];
+
+        return $request->expectsJson()
+            ? $this->asJsonSuccess($message, $data)
+            : $this->asSuccess($message, $data);
+    }
+
+    /**
+     * The criteria a queue job needs to find the action's elements again by
+     * their IDs, such as their site, or whether they're drafts or trashed.
+     * Filters and ordering are left behind, since the IDs already reflect them.
+     *
+     * @return array<string, mixed>
+     */
+    private function jobCriteria(ElementQueryInterface $query): array
+    {
+        $isPlain = function (mixed $value) use (&$isPlain): bool {
+            return is_array($value)
+                ? array_all($value, $isPlain)
+                : $value === null || is_scalar($value);
+        };
+
+        return array_filter(
+            Arr::except($query->getCriteria(), ['id', 'limit', 'offset', 'orderBy', 'search', 'fixedOrder', 'inReverse']),
+            $isPlain,
+        );
+    }
+
+    /**
+     * The index data an action's response carries, so the index can refresh
+     * its sources' badge counts.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     * @return array<string, mixed>
+     */
+    private function indexData(ElementIndexRequest $request, string $elementType, string $context): array
+    {
+        $responseData = new ElementIndexResource()->toArray($request);
         $formatter = $this->i18N->getFormatter();
 
         foreach ($this->elementSources->getSources($elementType, $context) as $source) {
@@ -225,9 +332,7 @@ class PerformElementActionController
                 : null;
         }
 
-        return $request->expectsJson()
-            ? $this->asJsonSuccess($result['message'], $responseData, $this->actionRedirect($action))
-            : $this->asSuccess($result['message'], $responseData, $this->actionRedirect($action));
+        return $responseData;
     }
 
     /**

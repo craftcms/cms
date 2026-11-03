@@ -16,6 +16,7 @@
   import '@craftcms/ui/components/resize-grips/resize-grips';
   import type {ResizeGripsSize} from '@craftcms/ui';
   import {useResizableBox} from '@/common/composables/useResizableBox';
+  import {useAnimatedBoxSize} from '@/common/composables/useAnimatedBoxSize';
 
   export interface ModalProps {
     isActive?: boolean;
@@ -165,6 +166,16 @@
     active: () => props.isActive,
     fixedHeight: () => Boolean(props.height),
   });
+  const sizeAnimation = useAnimatedBoxSize({
+    target: content,
+    enabled: () => reducedMotion.value !== 'reduce',
+  });
+
+  /** A size the user picked takes effect at once, not eased into. */
+  function resize(size: ResizeGripsSize): void {
+    sizeAnimation.settle();
+    resizer.applySize(size);
+  }
 
   const widthClass = computed(() => {
     return `w-${props.width}`;
@@ -221,8 +232,7 @@
           <craft-resize-grips
             .target="content"
             @craft-resize="
-              (event: CustomEvent<ResizeGripsSize>) =>
-                resizer.applySize(event.detail)
+              (event: CustomEvent<ResizeGripsSize>) => resize(event.detail)
             "
           ></craft-resize-grips>
         </div>

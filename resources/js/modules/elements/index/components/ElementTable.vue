@@ -281,6 +281,9 @@
       </div>
       <FlexRender v-else :cell="cell" />
     </template>
+    <template #header-after v-if="$slots['header-after']"
+      ><slot name="header-after"
+    /></template>
     <template #empty-row v-if="$slots['empty-row']"
       ><slot name="empty-row"
     /></template>
