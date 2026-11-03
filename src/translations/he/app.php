@@ -527,7 +527,7 @@ return [
     'Create a new section' => 'צור סקשן חדש',
     'Create a new site' => 'צור אתר חדש',
     'Create a new tag group' => 'צור קבוצת תגיות חדשה',
-    'Create a new token' => 'Create a new token',
+    'Create a new token' => 'יצירת אסימון חדש',
     'Create a new user group' => 'צור קבוצת משתמשים חדשה',
     'Create a new volume…' => 'צור אמצעי אחסון חדש…',
     'Create a new {section} entry' => 'צור רשומת {section} חדשה',
