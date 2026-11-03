@@ -46,9 +46,11 @@ import {
   previewEditorOffset,
 } from '@/modules/elements/live-preview/previews';
 import {containerSlideouts} from './support';
+import {setElementAttributes} from '@/common/craft/attributes';
+import {resolveElement} from '@/common/utils/dom';
+import {jq} from '@/common/utils/jquery';
 
 declare const Craft: any;
-declare const $: any;
 
 // Re-exported because `cp-screen-slideout.ts` and legacy consumers reach for
 // it here; the lookup itself lives with the rest of the cross-stack
@@ -77,7 +79,7 @@ sharedLiveRegion.setAttribute('role', 'status');
 export interface SlideoutSettings extends GarnishBaseSettings {
   /** Tag name for the generated container element. Default `'div'`. */
   containerElement: string;
-  /** Attributes applied to the container element via jQuery's `$(tag, attrs)`. */
+  /** Attributes applied to the container element. */
   containerAttributes: Record<string, string | number | boolean>;
   /** Whether {@link Slideout.open} should be called immediately from `init`. Default `true`. */
   autoOpen: boolean;
@@ -94,6 +96,21 @@ export interface SlideoutSettings extends GarnishBaseSettings {
 
 type SlideoutContents = string | Node | ArrayLike<Node> | null;
 type SlideoutTrigger = string | Element | ArrayLike<Element> | null;
+
+function contentNodes(contents: SlideoutContents | undefined): Node[] {
+  if (contents == null) {
+    return [];
+  }
+  if (typeof contents === 'string') {
+    const template = document.createElement('template');
+    template.innerHTML = contents;
+    return Array.from(template.content.childNodes);
+  }
+  if (contents instanceof Node) {
+    return [contents];
+  }
+  return Array.from(contents);
+}
 
 /**
  * A slideout panel. Builds a container element around passed-in contents,
@@ -165,11 +182,11 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
     // Park it offscreen on the way out. The shared stack repositions what's
     // left, but a panel it no longer knows about has to see itself off.
     if (panel._inPreview) {
-      panel.$container.css('inset-inline-start', '100%');
+      panel.container!.style.insetInlineStart = '100%';
     } else if (panel.useMobileStyles) {
-      panel.$container.css('top', '100vh');
+      panel.container!.style.top = '100vh';
     } else {
-      panel.$container.css(Slideout.positionProp(), '100vw');
+      panel.container!.style.setProperty(Slideout.positionProp(), '100vw');
     }
 
     unregisterPanel(panel);
@@ -186,14 +203,33 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
     syncPanelStack();
   }
 
-  // --- Instance state (jQuery-typed; see the class docblock for why) --------
+  // --- Instance state ----------------------------------------------------
 
-  $outerContainer: any = null;
-  $container: any = null;
-  $shade: any = null;
-  /** Plain element, not a jQuery collection — see the class docblock. */
+  outerContainer: HTMLElement | null = null;
+  container: HTMLElement | null = null;
+  shade: HTMLElement | null = null;
   $liveRegion: HTMLElement | null = null;
-  $triggerElement: any = null;
+  triggerElement: HTMLElement | null = null;
+
+  /** The outer container as a jQuery collection, for legacy code. */
+  get $outerContainer(): any {
+    return this.outerContainer ? jq()?.(this.outerContainer) : null;
+  }
+
+  /** The container as a jQuery collection, for legacy code. */
+  get $container(): any {
+    return this.container ? jq()?.(this.container) : null;
+  }
+
+  /** The shade as a jQuery collection, for legacy code. */
+  get $shade(): any {
+    return this.shade ? jq()?.(this.shade) : null;
+  }
+
+  /** The trigger element as a jQuery collection, for legacy code. */
+  get $triggerElement(): any {
+    return this.triggerElement ? jq()?.(this.triggerElement) : null;
+  }
   isOpen = false;
   isOpening = false;
   useMobileStyles: boolean | null = null;
@@ -203,6 +239,7 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
 
   /** Fallback timeouts scheduled by {@link _afterTransition}, in case their transitionend event never fires. */
   _transitionTimeouts: Set<ReturnType<typeof setTimeout>> = new Set();
+  _transitionListeners = new Map<(ev: Event) => void, HTMLElement>();
 
   /** Stops sizing this to Live Preview's editor pane. See {@link open}. */
   _stopFollowingPreview: (() => void) | null = null;
@@ -211,7 +248,7 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
 
   /** The element the stack moves, reflows, and fires lifecycle events on. */
   get element(): HTMLElement {
-    return this.$container[0];
+    return this.container!;
   }
 
   /**
@@ -225,7 +262,7 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
   position(index: number, total: number): void {
     if (this._inPreview) {
       // Over a preview's editor, each covers the one before it.
-      this.$container.css('inset-inline-start', 0);
+      this.container!.style.insetInlineStart = '0';
 
       return;
     }
@@ -233,12 +270,12 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
     if (this.useMobileStyles) {
       // A full-screen sheet slides up from the bottom; there's no room beside
       // it to stagger anything into.
-      this.$container.css('top', 0);
+      this.container!.style.top = '0';
 
       return;
     }
 
-    this.$container.css(
+    this.container!.style.setProperty(
       Slideout.positionProp(),
       `${45 * ((index + 1) / total)}vw`
     );
@@ -292,32 +329,32 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
   ): void {
     this.setSettings(settings, Slideout.defaults);
 
-    this.$outerContainer = $('<div/>', {
-      class: 'slideout-container cp-legacy hidden',
-    });
-    this.$container = $(
-      `<${this.settings!.containerElement}/>`,
-      this.settings!.containerAttributes
-    )
-      .attr('data-slideout', '')
-      .addClass('slideout cp-legacy')
-      .append(contents)
-      .data('slideout', this)
-      .appendTo(this.$outerContainer);
+    const outerContainer = document.createElement('div');
+    outerContainer.className = 'slideout-container cp-legacy hidden';
+    this.outerContainer = outerContainer;
 
-    containerSlideouts.set(this.$container[0], this);
+    const container = document.createElement(this.settings!.containerElement);
+    setElementAttributes(container, this.settings!.containerAttributes);
+    container.setAttribute('data-slideout', '');
+    container.classList.add('slideout', 'cp-legacy');
+    container.append(...contentNodes(contents));
+    outerContainer.append(container);
+    this.container = container;
+    jq()?.(container).data('slideout', this);
 
-    if (this.$container.attr('id')) {
-      Slideout.instances[this.$container.attr('id')] = this;
+    containerSlideouts.set(container, this);
+
+    if (container.id) {
+      Slideout.instances[container.id] = this;
     }
 
-    addModalAttributes(this.$outerContainer[0]);
+    addModalAttributes(outerContainer);
 
-    trapFocusWithin(this.$container[0]);
+    trapFocusWithin(container);
 
     // `appendChild` moves the one shared node, same as `appendTo` did.
     this.$liveRegion = sharedLiveRegion;
-    this.$container[0].appendChild(this.$liveRegion);
+    container.appendChild(this.$liveRegion);
 
     if (this.settings!.autoOpen) {
       this.open();
@@ -339,24 +376,26 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
     this.useMobileStyles =
       !!previewEditor || isMobileBrowser() || document.body.clientWidth < 600;
 
-    this.$outerContainer.removeClass('so-mobile so-lp');
-    this.$container.removeClass('so-mobile so-lp');
+    const outerContainer = this.outerContainer!;
+    const container = this.container!;
+    outerContainer.classList.remove('so-mobile', 'so-lp');
+    container.classList.remove('so-mobile', 'so-lp');
 
     if (previewEditor) {
-      this.$outerContainer.addClass('so-lp');
-      this.$container.addClass('so-lp');
+      outerContainer.classList.add('so-lp');
+      container.classList.add('so-lp');
     } else if (this.useMobileStyles) {
-      this.$container.addClass('so-mobile');
+      container.classList.add('so-mobile');
     }
 
     // One shade, shared with every other open panel — Vue ones included —
     // and owned by the panel stack, which shows it, hides it, and routes
-    // clicks on it to the topmost panel's `handleShadeClick()`. Still kept on
-    // `$shade` because that's public API (see the class docblock), and
-    // because `updateWidthsForPreviewPane()` resizes it.
-    this.$shade = $(shadeElement());
+    // clicks on it to the topmost panel's `handleShadeClick()`. Kept on
+    // `shade` because `updateWidthsForPreviewPane()` resizes it.
+    this.shade = shadeElement();
 
-    this.$outerContainer.appendTo(bod).removeClass('hidden');
+    bod.append(outerContainer);
+    outerContainer.classList.remove('hidden');
 
     if (previewEditor) {
       // keep the width equal to the edit pane width
@@ -387,20 +426,17 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
     this.isOpening = true;
 
     if (this._inPreview) {
-      this.$container.css({top: '', 'inset-inline-start': '100%'});
+      container.style.top = '';
+      container.style.insetInlineStart = '100%';
     } else if (this.useMobileStyles) {
-      this.$container.css({
-        top: '100vh',
-        [Slideout.positionProp()]: '',
-      });
+      container.style.top = '100vh';
+      container.style.setProperty(Slideout.positionProp(), '');
     } else {
-      this.$container.css({
-        top: '',
-        [Slideout.positionProp()]: '100vw',
-      });
+      container.style.top = '';
+      container.style.setProperty(Slideout.positionProp(), '100vw');
     }
 
-    this._afterTransition(this.$container, () => {
+    this._afterTransition(container, () => {
       this.isOpening = false;
       this.setFocusWithin();
     });
@@ -410,7 +446,7 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
     // Before `addPanel`: registering with the stack is what hides the rest of
     // the page from assistive technology, and that needs this layer already
     // in place to know which container to leave alone.
-    uiLayerManager().addLayer(this.$outerContainer[0]);
+    uiLayerManager().addLayer(outerContainer);
 
     // Positions the panel (transitioning it in from the offscreen position
     // set above), shows the shade, and locks body scroll.
@@ -427,25 +463,26 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
   }
 
   setFocusWithin(): void {
-    setFocusWithin(this.$container[0]!);
+    setFocusWithin(this.container!);
   }
 
   /** Sizes the slideout to Live Preview's editor pane, which it covers. */
   updateWidthsForPreviewPane(editor: HTMLElement): void {
     const width = editor.offsetWidth;
     const start = previewEditorOffset(editor);
-    if (this.$shade) {
-      this.$shade.width(width);
-      this.$shade[0]!.style.insetInlineStart = `${start}px`;
+    if (this.shade) {
+      this.shade.style.width = `${width}px`;
+      this.shade.style.insetInlineStart = `${start}px`;
     }
-    this.$outerContainer.css({
-      width: `${width}px`,
-      '--lp-editor-start': `${start}px`,
-    });
+    this.outerContainer!.style.width = `${width}px`;
+    this.outerContainer!.style.setProperty('--lp-editor-start', `${start}px`);
   }
 
   setTriggerElement(trigger: SlideoutTrigger): void {
-    this.$triggerElement = $(trigger);
+    this.triggerElement =
+      typeof trigger === 'string'
+        ? document.querySelector<HTMLElement>(trigger)
+        : resolveElement(trigger);
   }
 
   close(): void {
@@ -464,20 +501,20 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
     // this panel isn't necessarily the topmost layer any more. Before
     // `removePanel`, which is what restores the background layers — it reads
     // the highest remaining modal layer to decide what to un-hide.
-    uiLayerManager().removeLayer(this.$outerContainer[0]);
+    uiLayerManager().removeLayer(this.outerContainer!);
 
     // Hides the shade if this was the last panel open, and repositions the
     // rest of the stack.
     Slideout.removePanel(this);
-    this.$shade = null;
+    this.shade = null;
 
-    this._afterTransition(this.$container, () => {
-      this.$outerContainer.addClass('hidden');
+    this._afterTransition(this.container!, () => {
+      this.outerContainer?.classList.add('hidden');
       this.trigger('close');
     });
 
-    if (this.$triggerElement?.length) {
-      let focusTarget = $(this.$triggerElement)[0]; // Ensure we convert from jQuery to DOM element
+    if (this.triggerElement) {
+      let focusTarget: HTMLElement | null = this.triggerElement;
 
       // Check if target is still visible
       if (!focusTarget.checkVisibility()) {
@@ -485,7 +522,7 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
         const disclosure = focusTarget.closest('.menu--disclosure');
         if (disclosure) {
           const disclosureId = disclosure.getAttribute('id');
-          focusTarget = document.querySelector(
+          focusTarget = document.querySelector<HTMLElement>(
             `[aria-controls="${disclosureId}"]`
           );
         } else {
@@ -495,7 +532,7 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
 
       if (focusTarget) {
         setTimeout(() => {
-          focusTarget.focus();
+          focusTarget!.focus();
         }, 150);
       }
     }
@@ -506,14 +543,13 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
    * expected duration if no event is emitted, or immediately if the user
    * prefers reduced motion.
    */
-  _afterTransition($target: any, callback: () => void): void {
+  _afterTransition(target: HTMLElement, callback: () => void): void {
     // If a user prefers reduced motion, perform the callback immediately
     if (prefersReducedMotion()) {
       callback();
       return;
     }
 
-    const target = $target[0];
     const styles = getComputedStyle(target);
     const properties = styles.transitionProperty
       .split(',')
@@ -549,7 +585,8 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
 
       clearTimeout(timeout);
       this._transitionTimeouts.delete(timeout);
-      $target.off('transitionend.slideout', onTransitionEnd);
+      target.removeEventListener('transitionend', onTransitionEnd);
+      this._transitionListeners.delete(onTransitionEnd);
       callback();
     };
     const onTransitionEnd = (ev: Event) => {
@@ -558,7 +595,8 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
       }
     };
 
-    $target.on('transitionend.slideout', onTransitionEnd);
+    target.addEventListener('transitionend', onTransitionEnd);
+    this._transitionListeners.set(onTransitionEnd, target);
     timeout = setTimeout(complete, transitionDuration + 50);
     this._transitionTimeouts.add(timeout);
   }
@@ -572,7 +610,10 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
     this._transitionTimeouts.forEach(clearTimeout);
     this._transitionTimeouts.clear();
 
-    this.$container.off('transitionend.slideout');
+    for (const [listener, target] of this._transitionListeners) {
+      target.removeEventListener('transitionend', listener);
+    }
+    this._transitionListeners.clear();
   }
 
   /**
@@ -586,16 +627,16 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
 
     // Only drop the reference — the shade is shared with every other panel
     // and belongs to the stack, so removing it would take it away from them.
-    this.$shade = null;
+    this.shade = null;
 
-    this.$outerContainer.remove();
+    this.outerContainer?.remove();
 
-    if (this.$container) {
-      containerSlideouts.delete(this.$container[0]);
+    if (this.container) {
+      containerSlideouts.delete(this.container);
     }
 
-    this.$outerContainer = null;
-    this.$container = null;
+    this.outerContainer = null;
+    this.container = null;
 
     // Must delete in place — `Craft.Slideout.instances` shares this object
     // reference (see `index.ts`), so a reassignment would strand it.
