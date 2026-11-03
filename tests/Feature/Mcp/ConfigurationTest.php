@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\CustomNavigations;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
@@ -96,6 +97,97 @@ it('explains that workflows require Craft Pro', function (): void {
     ($this->call)('list', ['type' => 'workflows'])
         ->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'The workflows configuration type requires Craft Pro. This site runs Craft Team.');
+});
+
+it('manages CP navigations as the trees the navigation builder edits', function (): void {
+    $editors = UserGroup::factory()->create(['name' => 'Editors', 'handle' => 'editors']);
+    UserGroup::factory()->create(['name' => 'Authors', 'handle' => 'authors']);
+    $navigations = app(CustomNavigations::class);
+
+    $tree = ($this->operate)('get', 'cp-navigations', ['identifier' => ['userGroup' => 'default']])['item']['tree'];
+    $first = $tree[0]['id'];
+    $tree[0]['hidden'] = true;
+
+    expect(($this->operate)('update', 'cp-navigations', ['identifier' => ['userGroup' => 'default'], 'attributes' => ['tree' => $tree]])['item']['changes'])->toBe('1 hidden')
+        ->and($navigations->getDefault()['items'][$first])->toBe(['hidden' => true]);
+
+    ($this->operate)('create', 'cp-navigations', ['attributes' => ['userGroup' => 'authors']]);
+    $groupTree = ($this->operate)('get', 'cp-navigations', ['identifier' => ['userGroup' => 'authors']])['item']['tree'];
+    $groupTree[0]['label'] = 'Home';
+    $created = ($this->operate)('create', 'cp-navigations', ['attributes' => ['userGroup' => $editors->uid, 'tree' => $groupTree, 'position' => 1]])['item'];
+
+    expect($created)->toMatchArray(['userGroup' => 'editors', 'position' => 1, 'changes' => '1 edited'])
+        ->and($created['tree'][0]['label'])->toBe('Home')
+        ->and(array_column(($this->operate)('list', 'cp-navigations')['items'], 'userGroup'))->toBe(['editors', 'authors', 'default']);
+
+    ($this->call)('create', ['type' => 'cp-navigations', 'attributes' => ['userGroup' => 'editors']])
+        ->assertJsonPath('result.isError', true)
+        ->assertJsonPath('result.content.0.text', 'The “Editors” user group already has a navigation. Update it instead.');
+
+    expect(($this->operate)('update', 'cp-navigations', ['identifier' => ['userGroup' => 'editors'], 'attributes' => ['position' => 2]])['item']['position'])->toBe(2)
+        ->and(($this->operate)('delete', 'cp-navigations', ['identifier' => ['userGroup' => 'editors']]))->toBe(['type' => 'cp-navigations', 'deleted' => true])
+        ->and($navigations->getGroupNavigation($editors->uid))->toBeNull()
+        ->and(($this->operate)('delete', 'cp-navigations', ['identifier' => ['userGroup' => 'default']]))->toBe(['type' => 'cp-navigations', 'deleted' => true])
+        ->and($navigations->getDefault())->toBe([]);
+});
+
+it('builds user group CP navigations on the default navigation', function (): void {
+    UserGroup::factory()->create(['handle' => 'editors']);
+    $default = ($this->operate)('get', 'cp-navigations', ['identifier' => ['userGroup' => 'default']])['item']['tree'];
+    $default[] = ['id' => 'custom-docs', 'kind' => 'item', 'source' => 'custom', 'type' => 'link', 'label' => 'Docs', 'url' => 'https://craftcms.com/docs'];
+    ($this->operate)('update', 'cp-navigations', ['identifier' => ['userGroup' => 'default'], 'attributes' => ['tree' => $default]]);
+
+    $created = ($this->operate)('create', 'cp-navigations', ['attributes' => ['userGroup' => 'editors']])['item'];
+    $tree = $created['tree'];
+    $docs = array_search('custom-docs', array_column($tree, 'id'), true);
+    $tree[$docs]['hidden'] = true;
+    $hidden = ($this->operate)('update', 'cp-navigations', ['identifier' => ['userGroup' => 'editors'], 'attributes' => ['tree' => $tree]])['item'];
+
+    expect($created['changes'])->toBe('No changes')
+        ->and($docs)->not->toBeFalse()
+        ->and($hidden['changes'])->toBe('1 hidden')
+        ->and(app(CustomNavigations::class)->getGroupNavigation(UserGroup::query()->where('handle', 'editors')->firstOrFail()->uid)['nav'])
+        ->toBe(['items' => ['custom-docs' => ['hidden' => true]]]);
+
+    $default[0]['label'] = 'Home';
+    ($this->operate)('update', 'cp-navigations', ['identifier' => ['userGroup' => 'default'], 'attributes' => ['tree' => $default]]);
+
+    expect(($this->operate)('get', 'cp-navigations', ['identifier' => ['userGroup' => 'editors']])['item']['tree'][0]['label'])->toBe('Home');
+});
+
+it('keeps user group navigations to Craft Pro and CP navigations to Craft Team', function (): void {
+    UserGroup::factory()->create(['handle' => 'editors']);
+    Edition::set(Edition::Team);
+
+    expect(($this->operate)('get', 'cp-navigations', ['identifier' => ['userGroup' => 'default']])['item']['tree'])->not->toBeEmpty()
+        ->and(array_column(($this->operate)('list', 'cp-navigations')['items'], 'userGroup'))->toBe(['default']);
+
+    ($this->call)('create', ['type' => 'cp-navigations', 'attributes' => ['userGroup' => 'editors']])
+        ->assertJsonPath('result.isError', true)
+        ->assertJsonPath('result.content.0.text', 'User group navigations require Craft Pro. This site runs Craft Team.');
+
+    Edition::set(Edition::Solo);
+
+    expect(collect(($this->call)('schema')->json('result.structuredContent.types'))->keyBy('type')['cp-navigations'])
+        ->toBe(['type' => 'cp-navigations', 'operations' => [], 'requiredEdition' => 'Craft Team']);
+});
+
+it('refuses CP navigation links and ids the navigation builder would refuse', function (): void {
+    $tree = ($this->operate)('get', 'cp-navigations', ['identifier' => ['userGroup' => 'default']])['item']['tree'];
+    $tree[] = ['id' => 'custom-test', 'kind' => 'item', 'source' => 'custom', 'type' => 'link', 'label' => 'Bad', 'url' => 'javascript:alert(1)'];
+
+    ($this->call)('update', ['type' => 'cp-navigations', 'identifier' => ['userGroup' => 'default'], 'attributes' => ['tree' => $tree]])
+        ->assertJsonPath('result.isError', true)
+        ->assertJsonPath('result.content.0.text', 'The nav.'.(count($tree) - 1).'.url field is invalid.');
+
+    $tree = array_slice($tree, 0, -1);
+    $tree[] = ['id' => 'custom-news-page', 'kind' => 'item', 'source' => 'custom', 'type' => 'link', 'label' => 'News', 'url' => 'content/entries'];
+
+    ($this->call)('update', ['type' => 'cp-navigations', 'identifier' => ['userGroup' => 'default'], 'attributes' => ['tree' => $tree]])
+        ->assertJsonPath('result.isError', true)
+        ->assertJsonPath('result.content.0.text', 'The custom node “custom-news-page” needs an id of `custom-` followed by lowercase letters and digits, such as `custom-7f3a`.');
+
+    expect(app(CustomNavigations::class)->getDefault())->toBe([]);
 });
 
 it('refuses asset transformer changes Craft doesn’t allow', function (): void {

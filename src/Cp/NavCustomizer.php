@@ -70,6 +70,9 @@ class NavCustomizer
     /** The parent that the top level of the nav goes by. */
     public const string ROOT = 'root';
 
+    /** What the ids of sections and links the builder adds look like. */
+    public const string CUSTOM_ID_PATTERN = '/^custom-[a-z0-9]+$/';
+
     /**
      * The nav with a customization applied, for a user. Hidden items are left
      * out, and so are sections and links whose user condition the user doesn't
@@ -385,7 +388,7 @@ class NavCustomizer
         foreach ($items as $id => $config) {
             // The id becomes a project config key, so it's held to what the
             // builder gives new items.
-            if (isset($nodes[$id]) || ! isset($config['type']) || ! preg_match('/^custom-[a-z0-9]+$/', (string) $id)) {
+            if (isset($nodes[$id]) || ! isset($config['type']) || ! preg_match(self::CUSTOM_ID_PATTERN, (string) $id)) {
                 continue;
             }
 
