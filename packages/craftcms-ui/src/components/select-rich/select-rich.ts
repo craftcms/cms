@@ -112,11 +112,16 @@ export default class CraftSelectRich extends FormAssociated(
     }
   }
 
+  #defaultValueRead = false;
+
   override connectedCallback() {
     super.connectedCallback();
 
     this.registrationComplete.then(() => {
-      this.#defaultValue = this.#value;
+      if (!this.#defaultValueRead) {
+        this.#defaultValue = this.#value;
+        this.#defaultValueRead = true;
+      }
       this.#syncInput();
     });
   }
