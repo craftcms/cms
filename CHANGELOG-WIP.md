@@ -149,6 +149,10 @@
 - Added the `mcp:read`, `mcp:write`, and `mcp:admin` OAuth scopes for the authenticated MCP server. Users choose an access level when they authorize an MCP client, and it defaults to read only. ([#20080](https://github.com/craftcms/cms/pull/20080))
 - MCP clients that users have authorized are listed on their My Account → Tokens screen, where they can be revoked. ([#20291](https://github.com/craftcms/cms/pull/20291))
 - The OAuth authorization page now shows where the user will be redirected, and can no longer be displayed in a frame. ([#20105](https://github.com/craftcms/cms/pull/20105))
+- The OAuth authorization page now names the client in its title, and shows the host the user will be redirected to. ([#20296](https://github.com/craftcms/cms/pull/20296))
+- Names of dynamically-registered OAuth clients are now limited to 64 characters, with invisible, private-use, and unassigned characters removed, and names that look like “Craft”, “Craft CMS”, the system name, or a site name are rejected. ([#20296](https://github.com/craftcms/cms/pull/20296))
+- Dynamic OAuth client registration is now limited to 10 clients per IP address per hour, via the `oauth-registration` rate limiter. ([#20303](https://github.com/craftcms/cms/pull/20303))
+- Garbage collection now deletes expired and revoked OAuth authorization codes and tokens, and registered OAuth clients that were revoked or never authorized. ([#20303](https://github.com/craftcms/cms/pull/20303))
 - The HTTP MCP servers are discoverable via `/.well-known/ai-catalog.json` and a Server Card at `<endpoint>/server-card`, per [SEP-2127](https://modelcontextprotocol.io/seps/2127-mcp-server-cards). Servers on control panel URLs are never advertised, and the authenticated server is only advertised when public registration is enabled. Discovery requests are subject to the `defaultRateLimit` config setting. ([#20283](https://github.com/craftcms/cms/pull/20283))
 - Added the `mcp:serve` command, which serves the authenticated MCP server over stdio as a named user. ([#19846](https://github.com/craftcms/cms/pull/19846))
 - Added the `guidance.get`, `skills.list`, and `skills.get` MCP tools, which return the AI guidance and skills. ([#20109](https://github.com/craftcms/cms/pull/20109))
@@ -387,6 +391,9 @@
 - Deprecated `craft\events\DefineFieldActionsEvent`. `CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentActionMenuItemsResolving` should be used instead.
 
 #### Helpers
+- Added `CraftCms\Cms\Support\Str::areConfusable()`.
+- Added `CraftCms\Cms\Support\Str::stripPrivateAndUnassignedChars()`.
+- `CraftCms\Cms\Support\Str::invisibleCharsPattern()` now also matches bidirectional embedding, override, and isolate characters; non-whitespace control characters; the word joiner, function application, combining grapheme joiner, and Mongolian vowel separator characters; and blank Hangul filler and braille characters, so uploaded file names and search keywords no longer keep them.
 - Removed `CraftCms\Cms\FieldLayout\FieldLayoutComponent::conditionalSettingsHtml()`.
 - Added `CraftCms\Cms\Support\Arr`.
 - Added `CraftCms\Cms\Support\DateTimeHelper`.
