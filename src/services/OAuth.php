@@ -351,10 +351,31 @@ class OAuth extends Component
 
     public function issuer(string $resource): string
     {
-        return $this->url('', $resource);
+        return $this->cpUrl('', $resource);
     }
 
+    /**
+     * Returns the URL to an OAuth endpoint for the current request.
+     *
+     * Front-end requests get a site action URL, so the authorization flow can stay on the front end. Discovery
+     * metadata and the issuer always use the control panel URLs, so they don’t vary by request.
+     *
+     * @param string $endpoint
+     * @param string $resource
+     * @return string
+     */
     public function url(string $endpoint, string $resource): string
+    {
+        $request = Craft::$app->getRequest();
+        if (!$request->getIsConsoleRequest() && !$request->getIsCpRequest()) {
+            $this->getResource($resource);
+            return UrlHelper::actionUrl("oauth/$endpoint", ['resource' => $resource]);
+        }
+
+        return $this->cpUrl($endpoint, $resource);
+    }
+
+    private function cpUrl(string $endpoint, string $resource): string
     {
         $this->getResource($resource);
         return UrlHelper::removeParam(UrlHelper::cpUrl("oauth/$resource/$endpoint"), 'site');
@@ -380,9 +401,9 @@ class OAuth extends Component
     {
         return [
             'issuer' => $this->issuer($resource),
-            'authorization_endpoint' => $this->url('authorize', $resource),
-            'token_endpoint' => $this->url('token', $resource),
-            'registration_endpoint' => $this->url('register', $resource),
+            'authorization_endpoint' => $this->cpUrl('authorize', $resource),
+            'token_endpoint' => $this->cpUrl('token', $resource),
+            'registration_endpoint' => $this->cpUrl('register', $resource),
             'token_endpoint_auth_methods_supported' => ['none'],
             'response_types_supported' => ['code'],
             'grant_types_supported' => ['authorization_code', 'refresh_token'],

@@ -450,6 +450,7 @@ class FileHelperTest extends TestCase
             ['testing', '\'testing\'', []],
             ['testing', '“testing”', []],
             ['testing', '‘testing’', []],
+            ['invoicefdp.exe', "invoice\u{202E}fdp.exe", []],
         ];
     }
 

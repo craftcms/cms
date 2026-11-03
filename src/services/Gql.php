@@ -941,7 +941,7 @@ class Gql extends Component
                 $actionTrigger = Craft::$app->getConfig()->getGeneral()->actionTrigger;
                 return rtrim($baseUrl, '/') . "/$actionTrigger/graphql/api";
             },
-            'consentDescription' => 'This client can query and change content through the GraphQL API at the access level you choose, within your permissions.',
+            'consentDescription' => Craft::t('app', 'It will be able to access content through the GraphQL API on your behalf.'),
         ]);
     }
 

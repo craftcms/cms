@@ -8,6 +8,7 @@ use craft\filters\IpRateLimitIdentity;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\models\Site;
 use craft\oauth\Client;
 use craft\oauth\Repositories;
 use craft\oauth\User as OAuthUser;
@@ -28,6 +29,8 @@ use yii\web\Response;
 
 class OauthController extends Controller
 {
+    private const MAX_CLIENT_NAME_LENGTH = 64;
+
     // Clients must be able to discover, register, and refresh tokens while the system is offline. Resources decide
     // whether the token's user may access them then.
     protected array|bool|int $allowAnonymous = [
@@ -91,8 +94,17 @@ class OauthController extends Controller
         }
 
         $name = $data['client_name'] ?? $data['name'] ?? (parse_url($uris[0], PHP_URL_HOST) ?: 'OAuth Client');
-        if (!is_string($name) || trim($name) === '' || mb_strlen($name) > 255) {
-            return $this->error('invalid_client_metadata', 'The client name must be between 1 and 255 characters.');
+        if (!is_string($name)) {
+            return $this->error('invalid_client_metadata', 'The client name must be a string.');
+        }
+        $name = $this->normalizeClientName($name);
+        // Names made up only of formatting characters, marks, or separators (such as variation selectors or tag
+        // characters) would render empty
+        if (!preg_match('/[^\p{C}\p{M}\p{Z}]/u', $name) || mb_strlen($name) > self::MAX_CLIENT_NAME_LENGTH) {
+            return $this->error('invalid_client_metadata', sprintf('The client name must be between 1 and %s characters.', self::MAX_CLIENT_NAME_LENGTH));
+        }
+        if ($this->isReservedClientName($name)) {
+            return $this->error('invalid_client_metadata', 'The client name is reserved.');
         }
         if (isset($data['token_endpoint_auth_method']) && $data['token_endpoint_auth_method'] !== 'none') {
             return $this->error('invalid_client_metadata', 'Only public clients are supported.');
@@ -221,7 +233,7 @@ class OauthController extends Controller
 
             return $this->renderTemplate('oauth/authorize', [
                 'clientName' => $client->getName(),
-                'redirectUri' => $redirectUri,
+                'redirectHost' => $redirectUri ? $this->redirectHost($redirectUri) : null,
                 'authToken' => $authToken,
                 'consentDescription' => $definition->consentDescription,
                 'accessOptions' => array_map(fn(string $level) => [
@@ -310,6 +322,69 @@ class OauthController extends Controller
         }
         $query = http_build_query(['error' => $error, 'state' => $request->getState()]);
         return $this->redirect($uri . (str_contains($uri, '?') ? '&' : '?') . $query);
+    }
+
+    /**
+     * Returns the part of a redirect URI that identifies where the authorization code will be sent: the host for web
+     * URIs, or the scheme (plus host, if any) for custom app schemes.
+     */
+    private function redirectHost(string $uri): string
+    {
+        $scheme = strtolower((string)parse_url($uri, PHP_URL_SCHEME));
+        $host = (string)parse_url($uri, PHP_URL_HOST);
+        if (in_array($scheme, ['http', 'https'], true)) {
+            return $host;
+        }
+        return $host !== '' ? "$scheme://$host" : "$scheme:";
+    }
+
+    /**
+     * Removes invisible, private-use, and unassigned characters from a client name, and collapses its whitespace, so
+     * it can’t hide or spoof text on the consent screen.
+     */
+    private function normalizeClientName(string $name): string
+    {
+        $name = preg_replace(StringHelper::invisibleCharsRegex(), '', $name) ?? '';
+        $name = StringHelper::stripPrivateAndUnassignedChars($name);
+        return StringHelper::collapseWhitespace($name);
+    }
+
+    /**
+     * Returns whether a client name could be mistaken for Craft or this site.
+     *
+     * Anyone can register a client without authenticating, and the consent screen shows its name on this site’s own
+     * domain, under its own branding. A client named after Craft or the site would look like a first-party app, so a
+     * phishing link to the real authorize URL could trick users into granting it access. Look-alikes, such as “Craft”
+     * spelled with a Cyrillic “С” (U+0421), are blocked too. Names that only contain a reserved name are allowed; the
+     * redirect host shown on the consent screen covers those.
+     */
+    private function isReservedClientName(string $name): bool
+    {
+        $brandNames = [
+            Craft::$app->getSystemName(),
+            ...array_map(fn(Site $site) => $site->getName(), Craft::$app->getSites()->getAllSites(true)),
+        ];
+
+        // The consent screen translates the system name, and could be shown in any app or site language, regardless
+        // of the language of the registration request
+        $i18n = Craft::$app->getI18n();
+        $languages = array_unique([...$i18n->getAppLocaleIds(), ...$i18n->getSiteLocaleIds()]);
+        $reserved = ['Craft', 'Craft CMS'];
+        foreach ($brandNames as $brandName) {
+            $reserved[] = $brandName;
+            foreach ($languages as $language) {
+                $reserved[] = Craft::t('site', $brandName, language: $language);
+            }
+        }
+        $reserved = array_unique($reserved);
+
+        foreach ($reserved as $value) {
+            if ($value !== '' && StringHelper::areConfusable($name, $value)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function validRedirectUri(string $uri): bool
