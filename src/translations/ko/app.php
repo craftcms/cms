@@ -527,7 +527,7 @@ return [
     'Create a new section' => '새 섹션 생성',
     'Create a new site' => '새 사이트 생성',
     'Create a new tag group' => '새 태그 그룹 생성',
-    'Create a new token' => 'Create a new token',
+    'Create a new token' => '새 토큰 만들기',
     'Create a new user group' => '새 사용자 그룹 생성',
     'Create a new volume…' => '새 볼륨 생성…',
     'Create a new {section} entry' => '새 {section} 항목 생성',
