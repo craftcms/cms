@@ -527,7 +527,7 @@ return [
     'Create a new section' => 'Opprett en ny seksjon',
     'Create a new site' => 'Opprett et nytt nettsted',
     'Create a new tag group' => 'Opprett en ny stikkordsgruppe',
-    'Create a new token' => 'Create a new token',
+    'Create a new token' => 'Opprett en ny token',
     'Create a new user group' => 'Opprett en ny brukergruppe',
     'Create a new volume…' => 'Opprett et nytt volum …',
     'Create a new {section} entry' => 'Opprett en ny {section}-oppføring',
