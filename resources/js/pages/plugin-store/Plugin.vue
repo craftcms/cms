@@ -27,6 +27,8 @@
   const props = defineProps<{handle: string; tab: Tab}>();
 
   const plugin = shallowRef<Plugin | null>(null);
+  /** Tabs already shown for this plugin, kept mounted so they don't load again. */
+  const visitedTabs = shallowRef(new Set<Tab>());
   const loadError = shallowRef<'not-found' | 'failed' | null>(null);
   let controller: AbortController | null = null;
 
@@ -39,6 +41,7 @@
       const {signal} = controller;
       plugin.value = null;
       loadError.value = null;
+      visitedTabs.value = new Set();
 
       try {
         plugin.value = await getPlugin(handle, signal);
@@ -94,6 +97,7 @@
       return;
     }
 
+    visitedTabs.value = new Set([...visitedTabs.value, activeTab.value]);
     router.replace({
       url: pluginRoute({
         handle: props.handle,
@@ -161,7 +165,7 @@
         <template v-for="tab in tabs" :key="tab.id">
           <craft-tab slot="tab">{{ tab.label }}</craft-tab>
           <div slot="panel">
-            <template v-if="activeTab === tab.id">
+            <template v-if="activeTab === tab.id || visitedTabs.has(tab.id)">
               <PluginOverview v-if="tab.id === 'overview'" :plugin="plugin" />
               <PluginReviews
                 v-else-if="tab.id === 'reviews'"

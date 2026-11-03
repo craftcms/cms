@@ -45,8 +45,15 @@ vi.mock('@/modules/plugin-store/components/PluginOverview.vue', () => ({
       ]),
   },
 }));
+const reviewsMounts = vi.hoisted(() => ({count: 0}));
+
 vi.mock('@/modules/plugin-store/components/PluginReviews.vue', () => ({
-  default: marker('reviews panel'),
+  default: {
+    setup: () => {
+      reviewsMounts.count++;
+      return () => h('p', 'reviews panel');
+    },
+  },
 }));
 vi.mock('@/modules/plugin-store/components/PluginChangelog.vue', () => ({
   default: marker('changelog panel'),
@@ -180,5 +187,35 @@ it('moves focus to the Reviews tab when the hero’s rating link shows it', asyn
   expect(focused.tagName).toBe('CRAFT-TAB');
   expect(focused.textContent).toBe('Reviews');
   focus.mockRestore();
+  setUrlDefaults({});
+});
+
+it('keeps a tab it has shown mounted, rather than loading it again', async () => {
+  setUrlDefaults({cpTrigger: 'cp'});
+  getPlugin.mockResolvedValue(makePlugin('paid-plugin', ['49']));
+  const props = reactive<Props>({handle: 'paid-plugin', tab: 'overview'});
+  vi.mocked(router.replace).mockImplementation((visit) => {
+    Object.assign(props, (visit as {props: (p: Props) => Props}).props(props));
+  });
+  reviewsMounts.count = 0;
+
+  const root = mount(props);
+  await settle();
+  const tabs = root.querySelector('craft-tabs') as HTMLElement & {
+    selectedIndex: number;
+  };
+  const show = async (index: number) => {
+    tabs.selectedIndex = index;
+    tabs.dispatchEvent(new Event('craft-tab-show'));
+    await settle();
+  };
+
+  await show(1);
+  await show(0);
+  await show(1);
+
+  expect(props.tab).toBe('reviews');
+  expect(reviewsMounts.count).toBe(1);
+  vi.mocked(router.replace).mockReset();
   setUrlDefaults({});
 });
