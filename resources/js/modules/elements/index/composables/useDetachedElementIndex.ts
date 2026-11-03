@@ -97,7 +97,7 @@ export function useDetachedElementIndex<
 
   const visitor = createDetachedIndexVisitor(load, {
     search: options.initial.search || undefined,
-    status: options.initial.status || undefined,
+    status: options.initial.statusMenuValue || undefined,
     condition: (options.initial.currentCondition ?? undefined) as
       | IndexQueryValue
       | undefined,

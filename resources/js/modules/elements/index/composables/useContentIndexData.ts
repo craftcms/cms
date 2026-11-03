@@ -6,6 +6,7 @@ import type {BulkActionItem} from '@/modules/elements/types/actions';
 import type {ElementCapabilities} from '@/modules/elements/types/actions';
 import type {Source, SourceItem} from '@/modules/elements/types/sources';
 import type {IndexSite} from '@/modules/elements/types/sites';
+import {indexQueryCriteria} from '@/modules/elements/index/index-criteria';
 import type {InlineEditableRow} from '@/modules/elements/index/composables/useInlineEditing';
 import type {
   SortOption,
@@ -130,6 +131,7 @@ export function useContentIndexData<
 
     // Filtering
     status: computed(() => props().status),
+    statusMenuValue: computed(() => props().statusMenuValue),
     statusOptions: computed(() => props().statusOptions),
     search: computed(() => props().search),
     currentCondition: computed(() => props().currentCondition),
@@ -169,22 +171,16 @@ export function useContentIndexData<
 export function elementIndexQueryParams(
   elementIndex: Readonly<ReturnType<typeof useContentIndexData>>
 ) {
+  const {baseCriteria, criteria} = indexQueryCriteria(elementIndex);
+
   return {
     elementType: elementIndex.elementType,
     context: elementIndex.context,
     source: elementIndex.source?.key,
-    baseCriteria: {
-      status: null,
-      drafts: elementIndex.canHaveDrafts ? null : false,
-      draftOf: false,
-      savedDraftsOnly: true,
-      siteId: elementIndex.siteId,
-    },
+    baseCriteria,
     criteria: {
       search: elementIndex.search ?? '',
-      status: elementIndex.status || null,
-      ...(elementIndex.drafts ? {drafts: true} : {}),
-      ...(elementIndex.trashed ? {trashed: true} : {}),
+      ...criteria,
     },
     condition: elementIndex.currentCondition,
   };

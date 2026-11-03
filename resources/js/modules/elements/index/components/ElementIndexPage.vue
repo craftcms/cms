@@ -11,6 +11,7 @@
     type SourcesLanding,
   } from '@/modules/elements/index/composables/useCustomizeSources';
   import ElementBulkActionsBar from './ElementBulkActionsBar.vue';
+  import {indexQueryCriteria} from '@/modules/elements/index/index-criteria';
   import {computed, ref} from 'vue';
   import CustomizeSourcesModal from '@/modules/elements/index/components/customize-sources/CustomizeSourcesModal.vue';
   import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
@@ -71,7 +72,7 @@
           selectAll: true,
           exceptIds: selectAll.exceptIds.value,
         }
-      : {baseCriteria: {siteId: elementIndex.siteId}}
+      : indexQueryCriteria(elementIndex)
   );
 
   function onActionPerformed(): void {
