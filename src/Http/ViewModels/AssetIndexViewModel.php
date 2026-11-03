@@ -4,14 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
-use CraftCms\Cms\Asset\Actions\CopyReferenceTag;
-use CraftCms\Cms\Asset\Actions\CopyUrl;
-use CraftCms\Cms\Asset\Actions\DownloadAssetFile;
-use CraftCms\Cms\Asset\Actions\EditImage;
-use CraftCms\Cms\Asset\Actions\MoveAssets;
-use CraftCms\Cms\Asset\Actions\RenameFile;
-use CraftCms\Cms\Asset\Actions\ReplaceFile;
-use CraftCms\Cms\Asset\Actions\ShowInFolder;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -57,25 +49,6 @@ class AssetIndexViewModel extends ContentIndexViewModel
     public const MOVE_FOLDERS_EVENT = 'assets:move-folders';
 
     public const DELETE_FOLDERS_EVENT = 'assets:delete-folders';
-
-    /**
-     * Asset actions that only did anything through their legacy JavaScript
-     * triggers, which the index doesn't run. Each becomes a client event the
-     * page handles, keyed by action class, with the row capability every
-     * selected asset needs for it, if any.
-     *
-     * @var array<class-string, array{0: string, 1: string|null}>
-     */
-    private const array FILE_EVENT_ACTIONS = [
-        DownloadAssetFile::class => ['assets:download-file', null],
-        RenameFile::class => ['assets:rename-file', 'movable'],
-        ReplaceFile::class => ['assets:replace-file', 'replaceable'],
-        CopyUrl::class => ['assets:copy-url', 'hasUrl'],
-        CopyReferenceTag::class => ['assets:copy-reference-tag', null],
-        ShowInFolder::class => ['assets:show-in-folder', null],
-        EditImage::class => ['assets:edit-image', 'imageEditable'],
-        MoveAssets::class => ['assets:move-assets', 'movable'],
-    ];
 
     /** @var array{0: Volume|null, 1: string[]}|null */
     private ?array $resolvedDefaultSource = null;
@@ -160,40 +133,27 @@ class AssetIndexViewModel extends ContentIndexViewModel
     }
 
     /**
-     * Points an asset action with no server-side behavior at the page's client
-     * event for it, or leaves it out when it has nowhere to go.
+     * Gives the Move action the folders its assets can move to, or leaves it
+     * out when there are none.
      *
      * @param  array<string, mixed>  $action
      * @return array<string, mixed>|null
      */
     private function fileAction(array $action): ?array
     {
-        $key = $action['key'] ?? null;
-
-        if (! isset(self::FILE_EVENT_ACTIONS[$key])) {
+        if (($action['key'] ?? null) !== 'move-assets') {
             return $action;
         }
 
-        [$event, $capability] = self::FILE_EVENT_ACTIONS[$key];
-        $detail = match ($key) {
-            MoveAssets::class => $this->moveDetail(),
-            EditImage::class => Asset::sharedImageEditorSettings(),
-            default => [],
-        };
+        $detail = $this->moveDetail();
 
         if ($detail === null) {
             return null;
         }
 
-        return [
-            ...$action,
-            ...($capability !== null ? ['selectionAttribute' => $capability] : []),
-            'action' => [
-                'type' => 'event',
-                'name' => $event,
-                ...($detail !== [] ? ['detail' => $detail] : []),
-            ],
-        ];
+        $action['action']['detail'] = $detail;
+
+        return $action;
     }
 
     /**

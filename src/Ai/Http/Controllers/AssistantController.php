@@ -8,6 +8,7 @@ use CraftCms\Cms\Ai\Assistant\AssistantAgent;
 use CraftCms\Cms\Ai\Assistant\AssistantStreamProtocol;
 use CraftCms\Cms\Ai\Assistant\Content\ElementContexts;
 use CraftCms\Cms\Ai\Assistant\Content\ElementContextType;
+use CraftCms\Cms\Ai\Assistant\CraftcmsMcpTools;
 use CraftCms\Cms\Ai\Assistant\Crafty;
 use CraftCms\Cms\Ai\Assistant\McpTools;
 use CraftCms\Cms\Ai\Assistant\MessageContext;
@@ -87,6 +88,7 @@ readonly class AssistantController
     public function run(
         Request $request,
         McpTools $tools,
+        CraftcmsMcpTools $craftcmsTools,
         AssistantContextTypes $contextTypes,
         AgentSkills $skills,
         ModelImages $modelImages,
@@ -144,6 +146,7 @@ readonly class AssistantController
 
         $agent = new AssistantAgent(
             $tools,
+            $craftcmsTools,
             $user,
             $contextTypes->resolve($request, $items),
             $this->site($context, $request->integer('forwardedProps.siteId') ?: null),

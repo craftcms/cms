@@ -1,6 +1,6 @@
 import type {BulkActionItem} from '../types/actions';
 
-export const COPY_ACTION = 'CraftCms\\Cms\\Element\\Actions\\Copy';
+export const COPY_ACTION = 'copy';
 export const DUPLICATE_ACTION = 'CraftCms\\Cms\\Element\\Actions\\Duplicate';
 export const DELETE_ACTION = 'CraftCms\\Cms\\Element\\Actions\\Delete';
 

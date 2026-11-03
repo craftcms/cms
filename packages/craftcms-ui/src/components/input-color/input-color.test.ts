@@ -1,6 +1,6 @@
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import type CraftInputColor from './input-color.js';
-import './input-color.js';
+import {colorPickerValueToHex} from './input-color.js';
 
 async function createInputColor(): Promise<CraftInputColor> {
   const element = document.createElement('craft-input-color');
@@ -121,5 +121,55 @@ describe('craft-input-color', () => {
     await element.updateComplete;
 
     expect(new FormData(form).has('fill')).toBe(false);
+  });
+
+  it('previews translucent hex values, expanding 4-digit shorthand', async () => {
+    const element = await createInputColor();
+
+    element.modelValue = 'f008';
+    await element.updateComplete;
+
+    expect(element.modelValue).toBe('f008');
+    expect(preview(element).getAttribute('style')).toContain(
+      'background-color: #ff000088'
+    );
+  });
+
+  it('only sets the alpha attribute on the native picker when alpha is enabled', async () => {
+    const element = await createInputColor();
+
+    expect(pickerInput(element).hasAttribute('alpha')).toBe(false);
+
+    element.alpha = true;
+    await element.updateComplete;
+
+    expect(pickerInput(element).hasAttribute('alpha')).toBe(true);
+  });
+
+  it('gives pickers without alpha support 6-digit values', async () => {
+    const element = await createInputColor();
+
+    element.alpha = true;
+    element.setAttribute('presets', '["#ff000080"]');
+    element.modelValue = '11223344';
+    await element.updateComplete;
+
+    const option = element.shadowRoot!.querySelector('datalist option');
+
+    expect(pickerInput(element).value).toBe('#112233');
+    expect(option?.getAttribute('value')).toBe('#ff0000');
+  });
+});
+
+describe('colorPickerValueToHex', () => {
+  it('converts native color input values to bare hex', () => {
+    expect(colorPickerValueToHex('#112233')).toBe('112233');
+    expect(colorPickerValueToHex('color(srgb 1 0.5 0)')).toBe('ff8000');
+    expect(colorPickerValueToHex('color(srgb 1 0.5 0 / 1)')).toBe('ff8000');
+    expect(colorPickerValueToHex('color(srgb 0 0 1 / 0.5)')).toBe('0000ff80');
+    expect(colorPickerValueToHex('color(srgb 1.2 -0.1 0 / 0)')).toBe(
+      'ff000000'
+    );
+    expect(colorPickerValueToHex('not-a-color')).toBe('not-a-color');
   });
 });

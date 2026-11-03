@@ -257,7 +257,7 @@ it('renders single-choice buttons as radios, naming an icon-only option by its i
             ->presentation(ChoicePresentation::Buttons),
         'asc',
     );
-    $radios = $crawler->filter('craft-radio-group[buttons] craft-radio');
+    $radios = $crawler->filter('craft-radio-group[appearance="button-group"] craft-radio');
     $icon = $radios->eq(0)->filter('label[slot="label"] craft-icon');
 
     expect($radios)->toHaveCount(2)
@@ -314,7 +314,7 @@ it('renders choice presentations through CP components', function (ChoicePresent
     'select' => [ChoicePresentation::Select, false, 'craft-select', 'craft-select option', 3],
     'checkboxes' => [ChoicePresentation::Checkboxes, true, 'craft-checkbox-group', 'craft-checkbox'],
     'radios' => [ChoicePresentation::Radios, false, 'craft-radio-group', 'craft-radio'],
-    'buttons' => [ChoicePresentation::Buttons, false, 'craft-radio-group[buttons]', 'craft-radio'],
+    'buttons' => [ChoicePresentation::Buttons, false, 'craft-radio-group[appearance="button-group"]', 'craft-radio'],
     'multiple buttons' => [ChoicePresentation::Buttons, true, 'craft-button-group[multiple]', 'craft-button'],
 ]);
 

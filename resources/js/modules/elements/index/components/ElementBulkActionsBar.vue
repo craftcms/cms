@@ -21,6 +21,13 @@
     defineProps<{
       /** The ids of the elements currently selected in the index. */
       selectedIds: ReadonlyArray<string | number>;
+      /**
+       * How many elements are selected, when it's more than `selectedIds`
+       * holds, such as with every result selected.
+       */
+      selectedCount?: number;
+      /** Whether every element the index lists is selected. */
+      selectsAll?: boolean;
       /** Selected row data used by capability checks and client actions. */
       selectedElements?: ReadonlyArray<ElementActionSelection>;
       /** The serialized bulk action descriptors for the active source. */
@@ -61,18 +68,46 @@
   const bar = useTemplateRef('bar');
   const performing = shallowRef(false);
 
-  const {selectedCount, appliesToSelection, onOwnedEvent, invokerFor} =
-    useBulkActionSelection({
-      selectedIds: () => props.selectedIds,
-      root: () => bar.value?.root,
-      elementType: () => props.elementType,
-      selectedElements: () => props.selectedElements,
-    });
+  const {
+    selectedCount: selectedIdCount,
+    appliesToSelection,
+    onOwnedEvent,
+    invokerFor,
+  } = useBulkActionSelection({
+    selectedIds: () => props.selectedIds,
+    root: () => bar.value?.root,
+    elementType: () => props.elementType,
+    selectedElements: () => props.selectedElements,
+  });
+
+  const selectedCount = computed(
+    () => props.selectedCount ?? selectedIdCount.value
+  );
+
+  /**
+   * Whether an action can be performed on the selection. Actions that can't
+   * are left out: single-element actions with more than one selected, too
+   * many elements for one that can't run from a queue job, or a client-side
+   * action that needs every selected row loaded.
+   */
+  function availableForSelection(item: BulkActionItem): boolean {
+    if (item.bulk === false && selectedCount.value > 1) return false;
+
+    if (
+      item.syncLimit !== undefined &&
+      !item.queueable &&
+      selectedCount.value > item.syncLimit
+    )
+      return false;
+
+    return !(props.selectsAll && item.action?.type === 'event');
+  }
 
   const availableActions = computed(() =>
     (props.actions ?? []).filter(
       (item) =>
         appliesToSelection(item) &&
+        availableForSelection(item) &&
         selectionAllows(item, props.selectedElements)
     )
   );
@@ -100,13 +135,9 @@
     menuItems.value.map((item): ActionItem => {
       const variant = item.variant ?? (item.destructive ? 'danger' : undefined);
 
-      // Disabled (e.g. not-yet-ported interactive, or non-bulk actions with
-      // more than one element selected) actions render inert.
-      if (
-        item.disabled ||
-        !item.action ||
-        (item.bulk === false && selectedCount.value > 1)
-      ) {
+      // Disabled actions (e.g. Duplicate in a full nested element field)
+      // render inert.
+      if (item.disabled || !item.action) {
         return {
           type: 'button',
           label: item.label,
@@ -259,6 +290,27 @@
     }
   });
 
+  /**
+   * New sibling and new child actions open the new element's edit page, with
+   * the selected element as the one to place it by.
+   */
+  onOwnedEvent('craft:new-element', (event) => {
+    const [id] = event.detail.elementIds ?? props.selectedIds;
+    const {url, param}: Record<string, unknown> = event.detail;
+
+    if (
+      id === undefined ||
+      typeof url !== 'string' ||
+      typeof param !== 'string'
+    ) {
+      return;
+    }
+
+    const target = new URL(url, window.location.origin);
+    target.searchParams.set(param, String(id));
+    window.location.assign(target.href);
+  });
+
   function setStatus(status: 'enabled' | 'disabled') {
     const item = setStatusAction.value;
     if (!item?.action || item.action.type !== 'http') {
@@ -306,6 +358,10 @@
           </craft-action-item>
         </div>
       </craft-action-menu>
+    </template>
+
+    <template v-if="$slots.center" #center>
+      <slot name="center" />
     </template>
 
     <slot />
