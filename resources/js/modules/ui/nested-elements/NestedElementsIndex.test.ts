@@ -781,7 +781,7 @@ describe('NestedElementsIndex', () => {
   });
 
   it('leaves table links native when the owner is read-only', () => {
-    const {root, craft} = mount({editable: false, pages: [[element(11)]]});
+    const {root} = mount({editable: false, pages: [[element(11)]]});
     const link = root.querySelector<HTMLAnchorElement>(
       'a[href="/edit/11?elementId=11"]'
     )!;

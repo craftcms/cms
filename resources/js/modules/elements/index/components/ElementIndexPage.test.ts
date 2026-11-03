@@ -284,9 +284,7 @@ it.each([
       elementAction: 'Restore',
       baseCriteria: {siteId: 1},
     });
-    expect((item?.action?.body as {criteria: unknown}).criteria).toEqual(
-      criteria
-    );
+    expect(item?.action?.body).toHaveProperty('criteria', criteria);
   }
 );
 
