@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.12.0 - 2026-11-03
 
 ### MCP and OAuth
 
