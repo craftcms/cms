@@ -147,6 +147,11 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 
         $this->on(self::EVENT_BEFORE_EXEC, function(ExecEvent $e) {
             $this->_executingJobId = $e->id;
+
+            // Restore the time limit for batched jobs queued without one in their payload.
+            if ($e->job instanceof BaseBatchedJob) {
+                $e->job->ttr ??= $e->ttr;
+            }
         });
 
         $this->on(self::EVENT_AFTER_EXEC, function(ExecEvent $e) {
