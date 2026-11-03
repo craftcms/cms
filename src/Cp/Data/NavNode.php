@@ -56,6 +56,9 @@ class NavNode implements Arrayable, JsonSerializable
 
     public bool $hidden = false;
 
+    /** For custom nodes in a group's navigation: whether the default navigation adds it. */
+    public bool $inherited = false;
+
     /** A heading within a subnav, carrying the items under it. */
     public bool $heading;
 

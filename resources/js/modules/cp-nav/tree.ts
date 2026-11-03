@@ -281,6 +281,7 @@ function blank(overrides: Partial<NavNode>): NavNode {
     userCondition: null,
     home: null,
     hidden: false,
+    inherited: false,
     heading: false,
     children: [],
     ...overrides,

@@ -178,7 +178,7 @@
       },
     ];
 
-    if (readOnly || node.source === 'default') return items;
+    if (readOnly || node.source === 'default' || node.inherited) return items;
 
     return [
       ...items,
@@ -242,27 +242,25 @@
         header: t('Show'),
         meta: {columnClass: 'nav-builder__show'},
         cell: ({row: {original: row}}) =>
-          row.node.source === 'default'
-            ? h(
-                'craft-switch',
-                {
-                  size: 'small',
-                  '.checked': !row.node.hidden,
-                  '.disabled': readOnly,
-                  onChange: (event: Event) =>
-                    (tree.value = update(tree.value, row.id, {
-                      hidden: !(event.target as HTMLInputElement).checked,
-                    })),
-                },
-                [
-                  h(
-                    'span',
-                    {slot: 'label', class: 'sr-only'},
-                    t('Show {item}', {item: row.label})
-                  ),
-                ]
-              )
-            : null,
+          h(
+            'craft-switch',
+            {
+              size: 'small',
+              '.checked': !row.node.hidden,
+              '.disabled': readOnly,
+              onChange: (event: Event) =>
+                (tree.value = update(tree.value, row.id, {
+                  hidden: !(event.target as HTMLInputElement).checked,
+                })),
+            },
+            [
+              h(
+                'span',
+                {slot: 'label', class: 'sr-only'},
+                t('Show {item}', {item: row.label})
+              ),
+            ]
+          ),
       }),
       columnHelper.actions(
         ({row: {original: row}}) => [

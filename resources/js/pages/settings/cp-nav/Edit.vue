@@ -68,11 +68,15 @@
 <template>
   <div class="py-3">
     <CpContainer>
-      <p v-if="isDefault" class="mb-lg">
+      <p class="mb-lg">
         {{
-          t(
-            'The navigation everyone gets, unless their user group has one of its own.'
-          )
+          isDefault
+            ? t(
+                'The navigation everyone gets. User group navigations build on it.'
+              )
+            : t(
+                'Starts from the default navigation. Only what you change here differs for this group.'
+              )
         }}
       </p>
 

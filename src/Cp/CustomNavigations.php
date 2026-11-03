@@ -116,7 +116,7 @@ class CustomNavigations
 
     /**
      * The navigation a user gets: the first one for a group they're in (Craft
-     * Pro and up), or the default navigation.
+     * Pro and up), layered over the default navigation, or the default one.
      *
      * @return array<mixed>
      */
@@ -136,7 +136,7 @@ class CustomNavigations
             );
 
             if ($navigation !== null) {
-                return $navigation['nav'];
+                return NavCustomizer::layer($this->getDefault(), $navigation['nav']);
             }
         }
 

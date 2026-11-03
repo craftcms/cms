@@ -93,7 +93,7 @@
             iconSvg: icon && icon !== node.icon ? null : node.iconSvg,
           }
         : {}),
-      ...(node.source === 'default' ? {hidden: !values.shown} : {}),
+      hidden: !values.shown,
       ...(node.source === 'custom'
         ? {
             userCondition: (values.userCondition ??

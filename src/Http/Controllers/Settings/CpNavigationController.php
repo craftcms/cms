@@ -107,7 +107,7 @@ class CpNavigationController
                 ['label' => t('CP Navigation')],
             ])
             ->ui(Ui::make([
-                MarkdownContent::make('cp-nav-intro', t('People in more than one user group get the first of their groups’ navigations below, and everyone else gets the default navigation.'))
+                MarkdownContent::make('cp-nav-intro', t('People in more than one user group get the first of their groups’ navigations below. Each one builds on the default navigation, which everyone else gets.'))
                     ->displayInPane(false),
                 Table::make('cp-navigations')
                     ->columns([
@@ -158,7 +158,7 @@ class CpNavigationController
 
         $this->customNavigations->saveGroupNavigation(
             $group,
-            $this->navCustomizer->diff($this->navigation->getBaseTreeForGroup($group), $request->nav()),
+            $this->navCustomizer->diff($this->navigation->getBaseTreeForGroup($group), $request->nav(), $this->customNavigations->getDefault()),
         );
 
         return $this->asSuccess(
@@ -219,9 +219,7 @@ class CpNavigationController
                         ? t('Only users who match these rules see this link.')
                         : t('Only users who match these rules see this section.')),
             ))
-            ->unless($isCustom, fn (Ui $ui) => $ui->add(
-                Field::make(t('Show in the navigation'), Lightswitch::make('shown')->mode($mode)),
-            ));
+            ->add(Field::make(t('Show in the navigation'), Lightswitch::make('shown')->mode($mode)));
 
         return new JsonResponse([
             'ui' => $this->uiResolver->resolve($ui, new UiContext(values: [
@@ -304,9 +302,9 @@ class CpNavigationController
     }
 
     /**
-     * The builder for the default navigation, or a user group's. A group's is
-     * built with the group's permissions, so it only offers what its members
-     * can get to.
+     * The builder for the default navigation, or a user group's. A group's
+     * starts from the default navigation, and is built with the group's
+     * permissions, so it only offers what its members can get to.
      *
      * @param  array<mixed>  $nav
      */
@@ -316,6 +314,7 @@ class CpNavigationController
         $baseTree = $group === null
             ? $this->navigation->getBaseTree()
             : $this->navigation->getBaseTreeForGroup($group);
+        $base = $group === null ? [] : $this->customNavigations->getDefault();
 
         return new CpScreenResponse()
             ->title($title)
@@ -324,8 +323,8 @@ class CpNavigationController
             ->addCrumb($title)
             ->inertiaPage('settings/cp-nav/Edit', [
                 'isDefault' => $group === null,
-                'tree' => $this->navCustomizer->resolve($baseTree, $nav),
-                'defaultTree' => $this->navCustomizer->resolve($baseTree, []),
+                'tree' => $this->navCustomizer->resolve($baseTree, $nav, $base),
+                'defaultTree' => $this->navCustomizer->resolve($baseTree, [], $base),
                 'readOnly' => $this->readOnly,
                 'saveUrl' => $group === null
                     ? route('craft.cp.settings.cp-nav.update-default')

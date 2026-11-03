@@ -113,12 +113,12 @@ it('gives users the first matching group navigation, or the default navigation',
     $editors->users()->attach($user->id);
     $writers->users()->attach($user->id);
 
-    $navigations->saveDefault(['items' => ['nav-dashboard' => ['label' => 'Default home']]]);
+    $navigations->saveDefault(['items' => ['nav-dashboard' => ['label' => 'Default home'], 'nav-utilities' => ['label' => 'Toolbox']]]);
     $navigations->saveGroupNavigation(UserGroups::getGroupByUid($writers->uid), ['items' => ['nav-dashboard' => ['label' => 'Writers home']]]);
     $navigations->saveGroupNavigation(UserGroups::getGroupByUid($editors->uid), ['items' => ['nav-dashboard' => ['label' => 'Editors home'], 'nav-plugin-store' => ['hidden' => true]]]);
     actingAs($user);
 
-    expect(topNavLabels())->toContain('Writers home')->toContain('Plugin Store');
+    expect(topNavLabels())->toContain('Writers home', 'Toolbox', 'Plugin Store');
 
     $navigations->reorderGroupNavigations([$editors->uid, $writers->uid]);
 
