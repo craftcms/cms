@@ -1,4 +1,5 @@
-import {describe, test, expect} from 'vite-plus/test';
+import {afterEach, describe, test, expect} from 'vite-plus/test';
+import type {WindowWithCraft} from '../types/globals.js';
 import {t, tokenizePattern, parseToken, formatMessage} from './translate.js';
 
 const translations = {
@@ -370,6 +371,8 @@ describe('Translate', () => {
       ['Hello {name}', {name: 'World'}, 'Hello World'],
       ['Hello {first} {last}', {first: 'John', last: 'Doe'}, 'Hello John Doe'],
       ['Count: {num, number}', {num: 1234}, 'Count: 1,234'],
+      ['Count: {num, number}', {num: '1234.5'}, 'Count: 1,234.5'],
+      ['Count: {num, number}', {num: 1234.25}, 'Count: 1,234.25'],
       [
         'You have {count, plural, =0{no items} =1{one item} other{# items}}',
         {count: 0},
@@ -421,5 +424,20 @@ describe('Translate', () => {
         formatMessage(pattern as string, params as Record<string, any>)
       ).toThrow('Message pattern is invalid.');
     });
+  });
+});
+
+describe('numbers in the formatting locale', () => {
+  afterEach(() => {
+    delete (window as WindowWithCraft).Craft;
+  });
+
+  test('formats a decimal number with the locale’s separators', () => {
+    (window as WindowWithCraft).Craft = {
+      setCookie: () => {},
+      formattingLocale: 'de-DE',
+    };
+
+    expect(formatMessage('{num, number}', {num: '1234.5'})).toBe('1.234,5');
   });
 });

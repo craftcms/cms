@@ -10,6 +10,8 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
@@ -260,14 +262,14 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         if ($this->table !== Table::ELEMENTS) {
             $this->when(
                 DB::isMysql(),
-                fn (self $query) => $this->straightJoin(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', '=', "{$this->table}.id"),
-                fn (self $query) => $this->join(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', '=', "{$this->table}.id"),
+                fn (self $query) => $this->straightJoin(Table::ELEMENTS.' as elements', 'elements.id', '=', "{$this->table}.id"),
+                fn (self $query) => $this->join(Table::ELEMENTS.' as elements', 'elements.id', '=', "{$this->table}.id"),
             );
 
             $this->hasElementSourceTable = true;
         }
 
-        $this->query->join(new Alias(Table::ELEMENTS_SITES, 'elements_sites'), 'elements_sites.elementId', '=', 'elements.id');
+        $this->query->join(Table::ELEMENTS_SITES.' as elements_sites', 'elements_sites.elementId', '=', 'elements.id');
 
         // Prepare a new column mapping
         // (for use in SELECT and ORDER BY clauses)
@@ -837,6 +839,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     }
 
     /** @return self<TElement> */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'Sets the limit for paginated results.')]
     public function limit(?int $value): self
     {
         $this->getQuery()->limit = $value;
@@ -853,6 +856,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     }
 
     /** @return self<TElement> */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'Sets the offset for paginated results.')]
     public function offset(?int $value): self
     {
         $this->getQuery()->offset = $value;
@@ -865,6 +869,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * @param  int|string  $direction
      * @return self<TElement>
      */
+    #[ElementQueryParam(ElementQueryParamType::String, 'Sets the field the returned {elements} should be ordered by.')]
     public function orderBy($column, $direction = 'asc'): self
     {
         /**
@@ -874,7 +879,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             Deprecator::log(static::class.'::orderBy', static::class.'::orderBy() with an array argument is deprecated in 6.0.0.');
 
             foreach ($column as $c => $dir) {
-                $this->query->orderBy($c, $dir === SORT_ASC ? 'asc' : 'desc');
+                $this->query->orderBy($this->sqlColumn($c), $dir === SORT_ASC ? 'asc' : 'desc');
             }
 
             return $this;
@@ -889,7 +894,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             }
 
             foreach ($this->normalizeOrderByString($column, $direction) as [$column, $direction]) {
-                $this->forwardCallTo($this->query, 'orderBy', [$column, $direction]);
+                $this->forwardCallTo($this->query, 'orderBy', [$this->sqlColumn($column), $direction]);
             }
 
             return $this;
@@ -902,7 +907,38 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
     private function isDeprecatedOrderByString(string $columns): bool
     {
-        return str_contains($columns, ',') || preg_match('/\s+(asc|desc)(?:\s*(?:,|$))/i', $columns) === 1;
+        return count($this->splitOrderByString($columns)) > 1 || preg_match('/\s+(asc|desc)(?:\s*(?:,|$))/i', $columns) === 1;
+    }
+
+    /**
+     * Splits an order string on commas that aren't inside parentheses, so `FIELD(id, 3, 1)` stays one column.
+     *
+     * @return list<string>
+     */
+    private function splitOrderByString(string $columns): array
+    {
+        return preg_split('/(\((?:[^()]++|(?1))*\))(*SKIP)(*FAIL)|,/', $columns) ?: [$columns];
+    }
+
+    /**
+     * Craft 5 left column names containing `(` unquoted, so templates could order by `RAND()`.
+     * Strings are quoted as column names now, so they can't inject SQL. `rand()` and `random()`
+     * are mapped to the driver's random function; other expressions must be passed as expressions.
+     */
+    private function sqlColumn(mixed $column): mixed
+    {
+        if (! is_string($column) || ! str_contains($column, '(')) {
+            return $column;
+        }
+
+        if (in_array(strtolower(trim($column)), ['rand()', 'random()'], true)) {
+            return DB::raw(DB::isMysql() ? 'RAND()' : 'RANDOM()');
+        }
+
+        throw new InvalidArgumentException(sprintf(
+            'Element queries quote `%s` as a column name. Pass SQL expressions with `expression()` in Twig or `DB::raw()` in PHP.',
+            $column,
+        ));
     }
 
     /** @return array<int, array{string, 'asc'|'desc'}> */
@@ -913,8 +949,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             default => 'asc',
         };
 
-        return str($columns)
-            ->explode(',')
+        return collect($this->splitOrderByString($columns))
             ->map(fn (string $column) => trim($column))
             ->filter()
             ->map(function (string $column) use ($defaultDirection) {
@@ -1264,6 +1299,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
         $this->applySelectParams();
 
+        if ($this->query->groups) {
+            $this->query->groups = array_map($this->sqlColumn(...), $this->query->groups);
+        }
+
         // If the query isn't sourced from a concrete element table, explicitly filter by element type.
         if (! $this->hasElementSourceTable && $this->elementType !== Element::class) {
             try {
@@ -1336,6 +1375,14 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             }
 
             [$column, $alias] = explode(' as ', $column, 2) + [1 => null];
+
+            $column = $this->sqlColumn($column);
+
+            if ($column instanceof Expression) {
+                $select[] = $alias === null ? $column : new Alias($column, $alias);
+
+                continue;
+            }
 
             $alias ??= $column;
 

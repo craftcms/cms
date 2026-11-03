@@ -91,7 +91,7 @@ it('returns usable preview URLs through MCP for named and inline transforms', fu
 it('requires asset view permission before generating a preview', function (): void {
     $user = User::query()->firstOrFail();
     $user->update(['admin' => false]);
-    $permissions = ['accessCp', 'useCraftMcp'];
+    $permissions = ['accessCp'];
     app(UserPermissions::class)->saveUserPermissions($user->id, $permissions);
     Passport::actingAs($user, ['mcp:admin'], 'craft-mcp');
     Cms::config()->allowAdminChanges = false;

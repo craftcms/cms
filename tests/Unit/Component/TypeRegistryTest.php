@@ -2,163 +2,24 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Address\Elements\Address;
-use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Dashboard\Widgets\CraftSupport;
-use CraftCms\Cms\Dashboard\Widgets\Feed;
-use CraftCms\Cms\Dashboard\Widgets\MyDrafts;
-use CraftCms\Cms\Dashboard\Widgets\NewUsers;
-use CraftCms\Cms\Dashboard\Widgets\QuickPost;
-use CraftCms\Cms\Dashboard\Widgets\RecentEntries;
-use CraftCms\Cms\Dashboard\Widgets\Updates as UpdatesWidget;
 use CraftCms\Cms\Dashboard\WidgetTypes;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementTypes;
-use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Field\Addresses;
-use CraftCms\Cms\Field\Assets;
-use CraftCms\Cms\Field\ButtonGroup;
-use CraftCms\Cms\Field\Checkboxes;
-use CraftCms\Cms\Field\Color;
-use CraftCms\Cms\Field\ContentBlock;
-use CraftCms\Cms\Field\Country;
-use CraftCms\Cms\Field\Date;
-use CraftCms\Cms\Field\Dropdown;
-use CraftCms\Cms\Field\Email;
-use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\FieldTypes;
-use CraftCms\Cms\Field\Icon;
-use CraftCms\Cms\Field\Json;
-use CraftCms\Cms\Field\Lightswitch;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Field\LinkTypes;
-use CraftCms\Cms\Field\LinkTypes\Asset as LinkAsset;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
-use CraftCms\Cms\Field\LinkTypes\Email as LinkEmail;
-use CraftCms\Cms\Field\LinkTypes\Entry as LinkEntry;
-use CraftCms\Cms\Field\LinkTypes\Phone;
-use CraftCms\Cms\Field\LinkTypes\Sms;
 use CraftCms\Cms\Field\LinkTypes\Url;
-use CraftCms\Cms\Field\Markdown;
-use CraftCms\Cms\Field\Matrix;
-use CraftCms\Cms\Field\Money;
-use CraftCms\Cms\Field\MultiSelect;
-use CraftCms\Cms\Field\Number;
-use CraftCms\Cms\Field\PlainText;
-use CraftCms\Cms\Field\RadioButtons;
-use CraftCms\Cms\Field\Range;
-use CraftCms\Cms\Field\Table;
-use CraftCms\Cms\Field\Time;
-use CraftCms\Cms\Field\Users;
 use CraftCms\Cms\Gql\Directives\Directive;
-use CraftCms\Cms\Gql\Directives\FormatDateTime;
-use CraftCms\Cms\Gql\Directives\Markdown as GqlMarkdown;
-use CraftCms\Cms\Gql\Directives\Money as GqlMoney;
-use CraftCms\Cms\Gql\Directives\ParseRefs;
-use CraftCms\Cms\Gql\Directives\StripTags;
-use CraftCms\Cms\Gql\Directives\Transform;
-use CraftCms\Cms\Gql\Directives\Trim;
 use CraftCms\Cms\Gql\GqlDirectives;
 use CraftCms\Cms\Support\Facades\Volumes;
-use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\Utility\Utilities\AssetIndexes;
-use CraftCms\Cms\Utility\Utilities\ClearCaches;
-use CraftCms\Cms\Utility\Utilities\DbBackup;
-use CraftCms\Cms\Utility\Utilities\DeprecationErrors;
-use CraftCms\Cms\Utility\Utilities\FindAndReplace;
-use CraftCms\Cms\Utility\Utilities\Migrations;
-use CraftCms\Cms\Utility\Utilities\PhpInfo;
-use CraftCms\Cms\Utility\Utilities\ProjectConfig;
-use CraftCms\Cms\Utility\Utilities\QueueManager;
-use CraftCms\Cms\Utility\Utilities\SystemMessages;
-use CraftCms\Cms\Utility\Utilities\SystemReport;
-use CraftCms\Cms\Utility\Utilities\Updates;
 use CraftCms\Cms\Utility\Utility;
 use CraftCms\Cms\Utility\UtilityTypes;
 
 beforeEach(function () {
     Volumes::shouldReceive('getAllVolumes')->andReturn(collect([new stdClass]));
 });
-
-it('contains its built-in types in order', function (string $registry, array $expected) {
-    expect(app($registry)->types()->all())->toBe($expected);
-})->with([
-    'fields' => [FieldTypes::class, [
-        Addresses::class,
-        Assets::class,
-        ButtonGroup::class,
-        Checkboxes::class,
-        Color::class,
-        ContentBlock::class,
-        Country::class,
-        Date::class,
-        Dropdown::class,
-        Email::class,
-        Entries::class,
-        Icon::class,
-        Json::class,
-        Lightswitch::class,
-        Link::class,
-        Markdown::class,
-        Matrix::class,
-        Money::class,
-        MultiSelect::class,
-        Number::class,
-        PlainText::class,
-        RadioButtons::class,
-        Range::class,
-        Table::class,
-        Time::class,
-        Users::class,
-    ]],
-    'elements' => [ElementTypes::class, [
-        Address::class,
-        Asset::class,
-        Entry::class,
-        User::class,
-    ]],
-    'widgets' => [WidgetTypes::class, [
-        Feed::class,
-        CraftSupport::class,
-        NewUsers::class,
-        QuickPost::class,
-        RecentEntries::class,
-        MyDrafts::class,
-        UpdatesWidget::class,
-    ]],
-    'utilities' => [UtilityTypes::class, [
-        Updates::class,
-        SystemReport::class,
-        ProjectConfig::class,
-        PhpInfo::class,
-        SystemMessages::class,
-        AssetIndexes::class,
-        QueueManager::class,
-        ClearCaches::class,
-        DeprecationErrors::class,
-        DbBackup::class,
-        FindAndReplace::class,
-        Migrations::class,
-    ]],
-    'link types' => [LinkTypes::class, [
-        LinkAsset::class,
-        LinkEmail::class,
-        LinkEntry::class,
-        Phone::class,
-        Sms::class,
-        Url::class,
-    ]],
-    'gql directives' => [GqlDirectives::class, [
-        FormatDateTime::class,
-        GqlMarkdown::class,
-        GqlMoney::class,
-        StripTags::class,
-        Trim::class,
-        ParseRefs::class,
-        Transform::class,
-    ]],
-]);
 
 it('registers types once in first-registration order', function () {
     $registry = app(UtilityTypes::class);

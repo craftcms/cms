@@ -11,6 +11,7 @@
   import CurrentUser from '@/common/components/CurrentUser.vue';
   import UserThumbnail from '@/common/components/UserThumbnail.vue';
   import PasswordController from '@actions/Users/PasswordController';
+  import PersonalAccessTokensController from '@actions/Users/PersonalAccessTokensController';
 
   const {csrfTokenName, csrfTokenValue, currentUser} = useCraftData();
   const logoutForm = useTemplateRef('logoutForm');
@@ -40,6 +41,14 @@
         href: PasswordController.index().url,
         label: t('Password & Verification'),
       },
+      ...(currentUser.value?.showTokens
+        ? [
+            {
+              href: PersonalAccessTokensController.index().url,
+              label: t('Tokens'),
+            },
+          ]
+        : []),
       {type: 'hr'},
       {
         type: 'button',

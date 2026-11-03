@@ -94,8 +94,8 @@
   <craft-checkbox-select
     :name="baseName"
     :label="label"
-    :disabled="disabled"
-    :sortable="sortable"
+    .disabled="disabled"
+    .sortable="sortable"
     :presentation="sortable ? 'add-menu' : 'checkboxes'"
     :all-label="allowSelectAll ? t('All') : null"
     all-mode="each-value"

@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Concerns;
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Attributes\ElementProperty;
+use CraftCms\Cms\Element\Enums\ElementCapability;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +26,7 @@ trait Draftable
     /**
      * @var int|null The ID of the draft’s row in the `drafts` table
      */
+    #[ElementProperty(ElementPropertyType::Int, 'The draft ID (from the `drafts` table).', readable: true, writable: false, requires: ElementCapability::Drafts)]
     public ?int $draftId = null;
 
     /**
@@ -48,11 +52,13 @@ trait Draftable
     /**
      * @var string|null The draft name
      */
+    #[ElementProperty(ElementPropertyType::String, 'The name of the draft.', readable: true, writable: false, requires: ElementCapability::Drafts)]
     public ?string $draftName = null;
 
     /**
      * @var string|null The draft notes
      */
+    #[ElementProperty(ElementPropertyType::String, 'The notes for the draft.', readable: true, writable: false, requires: ElementCapability::Drafts)]
     public ?string $draftNotes = null;
 
     /**
@@ -97,7 +103,7 @@ trait Draftable
         $this->draftCreator = $creator ?? false;
     }
 
-    public function getDraftName(): string
+    public function getDraftName(): ?string
     {
         return $this->draftName;
     }
@@ -143,6 +149,7 @@ trait Draftable
         return $user->can('duplicate', $this);
     }
 
+    #[ElementProperty(ElementPropertyType::Boolean, 'Returns whether this is a draft.', readable: true, writable: false, requires: ElementCapability::Drafts)]
     public function getIsDraft(): bool
     {
         return ! empty($this->draftId);

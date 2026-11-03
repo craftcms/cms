@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Field\ButtonGroup;
+use CraftCms\Cms\Field\FieldContext;
 use Symfony\Component\DomCrawler\Crawler;
 
 function buttonGroupInput(bool $iconsOnly): Crawler
@@ -21,7 +22,7 @@ function buttonGroupInput(bool $iconsOnly): Crawler
 
 it('renders its options as radios drawn as buttons', function () {
     $crawler = buttonGroupInput(false);
-    $inputs = $crawler->filter('craft-radio-group[buttons] craft-radio > input[type="radio"]');
+    $inputs = $crawler->filter('craft-radio-group[appearance="button-group"] craft-radio > input[type="radio"]');
 
     expect($crawler->filter('craft-button-group'))->toHaveCount(0)
         ->and($inputs)->toHaveCount(2)
@@ -43,3 +44,20 @@ it('names an icon-only option by its icon, and shows the label on hover', functi
         ->and(trim($crawler->filter('label[for="align-1"]')->text()))->toBe('Right')
         ->and($crawler->filter('craft-radio')->eq(1)->attr('title'))->toBeNull();
 });
+
+it('tells its control whether options show only their icons', function (bool $iconsOnly) {
+    $field = new ButtonGroup([
+        'iconsOnly' => $iconsOnly,
+        'options' => [
+            ['label' => 'Left', 'value' => 'left', 'icon' => 'arrow-left', 'default' => false],
+        ],
+    ]);
+
+    $props = $field->uiControl(new FieldContext('value'))->props();
+
+    expect($props['options'][0]['icon'])->toBe('arrow-left')
+        ->and($props['iconsOnly'] ?? true)->toBe($iconsOnly);
+})->with([
+    'icons only' => true,
+    'icons with labels' => false,
+]);

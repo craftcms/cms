@@ -47,7 +47,7 @@
     type="button"
     @click="releaseJob"
     size="small"
-    :loading="form.processing"
+    .loading="form.processing"
     v-bind="$attrs"
   >
     <craft-icon name="remove" slot="prefix"></craft-icon>

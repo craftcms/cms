@@ -93,3 +93,27 @@ it('previews the current value like any other', async () => {
   expect(third).toBe('rgba(0, 0, 0, 0)');
   expect(getComputedStyle(segments[1]!).cursor).toBe('pointer');
 });
+
+it('moves focus to the slider when the host is focused', async () => {
+  const picker = await render();
+
+  picker.focus();
+
+  expect(picker.shadowRoot!.activeElement).toBe(
+    picker.shadowRoot!.querySelector('[role="slider"]')
+  );
+});
+
+it('moves focus to the slider when its label is clicked', async () => {
+  const picker = await render('id="columns"');
+  const label = document.createElement('label');
+  label.htmlFor = 'columns';
+  label.textContent = 'Columns';
+  document.body.prepend(label);
+
+  label.click();
+
+  expect(picker.shadowRoot!.activeElement).toBe(
+    picker.shadowRoot!.querySelector('[role="slider"]')
+  );
+});

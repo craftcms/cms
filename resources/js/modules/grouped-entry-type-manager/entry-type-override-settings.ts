@@ -143,7 +143,7 @@ async function requestOverrides(
  * Write applied overrides back onto the chip (legacy `applySettings`): swap
  * the label's contents, then rewrite the hidden-input JSON with the new
  * `{id, name, handle, description}` config while preserving the group the
- * manager stamped.
+ * manager stamped and any extra values the selection holds.
  */
 function writeOverrides(chip: HTMLElement, data: any): void {
   // Swap the label's contents (name/handle/description/indicators), keeping
@@ -161,15 +161,20 @@ function writeOverrides(chip: HTMLElement, data: any): void {
   }
 
   // Write the new override config into the hidden input, preserving the
-  // group the manager stamped (legacy `applySettings`).
+  // group the manager stamped (legacy `applySettings`) and any extra values
+  // the selection holds (see `EntryTypeSelect::extraValueKeys()`).
   const input = chip.querySelector('input');
   if (input) {
-    const config = {...data.config};
+    let config = {...data.config};
     try {
-      const group = JSON.parse(input.value).group;
-      if (group) {
-        config.group = group;
-      }
+      const {
+        id: _id,
+        name: _name,
+        handle: _handle,
+        description: _description,
+        ...preserved
+      } = JSON.parse(input.value);
+      config = {...preserved, ...config};
     } catch {
       // Not a JSON value — nothing to preserve.
     }

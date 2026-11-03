@@ -1,6 +1,5 @@
 import {actionClient} from '../utilities/api/actionClient.js';
 import type {HttpResponse} from '../utilities/api/http.js';
-import type {DateObject} from '@src/types';
 
 /**
  * API action endpoints for asset indexing operations.
@@ -34,7 +33,7 @@ export interface IndexingSession {
   /** Number of entries processed so far */
   readonly processedEntries: number;
   /** Updated date */
-  readonly dateUpdated: DateObject;
+  readonly dateUpdated: string;
   /** Whether the session requires user action */
   readonly actionRequired: boolean;
   /** List of file paths that were skipped during indexing */

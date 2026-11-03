@@ -16,6 +16,8 @@ const state = vi.hoisted(() => ({
   testMatch: vi.fn(),
 }));
 
+vi.mock('@inertiajs/vue3', () => ({usePage: () => ({props: {}})}));
+
 vi.mock('@/modules/import/mapping/test-match', async (importOriginal) => ({
   ...(await importOriginal<
     typeof import('@/modules/import/mapping/test-match')

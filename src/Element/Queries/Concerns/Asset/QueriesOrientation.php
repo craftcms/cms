@@ -6,7 +6,9 @@ namespace CraftCms\Cms\Element\Queries\Concerns\Asset;
 
 use BackedEnum;
 use CraftCms\Cms\Asset\Enums\ImageOrientation;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
 use CraftCms\Cms\Element\Queries\AssetQuery;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -97,6 +99,7 @@ trait QueriesOrientation
      *
      * @uses $orientation
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on whether the images are `landscape`, `portrait`, or `square`, by their width and height.')]
     public function orientation(mixed $value): static
     {
         $this->orientation = $value;

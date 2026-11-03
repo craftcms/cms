@@ -18,12 +18,14 @@
 
   const props = withDefaults(
     defineProps<{
-      statusOptions?: Array<{label: string; value: string}>;
+      statusOptions?: Array<{label: string; value: string; icon?: string}>;
       viewModes?: Array<ViewMode>;
       columnOptions: Array<CheckboxOption>;
       /** The thumbnail sizes the active view mode offers. */
       thumbSizeOptions?: Array<ThumbSize>;
       sortOptions: Array<SortOption>;
+      /** Whether any View menu setting differs from the source's default. */
+      viewCustomized?: boolean;
       processing?: boolean;
       /**
        * The sites this index can be switched between.
@@ -58,6 +60,7 @@
   const emit = defineEmits<{
     (e: 'submit'): void;
     (e: 'reorder', options: Array<CheckboxOption>): void;
+    (e: 'use-default-view'): void;
     (e: 'site-change', handle: string): void;
   }>();
 
@@ -83,6 +86,10 @@
   const sortDirectionLocked = computed(() =>
     ['score', 'sortOrder'].includes(sortField.value)
   );
+
+  function statusOptionIcon(value: string | number): string | undefined {
+    return props.statusOptions?.find((option) => option.value === value)?.icon;
+  }
 
   const siteOptions = computed(() =>
     (props.sites ?? []).map((site) => ({label: site.name, value: site.handle}))
@@ -171,7 +178,20 @@
           "
         >
           <template #option="{option}">
-            <ElementStatus :label="option.label" :value="option.value" />
+            <span
+              v-if="statusOptionIcon(option.value)"
+              style="
+                display: inline-flex;
+                align-items: center;
+                gap: var(--c-spacing-sm);
+              "
+            >
+              <craft-icon
+                :name.attr="statusOptionIcon(option.value)"
+              ></craft-icon>
+              {{ option.label }}
+            </span>
+            <ElementStatus v-else :label="option.label" :value="option.value" />
           </template>
         </CraftSelectRich>
       </div>
@@ -246,11 +266,13 @@
             :disabled="processing"
             :thumb-size-options="thumbSizeOptions"
             :show-table-columns="mode === 'table' || mode === 'structure'"
+            :customized="viewCustomized"
             v-model:sort-field="sortField"
             v-model:sort-direction="sortDirection"
             v-model:table-columns="tableColumns"
             v-model:thumb-size="thumbSize"
             @reorder="(options) => emit('reorder', options)"
+            @use-defaults="emit('use-default-view')"
           />
         </div>
       </div>

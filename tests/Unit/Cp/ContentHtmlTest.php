@@ -3,12 +3,14 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cp\Html\ContentHtml;
+use CraftCms\Cms\Support\Html;
 
 describe('metadataHtml', function () {
     it('renders metadata rows and omits false values', function () {
         $html = app(ContentHtml::class)->metadataHtml([
             'One' => 'Value',
             'Two' => fn () => 'Computed',
+            'Three' => fn () => Html::ul(['Item']),
             'Hidden' => fn () => false,
         ]);
 
@@ -16,6 +18,7 @@ describe('metadataHtml', function () {
             ->and($html)->toContain('>One</dt>')
             ->and($html)->toContain('<dd>Value</dd>')
             ->and($html)->toContain('<dd>Computed</dd>')
+            ->and($html)->toContain("<dd><ul>\n<li>Item</li>\n</ul></dd>")
             ->and($html)->not->toContain('Hidden');
     });
 

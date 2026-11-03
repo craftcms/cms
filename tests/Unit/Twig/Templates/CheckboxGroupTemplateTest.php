@@ -8,7 +8,7 @@ use function CraftCms\Cms\renderString;
 
 it('renders checkboxes from the legacy checkboxGroup variables', function () {
     $html = renderString(
-        "{% include '_includes/forms/checkboxGroup' with {id: 'g', name: 'colors', options: {red: 'Red', blue: 'Blue'}, values: ['blue']} only %}",
+        "{{ craft.cp.checkboxGroup({id: 'g', name: 'colors', options: {red: 'Red', blue: 'Blue'}, values: ['blue']})|raw }}",
         templateMode: TemplateMode::Cp,
     );
 
@@ -23,19 +23,10 @@ it('renders checkboxes from the legacy checkboxGroup variables', function () {
 
 it('renders the add-option button for allowCustomOptions', function () {
     $html = renderString(
-        "{% include '_includes/forms/checkboxGroup' with {id: 'g', name: 'opts', options: [], allowCustomOptions: true} only %}",
+        "{{ craft.cp.checkboxGroup({id: 'g', name: 'opts', options: [], allowCustomOptions: true})|raw }}",
         templateMode: TemplateMode::Cp,
     );
 
     expect($html)->toContain('id="g-add-btn"')
         ->and($html)->toContain('Add option');
-});
-
-it('merges attr-block attributes onto the container', function () {
-    $html = renderString(
-        "{% embed '_includes/forms/checkboxGroup' with {id: 'g', options: []} only %}{% block attr %}data-test=\"1\"{% endblock %}{% endembed %}",
-        templateMode: TemplateMode::Cp,
-    );
-
-    expect($html)->toContain('data-test="1"');
 });

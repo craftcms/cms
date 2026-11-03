@@ -118,3 +118,13 @@ it('can delete all logs', function () {
 
     expect(DeprecationError::count())->toBe(0);
 });
+
+it('serializes logs without passing through raw HTML', function () {
+    $this->deprecator->log('foo', 'Use `bar` <img src=x onerror=alert(1)>', '/path/<b>file</b>.php', 12);
+    $this->deprecator->storeLogs();
+
+    $serialized = DeprecationError::firstOrFail()->jsonSerialize();
+
+    expect($serialized['message'])->toBe('Use <code>bar</code> &lt;img src=x onerror=alert(1)&gt;')
+        ->and($serialized['origin'])->toBe('/path/<b>file</b>.php:12');
+});

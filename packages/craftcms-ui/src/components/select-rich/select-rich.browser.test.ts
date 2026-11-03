@@ -85,3 +85,89 @@ it.each([
     expect(list.right).toBeLessThanOrEqual(window.innerWidth);
   }
 );
+
+async function formFixture(): Promise<{
+  form: HTMLFormElement;
+  select: CraftSelectRich;
+}> {
+  document.body.innerHTML = `
+    <form>
+      <fieldset>
+        <craft-select-rich name="typeId" label="Entry Type">
+          <craft-option choice-value="1">Article</craft-option>
+          <craft-option choice-value="2" checked>News</craft-option>
+          <craft-option choice-value="3">Event</craft-option>
+        </craft-select-rich>
+      </fieldset>
+    </form>`;
+  const select = document.querySelector<CraftSelectRich>('craft-select-rich')!;
+  await select.registrationComplete;
+  await select.updateComplete;
+
+  return {form: document.querySelector('form')!, select};
+}
+
+it('posts the checked option through a native input', async () => {
+  const {form, select} = await formFixture();
+
+  expect(new FormData(form).getAll('typeId')).toEqual(['2']);
+  expect(select.form).toBe(form);
+  // jQuery's serialize() and serializeFormInputs() only see native controls.
+  expect(
+    form.querySelector('input[type="hidden"][name="typeId"]')
+  ).toBeTruthy();
+});
+
+it('posts a newly picked option and fires change', async () => {
+  const {form, select} = await formFixture();
+  const events: string[] = [];
+  form.addEventListener('change', () => events.push('change'));
+  form.addEventListener('input', () => events.push('input'));
+
+  await userEvent.click(select.querySelector('lion-select-invoker')!);
+  await userEvent.click(select.querySelectorAll('craft-option')[2]!);
+  await select.updateComplete;
+
+  expect(new FormData(form).get('typeId')).toBe('3');
+  expect(events).toEqual(['input', 'change']);
+});
+
+it('doesn’t fire change for programmatic selection', async () => {
+  const {form, select} = await formFixture();
+  const onChange = () => {
+    throw new Error('change fired');
+  };
+  form.addEventListener('change', onChange);
+
+  select.querySelectorAll('craft-option')[0]!.checked = true;
+  await select.updateComplete;
+
+  expect(new FormData(form).get('typeId')).toBe('1');
+});
+
+it('goes back to its initial option on form reset', async () => {
+  const {form, select} = await formFixture();
+
+  select.querySelectorAll('craft-option')[0]!.checked = true;
+  await select.updateComplete;
+  form.reset();
+  await select.updateComplete;
+
+  expect(select.modelValue).toBe('2');
+  expect(new FormData(form).get('typeId')).toBe('2');
+});
+
+it('posts nothing while disabled, including by a disabled fieldset', async () => {
+  const {form, select} = await formFixture();
+
+  select.disabled = true;
+  await select.updateComplete;
+  expect(new FormData(form).has('typeId')).toBe(false);
+
+  select.disabled = false;
+  await select.updateComplete;
+  form.querySelector('fieldset')!.disabled = true;
+  await select.updateComplete;
+  expect(select.disabled).toBe(true);
+  expect(new FormData(form).has('typeId')).toBe(false);
+});

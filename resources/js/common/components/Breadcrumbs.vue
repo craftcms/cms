@@ -27,17 +27,29 @@
    * Crumbs arrive from anywhere — core controllers, elements, plugins — and
    * the older shape spelled the link `url`. Resolving it here keeps a producer
    * written against that working.
+   *
+   * Keyed by what the crumb is rather than where it sits, numbered when
+   * repeated, so a crumb keeps its switcher menu when crumbs before it change.
    */
-  const crumbs = computed(() =>
-    props.items.map((item) => ({...item, href: item.href ?? item.url ?? null}))
-  );
+  const crumbs = computed(() => {
+    const seen = new Map<string, number>();
+
+    return props.items.map((item) => {
+      const href = item.href ?? item.url ?? null;
+      const base = item.id ?? href ?? item.label ?? item.html ?? '';
+      const count = seen.get(base) ?? 0;
+      seen.set(base, count + 1);
+
+      return {...item, href, key: count ? `${base}#${count}` : base};
+    });
+  });
 </script>
 
 <template>
   <craft-breadcrumbs :label="t('Breadcrumbs')" class="text-xs">
     <craft-breadcrumb-item
-      v-for="(item, idx) in crumbs"
-      :key="idx"
+      v-for="item in crumbs"
+      :key="item.key"
       v-bind="item.attrs"
     >
       <template v-if="item.icon">

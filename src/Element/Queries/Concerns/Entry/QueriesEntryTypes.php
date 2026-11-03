@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns\Entry;
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Entry\Data\EntryType;
@@ -99,6 +101,7 @@ trait QueriesEntryTypes
      *
      * @uses $typeId
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the entries’ entry type handles.')]
     public function type(mixed $value): static
     {
         if (Query::normalizeParam($value, function ($item) {
@@ -150,6 +153,7 @@ trait QueriesEntryTypes
      *
      * @uses $typeId
      */
+    #[ElementQueryParam(ElementQueryParamType::IntOrInts, 'Narrows the query results based on the entries’ entry types, per the types’ IDs.')]
     public function typeId(mixed $value): static
     {
         $this->typeId = $value;

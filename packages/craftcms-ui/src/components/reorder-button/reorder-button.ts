@@ -73,6 +73,13 @@ export default class CraftReorderButton extends LitElement {
   @property({reflect: true}) variant: string = 'plain';
 
   /**
+   * Forwarded to the underlying invoker button, to pull it out by the space
+   * around its icon so the icon lines up with the content beside it. See
+   * `craft-button`'s `flush`.
+   */
+  @property({reflect: true}) flush?: string;
+
+  /**
    * Disables the button: blocks pointer interaction (so it can't open the menu or
    * act as a drag handle), prevents reorder actions, and visually dims it. Defaults
    * to `false`.
@@ -223,6 +230,17 @@ export default class CraftReorderButton extends LitElement {
     return dir?.toLowerCase() === 'rtl';
   }
 
+  /**
+   * The menu is part of the button, so its own events stay inside it: leaving
+   * the shadow root, they'd read as the button's. `craft-reorder` and
+   * `craft-move` are what it reports instead.
+   */
+  private _stopMenuEvent = (event: Event) => {
+    if (event.target === event.currentTarget) {
+      event.stopPropagation();
+    }
+  };
+
   override render() {
     const label = this.label ?? t('Reorder');
     const horizontal = this.orientation === 'horizontal';
@@ -243,7 +261,14 @@ export default class CraftReorderButton extends LitElement {
     const downLabel = horizontal ? t('Move backward') : t('Move down');
 
     return html`
-      <craft-action-menu ?disabled="${this.disabled}">
+      <craft-action-menu
+        ?disabled="${this.disabled}"
+        @craft-show=${this._stopMenuEvent}
+        @craft-hide=${this._stopMenuEvent}
+        @craft-after-show=${this._stopMenuEvent}
+        @craft-after-hide=${this._stopMenuEvent}
+        @craft-select=${this._stopMenuEvent}
+      >
         <craft-button
           slot="invoker"
           type="button"
@@ -251,6 +276,7 @@ export default class CraftReorderButton extends LitElement {
           inherit
           size="small"
           variant="${this.variant}"
+          flush=${ifDefined(this.flush)}
           ?disabled="${this.disabled}"
         >
           <craft-icon label="${label}">

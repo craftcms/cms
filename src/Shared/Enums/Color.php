@@ -38,7 +38,7 @@ enum Color: string
             'on', 'live', 'active', 'enabled', 'turquoise' => self::Teal,
             'off', 'suspended', 'expired' => self::Red,
             'warning' => self::Amber,
-            'pending' => self::Orange,
+            'pending' => self::Sky,
             'grey' => self::Gray,
             default => self::tryFrom($status),
         };

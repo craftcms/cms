@@ -162,8 +162,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         $ns = $field->handle.'_'.Str::random(5);
 
         $exists = DB::table(Table::ENTRIES, "entries_$ns")
-            ->join(new Alias(Table::ELEMENTS, "elements_$ns"), "elements_$ns.id", '=', "entries_$ns.id")
-            ->join(new Alias(Table::ELEMENTS_OWNERS, "elements_owners_$ns"), "elements_owners_$ns.elementId", '=', "elements_$ns.id")
+            ->join(Table::ELEMENTS." as elements_$ns", "elements_$ns.id", '=', "entries_$ns.id")
+            ->join(Table::ELEMENTS_OWNERS." as elements_owners_$ns", "elements_owners_$ns.elementId", '=', "elements_$ns.id")
             ->where("entries_$ns.fieldId", $field->id)
             ->where("elements_$ns.enabled", true)
             ->whereNull("elements_$ns.dateDeleted")
@@ -644,6 +644,23 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             ->minEntries($this->minEntries)
             ->maxEntries($this->maxEntries)
             ->value(['entries' => $values, 'sortOrder' => $sortOrder]);
+    }
+
+    /**
+     * Returns the entries the field shows inline with their own fields, indexed by the identity their blocks have in
+     * the UI, or `null` if the field shows its entries as cards or in an element index.
+     *
+     * @return array<string, Entry>|null
+     */
+    public function inlineEntries(ElementInterface $element): ?array
+    {
+        if (in_array($this->viewMode, [self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID, self::VIEW_MODE_INDEX])) {
+            return null;
+        }
+
+        $entries = $this->entriesForUi($element->getFieldValue($this->handle));
+
+        return array_combine(ElementHelper::nestedElementIdentities($entries), $entries);
     }
 
     /** @return list<Entry> */

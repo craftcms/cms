@@ -94,7 +94,8 @@ class Url extends BaseTextLinkType
     protected function inputAttributes(): array
     {
         return [
-            'type' => 'url',
+            // Browsers reject root-relative URLs and anchors in URL inputs.
+            'type' => $this->allowRootRelativeUrls || $this->allowAnchors ? 'text' : 'url',
             'inputmode' => 'url',
         ];
     }

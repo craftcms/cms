@@ -1,20 +1,26 @@
 # MCP server
 
-Craft exposes its content and configuration to AI agents and other clients over the [Model Context Protocol](https://modelcontextprotocol.io). The server is built on the official `mcp/sdk` PHP package. Over HTTP, it speaks the stateless transport for protocol version `2026-07-28`. Over stdio, it speaks the session-based protocol that local MCP clients use.
+Craft exposes its content and configuration to AI agents and other clients over the [Model Context Protocol](https://modelcontextprotocol.io). The server is built on the official `mcp/sdk` PHP package. Each HTTP endpoint supports both handshake-based clients and the stateless protocol version `2026-07-28`, with per-request metadata. Over stdio, it speaks the session-based protocol that local MCP clients use.
 
 Craft runs three MCP servers:
 
-| Server        | URL                                     | Who can use it                                                     |
-| ------------- | --------------------------------------- | ------------------------------------------------------------------ |
-| Authenticated | `{cpTrigger}/mcp`, such as `/admin/mcp` | Users with the **Access the control panel** and **Use Craft MCP** permissions, through OAuth |
-| Public        | Configurable, `/mcp` by default         | Anyone, but only for capabilities and content an administrator has approved |
-| Stdio         | `php craft mcp:serve --user=…`          | Whoever can run Craft's CLI, acting as the named user with the **Use Craft MCP** permission |
+| Server        | URL                             | Who can use it                                                     |
+| ------------- | ------------------------------- | ------------------------------------------------------------------ |
+| Authenticated | Configurable, `/{cpTrigger}/mcp` by default, or `/mcp` with public registration | Any active user, through OAuth |
+| Public        | Configurable, `/mcp` by default | Anyone, but only for capabilities and content an administrator has approved |
+| Stdio         | `php craft mcp:serve --user=…`  | Whoever can run Craft's CLI, acting as the named user              |
 
-The authenticated and stdio servers are always available. The public server is disabled until an administrator enables it under **Settings → MCP**.
+The stdio server is always available. The authenticated and public servers are disabled until an administrator enables them under **Settings → MCP**.
+
+The two HTTP servers can share an endpoint. Requests with a bearer token go to the authenticated server, and the rest go to the public server. Clients discover OAuth from a `401` response, which a shared endpoint can't send, so authenticated clients should connect to the separate **Authorization Endpoint** (`/{cpTrigger}/mcp/auth` by default, or `/mcp/auth` with public registration) instead. It always requires a token and serves the authenticated server.
+
+When an endpoint is under the control panel, such as `/admin/mcp`, Craft treats its requests as control panel requests, so users also need the **Access the control panel** permission.
 
 ## How a request is handled
 
-The HTTP servers are stateless. Every request builds a new server instance, discovers the capabilities the current request may use, and then handles the JSON-RPC message.
+Every HTTP request builds a new server instance, discovers the capabilities the current request may use, and then handles the JSON-RPC message. Handshake clients start with `initialize`, then send the returned `Mcp-Session-Id` and negotiated `MCP-Protocol-Version` headers on subsequent requests. `DELETE` with those headers tears down the session. Modern clients send protocol metadata on each request without a session.
+
+Handshake sessions use Laravel's default cache store, with a one-hour sliding expiration. Configure a persistent store such as Redis or the database, not `array` or `null`. Multi-instance deployments must share that store, or use session affinity with persistent local storage. Public sessions are separate from authenticated sessions, which are bound to the user's ID and granted MCP scopes. Sessions never replace authentication or preserve capability approvals: permissions, scopes, and public approvals are checked on every request.
 
 ```mermaid
 sequenceDiagram
@@ -28,7 +34,7 @@ sequenceDiagram
     Client->>Route: POST JSON-RPC message
     Route->>Route: Authenticate, authorize, set activity origin
     Route->>Controller: admin() or public()
-    Controller->>Factory: Build stateless server
+    Controller->>Factory: Build dual-protocol server
     Factory->>Discovery: Discover capabilities
     Discovery->>Discovery: Merge core and registered classes
     Discovery->>Discovery: Remove capabilities the request may not use
@@ -113,8 +119,8 @@ The authenticated server uses OAuth 2.1 through Laravel Passport. Craft publishe
 
 - **Protected resource metadata** at `/.well-known/oauth-protected-resource/{path}`.
 - **Authorization server metadata** at `/.well-known/oauth-authorization-server/{path}`.
-- **Dynamic client registration** at `{cpTrigger}/mcp/oauth/register`.
-- **Authorization** at `{cpTrigger}/mcp/oauth/authorize`, using the authorization code grant with PKCE (`S256`).
+- **Dynamic client registration** at `{authorizationEndpoint}/oauth/register`.
+- **Authorization** at `{authorizationEndpoint}/oauth/authorize`, using the authorization code grant with PKCE (`S256`).
 
 Tokens are checked by the `craft-mcp` auth guard. An unauthenticated request receives a `401` response with a `WWW-Authenticate` header pointing at the protected resource metadata and requesting every MCP scope.
 
@@ -130,18 +136,17 @@ The user chooses the access level on the consent screen. It defaults to read onl
 
 Craft adds its scopes and guard alongside the host application's Passport configuration. It does not replace existing scopes, the default scope, or the authorization guard.
 
-After authentication, the user also needs the `accessCp` and `useCraftMcp` permissions. Individual capabilities can require more.
+After authentication, the user needs no particular permission, unless the endpoint is under the control panel. Individual capabilities can require more. Capabilities that expose control panel details, such as `info.get`, `elements.schema`, and `preferences.*`, require `accessCp`.
 
 ### Configuration
 
-Configure the authenticated server with the `mcp` general config setting:
+Enable the authenticated server and choose its endpoints under **Settings → MCP**. Those settings are stored in project config under `mcp`. Configure the rest with the `mcp` general config setting:
 
 ```php
 use CraftCms\Cms\Config\GeneralConfig;
 
 return GeneralConfig::create()
     ->mcp([
-        'endpoint' => 'mcp',
         'middleware' => [MyMcpMiddleware::class],
         'instructions' => 'Preserve legal notices when editing content.',
     ]);
@@ -149,7 +154,6 @@ return GeneralConfig::create()
 
 | Setting       | Description                                                                                       |
 | ------------- | ------------------------------------------------------------------------------------------------- |
-| `endpoint`    | Path below the control panel trigger. Defaults to `mcp`.                                          |
 | `middleware`  | Extra route middleware appended to the authenticated server and its upload routes.                |
 | `instructions` | Additional guidance returned by `info.get` for authenticated HTTP and stdio clients. Defaults to an empty string. |
 
@@ -159,7 +163,7 @@ The public server is configured in the control panel. Its settings are stored in
 
 ### Server instructions
 
-The admin server is the authenticated HTTP or stdio server acting as a Craft user, including editors. Its available capabilities depend on that user's permissions and `allowAdminChanges`. HTTP clients receive brief startup instructions through `server/discover`; stdio clients receive them during `initialize`. These direct clients to call `info.get` before using other Craft capabilities.
+The admin server is the authenticated HTTP or stdio server acting as a Craft user, including editors. Its available capabilities depend on that user's permissions and `allowAdminChanges`. HTTP clients receive brief startup instructions through `server/discover`; stdio clients receive them during `initialize`. For users with control panel access, these direct clients to call `info.get` before using other Craft capabilities.
 
 The `instructions` field in the `info.get` result contains the full guidance for discovery, identifiers, reading and editing content, pagination, and destructive operations, followed by site and plugin additions. Startup instructions stay below Claude Code's default 2,048-character limit. Task-specific guidance remains in element schemas and tool descriptions.
 
@@ -181,9 +185,13 @@ public function boot(): void
 
 Craft combines core instructions, site instructions, and plugin contributions in that order, separated by blank lines. Empty contributions are omitted. The event exposes only plugin contributions, so listeners cannot remove core or site instructions. Instructions guide clients; the server still enforces permissions independently. Avoid secrets in instructions because every user who can connect to the admin server receives them.
 
+The `mcp.instructions` setting is for developers. The site’s team writes guidance for content in the control panel’s **AI Guidance & Skills** utility, and each user can add their own. Clients get it with the `guidance.get` tool, and the site’s skills with `skills.list` and `skills.get`. Users who can use the utility can save guidance with `guidance.update` and manage skills with `skills.create`, `skills.update`, and `skills.delete`, and any user can save their own guidance with `guidance.updatePersonal`. The core instructions tell clients to read guidance before writing content. See [Ask AI](ask-ai.md#guidance-and-skills).
+
 Keep site and plugin contributions short. State when they apply and which capability or resource provides the details. Put task-specific procedures beside their tool schemas or in resources so unrelated tasks do not need to load them.
 
-The event runs each time `info.get` is called. Server discovery, stdio initialization, and unauthenticated CORS preflight requests do not collect instructions. Restart stdio clients after changing instruction configuration. The public server keeps separate instructions and receives neither `mcp.instructions` nor these plugin contributions.
+To add short guidance to the startup instructions instead, listen for `CraftCms\Cms\Mcp\Events\CollectingServerInstructions` the same way. Unlike `info.get`, every user who connects receives these, including users without control panel access.
+
+The `CollectingAdminInstructions` event runs each time `info.get` is called. Server discovery, stdio initialization, and unauthenticated CORS preflight requests do not collect instructions. Restart stdio clients after changing instruction configuration. The public server keeps separate instructions and receives neither `mcp.instructions` nor these plugin contributions.
 
 ### Element pagination and permission replacement
 
@@ -207,7 +215,7 @@ MCP clients that launch servers as local processes, such as desktop agents and c
 }
 ```
 
-The command is also available as `php artisan craft:mcp:serve`. `--user` accepts a user ID, username, or email address. The user must be active and have the **Use Craft MCP** permission. The **Access the control panel** permission is not required.
+The command is also available as `php artisan craft:mcp:serve`. `--user` accepts a user ID, username, or email address. The user must be active.
 
 ### Authentication
 
@@ -385,7 +393,7 @@ Use a plugin-specific URI scheme. `craft://` is reserved for core.
 
 ### Authorization
 
-Every capability on the authenticated server already requires `accessCp` and `useCraftMcp`. Add these attributes to require more:
+Capabilities on the authenticated server are available to any active user by default. Add these attributes to require more:
 
 | Attribute                         | Requirement                                                                         |
 | --------------------------------- | ----------------------------------------------------------------------------------- |
@@ -512,6 +520,24 @@ Without `createAttributesSchema()`, `elements.create` reports that the type can'
 
 Registered element types appear under **Public Content → Element Types**. When an administrator approves one, `craft-query` can query it by its `refHandle()`, using the common criteria (`id`, `uid`, `site`, `siteId`, `search`, `status`, `limit`, `offset`, and `orderBy`) plus its custom fields. Entries, assets, and users are controlled by sections, volumes, and user groups instead.
 
+### Hiding capabilities from users
+
+Craft dispatches `CraftCms\Cms\Mcp\Events\DiscoveringCapability` for each tool, resource, and prompt the authenticated or stdio server would expose to the current user, after its own permission and token scope checks. Set `allowed` to `false` to hide one:
+
+```php
+use CraftCms\Cms\Mcp\Events\DiscoveringCapability;
+use Illuminate\Support\Facades\Event;
+use Mcp\Capability\Registry\ToolReference;
+
+Event::listen(DiscoveringCapability::class, function (DiscoveringCapability $event): void {
+    if ($event->reference instanceof ToolReference && $event->reference->tool->name === 'reviews.delete' && ! $event->user?->can('deleteReviews')) {
+        $event->allowed = false;
+    }
+});
+```
+
+The event can't hide capabilities approved for the public server.
+
 ### Changing serialized elements
 
 Tools that return elements serialize them with `ElementSerializer`, which dispatches `CraftCms\Cms\Mcp\Events\ElementSerializing` before returning. Listen for it to add, change, or remove data:
@@ -606,7 +632,7 @@ public function boot(CheckRegistry $checks): void
 
 ## Testing plugin capabilities
 
-Register the capability class in the test, act as a user with an MCP scope on the `craft-mcp` guard, and post a JSON-RPC message to the authenticated server:
+Enable the authenticated server in the test's project config so its routes are registered. Then register the capability class, act as a user with an MCP scope on the `craft-mcp` guard, and post a JSON-RPC message to the authenticated server:
 
 ```php
 use CraftCms\Cms\Mcp\CapabilityRegistry;
@@ -616,7 +642,7 @@ it('lists reviews for an entry', function (): void {
     app(CapabilityRegistry::class)->register(ReviewCapabilities::class);
     Passport::actingAs($user, ['mcp:read'], 'craft-mcp');
 
-    postJson(route('craft.cp.mcp.server'), [
+    postJson(route('craft.mcp.server'), [
         'jsonrpc' => '2.0',
         'id' => 1,
         'method' => 'tools/call',
@@ -638,6 +664,6 @@ it('lists reviews for an entry', function (): void {
 });
 ```
 
-Laravel caches a route's controller instance. When a test sends several MCP requests whose available capabilities differ, call `Route::getRoutes()->getByName('craft.cp.mcp.server')->flushController()` between them.
+Laravel caches a route's controller instance. When a test sends several MCP requests whose available capabilities differ, call `Route::getRoutes()->getByName('craft.mcp.server')->flushController()` between them.
 
 Cover the authorization boundary as well as the happy path: a user without the required permission should get error `-32602`, and a user who cannot view a record should get the same error message as for a missing record.

@@ -38,8 +38,8 @@
     profileTemplates?: boolean;
   }
 
-  const props = usePage<UserPreferencesViewModel>().props;
-  const preferences = props.preferences;
+  const page = usePage<UserPreferencesViewModel>();
+  const preferences = page.props.preferences;
 
   const initialForm: UserPreferencesForm = {
     preferredLanguage: preferences.preferredLanguage?.toString() ?? '',
@@ -56,7 +56,7 @@
       preferences.notificationPosition?.toString() ?? 'end-start',
     slideoutPosition: preferences.slideoutPosition?.toString() ?? 'end',
   };
-  if (props.isAdmin) {
+  if (page.props.isAdmin) {
     initialForm.showFieldHandles = Boolean(preferences.showFieldHandles);
     initialForm.showExceptionView = Boolean(preferences.showExceptionView);
     initialForm.profileTemplates = Boolean(preferences.profileTemplates);
@@ -92,12 +92,12 @@
         {
           name: 'notificationPosition',
           label: t('Notification Position'),
-          options: props.notificationPositionOptions,
+          options: page.props.notificationPositionOptions,
         },
         {
           name: 'slideoutPosition',
           label: t('Slideout Position'),
-          options: props.slideoutPositionOptions,
+          options: page.props.slideoutPositionOptions,
         },
       ] as const
   );
@@ -150,7 +150,7 @@
         'slideoutPosition',
       ],
     },
-    ...(props.isAdmin
+    ...(page.props.isAdmin
       ? [
           {
             id: 'preferences-development',
@@ -202,7 +202,7 @@
             :help-text="t('The language that the control panel should use.')"
             id="preferredLanguage"
             name="preferredLanguage"
-            :options="props.languageOptions"
+            :options="page.props.languageOptions"
             :error="form.errors.preferredLanguage"
             :require-option-match="true"
             show-all-on-empty
@@ -218,7 +218,7 @@
             "
             id="preferredLocale"
             name="preferredLocale"
-            :options="props.localeOptions"
+            :options="page.props.localeOptions"
             :error="form.errors.preferredLocale"
             :require-option-match="true"
             show-all-on-empty
@@ -229,7 +229,7 @@
             :label="t('Week Start Day')"
             id="weekStartDay"
             name="weekStartDay"
-            :options="props.weekStartDayOptions"
+            :options="page.props.weekStartDayOptions"
             :error="form.errors.weekStartDay"
           />
 
@@ -238,7 +238,7 @@
             :label="t('Time Zone')"
             id="time-zone"
             name="timeZone"
-            :options="props.timeZoneOptions"
+            :options="page.props.timeZoneOptions"
             :error="form.errors.timeZone"
             :require-option-match="true"
             show-all-on-empty
@@ -257,7 +257,7 @@
             "
           >
             <craft-radio
-              v-for="option in props.themeOptions"
+              v-for="option in page.props.themeOptions"
               :key="option.value"
               .choiceValue="option.value"
               .checked="form.theme === option.value"
@@ -285,7 +285,7 @@
           </craft-radio-group>
         </craft-field-group>
 
-        <HtmlFragmentRenderer :fragment="props.prefsHook" />
+        <HtmlFragmentRenderer :fragment="page.props.prefsHook" />
       </section>
 
       <section id="preferences-accessibility" class="grid gap-3 hidden">
@@ -293,13 +293,13 @@
           <CheckboxGroup
             v-model="displaySettings"
             :label="t('Display Settings')"
-            :options="props.displaySettingOptions"
+            :options="page.props.displaySettingOptions"
           />
 
           <CheckboxGroup
             v-model="generalSettings"
             :label="t('General Settings')"
-            :options="props.generalSettingOptions"
+            :options="page.props.generalSettingOptions"
           />
 
           <Select
@@ -312,7 +312,7 @@
             "
             name="notificationDuration"
             id="notificationDuration"
-            :options="props.notificationDurationOptions"
+            :options="page.props.notificationDurationOptions"
             :error="form.errors.notificationDuration"
           />
 
@@ -376,7 +376,7 @@
       </section>
 
       <section
-        v-if="props.isAdmin"
+        v-if="page.props.isAdmin"
         id="preferences-development"
         class="grid gap-3 hidden"
       >
@@ -384,7 +384,7 @@
           <CheckboxGroup
             v-model="developmentSettings"
             :label="t('Development Settings')"
-            :options="props.developmentSettingOptions"
+            :options="page.props.developmentSettingOptions"
           />
         </craft-field-group>
       </section>

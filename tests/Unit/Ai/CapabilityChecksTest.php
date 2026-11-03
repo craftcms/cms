@@ -13,6 +13,7 @@ use CraftCms\Cms\Ai\Enums\AiUnavailableReason;
 use CraftCms\Cms\Ai\Enums\Capability;
 use CraftCms\Cms\Ai\Exceptions\AiUnavailableException;
 use CraftCms\Cms\Ai\Settings;
+use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Asset\Analysis\Tasks\ClassifyImage;
 use CraftCms\Cms\Asset\Analysis\Tasks\DetectFocalPoint;
 use CraftCms\Cms\Asset\Analysis\Tasks\GenerateAltText;
@@ -24,9 +25,11 @@ use CraftCms\Cms\Tests\Support\Ai\MediaTask;
 use CraftCms\Cms\Tests\Support\Ai\ResearchTask;
 use CraftCms\Cms\Tests\Support\Ai\SummarizeTask;
 use GuzzleHttp\Psr7\Response as Psr7Response;
+use Illuminate\Http\Client\Request;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Http;
 use Laravel\Ai\Exceptions\ProviderConnectionException;
 use Laravel\Ai\Exceptions\ProviderOverloadedException;
 
@@ -82,7 +85,11 @@ beforeEach(function (): void {
     app(AiTasks::class)->register(AltTextTask::class, SummarizeTask::class);
     app()->instance(Settings::class, new Settings([
         'defaults' => ['text' => ['provider' => 'openai', 'model' => 'gpt-vision']],
-        'tasks' => ['test:altText' => ['provider' => 'deepseek', 'model' => 'deepseek-chat']],
+        'tasks' => [
+            'test:altText' => ['provider' => 'deepseek', 'model' => 'deepseek-chat'],
+            // Craft’s own assistant needs tool calling, which would be checked on the default provider as well.
+            Assistant::handle() => ['enabled' => false],
+        ],
     ]));
 });
 
@@ -142,12 +149,43 @@ it('only checks tasks that need a capability and can run', function (): void {
     AttachmentProbe::fake(fn (string $prompt, Collection $attachments): string => probeAnswer($attachments));
     app()->instance(Settings::class, new Settings([
         'defaults' => ['text' => ['provider' => 'openai']],
-        'tasks' => ['test:altText' => ['enabled' => false]],
+        'tasks' => ['test:altText' => ['enabled' => false], Assistant::handle() => ['enabled' => false]],
     ]));
 
     app(Ai::class)->checkRequirements();
 
     AttachmentProbe::assertNeverPrompted();
+});
+
+it('checks the capabilities tasks use when their model has them, without making the task unavailable', function (bool $canSee): void {
+    app()->instance(Settings::class, new Settings([
+        'defaults' => ['text' => ['provider' => 'openai', 'model' => 'gpt-small']],
+        'tasks' => ['test:altText' => ['enabled' => false]],
+    ]));
+    Str::createRandomStringsUsing(fn (): string => 'kxqzpwmvtrla');
+    ToolCallingProbe::fake(['kxqzpwmvtrla']);
+    AttachmentProbe::fake(fn (string $prompt, Collection $attachments): string => $canSee ? probeAnswer($attachments) : 'I can’t see images.');
+
+    app(Ai::class)->checkRequirements();
+    Str::createRandomStringsNormally();
+
+    expect(app(Ai::class)->supports(Assistant::handle(), Capability::Vision))->toBe($canSee)
+        ->and(app(Ai::class)->available(Assistant::handle()))->toBeTrue()
+        ->and(app(Ai::class)->problems())->toBe([]);
+})->with([
+    'a model that can see' => true,
+    'a model that can’t' => false,
+]);
+
+it('checks a model the AI settings didn’t, the first time a task asks whether it has a capability', function (): void {
+    app()->instance(Settings::class, new Settings([
+        'defaults' => ['text' => ['provider' => 'openai', 'model' => 'gpt-small']],
+    ]));
+    AttachmentProbe::fake(fn (string $prompt, Collection $attachments): string => probeAnswer($attachments));
+
+    expect(app(Ai::class)->supports(Assistant::handle(), Capability::Vision))->toBeTrue()
+        ->and(app(Ai::class)->supports(Assistant::handle(), Capability::Vision))->toBeTrue();
+    AttachmentProbe::assertPromptedTimes(1);
 });
 
 it('checks that models can return structured output and call tools', function (mixed $structured, string $reply, ?bool $structuredOutput, ?bool $toolCalling, ?string $problem): void {
@@ -169,6 +207,28 @@ it('checks that models can return structured output and call tools', function (m
     'neither' => [['word' => 'lighthouse', 'number' => '42'], 'I can’t call tools.', false, false, 'Research needs structured output, which the gpt-small model on the openai provider doesn’t support.'],
     'no tools' => [['word' => 'lighthouse', 'number' => 42], 'I can’t call tools.', true, false, 'Research needs tool calling, which the gpt-small model on the openai provider doesn’t support.'],
 ]);
+
+it('checks tool calling with a tool name Anthropic accepts', function (): void {
+    config(['ai.providers.anthropic' => ['driver' => 'anthropic', 'key' => 'sk-test']]);
+    Http::fake(['api.anthropic.com/*' => function (Request $request) {
+        $tool = $request->data()['tools'][0]['name'];
+
+        if (! preg_match('/^[a-zA-Z0-9_-]{1,128}$/', $tool)) {
+            return Http::response(['type' => 'error', 'error' => ['type' => 'invalid_request_error', 'message' => 'tools.0.custom.name: String should match pattern']], 400);
+        }
+
+        $result = collect(last($request->data()['messages'])['content'])->firstWhere('type', 'tool_result');
+
+        return Http::response($result
+            ? ['content' => [['type' => 'text', 'text' => $result['content']]], 'stop_reason' => 'end_turn']
+            : ['content' => [['type' => 'tool_use', 'id' => 'toolu_1', 'name' => $tool, 'input' => []]], 'stop_reason' => 'tool_use']);
+    }]);
+
+    $check = app(CapabilityChecks::class)->check(Capability::ToolCalling, new ResolvedProvider('anthropic', 'claude-sonnet-5-5'));
+
+    expect($check->error)->toBeNull()
+        ->and($check->supported)->toBeTrue();
+});
 
 it('checks that models can read documents, hear audio, and watch videos', function (Capability $capability, bool $readable): void {
     app(AiTasks::class)->register(MediaTask::class);

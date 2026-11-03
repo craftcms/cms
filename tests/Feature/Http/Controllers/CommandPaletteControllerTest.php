@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Ai\Models\AgentSkill;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\CommandPalette\ActionRegistry;
 use CraftCms\Cms\Cp\CommandPalette\CommandPaletteItem;
@@ -9,6 +10,7 @@ use CraftCms\Cms\Cp\CommandPalette\Contracts\SearchProvider;
 use CraftCms\Cms\Cp\CommandPalette\DocsSearch;
 use CraftCms\Cms\Cp\CommandPalette\PageRegistry;
 use CraftCms\Cms\Cp\CommandPalette\SearchProviderRegistry;
+use CraftCms\Cms\Cp\CustomNavigations;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
@@ -141,6 +143,19 @@ it('gives nav pages without icons their parent’s', function () {
     expect($users['icon'])->not->toBeNull()
         ->and($allUsers['icon'])->toBe($users['icon'])
         ->and($utilities['nav-utilities-updates']['icon'])->not->toBe($utilities['nav-utilities']['icon']);
+});
+
+it('leaves out what the navigation hides, and finds what it renames or adds, by its new name or its old one', function () {
+    app(CustomNavigations::class)->saveDefault(['items' => [
+        'nav-plugin-store' => ['hidden' => true],
+        'nav-utilities' => ['label' => 'Toolbox'],
+        'custom-docs00' => ['type' => 'link', 'label' => 'Handbook', 'url' => 'https://docs.example.com'],
+    ]]);
+
+    expect(collect(paletteSearch('pages', 'plugin store'))->pluck('id'))->not->toContain('nav-plugin-store')
+        ->and(collect(paletteSearch('pages', 'toolbox'))->firstWhere('id', 'nav-utilities')['label'] ?? null)->toBe('Toolbox')
+        ->and(collect(paletteSearch('pages', 'utilities'))->pluck('id'))->toContain('nav-utilities')
+        ->and(collect(paletteSearch('pages', 'handbook'))->pluck('id'))->toContain('custom-docs00');
 });
 
 it('lists settings edit pages for admins, findable by handle', function () {
@@ -594,4 +609,31 @@ it('lets plugins remove search providers, pages and actions', function () {
     expect(collect($index->json('providers'))->pluck('handle'))->not->toContain('elements-user')
         ->and(collect($index->json('actions'))->pluck('id'))->not->toContain('plugin-action')
         ->and(collect(paletteSearch('pages', 'plugin reports'))->pluck('id'))->not->toContain('plugin-page');
+});
+
+it('offers to create skills, edit each one, and delete it when searching, to those allowed to use the utility', function () {
+    $skill = AgentSkill::query()->create(['title' => 'Palette Voice', 'description' => 'Use for anything written.', 'body' => 'Write plainly.']);
+
+    $indexIds = collect(getJson(route('craft.cp.command-palette.index'))->assertOk()->json('actions'))->pluck('id');
+    $page = collect(paletteSearch('pages', 'palette voice'))->firstWhere('id', "skill-$skill->id");
+    $delete = collect(paletteSearch('actions', 'delete palette voice'))->firstWhere('id', "delete-skill-$skill->id");
+
+    expect($indexIds)->toContain('create-skill')
+        ->not->toContain("delete-skill-$skill->id")
+        ->and($page['href'])->toBe(cp_url("ai-skills/$skill->id"))
+        ->and($page['hint'])->toBe('Use for anything written.')
+        ->and($delete['action'])->toMatchArray([
+            'type' => 'http',
+            'method' => 'DELETE',
+            'url' => cp_url("ai-skills/$skill->id"),
+        ])
+        ->and($delete['action']['confirm'])->toContain('Palette Voice')
+        ->and($delete['removedPage'])->toBe(cp_url("ai-skills/$skill->id"))
+        ->and($delete['removedPageRedirect'])->toBe(cp_url('utilities/ai-guidance/skills'));
+
+    actingAs(UserModel::factory()->withPermissions(['accessCp', 'accessUtilities'])->createElement(['admin' => false]));
+
+    expect(collect(getJson(route('craft.cp.command-palette.index'))->assertOk()->json('actions'))->pluck('id'))->not->toContain('create-skill')
+        ->and(collect(paletteSearch('pages', 'palette voice'))->pluck('id'))->not->toContain("skill-$skill->id")
+        ->and(collect(paletteSearch('actions', 'delete palette voice'))->pluck('id'))->not->toContain("delete-skill-$skill->id");
 });

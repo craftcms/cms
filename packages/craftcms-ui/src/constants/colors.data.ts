@@ -55,11 +55,11 @@ export const semanticColors = {
 
 /** Status name → palette color. */
 export const statusColors = {
-  pending: 'orange',
+  pending: 'sky',
   off: 'red',
   suspended: 'red',
   expired: 'red',
   disabled: 'gray',
   inactive: 'gray',
-  on: 'emerald',
+  on: 'teal',
 } as const;

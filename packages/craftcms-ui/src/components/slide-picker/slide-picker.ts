@@ -30,6 +30,15 @@ import styles from './slide-picker.styles.js';
  * `--c-color-neutral-fill-normal`.
  */
 export default class CraftSlidePicker extends FormAssociated(LitElement) {
+  /**
+   * Delegate focus into the shadow root, so `host.focus()` and a `<label for>`
+   * pointing at the host land on the slider.
+   */
+  static override shadowRootOptions: ShadowRootInit = {
+    ...LitElement.shadowRootOptions,
+    delegatesFocus: true,
+  };
+
   static override styles = [styles];
 
   /** Lowest selectable value. */

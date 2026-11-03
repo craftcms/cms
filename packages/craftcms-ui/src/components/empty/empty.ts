@@ -45,7 +45,6 @@ export default class CraftEmpty extends LitElement {
         color: var(--c-text-quiet);
       }
 
-      /* The border is the inner box's, which doesn't inherit the host's */
       :host([appearance~='outline']) .cp-empty {
         border-color: var(--c-color-border-quiet);
       }

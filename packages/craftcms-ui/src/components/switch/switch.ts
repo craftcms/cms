@@ -193,8 +193,8 @@ export default class CraftSwitch extends HasLabel(LionSwitch) {
       .join(' ');
   }
 
-  override updated(changedProperties: PropertyValues): void {
-    super.updated(changedProperties);
+  override willUpdate(changedProperties: PropertyValues): void {
+    super.willUpdate(changedProperties);
     if (
       changedProperties.has('checked') &&
       this.checked &&
@@ -202,6 +202,10 @@ export default class CraftSwitch extends HasLabel(LionSwitch) {
     ) {
       this.indeterminate = false;
     }
+  }
+
+  override updated(changedProperties: PropertyValues): void {
+    super.updated(changedProperties);
     if (changedProperties.has('onLabel') || changedProperties.has('offLabel')) {
       this.__syncStateDescription();
     }

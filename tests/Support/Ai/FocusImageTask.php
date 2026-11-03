@@ -21,12 +21,12 @@ class FocusImageTask extends ImageAnalysisTask
         return 'Focus';
     }
 
-    public static function instructions(Asset $asset): string
+    public static function instructions(Asset $asset, bool $overwrite): string
     {
         return 'Find the subject.';
     }
 
-    public static function schema(JsonSchema $schema, Asset $asset): array
+    public static function schema(JsonSchema $schema, Asset $asset, bool $overwrite): array
     {
         return ['x' => $schema->number()->required(), 'y' => $schema->number()->required()];
     }

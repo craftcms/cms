@@ -1,4 +1,6 @@
+import {t} from '@craftcms/ui/utilities/translate';
 import {markRaw, shallowReactive, shallowRef} from 'vue';
+import {registerShortcut} from '@/common/shortcuts';
 import type {
   CommandPaletteItem,
   CommandPaletteProvider,
@@ -17,12 +19,13 @@ export const openedWithShortcut = shallowRef(false);
 let shortcutInstalled = false;
 
 /**
- * Opens and closes the palette with Cmd+K (Ctrl+K elsewhere), from anywhere.
- * Installed with the control panel rather than by the palette component,
- * which loads after the page does, so a press made before it arrives isn't
- * lost. A focused editor that has a use for the shortcut — a rich text
- * field's link command — handles it first and cancels it, so it's left alone
- * then.
+ * Opens and closes the palette with Cmd+K (Ctrl+K elsewhere), from anywhere,
+ * and opens it with `/` when nothing that takes typing has focus, as search
+ * opens in other web apps. Installed with the control panel rather than by
+ * the palette component, which loads after the page does, so a press made
+ * before it arrives isn't lost. A focused editor that has a use for the
+ * shortcut — a rich text field's link command — handles it first and cancels
+ * it, so it's left alone then.
  */
 export function installCommandPaletteShortcut(): void {
   if (shortcutInstalled) {
@@ -31,25 +34,33 @@ export function installCommandPaletteShortcut(): void {
 
   shortcutInstalled = true;
 
-  window.addEventListener('keydown', (event: KeyboardEvent) => {
-    if (
-      event.key.toLowerCase() !== 'k' ||
-      event.altKey ||
-      event.shiftKey ||
-      !(event.metaKey || event.ctrlKey) ||
-      event.defaultPrevented
-    ) {
-      return;
-    }
+  registerShortcut(
+    'Mod+K',
+    () => {
+      if (!isCommandPaletteOpen.value) {
+        openedWithShortcut.value = true;
+      }
 
-    event.preventDefault();
+      isCommandPaletteOpen.value = !isCommandPaletteOpen.value;
+    },
+    {description: () => t('Open the command palette'), ignoreInputs: false}
+  );
 
-    if (!isCommandPaletteOpen.value) {
+  registerShortcut(
+    '/',
+    () => {
+      if (isCommandPaletteOpen.value) {
+        return false;
+      }
+
       openedWithShortcut.value = true;
+      isCommandPaletteOpen.value = true;
+    },
+    {
+      description: () =>
+        t('Open the command palette when not typing in a field'),
     }
-
-    isCommandPaletteOpen.value = !isCommandPaletteOpen.value;
-  });
+  );
 }
 
 const providers = shallowReactive<CommandPaletteProvider[]>([]);

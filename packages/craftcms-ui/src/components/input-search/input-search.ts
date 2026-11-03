@@ -187,9 +187,13 @@ export default class CraftInputSearch extends CraftInput {
     }
 
     this.modelValue = '';
-    this._inputNode?.dispatchEvent(new Event('input', {bubbles: true}));
+    this._inputNode?.dispatchEvent(
+      new Event('input', {bubbles: true, composed: true})
+    );
     this._inputNode?.focus();
-    this.dispatchEvent(new CustomEvent('clear', {bubbles: true}));
+    this.dispatchEvent(
+      new CustomEvent('clear', {bubbles: true, composed: true})
+    );
   }
 
   #hasValue(): boolean {

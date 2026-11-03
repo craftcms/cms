@@ -10,6 +10,7 @@
     label: string;
     /** Whether a request to show or hide the descendants is still in flight. */
     pending?: boolean;
+    flush?: 'inline-start';
   }>();
 
   defineEmits<{
@@ -23,6 +24,7 @@
     type="button"
     variant="plain"
     size="small"
+    :flush="flush"
     icon
     .loading="pending ?? false"
     :aria-expanded="String(expanded)"

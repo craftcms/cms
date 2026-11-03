@@ -13,7 +13,7 @@ it('renders the web component from the legacy variable API', function () {
     app()->scoped(Deprecator::class, fn () => $mock);
 
     $html = renderString(
-        "{% include '_includes/forms/lightswitch' with {id: 'ls', name: 'enabled', on: true, label: 'Enabled'} only %}",
+        "{{ craft.cp.lightswitch({id: 'ls', name: 'enabled', on: true, label: 'Enabled'})|raw }}",
         templateMode: TemplateMode::Cp,
     );
 
@@ -37,7 +37,7 @@ it('logs a deprecation for the unsupported descriptionId param', function () {
     app()->scoped(Deprecator::class, fn () => $mock);
 
     renderString(
-        "{% include '_includes/forms/lightswitch' with {id: 'ls', descriptionId: 'custom-desc'} only %}",
+        "{{ craft.cp.lightswitch({id: 'ls', descriptionId: 'custom-desc'})|raw }}",
         templateMode: TemplateMode::Cp,
     );
 

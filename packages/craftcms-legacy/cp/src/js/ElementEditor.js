@@ -517,6 +517,8 @@ Craft.ElementEditor = Garnish.Base.extend(
             keyCode: Garnish.S_KEY,
             ctrl: true,
             alt: true,
+            description: Craft.t('app', 'Apply draft'),
+            group: Craft.t('app', 'Forms'),
           },
           () => {
             Craft.submitForm(this.$container, {
@@ -1257,6 +1259,34 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     openPreview: async function () {
       if (Garnish.hasAttr(this.$previewBtn, 'aria-disabled')) {
+        return;
+      }
+
+      // Live Preview's JS API comes with the Yii2 adapter; without it, the
+      // element's standalone preview page is the way in.
+      if (typeof Craft.Preview === 'undefined') {
+        this.$previewBtn.attr('aria-disabled', true);
+
+        try {
+          // Autosave any last-minute changes, so the page shows them
+          await this.checkForm(false, true);
+        } catch (e) {
+          this.$previewBtn.removeAttr('aria-disabled');
+          throw e;
+        }
+
+        window.location.href = Craft.getCpUrl(
+          `preview/${this.settings.isProvisionalDraft ? this.settings.canonicalId : this.settings.elementId}`,
+          Object.fromEntries(
+            Object.entries({
+              siteId: this.settings.siteId,
+              draftId: this.settings.isProvisionalDraft
+                ? null
+                : this.settings.draftId,
+              revisionId: this.settings.revisionId,
+            }).filter(([, value]) => value != null)
+          )
+        );
         return;
       }
 

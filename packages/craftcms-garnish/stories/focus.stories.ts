@@ -26,7 +26,7 @@ export const FocusableMatcherAndTrap: Story = {
         The container mixes focusable and non-focusable elements. Run the matcher
         to highlight what <code>getFocusableElements</code> /
         <code>isKeyboardFocusable</code> select, then open the focus-trap modal and
-        press <kbd>Tab</kbd> / <kbd>Shift+Tab</kbd>.
+        press <kbd>Tab</kbd> / <kbd>Shift</kbd> <kbd>Tab</kbd>.
       </p>
       <div class="pg-controls">
         <button type="button" data-act="highlight">Highlight focusable elements</button>

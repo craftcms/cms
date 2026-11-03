@@ -109,7 +109,7 @@
               <craft-button
                 type="button"
                 variant="neutral"
-                :loading="isDiscarding"
+                .loading="isDiscarding"
                 @click="discardChanges"
               >
                 {{ t('Update YAML files') }}
@@ -128,7 +128,7 @@
               <craft-button
                 v-if="!readOnly"
                 type="button"
-                :loading="isDiscarding"
+                .loading="isDiscarding"
                 @click="discardChanges"
               >
                 {{ t('Discard changes') }}
@@ -163,7 +163,7 @@
               <craft-button
                 type="submit"
                 variant="neutral"
-                :loading="processing"
+                .loading="processing"
               >
                 {{ t('Generate') }}
               </craft-button>
@@ -194,7 +194,7 @@
               <craft-button
                 type="submit"
                 variant="neutral"
-                :loading="processing"
+                .loading="processing"
               >
                 {{ t('Rebuild') }}
               </craft-button>

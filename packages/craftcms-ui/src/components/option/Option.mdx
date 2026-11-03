@@ -28,7 +28,9 @@ Over a native `<option>`, two things:
 ```html
 <craft-option .choiceValue="${'username'}">
   username
-  <craft-badge slot="badge" fill="blue" size="small" no-prefix>Suggested</craft-badge>
+  <craft-badge slot="badge" fill="blue" size="small" no-prefix
+    >Suggested</craft-badge
+  >
 </craft-option>
 ```
 
@@ -37,6 +39,19 @@ Over a native `<option>`, two things:
 Options widen their layout once they have room, measured against the option itself rather than the viewport.
 
 That means the same list reads sensibly in a narrow slideout and on a wide page without the parent configuring anything. The threshold is `--c-option-wide-threshold`, defaulting to 640 pixels.
+
+## Groups
+
+Wrap related options in `<craft-option-group>` to list them under a heading. The `label` is shown above the options and names the group, so a screen reader announces it as someone moves into the group.
+
+```html
+<craft-option-group label="Pome">
+  <craft-option .choiceValue="${'apple'}">Apple</craft-option>
+  <craft-option .choiceValue="${'pear'}">Pear</craft-option>
+</craft-option-group>
+```
+
+`craft-combobox` builds these from options with `type: 'optgroup'`.
 
 ## Accessibility
 

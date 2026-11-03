@@ -7,15 +7,25 @@ import type {
 import type {ViewMode, ViewState} from '@/modules/elements/types/view-state';
 
 /**
- * Server-driven view mode. Switching modes updates the local view state
- * immediately (so the toolbar + view react without waiting on the network),
- * then pushes a `viewMode` Inertia visit that reflects the change in the URL
- * and refreshes the server-rendered elements. `preserveState` keeps the
- * optimistic local state in place while the server responds.
+ * The props a mode change re-renders. `viewState` comes along so its `mode`
+ * keeps naming the mode the rows were rendered for: Inertia stores the page in
+ * history, and going back to it calls `restore()` again, which trusts that mode.
+ */
+const MODE_PROPS = ['data', 'pagination', 'structure', 'viewState'];
+
+/**
+ * Server-driven view mode, kept per source as sort and columns are. A source
+ * without one shows the mode the server rendered: its default. Switching modes
+ * updates the local view state immediately (so the toolbar + view react
+ * without waiting on the network), then pushes a `viewMode` Inertia visit that
+ * reflects the change in the URL and refreshes the server-rendered elements.
+ * `preserveState` keeps the optimistic local state in place while the server
+ * responds.
  */
 export function useElementIndexViewMode(
   viewState: Ref<ViewState>,
   visitor: IndexVisitor,
+  sourceKey: () => string,
   /** The mode the current payload was rendered for, if it says. */
   renderedMode: () => ViewMode['mode'] | undefined = () => undefined,
   /** The modes the index can show, if it's limited to some. */
@@ -23,15 +33,29 @@ export function useElementIndexViewMode(
   /** Other params a mode's rows depend on, such as their thumbnail size. */
   modeParams: (mode: ViewMode['mode']) => IndexQueryParams = () => ({})
 ) {
+  /** The mode chosen for a source, if one has been. */
+  function persistedMode(
+    source: string = sourceKey()
+  ): ViewMode['mode'] | undefined {
+    return viewState.value.sources?.[source]?.mode;
+  }
+
+  function store(value: ViewMode['mode']): void {
+    viewState.value.sources = {
+      ...viewState.value.sources,
+      [sourceKey()]: {...viewState.value.sources?.[sourceKey()], mode: value},
+    };
+  }
+
   const mode = computed<ViewMode['mode']>({
-    get: () => viewState.value.mode,
+    get: () => persistedMode() ?? renderedMode() ?? 'table',
     set: (value) => {
-      if (value === viewState.value.mode) {
+      if (value === mode.value) {
         return;
       }
 
       // Update locally first so the view + active button switch immediately.
-      viewState.value.mode = value;
+      store(value);
 
       // Reflect the change in the URL and refresh the server-rendered bits.
       // `structure` comes along because the server only fills it in while the
@@ -40,7 +64,7 @@ export function useElementIndexViewMode(
       // the rows render with no reordering affordances.
       visitor.merge(
         {viewMode: value, ...modeParams(value)},
-        {only: ['data', 'pagination', 'structure']}
+        {only: MODE_PROPS}
       );
     },
   });
@@ -52,23 +76,25 @@ export function useElementIndexViewMode(
   // restore visit alongside the sort/column restores (see `useElementIndex`),
   // so they can't interrupt each other.
   function restore(): IndexRestore | null {
-    const persisted = viewState.value.mode;
+    const persisted = persistedMode();
     const rendered = renderedMode() ?? 'table';
 
-    // A mode named in the URL wins over the persisted one.
-    if (visitor.currentQuery().viewMode !== undefined) {
-      if (rendered !== persisted) {
-        viewState.value.mode = rendered;
-      }
-
+    if (persisted === rendered) {
       return null;
     }
 
-    // Otherwise, re-request the rows for the persisted mode — unless it's one
-    // the index can't show, in which case the view falls back to what was
-    // rendered anyway.
+    // A mode named in the URL wins over the persisted one, and becomes the
+    // source's.
+    if (visitor.currentQuery().viewMode !== undefined) {
+      store(rendered);
+      return null;
+    }
+
+    // Otherwise, re-request the rows for the persisted mode — unless there
+    // isn't one, or it's one the index can't show, in which case the view
+    // falls back to what was rendered anyway.
     if (
-      persisted === rendered ||
+      persisted === undefined ||
       availableModes()?.includes(persisted) === false
     ) {
       return null;
@@ -76,9 +102,9 @@ export function useElementIndexViewMode(
 
     return {
       params: {viewMode: persisted},
-      only: ['data', 'pagination', 'structure'],
+      only: MODE_PROPS,
     };
   }
 
-  return {mode, restore};
+  return {mode, restore, persistedMode};
 }

@@ -1,5 +1,6 @@
 import {createInertiaApp, router} from '@inertiajs/vue3';
 import {handleControlPanelLinks} from '@/common/inertia-links';
+import {observeExternalLinks} from '@craftcms/ui/utilities/external-links';
 import type {DefineComponent} from 'vue';
 import {setTranslations, t} from '@craftcms/ui/utilities/translate';
 import {http} from '@craftcms/ui/utilities/api/http';
@@ -12,6 +13,7 @@ import {configureIcons} from './icons.js';
 import {installSessionTimeout} from '@/modules/auth/session-timeout';
 import {config, installCpApp, queue} from './cp-app';
 import {cpComponentRegistry} from './components.js';
+import {assistantApi} from './assistant.js';
 import {
   elementDetailsPanelRegistry,
   warnDeprecated,
@@ -20,6 +22,7 @@ import type {ScreenPageProps} from '@/common/composables/screen';
 import {setUpInertiaMessages} from '@/modules/messages/inertia';
 import {trackScrollbarWidth} from '@/common/utils/scrollbarWidth';
 import {registerSubmitShortcut} from '@/common/utils/submitShortcut';
+import {uiValues} from '@/modules/ui/ui-values';
 
 type TranslationStore = Record<string, Record<string, string>>;
 
@@ -75,6 +78,10 @@ const Cp = {
     return cpComponentRegistry;
   },
 
+  get $ui() {
+    return uiValues;
+  },
+
   // Plugin bundles must use the mounted app's router, not their own module copy.
   get $router() {
     return router;
@@ -82,6 +89,10 @@ const Cp = {
 
   get $elementDetailsPanels() {
     return elementDetailsPanelRegistry;
+  },
+
+  get $assistant() {
+    return assistantApi;
   },
 
   /** @deprecated Use `$elementDetailsPanels`. */
@@ -162,6 +173,7 @@ const Cp = {
 
     handleNonInertiaRequests();
     handleControlPanelLinks();
+    observeExternalLinks();
     handleAccessibleRouting();
     registerSlideoutGlobals();
     registerSubmitShortcut();

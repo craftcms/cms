@@ -1,12 +1,10 @@
 import {css} from 'lit';
 export default css`
-  :host([checked]),
-  :host([aria-selected='true']) {
-    background-color: var(--c-color-neutral-fill-loud);
-    color: var(--c-color-neutral-on-loud);
-  }
-
   :host {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: var(--c-spacing-sm);
     --c-option-wide-threshold: 640;
     /* LionOption hard-codes a white fill */
     background-color: transparent;
@@ -16,18 +14,17 @@ export default css`
     border-radius: var(--c-radius-sm);
   }
 
+  /* LionOption fills a checked option; here the check mark marks it */
+  :host([checked]) {
+    background-color: transparent;
+  }
+
   :host(:hover) {
     background-color: var(--c-color-neutral-fill-normal);
     color: var(--c-color-neutral-on-normal);
   }
 
   :host([active]) {
-    background-color: var(--c-color-neutral-fill-loud);
-    color: var(--c-color-neutral-on-loud);
-  }
-
-  :host([checked]),
-  :host([aria-selected='true']) {
     background-color: var(--c-color-neutral-fill-loud);
     color: var(--c-color-neutral-on-loud);
   }
@@ -46,8 +43,7 @@ export default css`
     white-space: nowrap;
   }
 
-  :host([active]) .hint,
-  :host([aria-selected='true']) .hint {
+  :host([active]) .hint {
     color: var(--c-color-neutral-on-loud);
   }
 
@@ -56,10 +52,18 @@ export default css`
     max-width: 100%;
   }
 
-  /* in the label's flow, so options that mix icons and text keep their spacing */
-  ::slotted([slot='badge']) {
-    margin-inline-start: var(--c-spacing-sm);
-    vertical-align: middle;
+  .content {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--c-spacing-sm);
+    min-width: 0;
+  }
+
+  @media (forced-colors: active) {
+    :host([active]) {
+      outline: var(--c-focus-outline-width) solid Highlight;
+      outline-offset: calc(var(--c-focus-outline-width) * -1);
+    }
   }
 
   :host([wide]) .choice-field__label {

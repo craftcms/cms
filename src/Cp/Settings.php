@@ -8,6 +8,8 @@ use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\CmsAssets;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Container\Attributes\Singleton;
 use InvalidArgumentException;
@@ -23,9 +25,13 @@ use function CraftCms\Cms\t;
  *     $settings->registerSetting('My Plugin', 'general', fn () => [
  *         'label' => 'General',
  *         'url' => route('my-plugin.settings'),
+ *         'iconName' => 'gear',
  *     ]);
  * }
  * ```
+ *
+ * An `iconName` is a Font Awesome icon name. The settings index draws its light
+ * style where Craft ships one, and the nav draws its solid style.
  *
  * Use {@see registerReadOnlySetting()} for links shown when admin changes are disabled.
  *
@@ -39,6 +45,9 @@ class Settings
 
     /** @var array<string, array<string, Closure(): array<string, mixed>>> */
     private array $readonlyProviders = [];
+
+    /** @var array<string, string> Each section's untranslated name, by its label. */
+    private array $sectionNames = [];
 
     public function __construct(
         private readonly GeneralConfig $generalConfig,
@@ -70,87 +79,97 @@ class Settings
         $readOnly = ! $this->generalConfig->allowAdminChanges;
         $settings = [];
 
-        $label = t('System');
+        $label = $this->sectionLabel('System');
 
         $settings[$label]['general'] = [
             'url' => route('craft.cp.settings.general.index'),
-            'iconName' => 'light/sliders',
+            'iconName' => 'sliders',
             'label' => t('General'),
         ];
 
         $settings[$label]['sites'] = [
-            'iconName' => sprintf('light/%s', Icons::earth()),
+            'iconName' => Icons::earth(),
             'label' => t('Sites'),
         ];
 
         if (! $this->generalConfig->headlessMode) {
             $settings[$label]['routes'] = [
-                'iconName' => 'light/signs-post',
+                'iconName' => 'signs-post',
                 'label' => t('Routes'),
             ];
         }
 
         $settings[$label]['users'] = [
-            'iconName' => 'light/user-group',
+            'iconName' => 'user-group',
             'label' => t('Users'),
         ];
 
+        if (Edition::get()->supportsCustomNavigations()) {
+            $settings[$label]['cp-nav'] = [
+                'url' => route('craft.cp.settings.cp-nav.index'),
+                'iconName' => I18N::getLocale()->getOrientation() === 'rtl'
+                    ? 'custom-icons/sidebar-nav-flip-light'
+                    : 'custom-icons/sidebar-nav-light',
+                'label' => t('CP Navigation'),
+            ];
+        }
+
         if ($this->generalConfig->allowAdminChanges) {
             $settings[$label]['addresses'] = [
-                'iconName' => 'light/map-location',
+                'iconName' => 'map-location',
                 'label' => t('Addresses'),
             ];
 
             $settings[$label]['email'] = [
                 'url' => route('craft.cp.settings.email.index'),
-                'iconName' => 'light/envelope',
+                'iconName' => 'envelope',
                 'label' => t('Email'),
             ];
         }
 
-        $label = t('Content');
+        $label = $this->sectionLabel('Content');
 
         $settings[$label]['sections'] = [
-            'iconName' => 'light/newspaper',
+            'iconName' => 'newspaper',
             'label' => t('Sections'),
         ];
         $settings[$label]['entry-types'] = [
-            'iconName' => 'light/files',
+            'iconName' => 'files',
             'label' => t('Entry Types'),
         ];
 
         if (Edition::isAtLeast(Edition::Pro)) {
             $settings[$label]['workflows'] = [
-                'iconName' => 'light/clipboard-list-check',
+                'iconName' => 'clipboard-list-check',
                 'label' => t('Workflows'),
             ];
         }
 
         $settings[$label]['assets'] = [
-            'iconName' => 'light/image',
+            'iconName' => 'image',
             'label' => t('Assets'),
         ];
 
         $settings[$label]['fields'] = [
-            'iconName' => 'light/pen-to-square',
+            'iconName' => 'pen-to-square',
             'label' => t('Fields'),
         ];
 
-        $label = t('Extend');
+        $label = $this->sectionLabel('Extend');
 
         $settings[$label]['plugins'] = [
-            'iconName' => 'light/plug',
+            'iconName' => 'plug',
             'label' => t('Plugins'),
         ];
 
         $settings[$label]['connections'] = [
             'url' => route('craft.cp.settings.ai.index'),
-            'iconName' => 'light/sparkles',
+            'iconName' => 'sparkles',
             'label' => t('Connections'),
         ];
 
         // Reserved even if no plugin has settings yet, so sections that plugins register come after it
-        $label = t('Plugins');
+        $label = $this->sectionLabel('Plugins');
         $settings[$label] = [];
 
         foreach ($this->pluginsService->getAllPlugins() as $plugin) {
@@ -163,7 +182,30 @@ class Settings
             }
         }
 
-        return array_filter($this->apply($settings, $readOnly), fn (array $section): bool => $section !== []);
+        $settings = array_filter($this->apply($settings, $readOnly), fn (array $section): bool => $section !== []);
+
+        return array_map(fn (array $section): array => array_map($this->withLightIcon(...), $section), $settings);
+    }
+
+    /**
+     * @param  array<string, mixed>  $setting
+     * @return array<string, mixed>
+     */
+    private function withLightIcon(array $setting): array
+    {
+        $icon = $setting['iconName'] ?? null;
+
+        if (! is_string($icon) || str_contains($icon, '/')) {
+            return $setting;
+        }
+
+        $name = Icons::resolveIconName($icon);
+
+        if (is_file(CmsAssets::resourcesPath("icons/light/$name.svg"))) {
+            $setting['iconName'] = "light/$name";
+        }
+
+        return $setting;
     }
 
     /**
@@ -173,7 +215,7 @@ class Settings
     public function apply(array $settings, bool $readOnly): array
     {
         foreach ($readOnly ? $this->readonlyProviders : $this->providers as $section => $providers) {
-            $section = t($section);
+            $section = $this->sectionLabel($section);
 
             foreach ($providers as $handle => $provider) {
                 $setting = app()->call($provider);
@@ -195,6 +237,24 @@ class Settings
         }
 
         return $settings;
+    }
+
+    /**
+     * The untranslated name of a section {@see all()} returns, which stays the
+     * same whatever the language.
+     */
+    public function sectionName(string $label): string
+    {
+        return $this->sectionNames[$label] ?? $label;
+    }
+
+    /** Translates a section's name, remembering which name the label came from. */
+    private function sectionLabel(string $name): string
+    {
+        $label = t($name);
+        $this->sectionNames[$label] = $name;
+
+        return $label;
     }
 
     /**

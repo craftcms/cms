@@ -12,7 +12,7 @@
     {% set groups = SiteGroups.getAllGroups() %}
     <div>
         <label id="context-label" class="visually-hidden">{{ "Site"|t('app') }}</label>
-        <button type="button" class="btn menubtn sitemenubtn" data-icon="world" aria-labelledby="context-label">{{ selectedSiteId ? Sites.getSiteById(selectedSiteId).name|t('site') }}</button>
+        <button type="button" class="btn menubtn sitemenubtn" aria-labelledby="context-label"><craft-icon name="world"></craft-icon>{{ selectedSiteId ? Sites.getSiteById(selectedSiteId).name|t('site') }}</button>
         <div class="menu">
             {% for group in groups %}
                 {% set groupSiteIds = group.getSiteIds().all()|intersect(siteIds) %}

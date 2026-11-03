@@ -45,6 +45,10 @@ A change that needs any of these is a different pattern. Don't add a mode to `cr
 - [x] Activating an item closes the menu and returns focus to the invoker. Per WCAG 2.4.3 (Focus Order). Verified by `closes on a click and reports an item the consumer added later` in `action-menu.test.ts` and `closes and returns focus to a craft-button invoker when an item is chosen with Enter` in `action-menu.browser.test.ts`.
 - [ ] Moving focus out of the invoker and the menu closes it, as in the example. Per WCAG 2.4.3 (Focus Order). Known gap, inherited from `craft-popover`; see `popover.a11y.md`.
 
+### Visual
+
+- [x] The search input's placeholder takes the quiet text color at 4.5:1 against the menu in the light and dark themes, wherever the menu is rendered. Per WCAG 1.4.3 (Contrast (Minimum)). Verified by `sets the search placeholder at 4.5:1 against the menu inside a shadow root in the %s theme` in `action-menu.browser.test.ts`.
+
 ## Depends on usage
 
 - 4.1.2 (Name, Role, Value): use a real, named button as a slotted invoker. See [Accessibility](./ActionMenu.mdx#accessibility).

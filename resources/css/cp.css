@@ -22,9 +22,11 @@ CP Styles
 @import './cvd.css';
 @import './global-sidebar.css';
 @import './matrix.css';
+@import './content-block.css';
 @import './messages.css';
 @import './slideout.css';
 @import './modal.css' layer(cp);
+@import './menu.css' layer(cp);
 
 :root {
   --cp-sidebar-width: calc(226rem / 16);
@@ -339,6 +341,13 @@ ul.path > li:not(:last-child)::after {
   text-decoration: none;
   border: 1px solid color-mix(in srgb, currentColor 40%, transparent);
   border-radius: var(--c-radius-full);
+
+  /* Centered on its capitals, as `craft-badge` is, rather than on a line box
+     whose descender room depends on the font's metrics. */
+  @supports (text-box: trim-both cap alphabetic) {
+    text-box: trim-both cap alphabetic;
+    padding-block: calc((1lh - 1cap) / 2);
+  }
 }
 
 .label:has(.context-label),
@@ -487,21 +496,6 @@ doesn't leave a trail of selected text behind it.
 .is-resizing-inline * {
   cursor: col-resize !important;
   user-select: none !important;
-}
-
-/*
- * Choice option illustrations (View Mode and friends). The label is `for`-bound
- * to its radio, so clicking the illustration selects the option — what Craft 5
- * got from wrapping the image and the input in a single label.
- */
-.radio-thumbnail {
-  display: block;
-  margin-block-end: var(--c-spacing-xs);
-  cursor: pointer;
-}
-
-.radio-thumbnail img {
-  display: block;
 }
 
 /*

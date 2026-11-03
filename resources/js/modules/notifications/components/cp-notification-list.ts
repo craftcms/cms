@@ -158,6 +158,20 @@ class CpNotificationList extends LitElement {
     this.#stopListening?.();
   }
 
+  // CONFLICT-REVIEW: 6.x moved this list out of cp-notification-center, so the
+  // panel heading that used to be the fallback focus target is no longer
+  // reachable from here. Focus still moves to the notification's link; when a
+  // notification has no link, focus isn't moved.
+  async #markReadFromButton(
+    ids: string[],
+    focusTarget: () => HTMLElement | null | undefined
+  ): Promise<void> {
+    const marking = markNotificationsRead(ids);
+    await this.updateComplete;
+    focusTarget()?.focus();
+    await marking;
+  }
+
   #preservesNativeNavigation(
     event: MouseEvent,
     link: HTMLAnchorElement
@@ -224,7 +238,7 @@ class CpNotificationList extends LitElement {
       >
         ${notification.image
           ? html`
-              <craft-thumbnail checkered="false">
+              <craft-thumbnail>
                 <img
                   src=${notification.image}
                   alt=${notification.imageAlt ?? ''}
@@ -305,7 +319,14 @@ class CpNotificationList extends LitElement {
                     flush
                     @click=${(event: MouseEvent) => {
                       event.stopPropagation();
-                      void markNotificationsRead([notification.id]);
+                      const item = (event.currentTarget as HTMLElement).closest(
+                        'article'
+                      );
+                      void this.#markReadFromButton([notification.id], () =>
+                        item?.querySelector<HTMLElement>(
+                          '.notification-card-link'
+                        )
+                      );
                     }}
                   >
                     ${t('Mark as read')}

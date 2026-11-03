@@ -64,9 +64,15 @@ describe('craft-info-icon', () => {
     const element = await createInfoIcon();
     const button = element.shadowRoot!.querySelector('craft-button')!;
 
-    expect(element.id).not.toBe('');
-    expect(button.id).toBe(element.id);
-    expect(tooltip(element).getAttribute('for')).toBe(element.id);
+    expect(button.id).not.toBe('');
+    expect(tooltip(element).getAttribute('for')).toBe(button.id);
+  });
+
+  it('keeps an id set as a property on the host', async () => {
+    const element = await createInfoIcon();
+    element.id = 'help';
+
+    expect(document.getElementById('help')).toBe(element);
   });
 
   it('holds its content in the tooltip', async () => {

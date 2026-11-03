@@ -9,8 +9,16 @@ export type ViewMode = {
   availableOnMobile?: boolean;
 };
 
-/** A source's persisted view overrides (columns + sort). */
+/**
+ * A source's persisted view overrides (view mode, columns, sort, and
+ * thumbnail sizes).
+ */
 export type SourceViewState = {
+  /**
+   * The user's chosen view mode for this source. Absent, the source shows the
+   * mode the server rendered: its default.
+   */
+  mode?: ViewMode['mode'];
   /**
    * Columns the user has explicitly chosen to show, in display order — the
    * single source of column-order truth. Checking a column appends it;
@@ -23,24 +31,28 @@ export type SourceViewState = {
    * source's `defaultSort` (resolved server-side).
    */
   sort?: Array<SortItem>;
-};
-
-/** The size of an index's thumbnails: its table rows' or its tiles'. */
-export type ThumbSize = ChipThumbSizeValue;
-
-/**
- * @TODO should inlineEditing and static be a "mode"?
- */
-export type ViewState = {
-  inlineEditing: boolean;
-  mode: ViewMode['mode'];
   /**
    * The thumbnail size in each kind of view: `table` covers structure
    * views too. Absent entries fall back to that view's default size.
    */
   thumbSizes?: Partial<Record<'table' | 'thumbs', ThumbSize>>;
+};
+
+/** How cards show a thumbnail, as a source's field layout has it. */
+export interface CardThumbSettings {
+  style: string;
+  alignment: 'start' | 'end';
+}
+
+/** The size of an index's thumbnails: its table rows' or its tiles'. */
+export type ThumbSize = ChipThumbSizeValue;
+
+/**
+ * @TODO should static be a "mode"?
+ */
+export type ViewState = {
   /**
-   * Per-source view overrides (columns + sort), keyed by source key. Absent
+   * Per-source view overrides (view mode, columns, sort, and thumbnail sizes), keyed by source key. Absent
    * entries fall back to the source's own config (`tableAttributes` /
    * `defaultSort`) or the element-type defaults.
    */

@@ -2,11 +2,15 @@ import styles from './option.styles.js';
 import {LionOption} from '@lion/ui/listbox.js';
 import {html, nothing} from 'lit';
 import {property} from 'lit/decorators.js';
+import '../icon/icon.js';
 
 /**
  * @summary One option inside `craft-select-rich` or `craft-combobox`. Unlike a
  * native `<option>` it can hold arbitrary markup — an icon, a status, a
  * thumbnail — alongside its label.
+ *
+ * A selected option ends in a check mark, so it's told apart from the
+ * highlighted option by shape as well as fill, including in forced colors.
  *
  * Options widen their layout once they have room for it, measured against the
  * option rather than the viewport, so the same list reads sensibly in a narrow
@@ -16,6 +20,9 @@ import {property} from 'lit/decorators.js';
  * @slot suffix - Trailing content, shown after the label and hint.
  * @slot badge - A badge appended to the label. A select appends the selected
  *   option's to its value too.
+ *
+ * @attr {string} choice-value - The value the option selects, as a plain
+ *   string. Use it in server-rendered markup.
  *
  * @cssproperty --c-option-wide-threshold - Width, in pixels, past which the
  *   option switches to its wide layout. Defaults to `640`.
@@ -49,6 +56,26 @@ export default class CraftOption extends LionOption {
 
   #cachedWideThreshold?: number;
 
+  static override get observedAttributes() {
+    return [...super.observedAttributes, 'choice-value'];
+  }
+
+  /**
+   * `choiceValue` parses its attribute as JSON, which server-rendered markup
+   * can't rely on, so `choice-value` sets it as a plain string.
+   */
+  override attributeChangedCallback(
+    name: string,
+    oldValue: string | null,
+    value: string | null
+  ) {
+    super.attributeChangedCallback(name, oldValue, value);
+
+    if (name === 'choice-value' && value !== null) {
+      this.choiceValue = value;
+    }
+  }
+
   #wideThreshold(): number {
     this.#cachedWideThreshold ??= parseInt(
       getComputedStyle(this).getPropertyValue('--c-option-wide-threshold') ||
@@ -72,10 +99,13 @@ export default class CraftOption extends LionOption {
   override render() {
     return html`
       <div class="choice-field__label">
-        <span class="label"><slot></slot><slot name="badge"></slot></span>
+        <span class="content"><slot></slot><slot name="badge"></slot></span>
         ${this.hint ? html`<span class="hint">${this.hint}</span>` : nothing}
         <slot name="suffix"></slot>
       </div>
+      ${this.checked
+        ? html`<craft-icon class="check" name="check"></craft-icon>`
+        : nothing}
     `;
   }
 }

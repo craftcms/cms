@@ -187,12 +187,21 @@ export default class CraftThumbnail extends LitElement {
   override connectedCallback() {
     super.connectedCallback();
     this.updateSlottedSvgs();
+
+    // Disconnecting stopped the resize observer an unfrozen image waits on.
+    if (this.hasUpdated && !this.frozen) {
+      const image = this.shadowRoot?.querySelector('img');
+      if (image?.complete) {
+        this.attemptFreeze(image);
+      }
+    }
   }
 
   override disconnectedCallback() {
-    super.disconnectedCallback();
     this.restoreSlottedSvgs();
     this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
+    super.disconnectedCallback();
   }
 
   override render() {

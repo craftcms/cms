@@ -4,11 +4,15 @@ import {
   h,
   isProxy,
   nextTick,
+  ref,
+  shallowRef,
   type Component,
 } from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import type {ScreenPageProps} from '@/common/composables/screen';
 import type {UiPayload} from '@/modules/ui/types';
+import {registerPreview} from '@/modules/elements/live-preview/previews';
+import type {LivePreviewController} from '@/modules/elements/live-preview/useLivePreview';
 
 const fetchSlideoutPage = vi.fn();
 
@@ -745,6 +749,37 @@ describe('SlideoutHost', () => {
     // Only the top one — clicking again closes the next.
     expect(slideoutPanels().map((p) => p.href)).toEqual(['/a']);
   });
+
+  it('covers only Live Preview’s editor pane while a preview is open', async () => {
+    await mountHost();
+    const editor = document.body.appendChild(document.createElement('div'));
+    Object.defineProperty(editor, 'offsetWidth', {value: 480});
+    const editorCovers = ref(0);
+    const unregister = registerPreview({
+      isOpen: ref(true),
+      editor: shallowRef(editor),
+      editorCovers,
+    } as unknown as LivePreviewController);
+
+    try {
+      await openSlideout('/a');
+      await nextTick();
+
+      const panel = document.querySelector<HTMLElement>('.slideout-panel')!;
+      expect(panel.classList.contains('slideout-panel--in-preview')).toBe(true);
+      expect(panel.style.getPropertyValue('--slideout-preview-width')).toBe(
+        '480px'
+      );
+      expect(
+        document.querySelector<HTMLElement>('.cp-slideout-shade')!.style.width
+      ).toBe('480px');
+      expect(panel.querySelector('.slideout-panel__resize-handle')).toBeNull();
+      // What lifts the preview's own resize handle over the panel.
+      expect(editorCovers.value).toBe(1);
+    } finally {
+      unregister();
+    }
+  });
 });
 
 describe('SlideoutPanel', () => {
@@ -1029,7 +1064,7 @@ describe('SlideoutPanel', () => {
 
     const {root} = await mountPanel(Page);
 
-    const details = root.querySelector('.slideout-screen__details')!;
+    const details = root.querySelector('.screen-details-layout__details')!;
 
     expect(details.querySelector('.detail')?.textContent).toBe('side info');
   });

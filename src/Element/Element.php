@@ -10,12 +10,15 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
+use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Concerns\LegacyConstants;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Support\Attributes\Importable as ImportableAttribute;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
@@ -114,6 +117,7 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
      */
     #[AllowedInSandbox]
     // importing is handled via native field
+    #[ElementProperty(ElementPropertyType::String, 'The {element}’s title.', nullable: true, readable: true)]
     public ?string $title = null;
 
     /**
@@ -121,18 +125,22 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
      */
     #[AllowedInSandbox]
     #[ImportableAttribute('slug', 'Slug')]
+    #[ElementProperty(ElementPropertyType::String, 'The {element}’s slug.', nullable: true, readable: true)]
+    #[Gql(write: false)]
     public ?string $slug = null;
 
     /**
      * @var DateTimeInterface|null The date that the element was created
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::DateTime, 'The date the {element} was created.', readable: true, writable: false)]
     public ?DateTimeInterface $dateCreated = null;
 
     /**
      * @var DateTimeInterface|null The date that the element was last updated
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::DateTime, 'The date the {element} was last updated.', readable: true, writable: false)]
     public ?DateTimeInterface $dateUpdated = null;
 
     /**
@@ -154,6 +162,7 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
      * @var bool Whether the element has been soft-deleted.
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Boolean, 'Whether the {element} has been soft-deleted.', readable: true, writable: false)]
     public bool $trashed = false;
 
     /**
@@ -472,7 +481,11 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
         return $values;
     }
 
-    /** @return string[] */
+    /**
+     * Returns the names of the element’s attributes, leaving out its internal state, such as how it’s being saved.
+     *
+     * @return string[]
+     */
     public function attributes(): array
     {
         $names = array_flip(Utils::getPublicAttributes($this));
@@ -492,22 +505,36 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
         unset(
             $names['applyingDraft'],
             $names['awaitingFieldValues'],
+            $names['collapsed'],
+            $names['dateLastMerged'],
+            $names['deletedWithOwner'],
             $names['duplicateOf'],
+            $names['eagerLoadInfo'],
             $names['elementQueryResult'],
             $names['firstSave'],
+            $names['forceSave'],
             $names['hardDelete'],
-            $names['mergingCanonicalChanges'],
-            $names['newSiteIds'],
+            $names['hasProvisionalChanges'],
             $names['isNewForSite'],
             $names['isNewSite'],
+            $names['markDraftAsSaved'],
+            $names['mergingCanonicalChanges'],
+            $names['newSiteIds'],
+            $names['oldStatus'],
+            $names['placeInStructure'],
             $names['previewing'],
             $names['propagateAll'],
             $names['propagateRequired'],
             $names['propagating'],
             $names['propagatingFrom'],
             $names['resaving'],
+            $names['ruleset'],
             $names['saveOwnership'],
             $names['searchScore'],
+            $names['siteSettingsId'],
+            $names['tempId'],
+            $names['touchOwnersOnSave'],
+            $names['trackDraftChanges'],
             $names['updateSearchIndexForOwner'],
             $names['updateSearchIndexImmediately'],
             $names['updatingFromDerivative'],

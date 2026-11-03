@@ -143,7 +143,7 @@ it('publishes changed disabled and unpublished entries together and retains immu
         ->and($history->items->every(fn ($item): bool => $item->publishedElementId !== null && $item->publishedAt !== null))->toBeTrue()
         ->and(DB::table(Table::DRAFTS)->whereIn('id', $draftIds)->exists())->toBeFalse()
         ->and(fn () => $this->releases->update($published, 'Renamed launch', null, $this->actor))
-        ->toThrow(ReleaseException::class, 'Scheduled and completed releases cannot be changed.')
+        ->toThrow(ReleaseException::class, 'Releases that are publishing or published cannot be changed.')
         ->and(fn () => $this->releases->delete($published, $this->actor))
         ->toThrow(ReleaseException::class, 'Scheduled and completed releases cannot be changed.');
 
@@ -264,11 +264,12 @@ it('publishes an approved draft with Matrix content without resetting its approv
     $approve();
     expect($workflows->latestRun($entry)->status)->toBe(WorkflowStatus::Approved);
 
-    // Editing a block is still a change to the draft, which needs approving again.
+    // Editing a block is still a change to the draft, which takes it out of review until it's resubmitted.
     $block = $entry->getFieldValue('blocks')->one();
     $block->setFieldValue('blockText', 'Doors open at nine.');
     expect(Elements::saveElement($block))->toBeTrue()
-        ->and($workflows->latestRun($entry)->status)->toBe(WorkflowStatus::Pending);
+        ->and($workflows->latestRun($entry)->status)->toBe(WorkflowStatus::Withdrawn);
+    $workflows->submitForReview($entry);
     $approve();
 
     $release = $this->releases->create('Launch', null, $this->actor);

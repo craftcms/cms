@@ -83,6 +83,8 @@
       createMenuItems?: Array<{label: string; url: string}> | null;
       title?: string;
       reorderable?: boolean;
+      /** Whether a row can be moved; see `DataTable`'s `canReorderRow`. */
+      canReorderRow?: (row: TData) => boolean;
       selectable?: boolean;
       actions?: Array<BulkAction> | null;
       statuses?: Array<BulkAction> | null;
@@ -125,6 +127,7 @@
       actions: () => [],
       source: null,
       context: 'index',
+      readOnly: undefined,
       loading: false,
       layout: 'auto',
       spacing: TableSpacing.Spacious,
@@ -280,7 +283,10 @@
     managed?.paginated.value &&
     !managed.orderingDisabled.value &&
     table.value.getPageCount() > 1 &&
-    selectedIds.value.length === 1
+    selectedIds.value.length === 1 &&
+    table.value
+      .getSelectedRowModel()
+      .rows.every((row) => props.canReorderRow?.(row.original) ?? true)
       ? [{type: 'display' as const, is: MoveToPageDisplay}]
       : []),
   ]);
@@ -368,14 +374,15 @@
         :table="table"
         :title="title"
         :reorderable="reorderable"
+        :can-reorder-row="canReorderRow"
         :read-only="readOnly"
         :loading="loading"
         :layout="layout"
         :spacing="spacing"
         :appearance="
-          appearance === TableAppearance.Flush
-            ? TableAppearance.Flush
-            : TableAppearance.Plain
+          appearance === TableAppearance.Raised
+            ? TableAppearance.Plain
+            : appearance
         "
         :with-bottom-border="!footerVisible"
         :empty-row="!showEmptyState"

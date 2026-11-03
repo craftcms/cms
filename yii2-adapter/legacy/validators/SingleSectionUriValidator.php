@@ -13,7 +13,6 @@ use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Function\String\Lower;
-use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
@@ -41,7 +40,7 @@ class SingleSectionUriValidator extends UriFormatValidator
 
         // Make sure no other elements are using this URI already
         $query = DB::table(Table::ELEMENTS_SITES, 'elements_sites')
-            ->join(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', '=', 'elements_sites.elementId')
+            ->join(Table::ELEMENTS . ' as elements', 'elements.id', '=', 'elements_sites.elementId')
             ->where('elements_sites.siteId', $model->siteId)
             ->whereNull(['elements.draftId', 'elements.revisionId', 'elements.dateDeleted'])
             ->when(
@@ -51,7 +50,7 @@ class SingleSectionUriValidator extends UriFormatValidator
             )
             ->when(
                 $section->id,
-                fn(Builder $query) => $query->join(new Alias(Table::ENTRIES, 'entries'), 'entries.id', '=', 'elements.id')
+                fn(Builder $query) => $query->join(Table::ENTRIES . ' as entries', 'entries.id', '=', 'elements.id')
                     ->whereNot('entries.sectionId', $section->id),
             );
 

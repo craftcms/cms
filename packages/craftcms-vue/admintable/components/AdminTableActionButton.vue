@@ -1,7 +1,7 @@
 <template>
   <form ref="form" method="post">
     <input type="hidden" :name="tokenName" :value="tokenValue" />
-    <input type="hidden" name="action" :value="action" />
+    <input type="hidden" name="action" :value="formAction || action" />
     <input type="hidden" :name="param" :value="value" v-if="param" />
     <input
       type="hidden"
@@ -130,6 +130,7 @@
         buttonDisabled: false,
         tokenName: Craft.csrfTokenName,
         tokenValue: Craft.csrfTokenValue,
+        formAction: null,
         param: '',
         value: '',
       };
@@ -160,7 +161,7 @@
               this.$emit('reload');
             });
         } else {
-          this.action = action;
+          this.formAction = action;
           this.param = param;
           this.value = value;
 

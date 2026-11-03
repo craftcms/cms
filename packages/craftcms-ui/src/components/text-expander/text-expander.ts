@@ -144,6 +144,15 @@ export default class CraftTextExpander extends LitElement {
       this.#bindTarget();
     }
   });
+  // The combobox library marks the keyboard-current suggestion with
+  // aria-selected; craft-option highlights `active` instead.
+  #highlightObserver = new MutationObserver((records) => {
+    for (const {target} of records) {
+      if (target instanceof CraftOption) {
+        target.active = target.getAttribute('aria-selected') === 'true';
+      }
+    }
+  });
 
   override connectedCallback(): void {
     super.connectedCallback();
@@ -156,6 +165,7 @@ export default class CraftTextExpander extends LitElement {
 
   override disconnectedCallback(): void {
     this.#unbindTarget();
+    this.#highlightObserver.disconnect();
     this.#listbox?.remove();
     if (this.#announceTimeout !== null) {
       clearTimeout(this.#announceTimeout);
@@ -199,7 +209,10 @@ export default class CraftTextExpander extends LitElement {
       <craft-popover
         exportparts="popup"
         .config=${popoverConfig}
+        @craft-show=${this.#stopPopoverEvent}
         @craft-hide=${this.#onPopoverHide}
+        @craft-after-show=${this.#stopPopoverEvent}
+        @craft-after-hide=${this.#stopPopoverEvent}
       >
         <div class="text-expander__popup" slot="content">
           ${this.loading
@@ -226,6 +239,10 @@ export default class CraftTextExpander extends LitElement {
     this.#listbox.addEventListener('pointerdown', this.#onOptionPointerDown);
     this.#listbox.addEventListener('pointerup', this.#onOptionPointerUp);
     this.#listbox.addEventListener('combobox-commit', this.#onComboboxCommit);
+    this.#highlightObserver.observe(this.#listbox, {
+      subtree: true,
+      attributeFilter: ['aria-selected'],
+    });
     this.append(this.#listbox);
   }
 
@@ -448,6 +465,17 @@ export default class CraftTextExpander extends LitElement {
         ? t('{name} suggestions collapsed', {name: label})
         : t('Suggestions collapsed')
     );
+    this.#stopPopoverEvent(event);
+  };
+
+  /**
+   * The popup is part of the expander, so its own events stay inside it:
+   * leaving the shadow root, they'd read as the expander's.
+   */
+  #stopPopoverEvent = (event: Event): void => {
+    if (event.target === this.popoverElement) {
+      event.stopPropagation();
+    }
   };
 
   #evaluate(selectedOption?: Readonly<TextExpanderOption>): void {

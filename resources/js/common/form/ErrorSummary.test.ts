@@ -68,6 +68,7 @@ it('switches to the tab a linked field is on and focuses its input', async () =>
 
   const summary = await mount({title: 'Title is required.'});
   summary.querySelector('a')!.click();
+  await nextTick();
 
   expect(document.getElementById('tab-2')!.classList.contains('hidden')).toBe(
     false

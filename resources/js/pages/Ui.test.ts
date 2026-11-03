@@ -180,6 +180,26 @@ it('passes screen layout options through to the app layout', () => {
   );
 });
 
+it.each([
+  ['centers a form page', {}, [], true],
+  [
+    'leaves a lone admin table full width',
+    {},
+    [{type: 'table', component: 'craft:admin-table', props: {}}],
+    false,
+  ],
+  ['lets the page opt out', {contentMaxWidth: false}, [], false],
+])('%s', async (_name, extraProps, nodes: UiPayload['nodes'], constrained) => {
+  app = createApp(UiPage, {ui: {...payload, nodes}, ...extraProps});
+  app.mount(container);
+  await nextTick();
+
+  expect(state.layout.mock.lastCall?.[0]).toHaveProperty(
+    'contentMaxWidth',
+    constrained
+  );
+});
+
 it('accepts reactive Inertia ui values', () => {
   app = createApp(UiPage, {
     ui: reactive(payload),

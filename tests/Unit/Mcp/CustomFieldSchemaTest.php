@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Country;
+use CraftCms\Cms\Field\Markdown;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Field\Time;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -97,4 +98,29 @@ it('keeps a date or time format with the field’s instructions', function () {
 
     expect(app(CustomFieldSchema::class)->forElement($entry)['properties']['opens']['description'])
         ->toBe("A time of day, such as 14:30 or 2:30 PM.\n\nWhen the doors open.");
+});
+
+it('says a Markdown field takes Markdown, with the field’s instructions', function () {
+    $field = new Markdown(['name' => 'Body', 'handle' => 'body', 'instructions' => 'The article.', 'uid' => '3a7d1c2e-9b4f-4e6a-8c5d-1f2e3a4b5c6d']);
+    $layout = FieldLayout::make(Entry::class)
+        ->tab('Content', fn (FieldLayoutTab $tab) => $tab->add(CustomField::make($field)));
+    $entry = new class($layout) extends Entry
+    {
+        public function __construct(private readonly FieldLayout $layout)
+        {
+            parent::__construct();
+        }
+
+        public function getFieldLayout(): FieldLayout
+        {
+            return $this->layout;
+        }
+    };
+
+    $schema = app(CustomFieldSchema::class)->forElement($entry)['properties']['body'];
+
+    expect($schema['contentMediaType'])->toBe('text/markdown')
+        ->and($schema['description'])->toStartWith('Markdown,')
+        ->toContain('Not HTML.')
+        ->toEndWith("\n\nThe article.");
 });

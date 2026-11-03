@@ -2,14 +2,7 @@
   import {Deferred, Head, useHttp} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
   import backgroundUrl from '@public/images/install/installer-bg.png';
-  import {
-    computed,
-    nextTick,
-    reactive,
-    useTemplateRef,
-    watch,
-    watchEffect,
-  } from 'vue';
+  import {computed, nextTick, reactive, useTemplateRef, watch} from 'vue';
   import AccountFields from '@/modules/install/components/AccountFields.vue';
   import SiteFields from '@/modules/install/components/SiteFields.vue';
   import {useInstall} from '@/modules/install/composables/useInstall';
@@ -29,6 +22,27 @@
     database: string;
     username?: string;
     prefix?: string;
+  };
+  type InstallFormData = {
+    account: {
+      username: string;
+      email: string;
+      password: string;
+    };
+    db: {
+      driver: DbDriver;
+      host?: string;
+      port?: number | string;
+      database?: string;
+      username?: string;
+      password?: string;
+      prefix?: string;
+    };
+    site: {
+      name: string;
+      baseUrl: string;
+      language: string;
+    };
   };
 
   const backgroundImageUrl = computed(() => `url(${backgroundUrl})`);
@@ -53,13 +67,15 @@
     goToNext,
     goToPrevious,
     isCurrent,
-    possibleSteps,
-  } = useInstall();
+  } = useInstall({showDbScreen: () => props.showDbScreen});
 
-  watchEffect(() => {
-    const dbStep = possibleSteps.value.db;
-    if (dbStep) dbStep.hidden = !props.showDbScreen;
-  });
+  const siteLocaleOptions = computed(() =>
+    (props.localeOptions ?? []).map((option) => ({
+      id: option.id,
+      label: option.name,
+      value: option.id,
+    }))
+  );
 
   function beginInstall() {
     goTo('license');
@@ -79,7 +95,7 @@
     site: {},
   });
 
-  const formData = useHttp({
+  const formData = useHttp<InstallFormData>({
     account: {
       username: '',
       email: '',
@@ -208,8 +224,9 @@
               class="screen"
             >
               <AccountFields
-                v-if="isCurrent('account')"
-                v-model="formData.account"
+                v-model:username="formData.account.username"
+                v-model:email="formData.account.email"
+                v-model:password="formData.account.password"
                 :errors="errors.account"
               />
             </StepScreen>
@@ -220,7 +237,13 @@
               class="screen"
             >
               <DbFields
-                v-model="formData.db"
+                v-model:driver="formData.db.driver"
+                v-model:host="formData.db.host"
+                v-model:port="formData.db.port"
+                v-model:database="formData.db.database"
+                v-model:username="formData.db.username"
+                v-model:password="formData.db.password"
+                v-model:prefix="formData.db.prefix"
                 :defaults="dbDefaults"
                 :errors="errors.db"
               />
@@ -238,14 +261,10 @@
                 </template>
 
                 <SiteFields
-                  v-model="formData.site"
-                  :locale-options="
-                    (localeOptions ?? []).map((o) => ({
-                      id: o.id,
-                      label: o.name,
-                      value: o.id,
-                    }))
-                  "
+                  v-model:name="formData.site.name"
+                  v-model:base-url="formData.site.baseUrl"
+                  v-model:language="formData.site.language"
+                  :locale-options="siteLocaleOptions"
                   :errors="errors.site"
                 />
               </Deferred>
@@ -282,7 +301,7 @@
                 class="justify-self-end"
                 type="submit"
                 variant="accent"
-                :loading="formData.processing"
+                .loading="formData.processing"
               >
                 {{ current.submitLabel ?? t('Next') }}
                 <craft-icon name="arrow-right" slot="suffix"></craft-icon>

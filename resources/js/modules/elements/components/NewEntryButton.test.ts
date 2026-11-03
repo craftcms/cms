@@ -29,6 +29,10 @@ vi.mock('@/common/composables/useCraftData', () => ({
   default: () => ({site: {value: {id: 1}}}),
 }));
 
+vi.mock('@inertiajs/vue3', () => ({
+  usePage: () => ({url: '/admin/content/entries/blog?sort=title'}),
+}));
+
 // The menu is what's under test, not how it opens: record what it's handed and
 // render its invoker so the button inside can be inspected.
 const menu = vi.hoisted(() => ({actions: null as null | Array<ActionItem>}));
@@ -134,6 +138,20 @@ it('links directly to the entry type when it is the only one on screen', async (
   const href = button.href!;
   expect(href).toContain('/entries/blog/new');
   expect(href).toContain('type=article');
+});
+
+it('sends the new entry’s editor back to the index it was created from', async () => {
+  const blog = section('blog', [entryType('article', 1)]);
+  const container = await mount({
+    sources: [sectionSource('blog')],
+    source: sectionSource('blog'),
+    publishableSections: [blog],
+  });
+  const href = new URL(container.querySelector('craft-button')!.href!);
+
+  expect(href.searchParams.get('returnUrl')).toBe(
+    `${window.location.origin}/admin/content/entries/blog:QS:sort=title`
+  );
 });
 
 it('offers every entry type the section shows when there are several', async () => {

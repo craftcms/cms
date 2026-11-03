@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Support\Arr;
@@ -14,7 +15,6 @@ use CraftCms\Cms\Ui\Enums\ControlMode;
 use Override;
 
 use function CraftCms\Cms\currentUser;
-use function CraftCms\Cms\template;
 
 /**
  * @since 6.0.0
@@ -95,14 +95,11 @@ class TextareaField extends BaseNativeField
 
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return template(
-            '_includes/forms/textarea.twig',
-            $this->inputTemplateVariables($element, $static),
-        );
+        return FormFields::textareaHtml($this->inputTemplateVariables($element, $static));
     }
 
     /**
-     * Returns the variables that should be passed to the `_includes/forms/textarea.twig` template.
+     * Returns the legacy textarea config the input is rendered from.
      *
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)

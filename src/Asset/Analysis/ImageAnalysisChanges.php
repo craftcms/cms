@@ -42,6 +42,17 @@ class ImageAnalysisChanges
         $this->siteAttributes[$siteId][$attribute] = $value;
     }
 
+    /**
+     * Returns a copy of the changes without the attributes for one site.
+     */
+    public function withoutSite(int $siteId): self
+    {
+        $changes = clone $this;
+        unset($changes->siteAttributes[$siteId]);
+
+        return $changes;
+    }
+
     public function isEmpty(): bool
     {
         return $this->attributes === [] && $this->siteAttributes === [];

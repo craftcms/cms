@@ -73,6 +73,14 @@ abstract class Table
     public const IMAGETRANSFORMS = '{{%imagetransforms}}';
     public const INFO = '{{%info}}';
     public const MIGRATIONS = '{{%migrations}}';
+    /** @since 5.12.0 */
+    public const OAUTH_ACCESS_TOKENS = '{{%oauth_access_tokens}}';
+    /** @since 5.12.0 */
+    public const OAUTH_AUTH_CODES = '{{%oauth_auth_codes}}';
+    /** @since 5.12.0 */
+    public const OAUTH_CLIENTS = '{{%oauth_clients}}';
+    /** @since 5.12.0 */
+    public const OAUTH_REFRESH_TOKENS = '{{%oauth_refresh_tokens}}';
     /** @since 3.4.0 */
     public const PHPSESSIONS = '{{%phpsessions}}';
     public const PLUGINS = '{{%plugins}}';

@@ -26,3 +26,13 @@ test('validateValue', function (string $value, bool $expected, array $config = [
         'allowAnchors' => true,
     ]],
 ]);
+
+test('the input only asks the browser to validate absolute URLs', function (array $config, string $type) {
+    expect(new Url($config)->pickerConfig()['inputAttributes'])
+        ->toBe(['type' => $type, 'inputmode' => 'url']);
+})->with([
+    [[], 'url'],
+    [['allowRootRelativeUrls' => true], 'text'],
+    [['allowAnchors' => true], 'text'],
+    [['allowCustomSchemes' => true], 'url'],
+]);

@@ -415,6 +415,20 @@ export default class CraftChip extends LitElement {
     </div>`;
   }
 
+  override connectedCallback() {
+    super.connectedCallback();
+
+    if (this.hasUpdated) {
+      this.#thumbLoader = new ThumbnailLoader();
+      this.#thumbLoader.load(this);
+    }
+  }
+
+  override disconnectedCallback() {
+    this.#thumbLoader.destroy();
+    super.disconnectedCallback();
+  }
+
   protected override firstUpdated(_changedProperties: PropertyValues) {
     super.firstUpdated(_changedProperties);
     this.#thumbLoader.load(this);

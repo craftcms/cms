@@ -11,6 +11,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\Lightswitch;
 use CraftCms\Cms\Ui\Enums\ChoicePresentation;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
@@ -64,6 +66,18 @@ class ButtonGroup extends BaseOptionsField implements SortableFieldInterface
     }
 
     #[Override]
+    public function uiControl(FieldContext $context): Control
+    {
+        $control = parent::uiControl($context);
+
+        if ($control instanceof Choice) {
+            $control->iconsOnly($this->iconsOnly);
+        }
+
+        return $control;
+    }
+
+    #[Override]
     protected function uiPresentation(): ChoicePresentation
     {
         return ChoicePresentation::Buttons;
@@ -107,7 +121,7 @@ class ButtonGroup extends BaseOptionsField implements SortableFieldInterface
 
         return RadioGroup::make()
             ->id($id)
-            ->buttons()
+            ->appearance('button-group')
             ->options($radios)
             ->toHtml();
     }

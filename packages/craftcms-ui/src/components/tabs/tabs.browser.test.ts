@@ -282,6 +282,25 @@ describe.each(themes)('in the %s theme', (theme) => {
       expect(bar(tabs[1]!).backgroundColor).toBe('rgba(0, 0, 0, 0)');
     }
   );
+
+  it('marks the selected fill tab with a border at 3:1 against the track, and only that tab', async () => {
+    const wrapper = surface(theme);
+    const {element, tabs} = await strip({
+      parent: wrapper,
+      attrs: {appearance: 'fill'},
+    });
+
+    await expect.poll(() => tabs[0]!.hasAttribute('selected')).toBe(true);
+
+    const track = getComputedStyle(
+      element.shadowRoot!.querySelector('[part="strip"]')!
+    ).backgroundColor;
+    const selected = getComputedStyle(tabs[0]!);
+
+    expect(parseFloat(selected.borderTopWidth)).toBeGreaterThanOrEqual(1);
+    expect(contrast(selected.borderTopColor, track)).toBeGreaterThanOrEqual(3);
+    expect(getComputedStyle(tabs[1]!).borderTopColor).toBe('rgba(0, 0, 0, 0)');
+  });
 });
 
 /** Whether a 24px circle centered on `rect` stays clear of every other target. */
@@ -373,4 +392,166 @@ it('moves the selection to the first tab when the selected external tab is remov
   await expect.poll(() => element.selectedIndex).toBe(0);
   await expect.poll(() => tabs[0]!.getAttribute('aria-selected')).toBe('true');
   expect(sections[0]!.classList.contains('hidden')).toBe(false);
+});
+
+it('still switches external tabs after being moved elsewhere in the document', async () => {
+  const {element, tabs} = await externalStrip();
+  const elsewhere = document.createElement('div');
+  document.body.append(elsewhere);
+
+  elsewhere.append(element);
+  tabs[2]!.click();
+
+  await expect.poll(() => element.selectedIndex).toBe(2);
+});
+
+const OVERFLOW_LABELS = [
+  'Content',
+  'Metadata',
+  'Search Engine Optimization',
+  'Social Sharing',
+  'Advanced Settings',
+  'Permissions',
+];
+
+async function overflowingStrip(width: string): Promise<{
+  container: HTMLElement;
+  element: Strip;
+  tabs: HTMLElement[];
+  menu: HTMLElement & {opened: boolean};
+}> {
+  const container = document.createElement('div');
+  container.style.inlineSize = width;
+  const element = document.createElement('craft-tabs') as Strip;
+  element.setAttribute('label', 'Tabs');
+
+  for (const label of OVERFLOW_LABELS) {
+    const tab = document.createElement('craft-tab');
+    tab.slot = 'tab';
+    tab.textContent = label;
+    const panel = document.createElement('div');
+    panel.slot = 'panel';
+    panel.textContent = label;
+    element.append(tab, panel);
+  }
+
+  container.append(element);
+  document.body.append(container);
+  await element.updateComplete;
+
+  return {
+    container,
+    element,
+    tabs: [...element.querySelectorAll<HTMLElement>('craft-tab')],
+    menu: element.shadowRoot!.querySelector('[part="overflow-menu"]')!,
+  };
+}
+
+describe('after it is moved in the document', () => {
+  beforeEach(() => {
+    window.history.replaceState(null, '', window.location.pathname);
+  });
+
+  it('selects an external tab on click and follows the hash', async () => {
+    const {element, tabs, sections} = await externalStrip();
+    const target = document.createElement('div');
+    document.body.append(target);
+    target.append(element, ...sections);
+    await element.updateComplete;
+
+    tabs[1]!.click();
+    await expect.poll(() => element.selectedIndex).toBe(1);
+    expect(sections[1]!.classList.contains('hidden')).toBe(false);
+
+    window.history.replaceState(null, '', '#external-panel-2');
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    await expect.poll(() => element.selectedIndex).toBe(2);
+  });
+
+  it('collapses the tabs that no longer fit', async () => {
+    const {element, tabs} = await overflowingStrip('80rem');
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    expect(tabs.some((tab) => tab.hidden)).toBe(false);
+
+    const narrow = document.createElement('div');
+    narrow.style.inlineSize = '20rem';
+    document.body.append(narrow);
+    narrow.append(element);
+
+    await expect.poll(() => tabs.some((tab) => tab.hidden)).toBe(true);
+  });
+});
+
+it('keeps focus in the open overflow menu while the strip resizes', async () => {
+  const {container, tabs, menu} = await overflowingStrip('26rem');
+  const {userEvent} = await import('vite-plus/test/browser');
+  await expect.poll(() => tabs.some((tab) => tab.hidden)).toBe(true);
+  const collapsed = tabs.filter((tab) => tab.hidden).length;
+
+  await userEvent.click(menu.querySelector('[slot="invoker"]')!);
+  await expect
+    .poll(() => menu.querySelectorAll('craft-action-item').length)
+    .toBe(collapsed);
+  const item = menu.querySelector<HTMLElement>('craft-action-item')!;
+  item.focus();
+  expect(item.matches(':focus-within')).toBe(true);
+
+  container.style.inlineSize = 'calc(26rem + 1px)';
+  for (let frame = 0; frame < 3; frame++) {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+  }
+
+  expect(tabs.filter((tab) => tab.hidden).length).toBe(collapsed);
+  expect(menu.opened).toBe(true);
+  expect(item.isConnected).toBe(true);
+  expect(item.matches(':focus-within')).toBe(true);
+});
+
+it('keeps its overflow menu’s events inside the strip', async () => {
+  const {element, tabs, menu} = await overflowingStrip('26rem');
+  const {userEvent} = await import('vite-plus/test/browser');
+  const escaped: string[] = [];
+  const events = [
+    'craft-show',
+    'craft-hide',
+    'craft-after-show',
+    'craft-after-hide',
+    'craft-select',
+  ];
+  const record = (event: Event) => escaped.push(event.type);
+  events.forEach((type) => document.addEventListener(type, record));
+
+  try {
+    await expect.poll(() => tabs.some((tab) => tab.hidden)).toBe(true);
+    const target = tabs.filter((tab) => tab.hidden).at(-1)!;
+
+    await userEvent.click(menu.querySelector('[slot="invoker"]')!);
+    await expect.poll(() => menu.opened).toBe(true);
+    const item = [...menu.querySelectorAll('craft-action-item')].find(
+      (el) => el.textContent?.trim() === target.textContent
+    )!;
+    await userEvent.click(item);
+    await expect.poll(() => menu.opened).toBe(false);
+    await expect.poll(() => tabs.indexOf(target)).toBe(element.selectedIndex);
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+
+    expect(escaped).toEqual([]);
+  } finally {
+    events.forEach((type) => document.removeEventListener(type, record));
+  }
+});
+
+it('truncates the selected tab’s label when it alone is too wide for the strip', async () => {
+  const {element, tabs, menu} = await overflowingStrip('12rem');
+  tabs[1]!.textContent = 'An exceptionally long tab label that never fits';
+  element.selectedIndex = 1;
+  await expect.poll(() => tabs[0]!.hidden).toBe(true);
+
+  const selected = tabs[1]!.getBoundingClientRect();
+  const text = tabs[1]!.shadowRoot!.querySelector<HTMLElement>('.tab__text')!;
+
+  expect(selected.right).toBeLessThanOrEqual(
+    menu.getBoundingClientRect().left + 0.5
+  );
+  expect(text.scrollWidth).toBeGreaterThan(text.clientWidth);
 });

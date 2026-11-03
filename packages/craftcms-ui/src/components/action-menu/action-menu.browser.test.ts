@@ -1,5 +1,6 @@
 import {beforeEach, expect, it} from 'vite-plus/test';
 import {userEvent} from 'vite-plus/test/browser';
+import {contrast} from '../../../test/contrast';
 import type CraftButton from '../button/button.js';
 import type CraftActionMenu from './action-menu.js';
 import './action-menu.js';
@@ -61,6 +62,49 @@ it('closes and returns focus to a craft-button invoker when an item is chosen wi
   expect(document.activeElement).toBe(invoker);
 });
 
+it('spaces separators in slotted content, including ones added later, as it does those it renders from actions', async () => {
+  await import('../../styles/cp.css');
+  document.body.innerHTML = `
+    <craft-action-menu id="slotted">
+      <button slot="invoker" type="button">Open</button>
+      <div slot="content">
+        <craft-action-item>First</craft-action-item>
+        <hr />
+        <craft-action-item>Second</craft-action-item>
+      </div>
+    </craft-action-menu>
+    <craft-action-menu id="generated"></craft-action-menu>
+  `;
+  const slotted = document.querySelector<CraftActionMenu>('#slotted')!;
+  const generated = document.querySelector<CraftActionMenu>('#generated')!;
+  generated.actions = [
+    {type: 'button', label: 'First'},
+    {type: 'hr'},
+    {type: 'button', label: 'Second'},
+  ];
+  await slotted.updateComplete;
+  await generated.updateComplete;
+  slotted.opened = true;
+  generated.opened = true;
+  await slotted.updateComplete;
+  await generated.updateComplete;
+
+  const later = document.createElement('hr');
+  slotted.querySelector('[slot="content"]')!.append(later);
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  const spacing = (hr: Element) => {
+    const style = getComputedStyle(hr);
+
+    return [style.marginBlockStart, style.marginBlockEnd, style.marginInline];
+  };
+  const expected = spacing(generated.querySelector('hr')!);
+
+  expect(expected[0]).not.toBe('0px');
+  expect(spacing(slotted.querySelector('hr')!)).toEqual(expected);
+  expect(spacing(later)).toEqual(expected);
+});
+
 it('leaves a flush craft-button invoker pulled in on both sides, outside a button group', async () => {
   document.body.innerHTML = `
     <craft-action-menu>
@@ -74,3 +118,38 @@ it('leaves a flush craft-button invoker pulled in on both sides, outside a butto
   expect(parseFloat(style.marginInlineEnd)).toBeLessThan(0);
   expect(style.marginInlineStart).toBe(style.marginInlineEnd);
 });
+
+it.each(['light', 'dark'])(
+  'sets the search placeholder at 4.5:1 against the menu inside a shadow root in the %s theme',
+  async (theme) => {
+    await import('../../styles/cp.css');
+    document.body.innerHTML = `<div data-theme="${theme}"><div></div></div>`;
+    const shadowRoot = document
+      .querySelector('[data-theme] > div')!
+      .attachShadow({mode: 'open'});
+    shadowRoot.innerHTML = `
+      <craft-action-menu searchable>
+        <button slot="invoker" type="button">Open</button>
+        <div slot="content">
+          <craft-action-item>First</craft-action-item>
+        </div>
+      </craft-action-menu>
+    `;
+    const menu =
+      shadowRoot.querySelector<CraftActionMenu>('craft-action-menu')!;
+    await menu.updateComplete;
+    menu.opened = true;
+    await menu.updateComplete;
+
+    const input = menu.querySelector<HTMLInputElement>(
+      '.action-menu__search input'
+    )!;
+    const placeholder = getComputedStyle(input, '::placeholder');
+    const surface = getComputedStyle(
+      document.querySelector('[data-theme]')!
+    ).getPropertyValue('--c-surface-overlay');
+
+    expect(placeholder.opacity).toBe('1');
+    expect(contrast(placeholder.color, surface)).toBeGreaterThanOrEqual(4.5);
+  }
+);
