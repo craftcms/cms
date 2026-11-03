@@ -527,7 +527,7 @@ return [
     'Create a new section' => 'Utwórz nową sekcję',
     'Create a new site' => 'Utwórz nową witrynę',
     'Create a new tag group' => 'Utwórz nową grupę tagów',
-    'Create a new token' => 'Create a new token',
+    'Create a new token' => 'Utwórz nowy token',
     'Create a new user group' => 'Utwórz nową grupę użytkowników',
     'Create a new volume…' => 'Utwórz nowy wolumin…',
     'Create a new {section} entry' => 'Utwórz nowy wpis sekcji {section}',
