@@ -34,12 +34,7 @@ class QueueHelperTest extends TestCase
 
         // BaseBatchedJob clones itself and passes its TTR when pushing the next batch.
         $nextJob = clone $job;
-        $nextJob->batchIndex++;
-        $nextJob->itemOffset = 100;
         $this->assertPushTtr($nextJob, $queue, $job->ttr, $queue->ttr);
-
-        self::assertSame(1, $nextJob->batchIndex);
-        self::assertSame(100, $nextJob->itemOffset);
     }
 
     /**
@@ -96,9 +91,10 @@ class QueueHelperTest extends TestCase
     }
 
     /**
-     * Executing a job must preserve an already configured internal time limit.
+     * Executing a job must use the TTR the queue enforces, even if its serialized TTR differs
+     * (e.g. if an EVENT_BEFORE_PUSH handler changed the push TTR).
      */
-    public function testExecutingBatchPreservesItsConfiguredTtr(): void
+    public function testExecutingBatchUsesItsMetadataTtrOverSerializedTtr(): void
     {
         $queue = Craft::$app->getQueue();
         $job = new QueueHelperBatchedJob(['ttr' => 60]);
@@ -110,7 +106,7 @@ class QueueHelperTest extends TestCase
                 'ttr' => 120,
             ]));
 
-            self::assertSame(60, $job->ttr);
+            self::assertSame(120, $job->ttr);
         } finally {
             $queue->trigger(YiiQueue::EVENT_AFTER_EXEC, new ExecEvent(['job' => $job]));
         }

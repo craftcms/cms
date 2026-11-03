@@ -187,4 +187,5 @@
 - Fixed a bug where deleting an element for a site while editing a provisional draft would delete the provisional draft for all sites. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Fixed a bug where DSNs set via database config arrays weren’t getting parsed, so MySQL’s `utf8` charset wasn’t getting normalized to `utf8mb4`. ([#20248](https://github.com/craftcms/cms/issues/20248))
 - Fixed a bug where `craft\i18n\Locale::getOrientation()` was returning `ltr` for some right-to-left locales, such as Central Kurdish (`ckb`) and Punjabi in Arabic script (`pa-Arab`). ([#20301](https://github.com/craftcms/cms/issues/20301))
+- Fixed a bug where batched queue jobs weren’t splitting into additional batches before reaching their time limits. ([#20304](https://github.com/craftcms/cms/pull/20304))
 - Craft now requires `league/oauth2-server`, `mcp/sdk`, and `symfony/finder`. ([#20145](https://github.com/craftcms/cms/pull/20145))

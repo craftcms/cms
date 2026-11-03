@@ -2,7 +2,6 @@
 
 ## Unreleased
 
-- Fixed a bug where batched queue jobs could lose their time limits and fail to split batches before timing out.
 - Added `craft\helpers\Db::isSafeOrderBy()`. ([#19994](https://github.com/craftcms/cms/pull/19994))
 - Fixed a bug where users who logged into the control panel with “Remember me” checked could get logged out after an hour of inactivity.
 - Fixed a bug where default titles of assets with long filenames were taken from the end of the filename. ([#20112](https://github.com/craftcms/cms/pull/20112))
