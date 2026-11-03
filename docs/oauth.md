@@ -58,7 +58,7 @@ Event::on(OAuth::class, OAuth::EVENT_REGISTER_RESOURCES, function(RegisterOAuthR
         'defaultScopes' => ['content:read'],
         'permissions' => ['myPlugin:useApi'],
         'resourceUrl' => fn() => UrlHelper::siteUrl('api/my-plugin'),
-        'consentDescription' => 'This client would like to access My Plugin’s API as you.',
+        'consentDescription' => 'It will be able to use My Plugin’s API on your behalf.',
     ];
 });
 ```
@@ -75,7 +75,7 @@ The event’s `resources` map accepts configuration arrays or `craft\oauth\Resou
 | `userScopes` | Optional closure, `function(User $user, array $scopes): array`, that returns the scopes a user may be granted out of those given. |
 | `permissions` | Craft permissions the user must currently have to authorize and use the resource. Every listed permission is required. |
 | `resourceUrl` | Canonical absolute HTTP or HTTPS URL, supplied as a string or a closure with no arguments. Strings support environment variable references. |
-| `consentDescription` | Explanation shown above the requested scopes on the consent screen. |
+| `consentDescription` | Sentence shown on the consent screen after “{client} wants to access your {system} account.”, describing what the client will be able to do, such as “It will be able to use My Plugin’s API on your behalf.” |
 
 Every resource needs a distinct URL path, including when resources use different origins. URLs cannot contain credentials or fragments. Registering a resource does not create the API route or controller. In a multisite installation, generate the URL for a specific site or supply a fixed URL so the resource identity does not vary with the current site.
 

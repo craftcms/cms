@@ -4328,4 +4328,47 @@ class StringHelperTest extends TestCase
             [':100: :1234: 🔥', '\\:100\\: \\:1234\\: 🔥'],
         ];
     }
+
+    /**
+     * @dataProvider invisibleCharsRegexDataProvider
+     */
+    public function testInvisibleCharsRegex(string $expected, string $str): void
+    {
+        self::assertSame($expected, preg_replace(StringHelper::invisibleCharsRegex(), '', $str));
+    }
+
+    /**
+     * @dataProvider stripPrivateAndUnassignedCharsDataProvider
+     */
+    public function testStripPrivateAndUnassignedChars(string $expected, string $str): void
+    {
+        self::assertSame($expected, StringHelper::stripPrivateAndUnassignedChars($str));
+    }
+
+    public static function invisibleCharsRegexDataProvider(): array
+    {
+        return [
+            ['Craft CMS', "Craft\u{200B} CMS"],
+            ['invoicefdp.exe', "invoice\u{202E}fdp.exe"],
+            ['abc', "a\u{2066}b\u{2069}c"],
+            ['ab', "a\u{2060}\u{034F}\u{180E}b"],
+            ['ab', "a\u{3164}\u{115F}\u{1160}\u{FFA0}\u{2800}b"],
+            ['ab', "a\x00\x07\x1B\x7Fb"],
+            ['ab', "a\u{0083}\u{009F}b"],
+            ["a \t\n\r\u{00A0}\u{0085}b", "a \t\n\r\u{00A0}\u{0085}b"],
+            ['Ünïcödé 😀 こんにちは', 'Ünïcödé 😀 こんにちは'],
+        ];
+    }
+
+    public static function stripPrivateAndUnassignedCharsDataProvider(): array
+    {
+        return [
+            ['', ''],
+            ['Apple', "\u{F8FF}Apple"],
+            ['ab', "a\u{E000}\u{F0000}\u{10FFFD}b"],
+            ['ab', "a\u{0378}b"],
+            ['ab', "a\u{FFFE}b"],
+            ['Ünïcödé 😀 こんにちは', 'Ünïcödé 😀 こんにちは'],
+        ];
+    }
 }

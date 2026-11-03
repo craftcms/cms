@@ -68,7 +68,7 @@ class Mcp extends Component
             ],
             'userScopes' => fn(User $user, array $scopes) => $user->admin ? $scopes : array_diff($scopes, [self::SCOPE_ADMIN]),
             'resourceUrl' => fn() => $this->getSettings()->url($this->getSettings()->authorizationRoute),
-            'consentDescription' => 'This client can use Craft MCP at the access level you choose, within your permissions.',
+            'consentDescription' => Craft::t('app', 'It will be able to use Craft’s MCP server on your behalf.'),
         ]);
     }
 

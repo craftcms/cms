@@ -328,7 +328,7 @@ class OAuthTest extends TestCase
         self::assertSame('https://api.example/.well-known/oauth-protected-resource/content', $this->oauth->resourceMetadataUrl('api'));
 
         $this->app->generalConfig->cpTrigger = null;
-        self::assertSame('https://cms.example:8443/installation/oauth/api/token', $this->oauth->url('token', 'api'));
+        self::assertSame('https://cms.example:8443/installation/oauth/api/token', $this->oauth->metadata('api')['token_endpoint']);
 
         $this->app->generalConfig->omitScriptNameInUrls = false;
         $this->app->set('request', new Request([

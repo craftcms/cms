@@ -2782,31 +2782,67 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns a regex pattern for invisible characters.
      *
+     * Whitespace characters (spaces, tabs, and line breaks) aren’t included.
+     *
      * @return string
      * @since 5.6.1
      */
     public static function invisibleCharsRegex(): string
     {
         $invisibleCharCodes = [
+            '0000-0008', // control characters (excluding whitespace)
+            '000e-001f', // control characters (excluding whitespace)
+            '007f-0084', // delete + C1 control characters (excluding next line)
+            '0086-009f', // C1 control characters
             '00ad', // soft hyphen
-            '0083', // no break
+            '034f', // combining grapheme joiner
+            '115f', // Hangul choseong filler
+            '1160', // Hangul jungseong filler
+            '180e', // Mongolian vowel separator
             '200b', // zero width space
             '200c', // zero width non-joiner
             '200d', // zero width joiner
             '200e', // LTR character
             '200f', // RTL character
+            '202a-202e', // bidi embeddings and overrides
+            '2060', // word joiner
+            '2061', // function application
             '2062', // invisible times
             '2063', // invisible comma
             '2064', // invisible plus
-            'feff', //zero width non-break space
+            '2066-2069', // bidi isolates
+            '2800', // braille pattern blank
+            '3164', // Hangul filler
+            'feff', // zero width non-break space
+            'ffa0', // halfwidth Hangul filler
         ];
 
         array_walk(
             $invisibleCharCodes,
-            fn(&$charCode) => $charCode = sprintf('\\x{%s}', $charCode)
+            fn(&$charCode) => $charCode = preg_replace('/[0-9a-f]{4}/', '\\x{$0}', $charCode)
         );
 
-        return sprintf('/%s/iu', implode('|', $invisibleCharCodes));
+        return sprintf('/[%s]/iu', implode('', $invisibleCharCodes));
+    }
+
+    /**
+     * Removes private-use and unassigned Unicode characters from a string.
+     *
+     * Private-use characters have no standard meaning, so they render differently (or as icons) depending on the
+     * font. Unassigned characters are determined by the Unicode version PCRE was built with, so characters added
+     * in newer Unicode versions, such as new emoji, may be removed as well.
+     *
+     * @param string $str
+     * @return string
+     * @since 5.12.0
+     */
+    public static function stripPrivateAndUnassignedChars(string $str): string
+    {
+        if ($str === '') {
+            return '';
+        }
+
+        return preg_replace('/[\p{Co}\p{Cn}]/u', '', $str) ?? $str;
     }
 
     private static function modifyCase(string $str, ?string $language, string $case): ?string

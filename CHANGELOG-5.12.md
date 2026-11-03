@@ -117,6 +117,7 @@
 - Added `craft\gql\types\UserGroup`. ([#20055](https://github.com/craftcms/cms/pull/20055))
 - Added `craft\gql\types\Volume`. ([#20055](https://github.com/craftcms/cms/pull/20055))
 - Added `craft\helpers\Gql::getSchemaUser()`. ([#20147](https://github.com/craftcms/cms/pull/20147))
+- Added `craft\helpers\StringHelper::stripPrivateAndUnassignedChars()`.
 - Added `craft\helpers\Template::render()`. ([#19988](https://github.com/craftcms/cms/pull/19988))
 - Added `craft\icons\DirectoryIconSet`. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
 - Added `craft\icons\IconSet`. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
@@ -152,6 +153,7 @@
 - `Illuminate\Support\Collection` now has a `render()` macro, which replaces `craft\elements\ElementCollection::render()`. ([#19988](https://github.com/craftcms/cms/pull/19988))
 - `craft\fields\data\ColorData::getHex()` now has a `$withAlpha` argument, which defaults to `true`. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - `craft\helpers\ElementHelper::normalizeSlug()` now has a `$language` argument, which defaults to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
+- `craft\helpers\StringHelper::invisibleCharsRegex()` now also matches bidirectional embedding, override, and isolate characters; non-whitespace control characters; the word joiner, function application, combining grapheme joiner, and Mongolian vowel separator characters; and blank Hangul filler and braille characters.
 - `craft\helpers\StringHelper::toLowerCase()`, `::toTitleCase()`, and `::toUpperCase()` now have `$language` arguments, which default to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
 - `craft\validators\ColorValidator::normalizeColor()` now expands 4-digit hex values to 8 digits, and removes fully-opaque alpha channels from 8-digit hex values. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - `craft\services\Assets::getAssetById()` now returns the asset in another site if it doesn’t exist in the current site, when no site ID is passed. ([#20060](https://github.com/craftcms/cms/pull/20060))
@@ -175,6 +177,7 @@
 - Updated Twig to 3.30.
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
 - Asset previews and the Project Config utility now use TanStack Highlight for syntax highlighting, rather than Prism. ([#20088](https://github.com/craftcms/cms/pull/20088))
+- Uploaded file names and search keywords no longer retain bidirectional override characters and other invisible characters.
 - Fixed a bug where entry and address indexes weren’t showing any results if they had a “Field” condition rule set to “is empty”.
 - Fixed a bug where `craft\services\Elements::deleteElementsForSite()` would remove elements’ site rows without deleting the elements, on single-site installs. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - Fixed a bug where saving a deeply-nested element on its own wouldn’t update its owners’ `dateUpdated` timestamps, which could cause new revisions to reuse stale nested content. ([#19594](https://github.com/craftcms/cms/issues/19594))

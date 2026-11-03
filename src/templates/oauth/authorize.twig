@@ -1,46 +1,79 @@
-{% extends '_layouts/message.twig' %}
+{% extends '_layouts/basecp.twig' %}
 {% import '_includes/forms.twig' as forms %}
-{% set title = 'Authorize client'|t('app') %}
+{% set title = 'Authorize “{client}”'|t('app', {client: clientName}) %}
+{% set bodyClass = 'login' %}
 
-{% block message %}
-  <h1>{{ title }}</h1>
-  <p>{{ '{client} would like to access Craft CMS as you.'|t('app', {client: clientName}) }}</p>
-  <p>{{ consentDescription }}</p>
-  <form method="post" action="{{ approveAction }}">
-    {{ csrfInput() }}
-    {{ hiddenInput('authToken', authToken) }}
-    {% if accessOptions %}
-      <fieldset>
-        <legend><strong>{{ 'Access:'|t('app') }}</strong></legend>
-        {% for option in accessOptions %}
+{% block body %}
+  <a href="#main" class="skip-link btn">{{ 'Skip to content'|t('app') }}</a>
+
+  <header>
+    {% include '_layouts/components/system-info' %}
+  </header>
+
+  <main id="main" tabindex="-1">
+    <div class="login-container" style="width: calc(25rem + var(--pane-padding) * 2);">
+      <div class="pane secondary">
+        <form method="post" action="{{ approveAction }}">
+          {{ csrfInput() }}
+          {{ hiddenInput('authToken', authToken) }}
+
           <div>
-            {{ forms.radio({
-              id: "access-#{loop.index}",
-              name: 'access',
-              value: option.value,
-              label: option.label,
-              checked: loop.first,
-              describedBy: "access-#{loop.index}-description",
-            }) }}
-            <p id="access-{{ loop.index }}-description" class="light smalltext" style="margin-block: 2px var(--s); padding-inline-start: 22px;">{{ option.description }}</p>
+            <h1>{{ title }}</h1>
+            <p>
+              {{ '{client} wants to access your {system} account.'|t('app', {client: clientName, system: systemName}) }}
+              {{ consentDescription }}
+            </p>
           </div>
-        {% endfor %}
-      </fieldset>
-    {% endif %}
-    {% if scopes %}
-      <p><strong>{{ 'Scopes:'|t('app') }}</strong></p>
-      <ul class="bullets" style="padding-inline-start: 0; list-style-position: inside;">
-        {% for description in scopes %}
-          <li>{{ description }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
-    {% if redirectUri %}
-      <p style="overflow-wrap: anywhere;">{{ 'You will be redirected to {url}'|t('app', {url: redirectUri}) }}</p>
-    {% endif %}
-    <div class="buttons">
-      <button class="btn submit" type="submit">{{ 'Authorize'|t('app') }}</button>
-      <button class="btn" type="submit" formaction="{{ denyAction }}">{{ 'Deny'|t('app') }}</button>
+
+          {% if accessOptions %}
+            <fieldset style="margin-block: 0;">
+              <legend style="margin-block-end: var(--xs);"><strong>{{ 'Access'|t('app') }}</strong></legend>
+              {% for option in accessOptions %}
+                <div{% if not loop.last %} style="margin-block-end: var(--xs);"{% endif %}>
+                  {{ forms.radio({
+                    id: "access-#{loop.index}",
+                    name: 'access',
+                    value: option.value,
+                    label: option.label,
+                    checked: loop.first,
+                    describedBy: "access-#{loop.index}-description",
+                  }) }}
+                  <p id="access-{{ loop.index }}-description" class="light smalltext" style="margin-block: 2px 0; padding-inline-start: 22px;">{{ option.description }}</p>
+                </div>
+              {% endfor %}
+            </fieldset>
+          {% endif %}
+
+          {% if scopes %}
+            <div>
+              <p><strong>{{ 'Scopes'|t('app') }}</strong></p>
+              <ul class="bullets" style="padding-inline-start: 0; list-style-position: inside;">
+                {% for description in scopes %}
+                  <li>{{ description }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
+          <p style="margin-block: 0; overflow-wrap: anywhere;">
+            {{ 'Only authorize apps you trust.'|t('app') }}
+            {% if redirectHost %}
+              {{ 'You will be redirected to {host}.'|t('app', {host: tag('strong', {text: redirectHost})})|raw }}
+            {% endif %}
+          </p>
+
+          <div>
+            <button class="btn submit fullwidth" type="submit">{{ 'Authorize'|t('app') }}</button>
+            <button class="btn fullwidth" type="submit" formaction="{{ denyAction }}" style="margin-block-start: var(--s);">{{ 'Deny'|t('app') }}</button>
+          </div>
+        </form>
+      </div>
     </div>
-  </form>
+  </main>
 {% endblock %}
+
+{% css %}
+  html {
+    height: 100%;
+  }
+{% endcss %}
