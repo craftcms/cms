@@ -521,6 +521,7 @@ return [
     'Couldn’t install plugin.' => 'Couldn’t install plugin.',
     'Couldn’t load CMS editions.' => 'Couldn’t load CMS editions.',
     'Couldn’t load active trials.' => 'Couldn’t load active trials.',
+    'Couldn’t load featured plugins.' => 'Couldn’t load featured plugins.',
     'Couldn’t load the cart.' => 'Couldn’t load the cart.',
     'Couldn’t load the changelog.' => 'Couldn’t load the changelog.',
     'Couldn’t load the plugin.' => 'Couldn’t load the plugin.',

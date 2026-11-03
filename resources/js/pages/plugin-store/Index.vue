@@ -16,12 +16,16 @@
   const {trials, failed: trialsFailed} = useActiveTrials();
 
   const sections = shallowRef<FeaturedSection[] | null>(null);
+  const sectionsFailed = shallowRef(false);
   const controller = new AbortController();
   onScopeDispose(() => controller.abort());
 
   getFeaturedSections(controller.signal)
     .then((response) => (sections.value = response))
-    .catch(() => (sections.value = []));
+    .catch(() => {
+      sections.value = [];
+      sectionsFailed.value = !controller.signal.aborted;
+    });
 
   // Two full rows of the grid, whichever width it's at.
   const wide = cpBreakpoints.greaterOrEqual('2xl');
@@ -35,6 +39,14 @@
     </div>
 
     <div v-else class="grid gap-xl">
+      <craft-callout
+        v-if="sectionsFailed"
+        variant="danger"
+        icon="triangle-exclamation"
+      >
+        {{ t('Couldn’t load featured plugins.') }}
+      </craft-callout>
+
       <section v-for="section in sections" :key="section.id">
         <div class="flex items-baseline justify-between gap-md">
           <h2 class="m-0">{{ section.title }}</h2>
