@@ -36,6 +36,21 @@ describe('craft-breadcrumb-item', () => {
     expect(link!.getAttribute('href')).toBe('/entries');
   });
 
+  it('opens a link to another host in a new tab and says so', async () => {
+    const element = await createItem({href: 'https://craftcms.com/'});
+    const link = element.shadowRoot!.querySelector('a.label')!;
+    expect(link.getAttribute('target')).toBe('_blank');
+    expect(link.getAttribute('rel')).toContain('noopener');
+    expect(link.textContent).toContain('Opens in a new window');
+  });
+
+  it('opens a link to this host in the same tab', async () => {
+    const element = await createItem({href: '/entries'});
+    const link = element.shadowRoot!.querySelector('a.label')!;
+    expect(link.hasAttribute('target')).toBe(false);
+    expect(link.textContent).not.toContain('Opens in a new window');
+  });
+
   it('exposes href as a property', async () => {
     const element = await createItem({href: '/entries'});
     expect(element.href).toBe('/entries');
