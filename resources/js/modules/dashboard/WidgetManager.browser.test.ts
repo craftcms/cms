@@ -118,11 +118,9 @@ it('names each widget’s reorder button, column picker and delete button after 
   await picker.updateComplete;
 
   expect(reorder.label).toBe('Reorder Updates');
-  expect(
-    picker
-      .shadowRoot!.querySelector('[role="slider"]')!
-      .getAttribute('aria-label')
-  ).toBe('Number of columns Updates');
+  await expect
+    .element(picker)
+    .toHaveAccessibleName('Number of columns Updates');
   await expect
     .element(page.getByRole('button', {name: 'Delete Updates', exact: true}))
     .toBeInTheDocument();
@@ -135,7 +133,7 @@ it('resizes a widget to the column count picked from the keyboard', async () => 
     .querySelector('craft-slide-picker')!;
   await picker.updateComplete;
 
-  picker.shadowRoot!.querySelector<HTMLElement>('[role="slider"]')!.focus();
+  picker.focus();
   await userEvent.keyboard('{End}');
 
   expect(resizes).toEqual([[2, 2]]);

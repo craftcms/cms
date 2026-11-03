@@ -41,11 +41,15 @@ A slider's value is a number, and a number on its own rarely means anything.
 <craft-slide-picker value-unit="columns"></craft-slide-picker>
 ```
 
+The picker puts a space before a unit that starts with a letter, so don't include one. A symbol such as `%` is attached to the number: `value-unit="%"` announces "100%".
+
 When a unit is not enough, `valueLabel` formats the announced value however you like. It is a property rather than an attribute, so bind it with `.valueLabel`.
 
 ## Accessibility
 
-The control is a slider. Give it a visible label, such as a [Field](?path=/docs/form-controls-field--docs) label, so people know what it sets and can name it by voice.
+The control is a slider. Give it a visible label, such as a [Field](?path=/docs/form-controls-field--docs) label, so people know what it sets and can name it by voice. The picker has no name of its own: inside a field, or with a `<label for>` pointing at it, it takes that label's text. Set `label` only when nothing visible labels it.
+
+<Canvas of={SlidePickerStories.InField} sourceState="shown" />
 
 Set `value-unit` or `valueLabel` whenever the number alone doesn't say what it counts.
 

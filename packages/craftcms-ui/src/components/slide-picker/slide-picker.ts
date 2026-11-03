@@ -1,9 +1,8 @@
 import {html, LitElement, nothing, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
-import {ifDefined} from 'lit/directives/if-defined.js';
 import {FormAssociated} from '@src/mixins/FormAssociated';
-import {t} from '@src/utilities/translate';
+import type {FieldControl} from '../field/field.js';
 import styles from './slide-picker.styles.js';
 
 /**
@@ -29,16 +28,10 @@ import styles from './slide-picker.styles.js';
  * to the hovered one, previewing a value. Defaults to
  * `--c-color-neutral-fill-normal`.
  */
-export default class CraftSlidePicker extends FormAssociated(LitElement) {
-  /**
-   * Delegate focus into the shadow root, so `host.focus()` and a `<label for>`
-   * pointing at the host land on the slider.
-   */
-  static override shadowRootOptions: ShadowRootInit = {
-    ...LitElement.shadowRootOptions,
-    delegatesFocus: true,
-  };
-
+export default class CraftSlidePicker
+  extends FormAssociated(LitElement)
+  implements FieldControl
+{
   static override styles = [styles];
 
   /** Lowest selectable value. */
@@ -49,16 +42,20 @@ export default class CraftSlidePicker extends FormAssociated(LitElement) {
   @property({type: Number}) step = 10;
   /** The currently selected value. */
   @property({type: Number}) value = 0;
-  /** Accessible name for the slider. */
-  @property() label = t('Number of Columns');
+  /**
+   * Accessible name for the slider, for when no field label or `<label for>`
+   * names it. Either of those takes its place.
+   */
+  @property() label = '';
   /**
    * Id of the element describing the control, applied as `aria-describedby`.
-   * `craft-field` supplies this for you.
+   * Inside `craft-field` the field's instructions and errors are added for you.
    */
   @property({attribute: 'described-by'}) describedBy?: string;
   /**
-   * Unit appended to the announced value — `columns`, `px`. Without one a
-   * bare number is all a screen reader gets.
+   * Unit announced after the value — `columns`, `px`, `%`. A unit that starts
+   * with a letter is separated from the value by a space; a symbol is not.
+   * Without one a bare number is all a screen reader gets.
    */
   @property({attribute: 'value-unit'}) valueUnit = '';
   /**
@@ -73,9 +70,68 @@ export default class CraftSlidePicker extends FormAssociated(LitElement) {
    */
   @property({type: Boolean, reflect: true}) readonly = false;
 
+  /** Elements a surrounding field has added to the name and description. */
+  #labelledBy = new Set<HTMLElement>();
+  #describedBy = new Set<HTMLElement>();
+
+  constructor() {
+    super();
+    // The host is the slider, so it takes focus and the keys itself. That
+    // keeps it in the same tree as the field label and instructions that name
+    // and describe it.
+    this.addEventListener('keydown', this.#handleKeyDown);
+  }
+
   /** Whether the control responds to input. */
   get #editable(): boolean {
     return !this.readonly && !this.disabled;
+  }
+
+  /**
+   * Adds `element` to the slider's accessible name. `craft-field` calls this
+   * with its label.
+   */
+  addToAriaLabelledBy(element: HTMLElement): void {
+    this.#labelledBy.add(element);
+    this.#syncReferences();
+  }
+
+  /**
+   * Adds `element` to the slider's accessible description. `craft-field`
+   * calls this with its instructions and errors.
+   */
+  addToAriaDescribedBy(element: HTMLElement): void {
+    this.#describedBy.add(element);
+    this.#syncReferences();
+  }
+
+  #syncReferences(): void {
+    const ids = (elements: Set<HTMLElement>) =>
+      [...elements].map((element) => {
+        element.id ||= `slide-picker-ref-${crypto.randomUUID()}`;
+        return element.id;
+      });
+    const labelledBy = ids(this.#labelledBy);
+    const describedBy = [
+      ...new Set([
+        ...(this.describedBy?.split(/\s+/).filter(Boolean) ?? []),
+        ...ids(this.#describedBy),
+      ]),
+    ];
+
+    this.#setOrRemove('aria-labelledby', labelledBy.join(' '));
+    this.#setOrRemove('aria-describedby', describedBy.join(' '));
+    if (labelledBy.length) {
+      this.removeAttribute('aria-label');
+    }
+  }
+
+  #setOrRemove(attribute: string, value: string): void {
+    if (value) {
+      this.setAttribute(attribute, value);
+    } else {
+      this.removeAttribute(attribute);
+    }
   }
 
   override _formValue(): string | null {
@@ -140,7 +196,10 @@ export default class CraftSlidePicker extends FormAssociated(LitElement) {
     if (this.valueLabel) {
       return this.valueLabel(value);
     }
-    return this.valueUnit ? `${value}${this.valueUnit}` : `${value}`;
+    const unit = this.valueUnit.trim();
+    // A word gets a space ("3 columns"); a symbol doesn't ("100%").
+    const separator = /^\p{L}/u.test(unit) ? ' ' : '';
+    return unit ? `${value}${separator}${unit}` : `${value}`;
   }
 
   #setValue(next: number, emit: boolean) {
@@ -166,7 +225,7 @@ export default class CraftSlidePicker extends FormAssociated(LitElement) {
     this.#setValue(value, true);
   }
 
-  #handleKeyDown(event: KeyboardEvent) {
+  #handleKeyDown = (event: KeyboardEvent) => {
     if (!this.#editable) {
       return;
     }
@@ -199,26 +258,39 @@ export default class CraftSlidePicker extends FormAssociated(LitElement) {
         event.preventDefault();
         break;
     }
+  };
+
+  protected override updated(changed: PropertyValues<this>) {
+    super.updated(changed);
+
+    this.setAttribute('role', 'slider');
+    this.tabIndex = this.#editable ? 0 : -1;
+    // A `<label for>` names the slider through `aria-labelledby` too, since
+    // support for naming a custom element from its `<label>` is uneven.
+    const labelCount = this.#labelledBy.size;
+    for (const label of this.labels) {
+      this.#labelledBy.add(label as HTMLElement);
+    }
+    // `aria-label` would outrank those, so `label` only names the slider when
+    // nothing else does.
+    this.#setOrRemove('aria-label', this.#labelledBy.size ? '' : this.label);
+    this.setAttribute('aria-valuemin', String(this.min));
+    this.setAttribute('aria-valuemax', String(this.max));
+    this.setAttribute('aria-valuenow', String(this.value));
+    this.setAttribute('aria-valuetext', this.#valueText(this.value));
+    this.setAttribute('aria-readonly', this.readonly ? 'true' : 'false');
+    this.setAttribute('aria-disabled', this.disabled ? 'true' : 'false');
+
+    if (changed.has('describedBy') || this.#labelledBy.size !== labelCount) {
+      this.#syncReferences();
+    }
   }
 
   override render() {
     const values = this.#values();
 
     return html`
-      <div
-        class="slide-picker"
-        role="slider"
-        tabindex=${this.#editable ? 0 : -1}
-        aria-label=${this.label}
-        aria-valuemin=${this.min}
-        aria-valuemax=${this.max}
-        aria-valuenow=${this.value}
-        aria-valuetext=${this.#valueText(this.value)}
-        aria-readonly=${this.readonly ? 'true' : 'false'}
-        aria-disabled=${this.disabled ? 'true' : 'false'}
-        aria-describedby=${ifDefined(this.describedBy)}
-        @keydown=${this.#handleKeyDown}
-      >
+      <div class="slide-picker">
         ${values.map((segmentValue) => {
           const active = segmentValue <= this.value;
           const lastActive = segmentValue === this.value;

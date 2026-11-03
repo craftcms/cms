@@ -23,9 +23,11 @@ a story that already shows it, rather than a story of its own.
 
 Edge cases a reviewer needs to see — hard inputs, stress content, failure
 states, and fallbacks for missing data — go in
-`<component>.edge-cases.stories.ts`, titled `Components/<Name>/Edge Cases`
-with `tags: ['!autodocs']`, so they sit beside the component in the sidebar
-but stay off its docs page. Name each after the mode it exercises
+`<component>.edge-cases.stories.ts`, titled with the component's own
+`<component>.stories.ts` title plus `/Edge Cases` (`Form Controls/Slide
+Picker/Edge Cases`, `Components/Card/Edge Cases`) and tagged
+`tags: ['!autodocs']`, so they sit inside the component's folder in the
+sidebar but stay off its docs page. Name each after the mode it exercises
 (`CoverHardImages`), and size its canvas so the whole case is visible.
 They're published with the rest of Storybook, so they can be reviewed with
 or without a PR.

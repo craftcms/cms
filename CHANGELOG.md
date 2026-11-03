@@ -354,6 +354,9 @@
 - Fixed an accessibility issue where pressing <kbd>Return</kbd> on a dialog’s close button could reopen the dialog, such as the “Check your email” dialog on the Reset Password screen. ([#20049](https://github.com/craftcms/cms/pull/20049))
 - `craft-spinner` now has a `label` property, which describes what is loading to screen readers. Slotted text still replaces it.
 - `craft-field` now has an `instructions-sr-only` attribute, and UI fields and the `Field` view component have `instructionsSrOnly()`, which visually hide instructions while keeping them in the input’s accessible description.
+- Added the `FieldControl` type to `@craftcms/ui`. Controls slotted into `<craft-field>` that implement it are given the field’s label, instructions, and errors, so screen readers announce them when the control is focused.
+- `<craft-slide-picker>` now takes its accessible name and description from a surrounding `<craft-field>` or a `<label for>` pointing at it, its `label` no longer defaults to “Number of Columns”, and a `value-unit` that starts with a letter is now separated from the value by a space. The picker element itself is now the slider, rather than an element in its shadow root.
+- `<craft-select-color>` now takes its accessible name and description from a surrounding `<craft-field>`, and clicking the field label focuses its button. Its `<craft-select-rich>` now renders in its light DOM rather than its shadow root.
 - Fixed an accessibility issue where spinners in Content Block and Matrix inline-block fields weren’t announced as loading.
 - Fixed an accessibility issue where pressing Escape in a popover inside an element details panel also closed the panel.
 - Fixed an accessibility issue where keyboard focus was lost after moving an item with its reorder button’s “Move up” or “Move down” option. ([#20073](https://github.com/craftcms/cms/pull/20073))

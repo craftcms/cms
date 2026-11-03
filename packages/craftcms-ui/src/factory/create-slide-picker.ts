@@ -1,5 +1,4 @@
 import type CraftSlidePicker from '../components/slide-picker/slide-picker.js';
-import {t} from '@src/utilities/translate';
 
 export interface SlidePickerConfig {
   id?: string;
@@ -39,7 +38,9 @@ export function createSlidePicker(
   el.max = max;
   el.step = step;
   el.value = value || 0;
-  el.label = config.label || t('Number of Columns');
+  if (config.label) {
+    el.label = config.label;
+  }
   el.valueLabel = config.valueLabel || ((v) => `${v}`);
   if (config.describedBy) {
     el.setAttribute('described-by', config.describedBy);

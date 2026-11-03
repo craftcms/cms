@@ -47,6 +47,7 @@ export {ElementSelectorHostController} from './components/element-selector-modal
 export {default as CraftDisclosure} from './components/disclosure/disclosure.js';
 export {default as CraftEmpty} from './components/empty/empty.js';
 export {default as CraftField} from './components/field/field.js';
+export type {FieldControl} from './components/field/field.js';
 export {default as CraftFieldGroup} from './components/field-group/field-group.js';
 export {default as CraftIcon} from './components/icon/icon.js';
 export {default as CraftIndicator} from './components/indicator/indicator.js';

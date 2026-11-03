@@ -5,6 +5,12 @@ export default css`
     display: inline-flex;
   }
 
+  /* The ring is drawn around the current segment instead. The global
+     :focus-visible ring outranks :host rules unless they're !important. */
+  :host(:focus-visible) {
+    outline: none !important;
+  }
+
   .slide-picker {
     --_segment-height: 1rem;
     --_segment-width: calc(8rem / 16);
@@ -81,7 +87,7 @@ export default css`
     background-color: var(--_segment-hover-fill);
   }
 
-  .slide-picker:focus-visible .slide-picker__segment.is-last-active {
+  :host(:focus-visible) .slide-picker__segment.is-last-active {
     outline: var(--c-focus-outline-width) solid var(--c-color-focus-outline);
     outline-offset: var(--c-focus-outline-offset);
     position: relative;

@@ -13,8 +13,9 @@ async function createSlidePicker(
   return element;
 }
 
+/** The host is the slider. */
 function slider(element: CraftSlidePicker): HTMLElement {
-  return element.shadowRoot!.querySelector('.slide-picker') as HTMLElement;
+  return element;
 }
 
 function segments(element: CraftSlidePicker): HTMLElement[] {
@@ -200,6 +201,16 @@ describe('craft-slide-picker', () => {
       step: 25,
       value: 50,
     });
+    withUnit.valueUnit = 'columns';
+    await withUnit.updateComplete;
+    expect(slider(withUnit).getAttribute('aria-valuetext')).toBe('50 columns');
+
+    // A unit given with its own space doesn't get a second one.
+    withUnit.valueUnit = ' columns';
+    await withUnit.updateComplete;
+    expect(slider(withUnit).getAttribute('aria-valuetext')).toBe('50 columns');
+
+    // A symbol attaches to the number.
     withUnit.valueUnit = '%';
     await withUnit.updateComplete;
     expect(slider(withUnit).getAttribute('aria-valuetext')).toBe('50%');

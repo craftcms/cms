@@ -34,6 +34,9 @@ export declare class FormAssociatedHost {
   /** The form this control belongs to, or `null` when it is outside one. */
   readonly form: HTMLFormElement | null;
 
+  /** The `<label>` elements associated with the control, as on an `<input>`. */
+  readonly labels: NodeList;
+
   /** The control's current validity state. */
   readonly validity: ValidityState;
 
@@ -106,6 +109,10 @@ export const FormAssociated = <T extends Constructor<LitElement>>(Base: T) => {
 
     get form(): HTMLFormElement | null {
       return this.#internals.form;
+    }
+
+    get labels(): NodeList {
+      return this.#internals.labels;
     }
 
     get validity(): ValidityState {

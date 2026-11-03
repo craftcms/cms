@@ -19,6 +19,43 @@ That is what makes it general: any control can go in the `input` slot — a Craf
 
 <Canvas of={FieldStories.WithCraftInput} sourceState="shown" />
 
+## Custom Controls
+
+The field gives its label, instructions and errors to the control in the `input` slot, so a screen reader announces them when the control takes focus. How it does that depends on the control:
+
+- **A native control** (`<input>`, `<select>`, `<textarea>`) gets the field's `<label>` and an `aria-describedby`.
+- **A control that implements `FieldControl`** is handed the field's label, `help-text` and `feedback` elements, and attaches them itself. Craft's Lion-based fields, such as `craft-input` and `craft-select`, already do.
+- **Any other control** isn't changed. The field gives itself `role="group"` and names that instead.
+
+The group fallback suits a control that is really several inputs, such as a set of checkboxes. A single control needs to implement `FieldControl`, or its own label and description are all a screen reader announces.
+
+```ts
+import type {FieldControl} from '@craftcms/ui';
+
+class MyRating extends HTMLElement implements FieldControl {
+  addToAriaLabelledBy(element: HTMLElement): void {
+    this.#addReference('aria-labelledby', element);
+  }
+
+  addToAriaDescribedBy(element: HTMLElement): void {
+    this.#addReference('aria-describedby', element);
+  }
+
+  #addReference(attribute: string, element: HTMLElement): void {
+    element.id ||= `my-rating-ref-${crypto.randomUUID()}`;
+    const ids = new Set(
+      (this.getAttribute(attribute) ?? '').split(/\s+/).filter(Boolean)
+    );
+    ids.add(element.id);
+    this.setAttribute(attribute, [...ids].join(' '));
+  }
+}
+```
+
+Put the references on the element that takes focus. An ID reference can't reach into a shadow root, so if focus lands inside one, give the host the control's role and focus instead (with `ElementInternals`), or use element references such as `ariaDescribedByElements`.
+
+The field may call each method more than once with the same element, so ignore elements already added. It doesn't remove them later: errors change inside the `feedback` element, which stays in place.
+
 ## Instructions, Tips, and Warnings
 
 Three different things, rendered differently on purpose:
@@ -103,6 +140,7 @@ The field is where a control's accessible name and description come from, which 
 
 - **Every control in a form belongs in one.** A bare input has no name; wrapping it is the cheapest way to fix that.
 - **Use `fieldset` for groups.** A label pointing at the first of five checkboxes names that checkbox, not the group.
+- **Custom single controls implement `FieldControl`.** Otherwise the field can only name a group around them, and focusing the control doesn't announce the label, instructions or errors. See [Custom Controls](#custom-controls).
 - **`required` is announced,** not just marked with a symbol — so a person hears the requirement rather than needing to see the asterisk.
 - **Keep the label visible.** Set `label` on every field, and only use `label-sr-only` when the control's purpose is obvious without it, such as a search box beside its button.
 - **Set state on the control too.** The field never changes the slotted control, so put `required`, `readonly`, and `disabled` on the control as well as the field. That way the control itself is announced as required, read-only, or unavailable.

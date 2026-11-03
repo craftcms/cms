@@ -1,7 +1,8 @@
 import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
-import {userEvent} from 'vite-plus/test/browser';
+import {page, userEvent} from 'vite-plus/test/browser';
 import {computeAccessibleName} from 'dom-accessibility-api';
 import type CraftField from './field.js';
+import type {FieldControl} from './field.js';
 import './field.js';
 import '../textarea/textarea.js';
 import '../input/input.js';
@@ -24,6 +25,51 @@ it('labels nested native controls', async () => {
   expect(computeAccessibleName(document.querySelector('select')!)).toBe(
     'Operator'
   );
+});
+
+/**
+ * A control outside Lion that implements `FieldControl` the way
+ * `Field.mdx` shows, with one-argument methods.
+ */
+class TestFieldControl extends HTMLElement implements FieldControl {
+  connectedCallback(): void {
+    this.setAttribute('role', 'slider');
+    this.setAttribute('tabindex', '0');
+    this.setAttribute('aria-valuenow', '1');
+  }
+
+  addToAriaLabelledBy(element: HTMLElement): void {
+    this.#addReference('aria-labelledby', element);
+  }
+
+  addToAriaDescribedBy(element: HTMLElement): void {
+    this.#addReference('aria-describedby', element);
+  }
+
+  #addReference(attribute: string, element: HTMLElement): void {
+    element.id ||= `test-ref-${crypto.randomUUID()}`;
+    const ids = new Set(
+      (this.getAttribute(attribute) ?? '').split(/\s+/).filter(Boolean)
+    );
+    ids.add(element.id);
+    this.setAttribute(attribute, [...ids].join(' '));
+  }
+}
+customElements.define('test-field-control', TestFieldControl);
+
+it('hands its label and descriptions to a control that implements FieldControl', async () => {
+  document.body.innerHTML =
+    '<craft-field label="Card width" help-text="How many columns the card spans."><test-field-control slot="input"></test-field-control><ul slot="feedback"><li>Card width must be at least 2 columns.</li></ul></craft-field>';
+  const field = document.querySelector('craft-field')!;
+  const control = page.getByRole('slider');
+
+  await expect.element(control).toHaveAccessibleName('Card width');
+  await expect
+    .element(control)
+    .toHaveAccessibleDescription(
+      'How many columns the card spans. Card width must be at least 2 columns.'
+    );
+  expect(field.getAttribute('role')).toBeNull();
 });
 
 it.each([false, true])(

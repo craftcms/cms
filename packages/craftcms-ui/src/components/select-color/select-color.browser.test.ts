@@ -14,9 +14,7 @@ async function swatchEdges(): Promise<Record<string, string>> {
     document.querySelector<CraftSelectColor>('craft-select-color')!;
   await select.updateComplete;
   const edge = (value: string) => {
-    const option = [
-      ...select.shadowRoot!.querySelectorAll('craft-option'),
-    ].find(
+    const option = [...select.querySelectorAll('craft-option')].find(
       (o) => (o as unknown as {choiceValue: string}).choiceValue === value
     )!;
 
@@ -71,9 +69,7 @@ it.each(['light', 'dark'])(
       const header = getComputedStyle(
         card.shadowRoot!.querySelector('.card__header')!
       );
-      const option = [
-        ...select.shadowRoot!.querySelectorAll('craft-option'),
-      ].find(
+      const option = [...select.querySelectorAll('craft-option')].find(
         (o) => (o as unknown as {choiceValue: string}).choiceValue === color
       )!;
       const swatch = getComputedStyle(
@@ -92,3 +88,31 @@ it.each(['light', 'dark'])(
     }
   }
 );
+
+it('takes its name and description from a surrounding field', async () => {
+  const {page} = await import('vite-plus/test/browser');
+  await import('../field/field.js');
+  document.body.innerHTML = `<craft-field label="Card color" help-text="The color of the entry type's cards."><craft-select-color slot="input" model-value="red"></craft-select-color><ul slot="feedback" class="errors"><li>Pick a color.</li></ul></craft-field>`;
+
+  // The button's name is the field label followed by the selected color.
+  const button = page.getByRole('button', {name: /^Card color/});
+
+  await expect.element(button).toHaveAccessibleName(/^Card color\b.*Red/);
+  await expect
+    .element(button)
+    .toHaveAccessibleDescription(
+      /The color of the entry type's cards\..*Pick a color\./
+    );
+});
+
+it('focuses its button when the field label is clicked', async () => {
+  const {page} = await import('vite-plus/test/browser');
+  await import('../field/field.js');
+  document.body.innerHTML = `<craft-field label="Card color"><craft-select-color slot="input"></craft-select-color></craft-field>`;
+
+  await page.getByText('Card color', {exact: true}).click();
+
+  await expect
+    .element(page.getByRole('button', {name: /^Card color/}))
+    .toHaveFocus();
+});

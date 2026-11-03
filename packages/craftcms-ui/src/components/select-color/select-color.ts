@@ -1,6 +1,8 @@
-import {html, LitElement} from 'lit';
+import {html, LitElement, render} from 'lit';
 import {property} from 'lit/decorators.js';
 import type {Validator} from '@lion/ui/form-core.js';
+import type CraftSelectRich from '../select-rich/select-rich.js';
+import type {FieldControl} from '../field/field.js';
 import {colors as paletteColors} from '@src/constants/colors';
 import {emitChange, emitInput} from '@src/utilities/form-events';
 import {t} from '@src/utilities/translate';
@@ -39,7 +41,10 @@ function titleCase(value: string): string {
  * it. Prefer the native events above: they are the contract this package
  * supports, and they carry the component as `event.target`.
  */
-export default class CraftSelectColor extends LitElement {
+export default class CraftSelectColor
+  extends LitElement
+  implements FieldControl
+{
   static override styles = [styles];
 
   /**
@@ -197,12 +202,11 @@ export default class CraftSelectColor extends LitElement {
   /**
    * Bridges the inner rich select's selection back out to consumers.
    *
-   * The inner `craft-select-rich` emits Lion's `model-value-changed` event with
-   * `bubbles: true` but NOT `composed`, so it stays inside this component's
-   * shadow root and never reaches Vue (or other host listeners). We catch it
-   * here, sync our own host `modelValue` from the inner select, then re-dispatch
-   * a `composed` `model-value-changed` from the host so v-model wrappers can
-   * read the up-to-date `this.modelValue` off `event.target`.
+   * The inner `craft-select-rich` emits Lion's `model-value-changed` event,
+   * with the rich select as its target. We catch it here, sync our own host
+   * `modelValue` from the inner select, then re-dispatch a `composed`
+   * `model-value-changed` from the host so v-model wrappers can read the
+   * up-to-date `this.modelValue` off `event.target`.
    */
   protected _handleModelValueChanged(event: Event) {
     event.stopPropagation();
@@ -220,7 +224,57 @@ export default class CraftSelectColor extends LitElement {
     emitChange(this);
   }
 
+  /** The rich select this renders into its own light DOM. */
+  get #select(): CraftSelectRich | null {
+    return this.querySelector(':scope > craft-select-rich');
+  }
+
+  /**
+   * Adds `element` to the color button's accessible name. `craft-field` calls
+   * this with its label.
+   */
+  addToAriaLabelledBy(element: HTMLElement): void {
+    void this.#whenSelectReady().then((select) =>
+      select?.addToAriaLabelledBy(element)
+    );
+  }
+
+  /**
+   * Adds `element` to the color button's accessible description.
+   * `craft-field` calls this with its instructions and errors.
+   */
+  addToAriaDescribedBy(element: HTMLElement): void {
+    void this.#whenSelectReady().then((select) =>
+      select?.addToAriaDescribedBy(element)
+    );
+  }
+
+  /** Waits for this and the rich select inside it to render. */
+  async #whenSelectReady(): Promise<CraftSelectRich | null> {
+    await this.updateComplete;
+    await this.#select?.updateComplete;
+    return this.#select;
+  }
+
+  /** Focuses the color button, as clicking a field label does. */
+  override focus(options?: FocusOptions): void {
+    this.#select?.focus(options);
+  }
+
+  /**
+   * The shadow root only slots the rich select, which renders in light DOM.
+   * There it shares a tree with a surrounding field's label and instructions,
+   * so the ids the field hands it resolve.
+   */
   protected override render() {
+    return html`<slot></slot>`;
+  }
+
+  protected override updated() {
+    render(this.#selectTemplate(), this, {host: this});
+  }
+
+  #selectTemplate() {
     return html`
       <craft-select-rich
         label=${this.label}

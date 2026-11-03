@@ -4,6 +4,7 @@ import {expect} from 'storybook/test';
 import {html} from 'lit';
 import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 import './slide-picker.js';
+import '../field/field.js';
 
 const {events, args, argTypes, template} =
   getStorybookHelpers('craft-slide-picker');
@@ -25,11 +26,14 @@ export default meta;
 type Story = StoryObj<CraftSlidePicker & typeof args>;
 
 export const Default: Story = {
-  args: {},
+  args: {
+    label: 'Completion',
+  },
 };
 
 export const ReadOnly: Story = {
   args: {
+    label: 'Completion',
     readonly: true,
   },
 };
@@ -42,6 +46,29 @@ export const FiveSteps: Story = {
     value: 60,
     label: 'Completion',
   },
+};
+
+/**
+ * Inside `craft-field`, the field's label names the slider and its
+ * instructions and errors describe it, so the picker needs no `label` of its
+ * own.
+ */
+export const InField: Story = {
+  render: () => html`
+    <craft-field
+      label="Card width"
+      help-text="How many columns the card spans."
+    >
+      <craft-slide-picker
+        slot="input"
+        value-unit="columns"
+        min="1"
+        max="4"
+        step="1"
+        value="2"
+      ></craft-slide-picker>
+    </craft-field>
+  `,
 };
 
 /**
@@ -59,7 +86,7 @@ export const InAForm: Story = {
       <craft-slide-picker
         name="columns"
         label="Number of Columns"
-        value-unit=" columns"
+        value-unit="columns"
         min="1"
         max="6"
         step="1"

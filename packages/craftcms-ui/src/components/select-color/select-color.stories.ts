@@ -5,6 +5,7 @@ import {html} from 'lit';
 import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 
 import './select-color.js';
+import '../field/field.js';
 import type CraftSelectColor from './select-color.js';
 
 /**
@@ -51,7 +52,7 @@ export const Default: Story = {
     const host = canvasElement.querySelector('craft-select-color')!;
 
     // It forwards its label and name onto the select it wraps.
-    const select = host.shadowRoot!.querySelector('craft-select-rich')!;
+    const select = host.querySelector('craft-select-rich')!;
     await expect(select).toBeTruthy();
     await expect(select.getAttribute('label')).toBe('Color');
     await expect(select.getAttribute('name')).toBe('color');
@@ -82,13 +83,33 @@ export const NativeEvents: Story = {
       if (event.target === host) order.push('change');
     });
 
-    const inner = host.shadowRoot!.querySelector('craft-select-rich')!;
+    const inner = host.querySelector('craft-select-rich')!;
     inner.dispatchEvent(
       new CustomEvent('model-value-changed', {bubbles: true})
     );
 
     await expect(order).toEqual(['input', 'change']);
   },
+};
+
+/**
+ * Inside `craft-field`, the field's label names the color button and its
+ * instructions and errors describe it, so the control needs no `label` of its
+ * own.
+ */
+export const InField: Story = {
+  render: () => html`
+    <craft-field
+      label="Card color"
+      help-text="The color of the entry type's cards."
+    >
+      <craft-select-color
+        slot="input"
+        name="color"
+        model-value="red"
+      ></craft-select-color>
+    </craft-field>
+  `,
 };
 
 /** Nothing selected — the invoker shows the placeholder with no swatch. */

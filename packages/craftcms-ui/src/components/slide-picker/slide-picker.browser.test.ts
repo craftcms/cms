@@ -94,26 +94,70 @@ it('previews the current value like any other', async () => {
   expect(getComputedStyle(segments[1]!).cursor).toBe('pointer');
 });
 
-it('moves focus to the slider when the host is focused', async () => {
-  const picker = await render();
+it('is one Tab stop, on the slider', async () => {
+  const {page, userEvent} = await import('vite-plus/test/browser');
+  await render();
 
-  picker.focus();
+  await userEvent.tab();
 
-  expect(picker.shadowRoot!.activeElement).toBe(
-    picker.shadowRoot!.querySelector('[role="slider"]')
-  );
+  await expect.element(page.getByRole('slider')).toHaveFocus();
 });
 
-it('moves focus to the slider when its label is clicked', async () => {
-  const picker = await render('id="columns"');
-  const label = document.createElement('label');
-  label.htmlFor = 'columns';
-  label.textContent = 'Columns';
-  document.body.prepend(label);
+it('draws one focus ring, around the current segment', async () => {
+  const {userEvent} = await import('vite-plus/test/browser');
+  const picker = await render('', 50);
 
-  label.click();
+  await userEvent.tab();
 
-  expect(picker.shadowRoot!.activeElement).toBe(
-    picker.shadowRoot!.querySelector('[role="slider"]')
-  );
+  const current = picker.shadowRoot!.querySelector('.is-last-active')!;
+  expect(getComputedStyle(picker).outlineStyle).toBe('none');
+  expect(getComputedStyle(current).outlineStyle).not.toBe('none');
+});
+
+it('is named by a label pointing at it, and focused when the label is clicked', async () => {
+  const {page} = await import('vite-plus/test/browser');
+  await import('../../styles/cp.css');
+  document.body.innerHTML = `<label for="columns">Columns</label><craft-slide-picker id="columns" min="25" max="100" step="25" value="100"></craft-slide-picker>`;
+  await document.querySelector<CraftSlidePicker>('craft-slide-picker')!
+    .updateComplete;
+
+  document.querySelector('label')!.click();
+
+  const slider = page.getByRole('slider');
+  await expect.element(slider).toHaveAccessibleName('Columns');
+  await expect.element(slider).toHaveFocus();
+});
+
+it('takes its name and description from a surrounding field', async () => {
+  const {page} = await import('vite-plus/test/browser');
+  await import('../field/field.js');
+  await import('../../styles/cp.css');
+  const label = 'Card width';
+  const helpText = 'How many columns the card spans.';
+  const error = 'Card width must be at least 2 columns.';
+  document.body.innerHTML = `<craft-field label="${label}" help-text="${helpText}"><craft-slide-picker slot="input" min="1" max="4" step="1" value="1"></craft-slide-picker><ul slot="feedback" class="errors"><li>${error}</li></ul></craft-field>`;
+
+  const slider = page.getByRole('slider');
+
+  await expect.element(slider).toHaveAccessibleName(label);
+  await expect
+    .element(slider)
+    .toHaveAccessibleDescription(`${helpText} ${error}`);
+});
+
+it('is described by the element named in described-by', async () => {
+  const {page} = await import('vite-plus/test/browser');
+  await import('../../styles/cp.css');
+  document.body.innerHTML = `<p id="columns-help">How many columns the card spans.</p><craft-slide-picker label="Card width" described-by="columns-help" min="1" max="4" step="1" value="1"></craft-slide-picker>`;
+
+  await expect
+    .element(page.getByRole('slider'))
+    .toHaveAccessibleDescription('How many columns the card spans.');
+});
+
+it('has no name of its own until one is given', async () => {
+  const {page} = await import('vite-plus/test/browser');
+  await render();
+
+  await expect.element(page.getByRole('slider')).toHaveAccessibleName('');
 });
