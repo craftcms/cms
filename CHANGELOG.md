@@ -389,6 +389,8 @@
 
 ### Administration
 
+- Added Settings → System → CP Navigation, where administrators can customize the control panel’s navigation: reorder items and move them between sections, rename them, change their icons, hide them, and add sections and links, such as links straight to a single’s entry, which can be limited to users who match a condition. Customizing the navigation requires Craft Team or later. ([#20247](https://github.com/craftcms/cms/pull/20247))
+- User groups can now have their own control panel navigations, which build on the default navigation and save only what they change, so changes to the default carry through to them. People in more than one group get the first of their groups’ navigations, in the order administrators put them in. (Craft Pro and Enterprise only.) ([#20247](https://github.com/craftcms/cms/pull/20247))
 - Color fields’ palette colors can now have an alpha channel, by entering an 8-digit hex value or via the color picker in browsers that support it. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - Color fields now have an “Allow opacity for custom colors” setting. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - Color fields now have a “GraphQL Mode” setting, which can be set to “Full data” or “Hex only”. New Color fields default to “Full data”, and existing Color fields default to “Hex only”. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
@@ -437,6 +439,7 @@
 - The System Messages utility now shows each message in a card, and edits messages in a slideout with a Markdown editor. Typing `{{` in a message’s subject or body suggests the Twig variables it can use. ([#19946](https://github.com/craftcms/cms/pull/19946))
 - The MCP server’s `elements.update` tool can now set and clear assets’ focal points via a `focalPoint` attribute, in the format of `"x;y"`, such as `"0.5;0.5"`. ([#19933](https://github.com/craftcms/cms/pull/19933), [#20218](https://github.com/craftcms/cms/pull/20218))
 - The MCP server now validates custom field values against the `elements.field-schema` schema, and returns an error that identifies each invalid value. ([#19965](https://github.com/craftcms/cms/pull/19965))
+- The MCP server’s configuration tools can now manage control panel navigations, via the `cp-navigations` configuration type, which reads and writes each navigation as the tree the navigation builder edits. ([#20247](https://github.com/craftcms/cms/pull/20247))
 - The MCP server now accepts any date or time that Date and Time fields can parse, such as “2:30 PM” or a date with a UTC offset, rather than requiring ISO 8601. A value they can’t parse is rejected, rather than clearing the field, and a field’s instructions no longer replace the description of its format.
 - Fixed a bug where the Asset Indexes utility’s indexing sessions were inset from the rest of the page, and their “Last update” dates showed “Invalid Date”. ([#20215](https://github.com/craftcms/cms/issues/20215), [#20221](https://github.com/craftcms/cms/pull/20221))
 - Fixed an error that occurred when editing an entry type that was in use. ([#20138](https://github.com/craftcms/cms/issues/20138))
@@ -625,6 +628,14 @@
 - Added the `<craft-text-diff>` web component, which shows two versions of a text as one word-level diff, with each rewritten phrase as one deletion and one insertion. It can collapse long unchanged stretches, and mark passages of the text.
 - Added `statusColor()`, `Status`, `statuses`, and `StatusKey` to `@craftcms/ui`. `statusColor()` returns the palette color for an element status, matching `CraftCms\Cms\Shared\Enums\Color::tryFromStatus()`. ([#20270](https://github.com/craftcms/cms/pull/20270))
 - Updated `Color.On` from `@craftcms/ui` to `teal`, rather than `emerald`, to match `CraftCms\Cms\Shared\Enums\Color::tryFromStatus()`. ([#20270](https://github.com/craftcms/cms/pull/20270))
+- Added `CraftCms\Cms\Cp\CustomNavigations`, `CraftCms\Cms\Cp\NavCustomizer`, and `CraftCms\Cms\Cp\Data\NavNode`, for reading and applying control panel navigation customizations. ([#20247](https://github.com/craftcms/cms/pull/20247))
+- Added `CraftCms\Cms\Cp\Navigation::getBaseTree()` and `getBaseTreeForGroup()`, which return the control panel navigation before any customization. ([#20247](https://github.com/craftcms/cms/pull/20247))
+- Added `CraftCms\Cms\Edition::supportsCustomNavigations()`. ([#20247](https://github.com/craftcms/cms/pull/20247))
+- Added the `aligned` admin table appearance (`CraftCms\Cms\Cp\Enums\TableAppearance::Aligned`), which keeps a table’s outer cells’ content flush with its edges. ([#20247](https://github.com/craftcms/cms/pull/20247))
+- Admin table rows can now set `_reorderable` to `false` to stay in place without a drag handle. ([#20247](https://github.com/craftcms/cms/pull/20247))
+- Settings nav items now show a custom icon’s solid version (`custom-icons/<name>`) when a setting’s `iconName` is its light version (`custom-icons/<name>-light`). ([#20247](https://github.com/craftcms/cms/pull/20247))
+- Element source headings can now have a `handle`, which gives their control panel navigation items stable IDs. ([#20247](https://github.com/craftcms/cms/pull/20247))
+- Added `CraftCms\Cms\User\UserPermissions::actingAsGroup()`, which runs a callback with the current user’s permissions replaced by a user group’s. ([#20247](https://github.com/craftcms/cms/pull/20247))
 - Fixed a bug where `t()` from `@craftcms/ui` failed to format a message with a comma inside a plural or select option.
 - `<craft-badge-indicator>` now has a `max` property, which sets the largest count shown before it’s shortened to “99+”. Set it to `Infinity` to show the whole count. Counts are now formatted for the page’s language. ([#19967](https://github.com/craftcms/cms/pull/19967))
 - Added `CraftCms\Cms\Asset\Elements\Asset::$trashedFileExists` and `getTrashedFilePath()`. ([#20093](https://github.com/craftcms/cms/pull/20093))

@@ -376,6 +376,11 @@ export const TableAppearance = {
    * `--cp-container-padding` to match.
    */
   Flush: 'flush',
+  /**
+   * Sits inside the container's padding, with its outer cells' content flush
+   * with its edges.
+   */
+  Aligned: 'aligned',
   /** Sits in a raised pane. */
   Raised: 'raised',
 } as const;

@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\CustomNavigations;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Events\CpNavItemsResolving;
+use CraftCms\Cms\Cp\NavCustomizer;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Cp\Settings;
 use CraftCms\Cms\Element\ElementSources;
@@ -32,6 +34,12 @@ function cpSettings(): Settings
         Cms::config(),
         Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
     );
+}
+
+/** No navigations. */
+function noCustomNavigations(): CustomNavigations
+{
+    return Mockery::mock(CustomNavigations::class, ['navigationFor' => []]);
 }
 
 /**
@@ -86,6 +94,8 @@ it('selects nav items from paths with the cp trigger', function () {
         Cms::config(),
         Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
         cpSettings(),
+        noCustomNavigations(),
+        new NavCustomizer,
     );
 
     $settingsItem = findNavItem($navigation->getItems(), 'Settings');
@@ -105,6 +115,8 @@ it('selects parent nav items when a subnav item matches the cp path', function (
         Cms::config(),
         Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
         cpSettings(),
+        noCustomNavigations(),
+        new NavCustomizer,
     );
 
     $graphqlItem = findNavItem($navigation->getItems(), 'GraphQL');
@@ -144,6 +156,8 @@ it('keeps cp destinations for nav listeners on site and cp requests', function (
         Cms::config(),
         Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
         cpSettings(),
+        noCustomNavigations(),
+        new NavCustomizer,
     );
     swapUrlRequest('https://site.example.test/');
 
@@ -183,6 +197,8 @@ it('selects navigation independently for each request', function () {
         Cms::config(),
         Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
         cpSettings(),
+        noCustomNavigations(),
+        new NavCustomizer,
     );
 
     $settings->getItems();
@@ -196,6 +212,8 @@ it('selects navigation independently for each request', function () {
         Cms::config(),
         Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
         cpSettings(),
+        noCustomNavigations(),
+        new NavCustomizer,
     );
 
     $items = $graphql->getItems();
@@ -214,6 +232,8 @@ it('nests the settings screens under Settings, grouped as the index groups them'
         Cms::config(),
         Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
         cpSettings(),
+        noCustomNavigations(),
+        new NavCustomizer,
     );
 
     $settings = findNavItem($navigation->getTree(), 'Settings');
@@ -237,6 +257,8 @@ it('hands a group\'s children up for the legacy sidebar, which has no groups', f
         Cms::config(),
         Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
         cpSettings(),
+        noCustomNavigations(),
+        new NavCustomizer,
     );
 
     $items = collect($navigation->getShallowItems());
@@ -261,6 +283,8 @@ it('lists the administrative nav items under an Administration group', function 
         Cms::config(),
         Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
         cpSettings(),
+        noCustomNavigations(),
+        new NavCustomizer,
     );
 
     $tree = collect($navigation->getTree());
@@ -305,6 +329,8 @@ it('lists ungrouped plugin nav items before grouped ones', function () {
         Cms::config(),
         Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
         cpSettings(),
+        noCustomNavigations(),
+        new NavCustomizer,
     );
 
     $labels = collect($navigation->getTree())
@@ -345,6 +371,8 @@ it('hangs an element type\'s sources off its nav item, grouped by heading', func
         Cms::config(),
         $sources,
         cpSettings(),
+        noCustomNavigations(),
+        new NavCustomizer,
     );
 
     $entries = findNavItem($navigation->getTree(), 'Entries');
@@ -388,6 +416,8 @@ it('drops a heading whose members all turned out to be unusable', function () {
         Cms::config(),
         $sources,
         cpSettings(),
+        noCustomNavigations(),
+        new NavCustomizer,
     );
 
     $entries = findNavItem($navigation->getTree(), 'Entries');
@@ -398,6 +428,7 @@ it('drops a heading whose members all turned out to be unusable', function () {
 
 it('carries a plugin’s own icon into its settings nav item', function () {
     $settings = Mockery::mock(Settings::class, [
+        'sectionName' => 'System',
         'all' => [
             'System' => [
                 'plugins' => ['label' => 'Plugins', 'iconName' => 'light/plug'],
@@ -421,6 +452,8 @@ it('carries a plugin’s own icon into its settings nav item', function () {
         Cms::config(),
         Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
         $settings,
+        noCustomNavigations(),
+        new NavCustomizer,
     );
 
     $groups = collect(findNavItem($navigation->getItems(), 'Settings')->subnav);
@@ -442,12 +475,18 @@ it('draws settings nav items with solid icons', function () {
     File::ensureDirectoryExists(dirname($solidIcon));
     File::put($solidIcon, '<svg></svg>');
     $this->beforeApplicationDestroyed(fn () => File::delete($solidIcon));
+    $customIcon = CmsAssets::resourcesPath('icons/custom-icons/navigation-test-custom.svg');
+    File::put($customIcon, '<svg></svg>');
+    $this->beforeApplicationDestroyed(fn () => File::delete($customIcon));
 
     $settings = Mockery::mock(Settings::class, [
+        'sectionName' => 'System',
         'all' => [
             'System' => [
                 'with-solid' => ['label' => 'With Solid', 'iconName' => 'light/navigation-test-solid'],
                 'light-only' => ['label' => 'Light Only', 'iconName' => 'light/navigation-test-light-only'],
+                'custom-pair' => ['label' => 'Custom Pair', 'iconName' => 'custom-icons/navigation-test-custom-light'],
+                'custom-light-only' => ['label' => 'Custom Light Only', 'iconName' => 'custom-icons/navigation-test-unpaired-light'],
             ],
         ],
     ]);
@@ -461,15 +500,23 @@ it('draws settings nav items with solid icons', function () {
         Cms::config(),
         Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
         $settings,
+        noCustomNavigations(),
+        new NavCustomizer,
     );
 
     $items = collect(findNavItem($navigation->getItems(), 'Settings')->subnav[0]->subnav);
 
-    expect($items->pluck('icon')->all())->toBe(['navigation-test-solid', 'light/navigation-test-light-only']);
+    expect($items->pluck('icon')->all())->toBe([
+        'navigation-test-solid',
+        'light/navigation-test-light-only',
+        'custom-icons/navigation-test-custom',
+        'custom-icons/navigation-test-unpaired-light',
+    ]);
 });
 
 it('selects the plugin settings item instead of the Plugins index', function () {
     $settings = Mockery::mock(Settings::class, [
+        'sectionName' => 'System',
         'all' => [
             'System' => [
                 'plugins' => ['label' => 'Plugins', 'iconName' => 'light/plug'],
@@ -492,6 +539,8 @@ it('selects the plugin settings item instead of the Plugins index', function () 
         Cms::config(),
         Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
         $settings,
+        noCustomNavigations(),
+        new NavCustomizer,
     );
 
     $groups = collect(findNavItem($navigation->getItems(), 'Settings')->subnav);
@@ -525,6 +574,8 @@ it('leaves a source addressed by query to requests that ask for it', function (s
         Cms::config(),
         $sources,
         cpSettings(),
+        noCustomNavigations(),
+        new NavCustomizer,
     );
 
     $entries = findNavItem($navigation->getItems(), 'Entries');
@@ -569,6 +620,8 @@ it('links a source the way the nav does, on whichever page it lives', function (
         Cms::config(),
         $sources,
         cpSettings(),
+        noCustomNavigations(),
+        new NavCustomizer,
     );
 
     $cpTrigger = Cms::config()->cpTrigger;
@@ -599,6 +652,8 @@ it('gives each source its own nav item id, apart from the index it hangs off', f
         Cms::config(),
         $sources,
         cpSettings(),
+        noCustomNavigations(),
+        new NavCustomizer,
     );
 
     $entries = findNavItem($navigation->getTree(), 'Entries');
@@ -687,6 +742,8 @@ it('badges each utility with a count, as well as the Utilities item', function (
         Cms::config(),
         Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
         cpSettings(),
+        noCustomNavigations(),
+        new NavCustomizer,
     );
 
     $utilities = findNavItem($navigation->getItems(), 'Utilities');
@@ -694,4 +751,105 @@ it('badges each utility with a count, as well as the Utilities item', function (
     expect($utilities->badgeCount)->toBe(5)
         ->and(collect($utilities->subnav)->pluck('badgeCount', 'label')->all())
         ->toBe(['Updates' => 2, 'Messages' => 3, 'Quiet' => 0]);
+});
+
+it('gives every nav item an id of its own, whichever host its URL was built for', function () {
+    Event::listen(CpNavItemsResolving::class, function (CpNavItemsResolving $event) {
+        $event->navItems[] = new NavItem()->label('Orders')->href('https://cp.example.test/admin/commerce/orders?status=new');
+        $event->navItems[] = new NavItem()->label('Elsewhere')->href('https://elsewhere.example.test/admin/commerce/orders');
+        $event->navItems[] = new NavItem()->label('Refunds')->href('https://cp.example.test/admin/commerce/refunds?site=fr&status=open');
+    });
+
+    $navigation = new Navigation(
+        Request::create('https://cp.example.test/admin/dashboard'),
+        Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
+        Mockery::mock(Utilities::class, [
+            'getAuthorizedUtilityTypes' => new Collection,
+        ]),
+        Cms::config(),
+        Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
+        cpSettings(),
+        noCustomNavigations(),
+        new NavCustomizer,
+    );
+
+    $ids = [];
+    $collect = function (array $items) use (&$collect, &$ids): void {
+        foreach ($items as $item) {
+            $ids[] = $item->id;
+            $collect(is_array($item->subnav) ? $item->subnav : []);
+        }
+    };
+    $collect($tree = $navigation->getTree());
+
+    expect($ids)->toBe(array_unique($ids))
+        ->and(findNavItem($tree, 'Orders')->id)->toBe('nav-commerce-ordersstatusnew')
+        ->and(findNavItem($tree, 'Refunds')->id)->toBe('nav-commerce-refundsstatusopen')
+        ->and(findNavItem($tree, 'Elsewhere')->id)->not->toBe('nav-commerce-orders')
+        ->and(collect($tree)->firstWhere('label', 'Administration')->id)->toBe('nav-group-administration');
+});
+
+it('gives settings sections the same id in every language', function () {
+    $headingIds = function (): array {
+        $navigation = new Navigation(
+            Request::create('/admin/settings'),
+            Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
+            Mockery::mock(Utilities::class, ['getAuthorizedUtilityTypes' => new Collection]),
+            Cms::config(),
+            Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
+            cpSettings(),
+            noCustomNavigations(),
+            new NavCustomizer,
+        );
+
+        return collect($navigation->getTree())
+            ->flatMap(fn (NavItem $item) => $item->group ? $item->subnav : [$item])
+            ->firstWhere('id', 'nav-settings')
+            ->subnav;
+    };
+
+    $english = $headingIds();
+    $locale = app()->getLocale();
+    app()->setLocale('fr');
+
+    try {
+        expect(array_column($headingIds(), 'id'))->toBe(array_column($english, 'id'))
+            ->and(array_column($english, 'id'))->toContain('nav-settings-group-system')
+            ->and(array_column($headingIds(), 'label'))->toContain('Système');
+    } finally {
+        app()->setLocale($locale);
+    }
+});
+
+it('names source headings by their handle, or else as they were typed, whoever sees them', function () {
+    $this->totalEditableSections = 1;
+
+    $sources = Mockery::mock(ElementSources::class);
+    $sources->shouldReceive('getPages')->andReturn(collect(['Entries']));
+    $sources->shouldReceive('getPageSettings')->andReturn([]);
+    $sources->shouldReceive('getSources')->andReturn(collect([
+        ['type' => ElementSources::TYPE_HEADING, 'heading' => 'Kanäle', 'handle' => 'channel'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => 'section:abc', 'label' => 'Posts'],
+        ['type' => ElementSources::TYPE_HEADING, 'heading' => 'Featured'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => 'section:def', 'label' => 'News'],
+        ['type' => ElementSources::TYPE_HEADING, 'heading' => 'Featured'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => 'section:ghi', 'label' => 'Events'],
+    ]));
+
+    $navigation = new Navigation(
+        Request::create('/admin/content/entries'),
+        Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
+        Mockery::mock(Utilities::class, ['getAuthorizedUtilityTypes' => new Collection]),
+        Cms::config(),
+        $sources,
+        cpSettings(),
+        noCustomNavigations(),
+        new NavCustomizer,
+    );
+
+    expect(collect(findNavItem($navigation->getTree(), 'Entries')->subnav)->pluck('id')->all())->toBe([
+        'nav-content-entries-source-heading-channel',
+        'nav-content-entries-source-heading-featured',
+        'nav-content-entries-source-heading-featured-2',
+    ]);
 });

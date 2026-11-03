@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Mcp\Enums;
 
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Mcp\Capabilities\AssetTransformers;
+use CraftCms\Cms\Mcp\Capabilities\CpNavigations;
 use CraftCms\Cms\Mcp\Capabilities\EntryTypes;
 use CraftCms\Cms\Mcp\Capabilities\Fields;
 use CraftCms\Cms\Mcp\Capabilities\ImageTransforms;
@@ -33,12 +34,14 @@ enum ConfigurationType: string
     case Routes = 'routes';
     case AssetTransformers = 'asset-transformers';
     case Workflows = 'workflows';
+    case CpNavigations = 'cp-navigations';
 
     /** The Craft edition the type needs, if any. */
     public function requiredEdition(): ?Edition
     {
         return match ($this) {
             self::Workflows => Edition::Pro,
+            self::CpNavigations => Edition::Team,
             default => null,
         };
     }
@@ -66,6 +69,7 @@ enum ConfigurationType: string
             self::Routes => Routes::class,
             self::AssetTransformers => AssetTransformers::class,
             self::Workflows => Workflows::class,
+            self::CpNavigations => CpNavigations::class,
         };
     }
 
@@ -82,6 +86,7 @@ enum ConfigurationType: string
             self::Routes => 'route',
             self::AssetTransformers => 'transformer',
             self::Workflows => 'workflow',
+            self::CpNavigations => 'navigation',
         };
     }
 
@@ -92,6 +97,7 @@ enum ConfigurationType: string
             self::SiteGroups, self::UserGroups => 'groups',
             self::ImageTransforms => 'transforms',
             self::AssetTransformers => 'transformers',
+            self::CpNavigations => 'navigations',
             default => $this->value,
         };
     }
@@ -106,6 +112,7 @@ enum ConfigurationType: string
             self::Routes => ['Lookup accepts UID or computed URI. uriParts contains literal strings or [name, regex] tuples. Lists routes available to the current site.'],
             self::AssetTransformers => ['Lookup accepts UID or handle. component-types.list and component-types.get with kind: asset-transform-driver describe drivers and their settings; settings the driver doesn’t define are dropped. Changing the driver clears settings that aren’t supplied.'],
             self::Workflows => ['Lookup accepts ID or UID. Workflows require Craft Pro. Assign workflows to sections through section settings. component-types.list and component-types.get with kind: workflow-stage describe stage types and their settings. On update, supplied stages replace the current stages.'],
+            self::CpNavigations => ['Lookup is userGroup: a user group’s handle or UID, or `default` for the default navigation, which everyone without a group navigation gets. User group navigations require Craft Pro, and build on the default navigation: they start from it and save only what they change, so later changes to the default carry through to them. A group can hide custom sections and links the default adds, but not remove them. A user in several groups gets the first of their groups’ navigations, by position. Read a navigation’s tree with configuration.get and pass the whole edited tree back on update, with every node it had; it replaces the current customization. Custom sections and links can have a `userCondition` (a user condition’s config), so only users who match it see them, admins included. Hiding is cosmetic: a navigation can leave items out but never grant access to them.'],
             default => [],
         };
     }
@@ -125,6 +132,7 @@ enum ConfigurationType: string
             self::Routes => 'Removes the route from project config.',
             self::AssetTransformers => 'Removes the asset transformer from project config. Refuses to delete the Craft transformer, the default transformer, or one assigned to a volume.',
             self::Workflows => 'Removes the workflow from project config. Refuses to delete a workflow that is assigned to a section.',
+            self::CpNavigations => 'Removes a user group’s navigation, so the group gets the default navigation unchanged. On `default`, resets the default navigation to the one Craft and plugins build.',
         }, 'No configuration undo tool is provided.'];
     }
 }

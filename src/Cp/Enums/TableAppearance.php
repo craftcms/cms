@@ -18,6 +18,9 @@ enum TableAppearance: string
     /** Spans the container’s inline padding, padding each row’s outer cells to match. */
     case Flush = 'flush';
 
+    /** Sits inside the container’s padding, with its outer cells’ content flush with its edges. */
+    case Aligned = 'aligned';
+
     /** Sits in a raised pane. */
     case Raised = 'raised';
 }
