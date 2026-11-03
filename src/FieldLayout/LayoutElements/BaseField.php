@@ -7,9 +7,12 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Data\Thumb;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Enums\AttributeStatus;
+use CraftCms\Cms\Element\FieldValueComparisons;
 use CraftCms\Cms\Field\Icon;
 use CraftCms\Cms\Field\Markdown as MarkdownField;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentActionMenuItemsResolving;
@@ -543,6 +546,7 @@ abstract class BaseField extends FieldLayoutElement
         ));
 
         $coreActions = array_values(array_filter([
+            $this->compareChangesAction($context),
             $this->crossSiteCopyAction($context),
             $this->aiAssistantAction($context),
         ]));
@@ -580,6 +584,52 @@ abstract class BaseField extends FieldLayoutElement
             'action' => [
                 'type' => 'event',
                 'name' => 'craft:add-to-ai-assistant',
+            ],
+        ];
+    }
+
+    /**
+     * Returns an action that compares the field’s value on a draft, revision, or nested element with the value it
+     * was based on, for fields marked as modified or outdated.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function compareChangesAction(FieldLayoutElementContext $context): ?array
+    {
+        $element = $context->element;
+
+        if (
+            ! $this->uid ||
+            $element === null ||
+            ! $this->showStatus() ||
+            ! FieldValueComparisons::isComparable($element)
+        ) {
+            return null;
+        }
+
+        $static = $context->mode !== ControlMode::Editable || $context->ui->mode !== ControlMode::Editable;
+        $status = AttributeStatus::tryFrom((string) $this->statusClass($element, $static));
+
+        if ($status === null) {
+            return null;
+        }
+
+        return [
+            'icon' => 'code-compare',
+            'label' => t('Compare changes'),
+            'action' => [
+                'type' => 'event',
+                'name' => 'craft:compare-field-changes',
+                'detail' => [
+                    'elementType' => $element::class,
+                    'elementId' => $element->id,
+                    'siteId' => $element->siteId,
+                    'ownerId' => $element instanceof NestedElementInterface ? $element->getOwnerId() : null,
+                    'fieldId' => $element instanceof NestedElementInterface ? $element->getField()?->id : null,
+                    'layoutElementUid' => $this->uid,
+                    'status' => $status->value,
+                    'label' => $this->showLabel() ? $this->label() : null,
+                ],
             ],
         ];
     }
