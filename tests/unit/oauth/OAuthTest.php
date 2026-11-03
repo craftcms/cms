@@ -144,11 +144,24 @@ class OAuthTest extends TestCase
         $this->oauth->getResources();
     }
 
-    public function testMissingKeyFileIsAConfigError(): void
+    public function testFlattenedKeysStillWork(): void
     {
-        $this->app->oauthConfig->publicKey = '/nonexistent/oauth-public.key';
-        $this->expectException(InvalidConfigException::class);
-        $this->oauth->resourceServer('mcp');
+        // Craft Cloud replaces the line breaks in multiline environment variables with spaces.
+        $this->app->oauthConfig->privateKey = str_replace("\n", ' ', trim($this->app->oauthConfig->privateKey));
+        $this->app->oauthConfig->publicKey = str_replace("\n", ' ', trim($this->app->oauthConfig->publicKey));
+        self::assertSame($this->app->identity->id, $this->authenticate($this->grant('mcp', 'mcp:read')['access_token'])->id);
+    }
+
+    public function testMissingOrInvalidKeysAreConfigErrors(): void
+    {
+        foreach (['/nonexistent/oauth-public.key', "-----BEGIN PUBLIC KEY-----\nnope\n-----END PUBLIC KEY-----\n"] as $publicKey) {
+            $this->app->oauthConfig->publicKey = $publicKey;
+            try {
+                $this->oauth->resourceServer('mcp');
+                self::fail("Expected an InvalidConfigException for $publicKey");
+            } catch (InvalidConfigException) {
+            }
+        }
     }
 
     public function testResourcePermissionChangesDoNotRequireControlPanelAccess(): void

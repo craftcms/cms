@@ -397,10 +397,18 @@ class OAuth extends Component
         if (!$value) {
             $value = $this->keyPath($type);
         }
-        if (!str_contains($value, '-----BEGIN')) {
+        // CryptKey would throw generic LogicExceptions for missing or invalid keys, which don’t say how to fix them.
+        if (str_contains($value, '-----BEGIN')) {
+            // Some hosts, such as Craft Cloud, flatten multiline environment variables, so restore the PEM line breaks.
+            if (!str_contains($value, "\n") && preg_match('/^(-----BEGIN [A-Z ]+-----)(.+?)(-----END [A-Z ]+-----)$/', trim($value), $match)) {
+                $value = "$match[1]\n" . chunk_split(preg_replace('/\s+/', '', $match[2]), 64, "\n") . "$match[3]\n";
+            }
+            if (!($type === 'private' ? openssl_pkey_get_private($value) : openssl_pkey_get_public($value))) {
+                throw new InvalidConfigException("The OAuth `{$type}Key` config setting isn’t a valid PEM-encoded key.");
+            }
+        } else {
             $value = Craft::getAlias($value);
             if (!is_readable(preg_replace('~^file://~', '', $value))) {
-                // CryptKey would throw a generic LogicException, which doesn’t say how to fix it.
                 throw new InvalidConfigException("The OAuth $type key file “{$value}” doesn’t exist or isn’t readable. Run `php craft oauth/generate-keys`, or set the `{$type}Key` OAuth config setting.");
             }
         }
