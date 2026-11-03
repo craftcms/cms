@@ -7,6 +7,7 @@ namespace craft\mcp\schema;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\InputSchemaFieldInterface;
+use craft\elements\Entry;
 use craft\fields\Date;
 use craft\fields\Json;
 use craft\fields\Matrix;
@@ -110,8 +111,8 @@ class CustomFieldSchema
                 throw new ToolCallException(sprintf('%s: %s', $handle, $exception->getMessage()), previous: $exception);
             }
 
-            if ($field instanceof Matrix && !$this->listsNewEntries($values[$handle])) {
-                throw new ToolCallException(sprintf('%s: New entries must be listed in `sortOrder`, as `new:1`, `new:2`, etc. in the order they appear in `entries`, along with the IDs of any existing entries to keep.', $handle));
+            if ($field instanceof Matrix) {
+                $values[$handle] = $this->sortNewEntries($element, $field, $values[$handle]);
             }
         }
 
@@ -169,23 +170,48 @@ class CustomFieldSchema
     }
 
     /**
-     * Returns whether a normalized Matrix value lists all of its new entries in `sortOrder`.
+     * Ensures a normalized Matrix value lists its new entries in `sortOrder`.
      *
-     * The GraphQL API saves new entries missing from `sortOrder` without adding them to the field, so MCP rejects them.
+     * Matrix fields keep only the entries `sortOrder` lists, and default it to the existing entries, so new entries
+     * missing from it would be dropped without an error. When `sortOrder` is omitted, new entries are added after the
+     * existing ones, in the order they appear in `entries`. When it is given, new entries missing from it are rejected.
      */
-    private function listsNewEntries(mixed $value): bool
+    private function sortNewEntries(ElementInterface $element, Matrix $field, mixed $value): mixed
     {
-        if (!is_array($value) || isset($value['sortOrder']) || !is_array($value['entries'] ?? null)) {
-            return true;
+        if (!is_array($value) || !is_array($value['entries'] ?? null)) {
+            return $value;
         }
 
-        foreach (array_keys($value['entries']) as $id) {
-            if (str_starts_with((string) $id, 'new:')) {
-                return false;
+        $ids = array_map('strval', array_keys($value['entries']));
+
+        // Entries keyed by UID are matched to existing entries by UID, which the field resolves on its own.
+        foreach ($ids as $id) {
+            if (str_starts_with($id, 'uid:')) {
+                return $value;
             }
         }
 
-        return true;
+        $existingIds = $element->id
+            ? array_map('strval', Entry::find()->fieldId($field->id)->owner($element)->drafts(null)->status(null)->ids())
+            : [];
+        $newIds = array_values(array_diff($ids, $existingIds));
+
+        if (!isset($value['sortOrder'])) {
+            $value['sortOrder'] = [...$existingIds, ...$newIds];
+            return $value;
+        }
+
+        $unlisted = array_diff($newIds, array_map('strval', (array) $value['sortOrder']));
+
+        if ($unlisted !== []) {
+            throw new ToolCallException(sprintf(
+                '%s: Add %s to `sortOrder`, which lists the entries to keep in order, or omit `sortOrder` to add new entries after the existing ones.',
+                $field->handle,
+                implode(', ', $unlisted),
+            ));
+        }
+
+        return $value;
     }
 
     /**
