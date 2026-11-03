@@ -145,14 +145,14 @@ it('gives nav pages without icons their parent’s', function () {
         ->and($utilities['nav-utilities-updates']['icon'])->not->toBe($utilities['nav-utilities']['icon']);
 });
 
-it('finds what the navigation hides, renames or adds, by its new name or its old one', function () {
+it('leaves out what the navigation hides, and finds what it renames or adds, by its new name or its old one', function () {
     app(CustomNavigations::class)->saveDefault(['items' => [
         'nav-plugin-store' => ['hidden' => true],
         'nav-utilities' => ['label' => 'Toolbox'],
         'custom-docs00' => ['type' => 'link', 'label' => 'Handbook', 'url' => 'https://docs.example.com'],
     ]]);
 
-    expect(collect(paletteSearch('pages', 'plugin store'))->pluck('id'))->toContain('nav-plugin-store')
+    expect(collect(paletteSearch('pages', 'plugin store'))->pluck('id'))->not->toContain('nav-plugin-store')
         ->and(collect(paletteSearch('pages', 'toolbox'))->firstWhere('id', 'nav-utilities')['label'] ?? null)->toBe('Toolbox')
         ->and(collect(paletteSearch('pages', 'utilities'))->pluck('id'))->toContain('nav-utilities')
         ->and(collect(paletteSearch('pages', 'handbook'))->pluck('id'))->toContain('custom-docs00');

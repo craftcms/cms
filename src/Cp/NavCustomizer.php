@@ -66,21 +66,20 @@ class NavCustomizer
 
     /**
      * The nav with a customization applied, for a user. Hidden items are left
-     * out, unless `$withHidden` keeps them, as the command palette does: hiding
-     * something only tidies the nav, and it's still there to find. Sections and
-     * links whose user condition the user doesn't match are always left out.
+     * out, and so are sections and links whose user condition the user doesn't
+     * match.
      *
      * @param  NavItem[]  $tree
      * @param  NavDiff  $diff
      * @return NavItem[]
      */
-    public function apply(array $tree, array $diff, ?CraftUser $user, bool $withHidden = false): array
+    public function apply(array $tree, array $diff, ?CraftUser $user): array
     {
         if ($diff === []) {
             return $tree;
         }
 
-        return $this->render($this->resolve($tree, $diff), $user, $withHidden);
+        return $this->render($this->resolve($tree, $diff), $user);
     }
 
     /**
@@ -567,12 +566,12 @@ class NavCustomizer
      * @param  list<NavNode>  $nodes
      * @return NavItem[]
      */
-    private function render(array $nodes, ?CraftUser $user, bool $withHidden): array
+    private function render(array $nodes, ?CraftUser $user): array
     {
         $items = [];
 
         foreach ($nodes as $node) {
-            if (($node->hidden && ! $withHidden) || ! $this->isVisibleTo($node, $user)) {
+            if ($node->hidden || ! $this->isVisibleTo($node, $user)) {
                 continue;
             }
 
@@ -587,7 +586,7 @@ class NavCustomizer
             }
 
             if ($node->kind === 'section') {
-                $children = $this->render($node->children, $user, $withHidden);
+                $children = $this->render($node->children, $user);
 
                 // Moved out of, or hidden from, until nothing's left.
                 if ($children === []) {
@@ -597,7 +596,7 @@ class NavCustomizer
                 $item->subnav = $children;
             } elseif (is_array($item->subnav) && $item->subnav !== []) {
                 // Rebuilt from the nodes, since some may have moved out.
-                $children = $this->render($node->children, $user, $withHidden);
+                $children = $this->render($node->children, $user);
 
                 // A heading within a subnav, with nothing left beneath it.
                 if ($children === [] && $item->group) {
