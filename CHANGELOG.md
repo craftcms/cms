@@ -18,6 +18,7 @@
 - Fixed a bug where eager-loaded elements were getting reversed twice when both `orderBy` and `inReverse` criteria were set. ([#19994](https://github.com/craftcms/cms/pull/19994))
 - Fixed a bug where skipped revisions were getting reported as root element lookup errors when resaving elements. ([#20026](https://github.com/craftcms/cms/pull/20026))
 - Fixed a bug where pruning revisions could delete nested element revisions in other sites that newer revisions still referenced. ([#20042](https://github.com/craftcms/cms/issues/20042))
+- Fixed a bug where “Save as a new draft” didn’t carry nested entries over to the new draft. ([#20226](https://github.com/craftcms/cms/issues/20226))
 - Fixed an error that occurred when logging in with a passkey that was registered with an older version of Craft. ([#20052](https://github.com/craftcms/cms/issues/20052))
 - Fixed a bug where closing an element selector modal while it was loading caused it to keep loading all of the source’s elements in the background. ([#20100](https://github.com/craftcms/cms/issues/20100))
 - Fixed a bug where moving assets and replacing existing files with the same name could fail. ([#20128](https://github.com/craftcms/cms/issues/20128))
@@ -36,8 +37,8 @@
 - Fixed a bug where queries executed within `craft\db\Connection::cache()` could cause infinite recursion when `craft\cache\DbCache` was used as the cache component. ([#19877](https://github.com/craftcms/cms/issues/19877))
 - Fixed a bug where license records weren’t being updated with the newly-installed versions after running the `update` command. ([#19878](https://github.com/craftcms/cms/issues/19878))
 - Fixed a bug where addresses could present as editable even if the user didn’t have permission to save their parent element. ([#19881](https://github.com/craftcms/cms/issues/19881))
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SQL injection vulnerability. (GHSA-cphx-cx67-jcqj)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-4rg3-m2h8-grqw)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SQL injection vulnerability. ([GHSA-cphx-cx67-jcqj](https://github.com/craftcms/cms/security/advisories/GHSA-cphx-cx67-jcqj))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. ([GHSA-4rg3-m2h8-grqw](https://github.com/craftcms/cms/security/advisories/GHSA-4rg3-m2h8-grqw))
 
 ## 5.11.4 - 2026-10-01
 
@@ -56,10 +57,10 @@
 - Fixed an error that could occur when running the `setup/php-session-table` and `setup/db-cache-table` commands. ([#19742](https://github.com/craftcms/cms/pull/19742))
 - Fixed an infinite loop that could occur when editing nested Matrix entries in Blocks view. ([#19756](https://github.com/craftcms/cms/issues/19756))
 - Fixed a bug where filtering elements by textual params or conditions could only work if the param/condition value was all-lowercase. ([#19781](https://github.com/craftcms/cms/issues/19781))
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-hq78-cm2m-h24h)
-- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-6m9q-c5q4-3732)
-- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-j2r3-x468-c6j5)
-- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-q2rx-mr36-8rh5)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. ([GHSA-hq78-cm2m-h24h](https://github.com/craftcms/cms/security/advisories/GHSA-hq78-cm2m-h24h))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. ([GHSA-6m9q-c5q4-3732](https://github.com/craftcms/cms/security/advisories/GHSA-6m9q-c5q4-3732))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. ([GHSA-j2r3-x468-c6j5](https://github.com/craftcms/cms/security/advisories/GHSA-j2r3-x468-c6j5))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. ([GHSA-q2rx-mr36-8rh5](https://github.com/craftcms/cms/security/advisories/GHSA-Q2RX-MR36-8RH5))
 
 ## 5.11.3 - 2026-09-18
 
