@@ -404,6 +404,7 @@
         'cp-table--spacious': spacing === TableSpacing.Spacious,
         'cp-table--auto': layout === 'auto',
         'cp-table--flush': appearance === TableAppearance.Flush,
+        'cp-table--aligned': appearance === TableAppearance.Aligned,
       }"
     >
       <caption class="sr-only">

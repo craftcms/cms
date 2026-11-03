@@ -342,9 +342,9 @@
         :layout="layout"
         :spacing="spacing"
         :appearance="
-          appearance === TableAppearance.Flush
-            ? TableAppearance.Flush
-            : TableAppearance.Plain
+          appearance === TableAppearance.Raised
+            ? TableAppearance.Plain
+            : appearance
         "
         :with-bottom-border="!footerVisible"
         :empty-row="!showEmptyState"

@@ -194,6 +194,26 @@ it('lists group navigations in the order they apply, with the default navigation
     get(cp_url('settings/cp-nav'))->assertRedirect(route('craft.cp.settings.cp-nav.default'));
 });
 
+it('only offers reordering and deleting the navigations that can be', function (int $groupCount, bool $reorderable, bool $deletable) {
+    actingAs(UserModel::factory()->admin()->createElement());
+
+    for ($i = 0; $i < $groupCount; $i++) {
+        $group = UserGroups::getGroupByUid(UserGroup::factory()->create()->uid);
+        app(CustomNavigations::class)->saveGroupNavigation($group, []);
+    }
+
+    $table = collect(get(cp_url('settings/cp-nav'))->assertOk()->inertiaProps('ui.nodes'))
+        ->firstWhere('uid', 'cp-navigations')['props'];
+
+    expect($table['reorderUrl'] !== null)->toBe($reorderable)
+        ->and($table['deletable'])->toBe($deletable)
+        ->and($table['appearance'])->toBe('aligned');
+})->with([
+    'only the default navigation' => [0, false, false],
+    'one group navigation' => [1, false, true],
+    'several group navigations' => [2, true, true],
+]);
+
 it('deletes a user group’s navigation along with the group', function () {
     $group = UserGroups::getGroupByUid(UserGroup::factory()->create()->uid);
     app(CustomNavigations::class)->saveGroupNavigation($group, ['items' => ['nav-plugin-store' => ['hidden' => true]]]);

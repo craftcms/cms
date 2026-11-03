@@ -8,6 +8,7 @@ use Closure;
 use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\CustomNavigations;
+use CraftCms\Cms\Cp\Enums\TableAppearance;
 use CraftCms\Cms\Cp\NavCustomizer;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Edition;
@@ -115,6 +116,7 @@ class CpNavigationController
                         ['key' => 'changes', 'label' => t('Changes')],
                     ])
                     ->rows($rows)
+                    ->appearance(TableAppearance::Aligned)
                     ->unless($this->readOnly, fn (Table $table) => $table
                         ->when(
                             $newItems !== [],
@@ -122,8 +124,11 @@ class CpNavigationController
                                 ->createActionMenu(t('New navigation'), $newItems)
                                 ->createActionInPageHeader(),
                         )
-                        ->reorderable(route('craft.cp.settings.cp-nav.reorder'), t('New order saved.'))
-                        ->deletable()),
+                        ->when(
+                            $groupNavigations->count() > 1,
+                            fn (Table $table) => $table->reorderable(route('craft.cp.settings.cp-nav.reorder'), t('New order saved.')),
+                        )
+                        ->when($groupNavigations->isNotEmpty(), fn (Table $table) => $table->deletable())),
             ]));
     }
 
