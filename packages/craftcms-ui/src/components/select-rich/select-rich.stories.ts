@@ -13,9 +13,8 @@ import type CraftSelectRich from './select-rich.js';
  * controls and the API tables follow the component's JSDoc. Adding a property
  * to `select-rich.ts` surfaces it here without touching this file.
  *
- * The options are written out rather than generated: Lion registers each
- * `craft-option` as a real child, and a generated slot would wrap them in a
- * `<span>` that Lion adopts as the control instead.
+ * The options are written out rather than generated: they have to be direct
+ * children, and a generated slot would wrap them in a `<span>`.
  */
 const {args, argTypes} =
   getStorybookHelpers<CraftSelectRich>('craft-select-rich');

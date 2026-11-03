@@ -5,7 +5,6 @@ import {page, userEvent} from 'vite-plus/test/browser/context';
 import type CraftCombobox from '@craftcms/ui/components/combobox/combobox';
 import type {ComboboxItem} from '@craftcms/ui/components/combobox/combobox';
 import '@craftcms/ui/components/combobox/combobox';
-import CraftComboboxVue from '@craftcms/ui/vue/CraftCombobox.vue';
 import ComboboxControl from './ComboboxControl.vue';
 
 const slideout = vi.hoisted(() => ({openSlideout: vi.fn()}));
@@ -64,10 +63,21 @@ async function fixture(multiple = false, items: ComboboxItem[] = options) {
   await nextTick();
   const combobox = container.querySelector('craft-combobox') as CraftCombobox;
   await combobox.updateComplete;
+  // In multiple-choice mode the selected option leaves the list.
   await vi.waitFor(() =>
-    expect(combobox.querySelectorAll('craft-option')).toHaveLength(2)
+    expect(combobox.querySelectorAll('craft-option')).toHaveLength(
+      multiple ? 1 : 2
+    )
   );
   return {combobox, selection, changes};
+}
+
+function createOption(combobox: CraftCombobox): HTMLElement {
+  return [
+    ...combobox.querySelectorAll<HTMLElement & {choiceValue: string}>(
+      'craft-option'
+    ),
+  ].find((option) => option.choiceValue.startsWith('__'))!;
 }
 
 it('selects ordinary options without opening a slideout', async () => {
@@ -78,45 +88,6 @@ it('selects ordinary options without opening a slideout', async () => {
 
   await vi.waitFor(() => expect(selection.value).toBe('42'));
   expect(slideout.openSlideout).not.toHaveBeenCalled();
-});
-
-it('exposes a native selection event before syncing the Vue model', async () => {
-  container = document.createElement('div');
-  document.body.append(container);
-  const selection = ref('');
-  const updated = vi.fn(
-    (value: string | string[] | number | boolean | undefined) =>
-      (selection.value = String(value ?? ''))
-  );
-  app = createApp({
-    render: () =>
-      h(CraftComboboxVue, {
-        options,
-        modelValue: selection.value,
-        'onUpdate:modelValue': updated,
-        'onModel-value-changed': (
-          event: CustomEvent,
-          cancelModelUpdate: () => void
-        ) => {
-          if ((event.target as CraftCombobox).modelValue === '__add__') {
-            cancelModelUpdate();
-          }
-        },
-      }),
-  });
-  app.mount(container);
-  const combobox = container.querySelector('craft-combobox') as CraftCombobox;
-  await vi.waitFor(() =>
-    expect(combobox.querySelectorAll('craft-option')).toHaveLength(2)
-  );
-
-  combobox.querySelectorAll<HTMLElement>('craft-option')[0]!.click();
-  await vi.waitFor(() => expect(selection.value).toBe('42'));
-  updated.mockClear();
-
-  combobox.querySelectorAll<HTMLElement>('craft-option')[1]!.click();
-  await nextTick();
-  expect(updated).not.toHaveBeenCalled();
 });
 
 it('opens the create screen when its option is selected by keyboard', async () => {
@@ -131,7 +102,7 @@ it('opens the create screen when its option is selected by keyboard', async () =
     expect(slideout.openSlideout).toHaveBeenCalledTimes(1)
   );
   await vi.waitFor(() => expect(selection.value).toBe('42'));
-  expect(combobox.modelValue).toBe('42');
+  expect(combobox.value).toBe('42');
 });
 
 it.each([false, true])(
@@ -139,13 +110,13 @@ it.each([false, true])(
   async (multiple) => {
     slideout.openSlideout.mockResolvedValue(null);
     const {combobox, selection, changes} = await fixture(multiple);
-    combobox.querySelectorAll<HTMLElement>('craft-option')[1]!.click();
+    createOption(combobox).click();
 
     await vi.waitFor(() =>
       expect(slideout.openSlideout).toHaveBeenCalledTimes(1)
     );
     await vi.waitFor(() =>
-      expect(combobox.modelValue).toEqual(multiple ? ['42'] : '42')
+      expect(combobox.value).toEqual(multiple ? ['42'] : '42')
     );
     expect(selection.value).toEqual(multiple ? ['42'] : '42');
     await vi.waitFor(() =>
@@ -208,7 +179,7 @@ it('selects a created volume by UID rather than its numeric ID', async () => {
       },
     },
   ]);
-  combobox.querySelectorAll<HTMLElement>('craft-option')[1]!.click();
+  createOption(combobox).click();
 
   await vi.waitFor(() =>
     expect(slideout.openSlideout).toHaveBeenCalledTimes(1)

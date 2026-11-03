@@ -157,7 +157,7 @@ it.each([
     expect(combobox.name).toBe('siteOverrides[site-uid][fromEmail]');
     expect(combobox.label).toBe('System Email Address');
     expect(combobox.options).toEqual(expectedOptions);
-    expect(combobox.modelValue).toBe('$SYSTEM_EMAIL');
+    expect(combobox.value).toBe('$SYSTEM_EMAIL');
     expect(combobox.showAllOnEmpty).toBe(true);
   }
 );

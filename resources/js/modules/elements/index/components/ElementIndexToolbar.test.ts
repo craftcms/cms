@@ -182,31 +182,10 @@ it('reports the handle the user picked', () => {
   });
 
   const select = siteMenu()!.querySelector('select-rich')!;
-  Object.assign(select, {modelValue: 'fr'});
-  select.dispatchEvent(
-    new CustomEvent('model-value-changed', {
-      detail: {isTriggeredByUser: true},
-    })
-  );
+  Object.assign(select, {value: 'fr'});
+  select.dispatchEvent(new Event('change'));
 
   expect(onSiteChange).toHaveBeenCalledWith('fr');
-});
-
-it('ignores a change the user did not make', () => {
-  const {onSiteChange} = mount({
-    sites: [site(1, 'default', 'Default'), site(2, 'fr', 'French')],
-    siteHandle: 'default',
-  });
-
-  const select = siteMenu()!.querySelector('select-rich')!;
-  Object.assign(select, {modelValue: 'fr'});
-  select.dispatchEvent(
-    new CustomEvent('model-value-changed', {
-      detail: {isTriggeredByUser: false},
-    })
-  );
-
-  expect(onSiteChange).not.toHaveBeenCalled();
 });
 
 it('omits the shared cell when there is no site menu and no statuses', () => {

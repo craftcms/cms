@@ -86,7 +86,7 @@ describe.each([
     const control = await fixture([
       {label: 'Icon', value: 'icon', data: {icon: 'circle', color}},
     ]);
-    control.modelValue = 'icon';
+    control.value = 'icon';
     await control.updateComplete;
 
     expect(
@@ -100,7 +100,7 @@ describe.each([
       {label: 'Icon', value: 'icon', data: {icon: 'circle', color}},
     ]);
     control.multipleChoice = true;
-    control.modelValue = ['icon'];
+    control.value = ['icon'];
     await control.updateComplete;
 
     expect(
@@ -126,7 +126,7 @@ it('shows the selected option’s indicator while closed', async () => {
     {label: 'Online', value: 'true', data: {indicator: {fill: 'success'}}},
     {label: 'Offline', value: 'false', data: {indicator: {fill: 'danger'}}},
   ]);
-  control.modelValue = 'false';
+  control.value = 'false';
   await control.updateComplete;
 
   const indicator = control.shadowRoot!.querySelector(
@@ -180,7 +180,7 @@ it('opens and closes its options from the chevron, focusing the textbox', async 
     {label: 'Anthropic', value: 'anthropic'},
     {label: 'Azure', value: 'azure'},
   ]);
-  control.modelValue = 'anthropic';
+  control.value = 'anthropic';
   await control.updateComplete;
   const chevron = control.shadowRoot!.querySelector<HTMLElement>('.indicator')!;
 

@@ -126,7 +126,7 @@ class SelectColor extends ViewComponent
         return [
             'id' => $this->getId(),
             'name' => $this->name,
-            'model-value' => $this->value,
+            'value' => $this->value,
             'label' => $this->label,
             'allow-transparent' => $this->allowTransparent,
             'blank-label' => $this->blankLabel,

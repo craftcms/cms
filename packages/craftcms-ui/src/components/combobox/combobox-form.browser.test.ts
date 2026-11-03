@@ -26,8 +26,6 @@ async function fixture(
   form.append(control);
   document.body.append(form);
   await control.updateComplete;
-  // Lion adopts a requested `model-value` only once the option naming it has
-  // registered, so the value lands a tick after the first render.
   await new Promise((resolve) => requestAnimationFrame(resolve));
   await control.updateComplete;
 
@@ -38,14 +36,14 @@ const entries = (form: HTMLFormElement) => [...new FormData(form).entries()];
 
 it('posts its value under the host name', async () => {
   const {control, form} = await fixture((c) =>
-    c.setAttribute('model-value', '2026-01')
+    c.setAttribute('value', '2026-01')
   );
 
   expect(entries(form)).toEqual([['apiVersion', '2026-01']]);
 
   // Changing the selection changes what the form carries, so a save writes the
   // value the field is showing.
-  control.modelValue = '2026-04';
+  control.value = '2026-04';
   await control.updateComplete;
 
   expect(entries(form)).toEqual([['apiVersion', '2026-04']]);
@@ -54,20 +52,20 @@ it('posts its value under the host name', async () => {
 it('posts a custom value when it does not match an option', async () => {
   const {control, form} = await fixture((c) => {
     c.requireOptionMatch = false;
-    c.setAttribute('model-value', '$SHOPIFY_API_VERSION');
+    c.setAttribute('value', '$SHOPIFY_API_VERSION');
   });
 
   expect(entries(form)).toEqual([['apiVersion', '$SHOPIFY_API_VERSION']]);
-  expect(control.modelValue).toBe('$SHOPIFY_API_VERSION');
+  expect(control.value).toBe('$SHOPIFY_API_VERSION');
 });
 
 it('posts a value its markup carried, with the options as markup too', async () => {
-  // How a server-rendered page arrives: both `model-value` and `options` are
+  // How a server-rendered page arrives: both `value` and `options` are
   // attributes on the element, and it upgrades with them already set.
   const options = JSON.stringify([
     {label: '$SHOPIFY_API_VERSION', value: '$SHOPIFY_API_VERSION'},
   ]);
-  document.body.innerHTML = `<form><craft-combobox name="folderPath" model-value="@webroot/cache/blitz" allow-custom-choice options='${options}'></craft-combobox></form>`;
+  document.body.innerHTML = `<form><craft-combobox name="folderPath" value="@webroot/cache/blitz" options='${options}'></craft-combobox></form>`;
 
   const form = document.querySelector('form')!;
   const control = document.querySelector('craft-combobox') as CraftCombobox;
@@ -75,13 +73,13 @@ it('posts a value its markup carried, with the options as markup too', async () 
   await new Promise((resolve) => requestAnimationFrame(resolve));
   await control.updateComplete;
 
-  expect(control.modelValue).toBe('@webroot/cache/blitz');
+  expect(control.value).toBe('@webroot/cache/blitz');
   expect(entries(form)).toEqual([['folderPath', '@webroot/cache/blitz']]);
 });
 
 it('posts nothing while disabled', async () => {
   const {control, form} = await fixture((c) => {
-    c.setAttribute('model-value', '2026-01');
+    c.setAttribute('value', '2026-01');
     c.disabled = true;
   });
 

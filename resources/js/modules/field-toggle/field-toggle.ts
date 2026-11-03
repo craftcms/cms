@@ -197,19 +197,14 @@ export class FieldToggle extends Base {
     return this.normalizeToggleVal(this.#toggleValue());
   }
 
-  /**
-   * The toggle's value, whichever control it is.
-   *
-   * A combobox keeps the chosen value on `modelValue`; its `value` is what the
-   * textbox is showing, which is the label.
-   */
+  /** The toggle's value, whichever control it is. */
   #toggleValue(): string | null {
     const toggle = this.toggle;
 
     if (toggle?.nodeName === 'CRAFT-COMBOBOX') {
-      const model = (toggle as unknown as {modelValue?: unknown}).modelValue;
+      const value = (toggle as unknown as {value?: unknown}).value;
 
-      return typeof model === 'string' ? model : null;
+      return typeof value === 'string' ? value : null;
     }
 
     return toggle instanceof HTMLInputElement ||

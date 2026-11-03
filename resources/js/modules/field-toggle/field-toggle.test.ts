@@ -5,14 +5,14 @@ beforeEach(() => {
   document.body.innerHTML = '';
 });
 
-/** A stand-in for `craft-combobox`: the value lives on `modelValue`. */
+/** A stand-in for `craft-combobox`. */
 function combobox(
   value: string,
   options: unknown[] = [],
   attrs: Record<string, string> = {}
 ): HTMLElement {
   const el = document.createElement('craft-combobox');
-  Object.assign(el, {modelValue: value, options, value: 'the label'});
+  Object.assign(el, {value, options});
   for (const [name, attrValue] of Object.entries(attrs)) {
     el.setAttribute(name, attrValue);
   }
@@ -37,7 +37,7 @@ describe('a combobox toggle', () => {
     expect(new FieldToggle(toggle).getType()).toBe('booleanMenu');
   });
 
-  it('takes its value from modelValue, not the textbox', () => {
+  it('takes its value from the combobox', () => {
     const toggle = combobox('chosen-value', [], {
       'data-target-prefix': '#pane-',
     });

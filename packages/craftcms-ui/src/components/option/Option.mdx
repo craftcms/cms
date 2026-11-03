@@ -45,7 +45,7 @@ Wrap related options in `<craft-option-group>` to list them under a heading. The
 
 ## Accessibility
 
-Lion supplies the option semantics and selection state.
+Each option is a `role="option"` whose `aria-selected` follows `checked` and whose `aria-disabled` follows `disabled`. The listbox around it decides what selecting it does.
 
 Remember that everything inside the option is announced. A decorative icon should be hidden, or every entry in the list will be read with the same prefix before the part that distinguishes it. A `craft-icon` without a `label` is hidden already. Give an `<img>` an empty `alt`, and an inline `<svg>` `aria-hidden="true"`. Artwork that carries meaning needs a text alternative instead.
 

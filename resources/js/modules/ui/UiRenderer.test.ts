@@ -359,7 +359,7 @@ vi.mock('../editable-table', () => ({
 
           const combobox = document.createElement('craft-combobox');
           combobox.name = `${baseName}[${rowId}][${key}]`;
-          combobox.modelValue = stringValue;
+          combobox.value = stringValue;
           cell.append(combobox);
           continue;
         }
@@ -1130,11 +1130,11 @@ describe('UiRenderer', () => {
     app.unmount();
     await mount(status);
 
-    const combobox = container.querySelector<
-      HTMLElement & {modelValue: string}
-    >('craft-combobox')!;
+    const combobox = container.querySelector<HTMLElement & {value: string}>(
+      'craft-combobox'
+    )!;
     await vi.waitFor(() => {
-      expect(combobox.modelValue).toBe('1');
+      expect(combobox.value).toBe('1');
       expect(combobox.querySelector('input')?.value).toBe('Online');
     });
   });
@@ -2453,13 +2453,11 @@ describe('UiRenderer', () => {
     await mount(refreshable, {refresh});
 
     const combobox = required(
-      container.querySelector<HTMLElement & {modelValue: string}>(
-        'craft-combobox'
-      ),
+      container.querySelector<HTMLElement & {value: string}>('craft-combobox'),
       'Expected the UI mode combobox.'
     );
     await vi.waitFor(() => {
-      expect(combobox.modelValue).toBe('enlarged');
+      expect(combobox.value).toBe('enlarged');
       expect(container.querySelectorAll('craft-option')).toHaveLength(2);
     });
     await new Promise((resolve) => setTimeout(resolve));
@@ -2478,7 +2476,7 @@ describe('UiRenderer', () => {
     ]);
   });
 
-  it('uses the combobox change source instead of event timing', async () => {
+  it('reports input on the combobox as typing', async () => {
     const onChange = vi.fn();
     app.unmount();
     const refreshable = clonePayload();
@@ -2495,20 +2493,13 @@ describe('UiRenderer', () => {
     await mount(refreshable, {onChange});
 
     const combobox = required(
-      container.querySelector<HTMLElement & {modelValue: string}>(
-        'craft-combobox'
-      ),
+      container.querySelector<HTMLElement & {value: string}>('craft-combobox'),
       'Expected the UI mode combobox.'
     );
     onChange.mockClear();
-    combobox.modelValue = 'custom';
+    combobox.value = 'custom';
     await Promise.resolve();
-    combobox.dispatchEvent(
-      new CustomEvent('model-value-changed', {
-        bubbles: true,
-        detail: {changeSource: 'input'},
-      })
-    );
+    combobox.dispatchEvent(new Event('input', {bubbles: true}));
     await nextTick();
 
     expect(onChange).toHaveBeenCalledWith(

@@ -1,11 +1,11 @@
 <script setup lang="ts">
   import type ComboboxElement from '@craftcms/ui/components/combobox/combobox';
   import type {ComboboxItem} from '@craftcms/ui/components/combobox/combobox';
-  import CraftCombobox from '@craftcms/ui/vue/CraftCombobox.vue';
+  import '@craftcms/ui/components/combobox/combobox';
   import {computed, shallowRef, watch} from 'vue';
   import type {UiChangeKind, UiControlPayload} from './types';
   import {handleCreateOption} from './combobox-create-option';
-  import {inputName, serverErrorValidators} from './runtime';
+  import {inputName} from './runtime';
 
   type ComboboxControlProps = {
     options: ComboboxItem[];
@@ -46,18 +46,10 @@
     (event: 'update:value', value: string | string[], kind: UiChangeKind): void;
   }>();
 
-  function onModelValueChanged(
-    event: CustomEvent,
-    cancelModelUpdate: () => void
-  ): void {
-    if (event.detail?.initialize) {
-      return;
-    }
-
-    const combobox = event.target as ComboboxElement;
+  function onInput(event: Event): void {
+    const combobox = event.currentTarget as ComboboxElement;
     if (
       handleCreateOption(
-        event,
         combobox,
         options.value,
         modelValue.value,
@@ -67,36 +59,43 @@
         }
       )
     ) {
-      cancelModelUpdate();
       return;
     }
 
-    const value = combobox.modelValue;
+    emitValue(combobox, 'typing');
+  }
+
+  function emitValue(combobox: ComboboxElement, kind: UiChangeKind): void {
+    const value = combobox.value;
     emit(
       'update:value',
       Array.isArray(value) ? value.map(String) : String(value ?? ''),
-      event.detail?.changeSource === 'input' ? 'typing' : 'discrete'
+      kind
     );
   }
 </script>
 
 <template>
-  <CraftCombobox
+  <craft-combobox
     :name="editable ? inputName(control.path) : ''"
-    :options="options"
+    .options="options"
     :placeholder="control.props.placeholder"
-    :limit="control.props.limit"
-    :clearable="control.props.clearable"
-    :require-option-match="control.props.requireOptionMatch"
-    :show-all-on-empty="control.props.showAllOnEmpty"
-    :show-selected-hint="control.props.showSelectedHint"
+    .limit="control.props.limit ?? 150"
+    .clearable="control.props.clearable ?? false"
+    .requireOptionMatch="control.props.requireOptionMatch ?? false"
+    .showAllOnEmpty="control.props.showAllOnEmpty ?? false"
+    .showSelectedHint="control.props.showSelectedHint ?? false"
     :dir="control.props.dir"
-    :required="editable && required"
-    :readonly="control.mode === 'readOnly'"
-    :disabled="control.mode === 'disabled'"
-    :validators="serverErrorValidators(invalid)"
-    :multiple-choice="control.props.multiple ?? false"
-    :model-value="modelValue"
-    @model-value-changed="onModelValueChanged"
-  />
+    .required="editable && required"
+    .readOnly="control.mode === 'readOnly'"
+    .disabled="control.mode === 'disabled'"
+    .invalid="invalid"
+    .multipleChoice="control.props.multiple ?? false"
+    .value="modelValue"
+    @input="onInput"
+    @change="
+      (event: Event) =>
+        emitValue(event.currentTarget as ComboboxElement, 'discrete')
+    "
+  ></craft-combobox>
 </template>
