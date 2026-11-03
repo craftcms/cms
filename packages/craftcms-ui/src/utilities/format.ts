@@ -20,14 +20,21 @@ export function formattingLocale(): string {
   );
 }
 
-/** A date, in the user's formatting locale. Long dates by default, e.g. “October 30, 2026”. */
+/**
+ * A date, in the user's formatting locale. Long dates by default, e.g. “October 30, 2026”.
+ * A value that isn't a date formats as an empty string.
+ */
 export function formatDate(
   value: Date | string | number,
   options: Intl.DateTimeFormatOptions = {dateStyle: 'long'}
 ): string {
-  return new Intl.DateTimeFormat(formattingLocale(), options).format(
-    new Date(value)
-  );
+  const date = new Date(value);
+
+  if (isNaN(date.getTime())) {
+    return '';
+  }
+
+  return new Intl.DateTimeFormat(formattingLocale(), options).format(date);
 }
 
 /** An amount of money, in the user's formatting locale unless given another. Whole amounts drop their cents. */

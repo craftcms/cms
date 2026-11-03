@@ -144,6 +144,13 @@ describe('formatDate', () => {
     expect(formatDate(new Date(2026, 9, 30))).toBe('October 30, 2026');
   });
 
+  test.for(['', 'not a date', NaN])(
+    'formats %s, which isn’t a date, as an empty string',
+    (value) => {
+      expect(formatDate(value)).toBe('');
+    }
+  );
+
   test('takes other formats', () => {
     expect(formatDate(new Date(2026, 9, 30), {dateStyle: 'medium'})).toBe(
       'Oct 30, 2026'
