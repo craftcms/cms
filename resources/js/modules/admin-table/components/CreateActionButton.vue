@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import {computed, inject} from 'vue';
+  import {ButtonVariant} from '@craftcms/ui';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import {openSlideout} from '@/common/slideouts';
@@ -12,9 +13,9 @@
       url?: string | null;
       menuItems?: Array<{label: string; url: string}> | null;
       /** The button's style. Defaults to `primary`. */
-      variant?: string;
+      variant?: ButtonVariant;
     }>(),
-    {variant: 'primary'}
+    {variant: ButtonVariant.Primary}
   );
 
   const menuActions = computed<ActionItemLink[]>(
