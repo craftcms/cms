@@ -916,6 +916,7 @@
 - Fixed a bug where MCP requests could be rejected when a reverse proxy rewrote the `Host` header. MCP now validates the host resolved through trusted proxies.
 - Fixed a bug where PHP-style date formats, such as `{{ date|date('M Y') }}`, always showed month and day names in English, rather than in the formatting locale. ([#20237](https://github.com/craftcms/cms/pull/20237))
 - Fixed a bug where editing fields inside a Matrix entry wasn’t recorded in the entry’s Activity timeline. ([#20299](https://github.com/craftcms/cms/pull/20299))
+- Fixed a bug where configuration changes made through the stdio MCP server (`craft:mcp:serve`) weren’t saved until the server stopped, so the control panel didn’t see them, and they were lost if the server was killed.
 
 ## 6.0.0-alpha.20 - 2026-10-07
 
