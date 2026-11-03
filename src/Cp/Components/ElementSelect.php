@@ -118,6 +118,12 @@ class ElementSelect extends ViewComponent
 
     protected ?bool $showInGrid = null;
 
+    /** The JS input finds its container by id, so there always is one. */
+    public function getId(): string
+    {
+        return $this->id ??= 'elementselect'.mt_rand();
+    }
+
     protected function tagName(): string
     {
         return match (true) {
@@ -415,6 +421,11 @@ class ElementSelect extends ViewComponent
     #[\Override]
     protected function hostAttributes(): array
     {
+        // A disabled select renders as a plain div that no JS boots.
+        if ($this->isDisabled()) {
+            return ['id' => $this->getId()];
+        }
+
         $inputClass = in_array($this->inputClass, self::DEFAULT_INPUT_CLASSES, true) ? null : $this->inputClass;
 
         return [
@@ -427,8 +438,6 @@ class ElementSelect extends ViewComponent
     #[\Override]
     protected function renderSlots(): string
     {
-        $this->id ??= 'elementselect'.mt_rand();
-
         $html = $this->name !== null ? Html::hiddenInput($this->name, '') : '';
         $html .= $this->elementsHtml();
 
@@ -510,7 +519,7 @@ class ElementSelect extends ViewComponent
         $reference = $this->referenceElement;
 
         return [
-            'id' => $this->getId() !== null ? InputNamespace::namespaceId($this->getId()) : null,
+            'id' => InputNamespace::namespaceId($this->getId()),
             'name' => $this->name !== null ? InputNamespace::namespaceInputName($this->name) : null,
             'elementType' => $this->elementType,
             'context' => $this->context,

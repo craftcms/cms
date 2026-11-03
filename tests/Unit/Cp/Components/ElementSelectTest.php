@@ -80,9 +80,19 @@ it('renders a search input for search criteria', function () {
     expect($html)->toContainTag('input', ['role' => 'combobox', 'aria-labelledby' => 'authors-label']);
 });
 
-it('disables selection and the button when disabled', function () {
-    $select = ElementSelect::make()->elementType(User::class)->disabled();
+it('gives the JS input an id when none is set', function () {
+    $host = new Crawler(ElementSelect::make()->elementType(User::class)->toHtml())->filter('.elementselect');
 
-    expect($select->toHtml())->toContainTag('craft-button', ['disabled' => true])
-        ->and(elementSelectSettings($select))->toMatchArray(['selectable' => false, 'editable' => false]);
+    expect($host->attr('id'))->toStartWith('elementselect')
+        ->and(Json::decode($host->attr('settings'))['id'])->toBe($host->attr('id'));
+});
+
+it('renders a plain div with a disabled button and no JS settings when disabled', function () {
+    $html = ElementSelect::make()->id('authors')->elementType(User::class)->disabled()->toHtml();
+    $host = new Crawler($html)->filter('.elementselect');
+
+    expect($html)->toContainTag('craft-button', ['disabled' => true])
+        ->and($host->nodeName())->toBe('div')
+        ->and($host->attr('id'))->toBe('authors')
+        ->and($host->attr('settings'))->toBeNull();
 });

@@ -463,6 +463,12 @@ describe('iconPickerHtml', function () {
         expect(FormFields::iconPickerHtml(['name' => 'icon', 'value' => 'star', 'static' => true]))
             ->toContainTag('craft-icon-picker', ['name' => 'icon', 'value' => 'star', 'disabled' => true]);
     });
+
+    it('passes the allowed icon sets', function () {
+        expect(FormFields::iconPickerHtml(['name' => 'icon', 'sets' => ['fontawesome', 'custom']]))
+            ->toContainTag('craft-icon-picker', ['sets' => '["fontawesome","custom"]'])
+            ->and(FormFields::iconPickerHtml(['name' => 'icon']))->not->toContain(' sets=');
+    });
 });
 
 describe('multiSelectHtml', function () {
