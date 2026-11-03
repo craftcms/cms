@@ -8,6 +8,7 @@ use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Data\NavNode;
 use CraftCms\Cms\Http\Requests\NavCustomizationRequest;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Contracts\CraftUser;
@@ -51,6 +52,11 @@ use function CraftCms\Cms\t;
  * its own children along. It can go back beneath the item it came from, but
  * never beneath another one.
  *
+ * A user group's customization is layered over the default one with
+ * {@see layer()}: it holds only what the group changes from the default,
+ * including undoing it, such as `'hidden' => false` for something the default
+ * hides.
+ *
  * Hiding is cosmetic: a customization is applied to the nav the user may
  * already see, so it can leave things out but never add access. Sections and
  * links it adds can have a user condition, which applies to admins too.
@@ -83,22 +89,48 @@ class NavCustomizer
     }
 
     /**
+     * A customization layered over another: each item's settings, and each
+     * parent's order, replace the base's where it has them.
+     *
+     * @param  NavDiff  $base
+     * @param  NavDiff  $diff
+     * @return NavDiff
+     */
+    public static function layer(array $base, array $diff): array
+    {
+        $items = $base['items'] ?? [];
+
+        foreach ($diff['items'] ?? [] as $id => $config) {
+            $items[$id] = array_replace($items[$id] ?? [], $config);
+        }
+
+        return array_filter([
+            'order' => array_replace($base['order'] ?? [], $diff['order'] ?? []),
+            'items' => $items,
+        ]);
+    }
+
+    /**
      * The nav with a customization applied, as the builder edits it: hidden
      * items kept and flagged, and each item's defaults alongside its overrides.
+     * A group's customization is resolved over `$base`, the default one, whose
+     * sections and links are marked as inherited.
      *
      * @param  NavItem[]  $tree
      * @param  NavDiff  $diff
+     * @param  NavDiff  $base
      * @return list<NavNode>
      */
-    public function resolve(array $tree, array $diff): array
+    public function resolve(array $tree, array $diff, array $base = []): array
     {
-        $items = $diff['items'] ?? [];
+        $layered = self::layer($base, $diff);
+        $items = $layered['items'] ?? [];
 
         $nodes = $this->collectNodes($tree);
-        $this->addCreated($nodes, $items);
+        $this->addCreated($nodes, $items, $base['items'] ?? []);
         $this->liftMoved($nodes, $items);
 
-        return $this->place($nodes, $items, $diff['order'] ?? []);
+        return $this->place($nodes, $items, $layered['order'] ?? []);
     }
 
     /**
@@ -112,6 +144,7 @@ class NavCustomizer
             ->map(fn (array $item) => match (true) {
                 isset($item['type']) => 'added',
                 ! empty($item['hidden']) => 'hidden',
+                isset($item['hidden']) => 'shown',
                 isset($item['label']) || isset($item['icon']) => 'edited',
                 isset($item['parent']) => 'moved',
                 default => null,
@@ -122,6 +155,7 @@ class NavCustomizer
         $parts = array_filter([
             $counts->has('added') ? t('{num, number} added', ['num' => $counts['added']]) : null,
             $counts->has('hidden') ? t('{num, number} hidden', ['num' => $counts['hidden']]) : null,
+            $counts->has('shown') ? t('{num, number} shown', ['num' => $counts['shown']]) : null,
             $counts->has('edited') ? t('{num, number} edited', ['num' => $counts['edited']]) : null,
             $counts->has('moved') ? t('{num, number} moved', ['num' => $counts['moved']]) : null,
         ]);
@@ -139,19 +173,22 @@ class NavCustomizer
      * The edited tree is read as is, then put through {@see resolve()}, which
      * decides what may go where. Only what still differs from the nav is kept,
      * so anything the nav no longer has, such as an item since removed, is
-     * pruned on save.
+     * pruned on save. For a group, `$base` is the default customization, and
+     * only what differs from it is kept.
      *
      * @param  NavItem[]  $tree
      * @param  list<array<string, mixed>>  $edited  The tree as {@see resolve()} gives it, edited and posted back
+     * @param  NavDiff  $base
      * @return NavDiff
      */
-    public function diff(array $tree, array $edited): array
+    public function diff(array $tree, array $edited, array $base = []): array
     {
         $posted = ['order' => [], 'items' => []];
         $this->readEdited($edited, self::ROOT, $posted);
 
-        $items = $this->changes($this->resolve($tree, $posted));
-        $currentOrder = $this->childOrder($this->resolve($tree, ['items' => $items]));
+        $resolved = $this->resolve($tree, $posted);
+        $items = $this->subtract($this->changes($resolved), $base['items'] ?? [], $this->nodesById($resolved));
+        $currentOrder = $this->childOrder($this->resolve($tree, ['items' => $items], $base));
 
         $order = collect($posted['order'])
             ->intersectByKeys($currentOrder)
@@ -164,6 +201,68 @@ class NavCustomizer
             ->all();
 
         return array_filter(['order' => $order, 'items' => $items]);
+    }
+
+    /**
+     * What a customization changes from a base one. Where the base changes
+     * something this one doesn't, it's put back explicitly, so that layered
+     * over the base, it comes out as edited.
+     *
+     * @param  array<string, array<string, mixed>>  $items
+     * @param  array<string, array<string, mixed>>  $base
+     * @param  array<string, NavNode>  $nodes  The nodes the edited tree has, by id
+     * @return array<string, array<string, mixed>>
+     */
+    private function subtract(array $items, array $base, array $nodes): array
+    {
+        $changes = [];
+
+        foreach (array_keys($items + $base) as $id) {
+            $node = $nodes[$id] ?? null;
+
+            if ($node === null) {
+                continue;
+            }
+
+            $own = $items[$id] ?? [];
+            $inherited = $base[$id] ?? [];
+            $config = array_filter(
+                $own,
+                fn (mixed $value, string $key) => ! array_key_exists($key, $inherited) || Json::encode($inherited[$key]) !== Json::encode($value),
+                ARRAY_FILTER_USE_BOTH,
+            );
+
+            // An empty label or icon is no override, so the nav's own shows.
+            foreach (array_keys(array_diff_key($inherited, $own)) as $key) {
+                $config[$key] = match ($key) {
+                    'parent' => $node->defaultParent,
+                    'hidden', 'newWindow', 'userCondition' => false,
+                    default => '',
+                };
+            }
+
+            if ($config !== []) {
+                $changes[$id] = $config;
+            }
+        }
+
+        return $changes;
+    }
+
+    /**
+     * @param  list<NavNode>  $nodes
+     * @return array<string, NavNode>
+     */
+    private function nodesById(array $nodes): array
+    {
+        $byId = [];
+
+        foreach ($nodes as $node) {
+            $byId[$node->id] = $node;
+            $byId = [...$byId, ...$this->nodesById($node->children)];
+        }
+
+        return $byId;
     }
 
     /**
@@ -214,6 +313,7 @@ class NavCustomizer
                 'icon' => $node->type === 'link' && $node->icon !== 'link' ? $node->icon : null,
                 'newWindow' => $node->newWindow ?: null,
                 'userCondition' => $this->conditionConfig($node->userCondition),
+                'hidden' => $node->hidden ?: null,
             ] : [
                 'label' => $node->label !== $node->defaultLabel ? $node->label : null,
                 'icon' => $node->icon !== $node->defaultIcon ? $node->icon : null,
@@ -273,12 +373,14 @@ class NavCustomizer
     }
 
     /**
-     * Adds the sections and links the customization creates.
+     * Adds the sections and links the customization creates, marking those
+     * the base customization creates as inherited.
      *
      * @param  array<string, NavNode>  $nodes
      * @param  array<string, array<string, mixed>>  $items
+     * @param  array<string, array<string, mixed>>  $baseItems
      */
-    private function addCreated(array &$nodes, array $items): void
+    private function addCreated(array &$nodes, array $items, array $baseItems): void
     {
         foreach ($items as $id => $config) {
             // The id becomes a project config key, so it's held to what the
@@ -290,6 +392,7 @@ class NavCustomizer
             $node = $this->customNode($id, $config);
 
             if ($node !== null) {
+                $node->inherited = isset($baseItems[$id]['type']);
                 $nodes[$id] = $node;
             }
         }
@@ -434,7 +537,7 @@ class NavCustomizer
             ->id($id)
             ->label($label)
             ->href($isAbsolute ? $url : Url::cpUrl($url))
-            ->icon($config['icon'] ?? 'link')
+            ->icon(($config['icon'] ?? '') ?: 'link')
             ->external($newWindow || ($isAbsolute && ! str_starts_with($url, Url::baseCpUrl())));
 
         if ($newWindow) {
@@ -516,7 +619,7 @@ class NavCustomizer
 
         $icon = $config['icon'] ?? null;
 
-        if ($icon !== null && $node->kind !== 'child') {
+        if ($icon !== null && $icon !== '' && $node->kind !== 'child') {
             $node->icon = $icon;
             $node->iconSvg = null;
         }

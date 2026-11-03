@@ -23,6 +23,7 @@ function node(
     userCondition: null,
     home: kind === 'child' ? (extra.home ?? null) : null,
     hidden: false,
+    inherited: false,
     heading: false,
     children,
     ...extra,

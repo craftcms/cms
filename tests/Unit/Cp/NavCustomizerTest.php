@@ -231,3 +231,42 @@ it('drops created items whose ids couldn’t be project config keys', function (
 
     expect(array_keys($customizer->diff(customizerTree(), $edited)['items']))->toBe(['custom-shop00']);
 });
+
+it('layers a group’s navigation over the default one, saving only what the group changes, undoing included', function () {
+    $customizer = new NavCustomizer;
+    $default = ['items' => [
+        'nav-dashboard' => ['label' => 'Home'],
+        'nav-assets' => ['hidden' => true],
+        'nav-entries-blog' => ['parent' => 'root'],
+        'custom-docs00' => ['type' => 'link', 'label' => 'Docs', 'url' => 'https://docs.example.com'],
+    ]];
+    $start = postedTree($customizer->resolve(customizerTree(), [], $default));
+
+    expect($customizer->diff(customizerTree(), $start, $default))->toBe([]);
+
+    $blog = collect($start)->firstWhere('id', 'nav-entries-blog');
+    $edited = collect($start)
+        ->reject(fn (array $node) => $node['id'] === 'nav-entries-blog')
+        ->map(fn (array $node) => match ($node['id']) {
+            'custom-docs00' => [...$node, 'hidden' => true],
+            'nav-group-content' => [...$node, 'children' => array_map(fn (array $child) => match ($child['id']) {
+                'nav-assets' => [...$child, 'hidden' => false],
+                'nav-entries' => [...$child, 'children' => [$blog, ...$child['children']]],
+                default => $child,
+            }, $node['children'])],
+            default => $node,
+        })
+        ->values()
+        ->all();
+    $diff = $customizer->diff(customizerTree(), $edited, $default);
+
+    expect($diff)->toEqual(['items' => [
+        'nav-assets' => ['hidden' => false],
+        'nav-entries-blog' => ['parent' => 'nav-entries'],
+        'custom-docs00' => ['hidden' => true],
+    ]])->and(navLabels($customizer->apply(customizerTree(), NavCustomizer::layer($default, $diff), null)))->toBe([
+        'Home',
+        ['Content' => [['Entries' => ['Blog', 'News']], 'Assets']],
+        ['Administration' => ['Utilities']],
+    ]);
+});
