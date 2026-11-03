@@ -32,6 +32,7 @@ readonly class HandleActionRequest
 
         $newRequest = $request->duplicateWithUri($actionRoute->uri);
         $newRequest->attributes->set(ActionRoute::class, $actionRoute);
+        $newRequest->attributes->set(ResolveSite::REQUEST_PATH_ATTRIBUTE, $request->attributes->get(ResolveSite::REQUEST_PATH_ATTRIBUTE, $request->decodedPath()));
 
         app()->instance('request', $newRequest);
 

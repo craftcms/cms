@@ -37,7 +37,7 @@ beforeEach(function (): void {
     $this->entry = Entry::factory()->createElement(['title' => 'Canonical title']);
     $this->section = $this->entry->getSection();
     app(UserPermissions::class)->saveUserPermissions($this->reviewer->id, [
-        'accessCp', 'useCraftMcp', "viewEntries:{$this->section->uid}", "viewPeerEntryDrafts:{$this->section->uid}",
+        'accessCp', "viewEntries:{$this->section->uid}", "viewPeerEntryDrafts:{$this->section->uid}",
     ]);
     $group = UserGroup::factory()->create();
     $group->users()->sync([$this->author->id, $this->reviewer->id]);
@@ -206,7 +206,7 @@ it('keeps workflow administration private while allowing draft-scoped review ins
         ->assertBadRequest()
         ->assertJsonPath('error.code', -32602);
 
-    app(UserPermissions::class)->saveUserPermissions($this->reviewer->id, ['accessCp', 'useCraftMcp']);
+    app(UserPermissions::class)->saveUserPermissions($this->reviewer->id, ['accessCp']);
     ($this->callWorkflow)('workflows.review', actor: $this->reviewer)->assertJsonPath('result.isError', true);
 });
 

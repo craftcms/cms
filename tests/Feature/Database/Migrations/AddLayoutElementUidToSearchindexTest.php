@@ -17,8 +17,18 @@ it('adds the layoutElementUid column to the search index primary key', function 
     Schema::table(Table::SEARCHINDEX, fn (Blueprint $table) => $table->dropPrimary());
     Schema::table(Table::SEARCHINDEX, function (Blueprint $table) {
         $table->dropColumn('layoutElementUid');
-        $table->primary(['elementId', 'attribute', 'fieldId', 'siteId']);
     });
+
+    if (DB::isPgsql()) {
+        DB::statement(sprintf(
+            'alter table %s add constraint %s primary key ("elementId", "attribute", "fieldId", "siteId")',
+            DB::getQueryGrammar()->wrapTable(Table::SEARCHINDEX),
+            DB::getQueryGrammar()->wrap(DB::getTablePrefix().'searchindex_elementId_attribute_fieldId_siteId_unq_idx'),
+        ));
+    } else {
+        Schema::table(Table::SEARCHINDEX, fn (Blueprint $table) => $table->primary(['elementId', 'attribute', 'fieldId', 'siteId']));
+    }
+
     DB::table(Table::SEARCHINDEX)->insert([
         'elementId' => 1,
         'attribute' => 'field',

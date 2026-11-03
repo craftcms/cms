@@ -282,6 +282,25 @@ describe.each(themes)('in the %s theme', (theme) => {
       expect(bar(tabs[1]!).backgroundColor).toBe('rgba(0, 0, 0, 0)');
     }
   );
+
+  it('marks the selected fill tab with a border at 3:1 against the track, and only that tab', async () => {
+    const wrapper = surface(theme);
+    const {element, tabs} = await strip({
+      parent: wrapper,
+      attrs: {appearance: 'fill'},
+    });
+
+    await expect.poll(() => tabs[0]!.hasAttribute('selected')).toBe(true);
+
+    const track = getComputedStyle(
+      element.shadowRoot!.querySelector('[part="strip"]')!
+    ).backgroundColor;
+    const selected = getComputedStyle(tabs[0]!);
+
+    expect(parseFloat(selected.borderTopWidth)).toBeGreaterThanOrEqual(1);
+    expect(contrast(selected.borderTopColor, track)).toBeGreaterThanOrEqual(3);
+    expect(getComputedStyle(tabs[1]!).borderTopColor).toBe('rgba(0, 0, 0, 0)');
+  });
 });
 
 /** Whether a 24px circle centered on `rect` stays clear of every other target. */
@@ -373,6 +392,17 @@ it('moves the selection to the first tab when the selected external tab is remov
   await expect.poll(() => element.selectedIndex).toBe(0);
   await expect.poll(() => tabs[0]!.getAttribute('aria-selected')).toBe('true');
   expect(sections[0]!.classList.contains('hidden')).toBe(false);
+});
+
+it('still switches external tabs after being moved elsewhere in the document', async () => {
+  const {element, tabs} = await externalStrip();
+  const elsewhere = document.createElement('div');
+  document.body.append(elsewhere);
+
+  elsewhere.append(element);
+  tabs[2]!.click();
+
+  await expect.poll(() => element.selectedIndex).toBe(2);
 });
 
 const OVERFLOW_LABELS = [
@@ -509,4 +539,19 @@ it('keeps its overflow menu’s events inside the strip', async () => {
   } finally {
     events.forEach((type) => document.removeEventListener(type, record));
   }
+});
+
+it('truncates the selected tab’s label when it alone is too wide for the strip', async () => {
+  const {element, tabs, menu} = await overflowingStrip('12rem');
+  tabs[1]!.textContent = 'An exceptionally long tab label that never fits';
+  element.selectedIndex = 1;
+  await expect.poll(() => tabs[0]!.hidden).toBe(true);
+
+  const selected = tabs[1]!.getBoundingClientRect();
+  const text = tabs[1]!.shadowRoot!.querySelector<HTMLElement>('.tab__text')!;
+
+  expect(selected.right).toBeLessThanOrEqual(
+    menu.getBoundingClientRect().left + 0.5
+  );
+  expect(text.scrollWidth).toBeGreaterThan(text.clientWidth);
 });

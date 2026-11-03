@@ -223,11 +223,10 @@ class ElementResponse
                     'tabindex' => '-1',
                 ]).
                     Html::beginTag('div').
-                    Html::tag('span', '', [
+                    Html::tag('craft-icon', '', [
                         'class' => 'notification-icon',
-                        'data-icon' => 'alert',
-                        'aria-label' => t('Error'),
-                        'role' => 'img',
+                        'name' => 'alert',
+                        'label' => t('Error'),
                     ]).
                     Html::tag('h2', $heading).
                     Html::endTag('div').

@@ -390,7 +390,8 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
       if (node instanceof Element) {
         return node.slot === '';
       }
-      return (node.textContent ?? '').trim() !== '';
+      // A comment's text is in `textContent` too, but it renders nothing.
+      return node instanceof Text && node.data.trim() !== '';
     });
 
     if (!defaultSlotNodes.length) {

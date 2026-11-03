@@ -77,6 +77,24 @@ describe('craft-button link mode', () => {
     expect(rel).toContain('noopener');
   });
 
+  it('opens a link to another host in a new tab and says so', async () => {
+    const element = await createButton({href: 'https://craftcms.com/'});
+    const a = anchor(element)!;
+    expect(a.getAttribute('target')).toBe('_blank');
+    expect(a.getAttribute('rel')).toBe('noopener');
+    expect(a.textContent).toContain('Opens in a new window');
+  });
+
+  it('keeps its own target for a link to another host', async () => {
+    const element = await createButton({
+      href: 'https://craftcms.com/',
+      target: '_self',
+    });
+    const a = anchor(element)!;
+    expect(a.getAttribute('target')).toBe('_self');
+    expect(a.textContent).not.toContain('Opens in a new window');
+  });
+
   it('does not set rel when target is not _blank and no rel given', async () => {
     const element = await createButton({href: '/x'});
     expect(anchor(element)!.hasAttribute('rel')).toBe(false);
@@ -122,6 +140,28 @@ describe('craft-button shortcut', () => {
     expect(shortcut(element)?.textContent).toBe('S');
     expect(shortcut(element)?.alt).toBe(true);
     expect(shortcut(element)?.shift).toBe(true);
+  });
+
+  it('announces its shortcut with aria-keyshortcuts', async () => {
+    vi.spyOn(navigator, 'platform', 'get').mockReturnValue('MacIntel');
+    const element = await createButton(
+      {shortcut: '{"key": "s", "shift": true}'},
+      'Save'
+    );
+    expect(element.getAttribute('aria-keyshortcuts')).toBe('Meta+Shift+S');
+
+    element.shortcut = null;
+    await element.updateComplete;
+    expect(element.hasAttribute('aria-keyshortcuts')).toBe(false);
+    vi.restoreAllMocks();
+  });
+
+  it('keeps an aria-keyshortcuts its author set', async () => {
+    const element = await createButton(
+      {shortcut: 'S', 'aria-keyshortcuts': 'Control+Enter'},
+      'Save'
+    );
+    expect(element.getAttribute('aria-keyshortcuts')).toBe('Control+Enter');
   });
 
   /** Vue's in-DOM compiler sets attribute values as string properties. */

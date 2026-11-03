@@ -49,6 +49,15 @@ describe('craft-tab', () => {
    * The strip reads these off the host, and the stylesheet keys off them, so
    * all three have to reflect rather than stay properties.
    */
+  it('only shows a pointer when it can be selected', async () => {
+    const element = await createTab();
+
+    expect(getComputedStyle(element).cursor).toBe('pointer');
+
+    element.setAttribute('selected', '');
+    expect(getComputedStyle(element).cursor).toBe('default');
+  });
+
   it('reflects disabled', async () => {
     const element = await createTab({disabled: ''});
 

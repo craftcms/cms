@@ -33,6 +33,8 @@
     scrollsItself?: boolean;
     /** What gets focus when the panel is opened from its trigger. Defaults to its heading. */
     initialFocus?: () => HTMLElement | null | undefined;
+    /** See {@link DetailsPanel.unlistedInPalette}. */
+    unlistedInPalette?: boolean;
   }>();
 
   const panels = useScreenPanels();
@@ -56,6 +58,7 @@
     persistent: props.persistent,
     scrollsItself: props.scrollsItself,
     initialFocus: props.initialFocus,
+    unlistedInPalette: props.unlistedInPalette,
   }));
 
   // Registered once mounted rather than during setup: registering changes the

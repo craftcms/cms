@@ -20,8 +20,15 @@
       :key="entry.userId"
       :title="entry.message"
       :aria-label="entry.message"
-      class="inline-flex"
+      class="element-activity-avatar inline-flex"
       v-html="entry.userThumb"
     />
   </div>
 </template>
+
+<style scoped>
+  .element-activity-avatar {
+    --c-thumb-icon-size: var(--c-size-control-sm);
+    --c-thumbnail-size: var(--c-size-control-sm);
+  }
+</style>

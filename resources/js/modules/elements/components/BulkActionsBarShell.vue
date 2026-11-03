@@ -3,7 +3,8 @@
    * The frame a bulk-actions bar draws while rows are selected: the count, a
    * "Clear selection" button, and the "Actions" menu. A bar puts its own
    * pinned menus in the `status` slot, before "Actions", and anything else in
-   * the default slot, after it.
+   * the default slot, after it. The `center` slot sits between the selection
+   * and the actions, such as for page controls.
    */
   import {useTemplateRef} from 'vue';
   import {t} from '@craftcms/ui';
@@ -67,6 +68,10 @@
       </craft-button>
     </div>
 
+    <div class="bulk-actions-bar__center">
+      <slot name="center" />
+    </div>
+
     <div class="bulk-actions-bar__actions">
       <slot name="status" />
 
@@ -86,11 +91,10 @@
 
 <style scoped lang="scss">
   .bulk-actions-bar {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    justify-content: space-between;
     gap: var(--c-spacing-md);
-    flex-wrap: wrap;
     width: 100%;
   }
 
@@ -107,6 +111,7 @@
   .bulk-actions-bar__actions {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: var(--c-spacing-sm);
     flex-wrap: wrap;
   }

@@ -5,19 +5,22 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Concerns;
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Gql\Attributes\Gql;
+use CraftCms\Cms\Mcp\Attributes\Mcp;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * NestedElement
@@ -51,6 +54,7 @@ trait NestedElement
      * @var int|null Field ID
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Int, 'The ID of the field that contains the {element}.', readable: true, writable: false)]
     public ?int $fieldId = null;
 
     /**
@@ -242,6 +246,9 @@ trait NestedElement
         return $this->ownerId ?? $this->primaryOwnerId;
     }
 
+    #[ElementProperty(ElementPropertyType::Id, 'The ID of the {element}’s owner element.', readable: true)]
+    #[Gql(write: false)]
+    #[Mcp(create: false, update: false)]
     public function setOwnerId(?int $id): void
     {
         $this->ownerId = $id;
@@ -375,6 +382,9 @@ trait NestedElement
         return $this->sortOrder;
     }
 
+    #[ElementProperty(ElementPropertyType::Int, 'The {element}’s position within the field that contains it.', readable: true)]
+    #[Gql(write: false)]
+    #[Mcp(create: false, update: false)]
     public function setSortOrder(?int $sortOrder): void
     {
         $this->sortOrder = $sortOrder;
@@ -464,7 +474,7 @@ trait NestedElement
 
         if (! isset($this->sortOrder)) {
             $max = DB::table(Table::ELEMENTS_OWNERS, 'eo')
-                ->join(new Alias($elementTable, 'e'), 'e.id', '=', 'eo.elementId')
+                ->join($elementTable.' as e', 'e.id', '=', 'eo.elementId')
                 ->where('eo.ownerId', $ownerId)
                 ->where("e.$fieldIdColumn", $this->fieldId)
                 ->max('eo.sortOrder');

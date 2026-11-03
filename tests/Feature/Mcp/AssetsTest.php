@@ -160,13 +160,13 @@ it('sets and clears an image’s focal point through elements.update', function 
         'arguments' => ['type' => 'assets', 'id' => $id, 'attributes' => ['focalPoint' => $focalPoint]],
     ])->assertOk();
 
-    $update(['x' => 0.25, 'y' => 0.8])
+    $update('0.25;0.8')
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.element.hasFocalPoint', true);
 
     expect(Asset::findOne($id)->getFocalPoint())->toEqual(['x' => 0.25, 'y' => 0.8]);
 
-    $update(['x' => 1.5, 'y' => 0.5])->assertJsonPath('result.isError', true);
+    $update('1.5;0.5')->assertJsonPath('result.isError', true);
     $update(null)->assertJsonPath('result.isError', false);
 
     expect(Asset::findOne($id)->getHasFocalPoint())->toBeFalse();
@@ -178,7 +178,6 @@ it('sets an asset’s uploader through elements.update', function (bool $peer, b
     $volume = Volume::findOrFail($this->folder->volumeId);
     app(UserPermissions::class)->saveUserPermissions($user->id, [
         'accessCp',
-        'useCraftMcp',
         ...array_map(
             static fn (string $permission): string => "$permission:$volume->uid",
             ['viewAssets', 'saveAssets', ...($peer ? ['viewPeerAssets', 'savePeerAssets'] : [])],
@@ -251,7 +250,7 @@ it('checks destination permissions before downloading a file reference', functio
     $user = User::query()->firstOrFail();
     $user->admin = false;
     $user->save();
-    app(UserPermissions::class)->saveUserPermissions($user->id, ['accessCp', 'useCraftMcp']);
+    app(UserPermissions::class)->saveUserPermissions($user->id, ['accessCp']);
     actingAs($user);
     app(Request::class)->setUserResolver(static fn (): User => $user);
     Http::fake();

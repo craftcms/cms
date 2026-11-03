@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User;
 
+use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Auth\OAuth\OAuth;
+use CraftCms\Cms\Auth\PersonalAccessTokens\PersonalAccessTokens;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
@@ -36,9 +38,13 @@ class EditUserScreens
 
     public const string PREFERENCES = 'preferences';
 
+    public const string AI_ASSISTANT = 'ai-assistant';
+
     public const string PASSWORD = 'password';
 
     public const string PASSKEYS = 'passkeys';
+
+    public const string TOKENS = 'tokens';
 
     public const string SIGN_IN_PROVIDERS = 'sign-in-providers';
 
@@ -61,6 +67,10 @@ class EditUserScreens
             $screens[self::PREFERENCES] = ['label' => t('Preferences')];
         }
 
+        if ($user->getIsCurrent() && $user->can(Assistant::PERMISSION)) {
+            $screens[self::AI_ASSISTANT] = ['label' => t('AI Assistant')];
+        }
+
         $screens[self::ADDRESSES] = ['label' => t('Addresses')];
 
         event($event = new EditUserScreensResolving(currentUserElement(), $user, $screens));
@@ -70,6 +80,10 @@ class EditUserScreens
         if ($user->getIsCurrent() && $user->getHasPassword()) {
             $screens[self::PASSWORD] = ['label' => t('Password & Verification')];
             $screens[self::PASSKEYS] = ['label' => t('Passkeys')];
+        }
+
+        if ($this->showTokensScreen($user)) {
+            $screens[self::TOKENS] = ['label' => t('Tokens')];
         }
 
         if ($this->showSignInProvidersScreen($user)) {
@@ -100,7 +114,7 @@ class EditUserScreens
         foreach ($screens as $name => $info) {
             if (
                 $securityItem === null &&
-                in_array($name, [self::PASSWORD, self::SIGN_IN_PROVIDERS], true)
+                in_array($name, [self::PASSWORD, self::TOKENS, self::SIGN_IN_PROVIDERS], true)
             ) {
                 $securityItem = new NavItem([
                     'label' => t('Account Security'),
@@ -146,7 +160,7 @@ class EditUserScreens
         foreach ($screens as $name => $info) {
             if (
                 $nested === null &&
-                in_array($name, [self::PASSWORD, self::SIGN_IN_PROVIDERS], true)
+                in_array($name, [self::PASSWORD, self::TOKENS, self::SIGN_IN_PROVIDERS], true)
             ) {
                 $items[] = ['heading' => t('Account Security'), 'nested' => []];
                 $nested = array_key_last($items);
@@ -173,6 +187,18 @@ class EditUserScreens
     public function showPermissionsScreen(): bool
     {
         return (bool) currentUser()?->can('viewPermissionsScreen', User::class);
+    }
+
+    public function showTokensScreen(User $user): bool
+    {
+        if (! $user->getIsCurrent()) {
+            return false;
+        }
+
+        // Users who can’t create tokens still see the apps they’ve authorized.
+        $tokens = app(PersonalAccessTokens::class);
+
+        return $tokens->scopeGroupsFor($user)->isNotEmpty() || $tokens->grants($user) !== [];
     }
 
     public function showSignInProvidersScreen(User $user): bool

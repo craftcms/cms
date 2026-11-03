@@ -139,8 +139,12 @@ export default class CraftField extends FieldNotices(
     this.__onLightDomChanged()
   );
 
+  /** The slotted control the field last wired up. */
+  private __enhancedInput: HTMLElement | null = null;
+
   override connectedCallback(): void {
     super.connectedCallback();
+    this.__enhancedInput = this._inputNode ?? null;
     this.__lightDomObserver.observe(this, {childList: true});
     this.__syncHasErrors();
     this.__syncHasMaxlength();
@@ -489,6 +493,7 @@ export default class CraftField extends FieldNotices(
   }
 
   private __onLightDomChanged(): void {
+    this.__enhanceSwappedInput();
     this.__wireDescribedBy();
     this.__syncFieldsetSemantics();
     this.__syncHasErrors();
@@ -508,6 +513,36 @@ export default class CraftField extends FieldNotices(
         this.addToAriaDescribedBy(node, {idPrefix: slotName});
       }
     }
+  }
+
+  /**
+   * FormControlMixin wires up the slotted control once, when the field
+   * connects. A control swapped in afterward, as when a server-driven UI
+   * refresh replaces a hidden input with a textarea, gets the same treatment
+   * here: the `form-control` class that sizes it, an id for the label, and the
+   * label and descriptions it would otherwise go without.
+   */
+  private __enhanceSwappedInput(): void {
+    const input = this._inputNode;
+    if (!input || input === this.__enhancedInput) {
+      return;
+    }
+
+    this.__enhancedInput = input;
+    this._enhanceLightDomClasses();
+    input.id ||= this._inputId;
+
+    if (this.__formControlTarget()) {
+      if (this._labelNode) {
+        this.addToAriaLabelledBy(this._labelNode);
+      }
+      return;
+    }
+
+    // Lion only reflects these lists when they change, so reassign them to
+    // write them onto the new input.
+    this._ariaLabelledNodes = [...this._ariaLabelledNodes];
+    this._ariaDescribedNodes = [...this._ariaDescribedNodes];
   }
 
   private __formControlTarget(): FormControlTarget | undefined {

@@ -46,10 +46,10 @@
       /** Assets index uploads belong to the application queue when a destination is supplied. */
       destination?: AssetUploadDestination;
       /**
-       * An element that also accepts dropped files. The asset index doesn't
-       * set one — its drop target is the whole page, handled elsewhere — but
-       * a relation field passes its own container so files can be dropped
-       * onto it.
+       * An element that also accepts dropped files, and files pasted while
+       * focus is within it. The asset index doesn't set one — its drop target
+       * is the whole page, handled elsewhere — but a relation field passes its
+       * own container so files can be dropped or pasted onto it.
        */
       dropZone?: HTMLElement | null;
       /**
@@ -159,7 +159,9 @@
     uploader = new FileUploader(input, {
       fileInput: input,
       allowedKinds: props.allowedKinds,
-      ...(props.dropZone ? {dropZone: props.dropZone} : {}),
+      ...(props.dropZone
+        ? {dropZone: props.dropZone, pasteZone: props.dropZone}
+        : {}),
       url: store.url(),
       ...(destination
         ? {

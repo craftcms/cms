@@ -3134,8 +3134,6 @@ table:not(.cp-table) {
   }
 }
 
-// Adjust the columns when in live preview
-.lp-editor-container .card-grid,
 .width-50 .card-grid,
 .width-25 .card-grid {
   grid-template-columns: minmax(0, 1fr);
@@ -4752,8 +4750,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
 
   .pane &,
   .slideout &,
-  #content &,
-  .lp-content & {
+  #content & {
     border: 1px solid var(--border-hairline);
     background: var(--secondary-pane-bg);
     box-shadow: none;
@@ -5726,13 +5723,6 @@ $min2ColWidth: 400px;
   }
 }
 
-.button-fade .buttons {
-  /* The rest is in the template's utility classes, but legacy `.buttons` is
-     unlayered, so it would otherwise win over them. */
-  position: absolute;
-  margin: 0;
-}
-
 /* element selector modals */
 .elementselectormodal {
   --content-padding: 24px;
@@ -6439,8 +6429,13 @@ table.editable {
   z-index: 1;
 
   &.modified {
-    background-color: var(--blue-600);
-    box-shadow: 0 0 5px hsl(221deg 83% 53% / 15%);
+    background-color: var(--c-field-modified-indicator, var(--violet-600));
+    box-shadow: 0 0 5px
+      color-mix(
+        in srgb,
+        var(--c-field-modified-indicator, var(--violet-600)) 15%,
+        transparent
+      );
   }
 
   &.outdated {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/chip/chip';
-  import {t} from '@craftcms/ui';
+  import {actionClient, t} from '@craftcms/ui';
   import {computed, reactive, ref, useId} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import ElementList from '@/modules/elements/components/ElementList.vue';
@@ -83,8 +83,21 @@
       : next.slice(0, Math.max(limit.value, 1));
   }
 
-  /** One relation can't be reordered, and a read-only field can't be either. */
-  const sortable = computed(() => props.editable && ids.value.length > 1);
+  /**
+   * A field that maintains hierarchy keeps its elements in structure order,
+   * nested by level, as Craft 5's `_elements/structurelist` drew them.
+   */
+  const maintainHierarchy = computed(
+    () => props.control.props.maintainHierarchy === true
+  );
+
+  /**
+   * One relation can't be reordered, and a read-only field can't be either. A
+   * hierarchy's order is the structure's, so it can't be reordered by hand.
+   */
+  const sortable = computed(
+    () => props.editable && ids.value.length > 1 && !maintainHierarchy.value
+  );
 
   /**
    * Whether the field is full. At the limit the add and upload controls come
@@ -140,6 +153,7 @@
     ids.value.map((selectedValue) => ({
       ...presentation(selectedValue),
       id: elementId(selectedValue),
+      ...(maintainHierarchy.value ? {} : {level: undefined}),
     }))
   );
 
@@ -164,6 +178,77 @@
 
     next.splice(finishIndex, 0, moved);
     updateValue(next);
+  }
+
+  // ───────────────────────────── hierarchy ─────────────────────────────
+
+  /**
+   * Relates `next`. A hierarchy is then put back in structure order by the
+   * server, which fills in missing ancestors and applies the branch limit, as
+   * `relational-fields/structured-input-html` does for Craft 5's input. The
+   * chips show straight away, and move into place when the server answers,
+   * unless the selection has changed again in the meantime.
+   */
+  async function relate(next: number[], siteId?: number | string | null) {
+    updateValue(next);
+
+    if (!maintainHierarchy.value || next.length === 0) {
+      return;
+    }
+
+    let elements: ElementPresentation[];
+
+    try {
+      const {data} = await actionClient.post<{
+        elements?: ElementPresentation[];
+      }>('relational-fields/structured-elements', {
+        elementType: props.control.props.elementType,
+        elementIds: next,
+        siteId: siteId ?? null,
+        branchLimit: props.control.props.branchLimit ?? null,
+        thumbSize: props.control.props.thumbSize ?? null,
+      });
+      elements = data.elements ?? [];
+    } catch {
+      return;
+    }
+
+    if (ids.value.join() !== next.join()) {
+      return;
+    }
+
+    for (const element of elements) {
+      presentations.set(element.id, element);
+    }
+
+    updateValue(elements.map((element) => element.id));
+  }
+
+  /** `remove`, plus the descendants of each, which can't stay without their ancestor. */
+  function withDescendants(remove: Set<number>): Set<number> {
+    if (!maintainHierarchy.value) {
+      return remove;
+    }
+
+    const removing = new Set<number>();
+    let branchLevel: number | null = null;
+
+    for (const element of listData.value) {
+      const level = element.level ?? 1;
+
+      if (branchLevel !== null && level > branchLevel) {
+        removing.add(element.id);
+        continue;
+      }
+
+      branchLevel = remove.has(element.id) ? level : null;
+
+      if (branchLevel !== null) {
+        removing.add(element.id);
+      }
+    }
+
+    return removing;
   }
 
   // ───────────────────────────── selection modal ─────────────────────────────
@@ -239,12 +324,22 @@
             return;
           }
 
-          updateValue(
+          // A branch limit of one means a new choice replaces the old one, as
+          // it does in Craft 5.
+          const current =
+            maintainHierarchy.value &&
+            props.control.props.branchLimit === 1 &&
+            replacing === null
+              ? []
+              : ids.value;
+
+          void relate(
             withinLimit(
               replacing === null
-                ? [...ids.value, ...chosen]
-                : ids.value.flatMap((id) => (id === replacing ? chosen : [id]))
-            )
+                ? [...current, ...chosen]
+                : current.flatMap((id) => (id === replacing ? chosen : [id]))
+            ),
+            presentation(chosen[0]!).siteId
           );
         },
       }
@@ -270,7 +365,7 @@
         ...ids.value,
         ...elements.map((element) => element.id),
       ]);
-      updateValue(kept);
+      void relate(kept, elements[0]?.siteId);
 
       return kept;
     },
@@ -281,6 +376,7 @@
   // ───────────────────────────── chip actions ─────────────────────────────
 
   function removeIds(remove: Set<number>): void {
+    remove = withDescendants(remove);
     const next = ids.value.filter((id) => !remove.has(id));
     pruneSelection(next);
     updateValue(next);
@@ -398,9 +494,15 @@
 </script>
 
 <template>
-  <!-- `ref="dropZone"`: the whole field accepts dropped files, as `$container`
-       does for Craft 5's `AssetSelectInput`. -->
-  <div ref="dropZone" class="w-full">
+  <!-- `ref="dropZone"`: the whole field accepts dropped and pasted files, as
+       `$container` does for Craft 5's `AssetSelectInput`. It takes focus on
+       click when uploads are allowed, so there's somewhere to paste into. -->
+  <div
+    ref="dropZone"
+    class="w-full"
+    :class="{'can-paste': showUpload}"
+    :tabindex="showUpload ? -1 : undefined"
+  >
     <input
       v-if="editable"
       type="hidden"
@@ -424,6 +526,7 @@
           <ElementList
             :data="listData"
             :view-mode="viewMode"
+            :thumb-size="control.props.thumbSize ?? undefined"
             :selection="list.selection"
             :selectable="selectable"
             :select-all="false"
@@ -461,7 +564,7 @@
                   list.isList.value
                     ? 'inline-start'
                     : list.isThumbs.value
-                      ? false
+                      ? 'inline-end'
                       : undefined
                 "
               />
@@ -520,6 +623,12 @@
 </template>
 
 <style lang="scss" scoped>
+  .can-paste:focus {
+    outline: 2px solid var(--c-color-focus-ring);
+    outline-offset: var(--c-spacing-xs);
+    border-radius: var(--c-radius-sm);
+  }
+
   .element-selection-footer {
     display: flex;
     justify-content: space-between;

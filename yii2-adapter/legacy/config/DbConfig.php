@@ -345,6 +345,8 @@ class DbConfig extends BaseConfig
         // If we don't have a DSN yet, create one from the deprecated settings
         if (!isset($this->dsn)) {
             $this->_updateDsn();
+        } else {
+            $this->dsn($this->dsn);
         }
     }
 

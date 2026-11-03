@@ -2,8 +2,18 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Element\Attributes\ElementProperty;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Gql\ArgumentManager;
+use CraftCms\Cms\Gql\Arguments\ElementArguments;
+use CraftCms\Cms\Gql\Arguments\ElementMutationArguments;
 use CraftCms\Cms\Gql\Arguments\Transform;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Gql\Contracts\ArgumentHandlerInterface;
 use CraftCms\Cms\Gql\GqlArguments;
 use CraftCms\Cms\Gql\Handlers\RelatedAssets;
@@ -11,6 +21,7 @@ use CraftCms\Cms\Gql\Handlers\RelatedEntries;
 use CraftCms\Cms\Gql\Handlers\RelatedUsers;
 use CraftCms\Cms\Gql\Handlers\Site;
 use CraftCms\Cms\Gql\Handlers\SiteId;
+use CraftCms\Cms\Gql\Interfaces\Element as ElementInterfaceType;
 use GraphQL\Type\Definition\BooleanType;
 use GraphQL\Type\Definition\IntType;
 use GraphQL\Type\Definition\StringType;
@@ -74,6 +85,127 @@ it('derives transform argument types from the operation catalogue', function () 
         ->and($arguments['upscale']['type'])->toBeInstanceOf(BooleanType::class)
         ->and($arguments)->not()->toHaveKey('immediately');
 });
+
+it('adds the query params of an element type that its arguments class names, unless GraphQL excludes them', function () {
+    $arguments = GqlArgumentsWidgetArguments::getArguments();
+
+    expect($arguments['color']['description'])->toBe('Narrows the query results based on the widgets’ colors.')
+        ->and((string) $arguments['color']['type'])->toBe('[String]')
+        ->and($arguments['site']['description'])->toBe('Determines which site(s) the widgets should be queried in. Defaults to the current (requested) site.')
+        ->and($arguments)->not()->toHaveKey('drafts')
+        ->and($arguments)->not()->toHaveKey('secret')
+        ->and((string) $arguments['shade']['type'])->toBe('String')
+        ->and($arguments)->not()->toHaveKey('hidden')
+        ->and(GqlArgumentsWidgetArgumentsWithoutElementType::getArguments())->not()->toHaveKey('color');
+});
+
+it('adds the properties of an element type that its mutation arguments class names, unless GraphQL excludes them', function () {
+    $arguments = GqlArgumentsWidgetMutationArguments::getArguments();
+
+    expect($arguments['color']['description'])->toBe('The widget’s color.')
+        ->and((string) $arguments['color']['type'])->toBe('String')
+        ->and($arguments['title']['description'])->toBe('The widget’s title.')
+        ->and($arguments)->not()->toHaveKey('slug')
+        ->and($arguments)->not()->toHaveKey('secret')
+        ->and(GqlArgumentsWidgetMutationArgumentsWithoutElementType::getArguments())->not()->toHaveKey('color');
+});
+
+it('adds the readable properties of an element type that its interface names, unless GraphQL excludes them', function () {
+    $fields = GqlArgumentsWidgetInterface::getFieldDefinitions();
+
+    expect($fields['color']['description'])->toBe('The widget’s color.')
+        ->and((string) $fields['color']['type'])->toBe('String')
+        ->and($fields)->toHaveKey('title')
+        ->and($fields)->not()->toHaveKey('secret')
+        ->and(ElementInterfaceType::getFieldDefinitions())->not()->toHaveKey('color');
+});
+
+class GqlArgumentsWidget extends Element
+{
+    #[ElementProperty(ElementPropertyType::String, 'The {element}’s color.', nullable: true, readable: true)]
+    public ?string $color = null;
+
+    #[ElementProperty(ElementPropertyType::String, 'The {element}’s secret.', nullable: true, readable: true)]
+    #[Gql(exclude: true)]
+    public ?string $secret = null;
+
+    public static function displayName(): string
+    {
+        return 'Widget';
+    }
+
+    public static function pluralDisplayName(): string
+    {
+        return 'Widgets';
+    }
+
+    public static function find(): ElementQueryInterface
+    {
+        return new GqlArgumentsWidgetQuery(static::class);
+    }
+}
+
+class GqlArgumentsWidgetQuery extends ElementQuery
+{
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the {elements}’ colors.')]
+    public function color(mixed $value): static
+    {
+        return $this;
+    }
+
+    #[ElementQueryParam(ElementQueryParamType::String, 'Narrows the query results based on the {elements}’ secrets.')]
+    #[Gql(exclude: true)]
+    public function secret(mixed $value): static
+    {
+        return $this;
+    }
+
+    #[ElementQueryParam(ElementQueryParamType::String, 'Narrows the query results based on the {elements}’ shades.')]
+    #[Gql(static function (string $elementType): bool {
+        return $elementType === GqlArgumentsWidget::class;
+    })]
+    public function shade(mixed $value): static
+    {
+        return $this;
+    }
+
+    #[ElementQueryParam(ElementQueryParamType::String, 'Narrows the query results based on whether the {elements} are hidden.')]
+    #[Gql(static function (string $elementType): bool {
+        return false;
+    })]
+    public function hidden(mixed $value): static
+    {
+        return $this;
+    }
+}
+
+class GqlArgumentsWidgetArguments extends ElementArguments
+{
+    protected static function elementType(): string
+    {
+        return GqlArgumentsWidget::class;
+    }
+}
+
+class GqlArgumentsWidgetArgumentsWithoutElementType extends ElementArguments {}
+
+class GqlArgumentsWidgetMutationArguments extends ElementMutationArguments
+{
+    protected static function elementType(): string
+    {
+        return GqlArgumentsWidget::class;
+    }
+}
+
+class GqlArgumentsWidgetMutationArgumentsWithoutElementType extends ElementMutationArguments {}
+
+class GqlArgumentsWidgetInterface extends ElementInterfaceType
+{
+    protected static function elementType(): string
+    {
+        return GqlArgumentsWidget::class;
+    }
+}
 
 class RegistryArgumentHandler implements ArgumentHandlerInterface
 {

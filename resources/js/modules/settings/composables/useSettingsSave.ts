@@ -1,6 +1,6 @@
-import {useEventListener} from '@vueuse/core';
 import {type InertiaForm, router, usePage} from '@inertiajs/vue3';
 import {computed, type Ref} from 'vue';
+import {t} from '@craftcms/ui/utilities/translate';
 import {http, isHttpError} from '@craftcms/ui/utilities/api/http';
 import type {FormSaveOptions} from '@/common/types';
 import {elevatedSessionManager} from '@/modules/auth/elevated-session';
@@ -9,6 +9,7 @@ import {firstMessages} from '@/common/slideouts/errors';
 import type {SlideoutInstance, SlideoutSaveResult} from '@/common/slideouts';
 import {topStackedPanel} from '@/common/slideouts/panel-stack';
 import {showMessagesFromResponse} from '@/modules/messages';
+import {useShortcut} from '@/common/shortcuts';
 
 interface PasswordConfirmationOptions<T> {
   required: (data: T) => boolean;
@@ -21,6 +22,8 @@ export interface UseSettingsSaveOptions<T extends object> {
   keyboardShortcutEnabled?: () => boolean;
   /** Uses the existing topmost-panel save listener for alternate submissions. */
   onSaveShortcut?: (event: KeyboardEvent) => void;
+  /** Whether {@link onSaveShortcut} has a submission for cmd/ctrl + shift + S. */
+  hasShiftSaveShortcut?: () => boolean;
   /** Receives the response data when saving from a slideout. */
   onSuccess?: (data?: any) => void;
   /**
@@ -96,37 +99,40 @@ export function useSettingsSave<T extends object>(
     options.passwordConfirmation ??
     elevatedFieldsConfirmation(form, options.elevatedFields);
 
-  // Handle cmd + s events
-  useEventListener('keydown', (event) => {
-    if (
-      (event.metaKey || event.ctrlKey) &&
-      event.key.toLowerCase() === 's' &&
-      !event.altKey
-    ) {
-      // Only the topmost panel (or the page, when none is open) saves.
-      const top = topStackedPanel();
-      const isTopmost = top
-        ? slideout &&
+  /** Whether this is the topmost panel, or the page when none is open. Only it saves. */
+  function isTopmost(): boolean {
+    const top = topStackedPanel();
+
+    return top
+      ? !!slideout &&
           top.element.dataset.slideoutId === slideout.instance.containerId
-        : !slideout;
+      : !slideout;
+  }
 
-      if (!isTopmost) {
-        return;
-      }
+  /** Whether this screen's shortcuts save: it's topmost, and they're enabled. */
+  function canSave(): boolean {
+    return isTopmost() && options.keyboardShortcutEnabled?.() !== false;
+  }
 
-      event.preventDefault();
-      event.stopImmediatePropagation();
-
-      if (options.keyboardShortcutEnabled?.() === false) {
-        return;
-      }
-
-      if (options.onSaveShortcut) {
-        options.onSaveShortcut(event);
-      } else if (!event.shiftKey) {
-        save({redirect: false});
-      }
+  function onSaveShortcut(event: KeyboardEvent): void {
+    if (options.onSaveShortcut) {
+      options.onSaveShortcut(event);
+    } else {
+      save({redirect: false});
     }
+  }
+
+  useShortcut('Mod+S', onSaveShortcut, {
+    description: () => t('Save'),
+    group: () => t('Forms'),
+    isAvailable: canSave,
+    preventDefault: 'always',
+  });
+  useShortcut('Mod+Shift+S', onSaveShortcut, {
+    description: () => t('Save and add another'),
+    group: () => t('Forms'),
+    isAvailable: () => canSave() && !!options.hasShiftSaveShortcut?.(),
+    preventDefault: 'always',
   });
 
   function save({

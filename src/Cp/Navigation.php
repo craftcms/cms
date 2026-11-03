@@ -20,7 +20,9 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\UserPermissions;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Http\Request;
@@ -50,6 +52,8 @@ readonly class Navigation
         private GeneralConfig $generalConfig,
         private ElementSources $elementSources,
         private Settings $settings,
+        private CustomNavigations $customNavigations,
+        private NavCustomizer $navCustomizer,
     ) {}
 
     /**
@@ -109,13 +113,42 @@ readonly class Navigation
     }
 
     /**
-     * The whole navigation tree, without selection or badge counts.
+     * The whole navigation tree, as the current user has it laid out, without
+     * selection or badge counts. Hidden items are left out.
      *
      * @return NavItem[]
      */
     public function getTree(): array
     {
+        $user = currentUser();
+
+        return $this->navCustomizer->apply($this->buildTree(), $this->customNavigations->navigationFor($user), $user);
+    }
+
+    /**
+     * The navigation tree as Craft and plugins build it, before any customization.
+     *
+     * @return NavItem[]
+     */
+    public function getBaseTree(): array
+    {
         return $this->buildTree();
+    }
+
+    /**
+     * The navigation tree as a user group's members get it before any
+     * customization: built with the group's permissions, and nobody else's.
+     *
+     * @return NavItem[]
+     */
+    public function getBaseTreeForGroup(UserGroup $group): array
+    {
+        return app(UserPermissions::class)->actingAsGroup(
+            $group,
+            // Element sources are remembered per request, for whoever asked
+            // first, so the group's are worked out afresh.
+            fn () => app()->make(self::class, ['elementSources' => app()->build(ElementSources::class)])->buildTree(),
+        );
     }
 
     /**
@@ -253,7 +286,7 @@ readonly class Navigation
                 ->icon('gauge'),
         ]);
 
-        $contentGroup = new NavItem()->label(t('Content'))->group(true);
+        $contentGroup = new NavItem()->id('nav-group-content')->label(t('Content'))->group(true);
         $contentItems = collect();
 
         if ($this->listsSources(Entry::class)) {
@@ -324,6 +357,11 @@ readonly class Navigation
                 $pluginNavItem = new NavItem($pluginNavItem);
             }
 
+            // A group heading has no URL to take an id from.
+            if ($pluginNavItem->group) {
+                $pluginNavItem->id ??= 'nav-group-'.$plugin->handle;
+            }
+
             $pluginNavItems->add($pluginNavItem);
         }
 
@@ -342,7 +380,7 @@ readonly class Navigation
 
         $navItems = $navItems->merge($groupedPluginNavItems);
 
-        $administrationGroup = new NavItem()->label(t('Administration'))->group(true);
+        $administrationGroup = new NavItem()->id('nav-group-administration')->label(t('Administration'))->group(true);
         $administrationItems = [];
 
         if ($this->listsSources(User::class)) {
@@ -420,7 +458,7 @@ readonly class Navigation
         event($event = new CpNavItemsResolving($navItems->all()));
 
         return collect($event->navItems)
-            ->map($this->normalize(...))
+            ->map(fn (NavItem $item) => $this->normalize($item))
             ->all();
     }
 
@@ -445,6 +483,7 @@ readonly class Navigation
     {
         $items = [];
         $group = null;
+        $headingIds = [];
 
         // Scoped to the site the CP is working with, so switching sites leaves
         // the nav listing only the sources that run on the new one.
@@ -458,6 +497,11 @@ readonly class Navigation
         foreach ($sources as $source) {
             if (($source['type'] ?? null) === ElementSources::TYPE_HEADING) {
                 $heading = (string) ($source['heading'] ?? '');
+                // A heading Craft defines has a handle, since its label is
+                // translated. One added in the sources' settings is named as
+                // it was typed.
+                $headingId = $this->sourceItemId($indexUri, 'heading-'.($source['handle'] ?? Str::slug($heading)));
+                $headingIds[$headingId] = ($headingIds[$headingId] ?? 0) + 1;
 
                 // A blank heading separates a trailing run of un-configured
                 // sources rather than naming one, so it closes the open group
@@ -466,6 +510,7 @@ readonly class Navigation
                     $heading === ''
                         ? null
                         : new NavItem()
+                            ->id($headingIds[$headingId] > 1 ? "$headingId-{$headingIds[$headingId]}" : $headingId)
                             ->label($heading)
                             ->group(true)
                             ->subnav([]);
@@ -680,6 +725,7 @@ readonly class Navigation
             }
 
             $groups[] = new NavItem()
+                ->id('nav-settings-group-'.Str::slug($this->settings->sectionName($section)))
                 ->label($section)
                 ->group(true)
                 ->subnav($children);
@@ -705,40 +751,97 @@ readonly class Navigation
 
     /**
      * Settings name the light icons drawn large on the settings index; the
-     * nav draws the solid ones, where they exist.
+     * nav draws the solid ones, where they exist. Craft's own custom icons
+     * come in pairs, with the light one named `<name>-light`.
      */
     private function solidIconName(?string $icon): ?string
     {
-        if ($icon === null || ! str_starts_with($icon, 'light/')) {
-            return $icon;
+        if ($icon === null) {
+            return null;
         }
 
-        $name = substr($icon, strlen('light/'));
+        if (str_starts_with($icon, 'light/')) {
+            $name = substr($icon, strlen('light/'));
 
-        return is_file(CmsAssets::resourcesPath("icons/solid/$name.svg"))
-            ? $name
-            : $icon;
+            return is_file(CmsAssets::resourcesPath("icons/solid/$name.svg"))
+                ? $name
+                : $icon;
+        }
+
+        if (str_starts_with($icon, 'custom-icons/') && str_ends_with($icon, '-light')) {
+            $solid = substr($icon, 0, -strlen('-light'));
+
+            if (is_file(CmsAssets::resourcesPath("icons/$solid.svg"))) {
+                return $solid;
+            }
+        }
+
+        return $icon;
     }
 
     /**
      * Gives an item its id and an absolute URL, renders an icon it can't name,
      * and does the same for anything beneath it.
+     *
+     * An item without a URL — a group heading — takes its id from its label,
+     * under its parent's, so headings don't all end up sharing one.
      */
-    private function normalize(NavItem $item): NavItem
+    private function normalize(NavItem $item, ?string $parentId = null): NavItem
     {
-        $item->id ??= $this->itemId((string) $item->href);
-
         if ($item->href !== null && $item->href !== '') {
+            $item->id ??= $this->itemId($this->idPath($item->href));
             $item->href = Url::cpUrl($item->href);
+        } else {
+            $item->id ??= $this->itemId(sprintf('%s/%s', $parentId ?? 'group', Str::slug((string) $item->label)));
         }
 
         $this->resolveIcon($item);
 
         if (is_array($item->subnav)) {
-            $item->subnav = array_map($this->normalize(...), $item->subnav);
+            $item->subnav = array_map(
+                fn (NavItem $child) => $this->normalize($child, $item->id),
+                $item->subnav,
+            );
         }
 
         return $item;
+    }
+
+    /**
+     * The path an item's id is taken from: its URL relative to the control
+     * panel, so the id is the same whichever host the URL was built for —
+     * `route()` gives an absolute URL, and a navigation saved on one environment
+     * has to apply on the next.
+     */
+    private function idPath(string $href): string
+    {
+        $isAbsolute = Url::isAbsoluteUrl($href);
+
+        if (! $isAbsolute && ! str_starts_with($href, '/')) {
+            return $href;
+        }
+
+        if ($isAbsolute) {
+            $host = parse_url($href, PHP_URL_HOST);
+            $cpHosts = [parse_url(Url::baseCpUrl(), PHP_URL_HOST), $this->request->getHost()];
+
+            if (! in_array($host, $cpHosts, true)) {
+                return $href;
+            }
+        }
+
+        $path = (string) parse_url($href, PHP_URL_PATH);
+        $basePath = rtrim((string) parse_url(Url::baseCpUrl(), PHP_URL_PATH), '/');
+
+        if ($basePath !== '' && str_starts_with($path, $basePath.'/')) {
+            $path = substr($path, strlen($basePath));
+        }
+
+        // `cp_url()` adds the site the CP is working with, which mustn't
+        // change an item's id.
+        $query = trim((string) preg_replace('/(^|&)site=[^&]*/', '', (string) parse_url($href, PHP_URL_QUERY)), '&');
+
+        return Url::stripCpTrigger($path).($query !== '' ? '?'.$query : '');
     }
 
     /**

@@ -168,7 +168,7 @@ class EditElementController
         $enabledForSite = $element->getEnabledForSite();
         $hasRoute = $element->getRoute() !== null;
 
-        $redirectUrl = $this->postEditRedirectUrl($element);
+        $redirectUrl = ElementHelper::postEditRedirectUrl($element);
 
         // Site statuses
         if ($canEditMultipleSites) {

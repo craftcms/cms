@@ -24,6 +24,7 @@ use Override;
  * @method static void rememberAppliedChanges(string $path, mixed $oldValue, mixed $newValue, string|null $message = null)
  * @method static array getAppliedChanges()
  * @method static void saveModifiedConfigData()
+ * @method static void flushChanges()
  * @method static void flush()
  * @method static \CraftCms\DependencyAwareCache\Dependency\CallbackDependency getCacheDependency()
  * @method static bool getDoesExternalConfigExist()

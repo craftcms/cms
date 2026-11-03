@@ -675,7 +675,7 @@ class App
             'username' => $dbConfig->user,
             'password' => $dbConfig->password,
             'charset' => $dbConfig->getCharset(),
-            'tablePrefix' => $dbConfig->tablePrefix ?? '',
+            'tablePrefix' => config("database.connections.$driver.prefix") ?: ($dbConfig->tablePrefix ?? ''),
             'enableLogging' => app()->hasDebugModeEnabled(),
             'enableProfiling' => app()->hasDebugModeEnabled(),
             'schemaMap' => [

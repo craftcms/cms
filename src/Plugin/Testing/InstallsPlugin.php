@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin\Testing;
 
+use Composer\InstalledVersions;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
@@ -19,34 +20,24 @@ trait InstallsPlugin
         $this->composerInstallPlugin();
         $this->installAndEnablePlugin();
         $this->app->get(Plugins::class)->loadPlugins();
-    }
 
-    public function tearDownInstallsPlugin(): void
-    {
-        if (getenv('TEST_TOKEN') !== false) {
-            return;
-        }
-
-        File::delete($this->app->basePath('vendor/craftcms/plugins.php'));
+        $routes = $this->app->get('router')->getRoutes();
+        $routes->refreshNameLookups();
+        $routes->refreshActionLookups();
     }
 
     public function composerInstallPlugin(): void
     {
         $composer = $this->getComposerInfo();
 
-        $plugins = var_export([
-            $composer['name'] => array_merge($composer['extra'], [
-                'basePath' => package_path('/src'),
-            ]),
-        ], true);
-
-        File::ensureDirectoryExists($this->app->basePath('vendor/craftcms'));
-
-        $path = $this->app->basePath('vendor/craftcms/plugins.php');
-        $tempPath = sprintf('%s.%s.tmp', $path, bin2hex(random_bytes(8)));
-
-        File::put($tempPath, "<?php return $plugins;\n");
-        File::move($tempPath, $path);
+        $this->app->when(Plugins::class)
+            ->needs('$composerPlugins')
+            ->give(fn () => [
+                $composer['name'] => array_merge($composer['extra'], [
+                    'basePath' => package_path('/src'),
+                    'version' => $composer['version'] ?? InstalledVersions::getRootPackage()['pretty_version'],
+                ]),
+            ]);
 
         $this->app->forgetInstance(Plugins::class);
     }
@@ -62,7 +53,7 @@ trait InstallsPlugin
         $this->app->forgetInstance(Plugins::class);
     }
 
-    /** @return array{name: string, extra: array{handle: string}} */
+    /** @return array{name: string, version?: string, extra: array{handle: string}} */
     private function getComposerInfo(): array
     {
         return once(fn () => Json::decode(File::get(package_path('composer.json'))));

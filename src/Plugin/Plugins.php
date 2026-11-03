@@ -115,12 +115,14 @@ class Plugins
     /** @var array<string, string[]> */
     private array $scripts = [];
 
+    /** @param array<string, array<string, mixed>>|null $composerPlugins */
     public function __construct(
         private readonly Repository $cache,
         private readonly Application $app,
         Filesystem $files,
         GeneralConfig $generalConfig,
         private readonly PackageManifest $packageManifest,
+        ?array $composerPlugins = null,
     ) {
         $forceDisabledPlugins = $generalConfig->safeMode ? '*' : $generalConfig->disabledPlugins;
         $this->forceDisabledPlugins = array_fill_keys(is_string($forceDisabledPlugins) ? str($forceDisabledPlugins)->explode(',')->all() : ($forceDisabledPlugins ?? []), true);
@@ -129,11 +131,11 @@ class Plugins
 
         $path = $app->basePath('vendor/craftcms/plugins.php');
 
-        if (! $files->exists($path)) {
+        if ($composerPlugins === null && ! $files->exists($path)) {
             return;
         }
 
-        $plugins = require $path;
+        $plugins = $composerPlugins ?? require $path;
 
         if (! is_array($plugins)) {
             throw new UnexpectedValueException("Plugin manifest [$path] must return an array.");

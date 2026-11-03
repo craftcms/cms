@@ -59,7 +59,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use RuntimeException;
 use Throwable;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
@@ -214,7 +213,7 @@ class Sections
                 'sections.uid',
                 'structures.maxLevels',
             ])
-            ->leftJoin(new Alias(Table::STRUCTURES, 'structures'), function (JoinClause $join) {
+            ->leftJoin(Table::STRUCTURES.' as structures', function (JoinClause $join) {
                 $join->whereColumn('structures.id', 'sections.structureId')
                     ->whereNull('structures.dateDeleted');
             })
@@ -493,7 +492,7 @@ class Sections
                 'sections_sites.template',
                 'sections_sites.route',
             ])
-            ->join(new Alias(Table::SITES, 'sites'), function (JoinClause $join) {
+            ->join(Table::SITES.' as sites', function (JoinClause $join) {
                 $join->whereColumn('sections_sites.siteId', 'sites.id')
                     ->whereNull('sites.dateDeleted');
             })

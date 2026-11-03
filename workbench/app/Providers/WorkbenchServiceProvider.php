@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Workbench\App\Providers;
 
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Events\CpNavItemsResolving;
 use CraftCms\Cms\Dashboard\WidgetTypes;
@@ -13,9 +14,13 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Workflow\WorkflowStageTypes;
 use Illuminate\Console\Events\CommandStarting;
+use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Ai\AiManager;
+use Workbench\App\Ai\WorkbenchAiProvider;
 use Workbench\App\Http\Controllers\ErrorPagesController;
 use Workbench\App\Http\Controllers\PortedPagesController;
 use Workbench\App\Http\Controllers\SpecialPagesController;
@@ -25,6 +30,7 @@ use Workbench\App\Widgets\LayoutSlotsDemo;
 use Workbench\App\Workflow\AutomaticApprovalStage;
 
 use function Orchestra\Testbench\package_path;
+use function Orchestra\Testbench\workbench_path;
 
 class WorkbenchServiceProvider extends ServiceProvider
 {
@@ -37,6 +43,11 @@ class WorkbenchServiceProvider extends ServiceProvider
         AliasLoader::getInstance(
             $composer['extra']['laravel']['aliases'] ?? [],
         );
+
+        // Site templates live in the repo rather than in the Testbench app.
+        if (! $this->app->runningUnitTests()) {
+            Aliases::set('@templates', workbench_path('resources/views'));
+        }
     }
 
     public function boot(): void
@@ -60,6 +71,15 @@ class WorkbenchServiceProvider extends ServiceProvider
             app()->setBasePath(package_path());
             app()->useAppPath(package_path('src'));
         });
+
+        // A scripted AI provider, so the AI features can be tried without an API key.
+        if (! $this->app->runningUnitTests()) {
+            config(['ai.providers.workbench' => ['driver' => 'workbench']]);
+            $this->callAfterResolving(AiManager::class, fn (AiManager $manager) => $manager->extend(
+                'workbench',
+                fn (Application $app, array $config) => new WorkbenchAiProvider($config, $app->make(Dispatcher::class)),
+            ));
+        }
 
         app(Plugins::class)->addViteConfig('workbench', [
             'hotFile' => CmsAssets::resourcesPath('hot'),
@@ -94,7 +114,7 @@ class WorkbenchServiceProvider extends ServiceProvider
                         ->icon('table-layout'),
                     new NavItem()
                         ->label('Special Pages')
-                        ->href('workbench/special-pages/dbupdate')
+                        ->href('workbench/special-pages')
                         ->icon('clock-rotate-left')
                         ->subnav(collect(SpecialPagesController::GROUPS)
                             ->map(fn (array $pages, string $group) => new NavItem()
@@ -110,7 +130,7 @@ class WorkbenchServiceProvider extends ServiceProvider
                             ->all()),
                     new NavItem()
                         ->label('Error Pages')
-                        ->href('workbench/error-pages/404')
+                        ->href('workbench/error-pages')
                         ->icon('triangle-exclamation')
                         ->subnav(collect(ErrorPagesController::PAGES)
                             ->map(fn (string $label, int|string $page) => new NavItem()
@@ -120,7 +140,7 @@ class WorkbenchServiceProvider extends ServiceProvider
                             ->all()),
                     new NavItem()
                         ->label('Ported Pages')
-                        ->href('workbench/ported-pages/updater-progress')
+                        ->href('workbench/ported-pages')
                         ->icon('arrow-right-arrow-left')
                         ->subnav(collect(PortedPagesController::PAGES)
                             ->map(fn (string $label, string $page) => new NavItem()
@@ -128,6 +148,10 @@ class WorkbenchServiceProvider extends ServiceProvider
                                 ->href("workbench/ported-pages/{$page}"))
                             ->values()
                             ->all()),
+                    new NavItem()
+                        ->label('Plugin Store cart')
+                        ->href('plugin-store/buy/seomatic')
+                        ->icon('cart-shopping'),
                 ]);
         });
     }

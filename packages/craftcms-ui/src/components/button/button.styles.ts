@@ -329,19 +329,19 @@ export default css`
     --_active-color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
   }
 
-  /* Fill (default) — neutral normal fill. */
+  /* Fill (default) — neutral quiet fill. */
   :host([variant~='fill']) {
     border-color: transparent;
     background-color: var(
-      --c-color-fill-normal,
-      var(--c-color-neutral-fill-normal)
+      --c-color-fill-quiet,
+      var(--c-color-neutral-fill-quiet)
     );
     color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
   }
 
   :host([variant~='fill']:hover) {
     background-color: hsl(
-      from var(--c-color-fill-normal, var(--c-color-neutral-fill-normal)) h s
+      from var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)) h s
         calc(l - 5)
     );
     color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
@@ -349,7 +349,7 @@ export default css`
 
   :host([variant~='fill']:active) {
     --_active-background-color: hsl(
-      from var(--c-color-fill-normal, var(--c-color-neutral-fill-normal)) h s
+      from var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)) h s
         calc(l - 10)
     );
     --_active-color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
@@ -615,6 +615,8 @@ export default css`
       --c-button-spacing-inline,
       var(--c-form-control-spacing-inline)
     );
+    border-radius: inherit;
+    outline: none;
 
     /* Same minimum click area as Lion's :host::before (WCAG 2.5.5), but as
        part of the anchor so clicks on it follow the link. */
@@ -634,6 +636,13 @@ export default css`
       width: 100%;
       height: 100%;
     }
+  }
+
+  /* The anchor takes focus instead of the host, so it draws the host's ring.
+     The browser's own ring would also wrap the click-area overlay above. */
+  .link:focus-visible {
+    outline: var(--c-focus-outline-width) solid var(--c-color-focus-outline);
+    outline-offset: calc(var(--c-focus-outline-offset) + var(--_border-width));
   }
 
   :host([href][size~='xsmall']:not([disabled])) .link {

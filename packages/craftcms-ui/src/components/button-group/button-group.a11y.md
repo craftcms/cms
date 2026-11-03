@@ -4,7 +4,7 @@ Without `name`, the group only joins its buttons visually; each one follows `but
 
 **Not for:**
 
-- A form setting that picks one value from a set of options. Use `craft-radio-group` with `buttons`, which is announced and operated as radios.
+- A form setting that picks one value from a set of options. Use `craft-radio-group` with `appearance="button-group"`, which is announced and operated as radios.
 - Switching between panels where one is always showing. Use `craft-tabs`.
 - Arrow-key navigation between the buttons. That belongs to a composite widget (radios, tabs, a toolbar), and makes the buttons behave differently from what their role announces. No component implements the APG [Toolbar](https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/) pattern yet; raise it rather than adding a mode here.
 

@@ -6,7 +6,9 @@ namespace CraftCms\Cms\Element\Queries\Concerns\Asset;
 
 use BackedEnum;
 use CraftCms\Cms\Asset\Enums\ImageType;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
 use CraftCms\Cms\Element\Queries\AssetQuery;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 
 /**
@@ -56,6 +58,7 @@ trait QueriesImageType
      *
      * @uses $imageType
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on what kind of image the assets are: `photo`, `illustration`, `screenshot`, `diagram`, `logo`, `document`, or `pattern`.')]
     public function imageType(mixed $value): static
     {
         $this->imageType = $value;

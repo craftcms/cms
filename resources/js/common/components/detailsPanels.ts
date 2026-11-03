@@ -23,6 +23,8 @@ export interface DetailsPanel {
   scrollsItself?: boolean;
   /** What gets focus when the panel is opened from its trigger. Defaults to its heading. */
   initialFocus?: () => HTMLElement | null | undefined;
+  /** Left out of the command palette's panels, for a panel it offers its own way into. */
+  unlistedInPalette?: boolean;
 }
 
 export interface DetailsPanelStatus {

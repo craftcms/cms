@@ -31,6 +31,16 @@ export const tabsPlacements = Object.values(TabsPlacement);
 export type TabsPlacementValue =
   (typeof TabsPlacement)[keyof typeof TabsPlacement];
 
+export const TabsAppearance = {
+  Line: 'line',
+  Fill: 'fill',
+} as const;
+
+export const tabsAppearances = Object.values(TabsAppearance);
+
+export type TabsAppearanceValue =
+  (typeof TabsAppearance)[keyof typeof TabsAppearance];
+
 /** @deprecated Use {@link TabsPlacement}. */
 export const TabsLayout = {
   Horizontal: 'horizontal',
@@ -124,7 +134,8 @@ const FIT_TOLERANCE = 1;
  * A horizontal strip too narrow for its tabs collapses the ones that don't fit
  * into a `<craft-action-menu>` at the end, rather than scrolling or wrapping.
  * Tabs collapse from the end in document order, and the selected tab is always
- * kept in the strip — picking a tab from the menu swaps it back into view.
+ * kept in the strip — picking a tab from the menu swaps it back into view. A
+ * selected tab that's too wide for the strip on its own truncates its label.
  *
  * Collapsed tabs get the `hidden` attribute, so they leave the accessibility
  * tree along with the layout and are reachable only through the menu. Strips
@@ -206,6 +217,15 @@ export default class CraftTabs extends LionTabs {
    */
   @property({reflect: true}) placement: TabsPlacementValue =
     TabsPlacement.BlockStart;
+  /**
+   * How the strip is drawn: `line` (the default) rules it off from the panels
+   * and underlines the selected tab; `fill` sets the tabs on a quiet track and
+   * raises the selected one, for a strip that sits among other controls, such
+   * as an edition picker in a purchase panel. `fill` is drawn for the block
+   * placements.
+   */
+  @property({reflect: true}) appearance: TabsAppearanceValue =
+    TabsAppearance.Line;
 
   /**
    * The accessible name of the tablist, describing what the tabs switch
@@ -673,13 +693,15 @@ export default class CraftTabs extends LionTabs {
       return;
     }
 
-    // Measure from a clean slate — every tab laid out, the menu taking no room
-    // — so a tab that has since been given space comes back.
+    // Measure from a clean slate — every tab laid out at its natural width, the
+    // menu taking no room — so a tab that has since been given space comes back.
     tabs.forEach((tab) => tab.removeAttribute('hidden'));
     menu.hidden = true;
+    group.classList.add('tabs__tab-group--measuring');
 
     const gap = this.#tabGap(group);
     const widths = tabs.map((tab) => tab.offsetWidth);
+    group.classList.remove('tabs__tab-group--measuring');
     const natural = widths.reduce(
       (total, width, index) => total + width + (index ? gap : 0),
       0
@@ -940,6 +962,7 @@ export default class CraftTabs extends LionTabs {
               type="button"
               variant="plain"
               size="small"
+              flush="inline-end"
             >
               <!--
                 The name has to come from the icon: craft-button does not

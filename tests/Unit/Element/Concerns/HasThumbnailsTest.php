@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Element\Data\Thumb;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
@@ -35,6 +36,12 @@ class TestThumbnailElement extends Element
     public static function displayName(): string
     {
         return 'Test Element';
+    }
+
+    #[Override]
+    public static function hasThumbs(): bool
+    {
+        return true;
     }
 
     public function setCustomThumbUrl(?string $url): void
@@ -107,13 +114,13 @@ class TestThumbnailElement extends Element
 }
 
 describe('getThumbHtml', function () {
-    test('preserves field precedence and only uses native URLs for empty field HTML', function (ImageTransformMode $mode, ?string $fieldHtml) {
+    test('preserves field precedence and only uses native URLs without a field thumbnail', function (ImageTransformMode $mode, ?string $fieldHtml) {
         $element = new TestThumbnailElement;
         $element->setCustomThumbUrl('/native.jpg');
         $layout = Mockery::mock(FieldLayout::class);
-        $layout->thumbFieldKey = 'layoutElement:thumbnail';
-        $layout->shouldReceive('getThumbHtmlForElement')->once()
-            ->with('layoutElement:thumbnail', $element, 120, $mode)->andReturn($fieldHtml);
+        $layout->thumbSources = ['layoutElement:thumbnail'];
+        $layout->shouldReceive('getThumbForElement')->once()
+            ->with('layoutElement:thumbnail', $element)->andReturn($fieldHtml ? new Thumb(fn () => $fieldHtml) : null);
         $element->thumbnailLayout = $layout;
 
         $html = $element->getThumbHtml(120, $mode);
@@ -131,9 +138,8 @@ describe('getThumbHtml', function () {
         'stretch' => ImageTransformMode::Stretch,
         'letterbox' => ImageTransformMode::Letterbox,
     ])->with([
-        'field HTML' => '<b>Field thumbnail</b>',
-        'empty string fallback' => '',
-        'null fallback' => [null],
+        'field thumbnail' => '<b>Field thumbnail</b>',
+        'no field thumbnail' => [null],
     ]);
 
     test('defaults to fit for both responsive URLs', function () {

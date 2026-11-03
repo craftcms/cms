@@ -6,31 +6,6 @@ use CraftCms\Cms\Support\Search;
 
 require dirname(__DIR__).'/vendor/autoload.php';
 
-$lightIcons = [
-    'clipboard-list-check',
-    'earth-africa',
-    'earth-americas',
-    'earth-asia',
-    'earth-europe',
-    'earth-oceania',
-    'envelope',
-    'files',
-    'folder-open',
-    'globe',
-    'image',
-    'map-location',
-    'newspaper',
-    'pen-to-square',
-    'plug',
-    'robot',
-    'signs-post',
-    'sitemap',
-    'sliders',
-    'sparkles',
-    'tags',
-    'user-group',
-];
-
 $styles = [
     'globe' => 'regular',
 ];
@@ -102,13 +77,11 @@ if (! is_dir($iconsDir.'/light')) {
     mkdir($iconsDir.'/light');
 }
 
-foreach ($lightIcons as $name) {
-    $svg = $meta[$name]['svg']['light']['raw'] ?? '';
+// Settings icons are drawn in the light style when one exists, so plugins can name any icon.
+foreach ($meta as $name => $info) {
+    $svg = $info['svg']['light']['raw'] ?? '';
 
     if ($svg === '') {
-        echo "Skipping light/$name.svg (kit metadata has no light SVG content)\n";
-        $skipped++;
-
         continue;
     }
 

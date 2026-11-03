@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Cp\Enums\ChipThumbSize;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementIndexes;
@@ -43,6 +44,7 @@ readonly class PasteableElementsController
             'sources.*' => ['string'],
             'siteId' => ['nullable', 'integer'],
             'viewMode' => ['nullable', 'string', Rule::in(ElementSelect::viewModes())],
+            'thumbSize' => ['nullable', Rule::enum(ChipThumbSize::class)],
         ]);
 
         $elementType = $request->elementType();
@@ -95,6 +97,7 @@ readonly class PasteableElementsController
         }
 
         $viewMode = $request->input('viewMode', ElementSelect::VIEW_MODE_LIST);
+        $thumbSize = $request->enum('thumbSize', ChipThumbSize::class);
         $elements = $elementType::find()
             ->siteId($siteId)
             ->status(null)
@@ -104,7 +107,7 @@ readonly class PasteableElementsController
 
         return new JsonResponse([
             'elements' => array_values(array_map(
-                fn (ElementInterface $element): array => ElementSelect::presentation($element, $viewMode),
+                fn (ElementInterface $element): array => ElementSelect::presentation($element, $viewMode, $thumbSize),
                 array_filter($elements, fn (ElementInterface $element): bool => Gate::check('view', $element)),
             )),
         ]);

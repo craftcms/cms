@@ -177,7 +177,6 @@ it.each([
   ).toEqual({
     site: 'default',
     source: 'section:news',
-    viewMode: 'table',
     includeSubfolders: '1',
     search: 'needle',
     'condition[class]': 'EntryCondition',

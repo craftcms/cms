@@ -16,6 +16,8 @@ class Color extends Control
     /** @var list<string> */
     private array $presets = [];
 
+    private bool $alpha = false;
+
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, UiHtmlRenderer $renderer): string
     {
         return InputColor::make()
@@ -23,6 +25,7 @@ class Color extends Control
             ->name($attributes['name'])
             ->value($value === null ? null : (string) $value)
             ->presets($control->props['presets'] ?? [])
+            ->alpha($control->props['alpha'] ?? false)
             ->disabled($attributes['name'] === null)
             ->readOnly($attributes['readonly'])
             ->describedBy($attributes['aria']['describedby'] ?? null)
@@ -46,15 +49,25 @@ class Color extends Control
         return $this;
     }
 
+    /**
+     * Whether the color can have an alpha channel, set via the color picker in browsers that support it.
+     */
+    public function alpha(bool $alpha = true): static
+    {
+        $this->alpha = $alpha;
+
+        return $this;
+    }
+
     #[\Override]
     public function inputSchema(): array
     {
-        return ['type' => 'string', 'pattern' => '^#[0-9a-fA-F]{6}$'];
+        return ['type' => 'string', 'pattern' => $this->alpha ? '^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$' : '^#[0-9a-fA-F]{6}$'];
     }
 
     #[\Override]
     public function props(mixed $value = null): array
     {
-        return ['presets' => $this->presets];
+        return ['presets' => $this->presets, ...($this->alpha ? ['alpha' => true] : [])];
     }
 }

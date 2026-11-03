@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\Delete;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Events\ElementDeleting;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -36,6 +37,22 @@ it('soft deletes entries via the Laravel perform-action route', function () {
 
     expect(DB::table(Table::ELEMENTS)->where('id', $entry->id)->value('dateDeleted'))
         ->not()->toBeNull();
+});
+
+it('deletes unpublished drafts via the Laravel perform-action route', function () {
+    $draft = EntryModel::factory()->createElement();
+    app(Drafts::class)->saveElementAsDraft($draft, User::findOne()->id);
+
+    postJson(action(PerformElementActionController::class), [
+        'context' => 'index',
+        'source' => '*',
+        'elementType' => Entry::class,
+        'elementAction' => Delete::class,
+        'elementIds' => [$draft->id],
+    ])->assertOk();
+
+    expect(DB::table(Table::ELEMENTS)->where('id', $draft->id)->whereNull('dateDeleted')->exists())
+        ->toBeFalse();
 });
 
 it('reports a type-aware message when only part of a page selection can be deleted', function (int $failureCount, string $message) {

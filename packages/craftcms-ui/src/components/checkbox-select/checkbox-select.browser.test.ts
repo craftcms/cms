@@ -170,6 +170,20 @@ it('takes the “All” value as its model value before its first render', async
   expect(element.modelValue).toEqual(['*']);
 });
 
+it('keeps “All” in single-value mode while its options load, then checks them', async () => {
+  const {element} = await create({'all-label': 'All'}, []);
+  element.modelValue = ['*'];
+  await settle(element);
+
+  expect(element.modelValue).toEqual(['*']);
+
+  element.options = options;
+  await settle(element);
+
+  expect(element.modelValue).toEqual(['*']);
+  expect(element.options.every((option) => option.checked)).toBe(true);
+});
+
 it('checks every option from “All” in each-value mode, posting their values', async () => {
   const {element, form} = await create({
     name: 'caches',

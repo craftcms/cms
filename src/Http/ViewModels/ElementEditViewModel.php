@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Ai\Assistant\Data\ElementParams;
+use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Html\ContentHtml;
@@ -22,6 +24,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\EditsElement;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\ElementCrumbs;
+use CraftCms\Cms\Http\ElementPreview;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Release\Data\AttachedReleaseData;
 use CraftCms\Cms\Release\Data\ReleaseSummaryData;
@@ -30,11 +33,11 @@ use CraftCms\Cms\Release\Models\Release;
 use CraftCms\Cms\Release\Models\ReleaseItem;
 use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Ai;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Workflows;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Ui\Enums\ControlMode;
@@ -90,6 +93,8 @@ class ElementEditViewModel extends ViewModel
     }
 
     private ?UiPayload $ui = null;
+
+    private ?ElementPreview $elementPreview = null;
 
     private bool $uiResolved = false;
 
@@ -167,7 +172,7 @@ class ElementEditViewModel extends ViewModel
             && ! $this->element->getIsUnpublishedDraft()
             && ! $this->element->isProvisionalDraft;
 
-        return Crypt::encrypt($isNamedDraft ? '{cpEditUrl}' : $this->postEditRedirectUrl($this->element));
+        return Crypt::encrypt($isNamedDraft ? '{cpEditUrl}' : ElementHelper::postEditRedirectUrl($this->element));
     }
 
     /** Where the edit form posts when there are no provisional changes to apply. */
@@ -266,13 +271,13 @@ class ElementEditViewModel extends ViewModel
             $actions['primary']['actionUrl'] = $this->autosaveUrl();
             $actions['primary']['panelId'] = null;
 
-            if (! $release->status->isMutable()) {
+            if (! $release->status->isEditable()) {
                 $actions['buttons'] = array_map(
                     fn (array $action): array => $action['actionUrl'] === $this->applyDraftUrl()
                         ? [
                             ...$action,
                             'disabled' => true,
-                            'disabledReason' => t('Cancel the release schedule before applying this draft.'),
+                            'disabledReason' => t('This draft’s release is being published.'),
                         ]
                         : $action,
                     $actions['buttons'],
@@ -330,6 +335,7 @@ class ElementEditViewModel extends ViewModel
             canManage: $actor->can('manage', $release),
             draftId: (int) $this->element->draftId,
             siteId: $this->element->siteId,
+            blockers: app(Releases::class)->draftBlockers($release, $this->element),
         );
     }
 
@@ -351,7 +357,7 @@ class ElementEditViewModel extends ViewModel
             : [];
 
         return Release::query()
-            ->whereIn('status', [ReleaseStatus::Draft, ReleaseStatus::Failed])
+            ->whereIn('status', [ReleaseStatus::Draft, ReleaseStatus::Scheduled, ReleaseStatus::Failed])
             ->orderBy(new IsNull('targetDate'))
             ->orderBy('targetDate')
             ->orderBy('name')
@@ -463,6 +469,19 @@ class ElementEditViewModel extends ViewModel
             : null;
     }
 
+    /**
+     * The request parameters that identify the element to the AI assistant, which the user can add it to the context
+     * of, or `null` when they can’t use the assistant, or the element hasn’t been saved.
+     */
+    public function aiAssistant(): ?ElementParams
+    {
+        return $this->element->id
+            && ! $this->element->getIsRevision()
+            && Assistant::isAvailable()
+                ? ElementParams::for($this->element)
+                : null;
+    }
+
     /** Where this editor's activity timeline is loaded on demand. */
     public function activityTimelineUrl(): ?string
     {
@@ -493,74 +512,34 @@ class ElementEditViewModel extends ViewModel
     /**
      * The element's preview targets as ready-to-open links.
      *
-     * A live element links straight at its URL. Anything not publicly visible
-     * yet — a draft, a disabled entry, a future post date — links at
-     * `preview/create-token`, which mints a preview token and redirects to the
-     * tokenized URL. The legacy editor does that dance in JavaScript; every
-     * input is known here, so the link arrives ready to follow.
-     *
      * @return list<array{label: string, url: string}>
      */
     public function previewTargets(): array
     {
-        $element = $this->element;
+        return $this->elementPreview()->links();
+    }
 
-        if (! $element->id) {
-            return [];
+    /**
+     * What Live Preview needs to load the element's targets in an iframe, or
+     * `null` when it has none.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function preview(): ?array
+    {
+        if ($this->elementPreview()->targets() === []) {
+            return null;
         }
 
-        $targets = $element->getPreviewTargets();
+        return $this->elementPreview()->payload();
+    }
 
-        if ($targets === []) {
-            return [];
-        }
-
-        $isLive = (
-            ($element->getIsCanonical() || $element->isProvisionalDraft) &&
-            ! $element->getIsDraft() &&
-            $element->enabled &&
-            $element->getEnabledForSite() &&
-            $element->getRoute() !== null
-        );
-
-        $previewToken = Str::random(32, extendedChars: true);
-        $siteToken = (app()->isDownForMaintenance() || ! $element->getSite()->getEnabled())
-            ? Crypt::encrypt((string) $element->siteId)
-            : null;
-
-        $tokenParams = array_filter([
-            'elementType' => $element::class,
-            'canonicalId' => $element->getCanonicalId(),
-            'siteId' => $element->siteId,
-            'revisionId' => $element->revisionId,
-            'draftId' => $element->isProvisionalDraft ? null : $element->draftId,
-            'previewToken' => Crypt::encrypt($previewToken),
-        ], fn (mixed $value): bool => $value !== null);
-
-        return array_values(array_map(function (array $target) use ($isLive, $previewToken, $siteToken, $tokenParams): array {
-            $params = array_filter([
-                // Randomized so CDNs don't serve a cached page.
-                'x-craft-preview' => $isLive ? null : Crypt::encrypt(Str::random(10)),
-                Cms::config()->siteToken => $siteToken,
-            ], fn (mixed $value): bool => $value !== null);
-
-            if ($isLive) {
-                return [
-                    'label' => (string) $target['label'],
-                    'url' => Url::url($target['url'], $params),
-                ];
-            }
-
-            $params[Cms::config()->tokenParam] = $previewToken;
-
-            return [
-                'label' => (string) $target['label'],
-                'url' => Url::actionUrl('preview/create-token', [
-                    ...$tokenParams,
-                    'redirect' => Url::url($target['url'], $params),
-                ]),
-            ];
-        }, $targets));
+    /**
+     * Shared by the View links and Live Preview, so they use one token.
+     */
+    private function elementPreview(): ElementPreview
+    {
+        return $this->elementPreview ??= new ElementPreview($this->element);
     }
 
     /**
@@ -578,7 +557,7 @@ class ElementEditViewModel extends ViewModel
             return [];
         }
 
-        $hidesView = $this->element->getPreviewTargets() !== [];
+        $hidesView = $this->elementPreview()->targets() !== [];
 
         return array_values(array_filter(
             $this->element->actionMenuDescriptors(ElementActionContext::Editor),
@@ -971,10 +950,17 @@ class ElementEditViewModel extends ViewModel
                 continue;
             }
 
+            $siteParams = $params;
+
+            if (isset($siteParams['returnUrl']) && is_string($siteParams['returnUrl'])) {
+                // return to the index for the site being switched to
+                $siteParams['returnUrl'] = ElementHelper::returnUrlForSite($siteParams['returnUrl'], $site);
+            }
+
             $items[] = [
                 'type' => 'link',
                 'label' => t($site->getName(), category: 'site'),
-                'href' => Url::cpUrl($path, ['site' => $site->handle] + $params),
+                'href' => Url::cpUrl($path, ['site' => $site->handle] + $siteParams),
                 'selected' => $site->id === $currentSite->id,
             ];
         }

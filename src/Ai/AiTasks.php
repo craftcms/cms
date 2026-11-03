@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Ai;
 
 use CraftCms\Cms\Ai\Contracts\TaskInterface;
+use CraftCms\Cms\Ai\Tasks\Assistant;
+use CraftCms\Cms\Ai\Tasks\GenerateChatTitle;
 use CraftCms\Cms\Asset\Analysis\Tasks\ClassifyImage;
 use CraftCms\Cms\Asset\Analysis\Tasks\DetectFocalPoint;
 use CraftCms\Cms\Asset\Analysis\Tasks\GenerateAltText;
@@ -35,6 +37,8 @@ class AiTasks extends TypeRegistry
     protected const string CONTRACT = TaskInterface::class;
 
     protected const array DEFAULT_TYPES = [
+        Assistant::class,
+        GenerateChatTitle::class,
         GenerateAltText::class,
         GenerateTitles::class,
         DetectFocalPoint::class,

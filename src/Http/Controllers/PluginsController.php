@@ -17,6 +17,7 @@ use CraftCms\Cms\View\LegacyAssets\PluginsAsset;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -191,11 +192,17 @@ readonly class PluginsController
             $settings = $request->safe()->input('settings', []);
         }
 
-        $success = $this->plugins->savePluginSettings($plugin, $settings);
+        if (! $this->plugins->savePluginSettings($plugin, $settings)) {
+            $errors = [];
 
-        return $success
-            ? $this->asSuccess(t('Plugin settings saved.'))
-            : $this->editSettings($handle, $plugin);
+            foreach ($plugin->getSettings()?->errors()->getMessages() ?? [] as $attribute => $messages) {
+                $errors["settings.$attribute"] = $messages;
+            }
+
+            throw ValidationException::withMessages($errors);
+        }
+
+        return $this->asSuccess(t('Plugin settings saved.'));
     }
 
     public function renderSettingsUi(Request $request, string $handle): JsonResponse

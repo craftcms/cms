@@ -14,6 +14,8 @@ import Updates from '@/modules/updater/components/Updates.vue';
 import ProjectConfig from '@/modules/utilities/components/project-config/ProjectConfig.vue';
 import AssetIndexes from '@/modules/utilities/components/asset-indexes/AssetIndexes.vue';
 import SystemMessages from '@/modules/utilities/components/system-messages/SystemMessages.vue';
+import AiGuidance from '@/modules/ai/guidance/AiGuidance.vue';
+import AiSkills from '@/modules/ai/skills/AiSkills.vue';
 import CpLink from '@/common/components/CpLink.vue';
 import {cpComponentRegistry} from './components';
 import {elementDetailsPanelRegistry} from './element-details-panels';
@@ -52,6 +54,8 @@ export function installCpApp(app: App): void {
   app.component('ProjectConfig', ProjectConfig);
   app.component('AssetIndexes', AssetIndexes);
   app.component('SystemMessages', SystemMessages);
+  app.component('AiGuidance', AiGuidance);
+  app.component('AiSkills', AiSkills);
   app.component('CpLink', CpLink);
 
   app.runWithContext(useUnderlineLinks);

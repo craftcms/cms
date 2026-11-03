@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Html;
 
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Colorable;
@@ -23,7 +24,7 @@ use CraftCms\Cms\Cp\Enums\ChipThumbSize;
 use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
 use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
 use CraftCms\Cms\Cp\Icons;
-use CraftCms\Cms\Element\Actions\Copy;
+use CraftCms\Cms\Element\Actions\ClientAction;
 use CraftCms\Cms\Element\Actions\Delete;
 use CraftCms\Cms\Element\Actions\Duplicate;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -450,7 +451,7 @@ readonly class ElementHtml
 
         foreach ($items as &$item) {
             if ($config['nestedActionEvents'] && str_starts_with($item['id'] ?? '', 'action-copy-')) {
-                $item['action'] = $this->nestedElementAction($element, Copy::class);
+                $item['action'] = $this->nestedElementAction($element, ClientAction::copy());
             }
         }
         unset($item);
@@ -573,7 +574,7 @@ readonly class ElementHtml
             'class' => ['flex', 'flex-nowrap', 'gap-1', 'grow-1', 'items-center'],
         ]).
             ($icon ? Html::tag('craft-icon', '', ['name' => $icon]) : '').
-            ($title ? Html::tag('div', Html::encode($title), ['class' => 'card-titlebar-label']) : '').
+            ($title ? Html::tag('div', Html::encode($title), ['class' => 'card-titlebar-label', 'data-card-label' => true]) : '').
             Html::endTag('div'). // .flex
             $this->cardModifiedStatusHtml($element);
     }
@@ -924,17 +925,17 @@ readonly class ElementHtml
     }
 
     /**
-     * @param  class-string<Copy|Duplicate|Delete>  $actionClass
+     * @param  ClientAction|class-string<Duplicate|Delete>  $action
      * @return array{type: string, name: string, detail: array{action: string, elementId: int|null, item: array<string, mixed>}}
      */
-    private function nestedElementAction(ElementInterface $element, string $actionClass): array
+    private function nestedElementAction(ElementInterface $element, ClientAction|string $action): array
     {
         $elementActions = app(ElementActions::class);
         $item = $elementActions->serializeActionItems([
-            $elementActions->createAction($actionClass, $element::class),
+            $action instanceof ClientAction ? $action : $elementActions->createAction($action, $element::class),
         ])[0];
 
-        if ($actionClass === Copy::class) {
+        if ($action instanceof ClientAction && $action->key === 'copy') {
             $item['action']['detail']['elements'] = [[
                 'type' => $element::class,
                 'id' => $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id,
@@ -973,7 +974,16 @@ readonly class ElementHtml
             $classes[] = 'error';
         }
 
-        $thumb = $element->getThumbHtml(120, ImageTransformMode::Fit);
+        $elementThumb = $element->getThumb();
+        $coverAsset = match ($this->cardThumbStyle($element)) {
+            'cover' => $elementThumb?->getAsset(),
+            'auto' => $elementThumb?->supportsCover() ? $elementThumb->getAsset() : null,
+            default => null,
+        };
+        $coverUrl = $coverAsset?->getCardCoverUrl();
+        $luminance = $coverUrl !== null ? $coverAsset->analysis?->colors?->luminance : null;
+
+        $thumb = $elementThumb?->getHtml(120, ImageTransformMode::Fit);
         $thumbAlignment = $element->getFieldLayout()?->getCardThumbAlignment() ?? 'end';
 
         if ($thumb) {
@@ -986,6 +996,8 @@ readonly class ElementHtml
             $this->baseElementAttributes($element, $config),
             [
                 'class' => $classes,
+                'cover-src' => $coverUrl,
+                'luminance' => $luminance ?: null,
                 'style' => array_filter([
                     '--custom-border-color' => $color?->cssVar(200),
                     '--custom-titlebar-bg-color' => $color?->cssVar(100),
@@ -1008,6 +1020,14 @@ readonly class ElementHtml
             ],
             $config['attributes'],
         );
+    }
+
+    /**
+     * Returns the thumb style of an element's card: its field layout's, or else `auto` for assets.
+     */
+    private function cardThumbStyle(ElementInterface $element): string
+    {
+        return $element->getFieldLayout()?->getCardThumbStyle() ?? ($element instanceof Asset ? 'auto' : 'normal');
     }
 
     /**

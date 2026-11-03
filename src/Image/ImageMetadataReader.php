@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Image;
 
 use CraftCms\Cms\Image\Data\ImageMetadata;
 use DOMDocument;
+use DOMElement;
 use DOMXPath;
 use Imagick;
 use Throwable;
@@ -67,6 +68,10 @@ class ImageMetadataReader
                 $this->xmpText($xmp, 'Iptc4xmpCore:AltTextAccessibility'),
                 $this->xmpText($xmp, 'Iptc4xmpExt:AltTextAccessibility'),
             ) : null,
+            'altTextTranslations' => $xmp ? [
+                ...$this->xmpTranslations($xmp, 'Iptc4xmpExt:AltTextAccessibility'),
+                ...$this->xmpTranslations($xmp, 'Iptc4xmpCore:AltTextAccessibility'),
+            ] : [],
             'creator' => $this->first(
                 $xmp ? implode(', ', $this->xmpList($xmp, 'dc:creator')) : null,
                 implode(', ', array_filter(array_map($this->decode(...), (array) ($iptc['2#080'] ?? [])))),
@@ -268,6 +273,26 @@ class ImageMetadataReader
         }
 
         return null;
+    }
+
+    /**
+     * Returns a language alternative XMP property’s text in each language other than the default, indexed by language.
+     *
+     * @return array<string, string>
+     */
+    private function xmpTranslations(DOMXPath $xpath, string $property): array
+    {
+        $translations = [];
+
+        foreach ($xpath->query("//$property/rdf:Alt/rdf:li[@xml:lang and @xml:lang!='x-default']") ?: [] as $node) {
+            $language = $node instanceof DOMElement ? strtolower($node->getAttribute('xml:lang')) : '';
+
+            if ($language !== '' && ! isset($translations[$language]) && ($value = $this->decode($node->textContent)) !== null) {
+                $translations[$language] = $value;
+            }
+        }
+
+        return $translations;
     }
 
     /**

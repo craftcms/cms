@@ -157,8 +157,8 @@ it('returns null cache info when nothing was collected', function () {
 it('tracks the earliest collected cache expiry', function () {
     $this->elementCaches->startCollectingCacheInfo();
 
-    $later = new DateTime('+10 minutes');
-    $sooner = new DateTime('+5 minutes');
+    $later = now()->addMinutes(10);
+    $sooner = now()->addMinutes(5);
 
     $this->elementCaches->setCacheExpiryDate($later);
     $this->elementCaches->setCacheExpiryDate($sooner);
@@ -176,7 +176,7 @@ it('collects expiry info from expirable elements', function () {
 
     $element = new TestExpirableElementCachesElement;
     $element->id = 123;
-    $element->expiryDate = new DateTime('+5 minutes');
+    $element->expiryDate = now()->addMinutes(5);
 
     $this->elementCaches->collectCacheInfoForElement($element);
 

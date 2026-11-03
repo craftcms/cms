@@ -470,7 +470,7 @@ readonly class Assets
     /** @return array<string, mixed> */
     private function serializeUploadSession(UploadSessionData $session): array
     {
-        $transferUrl = route('craft.cp.mcp.uploads.transfer', ['upload' => $session->id]);
+        $transferUrl = route('craft.mcp.uploads.transfer', ['upload' => $session->id]);
         $transport = $session->transport;
 
         if ($transport['type'] === 'tus') {
@@ -485,8 +485,8 @@ readonly class Assets
             'transport' => $transport,
             'urls' => [
                 'transfer' => $transferUrl,
-                'status' => route('craft.cp.mcp.uploads.status', ['upload' => $session->id]),
-                'cancel' => route('craft.cp.mcp.uploads.destroy', ['upload' => $session->id]),
+                'status' => route('craft.mcp.uploads.status', ['upload' => $session->id]),
+                'cancel' => route('craft.mcp.uploads.destroy', ['upload' => $session->id]),
             ],
             'authorization' => [
                 'type' => 'bearer',

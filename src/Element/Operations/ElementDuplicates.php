@@ -209,8 +209,6 @@ readonly class ElementDuplicates
 
                         $siteClone = clone $siteElement;
                         $siteClone->duplicateOf = $siteElement;
-                        $siteClone->propagating = true;
-                        $siteClone->propagatingFrom = $mainClone;
                         $siteClone->id = $mainClone->id;
                         $siteClone->uid = $mainClone->uid;
                         $siteClone->structureId = $mainClone->structureId;
@@ -230,6 +228,10 @@ readonly class ElementDuplicates
                             $siteAttributes[$siteElement->siteId] ?? [],
                         ));
                         $siteClone->siteId = $siteElement->siteId;
+                        // Set these after $newAttributes, which may have set `propagating` to `false` for $mainClone
+                        // (see https://github.com/craftcms/cms/issues/20151)
+                        $siteClone->propagating = true;
+                        $siteClone->propagatingFrom = $mainClone;
 
                         $dirtyFields = $siteClone->getDirtyFields();
                         foreach ($siteClone->getFieldValues() as $handle => $value) {

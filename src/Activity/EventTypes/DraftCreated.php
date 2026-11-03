@@ -11,7 +11,7 @@ use CraftCms\Cms\Activity\ActivityEventType;
  */
 class DraftCreated extends ActivityEventType
 {
-    protected const string LABEL = 'Draft created';
+    protected const string LABEL = 'Created a draft';
 
     protected const string ICON = 'scribble';
 }

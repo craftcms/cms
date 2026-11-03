@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import {computed} from 'vue';
+  import type {ChipThumbSizeValue} from '@craftcms/ui';
   import ElementCards from '@/modules/elements/components/ElementCards.vue';
   import ElementChips from '@/modules/elements/components/ElementChips.vue';
   import ElementThumbs from '@/modules/elements/components/ElementThumbs.vue';
@@ -28,6 +29,8 @@
     cardContentHtml?: string;
     cardFooterHtml?: string;
     thumbHtml?: string;
+    /** Nests list chips by structure level; see `ElementChips`. */
+    level?: number | null;
   }
 
   const props = withDefaults(
@@ -35,6 +38,8 @@
       /** The elements to draw, in display order. */
       data?: Array<ListElement>;
       viewMode: ElementListViewMode;
+      /** The chips' or thumbnail tiles' thumbnail size; each body has its own default. */
+      thumbSize?: ChipThumbSizeValue;
       /** Selection, usually from `useElementList`. */
       selection: Selectable<any>;
       selectable?: boolean;
@@ -105,6 +110,7 @@
     :read-only="readOnly"
     :loading="loading"
     :sortable="sortable"
+    :thumb-size="thumbSize"
     @edit="(element) => edit(element.id)"
     @reorder="
       (startIndex, finishIndex) => $emit('reorder', startIndex, finishIndex)
@@ -123,6 +129,7 @@
     :selectable="selectable"
     :read-only="readOnly"
     :inline="viewMode === 'list-inline'"
+    :thumb-size="thumbSize"
     :sortable="sortable"
     @edit="$emit('edit', $event)"
     @reorder="

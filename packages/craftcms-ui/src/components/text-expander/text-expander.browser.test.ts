@@ -86,3 +86,37 @@ it('keeps its popup’s events inside the expander, and reports its own selectio
     events.forEach((type) => document.removeEventListener(type, record));
   }
 });
+
+it('highlights the suggestion that Enter will insert, and moves the highlight with the arrow keys', async () => {
+  document.body.innerHTML = `
+    <input id="field" type="text" aria-label="Template">
+    <craft-text-expander for="field"></craft-text-expander>`;
+  const input = document.querySelector('input')!;
+  const expander = document.querySelector('craft-text-expander')!;
+  expander.triggers = [
+    {
+      trigger: '{',
+      boundary: 'anywhere',
+      options: [
+        {label: 'Email', value: '{email}'},
+        {label: 'Name', value: '{name}'},
+      ],
+    },
+  ];
+  await expander.updateComplete;
+  await userEvent.fill(input, '{');
+  await vi.waitFor(() =>
+    expect(expander.querySelectorAll('craft-option')).toHaveLength(2)
+  );
+  const options = expander.querySelectorAll('craft-option');
+  const email = options[0]!;
+  const name = options[1]!;
+  const fill = (option: Element) => getComputedStyle(option).backgroundColor;
+
+  await vi.waitFor(() => expect(fill(email)).not.toBe(fill(name)));
+  const highlighted = fill(email);
+
+  await userEvent.keyboard('{ArrowDown}');
+  await vi.waitFor(() => expect(fill(name)).toBe(highlighted));
+  expect(fill(email)).not.toBe(highlighted);
+});

@@ -36,17 +36,20 @@
       type="button"
       variant="plain"
       size="small"
-      flush
       align="start"
       class="workflow-review-stage__heading"
     >
-      <craft-icon
-        slot="prefix"
-        :name="stage.icon"
-        appearance="badge"
-        :data-color="stage.iconColor"
-      />
-      <strong>{{ number }}. {{ stage.name }}</strong>
+      <span class="workflow-review-stage__label">
+        <strong>{{ number }}. {{ stage.name }}</strong>
+        <span class="workflow-review-stage__status">
+          <span class="sr-only">, </span>
+          {{ stage.statusLabel }}
+          <!-- The status text beside it says the same. -->
+          <span class="workflow-review-stage__dot" aria-hidden="true">
+            <craft-status :status="stage.status"></craft-status>
+          </span>
+        </span>
+      </span>
       <craft-icon
         slot="suffix"
         class="workflow-review-stage__chevron"
@@ -58,12 +61,15 @@
       v-else
       class="workflow-review-stage__heading workflow-review-stage__heading--static"
     >
-      <craft-icon
-        :name="stage.icon"
-        appearance="badge"
-        :data-color="stage.iconColor"
-      />
       <strong>{{ number }}. {{ stage.name }}</strong>
+      <span class="workflow-review-stage__status">
+        <span class="sr-only">, </span>
+        {{ stage.statusLabel }}
+        <!-- The status text beside it says the same. -->
+        <span class="workflow-review-stage__dot" aria-hidden="true">
+          <craft-status :status="stage.status"></craft-status>
+        </span>
+      </span>
     </div>
 
     <div
@@ -96,11 +102,34 @@
 </template>
 
 <style scoped>
-  /* Block-level, so it fills the row even as `flush` pulls it outward. */
   .workflow-review-stage__heading {
     display: flex;
-    --c-button-height: var(--c-size-touch-target);
-    --c-button-spacing-inline: var(--c-spacing-xs);
+    margin-inline: calc(-1 * var(--c-spacing-md));
+    background-color: var(--c-color-neutral-fill-quiet);
+    --c-button-radius: 0;
+  }
+
+  craft-button.workflow-review-stage__heading {
+    color: var(--c-color-neutral-on-quiet);
+    min-height: calc(var(--c-size-control-sm) + 2 * var(--c-spacing-xs));
+    padding-inline: calc(var(--c-spacing-md) + var(--c-spacing-xs) - 1px);
+  }
+
+  .workflow-review-stage__heading::part(prefix) {
+    display: none;
+  }
+
+  craft-button.workflow-review-stage__heading:hover {
+    background-color: var(--c-color-neutral-fill-normal);
+  }
+
+  craft-button.workflow-review-stage__heading:active {
+    background-color: color-mix(
+      in oklab,
+      var(--c-color-neutral-fill-normal),
+      var(--c-color-mix-active)
+    );
+    box-shadow: none;
   }
 
   .workflow-review-stage__heading::part(content) {
@@ -117,9 +146,32 @@
     display: grid;
     align-items: center;
     gap: var(--c-spacing-sm);
-    grid-template-columns: auto minmax(0, 1fr);
-    min-height: var(--c-size-touch-target);
-    padding: var(--c-spacing-xs);
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-height: calc(var(--c-size-control-sm) + 2 * var(--c-spacing-xs));
+    padding-block: var(--c-spacing-xs);
+    padding-inline: calc(var(--c-spacing-md) + var(--c-spacing-xs));
+  }
+
+  .workflow-review-stage__dot {
+    display: flex;
+  }
+
+  .workflow-review-stage__label {
+    display: flex;
+    width: 100%;
+    align-items: baseline;
+    gap: var(--c-spacing-sm);
+  }
+
+  .workflow-review-stage__status {
+    display: flex;
+    margin-inline-start: auto;
+    align-items: center;
+    gap: var(--c-spacing-md);
+    color: var(--c-text-quiet);
+    font-size: var(--c-text-sm);
+    font-weight: normal;
+    white-space: nowrap;
   }
 
   .workflow-review-stage__chevron {
@@ -142,7 +194,8 @@
   }
 
   .workflow-review-stage__content {
-    margin-block-start: var(--c-spacing-sm);
+    margin-block-start: var(--c-spacing-md);
+    padding-block-end: var(--c-spacing-md);
   }
 
   .workflow-review-events {
