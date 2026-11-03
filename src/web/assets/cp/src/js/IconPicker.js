@@ -197,7 +197,7 @@ Craft.IconPicker = Craft.BaseInputGenerator.extend(
         name = icon;
         html = (await Craft.ui.icon(icon)).outerHTML;
       } else {
-        name = icon.attr('data-icon') || icon.attr('title');
+        name = icon.attr('data-value') || icon.attr('title');
         html = $(icon).html();
       }
 

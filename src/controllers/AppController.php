@@ -1059,7 +1059,7 @@ class AppController extends Controller
                     'label' => $name,
                 ],
                 'data' => [
-                    'icon' => $value,
+                    'value' => $value,
                 ],
             ]) .
             Html::endTag('li');

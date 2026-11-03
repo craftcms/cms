@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where icon pickers were showing duplicate icons.
+
 ## 5.12.0 - 2026-11-03
 
 ### MCP and OAuth
