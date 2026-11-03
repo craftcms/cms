@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Table;
 use craft\elements\User;
 use craft\helpers\StringHelper;
+use craft\models\Site;
 use FunctionalTester;
 
 /**
@@ -100,6 +101,34 @@ class OAuthConsentCest
 
         $this->register($I, 'Craft CMS Companion');
         $I->assertSame(201, Craft::$app->getResponse()->getStatusCode());
+    }
+
+    public function testRegistrationRejectsLookalikesOfNonLatinSiteNames(FunctionalTester $I): void
+    {
+        $sitesService = Craft::$app->getSites();
+        $siteNames = [
+            'cyrillic' => ["\u{0410}\u{0440}\u{0435}\u{0445}", 'Apex'], // Cyrillic “Арех”, Latin look-alike
+            'greek' => ["\u{039A}\u{0391}\u{03A4}\u{039F}", 'KATO'], // Greek “ΚΑΤΟ”, Latin look-alike
+        ];
+
+        foreach ($siteNames as $handle => [$siteName, $lookalike]) {
+            $site = new Site([
+                'groupId' => $sitesService->getPrimarySite()->groupId,
+                'name' => $siteName,
+                'handle' => $handle,
+                'language' => 'en-US',
+            ]);
+            $I->assertTrue($sitesService->saveSite($site), json_encode($site->getErrors()));
+
+            foreach ([$siteName, $lookalike, mb_strtolower($lookalike)] as $name) {
+                $response = $this->register($I, $name);
+                $I->assertSame(400, Craft::$app->getResponse()->getStatusCode(), "“{$name}” should be reserved.");
+                $I->assertSame('The client name is reserved.', $response['error_description']);
+            }
+
+            $this->register($I, "$lookalike Companion");
+            $I->assertSame(201, Craft::$app->getResponse()->getStatusCode());
+        }
     }
 
     /**
