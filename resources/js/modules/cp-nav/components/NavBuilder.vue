@@ -6,11 +6,12 @@
    * Rows are dragged by their handle, or moved from its menu with the
    * keyboard. Settings for a row open in a slideout.
    */
-  import {computed, h, ref} from 'vue';
+  import {computed, h, nextTick, ref, useTemplateRef} from 'vue';
   import {t} from '@craftcms/ui';
   import type {ReorderMove} from '@craftcms/ui';
   import type {ActionItem} from '@/common/types';
   import ActionMenu from '@/common/components/ActionMenu.vue';
+  import {useAnnouncer} from '@/common/composables/useAnnouncer';
   import {useCraftTable} from '@/common/table/craftTable';
   import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
   import {useTableRowSelection} from '@/common/composables/useTableRowSelection';
@@ -36,6 +37,9 @@
   const {readOnly = false} = defineProps<{readOnly?: boolean}>();
 
   const allRows = computed(() => flatten(tree.value));
+
+  const {announce} = useAnnouncer();
+  const addButton = useTemplateRef<HTMLElement>('add-button');
 
   /**
    * Rows whose children are folded away. Items start collapsed, since their
@@ -74,10 +78,52 @@
 
     tree.value = result;
 
-    // Moved into a collapsed row: open it, so the row can be seen landing.
-    const parentId = flatten(result).find((row) => row.id === id)?.parentId;
+    const resultRows = flatten(result);
+    const row = resultRows.find((r) => r.id === id);
 
-    if (parentId && collapsed.value.has(parentId)) toggle(parentId);
+    if (!row) return;
+
+    // Moved into a collapsed row: open it, so the row can be seen landing.
+    if (row.parentId && collapsed.value.has(row.parentId)) toggle(row.parentId);
+
+    const siblings = resultRows.filter((r) => r.parentId === row.parentId);
+    const parent = resultRows.find((r) => r.id === row.parentId);
+
+    announce(
+      t('{item} moved to {place}, position {position} of {total}.', {
+        item: row.label,
+        place: parent?.label ?? t('the top level'),
+        position: siblings.indexOf(row) + 1,
+        total: siblings.length,
+      })
+    );
+  }
+
+  /** Focuses a row's label once it's rendered, or the Add button without one. */
+  function focusRow(id: string | null): void {
+    void nextTick(() =>
+      ((id ? labelRefs.get(id) : null) ?? addButton.value)?.focus()
+    );
+  }
+
+  /**
+   * Removes a custom node, moving focus to the row before it (or after it,
+   * for the first row), since its own menu goes with it.
+   */
+  function removeNode(node: NavNode): void {
+    const index = rows.value.findIndex((row) => row.id === node.id);
+    const row = rows.value[index];
+    const neighbor =
+      rows.value[index - 1] ??
+      rows.value.slice(index + 1).find((r) => r.level <= (row?.level ?? 1));
+
+    tree.value =
+      node.kind === 'section'
+        ? removeSection(tree.value, node.id)
+        : remove(tree.value, node.id);
+
+    announce(t('{item} removed.', {item: node.label}));
+    focusRow(neighbor?.id ?? null);
   }
 
   /** Where a row can go besides up, down, in and out: the top level, or a section. */
@@ -138,11 +184,7 @@
       {
         label: node.kind === 'section' ? t('Remove section') : t('Remove'),
         variant: 'danger',
-        onClick: () =>
-          (tree.value =
-            node.kind === 'section'
-              ? removeSection(tree.value, node.id)
-              : remove(tree.value, node.id)),
+        onClick: () => removeNode(node),
       },
     ];
   }
@@ -246,6 +288,10 @@
       (changes) => {
         const [next, addedId] = add(tree.value);
         tree.value = update(next, addedId, changes);
+
+        announce(t('{item} added.', {item: changes.label ?? ''}));
+        // After the slideout hands focus back to the Add button.
+        focusRow(addedId);
       }
     );
   }
@@ -295,6 +341,7 @@
     >
       <template #invoker="{attributes}">
         <craft-button
+          ref="add-button"
           v-bind="attributes"
           type="button"
           variant="dashed"
@@ -313,10 +360,6 @@
     margin-block-start: var(--c-spacing-md);
   }
 
-  /*
-   * The item takes the spare width, so the switches and actions sit together
-   * at the end of each row.
-   */
   :deep(.nav-builder__item) {
     width: 100%;
   }

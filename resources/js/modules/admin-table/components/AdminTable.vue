@@ -245,7 +245,10 @@
     managed?.paginated.value &&
     !managed.orderingDisabled.value &&
     table.value.getPageCount() > 1 &&
-    selectedIds.value.length === 1
+    selectedIds.value.length === 1 &&
+    table.value
+      .getSelectedRowModel()
+      .rows.every((row) => props.canReorderRow?.(row.original) ?? true)
       ? [{type: 'display' as const, is: MoveToPageDisplay}]
       : []),
   ]);

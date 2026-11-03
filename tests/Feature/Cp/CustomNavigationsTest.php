@@ -6,6 +6,7 @@ use CraftCms\Cms\Cp\CustomNavigations;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\User\Models\User as UserModel;
@@ -79,6 +80,7 @@ it('only saves links to control panel paths and web, mail and phone URLs', funct
     'javascript' => ['javascript:alert(1)', false],
     'data' => ['data:text/html,hi', false],
     'protocol-relative' => ['//evil.example.com', false],
+    'backslash protocol-relative' => ['/\\evil.example.com', false],
 ]);
 
 it('builds a link’s settings in a slideout, and checks them before they’re applied', function () {
@@ -186,4 +188,13 @@ it('lists group navigations in the order they apply, with the default navigation
     Edition::set(Edition::Team);
 
     get(cp_url('settings/cp-nav'))->assertRedirect(route('craft.cp.settings.cp-nav.default'));
+});
+
+it('deletes a user group’s navigation along with the group', function () {
+    $group = UserGroups::getGroupByUid(UserGroup::factory()->create()->uid);
+    app(CustomNavigations::class)->saveGroupNavigation($group, ['items' => ['nav-plugin-store' => ['hidden' => true]]]);
+
+    UserGroups::deleteGroup($group);
+
+    expect(app(ProjectConfig::class)->get(ProjectConfig::PATH_CP_NAV.'.groups'))->toBeEmpty();
 });

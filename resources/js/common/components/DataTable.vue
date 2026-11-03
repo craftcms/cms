@@ -186,13 +186,11 @@
 
   const {setRowRef, setHandleRef, getDragState, getDropState} =
     useReorderableRows({
-      getRowIds: () =>
-        props.table
-          .getRowModel()
-          .rows.filter((row) => isRowReorderable(row))
-          .map((row) => row.id),
+      getRowIds: () => reorderableRows().map((row) => row.id),
+      // Indexes among the reorderable rows, which `reorder` counts among all.
       onReorder: (startIndex, finishIndex) => {
-        emit('reorder', startIndex, finishIndex);
+        const indexes = reorderableRows().map((row) => row.index);
+        emit('reorder', indexes[startIndex]!, indexes[finishIndex]!);
       },
       enabled: () =>
         !readOnly.value && props.reorderable && !props.interactionsDisabled,
@@ -305,12 +303,15 @@
     return props.canReorderRow?.(row.original) ?? true;
   }
 
+  function reorderableRows(): Row<CraftTableFeatures, TData>[] {
+    return props.table
+      .getRowModel()
+      .rows.filter((row) => isRowReorderable(row));
+  }
+
   /** The first and last indexes rows can move between. */
   const reorderBounds = computed(() => {
-    const indexes = props.table
-      .getRowModel()
-      .rows.filter((row) => isRowReorderable(row))
-      .map((row) => row.index);
+    const indexes = reorderableRows().map((row) => row.index);
 
     return {first: Math.min(...indexes), last: Math.max(...indexes)};
   });

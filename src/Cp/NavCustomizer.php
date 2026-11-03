@@ -274,7 +274,9 @@ class NavCustomizer
     private function addCreated(array &$nodes, array $items): void
     {
         foreach ($items as $id => $config) {
-            if (isset($nodes[$id]) || ! isset($config['type'])) {
+            // The id becomes a project config key, so it's held to what the
+            // builder gives new items.
+            if (isset($nodes[$id]) || ! isset($config['type']) || ! preg_match('/^custom-[a-z0-9]+$/', (string) $id)) {
                 continue;
             }
 

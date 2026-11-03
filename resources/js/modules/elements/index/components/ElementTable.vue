@@ -120,14 +120,29 @@
       props.structure &&
       !props.interactionsDisabled,
     onMove: (id, move) => emit('moveStructureRow', id, move),
-    blockedDrops: (sourceId, targetId) =>
-      (
+    blockedDrops: (sourceId, targetId) => {
+      const blocked = (
         Object.entries(structureDropMoves) as Array<
           [StructureDropType, 'before' | 'after' | 'child']
         >
       )
         .filter(([, type]) => !props.canMoveRow(sourceId, {type, targetId}))
-        .map(([dropType]) => dropType),
+        .map(([dropType]) => dropType);
+      const targetLevel =
+        props.table
+          .getRowModel()
+          .rows.find((row: any) => String(row.original.id) === targetId)
+          ?.original.level ?? 1;
+      // A reparent drop can land at any level above the target's.
+      const canReparent = Array.from(
+        {length: targetLevel - 1},
+        (_, i) => i + 1
+      ).some((level) =>
+        props.canMoveRow(sourceId, {type: 'reparent', targetId, level})
+      );
+
+      return canReparent ? blocked : [...blocked, 'reparent'];
+    },
   });
 
   function structureDropEdge(rowId: string | number) {

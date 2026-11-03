@@ -2,6 +2,7 @@
   import {computed} from 'vue';
   import {ButtonVariant, t} from '@craftcms/ui';
   import {useForm} from '@inertiajs/vue3';
+  import {useAnnouncer} from '@/common/composables/useAnnouncer';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import CpContainer from '@/common/components/CpContainer.vue';
@@ -18,6 +19,7 @@
   }>();
 
   const form = useForm<{nav: NavNode[]}>({nav: props.tree});
+  const {announce} = useAnnouncer();
 
   const {save} = useSettingsSave(form, () => ({
     url: props.saveUrl,
@@ -31,18 +33,36 @@
   useAppLayout(() => ({
     form,
     onSave: save,
-    // Only resets the builder; nothing changes until the navigation is saved.
-    formAdditionalButtons:
-      !props.readOnly && isCustomized.value
-        ? [
-            {
-              label: t('Reset'),
-              variant: ButtonVariant.Plain,
-              onClick: () => (form.nav = props.defaultTree),
-            },
-          ]
-        : [],
+    // Kept when there's nothing to reset, so it never vanishes while focused.
+    formAdditionalButtons: props.readOnly
+      ? []
+      : [
+          {
+            label: t('Reset'),
+            variant: ButtonVariant.Plain,
+            disabled: !isCustomized.value,
+            disabledReason: isCustomized.value
+              ? null
+              : t('Nothing has been customized.'),
+            onClick: reset,
+          },
+        ],
   }));
+
+  /** Only resets the builder; nothing changes until the navigation is saved. */
+  function reset(): void {
+    if (
+      form.isDirty &&
+      !window.confirm(
+        t('Reset the navigation? Your unsaved changes will be lost.')
+      )
+    ) {
+      return;
+    }
+
+    form.nav = props.defaultTree;
+    announce(t('Navigation reset. Save to keep it.'));
+  }
 </script>
 
 <template>

@@ -220,3 +220,14 @@ it('drops links to anything but control panel paths and web, mail and phone URLs
         ->toHaveKey('custom-good00')
         ->not->toHaveKey('custom-bad000');
 });
+
+it('drops created items whose ids couldn’t be project config keys', function () {
+    $customizer = new NavCustomizer;
+    $edited = [
+        ...postedTree($customizer->resolve(customizerTree(), [])),
+        ['id' => 'custom-shop00', 'type' => 'section', 'label' => 'Shop', 'children' => []],
+        ['id' => 'custom-a.b', 'type' => 'section', 'label' => 'Dotted', 'children' => []],
+    ];
+
+    expect(array_keys($customizer->diff(customizerTree(), $edited)['items']))->toBe(['custom-shop00']);
+});

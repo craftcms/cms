@@ -54,8 +54,9 @@ class NavCustomizationRequest extends FormRequest
             'url:http,https',
             'regex:/^mailto:\S+$/i',
             'regex:/^tel:\S+$/i',
-            // No scheme, and not protocol-relative.
-            'regex:#^(?!//)(?![a-z][a-z0-9+.-]*:)\S+$#i',
+            // No scheme, and not protocol-relative. Browsers read a backslash
+            // as a slash, so `/\host` counts as protocol-relative too.
+            'regex:#^(?![/\\\\]{2})(?![a-z][a-z0-9+.-]*:)\S+$#i',
         ])];
     }
 }
