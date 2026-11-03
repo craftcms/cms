@@ -121,6 +121,7 @@ class ElementSelect extends ViewComponent
     protected function tagName(): string
     {
         return match (true) {
+            $this->isDisabled() => 'div',
             is_a((string) $this->elementType, Asset::class, true) => 'craft-asset-select-input',
             is_a((string) $this->elementType, Entry::class, true) => 'craft-entry-select-input',
             default => 'craft-element-select-input',
