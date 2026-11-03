@@ -24,10 +24,6 @@ class CpAsset implements LegacyAssetInterface
         // TailwindResetAsset::class,
         AnimationBlockerAsset::class,
         D3Asset::class,
-        GarnishAsset::class,
-        JqueryAsset::class,
-        JqueryTouchEventsAsset::class,
-        VelocityAsset::class,
         ThemeAsset::class,
     ];
 
