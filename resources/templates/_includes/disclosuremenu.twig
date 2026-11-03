@@ -83,21 +83,24 @@
       {% endapply -%}
     {% endtag %}
   {% endtag %}
-  {% if type == 'link' %}
-    {% js %}
-      $('#{{ id|namespaceInputId }}').on('keydown', (ev) => {
-        if (ev.keyCode === Garnish.SPACE_KEY) {
+  {% js %}
+    (() => {
+      const item = document.getElementById('{{ id|namespaceInputId }}');
+      {% if type == 'link' %}
+      item?.addEventListener('keydown', (ev) => {
+        if (ev.key === ' ') {
           ev.currentTarget.click();
         }
       });
-    {% endjs %}
-  {% endif %}
-  {% js %}
-    $('#{{ id|namespaceInputId }}').on('activate', () => {
-      setTimeout(() => {
-        $('#{{ menuId|namespaceInputId }}').data('disclosureMenu').hide();
-      }, 1);
-    });
+      {% endif %}
+      item?.addEventListener('click', () => {
+        setTimeout(() => {
+          // The menu is booted by the legacy jQuery plugin, when it's loaded
+          const menu = document.getElementById('{{ menuId|namespaceInputId }}');
+          window.jQuery?.(menu).data('disclosureMenu')?.hide();
+        }, 1);
+      });
+    })();
   {% endjs %}
 {% endmacro %}
 

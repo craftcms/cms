@@ -28,17 +28,17 @@
 {% endcss %}
 
 {% js %}
+  const setupBtn = document.getElementById('setup-2fa-btn');
   const setup = Craft.authMethodSetup = new Craft.AuthMethodSetup({
     onRefresh: () => {
-      if (Object.values(setup.methodListings).some(c => Garnish.hasAttr(c, 'data-active'))) {
-        $('#setup-2fa-btn').removeClass('hidden');
-      } else {
-        $('#setup-2fa-btn').addClass('hidden');
-      }
+      setupBtn.classList.toggle(
+        'hidden',
+        !Object.values(setup.methodListings).some(c => c.hasAttribute('data-active'))
+      );
     }
   });
 
-  $('#setup-2fa-btn').on('click', () => {
+  setupBtn.addEventListener('click', () => {
     window.location.reload();
   });
 {% endjs %}
