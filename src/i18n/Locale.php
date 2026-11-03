@@ -12,6 +12,7 @@ use craft\web\twig\AllowedInSandbox;
 use DateTime;
 use IntlDateFormatter;
 use NumberFormatter;
+use ResourceBundle;
 use yii\base\BaseObject;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -239,7 +240,7 @@ class Locale extends BaseObject
     public const FORMAT_HUMAN = 'human';
 
     /**
-     * @var array The languages that use RTL orientation.
+     * @var array The languages that use RTL orientation, if ICU doesn’t have layout data for a locale.
      */
     private static array $_rtlLanguages = [
         'ar',
@@ -405,6 +406,13 @@ class Locale extends BaseObject
     #[AllowedInSandbox]
     public function getOrientation(): string
     {
+        $bundle = ResourceBundle::create(str_replace('-', '_', $this->aliasOf ?? $this->id), 'ICUDATA');
+        $layout = $bundle['layout']['characters'] ?? null;
+
+        if (is_string($layout)) {
+            return $layout === 'right-to-left' ? 'rtl' : 'ltr';
+        }
+
         if (in_array($this->getLanguageID(), self::$_rtlLanguages, true)) {
             return 'rtl';
         }
