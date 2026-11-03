@@ -694,6 +694,8 @@
 - `CraftCms\Cms\Ui\Controls\Choice::sortable()` no longer implies the “Add item” menu, and can now be combined with `allOption()`. `presentation(ChoicePresentation::AddMenu)` should be used for the menu. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Added `CraftCms\Cms\Ui\Controls\Choice::allowCustom()` and `iconsOnly()`, and the `color` and `custom` option keys. ([#20166](https://github.com/craftcms/cms/pull/20166))
 - Added `CraftCms\Cms\Cp\FormFields::customCheckboxTemplate()`. ([#20166](https://github.com/craftcms/cms/pull/20166))
+- Added `CraftCms\Cms\Ui\Controls\EntryTypeSelect::extraValueKeys()`, which lets each selected entry type’s value hold additional keys, such as a plugin’s per-entry-type settings, when overrides are allowed. The keys are kept when the select is re-rendered and when entry type overrides are applied. ([#20294](https://github.com/craftcms/cms/pull/20294))
+- Added `CraftCms\Cms\Cp\Components\EntryTypeSelect::extraValues()`. ([#20294](https://github.com/craftcms/cms/pull/20294))
 - `<craft-combobox>` now shows selected options’ icons and indicators on `multiple-choice` tokens, and tints option icons with their `color` data. ([#20166](https://github.com/craftcms/cms/pull/20166))
 - Deprecated `CraftCms\Cms\Cp\Components\CheckboxSelect::storageKey()`, which now does nothing. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Deprecated `Craft.SortableCheckboxSelect`. `<craft-checkbox-select>` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))
