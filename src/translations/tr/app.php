@@ -527,7 +527,7 @@ return [
     'Create a new section' => 'Yeni bir bölüm oluştur',
     'Create a new site' => 'Yeni bir site oluşturun',
     'Create a new tag group' => 'Yeni bir etiket grubu oluştur',
-    'Create a new token' => 'Create a new token',
+    'Create a new token' => 'Yeni bir belirteç oluştur',
     'Create a new user group' => 'Yeni bir kullanıcı grubu oluştur',
     'Create a new volume…' => 'Yeni bir birim oluştur…',
     'Create a new {section} entry' => 'Yeni bir {section} kaydı oluşturun',
