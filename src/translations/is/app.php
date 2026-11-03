@@ -527,7 +527,7 @@ return [
     'Create a new section' => 'Búðu til nýjan svæði',
     'Create a new site' => 'Búðu til nýja síðu',
     'Create a new tag group' => 'Búðu til nýjan merkihóp',
-    'Create a new token' => 'Create a new token',
+    'Create a new token' => 'Búa til nýtt tákn',
     'Create a new user group' => 'Búðu til nýjan notendahóp',
     'Create a new volume…' => 'Búðu til nýtt safn...',
     'Create a new {section} entry' => 'Búðu til nýja {section} færslu',
