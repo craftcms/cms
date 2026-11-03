@@ -31,6 +31,8 @@ return [
     'authorizationCodeDuration' => 'PT10M',
     'redirectDomains' => ['https://client.example', 'http://localhost'],
     'customSchemes' => [],
+    'registrationRateLimit' => 10,
+    'registrationRateLimitDuration' => 3600,
     'resources' => [],
 ];
 ```
@@ -38,6 +40,10 @@ return [
 `privateKey` and `publicKey` accept PEM contents or file paths, including Craft aliases and environment variable references. Omit them to use the generated files under `storage`. Durations use PHP `DateInterval` syntax. The defaults are one hour for access tokens, 30 days for refresh tokens, and ten minutes for authorization codes.
 
 `redirectDomains` defaults to `['*']`, permitting HTTP and HTTPS registration redirects. An explicit list restricts registration to matching origins and optional path prefixes. HTTP loopback origins allow dynamic ports for local clients. `customSchemes` permits additional redirect schemes; those URIs must still have a host. Registered redirect URIs must match exactly during authorization and token exchange.
+
+Registration is anonymous, so each IP address can register `registrationRateLimit` clients per `registrationRateLimitDuration` seconds (10 per hour by default). Legitimate clients register once per install. Set `registrationRateLimit` to `false` to remove the limit. The OAuth endpoints are also limited to 60 requests per minute per IP address.
+
+Garbage collection deletes expired and revoked authorization codes and tokens, keeping access tokens that still have a live refresh token. It also deletes registered clients that have nothing live left and were either revoked, or registered over a day ago but never authorized. The personal access client is never deleted.
 
 ## Registering a plugin resource
 

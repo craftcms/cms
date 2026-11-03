@@ -30,6 +30,8 @@ class OAuthConsentCest
         $config = Craft::$app->getConfig()->getOAuth();
         openssl_pkey_export($key, $config->privateKey);
         $config->publicKey = openssl_pkey_get_details($key)['key'];
+        // Let tests register as many clients as they need (see OAuthRegistrationCest for the limit)
+        $config->registrationRateLimit = false;
 
         $I->amLoggedInAs(User::find()->admin()->one());
     }

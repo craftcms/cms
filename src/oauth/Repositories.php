@@ -145,6 +145,12 @@ class Repositories implements ClientRepositoryInterface, AccessTokenRepositoryIn
             'scopes' => $this->encodeScopes($authCodeEntity->getScopes()),
             'expires_at' => Db::prepareDateForDb($authCodeEntity->getExpiryDateTime()),
         ]);
+
+        // Record when the client was last authorized, so garbage collection can tell clients that were never
+        // authorized (registered clients start with no `updated_at` value) apart from ones whose tokens have expired
+        Craft::$app->getDb()->createCommand()->update(Table::OAUTH_CLIENTS, [
+            'updated_at' => Db::prepareDateForDb(new DateTime()),
+        ], ['id' => $authCodeEntity->getClient()->getIdentifier()], updateTimestamp: false)->execute();
     }
 
     public function revokeAuthCode(string $codeId): void

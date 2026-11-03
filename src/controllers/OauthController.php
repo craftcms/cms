@@ -57,6 +57,24 @@ class OauthController extends Controller
                     'ip' => $this->request->getUserIP() ?? 'unknown',
                 ]),
             ],
+            // Registration is anonymous and stores a row, and legitimate clients only register once per install
+            'registrationRateLimiter' => [
+                'class' => RateLimiter::class,
+                'only' => ['register'],
+                'enableRateLimitHeaders' => false,
+                'user' => function() {
+                    $config = Craft::$app->getConfig()->getOAuth();
+                    if ($config->registrationRateLimit === false) {
+                        return null;
+                    }
+                    return new IpRateLimitIdentity([
+                        'limit' => $config->registrationRateLimit,
+                        'window' => $config->registrationRateLimitDuration,
+                        'keyPrefix' => 'oauth-register',
+                        'ip' => $this->request->getUserIP() ?? 'unknown',
+                    ]);
+                },
+            ],
         ];
     }
 
@@ -135,7 +153,8 @@ class OauthController extends Controller
             'scopes' => json_encode(array_keys($definition->scopes), JSON_THROW_ON_ERROR),
             'revoked' => false,
             'created_at' => $now,
-            'updated_at' => $now,
+            // Set once the client is authorized, so garbage collection can find clients that never were
+            'updated_at' => null,
         ])->execute();
 
         $this->response->setStatusCode(201);

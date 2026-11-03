@@ -14,6 +14,7 @@ use craft\db\Table;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\records\User as UserRecord;
 use craft\services\Gc;
 use craft\test\TestCase;
@@ -156,6 +157,100 @@ class GcTest extends TestCase
 
         // Should only be 2 users now
         self::assertEquals(2, $count);
+    }
+
+    public function testRunDeletesStaleOAuthData(): void
+    {
+        $userId = (int)(new Query())->select('id')->from(Table::USERS)->scalar();
+        $date = fn(string $time) => Db::prepareDateForDb(new DateTime($time));
+
+        // id => [provider, revoked, created, last authorized]
+        $clients = [
+            'active' => [null, false, '3 days ago', '2 days ago'],
+            'authorized' => [null, false, '3 days ago', '2 days ago'],
+            'authorized-same-second' => [null, false, '2 days ago', '2 days ago'],
+            'new' => [null, false, '1 hour ago', null],
+            'unauthorized' => [null, false, '2 days ago', null],
+            'revoked' => [null, true, '3 days ago', '2 days ago'],
+            'revoked-live' => [null, true, '3 days ago', '2 days ago'],
+            'personal' => ['craft', false, '2 days ago', '2 days ago'],
+        ];
+        foreach ($clients as $id => [$provider, $revoked, $created, $updated]) {
+            Db::insert(Table::OAUTH_CLIENTS, [
+                'id' => $id,
+                'name' => $id,
+                'provider' => $provider,
+                'redirect_uris' => '[]',
+                'grant_types' => '[]',
+                'revoked' => $revoked,
+                'created_at' => $date($created),
+                'updated_at' => $updated ? $date($updated) : null,
+            ]);
+        }
+
+        // id => [client, revoked, expires]
+        $authCodes = [
+            'code-expired' => ['active', false, '1 minute ago'],
+            'code-revoked' => ['active', true, '+5 minutes'],
+            'code-live' => ['active', false, '+5 minutes'],
+        ];
+        foreach ($authCodes as $id => [$client, $revoked, $expires]) {
+            Db::insert(Table::OAUTH_AUTH_CODES, [
+                'id' => $id,
+                'user_id' => $userId,
+                'client_id' => $client,
+                'revoked' => $revoked,
+                'expires_at' => $date($expires),
+            ]);
+        }
+
+        // id => [client, revoked, expires, refresh token: [revoked, expires]]
+        $accessTokens = [
+            'access-expired' => ['active', false, '1 hour ago', null],
+            'access-expired-refreshable' => ['active', false, '1 hour ago', [false, '+29 days']],
+            'access-expired-refresh-expired' => ['active', false, '31 days ago', [false, '1 day ago']],
+            'access-rotated' => ['active', true, '+30 minutes', [true, '+29 days']],
+            'access-live' => ['active', false, '+30 minutes', null],
+            'access-revoked-client' => ['revoked-live', false, '+30 minutes', null],
+        ];
+        foreach ($accessTokens as $id => [$client, $revoked, $expires, $refresh]) {
+            Db::insert(Table::OAUTH_ACCESS_TOKENS, [
+                'id' => $id,
+                'user_id' => $userId,
+                'client_id' => $client,
+                'revoked' => $revoked,
+                'created_at' => $date('2 days ago'),
+                'updated_at' => $date('2 days ago'),
+                'expires_at' => $date($expires),
+            ]);
+            if ($refresh) {
+                Db::insert(Table::OAUTH_REFRESH_TOKENS, [
+                    'id' => "$id-refresh",
+                    'access_token_id' => $id,
+                    'revoked' => $refresh[0],
+                    'expires_at' => $date($refresh[1]),
+                ]);
+            }
+        }
+
+        $this->gc->run(true);
+
+        // PostgreSQL pads fixed-length IDs with spaces
+        $remaining = fn(string $table, array $ids) => array_map('rtrim', (new Query())->select('id')->from($table)->where(['id' => $ids])->orderBy('id')->column());
+
+        self::assertSame(['code-live'], $remaining(Table::OAUTH_AUTH_CODES, array_keys($authCodes)));
+        self::assertSame(
+            ['access-expired-refreshable', 'access-live', 'access-revoked-client'],
+            $remaining(Table::OAUTH_ACCESS_TOKENS, array_keys($accessTokens)),
+        );
+        self::assertSame(
+            ['access-expired-refreshable-refresh'],
+            $remaining(Table::OAUTH_REFRESH_TOKENS, array_map(fn($id) => "$id-refresh", array_keys($accessTokens))),
+        );
+        self::assertSame(
+            ['active', 'authorized', 'authorized-same-second', 'new', 'personal', 'revoked-live'],
+            $remaining(Table::OAUTH_CLIENTS, array_keys($clients)),
+        );
     }
 
     /**
