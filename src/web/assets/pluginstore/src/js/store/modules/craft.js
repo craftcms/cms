@@ -53,6 +53,11 @@ const getters = {
             description:
               'Define custom front-end templates, or use Craft headlessly with the auto-generated GraphQL API.',
           },
+          {
+            name: 'MCP server',
+            description:
+              'Connect AI tools to Craft’s Model Context Protocol server to inspect and manage your content, assets, and settings.',
+          },
         ],
         team: [
           {
