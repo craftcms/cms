@@ -527,7 +527,7 @@ return [
     'Create a new section' => 'สร้างส่วนใหม่',
     'Create a new site' => 'สร้างเว็บไซต์ใหม่',
     'Create a new tag group' => 'สร้างกลุ่มแท็กใหม่',
-    'Create a new token' => 'Create a new token',
+    'Create a new token' => 'สร้างโทเคนใหม่',
     'Create a new user group' => 'สร้างกลุ่มผู้ใช้ใหม่',
     'Create a new volume…' => 'สร้างไดรฟ์ข้อมูลใหม่…',
     'Create a new {section} entry' => 'สร้างรายการ {section} ใหม่',
