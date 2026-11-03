@@ -85,20 +85,20 @@ export default class CraftElementSelectInput extends ControllerElement<BaseEleme
   }
 
   /**
-   * The controller's jQuery-wrapped chip for `id`, or `null` when it isn't
-   * booted yet or doesn't know that chip — its methods take jQuery objects, and
-   * `$elements` is the collection they operate on.
+   * The controller's chip for `id`, or `null` when it isn't booted yet or
+   * doesn't know that chip. A plugin's legacy class (`input-class`) takes
+   * jQuery collections, so it gets one.
    */
   #chip(id: number | string): any {
-    const $elements = this.instance?.$elements;
+    const instance: any = this.instance;
 
-    if (!$elements?.length) {
-      return null;
+    if (Array.isArray(instance?.elements)) {
+      return instance.getElementById(id) ?? null;
     }
 
-    const $chip = $elements.filter(`[data-id="${id}"]`);
+    const $chip = instance?.$elements?.filter(`[data-id="${id}"]`);
 
-    return $chip.length ? $chip : null;
+    return $chip?.length ? $chip : null;
   }
 
   #inputClass(): ElementSelectInputConstructor {

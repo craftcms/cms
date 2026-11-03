@@ -14,7 +14,7 @@ import {startSide} from '@/common/craft/direction';
 import {showError} from '@/modules/messages/messages';
 import {QueueService} from '@/modules/queue/queue';
 import {announce} from '@/common/announcer';
-import {getElementInfo} from '@/common/craft/element-markup';
+import {getElementInfo} from './element-markup';
 
 declare const Craft: any;
 declare const Garnish: any;

@@ -1,113 +1,129 @@
 import {PromiseQueue} from '@/common/utils/promise-queue';
-import {jq} from '@/common/utils/jquery';
 
-/**
- * Helpers for legacy `div.element` markup, which element select inputs still
- * render. They take and return jQuery collections, as their callers do.
- */
-
-// oxlint-disable-next-line typescript/no-explicit-any
-type JQueryLike = any;
+/** Helpers for the legacy `div.element` chip markup element select inputs render. */
 
 export interface ElementInfo {
-  id: unknown;
-  siteId: unknown;
-  label: unknown;
-  status: unknown;
-  url: unknown;
+  id: number | null;
+  siteId: number | null;
+  label: string | null;
+  status: string | null;
+  url: string | null;
   hasThumb: boolean;
-  $element: JQueryLike;
+  element: HTMLElement | null;
+}
+
+function numberData(value: string | undefined): number | null {
+  if (value === undefined || value === '') {
+    return null;
+  }
+
+  const number = Number(value);
+
+  return Number.isFinite(number) ? number : null;
 }
 
 /** The element's data, from it or the first `.element` inside it. */
-export function getElementInfo(element: unknown): ElementInfo {
-  const $: JQueryLike = jq();
-  let $element = $(element);
+export function getElementInfo(source: Element | string): ElementInfo {
+  let root: Element | null = null;
 
-  if (!$element.hasClass('element')) {
-    $element = $element.find('.element:first');
+  if (typeof source === 'string') {
+    const template = document.createElement('template');
+    template.innerHTML = source.trim();
+    root = template.content.firstElementChild;
+  } else {
+    root = source;
   }
 
+  const element = root?.classList.contains('element')
+    ? (root as HTMLElement)
+    : (root?.querySelector<HTMLElement>('.element') ?? null);
+
   return {
-    id: $element.data('id'),
-    siteId: $element.data('site-id'),
-    label: $element.data('label'),
-    status: $element.data('status'),
-    url: $element.data('url'),
-    hasThumb: $element.hasClass('has-thumb'),
-    $element,
+    id: numberData(element?.dataset.id),
+    siteId: numberData(element?.dataset.siteId),
+    label: element?.dataset.label ?? null,
+    status: element?.dataset.status ?? null,
+    url: element?.dataset.url ?? null,
+    hasThumb: element?.classList.contains('has-thumb') ?? false,
+    element,
   };
 }
 
 /** Switches an element between its `small` and `large` sizes. */
-export function setElementSize(element: unknown, size: string): void {
-  const $: JQueryLike = jq();
-  const $element = $(element);
+export function setElementSize(element: HTMLElement, size: string): void {
   const newSize = size === 'large' ? 'large' : 'small';
 
-  if ($element.hasClass(newSize)) {
+  if (element.classList.contains(newSize)) {
     return;
   }
 
-  $element
-    .addClass(newSize)
-    .removeClass(newSize === 'small' ? 'large' : 'small');
+  element.classList.add(newSize);
+  element.classList.remove(newSize === 'small' ? 'large' : 'small');
 
-  if ($element.hasClass('has-thumb')) {
-    const $oldImg = $element.find('> .thumb > img');
-    $oldImg.replaceWith(
-      $('<img/>', {
-        sizes: `${newSize === 'small' ? 30 : 100}px`,
-        srcset: $oldImg.attr('srcset') || $oldImg.attr('data-pfsrcset'),
-      })
+  const oldImg = element.classList.contains('has-thumb')
+    ? element.querySelector<HTMLImageElement>(':scope > .thumb > img')
+    : null;
+
+  if (oldImg) {
+    const img = document.createElement('img');
+    img.sizes = `${newSize === 'small' ? 30 : 100}px`;
+    img.srcset =
+      oldImg.getAttribute('srcset') ||
+      oldImg.getAttribute('data-pfsrcset') ||
+      '';
+    oldImg.replaceWith(img);
+  }
+}
+
+type Styles = Record<string, string | number>;
+
+function applyStyles(element: HTMLElement, styles: Styles): void {
+  for (const [property, value] of Object.entries(styles)) {
+    const name = property.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
+    element.style.setProperty(
+      name,
+      typeof value === 'number' && name !== 'opacity' && name !== 'z-index'
+        ? `${value}px`
+        : String(value)
     );
   }
 }
 
 const transitions = new PromiseQueue();
 
-/** Animates an element to the given CSS, after any animations already running. */
+/** Animates an element to the given styles, after any animations already running. */
 export function animate(
-  element: unknown,
-  css: Record<string, string | number>
+  element: HTMLElement,
+  styles: Styles
 ): Promise<unknown> {
-  return animateAll([[element, css]]);
+  return animateAll([[element, styles]]);
 }
 
 /**
  * Animates several elements at once, in a view transition, after any
- * animations already running. Without view transitions, the CSS just applies.
+ * animations already running. Without view transitions, the styles just apply.
  */
 export function animateAll(
-  animations: Array<[unknown, Record<string, string | number>]>
+  animations: Array<[HTMLElement, Styles]>
 ): Promise<unknown> {
-  const $: JQueryLike = jq();
-
   return transitions.push(async () => {
-    const $animations = animations.map(
-      ([element, css]) => [$(element), css] as const
-    );
-
     if (!document.startViewTransition) {
-      for (const [$element, css] of $animations) {
-        $element.css(css);
+      for (const [element, styles] of animations) {
+        applyStyles(element, styles);
       }
       return;
     }
 
-    for (const [$element] of $animations) {
-      if ($element.css('view-transition-name') === 'none') {
-        $element.css(
-          'view-transition-name',
-          `vt-${Math.floor(Math.random() * 100000)}`
-        );
+    for (const [element] of animations) {
+      if (getComputedStyle(element).viewTransitionName === 'none') {
+        element.style.viewTransitionName = `vt-${Math.floor(Math.random() * 100000)}`;
       }
     }
 
     try {
       await document.startViewTransition(() => {
-        for (const [$element, css] of $animations) {
-          $element.css(css);
+        for (const [element, styles] of animations) {
+          applyStyles(element, styles);
         }
       }).finished;
     } catch (error) {

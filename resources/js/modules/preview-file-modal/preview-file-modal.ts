@@ -15,6 +15,8 @@ import {
   appendHeadHtml,
 } from '@craftcms/ui/utilities/dom';
 import {isPlainObject} from '@craftcms/garnish';
+import {resolveElement} from '@/common/utils/dom';
+import {jq} from '@/common/utils/jquery';
 import {showError, showNotice} from '@/modules/messages/messages';
 
 declare const Craft: any;
@@ -174,34 +176,42 @@ export class PreviewFileModal {
     );
   }
 
-  getSelectItem(): any {
-    const $item = this.elementSelect?.$items.filter(
-      `[data-id=${this.assetId}]`
+  /** The select's items, from a native select or a legacy jQuery one. */
+  #selectItems(): HTMLElement[] {
+    return Array.from(this.elementSelect?.$items ?? []);
+  }
+
+  getSelectItem(): HTMLElement | null {
+    return (
+      this.#selectItems().find(
+        (item) => item.dataset.id == String(this.assetId)
+      ) ?? null
     );
-    return $item?.length ? $item : null;
   }
 
   previewPreviousAsset(): void {
-    this.#previewSibling('getPreviousItem');
+    this.#previewSibling(-1);
   }
 
   previewNextAsset(): void {
-    this.#previewSibling('getNextItem');
+    this.#previewSibling(1);
   }
 
-  #previewSibling(getter: 'getPreviousItem' | 'getNextItem'): void {
-    const $element = this.getSelectItem();
-    if (!$element) return;
+  #previewSibling(step: 1 | -1): void {
+    const items = this.#selectItems();
+    const item = this.getSelectItem();
+    if (!item) return;
 
-    const index = this.elementSelect.getItemIndex($element);
-    const $sibling = this.elementSelect[getter](index);
-    if (
-      $sibling?.length &&
-      PreviewFileModal.showForAsset($sibling, this.elementSelect)
-    ) {
+    const sibling = items[items.indexOf(item) + step];
+    if (sibling && PreviewFileModal.showForAsset(sibling, this.elementSelect)) {
       this.elementSelect.deselectAll();
-      this.elementSelect.selectItem($sibling, false, false);
+      this.elementSelect.selectItem(this.#forSelect(sibling), false, false);
     }
+  }
+
+  /** An item as the select takes it: legacy selects take jQuery collections. */
+  #forSelect(item: HTMLElement): any {
+    return Array.isArray(this.elementSelect.$items) ? item : jq()?.(item);
   }
 
   /** Closes the preview, returning focus to the asset or whatever opened it. */
@@ -439,11 +449,11 @@ export class PreviewFileModal {
   #onAfterHide = (ev: Event): void => {
     if (ev.target !== this.dialog) return;
 
-    const $element = this.getSelectItem();
+    const item = this.getSelectItem();
     this.destroy();
 
-    if ($element) {
-      this.elementSelect.focusItem($element);
+    if (item) {
+      this.elementSelect.focusItem(this.#forSelect(item));
     } else {
       this.#returnFocus()?.focus();
     }
@@ -505,37 +515,38 @@ export class PreviewFileModal {
     (window as any).imageFocalPoint?.renderFocal();
   }
 
-  static showForAsset($element: any, elementSelect?: any): boolean {
-    if (!$element.hasClass('element')) {
-      $element = $element.find('.element:first');
-    }
-    if (
-      !$element.hasClass('element') ||
-      hasAttr($element[0], 'data-folder-id')
-    ) {
+  /** Previews the asset `element` is, or contains. Takes jQuery collections too. */
+  static showForAsset(element: any, elementSelect?: any): boolean {
+    const root = resolveElement(element);
+    const asset = root?.classList.contains('element')
+      ? root
+      : root?.querySelector<HTMLElement>('.element');
+
+    if (!asset || hasAttr(asset, 'data-folder-id')) {
       return false;
     }
 
     const settings: Partial<PreviewFileModalSettings> = {};
-    if ($element.data('image-width')) {
-      settings.startingWidth = $element.data('image-width');
-      settings.startingHeight = $element.data('image-height');
+    if (asset.dataset.imageWidth) {
+      settings.startingWidth = Number(asset.dataset.imageWidth);
+      settings.startingHeight = Number(asset.dataset.imageHeight);
     }
 
+    const assetId = Number(asset.dataset.id);
     const instance = PreviewFileModal.openInstance;
     if (
       instance?.visible &&
       instance.elementSelect === (elementSelect ?? null)
     ) {
       instance.loadAsset(
-        $element.data('id'),
+        assetId,
         settings.startingWidth,
         settings.startingHeight
       );
       return true;
     }
 
-    new PreviewFileModal($element.data('id'), elementSelect, settings);
+    new PreviewFileModal(assetId, elementSelect, settings);
     return true;
   }
 }
