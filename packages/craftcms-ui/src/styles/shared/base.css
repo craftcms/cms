@@ -511,6 +511,7 @@ Previously `.readable`
   }
 
   @media (forced-colors: active) {
+    /* Forced colors repaint the masked icon's background as Canvas, which would hide it. */
     blockquote.note::before {
       forced-color-adjust: none;
       background-color: CanvasText;
