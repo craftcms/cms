@@ -164,6 +164,7 @@ class Entry extends ElementMutationResolver
 
         $section = $entry->getSection();
         $this->requireSchemaAction("sections.$section->uid", 'delete');
+        $this->requireAllowedSitesForElement($entry);
         $this->requireUserAuthorization($entry, 'delete');
 
         return Elements::deleteElementById($entryId, hardDelete: $hardDelete);
@@ -173,9 +174,14 @@ class Entry extends ElementMutationResolver
     public function createDraft(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         $entryId = $arguments['id'];
+        $siteIds = array_map(fn (Site $site) => $site->id, GqlHelper::getAllowedSites());
+
+        if (empty($siteIds)) {
+            throw new Error('Unable to perform the action.');
+        }
 
         /** @var EntryElement|null $entry */
-        $entry = Elements::getElementById($entryId, EntryElement::class);
+        $entry = Elements::getElementById($entryId, EntryElement::class, array_values($siteIds));
 
         if (! $entry) {
             throw new Error('Unable to perform the action.');
@@ -229,6 +235,8 @@ class Entry extends ElementMutationResolver
             throw new Error('Unable to perform the action.');
         }
 
+        // Publishing the draft affects every site its canonical entry is saved in
+        $this->requireAllowedSitesForElement($draft);
         $this->requireUserAuthorization($draft, 'save');
         $this->requireUserAuthorization($draft, 'saveCanonical');
 
