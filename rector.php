@@ -8,6 +8,7 @@ use Rector\Config\RectorConfig;
 use Rector\DeadCode\Rector\Property\RemoveDefaultValueFromAssignedPropertyRector;
 use Rector\DeadCode\Rector\PropertyProperty\RemoveNullPropertyInitializationRector;
 use Rector\Php55\Rector\String_\StringClassNameToClassConstantRector;
+use Rector\Php74\Rector\Closure\ClosureToArrowFunctionRector;
 use Rector\Php74\Rector\Property\RestoreDefaultNullToNullableTypePropertyRector;
 use Rector\Php81\Rector\Array_\ArrayToFirstClassCallableRector;
 use Rector\TypeDeclaration\Rector\StmtsAwareInterface\DeclareStrictTypesRector;
@@ -53,6 +54,10 @@ return RectorConfig::configure()
         ArrayToFirstClassCallableRector::class => [
             // the array callable is deliberately not a Closure, to test that non-Closure callables are rejected
             __DIR__.'/tests/Unit/Twig/Extensions/ArrayTwigExtensionTest.php',
+        ],
+        ClosureToArrowFunctionRector::class => [
+            // constant expressions allow closures but not arrow functions
+            __DIR__.'/src/Gql/Attributes/Gql.php',
         ],
         AppToResolveRector::class,
         RemoveDefaultValueFromAssignedPropertyRector::class,

@@ -82,6 +82,11 @@
             save?.({redirect: false});
           }
         },
+        hasShiftSaveShortcut: () =>
+          submissionActions.value.some(
+            (item) =>
+              item.shortcut && item.shift && !item.hidden && !item.disabled
+          ),
         transform: currentValues,
         onSuccess: () => {
           elevatedBaseline.value = structuredClone(currentValues());

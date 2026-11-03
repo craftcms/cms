@@ -80,7 +80,7 @@ it('renders the thumbnail alignment setting as radios shown as buttons', functio
 
     // Radios, rather than toggle buttons, so the whole setting is one tab stop
     // whose selection the arrow keys move.
-    $group = $designer->filter('craft-radio-group#thumb-alignment[buttons]');
+    $group = $designer->filter('craft-radio-group#thumb-alignment[appearance="button-group"]');
     $radios = $group->filter('input[type="radio"][name="thumb-alignment"]');
 
     expect($group->count())->toBe(1)

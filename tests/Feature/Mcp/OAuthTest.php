@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Auth\PersonalAccessTokens\PersonalAccessTokens;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Settings as CpSettings;
 use CraftCms\Cms\Edition;
@@ -198,6 +199,7 @@ it('serves the endpoint and OAuth metadata from current settings when routes are
     Route::setCompiledRoutes($routes->compile());
     app()->instance('routes.cached', true);
     app()->forgetInstance(CpSettings::class);
+    app()->forgetInstance(PersonalAccessTokens::class);
     app()->call([app()->getProvider(McpServiceProvider::class), 'boot']);
 
     $this->postJson(route('craft.mcp.server'), McpRequest::payload('initialize'), McpRequest::headers('initialize'))

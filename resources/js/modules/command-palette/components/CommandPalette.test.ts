@@ -1100,6 +1100,7 @@ describe('CommandPalette', () => {
     expect(press(field, '/').defaultPrevented).toBe(false);
     expect(isCommandPaletteOpen.value).toBe(false);
     field.remove();
+    (document.activeElement as HTMLElement | null)?.blur();
 
     expect(press(document.body, '/', {ctrlKey: true}).defaultPrevented).toBe(
       false

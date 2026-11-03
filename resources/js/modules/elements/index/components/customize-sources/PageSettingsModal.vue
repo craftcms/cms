@@ -58,7 +58,7 @@
         <div v-if="error" slot="errors">{{ error }}</div>
       </craft-field>
 
-      <IconPicker v-model="icon" :label="t('Icon')" />
+      <IconPicker v-model="icon" :label="t('Icon')" sets="*" />
     </craft-field-group>
   </ModalForm>
 </template>

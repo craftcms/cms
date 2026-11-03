@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Ui\Controls;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Condition\Conditions;
+use CraftCms\Cms\Cp\Enums\ChipThumbSize;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\RequestedSite;
@@ -77,10 +78,9 @@ class ElementSelect extends Control
 
     public const string VIEW_MODE_CARDS_GRID = 'cards-grid';
 
-    /** Thumbnails are rendered at the size the element index uses. */
-    private const int THUMB_SIZE = 120;
-
     private string $viewMode = self::VIEW_MODE_LIST;
+
+    private ?ChipThumbSize $thumbSize = null;
 
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, UiHtmlRenderer $renderer): string
     {
@@ -239,6 +239,54 @@ class ElementSelect extends Control
         return $this;
     }
 
+    /**
+     * The thumbnail size, from {@see thumbSizes()} for the view mode. Left
+     * unset, or set to one the view mode doesn't offer, it's the view mode's
+     * default, as the element index's View menu has it.
+     */
+    public function thumbSize(ChipThumbSize|string|null $thumbSize): static
+    {
+        $this->thumbSize = is_string($thumbSize) ? ChipThumbSize::tryFrom($thumbSize) : $thumbSize;
+
+        return $this;
+    }
+
+    /**
+     * The thumbnail sizes a view mode offers, as the element index's View menu
+     * offers them: chips stop at a card's thumbnail size, thumbnail tiles come
+     * in every size, and cards have none to choose.
+     *
+     * @return list<ChipThumbSize>
+     */
+    public static function thumbSizes(string $viewMode): array
+    {
+        return match ($viewMode) {
+            self::VIEW_MODE_LIST, self::VIEW_MODE_LIST_INLINE => [ChipThumbSize::Sm, ChipThumbSize::Md, ChipThumbSize::Lg],
+            self::VIEW_MODE_THUMBS => ChipThumbSize::cases(),
+            default => [],
+        };
+    }
+
+    /**
+     * The size a view mode's thumbnails are drawn at: `$thumbSize` if the view
+     * mode offers it, or else its default — a chip's own for chips, and a
+     * card's for thumbnail tiles. `null` for a view mode without thumbnail sizes.
+     */
+    public static function resolveThumbSize(string $viewMode, ?ChipThumbSize $thumbSize = null): ?ChipThumbSize
+    {
+        $sizes = self::thumbSizes($viewMode);
+
+        if ($sizes === []) {
+            return null;
+        }
+
+        if ($thumbSize !== null && in_array($thumbSize, $sizes, true)) {
+            return $thumbSize;
+        }
+
+        return $viewMode === self::VIEW_MODE_THUMBS ? ChipThumbSize::Lg : ChipThumbSize::Sm;
+    }
+
     /** @return list<string> */
     public static function viewModes(): array
     {
@@ -259,11 +307,12 @@ class ElementSelect extends Control
         }
 
         $elements = self::elements($this->elementType, $value, $this->maintainHierarchy);
+        $thumbSize = self::resolveThumbSize($this->viewMode, $this->thumbSize);
 
         return [
             'elementType' => $this->elementType,
             'customElement' => self::customElement($this->elementType),
-            'elements' => array_map(fn (ElementInterface $element): array => self::presentation($element, $this->viewMode), $elements),
+            'elements' => array_map(fn (ElementInterface $element): array => self::presentation($element, $this->viewMode, $thumbSize), $elements),
             'elementDisplayName' => $this->elementType::lowerDisplayName(),
             'sources' => $this->sources,
             'criteria' => $this->criteria,
@@ -273,6 +322,7 @@ class ElementSelect extends Control
             'single' => $this->single,
             'showSiteMenu' => $this->showSiteMenu,
             'viewMode' => $this->viewMode,
+            'thumbSize' => $thumbSize?->value,
             'maintainHierarchy' => $this->maintainHierarchy,
             'branchLimit' => $this->branchLimit,
             ...($this->selectionCondition !== null ? ['selectionCondition' => $this->selectionCondition] : []),
@@ -286,9 +336,9 @@ class ElementSelect extends Control
      *
      * @return array<string, mixed>
      */
-    public static function presentation(ElementInterface $element, string $viewMode = self::VIEW_MODE_LIST): array
+    public static function presentation(ElementInterface $element, string $viewMode = self::VIEW_MODE_LIST, ?ChipThumbSize $thumbSize = null): array
     {
-        return self::elementPayload($element) + self::viewPayload($element, $viewMode);
+        return self::elementPayload($element) + self::viewPayload($element, $viewMode, self::resolveThumbSize($viewMode, $thumbSize));
     }
 
     /**
@@ -300,18 +350,14 @@ class ElementSelect extends Control
      *
      * @return array<string, mixed>
      */
-    private static function viewPayload(ElementInterface $element, string $viewMode): array
+    private static function viewPayload(ElementInterface $element, string $viewMode, ?ChipThumbSize $thumbSize): array
     {
         if (in_array($viewMode, [self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID], true)) {
             return self::cardPayload($element);
         }
 
-        if ($viewMode === self::VIEW_MODE_THUMBS) {
-            return ['thumbHtml' => $element->getThumbHtml(self::THUMB_SIZE, ImageTransformMode::Fit)];
-        }
-
-        if (in_array($viewMode, [self::VIEW_MODE_LIST, self::VIEW_MODE_LIST_INLINE], true)) {
-            return ['thumbHtml' => $element->getThumbHtml(ElementHtml::CHIP_THUMB_SIZE, ImageTransformMode::Fit)];
+        if ($thumbSize !== null) {
+            return ['thumbHtml' => $element->getThumbHtml($thumbSize->pixels() ?? ElementHtml::CHIP_THUMB_SIZE, ImageTransformMode::Fit)];
         }
 
         return [];

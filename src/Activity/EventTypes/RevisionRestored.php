@@ -16,7 +16,7 @@ use function CraftCms\Cms\t;
  */
 class RevisionRestored extends ActivityEventType
 {
-    protected const string LABEL = 'Revision restored';
+    protected const string LABEL = 'Restored a revision';
 
     protected const string ICON = 'rotate-left';
 

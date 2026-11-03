@@ -588,8 +588,9 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
     height: var(--_row-height);
   }
 
-  th {
-    height: calc(var(--_row-height) * 0.8);
+  thead th {
+    height: calc(var(--c-size-header) + 1px);
+    padding-block: var(--c-spacing-sm);
   }
 
   tbody th {

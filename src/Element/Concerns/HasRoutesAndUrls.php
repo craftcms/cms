@@ -12,6 +12,7 @@ use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Events\ElementUrlResolved;
 use CraftCms\Cms\Element\Events\ElementUrlResolving;
 use CraftCms\Cms\Element\Events\SetRoute;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Route\ElementRoute;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
@@ -87,6 +88,7 @@ trait HasRoutesAndUrls
     }
 
     #[ElementProperty(ElementPropertyType::String, 'The {element}’s full URL.', readable: true, writable: false)]
+    #[Gql(Gql::Uris)]
     public function getUrl(): ?string
     {
         event($beforeEvent = new ElementUrlResolving($this));

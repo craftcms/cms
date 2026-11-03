@@ -1,5 +1,6 @@
 import {beforeEach, expect, it, vi} from 'vite-plus/test';
 import {ThumbnailLoader} from '@src/utilities/thumbnail-loader';
+import '../button/button.js';
 import '../icon/icon.js';
 import '../thumbnail/thumbnail.js';
 import '../truncate/truncate.js';
@@ -1158,4 +1159,52 @@ it('loads a thumb shown while the chip was detached, once it is added back', asy
   document.body.append(chip);
 
   await vi.waitFor(() => expect(thumb.querySelector('img')).not.toBeNull());
+});
+
+it.each(['small', 'medium', 'large'])(
+  'insets a stacked %s chip’s checkbox as far from the top as from the side',
+  async (size) => {
+    document.body.innerHTML = `
+      <craft-chip prefix-placement="block-start" size="${size}" selectable>
+        <span slot="prefix" style="display: block; width: 40px; height: 40px"></span>
+        Label
+      </craft-chip>`;
+    const chip = document.querySelector('craft-chip')!;
+    await chip.updateComplete;
+
+    const base = chip.shadowRoot!.querySelector('.cp-chip')!;
+    const checkbox = chip
+      .shadowRoot!.querySelector('.cp-chip__select')!
+      .getBoundingClientRect();
+    const edges = base.getBoundingClientRect();
+
+    expect(checkbox.top - edges.top).toBeCloseTo(checkbox.left - edges.left, 0);
+  }
+);
+
+it('keeps a stacked chip’s parts from padding its rows beyond the chip’s own spacing', async () => {
+  document.body.innerHTML = `
+    <craft-chip prefix-placement="block-start" thumb-size="lg" selectable show-thumb>
+      <div slot="thumbnail" style="width: 100%; height: 100%"></div>
+      <craft-button slot="suffix" size="small" icon="ellipsis"></craft-button>
+      Label
+    </craft-chip>`;
+  const chip = document.querySelector('craft-chip')!;
+  await chip.updateComplete;
+
+  const shadow = chip.shadowRoot!;
+  const edges = shadow.querySelector('.cp-chip')!.getBoundingClientRect();
+  const checkbox = shadow
+    .querySelector('.cp-chip__select')!
+    .getBoundingClientRect();
+  const label = shadow.querySelector('.cp-chip__body')!.getBoundingClientRect();
+  const button = chip.querySelector('craft-button')!.getBoundingClientRect();
+  const inset = checkbox.left - edges.left;
+
+  expect(checkbox.top - edges.top).toBeCloseTo(inset, 0);
+  expect(edges.bottom - label.bottom).toBeCloseTo(inset, 0);
+  expect((button.top + button.bottom) / 2).toBeCloseTo(
+    (checkbox.top + checkbox.bottom) / 2,
+    0
+  );
 });

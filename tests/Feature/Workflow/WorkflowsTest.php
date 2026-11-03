@@ -284,7 +284,8 @@ it('completes a pending automated stage and advances the workflow', function () 
     $stageData = collect($this->workflows->reviewData($this->draft, $this->author)->runs)
         ->firstWhere('current')->stages[0];
     expect($stageData->events)->toHaveCount(1)
-        ->and($stageData->icon)->toBe('check')
+        ->and($stageData->status)->toBe('enabled')
+        ->and($stageData->statusLabel)->toBe('Approved')
         ->and($stageData->events[0]->actor['label'])->toBe('Craft CMS')
         ->and($stageData->events[0]->decision)->toBe('approved')
         ->and($stageData->events[0]->icon)->toBe('check')
@@ -391,7 +392,8 @@ it('fails on a change request and restores the current stage when review is requ
 
     $failedReview = $this->workflows->reviewData($this->draft, $this->author);
     expect($firstRun->status)->toBe(WorkflowStatus::Failed)
-        ->and(collect($failedReview->runs)->first()->stages[0]->icon)->toBe('xmark-large')
+        ->and(collect($failedReview->runs)->first()->stages[0]->status)->toBe('expired')
+        ->and(collect($failedReview->runs)->first()->stages[0]->statusLabel)->toBe('Changes requested')
         ->and($failedReview->actionProps['canRequestReviewAgain'])->toBeTrue()
         ->and($this->workflows->reviewData($this->draft, $this->reviewers[0])->actionProps['canRequestReviewAgain'])->toBeFalse();
 
@@ -420,7 +422,8 @@ it('fails on a change request and restores the current stage when review is requ
             'previousApprovalsReset' => true,
         ])
         ->and($review->runs)->toHaveCount(1)
-        ->and(collect($review->runs)->first()->stages[0]->icon)->toBe('clock')
+        ->and(collect($review->runs)->first()->stages[0]->status)->toBe('pending')
+        ->and(collect($review->runs)->first()->stages[0]->statusLabel)->toBe('Awaiting approval')
         ->and(collect($review->runs)->first()->stages[0]->events)->toHaveCount(3)
         ->and(collect($review->runs)->first()->stages[0]->events[0]->description)->toBe('requested changes')
         ->and(collect($review->runs)->first()->stages[0]->events[1]->description)->toBe('commented')
@@ -504,6 +507,22 @@ it('withdraws a draft from review as soon as someone outside its review starts e
 
     expect(fn () => actAs($this->reviewers[1], fn () => $this->workflows->prepareForEditing($this->draft, $run->id)))
         ->toThrow(WorkflowException::class, 'This review is no longer current. Refresh and try again.');
+});
+
+it('marks where a withdrawn review stopped and the stages it never reached', function () {
+    workflowFor($this->entry, [
+        userReviewStage('Review', reviewerGroup([$this->reviewers[0]])),
+        userReviewStage('Sign-off', reviewerGroup([$this->reviewers[0]])),
+    ]);
+    $run = submitAs($this->workflows, $this->draft, $this->author);
+
+    actAs($this->reviewers[1], fn () => $this->workflows->prepareForEditing($this->draft, $run->id));
+
+    $stages = collect($this->workflows->reviewData($this->draft, $this->author)->runs)->first()->stages;
+    expect(array_map(fn ($stage) => [$stage->status, $stage->statusLabel], $stages))->toBe([
+        ['disabled', 'Withdrawn'],
+        ['disabled', 'Not started'],
+    ]);
 });
 
 it('starts a new review from the first stage when a withdrawn draft is resubmitted', function () {

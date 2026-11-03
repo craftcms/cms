@@ -111,7 +111,7 @@ function mountSelectionTable(selectable: boolean, statuses: BulkAction[] = []) {
 
 it('preserves status colors in bulk-action menus after selecting a row', async () => {
   const {host, rows} = mountSelectionTable(true, [
-    {key: 'pending', label: 'Pending', fill: 'orange', onClick: () => {}},
+    {key: 'pending', label: 'Pending', fill: 'sky', onClick: () => {}},
     {
       key: 'enabled',
       label: 'Enabled',
@@ -140,7 +140,7 @@ it('preserves status colors in bulk-action menus after selecting a row', async (
           }
         )?.fill
     )
-  ).toEqual(['orange', 'green']);
+  ).toEqual(['sky', 'green']);
 });
 
 it('connects selectable rows and their labelled controls to the table selection', async () => {
@@ -242,3 +242,32 @@ it.each(['plain', 'flush', 'raised'] as const)(
     ).toBe(appearance === 'flush');
   }
 );
+
+it('lists the table columns in the view menu when columns are toggleable', async () => {
+  const host = document.createElement('div');
+  document.body.append(host);
+  const app = createApp({
+    render: () =>
+      h(AdminTable, {
+        rows: [{id: 1, name: 'First', count: 1}],
+        columns: [
+          {accessorKey: 'name', header: 'Name'},
+          {accessorKey: 'count', header: 'Count'},
+        ],
+        columnsToggleable: true,
+      } as never),
+  });
+  app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
+  app.mount(host);
+  teardown = () => app.unmount();
+  await nextTick();
+
+  expect(
+    Array.from(
+      host.querySelectorAll<HTMLInputElement>(
+        'input[name="viewState[tableColumns][]"]'
+      ),
+      (input) => input.value
+    )
+  ).toEqual(['name', 'count']);
+});

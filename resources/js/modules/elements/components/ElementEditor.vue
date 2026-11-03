@@ -205,10 +205,15 @@
     'detailsPanels'
   );
 
-  const editorLocked = computed(
-    () =>
-      workflowReviewLocked.value || payload.readOnly || releaseDraftLocked.value
+  /**
+   * Disables the fields. A read-only payload (such as a revision) isn't
+   * included: its controls already arrive read-only, which keeps them legible
+   * and focusable.
+   */
+  const fieldsLocked = computed(
+    () => workflowReviewLocked.value || releaseDraftLocked.value
   );
+  const editorLocked = computed(() => fieldsLocked.value || payload.readOnly);
 
   /**
    * Settles the pending “Edit anyway?” question, while the dialog asking it is
@@ -605,7 +610,7 @@
   >
     <craft-badge
       v-if="payload.isProvisionalDraft"
-      fill="info"
+      fill="violet"
       class="relative text-sm font-normal inline-flex"
     >
       <craft-icon name="pen-circle" slot="prefix"></craft-icon>
@@ -943,7 +948,7 @@
               :errors="errors"
               :refresh="uiPayload.refreshable ? refreshLayout : undefined"
               :modified="autosave.modified.value"
-              :disabled="editorLocked"
+              :disabled="fieldsLocked"
               :sidebar-tab-outlets="sidebarTabOutlets"
               @update:mutation="onMutation"
             />
@@ -975,7 +980,7 @@
     <template #meta>
       <craft-badge
         v-if="payload.isProvisionalDraft"
-        fill="info"
+        fill="violet"
         class="relative text-sm font-normal inline-flex"
       >
         <craft-icon name="pen-circle" slot="prefix"></craft-icon>
@@ -1046,7 +1051,7 @@
                   :payload="sidebarPayload"
                   :errors="sidebarErrors"
                   :modified="autosave.modified.value"
-                  :disabled="editorLocked"
+                  :disabled="fieldsLocked"
                   @update:mutation="onSidebarMutation"
                 />
               </craft-field-group>

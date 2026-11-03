@@ -205,6 +205,8 @@ Craft.CP = Garnish.Base.extend(
             {
               keyCode: Garnish.S_KEY,
               ctrl: true,
+              description: Craft.t('app', 'Save'),
+              group: Craft.t('app', 'Forms'),
             },
             {
               redirect: this.$primaryForm.data('saveshortcut-redirect'),
@@ -225,6 +227,8 @@ Craft.CP = Garnish.Base.extend(
                 keyCode: Garnish.S_KEY,
                 ctrl: true,
                 shift: !!action.shift,
+                description: action.label || Craft.t('app', 'Save'),
+                group: Craft.t('app', 'Forms'),
               },
               {
                 action: action.action,

@@ -16,7 +16,7 @@ test('try from status', function (string $status, ?Color $expected) {
     ['suspended', Color::Red],
     ['expired', Color::Red],
     ['warning', Color::Amber],
-    ['pending', Color::Orange],
+    ['pending', Color::Sky],
     ['grey', Color::Gray],
     ['gray', Color::Gray],
     ['unknown', null],

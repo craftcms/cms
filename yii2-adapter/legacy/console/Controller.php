@@ -217,7 +217,7 @@ class Controller extends YiiController
      * @return int|false The number of bytes printed or false on error
      * @since 5.5.0
      */
-    public function output(string $string = null): int|false
+    public function output(?string $string = null): int|false
     {
         if ($string !== null && $this->isColorEnabled()) {
             $args = func_get_args();

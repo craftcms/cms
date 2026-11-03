@@ -226,6 +226,9 @@
         <label slot="label">{{ t('Select all') }}</label>
       </craft-checkbox>
     </div>
+    <div v-if="$slots['header-after']" class="card-grid-header-after">
+      <slot name="header-after" />
+    </div>
 
     <SelectableCardList
       tag="ul"

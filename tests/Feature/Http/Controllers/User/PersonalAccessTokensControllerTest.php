@@ -7,6 +7,7 @@ use CraftCms\Cms\Auth\PersonalAccessTokens\ScopeGroup;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Users\PersonalAccessTokensController;
 use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
+use CraftCms\Cms\Mcp\Settings;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User;
@@ -94,6 +95,30 @@ it('offers the screen in the user menu only when the user may grant a scope', fu
     'no grantable scopes' => [[], false],
     'a grantable scope' => [['test-api:read'], true],
 ]);
+
+it('lists authorized MCP clients for users who can’t create tokens', function (): void {
+    app()->instance(Settings::class, new Settings(['enabled' => true]));
+    $client = app(ClientRepository::class)->createAuthorizationCodeGrantClient('MCP client', ['https://client.example/callback']);
+
+    get(action([PersonalAccessTokensController::class, 'index']))->assertForbidden();
+
+    Passport::token()->newQuery()->forceCreate([
+        'id' => 'mcp-token',
+        'user_id' => $this->user->id,
+        'client_id' => $client->id,
+        'scopes' => ['mcp:read'],
+        'revoked' => false,
+        'expires_at' => Query::prepareDateForDb(now()->addHour()),
+    ]);
+
+    get(action([PersonalAccessTokensController::class, 'index']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('groups', [])
+            ->where('grants.0.name', 'MCP client')
+            ->where('grants.0.scopes', ['mcp' => ['mcp:read']])
+            ->where('craft.currentUser.showTokens', true));
+});
 
 it('requires an elevated session to create a token', function (): void {
     registerTestScopeGroup();

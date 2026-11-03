@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter\Mixins;
 
 use Closure;
+use craft\elements\actions\ChangeSortOrder;
+use craft\elements\actions\MoveDown;
+use craft\elements\actions\MoveUp;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\ElementIndexHtml;
 use CraftCms\Cms\Cp\Icons;
-use CraftCms\Cms\Element\Actions\ChangeSortOrder;
-use CraftCms\Cms\Element\Actions\MoveDown;
-use CraftCms\Cms\Element\Actions\MoveUp;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\NestedElementManager;
