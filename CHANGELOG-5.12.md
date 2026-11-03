@@ -58,6 +58,7 @@
 - The HTTP MCP servers are discoverable via `/.well-known/ai-catalog.json` and a Server Card at `<endpoint>/server-card`, per [SEP-2127](https://modelcontextprotocol.io/seps/2127-mcp-server-cards). Servers on control panel URLs are never advertised, and the authenticated server is only advertised when public registration is enabled. ([#20283](https://github.com/craftcms/cms/pull/20283))
 - Added the `mcp/serve` command, which runs a stdio MCP server acting as a given user. ([#20145](https://github.com/craftcms/cms/pull/20145))
 - Added an OAuth authorization server, with discovery metadata, dynamic client registration, PKCE, and refresh token rotation, which the MCP servers and GraphQL API use. ([#20145](https://github.com/craftcms/cms/pull/20145))
+- Dynamic OAuth client registration is limited to 10 clients per IP address per hour by default, via the new `registrationRateLimit` and `registrationRateLimitDuration` OAuth config settings. ([#20303](https://github.com/craftcms/cms/pull/20303))
 - GraphQL API requests can now be authenticated with OAuth access tokens, granting access to the content the authorizing user has permission to access. ([#20147](https://github.com/craftcms/cms/pull/20147))
 - GraphQL schema components can now support authenticated requests via an `authenticated` key on their config. ([#20147](https://github.com/craftcms/cms/pull/20147))
 - Added the `currentUser` GraphQL query, which returns the user that authenticated the request. ([#20147](https://github.com/craftcms/cms/pull/20147))
@@ -168,6 +169,7 @@
 - MySQL database backups and restores now respect the `PDO::MYSQL_ATTR_SSL_CAPATH` and `PDO::MYSQL_ATTR_SSL_CIPHER` database connection attributes. ([#19366](https://github.com/craftcms/cms/pull/19366))
 - Craft can now determine the dimensions of BMP and JPEG XL images on remote volumes without downloading them.
 - Saving nested elements on multi-site installs now executes fewer database queries. ([#20090](https://github.com/craftcms/cms/pull/20090))
+- Garbage collection now deletes expired and revoked OAuth authorization codes and tokens, and registered OAuth clients that were revoked or never authorized. ([#20303](https://github.com/craftcms/cms/pull/20303))
 - Search indexing now executes fewer database queries. ([#20090](https://github.com/craftcms/cms/pull/20090))
 - User permission checks are now faster for users with many permissions. ([#20149](https://github.com/craftcms/cms/pull/20149))
 - Removed support for the non-standard `ED256` passkey algorithm. ([#19701](https://github.com/craftcms/cms/pull/19701))
