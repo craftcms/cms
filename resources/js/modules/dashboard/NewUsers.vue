@@ -3,7 +3,6 @@
   import {useResizeObserver} from '@vueuse/core';
   import {actionClient, t} from '@craftcms/ui';
   import {data as chartData} from '@actions/Dashboard/Widgets/NewUsersController';
-  import {jq} from '@/common/utils/jquery';
   import {Area, DataTable} from '@/modules/chart/chart';
 
   const props = defineProps<{
@@ -47,7 +46,7 @@
       await nextTick();
       if (abort.signal.aborted) return;
 
-      chart = new Area(jq()!(container.value!), {
+      chart = new Area(container.value!, {
         yAxis: {
           formatter: (chart: any) => (value: number) =>
             chart.formatLocale.format(

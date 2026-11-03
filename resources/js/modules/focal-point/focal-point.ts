@@ -3,21 +3,7 @@ import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {t} from '@craftcms/ui/utilities/translate';
 import {announce} from '@/common/announcer';
 import {refreshPreviews} from '@/modules/elements/live-preview/previews';
-
-/** The content box size, without padding. */
-function contentSize(el: HTMLElement): {width: number; height: number} {
-  const style = getComputedStyle(el);
-  return {
-    width:
-      el.clientWidth -
-      parseFloat(style.paddingLeft || '0') -
-      parseFloat(style.paddingRight || '0'),
-    height:
-      el.clientHeight -
-      parseFloat(style.paddingTop || '0') -
-      parseFloat(style.paddingBottom || '0'),
-  };
-}
+import {contentSize} from '@/common/utils/dom';
 
 export class FocalPoint {
   private readonly target: HTMLElement;

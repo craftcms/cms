@@ -4,28 +4,8 @@ import {
   muteResizeEvents,
 } from '@craftcms/garnish';
 import {startSide} from '@/common/craft/direction';
-import {resolveElement, type ElementArg} from '@/common/utils/dom';
+import {contentSize, resolveElement, type ElementArg} from '@/common/utils/dom';
 import {jq} from '@/common/utils/jquery';
-
-/** The content width, without padding, like jQuery's `width()`. */
-function contentWidth(el: HTMLElement): number {
-  const style = getComputedStyle(el);
-  return (
-    el.clientWidth -
-    parseFloat(style.paddingLeft || '0') -
-    parseFloat(style.paddingRight || '0')
-  );
-}
-
-/** The content height, without padding, like jQuery's `height()`. */
-function contentHeight(el: HTMLElement): number {
-  const style = getComputedStyle(el);
-  return (
-    el.clientHeight -
-    parseFloat(style.paddingTop || '0') -
-    parseFloat(style.paddingBottom || '0')
-  );
-}
 
 /** Sets the content height, accounting for `box-sizing`, like jQuery's `height(value)`. */
 function setContentHeight(el: HTMLElement, height: number | 'auto'): void {
@@ -242,12 +222,14 @@ export class Grid extends Base<GridSettings> {
     if (settings.cols) {
       totalCols = settings.cols;
     } else {
-      totalCols = Math.floor(contentWidth(container) / settings.minColWidth);
+      totalCols = Math.floor(
+        contentSize(container).width / settings.minColWidth
+      );
 
       // If we're adding a new column, require an extra 20 pixels in case a scrollbar shows up
       if (this.totalCols !== null && totalCols > this.totalCols) {
         totalCols = Math.floor(
-          (contentWidth(container) - 20) / settings.minColWidth
+          (contentSize(container).width - 20) / settings.minColWidth
         );
       }
 
@@ -303,7 +285,7 @@ export class Grid extends Base<GridSettings> {
       ) {
         const item = this.items[i]!;
         setContentHeight(item, 'auto');
-        const itemHeight = contentHeight(item);
+        const itemHeight = contentSize(item).height;
         if (itemHeight > tallestItemHeight) {
           tallestItemHeight = itemHeight;
         }
@@ -526,7 +508,7 @@ export class Grid extends Base<GridSettings> {
 
   getItemWidthInPx(colspan: number): number {
     return (
-      (this.getItemWidth(colspan) / 100) * contentWidth(this.container!) -
+      (this.getItemWidth(colspan) / 100) * contentSize(this.container!).width -
       this.colGutterDrop
     );
   }
@@ -539,7 +521,7 @@ export class Grid extends Base<GridSettings> {
 
   getItemLeftPosInPx(position: number): number {
     return (
-      ((this.getItemWidth(1) / 100) * contentWidth(this.container!) +
+      ((this.getItemWidth(1) / 100) * contentSize(this.container!).width +
         (this.settings!.gutter - this.colGutterDrop)) *
       position
     );
