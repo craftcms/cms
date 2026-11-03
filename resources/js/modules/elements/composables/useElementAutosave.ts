@@ -59,8 +59,9 @@ export interface ElementAutosaveDependencies {
  *
  * The first save creates the draft; `draftId` then identifies it for every
  * later save and is exposed so the host can submit it alongside the form. The
- * canonical `elementId` is always sent, matching the hidden input the legacy
- * editor posts.
+ * `elementId` of the element the draft is made from is always sent, matching
+ * the hidden input the legacy editor posts — the canonical for a draft, the
+ * element itself otherwise.
  *
  * Saves are debounced and serialized — a save in flight defers the next one
  * rather than racing it, so a burst of typing collapses into one trailing
