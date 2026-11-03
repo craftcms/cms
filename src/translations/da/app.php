@@ -527,7 +527,7 @@ return [
     'Create a new section' => 'Opret en ny sektion',
     'Create a new site' => 'Opret nyt site',
     'Create a new tag group' => 'Opret en ny tag gruppe',
-    'Create a new token' => 'Create a new token',
+    'Create a new token' => 'Opret en ny token',
     'Create a new user group' => 'Opret en ny bruger gruppe',
     'Create a new volume…' => 'Opret en ny diskenhed…',
     'Create a new {section} entry' => 'Opret en ny {section}-post',
