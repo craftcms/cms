@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/ui';
+  import {isHttpError, t} from '@craftcms/ui';
   import {router} from '@inertiajs/vue3';
   import {computed, onScopeDispose, shallowRef, watch} from 'vue';
   import {plugin as pluginRoute} from '@actions/PluginStore/PluginStoreController';
@@ -20,7 +20,7 @@
   const props = defineProps<{handle: string; tab: Tab}>();
 
   const plugin = shallowRef<Plugin | null>(null);
-  const notFound = shallowRef(false);
+  const loadError = shallowRef<'not-found' | 'failed' | null>(null);
   let controller: AbortController | null = null;
 
   // Switching tabs keeps this page mounted, so the plugin only loads when the handle changes.
@@ -29,13 +29,22 @@
     async (handle) => {
       controller?.abort();
       controller = new AbortController();
+      const {signal} = controller;
       plugin.value = null;
-      notFound.value = false;
+      loadError.value = null;
 
       try {
-        plugin.value = await getPlugin(handle, controller.signal);
-      } catch {
-        notFound.value = !controller.signal.aborted;
+        plugin.value = await getPlugin(handle, signal);
+      } catch (error) {
+        if (signal.aborted) {
+          return;
+        }
+
+        // The API reports an unknown plugin with a 200 and an `error` key, which `getPlugin` throws as a plain Error.
+        loadError.value =
+          !isHttpError(error) || error.response?.status === 404
+            ? 'not-found'
+            : 'failed';
       }
     },
     {immediate: true}
@@ -63,11 +72,13 @@
     return all;
   });
 
+  /** The tab in the URL, or Overview when this plugin doesn't have that tab. */
+  const activeTab = computed<Tab>(() =>
+    tabs.value.some((tab) => tab.id === props.tab) ? props.tab : 'overview'
+  );
+
   const selectedIndex = computed(() =>
-    Math.max(
-      0,
-      tabs.value.findIndex((tab) => tab.id === props.tab)
-    )
+    tabs.value.findIndex((tab) => tab.id === activeTab.value)
   );
 
   // A tab is a view of the same plugin rather than a new page, so it replaces the history entry.
@@ -101,10 +112,18 @@
 <template>
   <StoreContainer>
     <craft-empty
-      v-if="notFound"
+      v-if="loadError === 'not-found'"
       icon="plug"
       :label="t('Couldn’t find that plugin.')"
     ></craft-empty>
+
+    <craft-callout
+      v-else-if="loadError === 'failed'"
+      variant="danger"
+      icon="triangle-exclamation"
+    >
+      {{ t('Couldn’t load the plugin.') }}
+    </craft-callout>
 
     <div v-else-if="!plugin" class="flex justify-center p-lg">
       <craft-spinner></craft-spinner>
@@ -123,7 +142,7 @@
         <template v-for="tab in tabs" :key="tab.id">
           <craft-tab slot="tab">{{ tab.label }}</craft-tab>
           <div slot="panel">
-            <template v-if="props.tab === tab.id">
+            <template v-if="activeTab === tab.id">
               <PluginOverview v-if="tab.id === 'overview'" :plugin="plugin" />
               <PluginReviews
                 v-else-if="tab.id === 'reviews'"

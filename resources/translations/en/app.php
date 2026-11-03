@@ -518,6 +518,7 @@ return [
     'Couldn’t load active trials.' => 'Couldn’t load active trials.',
     'Couldn’t load the cart.' => 'Couldn’t load the cart.',
     'Couldn’t load the changelog.' => 'Couldn’t load the changelog.',
+    'Couldn’t load the plugin.' => 'Couldn’t load the plugin.',
     'Couldn’t move entries to the “{name}” section.' => 'Couldn’t move entries to the “{name}” section.',
     'Couldn’t remove item from cart.' => 'Couldn’t remove item from cart.',
     'Couldn’t reorder items.' => 'Couldn’t reorder items.',
