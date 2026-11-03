@@ -26,6 +26,7 @@ use CraftCms\Cms\Support\Facades\Images;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Locale;
@@ -37,6 +38,7 @@ use CraftCms\Cms\View\LegacyAssets\CpAsset;
 use Illuminate\Foundation\Vite;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use stdClass;
 
 use function CraftCms\Cms\craftAsset;
@@ -147,12 +149,40 @@ readonly class Cp
         ];
     }
 
-    public static function viteScripts(): Vite
+    /**
+     * Returns the tags that load the control panel's own scripts and styles.
+     */
+    public static function viteScripts(): string
     {
-        return static::vite()->withEntryPoints([
+        return static::viteTags([
             'resources/css/cp.css',
             'resources/js/cp.ts',
         ]);
+    }
+
+    /**
+     * Returns the tags that load the given entry points from a Vite build, with their imports preloaded.
+     *
+     * Laravel finds each imported stylesheet's chunk by scanning the whole manifest, which takes ~100ms for the
+     * control panel's entry points, so the tags are cached for each build. They aren't while the dev server is
+     * running, or with a CSP nonce, which changes with every request.
+     *
+     * @param  list<string>  $entryPoints
+     * @param  Vite|null  $vite  The build to load them from, if not the control panel's
+     */
+    public static function viteTags(array $entryPoints, ?Vite $vite = null): string
+    {
+        $vite ??= static::vite();
+        $manifestHash = $vite->manifestHash();
+
+        if ($manifestHash === null || $vite->cspNonce() !== null || $entryPoints === []) {
+            return $vite($entryPoints)->toHtml();
+        }
+
+        // The first entry point's URL tells builds apart, and covers the asset URL they're served from
+        $key = sprintf('craft:vite-tags:%s', md5(Json::encode([$manifestHash, $entryPoints, $vite->asset($entryPoints[0])])));
+
+        return Cache::remember($key, Cms::config()->cacheDuration ?: null, fn () => $vite($entryPoints)->toHtml());
     }
 
     /**

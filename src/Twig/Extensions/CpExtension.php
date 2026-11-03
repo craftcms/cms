@@ -103,9 +103,7 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
     public function vite(array $entryPoints): string
     {
         try {
-            return Cp::vite()
-                ->withEntryPoints($entryPoints)
-                ->toHtml();
+            return Cp::viteTags($entryPoints);
         } catch (ViteException $e) {
             if (Cms::config()->devMode) {
                 HtmlStack::jsWithVars(fn ($message) => "console.error($message)", [
