@@ -5,7 +5,7 @@
 {# Existing tokens list every group they have scopes in, even if the user can no longer grant them #}
 {% set shownGroups = groups|filter(group => grant ? grant.scopes[group.handle] is defined : group.scopesFor(currentUser)|length) %}
 
-<h2>{{ not grant ? 'New token'|t('app') : (personal ? 'Edit token'|t('app') : grant.name) }}</h2>
+<h2>{{ not grant ? 'Create a new token'|t('app') : grant.name }}</h2>
 
 {% if personal %}
   {{ forms.textField({
