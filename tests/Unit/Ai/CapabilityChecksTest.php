@@ -25,9 +25,11 @@ use CraftCms\Cms\Tests\Support\Ai\MediaTask;
 use CraftCms\Cms\Tests\Support\Ai\ResearchTask;
 use CraftCms\Cms\Tests\Support\Ai\SummarizeTask;
 use GuzzleHttp\Psr7\Response as Psr7Response;
+use Illuminate\Http\Client\Request;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Http;
 use Laravel\Ai\Exceptions\ProviderConnectionException;
 use Laravel\Ai\Exceptions\ProviderOverloadedException;
 
@@ -205,6 +207,28 @@ it('checks that models can return structured output and call tools', function (m
     'neither' => [['word' => 'lighthouse', 'number' => '42'], 'I can’t call tools.', false, false, 'Research needs structured output, which the gpt-small model on the openai provider doesn’t support.'],
     'no tools' => [['word' => 'lighthouse', 'number' => 42], 'I can’t call tools.', true, false, 'Research needs tool calling, which the gpt-small model on the openai provider doesn’t support.'],
 ]);
+
+it('checks tool calling with a tool name Anthropic accepts', function (): void {
+    config(['ai.providers.anthropic' => ['driver' => 'anthropic', 'key' => 'sk-test']]);
+    Http::fake(['api.anthropic.com/*' => function (Request $request) {
+        $tool = $request->data()['tools'][0]['name'];
+
+        if (! preg_match('/^[a-zA-Z0-9_-]{1,128}$/', $tool)) {
+            return Http::response(['type' => 'error', 'error' => ['type' => 'invalid_request_error', 'message' => 'tools.0.custom.name: String should match pattern']], 400);
+        }
+
+        $result = collect(last($request->data()['messages'])['content'])->firstWhere('type', 'tool_result');
+
+        return Http::response($result
+            ? ['content' => [['type' => 'text', 'text' => $result['content']]], 'stop_reason' => 'end_turn']
+            : ['content' => [['type' => 'tool_use', 'id' => 'toolu_1', 'name' => $tool, 'input' => []]], 'stop_reason' => 'tool_use']);
+    }]);
+
+    $check = app(CapabilityChecks::class)->check(Capability::ToolCalling, new ResolvedProvider('anthropic', 'claude-sonnet-5-5'));
+
+    expect($check->error)->toBeNull()
+        ->and($check->supported)->toBeTrue();
+});
 
 it('checks that models can read documents, hear audio, and watch videos', function (Capability $capability, bool $readable): void {
     app(AiTasks::class)->register(MediaTask::class);
