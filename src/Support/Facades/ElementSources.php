@@ -54,6 +54,8 @@ class ElementSources extends Facade
 
     public const string CONTEXT_SETTINGS = \CraftCms\Cms\Element\ElementSources::CONTEXT_SETTINGS;
 
+    public const string CONTEXT_EMBEDDED_INDEX = \CraftCms\Cms\Element\ElementSources::CONTEXT_EMBEDDED_INDEX;
+
     #[Override]
     protected static function getFacadeAccessor(): string
     {

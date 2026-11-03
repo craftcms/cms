@@ -390,6 +390,20 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     };
   }
 
+  /**
+   * The id of the element drafts are made from, as `elements/*` actions expect it.
+   *
+   * That's the canonical element for a draft, but the element itself otherwise —
+   * including a nested element duplicated for an owner's draft, which keeps track
+   * of its canonical without being a draft of it. `saveData()` carries the
+   * server's answer, the same one the legacy editor's hidden input posts.
+   */
+  function draftableElementId(): number | null {
+    const elementId = saveData?.().elementId;
+
+    return typeof elementId === 'number' ? elementId : props.canonicalId;
+  }
+
   const preparingOwnerGroups = new Map<symbol, string[]>();
   const draftElementIds = new Map<number, number>();
 
@@ -397,7 +411,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     url: props.autosaveUrl,
     params: contextParams,
     elementType: props.elementType,
-    elementId: props.canonicalId,
+    elementId: draftableElementId(),
     siteId: props.siteId,
     draftId: props.draftId,
     isProvisional: props.isProvisionalDraft,
@@ -450,7 +464,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   const activity = useElementActivity({
     url: props.activityUrl,
     elementType: props.elementType,
-    elementId: props.canonicalId,
+    elementId: draftableElementId(),
     // Autosave can create a provisional draft mid-session, and from then on
     // that's the element the screen is editing — so the poll has to ask about
     // it, not the canonical, or its timestamps won't be the ones the autosave
@@ -849,7 +863,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
         if (autosave.draftId.value !== null) {
           Object.assign(transformed, {
             elementType: props.elementType,
-            elementId: props.canonicalId,
+            elementId: draftableElementId(),
             siteId: props.siteId,
           });
           if (autosave.draftId.value !== null) {
@@ -1159,7 +1173,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       await actionClient.post(props.discardDraftUrl, {
         ...contextParams(),
         elementType: props.elementType,
-        elementId: props.canonicalId,
+        elementId: draftableElementId(),
         siteId: props.siteId,
         draftId: autosave.draftId.value,
         provisional: 1,

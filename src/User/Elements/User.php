@@ -615,6 +615,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
                 ],
                 [
                     'heading' => t('Account Type'),
+                    'handle' => 'account-type',
                 ],
                 [
                     'key' => 'credentialed',
@@ -643,7 +644,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
             $groups = UserGroups::getAllGroups();
 
             if ($groups->isNotEmpty()) {
-                $sources[] = ['heading' => t('Groups')];
+                $sources[] = ['heading' => t('Groups'), 'handle' => 'groups'];
 
                 foreach ($groups as $group) {
                     $sources[] = [

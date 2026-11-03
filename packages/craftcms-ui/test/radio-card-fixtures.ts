@@ -89,7 +89,7 @@ export const VIEW_MODES: RadioCardOption[] = [
  * A sample illustration that uses every role in the illustration palette, in
  * every pairing it promises 3:1 for: outlined `surface` and `paper` shapes,
  * `subtle` bars, mountains (`figure`) on an outlined `field`, and `mark`s that
- * cross them, with a light edge on the corners.
+ * cross them.
  */
 export const PALETTE_SAMPLE: RadioCardOption = {
   value: 'palette',
@@ -106,7 +106,7 @@ export const PALETTE_SAMPLE: RadioCardOption = {
       `<circle cx="72" cy="20" r="3" ${paint('figure')}/>` +
       `<rect x="43" y="47" width="36" height="5" ${paint('mark')}/>` +
       `<path d="M47.5 8.5H74.5V55.5H47.5Z" fill="none" ${paint(undefined, 'mark')} stroke-dasharray="1"/>` +
-      `<path d="M46 7H51V9H48V12H46Z" ${paint('mark', 'paper')} stroke-width="2" paint-order="stroke"/>` +
-      `<path d="M76 57H71V55H74V52H76Z" ${paint('mark', 'paper')} stroke-width="2" paint-order="stroke"/>`
+      `<path d="M46 7H51V9H48V12H46Z" ${paint('mark')}/>` +
+      `<path d="M76 57H71V55H74V52H76Z" ${paint('mark')}/>`
   ),
 };

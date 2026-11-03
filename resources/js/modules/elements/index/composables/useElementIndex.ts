@@ -109,7 +109,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
   );
   const filters = useElementIndexFilters(visitor, {
     search: elementIndex.search,
-    status: elementIndex.status,
+    status: elementIndex.statusMenuValue,
     conditions: elementIndex.currentCondition,
     busy: options.busy,
     preferredSort: () => {

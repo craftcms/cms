@@ -24,6 +24,7 @@ use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleAiConversations;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleBulkOpData;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleElementActivity;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleNotifications;
+use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleOAuthData;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteTrashedAssetFiles;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteUnsupportedSiteEntries;
 use CraftCms\Cms\GarbageCollection\Actions\FireRunEvent;
@@ -104,6 +105,7 @@ class GarbageCollection
             DeleteStaleBulkOpData::class,
             DeleteStaleNotifications::class,
             DeleteStaleAiConversations::class,
+            DeleteStaleOAuthData::class,
 
             // elements should always go first
             HardDeleteElements::class,

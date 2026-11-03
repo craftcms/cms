@@ -15,7 +15,7 @@ Used inside `craft-nav-list`; see [`nav-list.a11y.md`](../nav-list/nav-list.a11y
 - [x] Collapsed, the first-letter stand-in for a missing icon is hidden from assistive technology, so the name isn't read twice. Per WCAG 1.1.1 (Non-text Content). Verified by `stands the first letter in for a missing icon when collapsed` in `nav-item.test.ts`.
 - [x] Collapsed, a `group` heading becomes an `<hr>` that keeps the heading's text as its `aria-label`. Per WCAG 1.3.1 (Info and Relationships). Verified by `turns a collapsed heading into the rule between the runs it separates` in `nav-item.test.ts`.
 - [ ] A heading over a subnav (a `group` item, or an item whose label is styled text) is exposed as a heading, or names the nested list. Per WCAG 1.3.1 (Info and Relationships). Known gap: the label renders as a plain `<span>`, so the grouping is visual only and the heading isn't announced as one.
-- [ ] With `external`, the link opens in a new tab and its external-link icon carries a text alternative. Per WCAG 1.1.1 (Non-text Content). Known gap: `external` is declared but never rendered, so it sets no `target` and shows no icon.
+- [x] A link with `external`, or to another host, opens in a new tab with `rel="noopener"`, shows an external-link icon, and says it opens in a new window in hidden text, or in its `aria-label` when collapsed. The icon stays decorative, since the text carries its meaning. A link to the same host opens in the same tab. Per WCAG 1.1.1 (Non-text Content) and 3.2.5 (Change on Request). Verified by `opens a link %s in a new tab, with an icon, and says so`, `names a collapsed link as opening in a new tab` and `opens a link to this host in the same tab` in `nav-item.test.ts`.
 
 ### Subnav disclosure
 

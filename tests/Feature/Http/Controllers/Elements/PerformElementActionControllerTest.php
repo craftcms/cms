@@ -6,6 +6,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\Delete;
 use CraftCms\Cms\Element\Actions\Duplicate;
 use CraftCms\Cms\Element\Actions\ElementAction;
+use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Actions\SetStatus;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementActions;
@@ -349,6 +350,33 @@ it('deletes only the prepared derivative nested entry', function () {
         ->and($deletedDerivative?->getCanonicalId())->toBe($fixture['nested']->id)
         ->and(Entry::find()->id($fixture['nested']->id)->status(null)->one())
         ->not->toBeNull();
+});
+
+it('restores a trashed nested entry from the embedded index', function () {
+    $fixture = embeddedActionFixture();
+    $manager = $fixture['control']->props()['manager'];
+    $embeddedAction = fn (string $action, int $elementId, array $criteria = []) => ($this->performElementAction)([
+        ...$manager,
+        'context' => ElementSources::CONTEXT_EMBEDDED_INDEX,
+        'elementType' => Entry::class,
+        'source' => '__IMP__',
+        'elementAction' => $action,
+        'elementIds' => [$elementId],
+        'criteria' => $criteria,
+    ]);
+    $draftEntries = fn () => Entry::find()
+        ->fieldId($fixture['field']->id)
+        ->ownerId($fixture['draft']->id)
+        ->status(null)
+        ->drafts(null);
+
+    $embeddedAction(Delete::class, $fixture['nested']->id)->assertOk();
+    $trashedId = $draftEntries()->trashed()->one()->id;
+
+    $embeddedAction(Restore::class, $trashedId, ['status' => 'trashed'])->assertOk();
+
+    expect($draftEntries()->ids())->toBe([$trashedId])
+        ->and($draftEntries()->trashed()->ids())->toBeEmpty();
 });
 
 it('rolls back the prepared derivative when nested deletion fails', function () {

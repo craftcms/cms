@@ -87,6 +87,7 @@ readonly class SaveUserController
         $newEmail = trim($request->input('email') ?? '') ?: null;
 
         $isPublicRegistration = false;
+        $isInactiveUserRegistration = false;
 
         // Are we editing an existing user?
         if ($userId) {
@@ -117,21 +118,19 @@ readonly class SaveUserController
 
                 $isPublicRegistration = true;
 
-                // See if there's an inactive user with the same email
+                // See if there's an inactive (and not suspended) user with the same email
                 if ($newEmail) {
                     $user = User::find()
                         ->email(Query::escapeParam($newEmail))
                         ->status(User::STATUS_INACTIVE)
+                        ->whereBool('users.suspended', false)
                         ->one();
 
                     if ($user) {
+                        $isInactiveUserRegistration = true;
+
                         // ignore their previous admin status, if they had it
                         $user->admin = false;
-
-                        // clear out any existing permissions they had, if they had any
-                        if (Edition::isAtLeast(Edition::Pro)) {
-                            UserPermissions::saveUserPermissions($user->id, []);
-                        }
                     }
                 }
             }
@@ -287,6 +286,11 @@ readonly class SaveUserController
             $user->ruleset->useScenario(UserRules::SCENARIO_REGISTRATION);
         }
 
+        // Don't expose an existing inactive user's data in the response
+        $responseUser = $isInactiveUserRegistration
+            ? $this->publicRegistrationResponseModel($request, $newEmail, $fieldsLocation)
+            : $user;
+
         // Manually validate the user so we can pass $clearErrors=false
         $success = $user->validate(null, false) && $this->elements->saveElement($user, false);
 
@@ -305,8 +309,12 @@ readonly class SaveUserController
                 $user->errors()->forget('unverifiedEmail');
             }
 
+            if ($responseUser !== $user) {
+                $responseUser->errors()->merge($user->errors());
+            }
+
             return $this->asModelFailure(
-                $user,
+                $responseUser,
                 mb_ucfirst(t('Couldn’t save {type}.', [
                     'type' => User::lowerDisplayName(),
                 ])),
@@ -329,6 +337,11 @@ readonly class SaveUserController
         // Save the user’s photo, if it was submitted
         $this->processUserPhoto($request, app(Elements::class), $user, $decodedUserPhoto, $selectedPhoto);
 
+        // If an existing inactive user was just registered, clear out any permissions they had
+        if (Edition::isAtLeast(Edition::Pro) && $isInactiveUserRegistration) {
+            UserPermissions::saveUserPermissions($user->id, []);
+        }
+
         // If this is public registration, assign the user to the default user group
         if (Edition::isAtLeast(Edition::Pro) && $isPublicRegistration) {
             // Assign them to the default user group
@@ -349,7 +362,7 @@ readonly class SaveUserController
 
         if ($request->wantsJson()) {
             return $this->asModelSuccess(
-                $user,
+                $responseUser,
                 t('{type} saved.', ['type' => User::displayName()]),
                 $userVariable,
                 array_filter([
@@ -383,6 +396,21 @@ readonly class SaveUserController
         return $this->redirectToPostedUrl($user, $request->isCpRequest()
             ? Url::cpUrl($user->getIsCurrent() ? 'myaccount' : "users/$user->id")
             : null);
+    }
+
+    /**
+     * Returns a user model for a public registration response, populated solely from the submitted values.
+     */
+    private function publicRegistrationResponseModel(Request $request, ?string $email, string $fieldsLocation): User
+    {
+        $user = new User(['email' => $email]);
+        $user->username = $this->generalConfig->useEmailAsUsername
+            ? $email
+            : $request->input('username', $email);
+        $this->populateNameAttributes($request, $user);
+        $user->setFieldValuesFromRequest($fieldsLocation);
+
+        return $user;
     }
 
     private function processUserPhoto(Request $request, Elements $elements, User $user, ?string $decodedUserPhoto, ?Asset $selectedPhoto): void

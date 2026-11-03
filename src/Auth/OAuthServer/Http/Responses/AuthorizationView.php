@@ -36,6 +36,7 @@ readonly class AuthorizationView
         $client = $parameters['client'];
         $clientName = (string) $client->getAttribute('name');
         $redirectUri = $request->query('redirect_uri') ?? $client->getAttribute('redirect_uris')[0] ?? null;
+        $redirectHost = is_string($redirectUri) ? $this->redirectHost($redirectUri) : null;
         $resource = $this->resources->forRequest($request);
         $user = $request->craftUser();
         $accessChoices = $resource && $user
@@ -60,7 +61,7 @@ readonly class AuthorizationView
         $routePrefix = $resource ? "$resource->routeName." : 'passport.authorizations.';
         $approveAction = route($routePrefix.'approve');
         $denyAction = route($routePrefix.'deny');
-        $viewData = compact('clientName', 'redirectUri', 'scopes', 'accessOptions', 'authToken', 'csrfToken', 'approveAction', 'denyAction');
+        $viewData = compact('clientName', 'redirectUri', 'redirectHost', 'scopes', 'accessOptions', 'authToken', 'csrfToken', 'approveAction', 'denyAction');
 
         $response = $this->views->render(
             request: $request,
@@ -74,5 +75,21 @@ readonly class AuthorizationView
         $response->headers->set('Content-Security-Policy', "frame-ancestors 'none'", replace: false);
 
         return $response;
+    }
+
+    /**
+     * Returns the part of a redirect URI that identifies where the authorization code will be sent: the host for web
+     * URIs, or the scheme (plus host, if any) for custom app schemes.
+     */
+    private function redirectHost(string $uri): string
+    {
+        $scheme = strtolower((string) parse_url($uri, PHP_URL_SCHEME));
+        $host = (string) parse_url($uri, PHP_URL_HOST);
+
+        if (in_array($scheme, ['http', 'https'], true)) {
+            return $host;
+        }
+
+        return $host !== '' ? "$scheme://$host" : "$scheme:";
     }
 }

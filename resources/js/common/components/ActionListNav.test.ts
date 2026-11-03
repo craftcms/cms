@@ -322,3 +322,29 @@ it('tells the page you are on apart from the parents on the way to it', async ()
   expect(blog?.current).toBe(true);
   expect(all?.current).toBe(false);
 });
+
+it('marks a link to another site with a labeled icon, unless it has a subnav to toggle', async () => {
+  await mount({
+    items: [
+      node('Craft Console', {
+        href: 'https://console.craftcms.com/',
+        external: true,
+      }),
+      node('Same Site', {href: '/admin/legacy', external: true}),
+      node('Resources', {
+        href: 'https://craftcms.com/',
+        external: true,
+        subnav: [node('Docs', {href: 'https://craftcms.com/docs'})],
+      }),
+    ],
+  });
+
+  const suffixIcon = (label: string) =>
+    item(label)?.querySelector(':scope > craft-icon[slot="suffix"]');
+
+  expect(suffixIcon('Craft Console')?.getAttribute('label')).toBe(
+    'External site'
+  );
+  expect(suffixIcon('Same Site')).toBeNull();
+  expect(suffixIcon('Resources')).toBeNull();
+});

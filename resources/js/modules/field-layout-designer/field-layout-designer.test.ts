@@ -1,4 +1,4 @@
-import {afterEach, expect, it, vi} from 'vite-plus/test';
+import {afterAll, afterEach, beforeAll, expect, it, vi} from 'vite-plus/test';
 import $ from 'jquery';
 import {Base} from '@craftcms/garnish';
 import {CardViewDesigner} from './card-view-designer';
@@ -7,6 +7,34 @@ import {FieldLayoutDesigner} from './field-layout-designer';
 const {openSlideout} = vi.hoisted(() => ({openSlideout: vi.fn()}));
 
 vi.mock('@/common/slideouts', () => ({openSlideout}));
+
+// `craft-select-color` renders a form-associated `craft-select-rich`, which
+// calls attachInternals(), which happy-dom doesn't implement. Same stub
+// UiRenderer.test.ts uses, kept for the whole file because the element
+// renders after the test that creates it returns.
+const attachInternals = Object.getOwnPropertyDescriptor(
+  HTMLElement.prototype,
+  'attachInternals'
+);
+
+beforeAll(() => {
+  Object.defineProperty(HTMLElement.prototype, 'attachInternals', {
+    configurable: true,
+    value: () => ({setFormValue: vi.fn()}),
+  });
+});
+
+afterAll(() => {
+  if (attachInternals) {
+    Object.defineProperty(
+      HTMLElement.prototype,
+      'attachInternals',
+      attachInternals
+    );
+  } else {
+    delete (HTMLElement.prototype as Partial<HTMLElement>).attachInternals;
+  }
+});
 
 afterEach(() => {
   delete window.Craft;

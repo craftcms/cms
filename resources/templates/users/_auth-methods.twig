@@ -1,4 +1,3 @@
-{% import '_includes/forms' as forms %}
 
 {% tag 'div' with {
   id: 'auth-method-setup',
@@ -52,11 +51,11 @@
       </div>
 
       {% if not isActive %}
-        {{ forms.button({
-          class: ['auth-method-setup-btn', 'hairline'],
+        {{ ui('button', {
           type: 'button',
           label: 'Set up'|t('app'),
           attributes: {
+            class: ['auth-method-setup-btn', 'hairline'],
             data: {
               method: className(method),
             }

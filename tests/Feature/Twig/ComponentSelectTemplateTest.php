@@ -22,7 +22,7 @@ beforeEach(function () {
 
 it('renders a component select from the legacy componentSelect variables', function () {
     $html = renderString(
-        "{% include '_includes/forms/componentSelect' with {id: 'types', name: 'types[]', options: [entryType], values: [entryType], sortable: false} only %}",
+        "{{ craft.cp.componentSelect({id: 'types', name: 'types[]', options: [entryType], values: [entryType], sortable: false})|raw }}",
         ['entryType' => $this->entryType],
         TemplateMode::Cp,
     );
@@ -33,30 +33,9 @@ it('renders a component select from the legacy componentSelect variables', funct
         ->toContainTag('craft-action-item', ['data-id' => $this->entryType->id, 'hidden' => true]);
 });
 
-it('merges the attr block into the container attributes', function () {
-    $html = renderString(
-        "{% embed '_includes/forms/componentSelect' with {id: 'types'} only %}{% block attr %}data-foo=\"bar\"{% endblock %}{% endembed %}",
-        templateMode: TemplateMode::Cp,
-    );
-
-    expect($html)->toContainTag('craft-component-select', ['id' => 'types', 'data-foo' => 'bar']);
-});
-
-it('renders the legacy markup for an explicit jsClass', function () {
-    $html = renderString(
-        "{% include '_includes/forms/componentSelect' with {id: 'types', name: 'types[]', options: [entryType], jsClass: 'Craft.ComponentSelectInput'} only %}",
-        ['entryType' => $this->entryType],
-        TemplateMode::Cp,
-    );
-
-    expect($html)
-        ->toContainTag('div', ['id' => 'types', 'class' => 'componentselect'])
-        ->not->toContain('<craft-component-select');
-});
-
 it('renders an entry type select from the legacy entryTypeSelect variables', function () {
     $html = renderString(
-        "{% include '_includes/forms/entryTypeSelect' with {name: 'entryTypes[]', values: [entryType], allowOverrides: true, create: true} only %}",
+        "{{ craft.cp.entryTypeSelect({name: 'entryTypes[]', values: [entryType], allowOverrides: true, create: true})|raw }}",
         ['entryType' => $this->entryType],
         TemplateMode::Cp,
     );
