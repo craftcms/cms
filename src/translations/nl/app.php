@@ -527,7 +527,7 @@ return [
     'Create a new section' => 'Maak nieuwe sectie aan',
     'Create a new site' => 'Een nieuwe website maken',
     'Create a new tag group' => 'Maak een nieuwe tag-groep',
-    'Create a new token' => 'Create a new token',
+    'Create a new token' => 'Nieuw token aanmaken',
     'Create a new user group' => 'Maak nieuwe gebruikersgroep aan',
     'Create a new volume…' => 'Nieuw volume aanmaken…',
     'Create a new {section} entry' => 'Maak nieuwe inhoud in {section}',
