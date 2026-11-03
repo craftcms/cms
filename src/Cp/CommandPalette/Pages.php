@@ -76,7 +76,7 @@ class Pages
     private function craftPages(CraftUser $user): array
     {
         return [
-            ...$this->navPages($this->navigation->getTree(withHidden: true)),
+            ...$this->navPages($this->navigation->getTree()),
             ...$this->accountPages($user),
             ...$this->siteRoots(),
             ...($user->isAdmin() ? $this->settingsPages() : []),

@@ -114,16 +114,15 @@ readonly class Navigation
 
     /**
      * The whole navigation tree, as the current user has it laid out, without
-     * selection or badge counts. Hidden items are left out unless
-     * `$withHidden` keeps them.
+     * selection or badge counts. Hidden items are left out.
      *
      * @return NavItem[]
      */
-    public function getTree(bool $withHidden = false): array
+    public function getTree(): array
     {
         $user = currentUser();
 
-        return $this->navCustomizer->apply($this->buildTree(), $this->customNavigations->navigationFor($user), $user, $withHidden);
+        return $this->navCustomizer->apply($this->buildTree(), $this->customNavigations->navigationFor($user), $user);
     }
 
     /**
