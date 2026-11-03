@@ -527,7 +527,7 @@ return [
     'Create a new section' => 'Új szekció létrehozása',
     'Create a new site' => 'Új webhely létrehozása',
     'Create a new tag group' => 'Új fül csoport létrehozása',
-    'Create a new token' => 'Create a new token',
+    'Create a new token' => 'Új token létrehozása',
     'Create a new user group' => 'Új felhasználói csoport létrehozása',
     'Create a new volume…' => 'Új kötet létrehozása…',
     'Create a new {section} entry' => 'Új {section} bejegyzés létrehozása',
