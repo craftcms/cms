@@ -778,6 +778,9 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
       clearTimeout(this.#announceTimeout);
       this.#announceTimeout = null;
     }
+    this.#announcingRemoval = false;
+    this.#announcedMatches = '';
+    this.announcement = '';
     super.disconnectedCallback();
   }
 
@@ -797,12 +800,12 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
     if (message === this.#announcedMatches) {
       return;
     }
-    this.#announcedMatches = message;
     // Backspace reopens the list on keyup, which would talk over the removal
-    // it just announced; the count is announced again once typing changes it.
+    // it just announced; the count is announced once typing starts.
     if (this.#announcingRemoval && !this.#filtering) {
       return;
     }
+    this.#announcedMatches = message;
     this.#announce(message);
   }
 

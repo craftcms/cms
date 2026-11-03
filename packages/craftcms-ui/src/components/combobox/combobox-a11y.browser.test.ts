@@ -510,6 +510,44 @@ describe('announcements', () => {
     );
   });
 
+  it('announces the count once typing follows a removal, even when typing leaves it unchanged', async () => {
+    const {control, input} = await fixture((c) => {
+      c.multipleChoice = true;
+      c.modelValue = ['cherry', 'apple'];
+    });
+
+    await userEvent.click(input);
+    await userEvent.keyboard('{Backspace}');
+    await settle();
+    expect(liveRegion(control).textContent?.trim()).toBe('Removed Apple');
+    await userEvent.keyboard('a');
+
+    await vi.waitFor(() =>
+      expect(liveRegion(control).textContent?.trim()).toBe('3 results')
+    );
+  });
+
+  it('announces the count when the list opens after the control is moved mid-removal', async () => {
+    const {control, surface, input} = await fixture((c) => {
+      c.multipleChoice = true;
+      c.modelValue = ['cherry', 'apple'];
+    });
+
+    await userEvent.click(input);
+    await userEvent.keyboard('{Backspace}');
+    await settle();
+    control.remove();
+    surface.append(control);
+    await control.updateComplete;
+    control.opened = false;
+    await settle();
+    await open(input);
+
+    await vi.waitFor(() =>
+      expect(liveRegion(control).textContent?.trim()).toBe('3 results')
+    );
+  });
+
   it('clears the live region after the announcement timeout elapses', async () => {
     const {control} = await fixture();
     vi.useFakeTimers({toFake: ['setTimeout', 'clearTimeout']});
