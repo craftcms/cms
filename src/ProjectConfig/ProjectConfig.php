@@ -741,6 +741,19 @@ class ProjectConfig
     }
 
     /**
+     * Saves what changed during a request or command: the modified project
+     * config state, updated YAML files, and the config files' parsed times.
+     */
+    public function flushChanges(): void
+    {
+        $this->flush();
+
+        if ($this->waitingToUpdateParsedConfigTimes) {
+            $this->updateParsedConfigTimes();
+        }
+    }
+
+    /**
      * Saves the modified project config state and writes out updated YAML files, if needed.
      */
     public function flush(): void

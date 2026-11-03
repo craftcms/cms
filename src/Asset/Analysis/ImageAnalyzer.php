@@ -6,10 +6,10 @@ namespace CraftCms\Cms\Asset\Analysis;
 
 use CraftCms\Cms\Ai\Ai;
 use CraftCms\Cms\Ai\AiTasks;
+use CraftCms\Cms\Ai\ModelImages;
 use CraftCms\Cms\Asset\Analysis\Contracts\ImageAnalysisTaskInterface;
 use CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis;
 use CraftCms\Cms\Asset\Analysis\Jobs\AnalyzeImage;
-use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
@@ -19,12 +19,10 @@ use CraftCms\Cms\Image\Data\ImageColors;
 use CraftCms\Cms\Image\Data\ImageMetadata;
 use CraftCms\Cms\Image\Data\ImageSample;
 use CraftCms\Cms\Image\Images;
-use CraftCms\Cms\Image\Raster;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Log;
-use Laravel\Ai\Files\Image;
 use Laravel\Ai\Responses\StructuredAgentResponse;
 use Throwable;
 
@@ -33,20 +31,18 @@ use Throwable;
  * as their colors and embedded metadata.
  *
  * Tasks that resolve to the same provider and model share one request, so most sites send one request per image no
- * matter how many tasks they enable. The image is scaled down first, since models don’t look at more detail than that.
+ * matter how many tasks they enable. The image is prepared with {@see ModelImages} first.
  *
  * @since 6.0.0
  */
 #[Singleton]
 class ImageAnalyzer
 {
-    /** The longest side of the image that’s sent to models, in pixels. */
-    private const int MAX_IMAGE_SIZE = 1568;
-
     public function __construct(
         private readonly AiTasks $aiTasks,
         private readonly Ai $ai,
         private readonly Images $images,
+        private readonly ModelImages $modelImages,
         private readonly Elements $elements,
         private readonly AssetTransformers $assetTransformers,
     ) {}
@@ -221,12 +217,11 @@ class ImageAnalyzer
         $applied = [];
         $failure = null;
         $copy = null;
-        $tempPaths = [];
 
         try {
             // Sample first, so tasks see what the image’s embedded metadata filled in, and don’t replace it
             if ($sample && $this->needsSampling($asset)) {
-                $copy = $tempPaths[] = $asset->getCopyOfFile();
+                $copy = $asset->getCopyOfFile();
                 $this->sample($asset, $copy, $changes);
             }
 
@@ -241,9 +236,9 @@ class ImageAnalyzer
                 return [$changes, $applied, $failure];
             }
 
-            $copy ??= $tempPaths[] = $asset->getCopyOfFile();
+            $copy ??= $asset->getCopyOfFile();
 
-            $image = $this->preparedImage($copy, $tempPaths);
+            $image = $this->modelImages->forFile($copy);
 
             foreach ($groups as $group) {
                 $agent = new ImageAnalysisAgent($group, $asset, $overwrite);
@@ -267,8 +262,8 @@ class ImageAnalyzer
                 }
             }
         } finally {
-            foreach ($tempPaths as $path) {
-                File::delete($path);
+            if ($copy !== null) {
+                File::delete($copy);
             }
         }
 
@@ -336,29 +331,6 @@ class ImageAnalyzer
     private function hashNeedsSampling(ImageAnalysis $analysis): bool
     {
         return $analysis->colors !== null && $analysis->colors->grid !== [] && $analysis->hash === null;
-    }
-
-    /**
-     * Returns a copy of the image, scaled down to the size that’s sent to models, and rasterized if it’s an SVG.
-     *
-     * @param  list<string>  $tempPaths  Temporary files to delete afterward.
-     */
-    private function preparedImage(string $copy, array &$tempPaths): Image
-    {
-        $extension = in_array(strtolower(pathinfo($copy, PATHINFO_EXTENSION)), ['jpg', 'jpeg'], true) ? 'jpg' : 'png';
-        $prepared = AssetsHelper::tempFilePath($extension);
-        $tempPaths[] = $prepared;
-
-        $image = $this->images->loadImage($copy, rasterize: true);
-
-        if (! $image instanceof Raster) {
-            return Image::fromPath($copy);
-        }
-
-        $image->scaleToFit(self::MAX_IMAGE_SIZE, self::MAX_IMAGE_SIZE, false);
-        $image->saveAs($prepared);
-
-        return Image::fromPath($prepared, $extension === 'jpg' ? 'image/jpeg' : 'image/png');
     }
 
     /**

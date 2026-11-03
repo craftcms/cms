@@ -715,6 +715,29 @@ class GeneralConfig extends BaseConfig
     public ?string $cpTrigger = 'admin';
 
     /**
+     * @var string|null The path to a directory of SVG files that should be made available to icon pickers as a “Custom” icon set.
+     *
+     * This can be set to an aliased path such as `@config/icons`.
+     *
+     * Each file’s name (sans `.svg` extension) becomes its icon name, and icons selected from it will be stored as
+     * `custom:icon-name`.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->customIconPath('@config/icons')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_CUSTOM_ICON_PATH=@config/icons
+     * ```
+     * :::
+     *
+     * @group System
+     *
+     * @since 5.12.0
+     */
+    public ?string $customIconPath = null;
+
+    /**
      * @var string The asset transformer to use when none is selected explicitly.
      *
      * ::: code
@@ -845,6 +868,7 @@ class GeneralConfig extends BaseConfig
      * - login attempts
      * - two-factor authentication verifications
      * - password reset requests
+     * - MCP discovery requests (`/.well-known/ai-catalog.json` and MCP Server Cards)
      *
      * Login attempts and two-factor authentication verifications are also limited per account, to five a minute.
      *
@@ -3903,6 +3927,25 @@ class GeneralConfig extends BaseConfig
     public function cpTrigger(?string $value): self
     {
         $this->cpTrigger = $value;
+
+        return $this;
+    }
+
+    /**
+     * The path to a directory of SVG files that should be made available to icon pickers as a “Custom” icon set.
+     *
+     * ```php
+     * ->customIconPath('@config/icons')
+     * ```
+     *
+     * @group System
+     *
+     * @see $customIconPath
+     * @since 5.12.0
+     */
+    public function customIconPath(?string $value): self
+    {
+        $this->customIconPath = $value;
 
         return $this;
     }

@@ -7,8 +7,10 @@ namespace CraftCms\Cms\FieldLayout;
 use Closure;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\Thumb;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
@@ -54,6 +56,11 @@ use function CraftCms\Cms\t;
 class FieldLayout extends Component
 {
     use LegacyConstants;
+
+    /**
+     * The thumb source key for an entry’s entry type icon.
+     */
+    public const string ENTRY_TYPE_ICON_THUMB_SOURCE = 'entryTypeIcon';
 
     public ?int $id = null;
 
@@ -653,31 +660,32 @@ class FieldLayout extends Component
     }
 
     /**
-     * Returns how element cards show their thumbnail: `normal`, in a column beside the card's content, or `cover`,
-     * covering the whole card with the content laid over it, when the thumbnail is an image that can fill it.
+     * Returns how element cards show their thumbnail: `normal`, in a column beside the card's content; `cover`,
+     * covering the whole card with the content laid over it, when the thumbnail is an asset's image; or `auto`, covering
+     * the card only when the image is a good fit for it (see {@see Asset::canCoverCard()}).
      *
-     * Asset volumes' layouts default to `cover`, and all others to `normal`.
+     * Asset volumes' layouts default to `auto`, and all others to `normal`.
      *
-     * @return string `normal` or `cover`
+     * @return string `normal`, `cover`, or `auto`
      */
     public function getCardThumbStyle(): string
     {
-        return $this->_cardThumbStyle ?? ($this->type === Asset::class ? 'cover' : 'normal');
+        return $this->_cardThumbStyle ?? ($this->type === Asset::class ? 'auto' : 'normal');
     }
 
     /**
      * Sets how element cards show their thumbnail.
      *
-     * @param  string|null  $style  `normal` or `cover`, or `null` for the element type's default
+     * @param  string|null  $style  `normal`, `cover`, or `auto`, or `null` for the element type's default
      */
     public function setCardThumbStyle(?string $style = null): void
     {
-        $this->_cardThumbStyle = in_array($style, ['normal', 'cover'], true) ? $style : null;
+        $this->_cardThumbStyle = in_array($style, ['normal', 'cover', 'auto'], true) ? $style : null;
     }
 
     public function cardThumbStyle(?string $style = null): static
     {
-        if ($style !== null && ! in_array($style, ['normal', 'cover'], true)) {
+        if ($style !== null && ! in_array($style, ['normal', 'cover', 'auto'], true)) {
             throw new InvalidArgumentException("Invalid card thumbnail style: $style");
         }
 
@@ -1143,11 +1151,15 @@ class FieldLayout extends Component
     }
 
     /**
-     * Returns whether any of the layout’s [[thumbSources]] is a field that can provide thumbnails.
+     * Returns whether any of the layout’s [[thumbSources]] is a field that can provide thumbnails, or the entry type icon.
      */
     public function hasThumbField(): bool
     {
         foreach ($this->thumbSources as $key) {
+            if ($key === self::ENTRY_TYPE_ICON_THUMB_SOURCE) {
+                return true;
+            }
+
             $field = $this->getElementByKey($key);
 
             if ($field instanceof BaseField && $field->thumbable()) {
@@ -1166,6 +1178,10 @@ class FieldLayout extends Component
      */
     public function getThumbHtmlForElement(string $key, ElementInterface $element, int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
+        if ($key === self::ENTRY_TYPE_ICON_THUMB_SOURCE) {
+            return $this->entryTypeIconThumb($element)?->getHtml($size, $mode);
+        }
+
         $source = $this->thumbSource($key, $element);
 
         return $source ? $source[0]->thumbHtml($source[1], $size, $mode) : null;
@@ -1178,9 +1194,34 @@ class FieldLayout extends Component
      */
     public function getThumbForElement(string $key, ElementInterface $element): ?Thumb
     {
+        if ($key === self::ENTRY_TYPE_ICON_THUMB_SOURCE) {
+            return $this->entryTypeIconThumb($element);
+        }
+
         $source = $this->thumbSource($key, $element);
 
         return $source ? $source[0]->thumb($source[1]) : null;
+    }
+
+    /**
+     * Returns a thumbnail showing an entry’s entry type icon, faintly, in the entry type’s color, if it has an icon.
+     */
+    private function entryTypeIconThumb(ElementInterface $element): ?Thumb
+    {
+        if (! $element instanceof Entry) {
+            return null;
+        }
+
+        $entryType = $element->getType();
+
+        if (in_array($entryType->icon, [null, ''], true)) {
+            return null;
+        }
+
+        return new Thumb(fn (): string => Html::tag('div', Icons::svg($entryType->icon), [
+            'class' => ['thumb', 'icon-thumb', 'w-[var(--c-thumb-icon-size,24px)] h-[var(--c-thumb-icon-size,24px)]'],
+            'data-color' => $entryType->color?->value,
+        ]));
     }
 
     /**

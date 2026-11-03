@@ -33,13 +33,22 @@ afterEach(() => {
 
 describe('ElementStatus', () => {
   it.each([
-    ['live', 'success'],
-    ['expired', 'danger'],
-    ['pending', 'warning'],
-    ['info', 'info'],
-  ])('fills a %s dot with the %s variant', async (value, fill) => {
+    ['live', 'teal'],
+    ['enabled', 'teal'],
+    ['expired', 'red'],
+    ['suspended', 'red'],
+    ['pending', 'sky'],
+    ['warning', 'amber'],
+  ])('fills a %s dot with its status color, %s', async (value, fill) => {
     expect((await indicatorFor({value})).fill).toBe(fill);
   });
+
+  it.each(['success', 'danger', 'info'])(
+    'fills a %s dot with that variant',
+    async (value) => {
+      expect((await indicatorFor({value})).fill).toBe(value);
+    }
+  );
 
   it('fills a palette color status with that color', async () => {
     expect((await indicatorFor({value: 'orange'})).fill).toBe('orange');

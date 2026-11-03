@@ -192,7 +192,10 @@
     >
       <li v-for="index in placeholders" :key="index">
         <PlaceholderShape
-          v-if="placeholderThumb?.style === 'cover'"
+          v-if="
+            placeholderThumb?.style === 'cover' ||
+            placeholderThumb?.style === 'auto'
+          "
           class="card-cover-placeholder"
         />
         <craft-card v-else :thumb-alignment="placeholderThumb?.alignment">
@@ -222,6 +225,9 @@
       >
         <label slot="label">{{ t('Select all') }}</label>
       </craft-checkbox>
+    </div>
+    <div v-if="$slots['header-after']" class="card-grid-header-after">
+      <slot name="header-after" />
     </div>
 
     <SelectableCardList

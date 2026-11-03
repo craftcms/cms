@@ -8,10 +8,20 @@ export interface CpUser {
   email: string | null;
   id: number | null;
   thumbHtml: string | null;
+  /** The two `--color-{name}-500` palette colors of the user’s default photo’s gradient. */
+  photoColors: [string, string];
   name: string | null;
   admin: boolean;
   /** The "Underline links" accessibility preference. */
   underlineLinks: boolean;
+  /** Whether the user can use the AI assistant, and it can run. */
+  aiAssistant: boolean;
+  /** The account screen for the user’s own AI guidance, while they can use the assistant. */
+  personalGuidanceUrl: string | null;
+  /** The AI Guidance & Skills utility’s Guidance page, if the user can use it. */
+  aiGuidanceUrl: string | null;
+  /** The same utility’s Skills page, if the user can use it. */
+  aiSkillsUrl: string | null;
   /** Whether the user's account has a Tokens screen. */
   showTokens: boolean;
 }

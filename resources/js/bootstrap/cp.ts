@@ -1,5 +1,6 @@
 import {createInertiaApp, router} from '@inertiajs/vue3';
 import {handleControlPanelLinks} from '@/common/inertia-links';
+import {observeExternalLinks} from '@craftcms/ui/utilities/external-links';
 import type {DefineComponent} from 'vue';
 import {setTranslations, t} from '@craftcms/ui/utilities/translate';
 import {http} from '@craftcms/ui/utilities/api/http';
@@ -12,6 +13,7 @@ import {configureIcons} from './icons.js';
 import {installSessionTimeout} from '@/modules/auth/session-timeout';
 import {config, installCpApp, queue} from './cp-app';
 import {cpComponentRegistry} from './components.js';
+import {assistantApi} from './assistant.js';
 import {
   elementDetailsPanelRegistry,
   warnDeprecated,
@@ -87,6 +89,10 @@ const Cp = {
 
   get $elementDetailsPanels() {
     return elementDetailsPanelRegistry;
+  },
+
+  get $assistant() {
+    return assistantApi;
   },
 
   /** @deprecated Use `$elementDetailsPanels`. */
@@ -167,6 +173,7 @@ const Cp = {
 
     handleNonInertiaRequests();
     handleControlPanelLinks();
+    observeExternalLinks();
     handleAccessibleRouting();
     registerSlideoutGlobals();
     registerSubmitShortcut();

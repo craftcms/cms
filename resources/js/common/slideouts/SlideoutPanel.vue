@@ -15,7 +15,6 @@
     onBeforeUnmount,
     onMounted,
     ref,
-    provide,
     useTemplateRef,
     watch,
   } from 'vue';
@@ -28,18 +27,14 @@
   } from '@craftcms/garnish';
   import {t} from '@craftcms/ui/utilities/translate';
   import {useResizeObserver, useWindowSize} from '@vueuse/core';
-  import {getActivePreview} from '@/modules/elements/live-preview/previews';
+  import {
+    getActivePreview,
+    previewEditorOffset,
+  } from '@/modules/elements/live-preview/previews';
   import AppLayout from '@/common/layouts/AppLayout.vue';
   import ResizeHandle from '@/common/components/ResizeHandle.vue';
   import {useResizable} from '@/common/composables/useResizable';
-  import SlideoutScreen from '@/common/layouts/screens/SlideoutScreen.vue';
-  import {
-    createScreenPropsStore,
-    provideScreenContext,
-    ScreenPagePropsKey,
-    ScreenPropsStoreKey,
-    ScreenShellKey,
-  } from '@/common/composables/screen';
+  import {provideSlideoutScreen} from './screenContext';
   import {
     registerPanel,
     shadeElement,
@@ -48,7 +43,7 @@
     type StackedPanel,
   } from './panel-stack';
   import {closeSlideout, notifySlideoutSaved, reloadSlideout} from './store';
-  import {SlideoutControllerKey, type SlideoutInstance} from './types';
+  import type {SlideoutInstance} from './types';
 
   const props = defineProps<{
     instance: SlideoutInstance;
@@ -58,22 +53,14 @@
   /** Room kept beside a slideout. Mirrored by the panel's stylesheet cap. */
   const SLIDEOUT_MIN_GAP = 80;
 
-  provide(ScreenShellKey, SlideoutScreen);
-  provide(ScreenPropsStoreKey, createScreenPropsStore());
-  provideScreenContext('slideout');
-
-  // Without this the shell would read its chrome off `usePage()` — the page
-  // *behind* the slideout — and show that screen's title and edit URL.
-  provide(ScreenPagePropsKey, () => props.instance.props);
-
-  provide(SlideoutControllerKey, {
-    get instance() {
-      return props.instance;
-    },
+  provideSlideoutScreen(() => props.instance, {
     close: (options?: {force?: boolean}) =>
       closeSlideout(props.instance.id, options),
     reload: () => reloadSlideout(props.instance.id),
     saved: (result) => notifySlideoutSaved(props.instance.id, result),
+    get coversPreviewEditor() {
+      return previewEditor !== null;
+    },
   });
 
   /**
@@ -96,12 +83,17 @@
    * then covers only that pane, as a sheet sliding up from the bottom, and
    * the shade stops at its edge, leaving the preview visible beside it.
    */
-  const previewEditor = getActivePreview()?.editor.value ?? null;
-  const previewEditorWidth = ref(previewEditor?.clientWidth ?? 0);
+  const activePreview = getActivePreview();
+  const previewEditor = activePreview?.editor.value ?? null;
+  const previewEditorWidth = ref(previewEditor?.offsetWidth ?? 0);
+  const previewEditorStart = ref(
+    previewEditor ? previewEditorOffset(previewEditor) : 0
+  );
 
   if (previewEditor) {
     useResizeObserver(previewEditor, () => {
-      previewEditorWidth.value = previewEditor.clientWidth;
+      previewEditorWidth.value = previewEditor.offsetWidth;
+      previewEditorStart.value = previewEditorOffset(previewEditor);
     });
   }
 
@@ -139,7 +131,7 @@
    * forces a reflow before positioning it, so the browser has the `100vw`
    * start value to animate from.
    */
-  const offset = ref(previewEditor ? '100vh' : '100vw');
+  const offset = ref('100vw');
 
   /**
    * The stack's view of this panel. Its `position()` mirrors Craft 5's
@@ -162,8 +154,9 @@
     },
     position(index: number, total: number) {
       if (previewEditor) {
-        // There's no room beside the pane to stagger panels into.
-        offset.value = 'var(--slideout-preview-gap)';
+        // There's no room beside the pane to stagger panels into, so each
+        // covers the one before it.
+        offset.value = 'var(--slideout-preview-start)';
         return;
       }
 
@@ -181,6 +174,10 @@
   };
 
   onMounted(() => {
+    if (previewEditor) {
+      activePreview!.editorCovers.value++;
+    }
+
     const el = panelEl.value!;
 
     addModalAttributes(el);
@@ -217,17 +214,20 @@
 
   function fitShadeToPreviewEditor(): void {
     if (previewEditor) {
-      shadeElement().style.width = `${previewEditorWidth.value}px`;
+      const shade = shadeElement();
+      shade.style.insetInlineStart = `${previewEditorStart.value}px`;
+      shade.style.width = `${previewEditorWidth.value}px`;
     }
   }
 
-  watch(previewEditorWidth, fitShadeToPreviewEditor);
+  watch([previewEditorWidth, previewEditorStart], fitShadeToPreviewEditor);
 
   const panelStyle = computed(() =>
     previewEditor
       ? {
           '--slideout-preview-width': `${previewEditorWidth.value}px`,
-          insetBlockStart: offset.value,
+          '--slideout-preview-start': `${previewEditorStart.value}px`,
+          insetInlineStart: offset.value,
         }
       : {
           ...(props.instance.width
@@ -239,6 +239,10 @@
   );
 
   onBeforeUnmount(() => {
+    if (previewEditor) {
+      activePreview!.editorCovers.value--;
+    }
+
     const el = panelEl.value!;
 
     // By element, not the bare pop: with two slideout stacks interleaving,
@@ -348,21 +352,17 @@
     }
   }
 
-  /* Over Live Preview's editor pane, inset from its edges. Stacked panels sit
-     on top of each other, like the full-width sheet below. */
+  /* Over Live Preview's editor pane, covering it exactly, as a nested view
+     sliding in from the end. Stacked panels sit on top of each other. */
   .slideout-panel--in-preview {
-    --slideout-preview-gap: var(--c-spacing-md);
-
-    inset-block: auto;
-    inset-inline-start: var(--slideout-preview-gap);
-    width: calc(
-      var(--slideout-preview-width) - var(--slideout-preview-gap) * 2
-    );
-    height: calc(100vh - var(--slideout-preview-gap) * 2);
-    border-radius: var(--c-radius-lg, 0.5rem);
+    width: var(--slideout-preview-width);
+    /* Over the editor's own border, so it carries one of its own. */
+    border-inline-start: 1px solid var(--c-color-border-quiet);
+    border-radius: 0;
+    box-shadow: none;
 
     @media screen and (prefers-reduced-motion: no-preference) {
-      transition: inset-block-start linear 250ms;
+      transition: inset-inline-start linear 250ms;
     }
   }
 

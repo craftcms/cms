@@ -278,10 +278,12 @@ it('defaults the card thumb style by element type, and keeps a chosen one throug
         ->and($config['cardThumbStyle'])->toBe($expected)
         ->and(new FieldLayout(['type' => $type, ...$config])->getCardThumbStyle())->toBe($expected);
 })->with([
-    'asset default' => [Asset::class, null, 'cover'],
+    'asset default' => [Asset::class, null, 'auto'],
     'entry default' => [Entry::class, null, 'normal'],
     'asset set to normal' => [Asset::class, 'normal', 'normal'],
     'entry set to cover' => [Entry::class, 'cover', 'cover'],
+    'asset set to cover' => [Asset::class, 'cover', 'cover'],
+    'entry set to auto' => [Entry::class, 'auto', 'auto'],
 ]);
 
 it('rejects invalid constrained fluent values', function () {

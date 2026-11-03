@@ -6,6 +6,7 @@ import {
   linkHoverIntent,
 } from '@src/utilities/hover-intent.js';
 import {t} from '@src/utilities/translate';
+import {NEW_TAB_CUE_ATTRIBUTE} from '@src/utilities/external-links';
 import hostStyles from '@src/styles/host.styles';
 import styles from './link.styles.js';
 
@@ -119,7 +120,15 @@ export default class CraftLink extends LitElement {
   }
 
   get #text(): string {
-    return (this.anchor?.textContent ?? '').replace(/\s+/g, ' ').trim();
+    return Array.from(this.anchor?.childNodes ?? [])
+      .filter(
+        (node) =>
+          !(node instanceof Element && node.hasAttribute(NEW_TAB_CUE_ATTRIBUTE))
+      )
+      .map((node) => node.textContent)
+      .join('')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
   get #scheme(): string {

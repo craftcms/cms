@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Ai\Contracts;
 
+use CraftCms\Cms\Ai\Ai;
 use CraftCms\Cms\Ai\Enums\Capability;
 use CraftCms\Cms\Ai\Enums\Modality;
 use CraftCms\Cms\Ai\Task;
@@ -49,4 +50,15 @@ interface TaskInterface
      * @return list<Capability>
      */
     public static function requirements(): array;
+
+    /**
+     * Returns what the task uses from its model when the model has it, such as vision for images, which
+     * {@see Ai::supports()} tells it.
+     *
+     * Craft checks the chosen model for them when the AI settings are saved, as for requirements, but a model
+     * without them still runs the task.
+     *
+     * @return list<Capability>
+     */
+    public static function optionalCapabilities(): array;
 }

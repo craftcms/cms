@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
+use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Events\ElementKeywordsResolving;
 use CraftCms\Cms\Support\Str;
 
@@ -23,6 +25,7 @@ trait Searchable
     /**
      * @var int|null The element's search score, if the [[\craft\elements\db\ElementQuery::search]] parameter was used when querying for the element
      */
+    #[ElementProperty(ElementPropertyType::Int, 'The {element}’s search score, if the `search` parameter was used when querying for the {element}.', readable: true, writable: false)]
     public ?int $searchScore = null;
 
     /**

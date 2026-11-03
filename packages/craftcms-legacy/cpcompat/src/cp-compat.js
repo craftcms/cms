@@ -474,7 +474,7 @@
         );
       }
 
-      this.settings = $.extend({presets: []}, settings || {});
+      this.settings = $.extend({presets: [], alpha: false}, settings || {});
 
       var $container = $(container);
       this.$container = $container;
@@ -501,6 +501,9 @@
       }
       if (this.settings.presets && this.settings.presets.length) {
         $el.attr('presets', JSON.stringify(this.settings.presets));
+      }
+      if (this.settings.alpha) {
+        $el.attr('alpha', '');
       }
 
       $input.attr('slot', 'input').appendTo($el);

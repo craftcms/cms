@@ -277,6 +277,8 @@ export class CpScreenSlideout extends Slideout {
       {
         keyCode: S_KEY,
         ctrl: true,
+        description: Craft.t('app', 'Save'),
+        group: Craft.t('app', 'Forms'),
       },
       (ev: any) => {
         this.handleSubmit(ev);

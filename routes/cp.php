@@ -2,7 +2,11 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Ai\Http\Controllers\AccountController as AiAccountController;
+use CraftCms\Cms\Ai\Http\Controllers\GuidanceController as AiGuidanceController;
 use CraftCms\Cms\Ai\Http\Controllers\SettingsController as AiSettingsController;
+use CraftCms\Cms\Ai\Http\Controllers\SkillsController as AiSkillsController;
+use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Edition;
@@ -141,6 +145,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             ->whereNumber('release');
 
         Route::prefix('releases/{release}')->name('releases.')->whereNumber('release')->group(function () {
+            Route::get('preview', [ReleasesController::class, 'preview'])->name('preview');
             Route::post('validate', [ReleasesController::class, 'validateRelease'])->name('validate');
             Route::get('schedule', [ReleasesController::class, 'scheduleModal'])->name('scheduleModal');
             Route::post('schedule', [ReleasesController::class, 'schedule'])->name('schedule');
@@ -156,6 +161,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::post('submit', [WorkflowTransitionsController::class, 'submit']);
         Route::post('{workflowRun}/override', [WorkflowTransitionsController::class, 'override']);
         Route::post('{workflowRun}/restart', [WorkflowTransitionsController::class, 'restart']);
+        Route::post('{workflowRun}/prepare-for-editing', [WorkflowTransitionsController::class, 'prepareForEditing']);
         Route::prefix('{workflowRun}/stages/{stage}')->group(function () {
             Route::post('comment', [WorkflowTransitionsController::class, 'comment']);
             Route::post('user-review/approve', [UserReviewController::class, 'approve']);
@@ -200,6 +206,15 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     // SystemMessages
     Route::get('system-messages/{key}', [SystemMessagesController::class, 'show']);
     Route::post('system-messages', [SystemMessagesController::class, 'store']);
+
+    // AI Guidance
+    Route::post('ai-guidance', [AiGuidanceController::class, 'store']);
+    Route::get('ai-skills', [AiSkillsController::class, 'index']);
+    Route::get('ai-skills/new', [AiSkillsController::class, 'create']);
+    Route::get('ai-skills/{skillId}', [AiSkillsController::class, 'edit'])->whereNumber('skillId');
+    Route::post('ai-skills', [AiSkillsController::class, 'store']);
+    Route::patch('ai-skills/{skillId}', [AiSkillsController::class, 'update'])->whereNumber('skillId');
+    Route::delete('ai-skills/{skillId}', [AiSkillsController::class, 'destroy'])->whereNumber('skillId');
 
     Route::middleware(RequireAdminChanges::class)->group(function () {
         Route::get('settings/addresses', [AddressSettingsController::class, 'index']);
@@ -271,6 +286,10 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('myaccount/preferences', [PreferencesController::class, 'index']);
     Route::patch('myaccount/preferences', [PreferencesController::class, 'update']);
     Route::get('myaccount/tokens', [PersonalAccessTokensController::class, 'index']);
+    Route::middleware('can:'.Assistant::PERMISSION)->group(function () {
+        Route::get('myaccount/ai-assistant', [AiAccountController::class, 'index']);
+        Route::patch('myaccount/ai-assistant', [AiAccountController::class, 'update']);
+    });
     Route::get('myaccount/sign-in-providers', [SignInProvidersController::class, 'index']);
     Route::post('myaccount/sign-in-providers/{provider}/connect', [SignInProvidersController::class, 'connect']);
     Route::delete('myaccount/sign-in-providers/{provider}', [SignInProvidersController::class, 'destroy']);
@@ -449,7 +468,18 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
 
             Route::get('{handle}', [PluginsController::class, 'editSettings']);
         });
-        Route::get('plugin-store{any?}', [PluginStoreController::class, 'index'])->where('any', '.*');
+        Route::prefix('plugin-store')->group(function () {
+            Route::get('/', [PluginStoreController::class, 'index']);
+            Route::get('categories/{id}', [PluginStoreController::class, 'category'])->whereNumber('id');
+            Route::get('featured/{handle}', [PluginStoreController::class, 'featured']);
+            Route::get('developer/{id}', [PluginStoreController::class, 'developer'])->whereNumber('id');
+            Route::get('search', [PluginStoreController::class, 'search']);
+            Route::get('buy-all-trials', [PluginStoreController::class, 'buyAllTrials']);
+            Route::get('buy/{handle}/{edition?}', [PluginStoreController::class, 'buy']);
+            Route::get('upgrade-craft', [PluginStoreController::class, 'upgradeCraft']);
+            Route::get('{handle}/{tab?}', [PluginStoreController::class, 'plugin'])
+                ->where('tab', 'reviews|editions|changelog');
+        });
 
         // Rebrand
         // @TODO: Remove when rebrand assets are refactored

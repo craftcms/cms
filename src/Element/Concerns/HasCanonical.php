@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
+use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Enums\ElementCapability;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use DateTimeInterface;
@@ -120,6 +123,7 @@ trait HasCanonical
         $this->_canonical = $element;
     }
 
+    #[ElementProperty(ElementPropertyType::Int, 'Returns the {element}’s canonical ID.', readable: true, writable: false, requires: ElementCapability::Drafts)]
     public function getCanonicalId(): ?int
     {
         return $this->_canonicalId ?? $this->id;
@@ -131,6 +135,7 @@ trait HasCanonical
         $this->_canonical = null;
     }
 
+    #[ElementProperty(ElementPropertyType::String, 'Returns the {element}’s canonical UUID.', readable: true, writable: false, requires: ElementCapability::Drafts)]
     public function getCanonicalUid(): ?string
     {
         if ($this->getIsCanonical()) {
@@ -152,6 +157,7 @@ trait HasCanonical
         return $this->_canonicalUid;
     }
 
+    #[ElementProperty(ElementPropertyType::Boolean, 'Returns whether this is an unpublished draft.', readable: true, writable: false, requires: ElementCapability::Drafts)]
     public function getIsUnpublishedDraft(): bool
     {
         return $this->getIsDraft() && $this->getIsCanonical();

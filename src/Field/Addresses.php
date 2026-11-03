@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Database\Table as DbTable;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
@@ -199,10 +200,13 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                 ->instructions(t('Choose how nested {type} should be presented to authors.', ['type' => t('addresses')]))
                 ->control(Choice::make('viewMode')
                     ->presentation(ChoicePresentation::Radios)
-                    ->options([
+                    ->options(array_map(fn (array $mode): array => [
+                        ...$mode,
+                        'thumbnail' => Cp::viewModeThumbnail($mode['value']),
+                    ], [
                         ['label' => t('Cards'), 'value' => self::VIEW_MODE_CARDS],
                         ['label' => t('Index'), 'value' => self::VIEW_MODE_INDEX],
-                    ])
+                    ]))
                     ->value($this->viewMode)),
         ]);
     }

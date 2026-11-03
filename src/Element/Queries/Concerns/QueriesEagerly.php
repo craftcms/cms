@@ -8,6 +8,9 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Database\Query\Expression as ExpressionContract;
@@ -99,6 +102,8 @@ trait QueriesEagerly
      * ```
      */
     /** @param array<array-key, mixed>|string|null $value */
+    #[ElementQueryParam(ElementQueryParamType::StringList, 'Eager-loads the given handles or paths for the returned {elements}.')]
+    #[Gql(exclude: true)]
     public function with(array|string|null $value): static
     {
         $this->with = $value;

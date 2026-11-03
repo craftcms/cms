@@ -251,6 +251,7 @@ it('renders a named draft in the Inertia editor', function () {
             ->where('isProvisionalDraft', false)
             ->where('readOnly', false)
             ->where('editorActions.primary.label', 'Save draft')
+            ->where('editorActions.primary.actionUrl', Url::actionUrl('elements/save-draft'))
             ->where('editorActions.buttons', fn (Collection $actions) => $actions
                 ->pluck('label')->contains('Apply draft'))
             ->etc()
@@ -424,7 +425,36 @@ it('renders an unpublished draft as a create screen', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('elements/Edit')
             ->where('editorActions.primary.label', 'Create entry')
+            ->where('editorActions.primary.actionUrl', null)
             ->where('contextMenu', null)
+            ->etc()
+        );
+});
+
+it('saves an unpublished draft as a draft when the user cannot create the entry', function () {
+    $user = UserModel::factory()->withPermissions([
+        'accessCp',
+        "viewEntries:{$this->section->uid}",
+        "createEntries:{$this->section->uid}",
+    ])->createElement();
+    actingAs($user);
+
+    $draft = app(Entry::class);
+    $draft->siteId = $this->entry->siteId;
+    $draft->sectionId = $this->section->id;
+    $draft->typeId = $this->entryType->id;
+    $draft->title = 'Unpublished Draft';
+    $draft->slug = 'unpublished-draft';
+    $draft->setAuthorIds([$user->id]);
+
+    app(Drafts::class)->saveElementAsDraft($draft, $user->id, markAsSaved: false);
+
+    get($draft->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('elements/Edit')
+            ->where('editorActions.primary.label', 'Save draft')
+            ->where('editorActions.primary.actionUrl', Url::actionUrl('elements/save-draft'))
             ->etc()
         );
 });
@@ -603,11 +633,28 @@ it('saves a released draft that can be submitted for review instead of opening t
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('release.id', $release->id)
+            ->where('release.blockers', ['The draft must complete its approval workflow before it can be added or published.'])
             ->where('workflow.current.canSubmit', true)
             ->where('editorActions.primary.label', 'Save draft')
             ->where('editorActions.primary.panelId', null)
             ->etc()
         );
+});
+
+it('reports whether a released draft blocks its release', function () {
+    $draft = app(Drafts::class)->createDraft($this->entry, auth()->id(), name: 'Working Draft');
+    app(Releases::class)->attach(app(Releases::class)->create('Launch', null, auth()->user()), $draft, auth()->user());
+
+    get($draft->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('release.blockers', [])->etc());
+
+    $draft->title = '';
+    expect(Elements::saveElement($draft))->toBeTrue();
+
+    get($draft->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('release.blockers', ['The title field is required.'])->etc());
 });
 
 it('keeps draft actions visible and disables applying until workflow approval', function () {
@@ -813,7 +860,7 @@ it('gives Live Preview untokenized targets and the token the View links share', 
         );
 });
 
-it('withholds Live Preview from revisions', function () {
+it('gives revisions Live Preview', function () {
     $revision = Elements::getElementById(
         app(Revisions::class)->createRevision($this->entry, auth()->id()),
     );
@@ -826,7 +873,7 @@ it('withholds Live Preview from revisions', function () {
     )))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('preview', null)
+            ->where('preview.tokenParams.revisionId', $revision->revisionId)
             ->etc()
         );
 });

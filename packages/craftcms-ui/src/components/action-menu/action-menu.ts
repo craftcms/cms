@@ -33,6 +33,20 @@ export type {
 } from './action-menu.types.js';
 
 /**
+ * Styles a separator between groups of items. It's in the light DOM, inside
+ * the slotted content, where the menu's shadow styles can't reach it. With the
+ * content's gap, the space around it matches the menu's padding.
+ */
+function styleSeparator(hr: HTMLElement): void {
+  Object.assign(hr.style, {
+    marginBlock: 'calc(var(--c-spacing-sm) - var(--c-spacing-xs))',
+    marginInline: '0',
+    border: '0',
+    borderBlockStart: '1px solid var(--c-color-neutral-border-quiet)',
+  });
+}
+
+/**
  * An action menu built on craft-popover.
  *
  * The web component is the single source of truth for action-menu behavior.
@@ -83,11 +97,6 @@ export default class CraftActionMenu extends CraftPopover {
         padding: var(--c-spacing-sm);
         font-size: var(--c-text-base);
         font-weight: 400;
-      }
-
-      ::slotted([slot='content']) hr {
-        margin-block: calc(var(--c-spacing-sm) - var(--c-spacing-xs));
-        margin-inline: 0;
       }
 
       :host([disabled]) ::slotted([slot='invoker']) {
@@ -198,21 +207,24 @@ export default class CraftActionMenu extends CraftPopover {
     const content = this.contentNodes[0];
     if (!content) return;
 
-    content
-      .querySelectorAll<CraftActionItem>('craft-action-item')
-      .forEach((item) => item.addEventListener('click', this._onItemClick));
-
+    this._bindContent(content);
     this._observeContent(content);
   }
 
   private _observeContent(content: HTMLElement): void {
     this._contentObserver?.disconnect();
-    this._contentObserver = new MutationObserver(() => {
-      content
-        .querySelectorAll<CraftActionItem>('craft-action-item')
-        .forEach((item) => item.addEventListener('click', this._onItemClick));
-    });
+    this._contentObserver = new MutationObserver(() =>
+      this._bindContent(content)
+    );
     this._contentObserver.observe(content, {childList: true, subtree: true});
+  }
+
+  /** Listens for clicks on the content's items, and styles its separators. */
+  private _bindContent(content: HTMLElement): void {
+    content
+      .querySelectorAll<CraftActionItem>('craft-action-item')
+      .forEach((item) => item.addEventListener('click', this._onItemClick));
+    content.querySelectorAll<HTMLElement>('hr').forEach(styleSeparator);
   }
 
   private _dispatchChange(
@@ -553,16 +565,7 @@ export default class CraftActionMenu extends CraftPopover {
     if (action.type === 'hr') {
       const hr = document.createElement('hr');
       hr.className = 'action-menu__separator';
-      // The separator lives in light DOM (inside the slotted content
-      // container), so the shadow `::slotted()` selector can't reach it —
-      // style it directly here.
-      // With the content's gap, the space around it matches the menu's padding.
-      Object.assign(hr.style, {
-        marginBlock: 'calc(var(--c-spacing-sm) - var(--c-spacing-xs))',
-        marginInline: '0',
-        border: '0',
-        borderBlockStart: '1px solid var(--c-color-neutral-border-quiet)',
-      });
+      styleSeparator(hr);
       return hr;
     }
 

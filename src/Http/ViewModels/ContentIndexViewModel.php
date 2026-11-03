@@ -93,6 +93,9 @@ abstract class ContentIndexViewModel extends ViewModel
 
     private ?Site $resolvedSite = null;
 
+    /** @var array{status: string, drafts: bool, trashed: bool}|null */
+    private ?array $statusSelection = null;
+
     /** @var Collection<int, Site>|null */
     private ?Collection $selectableSites = null;
 
@@ -160,9 +163,31 @@ abstract class ContentIndexViewModel extends ViewModel
         return static::RENDER_CONTEXT;
     }
 
+    /**
+     * The element status to filter by.
+     *
+     * The status menu's Drafts and Trashed options share its `status` param,
+     * but they aren't element statuses (see {@see drafts()} and
+     * {@see trashed()}), so they're never returned here.
+     */
     public function status(): string
     {
-        return $this->request->input('status', '') ?? '';
+        return $this->statusSelection()['status'];
+    }
+
+    /**
+     * The status menu's selected option: an element status, `drafts` or
+     * `trashed`.
+     */
+    public function statusMenuValue(): string
+    {
+        $selection = $this->statusSelection();
+
+        return match (true) {
+            $selection['trashed'] => 'trashed',
+            $selection['drafts'] => 'drafts',
+            default => $selection['status'],
+        };
     }
 
     public function search(): ?string
@@ -198,9 +223,16 @@ abstract class ContentIndexViewModel extends ViewModel
     /**
      * Whether the index is listing drafts or trashed elements. Both disable
      * structure reordering: a move only makes sense against the canonical tree.
+     *
+     * Where the status menu offers them, they're its selection; elsewhere they
+     * come from the request's criteria, which only those indexes apply.
      */
     public function drafts(): bool
     {
+        if ($this->offersDraftsAndTrashed()) {
+            return $this->statusSelection()['drafts'];
+        }
+
         return filter_var(
             $this->request->criteria()['drafts'] ?? false,
             FILTER_VALIDATE_BOOLEAN,
@@ -209,10 +241,91 @@ abstract class ContentIndexViewModel extends ViewModel
 
     public function trashed(): bool
     {
+        if ($this->offersDraftsAndTrashed()) {
+            return $this->statusSelection()['trashed'];
+        }
+
         return filter_var(
             $this->request->criteria()['trashed'] ?? false,
             FILTER_VALIDATE_BOOLEAN,
         );
+    }
+
+    /**
+     * The status menu's options for listing drafts or trashed elements in
+     * place of the canonical ones. The menu shows them after the element
+     * statuses.
+     *
+     * @return list<array{label: string, value: string, icon: string}>
+     */
+    private function draftsAndTrashedOptions(): array
+    {
+        if (! $this->offersDraftsAndTrashed()) {
+            return [];
+        }
+
+        return [
+            ...($this->canHaveDrafts() ? [['label' => t('Drafts'), 'value' => 'drafts', 'icon' => 'draft']] : []),
+            ['label' => t('Trashed'), 'value' => 'trashed', 'icon' => 'trash'],
+        ];
+    }
+
+    /**
+     * Whether the status menu offers Drafts and Trashed. Craft 5 offers them
+     * on the index screen and the embedded index.
+     */
+    private function offersDraftsAndTrashed(): bool
+    {
+        return in_array(static::RENDER_CONTEXT, [
+            ElementSources::CONTEXT_INDEX,
+            ElementSources::CONTEXT_EMBEDDED_INDEX,
+        ], true);
+    }
+
+    /**
+     * The `status` param, split into an element status and the Drafts and
+     * Trashed options that share it.
+     *
+     * @return array{status: string, drafts: bool, trashed: bool}
+     */
+    private function statusSelection(): array
+    {
+        if ($this->statusSelection !== null) {
+            return $this->statusSelection;
+        }
+
+        $status = $this->request->input('status');
+
+        return $this->statusSelection = $this->offersDraftsAndTrashed()
+            ? app(ElementIndexes::class)->statusSelection($this->elementType, $status)
+            : ['status' => is_string($status) ? $status : '', 'drafts' => false, 'trashed' => false];
+    }
+
+    /**
+     * The criteria the status menu's selection adds to the index query. On
+     * the index screen, as in Craft 5, picking an element status also leaves
+     * out unpublished drafts, which only belong under Drafts.
+     *
+     * @return array<string, mixed>
+     */
+    private function statusMenuCriteria(): array
+    {
+        if (! $this->offersDraftsAndTrashed()) {
+            return [];
+        }
+
+        $criteria = app(ElementIndexes::class)->statusSelectionCriteria($this->statusSelection());
+
+        if (
+            $criteria === [] &&
+            static::RENDER_CONTEXT === ElementSources::CONTEXT_INDEX &&
+            $this->status() !== '' &&
+            $this->canHaveDrafts()
+        ) {
+            return ['drafts' => false];
+        }
+
+        return $criteria;
     }
 
     /** @return array<string, mixed>|null */
@@ -258,20 +371,32 @@ abstract class ContentIndexViewModel extends ViewModel
         ];
     }
 
-    /** @return array<int, array{label: string, value: string}> */
+    /**
+     * The status menu's options: All, the element statuses, then Drafts and
+     * Trashed. Element types without statuses only get All, Drafts and
+     * Trashed, since filtering by status is a no-op for them.
+     *
+     * @return list<array{label: string, value: string, icon?: string}>
+     */
     public function statusOptions(): array
     {
-        // Status filtering is a no-op for element types without statuses
-        // (QueriesStatuses ignores it), so don't offer the filter at all.
-        if (! $this->showStatusMenu()) {
+        $showStatusMenu = $this->showStatusMenu();
+        $draftsAndTrashedOptions = $this->draftsAndTrashedOptions();
+
+        if (! $showStatusMenu && ! $draftsAndTrashedOptions) {
             return [];
         }
 
-        return collect($this->elementType::statuses())
-            ->map(fn ($label, $value) => ['label' => $label, 'value' => $value])
-            ->prepend(['label' => t('All'), 'value' => ''])
-            ->values()
-            ->all();
+        return [
+            ['label' => t('All'), 'value' => ''],
+            ...($showStatusMenu
+                ? collect($this->elementType::statuses())
+                    ->map(fn ($label, $value) => ['label' => $label, 'value' => $value])
+                    ->values()
+                    ->all()
+                : []),
+            ...$draftsAndTrashedOptions,
+        ];
     }
 
     public function showStatusMenu(): bool
@@ -560,7 +685,17 @@ abstract class ContentIndexViewModel extends ViewModel
     /** @return array<array-key, mixed> */
     public function viewModes(): array
     {
-        return $this->sourceSettings()->viewModes;
+        $viewModes = $this->sourceSettings()->viewModes;
+
+        if (! $this->drafts() && ! $this->trashed()) {
+            return $viewModes;
+        }
+
+        // Drafts and trashed elements aren't part of the structure.
+        return array_values(array_filter(
+            $viewModes,
+            fn (array $viewMode): bool => ($viewMode['mode'] ?? null) !== ElementIndexViewMode::Structure->value,
+        ));
     }
 
     public function selectedSubnavItem(): ?string
@@ -630,7 +765,7 @@ abstract class ContentIndexViewModel extends ViewModel
         }
 
         return [
-            'style' => $fieldLayout?->getCardThumbStyle() ?? (is_a($this->elementType, Asset::class, true) ? 'cover' : 'normal'),
+            'style' => $fieldLayout?->getCardThumbStyle() ?? (is_a($this->elementType, Asset::class, true) ? 'auto' : 'normal'),
             'alignment' => $fieldLayout?->getCardThumbAlignment() === 'start' ? 'start' : 'end',
         ];
     }
@@ -1128,9 +1263,17 @@ abstract class ContentIndexViewModel extends ViewModel
      */
     protected function mode(): string
     {
-        return $this->request->input('viewMode')
+        $mode = $this->request->input('viewMode')
             ?: $this->request->input('viewState.mode')
             ?: $this->sourceSettings()->defaultViewMode;
+
+        // Without structure mode on offer, show the first mode that is, as the
+        // client does.
+        if ($mode === ElementIndexViewMode::Structure->value && ($this->drafts() || $this->trashed())) {
+            return $this->viewModes()[0]['mode'] ?? ElementIndexViewMode::Table->value;
+        }
+
+        return $mode;
     }
 
     /** @return string[] */
@@ -1163,7 +1306,7 @@ abstract class ContentIndexViewModel extends ViewModel
             source: $this->sourceState()[1],
             condition: $this->request->condition(),
             baseCriteria: $this->baseCriteria(),
-            criteria: static::RENDER_CONTEXT === ElementSources::CONTEXT_MODAL ? $this->request->criteria() : [],
+            criteria: static::RENDER_CONTEXT === ElementSources::CONTEXT_MODAL ? $this->request->criteria() : $this->statusMenuCriteria(),
             // Collapsed subtrees are excluded by the query itself, so a
             // collapsed branch never reaches the client (and never counts
             // toward pagination). Only structure mode collapses anything —
@@ -1472,7 +1615,8 @@ abstract class ContentIndexViewModel extends ViewModel
                 'context' => static::RENDER_CONTEXT,
                 // Folders (no edit URL) navigate via their own card handler, so
                 // don't wrap them in a link that would swallow the click.
-                'hyperlink' => $this->editUrl($element) !== null,
+                // Trashed elements can't be edited.
+                'hyperlink' => ! $element->trashed && $this->editUrl($element) !== null,
                 'showEditButton' => false,
                 'autoReload' => false,
                 'selectable' => false,
@@ -1503,7 +1647,7 @@ abstract class ContentIndexViewModel extends ViewModel
         return array_map(fn (ElementInterface $element) => [
             'id' => $this->rowId($element),
             ...$this->baseRowData($element),
-            'url' => static::RENDER_CONTEXT !== ElementSources::CONTEXT_MODAL
+            'url' => static::RENDER_CONTEXT !== ElementSources::CONTEXT_MODAL && ! $element->trashed
                 ? $this->editUrl($element)
                 : null,
             'thumbHtml' => $element->getThumbHtml($this->thumbSize()->pixels() ?? ElementHtml::CHIP_THUMB_SIZE, ImageTransformMode::Fit),
@@ -1529,7 +1673,7 @@ abstract class ContentIndexViewModel extends ViewModel
     private function elementUrls(ElementInterface $element): array
     {
         return [
-            'cpEditUrl' => currentUser()?->can('view', $element) ? $this->withEditReturnUrl($element->getCpEditUrl()) : null,
+            'cpEditUrl' => ! $element->trashed && currentUser()?->can('view', $element) ? $this->withEditReturnUrl($element->getCpEditUrl()) : null,
             'viewUrl' => $element->getUrl(),
         ];
     }

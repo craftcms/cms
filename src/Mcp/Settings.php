@@ -8,12 +8,15 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Mcp\Validation\EndpointRule;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\Volumes;
+use CraftCms\Cms\Support\Str;
+use Illuminate\Http\Request;
 use Illuminate\Validation\Validator;
 
 /**
@@ -143,6 +146,40 @@ class Settings extends Component
         return $cpTrigger !== '' && str_starts_with(trim($route, '/').'/', $cpTrigger.'/');
     }
 
+    /**
+     * Returns the servers that `/.well-known/ai-catalog.json` advertises, as app-relative paths mapped to whether
+     * each is the public server.
+     *
+     * Servers on control panel URLs are never advertised, and the authenticated server is only advertised when
+     * people can register for an account on the front end.
+     *
+     * @return array<string, bool>
+     */
+    public function discoverableServers(): array
+    {
+        $servers = [];
+
+        if ($this->publicEnabled && $this->isDiscoverable($this->publicRoute)) {
+            $servers[trim($this->publicRoute, '/')] = true;
+        }
+
+        if (
+            $this->enabled &&
+            app(ProjectConfig::class)->get('users.allowPublicRegistration') &&
+            $this->isDiscoverable($this->authorizationRoute)
+        ) {
+            $servers[trim($this->authorizationRoute, '/')] ??= false;
+        }
+
+        return $servers;
+    }
+
+    /** Returns the name MCP clients should give a server. */
+    public function serverName(bool $isPublic): string
+    {
+        return (Str::slug(Cms::systemName()) ?: 'craft').($isPublic ? '' : '-admin');
+    }
+
     /** Whether both servers are enabled and share an endpoint. */
     public function sharesEndpoint(): bool
     {
@@ -166,6 +203,16 @@ class Settings extends Component
         $baseUrl = $this->isCpRoute($route) ? Env::parse(Cms::config()->baseCpUrl) : null;
 
         return (string) ($baseUrl ?? config('app.url'));
+    }
+
+    /** Whether a route has an endpoint and a request to its URL wouldn't be a control panel request. */
+    private function isDiscoverable(string $route): bool
+    {
+        $path = trim($route, '/');
+
+        return $path !== ''
+            && app(EndpointConflicts::class)->find($path) === null
+            && ! Request::create($this->url($route))->isCpRequest();
     }
 
     private function nestedEntryFieldByHandle(string $handle): mixed

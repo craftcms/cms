@@ -19,7 +19,7 @@
   import type CraftInput from '@craftcms/ui/components/input/input';
   import '@craftcms/ui/components/input/input';
   import CpContainer from '@/common/components/CpContainer.vue';
-  import {commentToolbarButtons} from '@/modules/markdown-field/commentToolbarButtons';
+  import {commentToolbarButtons} from '@/modules/markdown-field/toolbarPresets';
   import '@/modules/markdown-field/markdown-field';
   import '@craftcms/ui/components/text-expander/text-expander';
 

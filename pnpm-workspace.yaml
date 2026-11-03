@@ -13,6 +13,16 @@ packages:
 # committed lockfile.
 minimumReleaseAge: 10080
 minimumReleaseAgeExclude:
+  # TanStack AI 1.0, for the AI chat, published 2026-10-22. Remove once it's
+  # past the window.
+  - '@tanstack/ai'
+  - '@tanstack/ai-client'
+  - '@tanstack/ai-event-client'
+  - '@tanstack/ai-utils'
+  - '@tanstack/ai-vue'
+  # TanStack Hotkeys 0.23.0, for keyboard shortcuts, published 2026-11-01.
+  # Pinned to that version; remove once it's past the window.
+  - '@tanstack/hotkeys@0.23.0'
   # Our own Font Awesome kit, published with the Live Preview icons.
   - '@awesome.me/kit-ddaed3f5c5@1.0.77'
 

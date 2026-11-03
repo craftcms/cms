@@ -7,16 +7,7 @@ namespace CraftCms\Cms\Asset\Elements;
 use Closure;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Actions\AnalyzeImages;
-use CraftCms\Cms\Asset\Actions\CopyReferenceTag;
-use CraftCms\Cms\Asset\Actions\CopyUrl;
 use CraftCms\Cms\Asset\Actions\DeleteAssets;
-use CraftCms\Cms\Asset\Actions\DownloadAssetFile;
-use CraftCms\Cms\Asset\Actions\EditImage;
-use CraftCms\Cms\Asset\Actions\MoveAssets;
-use CraftCms\Cms\Asset\Actions\PreviewAsset;
-use CraftCms\Cms\Asset\Actions\RenameFile;
-use CraftCms\Cms\Asset\Actions\ReplaceFile;
-use CraftCms\Cms\Asset\Actions\ShowInFolder;
 use CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis;
 use CraftCms\Cms\Asset\Analysis\ImageAnalyzer;
 use CraftCms\Cms\Asset\Analysis\Tasks\TagImage;
@@ -50,8 +41,10 @@ use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Actions\ClientAction;
 use CraftCms\Cms\Element\Actions\DeleteForSite;
 use CraftCms\Cms\Element\Actions\Restore;
+use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\CurrentElementIndex;
@@ -60,6 +53,7 @@ use CraftCms\Cms\Element\Data\Thumb;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Queries\AssetQuery;
@@ -69,6 +63,7 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\ViewModels\AssetEditViewModel;
@@ -82,6 +77,7 @@ use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\ImageHash;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Image\ImageTransformHelper;
+use CraftCms\Cms\Mcp\Attributes\Mcp;
 use CraftCms\Cms\Search\SearchQuery;
 use CraftCms\Cms\Search\SearchQueryTerm;
 use CraftCms\Cms\Search\SearchQueryTermGroup;
@@ -221,12 +217,18 @@ class Asset extends Element
      * @var int|null Folder ID
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Id, 'The ID of the folder that the asset belongs to.', readable: true, nonNull: true)]
+    #[Gql(write: false)]
+    #[Mcp(hint: 'Changing it moves the file.')]
     public ?int $folderId = null;
 
     /**
      * @var int|null The ID of the user who first added this asset (if known)
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Id, 'The ID of the user who first added the asset, if known.', nullable: true, readable: true)]
+    #[Gql(Gql::CanQueryAllUsers)]
+    #[Mcp(hint: 'Null marks it unknown. Changing it requires permission to save other users’ assets in the volume.')]
     public ?int $uploaderId = null;
 
     /**
@@ -239,12 +241,14 @@ class Asset extends Element
      * @var string|null Kind
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The file kind.', readable: true, writable: false, nonNull: true)]
     public ?string $kind = null;
 
     /**
      * @var string|null Alternative text
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'Alternative text for the asset.', nullable: true, readable: true)]
     public ?string $alt = null;
 
     /**
@@ -315,6 +319,7 @@ class Asset extends Element
      * @var DateTimeInterface|null Date modified
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::DateTime, 'The date the asset file was last modified.', readable: true, writable: false)]
     public ?DateTimeInterface $dateModified = null;
 
     /**
@@ -339,6 +344,8 @@ class Asset extends Element
     /**
      * @var int|null New folder ID
      */
+    #[ElementProperty(ElementPropertyType::Id, 'The ID of the folder to move the asset to.')]
+    #[Mcp(create: false, update: false)]
     public ?int $newFolderId = null;
 
     /**
@@ -775,7 +782,7 @@ class Asset extends Element
         return array_map(fn (Volume $volume) => $volume->getFieldLayout(), $volumes);
     }
 
-    /** @return list<class-string|array{type: class-string, label?: string, restorableElementsOnly?: bool}> */
+    /** @return list<class-string|array{type: class-string, restorableElementsOnly?: bool}|ClientAction> */
     #[Override]
     protected static function defineActions(string $source): array
     {
@@ -792,23 +799,45 @@ class Asset extends Element
         if (isset($volume)) {
             $isTemp = $volume->isTemporary();
 
-            $actions[] = [
-                'type' => PreviewAsset::class,
-                'label' => t('Preview file'),
-            ];
+            $actions[] = new ClientAction(
+                key: 'preview-file',
+                label: t('Preview file'),
+                event: 'craft:preview-file',
+                bulk: false,
+            );
 
-            // Download
-            $actions[] = DownloadAssetFile::class;
+            $actions[] = new ClientAction(
+                key: 'download-file',
+                label: t('Download'),
+                event: 'assets:download-file',
+                bulk: false,
+            );
 
             if ($isTemp || Gate::check("replaceFiles:$volume->uid")) {
-                // Rename/Replace File
-                $actions[] = RenameFile::class;
-                $actions[] = ReplaceFile::class;
+                $actions[] = new ClientAction(
+                    key: 'rename-file',
+                    label: t('Rename file'),
+                    event: 'assets:rename-file',
+                    bulk: false,
+                    selectionAttribute: 'movable',
+                );
+                $actions[] = new ClientAction(
+                    key: 'replace-file',
+                    label: t('Replace file'),
+                    event: 'assets:replace-file',
+                    bulk: false,
+                    selectionAttribute: 'replaceable',
+                );
             }
 
-            // Copy URL
             if ($volume->sourceHasUrls()) {
-                $actions[] = CopyUrl::class;
+                $actions[] = new ClientAction(
+                    key: 'copy-url',
+                    label: t('Copy URL'),
+                    event: 'assets:copy-url',
+                    bulk: false,
+                    selectionAttribute: 'hasUrl',
+                );
             }
 
             // Show in folder
@@ -820,23 +849,43 @@ class Asset extends Element
                 isset($query->search) &&
                 $query->includeSubfolders
             ) {
-                $actions[] = ShowInFolder::class;
+                $actions[] = new ClientAction(
+                    key: 'show-in-folder',
+                    label: t('Show in folder'),
+                    event: 'assets:show-in-folder',
+                    bulk: false,
+                );
             }
 
-            // Copy Reference Tag
-            $actions[] = CopyReferenceTag::class;
+            $actions[] = new ClientAction(
+                key: 'copy-reference-tag',
+                label: t('Copy reference tag'),
+                event: 'assets:copy-reference-tag',
+                bulk: false,
+            );
 
-            // Edit Image
             if ($isTemp || Gate::check("editImages:$volume->uid")) {
-                $actions[] = EditImage::class;
+                $actions[] = new ClientAction(
+                    key: 'edit-image',
+                    label: t('Edit Image'),
+                    event: 'assets:edit-image',
+                    detail: self::sharedImageEditorSettings(),
+                    bulk: false,
+                    selectionAttribute: 'imageEditable',
+                );
             }
 
             if (app(ImageAnalyzer::class)->available()) {
                 $actions[] = AnalyzeImages::class;
             }
 
-            // Move
-            $actions[] = MoveAssets::class;
+            // The index adds the folders the assets can move to
+            $actions[] = new ClientAction(
+                key: 'move-assets',
+                label: t('Move…'),
+                event: 'assets:move-assets',
+                selectionAttribute: 'movable',
+            );
 
             // Restore
             $actions[] = [
@@ -1421,6 +1470,7 @@ class Asset extends Element
      * Returns the volume’s ID.
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Id, 'The ID of the volume that the asset belongs to.', readable: true, writable: false)]
     public function getVolumeId(): ?int
     {
         return (int) $this->_volumeId ?: null;
@@ -2489,6 +2539,9 @@ JS, [
     /**
      * Sets the filename (with extension).
      */
+    #[ElementProperty(ElementPropertyType::String, 'The filename of the asset file.', readable: true, nonNull: true)]
+    #[Gql(write: false)]
+    #[Mcp(hint: 'Changing it renames the file.')]
     public function setFilename(string $filename): void
     {
         $this->_filename = $filename;
@@ -2498,6 +2551,7 @@ JS, [
      * Returns the file extension.
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The file extension for the asset file.', readable: true, writable: false, nonNull: true)]
     public function getExtension(): string
     {
         return pathinfo($this->_filename, PATHINFO_EXTENSION);
@@ -2523,6 +2577,7 @@ JS, [
      * @throws ImageTransformException if $transform is an invalid transform handle
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The file’s MIME type, if it can be determined.', readable: true, writable: false)]
     public function getMimeType(mixed $transform = null): ?string
     {
         if ($transform !== null) {
@@ -2688,6 +2743,7 @@ JS, [
      * @param  string|null  $filename  Filename to use. If not specified, the asset's filename will be used.
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The asset’s path in the volume.', readable: true, writable: false, nonNull: true)]
     public function getPath(?string $filename = null): string
     {
         return $this->folderPath.($filename ?: $this->_filename);
@@ -2767,20 +2823,18 @@ JS, [
     }
 
     /**
-     * Returns the URL of a 4:3 thumbnail that can cover an element card, or `null` if the asset’s image can’t cover
-     * one (see [[canCoverCard()]]).
+     * Returns the URL of a 4:3 thumbnail that can cover an element card, or `null` if one can’t be generated.
+     *
+     * It’s returned whether or not the image is a good fit for a card (see [[canCoverCard()]]).
      */
     public function getCardCoverUrl(): ?string
     {
-        if (! $this->canCoverCard()) {
-            return null;
-        }
-
         return AssetsService::getThumbUrl($this, 800, 600, false, ImageTransformMode::Crop);
     }
 
     /**
-     * Returns whether the asset’s image can cover an element card.
+     * Returns whether the asset’s image is a good fit for covering an element card, for cards whose thumb style is
+     * `auto`.
      *
      * Only images that could be transparent are left out, along with images smaller than 480×360, which would be scaled
      * up, and images narrower than 3:4 or wider than 2:1, which would be cropped too far to tell what they show.
@@ -2809,6 +2863,7 @@ JS, [
      * @see ColorGrid::interpolate()
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'A data URL of a tiny PNG made from the average colors of the image’s regions, which can be scaled up as a blurred placeholder for it, or null if it’s not an image or its colors aren’t known.', readable: true, writable: false)]
     public function getPlaceholderDataUrl(): ?string
     {
         $grid = $this->kind === FileKind::Image->value ? $this->analysis?->colors?->grid : null;
@@ -2839,6 +2894,7 @@ JS, [
      * @see ImageColors::$grid
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'A [BlurHash](https://blurha.sh) string encoded from the image’s colors, or null if it’s not an image or its colors aren’t known.', readable: true, writable: false)]
     public function getBlurhash(): ?string
     {
         $grid = $this->kind === FileKind::Image->value ? $this->analysis?->colors?->grid : null;
@@ -2906,6 +2962,7 @@ JS, [
      * Returns whether a user-defined focal point is set on the asset.
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Boolean, 'Whether a user-defined focal point is set on the asset.', readable: true, writable: false, nonNull: true)]
     public function getHasFocalPoint(): bool
     {
         return isset($this->_focalPoint);
@@ -2939,6 +2996,7 @@ JS, [
      * @throws InvalidArgumentException if $value is invalid
      */
     /** @param array{x: float|int|string, y: float|int|string}|string|null $value */
+    #[ElementProperty(ElementPropertyType::String, 'The image or video focal point, as fractions of the width and height from the top-left corner in the format of "x;y", such as "0.5;0.5". Image transforms crop around it. Null clears it.', nullable: true)]
     public function setFocalPoint(array|string|null $value): void
     {
         if (is_array($value)) {

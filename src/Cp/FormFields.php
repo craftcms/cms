@@ -732,7 +732,9 @@ readonly class FormFields
             'autocapitalize' => false,
         ]), $input);
 
-        return $input->presets($config['presets'] ?? []);
+        return $input
+            ->presets($config['presets'] ?? [])
+            ->alpha($config['alpha'] ?? false);
     }
 
     /** @param array<string, mixed> $config */

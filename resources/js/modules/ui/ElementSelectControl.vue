@@ -206,6 +206,7 @@
         elementIds: next,
         siteId: siteId ?? null,
         branchLimit: props.control.props.branchLimit ?? null,
+        thumbSize: props.control.props.thumbSize ?? null,
       });
       elements = data.elements ?? [];
     } catch {
@@ -493,9 +494,15 @@
 </script>
 
 <template>
-  <!-- `ref="dropZone"`: the whole field accepts dropped files, as `$container`
-       does for Craft 5's `AssetSelectInput`. -->
-  <div ref="dropZone" class="w-full">
+  <!-- `ref="dropZone"`: the whole field accepts dropped and pasted files, as
+       `$container` does for Craft 5's `AssetSelectInput`. It takes focus on
+       click when uploads are allowed, so there's somewhere to paste into. -->
+  <div
+    ref="dropZone"
+    class="w-full"
+    :class="{'can-paste': showUpload}"
+    :tabindex="showUpload ? -1 : undefined"
+  >
     <input
       v-if="editable"
       type="hidden"
@@ -519,6 +526,7 @@
           <ElementList
             :data="listData"
             :view-mode="viewMode"
+            :thumb-size="control.props.thumbSize ?? undefined"
             :selection="list.selection"
             :selectable="selectable"
             :select-all="false"
@@ -556,7 +564,7 @@
                   list.isList.value
                     ? 'inline-start'
                     : list.isThumbs.value
-                      ? false
+                      ? 'inline-end'
                       : undefined
                 "
               />
@@ -615,6 +623,12 @@
 </template>
 
 <style lang="scss" scoped>
+  .can-paste:focus {
+    outline: 2px solid var(--c-color-focus-ring);
+    outline-offset: var(--c-spacing-xs);
+    border-radius: var(--c-radius-sm);
+  }
+
   .element-selection-footer {
     display: flex;
     justify-content: space-between;

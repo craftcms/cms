@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User;
 
+use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Auth\PersonalAccessTokens\PersonalAccessTokens;
 use CraftCms\Cms\Cp\Data\NavItem;
@@ -37,6 +38,8 @@ class EditUserScreens
 
     public const string PREFERENCES = 'preferences';
 
+    public const string AI_ASSISTANT = 'ai-assistant';
+
     public const string PASSWORD = 'password';
 
     public const string PASSKEYS = 'passkeys';
@@ -62,6 +65,10 @@ class EditUserScreens
 
         if ($user->getIsCurrent()) {
             $screens[self::PREFERENCES] = ['label' => t('Preferences')];
+        }
+
+        if ($user->getIsCurrent() && $user->can(Assistant::PERMISSION)) {
+            $screens[self::AI_ASSISTANT] = ['label' => t('AI Assistant')];
         }
 
         $screens[self::ADDRESSES] = ['label' => t('Addresses')];
@@ -184,7 +191,14 @@ class EditUserScreens
 
     public function showTokensScreen(User $user): bool
     {
-        return $user->getIsCurrent() && app(PersonalAccessTokens::class)->scopeGroupsFor($user)->isNotEmpty();
+        if (! $user->getIsCurrent()) {
+            return false;
+        }
+
+        // Users who can’t create tokens still see the apps they’ve authorized.
+        $tokens = app(PersonalAccessTokens::class);
+
+        return $tokens->scopeGroupsFor($user)->isNotEmpty() || $tokens->grants($user) !== [];
     }
 
     public function showSignInProvidersScreen(User $user): bool

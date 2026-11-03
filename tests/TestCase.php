@@ -16,6 +16,7 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
 use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Http\Middleware\PreventRequestsDuringMaintenance as CraftMaintenanceMiddleware;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Search\Search;
@@ -26,6 +27,7 @@ use CraftCms\Cms\Tests\Support\DatabaseLock;
 use CraftCms\Cms\Tests\Support\GuardsUtcDateBindings;
 use CraftCms\Cms\Tests\Support\IsolatesParallelFiles;
 use CraftCms\Cms\Tests\Support\RegistersPackageAliases;
+use CraftCms\Cms\Tests\Support\SkipsRepeatedDstHour;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
@@ -119,6 +121,7 @@ class TestCase extends Orchestra
         Cms::config()->timezone('America/Los_Angeles');
         Cms::setDefaultTimezone();
 
+        SkipsRepeatedDstHour::register();
         GuardsUtcDateBindings::register();
 
         // Tests run in Cp by default
@@ -191,6 +194,9 @@ class TestCase extends Orchestra
         Field::flushMacros();
         FieldLayoutComponent::flushMacros();
         Widget::flushMacros();
+
+        // GraphQL types are built from the schema of the test that first asks for them
+        GqlEntityRegistry::flush();
 
         // ElementQuery has its own $macros property (not via Macroable trait)
         new ReflectionProperty(ElementQuery::class, 'macros')->setValue(null, []);

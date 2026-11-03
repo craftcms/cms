@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Element\Queries\Concerns\Entry;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Facades\UserGroups;
@@ -176,6 +178,7 @@ trait QueriesAuthors
      *
      * @uses $authorId
      */
+    #[ElementQueryParam(ElementQueryParamType::IntOrInts, 'Narrows the query results based on the entries’ authors.')]
     public function authorId(mixed $value): static
     {
         $this->authorId = $value;
@@ -216,6 +219,7 @@ trait QueriesAuthors
      *
      * @uses $authorGroupId
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the user group the entries’ authors belong to.')]
     public function authorGroup(mixed $value): static
     {
         if (is_string($value) && ($group = UserGroups::getGroupByHandle($value))) {
@@ -272,6 +276,7 @@ trait QueriesAuthors
      *
      * @uses $authorGroupId
      */
+    #[ElementQueryParam(ElementQueryParamType::IntOrInts, 'Narrows the query results based on the user group the entries’ authors belong to, per the groups’ IDs.')]
     public function authorGroupId(mixed $value): static
     {
         $this->authorGroupId = $value;

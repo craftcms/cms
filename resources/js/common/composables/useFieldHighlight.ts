@@ -1,8 +1,33 @@
 import {onScopeDispose, nextTick} from 'vue';
 import {router} from '@inertiajs/vue3';
+import {revealElement} from '@/common/utils/dom';
 
 /** How long the highlight stays up before fading itself out. */
 const HIGHLIGHT_MS = 5000;
+
+let timer: ReturnType<typeof setTimeout> | undefined;
+let highlighted: HTMLElement | undefined;
+
+function clearHighlight(): void {
+  clearTimeout(timer);
+  highlighted?.removeAttribute('data-highlighted');
+  highlighted = undefined;
+}
+
+/**
+ * Highlights a field for a few seconds, in place of the one highlighted
+ * before, and shows it.
+ */
+export async function highlightField(field: HTMLElement): Promise<void> {
+  clearHighlight();
+  highlighted = field;
+  field.setAttribute('data-highlighted', '');
+
+  timer = setTimeout(clearHighlight, HIGHLIGHT_MS);
+
+  // The field may be on a tab that isn't selected.
+  await revealElement(field, {block: 'center'});
+}
 
 /**
  * Draws attention to the field a URL fragment points at.
@@ -18,15 +43,6 @@ const HIGHLIGHT_MS = 5000;
  * would be worse than doing nothing.
  */
 export function useFieldHighlight(): void {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  let highlighted: HTMLElement | undefined;
-
-  function clear(): void {
-    clearTimeout(timer);
-    highlighted?.removeAttribute('data-highlighted');
-    highlighted = undefined;
-  }
-
   async function highlightTarget(): Promise<void> {
     const id = window.location.hash.slice(1);
 
@@ -42,22 +58,9 @@ export function useFieldHighlight(): void {
     const target = document.getElementById(decodeURIComponent(id));
     const field = target?.closest<HTMLElement>('craft-field');
 
-    if (!field) {
-      return;
+    if (field) {
+      await highlightField(field);
     }
-
-    clear();
-    highlighted = field;
-    field.setAttribute('data-highlighted', '');
-
-    field.scrollIntoView({
-      block: 'center',
-      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
-        ? 'auto'
-        : 'smooth',
-    });
-
-    timer = setTimeout(clear, HIGHLIGHT_MS);
   }
 
   void highlightTarget();
@@ -77,7 +80,7 @@ export function useFieldHighlight(): void {
   window.addEventListener('hashchange', highlightTarget);
 
   onScopeDispose(() => {
-    clear();
+    clearHighlight();
     stopListening.forEach((stop) => stop());
     window.removeEventListener('hashchange', highlightTarget);
   });

@@ -16,11 +16,14 @@ use CraftCms\Cms\Release\Enums\ReleaseStatus;
 use CraftCms\Cms\Release\Models\Release;
 use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Tests\TestClasses\Release\DraftableReleaseElement;
 use CraftCms\Cms\Tests\TestClasses\Release\ReleasePermissions;
 use CraftCms\Cms\User\Elements\User;
@@ -35,6 +38,7 @@ use function Pest\Laravel\delete;
 use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\get;
 use function Pest\Laravel\getJson;
+use function Pest\Laravel\patchJson;
 use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
@@ -148,19 +152,28 @@ it('schedules a release at the submitted time in the user’s time zone and requ
     get(route('craft.cp.releases.show', $release))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('readOnly', true)
+            ->where('readOnly', false)
             ->where('actionMenu', [])
-            ->where('formActions', [])
-            ->where('redirectUrl', null)
-            ->where('editUi', null));
+            ->where('formActions.0.label', 'Save and continue editing')
+            ->where('editUi', fn ($editUi) => ! str_contains(Json::encode($editUi), 'targetDate'))
+            ->where('release.canUnschedule', true));
 
     getJson(route('craft.cp.releases.scheduleModal', $release))->assertForbidden();
+
+    patchJson(route('craft.cp.releases.update', $release), ['name' => 'Renamed launch'])->assertOk();
+
+    expect($release->fresh()->name)->toBe('Renamed launch')
+        ->and($release->fresh()->targetDate->utc()->toDateTimeString())->toBe('2026-10-02 12:00:00');
 
     get($draft->getCpEditUrl())
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('editorActions.buttons.0.disabled', true)
-            ->where('editorActions.buttons.0.disabledReason', 'Cancel the release schedule before applying this draft.'));
+            ->missing('editorActions.buttons.0.disabled')
+            ->missing('editorActions.buttons.0.disabledReason'));
+
+    postJson(route('craft.cp.releases.publish', $release))->assertOk();
+
+    expect($release->fresh()->status)->toBe(ReleaseStatus::Published);
 });
 
 it('shows release item counts while restricting management to release managers', function () {
@@ -419,6 +432,100 @@ it('shows an entry’s publication warnings in its release row, in an Issues col
     expect($columns())->toBe(['title', 'status', 'issues']);
 });
 
+it('previews every release draft in Live Preview, opening on the requested one', function () {
+    $entryType = EntryType::factory()->create();
+    $section = Section::factory()->withEntryTypes($entryType)->create([
+        'previewTargets' => [['label' => 'Entry page', 'urlFormat' => '{url}', 'refresh' => '1']],
+    ]);
+    SectionSiteSettings::query()->where('sectionId', $section->id)->update([
+        'hasUrls' => true,
+        'uriFormat' => 'news/{slug}',
+        'template' => 'news/_entry',
+    ]);
+    Sections::refreshSections();
+    $previewableDraft = function (string $title) use ($section, $entryType): EntryElement {
+        $canonical = EntryModel::factory()->forSection($section)->forEntryType($entryType)->createElement(['title' => $title]);
+        $draft = app(Drafts::class)->createDraft(canonical: $canonical, creatorId: $this->actor->id, name: "$title draft");
+        $draft->title = "$title changed";
+        expect(Elements::saveElement($draft))->toBeTrue();
+
+        return $draft;
+    };
+    $first = $previewableDraft('First');
+    $second = $previewableDraft('Second');
+    $withoutUrl = releaseControllerDraft($this->actor);
+    $release = $this->releases->create('Previewed release', null, $this->actor);
+    foreach ([$first, $withoutUrl, $second] as $draft) {
+        $this->releases->attach($release, $draft, $this->actor);
+    }
+    $itemIds = $release->items()->orderBy('id')->pluck('id')->all();
+
+    get(route('craft.cp.releases.show', $release))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('previewUrl', route('craft.cp.releases.preview', $release))
+            ->etc());
+
+    get(route('craft.cp.releases.preview', $release))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('preview.selectedItemId', $itemIds[0])->etc());
+
+    $page = get(route('craft.cp.releases.preview', [$release, 'item' => $itemIds[2]]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('releases/Show')
+            ->where('preview.selectedItemId', $itemIds[2])
+            ->where('preview.closeUrl', route('craft.cp.releases.show', $release))
+            ->where('preview.items', fn ($items) => $items->pluck('title')->all() === ['First changed', 'Controller change', 'Second changed'])
+            ->where('preview.items.1.preview', null)
+            ->where('preview.items.2.preview.targets.0.url', $second->getCanonical()->getUrl())
+            ->where('preview.items.2.preview.tokenParams.draftId', $second->draftId)
+            ->where('preview.items.2.editUrl', $second->getCpEditUrl())
+            ->etc());
+
+    $tokenParams = $page->inertiaProps('preview.items.2.preview.tokenParams');
+    postJson(Url::actionUrl('preview/create-token'), $tokenParams)
+        ->assertOk()
+        ->assertJsonPath('token', $page->inertiaProps('preview.items.2.preview.token'));
+
+    get(route('craft.cp.releases.preview', [$release, 'item' => $itemIds[1]]))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('preview.selectedItemId', $itemIds[1])->etc());
+
+    get(route('craft.cp.releases.preview', [$release, 'item' => 0]))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('preview.selectedItemId', $itemIds[0])->etc());
+
+    // Each draft says what's blocking the release, as the release screen does.
+    DB::table(Table::ELEMENTS)->where('id', $second->getCanonicalId())->softDelete();
+
+    get(route('craft.cp.releases.preview', $release))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('preview.items.0.blockers', [])
+            ->where('preview.items.2.blockers', fn ($blockers) => count($blockers) === 1)
+            ->etc());
+
+    $viewer = UserModel::factory()->withPermissions([
+        'accessCp',
+        "viewEntries:$section->uid",
+        "viewPeerEntries:$section->uid",
+        "viewPeerEntryDrafts:$section->uid",
+    ])->createElement();
+    $this->flushSession();
+    actingAs($viewer);
+
+    get(route('craft.cp.releases.preview', [$release, 'item' => $itemIds[2]]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('preview.items.0.title', 'First changed')
+            ->where('preview.items.0.editUrl', null)
+            ->etc());
+});
+
+it('has no preview for a release without drafts', function () {
+    $release = $this->releases->create('Empty release', null, $this->actor);
+
+    get(route('craft.cp.releases.show', $release))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('previewUrl', null)->etc());
+    get(route('craft.cp.releases.preview', $release))->assertNotFound();
+});
+
 it('offers adding to a release only while editing a draft', function (Closure $editedElement, bool $canAddToRelease) {
     $draft = releaseControllerDraft($this->actor);
     $this->releases->create('Editor release', null, $this->actor);
@@ -542,7 +649,40 @@ it('lists a release’s drafts for publishing, holding publication until none ar
 
     $release->update(['status' => ReleaseStatus::Scheduled]);
 
+    getJson(route('craft.cp.releases.publishModal', $release))->assertOk();
+
+    $release->update(['status' => ReleaseStatus::Published]);
+
     getJson(route('craft.cp.releases.publishModal', $release))->assertForbidden();
+});
+
+it('flags blocked drafts on scheduled releases, and blocked releases on the index', function () {
+    $blocked = releaseControllerDraft($this->actor);
+    $release = $this->releases->create('Blocked schedule', null, $this->actor);
+    $this->releases->attach($release, $blocked, $this->actor);
+    DB::table(Table::ELEMENTS)->where('id', $blocked->getCanonicalId())->softDelete();
+    $this->releases->create('Empty release', null, $this->actor);
+    $indexStatuses = fn () => collect(get(route('craft.cp.releases.index'), headers: ['X-Inertia' => 'true'])
+        ->json('props.ui.nodes.0.props.rows'))
+        ->mapWithKeys(fn (array $row) => [$row['name']['label'] => $row['status']['html']]);
+
+    expect($indexStatuses()['Blocked schedule'])->toContain('Draft')->toContain('Blocked')
+        ->and($indexStatuses()['Empty release'])->not->toContain('Blocked');
+
+    $release->update(['status' => ReleaseStatus::Scheduled, 'publishedAt' => now()->addDay()]);
+
+    expect($indexStatuses()['Blocked schedule'])->toContain('Scheduled')->toContain('Blocked');
+
+    get(route('craft.cp.releases.show', $release))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('ui.nodes.0.props.columns.1.key', 'status')
+            ->where('ui.nodes.0.props.columns.2.key', 'issues')
+            ->where('ui.nodes.0.props.rows.0.status.html', fn (string $html) => str_contains($html, 'Blocked'))
+            ->where('ui.nodes.0.props.rows.0.issues.html', fn (string $html) => str_contains($html, 'The entry has been deleted.'))
+            ->where('release.canPublish', true)
+            ->where('release.canSchedule', false)
+            ->where('publishDisabledReason', '1 draft is blocking publication.'));
 });
 
 it('deletes a mutable release through its advertised action without deleting its draft', function (string $source, ReleaseStatus $status) {

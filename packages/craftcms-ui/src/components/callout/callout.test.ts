@@ -216,7 +216,7 @@ describe('craft-callout title', () => {
     await new Promise((resolve) => setTimeout(resolve));
     await element.updateComplete;
 
-    expect(shadow(element, '.callout--title')).not.toBeNull();
+    expect(shadow(element, '.callout__title')).not.toBeNull();
     expect(shadow(element, 'slot[name="title"]')).not.toBeNull();
   });
 });
