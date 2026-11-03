@@ -44,4 +44,31 @@ class LocaleTest extends TestCase
             ['pt', 'pt-BR'],
         ];
     }
+
+    /**
+     * @param string $expected
+     * @param string $locale
+     * @dataProvider orientationDataProvider
+     */
+    public function testOrientation(string $expected, string $locale): void
+    {
+        self::assertSame($expected, (new Locale($locale))->getOrientation());
+    }
+
+    /**
+     * @return array[]
+     */
+    public static function orientationDataProvider(): array
+    {
+        return [
+            ['rtl', 'ar'],
+            ['rtl', 'he-IL'],
+            ['rtl', 'ckb'],
+            ['rtl', 'yi'],
+            ['rtl', 'pa-Arab'],
+            ['ltr', 'pa'],
+            ['ltr', 'en-US'],
+            ['ltr', 'zh-Hans'],
+        ];
+    }
 }
