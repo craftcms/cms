@@ -27,7 +27,7 @@
       <craft-tab slot="tab">{{ mode.label }}</craft-tab>
       <div slot="panel" class="install-commands__panel">
         <craft-input-copy
-          :label="`${mode.label} ${t('Installation Instructions')}`"
+          :label="t('{name} installation instructions', {name: mode.label})"
           label-sr-only
           readonly
           class="font-mono"

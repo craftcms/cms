@@ -69,7 +69,7 @@
         </div>
         <craft-button
           size="small"
-          :aria-label="`${t('Add to cart')} ${trial.name}`"
+          :aria-label="t('Add {name} to cart', {name: trial.name})"
           .disabled="busy || adding || trial.licenseMismatched"
           @click="addRows([trial], t('Couldn’t add item to cart.'))"
         >

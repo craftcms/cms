@@ -35,10 +35,10 @@
   const compatibility = computed(() => [
     {svg: craftIcon, label: plugin.compatibility},
     ...(plugin.cloudTested
-      ? [{svg: cloudIcon, label: 'Tested on Craft Cloud'}]
+      ? [{svg: cloudIcon, label: t('Tested on Craft Cloud')}]
       : []),
     ...(plugin.supportsGql
-      ? [{svg: graphqlIcon, label: 'Supports GraphQL'}]
+      ? [{svg: graphqlIcon, label: t('Supports GraphQL')}]
       : []),
   ]);
 </script>

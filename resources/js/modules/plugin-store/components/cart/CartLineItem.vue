@@ -107,7 +107,7 @@
           <craft-button
             variant="link"
             size="small"
-            :aria-label="`${t('Remove')} ${name}`"
+            :aria-label="t('Remove {name}', {name})"
             .disabled="busy"
             @click="removeItem"
           >
@@ -150,6 +150,7 @@
           <craft-button
             variant="link"
             size="small"
+            :aria-label="t('Remove extra years of updates for {name}', {name})"
             .disabled="busy"
             @click="setAutoRenew(true)"
           >

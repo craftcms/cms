@@ -26,14 +26,14 @@
     const info = developer.value?.partnerInfo;
 
     return [
-      info?.isCraftVerified && {kind: 'craft', label: 'Craft Verified'},
+      info?.isCraftVerified && {kind: 'craft', label: t('Craft Verified')},
       info?.isCommerceVerified && {
         kind: 'commerce',
-        label: 'Craft Commerce Verified',
+        label: t('Craft Commerce Verified'),
       },
       info?.isEnterpriseVerified && {
         kind: 'enterprise',
-        label: 'Enterprise Verified',
+        label: t('Enterprise Verified'),
       },
     ].filter(Boolean) as Array<{
       kind: 'craft' | 'commerce' | 'enterprise';
