@@ -58,7 +58,6 @@ import './modules/entry-mover/index';
 import './modules/prompt-handler/index';
 import './modules/link-field/index';
 import './modules/cp-modal/index';
-import './modules/tabs/index';
 import './modules/grid/index';
 import './modules/chart/index';
 import './modules/element-thumb-loader/index';

@@ -21,4 +21,5 @@ import '@/modules/interval-manager/compat';
 import '@/modules/prompt-handler/compat';
 import '@/modules/slideout/compat';
 import '@/modules/sortable-checkbox-select/compat';
+import '@/modules/tabs/compat';
 import '@/modules/ui/compat';
