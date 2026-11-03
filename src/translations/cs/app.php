@@ -716,7 +716,7 @@ return [
     'Edited' => 'Upraveno',
     'Eircode' => 'Kód Eircode',
     'Element States' => 'Stavy prvků',
-    'Element' => 'Najít oficiálního partnera Craft ',
+    'Element' => 'Prvek',
     'Elements duplicated.' => 'Prvky duplikovány.',
     'Elements' => 'Prvky',
     'Email Settings' => 'Nastavení emailu',
