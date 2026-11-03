@@ -527,7 +527,7 @@ return [
     'Create a new section' => '新しいセクションを作る',
     'Create a new site' => '新しいサイトを作る',
     'Create a new tag group' => '新しいタググループを作成する',
-    'Create a new token' => 'Create a new token',
+    'Create a new token' => '新規トークンを作成',
     'Create a new user group' => '新しいユーザーグループを作る',
     'Create a new volume…' => '新しいボリュームを作成…',
     'Create a new {section} entry' => '新規{section}エントリを作成',
