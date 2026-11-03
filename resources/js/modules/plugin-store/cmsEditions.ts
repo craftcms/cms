@@ -31,9 +31,19 @@ export const cmsEditionFeatures: Partial<
         'Preview your content from multiple targets, including single-page applications.',
     },
     {
-      name: 'Twig + GraphQL',
+      name: 'Custom front end',
       description:
-        'Define custom front-end templates, or use Craft headlessly with the auto-generated GraphQL API.',
+        'Create front-end templates in Blade, Twig, or Inertia, or use Craft headlessly with the auto-generated GraphQL API.',
+    },
+    {
+      name: 'AI assistant + tooling',
+      description:
+        'Interact and enhance with your content with several built-in AI tools.',
+    },
+    {
+      name: 'MCP server',
+      description:
+        'Connect AI tools to Craft’s Model Context Protocol server to inspect and manage your content, assets, and settings.',
     },
   ],
   team: [
@@ -46,6 +56,11 @@ export const cmsEditionFeatures: Partial<
       name: 'One user group',
       description:
         'All accounts belong to a “Team” user group with customizable permissions for non-admins.',
+    },
+    {
+      name: 'Content collaboration',
+      description:
+        'Discuss content on its activity timeline, alongside content changes and other actions.',
     },
     {
       name: 'Developer support',
@@ -62,6 +77,21 @@ export const cmsEditionFeatures: Partial<
     {
       name: 'Unlimited user groups',
       description: 'Create multiple user groups with custom permissions.',
+    },
+    {
+      name: 'Publishing workflows',
+      description:
+        'Require drafts to pass review stages, with per-group approvals and change requests, before they can be applied.',
+    },
+    {
+      name: 'Content releases',
+      description:
+        'Group new entries and content updates into releases that publish together, at a scheduled time.',
+    },
+    {
+      name: 'Social sign-in',
+      description:
+        'Let users sign in with their accounts on other services, such as Google or GitHub.',
     },
     {
       name: 'Branded control panel',
