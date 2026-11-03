@@ -527,7 +527,7 @@ return [
     'Create a new section' => 'Δημιουργία νέας ενότητας',
     'Create a new site' => 'Δημιουργία νέου ιστότοπου',
     'Create a new tag group' => 'Δημιουργία νέας ομάδας ετικετών',
-    'Create a new token' => 'Create a new token',
+    'Create a new token' => 'Δημιουργία νέου token',
     'Create a new user group' => 'Δημιουργία νέας ομάδας χρηστών',
     'Create a new volume…' => 'Δημιουργία νέου τόμου…',
     'Create a new {section} entry' => 'Δημιουργία νέας καταχώρισης {section}',
