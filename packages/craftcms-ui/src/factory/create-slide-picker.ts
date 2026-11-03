@@ -9,6 +9,8 @@ export interface SlidePickerConfig {
   step?: number;
   value?: number;
   label?: string;
+  labelledBy?: string;
+  describedBy?: string;
   valueLabel?: (value: number) => string;
   readOnly?: boolean;
   disabled?: boolean;
@@ -38,6 +40,12 @@ export function createSlidePicker(
   el.modelValue = value || 0;
   if (config.label) {
     el.label = config.label;
+  }
+  if (config.labelledBy) {
+    el.setAttribute('aria-labelledby', config.labelledBy);
+  }
+  if (config.describedBy) {
+    el.setAttribute('aria-describedby', config.describedBy);
   }
   el.valueLabel = config.valueLabel || ((v) => `${v}`);
   if (readOnly) {

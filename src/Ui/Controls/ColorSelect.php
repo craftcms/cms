@@ -44,6 +44,7 @@ class ColorSelect extends Control
             ->disabled($attributes['disabled'])
             ->readOnly($attributes['readonly'])
             ->required($attributes['required'])
+            ->describedBy($attributes['aria']['describedby'] ?? null)
             ->toHtml();
     }
 

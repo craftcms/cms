@@ -191,6 +191,16 @@ describe('createSlidePicker', () => {
     expect(el.min).toBe(10);
     expect(el.max).toBe(90);
   });
+
+  it('references the elements that label and describe it', () => {
+    const el = createSlidePicker({
+      labelledBy: 'width-label',
+      describedBy: 'width-instructions',
+    });
+
+    expect(el.getAttribute('aria-labelledby')).toBe('width-label');
+    expect(el.getAttribute('aria-describedby')).toBe('width-instructions');
+  });
 });
 
 describe('createInputColor', () => {

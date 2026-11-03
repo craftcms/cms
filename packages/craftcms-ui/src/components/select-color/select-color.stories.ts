@@ -5,7 +5,6 @@ import {html} from 'lit';
 import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 
 import './select-color.js';
-import '../field/field.js';
 import type CraftSelectColor from './select-color.js';
 
 /**
@@ -47,26 +46,6 @@ export const Default: Story = {
 
     await expect((host as {modelValue?: unknown}).modelValue).toBe('red');
   },
-};
-
-/**
- * Inside `craft-field`, the field's label names the color button and its
- * instructions and errors describe it, so the control needs no `label` of its
- * own.
- */
-export const InField: Story = {
-  render: () => html`
-    <craft-field
-      label="Card color"
-      help-text="The color of the entry type's cards."
-    >
-      <craft-select-color
-        slot="input"
-        name="color"
-        model-value="red"
-      ></craft-select-color>
-    </craft-field>
-  `,
 };
 
 /** Nothing selected — the invoker shows the placeholder with no swatch. */

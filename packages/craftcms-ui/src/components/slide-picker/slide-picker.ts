@@ -2,6 +2,7 @@ import {LionField} from '@lion/ui/form-core.js';
 import {html, nothing, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {HasLabel} from '@src/mixins/HasLabel';
+import {HostAriaReferences} from '@src/mixins/HostAriaReferences';
 import {baseFieldStyles} from '@src/styles/form.styles';
 import {emitChange, emitInput} from '@src/utilities/form-events';
 import type CraftSlidePickerSlider from './slide-picker-slider.js';
@@ -18,6 +19,10 @@ import styles from './slide-picker.styles.js';
  * hidden input carries the value, so a picker with a `name` posts like any
  * other field.
  *
+ * Outside a field, `aria-labelledby` and `aria-describedby` on the picker name
+ * and describe the slider after elements elsewhere, such as a table column
+ * heading.
+ *
  * @attr model-value - The selected value.
  *
  * @slot label - The picker's label, as an alternative to the `label`
@@ -30,6 +35,11 @@ import styles from './slide-picker.styles.js';
  * user. Every alteration is a commit here, so it follows each `input`.
  * @fires model-value-changed - The value changed.
  *
+ * `model-value-changed` is Lion's own protocol name, not one this package
+ * chose, and it is kept because Lion's form system dispatches and listens for
+ * it. Prefer the native events above: they are the contract this package
+ * supports, and they carry the component as `event.target`.
+ *
  * @cssproperty --c-slide-picker-segment-fill - Fill of the segments past the
  * value. Defaults to `--c-color-neutral-fill-quiet`.
  * @cssproperty --c-slide-picker-segment-active-fill - Fill of the segments up
@@ -38,13 +48,17 @@ import styles from './slide-picker.styles.js';
  * @cssproperty --c-slide-picker-segment-hover-fill - Fill of the segments up
  * to the hovered one, previewing a value. Defaults to
  * `--c-color-neutral-fill-normal`.
- *
- * `model-value-changed` is Lion's own protocol name, not one this package
- * chose, and it is kept because Lion's form system dispatches and listens for
- * it. Prefer the native events above: they are the contract this package
- * supports, and they carry the component as `event.target`.
  */
-export default class CraftSlidePicker extends HasLabel(LionField) {
+export default class CraftSlidePicker extends HostAriaReferences(
+  HasLabel(LionField)
+) {
+  /**
+   * Makes the browser treat the picker as a form control, so a form reset
+   * that isn't canceled calls `formResetCallback()`. The hidden input posts
+   * the value.
+   */
+  static formAssociated = true;
+
   static override get styles() {
     return [...super.styles, baseFieldStyles, styles];
   }
@@ -77,9 +91,6 @@ export default class CraftSlidePicker extends HasLabel(LionField) {
    * A property rather than an attribute, so bind it with `.valueLabel`.
    */
   @property({attribute: false}) valueLabel?: (value: number) => string;
-
-  /** The form whose reset restores the picker's starting value. */
-  #form: HTMLFormElement | null = null;
 
   constructor() {
     super();
@@ -133,19 +144,10 @@ export default class CraftSlidePicker extends HasLabel(LionField) {
     super.attributeChangedCallback(name, old, value);
   }
 
-  override connectedCallback() {
-    super.connectedCallback();
-    this.#form = this.closest('form');
-    this.#form?.addEventListener('reset', this.#handleReset);
+  /** Restores the starting value when the owning form is reset. */
+  formResetCallback() {
+    this.reset();
   }
-
-  override disconnectedCallback() {
-    super.disconnectedCallback();
-    this.#form?.removeEventListener('reset', this.#handleReset);
-    this.#form = null;
-  }
-
-  #handleReset = () => this.reset();
 
   /** Reads the slider's string value as a number. */
   override parser(value: string): number {

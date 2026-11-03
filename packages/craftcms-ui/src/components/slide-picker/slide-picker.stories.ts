@@ -4,7 +4,6 @@ import {expect} from 'storybook/test';
 import {html} from 'lit';
 import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 import './slide-picker.js';
-import '../field/field.js';
 
 /**
  * Lion's own `label` and `help-text` are slots here, so they are set through
@@ -54,29 +53,6 @@ export const FiveSteps: Story = {
     'model-value': 60,
     'label-slot': 'Completion',
   },
-};
-
-/**
- * Inside `craft-field`, the field's label names the slider and its
- * instructions and errors describe it, so the picker needs no `label` of its
- * own.
- */
-export const InField: Story = {
-  render: () => html`
-    <craft-field
-      label="Card width"
-      help-text="How many columns the card spans."
-    >
-      <craft-slide-picker
-        slot="input"
-        value-unit="columns"
-        min="1"
-        max="4"
-        step="1"
-        model-value="2"
-      ></craft-slide-picker>
-    </craft-field>
-  `,
 };
 
 /**

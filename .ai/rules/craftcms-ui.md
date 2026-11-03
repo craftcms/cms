@@ -21,6 +21,15 @@ copy its pattern without applying that test first. Give each thing a
 consumer can vary its own story. Describe behavior every instance shares in
 a story that already shows it, rather than a story of its own.
 
+Before adding to `<component>.stories.ts`, check why you want the story. If
+it's to get a check (axe, a `play()` assertion) or to show a reviewer a case,
+it isn't an API story: verify the case in a `.browser.test.ts`, and add it to
+the edge-cases stories file only if a reviewer needs to see it. Placing the
+component somewhere, such as inside a `craft-field`, in a table cell or
+beside other content, to show how it's named or wired up (`aria-labelledby`
+pointing at a column heading) isn't an API variant either. Document the attribute in the `.mdx` prose and verify
+it in a browser test.
+
 Edge cases a reviewer needs to see — hard inputs, stress content, failure
 states, and fallbacks for missing data — go in
 `<component>.edge-cases.stories.ts`, titled with the component's own

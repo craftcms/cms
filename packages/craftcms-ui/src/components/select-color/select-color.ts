@@ -1,6 +1,7 @@
 import {html, nothing, render, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {colors as paletteColors} from '@src/constants/colors';
+import {HostAriaReferences} from '@src/mixins/HostAriaReferences';
 import {emitChange, emitInput} from '@src/utilities/form-events';
 import {t} from '@src/utilities/translate';
 import CraftSelectRich from '../select-rich/select-rich.js';
@@ -21,6 +22,9 @@ function titleCase(value: string): string {
  *
  * Everything else, including the label, help text, validation and the way a
  * surrounding `craft-field` names it, comes from {@link CraftSelectRich}.
+ * Outside a field, `aria-labelledby` and `aria-describedby` on the host name
+ * and describe the button after elements elsewhere, such as a table column
+ * heading.
  *
  * @since 1.0
  *
@@ -31,18 +35,20 @@ function titleCase(value: string): string {
  *   follows each `input`.
  * @fires model-value-changed - The selected color changed.
  *
+ * `model-value-changed` is Lion's own protocol name, not one this package
+ * chose, and it is kept because Lion's form system dispatches and listens for
+ * it. Prefer the native events above: they are the contract this package
+ * supports, and they carry the component as `event.target`.
+ *
  * @cssproperty [--c-select-color-swatch-edge=rgb(0 0 0 / 15%)] - Edge of the
  *   no-color swatch, which would otherwise blend into a dark surface. The dark
  *   theme lightens it.
  * @cssproperty [--c-select-color-swatch-ring=transparent] - Ring around every
  *   swatch. The dark theme sets a faint one.
- *
- * `model-value-changed` is Lion's own protocol name, not one this package
- * chose, and it is kept because Lion's form system dispatches and listens for
- * it. Prefer the native events above: they are the contract this package
- * supports, and they carry the component as `event.target`.
  */
-export default class CraftSelectColor extends CraftSelectRich {
+export default class CraftSelectColor extends HostAriaReferences(
+  CraftSelectRich
+) {
   static override get styles() {
     return [...super.styles, styles];
   }

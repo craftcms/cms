@@ -146,3 +146,51 @@ it('has no name of its own until one is given', async () => {
 
   await expect.element(page.getByRole('slider')).toHaveAccessibleName('');
 });
+
+it('is named and described by the elements its host references', async () => {
+  const {page} = await import('vite-plus/test/browser');
+  await import('../../styles/cp.css');
+  document.body.innerHTML = `<table><thead><tr><th id="width-heading">Width</th></tr></thead><tbody><tr><td><craft-slide-picker min="1" max="4" step="1" model-value="2" aria-labelledby="width-heading" aria-describedby="width-help"></craft-slide-picker></td></tr></tbody></table><p id="width-help">How many columns the field spans.</p>`;
+
+  const slider = page.getByRole('slider');
+
+  await expect.element(slider).toHaveAccessibleName('Width');
+  await expect
+    .element(slider)
+    .toHaveAccessibleDescription('How many columns the field spans.');
+});
+
+it('follows changes to the references on its host', async () => {
+  const {page} = await import('vite-plus/test/browser');
+  document.body.innerHTML = `<span id="first">Width</span><span id="second">Columns</span><craft-slide-picker min="1" max="4" step="1" aria-labelledby="first"></craft-slide-picker>`;
+  const picker =
+    document.querySelector<CraftSlidePicker>('craft-slide-picker')!;
+  const slider = page.getByRole('slider');
+  await expect.element(slider).toHaveAccessibleName('Width');
+
+  picker.setAttribute('aria-labelledby', 'second');
+  await expect.element(slider).toHaveAccessibleName('Columns');
+
+  picker.removeAttribute('aria-labelledby');
+  await expect.element(slider).toHaveAccessibleName('');
+});
+
+it('keeps its value when the form reset is canceled', async () => {
+  document.body.innerHTML = `<form><craft-slide-picker name="columns" min="1" max="4" step="1" model-value="2"></craft-slide-picker><input name="title" value="Original"></form>`;
+  const form = document.querySelector('form')!;
+  const picker =
+    document.querySelector<CraftSlidePicker>('craft-slide-picker')!;
+  const input = form.querySelector('input')!;
+  await picker.updateComplete;
+  form.addEventListener('reset', (event) => event.preventDefault());
+
+  picker.modelValue = 4;
+  input.value = 'Changed';
+  await picker.updateComplete;
+  form.reset();
+  await picker.updateComplete;
+
+  expect(input.value).toBe('Changed');
+  expect(picker.modelValue).toBe(4);
+  expect(new FormData(form).get('columns')).toBe('4');
+});

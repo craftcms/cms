@@ -643,8 +643,11 @@ Craft.ui = {
     if (!config.labelId) {
       config.labelId = `${config.id}-label`;
     }
+    if (!config.labelledBy) {
+      config.labelledBy = config.labelId;
+    }
     if (!config.describedBy) {
-      config.describedBy = config.labelId;
+      config.describedBy = this.getDescribedByValue(config);
     }
 
     return this.createField(this.createSlidePicker(config), config).addClass(
