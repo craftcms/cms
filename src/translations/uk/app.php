@@ -527,7 +527,7 @@ return [
     'Create a new section' => 'Створити новий розділ',
     'Create a new site' => 'Створити новий сайт',
     'Create a new tag group' => 'Створити нову групу тегів',
-    'Create a new token' => 'Create a new token',
+    'Create a new token' => 'Створити новий токен',
     'Create a new user group' => 'Створити нову групу користувачів',
     'Create a new volume…' => 'Створити новий том…',
     'Create a new {section} entry' => 'Створення нового запису в розділі «{section}»',
