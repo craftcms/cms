@@ -103,9 +103,9 @@ describe('openExternalLinksInNewTabs', () => {
 
     openExternalLinksInNewTabs(document.body);
 
-    const ids = link.getAttribute('aria-describedby')!.split(' ');
-    expect(ids[0]).toBe('hint');
-    expect(document.getElementById(ids[1])!.textContent).toBe(
+    const [hint, cue] = link.getAttribute('aria-describedby')!.split(' ');
+    expect(hint).toBe('hint');
+    expect(document.getElementById(cue!)!.textContent).toBe(
       'Opens in a new window'
     );
   });
