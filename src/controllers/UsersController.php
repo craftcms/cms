@@ -1595,6 +1595,7 @@ JS, ['users/token-modal']);
         $response->contentTemplate('users/_tokens', [
             'groups' => $tokens->scopeGroups(),
             'grants' => $tokens->grants($user),
+            'canCreate' => (bool)$tokens->scopeGroupsFor($user),
             'newToken' => Craft::$app->getSession()->getFlash('accessToken'),
         ]);
 

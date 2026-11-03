@@ -72,6 +72,21 @@ class PersonalAccessTokens extends Component
                 userScopes: fn(User $user, array $scopes) => $resource->scopesForUser($user, $scopes),
             );
         });
+
+        // MCP clients the user has authorized are listed, but MCP tokens come from MCP clients, so users can’t grant
+        // MCP scopes to personal access tokens.
+        $this->registerScopeGroup('mcp', function() {
+            if (!Craft::$app->get('mcp')->getSettings()->enabled) {
+                return null;
+            }
+
+            return new ScopeGroup(
+                handle: 'mcp',
+                label: Craft::t('app', 'MCP'),
+                scopes: Craft::$app->getOAuth()->getResource('mcp')->scopes,
+                userScopes: fn() => [],
+            );
+        });
     }
 
     /**

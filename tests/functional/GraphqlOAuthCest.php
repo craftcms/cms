@@ -18,6 +18,7 @@ use craft\helpers\StringHelper;
 use craft\oauth\ScopeGroup;
 use craft\oauth\User as OAuthUser;
 use craft\services\Gql;
+use craft\services\Mcp;
 use craft\services\PersonalAccessTokens;
 use DateInterval;
 use DateTime;
@@ -52,6 +53,11 @@ class GraphqlOAuthCest
             'scopes' => '["graphql:read","graphql:write"]',
             'revoked' => false,
         ])->execute();
+    }
+
+    public function _after(FunctionalTester $I): void
+    {
+        Craft::$app->get('mcp')->resetSettings();
     }
 
     public function testSchemaIsBasedOnTheTokensUser(FunctionalTester $I): void
@@ -110,9 +116,10 @@ class GraphqlOAuthCest
     public function testPersonalAccessTokensCanMixApis(FunctionalTester $I): void
     {
         $user = $this->user(['viewUsers', 'accessCp', 'useCraftMcp']);
+        Craft::$app->get('mcp')->getSettings()->enabled = true;
         $tokens = new PersonalAccessTokens();
-        $tokens->registerScopeGroup('mcp', fn() => new ScopeGroup('mcp', 'MCP', ['mcp:read' => 'Read'], fn(User $user, array $scopes) => $scopes));
-        $token = $tokens->create($user, 'Agent', [Gql::SCOPE_READ, 'mcp:read'], new DateInterval('P7D'));
+        // Users can't grant MCP scopes from the Tokens screen, but tokens can still be issued for several APIs
+        $token = Craft::$app->getOAuth()->createPersonalAccessToken($user, 'Agent', [Gql::SCOPE_READ, 'mcp:read'], new DateInterval('P7D'));
 
         // Each API accepts the token, and only sees its own scopes
         $I->assertSame(['users' => []], $this->graphql($I, '{ users(email: "nobody@example.com") { id } }', $token)['data']);
@@ -166,6 +173,38 @@ class GraphqlOAuthCest
         }
     }
 
+    public function testMcpTokens(FunctionalTester $I): void
+    {
+        Craft::$app->getDb()->createCommand()->insert(Table::OAUTH_CLIENTS, [
+            'id' => 'test-mcp',
+            'name' => 'Test MCP client',
+            'redirect_uris' => '["https://client.example/callback"]',
+            'grant_types' => '["authorization_code","refresh_token"]',
+            'scopes' => '["mcp:read","mcp:write","mcp:admin"]',
+            'revoked' => false,
+        ])->execute();
+        Craft::$app->get('mcp')->getSettings()->enabled = true;
+        $tokens = new PersonalAccessTokens();
+        $user = $this->user([]);
+
+        // MCP tokens come from MCP clients, not the Tokens screen
+        $I->assertArrayNotHasKey('mcp', $tokens->scopeGroupsFor(User::find()->admin()->one()));
+        $I->expectThrowable(InvalidArgumentException::class, fn() => $tokens->create($user, 'MCP', [Mcp::SCOPE_READ], new DateInterval('P7D')));
+
+        // But MCP clients the user has authorized are listed, and can be revoked
+        $clientToken = $this->token($user, Mcp::SCOPE_WRITE, 'mcp', 'test-mcp');
+        $grants = $tokens->grants($user);
+        $I->assertCount(1, $grants);
+        $I->assertSame('Test MCP client', $grants[0]['name']);
+        $I->assertFalse($grants[0]['personal']);
+        $I->assertSame(['mcp' => [Mcp::SCOPE_WRITE]], $grants[0]['scopes']);
+
+        $tokens->revoke($user, 'test-mcp');
+        $I->assertSame([], $tokens->grants($user));
+        $request = new ServerRequest('POST', 'https://example.test/mcp', ['Authorization' => "Bearer $clientToken"]);
+        $I->expectThrowable(OAuthServerException::class, fn() => Craft::$app->getOAuth()->authenticate($request, 'mcp'));
+    }
+
     public function testInvalidTokensAreRejected(FunctionalTester $I): void
     {
         $I->haveHttpHeader('Authorization', 'Bearer aaa.bbb.ccc');
@@ -201,15 +240,15 @@ class GraphqlOAuthCest
         return Json::decode($I->grabPageSource());
     }
 
-    private function token(User $user, string $scope = Gql::SCOPE_READ): string
+    private function token(User $user, string $scope = Gql::SCOPE_READ, string $resource = 'graphql', string $clientId = 'test-graphql'): string
     {
         $oauth = Craft::$app->getOAuth();
-        $server = $oauth->server('graphql');
+        $server = $oauth->server($resource);
         $verifier = str_repeat('v', 43);
 
-        $request = (new ServerRequest('GET', $oauth->url('authorize', 'graphql')))->withQueryParams([
+        $request = (new ServerRequest('GET', $oauth->url('authorize', $resource)))->withQueryParams([
             'response_type' => 'code',
-            'client_id' => 'test-graphql',
+            'client_id' => $clientId,
             'redirect_uri' => 'https://client.example/callback',
             'scope' => $scope,
             'state' => 'state',
@@ -224,9 +263,9 @@ class GraphqlOAuthCest
         $response = $server->completeAuthorizationRequest($authorization, new Response());
         parse_str(parse_url($response->getHeaderLine('Location'), PHP_URL_QUERY), $query);
 
-        $request = (new ServerRequest('POST', $oauth->url('token', 'graphql')))->withParsedBody([
+        $request = (new ServerRequest('POST', $oauth->url('token', $resource)))->withParsedBody([
             'grant_type' => 'authorization_code',
-            'client_id' => 'test-graphql',
+            'client_id' => $clientId,
             'redirect_uri' => 'https://client.example/callback',
             'code' => $query['code'],
             'code_verifier' => $verifier,
