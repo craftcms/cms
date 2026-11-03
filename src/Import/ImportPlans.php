@@ -316,7 +316,7 @@ class ImportPlans
             $importRecord->name = $importPlan->name;
             $importRecord->handle = $importPlan->handle;
             $importRecord->description = $importPlan->description;
-            $importRecord->steps = $importPlan->serializeSteps();
+            $importRecord->steps = $importPlan->serializeSteps() ?? [];
 
             if (! $importRecord->exists) {
                 $importRecord->sortOrder = $this->nextSortOrder();
@@ -360,6 +360,11 @@ class ImportPlans
                 $importPlan->steps ?? [],
             ),
         ]);
+
+        // a plan can be saved before it has steps, and so can its copy
+        if (empty($importPlan->steps)) {
+            $copy->withoutRequiredSteps();
+        }
 
         return $this->saveImportPlan($copy);
     }

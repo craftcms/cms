@@ -56,6 +56,12 @@ export default css`
     max-width: 100%;
   }
 
+  /* in the label's flow, so options that mix icons and text keep their spacing */
+  ::slotted([slot='badge']) {
+    margin-inline-start: var(--c-spacing-sm);
+    vertical-align: middle;
+  }
+
   :host([wide]) .choice-field__label {
     align-items: baseline;
     grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -119,7 +119,8 @@ export default class CraftCheckbox extends SsrChoiceInputMixin(LionCheckbox) {
         :host(:not([label-sr-only])) {
           --_gap-x: var(--gap-x, var(--c-spacing-md));
           display: grid;
-          align-items: center;
+          /* the box is a line tall, so it stays on the label's first line as that wraps */
+          align-items: start;
           gap: 0 var(--_gap-x);
           grid-template-areas: 'input label' '. help-text';
           grid-template-columns: auto 1fr;

@@ -196,3 +196,84 @@ it('leaves ordinary link clicks to the link without selecting its row', async ()
   expect(event.defaultPrevented).toBe(false);
   expect(selection.selectedIds.value).toEqual([]);
 });
+
+it('renders an expanded row’s sub-rows beneath it, marked with their depth', async () => {
+  interface TreeRow {
+    id: string;
+    name: string;
+    children?: TreeRow[];
+  }
+  const expanded = {value: {parent: true} as Record<string, boolean>};
+  const table = useCraftTable<TreeRow>({
+    data: [
+      {
+        id: 'parent',
+        name: 'Parent',
+        children: [
+          {id: 'child', name: 'Child', children: [{id: 'leaf', name: 'Leaf'}]},
+        ],
+      },
+      {id: 'sibling', name: 'Sibling'},
+    ],
+    columns: [{accessorKey: 'name', header: 'Name'}],
+    getRowId: (row) => row.id,
+    getSubRows: (row) => row.children,
+    state: {
+      get expanded() {
+        return expanded.value;
+      },
+    },
+  });
+  const root = document.createElement('div');
+  document.body.append(root);
+  const app = createApp({render: () => h(DataTable, {table} as never)});
+  app.mount(root);
+  teardown = () => app.unmount();
+
+  const rows = () =>
+    [...root.querySelectorAll<HTMLTableRowElement>('tbody tr')].map(
+      (row) => `${row.dataset.rowDepth ?? 0}:${row.textContent!.trim()}`
+    );
+
+  // a collapsed sub-row keeps its own children hidden
+  expect(rows()).toEqual(['0:Parent', '1:Child', '0:Sibling']);
+  expect(
+    root
+      .querySelector<HTMLElement>('tbody tr[data-row-depth]')!
+      .style.getPropertyValue('--row-depth')
+  ).toBe('1');
+});
+
+it('renders a cell spanning columns once, leaving out the cells it covers', () => {
+  const table = useCraftTable<{id: string; name: string; note: string}>({
+    data: [
+      {id: 'a', name: 'Spans', note: 'hidden'},
+      {id: 'b', name: 'Plain', note: 'shown'},
+    ],
+    columns: [
+      {
+        accessorKey: 'name',
+        header: 'Name',
+        spanColumns: ({row}) => (row.original.id === 'a' ? Infinity : 1),
+      },
+      {accessorKey: 'note', header: 'Note'},
+    ],
+    getRowId: (row) => row.id,
+  });
+  const root = document.createElement('div');
+  document.body.append(root);
+  const app = createApp({render: () => h(DataTable, {table} as never)});
+  app.mount(root);
+  teardown = () => app.unmount();
+
+  const [spanning, plain] = [
+    ...root.querySelectorAll<HTMLTableRowElement>('tbody tr'),
+  ].map((row) => [...row.querySelectorAll('td')]);
+
+  expect(spanning!.map((cell) => cell.getAttribute('colspan'))).toEqual(['2']);
+  expect(spanning![0]!.style.gridColumn).toBe('span 2');
+  expect(plain!.map((cell) => cell.textContent!.trim())).toEqual([
+    'Plain',
+    'shown',
+  ]);
+});

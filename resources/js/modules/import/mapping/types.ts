@@ -22,7 +22,7 @@ export type CompoundMappingColumn =
 
 export type MappingColumnEntry = MappingColumn | CompoundMappingColumn;
 
-/** One field-layout provider's columns, in the nested panel. */
+/** One field-layout provider's columns, under an expanded container. */
 export type MappingColumnGroup = CraftCms.Cms.Import.Data.MappingColumnGroup;
 
 /**
@@ -45,10 +45,14 @@ export type MappingValueTree = keyof MappingValues;
  */
 export type SuggestedMap = Record<string, unknown>;
 
-/**
- * What a row needs from the screen around it. Provided by both the page and the
- * nested panel, so the table renders identically in either.
- */
+/** A container column's own columns, once they've been asked for. */
+export interface NestedColumns {
+  loading: boolean;
+  error: string | null;
+  groups: MappingColumnGroup[];
+}
+
+/** What a row needs from the step's mapping editor around it. */
 export interface MappingContext {
   values: MappingValues;
   /**
@@ -62,14 +66,18 @@ export interface MappingContext {
   templateTextExpanderTriggers: TextExpanderTriggers;
   /**
    * The server's errors for the templates, keyed by the column's path joined with
-   * dots. Set when the panel is applied.
+   * dots, from the plan's last save.
    */
   templateErrors: Ref<Record<string, string[]>>;
-  /** Marks this panel's invalid template inputs, so Apply can focus the first one. */
+  /** Marks this editor's invalid template inputs. */
   panelId: string;
   editable: boolean;
-  /** Opens a container column's own mapping in a nested panel. */
-  openNested(col: MappingColumn, opener: HTMLElement | null): void;
+  /** A container column's own columns, keyed by its `prefixedHandle`. */
+  nested: Record<string, NestedColumns>;
+  /** The `prefixedHandle`s of the container columns showing their own columns. */
+  expanded: Set<string>;
+  /** Shows or hides a container column's own columns, loading them the first time. */
+  toggleNested(col: MappingColumn): Promise<void>;
 }
 
 export const MappingContextKey: InjectionKey<MappingContext> = Symbol(

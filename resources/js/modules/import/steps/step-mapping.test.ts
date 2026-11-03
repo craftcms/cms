@@ -1,19 +1,7 @@
 import {expect, it, vi} from 'vite-plus/test';
 import {actionClient} from '@craftcms/ui';
 import type {ImportStep} from '@/modules/import/mapping/types';
-import {
-  openStepMapping,
-  StepMappingUnavailableError,
-  takeStepMappingContext,
-} from './step-mapping';
-
-const state = vi.hoisted(() => ({
-  openSlideoutWith: vi.fn(),
-}));
-
-vi.mock('@/common/slideouts', () => ({
-  openSlideoutWith: state.openSlideoutWith,
-}));
+import {loadStepMapping, StepMappingUnavailableError} from './step-mapping';
 
 const step: ImportStep = {
   uid: 'step-1',
@@ -26,21 +14,9 @@ const step: ImportStep = {
 };
 
 async function contextFor(data: Record<string, unknown>) {
-  let contextId: string | undefined;
-  state.openSlideoutWith.mockReset();
-  state.openSlideoutWith.mockImplementation((_component, props) => {
-    contextId = props.contextId;
-
-    return {};
-  });
   vi.spyOn(actionClient, 'post').mockResolvedValue({data} as never);
 
-  await openStepMapping(
-    {step, editable: true, opener: null, apply: () => {}},
-    'Edit mapping'
-  );
-
-  return takeStepMappingContext(contextId!);
+  return loadStepMapping(step);
 }
 
 it('flags the leaves it filled from the server’s suggestions', async () => {
@@ -111,10 +87,7 @@ it('throws with the server’s reason and attribute when the step can’t be map
     },
   } as never);
 
-  const opening = openStepMapping(
-    {step, editable: true, opener: null, apply: () => {}},
-    'Edit mapping'
-  );
+  const opening = loadStepMapping(step);
 
   await expect(opening).rejects.toBeInstanceOf(StepMappingUnavailableError);
   await expect(opening).rejects.toMatchObject({

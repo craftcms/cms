@@ -1,0 +1,40 @@
+// A table's structure rows: each row's `--structure-level` indents its first cell, and the
+// leading toggle, reorder and select cells, by a column per level.
+
+:deep(.cp-table-row) {
+  --_structure-indent: calc(44px * (var(--structure-level, 1) - 1));
+}
+
+// Holds the toggle's footprint whether or not this row has one: the table
+// isn't in grid mode, so column widths come from content, and a collapsed
+// empty column would jump the moment a row first gained children.
+:deep(.cp-table-cell--structure) {
+  inline-size: var(--c-size-control-sm);
+  min-inline-size: var(--c-size-control-sm);
+}
+
+:deep(.cp-table-cell--structure-reorder),
+:deep(.cp-table-cell--structure) {
+  padding-inline: 0;
+}
+
+:deep(.cp-table-cell--structure),
+:deep(.cp-table-cell--structure-reorder),
+:deep(.cp-table-cell--structure ~ .cp-table-cell--select) {
+  overflow: visible;
+}
+
+:deep(.cp-table-structure-toggle),
+:deep(.cp-table-cell--structure-reorder > div),
+:deep(.cp-table-cell--structure ~ .cp-table-cell--select > craft-checkbox) {
+  position: relative;
+  z-index: 1;
+  inset-inline-start: var(--_structure-indent);
+}
+
+:deep(.cp-table-structure) {
+  display: flex;
+  align-items: center;
+  gap: var(--c-spacing-sm);
+  padding-inline-start: var(--_structure-indent);
+}

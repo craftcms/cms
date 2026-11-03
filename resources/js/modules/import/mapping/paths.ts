@@ -23,6 +23,22 @@ export function getAt(
   );
 }
 
+/** How many columns a `map` tree, or a branch of one, maps. */
+export function countMapped(tree: unknown): number {
+  if (tree === null || tree === undefined || tree === '') {
+    return 0;
+  }
+
+  if (typeof tree !== 'object') {
+    return 1;
+  }
+
+  return Object.values(tree as Record<string, unknown>).reduce<number>(
+    (total, value) => total + countMapped(value),
+    0
+  );
+}
+
 /** Writes a column's value into one of the mapping trees, creating branches as needed. */
 export function setAt(
   tree: Record<string, unknown>,

@@ -45,6 +45,17 @@ export const WithAction: Story = {
   },
 };
 
+/** `dashed` marks a space waiting to be filled, around the action that fills it. */
+export const Dashed: Story = {
+  args: {
+    appearance: 'dashed',
+    icon: '',
+    label: 'No steps yet.',
+    'default-slot':
+      '<craft-button variant="dashed" icon="plus">Add a step</craft-button>',
+  },
+};
+
 /** The `content` slot replaces the label when it needs more than one line. */
 export const CustomContent: Story = {
   args: {

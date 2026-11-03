@@ -485,11 +485,13 @@
       </CpContainer>
     </header>
 
-    <div v-show="hasTabs" ref="tabsEl" class="slideout-screen__tabs">
-      <LayoutSlotOutlet name="content-tabs">
-        <slot name="content-tabs"></slot>
-      </LayoutSlotOutlet>
-    </div>
+    <CpContainer v-show="hasTabs">
+      <div ref="tabsEl" class="slideout-screen__tabs">
+        <LayoutSlotOutlet name="content-tabs">
+          <slot name="content-tabs"></slot>
+        </LayoutSlotOutlet>
+      </div>
+    </CpContainer>
 
     <div class="slideout-screen__body">
       <div ref="contentEl" class="slideout-screen__content">
@@ -613,11 +615,6 @@
     display: flex;
     align-items: center;
     gap: var(--c-spacing-sm, 0.5rem);
-  }
-
-  .slideout-screen__tabs {
-    padding-inline: var(--c-spacing-md, 1rem);
-    border-block-end: 1px solid var(--c-color-border-quiet);
   }
 
   .slideout-screen__body {

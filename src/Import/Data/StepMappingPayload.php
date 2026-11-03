@@ -25,6 +25,7 @@ readonly class StepMappingPayload implements JsonSerializable
      * @param  list<SourceColumn>|null  $sourceDataCols
      * @param  array<array-key, mixed>|null  $suggestions
      * @param  list<TextExpanderTrigger>|null  $templateTextExpanderTriggers
+     * @param  string|null  $targetName  What the step imports, in the plural and lowercase, e.g. “entries”.
      */
     public function __construct(
         public bool $available,
@@ -44,6 +45,8 @@ readonly class StepMappingPayload implements JsonSerializable
         #[Optional]
         #[LiteralTypeScriptType('unknown[]')]
         public ?array $templateTextExpanderTriggers = null,
+        #[Optional]
+        public ?string $targetName = null,
     ) {}
 
     /** @return array<string, mixed> */
@@ -64,6 +67,7 @@ readonly class StepMappingPayload implements JsonSerializable
             'values' => $this->values?->jsonSerialize(),
             'suggestions' => $this->suggestions,
             'templateTextExpanderTriggers' => $this->templateTextExpanderTriggers,
+            'targetName' => $this->targetName,
         ]);
     }
 }

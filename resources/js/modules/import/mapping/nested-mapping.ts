@@ -1,117 +1,52 @@
 /**
- * Opening a container column's mapping in a slideout panel.
+ * Asking the server for a container column's own columns — a Matrix field's, say.
  *
- * Opened with `openSlideoutWith()` rather than `openSlideout()`: the mapping being
- * edited is unsaved client state the panel above already holds, with no URL to GET.
- * The server is POSTed the draft step and asked only for the container's *structure*
- * — which columns exist under it — and the panel edits a copy of the trees, handing
- * them back on Apply. Nothing needs to have been saved for this to work.
- *
- * That copy is the whole set of trees rather than just the container's branch, so a
- * nested column's absolute `prefixedHandleAsArray` addresses the same place in the
- * panel as it does on the page, and nesting works to any depth without rebasing paths.
+ * The server is POSTed the draft step and returns only the container's *structure*:
+ * which columns exist under it, grouped by the entry type (or other provider) they
+ * belong to, plus its guesses at mapping them. The columns keep their absolute
+ * `prefixedHandleAsArray`, so they read and write the same mapping trees as the
+ * step's own columns, at any depth.
  */
 import {actionClient} from '@craftcms/ui';
 import {nestedMappingCols} from '@actions/Import/ImportPlansController';
-import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
-import {
-  createContextRegistry,
-  openContextSlideout,
-} from '@/modules/import/context-slideout';
-import {applySuggestions, cloneValues, toObjectTree} from './paths';
-import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
+import {toObjectTree} from './paths';
 import type {
+  ImportStep,
   MappingColumn,
   MappingColumnGroup,
   MappingValues,
-  SourceColumn,
-  ImportStep,
-  SuggestedMap,
 } from './types';
 
-export interface NestedMappingContext {
-  col: MappingColumn;
-  fieldName: string;
+export type NestedMappingPayload =
+  CraftCms.Cms.Import.Data.NestedMappingPayload;
+
+export interface NestedMappingData {
   groups: MappingColumnGroup[];
-  sourceDataCols: SourceColumn[];
-  templateTextExpanderTriggers: TextExpanderTriggers;
-  values: MappingValues;
-  /** Which of this panel's own `values.map` leaves hold a guessed value. */
-  suggestedMap: SuggestedMap;
-  editable: boolean;
-  /** Carried through so a container inside the panel can open a panel of its own. */
-  step: ImportStep;
-  apply(values: MappingValues): void;
+  /** The server's guesses for the container's columns, as a handle-keyed tree. */
+  suggestions: Record<string, unknown>;
 }
 
-export interface OpenNestedMappingOptions {
-  col: MappingColumn;
-  /** The draft step being mapped. Posted so the server can build its importer. */
-  step: ImportStep;
-  values: MappingValues;
-  editable: boolean;
-  opener: HTMLElement | null;
-  apply(values: MappingValues): void;
-}
+export async function fetchNestedMapping(
+  step: ImportStep,
+  values: MappingValues,
+  col: MappingColumn
+): Promise<NestedMappingData> {
+  // PHP sends empty settings as `[]`
+  const settings = Array.isArray(step.settings) ? {} : (step.settings ?? {});
 
-const registry = createContextRegistry<NestedMappingContext>(
-  'import-nested-mapping'
-);
-
-export function takeNestedMappingContext(
-  contextId: string
-): NestedMappingContext {
-  return registry.take(contextId);
-}
-
-/**
- * Returns false when the panel was not opened — the user declined to discard unsaved
- * changes in a panel this one would have replaced.
- */
-export async function openNestedMapping(
-  options: OpenNestedMappingOptions
-): Promise<boolean> {
-  const {col} = options;
-
-  const {data} =
-    await actionClient.post<CraftCms.Cms.Import.Data.NestedMappingPayload>(
-      nestedMappingCols().url,
-      {
-        step: options.step,
-        fieldUid: col.fieldUid ?? '',
-        fieldHandle: col.prefixedHandle,
-        fieldIsProperty: col.isProperty ? 1 : 0,
-      }
-    );
-
-  const values = cloneValues(options.values);
-  const suggestedMap: SuggestedMap = {};
-  applySuggestions(
-    values.map,
-    toObjectTree(data.suggestions ?? {}),
-    suggestedMap
-  );
-
-  return openContextSlideout(
-    registry,
-    () =>
-      import('./NestedMapping.vue').then(
-        (m) => m.default as InertiaPageComponent
-      ),
+  // the trees as they stand, so the server's guesses skip what's already been chosen
+  const {data} = await actionClient.post<NestedMappingPayload>(
+    nestedMappingCols().url,
     {
-      col,
-      fieldName: data.fieldName,
-      groups: data.groups,
-      sourceDataCols: data.sourceDataCols ?? [],
-      templateTextExpanderTriggers:
-        data.templateTextExpanderTriggers as TextExpanderTriggers,
-      values,
-      suggestedMap,
-      editable: options.editable,
-      step: options.step,
-      apply: options.apply,
-    },
-    data.title,
-    options.opener
+      step: {...step, settings: {...settings, ...values}},
+      fieldUid: col.fieldUid ?? '',
+      fieldHandle: col.prefixedHandle,
+      fieldIsProperty: col.isProperty ? 1 : 0,
+    }
   );
+
+  return {
+    groups: data.groups,
+    suggestions: toObjectTree(data.suggestions ?? {}),
+  };
 }

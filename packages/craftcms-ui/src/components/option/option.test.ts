@@ -30,6 +30,19 @@ describe('craft-option', () => {
     expect(element.textContent).toBe('Blog');
   });
 
+  it('appends its badge to the label, ahead of the hint', async () => {
+    const element = await createOption(
+      {hint: '12 entries'},
+      'Blog<span slot="badge">Suggested</span>'
+    );
+    const label = element.shadowRoot!.querySelector('.label')!;
+
+    expect(
+      label.querySelector('slot:not([name]) + slot[name="badge"]')
+    ).toBeTruthy();
+    expect(label.nextElementSibling!.classList).toContain('hint');
+  });
+
   it('renders no hint unless one is set', async () => {
     const element = await createOption();
 

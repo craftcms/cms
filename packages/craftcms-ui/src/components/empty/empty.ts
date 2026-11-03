@@ -45,8 +45,15 @@ export default class CraftEmpty extends LitElement {
         color: var(--c-text-quiet);
       }
 
-      :host([appearance~='outline']) {
+      /* The border is the inner box's, which doesn't inherit the host's */
+      :host([appearance~='outline']) .cp-empty {
         border-color: var(--c-color-border-quiet);
+      }
+
+      /* Matches a dashed button, for a space waiting to be filled */
+      :host([appearance~='dashed']) .cp-empty {
+        border-style: dashed;
+        border-color: var(--c-form-control-border-color);
       }
     `,
   ];
@@ -57,8 +64,12 @@ export default class CraftEmpty extends LitElement {
   /** Name of an icon shown above the message. */
   @property() icon: string = '';
 
-  /** `outline` draws a quiet border around the empty state. */
-  @property({reflect: true}) appearance: 'plain' | 'outline' = 'plain';
+  /**
+   * `outline` draws a quiet border around the empty state, and `dashed` a
+   * dashed one, like a dashed button's, for a space waiting to be filled.
+   */
+  @property({reflect: true}) appearance: 'plain' | 'outline' | 'dashed' =
+    'plain';
 
   protected override render() {
     return html`

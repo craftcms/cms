@@ -1,9 +1,12 @@
 import {
+  cellSpanningFeature,
   columnOrderingFeature,
   columnSizingFeature,
   columnVisibilityFeature,
+  createExpandedRowModel,
   createTableHook,
   metaHelper,
+  rowExpandingFeature,
   rowPaginationFeature,
   rowSelectionFeature,
   rowSortingFeature,
@@ -39,12 +42,16 @@ export interface CraftColumnMeta {
  * reach for the selection, sorting, pagination, visibility and ordering APIs
  * regardless of whether a given table makes use of them — and TanStack only
  * adds a feature's APIs to a table that registers it. Sorting and pagination
- * happen on the server, so no client-side row models are registered here.
+ * happen on the server, so the only client-side row model is the expanded one,
+ * which leaves a table without `getSubRows` as it is.
  */
 export const craftTableFeatures = tableFeatures({
+  cellSpanningFeature,
   columnOrderingFeature,
   columnSizingFeature,
   columnVisibilityFeature,
+  rowExpandingFeature,
+  expandedRowModel: createExpandedRowModel(),
   rowPaginationFeature,
   rowSelectionFeature,
   rowSortingFeature,

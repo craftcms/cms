@@ -265,6 +265,59 @@ describe('craft-text-expander', () => {
     expect(options(expander)[0]?.textContent?.trim()).toBe('Author Username');
   });
 
+  it('lets a trigger’s pattern allow other characters in its query', async () => {
+    const option = {
+      label: 'Resources',
+      value: '@root/resources/',
+      keywords: ['root/res'],
+    };
+    const {expander, target} = await createFixture({
+      '@': [
+        {boundary: 'start', pattern: '[^\\s]*', options: [option]},
+        {boundary: 'start', label: 'Plain', options: [option]},
+      ],
+    });
+
+    type(target, '@root/res');
+
+    expect(
+      options(expander).map((element) => element.textContent?.trim())
+    ).toEqual(['Resources']);
+    // the patterned trigger has no label of its own; the plain one would name the list
+    expect(
+      expander.querySelector('[role="listbox"]')?.getAttribute('aria-label')
+    ).toBe('Suggestions');
+  });
+
+  it('keeps suggesting after inserting an option that continues', async () => {
+    const request = vi
+      .spyOn(actionClient, 'get')
+      .mockImplementation(async (_url, config) => {
+        const query = (config?.params as {query: string}).query;
+
+        return {
+          data:
+            query === './'
+              ? [{label: 'nested/', value: './nested/', continues: true}]
+              : [{label: 'inner.json', value: './nested/inner.json'}],
+        } as unknown as HttpResponse<readonly TextExpanderOption[]>;
+      });
+    const {expander, target} = await createFixture({
+      './': {boundary: 'start', pattern: '[^\\s]*', source: 'files'},
+    });
+
+    type(target, './');
+    await waitForFirstOption(expander);
+    target.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 'Enter', bubbles: true})
+    );
+
+    expect(target.value).toBe('./nested/');
+    await waitForFirstOption(expander);
+    expect(request.mock.calls.at(-1)![1]!.params).toEqual({query: './nested/'});
+    expect(options(expander)[0]?.textContent?.trim()).toBe('inner.json');
+  });
+
   it('does not rebuild options when selectionchange keeps the same caret', async () => {
     const {expander, target} = await createFixture({
       '@': {options: [{label: 'Brad', value: '@brad'}]},

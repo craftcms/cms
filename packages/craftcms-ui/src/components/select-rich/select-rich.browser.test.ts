@@ -35,15 +35,15 @@ it('leaves unselected options unfilled', async () => {
   expect(getComputedStyle(option).backgroundColor).toBe('rgba(0, 0, 0, 0)');
 });
 
-it('doesn’t light up the hovered invoker', async () => {
+it('keeps the invoker’s fill on hover, as a plain select does', async () => {
   const select = await fixture();
   const invoker = select.querySelector<HTMLElement>('lion-select-invoker')!;
+  const fill = getComputedStyle(invoker).backgroundColor;
 
   await userEvent.hover(invoker);
 
-  expect(getComputedStyle(invoker).backgroundColor).not.toBe(
-    'rgb(244, 246, 247)'
-  );
+  expect(getComputedStyle(invoker).backgroundColor).toBe(fill);
+  expect(fill).not.toBe('rgb(244, 246, 247)');
 });
 
 it.each([

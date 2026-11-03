@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Http\ViewModels;
 use CraftCms\Cms\Element\Import\ElementTransformer;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Import\Jobs\Import as ImportJob;
+use CraftCms\Cms\Import\SourceSuggestions;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\Number;
 use CraftCms\Cms\Ui\Controls\Text;
@@ -54,8 +56,10 @@ class ImportPlanStepUiViewModel extends ViewModel
                 ->reactive())
                 ->instructions(t('What this step imports.')),
             UiField::make(t('Data Source'), Text::make('source')
-                ->placeholder('resources/my-data.json'))
+                ->placeholder('resources/my-data.json')
+                ->textExpanderTriggers($this->canSave ? SourceSuggestions::triggers('import/source-suggestions') : []))
                 ->instructions(t('The aliased or @root-relative path to a file or a URL containing the data you want this step to import.'))
+                ->tip($this->canSave ? t('Type `./` to browse the project folder, or `@` for an alias.') : null)
                 ->required()
                 ->visible($hasType),
             UiField::make(t('Transformer'), Text::make('transformer')
@@ -63,9 +67,11 @@ class ImportPlanStepUiViewModel extends ViewModel
                 ->placeholder(ElementTransformer::class))
                 ->instructions(t('The fully qualified class name of the transformer you’d like to use.'))
                 ->visible($hasType),
-            UiField::make(t('Custom batch size'), Number::make('batchSize'))
-                ->instructions(t('By default, this step will be run in batches containing up to 100 items. You can provide a different size, if you wish. Set to 0 to disable batching.'))
-                ->visible($hasType),
+            // how the data is read in, which most steps leave as it is
+            Group::make('import-step-advanced', [
+                UiField::make(t('Batch Size'), Number::make('batchSize'))
+                    ->instructions(t('How many items this step imports per batch. Set to 0 to disable batching.')),
+            ])->label(t('Advanced'))->collapsible()->visible($hasType),
             ...(empty($settingsNodes) ? [] : [
                 Scope::make('settings', [
                     Group::make('import-step-settings', $settingsNodes)->dependsOn('type'),
@@ -76,7 +82,7 @@ class ImportPlanStepUiViewModel extends ViewModel
                 'uid' => $this->importer?->uid,
                 'type' => $this->importer !== null ? $this->importer::class : null,
                 'source' => $this->importer?->source,
-                'batchSize' => $this->batchSize,
+                'batchSize' => $this->batchSize ?? ImportJob::DEFAULT_BATCH_SIZE,
             ],
             mode: $mode,
             refreshable: $refreshable,

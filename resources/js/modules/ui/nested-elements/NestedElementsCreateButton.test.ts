@@ -19,7 +19,10 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-async function mount(choices: Array<{value: string; label: string}>) {
+async function mount(
+  choices: Array<{value: string; label: string}>,
+  props: {menu?: boolean} = {}
+) {
   const onCreate = vi.fn();
   const container = document.createElement('div');
   document.body.append(container);
@@ -30,6 +33,7 @@ async function mount(choices: Array<{value: string; label: string}>) {
         label: 'New variant',
         disabled: false,
         onCreate,
+        ...props,
       }),
   });
 
@@ -68,4 +72,36 @@ it('moves multiple choices into a menu when the area is too narrow', async () =>
   ]);
 
   expect(container.querySelector('craft-action-menu')).not.toBeNull();
+});
+
+it('offers its choices from a menu when asked to, even where buttons would fit', async () => {
+  vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(1);
+  const {container} = await mount(
+    [
+      {value: 'text', label: 'Text'},
+      {value: 'quote', label: 'Quote'},
+    ],
+    {menu: true}
+  );
+
+  expect(container.querySelector('craft-action-menu')).not.toBeNull();
+  expect(container.querySelectorAll('[data-create-element]')).toHaveLength(1);
+});
+
+it('searches its menu once there are more than five choices', async () => {
+  const choices = (count: number) =>
+    Array.from({length: count}, (_, i) => ({value: `t${i}`, label: `T${i}`}));
+
+  const five = await mount(choices(5), {menu: true});
+  expect(
+    five.container
+      .querySelector('craft-action-menu')!
+      .hasAttribute('searchable')
+  ).toBe(false);
+  teardown?.();
+
+  const six = await mount(choices(6), {menu: true});
+  expect(
+    six.container.querySelector('craft-action-menu')!.hasAttribute('searchable')
+  ).toBe(true);
 });

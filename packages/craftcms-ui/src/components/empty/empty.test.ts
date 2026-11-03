@@ -56,4 +56,17 @@ describe('craft-empty', () => {
 
     expect(names).toEqual(expect.arrayContaining(['graphic', 'content', null]));
   });
+
+  it.each(['outline', 'dashed'])(
+    'borders the empty state with the %s appearance',
+    async (appearance) => {
+      const element = await createEmpty({label: 'None', appearance});
+      const box = element.shadowRoot!.querySelector<HTMLElement>('.cp-empty')!;
+
+      expect(getComputedStyle(box).borderStyle).toBe(
+        appearance === 'dashed' ? 'dashed' : 'solid'
+      );
+      expect(getComputedStyle(box).borderColor).not.toBe('rgba(0, 0, 0, 0)');
+    }
+  );
 });

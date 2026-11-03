@@ -455,3 +455,57 @@ it('deletes a step’s stored items once its batch has finished', function () {
     $disk->assertMissing(ImportJob::spoolPath('run-id', 'step-1').'/0.json');
     $disk->assertExists(ImportJob::spoolPath('run-id', 'step-2').'/0.json');
 });
+
+describe('run state', function () {
+    it('remembers the queue job a running plan is on, until the run finishes', function () {
+        $import = app(Import::class);
+        $import->dispatchImport($this->importPlan);
+        $runId = Bus::dispatched(ImportPipeline::class)->first()->runId;
+
+        $queueJob = Mockery::mock(QueueJob::class);
+        $queueJob->allows(['uuid' => 'running-job-uuid', 'getConnectionName' => 'sync']);
+        [$job] = new ImportJob($this->importPlan, 'step-1', $this->filePath, $runId)->withFakeBatch();
+        $job->setJob($queueJob);
+        $job->handle();
+
+        expect($import->runningJobUid($this->importPlan))->toBe('running-job-uuid');
+
+        new FinishImport($this->importPlan, $runId)->handle();
+
+        expect($import->runningJobUid($this->importPlan))->toBeNull();
+    });
+
+    it('records whether the latest run failed', function () {
+        $import = app(Import::class);
+
+        Cache::put(FinishImport::hasFailuresCacheKey('run-id'), true);
+        new FinishImport($this->importPlan, 'run-id')->handle();
+
+        expect($import->lastRunFailed($this->importPlan))->toBeTrue();
+
+        new FinishImport($this->importPlan, 'run-id')->handle();
+
+        expect($import->lastRunFailed($this->importPlan))->toBeFalse();
+    });
+
+    it('records a canceled run as failed', function () {
+        $import = app(Import::class);
+        $import->dispatchImport($this->importPlan);
+        Bus::dispatched(ImportPipeline::class)->first()->handle();
+        $pendingBatches = ($this->pendingBatches)();
+
+        $pendingBatches[0]->finallyCallbacks()[0](new BatchFake(
+            'batch-id', 'Step', 1, 0, 0, [], [], CarbonImmutable::now(), CarbonImmutable::now(),
+        ));
+
+        expect($import->lastRunFailed($this->importPlan))->toBeTrue();
+    });
+
+    it('counts a step that couldn’t run against the run', function () {
+        $this->importPlan->steps[0]->source('tests/Fixtures/Import/does-not-exist.json');
+
+        ($this->runJob)();
+
+        expect(Cache::has(FinishImport::hasFailuresCacheKey('run-id')))->toBeTrue();
+    });
+});

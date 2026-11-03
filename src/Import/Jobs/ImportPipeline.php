@@ -89,6 +89,7 @@ class ImportPipeline extends Job
                     // FinishImport won't run, so it can't mark the import plan as no longer running
                     if ($batch->cancelled()) {
                         ImportService::releaseRunLock($importPlan, $runId);
+                        app(ImportService::class)->recordRunFinished($importPlan, failed: true);
                     }
                 })
                 ->when($this->connection !== null, fn (PendingBatch $batch) => $batch->onConnection($this->connection));

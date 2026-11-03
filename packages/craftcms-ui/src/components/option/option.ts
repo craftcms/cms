@@ -14,6 +14,8 @@ import {property} from 'lit/decorators.js';
  *
  * @slot - The option's label and any markup that goes with it.
  * @slot suffix - Trailing content, shown after the label and hint.
+ * @slot badge - A badge appended to the label. A select appends the selected
+ *   option's to its value too.
  *
  * @cssproperty --c-option-wide-threshold - Width, in pixels, past which the
  *   option switches to its wide layout. Defaults to `640`.
@@ -70,7 +72,7 @@ export default class CraftOption extends LionOption {
   override render() {
     return html`
       <div class="choice-field__label">
-        <slot></slot>
+        <span class="label"><slot></slot><slot name="badge"></slot></span>
         ${this.hint ? html`<span class="hint">${this.hint}</span>` : nothing}
         <slot name="suffix"></slot>
       </div>

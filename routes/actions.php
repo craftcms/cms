@@ -345,15 +345,23 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
             Route::post('import/step-settings', [ImportPlansController::class, 'stepSettings']);
             Route::post('import/step-mapping', [ImportPlansController::class, 'stepMapping']);
             Route::post('import/nested-mapping-cols', [ImportPlansController::class, 'nestedMappingCols']);
+            Route::post('import/test-match', [ImportPlansController::class, 'testMatch']);
+            Route::post('import/review', [ImportPlansController::class, 'reviewSteps']);
+            Route::post('import/source-preview', [ImportPlansController::class, 'sourcePreview']);
         });
         Route::middleware('can:saveImportPlans')->group(function () {
             Route::post('import/save', [ImportPlansController::class, 'store']);
+            Route::post('import/save-step', [ImportPlansController::class, 'storeStep']);
             Route::post('import/duplicate', [ImportPlansController::class, 'duplicate']);
+            Route::post('import/bulk-duplicate', [ImportPlansController::class, 'bulkDuplicate']);
             Route::post('import/reorder', [ImportPlansController::class, 'reorder']);
             Route::post('import/validate-step', [ImportPlansController::class, 'validateStep']);
+            Route::get('import/source-suggestions', [ImportPlansController::class, 'sourceSuggestions']);
         });
         Route::middleware('can:deleteImportPlans')->delete('import/delete', [ImportPlansController::class, 'destroy']);
         Route::middleware('can:triggerImportPlans')->post('import/run', [ImportPlansController::class, 'run']);
+        Route::middleware('can:deleteImportPlans')->post('import/bulk-delete', [ImportPlansController::class, 'bulkDestroy']);
+        Route::middleware('can:triggerImportPlans')->post('import/bulk-run', [ImportPlansController::class, 'bulkRun']);
 
         // Matrix
         Route::post('matrix/default-table-column-options', [MatrixController::class, 'defaultTableColumnOptions']);

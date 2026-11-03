@@ -1,19 +1,12 @@
 /**
- * Opening one step's field mapping in a slideout panel, from inside that step's own
- * panel.
+ * Loading one step's field mapping.
  *
  * Same shape as `nested-mapping.ts`: the server is POSTed the draft step and returns
  * only the structure — which destination columns exist and what the source file's
- * headings are — while the panel edits a copy of the step's mapping trees and hands
- * them back on Apply.
+ * headings are — along with the step's mapping trees and its guesses at filling them.
  */
 import {actionClient} from '@craftcms/ui';
 import {stepMapping} from '@actions/Import/ImportPlansController';
-import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
-import {
-  createContextRegistry,
-  openContextSlideout,
-} from '@/modules/import/context-slideout';
 import {
   applySuggestions,
   cloneValues,
@@ -28,30 +21,15 @@ import type {
 } from '@/modules/import/mapping/types';
 import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
 
-export interface StepMappingContext {
+/** Everything a step's mapping editor starts from. */
+export interface StepMappingData {
   destinationCols: MappingColumnEntry[];
   sourceDataCols: SourceColumn[];
   templateTextExpanderTriggers: TextExpanderTriggers;
   values: MappingValues;
   suggestedMap: SuggestedMap;
-  editable: boolean;
-  step: ImportStep;
-  apply(values: MappingValues): void;
-}
-
-export interface OpenStepMappingOptions {
-  step: ImportStep;
-  editable: boolean;
-  opener: HTMLElement | null;
-  apply(values: MappingValues): void;
-}
-
-const registry = createContextRegistry<StepMappingContext>(
-  'import-step-mapping'
-);
-
-export function takeStepMappingContext(contextId: string): StepMappingContext {
-  return registry.take(contextId);
+  /** What the step imports, in the plural and lowercase, e.g. “entries”. */
+  targetName: string | null;
 }
 
 export type StepMappingPayload = CraftCms.Cms.Import.Data.StepMappingPayload;
@@ -77,15 +55,14 @@ export async function fetchStepMapping(
 }
 
 /**
- * Returns false when the user declined to discard unsaved changes in a panel this one
- * would have replaced. Throws with the server's reason when the step can't be mapped
- * yet — e.g. nothing to import into is chosen, or its data source can't be read.
+ * Loads what a step's mapping editor needs, with the server's suggestions filled in
+ * wherever nothing's mapped yet. Throws with the server's reason when the step can't be
+ * mapped yet — e.g. nothing to import into is chosen, or its data source can't be read.
  */
-export async function openStepMapping(
-  options: OpenStepMappingOptions,
-  title: string
-): Promise<boolean> {
-  const data = await fetchStepMapping(options.step);
+export async function loadStepMapping(
+  step: ImportStep
+): Promise<StepMappingData> {
+  const data = await fetchStepMapping(step);
 
   if (!data.available) {
     throw new StepMappingUnavailableError(
@@ -111,24 +88,13 @@ export async function openStepMapping(
     suggestedMap
   );
 
-  return openContextSlideout(
-    registry,
-    () =>
-      import('./StepMapping.vue').then(
-        (m) => m.default as InertiaPageComponent
-      ),
-    {
-      destinationCols: data.destinationCols ?? [],
-      sourceDataCols: data.sourceDataCols ?? [],
-      templateTextExpanderTriggers: (data.templateTextExpanderTriggers ??
-        []) as TextExpanderTriggers,
-      values,
-      suggestedMap,
-      editable: options.editable,
-      step: options.step,
-      apply: options.apply,
-    },
-    title,
-    options.opener
-  );
+  return {
+    destinationCols: data.destinationCols ?? [],
+    sourceDataCols: data.sourceDataCols ?? [],
+    templateTextExpanderTriggers: (data.templateTextExpanderTriggers ??
+      []) as TextExpanderTriggers,
+    values,
+    suggestedMap,
+    targetName: data.targetName ?? null,
+  };
 }

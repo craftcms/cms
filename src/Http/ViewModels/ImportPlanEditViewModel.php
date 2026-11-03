@@ -19,6 +19,7 @@ use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiPayload;
 use CraftCms\Cms\Ui\UiResolver;
+use Illuminate\Support\Facades\Crypt;
 
 use function CraftCms\Cms\t;
 
@@ -32,19 +33,22 @@ class ImportPlanEditViewModel extends ViewModel
         private readonly Import $importService,
         private readonly UiResolver $uiResolver,
         private readonly bool $canSave = true,
+        private readonly bool $canRun = false,
     ) {}
 
-    public function ui(): UiPayload
+    /**
+     * The fields that name and describe a plan, which a new plan's wizard asks for first.
+     *
+     * @return list<UiField>
+     */
+    public static function detailFields(bool $isNew): array
     {
-        $mode = $this->canSave ? ControlMode::Editable : ControlMode::ReadOnly;
-
         $handle = Handle::make('handle');
-        if (! $this->importPlan->uid) {
+        if ($isNew) {
             $handle->source('name');
         }
 
-        return $this->uiResolver->resolve(Ui::make([
-            HiddenField::make('uid'),
+        return [
             UiField::make(t('Name'), Text::make('name')->autofocus())
                 ->instructions(t('What this import plan will be called in the control panel.'))
                 ->required(),
@@ -53,7 +57,23 @@ class ImportPlanEditViewModel extends ViewModel
                 ->required(),
             UiField::make(t('Description'), Textarea::make('description'))
                 ->instructions(t('A description of what this import plan is for.')),
-            UiField::make(control: Table::make('steps')),
+        ];
+    }
+
+    public function ui(): UiPayload
+    {
+        $mode = $this->canSave ? ControlMode::Editable : ControlMode::ReadOnly;
+
+        return $this->uiResolver->resolve(Ui::make([
+            HiddenField::make('uid'),
+            ...self::detailFields(! $this->importPlan->uid),
+            UiField::make(t('Steps'), Table::make('steps'))
+                ->instructions(t('Each step imports one kind of data. Steps run in the order listed here.'))
+                ->fieldset(),
+            // rendered by the page from the steps as they stand; saving the plan ignores it
+            UiField::make(t('Review'), Table::make('review'))
+                ->instructions(t('This is what running this import plan would do with the first rows of each step’s data. Nothing has been imported yet.'))
+                ->fieldset(),
         ]), new UiContext(
             values: [
                 'uid' => $this->importPlan->uid,
@@ -67,7 +87,7 @@ class ImportPlanEditViewModel extends ViewModel
     }
 
     /**
-     * The importer types a step can be, for the step slideout's type select.
+     * The importer types a step can be, for labeling the step cards.
      *
      * @return list<array{value: class-string<BaseImporter>, label: string}>
      */
@@ -77,6 +97,47 @@ class ImportPlanEditViewModel extends ViewModel
             'label' => $type::displayName(),
             'value' => $type,
         ], $this->importService->getAllImporterTypes());
+    }
+
+    /**
+     * Where each of the plan's saved steps has its own page, by uid.
+     *
+     * @return array<string, string>
+     */
+    public function stepPageUrls(): array
+    {
+        if (! $this->importPlan->uid) {
+            return [];
+        }
+
+        $urls = [];
+
+        foreach ($this->importPlan->steps ?? [] as $step) {
+            if ($step->uid) {
+                $urls[$step->uid] = route('craft.cp.import.steps.edit', ['handle' => $this->importPlan->handle, 'uid' => $step->uid]);
+            }
+        }
+
+        return $urls;
+    }
+
+    /**
+     * Running the saved plan, for its Run import button. Unset for a plan that's yet to be
+     * saved, or a user who can't run it.
+     *
+     * @return array{url: string, uid: string, redirect: string}|null
+     */
+    public function run(): ?array
+    {
+        if (! $this->canRun || ! $this->importPlan->uid) {
+            return null;
+        }
+
+        return [
+            'url' => action([ImportPlansController::class, 'run']),
+            'uid' => $this->importPlan->uid,
+            'redirect' => Crypt::encrypt(route('craft.cp.import.index')),
+        ];
     }
 
     /** @return array{method: 'post', url: string} */

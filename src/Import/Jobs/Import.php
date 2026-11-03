@@ -44,7 +44,10 @@ class Import extends Job
      */
     public bool $failOnTimeout = true;
 
-    private int $defaultBatchSize = 100;
+    /**
+     * How many items a step imports per job when it doesn't set its own batch size.
+     */
+    public const int DEFAULT_BATCH_SIZE = 100;
 
     /**
      * Promotes the owning import plan, the step's UID, the file path, the import run's ID
@@ -99,6 +102,8 @@ class Import extends Job
             return;
         }
 
+        ImportFacade::rememberRunningJob($this->importPlan, $this->job?->uuid());
+
         $stepLabel = ImportFacade::stepLabel($this->importPlan, $step);
 
         try {
@@ -117,6 +122,10 @@ class Import extends Job
                 'validation' => $this->start === 0 ? 'full' : 'settings',
                 'errors' => $e->errors(),
             ]);
+
+            // a step that couldn't run counts against the run, as a failed item would
+            Cache::put(FinishImport::hasFailuresCacheKey($this->runId), true, now()->addDay());
+            Cache::put(FinishImport::stepHasFailuresCacheKey($this->runId, $this->stepUid), true, now()->addDay());
 
             return;
         }
@@ -342,7 +351,7 @@ class Import extends Job
     {
         // if chunk size was left empty, it was cast to a null, and we should use the default chunk size
         if (($step->batchSize ?? null) === null) {
-            return $this->defaultBatchSize;
+            return self::DEFAULT_BATCH_SIZE;
         }
 
         // otherwise, return the number specified in the step

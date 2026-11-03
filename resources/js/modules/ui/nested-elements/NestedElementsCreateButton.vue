@@ -17,6 +17,8 @@
     label: string;
     disabled: boolean;
     adding?: T | null;
+    /** Always offers the choices from a menu, rather than as buttons while they fit. */
+    menu?: boolean;
   }>();
   const emit = defineEmits<{
     create: [value: T, opener: HTMLElement];
@@ -42,7 +44,8 @@
   const addFromMenu = computed(
     () =>
       props.choices.length > 1 &&
-      (groups.value.length > 1 ||
+      (props.menu ||
+        groups.value.length > 1 ||
         (buttonsWidth.value > 0 &&
           addAreaWidth.value > 0 &&
           addAreaWidth.value < buttonsWidth.value))

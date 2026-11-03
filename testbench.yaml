@@ -10,6 +10,12 @@ providers:
   - Spatie\LaravelTypeScriptTransformer\TypeScriptTransformerServiceProvider
   - Workbench\App\Providers\TypeScriptTransformerServiceProvider
 
+env:
+  # queued jobs, imports included, run in the background as they do on a real site
+  - QUEUE_CONNECTION=database
+  # kept between requests, as locks and the like are on a real site
+  - CACHE_STORE=database
+
 seeders:
   - Workbench\Database\Seeders\DatabaseSeeder
 

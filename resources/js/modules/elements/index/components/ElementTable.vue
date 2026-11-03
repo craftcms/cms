@@ -23,6 +23,8 @@
     type TableSpacingValue,
   } from '@/common/types';
   import DropIndicator from '@/common/components/DropIndicator.vue';
+  import StructureCell from '@/common/components/structure/StructureCell.vue';
+  import StructureToggle from '@/common/components/structure/StructureToggle.vue';
   import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
 
   const props = withDefaults(
@@ -217,28 +219,13 @@
         class="cp-table-cell cp-table-cell--structure"
         :class="{'border-b-0': hideBottomBorder}"
       >
-        <craft-button
+        <StructureToggle
           v-if="row.original.hasDescendants"
-          class="cp-table-structure-toggle"
-          type="button"
-          variant="plain"
-          size="small"
-          icon
-          .loading="isRowPending(row.original.id)"
-          :aria-expanded="String(!isRowCollapsed(row.original.id))"
-          @click.stop="emit('toggleStructure', row.original.id)"
-        >
-          <craft-icon
-            :name="
-              isRowCollapsed(row.original.id) ? 'chevron-right' : 'chevron-down'
-            "
-            :label="
-              isRowCollapsed(row.original.id)
-                ? t('Expand {title}', {title: rowLabel(row)})
-                : t('Collapse {title}', {title: rowLabel(row)})
-            "
-          ></craft-icon>
-        </craft-button>
+          :expanded="!isRowCollapsed(row.original.id)"
+          :label="rowLabel(row)"
+          :pending="isRowPending(row.original.id)"
+          @toggle="emit('toggleStructure', row.original.id)"
+        />
 
         <!-- Drop indicator spans entire row, positioned from this cell -->
         <DropIndicator
@@ -270,12 +257,12 @@
         :render="renderInlineCell"
         :props="cell.getContext()"
       />
-      <div v-else-if="structure && index === 0" class="cp-table-structure">
-        <span class="sr-only"
-          >{{ t('Level {level}', {level: row.original.level ?? 1}) }}
-        </span>
+      <StructureCell
+        v-else-if="structure && index === 0"
+        :level="row.original.level ?? 1"
+      >
         <FlexRender :cell="cell" />
-      </div>
+      </StructureCell>
       <FlexRender v-else :cell="cell" />
     </template>
     <template #empty-row v-if="$slots['empty-row']"
@@ -320,48 +307,6 @@
     width: auto;
   }
 
-  :deep(.cp-table-row) {
-    --_structure-indent: calc(44px * (var(--structure-level, 1) - 1));
-  }
-
-  // Holds the toggle's footprint whether or not this row has one: the table
-  // isn't in grid mode, so column widths come from content, and a collapsed
-  // empty column would jump the moment a row first gained children.
-  :deep(.cp-table-cell--structure) {
-    inline-size: var(--c-size-control-sm);
-    min-inline-size: var(--c-size-control-sm);
-  }
-
-  :deep(.cp-table-cell--structure-reorder),
-  :deep(.cp-table-cell--structure) {
-    padding-inline: 0;
-  }
-
-  :deep(.cp-table-cell--structure),
-  :deep(.cp-table-cell--structure-reorder),
-  :deep(.cp-table-cell--structure ~ .cp-table-cell--select) {
-    overflow: visible;
-  }
-
-  :deep(.cp-table-structure-toggle),
-  :deep(.cp-table-cell--structure-reorder > div),
-  :deep(.cp-table-cell--structure ~ .cp-table-cell--select > craft-checkbox) {
-    position: relative;
-    z-index: 1;
-    inset-inline-start: var(--_structure-indent);
-  }
-
-  :deep(.cp-table-structure-toggle:dir(rtl) craft-icon[name='chevron-right']) {
-    transform: scaleX(-1);
-  }
-
-  :deep(.cp-table-structure) {
-    display: flex;
-    align-items: center;
-    gap: var(--c-spacing-sm);
-    padding-inline-start: var(--_structure-indent);
-  }
-
   :deep(.cell--drag-handle) {
     width: 40px;
     padding-inline: var(--c-spacing-sm);
@@ -377,3 +322,9 @@
     background-color: var(--c-color-accent-fill-quiet);
   }
 </style>
+
+<style
+  scoped
+  lang="scss"
+  src="@/common/components/structure/structure-table.scss"
+></style>

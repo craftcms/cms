@@ -288,6 +288,11 @@
     };
   });
 
+  /** A row's cells, less any another cell's column span covers. */
+  function visibleCells(row: Row<CraftTableFeatures, TData>) {
+    return row.getVisibleCells().filter((cell) => !cell.getIsCovered());
+  }
+
   function hideBottomBorder(rowIdx: number) {
     return (
       !props.withBottomBorder &&
@@ -488,7 +493,10 @@
                 selectable && !selectionDisabled && row.getCanSelect(),
               'row--dragging':
                 !readOnly && getDragState(row.id).type === 'is-dragging',
+              'cp-table-row--nested': row.depth > 0,
             }"
+            :style="row.depth > 0 ? {'--row-depth': row.depth} : undefined"
+            :data-row-depth="row.depth > 0 ? row.depth : undefined"
             :tabindex="selectable ? 0 : undefined"
             v-bind="rowAttributes?.(row)"
             @click="onRowClick(row, $event)"
@@ -541,9 +549,15 @@
               </td>
             </template>
             <component
-              v-for="(cell, cellIdx) in row.getVisibleCells()"
+              v-for="(cell, cellIdx) in visibleCells(row)"
               :is="cell.column.columnDef.meta?.cellTag ?? 'td'"
               :key="cell.id"
+              :colspan="cell.getColSpan() > 1 ? cell.getColSpan() : undefined"
+              :style="
+                cell.getColSpan() > 1
+                  ? {gridColumn: `span ${cell.getColSpan()}`}
+                  : undefined
+              "
               :class="[
                 {
                   'cp-table-cell': true,

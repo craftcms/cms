@@ -229,3 +229,81 @@ it.each(['plain', 'flush', 'raised'] as const)(
     ).toBe(appearance === 'flush');
   }
 );
+
+function mountStructureTable(structure: boolean) {
+  type Row = {id: string; name: string; subRows?: Row[]};
+  const table = useCraftTable<Row>({
+    data: [
+      {
+        id: 'plan',
+        name: 'Plan',
+        subRows: [
+          {id: 'step-1', name: 'Step one'},
+          {id: 'step-2', name: 'Step two'},
+        ],
+      },
+      {id: 'empty', name: 'Empty plan'},
+    ],
+    columns: [
+      {accessorKey: 'name', header: 'Name', cell: ({getValue}) => getValue()},
+    ],
+    getSubRows: (row) => row.subRows,
+    initialState: {expanded: true},
+  });
+  const host = document.createElement('div');
+  document.body.append(host);
+  const app = createApp({
+    render: () => h(AdminTable, {table, structure} as never),
+  });
+  app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
+  app.mount(host);
+  teardown = () => app.unmount();
+
+  return host;
+}
+
+function rowNames(host: HTMLElement): string[] {
+  return [...host.querySelectorAll('tbody tr')].map((tr) => {
+    const cell = tr.querySelector('.cp-table-cell--name')!;
+    const level = cell.querySelector('.sr-only')?.textContent?.trim();
+    const name = cell.textContent!.replace(level ?? '', '').trim();
+
+    return level ? `${level}: ${name}` : name;
+  });
+}
+
+it('shows sub-rows as a structure, indented under a row that toggles them', async () => {
+  const host = mountStructureTable(true);
+  const rows = [...host.querySelectorAll<HTMLElement>('tbody tr')];
+
+  expect(rowNames(host)).toEqual([
+    'Level 1: Plan',
+    'Level 2: Step one',
+    'Level 2: Step two',
+    'Level 1: Empty plan',
+  ]);
+  expect(
+    rows.map((tr) => tr.style.getPropertyValue('--structure-level'))
+  ).toEqual(['1', '2', '2', '1']);
+
+  const toggles = host.querySelectorAll('.cp-table-structure-toggle');
+  expect(toggles).toHaveLength(1);
+  expect(toggles[0]!.getAttribute('aria-expanded')).toBe('true');
+
+  toggles[0]!.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+  await nextTick();
+
+  expect(rowNames(host)).toEqual(['Level 1: Plan', 'Level 1: Empty plan']);
+  expect(
+    host
+      .querySelector('.cp-table-structure-toggle')!
+      .getAttribute('aria-expanded')
+  ).toBe('false');
+});
+
+it('leaves a table that isn’t a structure without toggles or levels', () => {
+  const host = mountStructureTable(false);
+
+  expect(host.querySelector('.cp-table-cell--structure')).toBeNull();
+  expect(rowNames(host)[0]).toBe('Plan');
+});

@@ -47,6 +47,7 @@ class FinishImport extends Job
         $hasFailures = (bool) Cache::pull(self::hasFailuresCacheKey($this->runId));
 
         Import::releaseRunLock($this->importPlan, $this->runId);
+        app(Import::class)->recordRunFinished($this->importPlan, $hasFailures);
 
         event(new ImportFinished($this->importPlan, $this->importPlan->steps ?? [], $this->runId, $hasFailures));
     }

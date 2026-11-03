@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import\Data;
 
 use JsonSerializable;
+use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 
 /**
  * One row of the import plans index.
@@ -14,7 +15,7 @@ use JsonSerializable;
 readonly class ImportPlanIndexData implements JsonSerializable
 {
     /**
-     * @param  list<string>  $stepLabels
+     * @param  list<array{label: string, source: string|null, enabled: bool, url: string|null}>  $steps
      */
     public function __construct(
         public ?string $uid,
@@ -22,8 +23,16 @@ readonly class ImportPlanIndexData implements JsonSerializable
         public string $handle,
         public ?string $description,
         public int $stepCount,
-        public array $stepLabels,
+        /** Each step, as the index lists it under the plan, with its own page if the plan is editable. */
+        #[LiteralTypeScriptType('{label: string, source: string | null, enabled: boolean, url: string | null}[]')]
+        public array $steps,
         public bool $editable,
+        /** Whether the plan is running right now. */
+        public bool $running = false,
+        /** Where its run can be followed in the queue manager, while it’s running. */
+        public ?string $runningJobUrl = null,
+        /** Whether its latest finished run had failures. */
+        public bool $lastRunFailed = false,
     ) {}
 
     /** @return array<string, mixed> */
@@ -35,8 +44,11 @@ readonly class ImportPlanIndexData implements JsonSerializable
             'handle' => $this->handle,
             'description' => $this->description,
             'stepCount' => $this->stepCount,
-            'stepLabels' => $this->stepLabels,
+            'steps' => $this->steps,
             'editable' => $this->editable,
+            'running' => $this->running,
+            'runningJobUrl' => $this->runningJobUrl,
+            'lastRunFailed' => $this->lastRunFailed,
         ];
     }
 }

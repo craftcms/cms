@@ -79,3 +79,39 @@ it('returns label and value for each heading', function () {
     expect($result[0])->toHaveKeys(['label', 'value']);
     expect($result[0]['label'])->toBe($result[0]['value']);
 });
+
+it('marks each part of a heading that holds a list, leaving its value alone', function () {
+    $result = Json::getHeadings('[{"author": {"name": "Ada"}, "related": ["a"], "blocks": [{"title": "x", "steps": [{"text": "y"}]}]}]');
+
+    expect(array_column($result, 'label', 'value'))->toBe([
+        'author' => 'author',
+        'author.name' => 'author.name',
+        'blocks' => 'blocks[]',
+        'blocks.steps' => 'blocks[].steps[]',
+        'blocks.steps.text' => 'blocks[].steps[].text',
+        'blocks.title' => 'blocks[].title',
+        'related' => 'related[]',
+    ]);
+});
+
+it('marks a list that only a later item fills in', function () {
+    $result = Json::getHeadings('[{"tips": []}, {"steps": [{"tips": [{"text": "x"}]}]}]');
+
+    expect(array_column($result, 'label', 'value'))
+        ->toMatchArray(['tips' => 'tips[]', 'steps.tips' => 'steps[].tips[]', 'steps.tips.text' => 'steps[].tips[].text']);
+});
+
+it('hints a deeply nested heading with a value from whichever item has one', function () {
+    $result = Json::getHeadings(json_encode([
+        ['content' => [['type' => 'text', 'body' => 'Hi'], ['steps' => [['tips' => []], ['tips' => [['tone' => '']]]]]]],
+        ['content' => [['steps' => [['tips' => [['tone' => 'warning']]]]]]],
+    ]));
+
+    expect(collect($result)->firstWhere('value', 'content.steps.tips.tone')['data']['hint'] ?? null)->toBe('warning');
+});
+
+it('hints a boolean heading the way its preview reads', function () {
+    $result = Json::getHeadings('[{"optional": false}]');
+
+    expect($result[0]['data']['hint'] ?? null)->toBe('false');
+});

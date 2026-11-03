@@ -1,9 +1,17 @@
 <script setup lang="ts" generic="TData extends Record<string, any>">
-  import type {ColumnDef, Table} from '@tanstack/vue-table';
+  import {
+    FlexRender,
+    type ColumnDef,
+    type Row,
+    type Table,
+  } from '@tanstack/vue-table';
+  import type {HTMLAttributes} from 'vue';
   import type {CraftTableFeatures} from '@/common/table/craftTable';
   import type {BulkAction} from '@/modules/elements/types/actions';
   import AdminTableBulkActionsBar from './AdminTableBulkActionsBar.vue';
   import DataTable from '@/common/components/DataTable.vue';
+  import StructureCell from '@/common/components/structure/StructureCell.vue';
+  import StructureToggle from '@/common/components/structure/StructureToggle.vue';
   import PaginationControls from '@/common/components/PaginationControls.vue';
   import {useTableRowSelection} from '@/common/composables/useTableRowSelection';
   import {usePage} from '@inertiajs/vue3';
@@ -55,6 +63,14 @@
       getSortValue?: AdminTableDataOptions<TData>['getSortValue'];
       canSelectRow?: AdminTableDataOptions<TData>['canSelectRow'];
       getRowLabel?: (row: TData) => string;
+      /** Attributes for each row's `<tr>`, such as a class for rows that need setting apart. */
+      rowAttributes?: (row: Row<CraftTableFeatures, TData>) => HTMLAttributes;
+      /**
+       * Shows the table's sub-rows as a structure, as a structure section's
+       * element index does: each indented by its depth, under a row with a
+       * toggle to expand or collapse them.
+       */
+      structure?: boolean;
       reorderRows?: (move: AdminTableReorder<TData>) => Promise<void>;
       moveToPage?: (
         id: string | number,
@@ -149,6 +165,28 @@
     : useAdminTable<TData>(props, (error) => emit('load-error', error));
   const table = computed(() => props.table ?? managed!.table);
   const hasRows = computed(() => table.value.getRowModel().rows.length > 0);
+
+  function structureLabel(row: Row<CraftTableFeatures, TData>): string {
+    return (
+      props.getRowLabel?.(row.original) ??
+      String(row.original.label ?? row.original.name ?? row.id)
+    );
+  }
+
+  function tableRowAttributes(
+    row: Row<CraftTableFeatures, TData>
+  ): HTMLAttributes {
+    const attributes = props.rowAttributes?.(row) ?? {};
+
+    if (!props.structure) {
+      return attributes;
+    }
+
+    return {
+      ...attributes,
+      style: [attributes.style, {'--structure-level': row.depth + 1}],
+    };
+  }
   const loading = computed(
     () => props.loading || !!managed?.loading.value || moving.value
   );
@@ -343,9 +381,38 @@
         :empty-row="!showEmptyState"
         :selection="selection"
         :get-row-label="getRowLabel"
+        :row-attributes="tableRowAttributes"
+        :leading-column-tracks="structure ? ['44px'] : []"
         :interactions-disabled="interactionsDisabled || loading"
         @reorder="onReorder"
       >
+        <template v-if="structure" #leading-header>
+          <th
+            class="cp-table-cell cp-table-cell--header cp-table-cell--structure"
+            scope="col"
+          >
+            <span class="sr-only">{{ t('Expand or collapse') }}</span>
+          </th>
+        </template>
+        <template v-if="structure" #leading-cells="{row, hideBottomBorder}">
+          <td
+            class="cp-table-cell cp-table-cell--structure"
+            :class="{'border-b-0': hideBottomBorder}"
+          >
+            <StructureToggle
+              v-if="row.getCanExpand()"
+              :expanded="row.getIsExpanded()"
+              :label="structureLabel(row)"
+              @toggle="row.toggleExpanded()"
+            />
+          </td>
+        </template>
+        <template v-if="structure" #cell="{cell, row, index}">
+          <StructureCell v-if="index === 0" :level="row.depth + 1">
+            <FlexRender :cell="cell" />
+          </StructureCell>
+          <FlexRender v-else :cell="cell" />
+        </template>
         <template #empty-row v-if="$slots['empty-row'] || managed">
           <slot name="empty-row"><span hidden /></slot>
         </template>
@@ -424,3 +491,9 @@
     background-color: var(--c-surface-default);
   }
 </style>
+
+<style
+  scoped
+  lang="scss"
+  src="@/common/components/structure/structure-table.scss"
+></style>

@@ -1,14 +1,14 @@
 <script setup lang="ts">
   /**
-   * One destination column: what it maps to, and how it behaves when the imported
-   * value is missing.
+   * One cell of a destination column's row: what it maps to, and how it behaves when
+   * the imported value is missing. The row's cells share their state through the
+   * mapping trees, so each renders independently.
    *
-   * A container column has no mapping of its own — it opens a nested panel over the
-   * same trees instead, which is why every control here writes through
+   * A container column has no row of its own — `MappingTable` maps it in a section
+   * below, over the same trees — which is why every control here writes through
    * `prefixedHandleAsArray` rather than a form input name.
    */
   import '@craftcms/ui/components/badge/badge';
-  import '@craftcms/ui/components/button/button';
   import '@craftcms/ui/components/checkbox/checkbox';
   import '@craftcms/ui/components/field/field';
   import '@craftcms/ui/components/info-icon/info-icon';
@@ -16,8 +16,8 @@
   import '@craftcms/ui/components/select/select';
   import '@craftcms/ui/components/select-rich/select-rich';
   import '@craftcms/ui/components/text-expander/text-expander';
-  import {computed, inject, useId, useTemplateRef} from 'vue';
-  import {ButtonVariant, t} from '@craftcms/ui';
+  import {computed, inject, ref, useId, watch} from 'vue';
+  import {Color, t} from '@craftcms/ui';
   import {ignoreModelValueInitialization} from '@/modules/ui/runtime';
   import {checkedValue, getAt, isChecked, setAt} from './paths';
   import {
@@ -29,15 +29,16 @@
 
   const props = defineProps<{
     col: MappingColumn;
+    part: 'destination' | 'incoming' | 'match' | 'clear';
+    /** The compound column this one is a subfield of, if any. */
+    heading?: string | null;
   }>();
 
   const context = inject(MappingContextKey);
 
   if (!context) {
-    throw new Error('MappingRow must be rendered inside a mapping screen.');
+    throw new Error('MappingCell must be rendered inside a mapping screen.');
   }
-
-  const nestedTrigger = useTemplateRef<HTMLElement>('nestedTrigger');
 
   /** Reads a column's leaf in one of the trees as a string, with nothing set reading as `''`. */
   function stringAt(
@@ -70,6 +71,22 @@
 
   const isBestGuess = computed(() =>
     Boolean(getAt(context.suggestedMap, path.value))
+  );
+
+  /**
+   * The column the server suggested, which its option goes on saying in the list
+   * after another is chosen. A container's suggestions arrive after the row renders.
+   */
+  const suggestedColumn = ref<string | null>(null);
+
+  watch(
+    isBestGuess,
+    (guessed) => {
+      if (guessed) {
+        suggestedColumn.value = mapValue.value;
+      }
+    },
+    {immediate: true}
   );
 
   /**
@@ -174,191 +191,151 @@
       );
     })(event);
   }
-
-  function openNested(): void {
-    context!.openNested(props.col, nestedTrigger.value);
-  }
-
-  /** Whether the container's nested mapping has anything in it yet. */
-  const hasNestedMapping = computed(() => {
-    const branch = getAt(context!.values.map, path.value);
-
-    return (
-      branch !== null &&
-      typeof branch === 'object' &&
-      Object.keys(branch as object).length > 0
-    );
-  });
 </script>
 
 <template>
-  <tr>
-    <th scope="row">
+  <template v-if="part === 'destination'">
+    <span class="destination">
+      <span v-if="heading" class="text-quiet">{{ heading }} ›</span>
       {{ col.label }}
-      <craft-badge v-if="isMatchOnly" fill="gray">{{
+      <craft-badge v-if="isMatchOnly" fill="gray" size="small" no-prefix>{{
         t('Match only')
       }}</craft-badge>
-      <craft-info-icon v-if="isMatchOnly">{{
-        t(
-          'This value can’t be imported directly — it can only be used to match against an existing element.'
-        )
-      }}</craft-info-icon>
-      <br />
-      <code>{{ col.handle }}</code>
-    </th>
-    <td :class="{'best-guess': isBestGuess}">
-      <craft-button
-        v-if="col.isContainer"
-        ref="nestedTrigger"
-        type="button"
-        :variant="ButtonVariant.Dashed"
+    </span>
+    <code class="block font-normal text-xs text-quiet">{{ col.handle }}</code>
+  </template>
+
+  <div v-else-if="part === 'incoming'">
+    <template v-if="!col.isContainer">
+      <!-- The suggested option's badge is appended to the select's value too while it's selected. -->
+      <craft-select-rich
+        .modelValue="mapValue"
         .disabled="!context.editable"
-        @click="openNested"
+        :label="col.label"
+        label-sr-only
+        @model-value-changed="onMapChanged"
       >
-        {{ hasNestedMapping ? t('Edit mapping') : t('Map field') }}
-      </craft-button>
-      <template v-else>
-        <craft-select-rich
-          .modelValue="mapValue"
-          .disabled="!context.editable"
-          :label="col.label"
-          label-sr-only
-          @model-value-changed="onMapChanged"
+        <craft-option
+          v-for="option in context.sourceDataCols"
+          :key="option.value"
+          .choiceValue="option.value"
+          .hint="option.hint ?? null"
         >
-          <craft-option
-            v-for="option in context.sourceDataCols"
+          {{ option.label }}
+          <craft-badge
+            v-if="suggestedColumn !== null && option.value === suggestedColumn"
+            slot="badge"
+            :fill="Color.Accent"
+            ^size="small"
+            no-prefix
+            >{{ t('Suggested') }}</craft-badge
+          >
+        </craft-option>
+      </craft-select-rich>
+      <craft-field
+        v-if="isTemplate"
+        class="template"
+        :label="t('Template')"
+        :has-errors="templateErrors.length > 0"
+        width="full"
+        required
+      >
+        <craft-input
+          slot="input"
+          monospace
+          .modelValue="templateValue"
+          required
+          :disabled="!context.editable"
+          :aria-invalid="templateErrors.length ? 'true' : undefined"
+          @model-value-changed="onTemplateChanged"
+        >
+          <input
+            :id="templateInputId"
+            slot="input"
+            :data-mapping-template-invalid="
+              templateErrors.length ? context.panelId : undefined
+            "
+          />
+        </craft-input>
+        <craft-text-expander
+          v-if="context.editable"
+          slot="input"
+          :for="templateInputId"
+          .triggers="context.templateTextExpanderTriggers"
+        />
+        <span
+          v-if="context.editable"
+          slot="tip"
+          v-html="t('Type <kbd>{</kbd> to choose an object template variable.')"
+        ></span>
+        <ul v-if="templateErrors.length" slot="feedback" class="error-list">
+          <li v-for="error in templateErrors" :key="error">{{ error }}</li>
+        </ul>
+      </craft-field>
+    </template>
+    <div v-if="importSettings.length" class="import-settings">
+      <craft-select
+        v-for="setting in importSettings"
+        :key="setting.name"
+        .modelValue="importSettingValue(setting)"
+        .disabled="!context.editable"
+        @model-value-changed="onImportSettingChanged(setting, $event)"
+      >
+        <!-- A span, not a label: the info icon is a button, which a label would also activate. -->
+        <span slot="label">
+          {{ setting.label }}
+          <craft-info-icon v-if="setting.instructions">{{
+            setting.instructions
+          }}</craft-info-icon>
+        </span>
+        <select slot="input">
+          <option
+            v-for="option in setting.options"
             :key="option.value"
-            .choiceValue="option.value"
-            .hint="option.hint ?? null"
+            :value="option.value"
           >
             {{ option.label }}
-          </craft-option>
-          <span v-if="isBestGuess" slot="help-text" class="sr-only">{{
-            t('Suggested')
-          }}</span>
-        </craft-select-rich>
-        <div v-if="isBestGuess" class="suggested">
-          <craft-badge fill="blue" aria-hidden="true">{{
-            t('Suggested')
-          }}</craft-badge>
-        </div>
-        <craft-field
-          v-if="isTemplate"
-          class="template"
-          :label="t('Template')"
-          :has-errors="templateErrors.length > 0"
-          width="full"
-          required
-        >
-          <craft-input
-            slot="input"
-            monospace
-            .modelValue="templateValue"
-            required
-            :disabled="!context.editable"
-            :aria-invalid="templateErrors.length ? 'true' : undefined"
-            @model-value-changed="onTemplateChanged"
-          >
-            <input
-              :id="templateInputId"
-              slot="input"
-              :data-mapping-template-invalid="
-                templateErrors.length ? context.panelId : undefined
-              "
-            />
-          </craft-input>
-          <craft-text-expander
-            v-if="context.editable"
-            slot="input"
-            :for="templateInputId"
-            .triggers="context.templateTextExpanderTriggers"
-          />
-          <craft-info-icon
-            v-if="context.editable"
-            slot="heading-suffix"
-            :label="
-              t('More info about {name}', {
-                name: `${t('Template')} ${col.label}`,
-              })
-            "
-          >
-            <span
-              v-html="
-                t('Type <kbd>{</kbd> to choose an object template variable.')
-              "
-            ></span>
-          </craft-info-icon>
-          <ul v-if="templateErrors.length" slot="feedback" class="error-list">
-            <li v-for="error in templateErrors" :key="error">{{ error }}</li>
-          </ul>
-        </craft-field>
-      </template>
-      <div v-if="importSettings.length" class="import-settings">
-        <craft-select
-          v-for="setting in importSettings"
-          :key="setting.name"
-          .modelValue="importSettingValue(setting)"
-          .disabled="!context.editable"
-          @model-value-changed="onImportSettingChanged(setting, $event)"
-        >
-          <!-- A span, not a label: the info icon is a button, which a label would also activate. -->
-          <span slot="label">
-            {{ setting.label }}
-            <craft-info-icon v-if="setting.instructions">{{
-              setting.instructions
-            }}</craft-info-icon>
-          </span>
-          <select slot="input">
-            <option
-              v-for="option in setting.options"
-              :key="option.value"
-              :value="option.value"
-            >
-              {{ option.label }}
-            </option>
-          </select>
-        </craft-select>
-      </div>
-    </td>
+          </option>
+        </select>
+      </craft-select>
+    </div>
+  </div>
 
-    <!-- A slotted label is the only way to name a `craft-checkbox`: Lion overwrites `aria-labelledby`. -->
-    <td>
-      <craft-checkbox
-        v-if="canMatch"
-        label-sr-only
-        .checked="matchCriteriaChecked"
-        .disabled="!context.editable || mapValue === ''"
-        @model-value-changed="onMatchCriteriaChanged"
-      >
-        <label slot="label">{{
-          t('Match on {field}', {field: col.label})
-        }}</label>
-      </craft-checkbox>
-    </td>
+  <!-- A slotted label is the only way to name a `craft-checkbox`: Lion overwrites `aria-labelledby`. -->
+  <craft-checkbox
+    v-else-if="part === 'match' && canMatch"
+    label-sr-only
+    .checked="matchCriteriaChecked"
+    .disabled="!context.editable || mapValue === ''"
+    @model-value-changed="onMatchCriteriaChanged"
+  >
+    <label slot="label">{{ t('Match on {field}', {field: col.label}) }}</label>
+  </craft-checkbox>
 
-    <td>
-      <craft-checkbox
-        v-if="canClear"
-        label-sr-only
-        .checked="clearChecked"
-        .disabled="!context.editable"
-        @model-value-changed="onClearChanged"
-      >
-        <label slot="label">{{ t('Clear {field}', {field: col.label}) }}</label>
-      </craft-checkbox>
-    </td>
-  </tr>
+  <craft-checkbox
+    v-else-if="part === 'clear' && canClear"
+    label-sr-only
+    .checked="clearChecked"
+    .disabled="!context.editable"
+    @model-value-changed="onClearChanged"
+  >
+    <label slot="label">{{ t('Clear {field}', {field: col.label}) }}</label>
+  </craft-checkbox>
 </template>
 
 <style scoped lang="scss">
-  .best-guess {
-    background: var(--color-blue-100);
+  // the name and its badge share a line, centered on each other rather than on the text's baseline
+  .destination {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: var(--c-spacing-sm);
   }
 
-  .suggested {
-    display: flex;
-    justify-content: flex-end;
-    margin-block-start: var(--c-spacing-sm);
+  .heading {
+    display: block;
+    font-size: 0.85em;
+    color: var(--c-text-quiet);
   }
 
   .template {

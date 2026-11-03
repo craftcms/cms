@@ -304,14 +304,13 @@
 
   @media (width < var(--breakpoint-sm)) {
     .slideout-panel {
-      /* Full-width sheet on small screens, matching the legacy slideout —
-         there isn't room to peek, so stacked panels sit on top of each other.
+      /* Full-screen on small screens, matching the legacy slideout — there
+         isn't room to peek, so stacked panels sit on top of each other.
          `!important` because the inline offset is set per-panel. */
       inset-inline: 0 !important;
       width: auto !important;
-      inset-block-start: 15vh;
-      border-start-end-radius: var(--c-radius-lg, 0.5rem);
-      border-end-start-radius: 0;
+      border-radius: 0;
+      box-shadow: none;
       container-name: slideout;
       container-type: inline-size;
     }

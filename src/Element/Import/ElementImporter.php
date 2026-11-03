@@ -15,6 +15,7 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Import\Data\MappingColumn;
+use CraftCms\Cms\Import\Enums\MatchMode;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Site\Data\Site;
@@ -29,6 +30,7 @@ use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use Illuminate\Database\Query\Expression;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 use InvalidArgumentException;
 use Override;
@@ -78,6 +80,9 @@ abstract class ElementImporter extends BaseImporter
      * e.g. `['myAssets' => ['fileConflict' => 'replace'], 'myMatrix' => ['someEntryType' => ['fields' => ['innerAssets' => [...]]]]]`.
      */
     public protected(set) ?array $fieldSettings = null;
+
+    /** Whether rows create new elements, update the ones they match, or both. */
+    public protected(set) MatchMode $matchMode = MatchMode::CreateAndUpdate;
 
     #[Override]
     public static function getDefaultTransformer(): ?string
@@ -208,10 +213,23 @@ abstract class ElementImporter extends BaseImporter
         return $this;
     }
 
+    /**
+     * Sets whether rows create new elements, update the ones they match, or both, and returns
+     * the current instance.
+     */
+    public function matchMode(MatchMode|string|null $matchMode): self
+    {
+        $this->matchMode = $matchMode instanceof MatchMode
+            ? $matchMode
+            : (MatchMode::tryFrom((string) $matchMode) ?? MatchMode::CreateAndUpdate);
+
+        return $this;
+    }
+
     #[Override]
     protected static function settingNames(): array
     {
-        return [...parent::settingNames(), 'site', 'fieldLayout', 'keepMissingNestedElements', 'fieldSettings'];
+        return [...parent::settingNames(), 'site', 'fieldLayout', 'keepMissingNestedElements', 'fieldSettings', 'matchMode'];
     }
 
     #[Override]
@@ -222,6 +240,7 @@ abstract class ElementImporter extends BaseImporter
             'settings.site' => ['required', new SiteRule],
             'settings.keepMissingNestedElements' => ['nullable', 'array'],
             'settings.fieldSettings' => ['nullable', 'array'],
+            'settings.matchMode' => ['nullable', Rule::enum(MatchMode::class)],
         ]);
     }
 
@@ -241,6 +260,7 @@ abstract class ElementImporter extends BaseImporter
         $data['settings']['fieldLayout'] = $this->fieldLayout ?? null;
         $data['settings']['keepMissingNestedElements'] = $this->keepMissingNestedElements;
         $data['settings']['fieldSettings'] = $this->fieldSettings;
+        $data['settings']['matchMode'] = $this->matchMode->value;
 
         return $data;
     }
@@ -416,10 +436,16 @@ abstract class ElementImporter extends BaseImporter
     }
 
     #[Override]
-    public function importItem(array $data): ElementInterface
+    public function importItem(array $data): ?ElementInterface
     {
         // figure out if we're adding or updating
         $element = $this->getRootElement($data);
+
+        // a row the plan doesn't create or update is left out
+        if (! $this->matchMode->imports($element->id !== null)) {
+            return null;
+        }
+
         $element->markAsImporting();
 
         $item = Import::processData($this, $data, $element);
@@ -797,40 +823,50 @@ abstract class ElementImporter extends BaseImporter
         // figure out if we're adding or editing
         $element = $this->prepareNewRootElementForImport($data);
 
-        // if we don't have matchCriteria, then return a new Element
-        if (empty($data['matchCriteria'])) {
-            return $element;
+        return $this->matchingElement($element, $data) ?? $element;
+    }
+
+    /**
+     * Returns the existing element an item's resolved match criteria find, without importing
+     * anything, or null if there's none or the item has no match criteria.
+     *
+     * @param  array<string, mixed>  $data  The item, as {@see \CraftCms\Cms\Import\Import::importItem()} hands it over.
+     */
+    public function findMatchingElement(array $data): ?ElementInterface
+    {
+        return $this->matchingElement($this->prepareNewRootElementForImport($data), $data);
+    }
+
+    /** @param array<string, mixed> $data */
+    private function matchingElement(ElementInterface $element, array $data): ?ElementInterface
+    {
+        if (empty($data['matchCriteria']) || ! is_array($data['matchCriteria'])) {
+            return null;
         }
 
-        if (is_array($data['matchCriteria'])) {
-            // only canonical elements and unpublished drafts can be imported into,
-            // preferring a canonical element when both match;
-            // drafts of an existing element are left alone
-            $query = $element::find()
-                ->drafts(null)
-                ->draftOf(false)
-                ->status(null)
-                ->orderBy(new Expression('CASE WHEN elements.draftId IS NULL THEN 0 ELSE 1 END'));
+        // only canonical elements and unpublished drafts can be imported into,
+        // preferring a canonical element when both match;
+        // drafts of an existing element are left alone
+        $query = $element::find()
+            ->drafts(null)
+            ->draftOf(false)
+            ->status(null)
+            ->orderBy(new Expression('CASE WHEN elements.draftId IS NULL THEN 0 ELSE 1 END'));
 
-            // give element a chance to adjust the query
-            $this->prepareRootElementImportQuery($element, $query);
+        // give element a chance to adjust the query
+        $this->prepareRootElementImportQuery($element, $query);
 
-            // by now the match criteria from various sources (ui, config, transformer) should have been merged,
-            // and the values from incoming data should have been applied to it
-            $criteria = $data['matchCriteria'];
+        // by now the match criteria from various sources (ui, config, transformer) should have been merged,
+        // and the values from incoming data should have been applied to it
+        $criteria = $data['matchCriteria'];
 
-            Typecast::configure($query, $criteria);
+        Typecast::configure($query, $criteria);
 
-            // ensure we use the config's siteId, not one from the matchCriteria
-            // that's why we haven't set it earlier on
-            $query->siteId = $this->site?->id;
+        // ensure we use the config's siteId, not one from the matchCriteria
+        // that's why we haven't set it earlier on
+        $query->siteId = $this->site?->id;
 
-            // return found or new element
-            return $query->one() ?? $element;
-        }
-
-        // return new element
-        return $element;
+        return $query->one();
     }
 
     /**

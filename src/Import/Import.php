@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import;
 
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Data\SourceColumn;
@@ -177,6 +179,61 @@ class Import
     }
 
     /**
+     * Remembers the queue job an import plan's run is on, so the control panel can link to it.
+     *
+     * @param  string|null  $jobUid  The job's uid in the queue manager.
+     */
+    public function rememberRunningJob(ImportPlanData $importPlan, ?string $jobUid): void
+    {
+        if ($jobUid !== null) {
+            Cache::put(self::runningJobKey($importPlan), $jobUid, self::RUN_LOCK_TTL);
+        }
+    }
+
+    /**
+     * Returns the uid of the queue job the import plan’s run is on, if it’s running and has started one.
+     */
+    public function runningJobUid(ImportPlanData $importPlan): ?string
+    {
+        if (! $this->isRunning($importPlan)) {
+            return null;
+        }
+
+        $jobUid = Cache::get(self::runningJobKey($importPlan));
+
+        return is_string($jobUid) ? $jobUid : null;
+    }
+
+    /**
+     * Records how the import plan’s latest run went, once it’s finished or been canceled.
+     */
+    public function recordRunFinished(ImportPlanData $importPlan, bool $failed): void
+    {
+        Cache::forget(self::runningJobKey($importPlan));
+        Cache::forever(self::lastRunKey($importPlan), ['failed' => $failed, 'finishedAt' => now()->getTimestamp()]);
+    }
+
+    /**
+     * Returns whether the import plan’s latest finished run had failures.
+     */
+    public function lastRunFailed(ImportPlanData $importPlan): bool
+    {
+        $lastRun = Cache::get(self::lastRunKey($importPlan));
+
+        return is_array($lastRun) && ! empty($lastRun['failed']);
+    }
+
+    private static function runningJobKey(ImportPlanData $importPlan): string
+    {
+        return 'import-plan:'.($importPlan->uid ?? $importPlan->handle).':running-job';
+    }
+
+    private static function lastRunKey(ImportPlanData $importPlan): string
+    {
+        return 'import-plan:'.($importPlan->uid ?? $importPlan->handle).':last-run';
+    }
+
+    /**
      * Returns the cache key of the lock that marks an import plan as running.
      */
     private static function runLockKey(ImportPlanData $importPlan): string
@@ -294,6 +351,48 @@ class Import
         $importer->runAfterItemImportedCallbacks($importedItem);
 
         event(new ItemImported($importer, $data, $runId, $importedItem));
+    }
+
+    /**
+     * Finds the existing elements an element import would update, without importing anything: each
+     * item is remapped and has its match criteria resolved as {@see importItem()} would, and the first
+     * `$limit` items that match an existing element are returned with it.
+     *
+     * @param  list<array<string, mixed>>  $items  The source's items, in order.
+     * @return array{matches: list<array{row: int, element: ElementInterface}>, checked: int} The matches, each with the
+     *                                                                                        1-based row it came from, and how many rows were checked to find them.
+     */
+    public function findMatches(ElementImporter $importer, array $items, int $limit = 10): array
+    {
+        $matchCriteria = ImportHelper::normalizeMatchCriteriaFromImporterConfig($importer);
+        $matches = [];
+        $checked = 0;
+
+        foreach ($items as $index => $data) {
+            if (count($matches) >= $limit) {
+                break;
+            }
+
+            $checked++;
+
+            if (! is_array($data)) {
+                continue;
+            }
+
+            if ($importer->map) {
+                $data = ImportHelper::remapData($importer->map, $data, $importer->templates ?? []);
+            }
+
+            $additionalMatchCriteria = $importer->transformer instanceof BaseTransformer ?
+                $importer->transformer->additionalMatchCriteria($importer, $data) : [];
+            $this->resolveMatchCriteria($data, $matchCriteria, $additionalMatchCriteria);
+
+            if ($element = $importer->findMatchingElement($data)) {
+                $matches[] = ['row' => $index + 1, 'element' => $element];
+            }
+        }
+
+        return ['matches' => $matches, 'checked' => $checked];
     }
 
     /**

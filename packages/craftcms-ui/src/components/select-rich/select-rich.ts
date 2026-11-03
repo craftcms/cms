@@ -6,6 +6,7 @@ import CraftSelectInvoker from './select-invoker.js';
 import '../option/option.js';
 import '../icon/icon.js';
 import {HasLabel} from '@src/mixins/HasLabel';
+import {viewportEscapingModifiers} from '@src/utilities/overlay-position';
 
 /**
  * @summary A rich `<select>` replacement built on Lion's select-rich. Unlike a
@@ -41,6 +42,30 @@ export default class CraftSelectRich extends HasLabel(LionSelectRich) {
 
   /** Renders the invoker at a smaller size. */
   @property({reflect: true, type: Boolean}) small = false;
+
+  /**
+   * Keeps the listbox within the viewport rather than within its clipping
+   * ancestor, like a native select's options. Lion's boundary options use
+   * Popper 1's names, which Popper 2 ignores.
+   */
+  // @ts-ignore Lion's OverlayMixin is typed via JSDoc.
+  override _defineOverlayConfig() {
+    const config = super._defineOverlayConfig();
+    const boundary = {boundary: document.documentElement, padding: 8};
+
+    return {
+      ...config,
+      popperConfig: {
+        ...config.popperConfig,
+        modifiers: [
+          ...(config.popperConfig?.modifiers ?? []),
+          {name: 'preventOverflow', options: boundary},
+          {name: 'flip', options: boundary},
+          ...viewportEscapingModifiers(),
+        ],
+      },
+    };
+  }
 
   /**
    * Override Lion's default which sets a fixed pixel width on the invoker.

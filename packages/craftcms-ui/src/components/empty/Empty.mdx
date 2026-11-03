@@ -25,6 +25,12 @@ Then give them the action:
 
 The default slot sits below the message and is where that action goes.
 
+## Appearance
+
+`appearance="outline"` draws a quiet border around the empty state. `appearance="dashed"` draws a dashed one, matching a dashed button, for a space that's waiting to be filled — a list whose first item gets added right there:
+
+<Canvas of={EmptyStories.Dashed} sourceState="shown" />
+
 ## Distinguishing Empty From Filtered
 
 The two look the same and mean opposite things. A section with no entries needs "Create one"; a search with no matches needs "Clear the filters".

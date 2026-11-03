@@ -6,11 +6,40 @@ import StepList from './StepList.vue';
 
 const state = vi.hoisted(() => ({
   openStepSlideout: vi.fn(),
+  menus: new Map<string, Array<any>>(),
 }));
 
 vi.mock('./step-slideout', () => ({
   openStepSlideout: state.openStepSlideout,
 }));
+
+// stands in for each card's actions menu, keeping its items to act on
+vi.mock('@/common/components/ActionMenu.vue', async () => {
+  const {h} = await import('vue');
+
+  return {
+    default: {
+      name: 'ActionMenu',
+      props: ['actions', 'label'],
+      setup(props: any) {
+        return () => {
+          state.menus.set(props.label, props.actions);
+
+          return h('div', {class: 'action-menu-stub'}, props.label);
+        };
+      },
+    },
+  };
+});
+
+/** Steps saved with the plan, which have pages of their own. */
+const savedUids = ['step-1', 'step-2'];
+
+function stepPageUrl(step: ImportStep): string | null {
+  return savedUids.includes(step.uid)
+    ? `/admin/import/plan/steps/${step.uid}`
+    : null;
+}
 
 const importerTypes = [
   {value: 'CraftCms\\Cms\\Entry\\Import\\EntryImporter', label: 'Entries'},
@@ -36,53 +65,76 @@ let steps: ReturnType<typeof ref<ImportStep[]>>;
 
 function mount(
   initial: ImportStep[] = [step()],
-  props: {editable?: boolean; errors?: Record<string, string[]>} = {}
+  props: {
+    editable?: boolean;
+    errors?: Record<string, string[]>;
+  } = {}
 ) {
   steps = ref<ImportStep[]>(initial);
 
   app = createApp({
     components: {StepList},
     template:
-      '<StepList v-model="steps" :editable="editable" :importer-types="importerTypes" :errors="errors" />',
+      '<StepList v-model="steps" :editable="editable" :importer-types="importerTypes" :errors="errors" :step-page-url="stepPageUrl" />',
     setup: () => ({
       steps,
       importerTypes,
       editable: props.editable ?? true,
       errors: props.errors ?? {},
+      stepPageUrl,
     }),
   });
   app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
   app.mount(container);
 }
 
-function rowButtons(index = 0): HTMLElement[] {
-  const row = [...container.querySelectorAll('li')][index]!;
-
-  return [...row.querySelectorAll<HTMLElement>('craft-button')];
+/**
+ * Vue drops an event reaching a listener second-hand in the same millisecond the listener
+ * was attached, so a click straight after mounting can go unheard.
+ */
+async function mountAndWait(...args: Parameters<typeof mount>): Promise<void> {
+  mount(...args);
+  await new Promise((resolve) => setTimeout(resolve, 2));
 }
 
-function addButton(): HTMLElement {
-  return [...container.querySelectorAll<HTMLElement>('craft-button')].at(-1)!;
+function row(index = 0): HTMLElement {
+  return [...container.querySelectorAll<HTMLElement>('[role="listitem"]')][
+    index
+  ]!;
 }
 
-function isLoading(button: HTMLElement): boolean {
-  return (button as HTMLElement & {loading: boolean}).loading;
+/** The card's own link, which opens the step. */
+function openButton(index = 0): HTMLElement {
+  return row(index).querySelector<HTMLElement>('.step-card__open')!;
 }
 
-function isDisabled(button: HTMLElement): boolean {
-  return (button as HTMLElement & {disabled: boolean}).disabled;
+/** The items of a card's actions menu, by label. */
+function menu(index = 0): Record<string, any> {
+  return Object.fromEntries(
+    (state.menus.get(`Step ${index + 1} actions`) ?? []).map((item: any) => [
+      item.label,
+      item,
+    ])
+  );
 }
 
-function deferred<T>() {
-  let resolve!: (value: T) => void;
-  const promise = new Promise<T>((r) => (resolve = r));
+/** The Create step menu's items, by label: one for each importer type. */
+function createMenu(): Record<string, any> {
+  return Object.fromEntries(
+    (state.menus.get('Create step') ?? [])
+      .flatMap((group: any) => group.items)
+      .map((item: any) => [item.label, item])
+  );
+}
 
-  return {promise, resolve};
+/** What the list last opened a slideout with. */
+function opened(): any {
+  return state.openStepSlideout.mock.lastCall?.[0];
 }
 
 beforeEach(() => {
-  state.openStepSlideout.mockReset();
-  state.openStepSlideout.mockResolvedValue(true);
+  state.openStepSlideout.mockReset().mockResolvedValue(true);
+  state.menus.clear();
   vi.stubGlobal('confirm', vi.fn().mockReturnValue(true));
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false}));
   app = null;
@@ -105,112 +157,147 @@ it('clones a step held in reactive state', () => {
   expect(cloneSteps(reactive([step()]))).toEqual([step()]);
 });
 
-it('opens the slideout for a step read out of its reactive model', async () => {
-  mount();
+it('links each saved step’s card to its page', () => {
+  mount([step(), step({uid: 'step-2'}), step({uid: 'step-3'})]);
 
-  rowButtons()[0]!.dispatchEvent(new Event('click'));
-  await nextTick();
-
-  expect(state.openStepSlideout).toHaveBeenCalledOnce();
-  expect(state.openStepSlideout.mock.calls[0]![0]).toMatchObject({
-    editable: true,
-  });
-  expect(state.openStepSlideout.mock.calls[0]![0].step.uid).toBe('step-1');
+  expect(openButton(1).getAttribute('href')).toBe(
+    '/admin/import/plan/steps/step-2'
+  );
+  expect(openButton(2).getAttribute('href')).toBe('#');
 });
-
-it('summarizes a step by its importer type and source', () => {
+it('heads a step’s card with its importer type and source', () => {
   mount();
 
-  expect(container.querySelector('li')!.textContent).toContain(
-    '1. Entries — people.csv'
+  expect(openButton().textContent!.trim()).toBe('1. Entries');
+  expect(row().querySelector('.step-card__source')!.textContent).toBe(
+    'people.csv'
   );
 });
 
-it('names each row’s buttons after its step', () => {
-  mount([step(), step({uid: 'step-2', source: 'people.csv'})]);
-
-  const [edit, , remove] = rowButtons(1);
-
-  expect(
-    [edit, remove].map((button) => button!.getAttribute('aria-label'))
-  ).toEqual(['Edit 2. Entries — people.csv', 'Delete 2. Entries — people.csv']);
-});
-
-it('names a row’s toggle button after its label and its step', () => {
+it('offers editing a step, from its menu as well as its card', () => {
   mount([step(), step({uid: 'step-2'})]);
 
-  const ids = rowButtons(1)[1]!.getAttribute('aria-labelledby')!.split(' ');
+  menu(1)['Edit step'].onClick();
 
-  expect(
-    ids.map((id) => document.getElementById(id)!.textContent!.trim())
-  ).toEqual(['Disable step', '2. Entries — people.csv']);
+  expect(opened()).toMatchObject({
+    step: step({uid: 'step-2'}),
+    editable: true,
+    title: 'Edit step 2',
+    editUrl: '/admin/import/plan/steps/step-2',
+  });
 });
 
+it('only offers viewing a step that can’t be edited', () => {
+  mount([step()], {editable: false});
+
+  expect(Object.keys(menu(0))).toEqual(['View step']);
+
+  menu(0)['View step'].onClick();
+
+  expect(opened()).toMatchObject({editable: false, title: 'Step 1'});
+});
+it('describes each card by its step', () => {
+  mount([step(), step({uid: 'step-2'})]);
+
+  expect(row(1).getAttribute('aria-label')).toBe('2. Entries — people.csv');
+});
 it('disables a step and enables it again', async () => {
   mount([step(), step({uid: 'step-2'})]);
 
-  rowButtons(0)[1]!.dispatchEvent(new Event('click'));
+  menu(0)['Disable step'].onClick();
   await nextTick();
 
   expect(steps.value!.map((s) => s.enabled)).toEqual([false, true]);
-  expect(container.querySelector('li')!.textContent).toContain('(Disabled)');
-  expect(rowButtons(0)[1]!.textContent!.trim()).toBe('Enable step');
+  expect(row(0).querySelector('craft-badge')!.textContent).toBe('Disabled');
 
-  rowButtons(0)[1]!.dispatchEvent(new Event('click'));
+  menu(0)['Enable step'].onClick();
   await nextTick();
 
   expect(steps.value!.map((s) => s.enabled)).toEqual([true, true]);
 });
-
 it('only lets a step be disabled while another stays enabled', () => {
   mount([step(), step({uid: 'step-2', enabled: false})]);
 
-  expect(isDisabled(rowButtons(0)[1]!)).toBe(true);
-  expect(isDisabled(rowButtons(1)[1]!)).toBe(false);
+  expect(menu(0)['Disable step'].disabled).toBe(true);
+  expect(menu(1)['Enable step'].disabled).toBe(false);
 });
-
-it('names a read-only row’s button for viewing', () => {
-  mount([step()], {editable: false});
-
-  expect(rowButtons()[0]!.getAttribute('aria-label')).toBe(
-    'View 1. Entries — people.csv'
-  );
-});
-
-it('appends a step the add slideout hands back', async () => {
+it('offers adding the first step from the empty state', () => {
   mount([]);
 
-  addButton().dispatchEvent(new Event('click'));
-  await nextTick();
+  const empty = container.querySelector('craft-empty')!;
 
-  const {step: draft, apply} = state.openStepSlideout.mock.calls[0]![0];
-  apply({...draft, type: importerTypes[1]!.value, source: 'assets.csv'});
-  await nextTick();
-
-  expect(steps.value).toHaveLength(1);
-  expect(steps.value![0]!.source).toBe('assets.csv');
-  expect(steps.value![0]!.uid).toBe(draft.uid);
-});
-
-it('replaces the edited step in place, keeping its uid', async () => {
-  mount([step(), step({uid: 'step-2', source: 'other.csv'})]);
-
-  rowButtons(1)[0]!.dispatchEvent(new Event('click'));
-  await nextTick();
-
-  state.openStepSlideout.mock.calls[0]![0].apply(
-    step({uid: 'ignored', source: 'edited.csv'})
+  expect((empty as HTMLElement & {appearance: string}).appearance).toBe(
+    'dashed'
   );
-  await nextTick();
-
-  expect(steps.value!.map((s) => s.uid)).toEqual(['step-1', 'step-2']);
-  expect(steps.value![1]!.source).toBe('edited.csv');
+  expect(empty.querySelector('.action-menu-stub')!.textContent).toBe(
+    'Create step'
+  );
+  expect(Object.keys(createMenu())).toEqual(['Add Entries', 'Add Assets']);
+  expect(container.querySelector('.step-list__actions')).toBeNull();
 });
 
+it('offers adding another step below the list', () => {
+  mount([step()]);
+
+  expect(container.querySelector('craft-empty')).toBeNull();
+  expect(
+    container.querySelector('.step-list__actions .action-menu-stub')
+  ).not.toBeNull();
+});
+
+it('offers no way to add a step that can’t be edited', () => {
+  mount([], {editable: false});
+
+  expect(container.querySelector('craft-empty .action-menu-stub')).toBeNull();
+});
+
+it('adds a step of the chosen type in a slideout, and to the list once it’s applied', async () => {
+  mount([step()]);
+
+  createMenu()['Add Assets'].onClick();
+
+  expect(opened()).toMatchObject({
+    step: {
+      type: importerTypes[1]!.value,
+      source: null,
+      enabled: true,
+      settings: {},
+    },
+    editUrl: null,
+  });
+
+  opened().apply(step({uid: 'step-3', source: 'places.csv'}));
+  await nextTick();
+
+  expect(steps.value!.map((s) => s.uid)).toEqual(['step-1', 'step-3']);
+});
+
+it('replaces a step with the one its slideout applies', async () => {
+  mount([step(), step({uid: 'step-2'})]);
+
+  menu(0)['Edit step'].onClick();
+  opened().apply(step({source: 'places.csv'}));
+  await nextTick();
+
+  expect(steps.value!.map((s) => s.source)).toEqual([
+    'places.csv',
+    'people.csv',
+  ]);
+});
+
+it('hands a step’s slideout the errors the server found in it', () => {
+  mount([step()], {errors: {'steps.step-1.source': ['File does not exist.']}});
+
+  menu(0)['Edit step'].onClick();
+
+  expect(opened().errors).toEqual([
+    {path: ['source'], messages: ['File does not exist.']},
+  ]);
+});
 it('removes a step once the deletion is confirmed', async () => {
   mount([step(), step({uid: 'step-2'})]);
 
-  rowButtons(0)[2]!.dispatchEvent(new Event('click'));
+  menu(0)['Delete step'].onClick();
   await nextTick();
 
   expect(steps.value!.map((s) => s.uid)).toEqual(['step-2']);
@@ -220,7 +307,7 @@ it('keeps a step the user declines to delete', async () => {
   vi.stubGlobal('confirm', vi.fn().mockReturnValue(false));
   mount([step(), step({uid: 'step-2'})]);
 
-  rowButtons(0)[2]!.dispatchEvent(new Event('click'));
+  menu(0)['Delete step'].onClick();
   await nextTick();
 
   expect(steps.value!.map((s) => s.uid)).toEqual(['step-1', 'step-2']);
@@ -252,111 +339,101 @@ it('ignores a reorder that would move a step off either end', async () => {
   expect(steps.value!.map((s) => s.uid)).toEqual(['step-1', 'step-2']);
 });
 
-it('shows a server error on the step it belongs to', () => {
+it('badges a step the server found errors in', () => {
   mount([step(), step({uid: 'step-2'})], {
     errors: {'steps.step-2.source': ['File does not exist.']},
   });
 
-  const rows = [...container.querySelectorAll('li')];
-
-  expect(rows[0]!.querySelector('.error')).toBeNull();
-  expect(rows[1]!.querySelector('.error')!.textContent).toContain(
-    'The step “Entries — people.csv” is invalid. Edit it to fix the problem.'
-  );
+  expect(row(0).querySelector('craft-badge')).toBeNull();
+  expect(row(1).querySelector('craft-badge')!.textContent).toBe('Has errors');
 });
 
-it('describes an invalid step’s edit button with its error', () => {
+it('describes an invalid step’s card button with its badge', () => {
   mount([step(), step({uid: 'step-2'})], {
     errors: {'steps.step-2.source': ['File does not exist.']},
   });
 
-  const describedBy = rowButtons(1)[0]!.getAttribute('aria-describedby');
+  const describedBy = openButton(1).getAttribute('aria-describedby');
 
-  expect(rowButtons(0)[0]!.hasAttribute('aria-describedby')).toBe(false);
-  expect(describedBy).not.toBeNull();
-  expect(container.querySelector(`#${describedBy}`)!.textContent).toContain(
-    'The step “Entries — people.csv” is invalid. Edit it to fix the problem.'
+  expect(openButton(0).hasAttribute('aria-describedby')).toBe(false);
+  expect(container.querySelector(`#${describedBy}`)!.textContent).toBe(
+    'Has errors'
   );
 });
 
-it('reports a slideout that fails to open instead of doing nothing', async () => {
-  state.openStepSlideout.mockRejectedValue(new Error('Request failed.'));
-  mount([]);
+function pencil(index = 0): HTMLElement {
+  return row(index).querySelector<HTMLElement>(
+    'craft-button[aria-label^="Edit "]'
+  )!;
+}
 
-  addButton().dispatchEvent(new Event('click'));
-  await nextTick();
-  await nextTick();
+it('opens a step in a slideout from the pencil in its card', async () => {
+  await mountAndWait([step(), step({uid: 'step-2'})]);
 
-  expect(container.querySelector('.error-list')!.textContent).toContain(
-    'Request failed.'
+  expect(pencil(1).getAttribute('aria-label')).toBe(
+    'Edit 2. Entries — people.csv'
   );
+
+  pencil(1).dispatchEvent(new MouseEvent('click', {bubbles: true}));
+
+  expect(opened()).toMatchObject({
+    step: step({uid: 'step-2'}),
+    opener: pencil(1),
+  });
 });
 
-it('shows a spinner on the add button while its slideout opens', async () => {
-  const opening = deferred<boolean>();
-  state.openStepSlideout.mockReturnValue(opening.promise);
-  mount([]);
+it('opens a step in a slideout when its card is double-clicked', async () => {
+  await mountAndWait([step()]);
 
-  addButton().dispatchEvent(new Event('click'));
-  await nextTick();
+  row(0)
+    .querySelector('.step-card__source')!
+    .dispatchEvent(new MouseEvent('dblclick', {bubbles: true}));
 
-  expect(isLoading(addButton())).toBe(true);
-
-  opening.resolve(true);
-  await opening.promise;
-  await nextTick();
-
-  expect(isLoading(addButton())).toBe(false);
+  expect(opened()).toMatchObject({step: step()});
 });
 
-it('shows a spinner only on the edit button that was clicked', async () => {
-  const opening = deferred<boolean>();
-  state.openStepSlideout.mockReturnValue(opening.promise);
-  mount([step(), step({uid: 'step-2'})]);
+it('leaves a double-click on the card’s own controls alone', () => {
+  mount([step()]);
 
-  rowButtons(1)[0]!.dispatchEvent(new Event('click'));
-  await nextTick();
+  pencil(0).dispatchEvent(new MouseEvent('dblclick', {bubbles: true}));
 
-  expect(isLoading(rowButtons(0)[0]!)).toBe(false);
-  expect(isLoading(rowButtons(1)[0]!)).toBe(true);
-  expect(isLoading(addButton())).toBe(false);
-
-  opening.resolve(true);
-  await opening.promise;
-  await nextTick();
-
-  expect(isLoading(rowButtons(1)[0]!)).toBe(false);
+  // the pencil's own clicks aren't dispatched by a synthetic dblclick
+  expect(state.openStepSlideout).not.toHaveBeenCalled();
 });
 
-it('clears the spinner when a slideout fails to open', async () => {
-  state.openStepSlideout.mockRejectedValue(new Error('Request failed.'));
-  mount();
+it('opens a double-clicked step in a new tab with a modifier key', async () => {
+  const open = vi.fn();
+  vi.stubGlobal('open', open);
+  await mountAndWait([step()]);
 
-  rowButtons()[0]!.dispatchEvent(new Event('click'));
-  await nextTick();
-  await nextTick();
+  row(0)
+    .querySelector('.step-card__source')!
+    .dispatchEvent(new MouseEvent('dblclick', {bubbles: true, metaKey: true}));
 
-  expect(isLoading(rowButtons()[0]!)).toBe(false);
+  expect(open).toHaveBeenCalledWith(
+    '/admin/import/plan/steps/step-1',
+    '_blank',
+    'noopener'
+  );
+  expect(state.openStepSlideout).not.toHaveBeenCalled();
 });
 
-it('ignores other open requests while a slideout is opening', async () => {
-  const opening = deferred<boolean>();
-  state.openStepSlideout.mockReturnValue(opening.promise);
-  mount();
+it('opens a step in a slideout from the link on its name', async () => {
+  await mountAndWait([step()]);
 
-  rowButtons()[0]!.dispatchEvent(new Event('click'));
-  rowButtons()[0]!.dispatchEvent(new Event('click'));
-  addButton().dispatchEvent(new Event('click'));
-  await nextTick();
+  openButton(0).dispatchEvent(
+    new MouseEvent('click', {bubbles: true, cancelable: true, button: 0})
+  );
 
-  expect(state.openStepSlideout).toHaveBeenCalledOnce();
+  expect(opened()).toMatchObject({step: step()});
+});
 
-  opening.resolve(true);
-  await opening.promise;
-  await nextTick();
+it('opens a step that’s yet to be saved in a slideout, even with a modifier key', async () => {
+  await mountAndWait([step({uid: 'step-3'})]);
 
-  addButton().dispatchEvent(new Event('click'));
-  await nextTick();
+  openButton(0).dispatchEvent(
+    new MouseEvent('click', {bubbles: true, cancelable: true, metaKey: true})
+  );
 
-  expect(state.openStepSlideout).toHaveBeenCalledTimes(2);
+  expect(opened()).toMatchObject({step: step({uid: 'step-3'})});
 });

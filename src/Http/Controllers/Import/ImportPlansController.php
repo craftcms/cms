@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Import;
 
 use CraftCms\Cms\Component\Contracts\Chippable;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\ImportableContainerPropertiesInterface;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -26,8 +28,13 @@ use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Import\ImportPlans;
+use CraftCms\Cms\Import\ImportPreview;
+use CraftCms\Cms\Import\SourceSuggestions;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ImportLog;
+use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiResolver;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -81,28 +88,73 @@ class ImportPlansController
 
     private function importRow(ImportPlanData $importPlan, bool $editable): ImportPlanIndexData
     {
+        $running = $this->importService->isRunning($importPlan);
+
         return new ImportPlanIndexData(
             uid: $importPlan->uid,
             name: (string) $importPlan->name,
             handle: (string) $importPlan->handle,
             description: $importPlan->description,
             stepCount: count($importPlan->steps ?? []),
-            stepLabels: array_values(array_map(
-                fn (BaseImporter $step): string => $step::displayName(),
+            steps: array_values(array_map(
+                fn (BaseImporter $step): array => [
+                    'label' => $step::displayName(),
+                    'source' => $step->source,
+                    'enabled' => $step->enabled,
+                    'url' => $editable && $step->uid
+                        ? route('craft.cp.import.steps.edit', ['handle' => $importPlan->handle, 'uid' => $step->uid])
+                        : null,
+                ],
                 $importPlan->steps ?? [],
             )),
             editable: $editable,
+            running: $running,
+            runningJobUrl: $running ? $this->runningJobUrl($importPlan) : null,
+            lastRunFailed: $this->importService->lastRunFailed($importPlan),
         );
     }
 
-    public function create(): CpScreenResponse
+    /**
+     * Where a running plan's job is in the queue manager: the job itself once one's started,
+     * or the queue manager while its jobs are still waiting.
+     */
+    private function runningJobUrl(ImportPlanData $importPlan): string
     {
-        $old = $this->request->session()->get('import');
+        $jobUid = $this->importService->runningJobUid($importPlan);
 
-        return $this->cpScreenResponse(! empty($old) ? new ImportPlanData($old) : new ImportPlanData);
+        return route('craft.cp.utilities.show', array_filter([
+            'id' => 'queue-manager',
+            'extra' => $jobUid,
+        ]));
     }
 
-    public function edit(?string $handle = null): CpScreenResponse
+    /**
+     * A new plan's wizard: its name, then each step's data and fields in turn, then a review.
+     * Nothing is saved until the review, so the plan is posted whole.
+     */
+    public function create(): InertiaResponse
+    {
+        return Inertia::render('import/Create', [
+            'title' => t('Create a new import plan'),
+            'crumbs' => [
+                new ActionItem()->label(t('Import'))->href(route('craft.cp.import.index')),
+            ],
+            'ui' => app(UiResolver::class)->resolve(
+                Ui::make(ImportPlanEditViewModel::detailFields(isNew: true)),
+                new UiContext(values: ['name' => null, 'handle' => null, 'description' => null]),
+            ),
+            'importerTypes' => array_map(fn (string $type): array => [
+                'label' => $type::displayName(),
+                'value' => $type,
+            ], $this->importService->getAllImporterTypes()),
+            'submit' => ['method' => 'post', 'url' => action([self::class, 'store'])],
+            'runUrl' => $this->request->craftUser()?->can('triggerImportPlans') ? action([self::class, 'run']) : null,
+            'editUrl' => route('craft.cp.import.edit', ['handle' => '__handle__']),
+            'indexUrl' => route('craft.cp.import.index'),
+        ]);
+    }
+
+    public function edit(?string $handle = null): CpScreenResponse|InertiaResponse
     {
         $handle ??= $this->request->input('handle');
 
@@ -110,12 +162,18 @@ class ImportPlansController
             return $this->create();
         }
 
+        return $this->cpScreenResponse($this->editablePlan($handle));
+    }
+
+    /** The plan with this handle, or its unsaved changes if saving them just failed. */
+    private function editablePlan(string $handle): ImportPlanData
+    {
         abort_if(is_null($found = $this->importsService->getImportPlanByHandle($handle)), 404, 'Import plan not found');
         abort_if(! $found->isEditable(), 400, "This import plan is not editable: $found->handle");
 
         $old = $this->request->session()->get('import');
 
-        return $this->cpScreenResponse(! empty($old) ? new ImportPlanData($old) : $found);
+        return ! empty($old) ? new ImportPlanData($old) : $found;
     }
 
     public function store(): Response
@@ -146,6 +204,151 @@ class ImportPlansController
             t('Import plan saved.'),
             'import',
         );
+    }
+
+    public function editStep(string $handle, string $uid): InertiaResponse
+    {
+        $importPlan = $this->editablePlan($handle);
+        $step = collect($importPlan->serializeSteps() ?? [])->firstWhere('uid', $uid);
+
+        abort_if($step === null, 404, 'Import step not found');
+
+        return $this->stepScreen($importPlan, $step);
+    }
+
+    /**
+     * What running the plan's enabled steps would do with the first rows of their data: the
+     * values each row fills in, and which elements it creates or updates.
+     *
+     * Users who can save import plans get the posted steps, so the review follows the plan's
+     * unsaved changes. Anyone else gets the saved plan, so they can't make the server fetch a
+     * source of their choosing.
+     */
+    public function reviewSteps(ImportPreview $preview): JsonResponse
+    {
+        if ($this->request->craftUser()?->can('saveImportPlans')) {
+            $steps = $this->request->validate([
+                'steps' => ['nullable', 'array'],
+                'steps.*' => ['array'],
+            ])['steps'] ?? [];
+
+            $importers = array_map(function (array $step): ?BaseImporter {
+                $step['settings'] = ImportHelper::decodeRecursive($step['settings'] ?? []);
+
+                return ImportPlans::createImporter($step);
+            }, array_values($steps));
+        } else {
+            $uid = $this->request->validate([
+                'uid' => ['required', 'string', 'max:36'],
+            ])['uid'];
+
+            abort_if(is_null($importPlan = $this->importsService->getImportPlanByUid($uid)), 404, 'Import plan not found');
+
+            $importers = array_values($importPlan->steps ?? []);
+        }
+
+        return new JsonResponse([
+            'steps' => $this->enabledSteps($importers, fn (BaseImporter $step) => $preview->review($step)),
+        ]);
+    }
+
+    /**
+     * Each enabled step, numbered by its place in the plan, with what the callback works out for it.
+     * A step that's yet to be given a valid importer type has nothing to review, but keeps its place.
+     *
+     * @param  list<BaseImporter|null>  $importers
+     * @return list<array{uid: string|null, number: int, label: string, source: string|null, preview: mixed}>
+     */
+    private function enabledSteps(array $importers, callable $callback): array
+    {
+        $steps = [];
+
+        foreach ($importers as $index => $step) {
+            if (! $step?->enabled) {
+                continue;
+            }
+
+            $steps[] = [
+                'uid' => $step->uid,
+                'number' => $index + 1,
+                'label' => $step::displayName(),
+                'source' => $step->source,
+                'preview' => $callback($step),
+            ];
+        }
+
+        return $steps;
+    }
+
+    /**
+     * Saves one step into its plan: replacing the step with its uid, adding it if there's none,
+     * or adding a copy with a uid of its own when it's saved as a new step.
+     */
+    public function storeStep(): Response
+    {
+        $data = $this->request->validate([
+            'planUid' => ['required', 'string', 'max:36'],
+            'step' => ['required', 'array'],
+            'step.uid' => ['required', 'string', 'max:36'],
+            'asNew' => ['nullable', 'boolean'],
+        ]);
+
+        abort_if(is_null($importPlan = $this->importsService->getImportPlanByUid($data['planUid'], true)), 400, "Invalid import plan UID: {$data['planUid']}");
+
+        // the validated data keeps only the step keys named in the rules
+        $step = $this->request->input('step');
+        if ($this->request->boolean('asNew')) {
+            $step['uid'] = Str::uuid()->toString();
+        }
+
+        $steps = $importPlan->serializeSteps() ?? [];
+        $index = collect($steps)->search(fn (array $existing) => $existing['uid'] === $step['uid']);
+
+        if ($index === false) {
+            $steps[] = $step;
+        } else {
+            $steps[$index] = $step;
+        }
+
+        $importPlan->steps($steps);
+
+        if (! $this->importsService->saveImportPlan($importPlan)) {
+            return $this->asModelFailure($importPlan, t('Couldn’t save import step.'), 'import');
+        }
+
+        // Save and continue editing posts no redirect, and lands on the step it saved
+        return $this->asModelSuccess(
+            $importPlan,
+            t('Import step saved.'),
+            'import',
+            redirect: $this->getPostedRedirectUrl($importPlan)
+                ?? route('craft.cp.import.steps.edit', ['handle' => $importPlan->handle, 'uid' => $step['uid']]),
+        );
+    }
+
+    /** @param array<string, mixed> $step */
+    private function stepScreen(ImportPlanData $importPlan, array $step): InertiaResponse
+    {
+        $canSave = (bool) $this->request->craftUser()?->can('saveImportPlans');
+        $steps = $importPlan->serializeSteps() ?? [];
+        $index = collect($steps)->search(fn (array $existing) => $existing['uid'] === $step['uid']);
+        $planUrl = route('craft.cp.import.edit', ['handle' => $importPlan->handle]);
+
+        return Inertia::render('import/StepEdit', [
+            'title' => t('Edit step {number} of {name}', ['number' => $index + 1, 'name' => $importPlan->name]),
+            'crumbs' => [
+                new ActionItem()->label(t('Import'))->href(route('craft.cp.import.index')),
+                new ActionItem()->label((string) $importPlan->name)->href($planUrl),
+            ],
+            'planUid' => $importPlan->uid,
+            'step' => $step,
+            // opened in a slideout, the step page links to itself to open in a new tab
+            'editUrl' => route('craft.cp.import.steps.edit', ['handle' => $importPlan->handle, 'uid' => $step['uid']]),
+            'editable' => $canSave,
+            'submit' => ['method' => 'post', 'url' => action([self::class, 'storeStep'])],
+            // Save goes back to the plan, and its other actions stay on the step
+            'redirectUrl' => $canSave ? Crypt::encrypt($planUrl) : null,
+        ]);
     }
 
     /**
@@ -184,6 +387,19 @@ class ImportPlansController
     }
 
     /**
+     * Suggests a step's data source as it's typed, for the Data Source field's text expander.
+     */
+    public function sourceSuggestions(SourceSuggestions $suggestions): JsonResponse
+    {
+        $data = $this->request->validate([
+            'query' => ['required', 'string', 'max:1024'],
+            'limit' => ['nullable', 'integer', 'min:1', 'max:200'],
+        ]);
+
+        return new JsonResponse($suggestions->suggest($data['query'], (int) ($data['limit'] ?? 50)));
+    }
+
+    /**
      * Validates a single draft step, for the slideout to check before it lets the step close.
      */
     public function validateStep(): JsonResponse
@@ -208,6 +424,19 @@ class ImportPlansController
         }
 
         return new JsonResponse(['success' => true]);
+    }
+
+    /**
+     * Reads a draft step's data source for its first rows, so the source can be checked before
+     * it's mapped.
+     */
+    public function sourcePreview(ImportPreview $preview): JsonResponse
+    {
+        $importer = $this->mappingImporter();
+
+        abort_if($importer === null, 400, 'Choose an importer type first.');
+
+        return new JsonResponse($preview->source($importer));
     }
 
     /**
@@ -251,7 +480,48 @@ class ImportPlansController
             values: MappingValues::fromImporter($importer),
             suggestions: ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, $importer->map, $importer),
             templateTextExpanderTriggers: ImportHelper::templateTextExpanderTriggers($sourceDataCols),
+            targetName: is_subclass_of($importer::targetClass(), ElementInterface::class)
+                ? $importer::targetClass()::pluralLowerDisplayName()
+                : null,
         )->jsonSerialize());
+    }
+
+    /**
+     * Lists the existing elements a draft step's matching would update — the first ten found
+     * by going through its source's rows in order — without importing anything.
+     */
+    public function testMatch(): JsonResponse
+    {
+        $importer = $this->mappingImporter();
+
+        if (! $importer instanceof ElementImporter || ! $this->hasDestination($importer)) {
+            return $this->asJsonFailure(t('Choose what this step imports into before testing its matching.'));
+        }
+
+        if (($sourceError = BaseImporter::sourceError($importer->source, resolveHost: false)) !== null) {
+            return $this->asJsonFailure($sourceError);
+        }
+
+        $importer->prepareForImport();
+
+        try {
+            $items = $importer->withLocalFile(fn (string $filePath) => array_values($this->importService->getFormattedData($filePath)));
+        } catch (Exception $e) {
+            return $this->asJsonFailure($e->getMessage());
+        }
+
+        $found = $this->importService->findMatches($importer, $items);
+
+        return new JsonResponse([
+            'matches' => array_map(fn (array $match): array => [
+                'row' => $match['row'],
+                'id' => $match['element']->id,
+                'label' => $match['element']->getUiLabel(),
+                'url' => $match['element']->getCpEditUrl(),
+            ], $found['matches']),
+            'checked' => $found['checked'],
+            'total' => count($items),
+        ]);
     }
 
     /**
@@ -509,13 +779,95 @@ class ImportPlansController
         return $this->asSuccess(t('Import started.'));
     }
 
+    /** Starts each of the selected import plans that isn’t already running. */
+    public function bulkRun(): Response
+    {
+        $started = 0;
+        $skipped = [];
+
+        foreach ($this->selectedPlans() as $importPlan) {
+            try {
+                $dispatched = ! $this->importService->isRunning($importPlan)
+                    && $this->importService->dispatchImport($importPlan);
+            } catch (Throwable $e) {
+                ImportLog::warning("Import failed: {$e->getMessage()}");
+
+                $dispatched = false;
+            }
+
+            if ($dispatched) {
+                $started++;
+            } else {
+                $skipped[] = (string) $importPlan->name;
+            }
+        }
+
+        if ($skipped !== []) {
+            return $this->asFailure(t('{count, plural, =0{No imports were started} =1{# import started} other{# imports started}}; couldn’t start {names}.', [
+                'count' => $started,
+                'names' => implode(', ', $skipped),
+            ]));
+        }
+
+        return $this->asSuccess(t('{count, plural, =1{# import started.} other{# imports started.}}', ['count' => $started]));
+    }
+
+    /** Duplicates each of the selected import plans. */
+    public function bulkDuplicate(): Response
+    {
+        $plans = $this->selectedPlans(editable: true);
+
+        foreach ($plans as $importPlan) {
+            if (! $this->importsService->duplicateImportPlan($importPlan)) {
+                return $this->asFailure(t('Couldn’t duplicate “{name}”.', ['name' => $importPlan->name]));
+            }
+        }
+
+        return $this->asSuccess(t('{count, plural, =1{# import plan duplicated.} other{# import plans duplicated.}}', ['count' => count($plans)]));
+    }
+
+    /** Deletes each of the selected import plans. */
+    public function bulkDestroy(): Response
+    {
+        $plans = $this->selectedPlans(editable: true);
+
+        foreach ($plans as $importPlan) {
+            $this->importsService->deleteImportPlan($importPlan);
+        }
+
+        return $this->asSuccess(t('{count, plural, =1{# import plan deleted.} other{# import plans deleted.}}', ['count' => count($plans)]));
+    }
+
+    /**
+     * The import plans posted as `uids`, in the order they were posted.
+     *
+     * @return list<ImportPlanData>
+     */
+    private function selectedPlans(bool $editable = false): array
+    {
+        $uids = $this->request->validate([
+            'uids' => ['required', 'array', 'min:1'],
+            'uids.*' => ['required', 'string'],
+        ])['uids'];
+
+        return array_map(function (string $uid) use ($editable): ImportPlanData {
+            $importPlan = $this->importsService->getImportPlanByUid($uid);
+
+            abort_if(is_null($importPlan), 404, "Invalid import plan UID: $uid");
+            abort_if($editable && ! $importPlan->isEditable(), 400, "This import plan is not editable via the control panel: $uid");
+
+            return $importPlan;
+        }, array_values($uids));
+    }
+
     private function cpScreenResponse(ImportPlanData $importPlan): CpScreenResponse
     {
         $currentUser = $this->request->craftUser();
         $canSave = (bool) $currentUser?->can('saveImportPlans');
+        $isNew = ! isset($importPlan->uid);
 
         return new CpScreenResponse()
-            ->title(! isset($importPlan->uid) ? t('Create a new import plan') : t('Edit {name} import plan', ['name' => $importPlan->name]))
+            ->title($isNew ? t('Create a new import plan') : t('Edit {name} import plan', ['name' => $importPlan->name]))
             ->addCrumb(t('Import'), route('craft.cp.import.index'))
             ->formAttributes(['action' => action([self::class, 'store'])])
             ->inertiaPage('import/Edit', new ImportPlanEditViewModel(
@@ -523,6 +875,7 @@ class ImportPlansController
                 $this->importService,
                 app(UiResolver::class),
                 $canSave,
+                canRun: ! $isNew && (bool) $currentUser?->can('triggerImportPlans'),
             ))
             ->when(
                 $canSave,
@@ -547,23 +900,6 @@ class ImportPlansController
                                     'redirect' => Crypt::encrypt(action([self::class, 'index'])),
                                 ],
                                 'confirm' => t('Are you sure you want to delete “{name}”?', [
-                                    'name' => $importPlan->name,
-                                ]),
-                            ],
-                        ]);
-                    }
-
-                    if ($currentUser?->can('triggerImportPlans')) {
-                        $response->addAltAction(t('Run this import plan'), [
-                            'action' => [
-                                'type' => 'http',
-                                'method' => 'POST',
-                                'url' => action([self::class, 'run']),
-                                'body' => [
-                                    'uid' => $importPlan->uid,
-                                    'redirect' => Crypt::encrypt(route('craft.cp.import.edit', ['handle' => $importPlan->handle])),
-                                ],
-                                'confirm' => t('Are you sure you want to run “{name}”?', [
                                     'name' => $importPlan->name,
                                 ]),
                             ],

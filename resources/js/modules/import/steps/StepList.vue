@@ -1,18 +1,25 @@
 <script setup lang="ts">
   /**
-   * An import's ordered list of steps.
+   * An import's ordered list of steps, as cards like a workflow's stages, each just its
+   * heading: the step's name and its data source.
    *
-   * The list owns the steps outright: adding, editing, reordering, disabling and
-   * deleting all happen against this component's state, and the steps only reach the server when
-   * the import's own form is submitted.
+   * Everything happens against this component's state, and reaches the server when the
+   * import's own form is submitted. A step is added and edited in a slideout, so the plan
+   * can get its steps before it's ever saved.
    */
+  import '@craftcms/ui/components/badge/badge';
   import '@craftcms/ui/components/button/button';
   import '@craftcms/ui/components/empty/empty';
-  import '@craftcms/ui/components/reorder-button/reorder-button';
   import {computed, ref} from 'vue';
+  import {ELEMENT_QUICK_EDIT_CONTROL_SELECTOR} from '@/modules/elements/composables/useElementQuickEdit';
   import {t} from '@craftcms/ui';
-  import {useReorderableItems} from '@/common/composables/useReorderableItems';
+  import ActionMenu from '@/common/components/ActionMenu.vue';
+  import SelectableCardList from '@/common/components/SelectableCardList.vue';
+  import {useSelectable} from '@/common/composables/useSelectable';
+  import type {ActionItems} from '@/common/types';
+  import type {UiPayload} from '@/modules/ui/types';
   import type {ImportStep} from '@/modules/import/mapping/types';
+  import NestedElementsCreateButton from '@/modules/ui/nested-elements/NestedElementsCreateButton.vue';
   import {openStepSlideout} from './step-slideout';
 
   const props = defineProps<{
@@ -21,52 +28,54 @@
     importerTypes: Array<{value: string; label: string}>;
     /** Server-side errors, keyed `steps.<step uid>.<attribute>`. */
     errors?: Record<string, string[]>;
+    /** A step's own page, for one that's been saved. */
+    stepPageUrl?: (step: ImportStep) => string | null;
   }>();
 
   const steps = defineModel<ImportStep[]>({required: true});
 
-  const addButton = ref<HTMLElement | null>(null);
-  const itemButtons = ref<Record<string, HTMLElement | null>>({});
+  // the cards are reordered, not selected
+  const selection = useSelectable<string>({
+    ids: () => steps.value.map((step) => step.uid),
+    enabled: false,
+    readOnly: true,
+  });
 
-  /** A slideout that couldn't be opened, as opposed to a server validation error. */
-  const requestError = ref<string | null>(null);
-
-  /** Which slideout is being opened: `new` for Add, or the uid of the step being edited. */
-  const openingStep = ref<string | null>(null);
-
-  const {setItemRef, setHandleRef, getDropState, getRowPosition} =
-    useReorderableItems({
-      getItemIds: () => steps.value.map((step) => step.uid),
-      enabled: () => props.editable && steps.value.length > 1,
-      onReorder: (from, to) => reorder(from, to),
-    });
-
+  /** The server's errors, regrouped by step and keyed by the path within it. */
   const errorsByStep = computed(() => {
-    const byStep: Record<string, string[]> = {};
+    const byStep: Record<string, UiPayload['errors']> = {};
 
     for (const [path, messages] of Object.entries(props.errors ?? {})) {
-      const uid = /^steps\.([^.]+)\./.exec(path)?.[1];
+      const [, uid, ...rest] = path.split('.');
 
-      if (uid === undefined) {
+      if (uid === undefined || !rest.length || !path.startsWith('steps.')) {
         continue;
       }
 
-      byStep[uid] = [...(byStep[uid] ?? []), ...messages];
+      (byStep[uid] ??= []).push({path: rest, messages});
     }
 
     return byStep;
   });
 
-  /** A slideout that failed to open. Errors about the list as a whole belong to its form field. */
-  const listErrors = computed(() =>
-    requestError.value ? [requestError.value] : []
+  const typeLabels = computed(() =>
+    Object.fromEntries(
+      props.importerTypes.map((type) => [type.value, type.label])
+    )
   );
 
-  function newStep(): ImportStep {
+  /** The step being opened, while its slideout loads. */
+  const opening = ref<string | null>(null);
+  const openError = ref<string | null>(null);
+
+  /** The importer type a new step is being opened with, while its slideout loads. */
+  const addingType = ref<string | null>(null);
+
+  function newStep(type: string): ImportStep {
     return {
       // a plain UUID: the server caps a step's uid at 36 characters
       uid: crypto.randomUUID(),
-      type: null,
+      type,
       source: null,
       transformer: null,
       batchSize: null,
@@ -75,18 +84,14 @@
     };
   }
 
-  const typeLabels = computed(() =>
-    Object.fromEntries(
-      props.importerTypes.map((type) => [type.value, type.label])
-    )
-  );
-
-  function summary(step: ImportStep): string {
-    const label = step.type
+  function typeLabel(step: ImportStep): string {
+    return step.type
       ? (typeLabels.value[step.type] ?? step.type)
       : t('Choose an importer');
+  }
 
-    return [label, step.source].filter(Boolean).join(' — ');
+  function summary(step: ImportStep): string {
+    return [typeLabel(step), step.source].filter(Boolean).join(' — ');
   }
 
   function stepLabel(step: ImportStep, index: number): string {
@@ -126,12 +131,6 @@
     );
   }
 
-  function replace(uid: string, step: ImportStep): void {
-    steps.value = steps.value.map((existing) =>
-      existing.uid === uid ? {...step, uid} : existing
-    );
-  }
-
   function remove(step: ImportStep): void {
     if (
       !window.confirm(t('Are you sure you want to delete this import step?'))
@@ -142,166 +141,289 @@
     steps.value = steps.value.filter((existing) => existing.uid !== step.uid);
   }
 
-  /**
-   * Opening a step's slideout asks the server to build its form, so it can fail. Report it
-   * rather than letting the rejection go unhandled, which reads as the button doing nothing.
-   */
-  async function openStep(
+  function pageUrl(step: ImportStep): string | undefined {
+    return props.stepPageUrl?.(step) ?? undefined;
+  }
+
+  function stepActions(step: ImportStep): ActionItems {
+    const actions: ActionItems = [
+      {
+        label: props.editable ? t('Edit step') : t('View step'),
+        icon: props.editable ? 'pencil' : 'eye',
+        onClick: () => void openStep(step, null),
+      },
+    ];
+
+    if (props.editable) {
+      actions.push(
+        {
+          label: step.enabled ? t('Disable step') : t('Enable step'),
+          icon: step.enabled ? 'toggle-off' : 'toggle-on',
+          disabled: !canToggle(step),
+          onClick: () => toggleEnabled(step),
+        },
+        {
+          label: t('Delete step'),
+          icon: 'trash',
+          variant: 'danger',
+          onClick: () => remove(step),
+        }
+      );
+    }
+
+    return actions;
+  }
+
+  async function openSlideout(
     key: string,
-    options: Parameters<typeof openStepSlideout>[0],
-    title: string
+    options: Parameters<typeof openStepSlideout>[0]
   ): Promise<void> {
-    if (openingStep.value !== null) {
+    if (opening.value !== null) {
       return;
     }
 
-    requestError.value = null;
-    openingStep.value = key;
+    openError.value = null;
+    opening.value = key;
 
     try {
-      await openStepSlideout(options, title);
+      await openStepSlideout(options);
     } catch (error) {
-      requestError.value =
+      openError.value =
         error instanceof Error && error.message
           ? error.message
           : t('Couldn’t open this step.');
     } finally {
-      openingStep.value = null;
+      opening.value = null;
     }
   }
 
-  async function add(): Promise<void> {
-    const step = newStep();
-
-    await openStep(
-      'new',
-      {
-        step,
-        editable: props.editable,
-        opener: addButton.value,
-        apply: (applied) => {
-          steps.value = [...steps.value, {...applied, uid: step.uid}];
-        },
-      },
-      t('Add an import step')
+  /**
+   * Opens a step in a slideout, as a nested element's card opens its editor. A modified
+   * click on its link, or a double-click, opens a saved step's page in a new tab instead.
+   */
+  async function openStep(
+    step: ImportStep,
+    opener: HTMLElement | null
+  ): Promise<void> {
+    const index = steps.value.findIndex(
+      (candidate) => candidate.uid === step.uid
     );
+
+    await openSlideout(step.uid, {
+      step,
+      editable: props.editable,
+      errors: errorsByStep.value[step.uid] ?? [],
+      editUrl: pageUrl(step) ?? null,
+      title: props.editable
+        ? t('Edit step {number}', {number: index + 1})
+        : t('Step {number}', {number: index + 1}),
+      opener,
+      apply: (applied) => {
+        steps.value = steps.value.map((existing) =>
+          existing.uid === applied.uid ? applied : existing
+        );
+      },
+    });
   }
 
-  async function edit(step: ImportStep): Promise<void> {
-    await openStep(
-      step.uid,
-      {
-        step,
-        editable: props.editable,
-        opener: itemButtons.value[step.uid] ?? null,
-        apply: (applied) => replace(step.uid, applied),
-      },
-      t('Edit import step')
-    );
+  function onCardDblclick(uid: string, event: MouseEvent): void {
+    const step = steps.value.find((candidate) => candidate.uid === uid);
+    const target = event.target;
+
+    // a double-click on one of the card's own controls is about that control
+    if (
+      !step ||
+      !(target instanceof Element) ||
+      target.closest(ELEMENT_QUICK_EDIT_CONTROL_SELECTOR)
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    window.getSelection()?.removeAllRanges();
+
+    const url = pageUrl(step);
+
+    if (url && (event.ctrlKey || event.metaKey)) {
+      window.open(url, '_blank', 'noopener');
+
+      return;
+    }
+
+    void openStep(step, event.currentTarget as HTMLElement);
+  }
+
+  function onEditLink(step: ImportStep, event: MouseEvent): void {
+    // a step that's yet to be saved has no page to open instead
+    if (
+      pageUrl(step) &&
+      (event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey)
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    void openStep(step, event.currentTarget as HTMLElement);
+  }
+
+  /** Opens a new step of the chosen importer type, which its settings start from. */
+  async function add(type: string, opener: HTMLElement): Promise<void> {
+    addingType.value = type;
+
+    try {
+      await openSlideout('new', {
+        step: newStep(type),
+        editable: true,
+        errors: [],
+        editUrl: null,
+        title: t('Add an import step'),
+        opener,
+        apply: (step) => {
+          steps.value = [...steps.value, step];
+        },
+      });
+    } finally {
+      addingType.value = null;
+    }
   }
 </script>
 
 <template>
-  <craft-pane appearance="raised">
-    <h2>{{ t('Steps') }}</h2>
-    <p>
-      {{
-        t(
-          'Each step imports one kind of data. Steps run in the order listed here.'
-        )
-      }}
-    </p>
-
-    <craft-empty v-if="!steps.length" :label="t('No steps yet.')"></craft-empty>
-
-    <ol v-else class="m-0 p-0 list-none space-y-2" role="list">
-      <li
-        v-for="(step, index) in steps"
-        :key="step.uid"
-        :ref="(el) => setItemRef(el, step.uid)"
-        class="flex flex-wrap items-center gap-3 rounded p-2"
-        :class="{'bg-gray-100': getDropState(step.uid).type === 'is-over'}"
-      >
-        <craft-reorder-button
-          :ref="
-            (el: Parameters<typeof setHandleRef>[0]) =>
-              setHandleRef(el, step.uid)
-          "
-          .disabled="!editable || steps.length < 2"
-          :position="getRowPosition(index)"
-          @craft-reorder="
-            reorder(index, index + ($event.detail.direction === 'up' ? -1 : 1))
-          "
-        ></craft-reorder-button>
-
-        <span class="flex-1">
-          <span :id="`step-label-${step.uid}`" class="font-bold">{{
-            stepLabel(step, index)
-          }}</span>
-          <span v-if="!step.enabled" class="ms-2">({{ t('Disabled') }})</span>
-          <span
-            v-if="errorsByStep[step.uid]"
-            :id="`step-error-${step.uid}`"
-            class="error block"
+  <SelectableCardList
+    v-if="steps.length"
+    :ids="steps.map((step) => step.uid)"
+    :selection="selection"
+    :sortable="editable && steps.length > 1"
+    :read-only="!editable"
+    single-column
+    tag="div"
+    item-tag="div"
+    list-class="grid gap-md"
+    :item-attrs="
+      (uid, index) => ({
+        role: 'listitem',
+        'aria-label': stepLabel(steps[index]!, index),
+      })
+    "
+    :card-attrs="() => ({collapsed: true})"
+    role="list"
+    @reorder="reorder"
+    @item-dblclick="onCardDblclick"
+  >
+    <template #label="{index}">
+      <div class="step-card__heading">
+        <div class="step-card__title">
+          <a
+            :id="`step-label-${steps[index]!.uid}`"
+            :href="pageUrl(steps[index]!) ?? '#'"
+            class="step-card__open"
+            :aria-describedby="
+              errorsByStep[steps[index]!.uid]
+                ? `step-error-${steps[index]!.uid}`
+                : undefined
+            "
+            @click="onEditLink(steps[index]!, $event)"
+            >{{ index + 1 }}. {{ typeLabel(steps[index]!) }}</a
           >
-            {{
-              t('The step “{step}” is invalid. Edit it to fix the problem.', {
-                step: summary(step),
-              })
-            }}
-          </span>
-        </span>
+          <craft-badge v-if="!steps[index]!.enabled" fill="gray" size="small">{{
+            t('Disabled')
+          }}</craft-badge>
+          <craft-badge
+            v-if="errorsByStep[steps[index]!.uid]"
+            :id="`step-error-${steps[index]!.uid}`"
+            fill="red"
+            size="small"
+            >{{ t('Has errors') }}</craft-badge
+          >
+        </div>
+        <code v-if="steps[index]!.source" class="step-card__source">{{
+          steps[index]!.source
+        }}</code>
+      </div>
+    </template>
 
-        <craft-button
-          :ref="(el: HTMLElement | null) => (itemButtons[step.uid] = el)"
-          type="button"
-          .loading="openingStep === step.uid"
-          :aria-describedby="
-            errorsByStep[step.uid] ? `step-error-${step.uid}` : undefined
-          "
-          :aria-label="
-            t(editable ? 'Edit {type}' : 'View {type}', {
-              type: stepLabel(step, index),
-            })
-          "
-          @click="edit(step)"
-        >
-          {{ editable ? t('Edit') : t('View') }}
-        </craft-button>
+    <template #actions="{index}">
+      <craft-button
+        variant="plain"
+        inherit
+        type="button"
+        size="small"
+        icon="edit"
+        :aria-label="
+          t('Edit {title}', {title: stepLabel(steps[index]!, index)})
+        "
+        :title="t('Edit')"
+        @click.stop="
+          openStep(steps[index]!, $event.currentTarget as HTMLElement)
+        "
+      ></craft-button>
+      <ActionMenu
+        v-if="stepActions(steps[index]!).length"
+        :actions="stepActions(steps[index]!)"
+        :label="t('Step {num} actions', {num: index + 1})"
+        :flush="false"
+      />
+    </template>
+  </SelectableCardList>
 
-        <craft-button
-          :id="`step-toggle-${step.uid}`"
-          type="button"
-          :aria-labelledby="`step-toggle-${step.uid} step-label-${step.uid}`"
-          .disabled="!canToggle(step)"
-          @click="toggleEnabled(step)"
-        >
-          {{ step.enabled ? t('Disable step') : t('Enable step') }}
-        </craft-button>
-
-        <craft-button
-          type="button"
-          icon="trash"
-          :aria-label="t('Delete {type}', {type: stepLabel(step, index)})"
-          .disabled="!editable"
-          @click="remove(step)"
-        ></craft-button>
-      </li>
-    </ol>
-
-    <ul v-if="listErrors.length" class="error-list" role="alert">
-      <li v-for="error in listErrors" :key="error">{{ error }}</li>
-    </ul>
-
-    <craft-button
+  <craft-empty v-else appearance="dashed" :label="t('No steps yet.')">
+    <NestedElementsCreateButton
       v-if="editable"
-      ref="addButton"
-      type="button"
-      icon="plus"
-      .loading="openingStep === 'new'"
-      @click="add"
-    >
-      {{ t('Add a step') }}
-    </craft-button>
-  </craft-pane>
+      :choices="importerTypes"
+      :label="t('Create step')"
+      :disabled="opening !== null"
+      :adding="addingType"
+      menu
+      @create="add"
+    />
+  </craft-empty>
+
+  <div v-if="editable && steps.length" class="step-list__actions">
+    <NestedElementsCreateButton
+      :choices="importerTypes"
+      :label="t('Create step')"
+      :disabled="opening !== null"
+      :adding="addingType"
+      menu
+      @create="add"
+    />
+  </div>
+  <p v-if="openError" class="error" role="alert">{{ openError }}</p>
 </template>
+
+<style scoped>
+  .step-card__heading {
+    display: grid;
+    gap: var(--c-spacing-xs);
+    min-width: 0;
+  }
+
+  .step-card__title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--c-spacing-xs) var(--c-spacing-sm);
+  }
+
+  .step-card__open {
+    font-weight: 600;
+    color: inherit;
+  }
+
+  .step-card__source {
+    color: var(--c-text-quiet);
+    overflow-wrap: anywhere;
+  }
+
+  .step-list__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--c-spacing-sm) var(--c-spacing-md);
+    margin-block-start: var(--c-spacing-md);
+  }
+</style>

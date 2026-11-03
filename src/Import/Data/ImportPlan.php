@@ -51,6 +51,9 @@ class ImportPlan extends Component implements CpEditable, Validatable
      */
     public bool $editable = false;
 
+    /** Whether saving needs at least one step. A new plan is saved before its steps are added. */
+    private bool $stepsRequired = true;
+
     /**
      * Creates the import plan, decoding JSON-encoded steps into importers.
      *
@@ -76,6 +79,16 @@ class ImportPlan extends Component implements CpEditable, Validatable
             ...parent::fields(),
             'steps' => fn (self $importPlan): ?array => $importPlan->serializeSteps(),
         ];
+    }
+
+    /**
+     * Lets the import plan be saved without any steps yet.
+     */
+    public function withoutRequiredSteps(): self
+    {
+        $this->stepsRequired = false;
+
+        return $this;
     }
 
     /**
@@ -211,11 +224,9 @@ class ImportPlan extends Component implements CpEditable, Validatable
                 'string',
                 'nullable',
             ],
-            'steps' => [
-                'required',
-                'array',
-                'min:1',
-            ],
+            'steps' => $this->stepsRequired
+                ? ['required', 'array', 'min:1']
+                : ['nullable', 'array'],
         ];
     }
 
