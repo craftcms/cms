@@ -114,11 +114,9 @@
         <p v-if="error" class="field-changes__message" role="alert">
           {{ error }}
         </p>
-        <craft-spinner
-          v-else-if="!comparison"
-          visible
-          :label="t('Loading')"
-        ></craft-spinner>
+        <div v-else-if="!comparison" class="field-changes__loading">
+          <craft-spinner visible :label="t('Loading')"></craft-spinner>
+        </div>
         <template v-else>
           <p v-if="comparison.hasBase" class="field-changes__versions">
             <del>{{ comparison.fromLabel }}</del>
@@ -174,6 +172,14 @@
     flex-direction: column;
     gap: var(--c-spacing-md);
     overflow-wrap: anywhere;
+  }
+
+  /* Matches the Stack Trace modal's loading height. */
+  .field-changes__loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    block-size: 20rem;
   }
 
   .field-changes__versions,
