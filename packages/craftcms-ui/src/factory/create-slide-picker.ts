@@ -42,10 +42,10 @@ export function createSlidePicker(
     el.label = config.label;
   }
   if (config.labelledBy) {
-    el.setAttribute('aria-labelledby', config.labelledBy);
+    el.setAttribute('labelled-by', config.labelledBy);
   }
   if (config.describedBy) {
-    el.setAttribute('aria-describedby', config.describedBy);
+    el.setAttribute('described-by', config.describedBy);
   }
   el.valueLabel = config.valueLabel || ((v) => `${v}`);
   if (readOnly) {

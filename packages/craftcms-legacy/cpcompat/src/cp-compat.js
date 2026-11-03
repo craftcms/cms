@@ -595,9 +595,9 @@
       el.label = this.settings.label || Craft.t('app', 'Number of columns');
 
       if (this.settings.describedBy) {
-        el.setAttribute('aria-describedby', this.settings.describedBy);
+        el.setAttribute('described-by', this.settings.describedBy);
       } else {
-        el.removeAttribute('aria-describedby');
+        el.removeAttribute('described-by');
       }
 
       el.readOnly = !!this.settings.readOnly;

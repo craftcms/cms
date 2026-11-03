@@ -19,11 +19,14 @@ import styles from './slide-picker.styles.js';
  * hidden input carries the value, so a picker with a `name` posts like any
  * other field.
  *
- * Outside a field, `aria-labelledby` and `aria-describedby` on the picker name
- * and describe the slider after elements elsewhere, such as a table column
+ * Outside a field, `labelled-by` and `described-by` on the picker name and
+ * describe the slider after elements elsewhere, such as a table column
  * heading.
  *
  * @attr model-value - The selected value.
+ * @attr labelled-by - Ids of elements elsewhere that label the control, such
+ *   as a table column heading.
+ * @attr described-by - Ids of elements elsewhere that describe the control.
  *
  * @slot label - The picker's label, as an alternative to the `label`
  *   attribute.

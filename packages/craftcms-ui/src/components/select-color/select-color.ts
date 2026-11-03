@@ -22,13 +22,16 @@ function titleCase(value: string): string {
  *
  * Everything else, including the label, help text, validation and the way a
  * surrounding `craft-field` names it, comes from {@link CraftSelectRich}.
- * Outside a field, `aria-labelledby` and `aria-describedby` on the host name
- * and describe the button after elements elsewhere, such as a table column
+ * Outside a field, `labelled-by` and `described-by` on the host name and
+ * describe the button after elements elsewhere, such as a table column
  * heading.
  *
  * @since 1.0
  *
  * @attr model-value - The selected color.
+ * @attr labelled-by - Ids of elements elsewhere that label the control, such
+ *   as a table column heading.
+ * @attr described-by - Ids of elements elsewhere that describe the control.
  *
  * @fires input - Emitted when a color is picked.
  * @fires change - Emitted when a color is picked. Picking is a commit, so it

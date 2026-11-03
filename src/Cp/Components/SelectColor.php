@@ -134,10 +134,8 @@ class SelectColor extends ViewComponent
             'required' => $this->required,
             'readonly' => $this->readOnly,
             'disabled' => $this->isDisabled(),
-            'aria' => [
-                'describedby' => $this->describedBy,
-                'labelledby' => $this->labelledBy,
-            ],
+            'described-by' => $this->describedBy,
+            'labelled-by' => $this->labelledBy,
         ];
     }
 }

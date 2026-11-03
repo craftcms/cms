@@ -150,7 +150,7 @@ it('has no name of its own until one is given', async () => {
 it('is named and described by the elements its host references', async () => {
   const {page} = await import('vite-plus/test/browser');
   await import('../../styles/cp.css');
-  document.body.innerHTML = `<table><thead><tr><th id="width-heading">Width</th></tr></thead><tbody><tr><td><craft-slide-picker min="1" max="4" step="1" model-value="2" aria-labelledby="width-heading" aria-describedby="width-help"></craft-slide-picker></td></tr></tbody></table><p id="width-help">How many columns the field spans.</p>`;
+  document.body.innerHTML = `<table><thead><tr><th id="width-heading">Width</th></tr></thead><tbody><tr><td><craft-slide-picker min="1" max="4" step="1" model-value="2" labelled-by="width-heading" described-by="width-help"></craft-slide-picker></td></tr></tbody></table><p id="width-help">How many columns the field spans.</p>`;
 
   const slider = page.getByRole('slider');
 
@@ -162,16 +162,16 @@ it('is named and described by the elements its host references', async () => {
 
 it('follows changes to the references on its host', async () => {
   const {page} = await import('vite-plus/test/browser');
-  document.body.innerHTML = `<span id="first">Width</span><span id="second">Columns</span><craft-slide-picker min="1" max="4" step="1" aria-labelledby="first"></craft-slide-picker>`;
+  document.body.innerHTML = `<span id="first">Width</span><span id="second">Columns</span><craft-slide-picker min="1" max="4" step="1" labelled-by="first"></craft-slide-picker>`;
   const picker =
     document.querySelector<CraftSlidePicker>('craft-slide-picker')!;
   const slider = page.getByRole('slider');
   await expect.element(slider).toHaveAccessibleName('Width');
 
-  picker.setAttribute('aria-labelledby', 'second');
+  picker.setAttribute('labelled-by', 'second');
   await expect.element(slider).toHaveAccessibleName('Columns');
 
-  picker.removeAttribute('aria-labelledby');
+  picker.removeAttribute('labelled-by');
   await expect.element(slider).toHaveAccessibleName('');
 });
 

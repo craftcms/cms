@@ -150,7 +150,7 @@ it('selects no color until one is given', async () => {
 
 it('is named and described by the elements its host references', async () => {
   const {page} = await import('vite-plus/test/browser');
-  document.body.innerHTML = `<table><thead><tr><th id="color-heading">Card color</th></tr></thead><tbody><tr><td><craft-select-color model-value="red" aria-labelledby="color-heading" aria-describedby="color-help"></craft-select-color></td></tr></tbody></table><p id="color-help">The color of the entry type's cards.</p>`;
+  document.body.innerHTML = `<table><thead><tr><th id="color-heading">Card color</th></tr></thead><tbody><tr><td><craft-select-color model-value="red" labelled-by="color-heading" described-by="color-help"></craft-select-color></td></tr></tbody></table><p id="color-help">The color of the entry type's cards.</p>`;
 
   const button = page.getByRole('button', {name: /^Card color/});
 

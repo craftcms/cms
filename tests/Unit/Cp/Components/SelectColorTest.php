@@ -11,14 +11,14 @@ describe('host attributes', function () {
             ->describedBy('a-description')
             ->toHtml();
 
-        expect($html)->toContain('aria-labelledby="a-label"')
-            ->and($html)->toContain('aria-describedby="a-description"');
+        expect($html)->toContain('labelled-by="a-label"')
+            ->and($html)->toContain('described-by="a-description"');
     });
 
     it('leaves the associations off when none are given', function () {
         $html = SelectColor::make()->toHtml();
 
-        expect($html)->not->toContain('aria-labelledby')
-            ->and($html)->not->toContain('aria-describedby');
+        expect($html)->not->toContain('labelled-by')
+            ->and($html)->not->toContain('described-by');
     });
 });

@@ -198,8 +198,8 @@ describe('createSlidePicker', () => {
       describedBy: 'width-instructions',
     });
 
-    expect(el.getAttribute('aria-labelledby')).toBe('width-label');
-    expect(el.getAttribute('aria-describedby')).toBe('width-instructions');
+    expect(el.getAttribute('labelled-by')).toBe('width-label');
+    expect(el.getAttribute('described-by')).toBe('width-instructions');
   });
 });
 

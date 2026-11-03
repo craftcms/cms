@@ -1,5 +1,6 @@
 import {dedupeMixin} from '@open-wc/dedupe-mixin';
-import type {LitElement} from 'lit';
+import type {LitElement, PropertyValues} from 'lit';
+import {property} from 'lit/decorators.js';
 
 // oxlint-disable-next-line @typescript-eslint/no-explicit-any
 type Constructor<T = object> = new (...args: any[]) => T;
@@ -18,26 +19,43 @@ interface AriaReferencingControl extends LitElement {
   removeFromAriaDescribedBy(element: HTMLElement): void;
 }
 
+/** The properties the mixin adds. */
+export declare class HostAriaReferencesHost {
+  /**
+   * Ids of elements elsewhere that label the control, such as a table column
+   * heading. Set with the `labelled-by` attribute.
+   */
+  labelledBy: string | null;
+
+  /**
+   * Ids of elements elsewhere that describe the control. Set with the
+   * `described-by` attribute.
+   */
+  describedBy: string | null;
+}
+
 const REFERENCES = {
-  'aria-labelledby': ['addToAriaLabelledBy', 'removeFromAriaLabelledBy'],
-  'aria-describedby': ['addToAriaDescribedBy', 'removeFromAriaDescribedBy'],
+  labelledBy: ['addToAriaLabelledBy', 'removeFromAriaLabelledBy'],
+  describedBy: ['addToAriaDescribedBy', 'removeFromAriaDescribedBy'],
 } as const;
 
-type ReferenceAttribute = keyof typeof REFERENCES;
+type Reference = keyof typeof REFERENCES;
 
-const ATTRIBUTES = Object.keys(REFERENCES) as ReferenceAttribute[];
+const PROPERTIES = Object.keys(REFERENCES) as Reference[];
 
 /**
- * Lets markup name and describe a Lion form control by id, the way it would a
- * native input: `aria-labelledby` and `aria-describedby` on the host reference
- * elements the control doesn't own — a table column heading, say, or
- * instructions rendered elsewhere in the form.
+ * Lets markup name and describe a Lion form control by id: `labelled-by` and
+ * `described-by` on the host reference elements the control doesn't own — a
+ * table column heading, say, or instructions rendered elsewhere in the form.
+ * They aren't `aria-labelledby` and `aria-describedby` because the host isn't
+ * the control: the markup shows which element people interact with, and which
+ * only passes the references on.
  *
  * Lion rebuilds its control's ARIA references from the elements it tracks, so
  * an id written onto the control directly is overwritten. Instead, each id is
  * looked up in the host's tree and the element handed to Lion, which names the
  * control after it alongside its own label, help text and feedback. The ids are
- * read when the control connects and whenever either attribute changes, so the
+ * read when the control connects and whenever either property changes, so the
  * elements they reference need to be in the tree by then.
  *
  * Lion documents no way to do this: its `data-label` and `data-description`
@@ -55,40 +73,41 @@ const ATTRIBUTES = Object.keys(REFERENCES) as ReferenceAttribute[];
 export const HostAriaReferences = dedupeMixin(
   <T extends Constructor<AriaReferencingControl>>(Base: T) => {
     class HostAriaReferencesElement extends Base {
-      #observer = new MutationObserver((records) => {
-        for (const {attributeName} of records) {
-          this.#adopt(attributeName as ReferenceAttribute);
-        }
-      });
+      @property({attribute: 'labelled-by'}) labelledBy: string | null = null;
 
-      #adopted: Record<ReferenceAttribute, HTMLElement[]> = {
-        'aria-labelledby': [],
-        'aria-describedby': [],
+      @property({attribute: 'described-by'}) describedBy: string | null = null;
+
+      #adopted: Record<Reference, HTMLElement[]> = {
+        labelledBy: [],
+        describedBy: [],
       };
 
       override connectedCallback() {
         super.connectedCallback();
-        this.#observer.observe(this, {attributeFilter: ATTRIBUTES});
-        for (const attribute of ATTRIBUTES) {
-          this.#adopt(attribute);
+        for (const reference of PROPERTIES) {
+          this.#adopt(reference);
         }
       }
 
-      override disconnectedCallback() {
-        this.#observer.disconnect();
-        super.disconnectedCallback();
+      protected override updated(changed: PropertyValues) {
+        super.updated(changed);
+        for (const reference of PROPERTIES) {
+          if (changed.has(reference)) {
+            this.#adopt(reference);
+          }
+        }
       }
 
-      #adopt(attribute: ReferenceAttribute) {
-        const [add, remove] = REFERENCES[attribute];
+      #adopt(reference: Reference) {
+        const [add, remove] = REFERENCES[reference];
         const root = this.getRootNode() as Document | ShadowRoot;
-        const elements = (this.getAttribute(attribute) ?? '')
+        const elements = (this[reference] ?? '')
           .split(/\s+/)
           .filter(Boolean)
           .map((id) => root.getElementById(id))
           .filter((element): element is HTMLElement => element !== null);
 
-        for (const element of this.#adopted[attribute]) {
+        for (const element of this.#adopted[reference]) {
           if (!elements.includes(element)) {
             this[remove](element);
           }
@@ -96,10 +115,11 @@ export const HostAriaReferences = dedupeMixin(
         for (const element of elements) {
           this[add](element, {reorder: false});
         }
-        this.#adopted[attribute] = elements;
+        this.#adopted[reference] = elements;
       }
     }
 
-    return HostAriaReferencesElement as T;
+    return HostAriaReferencesElement as unknown as Constructor<HostAriaReferencesHost> &
+      T;
   }
 );

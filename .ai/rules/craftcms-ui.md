@@ -62,6 +62,7 @@ A new single form control is built on Lion, so `craft-field`, validation and pos
 - Otherwise extend `HasLabel(LionField)` and render the element people interact with into its `input` slot from `get slots()`. `craft-slide-picker` does this with `craft-slide-picker-slider`, the same way `craft-switch` uses `craft-switch-button`.
 - When a listbox generates its own options, render them into `_listboxNode`, as `craft-combobox` does.
 - Expose the value as `modelValue`, adding a `model-value` attribute when markup needs to set it. Lion's `value` is the string view value.
+- To let markup point at a label or description the control doesn't own, such as a table column heading, apply the `HostAriaReferences` mixin, which reads `labelled-by` and `described-by` on the host. Don't read `aria-labelledby` or `aria-describedby` from the host: the host isn't the control, and the attribute names should say so. `craft-combobox` predates this and still reads `aria-labelledby`.
 
 Don't hand-write `addToAriaLabelledBy`/`addToAriaDescribedBy`, don't put the focusable element in a shadow root, and don't nest one form control inside another.
 
