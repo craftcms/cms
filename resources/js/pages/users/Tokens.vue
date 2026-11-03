@@ -276,7 +276,7 @@
         <div role="status" :class="{'mt-lg': newToken}">
           <craft-callout v-if="newToken" variant="success">
             <div class="grid gap-md">
-              <craft-input-copy .modelValue="newToken" monospace>
+              <craft-input-copy .value="newToken" monospace>
                 <label slot="label">{{ t('New token') }}</label>
               </craft-input-copy>
               <p>

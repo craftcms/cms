@@ -10,7 +10,7 @@ type Constructor<T = object> = new (...args: any[]) => T;
 
 type NoticeKind = 'tip' | 'warning';
 
-/** The Lion `FormControlMixin` members the mixin uses. */
+/** The `FormControl` members the mixin uses, which older controls share. */
 interface NoticeHost extends LitElement {
   addToAriaDescribedBy(
     element: HTMLElement,
@@ -52,13 +52,13 @@ export const FieldNotices = <T extends Constructor<NoticeHost>>(Base: T) => {
       }
     }
 
-    // Lion declares `_feedbackTemplate()` on `FormControlMixin`; notices go
-    // just ahead of it, so subclasses that rearrange group two keep them.
+    // Notices go just ahead of `_feedbackTemplate()`'s own output, so
+    // subclasses that rearrange group two keep them.
     protected _feedbackTemplate() {
       return html`${this._noticeTemplate('tip')}${this._noticeTemplate(
         'warning'
       )}${
-        // @ts-expect-error The base is typed without Lion's protected members.
+        // @ts-expect-error The generic base is typed without the chrome's template methods.
         super._feedbackTemplate()
       }`;
     }

@@ -304,7 +304,7 @@ describe('NestedElementsControl', () => {
     button(root, 'Paste entry').click();
     await vi.waitFor(() => expect(pasteElements).toHaveBeenCalledOnce());
     await waitForPage(root, 1);
-    expect(searchInput(root).modelValue).toBe('');
+    expect(searchInput(root).value).toBe('');
     expect(indexRequests().at(-1)?.search).toBeUndefined();
     expect(ownerRefresh).toHaveBeenCalledTimes(2);
   });
@@ -435,20 +435,17 @@ function indexResponse(
 
 function searchInput(root: HTMLElement) {
   return root.querySelector<
-    HTMLElement & {modelValue: string; updateComplete?: Promise<unknown>}
+    HTMLElement & {value: string; updateComplete?: Promise<unknown>}
   >('craft-input-search[name="search"]')!;
 }
 
 async function search(root: HTMLElement, value: string): Promise<void> {
   const input = searchInput(root);
   await input.updateComplete;
-  input.modelValue = value;
-  input.dispatchEvent(
-    new CustomEvent('model-value-changed', {
-      bubbles: true,
-      detail: {isTriggeredByUser: true},
-    })
-  );
+  input.value = value;
+  input
+    .querySelector('input')!
+    .dispatchEvent(new Event('input', {bubbles: true}));
   await nextTick();
 
   const event = new KeyboardEvent('keydown', {

@@ -30,6 +30,7 @@ export default class CraftInputCopy extends CraftInput {
 
   protected _renderSuffix() {
     return html`<craft-copy-button
+      slot="suffix"
       tooltip-label="${t('Copy')}"
     ></craft-copy-button>`;
   }
@@ -40,12 +41,7 @@ export default class CraftInputCopy extends CraftInput {
   override get slots() {
     return {
       ...super.slots,
-      // Render as a direct host child so the copy button itself carries
-      // slot="suffix", rather than being nested in SlotMixin's wrapper div.
-      suffix: () => ({
-        template: this._renderSuffix(),
-        renderAsDirectHostChild: true,
-      }),
+      suffix: () => this._renderSuffix(),
     };
   }
 
@@ -61,7 +57,7 @@ export default class CraftInputCopy extends CraftInput {
   protected _syncCopyButton() {
     const btn = this._copyButton();
     if (!btn) return;
-    btn.value = this.copyValue ?? String(this.modelValue ?? '');
+    btn.value = this.copyValue ?? this.value;
   }
 
   override updated(changedProperties: Map<string | symbol, unknown>) {

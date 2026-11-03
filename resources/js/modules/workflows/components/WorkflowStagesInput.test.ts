@@ -156,7 +156,7 @@ describe('WorkflowStagesInput', () => {
 
     const nameInput = container!.querySelector('craft-input');
 
-    expect(nameInput?.getAttribute('has-feedback-for')).toBe('error');
+    expect(nameInput?.hasAttribute('invalid')).toBe(true);
     expect(nameInput?.textContent).toContain('The name field is required.');
   });
 });

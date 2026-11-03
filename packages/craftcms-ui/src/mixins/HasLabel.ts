@@ -4,7 +4,7 @@ import {FieldNotices} from './FieldNotices';
 // oxlint-disable-next-line @typescript-eslint/no-explicit-any
 type Constructor<T = object> = new (...args: any[]) => T;
 
-/** The Lion `FormControlMixin` members the mixin reads. */
+/** The `FormControl` members the mixin reads, which older controls share. */
 interface LabeledFormControl extends LitElement {
   label: string;
   helpText: string;
@@ -15,7 +15,7 @@ interface LabeledFormControl extends LitElement {
 }
 
 /**
- * The field chrome a standalone Lion form control shares with `craft-field`,
+ * The field chrome a standalone form control shares with `craft-field`,
  * so a labeled control lays out like any other CP field:
  *
  * - The label and help text render only when there's something to show, as
@@ -30,7 +30,7 @@ interface LabeledFormControl extends LitElement {
  * slotted content changes outside of Lit.
  *
  * ```ts
- * class CraftThing extends HasLabel(LionInput) {}
+ * class CraftThing extends HasLabel(NativeField(LitElement)) {}
  * ```
  */
 export const HasLabel = <T extends Constructor<LabeledFormControl>>(
@@ -71,14 +71,14 @@ export const HasLabel = <T extends Constructor<LabeledFormControl>>(
 
     protected _labelTemplate() {
       return this.#hasLabel
-        ? // @ts-expect-error The base is typed without Lion's protected members.
+        ? // @ts-expect-error The generic base is typed without the chrome's template methods.
           super._labelTemplate()
         : html``;
     }
 
     protected _helpTextTemplate() {
       return this.#hasHelpText
-        ? // @ts-expect-error The base is typed without Lion's protected members.
+        ? // @ts-expect-error The generic base is typed without the chrome's template methods.
           super._helpTextTemplate()
         : html``;
     }

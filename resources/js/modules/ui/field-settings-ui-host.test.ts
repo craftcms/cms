@@ -153,13 +153,13 @@ it('refreshes the complete namespaced legacy settings UI and retains unsaved set
   document.body.append(form);
   await settle(form);
 
-  const heading = form.querySelector<HTMLElement & {modelValue: string}>(
+  const heading = form.querySelector<HTMLElement & {value: string}>(
     'craft-input[name="fields[new][settings][columns][col1][heading]"]'
   )!;
-  heading.modelValue = 'Publication status';
-  heading.dispatchEvent(
-    new CustomEvent('model-value-changed', {bubbles: true})
-  );
+  heading.value = 'Publication status';
+  heading
+    .querySelector('input, textarea, select')!
+    .dispatchEvent(new Event('input', {bubbles: true}));
   const type = form.querySelector<HTMLSelectElement>(
     'select[name="fields[new][settings][columns][col1][type]"]'
   )!;

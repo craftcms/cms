@@ -47,7 +47,7 @@ describe('craft-textarea', () => {
   it('carries the value as Lion s modelValue', async () => {
     const element = await createTextarea();
 
-    element.modelValue = 'Some description';
+    element.value = 'Some description';
     await element.updateComplete;
 
     expect(native(element).value).toBe('Some description');
