@@ -56,9 +56,12 @@ it('deletes stale OAuth credentials and registered clients that can no longer be
 
     app(DeleteStaleOAuthData::class)();
 
-    expect(DB::table(Table::OAUTH_ACCESS_TOKENS)->orderBy('id')->pluck('id')->all())->toBe(['live', 'refreshable', 'revoked-client-token'])
-        ->and(DB::table(Table::OAUTH_REFRESH_TOKENS)->pluck('id')->all())->toBe(['live-refresh'])
-        ->and(DB::table(Table::OAUTH_AUTH_CODES)->pluck('id')->all())->toBe(['live-code'])
+    // PostgreSQL pads the `char(80)` IDs with spaces
+    $ids = fn (string $table) => DB::table($table)->orderBy('id')->pluck('id')->map(fn (string $id) => rtrim($id))->all();
+
+    expect($ids(Table::OAUTH_ACCESS_TOKENS))->toBe(['live', 'refreshable', 'revoked-client-token'])
+        ->and($ids(Table::OAUTH_REFRESH_TOKENS))->toBe(['live-refresh'])
+        ->and($ids(Table::OAUTH_AUTH_CODES))->toBe(['live-code'])
         ->and(DB::table(Table::OAUTH_CLIENTS)->orderBy('name')->pluck('name')->all())->toBe([
             'Authorized',
             'Authorized, without tokens',
