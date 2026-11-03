@@ -34,11 +34,29 @@ export type ExportElementIndex = (
   limit?: number
 ) => void | Promise<void>;
 
+/**
+ * Selecting every element the index lists, on every page, rather than only the
+ * rows that have been selected one by one.
+ */
+export interface ElementIndexSelectAll {
+  /** Whether every listed element is selected, other than `exceptIds`. */
+  active: Readonly<Ref<boolean>>;
+  /** Elements deselected since every listed element was selected. */
+  exceptIds: ComputedRef<string[]>;
+  /** How many elements are selected, counting those on pages not loaded. */
+  count: ComputedRef<number>;
+  /** Selects every element the index lists. */
+  selectAll(this: void): void;
+  /** Narrows the selection to the rows on the page on screen. */
+  selectPage(this: void): void;
+}
+
 export interface ElementIndexView {
   elementIndex: Readonly<ReturnType<typeof useContentIndexData>>;
   table: Table<CraftTableFeatures, ElementIndexRow>;
   data: ComputedRef<ElementIndexRow[]>;
   selection: TableRowSelection<ElementIndexRow>;
+  selectAll: ElementIndexSelectAll;
   search: Ref<string>;
   status: Ref<string>;
   conditions: Ref<ConditionConfig | null>;
@@ -62,6 +80,8 @@ export interface ElementIndexView {
   /** Whether the rows are still to come, drawn as placeholders until then. */
   pending: ComputedRef<boolean>;
   processing: ComputedRef<boolean>;
+  /** Drops a page load in flight, such as while a new page number is typed. */
+  cancelPageLoad(this: void): void;
   filterContext: ComputedRef<ElementIndexContext | null>;
   exportElements?: ExportElementIndex;
   submit(this: void): void;

@@ -73,10 +73,13 @@ describe('SSR name adoption', () => {
   });
 });
 
-describe('buttons', () => {
+describe('button-group appearance', () => {
   it('keeps each option a named radio input', async () => {
     const element = await createFromMarkup(
-      SSR_MARKUP.replace('<craft-radio-group', '<craft-radio-group buttons')
+      SSR_MARKUP.replace(
+        '<craft-radio-group',
+        '<craft-radio-group appearance="button-group"'
+      )
     );
     await element.registrationComplete;
     await element.updateComplete;
@@ -114,11 +117,14 @@ describe('buttons', () => {
 
   it('stops drawing buttons when turned off', async () => {
     const element = await createFromMarkup(
-      SSR_MARKUP.replace('<craft-radio-group', '<craft-radio-group buttons')
+      SSR_MARKUP.replace(
+        '<craft-radio-group',
+        '<craft-radio-group appearance="button-group"'
+      )
     );
     await element.registrationComplete;
 
-    element.buttons = false;
+    element.appearance = undefined;
     await element.updateComplete;
 
     const radios = Array.from(element.querySelectorAll('craft-radio'));

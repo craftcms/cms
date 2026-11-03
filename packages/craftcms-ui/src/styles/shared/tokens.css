@@ -16,7 +16,7 @@
   --c-text-sm: calc(12rem / 16);
   --c-text-xs: calc(9rem / 16);
 
-  --c-leading-normal: 1.42;
+  --c-leading-normal: 1.5;
 
   /* White cards, chips, badges, and Matrix blocks. */
   --c-surface-white: var(--c-surface-raised);
@@ -260,6 +260,22 @@
   --c-checkbox-radius: var(--c-radius-sm);
   --c-checkbox-group-spacing: calc(20px - var(--c-checkbox-size));
 
+  /* A radio's icon, beside its label or on a card */
+  --c-radio-icon-size: 1.25rem;
+  --c-radio-card-icon-size: 3.75rem;
+
+  /* Radio cards, in a `craft-radio-group` with `appearance="cards"` */
+  --c-radio-card-min-size: 5rem;
+  --c-radio-card-max-size: 7rem;
+
+  --c-illustration-surface: var(--color-base-100);
+  --c-illustration-paper: var(--color-base-50);
+  --c-illustration-subtle: var(--color-slate-100);
+  --c-illustration-field: var(--color-slate-50);
+  --c-illustration-figure: var(--color-slate-500);
+  --c-illustration-line: var(--color-slate-500);
+  --c-illustration-mark: var(--color-base-950);
+
   /* Slide rule */
   --c-slide-rule-height: var(--c-size-touch-target);
   --c-slide-rule-graduation-width: 10px;
@@ -391,6 +407,9 @@
   );
   /* White is a shade of gray here, so a white dot is solid, like a gray one. */
   --c-indicator-white-ring: var(--c-color-white-fill-loud);
+
+  --c-illustration-field: var(--color-slate-400);
+  --c-illustration-figure: var(--color-base-50);
 }
 
 .underline-links {

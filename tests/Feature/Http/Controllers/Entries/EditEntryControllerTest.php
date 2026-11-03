@@ -251,6 +251,7 @@ it('renders a named draft in the Inertia editor', function () {
             ->where('isProvisionalDraft', false)
             ->where('readOnly', false)
             ->where('editorActions.primary.label', 'Save draft')
+            ->where('editorActions.primary.actionUrl', Url::actionUrl('elements/save-draft'))
             ->where('editorActions.buttons', fn (Collection $actions) => $actions
                 ->pluck('label')->contains('Apply draft'))
             ->etc()
@@ -424,7 +425,36 @@ it('renders an unpublished draft as a create screen', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('elements/Edit')
             ->where('editorActions.primary.label', 'Create entry')
+            ->where('editorActions.primary.actionUrl', null)
             ->where('contextMenu', null)
+            ->etc()
+        );
+});
+
+it('saves an unpublished draft as a draft when the user cannot create the entry', function () {
+    $user = UserModel::factory()->withPermissions([
+        'accessCp',
+        "viewEntries:{$this->section->uid}",
+        "createEntries:{$this->section->uid}",
+    ])->createElement();
+    actingAs($user);
+
+    $draft = app(Entry::class);
+    $draft->siteId = $this->entry->siteId;
+    $draft->sectionId = $this->section->id;
+    $draft->typeId = $this->entryType->id;
+    $draft->title = 'Unpublished Draft';
+    $draft->slug = 'unpublished-draft';
+    $draft->setAuthorIds([$user->id]);
+
+    app(Drafts::class)->saveElementAsDraft($draft, $user->id, markAsSaved: false);
+
+    get($draft->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('elements/Edit')
+            ->where('editorActions.primary.label', 'Save draft')
+            ->where('editorActions.primary.actionUrl', Url::actionUrl('elements/save-draft'))
             ->etc()
         );
 });

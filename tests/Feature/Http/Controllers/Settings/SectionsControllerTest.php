@@ -245,6 +245,21 @@ it('refreshes the fields that depend on the section type', function () {
         ->not->toContain(['propagationMethod'], ['maxLevels'], ['defaultPlacement'], ['minAuthors'], ['maxAuthors']);
 });
 
+it('warns about changing a saved channel or structure’s type, whatever type is chosen', function () {
+    $warning = fn (?int $sectionId, SectionType $type) => collect(flattenUiNodes(postJson(action([SectionsController::class, 'renderUi']), [
+        'values' => sectionUiValues(['sectionId' => $sectionId, 'type' => $type->value]),
+        'scope' => [],
+    ])->assertOk()->json('ui.nodes')))->first(fn (array $node) => ($node['control']['path'] ?? null) === ['type'])['props']['warning'] ?? null;
+
+    $channel = Section::factory()->create(['type' => SectionType::Channel]);
+    $single = Section::factory()->create(['type' => SectionType::Single]);
+
+    expect($warning($channel->id, SectionType::Single))->toBe(t('Changing this may result in data loss.'))
+        ->and($warning($channel->id, SectionType::Structure))->toBe(t('Changing this may result in data loss.'))
+        ->and($warning($single->id, SectionType::Channel))->toBeNull()
+        ->and($warning(null, SectionType::Channel))->toBeNull();
+});
+
 function sectionUiControl(array $nodes, string $path): array
 {
     return collect(flattenUiNodes($nodes))->first(fn (array $node) => ($node['control']['path'] ?? null) === [$path])['control'];

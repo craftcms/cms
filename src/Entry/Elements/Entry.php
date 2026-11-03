@@ -16,7 +16,7 @@ use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Element\Actions\Copy;
+use CraftCms\Cms\Element\Actions\ClientAction;
 use CraftCms\Cms\Element\Actions\Delete;
 use CraftCms\Cms\Element\Actions\DeleteForSite;
 use CraftCms\Cms\Element\Actions\Duplicate;
@@ -39,10 +39,6 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Element\Validation\ElementRules;
-use CraftCms\Cms\Entry\Actions\MoveToSection;
-use CraftCms\Cms\Entry\Actions\NewChild;
-use CraftCms\Cms\Entry\Actions\NewSiblingAfter;
-use CraftCms\Cms\Entry\Actions\NewSiblingBefore;
 use CraftCms\Cms\Entry\Concerns\LegacyConstants;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Conditions\SectionConditionRule;
@@ -75,7 +71,6 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
-use CraftCms\Cms\Support\Facades\ElementActions;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Entries;
@@ -670,29 +665,37 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 $section->type === SectionType::Structure &&
                 $user->can('createEntries:'.$section->uid)
             ) {
-                $newEntryUrl = 'entries/'.$section->handle.'/new';
-                // $newEntryUrl = sprintf('%s/new', $section->getCpIndexUri());
+                $newEntryUrl = Url::cpUrl(
+                    'entries/'.$section->handle.'/new',
+                    Sites::isMultiSite() ? ['site' => $site->handle] : [],
+                );
+                $type = static::lowerDisplayName();
 
-                if (Sites::isMultiSite()) {
-                    $newEntryUrl .= '?site='.$site->handle;
-                }
+                $actions[] = new ClientAction(
+                    key: 'new-sibling-before',
+                    label: t('Create a new {type} before', ['type' => $type]),
+                    event: 'craft:new-element',
+                    detail: ['url' => $newEntryUrl, 'param' => 'before'],
+                    bulk: false,
+                );
 
-                $actions[] = ElementActions::createAction([
-                    'type' => NewSiblingBefore::class,
-                    'newSiblingUrl' => $newEntryUrl,
-                ], static::class);
-
-                $actions[] = ElementActions::createAction([
-                    'type' => NewSiblingAfter::class,
-                    'newSiblingUrl' => $newEntryUrl,
-                ], static::class);
+                $actions[] = new ClientAction(
+                    key: 'new-sibling-after',
+                    label: t('Create a new {type} after', ['type' => $type]),
+                    event: 'craft:new-element',
+                    detail: ['url' => $newEntryUrl, 'param' => 'after'],
+                    bulk: false,
+                );
 
                 if ($section->maxLevels !== 1) {
-                    $actions[] = ElementActions::createAction([
-                        'type' => NewChild::class,
-                        'maxLevels' => $section->maxLevels,
-                        'newChildUrl' => $newEntryUrl,
-                    ], static::class);
+                    $actions[] = new ClientAction(
+                        key: 'new-child',
+                        label: t('Create a new child {type}', ['type' => $type]),
+                        event: 'craft:new-element',
+                        detail: ['url' => $newEntryUrl, 'param' => 'parentId'],
+                        bulk: false,
+                        selectionAttribute: 'acceptsChildren',
+                    );
                 }
             }
 
@@ -713,8 +716,17 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                     ];
                 }
 
-                $actions[] = Copy::class;
-                $actions[] = MoveToSection::class;
+                $actions[] = ClientAction::copy();
+                $actions[] = new ClientAction(
+                    key: 'move-to-section',
+                    label: t('Move to…'),
+                    event: 'entries:move-to-section',
+                    detail: [
+                        'siteId' => $site->id,
+                        'currentSectionUid' => $section->uid,
+                    ],
+                    selectionAttribute: 'movable',
+                );
             }
 
             $actions[] = Delete::class;
@@ -730,7 +742,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 ];
             }
         } else {
-            $actions[] = Copy::class;
+            $actions[] = ClientAction::copy();
         }
 
         if (

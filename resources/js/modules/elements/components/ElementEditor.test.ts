@@ -22,6 +22,8 @@ import ContentFooter from '@/common/layouts/screens/page/ContentFooter.vue';
 import ErrorSummary from '@/common/form/ErrorSummary.vue';
 import {SlideoutControllerKey} from '@/common/slideouts/types';
 import {useReleasePreviewScope} from '@/modules/releases/releaseEditor';
+import {createCpComponentRegistry} from '@/bootstrap/components';
+import {registerUiComponents} from '@/modules/ui/register';
 import ElementEditor from './ElementEditor.vue';
 
 const state = vi.hoisted(() => ({
@@ -198,6 +200,9 @@ function mount(
   });
 
   app = createApp(Root);
+  const components = createCpComponentRegistry();
+  registerUiComponents(components);
+  components.install(app);
   app.mount(container);
 }
 
@@ -424,6 +429,51 @@ it('describes a revision with its own notice alone', async () => {
   expect(container.textContent).toContain('You’re viewing a revision.');
   expect(container.textContent).not.toContain('This is a read-only view.');
 });
+
+it.each([
+  ['a revision', 'readOnly', 'readOnly', false],
+  ['a draft locked for review', 'disabled', 'editable', true],
+] as const)(
+  'renders the fields of %s as %s',
+  async (_, expected, controlMode, reviewLocked) => {
+    state.editor.workflowReviewLocked = computed(() => reviewLocked);
+    state.editor.props.readOnly = controlMode === 'readOnly';
+    state.editor.errors = computed(() => []);
+    state.editor.uiPayload = computed(() => ({
+      scope: [],
+      refreshable: false,
+      values: {title: 'Hello'},
+      errors: [],
+      globalErrors: [],
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+          component: 'craft:field',
+          props: {label: 'Title'},
+          control: {
+            type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
+            component: 'craft:text',
+            props: {},
+            path: ['title'],
+            mode: controlMode,
+            deltaGroup: ['title'],
+          },
+        },
+      ],
+    }));
+
+    mount('page');
+    await nextTick();
+
+    const field = container.querySelector<
+      HTMLElement & {readOnly: boolean; disabled: boolean}
+    >('craft-field')!;
+    expect({readOnly: field.readOnly, disabled: field.disabled}).toEqual({
+      readOnly: expected === 'readOnly',
+      disabled: expected === 'disabled',
+    });
+  }
+);
 
 it('points a withdrawn draft back to the workflow panel to resubmit it', async () => {
   state.editor.workflowReviewLocked = computed(() => false);
