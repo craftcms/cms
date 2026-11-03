@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use Closure;
-use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\CustomNavigations;
 use CraftCms\Cms\Cp\Enums\TableAppearance;
@@ -34,7 +32,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\AnyOf;
-use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -249,21 +246,7 @@ class CpNavigationController
         $request->validate([
             'settings.label' => [$node['source'] === 'custom' ? 'required' : 'nullable', 'string', 'max:255'],
             ...($node['type'] === 'link' ? ['settings.url' => ['required', ...NavCustomizationRequest::linkRules()]] : []),
-            'settings.userCondition' => ['nullable', 'array', function (string $attribute, array $config, Closure $fail): void {
-                if (! isset($config['class'])) {
-                    return;
-                }
-
-                try {
-                    $isUserCondition = app(Conditions::class)->createCondition($config) instanceof UserCondition;
-                } catch (InvalidArgumentException) {
-                    $isUserCondition = false;
-                }
-
-                if (! $isUserCondition) {
-                    $fail(t('The condition isn’t valid.'));
-                }
-            }],
+            'settings.userCondition' => NavCustomizationRequest::userConditionRules(),
         ], [
             'settings.url.'.AnyOf::class => t('Enter a control panel path, or a URL starting with http, https, mailto or tel.'),
         ], [

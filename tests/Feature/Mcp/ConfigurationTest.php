@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\CustomNavigations;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Mcp\Capabilities\Configuration;
@@ -14,6 +15,8 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\Support\McpRequest;
+use CraftCms\Cms\User\Conditions\AdminConditionRule;
+use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\Models\UserGroup;
 use CraftCms\Cms\Workflow\UserReview\UserReviewStage;
@@ -181,13 +184,45 @@ it('refuses CP navigation links and ids the navigation builder would refuse', fu
         ->assertJsonPath('result.content.0.text', 'The nav.'.(count($tree) - 1).'.url field is invalid.');
 
     $tree = array_slice($tree, 0, -1);
-    $tree[] = ['id' => 'custom-news-page', 'kind' => 'item', 'source' => 'custom', 'type' => 'link', 'label' => 'News', 'url' => 'content/entries'];
-
-    ($this->call)('update', ['type' => 'cp-navigations', 'identifier' => ['userGroup' => 'default'], 'attributes' => ['tree' => $tree]])
+    $refuse = fn (array $node, string $error) => ($this->call)('update', ['type' => 'cp-navigations', 'identifier' => ['userGroup' => 'default'], 'attributes' => ['tree' => [...$tree, $node]]])
         ->assertJsonPath('result.isError', true)
-        ->assertJsonPath('result.content.0.text', 'The custom node “custom-news-page” needs an id of `custom-` followed by lowercase letters and digits, such as `custom-7f3a`.');
+        ->assertJsonPath('result.content.0.text', fn (string $text): bool => str_starts_with($text, $error));
+
+    $refuse(['id' => 'custom-news-page', 'kind' => 'item', 'source' => 'custom', 'type' => 'link', 'label' => 'News', 'url' => 'content/entries'], 'The navigation can’t have `custom-news-page`.');
+    $refuse(['id' => 'docs', 'kind' => 'item', 'type' => 'link', 'label' => 'Docs', 'url' => 'https://craftcms.com/docs'], 'The navigation can’t have `docs`.');
+    $refuse(['id' => 'custom-docs', 'kind' => 'item', 'source' => 'custom', 'type' => 'link', 'url' => 'https://craftcms.com/docs'], 'The navigation can’t have `custom-docs`.');
+    $refuse(['id' => 'custom-docs', 'kind' => 'item', 'source' => 'custom', 'type' => 'link', 'label' => 'Docs', 'url' => 'https://craftcms.com/docs', 'userCondition' => ['class' => EntryCondition::class]], 'The condition isn’t valid.');
 
     expect(app(CustomNavigations::class)->getDefault())->toBe([]);
+});
+
+it('needs the whole CP navigation tree, so nodes left out keep their changes', function (): void {
+    UserGroup::factory()->create(['handle' => 'editors']);
+    $tree = ($this->operate)('get', 'cp-navigations', ['identifier' => ['userGroup' => 'default']])['item']['tree'];
+    $tree[0]['label'] = 'Home';
+    $tree[1]['hidden'] = true;
+    $tree[] = ['id' => 'custom-docs', 'kind' => 'item', 'source' => 'custom', 'type' => 'link', 'label' => 'Docs', 'url' => 'https://craftcms.com/docs', 'userCondition' => [
+        'class' => UserCondition::class,
+        'conditionRules' => [['class' => AdminConditionRule::class, 'value' => true]],
+    ]];
+    ($this->operate)('update', 'cp-navigations', ['identifier' => ['userGroup' => 'default'], 'attributes' => ['tree' => $tree]]);
+    ($this->operate)('create', 'cp-navigations', ['attributes' => ['userGroup' => 'editors']]);
+    $saved = app(CustomNavigations::class)->getDefault();
+
+    foreach (['default', 'editors'] as $userGroup) {
+        ($this->call)('update', ['type' => 'cp-navigations', 'identifier' => ['userGroup' => $userGroup], 'attributes' => ['tree' => [[...$tree[0], 'label' => 'Start']]]])
+            ->assertJsonPath('result.isError', true)
+            ->assertJsonPath('result.content.0.text', fn (string $text): bool => str_starts_with($text, 'The tree leaves out `') && str_contains($text, ' more. Pass the whole tree'));
+    }
+
+    expect($saved['items']['custom-docs']['userCondition']['conditionRules']['rules'][0])->toMatchArray(['class' => AdminConditionRule::class, 'value' => true])
+        ->and(app(CustomNavigations::class)->getDefault())->toBe($saved)
+        ->and(app(CustomNavigations::class)->getGroupNavigation(UserGroup::query()->where('handle', 'editors')->firstOrFail()->uid)['nav'])->toBe([]);
+
+    // A custom node the navigation adds itself is removed by leaving it out.
+    $removed = ($this->operate)('update', 'cp-navigations', ['identifier' => ['userGroup' => 'default'], 'attributes' => ['tree' => array_slice($tree, 0, -1)]])['item'];
+
+    expect(array_column($removed['tree'], 'id'))->not->toContain('custom-docs');
 });
 
 it('refuses asset transformer changes Craft doesn’t allow', function (): void {
