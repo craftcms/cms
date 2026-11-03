@@ -85,8 +85,10 @@
   {% endif %}
 </div>
 
-{{ forms.button({
-  id: 'new-token-btn',
-  label: 'New token'|t('app'),
-  icon: 'plus',
-}) }}
+{% if canCreate %}
+  {{ forms.button({
+    id: 'new-token-btn',
+    label: 'New token'|t('app'),
+    icon: 'plus',
+  }) }}
+{% endif %}

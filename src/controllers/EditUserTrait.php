@@ -113,7 +113,9 @@ trait EditUserTrait
             $screens[self::SCREEN_PASSKEYS] = ['label' => Craft::t('app', 'Passkeys')];
         }
 
-        if ($user->getIsCurrent() && Craft::$app->getPersonalAccessTokens()->scopeGroupsFor($user)) {
+        // Users who can't create tokens still see the apps they've authorized.
+        $tokens = Craft::$app->getPersonalAccessTokens();
+        if ($user->getIsCurrent() && ($tokens->scopeGroupsFor($user) || $tokens->grants($user))) {
             $screens[self::SCREEN_TOKENS] = ['label' => Craft::t('app', 'Tokens')];
         }
 
