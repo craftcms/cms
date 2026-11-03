@@ -47,9 +47,13 @@ When a unit is not enough, `valueLabel` formats the announced value however you 
 
 ## Accessibility
 
-The control is a slider, and a Lion field like [Input](?path=/docs/form-controls-text-controls-input--docs): its `label`, help text and feedback name and describe the slider. Give it a visible label so people know what it sets and can name it by voice. Inside a [Field](?path=/docs/form-controls-field--docs), leave `label` off and the field's label, instructions and errors are used instead. With no label at all, the slider has no name. When something next to the picker already says what it sets, keep `label` but add `label-sr-only` to hide it visually.
+The control is a slider and a Lion field, like [Input](?path=/docs/form-controls-text-controls-input--docs). The slider takes its name and description from one of these:
 
-When the label is somewhere else, such as a table column heading, point `labelled-by` at it instead, and `described-by` at anything that describes the picker.
+- **Its own label.** Set `label`, and add help text to describe the slider. Keep the label visible, so people know what the slider sets and can name it by voice. When something next to the picker already says what it sets, add `label-sr-only` to hide the label visually.
+- **A surrounding [Field](?path=/docs/form-controls-field--docs).** Leave `label` off. The field's label names the slider, and its instructions and errors describe it.
+- **A table column heading.** In a table cell, point `labelled-by` at the heading, and `described-by` at anything that describes the slider.
+
+Without one of these, the slider has no name.
 
 Set `value-unit` or `valueLabel` whenever the number alone doesn't say what it counts.
 
