@@ -418,12 +418,12 @@ describe('selectizeHtml', function () {
             'name' => 'enabled',
             'value' => true,
             'options' => [['value' => '1', 'label' => 'Yes'], ['value' => '0', 'label' => 'No']],
-        ]))->toContain('model-value="1"')
+        ]))->toContain(' value="1"')
             ->and(FormFields::selectizeHtml([
                 'name' => 'enabled',
                 'value' => false,
                 'options' => [['value' => '1', 'label' => 'Yes'], ['value' => '0', 'label' => 'No']],
-            ]))->toContain('model-value="0"');
+            ]))->toContain(' value="0"');
     });
 
     it('casts a numeric value to its option value', function () {
@@ -431,7 +431,7 @@ describe('selectizeHtml', function () {
             'name' => 'limit',
             'value' => 25,
             'options' => [['value' => '25', 'label' => '25']],
-        ]))->toContain('model-value="25"');
+        ]))->toContain(' value="25"');
     });
 
     it('keeps the native multiple select, which posts an array', function () {
@@ -524,7 +524,7 @@ describe('colorSelectHtml', function () {
         $html = html_entity_decode(FormFields::colorSelectHtml(['name' => 'color']));
 
         expect($html)
-            ->toContain('model-value="__blank__"')
+            ->toContain(' value="__blank__"')
             ->toContain('"value":"__blank__"')
             ->toContain('"value":"rose"')
             ->not->toContain('"value":"gray"');
@@ -532,7 +532,7 @@ describe('colorSelectHtml', function () {
 
     it('selects the value of a Color enum', function () {
         expect(FormFields::colorSelectHtml(['name' => 'color', 'value' => Color::Teal, 'withBlankOption' => false]))
-            ->toContain('model-value="teal"');
+            ->toContain(' value="teal"');
     });
 });
 
@@ -541,7 +541,7 @@ describe('timeZoneHtml', function () {
         $html = html_entity_decode(FormFields::timeZoneHtml(['name' => 'tz', 'value' => 'Europe/Brussels']));
 
         expect($html)
-            ->toContain('model-value="Europe/Brussels"')
+            ->toContain(' value="Europe/Brussels"')
             ->toContain('"value":"America\\/New_York"');
     });
 });

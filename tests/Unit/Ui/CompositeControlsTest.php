@@ -153,7 +153,7 @@ it('renders composite Controls with nested submission names and escaped values',
         ->and(json_decode($crawler->filter('craft-table-ui')->attr('data-payload'), true)['nodes'][0]['control']['props']['addRowLabel'])->toBe('Add a coupon')
         ->and($crawler->filter('craft-link-field[name="settings[link]"][model-value]'))->toHaveCount(1)
         ->and($crawler->filter('input[name="settings[address][addressLine1]"][value="123 Main Street"]'))->toHaveCount(1)
-        ->and($crawler->filter('craft-combobox[name="settings[address][administrativeArea]"][model-value="CA"]'))->toHaveCount(1)
+        ->and($crawler->filter('craft-combobox[name="settings[address][administrativeArea]"][value="CA"]'))->toHaveCount(1)
         ->and($crawler->filter('craft-icon-picker[name="settings[icon]"][value="star"][free-only]'))->toHaveCount(1)
         ->and($crawler->html())->toContain('Enter a valid link.', 'Choose an address.', 'Unmatched error.')
         ->and($crawler->html())->not->toContain('<script>');

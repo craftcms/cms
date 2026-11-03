@@ -15,9 +15,10 @@ export default css`
 
   ::slotted(.form-control) {
     ${baseComboboxStyles}
+    box-sizing: border-box;
   }
 
-  /* Lion sets the field's width as an inline min-width, which wins over this cap on wider fields */
+  /* The dropdown sets the field's width as an inline min-width, which wins over this cap on wider fields */
   #overlay-content-node-wrapper {
     max-inline-size: min(calc(360rem / 16), calc(100vw - var(--c-spacing-lg)));
     border: 1px solid var(--c-form-control-border-color);
@@ -30,6 +31,8 @@ export default css`
   ::slotted([slot='listbox']) {
     background: transparent;
     display: grid;
+    max-block-size: calc(200rem / 16);
+    overflow: auto;
     grid-template-columns: minmax(0, 1fr);
     gap: var(--c-spacing-xs);
     padding: var(--c-spacing-sm);
@@ -100,7 +103,7 @@ export default css`
     outline-offset: var(--c-focus-outline-offset);
   }
 
-  /* Lion turns off the textbox's own outline, so draw the ring on its wrapper */
+  /* The textbox is the .form-control here, so it carries the ring itself */
   :host(:not([multiple-choice])) ::slotted(.form-control:focus-within) {
     outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
       var(--c-color-focus-outline);

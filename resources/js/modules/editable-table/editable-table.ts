@@ -835,7 +835,7 @@ export class EditableTable extends Base<EditableTableSettings> {
                         }
                 )
               : [];
-            combobox.modelValue = String(value ?? '');
+            combobox.value = String(value ?? '');
             combobox.showAllOnEmpty = true;
             combobox.setAttribute('label-sr-only', '');
             $cell.append(combobox);

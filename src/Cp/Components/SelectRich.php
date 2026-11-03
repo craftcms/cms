@@ -107,7 +107,7 @@ class SelectRich extends ViewComponent
             'label' => $this->label,
             'label-sr-only' => $this->labelSrOnly,
             'small' => $this->small,
-            'aria-invalid' => $this->invalid ? 'true' : null,
+            'invalid' => $this->invalid,
             'disabled' => $this->isDisabled(),
         ];
     }

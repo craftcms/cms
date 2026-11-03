@@ -1,5 +1,4 @@
-import {LionSelectRich} from '@lion/ui/select-rich.js';
-import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {beforeEach, describe, expect, it} from 'vite-plus/test';
 
 import './select-rich.js';
 import type CraftSelectRich from './select-rich.js';
@@ -23,12 +22,6 @@ beforeEach(() => {
   document.body.innerHTML = '';
 });
 
-/**
- * Slotted `craft-option`s are not exercised here: registering one runs Lion's
- * listbox wiring, which needs layout happy-dom does not provide and throws
- * before the option lands. The options, the keyboard navigation, and the
- * selection are covered by the Storybook stories, which run in a real browser.
- */
 describe('craft-select-rich', () => {
   it('upgrades and renders its field chrome', async () => {
     const element = await createSelectRich();
@@ -39,32 +32,25 @@ describe('craft-select-rich', () => {
 
   it('leaves keyboard shortcuts out of type-ahead', async () => {
     const element = await createSelectRich();
-    const typeAhead = vi
-      // @ts-expect-error Lion marks the method protected.
-      .spyOn(LionSelectRich.prototype, '_handleTypeAhead')
-      .mockImplementation(() => {});
+    element.insertAdjacentHTML(
+      'beforeend',
+      '<craft-option choice-value="apple">Apple</craft-option>' +
+        '<craft-option choice-value="strawberry">Strawberry</craft-option>'
+    );
+    await new Promise((resolve) => setTimeout(resolve));
+    const invoker = element.querySelector('craft-select-invoker')!;
+    const press = (init: KeyboardEventInit) =>
+      invoker.dispatchEvent(
+        new KeyboardEvent('keydown', {bubbles: true, ...init})
+      );
 
     // ⌘S while the select has focus must not jump to an "S" option.
-    element._handleTypeAhead(
-      new KeyboardEvent('keydown', {key: 's', metaKey: true}),
-      {
-        setAsChecked: true,
-      }
-    );
-    element._handleTypeAhead(
-      new KeyboardEvent('keydown', {key: 's', ctrlKey: true}),
-      {
-        setAsChecked: true,
-      }
-    );
-    expect(typeAhead).not.toHaveBeenCalled();
+    press({key: 's', metaKey: true});
+    press({key: 's', ctrlKey: true});
+    expect(element.value).toBe('apple');
 
-    element._handleTypeAhead(new KeyboardEvent('keydown', {key: 's'}), {
-      setAsChecked: true,
-    });
-    expect(typeAhead).toHaveBeenCalledOnce();
-
-    typeAhead.mockRestore();
+    press({key: 's'});
+    expect(element.value).toBe('strawberry');
   });
 
   it('takes a name for posting', async () => {
@@ -78,20 +64,4 @@ describe('craft-select-rich', () => {
 
     expect(element.hasAttribute('small')).toBe(true);
   });
-
-  /**
-   * The component registers its own elements into the shadow root rather than
-   * relying on globally defined tags, which is how a rich option renders.
-   */
-  it('scopes the elements it renders', async () => {
-    const scoped = (
-      CraftSelectRichConstructor as unknown as {
-        scopedElements: Record<string, unknown>;
-      }
-    ).scopedElements;
-
-    expect(Object.keys(scoped).length).toBeGreaterThan(0);
-  });
 });
-
-const CraftSelectRichConstructor = customElements.get('craft-select-rich')!;

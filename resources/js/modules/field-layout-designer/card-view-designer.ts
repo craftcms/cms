@@ -194,12 +194,9 @@ export class CardViewDesigner extends Base {
 
   /** The value of the Name, Color, or Icon control, or `''` if there isn't one. */
   appearanceValue(key: 'name' | 'color' | 'icon'): string {
-    // A Lion control, such as the color select, holds it as `modelValue`.
-    const control = this.appearanceControl(key) as {
-      value?: unknown;
-      modelValue?: unknown;
-    } | null;
-    return String(control?.modelValue ?? control?.value ?? '').trim();
+    return String(
+      (this.appearanceControl(key) as {value?: unknown} | null)?.value ?? ''
+    ).trim();
   }
 
   /**

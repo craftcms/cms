@@ -54,18 +54,18 @@ function insertBefore(
   });
 }
 
+/**
+ * Opens the slideout for a "create" option when one was just picked, and puts
+ * the previous value back. Call it from the combobox's `input` listener; the
+ * value is restored before the combobox commits, so no `change` follows.
+ */
 export function handleCreateOption(
-  event: CustomEvent,
   combobox: CraftCombobox,
   options: ComboboxItem[],
   previousValue: string | string[],
   saved: (options: ComboboxItem[], value: string | string[]) => void
 ): boolean {
-  if (event.detail?.initialize || event.detail?.changeSource === 'input') {
-    return false;
-  }
-
-  const value = combobox.modelValue;
+  const value = combobox.value;
   const triggerValue = Array.isArray(value)
     ? value.find((item) => createOption(options, item))
     : value;
@@ -74,23 +74,8 @@ export function handleCreateOption(
     return false;
   }
 
-  event.stopImmediatePropagation();
-  // Lion finishes committing the option after dispatching this event.
-  queueMicrotask(() => {
-    combobox.modelValue = previousValue;
-    combobox.value = '';
-    combobox.opened = false;
-    const input = combobox.querySelector('input');
-    if (input && !Array.isArray(previousValue)) {
-      const selected = options
-        .flatMap((item) => (item.type === 'optgroup' ? item.options : [item]))
-        .find((item) => item.value === previousValue);
-      input.value = selected?.label ?? previousValue;
-      if (combobox.showSelectedHint && selected?.data?.hint) {
-        input.value = `${selected.label} – ${selected.data.hint}`;
-      }
-    }
-  });
+  combobox.value = previousValue;
+  combobox.opened = false;
 
   const {url, resultKey, labelField, valueField} = trigger.data.create;
   void openSlideout(url, {
@@ -128,7 +113,7 @@ export function handleCreateOption(
         : option.value;
 
       combobox.options = createdOptions;
-      combobox.modelValue = selectedValue;
+      combobox.value = selectedValue;
       saved(createdOptions, selectedValue);
     },
   });

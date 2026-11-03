@@ -193,12 +193,12 @@ it('renders combobox options through the web component', function () {
     );
     $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
 
-    $combobox = $crawler->filter('craft-combobox[name="settings[path]"][model-value="@root"]');
+    $combobox = $crawler->filter('craft-combobox[name="settings[path]"][value="@root"]');
 
     expect($combobox)->toHaveCount(1)
         ->and($combobox->attr('limit'))->toBe('10')
         ->and($combobox->attr('clearable'))->not->toBeNull()
-        ->and($combobox->attr('requireoptionmatch'))->not->toBeNull()
+        ->and($combobox->attr('require-option-match'))->not->toBeNull()
         ->and($combobox->attr('show-all-on-empty'))->not->toBeNull()
         ->and($combobox->attr('dir'))->toBe('rtl')
         ->and(json_decode((string) $combobox->attr('options'), true))->toBe([

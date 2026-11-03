@@ -325,22 +325,14 @@ it('shows the empty state right under the column headers, without an empty row',
 });
 
 async function setControl(host: HTMLElement, selector: string, value: string) {
-  const control = host.querySelector<
-    HTMLElement & {value: string; modelValue?: string}
-  >(selector)!;
+  const control = host.querySelector<HTMLElement & {value: string}>(selector)!;
   await (control as typeof control & {updateComplete: Promise<boolean>})
     .updateComplete;
-  if ('modelValue' in control) {
-    control.modelValue = value;
-    control.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
-  } else {
-    control.value = value;
-    control
-      .querySelector('input, select')!
-      .dispatchEvent(new Event('input', {bubbles: true}));
-  }
+  control.value = value;
+  const target =
+    control.querySelector('input:not([type="hidden"]), select') ?? control;
+  target.dispatchEvent(new Event('input', {bubbles: true}));
+  target.dispatchEvent(new Event('change', {bubbles: true}));
   await nextTick();
 }
 function rowNames(host: HTMLElement) {
