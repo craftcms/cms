@@ -163,6 +163,9 @@ describe('formatCurrency', () => {
     [49, '$49'],
     ['49.00', '$49'],
     [49.5, '$49.50'],
+    [49.001, '$49'],
+    [48.999, '$49'],
+    [49.005, '$49.01'],
     [null, '$0'],
   ] as const)('formatCurrency(%s) -> %s', ([value, expected]) => {
     expect(formatCurrency(value, 'USD')).toBe(expected);

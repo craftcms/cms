@@ -44,13 +44,21 @@ export function formatCurrency(
   locale: string = formattingLocale()
 ): string {
   const amount = Number(value ?? 0);
-  const fractionDigits = Number.isInteger(amount) ? 0 : undefined;
+  const formatter = new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+  });
+  const scale = 10 ** (formatter.resolvedOptions().maximumFractionDigits ?? 2);
+
+  if (!Number.isInteger(Math.round(amount * scale) / scale)) {
+    return formatter.format(amount);
+  }
 
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
-    minimumFractionDigits: fractionDigits,
-    maximumFractionDigits: fractionDigits,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   }).format(amount);
 }
 
