@@ -13,6 +13,8 @@
     refreshable: boolean;
     initiallyHidden?: boolean;
     tabButtonId?: string;
+    /** Leaves the panel empty, until it's first shown. */
+    deferred?: boolean;
   }>();
   const emit = defineEmits<{
     (event: 'change', change: UiChange): void;
@@ -35,6 +37,7 @@
     :data-layout-tab="node.uid"
   >
     <craft-field-group
+      v-if="!deferred"
       separated
       style="--c-field-group-separator-spacing: var(--cp-container-padding)"
     >
