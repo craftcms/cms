@@ -143,7 +143,7 @@ async function requestOverrides(
  * Write applied overrides back onto the chip (legacy `applySettings`): swap
  * the label's contents, then rewrite the hidden-input JSON with the new
  * `{id, name, handle, description}` config while preserving the group the
- * manager stamped.
+ * manager stamped and any extra values the selection holds.
  */
 function writeOverrides(chip: HTMLElement, data: any): void {
   // Swap the label's contents (name/handle/description/indicators), keeping
@@ -167,9 +167,13 @@ function writeOverrides(chip: HTMLElement, data: any): void {
   if (input) {
     let config = {...data.config};
     try {
-      const {id, name, handle, description, ...preserved} = JSON.parse(
-        input.value
-      );
+      const {
+        id: _id,
+        name: _name,
+        handle: _handle,
+        description: _description,
+        ...preserved
+      } = JSON.parse(input.value);
       config = {...preserved, ...config};
     } catch {
       // Not a JSON value — nothing to preserve.

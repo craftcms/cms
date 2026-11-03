@@ -7,10 +7,10 @@ namespace CraftCms\Cms\Ui\Controls;
 use CraftCms\Cms\Cp\Components\EntryTypeSelect as EntryTypeSelectComponent;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\EntryTypes;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
-use Illuminate\Support\Arr;
 
 /**
  * An entry type picker, backed by the server-rendered
@@ -42,8 +42,8 @@ class EntryTypeSelect extends Control
         );
     }
 
-    /** @param list<array<string, mixed>|int|string> $value */
     /**
+     * @param  list<array<string, mixed>|int|string>  $value
      * @param  list<string>  $extraValueKeys  Additional keys that each selection value can hold, which are kept in the
      *                                        selections’ values (requires `$allowOverrides`)
      */

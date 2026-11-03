@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Cp\Components;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\EntryTypes;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
 
@@ -58,7 +59,6 @@ class EntryTypeSelect extends ComponentSelect
         return $this;
     }
 
-    /** Whether to offer a Create button for new entry types. */
     /**
      * Additional values to include in each selection’s value, indexed by entry type ID (requires overrides).
      *
@@ -71,6 +71,7 @@ class EntryTypeSelect extends ComponentSelect
         return $this;
     }
 
+    /** Whether to offer a Create button for new entry types. */
     public function create(bool $create = true): static
     {
         return $this->createAction($create ? Url::cpUrl('settings/entry-types/new') : null);
@@ -101,7 +102,11 @@ class EntryTypeSelect extends ComponentSelect
 
         return [
             ...$config,
-            'inputValue' => Json::encode([...$value, ...$overrides, ...($this->extraValues[$component->id] ?? [])]),
+            'inputValue' => Json::encode([
+                ...$value,
+                ...$overrides,
+                ...Arr::except($this->extraValues[$component->id] ?? [], ['id', 'uid', 'name', 'handle', 'description', 'group']),
+            ]),
             'overrides' => $overrides,
         ];
     }
