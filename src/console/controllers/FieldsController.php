@@ -494,10 +494,12 @@ MD, $infoByField->join("\n"))));
             $changed = false;
             foreach ($layout->getCustomFieldElements() as $layoutElement) {
                 if ($layoutElement->getFieldUid() === $outgoingField->uid) {
-                    // hard code the label, handle, and instructions, if they differ from the persistent field
+                    // hard code the label, handle, instructions, tip, and warning, if they differ from the persistent field
                     $layoutElement->label = $this->layoutElementOverride($persistingField->name, $outgoingField->name, $layoutElement->label);
                     $layoutElement->handle = $this->layoutElementOverride($persistingField->handle, $outgoingField->handle, $layoutElement->handle);
                     $layoutElement->instructions = $this->layoutElementOverride($persistingField->instructions, $outgoingField->instructions, $layoutElement->instructions);
+                    $layoutElement->tip = $this->layoutElementOverride($persistingField->tip, $outgoingField->tip, $layoutElement->tip);
+                    $layoutElement->warning = $this->layoutElementOverride($persistingField->warning, $outgoingField->warning, $layoutElement->warning);
 
                     // let Fields::saveLayout() know to update any condition rules that reference the outgoing field
                     $layoutElement->oldFieldUid ??= $outgoingField->uid;

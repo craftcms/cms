@@ -8,6 +8,7 @@
 namespace craft\models;
 
 use craft\base\Model;
+use craft\elements\User;
 use craft\helpers\StringHelper;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\validators\UniqueValidator;
@@ -44,6 +45,16 @@ class GqlSchema extends Model
      * @var string|null $uid
      */
     public ?string $uid = null;
+
+    /**
+     * @var User|null The user an authenticated schema was created for.
+     *
+     * Schema components should limit their results to what this user is permitted to access.
+     *
+     * @see \craft\services\Gql::getSchemaForUser()
+     * @since 5.12.0
+     */
+    public ?User $user = null;
 
     /**
      * @var array Instance cache for the extracted scope pairs

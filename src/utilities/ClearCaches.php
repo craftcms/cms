@@ -16,6 +16,7 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\web\assets\clearcaches\ClearCachesAsset;
 use Exception;
+use Throwable;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 
@@ -261,6 +262,44 @@ class ClearCaches extends Utility
         ArrayHelper::multisort($options, 'label');
 
         return $options;
+    }
+
+    /**
+     * Clears the caches with the given keys, or all of them when `$keys` is `'*'`.
+     *
+     * @param string[]|string $keys The cache option keys, or `'*'`
+     * @return string[] The keys of the caches that were cleared
+     * @since 5.12.0
+     */
+    public static function clear(array|string $keys): array
+    {
+        $cleared = [];
+
+        foreach (static::cacheOptions() as $cacheOption) {
+            if (is_array($keys) && !in_array($cacheOption['key'], $keys, true)) {
+                continue;
+            }
+
+            $action = $cacheOption['action'];
+
+            if (is_string($action)) {
+                try {
+                    FileHelper::clearDirectory($action);
+                } catch (InvalidArgumentException) {
+                    // the directory doesn't exist
+                } catch (Throwable $e) {
+                    Craft::warning("Could not clear the directory $action: " . $e->getMessage(), __METHOD__);
+                }
+            } elseif (isset($cacheOption['params'])) {
+                call_user_func_array($action, $cacheOption['params']);
+            } else {
+                $action();
+            }
+
+            $cleared[] = $cacheOption['key'];
+        }
+
+        return $cleared;
     }
 
     /**

@@ -12,8 +12,10 @@ use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\DefaultableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\base\InputSchemaFieldInterface;
 use craft\fields\data\ColorData;
 use craft\gql\GqlEntityRegistry;
+use craft\gql\GqlInputSchema;
 use craft\gql\types\generators\TableRowType;
 use craft\gql\types\TableRow;
 use craft\helpers\ArrayHelper;
@@ -41,7 +43,7 @@ use yii\validators\EmailValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Table extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface
+class Table extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, InputSchemaFieldInterface
 {
     private static array $typeOptions;
 
@@ -933,5 +935,14 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             'describedBy' => $this->describedBy,
             'includeRowId' => $this->staticRows,
         ]);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 5.12.0
+     */
+    public function getInputSchema(): array
+    {
+        return GqlInputSchema::fromType($this->getContentGqlMutationArgumentType());
     }
 }

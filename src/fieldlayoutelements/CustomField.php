@@ -83,6 +83,8 @@ class CustomField extends BaseField
     private ?string $_originalName = null;
     private ?string $_originalHandle = null;
     private ?string $_originalInstructions = null;
+    private ?string $_originalTip = null;
+    private ?string $_originalWarning = null;
 
     /**
      * @var UserCondition|class-string<UserCondition>|array|null
@@ -398,11 +400,15 @@ class CustomField extends BaseField
         $this->_originalName = $this->_field->name;
         $this->_originalHandle = $this->_field->handle;
         $this->_originalInstructions = $this->_field->instructions;
+        $this->_originalTip = $this->_field->tip;
+        $this->_originalWarning = $this->_field->warning;
 
         // Set the instance overrides
         $this->_field->name = $this->label ?? $this->_field->name;
         $this->_field->handle = $this->handle ?? $this->_field->handle;
         $this->_field->instructions = $this->instructions ?? $this->_field->instructions;
+        $this->_field->tip = $this->tip ?? $this->_field->tip;
+        $this->_field->warning = $this->warning ?? $this->_field->warning;
         $this->_field->required = $this->required;
     }
 
@@ -568,6 +574,8 @@ class CustomField extends BaseField
             'defaultLabel' => $this->defaultLabel(),
             'defaultHandle' => $this->_originalHandle,
             'defaultInstructions' => $this->defaultInstructions(),
+            'defaultTip' => $this->defaultTip(),
+            'defaultWarning' => $this->defaultWarning(),
             'labelHidden' => !$this->showLabel(),
         ]);
     }
@@ -722,6 +730,22 @@ class CustomField extends BaseField
     protected function defaultInstructions(?ElementInterface $element = null, bool $static = false): ?string
     {
         return $this->_originalInstructions ? Craft::t('site', $this->_originalInstructions) : null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function defaultTip(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        return $this->_originalTip ? Craft::t('site', $this->_originalTip) : null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function defaultWarning(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        return $this->_originalWarning ? Craft::t('site', $this->_originalWarning) : null;
     }
 
     /**

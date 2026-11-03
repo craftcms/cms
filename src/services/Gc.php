@@ -119,6 +119,7 @@ class Gc extends Component
         $this->_deleteStaleAnnouncements();
         $this->_deleteStaleElementActivity();
         $this->_deleteStaleBulkOpData();
+        $this->_deleteStaleOAuthData();
 
         // elements should always go first
         $this->hardDeleteElements();
@@ -455,6 +456,47 @@ class Gc extends Component
         foreach ([Table::BULKOPEVENTS, Table::ELEMENTS_BULKOPS] as $table) {
             Db::delete($table, $condition);
         }
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    /**
+     * Deletes expired and revoked OAuth credentials, and registered clients that can no longer be used.
+     */
+    private function _deleteStaleOAuthData(): void
+    {
+        $this->_stdout('    > deleting stale OAuth data ... ');
+        $now = Db::prepareDateForDb(new DateTime());
+        $stale = ['or', ['revoked' => true], ['<', 'expires_at', $now]];
+
+        Db::delete(Table::OAUTH_AUTH_CODES, $stale);
+        Db::delete(Table::OAUTH_REFRESH_TOKENS, $stale);
+
+        // Keep access tokens with a live refresh token, which would be deleted along with them
+        Db::delete(Table::OAUTH_ACCESS_TOKENS, [
+            'and',
+            $stale,
+            ['not in', 'id', (new Query())->select('access_token_id')->from(Table::OAUTH_REFRESH_TOKENS)],
+        ]);
+
+        // Dynamically registered clients (which have no provider) that have nothing live left, and were either revoked,
+        // or registered over a day ago but never authorized (`updated_at` is null until a client is first authorized).
+        // Registration is anonymous, so these would otherwise pile up.
+        Db::delete(Table::OAUTH_CLIENTS, [
+            'and',
+            ['provider' => null],
+            ['not in', 'id', (new Query())->select('client_id')->from(Table::OAUTH_ACCESS_TOKENS)],
+            ['not in', 'id', (new Query())->select('client_id')->from(Table::OAUTH_AUTH_CODES)],
+            [
+                'or',
+                ['revoked' => true],
+                [
+                    'and',
+                    ['<', 'created_at', Db::prepareDateForDb(new DateTime('1 day ago'))],
+                    ['updated_at' => null],
+                ],
+            ],
+        ]);
+
         $this->_stdout("done\n", Console::FG_GREEN);
     }
 

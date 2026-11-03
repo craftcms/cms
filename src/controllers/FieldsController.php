@@ -428,6 +428,8 @@ JS, [
             'handle' => $this->request->getBodyParam('handle'),
             'columnSuffix' => $oldField->columnSuffix ?? null,
             'instructions' => $this->request->getBodyParam('instructions'),
+            'tip' => $this->request->getBodyParam('tip'),
+            'warning' => $this->request->getBodyParam('warning'),
             'searchable' => (bool)$this->request->getBodyParam('searchable', true),
             'translationMethod' => $this->request->getBodyParam('translationMethod', Field::TRANSLATION_METHOD_NONE),
             'translationKeyFormat' => $this->request->getBodyParam('translationKeyFormat'),

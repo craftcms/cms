@@ -1,9 +1,6 @@
-{% extends "_layouts/cp" %}
-{% set title = 'Filesystems'|t('app') %}
+{% extends "settings/assets/_layout" %}
+{% set selectedNavItem = 'filesystems' %}
 {% set readOnly = readOnly ?? false %}
-{% set crumbs = [
-    { label: "Settings"|t('app'), url: url('settings') }
-] %}
 
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 
@@ -16,7 +13,7 @@
 
 {% block actionButton %}
     {% if not readOnly %}
-        <a class="btn submit add icon" href="{{ url('settings/filesystems/new') }}">{{ "New filesystem"|t('app') }}</a>
+        <a class="btn submit add icon" href="{{ url('settings/assets/filesystems/new') }}">{{ "New filesystem"|t('app') }}</a>
     {% endif %}
 {% endblock %}
 
@@ -39,7 +36,7 @@
     {% set tableData = tableData|merge([{
         id: filesystem.handle,
         title: filesystem.name|t('site'),
-        url: url('settings/filesystems/' ~ filesystem.handle),
+        url: url('settings/assets/filesystems/' ~ filesystem.handle),
         name: filesystem.name|t('site')|e,
         handle: filesystem.handle,
         type: {

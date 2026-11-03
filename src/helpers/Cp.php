@@ -42,6 +42,7 @@ use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\models\Site;
 use craft\services\ElementSources;
+use craft\services\Icons;
 use craft\utilities\ProjectConfig as ProjectConfigUtility;
 use craft\utilities\Updates;
 use craft\web\twig\TemplateLoaderException;
@@ -388,6 +389,8 @@ class Cp
                 'description' => $component instanceof Describable ? $component->getDescription() : null,
                 'handle' => $component instanceof Grippable ? $component->getHandle() : null,
                 'instructions' => $component instanceof FieldInterface && $component->instructions ? Craft::t('site', $component->instructions) : null,
+                'tip' => $component instanceof FieldInterface && $component->tip ? Craft::t('site', $component->tip) : null,
+                'warning' => $component instanceof FieldInterface && $component->warning ? Craft::t('site', $component->warning) : null,
                 'settings' => $config['autoReload'] ? [
                     'selectable' => $config['selectable'],
                     'id' => Craft::$app->getView()->namespaceInputId($config['id']),
@@ -3943,8 +3946,16 @@ JS, [
         };
 
         try {
-            // system icon name?
-            if (preg_match('/^[\da-z\-]+$/', $icon)) {
+            // custom icon set icon?
+            if ($customIcon = Icons::parse($icon)) {
+                [$setHandle, $name] = $customIcon;
+                $svg = Craft::$app->getIcons()->getIconSetByHandle($setHandle)?->getSvg($name);
+                if ($svg === null) {
+                    throw new InvalidArgumentException("Invalid custom icon: $icon");
+                }
+                $svg = Html::svg($svg, throwException: true);
+            } elseif (preg_match('/^[\da-z\-]+$/', $icon)) {
+                // system icon name
                 $path = match ($icon) {
                     'asterisk-slash',
                     'diamond-slash',

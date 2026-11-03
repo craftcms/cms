@@ -151,6 +151,48 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
       this.base();
     },
 
+    /**
+     * Reloads the slideout for the element in a different site.
+     *
+     * @param {number} siteId
+     * @returns {Promise}
+     */
+    switchSite: async function (siteId) {
+      if (siteId == this.settings.siteId) {
+        return;
+      }
+
+      if (this.elementEditor) {
+        if (
+          this.elementEditor.settings.canCreateDrafts &&
+          this.elementEditor.enableAutosave
+        ) {
+          // Make sure any pending changes have been saved to the draft
+          await this.elementEditor.checkForm();
+        } else if (
+          this.isDirty() &&
+          !confirm(
+            Craft.t(
+              'app',
+              'Are you sure you want to switch sites? Any changes will be lost.'
+            )
+          )
+        ) {
+          return;
+        }
+      }
+
+      // Keep the sidebar open, so the site change is visible
+      if (this.showingSidebar) {
+        this.once('load', () => {
+          this.showSidebar(false);
+        });
+      }
+
+      this.settings.siteId = siteId;
+      this.reload();
+    },
+
     handleSubmit: async function (ev) {
       if (ev.type !== 'submit' && this.elementEditor.settings.canCreateDrafts) {
         // first, we have to save the draft and then fully save;

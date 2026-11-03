@@ -20,6 +20,7 @@ use craft\gql\types\generators\IconDataType;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Html;
+use craft\services\Icons;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 
@@ -92,6 +93,15 @@ class Icon extends Field implements InlineEditableFieldInterface, ThumbableField
     public bool $includeProIcons = false;
 
     /**
+     * @var string[] The icon sets that should be selectable.
+     *
+     * [[Icons::FONT_AWESOME]] refers to the built-in Font Awesome icons.
+     *
+     * @since 5.12.0
+     */
+    public array $iconSets = [Icons::FONT_AWESOME];
+
+    /**
      * @var bool Whether GraphQL values should be returned as objects with `name` and `styles` keys.
      * @since 5.8.0
      */
@@ -109,6 +119,10 @@ class Icon extends Field implements InlineEditableFieldInterface, ThumbableField
 
         if (isset($config['graphqlMode'])) {
             $config['fullGraphqlData'] = ArrayHelper::remove($config, 'graphqlMode') === 'full';
+        }
+
+        if (isset($config['iconSets']) && !is_array($config['iconSets'])) {
+            $config['iconSets'] = array_filter([$config['iconSets']]);
         }
 
         // Default fullGraphqlData to false for existing fields
@@ -135,9 +149,48 @@ class Icon extends Field implements InlineEditableFieldInterface, ThumbableField
         return $this->settingsHtml(true);
     }
 
+    /**
+     * @inheritdoc
+     */
+    protected function defineRules(): array
+    {
+        return [
+            ...parent::defineRules(),
+            [['iconSets'], 'required', 'message' => Craft::t('app', 'At least one icon set must be selected.')],
+            [['iconSets'], 'each', 'rule' => ['in', 'range' => array_keys(Craft::$app->getIcons()->getIconSetNames())]],
+        ];
+    }
+
     private function settingsHtml(bool $readOnly): string
     {
-        $html = Cp::lightswitchFieldHtml([
+        $html = '';
+
+        if (!empty(Craft::$app->getIcons()->getIconSets())) {
+            $options = [];
+            foreach (Craft::$app->getIcons()->getIconSetNames() as $handle => $name) {
+                $options[] = [
+                    'label' => $name,
+                    'value' => $handle,
+                    'toggle' => $handle === Icons::FONT_AWESOME ? 'include-pro-icons-field' : null,
+                ];
+            }
+
+            $html .= Cp::checkboxSelectFieldHtml([
+                'label' => Craft::t('app', 'Icon Sets'),
+                'instructions' => Craft::t('app', 'Which icon sets should be selectable?'),
+                'id' => 'icon-sets',
+                'name' => 'iconSets',
+                'options' => $options,
+                'values' => $this->iconSets,
+                'sortable' => true,
+                'errors' => $this->getErrors('iconSets'),
+                'disabled' => $readOnly,
+            ]);
+        }
+
+        $html .= Cp::lightswitchFieldHtml([
+            'id' => 'include-pro-icons',
+            'fieldClass' => in_array(Icons::FONT_AWESOME, $this->iconSets) ? null : 'hidden',
             'label' => Craft::t('app', 'Include Pro icons'),
             'instructions' => Craft::t('app', 'Should icons that are exclusive to Font Awesome Pro be selectable? (<a href="{url}">View pricing</a>)', [
                 'url' => 'https://fontawesome.com/plans',
@@ -190,6 +243,11 @@ class Icon extends Field implements InlineEditableFieldInterface, ThumbableField
             return null;
         }
 
+        if ($customIcon = Icons::parse($value)) {
+            [$set, $name] = $customIcon;
+            return new IconData($name, [], $set);
+        }
+
         return new IconData($value, self::iconStyles($value));
     }
 
@@ -203,8 +261,9 @@ class Icon extends Field implements InlineEditableFieldInterface, ThumbableField
             'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
-            'value' => $value?->name,
+            'value' => $value?->serialize(),
             'freeOnly' => !$this->includeProIcons,
+            'sets' => $this->iconSets,
         ]);
     }
 
@@ -216,7 +275,7 @@ class Icon extends Field implements InlineEditableFieldInterface, ThumbableField
         /** @var IconData|null $value */
         return Cp::iconPickerHtml([
             'static' => true,
-            'value' => $value?->name,
+            'value' => $value?->serialize(),
         ]);
     }
 
@@ -226,7 +285,7 @@ class Icon extends Field implements InlineEditableFieldInterface, ThumbableField
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var IconData|null $value */
-        return $value ? Html::tag('div', Cp::iconSvg($value->name), ['class' => 'cp-icon']) : '';
+        return $value ? Html::tag('div', Cp::iconSvg($value->serialize()), ['class' => 'cp-icon']) : '';
     }
 
     /**
@@ -244,7 +303,7 @@ class Icon extends Field implements InlineEditableFieldInterface, ThumbableField
     public function getThumbHtml(mixed $value, ElementInterface $element, int $size): ?string
     {
         /** @var IconData|null $value */
-        return $value ? Html::tag('div', Cp::iconSvg($value->name), ['class' => 'cp-icon']) : null;
+        return $value ? Html::tag('div', Cp::iconSvg($value->serialize()), ['class' => 'cp-icon']) : null;
     }
 
     /**

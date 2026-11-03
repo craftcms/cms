@@ -270,14 +270,27 @@ class Addresses extends Field implements
         $elementsService = Craft::$app->getElements();
         $owner = $element->getOwner();
 
-        if (!$elementsService->canSave($owner, $user)) {
+        if (!$owner) {
             return false;
         }
 
-        // addresses don't support drafts, so make sure they can edit the canonical owner too
-        $canonicalOwner = $owner->getCanonical(true);
-        if ($canonicalOwner !== $owner && !$elementsService->canSave($canonicalOwner, $user)) {
-            return false;
+        if (!$elementsService->canSave($owner, $user)) {
+            // Check all the owners. Maybe the user can save one of the other ones?
+            if ($owner->getIsRevision()) {
+                return false;
+            }
+
+            $authorized = false;
+            foreach ($element->getOwners(['revisions' => false]) as $o) {
+                if ($o->id !== $owner->id && $elementsService->canSave($o, $user)) {
+                    $authorized = true;
+                    break;
+                }
+            }
+
+            if (!$authorized) {
+                return false;
+            }
         }
 
         // If this is a new address, make sure we aren't hitting the Max Addresses limit
@@ -760,9 +773,6 @@ JS, [
         $config += [
             'allowedViewModes' => [ElementIndexViewMode::Cards],
             'pageSize' => $this->pageSize ?? 50,
-            // addresses don't have drafts, but in this particular context we need to allow drafts,
-            // so that addresses show while adding them via slideout in the element index view mode
-            'canHaveDrafts' => true,
         ];
 
         return $this->addressManager()->getIndexHtml($owner, $config);

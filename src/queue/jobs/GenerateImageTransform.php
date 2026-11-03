@@ -8,7 +8,6 @@
 namespace craft\queue\jobs;
 
 use Craft;
-use craft\elements\Asset;
 use craft\i18n\Translation;
 use craft\imagetransforms\ImageTransformer;
 use craft\queue\BaseJob;
@@ -38,8 +37,7 @@ class GenerateImageTransform extends BaseJob
         if ($index && !$index->fileExists) {
             // Don't let an exception stop us from processing the rest
             try {
-                /** @var Asset|null $asset */
-                $asset = Asset::find()->id($index->assetId)->one();
+                $asset = Craft::$app->getAssets()->getAssetById($index->assetId);
                 if ($asset) {
                     $transformer->getTransformUrl($asset, $index->getTransform(), true);
                 }

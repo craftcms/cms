@@ -59,7 +59,8 @@ class GetAttrNode extends GetAttrExpression
                 ->raw('((' . $var . ' = ')
                 ->subcompile($this->getNode('node'))
                 ->raw(') && is_array(')
-                ->raw($var);
+                ->raw($var)
+            ;
 
             if (!$env->hasExtension(SandboxExtension::class)) {
                 $compiler
@@ -159,6 +160,9 @@ class GetAttrNode extends GetAttrExpression
 
     /**
      * DIFF: reimplemented because GetAttrExpression's version is private.
+     *
+     * DIFF: Stringable keys are always coerced to strings, rather than only for arrays, `ArrayObject`, and
+     * `ArrayIterator`, to match [[TemplateHelper::attribute()]].
      */
     private function compileArrayKey(Compiler $compiler): void
     {

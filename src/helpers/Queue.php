@@ -12,6 +12,7 @@ use craft\queue\BaseBatchedJob;
 use yii\base\NotSupportedException;
 use yii\queue\JobInterface;
 use yii\queue\Queue as BaseQueue;
+use yii\queue\RetryableJobInterface;
 
 /**
  * Queue helper.
@@ -45,6 +46,8 @@ class Queue
         }
 
         if ($job instanceof BaseBatchedJob) {
+            $ttr = $ttr ?: ($job instanceof RetryableJobInterface ? $job->getTtr() : $queue->ttr);
+
             // Keep track of the priority and TTR in case there will be additional jobs
             $job->priority = $priority;
             $job->ttr = $ttr;

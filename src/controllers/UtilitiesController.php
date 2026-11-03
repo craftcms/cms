@@ -195,28 +195,7 @@ class UtilitiesController extends Controller
     public function actionClearCachesPerformAction(): Response
     {
         $caches = $this->request->getRequiredBodyParam('caches');
-
-        foreach (ClearCaches::cacheOptions() as $cacheOption) {
-            if (is_array($caches) && !in_array($cacheOption['key'], $caches, true)) {
-                continue;
-            }
-
-            $action = $cacheOption['action'];
-
-            if (is_string($action)) {
-                try {
-                    FileHelper::clearDirectory($action);
-                } catch (InvalidArgumentException) {
-                    // the directory doesn't exist
-                } catch (Throwable $e) {
-                    Craft::warning("Could not clear the directory $action: " . $e->getMessage(), __METHOD__);
-                }
-            } elseif (isset($cacheOption['params'])) {
-                call_user_func_array($action, $cacheOption['params']);
-            } else {
-                $action();
-            }
-        }
+        ClearCaches::clear(is_array($caches) ? $caches : '*');
 
         return $this->asSuccess();
     }

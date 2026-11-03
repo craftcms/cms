@@ -16,6 +16,7 @@ use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
+use craft\enums\PropagationMethod;
 use craft\errors\SiteNotFoundException;
 use craft\events\ConfigEvent;
 use craft\events\DeleteSiteEvent;
@@ -30,6 +31,7 @@ use craft\helpers\Session;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use craft\models\SiteGroup;
+use craft\models\Volume;
 use craft\queue\jobs\PropagateElements;
 use craft\records\Site as SiteRecord;
 use craft\records\SiteGroup as SiteGroupRecord;
@@ -881,12 +883,29 @@ class Sites extends Component
                 Tag::class,
             ];
 
+            // (skip assets in volumes with custom propagation, as they only get saved to the sites they're assigned to)
+            $customVolumeIds = Collection::make(Craft::$app->getVolumes()->getAllVolumes())
+                ->filter(fn(Volume $volume) => $volume->propagationMethod === PropagationMethod::Custom)
+                ->map(fn(Volume $volume) => $volume->id)
+                ->values()
+                ->all();
+
             foreach ($elementTypes as $elementType) {
+                $criteria = [
+                    'siteId' => $oldPrimarySiteId,
+                ];
+
+                if ($elementType === Asset::class && !empty($customVolumeIds)) {
+                    $criteria['where'] = [
+                        'or',
+                        ['assets.volumeId' => null],
+                        ['not', ['assets.volumeId' => $customVolumeIds]],
+                    ];
+                }
+
                 Queue::push(new PropagateElements([
                     'elementType' => $elementType,
-                    'criteria' => [
-                        'siteId' => $oldPrimarySiteId,
-                    ],
+                    'criteria' => $criteria,
                     'siteId' => $site->id,
                     'isNewSite' => true,
                 ]));

@@ -83,6 +83,10 @@ class Element extends ObjectType
             return $source->{'get' . ucfirst($fieldName)}($query);
         }
 
+        if ($fieldName === 'site') {
+            return $source->getSite();
+        }
+
         if ($fieldName === 'siteHandle') {
             return $source->getSite()->handle;
         }

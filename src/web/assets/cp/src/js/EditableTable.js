@@ -535,6 +535,7 @@ Craft.EditableTable = Garnish.Base.extend(
                   name: name,
                   value: typeof value !== 'object' ? value : null,
                   small: true,
+                  sets: '*',
                 })
                 .appendTo($cell);
               break;
@@ -544,6 +545,7 @@ Craft.EditableTable = Garnish.Base.extend(
                 .createColorInput({
                   name: name,
                   value: typeof value !== 'object' ? value : null,
+                  alpha: col.alpha,
                   small: true,
                 })
                 .appendTo($cell);

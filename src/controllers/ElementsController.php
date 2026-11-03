@@ -467,6 +467,7 @@ class ElementsController extends Controller
                         'canSaveCanonical' => $canSaveCanonical,
                         'elementId' => $element->id,
                         'canonicalId' => $canonical->id,
+                        'cpEditUrl' => $element->getCpEditUrl(),
                         'draftId' => $element->draftId,
                         'draftName' => $isDraft ? $element->draftName : null,
                         'elementType' => get_class($element),
@@ -2084,6 +2085,7 @@ JS, [
             'modifiedAttributes' => $element->getModifiedAttributes(),
             'draftElementIds' => $draftElementIds,
             'draftElementUids' => $draftElementUids,
+            'canDeleteForSite' => $elementsService->canDeleteForSite($element, $user),
         ];
 
         if ($this->request->getIsCpRequest()) {

@@ -593,6 +593,8 @@ class Fields extends Component
             'handle' => $field->handle,
             'columnSuffix' => $field->columnSuffix,
             'instructions' => $field->instructions,
+            'tip' => $field->tip,
+            'warning' => $field->warning,
             'searchable' => $field->searchable,
             'translationMethod' => $field->translationMethod,
             'translationKeyFormat' => $field->translationKeyFormat,
@@ -1479,6 +1481,8 @@ class Fields extends Component
             $fieldRecord->context = $context;
             $fieldRecord->columnSuffix = $data['columnSuffix'] ?? null;
             $fieldRecord->instructions = $data['instructions'];
+            $fieldRecord->tip = $data['tip'] ?? null;
+            $fieldRecord->warning = $data['warning'] ?? null;
             $fieldRecord->searchable = $searchable;
             $fieldRecord->translationMethod = $data['translationMethod'];
             $fieldRecord->translationKeyFormat = $data['translationKeyFormat'];
@@ -1676,6 +1680,11 @@ class Fields extends Component
         // todo: remove after the next breakpoint
         if (Craft::$app->getDb()->columnExists(Table::FIELDS, 'dateDeleted')) {
             $query->where(['fields.dateDeleted' => null]);
+        }
+
+        // todo: remove after the next breakpoint
+        if (Craft::$app->getDb()->columnExists(Table::FIELDS, 'tip')) {
+            $query->addSelect(['fields.tip', 'fields.warning']);
         }
 
         return $query;

@@ -9,11 +9,14 @@ namespace craft\helpers;
 
 use BackedEnum;
 use Craft;
+use craft\i18n\Locale;
 use Illuminate\Support\Str;
 use IteratorAggregate;
 use LitEmoji\LitEmoji;
 use Normalizer;
+use Spoofchecker;
 use Throwable;
+use Transliterator;
 use voku\helper\ASCII;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -2313,11 +2316,12 @@ class StringHelper extends \yii\helpers\StringHelper
      * Converts all characters in the string to lowercase. An alias for PHP's mb_strtolower().
      *
      * @param string $str The string to convert to lowercase.
+     * @param string|null $language The string’s langauge
      * @return string The lowercase string.
      */
-    public static function toLowerCase(string $str): string
+    public static function toLowerCase(string $str, ?string $language = null): string
     {
-        return Str::lower($str);
+        return self::modifyCase($str, $language, 'Lower') ?? Str::lower($str);
     }
 
     /**
@@ -2414,11 +2418,12 @@ class StringHelper extends \yii\helpers\StringHelper
      * Converts the first character of each word in the string to uppercase.
      *
      * @param string $str The string to convert case.
+     * @param string|null $language The string’s langauge
      * @return string The title-cased string.
      */
-    public static function toTitleCase(string $str): string
+    public static function toTitleCase(string $str, ?string $language = null): string
     {
-        return Str::title($str);
+        return self::modifyCase($str, $language, 'Title') ?? Str::title($str);
     }
 
     /**
@@ -2440,11 +2445,12 @@ class StringHelper extends \yii\helpers\StringHelper
      * Converts all characters in the string to uppercase. An alias for PHP's mb_strtoupper().
      *
      * @param string $str The string to convert to uppercase.
+     * @param string|null $language The string’s langauge
      * @return string The uppercase string.
      */
-    public static function toUpperCase(string $str): string
+    public static function toUpperCase(string $str, ?string $language = null): string
     {
-        return Str::upper($str);
+        return self::modifyCase($str, $language, 'Upper') ?? Str::upper($str);
     }
 
     /**
@@ -2777,30 +2783,135 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns a regex pattern for invisible characters.
      *
+     * Whitespace characters (spaces, tabs, and line breaks) aren’t included.
+     *
      * @return string
      * @since 5.6.1
      */
     public static function invisibleCharsRegex(): string
     {
         $invisibleCharCodes = [
+            '0000-0008', // control characters (excluding whitespace)
+            '000e-001f', // control characters (excluding whitespace)
+            '007f-0084', // delete + C1 control characters (excluding next line)
+            '0086-009f', // C1 control characters
             '00ad', // soft hyphen
-            '0083', // no break
+            '034f', // combining grapheme joiner
+            '115f', // Hangul choseong filler
+            '1160', // Hangul jungseong filler
+            '180e', // Mongolian vowel separator
             '200b', // zero width space
             '200c', // zero width non-joiner
             '200d', // zero width joiner
             '200e', // LTR character
             '200f', // RTL character
+            '202a-202e', // bidi embeddings and overrides
+            '2060', // word joiner
+            '2061', // function application
             '2062', // invisible times
             '2063', // invisible comma
             '2064', // invisible plus
-            'feff', //zero width non-break space
+            '2066-2069', // bidi isolates
+            '2800', // braille pattern blank
+            '3164', // Hangul filler
+            'feff', // zero width non-break space
+            'ffa0', // halfwidth Hangul filler
         ];
 
         array_walk(
             $invisibleCharCodes,
-            fn(&$charCode) => $charCode = sprintf('\\x{%s}', $charCode)
+            fn(&$charCode) => $charCode = preg_replace('/[0-9a-f]{4}/', '\\x{$0}', $charCode)
         );
 
-        return sprintf('/%s/iu', implode('|', $invisibleCharCodes));
+        return sprintf('/[%s]/iu', implode('', $invisibleCharCodes));
+    }
+
+    /**
+     * Removes private-use and unassigned Unicode characters from a string.
+     *
+     * Private-use characters have no standard meaning, so they render differently (or as icons) depending on the
+     * font. Unassigned characters are determined by the Unicode version PCRE was built with, so characters added
+     * in newer Unicode versions, such as new emoji, may be removed as well.
+     *
+     * @param string $str
+     * @return string
+     * @since 5.12.0
+     */
+    public static function stripPrivateAndUnassignedChars(string $str): string
+    {
+        if ($str === '') {
+            return '';
+        }
+
+        return preg_replace('/[\p{Co}\p{Cn}]/u', '', $str) ?? $str;
+    }
+
+    /**
+     * Returns whether two strings could be mistaken for each other when displayed.
+     *
+     * Case, full-width and other compatibility forms, invisible characters, and whitespace differences are ignored,
+     * and look-alike characters from different scripts (such as the Latin “C” and Cyrillic “С”, U+0421) are treated
+     * as the same, per [Unicode Technical Standard #39](https://www.unicode.org/reports/tr39/).
+     *
+     * Only whole strings are compared, so `Craft` and `Craft Companion` aren’t confusable, even when one is spelled
+     * with look-alikes.
+     *
+     * @param string $a
+     * @param string $b
+     * @return bool
+     * @since 5.12.0
+     */
+    public static function areConfusable(string $a, string $b): bool
+    {
+        $clean = function(string $str): string {
+            $str = preg_replace(static::invisibleCharsRegex(), '', $str) ?? $str;
+            return static::collapseWhitespace($str);
+        };
+        $fold = function(string $str): string {
+            $str = Normalizer::normalize($str, Normalizer::FORM_KC) ?: $str;
+            return mb_convert_case($str, MB_CASE_FOLD, 'UTF-8');
+        };
+
+        $a = $clean($a);
+        $b = $clean($b);
+        $foldedA = $fold($a);
+        $foldedB = $fold($b);
+
+        if ($foldedA === $foldedB) {
+            return true;
+        }
+
+        if (!class_exists(Spoofchecker::class)) {
+            return false;
+        }
+
+        $checker = new Spoofchecker();
+        $checker->setChecks(Spoofchecker::SINGLE_SCRIPT_CONFUSABLE | Spoofchecker::MIXED_SCRIPT_CONFUSABLE);
+
+        // Look-alikes don’t always survive a change of case: Greek “ΚΑΤΟ” looks like “KATO”, but “κατο” doesn’t
+        // look like “kato”. So compare the lowercase and uppercase forms, plus the original strings as-is and
+        // lowercased, since case folding and NFKC can turn a look-alike into a different letter (the long “ſ” (U+017F)
+        // becomes “s”, not “f”).
+        return (
+            $checker->areConfusable($foldedA, $foldedB) ||
+            $checker->areConfusable(mb_strtoupper($foldedA, 'UTF-8'), mb_strtoupper($foldedB, 'UTF-8')) ||
+            $checker->areConfusable($a, $b) ||
+            $checker->areConfusable(mb_strtolower($a, 'UTF-8'), mb_strtolower($b, 'UTF-8'))
+        );
+    }
+
+    private static function modifyCase(string $str, ?string $language, string $case): ?string
+    {
+        $language ??= Craft::$app->language;
+        $transliterator = Transliterator::create(sprintf('%s-%s', Locale::languageId($language), $case));
+
+        if (!$transliterator) {
+            return null;
+        }
+
+        // Normalize NFD chars to NFC
+        $str = Normalizer::normalize($str, Normalizer::FORM_C);
+
+        return $transliterator->transliterate($str);
     }
 }

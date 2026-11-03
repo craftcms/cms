@@ -13,6 +13,7 @@ use craft\base\ElementInterface;
 use craft\base\Event;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\InputSchemaFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\RelationalFieldInterface;
 use craft\base\RelationalFieldTrait;
@@ -31,6 +32,7 @@ use craft\fields\linktypes\Phone;
 use craft\fields\linktypes\Sms;
 use craft\fields\linktypes\Url as UrlType;
 use craft\gql\GqlEntityRegistry;
+use craft\gql\GqlInputSchema;
 use craft\gql\types\generators\LinkDataType;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
@@ -52,7 +54,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
  */
-class Link extends Field implements InlineEditableFieldInterface, RelationalFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
+class Link extends Field implements InlineEditableFieldInterface, RelationalFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface, InputSchemaFieldInterface
 {
     use RelationalFieldTrait;
 
@@ -981,5 +983,14 @@ JS;
             $targetIds[] = $element->id;
         }
         return $targetIds;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 5.12.0
+     */
+    public function getInputSchema(): array
+    {
+        return GqlInputSchema::fromType($this->getContentGqlMutationArgumentType());
     }
 }

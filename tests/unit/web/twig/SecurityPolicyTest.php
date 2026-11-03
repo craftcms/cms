@@ -8,11 +8,16 @@
 namespace crafttests\unit\web\twig;
 
 use Craft;
+use craft\base\Renderable;
+use craft\elements\User;
 use craft\test\TestCase;
 use craft\web\twig\SecurityPolicy;
 use craft\web\View;
+use Illuminate\Support\Collection;
+use Twig\Markup;
 use Twig\Sandbox\SecurityError;
 use Twig\Sandbox\SecurityNotAllowedFunctionError;
+use Twig\Sandbox\SecurityNotAllowedMethodError;
 use UnitTester;
 
 /**
@@ -56,5 +61,67 @@ class SecurityPolicyTest extends TestCase
 
         self::expectException(SecurityError::class);
         $view->renderSandboxedString('{{ attribute(_context, "foo") }}');
+    }
+
+    public function testRenderTagIsAllowedWithinSandbox(): void
+    {
+        $vars = [
+            'one' => $this->renderable('a'),
+            'array' => [$this->renderable('a'), $this->renderable('b')],
+            'collection' => Collection::make([$this->renderable('a'), $this->renderable('b')]),
+        ];
+
+        self::assertSame('a', $this->renderSandboxedString('{% render one %}', $vars));
+        self::assertSame("a\nb", $this->renderSandboxedString('{% render array %}', $vars));
+        self::assertSame("a\nb", $this->renderSandboxedString('{% render collection with {foo: "bar"} only %}', $vars));
+    }
+
+    public function testRenderMethodsAreAllowedWithinSandbox(): void
+    {
+        $vars = [
+            'one' => $this->renderable('a'),
+            'collection' => Collection::make([$this->renderable('a'), $this->renderable('b')]),
+            'query' => User::find()->id(-1),
+        ];
+
+        self::assertSame('a', $this->renderSandboxedString('{{ one.render() }}', $vars));
+        self::assertSame("a\nb", $this->renderSandboxedString('{{ collection.render() }}', $vars));
+        self::assertSame('', $this->renderSandboxedString('{{ query.render() }}', $vars));
+    }
+
+    public function testOtherCollectionMethodsAreRejectedWithinSandbox(): void
+    {
+        self::expectException(SecurityNotAllowedMethodError::class);
+        $this->renderSandboxedString('{{ collection.toJson() }}', [
+            'collection' => Collection::make([1, 2, 3]),
+        ]);
+    }
+
+    private function renderSandboxedString(string $template, array $variables = []): string
+    {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $enableTwigSandbox = $generalConfig->enableTwigSandbox;
+        $generalConfig->enableTwigSandbox = true;
+
+        try {
+            return Craft::$app->getView()->renderSandboxedString($template, $variables, View::TEMPLATE_MODE_SITE);
+        } finally {
+            $generalConfig->enableTwigSandbox = $enableTwigSandbox;
+        }
+    }
+
+    private function renderable(string $name): Renderable
+    {
+        return new class($name) implements Renderable {
+            public function __construct(
+                private string $name,
+            ) {
+            }
+
+            public function render(array $variables = []): Markup
+            {
+                return new Markup($this->name, Craft::$app->charset);
+            }
+        };
     }
 }

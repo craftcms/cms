@@ -61,6 +61,25 @@ new Vue({
     }
   },
 
+  computed: {
+    /**
+     * Returns the active job’s data as syntax-highlighted HTML, if it’s valid JSON.
+     * @return {string|null}
+     */
+    highlightedJobData() {
+      const data = this.activeJob?.job;
+      if (typeof data !== 'string') {
+        return null;
+      }
+      try {
+        JSON.parse(data);
+      } catch (e) {
+        return null;
+      }
+      return Craft.highlighter.highlight(data, {lang: 'json'}).html;
+    },
+  },
+
   methods: {
     /**
      * Force-updates the job progress.

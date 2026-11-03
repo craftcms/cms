@@ -13,6 +13,7 @@ use craft\base\DefaultableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\InputSchemaFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\elements\Entry;
@@ -45,7 +46,8 @@ class Money extends Field implements
     SortableFieldInterface,
     MergeableFieldInterface,
     CrossSiteCopyableFieldInterface,
-    DefaultableFieldInterface
+    DefaultableFieldInterface,
+    InputSchemaFieldInterface
 {
     /**
      * @inheritdoc
@@ -451,5 +453,14 @@ class Money extends Field implements
             'type' => MoneyType::getType(),
             'description' => $this->instructions,
         ];
+    }
+
+    /**
+     * @inheritdoc
+     * @since 5.12.0
+     */
+    public function getInputSchema(): array
+    {
+        return ['type' => 'number'];
     }
 }

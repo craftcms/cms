@@ -12,6 +12,7 @@ use craft\controllers\UsersController;
 use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\mail\Message;
+use craft\records\User as UserRecord;
 use craft\test\TestCase;
 use UnitTester;
 use yii\web\Response;
@@ -127,6 +128,102 @@ class UsersControllerTest extends TestCase
         ];
     }
 
+    public function testFailedPublicRegistrationDoesNotExposeOrModifyInactiveUser(): void
+    {
+        $this->setUserSettings([
+            'allowPublicRegistration' => true,
+            'requireEmailVerification' => true,
+        ]);
+
+        $existingUser = $this->createInactiveUser();
+        Craft::$app->getUserPermissions()->saveUserPermissions($existingUser->id, ['accesscp']);
+
+        $response = $this->saveUser([
+            'username' => 'registrant',
+            'email' => self::EMAIL,
+            'password' => 'x',
+        ]);
+
+        self::assertSame(400, $response->getStatusCode());
+        self::assertArrayHasKey('password', $response->data['errors']);
+        self::assertNull($response->data['user']['id']);
+        self::assertStringNotContainsString('Existing', (string)json_encode($response->data));
+        self::assertSame(['accesscp'], Craft::$app->getUserPermissions()->getPermissionsByUserId($existingUser->id));
+    }
+
+    public function testPublicRegistrationResetsInactiveUserPermissions(): void
+    {
+        $this->setUserSettings([
+            'allowPublicRegistration' => true,
+            'requireEmailVerification' => true,
+        ]);
+
+        $existingUser = $this->createInactiveUser();
+        Craft::$app->getUserPermissions()->saveUserPermissions($existingUser->id, ['accesscp']);
+
+        $response = $this->saveUser([
+            'username' => 'registrant',
+            'email' => self::EMAIL,
+            'password' => 'SuperSecret123!',
+        ]);
+
+        self::assertSame(200, $response->getStatusCode(), (string)json_encode($response->data));
+        self::assertStringNotContainsString('Existing', (string)json_encode($response->data));
+        self::assertSame([], Craft::$app->getUserPermissions()->getPermissionsByUserId($existingUser->id));
+    }
+
+    /**
+     * @dataProvider suspendedInactiveUserDataProvider
+     */
+    public function testPublicRegistrationIgnoresSuspendedInactiveUser(bool $requireEmailVerification): void
+    {
+        $this->setUserSettings([
+            'allowPublicRegistration' => true,
+            'requireEmailVerification' => $requireEmailVerification,
+        ]);
+
+        $existingUser = $this->createInactiveUser(['suspended' => true]);
+
+        $this->saveUser([
+            'username' => 'registrant',
+            'email' => self::EMAIL,
+            'password' => 'SuperSecret123!',
+        ]);
+
+        // The registration must not take over the suspended account, so it can't be unsuspended by verifying it
+        $record = UserRecord::findOne($existingUser->id);
+        self::assertTrue((bool)$record->suspended);
+        self::assertFalse((bool)$record->active);
+        self::assertFalse((bool)$record->pending);
+        self::assertNull($record->verificationCode);
+        self::assertNull($record->password);
+        self::assertSame('existing', $record->username);
+    }
+
+    /**
+     * @return array
+     */
+    public static function suspendedInactiveUserDataProvider(): array
+    {
+        return [
+            'verification required' => [true],
+            'no verification' => [false],
+        ];
+    }
+
+    private function createInactiveUser(array $attributes = []): User
+    {
+        $user = new User(array_merge([
+            'username' => 'existing',
+            'email' => self::EMAIL,
+            'fullName' => 'Existing Person',
+            'active' => false,
+            'pending' => false,
+        ], $attributes));
+        self::assertTrue(Craft::$app->getElements()->saveElement($user), (string)json_encode($user->getErrors()));
+        return $user;
+    }
+
     private function setUserSettings(array $settings): void
     {
         $projectConfig = Craft::$app->getProjectConfig();
@@ -163,8 +260,7 @@ class UsersControllerTest extends TestCase
     {
         Craft::$app->getUser()->logout(false);
 
-        $user = User::find()->email(self::EMAIL)->status(null)->one();
-        if ($user) {
+        foreach (User::find()->email(self::EMAIL)->status(null)->all() as $user) {
             $this->tester->deleteElement($user);
         }
 

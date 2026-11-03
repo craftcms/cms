@@ -36,8 +36,10 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use craft\helpers\Template;
 use craft\models\FieldLayout;
 use craft\models\Site;
+use craft\web\twig\AllowedInSandbox;
 use Illuminate\Support\Collection;
 use ReflectionClass;
 use ReflectionException;
@@ -2105,12 +2107,13 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @return Markup
      * @throws InvalidConfigException
      * @throws NotSupportedException
-     * @see ElementHelper::renderElements()
+     * @see Template::render()
      * @since 5.0.0
      */
+    #[AllowedInSandbox]
     public function render(array $variables = []): Markup
     {
-        return ElementHelper::renderElements($this->all(), $variables);
+        return Template::render($this->all(), $variables);
     }
 
     /**

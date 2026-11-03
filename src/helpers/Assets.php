@@ -577,6 +577,7 @@ class Assets
                         'jpeg',
                         'jpg',
                         'jpx',
+                        'jxl',
                         'pam',
                         'pfm',
                         'pgm',
@@ -599,6 +600,13 @@ class Assets
                     'label' => 'JSON',
                     'extensions' => [
                         'json',
+                    ],
+                ],
+                Asset::KIND_MARKDOWN => [
+                    'label' => 'Markdown',
+                    'extensions' => [
+                        'markdown',
+                        'md',
                     ],
                 ],
                 Asset::KIND_PDF => [

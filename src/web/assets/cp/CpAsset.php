@@ -143,6 +143,7 @@ JS;
             'Are you sure you want to move the selected items?',
             'Are you sure you want to permanently delete {numElements, plural, =1{this} other{these}} {type}?',
             'Are you sure you want to remove the page “{name}”?',
+            'Are you sure you want to switch sites? Any changes will be lost.',
             'Are you sure you want to transfer your license to this domain?',
             'Are you sure you want to undo the move?',
             'Ascending',

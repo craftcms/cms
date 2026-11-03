@@ -9,7 +9,7 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
-use craft\web\assets\prismjs\PrismJsAsset;
+use craft\web\assets\highlight\HighlightAsset;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -52,9 +52,9 @@ class ProjectConfig extends Utility
         $projectConfig = Craft::$app->getProjectConfig();
         $areChangesPending = $projectConfig->areChangesPending(force: true);
         $view = Craft::$app->getView();
+        $view->registerAssetBundle(HighlightAsset::class);
 
         if ($areChangesPending) {
-            $view->registerAssetBundle(PrismJsAsset::class);
             $view->registerTranslations('app', [
                 'Show all changes',
             ]);

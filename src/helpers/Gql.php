@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
+use craft\elements\User;
 use craft\errors\GqlException;
 use craft\gql\base\Directive;
 use craft\gql\ElementQueryConditionBuilder;
@@ -111,6 +112,22 @@ class Gql
             }
         }
         return false;
+    }
+
+    /**
+     * Returns the user an authenticated schema was created for, if any.
+     *
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
+     * @return User|null
+     * @since 5.12.0
+     */
+    public static function getSchemaUser(?GqlSchema $schema = null): ?User
+    {
+        try {
+            return self::_schema($schema)->user;
+        } catch (GqlException) {
+            return null;
+        }
     }
 
     /**

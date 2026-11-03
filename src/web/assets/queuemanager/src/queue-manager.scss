@@ -6,4 +6,10 @@
     color: var(--link-color);
     cursor: pointer;
   }
+
+  .pane > pre.th-code {
+    margin: 0;
+    padding: 0;
+    background-color: transparent;
+  }
 }

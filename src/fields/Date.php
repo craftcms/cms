@@ -12,6 +12,7 @@ use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\InputSchemaFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\elements\Entry;
@@ -36,7 +37,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Date extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
+class Date extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface, InputSchemaFieldInterface
 {
     /**
      * @inheritdoc
@@ -492,6 +493,19 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
             'name' => $this->handle,
             'type' => $type,
             'description' => $this->instructions,
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     * @since 5.12.0
+     */
+    public function getInputSchema(): array
+    {
+        // Any date the field can parse, rather than a strict format, which models and clients easily miss.
+        return [
+            'type' => 'string',
+            'description' => 'A date, or a date and time, such as 2026-11-22 or 2026-11-22T10:00:00+01:00. Include the UTC offset, or the time is read as UTC.',
         ];
     }
 }

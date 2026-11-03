@@ -1365,10 +1365,11 @@ class StringHelperTest extends TestCase
      * @dataProvider toLowerCaseDataProvider
      * @param string $expected
      * @param string $string
+     * @param string|null $language
      */
-    public function testToLowerCase(string $expected, string $string): void
+    public function testToLowerCase(string $expected, string $string, ?string $language = null): void
     {
-        $actual = StringHelper::toLowerCase($string);
+        $actual = StringHelper::toLowerCase($string, $language);
         self::assertSame($expected, $actual);
     }
 
@@ -1434,10 +1435,11 @@ class StringHelperTest extends TestCase
      * @dataProvider toTitleCaseDataProvider
      * @param string $expected
      * @param string $string
+     * @param string|null $language
      */
-    public function testToTitleCase(string $expected, string $string): void
+    public function testToTitleCase(string $expected, string $string, ?string $language = null): void
     {
-        $actual = StringHelper::toTitleCase($string);
+        $actual = StringHelper::toTitleCase($string, $language);
         self::assertSame($expected, $actual);
     }
 
@@ -1456,10 +1458,11 @@ class StringHelperTest extends TestCase
      * @dataProvider toUppercaseDataProvider
      * @param string $expected
      * @param string $string
+     * @param string|null $language
      */
-    public function testToUppercase(string $expected, string $string): void
+    public function testToUppercase(string $expected, string $string, ?string $language = null): void
     {
-        $actual = StringHelper::toUpperCase($string);
+        $actual = StringHelper::toUpperCase($string, $language);
         self::assertSame($expected, $actual);
     }
 
@@ -1668,6 +1671,10 @@ class StringHelperTest extends TestCase
             ['😘', '😘'],
             ['22 Alphan Numeric', '22 AlphaN Numeric'],
             ['!@#$%  ^&*()', '!@#$%  ^&*()'],
+            // Dutch "ij" is treated as a single letter, so title-casing it capitalizes both characters
+            // (https://github.com/craftcms/cms/discussions/19555)
+            ['IJsselmeer', 'ijsselmeer', 'nl'],
+            ['Ijsselmeer', 'ijsselmeer'],
         ];
     }
 
@@ -1687,6 +1694,10 @@ class StringHelperTest extends TestCase
             ['😘', '😘'],
             ['22 alphan numeric', '22 AlphaN Numeric'],
             ['!@#$%  ^&*()', '!@#$%  ^&*()'],
+            // Turkish lowercases a dotless "I" to a dotless "ı", not "i"
+            // (https://github.com/craftcms/cms/discussions/19555)
+            ['ıstanbul', 'Istanbul', 'tr'],
+            ['istanbul', 'Istanbul'],
         ];
     }
 
@@ -2262,6 +2273,14 @@ class StringHelperTest extends TestCase
             ['😘', '😘'],
             ['22 ALPHAN NUMERIC', '22 AlphaN Numeric'],
             ['!@#$%  ^&*()', '!@#$%  ^&*()'],
+            // Turkish uppercases a dotted "i" to a dotted "İ", not "I"
+            // (https://github.com/craftcms/cms/discussions/19555)
+            ['İSTANBUL', 'istanbul', 'tr'],
+            ['ISTANBUL', 'istanbul'],
+            // Greek strips accents when uppercasing
+            // (https://github.com/craftcms/cms/discussions/19555)
+            ['ΑΝΘΡΩΠΟΣ', 'άνθρωπος', 'el'],
+            ['ΆΝΘΡΩΠΟΣ', 'άνθρωπος'],
         ];
     }
 
@@ -4307,6 +4326,83 @@ class StringHelperTest extends TestCase
     {
         return [
             [':100: :1234: 🔥', '\\:100\\: \\:1234\\: 🔥'],
+        ];
+    }
+
+    /**
+     * @dataProvider invisibleCharsRegexDataProvider
+     */
+    public function testInvisibleCharsRegex(string $expected, string $str): void
+    {
+        self::assertSame($expected, preg_replace(StringHelper::invisibleCharsRegex(), '', $str));
+    }
+
+    /**
+     * @dataProvider stripPrivateAndUnassignedCharsDataProvider
+     */
+    public function testStripPrivateAndUnassignedChars(string $expected, string $str): void
+    {
+        self::assertSame($expected, StringHelper::stripPrivateAndUnassignedChars($str));
+    }
+
+    /**
+     * @dataProvider areConfusableDataProvider
+     */
+    public function testAreConfusable(bool $expected, string $a, string $b): void
+    {
+        self::assertSame($expected, StringHelper::areConfusable($a, $b));
+        self::assertSame($expected, StringHelper::areConfusable($b, $a));
+    }
+
+    public static function invisibleCharsRegexDataProvider(): array
+    {
+        return [
+            ['Craft CMS', "Craft\u{200B} CMS"],
+            ['invoicefdp.exe', "invoice\u{202E}fdp.exe"],
+            ['abc', "a\u{2066}b\u{2069}c"],
+            ['ab', "a\u{2060}\u{034F}\u{180E}b"],
+            ['ab', "a\u{3164}\u{115F}\u{1160}\u{FFA0}\u{2800}b"],
+            ['ab', "a\x00\x07\x1B\x7Fb"],
+            ['ab', "a\u{0083}\u{009F}b"],
+            ["a \t\n\r\u{00A0}\u{0085}b", "a \t\n\r\u{00A0}\u{0085}b"],
+            ['Ünïcödé 😀 こんにちは', 'Ünïcödé 😀 こんにちは'],
+        ];
+    }
+
+    public static function areConfusableDataProvider(): array
+    {
+        return [
+            [true, 'Craft', 'Craft'],
+            [true, 'craft cms', 'Craft CMS'],
+            [true, "\u{FF23}\u{FF52}\u{FF41}\u{FF46}\u{FF54}", 'Craft'], // full-width
+            [true, "Craft\u{200B}  \u{00A0}CMS", 'Craft CMS'], // zero-width space, extra spaces, NBSP
+            [true, "\u{0421}raft", 'Craft'], // Cyrillic Es
+            [true, "\u{0441}r\u{0430}ft \u{0441}ms", 'Craft CMS'], // Cyrillic es and a, lowercase
+            [true, "HAPPY LAG\u{0415}R", 'Happy Lager'], // Cyrillic Ie, uppercase
+            [true, "Cra\u{017F}t", 'Craft'], // long s
+            [true, "cra\u{017F}t", 'Craft'], // long s, lowercase
+            [true, "\u{0391}cme", 'Acme'], // Greek Alpha
+            [true, 'Apex', "\u{0410}\u{0440}\u{0435}\u{0445}"], // all-Cyrillic “Арех”
+            [true, 'kato', "\u{039A}\u{0391}\u{03A4}\u{039F}"], // all-Greek “ΚΑΤΟ”, lowercase
+            [false, 'Apex', "\u{041C}\u{043E}\u{0441}\u{043A}\u{0432}\u{0430}"], // Cyrillic “Москва”
+            [false, 'Crafty', 'Craft'],
+            [false, 'Cr4ft', 'Craft'],
+            [false, 'CraftCMS', 'Craft CMS'],
+            [false, 'Craft CMS Companion', 'Craft CMS'],
+            [false, "\u{0421}raft Companion", 'Craft'],
+            [false, 'Happy Lager', 'Sad Lager'],
+        ];
+    }
+
+    public static function stripPrivateAndUnassignedCharsDataProvider(): array
+    {
+        return [
+            ['', ''],
+            ['Apple', "\u{F8FF}Apple"],
+            ['ab', "a\u{E000}\u{F0000}\u{10FFFD}b"],
+            ['ab', "a\u{0378}b"],
+            ['ab', "a\u{FFFE}b"],
+            ['Ünïcödé 😀 こんにちは', 'Ünïcödé 😀 こんにちは'],
         ];
     }
 }
