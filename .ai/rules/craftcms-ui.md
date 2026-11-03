@@ -46,6 +46,16 @@ The checklist holds only what the component itself does, so every item can be ve
 ## Name the component's interaction pattern when one exists
 If a documented pattern fits the component — a WAI-ARIA APG pattern, or another well-documented or researched one — name and link it at the top of its `.a11y.md`, followed by a "Not for" list: behaviors that would break the pattern, and the component to use instead (see `tabs/tabs.a11y.md`). Check any new attribute, mode or state against both before adding it. If it contradicts the pattern, use the component that matches the behavior, per "Choosing an interaction pattern" in `.github/instructions/a11y.instructions.md`. `craft-tabs` grew a `collapsible` mode this way and had to be removed. If no documented pattern applies, the requirements checklist alone is enough.
 
+## Build form controls on Lion
+A new single form control is built on Lion, so `craft-field`, validation and posting work as they do for every other control:
+
+- Extend an existing Craft control when yours is a variation of one, as `craft-select-color` extends `craft-select-rich`.
+- Otherwise extend `HasLabel(LionField)` and render the element people interact with into its `input` slot from `get slots()`. `craft-slide-picker` does this with `craft-slide-picker-slider`, the same way `craft-switch` uses `craft-switch-button`.
+- When a listbox generates its own options, render them into `_listboxNode`, as `craft-combobox` does.
+- Expose the value as `modelValue`, adding a `model-value` attribute when markup needs to set it. Lion's `value` is the string view value.
+
+Don't hand-write `addToAriaLabelledBy`/`addToAriaDescribedBy`, don't put the focusable element in a shadow root, and don't nest one form control inside another.
+
 ## Build the UI package before consumers
 Build `@craftcms/ui` with `vp run build:ui` before building or checking the main Vite application after UI package changes. Run its tests with `vp run test:ui`.
 
