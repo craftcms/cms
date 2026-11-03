@@ -13,6 +13,8 @@ use craft\elements\User;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use FunctionalTester;
+use yii\i18n\MessageSource;
+use yii\i18n\MissingTranslationEvent;
 
 /**
  * Tests the OAuth consent page.
@@ -72,9 +74,17 @@ class OAuthConsentCest
         $I->assertSame(400, Craft::$app->getResponse()->getStatusCode());
         $I->assertSame('invalid_client_metadata', $response['error']);
 
-        $response = $this->register($I, "\u{200B} \u{3164}");
-        $I->assertSame(400, Craft::$app->getResponse()->getStatusCode());
-        $I->assertSame('invalid_client_metadata', $response['error']);
+        // Invisible-only names
+        foreach (["\u{200B} \u{3164}", "\u{206A}", "\u{E0061}", "\u{FE0F}", "\u{206A} \u{E0061}\u{FE0F}"] as $name) {
+            $response = $this->register($I, $name);
+            $I->assertSame(400, Craft::$app->getResponse()->getStatusCode());
+            $I->assertSame('invalid_client_metadata', $response['error']);
+        }
+
+        // Variation selectors are kept in otherwise visible names
+        $response = $this->register($I, "My App \u{2764}\u{FE0F}");
+        $I->assertSame(201, Craft::$app->getResponse()->getStatusCode());
+        $I->assertSame("My App \u{2764}\u{FE0F}", $response['client_name']);
     }
 
     public function testRegistrationRejectsReservedClientNames(FunctionalTester $I): void
@@ -101,6 +111,29 @@ class OAuthConsentCest
 
         $this->register($I, 'Craft CMS Companion');
         $I->assertSame(201, Craft::$app->getResponse()->getStatusCode());
+    }
+
+    public function testRegistrationRejectsTranslatedBrandNames(FunctionalTester $I): void
+    {
+        // Translate the system name into a language other than the registration request’s
+        $systemName = Craft::$app->getSystemName();
+        $source = Craft::$app->getI18n()->getMessageSource('site');
+        $handler = function(MissingTranslationEvent $event) use ($systemName) {
+            if ($event->language === 'fr' && $event->message === $systemName) {
+                $event->translatedMessage = 'Boutique';
+            }
+        };
+        $source->on(MessageSource::EVENT_MISSING_TRANSLATION, $handler);
+
+        try {
+            foreach (['Boutique', "\u{0412}outique"] as $name) { // Cyrillic Ve
+                $response = $this->register($I, $name);
+                $I->assertSame(400, Craft::$app->getResponse()->getStatusCode(), "“{$name}” should be reserved.");
+                $I->assertSame('The client name is reserved.', $response['error_description']);
+            }
+        } finally {
+            $source->off(MessageSource::EVENT_MISSING_TRANSLATION, $handler);
+        }
     }
 
     public function testRegistrationRejectsLookalikesOfNonLatinSiteNames(FunctionalTester $I): void

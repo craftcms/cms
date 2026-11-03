@@ -4380,6 +4380,7 @@ class StringHelperTest extends TestCase
             [true, "\u{0441}r\u{0430}ft \u{0441}ms", 'Craft CMS'], // Cyrillic es and a, lowercase
             [true, "HAPPY LAG\u{0415}R", 'Happy Lager'], // Cyrillic Ie, uppercase
             [true, "Cra\u{017F}t", 'Craft'], // long s
+            [true, "cra\u{017F}t", 'Craft'], // long s, lowercase
             [true, "\u{0391}cme", 'Acme'], // Greek Alpha
             [true, 'Apex', "\u{0410}\u{0440}\u{0435}\u{0445}"], // all-Cyrillic “Арех”
             [true, 'kato', "\u{039A}\u{0391}\u{03A4}\u{039F}"], // all-Greek “ΚΑΤΟ”, lowercase

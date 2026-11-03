@@ -98,7 +98,9 @@ class OauthController extends Controller
             return $this->error('invalid_client_metadata', 'The client name must be a string.');
         }
         $name = $this->normalizeClientName($name);
-        if ($name === '' || mb_strlen($name) > self::MAX_CLIENT_NAME_LENGTH) {
+        // Names made up only of formatting characters, marks, or separators (such as variation selectors or tag
+        // characters) would render empty
+        if (!preg_match('/[^\p{C}\p{M}\p{Z}]/u', $name) || mb_strlen($name) > self::MAX_CLIENT_NAME_LENGTH) {
             return $this->error('invalid_client_metadata', sprintf('The client name must be between 1 and %s characters.', self::MAX_CLIENT_NAME_LENGTH));
         }
         if ($this->isReservedClientName($name)) {
@@ -358,12 +360,23 @@ class OauthController extends Controller
      */
     private function isReservedClientName(string $name): bool
     {
-        $reserved = [
-            'Craft',
-            'Craft CMS',
+        $brandNames = [
             Craft::$app->getSystemName(),
             ...array_map(fn(Site $site) => $site->getName(), Craft::$app->getSites()->getAllSites(true)),
         ];
+
+        // The consent screen translates the system name, and could be shown in any app or site language, regardless
+        // of the language of the registration request
+        $i18n = Craft::$app->getI18n();
+        $languages = array_unique([...$i18n->getAppLocaleIds(), ...$i18n->getSiteLocaleIds()]);
+        $reserved = ['Craft', 'Craft CMS'];
+        foreach ($brandNames as $brandName) {
+            $reserved[] = $brandName;
+            foreach ($languages as $language) {
+                $reserved[] = Craft::t('site', $brandName, language: $language);
+            }
+        }
+        $reserved = array_unique($reserved);
 
         foreach ($reserved as $value) {
             if ($value !== '' && StringHelper::areConfusable($name, $value)) {

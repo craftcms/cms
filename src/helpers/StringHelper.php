@@ -2889,12 +2889,14 @@ class StringHelper extends \yii\helpers\StringHelper
         $checker->setChecks(Spoofchecker::SINGLE_SCRIPT_CONFUSABLE | Spoofchecker::MIXED_SCRIPT_CONFUSABLE);
 
         // Look-alikes don’t always survive a change of case: Greek “ΚΑΤΟ” looks like “KATO”, but “κατο” doesn’t
-        // look like “kato”. So compare the lowercase and uppercase forms, plus the original strings, since case
-        // folding and NFKC can turn a look-alike into a different letter (the long “ſ” (U+017F) becomes “s”, not “f”).
+        // look like “kato”. So compare the lowercase and uppercase forms, plus the original strings as-is and
+        // lowercased, since case folding and NFKC can turn a look-alike into a different letter (the long “ſ” (U+017F)
+        // becomes “s”, not “f”).
         return (
             $checker->areConfusable($foldedA, $foldedB) ||
             $checker->areConfusable(mb_strtoupper($foldedA, 'UTF-8'), mb_strtoupper($foldedB, 'UTF-8')) ||
-            $checker->areConfusable($a, $b)
+            $checker->areConfusable($a, $b) ||
+            $checker->areConfusable(mb_strtolower($a, 'UTF-8'), mb_strtolower($b, 'UTF-8'))
         );
     }
 
