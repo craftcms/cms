@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -30,7 +31,6 @@ use Illuminate\Database\Query\Builder;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Lightswitch represents a Lightswitch field.
@@ -161,7 +161,7 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
     {
         $id = $this->getInputId();
 
-        return template('_includes/forms/lightswitch', [
+        return FormFields::lightswitchFromConfig([
             'id' => $id,
             'labelId' => $this->getLabelId(),
             'describedBy' => $this->describedBy,
@@ -170,7 +170,7 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
             'onLabel' => t($this->onLabel, category: 'site'),
             'offLabel' => t($this->offLabel, category: 'site'),
             'disabled' => $static,
-        ]);
+        ])->toHtml();
     }
 
     #[Override]

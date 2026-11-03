@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\EmptyFieldConditionRule;
@@ -30,7 +31,6 @@ use Illuminate\Support\Facades\Date;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Date represents a Time field.
@@ -151,7 +151,7 @@ class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        return template('_includes/forms/time', [
+        return FormFields::timeHtml([
             'id' => parent::getInputId(), // can't use $this->getInputId() here because the template adds the "-time"
             'describedBy' => $this->describedBy,
             'name' => $this->handle,

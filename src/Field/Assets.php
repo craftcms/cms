@@ -39,6 +39,7 @@ use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Folders;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
@@ -170,12 +171,6 @@ class Assets extends BaseRelationField
 
     #[Override]
     protected bool $allowLargeThumbsView = true;
-
-    #[Override]
-    protected string $settingsTemplate = '_components/fieldtypes/Assets/settings.twig';
-
-    #[Override]
-    protected string $inputTemplate = '_components/fieldtypes/Assets/input.twig';
 
     #[Override]
     protected ?string $inputJsClass = 'Craft.AssetSelectInput';
@@ -935,6 +930,30 @@ class Assets extends BaseRelationField
         }
 
         return $variables;
+    }
+
+    /** @param array<string, mixed> $variables */
+    #[Override]
+    protected function elementSelectHtml(array $variables): string
+    {
+        $variables['jsSettings'] = [
+            'canUpload' => $variables['canUpload'],
+            'defaultFieldLayoutId' => $variables['defaultFieldLayoutId'],
+            'describedBy' => $variables['describedBy']
+                ? implode(' ', array_map(InputNamespace::namespaceId(...), explode(' ', $variables['describedBy'])))
+                : null,
+        ];
+        $variables['modalSettings'] = [
+            ...$variables['modalSettings'],
+            'hideSidebar' => $variables['hideSidebar'] ?? false,
+            'defaultSource' => $variables['defaultSource'] ?? null,
+            'defaultSourcePath' => $variables['defaultSourcePath'] ?? null,
+            'preferStoredSource' => $variables['preferStoredSource'] ?? false,
+            'showSourcePath' => $variables['showSourcePath'] ?? true,
+            'indexSettings' => ['showFolders' => $variables['showFolders']],
+        ];
+
+        return parent::elementSelectHtml($variables);
     }
 
     /** @return array<string, mixed> */

@@ -349,7 +349,7 @@ class EntryTypesController
         $namespace = Str::random(10);
 
         $html = InputNamespace::namespaceInputs(
-            fn () => template('_includes/forms/entry-type-select/selection-settings', [
+            fn () => template('settings/entry-types/_selection-settings', [
                 'entryType' => $entryType,
             ]),
             $namespace,

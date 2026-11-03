@@ -47,9 +47,6 @@ class Entries extends BaseRelationField
     public bool $showUnpermittedSections = false;
 
     #[Override]
-    protected string $settingsTemplate = '_components/fieldtypes/Entries/settings.twig';
-
-    #[Override]
     protected ?string $inputJsClass = 'Craft.EntrySelectInput';
 
     #[Override]

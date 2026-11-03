@@ -1,4 +1,3 @@
-{% import '_includes/forms.twig' as forms %}
 {% from '_includes/disclosuremenu.twig' import item as itemMacro %}
 
 {% set id = id ?? "customselect#{random()}" %}
@@ -40,12 +39,11 @@
   id: id,
   data: {value},
 }|merge(attributes ?? {}, recursive=true) %}
-  {{ forms.button({
+  {{ ui('button', {
     id: buttonId,
-    iconHtml: buttonIconHtml,
+    prefix: buttonIconHtml,
     label: buttonLabel,
-    class: ['menubtn'],
-    attributes: buttonAttributes ?? {},
+    attributes: {class: ['menubtn']}|merge(buttonAttributes ?? {}, recursive=true),
   }) }}
 
   {% if not disabled %}

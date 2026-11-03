@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
@@ -12,7 +13,6 @@ use CraftCms\Cms\Ui\Enums\ChoicePresentation;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * RadioButtons represents a Radio Buttons field.
@@ -72,12 +72,12 @@ class RadioButtons extends BaseOptionsField implements SortableFieldInterface
             ];
         }
 
-        return template('_includes/forms/radioGroup', [
+        return FormFields::radioGroupFromConfig([
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'value' => $this->encodeValue($value),
             'options' => $options,
-        ]);
+        ])->toHtml();
     }
 
     #[Override]

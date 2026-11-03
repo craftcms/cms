@@ -15,6 +15,9 @@ import {property} from 'lit/decorators.js';
  * @slot - The option's label and any markup that goes with it.
  * @slot suffix - Trailing content, shown after the label and hint.
  *
+ * @attr {string} choice-value - The value the option selects, as a plain
+ *   string. Use it in server-rendered markup.
+ *
  * @cssproperty --c-option-wide-threshold - Width, in pixels, past which the
  *   option switches to its wide layout. Defaults to `640`.
  */
@@ -46,6 +49,26 @@ export default class CraftOption extends LionOption {
   hint?: string | null = null;
 
   #cachedWideThreshold?: number;
+
+  static override get observedAttributes() {
+    return [...super.observedAttributes, 'choice-value'];
+  }
+
+  /**
+   * `choiceValue` parses its attribute as JSON, which server-rendered markup
+   * can't rely on, so `choice-value` sets it as a plain string.
+   */
+  override attributeChangedCallback(
+    name: string,
+    oldValue: string | null,
+    value: string | null
+  ) {
+    super.attributeChangedCallback(name, oldValue, value);
+
+    if (name === 'choice-value' && value !== null) {
+      this.choiceValue = value;
+    }
+  }
 
   #wideThreshold(): number {
     this.#cachedWideThreshold ??= parseInt(

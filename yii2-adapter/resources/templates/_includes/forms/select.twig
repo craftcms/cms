@@ -1,0 +1,14 @@
+{# Renders a <craft-select> from the legacy select variables (`id`, `name`,
+   `options`, `value`, `class`, `toggle`/`targetPrefix`, `autocomplete`,
+   `autofocus`, `disabled`, `required`, `labelledBy`/`describedBy`,
+   `inputAttributes`, `containerAttributes` and an `attr` block).
+
+   The legacy-to-component mapping lives in FormFields::selectFromConfig();
+   this template only handles the `attr` block. #}
+
+{%- set containerAttributes = containerAttributes ?? {} %}
+{%- if block('attr') is defined %}
+  {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{{- craft.cp.select(_context)|raw -}}

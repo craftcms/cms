@@ -85,7 +85,6 @@
     {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
-{% from "_includes/forms" import text %}
 
 {% tag useCustomElement ? customElement : 'div' with containerAttributes %}
     {% if name %}
@@ -137,12 +136,12 @@
             }) }}
             {% if searchCriteria %}
                 <div class="texticon search icon elementselect__search-input-wrapper">
-                    {{ text({
+                    {{ ui('input', {
                         width: 'auto',
                         placeholder: 'Search'|t('app'),
-                        describedBy: describedBy ?? false,
+                        describedBy: (describedBy ?? null) ?: null,
                         role: 'combobox',
-                        labelledBy: labelId ?? false,
+                        labelledBy: (labelId ?? null) ?: null,
                     }) }}
                     <craft-spinner class="spinner hidden"></craft-spinner>
                 </div>

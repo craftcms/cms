@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers;
 
 use CraftCms\Cms\Cp\Enums\ChipThumbSize;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
@@ -14,8 +15,6 @@ use CraftCms\Cms\Ui\Controls\ElementSelect;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-
-use function CraftCms\Cms\template;
 
 /**
  * @since 6.0.0
@@ -41,14 +40,13 @@ readonly class RelationalFieldsController
 
         $drafts->loadProvisionalChanges($elements);
 
-        $html = template('_includes/forms/elementSelect', [
+        $html = FormFields::elementSelectHtml([
             'elements' => $elements,
             'id' => $request->input('containerId'),
             'name' => $request->input('name'),
             'selectionLabel' => $request->input('selectionLabel'),
             'elementType' => $request->input('elementType'),
             'maintainHierarchy' => true,
-            'registerJs' => false,
         ]);
 
         return new JsonResponse([

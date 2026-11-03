@@ -652,6 +652,14 @@
 - Added `CraftCms\Cms\Ui\Nodes\TemplateContent::trusted()`, which allows developer-controlled HTML to include interactive content and inline SVG. ([#19913](https://github.com/craftcms/cms/pull/19913))
 - Added `craft.cp.select()` and `CraftCms\Cms\Cp\FormFields::selectFromConfig()`, which render the legacy select variables as a `<craft-select>`.
 - Added `craft.cp.autosuggest()` and `CraftCms\Cms\Cp\FormFields::autosuggestFromConfig()`, which render the legacy autosuggest variables as a combobox. Craft 5’s `suggestions` shape is still accepted.
+- Added `CraftCms\Cms\Cp\Components\ElementSelect` and `CraftCms\Cms\Cp\Components\SelectRich`, available as the `element-select` and `select-rich` `ui()` components. ([#20275](https://github.com/craftcms/cms/pull/20275))
+- Added `CraftCms\Cms\Field\BaseRelationField::elementSelectHtml()`, which renders relation fields’ editable inputs. ([#20275](https://github.com/craftcms/cms/pull/20275))
+- Added `CraftCms\Cms\Cp\FormFields::colorSelectHtml()`, `customSelectFromConfig()`, `elementSelectFromConfig()`, `fieldSelectFromConfig()`, `moneyFromConfig()`, and `timeZoneHtml()`. ([#20275](https://github.com/craftcms/cms/pull/20275))
+- Added `craft.cp.money()` and `craft.cp.range()`, which render the legacy money and range variables. ([#20275](https://github.com/craftcms/cms/pull/20275))
+- Added `CraftCms\Cms\Cp\Components\Field::attribute()` and `errorKey()`. Field components now give their component input the field’s ID, and set `data-attribute` and `data-error-key` from it. ([#20275](https://github.com/craftcms/cms/pull/20275))
+- Added the `choice-value` attribute to `<craft-option>`, which sets its value as a plain string. ([#20275](https://github.com/craftcms/cms/pull/20275))
+- `<craft-select-rich>` is now form-associated, and posts its value through a hidden input, so jQuery’s `serialize()` and `serializeFormInputs()` include it. ([#20275](https://github.com/craftcms/cms/pull/20275))
+- `<craft-element-select-input>` now waits for the class named by its `input-class` attribute to load before booting. ([#20275](https://github.com/craftcms/cms/pull/20275))
 - Added `CraftCms\Cms\Cp\Components\Combobox::labelledBy()`, for a combobox labelled by an element the caller renders itself.
 - Added `CraftCms\Cms\Ui\Nodes\Field::headingPrefix()`, `headingSuffix()`, `translatable()`, `orientation()`, `inputWidth()`, `fieldset()`, and `showStatus()`. ([#19915](https://github.com/craftcms/cms/pull/19915))
 - Updated `CraftCms\Cms\Ui\Nodes\Field::make()` and `label()` to accept `Illuminate\Contracts\Support\Htmlable` and `Twig\Markup` labels. ([#19915](https://github.com/craftcms/cms/pull/19915))
@@ -676,6 +684,8 @@
 - Removed the `collapsible` attribute, the reflected `collapsed` attribute, and the `close()` and `open()` methods from `<craft-tabs>`, and `CraftCms\Cms\Cp\Components\Tabs::collapsible()`. Panels that can all be closed should use `<craft-disclosure>` instead.
 - Deprecated `Cp.$elementDetailsTabs`, its `tabs` property, and the `ElementDetailsTab*` types. `Cp.$elementDetailsPanels`, its `panels` property, and the `ElementDetailsPanel*` types should be used instead.
 - Removed the `data` and `methods` blocks from the `_includes/forms/autosuggest.twig` template, along with the Vue instance they configured. Templates that overrode them should pass `suggestions` instead.
+- Moved the `_includes/forms.twig` macros and the `_includes/forms/*.twig` templates to the Yii adapter. Core templates now render form controls with `ui()` components, and templates that still use the legacy includes or macros need `craftcms/yii2-adapter`. ([#20275](https://github.com/craftcms/cms/pull/20275))
+- Removed `CraftCms\Cms\Field\BaseRelationField::$inputTemplate` and `$settingsTemplate`. Relation fields that extend the Yii adapter’s base relation field classes can still set them; other relation fields that set `$inputTemplate` now throw an exception, and should override `CraftCms\Cms\Field\BaseRelationField::elementSelectHtml()` instead. ([#20275](https://github.com/craftcms/cms/pull/20275))
 - Removed `CraftCms\Cms\Plugin\Contracts\PluginInterface::createSettingsModel()`. The static `createSettings()` must be implemented instead. (`createSettingsModel()` remains supported for plugins extending `craft\base\Plugin` through the Yii adapter.) ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Renamed `CraftCms\Cms\Form` to `CraftCms\Cms\Ui`, along with its `Form` classes and methods, and the JavaScript `forms` module and its definition APIs to `ui`, including payload fields and refresh endpoints. ([#19882](https://github.com/craftcms/cms/pull/19882))
 - Moved the shared control panel table code (`useCraftTable`, `createCraftColumnHelper`, `useServerPagination`, `useServerSort`, and `useEditableTable`) from `modules/admin-table` to `common/table`. ([#19897](https://github.com/craftcms/cms/pull/19897))
@@ -917,6 +927,7 @@
 - Fixed a bug where nested entries owned by drafts could get their own revisions, which could cause a foreign key error when applying the draft on PostgreSQL. ([#20151](https://github.com/craftcms/cms/issues/20151))
 - Fixed a bug where “Save as a new draft” didn’t carry nested entries over to the new draft. ([#20226](https://github.com/craftcms/cms/issues/20226))
 - Fixed a bug where MCP requests could be rejected when a reverse proxy rewrote the `Host` header. MCP now validates the host resolved through trusted proxies.
+- Fixed an error that occurred when rendering the settings of `craft\fields\Assets` and `craft\fields\Entries` fields. ([#20275](https://github.com/craftcms/cms/pull/20275))
 - Fixed a bug where PHP-style date formats, such as `{{ date|date('M Y') }}`, always showed month and day names in English, rather than in the formatting locale. ([#20237](https://github.com/craftcms/cms/pull/20237))
 - Fixed a bug where editing fields inside a Matrix entry wasn’t recorded in the entry’s Activity timeline. ([#20299](https://github.com/craftcms/cms/pull/20299))
 - Fixed a bug where configuration changes made through the stdio MCP server (`craft:mcp:serve`) weren’t saved until the server stopped, so the control panel didn’t see them, and they were lost if the server was killed.
