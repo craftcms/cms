@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
+use Closure;
+use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\CustomNavigations;
 use CraftCms\Cms\Cp\NavCustomizer;
@@ -13,6 +15,7 @@ use CraftCms\Cms\Http\Requests\NavCustomizationRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Ui\Controls\Checkbox;
+use CraftCms\Cms\Ui\Controls\ConditionBuilder;
 use CraftCms\Cms\Ui\Controls\IconPicker;
 use CraftCms\Cms\Ui\Controls\Lightswitch;
 use CraftCms\Cms\Ui\Controls\Text;
@@ -23,12 +26,14 @@ use CraftCms\Cms\Ui\Nodes\Table;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiResolver;
+use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\UserGroups;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\AnyOf;
+use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -205,6 +210,15 @@ class CpNavigationController
             ->when($node['kind'] === 'item', fn (Ui $ui) => $ui->add(
                 Field::make(t('Icon'), IconPicker::make('icon')->mode($mode)),
             ))
+            ->when($isCustom, fn (Ui $ui) => $ui->add(
+                Field::make(t('Current User Condition'), ConditionBuilder::make('userCondition')
+                    ->mode($mode)
+                    ->conditionClass(UserCondition::class)
+                    ->forProjectConfig())
+                    ->instructions($isLink
+                        ? t('Only users who match these rules see this link.')
+                        : t('Only users who match these rules see this section.')),
+            ))
             ->unless($isCustom, fn (Ui $ui) => $ui->add(
                 Field::make(t('Show in the navigation'), Lightswitch::make('shown')->mode($mode)),
             ));
@@ -216,6 +230,7 @@ class CpNavigationController
                 'newWindow' => $node['newWindow'],
                 'icon' => $node['icon'],
                 'shown' => ! $node['hidden'],
+                'userCondition' => $node['userCondition'] ?? [],
             ])),
         ]);
     }
@@ -231,6 +246,21 @@ class CpNavigationController
         $request->validate([
             'settings.label' => [$node['source'] === 'custom' ? 'required' : 'nullable', 'string', 'max:255'],
             ...($node['type'] === 'link' ? ['settings.url' => ['required', ...NavCustomizationRequest::linkRules()]] : []),
+            'settings.userCondition' => ['nullable', 'array', function (string $attribute, array $config, Closure $fail): void {
+                if (! isset($config['class'])) {
+                    return;
+                }
+
+                try {
+                    $isUserCondition = app(Conditions::class)->createCondition($config) instanceof UserCondition;
+                } catch (InvalidArgumentException) {
+                    $isUserCondition = false;
+                }
+
+                if (! $isUserCondition) {
+                    $fail(t('The condition isn’t valid.'));
+                }
+            }],
         ], [
             'settings.url.'.AnyOf::class => t('Enter a control panel path, or a URL starting with http, https, mailto or tel.'),
         ], [
@@ -242,7 +272,7 @@ class CpNavigationController
     }
 
     /**
-     * @return array{kind: string, source: string, type: ?string, label: string, defaultLabel: ?string, url: ?string, newWindow: bool, icon: ?string, hidden: bool}
+     * @return array{kind: string, source: string, type: ?string, label: string, defaultLabel: ?string, url: ?string, newWindow: bool, icon: ?string, hidden: bool, userCondition: array<string, mixed>|null}
      */
     private function postedNode(Request $request): array
     {
@@ -256,6 +286,7 @@ class CpNavigationController
             'node.newWindow' => ['boolean'],
             'node.icon' => ['nullable', 'string'],
             'node.hidden' => ['boolean'],
+            'node.userCondition' => ['nullable', 'array'],
         ])['node'];
 
         return [
@@ -268,6 +299,7 @@ class CpNavigationController
             'newWindow' => (bool) ($node['newWindow'] ?? false),
             'icon' => $node['icon'] ?? null,
             'hidden' => (bool) ($node['hidden'] ?? false),
+            'userCondition' => $node['userCondition'] ?? null,
         ];
     }
 

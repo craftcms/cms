@@ -43,6 +43,7 @@ export function postedNode(node: NavNode) {
     newWindow,
     icon,
     hidden,
+    userCondition,
   } = node;
 
   return {
@@ -55,6 +56,7 @@ export function postedNode(node: NavNode) {
     newWindow,
     icon,
     hidden,
+    userCondition,
   };
 }
 

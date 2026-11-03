@@ -9,6 +9,9 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\UserPermissions;
+use CraftCms\Cms\User\Conditions\AdminConditionRule;
+use CraftCms\Cms\User\Conditions\GroupConditionRule;
+use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Models\UserGroup;
 use Inertia\Testing\AssertableInertia;
@@ -197,4 +200,45 @@ it('deletes a user group’s navigation along with the group', function () {
     UserGroups::deleteGroup($group);
 
     expect(app(ProjectConfig::class)->get(ProjectConfig::PATH_CP_NAV.'.groups'))->toBeEmpty();
+});
+
+it('shows added sections and links only to users who match their user condition, admins included', function () {
+    $reviewers = UserGroup::factory()->create(['name' => 'Reviewers']);
+    $inReviewers = ['class' => GroupConditionRule::class, 'operator' => 'in', 'values' => [$reviewers->uid]];
+    $condition = fn (array $rules): array => ['class' => UserCondition::class, 'conditionRules' => $rules];
+
+    actingAs(UserModel::factory()->admin()->createElement());
+    $tree = get(cp_url('settings/cp-nav/default'))->viewData('page')['props']['tree'];
+
+    $this->put(cp_url('settings/cp-nav/default'), ['nav' => [
+        ...$tree,
+        ['id' => 'custom-link00', 'type' => 'link', 'label' => 'Reviewers only', 'url' => 'entries', 'userCondition' => $condition([$inReviewers])],
+        ['id' => 'custom-link01', 'type' => 'link', 'label' => 'Admins and reviewers', 'url' => 'entries', 'userCondition' => $condition([
+            'operator' => 'or',
+            'rules' => [['class' => AdminConditionRule::class, 'value' => true], $inReviewers],
+        ])],
+        ['id' => 'custom-link02', 'type' => 'link', 'label' => 'Everyone', 'url' => 'entries', 'userCondition' => $condition([])],
+        ['id' => 'custom-sect00', 'type' => 'section', 'label' => 'Review', 'userCondition' => $condition([$inReviewers]), 'children' => [
+            ['id' => 'custom-link03', 'type' => 'link', 'label' => 'Queue', 'url' => 'entries'],
+        ]],
+    ]])->assertSessionHasNoErrors();
+
+    expect(app(CustomNavigations::class)->getDefault()['items']['custom-link02'])->not->toHaveKey('userCondition');
+
+    $reviewer = UserModel::factory()->createElement();
+    $reviewers->users()->attach($reviewer->id);
+    $other = UserModel::factory()->createElement();
+    UserPermissions::saveUserPermissions($reviewer->id, ['accessCp']);
+    UserPermissions::saveUserPermissions($other->id, ['accessCp']);
+    $added = ['Reviewers only', 'Admins and reviewers', 'Everyone', 'Review', 'Queue'];
+
+    expect(array_values(array_intersect(topNavLabels(), $added)))->toBe(['Admins and reviewers', 'Everyone']);
+
+    actingAs($reviewer);
+
+    expect(array_values(array_intersect(topNavLabels(), $added)))->toBe(['Reviewers only', 'Admins and reviewers', 'Everyone', 'Review', 'Queue']);
+
+    actingAs($other);
+
+    expect(array_values(array_intersect(topNavLabels(), $added)))->toBe(['Everyone']);
 });

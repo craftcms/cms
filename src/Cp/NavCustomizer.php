@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp;
 
+use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Data\NavNode;
 use CraftCms\Cms\Http\Requests\NavCustomizationRequest;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\User\Conditions\UserCondition;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use Illuminate\Support\Facades\Validator;
+use InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 
@@ -48,7 +52,8 @@ use function CraftCms\Cms\t;
  * never beneath another one.
  *
  * Hiding is cosmetic: a customization is applied to the nav the user may
- * already see, so it can leave things out but never add access.
+ * already see, so it can leave things out but never add access. Sections and
+ * links it adds can have a user condition, which applies to admins too.
  *
  * @phpstan-type NavDiff array{order?: array<string, list<string>>, items?: array<string, array<string, mixed>>}
  *
@@ -60,21 +65,22 @@ class NavCustomizer
     public const string ROOT = 'root';
 
     /**
-     * The nav with a customization applied. Hidden items are left out, unless
-     * `$withHidden` keeps them, as the command palette does: hiding something
-     * only tidies the nav, and it's still there to find.
+     * The nav with a customization applied, for a user. Hidden items are left
+     * out, unless `$withHidden` keeps them, as the command palette does: hiding
+     * something only tidies the nav, and it's still there to find. Sections and
+     * links whose user condition the user doesn't match are always left out.
      *
      * @param  NavItem[]  $tree
      * @param  NavDiff  $diff
      * @return NavItem[]
      */
-    public function apply(array $tree, array $diff, bool $withHidden = false): array
+    public function apply(array $tree, array $diff, ?CraftUser $user, bool $withHidden = false): array
     {
         if ($diff === []) {
             return $tree;
         }
 
-        return $this->render($this->resolve($tree, $diff), $withHidden);
+        return $this->render($this->resolve($tree, $diff), $user, $withHidden);
     }
 
     /**
@@ -183,6 +189,7 @@ class NavCustomizer
                     array_intersect_key($entry, array_flip(['type', 'label', 'icon', 'url', 'newWindow', 'hidden'])),
                     is_scalar(...),
                 ),
+                ...(is_array($entry['userCondition'] ?? null) ? ['userCondition' => $entry['userCondition']] : []),
                 'parent' => $parent,
             ];
 
@@ -207,6 +214,7 @@ class NavCustomizer
                 // Links without an icon of their own get the link icon.
                 'icon' => $node->type === 'link' && $node->icon !== 'link' ? $node->icon : null,
                 'newWindow' => $node->newWindow ?: null,
+                'userCondition' => $this->conditionConfig($node->userCondition),
             ] : [
                 'label' => $node->label !== $node->defaultLabel ? $node->label : null,
                 'icon' => $node->icon !== $node->defaultIcon ? $node->icon : null,
@@ -400,11 +408,18 @@ class NavCustomizer
 
         $type = $config['type'] ?? null;
 
+        $userCondition = is_array($config['userCondition'] ?? null) && isset($config['userCondition']['class'])
+            ? $config['userCondition']
+            : null;
+
         if ($type === 'section') {
-            return $this->markCustom(
+            $node = $this->markCustom(
                 NavNode::fromItem(new NavItem()->id($id)->label($label)->group(true)->subnav([]), 'section', self::ROOT),
                 'section',
             );
+            $node->userCondition = $userCondition;
+
+            return $node;
         }
 
         $url = (string) ($config['url'] ?? '');
@@ -430,8 +445,52 @@ class NavCustomizer
         $node = $this->markCustom(NavNode::fromItem($item, 'item', self::ROOT), 'link');
         $node->url = $url;
         $node->newWindow = $newWindow;
+        $node->userCondition = $userCondition;
 
         return $node;
+    }
+
+    /**
+     * A user condition's config as it's saved, or null if it has no rules.
+     * One that can't be read is kept as it is, so it matches nobody rather
+     * than everybody.
+     *
+     * @param  array<string, mixed>|null  $config
+     * @return array<string, mixed>|null
+     */
+    private function conditionConfig(?array $config): ?array
+    {
+        if ($config === null) {
+            return null;
+        }
+
+        try {
+            $condition = app(Conditions::class)->createCondition($config);
+        } catch (InvalidArgumentException) {
+            return $config;
+        }
+
+        return $condition->getConditionRules()->getRules() === [] ? null : $condition->getConfig();
+    }
+
+    /** Whether a user gets to see a node, by its user condition. */
+    private function isVisibleTo(NavNode $node, ?CraftUser $user): bool
+    {
+        if ($node->userCondition === null) {
+            return true;
+        }
+
+        if ($user === null) {
+            return false;
+        }
+
+        try {
+            $condition = app(Conditions::class)->createCondition($node->userCondition);
+        } catch (InvalidArgumentException) {
+            return false;
+        }
+
+        return $condition instanceof UserCondition && $condition->matchElement($user->asElement());
     }
 
     /**
@@ -508,12 +567,12 @@ class NavCustomizer
      * @param  list<NavNode>  $nodes
      * @return NavItem[]
      */
-    private function render(array $nodes, bool $withHidden): array
+    private function render(array $nodes, ?CraftUser $user, bool $withHidden): array
     {
         $items = [];
 
         foreach ($nodes as $node) {
-            if ($node->hidden && ! $withHidden) {
+            if (($node->hidden && ! $withHidden) || ! $this->isVisibleTo($node, $user)) {
                 continue;
             }
 
@@ -528,7 +587,7 @@ class NavCustomizer
             }
 
             if ($node->kind === 'section') {
-                $children = $this->render($node->children, $withHidden);
+                $children = $this->render($node->children, $user, $withHidden);
 
                 // Moved out of, or hidden from, until nothing's left.
                 if ($children === []) {
@@ -538,7 +597,7 @@ class NavCustomizer
                 $item->subnav = $children;
             } elseif (is_array($item->subnav) && $item->subnav !== []) {
                 // Rebuilt from the nodes, since some may have moved out.
-                $children = $this->render($node->children, $withHidden);
+                $children = $this->render($node->children, $user, $withHidden);
 
                 // A heading within a subnav, with nothing left beneath it.
                 if ($children === [] && $item->group) {

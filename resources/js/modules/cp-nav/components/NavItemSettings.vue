@@ -15,6 +15,7 @@
   import UiRenderer from '@/modules/ui/UiRenderer.vue';
   import type {UiPayload, UiValues} from '@/modules/ui/types';
   import {postedNode, takeNavItemSettingsContext} from '../settings-slideout';
+  import type {NavNode} from '../tree';
 
   const props = defineProps<{contextId: string}>();
   const {node, readOnly, apply, payload} = takeNavItemSettingsContext(
@@ -93,6 +94,12 @@
           }
         : {}),
       ...(node.source === 'default' ? {hidden: !values.shown} : {}),
+      ...(node.source === 'custom'
+        ? {
+            userCondition: (values.userCondition ??
+              null) as NavNode['userCondition'],
+          }
+        : {}),
     });
 
     // Before close(): closing drops the panel from the store, and its handler

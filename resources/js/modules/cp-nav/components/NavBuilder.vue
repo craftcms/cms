@@ -23,6 +23,7 @@
     addSection,
     canPlace,
     flatten,
+    isConditional,
     moveNode,
     placement,
     remove,
@@ -229,6 +230,9 @@
               h('span', {class: 'nav-row__text'}, row.label || t('(blank)')),
               sublabel(row.node)
                 ? h('span', {class: 'nav-row__sublabel'}, sublabel(row.node)!)
+                : null,
+              isConditional(row.node)
+                ? h('craft-badge', {fill: 'blue'}, t('Conditional'))
                 : null,
             ]
           ),

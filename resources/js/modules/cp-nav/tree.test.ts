@@ -20,6 +20,7 @@ function node(
     href: `/admin/${id}`,
     url: null,
     newWindow: false,
+    userCondition: null,
     home: kind === 'child' ? (extra.home ?? null) : null,
     hidden: false,
     heading: false,

@@ -43,6 +43,14 @@ class NavNode implements Arrayable, JsonSerializable
 
     public bool $newWindow = false;
 
+    /**
+     * For custom nodes: the user condition people have to match to see it, or
+     * null for everyone.
+     *
+     * @var array<string, mixed>|null
+     */
+    public ?array $userCondition = null;
+
     /** For things from beneath an item: that item, which they can go back beneath. */
     public ?string $home = null;
 

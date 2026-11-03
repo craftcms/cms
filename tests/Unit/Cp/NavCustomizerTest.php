@@ -88,7 +88,7 @@ it('saves only what the builder changed, and renders it back', function () {
             'nav-assets' => ['parent' => 'nav-group-administration'],
             'nav-entries' => ['label' => 'Articles'],
         ],
-    ])->and(navLabels($customizer->apply(customizerTree(), $diff)))->toBe([
+    ])->and(navLabels($customizer->apply(customizerTree(), $diff, null)))->toBe([
         ['Administration' => ['Utilities', 'Assets']],
         ['Content' => [['Articles' => ['News', 'Blog']]]],
     ]);
@@ -104,7 +104,7 @@ it('shows items added after the customization was saved, and skips ones since re
     $tree = customizerTree();
     $tree[1]->subnav = [...$tree[1]->subnav, new NavItem()->id('nav-commerce')->label('Commerce')->href('/admin/commerce')];
 
-    expect(navLabels($customizer->apply($tree, $diff))[1])->toBe([
+    expect(navLabels($customizer->apply($tree, $diff, null))[1])->toBe([
         'Content' => ['Files', ['Entries' => ['Blog', 'News']], 'Commerce'],
     ]);
 });
@@ -120,7 +120,7 @@ it('adds sections and links, moves things out from beneath their item, and drops
             'nav-entries-blog' => ['parent' => 'root', 'label' => 'Blog posts'],
             'nav-utilities' => ['hidden' => true],
         ],
-    ]);
+    ], null);
 
     expect(navLabels($rendered))->toBe([
         ['Shop' => ['Docs']],
@@ -144,7 +144,7 @@ it('keeps sections out of sections, and what’s beneath an item out of other it
     }));
 
     expect($diff['items'] ?? [])->toBe([])
-        ->and(navLabels($customizer->apply(customizerTree(), $diff)))->toBe(navLabels(customizerTree()));
+        ->and(navLabels($customizer->apply(customizerTree(), $diff, null)))->toBe(navLabels(customizerTree()));
 });
 
 it('customizes what’s under a heading in a subnav, and moves it out, but not the heading', function () {
@@ -171,7 +171,7 @@ it('customizes what’s under a heading in a subnav, and moves it out, but not t
     $edited[] = [...$general, 'hidden' => false];
     $edited[] = $extend;
 
-    expect(navLabels($customizer->apply($tree(), $customizer->diff($tree(), $edited))))->toBe([
+    expect(navLabels($customizer->apply($tree(), $customizer->diff($tree(), $edited), null)))->toBe([
         ['Settings' => [['System' => ['Websites']], ['Extend' => ['Plugins']]]],
         'General',
     ]);
@@ -196,7 +196,7 @@ it('moves something from beneath an item into a section, children and all, and b
     $diff = $customizer->diff($tree(), $edited);
 
     expect($diff['items'])->toBe(['nav-users-admins' => ['parent' => 'nav-group-administration']])
-        ->and(navLabels($customizer->apply($tree(), $diff)))->toBe([
+        ->and(navLabels($customizer->apply($tree(), $diff, null)))->toBe([
             'Users',
             ['Administration' => ['Utilities', ['Admins' => ['Active']]]],
         ]);

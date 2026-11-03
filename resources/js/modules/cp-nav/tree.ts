@@ -74,6 +74,13 @@ export function flatten(tree: NavNode[]): NavRow[] {
   return rows;
 }
 
+/** Whether a node's user condition has rules, so not everyone sees it. */
+export function isConditional(node: NavNode): boolean {
+  const rules = node.userCondition?.conditionRules;
+
+  return (Array.isArray(rules) ? rules : (rules?.rules ?? [])).length > 0;
+}
+
 /** Finds a node anywhere in the tree. */
 export function find(tree: NavNode[], id: string): NavNode | null {
   for (const node of tree) {
@@ -271,6 +278,7 @@ function blank(overrides: Partial<NavNode>): NavNode {
     href: null,
     url: null,
     newWindow: false,
+    userCondition: null,
     home: null,
     hidden: false,
     heading: false,

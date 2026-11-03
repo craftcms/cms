@@ -121,7 +121,9 @@ readonly class Navigation
      */
     public function getTree(bool $withHidden = false): array
     {
-        return $this->navCustomizer->apply($this->buildTree(), $this->customNavigations->navigationFor(currentUser()), $withHidden);
+        $user = currentUser();
+
+        return $this->navCustomizer->apply($this->buildTree(), $this->customNavigations->navigationFor($user), $user, $withHidden);
     }
 
     /**
