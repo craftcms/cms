@@ -72,22 +72,23 @@ export class AssetMover extends Base {
   }
 
   successNotice(moveParams: any, message: any, allowUndo = true): void {
-    let $undoBtn = null;
+    let undoBtn: HTMLElement | null = null;
 
     if (allowUndo && this.conflictCount === 0) {
-      $undoBtn = $(create('craft-button', {type: 'button'}, t('Undo')));
+      undoBtn = create('craft-button', {type: 'button'}, t('Undo'));
     }
 
     // if we didn't reach the limit, so the move was not confirmed, we want to give the option to undo
     const notice = showNotice(
       message,
-      !moveParams.confirmed && allowUndo && $undoBtn
-        ? {details: $undoBtn[0]}
+      !moveParams.confirmed && allowUndo && undoBtn
+        ? {details: undoBtn}
         : undefined
     );
 
     if (allowUndo) {
-      $undoBtn?.on('activate', async () => {
+      // `<craft-button>` fires click for Enter and Space too
+      undoBtn?.addEventListener('click', async () => {
         // ask to confirm if they want to undo
         if (confirm(t('Are you sure you want to undo the move?'))) {
           // if yes, undo
