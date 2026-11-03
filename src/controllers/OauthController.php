@@ -141,7 +141,8 @@ class OauthController extends Controller
             'scopes' => json_encode(array_keys($definition->scopes), JSON_THROW_ON_ERROR),
             'revoked' => false,
             'created_at' => $now,
-            'updated_at' => $now,
+            // Set once the client is authorized, so garbage collection can find clients that never were
+            'updated_at' => null,
         ])->execute();
 
         $this->response->setStatusCode(201);

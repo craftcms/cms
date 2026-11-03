@@ -9,6 +9,8 @@ namespace crafttests\functional;
 
 use Craft;
 use craft\config\OAuthConfig;
+use craft\db\Query;
+use craft\db\Table;
 use FunctionalTester;
 
 /**
@@ -60,6 +62,15 @@ class OAuthRegistrationCest
         $this->config->registrationRateLimit = false;
         $this->register($I);
         $I->seeResponseCodeIs(201);
+    }
+
+    public function testRegisteredClientsStartUnauthorized(FunctionalTester $I): void
+    {
+        // Garbage collection relies on this to find clients that were never authorized
+        $this->register($I);
+        $I->seeResponseCodeIs(201);
+        $clientId = json_decode($I->grabPageSource(), true)['client_id'];
+        $I->assertNull((new Query())->select('updated_at')->from(Table::OAUTH_CLIENTS)->where(['id' => $clientId])->scalar());
     }
 
     private function register(FunctionalTester $I): void

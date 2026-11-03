@@ -491,7 +491,7 @@ class Gc extends Component
                 [
                     'and',
                     ['<', 'created_at', Db::prepareDateForDb(new DateTime('1 day ago'))],
-                    '[[updated_at]] <= [[created_at]]',
+                    ['updated_at' => null],
                 ],
             ],
         ]);

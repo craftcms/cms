@@ -168,8 +168,9 @@ class GcTest extends TestCase
         $clients = [
             'active' => [null, false, '3 days ago', '2 days ago'],
             'authorized' => [null, false, '3 days ago', '2 days ago'],
-            'new' => [null, false, '1 hour ago', '1 hour ago'],
-            'unauthorized' => [null, false, '2 days ago', '2 days ago'],
+            'authorized-same-second' => [null, false, '2 days ago', '2 days ago'],
+            'new' => [null, false, '1 hour ago', null],
+            'unauthorized' => [null, false, '2 days ago', null],
             'revoked' => [null, true, '3 days ago', '2 days ago'],
             'revoked-live' => [null, true, '3 days ago', '2 days ago'],
             'personal' => ['craft', false, '2 days ago', '2 days ago'],
@@ -183,7 +184,7 @@ class GcTest extends TestCase
                 'grant_types' => '[]',
                 'revoked' => $revoked,
                 'created_at' => $date($created),
-                'updated_at' => $date($updated),
+                'updated_at' => $updated ? $date($updated) : null,
             ]);
         }
 
@@ -234,7 +235,8 @@ class GcTest extends TestCase
 
         $this->gc->run(true);
 
-        $remaining = fn(string $table, array $ids) => (new Query())->select('id')->from($table)->where(['id' => $ids])->orderBy('id')->column();
+        // PostgreSQL pads fixed-length IDs with spaces
+        $remaining = fn(string $table, array $ids) => array_map('rtrim', (new Query())->select('id')->from($table)->where(['id' => $ids])->orderBy('id')->column());
 
         self::assertSame(['code-live'], $remaining(Table::OAUTH_AUTH_CODES, array_keys($authCodes)));
         self::assertSame(
@@ -246,7 +248,7 @@ class GcTest extends TestCase
             $remaining(Table::OAUTH_REFRESH_TOKENS, array_map(fn($id) => "$id-refresh", array_keys($accessTokens))),
         );
         self::assertSame(
-            ['active', 'authorized', 'new', 'personal', 'revoked-live'],
+            ['active', 'authorized', 'authorized-same-second', 'new', 'personal', 'revoked-live'],
             $remaining(Table::OAUTH_CLIENTS, array_keys($clients)),
         );
     }
