@@ -427,6 +427,8 @@ class ElementSelect extends ViewComponent
     #[\Override]
     protected function renderSlots(): string
     {
+        $this->id ??= 'elementselect'.mt_rand();
+
         $html = $this->name !== null ? Html::hiddenInput($this->name, '') : '';
         $html .= $this->elementsHtml();
 
