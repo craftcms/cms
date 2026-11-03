@@ -1,5 +1,7 @@
 import {createApp, h, nextTick, reactive, type App} from 'vue';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
+import {router} from '@inertiajs/vue3';
+import {setUrlDefaults} from '@/wayfinder';
 import {HttpError} from '@craftcms/ui';
 import type {Plugin} from '@/modules/plugin-store/types';
 
@@ -23,10 +25,25 @@ vi.mock('@/modules/plugin-store/components/StoreContainer.vue', () => ({
 }));
 vi.mock('@/common/components/LayoutSlot.vue', () => ({default: passThrough}));
 vi.mock('@/modules/plugin-store/components/PluginHero.vue', () => ({
-  default: {render: () => null},
+  default: {
+    emits: ['show-reviews'],
+    setup:
+      (_props: unknown, {emit}: {emit: (event: string) => void}) =>
+      () =>
+        h('a', {class: 'show-reviews', onClick: () => emit('show-reviews')}),
+  },
 }));
 vi.mock('@/modules/plugin-store/components/PluginOverview.vue', () => ({
-  default: marker('overview panel'),
+  default: {
+    render: () =>
+      h('div', [
+        h('p', 'overview panel'),
+        h('craft-tabs', [
+          h('craft-tab', {slot: 'tab'}, 'Shell'),
+          h('craft-tab', {slot: 'tab'}, 'DDEV'),
+        ]),
+      ]),
+  },
 }));
 vi.mock('@/modules/plugin-store/components/PluginReviews.vue', () => ({
   default: marker('reviews panel'),
@@ -144,4 +161,24 @@ it('tells a plugin that doesn’t exist from one that failed to load', async () 
   await settle();
   expect(failed.querySelector('craft-empty')).toBeNull();
   expect(failed.textContent).toContain('Couldn’t load the plugin.');
+});
+
+it('moves focus to the Reviews tab when the hero’s rating link shows it', async () => {
+  setUrlDefaults({cpTrigger: 'cp'});
+  getPlugin.mockResolvedValue(makePlugin('paid-plugin', ['49', '99']));
+  const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+
+  const root = mount({handle: 'paid-plugin', tab: 'overview'});
+  await settle();
+  root.querySelector<HTMLElement>('.show-reviews')!.click();
+  await settle();
+
+  expect(router.replace).toHaveBeenCalledWith(
+    expect.objectContaining({preserveState: true})
+  );
+  const focused = focus.mock.contexts.at(-1) as HTMLElement;
+  expect(focused.tagName).toBe('CRAFT-TAB');
+  expect(focused.textContent).toBe('Reviews');
+  focus.mockRestore();
+  setUrlDefaults({});
 });

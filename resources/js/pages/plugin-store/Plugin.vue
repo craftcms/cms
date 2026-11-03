@@ -1,7 +1,14 @@
 <script setup lang="ts">
   import {isHttpError, t} from '@craftcms/ui';
   import {router} from '@inertiajs/vue3';
-  import {computed, onScopeDispose, shallowRef, watch} from 'vue';
+  import {
+    computed,
+    nextTick,
+    onScopeDispose,
+    shallowRef,
+    useTemplateRef,
+    watch,
+  } from 'vue';
   import {plugin as pluginRoute} from '@actions/PluginStore/PluginStoreController';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import PluginChangelog from '@/modules/plugin-store/components/PluginChangelog.vue';
@@ -98,6 +105,17 @@
     });
   }
 
+  const tabsElement = useTemplateRef<HTMLElement>('tabsElement');
+
+  /** The hero's rating link swaps the panel in place, so focus follows it to the Reviews tab. */
+  async function showReviews(): Promise<void> {
+    showTab('reviews');
+    await nextTick();
+    tabsElement.value
+      ?.querySelectorAll<HTMLElement>(':scope > craft-tab')
+      [tabs.value.findIndex((tab) => tab.id === 'reviews')]?.focus();
+  }
+
   function onTabShow(event: Event): void {
     const index = (event.target as HTMLElement & {selectedIndex: number})
       .selectedIndex;
@@ -131,10 +149,11 @@
 
     <div v-else class="grid gap-lg">
       <LayoutSlot name="title">
-        <PluginHero :plugin="plugin" @show-reviews="showTab('reviews')" />
+        <PluginHero :plugin="plugin" @show-reviews="showReviews" />
       </LayoutSlot>
 
       <craft-tabs
+        ref="tabsElement"
         :label="plugin.name"
         .selectedIndex="selectedIndex"
         @craft-tab-show="onTabShow"

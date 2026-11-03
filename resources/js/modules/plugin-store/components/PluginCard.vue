@@ -47,6 +47,7 @@
       <CpLink
         :href="pluginRoute({handle: plugin.handle})"
         tabindex="-1"
+        aria-hidden="true"
         class="plugin-card__icon"
       >
         <PluginIcon :url="plugin.iconUrl" />

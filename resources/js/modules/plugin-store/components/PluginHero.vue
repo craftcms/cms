@@ -104,7 +104,11 @@
           <CpLink :href="developerRoute({id: plugin.developerId})">
             {{ plugin.developerName }}
           </CpLink>
-          <PartnerBadge v-if="plugin.developerPartner" kind="craft" />
+          <PartnerBadge
+            v-if="plugin.developerPartner"
+            kind="craft"
+            :label="t('Craft Verified')"
+          />
         </div>
         <p v-if="plugin.shortDescription" class="plugin-hero__description">
           {{ plugin.shortDescription }}

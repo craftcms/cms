@@ -67,36 +67,40 @@
       </craft-button>
     </div>
 
-    <dl class="m-0">
-      <InstallInstructions :plugin="plugin" />
-      <ActiveInstalls :plugin="plugin" />
-      <div class="plugin-meta__pair">
+    <div>
+      <dl class="m-0">
+        <InstallInstructions :plugin="plugin" />
+        <ActiveInstalls :plugin="plugin" />
+      </dl>
+      <dl class="plugin-meta__pair m-0">
         <MetaStat :label="t('License')">
           {{ licenseLabels[plugin.license] ?? plugin.license }}
         </MetaStat>
         <MetaStat v-if="plugin.totalReleases" :label="t('Total releases')">
           {{ plugin.totalReleases }}
         </MetaStat>
-      </div>
-      <MetaStat :label="t('Compatibility')">
-        <ul class="plugin-meta__compatibility">
-          <li v-for="item in compatibility" :key="item.label">
-            <span class="plugin-meta__compat-icon" v-html="item.svg"></span>
-            {{ item.label }}
-          </li>
-        </ul>
-      </MetaStat>
-      <MetaStat v-if="pluginCategories.length" :label="t('Categories')">
-        <ul class="plugin-meta__categories">
-          <li v-for="category in pluginCategories" :key="category.id">
-            <CpLink :href="categoryRoute({id: category.id})">
-              <craft-badge no-prefix>{{ category.title }}</craft-badge>
-            </CpLink>
-          </li>
-        </ul>
-      </MetaStat>
-      <GithubActivity :plugin="plugin" />
-    </dl>
+      </dl>
+      <dl class="m-0">
+        <MetaStat :label="t('Compatibility')">
+          <ul class="plugin-meta__compatibility">
+            <li v-for="item in compatibility" :key="item.label">
+              <span class="plugin-meta__compat-icon" v-html="item.svg"></span>
+              {{ item.label }}
+            </li>
+          </ul>
+        </MetaStat>
+        <MetaStat v-if="pluginCategories.length" :label="t('Categories')">
+          <ul class="plugin-meta__categories">
+            <li v-for="category in pluginCategories" :key="category.id">
+              <CpLink :href="categoryRoute({id: category.id})">
+                <craft-badge no-prefix>{{ category.title }}</craft-badge>
+              </CpLink>
+            </li>
+          </ul>
+        </MetaStat>
+        <GithubActivity :plugin="plugin" />
+      </dl>
+    </div>
 
     <div>
       <craft-button variant="danger" :href="reportIssueUrl(plugin)" icon="flag">

@@ -58,7 +58,16 @@
     @keydown="onKeydown"
   >
     <div class="plugin-screenshots__viewer">
-      <img v-if="openImage" :src="openImage" alt="" />
+      <img
+        v-if="openImage"
+        :src="openImage"
+        :alt="
+          t('Screenshot {num} of {total}', {
+            num: (openIndex ?? 0) + 1,
+            total: images.length,
+          })
+        "
+      />
     </div>
     <div
       v-if="images.length > 1"
@@ -71,7 +80,9 @@
         @click="step(-1)"
       >
       </craft-button>
-      <span>{{ (openIndex ?? 0) + 1 }} / {{ images.length }}</span>
+      <span role="status">
+        {{ (openIndex ?? 0) + 1 }} / {{ images.length }}
+      </span>
       <craft-button
         icon="chevron-right"
         :aria-label="t('Next')"

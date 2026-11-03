@@ -12,6 +12,12 @@
     })
   );
 
+  function starsLabel(rating: number): string {
+    return t('{num, number} {num, plural, =1{star} other{stars}}', {
+      num: rating,
+    });
+  }
+
   function share(rating: number): number {
     const count = stats.totalReviewsByRating[rating] ?? 0;
     return stats.totalReviews
@@ -32,7 +38,8 @@
     </div>
     <ul class="reviews-summary__bars">
       <li v-for="rating in [5, 4, 3, 2, 1]" :key="rating">
-        <span>{{ rating }}</span>
+        <span aria-hidden="true">{{ rating }}</span>
+        <span class="sr-only">{{ starsLabel(rating) }}</span>
         <span class="reviews-summary__bar" aria-hidden="true">
           <span :style="{inlineSize: `${share(rating)}%`}"></span>
         </span>

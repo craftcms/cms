@@ -2670,6 +2670,7 @@ return [
     '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number} {num, plural, =1{notification} other{notifications}}',
     '{num, number} {num, plural, =1{result} other{results}}' => '{num, number} {num, plural, =1{result} other{results}}',
     '{num, number} {num, plural, =1{second} other{seconds}}' => '{num, number} {num, plural, =1{second} other{seconds}}',
+    '{num, number} {num, plural, =1{star} other{stars}}' => '{num, number} {num, plural, =1{star} other{stars}}',
     '{num, number} {num, plural, =1{week} other{weeks}}' => '{num, number} {num, plural, =1{week} other{weeks}}',
     '{num, number} {num, plural, =1{year} other{years}} of updates' => '{num, number} {num, plural, =1{year} other{years}} of updates',
     '{num, number} {num, plural, =1{year} other{years}}' => '{num, number} {num, plural, =1{year} other{years}}',

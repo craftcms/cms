@@ -1,5 +1,9 @@
 <script setup lang="ts">
-  const {kind} = defineProps<{kind: 'craft' | 'commerce' | 'enterprise'}>();
+  const {kind, label} = defineProps<{
+    kind: 'craft' | 'commerce' | 'enterprise';
+    /** Names the badge where no text beside it does. */
+    label?: string;
+  }>();
 
   const icons = {
     craft: 'check',
@@ -10,7 +14,7 @@
 
 <template>
   <span class="partner-badge">
-    <craft-icon :name="icons[kind]"></craft-icon>
+    <craft-icon :name="icons[kind]" :label="label"></craft-icon>
   </span>
 </template>
 
