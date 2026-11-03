@@ -107,7 +107,12 @@ export {default as CraftSpinner} from './components/spinner/spinner.js';
 export {default as CraftStatus} from './components/status/status.js';
 export {default as CraftSwitchButton} from './components/switch-button/switch-button.js';
 export {default as CraftSwitch} from './components/switch/switch.js';
-export {default as CraftTabs} from './components/tabs/tabs.js';
+export {
+  default as CraftTabs,
+  TabsAppearance,
+  tabsAppearances,
+  type TabsAppearanceValue,
+} from './components/tabs/tabs.js';
 export {default as CraftTab} from './components/tab/tab.js';
 export {default as CraftTextDiff} from './components/text-diff/text-diff.js';
 export {default as CraftTextarea} from './components/textarea/textarea.js';
