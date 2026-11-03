@@ -527,7 +527,7 @@ return [
     'Create a new section' => 'ایجاد یک بخش جدید',
     'Create a new site' => 'ایجاد یک سایت جدید',
     'Create a new tag group' => 'ایجاد یک گروه برچسب جدید',
-    'Create a new token' => 'Create a new token',
+    'Create a new token' => 'ایجاد توکن جدید',
     'Create a new user group' => 'ایجاد یک گروه کاربری جدید',
     'Create a new volume…' => 'ایجاد یک مخزن جدید...',
     'Create a new {section} entry' => 'ایجاد یک ورودی {section} جدید',
