@@ -7,6 +7,7 @@ Used inside `craft-action-menu`; see `action-menu.a11y.md` for the pattern. This
 ### Semantics
 
 - [x] The item renders a native `<button>`, or an `<a href>` when `href` is set, so it keeps the button or link role. Per WCAG 4.1.2 (Name, Role, Value). Verified by `marks its own button as current, not just the host` in `action-item.test.ts` and `carries target and rel onto a link item’s anchor` in `action-menu.test.ts`.
+- [x] A link item to another host with no `target` opens in a new tab with `rel="noopener"`, and says it opens in a new window in hidden text. A link to the same host opens in the same tab. Per WCAG 3.2.5 (Change on Request). Verified by `a link to another host opens in a new tab and says so` and `a link to this host opens in the same tab` in `action-item.test.ts`.
 - [ ] The default slot is the item's accessible name, and an `icon` without a label stays out of it as decorative. Per WCAG 4.1.2 (Name, Role, Value) and 1.1.1 (Non-text Content). Not yet verified.
 - [x] `current` sets `aria-current` on the item's own button, where an attribute on the host wouldn't reach. Per WCAG 4.1.2 (Name, Role, Value). Verified by `marks its own button as current, not just the host` in `action-item.test.ts`. No test covers a link item.
 - [ ] A link to the current page is marked `aria-current="page"`, as in the Disclosure Navigation Menu example. Per WCAG 4.1.2 (Name, Role, Value). Known gap: `current` always sets `aria-current="true"`.

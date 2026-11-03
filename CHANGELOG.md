@@ -336,6 +336,7 @@
 
 ### Accessibility
 
+- Links to other sites now show an external-link icon and tell screen readers that they open in a new window. They open in a new tab on every control panel page again, including links in Ask AI replies, Vue-rendered pages, and `<craft-button>`, `<craft-action-item>`, `<craft-breadcrumb-item>`, and `<craft-nav-item>` components. ([#20306](https://github.com/craftcms/cms/pull/20306))
 - Search fields’ clear buttons are no longer in the <kbd>Tab</kbd> order. <kbd>Esc</kbd> clears the field from the keyboard. ([#20127](https://github.com/craftcms/cms/pull/20127))
 - Improved labeling and keyboard focus management in shared control panel modals. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Buttons and menu items with keyboard shortcuts now announce them to assistive technology, including the Save menu’s items, inline editing’s and modals’ Save buttons, and comments’ Comment buttons. On a Mac, the ⌥, ⇧, and ⌘ symbols are read as “Option”, “Shift”, and “Command”. ([#20219](https://github.com/craftcms/cms/pull/20219))
