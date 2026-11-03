@@ -3,25 +3,39 @@ import type CraftSlidePicker from './slide-picker.js';
 import './slide-picker.js';
 
 async function createSlidePicker(
-  props: Partial<Pick<CraftSlidePicker, 'min' | 'max' | 'step' | 'value'>> = {}
+  props: Partial<
+    Pick<CraftSlidePicker, 'min' | 'max' | 'step' | 'modelValue' | 'name'>
+  > = {},
+  parent: HTMLElement = document.body
 ): Promise<CraftSlidePicker> {
   const element = document.createElement('craft-slide-picker');
-  Object.assign(element, {min: 0, max: 100, step: 10, value: 0, ...props});
-  document.body.append(element);
+  Object.assign(element, {min: 0, max: 100, step: 10, modelValue: 0, ...props});
+  parent.append(element);
   await element.updateComplete;
+  await slider(element).updateComplete;
 
   return element;
 }
 
-/** The host is the slider. */
-function slider(element: CraftSlidePicker): HTMLElement {
-  return element;
+function slider(element: CraftSlidePicker) {
+  return element.querySelector('craft-slide-picker-track')!;
 }
 
 function segments(element: CraftSlidePicker): HTMLElement[] {
   return [
-    ...element.shadowRoot!.querySelectorAll('.slide-picker__segment'),
+    ...slider(element).shadowRoot!.querySelectorAll('.slide-picker__segment'),
   ] as HTMLElement[];
+}
+
+async function settle(element: CraftSlidePicker) {
+  await element.updateComplete;
+  await slider(element).updateComplete;
+}
+
+function press(element: CraftSlidePicker, key: string) {
+  slider(element).dispatchEvent(
+    new KeyboardEvent('keydown', {key, bubbles: true})
+  );
 }
 
 beforeEach(() => {
@@ -41,7 +55,7 @@ describe('craft-slide-picker', () => {
       min: 0,
       max: 100,
       step: 25,
-      value: 50,
+      modelValue: 50,
     });
 
     const active = segments(element).filter((s) =>
@@ -58,106 +72,87 @@ describe('craft-slide-picker', () => {
   });
 
   it('emits input then change on segment click', async () => {
-    const element = await createSlidePicker({
-      min: 0,
-      max: 100,
-      step: 10,
-      value: 0,
-    });
+    const element = await createSlidePicker();
     const order: string[] = [];
-    element.addEventListener('input', () => order.push('input'));
-    element.addEventListener('change', () => order.push('change'));
+    element.addEventListener('input', (event) => {
+      if (event.target === element) order.push('input');
+    });
+    element.addEventListener('change', (event) => {
+      if (event.target === element) order.push('change');
+    });
 
     segments(element)[3]!.click(); // 0, 10, 20, 30 -> 30
-    await element.updateComplete;
+    await settle(element);
 
-    expect(element.value).toBe(30);
-    // Every step is a commit, so the pair fires together.
+    expect(element.modelValue).toBe(30);
     expect(order).toEqual(['input', 'change']);
   });
 
   it('does not emit when the value is set programmatically', async () => {
-    const element = await createSlidePicker({value: 0});
+    const element = await createSlidePicker();
     const handler = vi.fn();
     element.addEventListener('input', handler as EventListener);
     element.addEventListener('change', handler as EventListener);
 
-    element.value = 40;
-    await element.updateComplete;
+    element.modelValue = 40;
+    await settle(element);
 
     expect(handler).not.toHaveBeenCalled();
+    expect(slider(element).getAttribute('aria-valuenow')).toBe('40');
+  });
+
+  it('starts at the minimum when it is given no value', async () => {
+    const element = document.createElement('craft-slide-picker');
+    Object.assign(element, {min: 20, max: 100, step: 20});
+    document.body.append(element);
+    await settle(element);
+
+    expect(element.modelValue).toBe(20);
   });
 
   it('clamps out-of-range values and snaps off-step values', async () => {
-    const clamped = await createSlidePicker({
-      min: 0,
-      max: 100,
-      step: 10,
-      value: 250,
-    });
-    expect(clamped.value).toBe(100);
+    const clamped = await createSlidePicker({modelValue: 250});
+    expect(clamped.modelValue).toBe(100);
 
-    const snapped = await createSlidePicker({
-      min: 0,
-      max: 100,
-      step: 10,
-      value: 23,
-    });
-    expect(snapped.value).toBe(20);
+    const snapped = await createSlidePicker({modelValue: 23});
+    expect(snapped.modelValue).toBe(20);
   });
 
   it('moves the value with the keyboard and emits each change', async () => {
-    const element = await createSlidePicker({
-      min: 0,
-      max: 100,
-      step: 10,
-      value: 50,
-    });
+    const element = await createSlidePicker({modelValue: 50});
     const handler = vi.fn();
     element.addEventListener('change', handler as EventListener);
 
-    const press = (key: string) =>
-      slider(element).dispatchEvent(
-        new KeyboardEvent('keydown', {key, bubbles: true})
-      );
+    press(element, 'ArrowUp');
+    await settle(element);
+    expect(element.modelValue).toBe(60);
 
-    press('ArrowUp');
-    await element.updateComplete;
-    expect(element.value).toBe(60);
+    press(element, 'Home');
+    await settle(element);
+    expect(element.modelValue).toBe(0);
 
-    press('Home');
-    await element.updateComplete;
-    expect(element.value).toBe(0);
-
-    press('End');
-    await element.updateComplete;
-    expect(element.value).toBe(100);
+    press(element, 'End');
+    await settle(element);
+    expect(element.modelValue).toBe(100);
 
     expect(handler).toHaveBeenCalledTimes(3);
   });
 
-  it('ignores input while read-only', async () => {
-    const element = await createSlidePicker({
-      min: 0,
-      max: 100,
-      step: 10,
-      value: 50,
-    });
-    element.readonly = true;
-    await element.updateComplete;
+  it('ignores input while read-only, but stays in the Tab order', async () => {
+    const element = await createSlidePicker({modelValue: 50});
+    element.readOnly = true;
+    await settle(element);
 
     const handler = vi.fn();
     element.addEventListener('change', handler as EventListener);
 
     segments(element)[0]!.click();
-    slider(element).dispatchEvent(
-      new KeyboardEvent('keydown', {key: 'ArrowUp', bubbles: true})
-    );
-    await element.updateComplete;
+    press(element, 'ArrowUp');
+    await settle(element);
 
-    expect(element.value).toBe(50);
+    expect(element.modelValue).toBe(50);
     expect(handler).not.toHaveBeenCalled();
-    expect(slider(element).getAttribute('tabindex')).toBe('-1');
+    expect(slider(element).getAttribute('tabindex')).toBe('0');
     expect(slider(element).getAttribute('aria-readonly')).toBe('true');
   });
 
@@ -166,7 +161,7 @@ describe('craft-slide-picker', () => {
       min: 0,
       max: 100,
       step: 25,
-      value: 50,
+      modelValue: 50,
     });
     const s = slider(element);
 
@@ -178,109 +173,100 @@ describe('craft-slide-picker', () => {
   });
 
   it('ignores input while disabled', async () => {
-    const element = await createSlidePicker({value: 50});
+    const element = await createSlidePicker({modelValue: 50});
     element.disabled = true;
-    await element.updateComplete;
+    await settle(element);
 
     const handler = vi.fn();
     element.addEventListener('change', handler as EventListener);
 
     segments(element)[0]!.click();
-    await element.updateComplete;
+    await settle(element);
 
-    expect(element.value).toBe(50);
+    expect(element.modelValue).toBe(50);
     expect(handler).not.toHaveBeenCalled();
     expect(slider(element).getAttribute('tabindex')).toBe('-1');
     expect(slider(element).getAttribute('aria-disabled')).toBe('true');
   });
 
-  it('formats the value text with valueUnit and valueLabel', async () => {
-    const withUnit = await createSlidePicker({
-      min: 0,
-      max: 100,
-      step: 25,
-      value: 50,
-    });
-    withUnit.valueUnit = 'columns';
-    await withUnit.updateComplete;
-    expect(slider(withUnit).getAttribute('aria-valuetext')).toBe('50 columns');
+  it.each([
+    ['columns', '50 columns'],
+    [' columns', '50 columns'],
+    ['%', '50%'],
+  ])('announces value-unit %j as %j', async (valueUnit, expected) => {
+    const element = await createSlidePicker({modelValue: 50});
+    element.valueUnit = valueUnit;
+    await settle(element);
 
-    // A unit given with its own space doesn't get a second one.
-    withUnit.valueUnit = ' columns';
-    await withUnit.updateComplete;
-    expect(slider(withUnit).getAttribute('aria-valuetext')).toBe('50 columns');
+    expect(slider(element).getAttribute('aria-valuetext')).toBe(expected);
+  });
 
-    // A symbol attaches to the number.
-    withUnit.valueUnit = '%';
-    await withUnit.updateComplete;
-    expect(slider(withUnit).getAttribute('aria-valuetext')).toBe('50%');
+  it('announces the value as valueLabel formats it', async () => {
+    const element = await createSlidePicker({modelValue: 50});
+    element.valueLabel = (value) => `${value} columns`;
+    await settle(element);
 
-    const withLabel = await createSlidePicker({
-      min: 0,
-      max: 100,
-      step: 25,
-      value: 50,
-    });
-    withLabel.valueLabel = (value) => `${value} columns`;
-    await withLabel.updateComplete;
-    expect(slider(withLabel).getAttribute('aria-valuetext')).toBe('50 columns');
+    expect(slider(element).getAttribute('aria-valuetext')).toBe('50 columns');
   });
 });
 
-/**
- * happy-dom has no `ElementInternals`, so these run against
- * `element-internals-polyfill` (wired up in the components project's setup).
- * The polyfill carries `setFormValue` and `FormData`, but not the parts the
- * user agent itself performs — leaving a disabled control out of submission,
- * and calling `formResetCallback` on reset. Those are covered in the browser,
- * in `slide-picker.stories.ts`.
- */
-describe('craft-slide-picker form association', () => {
+describe('craft-slide-picker in a form', () => {
   async function createInForm(
-    props: Partial<Pick<CraftSlidePicker, 'name' | 'value'>> = {}
+    props: Partial<Pick<CraftSlidePicker, 'name' | 'modelValue'>> = {}
   ): Promise<{form: HTMLFormElement; element: CraftSlidePicker}> {
     const form = document.createElement('form');
-    const element = document.createElement('craft-slide-picker');
-    Object.assign(element, {min: 0, max: 100, step: 10, value: 0, ...props});
-    form.append(element);
     document.body.append(form);
-    await element.updateComplete;
+    const element = await createSlidePicker(props, form);
 
     return {form, element};
   }
 
   it('posts its value under its name', async () => {
-    const {form} = await createInForm({name: 'columns', value: 30});
+    const {form} = await createInForm({name: 'columns', modelValue: 30});
 
     expect(new FormData(form).get('columns')).toBe('30');
   });
 
   it('posts the updated value after user input', async () => {
-    const {form, element} = await createInForm({name: 'columns', value: 0});
+    const {form, element} = await createInForm({name: 'columns'});
 
     segments(element)[5]!.click(); // -> 50
-    await element.updateComplete;
+    await settle(element);
 
     expect(new FormData(form).get('columns')).toBe('50');
   });
 
   it('posts nothing without a name', async () => {
-    const {form} = await createInForm({value: 30});
+    const {form} = await createInForm({modelValue: 30});
 
     expect([...new FormData(form).keys()]).toEqual([]);
   });
 
-  it('restores the value it was given back', async () => {
-    const {element} = await createInForm({name: 'columns', value: 30});
+  it('posts nothing while disabled', async () => {
+    const {form, element} = await createInForm({
+      name: 'columns',
+      modelValue: 30,
+    });
+    element.disabled = true;
+    await settle(element);
+
+    expect(new FormData(form).get('columns')).toBeNull();
+  });
+
+  it('puts back the value it started with when the form is reset', async () => {
+    const {form, element} = await createInForm({
+      name: 'columns',
+      modelValue: 30,
+    });
 
     segments(element)[8]!.click(); // -> 80
-    await element.updateComplete;
-    expect(element.value).toBe(80);
+    await settle(element);
+    expect(element.modelValue).toBe(80);
 
-    // What the user agent hands back on `form.reset()`.
-    element._restoreFormValue('30');
-    await element.updateComplete;
+    form.reset();
+    await settle(element);
 
-    expect(element.value).toBe(30);
+    expect(element.modelValue).toBe(30);
+    expect(new FormData(form).get('columns')).toBe('30');
   });
 });

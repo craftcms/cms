@@ -29,6 +29,10 @@ The field gives its label, instructions and errors to the control in the `input`
 
 The group fallback suits a control that is really several inputs, such as a set of checkboxes. A single control needs to implement `FieldControl`, or its own label and description are all a screen reader announces.
 
+The simplest way is to build the control on Lion, which implements `FieldControl` for you. Extend an existing Craft control when yours is a variation of one, as [Select Color](?path=/docs/form-controls-select-controls-select-color--docs) extends `craft-select-rich`. Otherwise extend `LionField` and render the element people interact with into its `input` slot, as [Slide Picker](?path=/docs/form-controls-slide-picker--docs) does with its slider.
+
+A control that isn't built on Lion implements the two methods itself:
+
 ```ts
 import type {FieldControl} from '@craftcms/ui';
 

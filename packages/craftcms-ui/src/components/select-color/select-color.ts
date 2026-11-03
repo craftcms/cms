@@ -1,13 +1,10 @@
-import {html, LitElement, render} from 'lit';
+import {html, nothing, render, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
-import type {Validator} from '@lion/ui/form-core.js';
-import type CraftSelectRich from '../select-rich/select-rich.js';
-import type {FieldControl} from '../field/field.js';
 import {colors as paletteColors} from '@src/constants/colors';
 import {emitChange, emitInput} from '@src/utilities/form-events';
 import {t} from '@src/utilities/translate';
+import CraftSelectRich from '../select-rich/select-rich.js';
 import styles from './select-color.styles.js';
-import '../select-rich/select-rich.js';
 import '../option/option.js';
 
 /**
@@ -18,17 +15,21 @@ function titleCase(value: string): string {
 }
 
 /**
- * @summary A color picker built on top of the rich select. Renders one option
- * per color from `constants/colors` (or {@link CraftSelectColor.colors}, when
- * narrowed), with an optional "transparent" option.
+ * @summary A color picker: a rich select whose options are the colors from
+ * `constants/colors` (or {@link CraftSelectColor.colors}, when narrowed), with
+ * an optional "transparent" option.
+ *
+ * Everything else, including the label, help text, validation and the way a
+ * surrounding `craft-field` names it, comes from {@link CraftSelectRich}.
  *
  * @since 1.0
+ *
+ * @attr model-value - The selected color.
  *
  * @fires input - Emitted when a color is picked.
  * @fires change - Emitted when a color is picked. Picking is a commit, so it
  *   follows each `input`.
- * @fires model-value-changed - The selected color changed. Re-dispatched from
- *   the host as a composed event so it crosses the shadow boundary.
+ * @fires model-value-changed - The selected color changed.
  *
  * @cssproperty [--c-select-color-swatch-edge=rgb(0 0 0 / 15%)] - Edge of the
  *   no-color swatch, which would otherwise blend into a dark surface. The dark
@@ -41,29 +42,10 @@ function titleCase(value: string): string {
  * it. Prefer the native events above: they are the contract this package
  * supports, and they carry the component as `event.target`.
  */
-export default class CraftSelectColor
-  extends LitElement
-  implements FieldControl
-{
-  static override styles = [styles];
-
-  /**
-   * Field label, forwarded to the underlying rich select.
-   */
-  @property()
-  label = '';
-
-  /**
-   * Field name, forwarded to the underlying rich select.
-   */
-  @property()
-  name = '';
-
-  /**
-   * The currently selected color value.
-   */
-  @property({attribute: 'model-value'})
-  modelValue: string | null = null;
+export default class CraftSelectColor extends CraftSelectRich {
+  static override get styles() {
+    return [...super.styles, styles];
+  }
 
   /**
    * When enabled, a blank option (labeled {@link blankLabel}) is prepended
@@ -84,29 +66,9 @@ export default class CraftSelectColor
   @property({type: Array})
   colors: string[] = [...paletteColors];
 
-  /**
-   * Disables the control, forwarded to the underlying rich select.
-   */
-  @property({type: Boolean, reflect: true})
-  disabled = false;
-
-  /**
-   * Shows the selected color without letting it be changed.
-   */
-  @property({type: Boolean, reflect: true, attribute: 'readonly'})
-  readOnly = false;
-
-  /**
-   * Marks the control as required, forwarded to the underlying rich select.
-   */
+  /** Marks the control as required. */
   @property({type: Boolean, reflect: true})
   required = false;
-
-  /**
-   * Lion validators, forwarded to the underlying rich select.
-   */
-  @property({attribute: false})
-  validators: Validator[] = [];
 
   /**
    * Renders a color swatch for the given color value. The special `__blank__`
@@ -200,103 +162,73 @@ export default class CraftSelectColor
   }
 
   /**
-   * Bridges the inner rich select's selection back out to consumers.
-   *
-   * The inner `craft-select-rich` emits Lion's `model-value-changed` event,
-   * with the rich select as its target. We catch it here, sync our own host
-   * `modelValue` from the inner select, then re-dispatch a `composed`
-   * `model-value-changed` from the host so v-model wrappers can read the
-   * up-to-date `this.modelValue` off `event.target`.
+   * The rich select only adopts a `model-value` once its options exist, so the
+   * attribute is applied as a property, which waits for them.
    */
-  protected _handleModelValueChanged(event: Event) {
-    event.stopPropagation();
+  static override get observedAttributes() {
+    return [...super.observedAttributes, 'model-value'];
+  }
 
-    const inner = event.target as {modelValue?: string | null} | null;
-    this.modelValue = inner?.modelValue ?? null;
+  override attributeChangedCallback(
+    name: string,
+    old: string | null,
+    value: string | null
+  ) {
+    if (name === 'model-value') {
+      this.modelValue = value ?? '';
+      return;
+    }
+    super.attributeChangedCallback(name, old, value);
+  }
 
-    this.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true, composed: true})
+  constructor() {
+    super();
+    /** No color is picked until one is asked for. */
+    this.hasNoDefaultSelected = true;
+    // Picking a color is a commit, so the pair fires together, the way a radio
+    // group's does.
+    this.addEventListener('model-value-changed', (event) => {
+      if (
+        event.target === this &&
+        (event as CustomEvent).detail?.isTriggeredByUser
+      ) {
+        emitInput(this);
+        emitChange(this);
+      }
+    });
+  }
+
+  override connectedCallback() {
+    super.connectedCallback();
+    this.#renderOptions();
+  }
+
+  override updated(changed: PropertyValues<this>) {
+    super.updated(changed);
+
+    if (
+      changed.has('colors') ||
+      changed.has('allowTransparent') ||
+      changed.has('blankLabel')
+    ) {
+      this.#renderOptions();
+    }
+  }
+
+  /** Renders the options into the listbox, as `craft-combobox` does. */
+  #renderOptions() {
+    if (!this._listboxNode) {
+      return;
+    }
+
+    render(
+      html`${this.allowTransparent
+        ? this._optionTemplate('__blank__', this.blankLabel ?? t('Transparent'))
+        : nothing}${this.colors.map((color) =>
+        this._optionTemplate(color, t(titleCase(color)))
+      )}`,
+      this._listboxNode
     );
-
-    // The public contract. Picking a color is a commit, so the pair fires
-    // together, the way a radio group's does.
-    emitInput(this);
-    emitChange(this);
-  }
-
-  /** The rich select this renders into its own light DOM. */
-  get #select(): CraftSelectRich | null {
-    return this.querySelector(':scope > craft-select-rich');
-  }
-
-  /**
-   * Adds `element` to the color button's accessible name. `craft-field` calls
-   * this with its label.
-   */
-  addToAriaLabelledBy(element: HTMLElement): void {
-    void this.#whenSelectReady().then((select) =>
-      select?.addToAriaLabelledBy(element)
-    );
-  }
-
-  /**
-   * Adds `element` to the color button's accessible description.
-   * `craft-field` calls this with its instructions and errors.
-   */
-  addToAriaDescribedBy(element: HTMLElement): void {
-    void this.#whenSelectReady().then((select) =>
-      select?.addToAriaDescribedBy(element)
-    );
-  }
-
-  /** Waits for this and the rich select inside it to render. */
-  async #whenSelectReady(): Promise<CraftSelectRich | null> {
-    await this.updateComplete;
-    await this.#select?.updateComplete;
-    return this.#select;
-  }
-
-  /** Focuses the color button, as clicking a field label does. */
-  override focus(options?: FocusOptions): void {
-    this.#select?.focus(options);
-  }
-
-  /**
-   * The shadow root only slots the rich select, which renders in light DOM.
-   * There it shares a tree with a surrounding field's label and instructions,
-   * so the ids the field hands it resolve.
-   */
-  protected override render() {
-    return html`<slot></slot>`;
-  }
-
-  protected override updated() {
-    render(this.#selectTemplate(), this, {host: this});
-  }
-
-  #selectTemplate() {
-    return html`
-      <craft-select-rich
-        label=${this.label}
-        name=${this.name}
-        .modelValue=${this.modelValue}
-        .disabled=${this.disabled}
-        .readOnly=${this.readOnly}
-        .required=${this.required}
-        .validators=${this.validators}
-        @model-value-changed=${this._handleModelValueChanged}
-      >
-        ${this.allowTransparent
-          ? this._optionTemplate(
-              '__blank__',
-              this.blankLabel ?? t('Transparent')
-            )
-          : ''}
-        ${this.colors.map((color) =>
-          this._optionTemplate(color, t(titleCase(color)))
-        )}
-      </craft-select-rich>
-    `;
   }
 }
 

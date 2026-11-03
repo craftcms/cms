@@ -94,7 +94,6 @@ it('takes its name and description from a surrounding field', async () => {
   await import('../field/field.js');
   document.body.innerHTML = `<craft-field label="Card color" help-text="The color of the entry type's cards."><craft-select-color slot="input" model-value="red"></craft-select-color><ul slot="feedback" class="errors"><li>Pick a color.</li></ul></craft-field>`;
 
-  // The button's name is the field label followed by the selected color.
   const button = page.getByRole('button', {name: /^Card color/});
 
   await expect.element(button).toHaveAccessibleName(/^Card color\b.*Red/);
@@ -115,4 +114,36 @@ it('focuses its button when the field label is clicked', async () => {
   await expect
     .element(page.getByRole('button', {name: /^Card color/}))
     .toHaveFocus();
+});
+
+it('emits input then change when a color is picked, but not when one is set', async () => {
+  const {page, userEvent} = await import('vite-plus/test/browser');
+  document.body.innerHTML = `<craft-select-color label="Color"></craft-select-color>`;
+  const select =
+    document.querySelector<CraftSelectColor>('craft-select-color')!;
+  await select.updateComplete;
+  const events: string[] = [];
+  select.addEventListener('input', () => events.push('input'));
+  select.addEventListener('change', () => events.push('change'));
+
+  select.modelValue = 'green';
+  await select.updateComplete;
+  await userEvent.click(page.getByRole('button', {name: /^Color/}));
+  await userEvent.click(page.getByRole('option', {name: 'Red'}));
+
+  expect(events).toEqual(['input', 'change']);
+  expect(select.modelValue).toBe('red');
+});
+
+it('selects no color until one is given', async () => {
+  const {page} = await import('vite-plus/test/browser');
+  document.body.innerHTML = `<craft-select-color label="Color"></craft-select-color>`;
+  const select =
+    document.querySelector<CraftSelectColor>('craft-select-color')!;
+  await select.registrationComplete;
+
+  expect(select.modelValue).toBe('');
+  await expect
+    .element(page.getByRole('option', {name: 'Red', includeHidden: true}))
+    .toHaveAttribute('aria-selected', 'false');
 });

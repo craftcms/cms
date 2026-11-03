@@ -119,8 +119,8 @@ it('names each widget’s reorder button, column picker and delete button after 
 
   expect(reorder.label).toBe('Reorder Updates');
   await expect
-    .element(picker)
-    .toHaveAccessibleName('Number of columns Updates');
+    .element(page.getByRole('slider', {name: 'Number of columns Updates'}))
+    .toBeInTheDocument();
   await expect
     .element(page.getByRole('button', {name: 'Delete Updates', exact: true}))
     .toBeInTheDocument();
