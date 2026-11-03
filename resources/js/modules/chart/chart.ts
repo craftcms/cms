@@ -1,11 +1,34 @@
 import * as d3 from 'd3';
-import {Base} from '@craftcms/garnish';
+import {Base, isPlainObject} from '@craftcms/garnish';
+import {contentSize, resolveElement, type ElementArg} from '@/common/utils/dom';
+import {jq} from '@/common/utils/jquery';
 
-// Charts keep the `declare const $` jQuery seam (like the other complex legacy
-// managers): the `$container` API is passed as jQuery by the still-legacy chart
-// widgets, and the tooltip/measurement (`.width()`/`.height()`/`.offset()`)
-// rely on jQuery's box model. d3 is a real ESM import (bundled).
-declare const $: any;
+/** A deep merge with the semantics of jQuery's `$.extend(true, …)`. */
+function deepExtend(target: any, ...sources: any[]): any {
+  for (const source of sources) {
+    if (source == null) {
+      continue;
+    }
+
+    for (const [key, value] of Object.entries(source)) {
+      if (value === undefined || value === target) {
+        continue;
+      }
+
+      if (Array.isArray(value)) {
+        const base = Array.isArray(target[key]) ? target[key] : [];
+        target[key] = deepExtend(base, value);
+      } else if (isPlainObject(value)) {
+        const base = isPlainObject(target[key]) ? target[key] : {};
+        target[key] = deepExtend(base, value);
+      } else {
+        target[key] = value;
+      }
+    }
+  }
+
+  return target;
+}
 
 declare global {
   interface Window {
@@ -35,7 +58,7 @@ export class DataTable extends Base {
     const rows = data.rows;
 
     rows.forEach((d: any) => {
-      $.each(d, function (cellIndex: any) {
+      d.forEach((_cell: any, cellIndex: number) => {
         const column = columns[cellIndex];
         let parseTime;
 
@@ -73,37 +96,48 @@ export class DataTable extends Base {
  * Craft.charts.Tip — a positioned tooltip element inside the chart container.
  */
 export class Tip extends Base {
-  $container: any = null;
-  $tip: any = null;
+  container: HTMLElement | null = null;
+  tip!: HTMLElement;
 
-  constructor($container?: any) {
+  constructor(container?: ElementArg) {
     super();
     if (new.target === Tip) {
-      this.init($container);
+      this.init(container);
     }
   }
 
-  init($container: any): void {
-    this.$container = $container;
-    this.$tip = $('<div class="tooltip"></div>').appendTo(this.$container);
+  init(container: ElementArg): void {
+    this.container = resolveElement(container);
+    this.tip = document.createElement('div');
+    this.tip.className = 'tooltip';
+    this.container?.append(this.tip);
     this.hide();
   }
 
-  setContent(html: any): void {
-    this.$tip.html(html);
+  /** The tooltip as a jQuery collection, for legacy code. */
+  get $tip(): any {
+    return jq()?.(this.tip) ?? null;
+  }
+
+  setContent(content: string | Node): void {
+    if (typeof content === 'string') {
+      this.tip.innerHTML = content;
+    } else {
+      this.tip.replaceChildren(content);
+    }
   }
 
   setPosition(position: {left: number; top: number}): void {
-    this.$tip.css('left', `${position.left}px`);
-    this.$tip.css('top', `${position.top}px`);
+    this.tip.style.left = `${position.left}px`;
+    this.tip.style.top = `${position.top}px`;
   }
 
   show(): void {
-    this.$tip.css('display', 'block');
+    this.tip.style.display = 'block';
   }
 
   hide(): void {
-    this.$tip.css('display', 'none');
+    this.tip.style.display = 'none';
   }
 }
 
@@ -134,8 +168,18 @@ export class BaseChart extends Base {
   // loosen the inherited `Base` `settings: S | null` to `any`.
   declare settings: any;
 
-  $container: any = null;
-  $chart: any = null;
+  container: HTMLElement | null = null;
+  chart: HTMLElement | null = null;
+
+  /** The container as a jQuery collection, for legacy chart widgets. */
+  get $container(): any {
+    return this.container ? jq()?.(this.container) : null;
+  }
+
+  /** The chart element as a jQuery collection, for legacy chart widgets. */
+  get $chart(): any {
+    return this.chart ? jq()?.(this.chart) : null;
+  }
 
   chartBaseClass = 'cp-chart';
   dataTable: any = null;
@@ -155,8 +199,8 @@ export class BaseChart extends Base {
     }
   }
 
-  init(container: any, settings?: any): void {
-    this.$container = container;
+  init(container: ElementArg, settings?: any): void {
+    this.container = resolveElement(container);
 
     this.setSettings(BaseChart.defaults);
     this.setSettings(settings);
@@ -178,7 +222,7 @@ export class BaseChart extends Base {
   // it's called repeatedly to layer defaults + overrides + global config.
   override setSettings(settings?: any, defaults?: any): void {
     const baseSettings = this.settings ?? {};
-    this.settings = $.extend(true, {}, baseSettings, defaults, settings);
+    this.settings = deepExtend({}, baseSettings, defaults, settings);
   }
 
   draw(dataTable: any, settings?: any): void {
@@ -193,16 +237,16 @@ export class BaseChart extends Base {
     this.orientation = this.settings.orientation;
 
     // Set (or reset) the chart element
-    if (this.$chart) {
-      this.$chart.remove();
-    }
+    this.chart?.remove();
 
     let className = this.chartBaseClass;
     if (this.settings.chartClass) {
       className += ' ' + this.settings.chartClass;
     }
 
-    this.$chart = $(`<div class="${className}" />`).appendTo(this.$container);
+    this.chart = document.createElement('div');
+    this.chart.className = className;
+    this.container?.append(this.chart);
   }
 
   resize(): void {
@@ -211,19 +255,15 @@ export class BaseChart extends Base {
 
   onAfterDrawTicks(): void {
     // White border for ticks' text
-    $('.tick', this.$chart).each(function (
-      this: any,
-      _tickKey: any,
-      tick: any
-    ) {
-      const $tickText = $('text', tick);
+    for (const tick of this.chart?.querySelectorAll('.tick') ?? []) {
+      const texts = Array.from(tick.querySelectorAll('text'));
 
-      const $clone = $tickText.clone();
-      $clone.appendTo(tick);
-
-      $tickText.attr('stroke', '#ffffff');
-      $tickText.attr('stroke-width', 3);
-    });
+      for (const text of texts) {
+        tick.append(text.cloneNode(true));
+        text.setAttribute('stroke', '#ffffff');
+        text.setAttribute('stroke-width', '3');
+      }
+    }
   }
 }
 
@@ -273,8 +313,9 @@ export class Area extends BaseChart {
 
     const margin = this.getChartMargin();
 
-    this.width = this.$chart.width() - margin.left - margin.right;
-    this.height = this.$chart.height() - margin.top - margin.bottom;
+    const chartSize = contentSize(this.chart!);
+    this.width = chartSize.width - margin.left - margin.right;
+    this.height = chartSize.height - margin.top - margin.bottom;
 
     // Append SVG to chart element
     const svg = {
@@ -285,7 +326,7 @@ export class Area extends BaseChart {
     };
 
     this.svg = d3
-      .select(this.$chart.get(0))
+      .select(this.chart)
       .append('svg')
       .attr('width', svg.width)
       .attr('height', svg.height);
@@ -469,7 +510,7 @@ export class Area extends BaseChart {
     }
 
     if (!this.tip) {
-      this.tip = new Tip(this.$chart);
+      this.tip = new Tip(this.chart);
     }
 
     // Define xAxisTickInterval
@@ -513,14 +554,14 @@ export class Area extends BaseChart {
         this.drawingArea.select('.plot-' + index).attr('r', 5);
 
         // Set tip content
-        const $content = $('<div />');
-        const $xValue = $('<div class="x-value" />').appendTo($content);
-        const $yValue = $('<div class="y-value" />').appendTo($content);
-
-        $xValue.html(this.getXFormatter()(dataValue[0]));
-        $yValue.html(this.getYFormatter()(dataValue[1]));
-
-        const content = $content.get(0);
+        const content = document.createElement('div');
+        const xValue = document.createElement('div');
+        xValue.className = 'x-value';
+        xValue.innerHTML = this.getXFormatter()(dataValue[0]);
+        const yValue = document.createElement('div');
+        yValue.className = 'y-value';
+        yValue.innerHTML = this.getYFormatter()(dataValue[1]);
+        content.append(xValue, yValue);
 
         this.tip.setContent(content);
 
@@ -534,17 +575,17 @@ export class Area extends BaseChart {
         if (this.orientation !== 'rtl') {
           left = x(dataValue[0]) + margin.left + offset;
 
-          const calcLeft =
-            this.$chart.offset().left + left + this.tip.$tip.width();
-          const maxLeft =
-            this.$chart.offset().left + this.$chart.width() - offset;
+          const chartLeft = this.chart!.getBoundingClientRect().left;
+          const calcLeft = chartLeft + left + contentSize(this.tip.tip).width;
+          const maxLeft = chartLeft + contentSize(this.chart!).width - offset;
 
           if (calcLeft > maxLeft) {
-            left = x(dataValue[0]) - (this.tip.$tip.width() + offset);
+            left = x(dataValue[0]) - (contentSize(this.tip.tip).width + offset);
           }
         } else {
           left =
-            x(dataValue[0]) - (this.tip.$tip.width() + margin.left + offset);
+            x(dataValue[0]) -
+            (contentSize(this.tip.tip).width + margin.left + offset);
         }
 
         if (left < 0) {
@@ -572,7 +613,7 @@ export class Area extends BaseChart {
     const values = this.getYTickValues();
     let yTicksMaxWidth = 0;
 
-    $.each(values, (_key: any, value: any) => {
+    values.forEach((value: any) => {
       const characterWidth = 8;
 
       const formatter = this.getYFormatter();
