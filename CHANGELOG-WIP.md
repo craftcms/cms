@@ -11,6 +11,8 @@
 - Added a “Theme” user preference, with “Light”, “Dark”, and “System” options. “System” is the default. Pages shown to logged-out users, such as the login page, always follow the system’s light or dark setting. ([#19966](https://github.com/craftcms/cms/pull/19966))
 - Added a control panel notification center.
 - Added flyout menus to the global control panel nav, for accessing sub-pages of non-selected sections. ([#19648](https://github.com/craftcms/cms/pull/19648))
+- Added Settings → System → CP Navigation, where administrators can customize the control panel’s navigation: reorder items and move them between sections, rename them, change their icons, hide them, and add sections and links, which can be limited to users who match a condition. Customizing the navigation requires Craft Team or later. ([#20247](https://github.com/craftcms/cms/pull/20247))
+- User groups can now have their own control panel navigations, which build on the default navigation and save only what they change, so changes to the default carry through to them. People in more than one group get the first of their groups’ navigations, in the order administrators put them in. (Craft Pro and Enterprise only.) ([#20247](https://github.com/craftcms/cms/pull/20247))
 - Control panel success, notice, and error messages now stack, newest first, and can be swiped away. Errors and messages with actions stay until dismissed.
 - Admin table links and create actions can now open in a slideout with a custom width, via the `slideoutWidth` link option and new `slideout` and `slideoutWidth` arguments on `CraftCms\Cms\Ui\Nodes\Table::createAction()`.
 - Double-clicking an admin table row now opens its link's slideout, if it has one.
@@ -163,6 +165,7 @@
 - The MCP server’s `elements.field-schema` tool now says that Markdown fields take Markdown, rather than HTML. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - The `elements.*` MCP tools no longer list draft, revision, or structure criteria and attributes for element types that don’t support them, such as structure params for assets and users. ([#20254](https://github.com/craftcms/cms/pull/20254))
 - MCP tools that set Matrix field values now add new entries after the existing ones when `sortOrder` is omitted, and reject a `sortOrder` that doesn’t list every new entry. ([#20292](https://github.com/craftcms/cms/pull/20292))
+- The MCP server’s configuration tools can now manage control panel navigations, via the `cp-navigations` configuration type, which reads and writes each navigation as the tree the navigation builder edits. ([#20247](https://github.com/craftcms/cms/pull/20247))
 
 #### General
 - Replaced Craft’s system status with Laravel maintenance mode, including an admin-only Maintenance Mode control in General Settings.
@@ -834,6 +837,12 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - Deprecated the `Craft.LightSwitch`, `Craft.InfoIcon`, `Craft.ColorInput`, `Craft.PasswordInput`, `Craft.IconPicker`, `Craft.SlidePicker`, `Craft.SlideRuleInput`, and `Craft.Tooltip` control panel JavaScript classes, along with the `.infoicon` jQuery plugin. The corresponding `@craftcms/ui` web components should be used instead. 
 - Deprecated the `Craft.SortableCheckboxSelect` control panel JavaScript class. `<craft-checkbox-select>` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Control panel elements with a `data-icon` attribute, such as those in plugins’ templates and scripts, now show the matching SVG icon via `<craft-icon>` when `craftcms/yii2-adapter` is installed, since the legacy icon font is no longer loaded. Core control panel markup uses `<craft-icon>` instead. ([#20179](https://github.com/craftcms/cms/pull/20179))
+- Added `CraftCms\Cms\Cp\CustomNavigations`, `CraftCms\Cms\Cp\NavCustomizer`, and `CraftCms\Cms\Cp\Data\NavNode`, for reading and applying control panel navigation customizations. ([#20247](https://github.com/craftcms/cms/pull/20247))
+- Added `CraftCms\Cms\Cp\Navigation::getBaseTree()` and `getBaseTreeForGroup()`, which return the control panel navigation before any customization. ([#20247](https://github.com/craftcms/cms/pull/20247))
+- Added `CraftCms\Cms\Edition::supportsCustomNavigations()`. ([#20247](https://github.com/craftcms/cms/pull/20247))
+- Added the `aligned` admin table appearance (`CraftCms\Cms\Cp\Enums\TableAppearance::Aligned`), which keeps a table’s outer cells’ content flush with its edges. ([#20247](https://github.com/craftcms/cms/pull/20247))
+- Admin table rows can now set `_reorderable` to `false` to stay in place without a drag handle. ([#20247](https://github.com/craftcms/cms/pull/20247))
+- Settings nav items now show a custom icon’s solid version (`custom-icons/<name>`) when a setting’s `iconName` is its light version (`custom-icons/<name>-light`). ([#20247](https://github.com/craftcms/cms/pull/20247))
 
 #### Drafts
 - Deprecated `craft\services\Drafts`. `CraftCms\Cms\Element\Drafts` should be used instead.
@@ -924,6 +933,7 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Deprecated `craft\services\ElementSources`. `CraftCms\Cms\Element\ElementSources` should be used instead.
 - Deprecated `craft\events\DefineSourceSortOptionsEvent`. `CraftCms\Cms\Element\Events\ElementSourceSortOptionsResolving` should be used instead.
 - Deprecated `craft\events\DefineSourceTableAttributesEvent`. `CraftCms\Cms\Element\Events\ElementSourceTableAttributesResolving` should be used instead.
+- Element source headings can now have a `handle`, which gives their control panel navigation items stable IDs. ([#20247](https://github.com/craftcms/cms/pull/20247))
 
 #### Element Queries
 - Deprecated `craft\elements\db\ElementRelationParamParser`. `CraftCms\Cms\Database\ElementRelationParamFilter` should be used instead.
@@ -1309,6 +1319,7 @@ Moved the following controllers:
 - Deprecated `\craft\records\UserPermission`. `\CraftCms\Cms\User\Models\UserPermission` should be used instead.
 - Deprecated `craft\services\UserPermissions`. `CraftCms\Cms\User\UserPermissions` should be used instead.
 - Deprecated `craft\events\DefineEditUserScreensEvent`. `CraftCms\Cms\User\Events\EditUserScreensResolving` should be used instead.
+- Added `CraftCms\Cms\User\UserPermissions::actingAsGroup()`, which runs a callback with the current user’s permissions replaced by a user group’s. ([#20247](https://github.com/craftcms/cms/pull/20247))
 
 #### View
 - Added `CraftCms\Cms\View\TwigEngine`.
