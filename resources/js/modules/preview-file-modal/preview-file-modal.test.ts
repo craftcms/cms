@@ -1,4 +1,3 @@
-import $ from 'jquery';
 import {
   afterEach,
   beforeEach,
@@ -50,16 +49,15 @@ function stubOverflow(): void {
   vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(100);
 }
 
-/** A stand-in for the legacy `Garnish.Select` holding asset elements. */
+/** A stand-in for a `Select` holding asset elements. */
 function elementSelect(ids: number[]) {
-  const $items = $(
-    ids.map((id) => `<div class="element" data-id="${id}"></div>`).join('')
-  );
   return {
-    $items,
-    getItemIndex: ($item: any) => $items.index($item),
-    getPreviousItem: (index: number) => $items.eq(index - 1),
-    getNextItem: (index: number) => $items.eq(index + 1),
+    $items: ids.map((id) => {
+      const item = document.createElement('div');
+      item.className = 'element';
+      item.dataset.id = String(id);
+      return item;
+    }),
     deselectAll: vi.fn(),
     selectItem: vi.fn(),
     focusItem: vi.fn(),
@@ -204,7 +202,7 @@ describe('PreviewFileModal', () => {
           previewHtml: '<pre><code data-language="text">abc</code></pre>',
         },
       });
-    PreviewFileModal.showForAsset(select.$items.eq(0), select);
+    PreviewFileModal.showForAsset(select.$items[0], select);
     await settle();
 
     const [dialog] = openDialogs();
@@ -235,7 +233,7 @@ describe('PreviewFileModal', () => {
         ).toBe('2');
       });
     const select = elementSelect([1, 2]);
-    PreviewFileModal.showForAsset(select.$items.eq(0), select);
+    PreviewFileModal.showForAsset(select.$items[0], select);
     await settle();
 
     const [dialog] = openDialogs();
@@ -250,7 +248,7 @@ describe('PreviewFileModal', () => {
 
   it('moves between the assets of its element select in the same dialog', async () => {
     const select = elementSelect([1, 2, 3]);
-    PreviewFileModal.showForAsset(select.$items.eq(1), select);
+    PreviewFileModal.showForAsset(select.$items[1], select);
     await settle();
 
     const [dialog] = openDialogs();
@@ -265,13 +263,13 @@ describe('PreviewFileModal', () => {
     expect(openDialogs()).toEqual([dialog]);
     expect(dialog!.querySelector('.preview')!.textContent).toBe('3');
     expect(select.selectItem).toHaveBeenCalledWith(
-      select.$items.eq(2),
+      select.$items[2],
       false,
       false
     );
 
     dialog!.dispatchEvent(new Event('craft-after-hide'));
-    expect(select.focusItem).toHaveBeenCalledWith(select.$items.eq(2));
+    expect(select.focusItem).toHaveBeenCalledWith(select.$items[2]);
   });
 
   it('focuses the loaded preview, and makes it a tab stop when it overflows', async () => {
@@ -298,7 +296,7 @@ describe('PreviewFileModal', () => {
   it('scrolls an overflowing preview with the up and down arrows, rather than moving between assets', async () => {
     stubOverflow();
     const select = elementSelect([1, 2, 3]);
-    PreviewFileModal.showForAsset(select.$items.eq(1), select);
+    PreviewFileModal.showForAsset(select.$items[1], select);
     await settle();
 
     const [dialog] = openDialogs();

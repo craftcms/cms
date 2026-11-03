@@ -19,7 +19,7 @@ import {
   animateAll,
   getElementInfo,
   setElementSize,
-} from '@/common/craft/element-markup';
+} from './element-markup';
 import {announce} from '@/common/announcer';
 import {loadElementThumbs} from '@/modules/element-thumb-loader/globals';
 import {iconSvg} from '@/common/craft/icon-svg';
