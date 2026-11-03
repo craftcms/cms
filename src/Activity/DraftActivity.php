@@ -14,9 +14,7 @@ use CraftCms\Cms\Element\Events\DraftApplied;
 use CraftCms\Cms\Element\Events\DraftCreated;
 use CraftCms\Cms\Element\Events\ElementPersisted;
 use CraftCms\Cms\Element\Events\ElementSaving;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Release\Activity\ReleaseDraftPublished;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\Activities;
@@ -85,16 +83,6 @@ readonly class DraftActivity
             $original->getAuthorIds();
         }
 
-        foreach ($original?->getFieldLayout()?->getCustomFields() ?? [] as $field) {
-            if ($field instanceof BaseRelationField && in_array($field->handle, $dirtyFields, true)) {
-                $value = $original->getFieldValue($field->handle);
-
-                if ($value instanceof ElementQueryInterface) {
-                    $original->setFieldValue($field->handle, (clone $value)->status(null)->collect());
-                }
-            }
-        }
-
         $this->writes[$element] = new DraftWrite(
             isNew: ! $wasDraft || (bool) $draft->provisional || ! (bool) $draft->saved,
             metadataChanged: (bool) $draft->provisional !== $element->isProvisionalDraft ||
@@ -102,6 +90,7 @@ readonly class DraftActivity
                 $draft->notes !== $element->draftNotes ||
                 (bool) $draft->saved !== $element->markDraftAsSaved,
             original: $original,
+            originalFieldValues: $original !== null ? EntryActivity::fieldValues($original, $dirtyFields) : [],
             dirtyAttributes: $dirtyAttributes,
             dirtyFields: $dirtyFields,
         );
@@ -119,6 +108,7 @@ readonly class DraftActivity
             [$changes, $contentChanged] = EntryActivity::changes(
                 $event->element,
                 $write->original,
+                $write->originalFieldValues,
                 $write->dirtyAttributes,
                 $write->dirtyFields,
             );
@@ -196,15 +186,7 @@ readonly class DraftActivity
             $original->getAuthorIds();
         }
 
-        foreach ($original->getFieldLayout()?->getCustomFields() ?? [] as $field) {
-            if ($field instanceof BaseRelationField && in_array($field->handle, $dirtyFields, true)) {
-                $value = $original->getFieldValue($field->handle);
-
-                if ($value instanceof ElementQueryInterface) {
-                    $original->setFieldValue($field->handle, (clone $value)->status(null)->collect());
-                }
-            }
-        }
+        $originalFieldValues = EntryActivity::fieldValues($original, $dirtyFields);
 
         $moveOrigin = $original->structureId !== null && $original->getParentId() !== $draft->getParentId()
             ? StructuralElementActivity::position(
@@ -213,7 +195,7 @@ readonly class DraftActivity
             )
             : null;
 
-        return function (Entry $entry) use ($original, $dirtyAttributes, $dirtyFields, $moveOrigin): void {
+        return function (Entry $entry) use ($original, $originalFieldValues, $dirtyAttributes, $dirtyFields, $moveOrigin): void {
             if ($moveOrigin !== null) {
                 StructuralElementActivity::recordMoved(
                     $entry,
@@ -222,7 +204,7 @@ readonly class DraftActivity
                 );
             }
 
-            EntryActivity::recordUpdated($entry, $original, $dirtyAttributes, $dirtyFields);
+            EntryActivity::recordUpdated($entry, $original, $originalFieldValues, $dirtyAttributes, $dirtyFields);
         };
     }
 }
