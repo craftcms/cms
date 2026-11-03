@@ -1,5 +1,4 @@
 import '@/modules/element-thumb-loader';
-import './globals';
 import CraftElementSelectInput, {
   CraftAssetSelectInput,
   CraftEntrySelectInput,

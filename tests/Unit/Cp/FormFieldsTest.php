@@ -113,6 +113,38 @@ describe('elementSelectFieldHtml', function () {
         expect($input->filter('craft-button')->text())->toBe('Add an entry')
             ->and($input->filter('input[type="hidden"][name="featuredEntryIds"][value=""]'))->toHaveCount(1);
     })->with([false, true]);
+
+    it('boots through a custom element rather than an inline script', function (?string $jsClass, string $element, ?string $inputClass) {
+        $html = FormFields::elementSelectHtml([
+            'id' => 'related',
+            'name' => 'relatedIds',
+            'elementType' => Entry::class,
+            'jsClass' => $jsClass,
+        ]);
+
+        $input = new Crawler($html)->filter($element);
+
+        expect($input)->toHaveCount(1)
+            ->and($input->attr('input-class'))->toBe($inputClass)
+            ->and(json_decode((string) $input->attr('settings'), true)['name'])->toBe('relatedIds')
+            ->and($html)->not->toContain('<script');
+    })->with([
+        'default' => [null, 'craft-element-select-input', null],
+        'entries' => ['Craft.EntrySelectInput', 'craft-entry-select-input', null],
+        'assets' => ['Craft.AssetSelectInput', 'craft-asset-select-input', null],
+        'plugin class' => ['MyPlugin.SelectInput', 'craft-element-select-input', 'MyPlugin.SelectInput'],
+    ]);
+
+    it('renders a plain container when disabled', function () {
+        $html = FormFields::elementSelectHtml([
+            'id' => 'related',
+            'elementType' => Entry::class,
+            'disabled' => true,
+        ]);
+
+        expect($html)->not->toContain('craft-element-select-input')
+            ->and($html)->toContainTag('div', ['id' => 'related']);
+    });
 });
 
 describe('customSelectFieldHtml', function () {

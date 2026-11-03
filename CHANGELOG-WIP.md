@@ -849,6 +849,7 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - `Craft.AdminTable` and `Craft.DataTableSorter` are now provided by the Yii2 adapter.
 - `Craft.ui` and `Craft.EditableTable` are now provided by the Yii2 adapter.
 - `Craft.CpScreenSlideout`, `Craft.ElementActionTrigger`, and `Craft.createElementEditor()` are now provided by the Yii2 adapter.
+- Element select inputs now boot through `<craft-element-select-input>`, `<craft-entry-select-input>`, and `<craft-asset-select-input>` rather than inline JavaScript. `Craft.BaseElementSelectInput`, `Craft.EntrySelectInput`, and `Craft.AssetSelectInput` are now provided by the Yii2 adapter, and a relation field’s custom `$inputJsClass` is booted by name via the element’s `input-class` attribute.
 - `Craft.Slideout`, `Craft.Grid`, `Craft.PreviewFileModal`, `Craft.ElementDeletionManager`, and the `Craft.charts` classes now store plain elements (`container`, `items`, etc.) instead of jQuery collections, and no longer have `$container`, `$items`, `$outerContainer`, `$shade`, `$chart`, or other `$`-prefixed properties.
 - `Craft.ElementEditor` and `Craft.ElementEditorSlideout` are now provided by the Yii2 adapter. Core’s element editors, slideouts included, all use the Vue editor.
 - `Craft.CP` and `Craft.cp` are now provided by the Yii2 adapter. Control panel messages, the element clipboard and screen reader announcements no longer use them. `showNotice()`, `showSuccess()`, `showError()`, `copyElements()` and `announce()` are exported from `@craftcms/cp`.
