@@ -17,6 +17,7 @@
     nextTick,
     ref,
     useId,
+    useSlots,
     useTemplateRef,
     watch,
   } from 'vue';
@@ -308,6 +309,19 @@
       .getRowModel()
       .rows.filter((row) => isRowReorderable(row));
   }
+
+  /**
+   * Lines the drag handles up with the table's edge, when the table is
+   * aligned with its container and they're the first cell in each row.
+   */
+  const slots = useSlots();
+  const reorderHandleFlush = computed(() =>
+    props.appearance === TableAppearance.Aligned &&
+    !selectable.value &&
+    !slots['leading-cells']
+      ? 'inline-start'
+      : undefined
+  );
 
   /** The first and last indexes rows can move between. */
   const reorderBounds = computed(() => {
@@ -601,6 +615,7 @@
                         )
                     "
                     :position="getRowPosition(row.index)"
+                    :flush="reorderHandleFlush"
                     :ref="(el: any) => setHandleRef(el, row.id)"
                   ></craft-reorder-button>
                 </div>
