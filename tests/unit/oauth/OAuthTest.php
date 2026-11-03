@@ -94,6 +94,17 @@ class OAuthTest extends TestCase
         $this->expectOAuthError(fn() => $this->exchange(['grant_type' => 'refresh_token', 'refresh_token' => $fresh['refresh_token']]), 'access_denied');
     }
 
+    public function testAuthorizationRecordsWhenTheClientWasLastAuthorized(): void
+    {
+        $lastAuthorized = fn() => (new Query())->select('updated_at')->from(Table::OAUTH_CLIENTS)->where(['id' => 'test-mcp'])->scalar();
+        self::assertNull($lastAuthorized());
+
+        $this->authorize(str_repeat('l', 43));
+
+        self::assertNotNull($lastAuthorized());
+        self::assertNull((new Query())->select('updated_at')->from(Table::OAUTH_CLIENTS)->where(['id' => 'test-api'])->scalar());
+    }
+
     public function testWrongVerifierCannotConsumeAuthorizationCode(): void
     {
         $verifier = str_repeat('b', 43);
