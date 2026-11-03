@@ -44,7 +44,6 @@ import './modules/entry-mover';
 import './modules/prompt-handler';
 import './modules/link-field';
 import './modules/cp-modal';
-import './modules/tabs';
 import './modules/grid';
 import './modules/chart';
 import './modules/element-thumb-loader';
