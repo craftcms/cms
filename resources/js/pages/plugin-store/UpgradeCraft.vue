@@ -112,12 +112,7 @@
     <ul v-else class="cms-editions">
       <li v-for="card in cards" :key="card.edition.handle" class="cms-edition">
         <div class="grid gap-sm">
-          <div class="flex items-center justify-between gap-sm">
-            <h2 class="m-0">{{ card.edition.name }}</h2>
-            <craft-badge v-if="card.actions.status === 'licensed'" fill="blue">
-              {{ statusLabels.licensed }}
-            </craft-badge>
-          </div>
+          <h2 class="m-0">{{ card.edition.name }}</h2>
           <p v-if="card.description" class="m-0">{{ card.description }}</p>
         </div>
 
@@ -151,6 +146,14 @@
         </ul>
 
         <div class="grid gap-sm">
+          <craft-button
+            v-if="card.actions.status === 'licensed'"
+            icon="check"
+            disabled
+          >
+            {{ statusLabels.licensed }}
+          </craft-button>
+
           <craft-button
             v-if="card.actions.purchase === 'buy'"
             variant="primary"
