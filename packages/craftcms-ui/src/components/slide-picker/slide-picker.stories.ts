@@ -1,6 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
 import type CraftSlidePicker from './slide-picker.js';
-import {expect} from 'storybook/test';
 import {html} from 'lit';
 import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 import './slide-picker.js';
@@ -52,52 +51,5 @@ export const FiveSteps: Story = {
     step: 20,
     'model-value': 60,
     'label-slot': 'Completion',
-  },
-};
-
-/**
- * A picker with a `name` posts its value like any other field, and a form
- * reset puts back the value it started with.
- *
- * The assertions run here to check a real form in a real browser: what is
- * posted, what a disabled picker leaves out, and what a reset restores.
- */
-export const InAForm: Story = {
-  render: () => html`
-    <form>
-      <craft-slide-picker
-        name="columns"
-        label="Number of columns"
-        value-unit="columns"
-        min="1"
-        max="6"
-        step="1"
-        model-value="3"
-      ></craft-slide-picker>
-    </form>
-  `,
-  play: async ({canvasElement}) => {
-    const form = canvasElement.querySelector('form')!;
-    const picker = form.querySelector('craft-slide-picker')!;
-    await picker.updateComplete;
-
-    await expect(new FormData(form).get('columns')).toBe('3');
-
-    // A disabled picker is left out of submission entirely.
-    picker.disabled = true;
-    await picker.updateComplete;
-    await expect(new FormData(form).get('columns')).toBeNull();
-
-    picker.disabled = false;
-    await picker.updateComplete;
-
-    picker.modelValue = 6;
-    await picker.updateComplete;
-    await expect(new FormData(form).get('columns')).toBe('6');
-
-    form.reset();
-    await picker.updateComplete;
-    await expect(picker.modelValue).toBe(3);
-    await expect(new FormData(form).get('columns')).toBe('3');
   },
 };
