@@ -100,7 +100,13 @@ export const HostAriaReferences = dedupeMixin(
 
       #adopt(reference: Reference) {
         const [add, remove] = REFERENCES[reference];
+        // When disconnected, getRootNode() may return a root (the element
+        // itself or a bare DocumentFragment) without getElementById.
+        // connectedCallback() adopts again.
         const root = this.getRootNode() as Document | ShadowRoot;
+        if (typeof root.getElementById !== 'function') {
+          return;
+        }
         const elements = (this[reference] ?? '')
           .split(/\s+/)
           .filter(Boolean)

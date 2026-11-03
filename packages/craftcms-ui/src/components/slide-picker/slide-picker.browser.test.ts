@@ -194,3 +194,18 @@ it('keeps its value when the form reset is canceled', async () => {
   expect(picker.modelValue).toBe(4);
   expect(new FormData(form).get('columns')).toBe('4');
 });
+
+it('picks up references changed while it was off the page once it is put back', async () => {
+  const {page} = await import('vite-plus/test/browser');
+  document.body.innerHTML = `<span id="width">Width</span><craft-slide-picker min="1" max="4" step="1"></craft-slide-picker>`;
+  const picker =
+    document.querySelector<CraftSlidePicker>('craft-slide-picker')!;
+  await picker.updateComplete;
+
+  picker.remove();
+  picker.setAttribute('labelled-by', 'width');
+  await expect(picker.updateComplete).resolves.toBeTypeOf('boolean');
+
+  document.body.append(picker);
+  await expect.element(page.getByRole('slider')).toHaveAccessibleName('Width');
+});
