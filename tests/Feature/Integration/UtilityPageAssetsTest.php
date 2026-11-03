@@ -23,24 +23,22 @@ beforeEach(function () {
  * Utility pages used to drain the whole HtmlStack into their own Inertia page
  * props, which also swallowed the global CP asset bundle that
  * HandleInertiaRequests registers for every CP request. That left the root
- * template without jQuery or Garnish, so the page died
- * on `$ is not defined` before the Inertia app could mount.
+ * template without the `window.Craft` config the Inertia app boots from.
  */
 it('leaves the global CP asset bundle in the root template', function (string $id) {
     $html = get("/{$this->cpTrigger}/utilities/{$id}")
         ->assertOk()
         ->getContent();
 
-    // jQuery and Garnish are body-end JS files. The legacy cp.js bundle comes
+    // The legacy Craft.js bundle, and the jQuery and Garnish it needs, come
     // with the Yii2 adapter, not core…
     expect($html)
-        ->toContain('legacy/jquery/dist/jquery.js')
-        ->toContain('legacy/garnish/dist/garnish.js')
+        ->toContain('legacy/theme/dist/')
+        ->not->toContain('legacy/jquery/dist/jquery.js')
         ->not->toContain('legacy/cpcompat/dist/craft.js');
 
-    // …while the `window.Craft` config it reads is head JS. It has to land in
-    // the root template's <head>, ahead of the module scripts that boot the
-    // Inertia CP.
+    // …while the `window.Craft` config is head JS. It has to land in the root
+    // template's <head>, ahead of the module scripts that boot the Inertia CP.
     expect(Str::between($html, '<head>', '</head>'))
         ->toContain('window.Craft = Object.assign');
 })->with(['system-report', 'php-info', 'deprecation-errors']);

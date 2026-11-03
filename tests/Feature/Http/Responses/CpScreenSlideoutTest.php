@@ -47,7 +47,7 @@ it('renders a full page when nothing marks the request as a slideout', function 
 it('loads screen assets with the initial document', function () {
     get(editUrl())
         ->assertOk()
-        ->assertSee('/legacy/jquery/dist/jquery.js', false)
+        ->assertSee('window.Craft = Object.assign', false)
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->missing('headHtml')
             ->missing('bodyHtml'));
