@@ -40,6 +40,7 @@
 
 ### Elements
 - Added Markdown comments to element activity timelines, with support for editing, removing, structured user mentions, syntax-highlighted code blocks, and email notifications.
+- Element activity timelines now list rich text changes by their text. ([#20307](https://github.com/craftcms/cms/pull/20307))
 - Element index searches now update results as users type. ([#19754](https://github.com/craftcms/cms/pull/19754))
 - Clicking anywhere on an element index table row or card (other than an interactive control) now selects it. ([#19351](https://github.com/craftcms/cms/pull/19351))
 - Element index selections now carry across pages, and bulk actions apply to all of them. Selections are cleared when the search, status, filters, source, or site change. ([#10295](https://github.com/craftcms/cms/discussions/10295), [#20262](https://github.com/craftcms/cms/pull/20262))

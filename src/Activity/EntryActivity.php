@@ -16,8 +16,10 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Support\Facades\Activities;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Elements\User;
 use DateTimeInterface;
+use Twig\Markup;
 
 use function CraftCms\Cms\t;
 
@@ -162,6 +164,7 @@ class EntryActivity
                 t($field->name, category: 'site'),
                 $originalFieldValues[$field->handle] ?? null,
                 $newFieldValues[$field->handle],
+                $entry->getFieldValue((string) $field->handle) instanceof Markup,
             );
         }
 
@@ -175,9 +178,22 @@ class EntryActivity
         string $label,
         mixed $old,
         mixed $new,
+        bool $html = false,
     ): void {
         if ($old === $new) {
             return;
+        }
+
+        // HTML, such as rich text, is listed by its text. A change to its markup alone isn’t listed.
+        if ($html) {
+            $old = is_string($old) ? Html::toText($old) : $old;
+            $new = is_string($new) ? Html::toText($new) : $new;
+
+            if ($old === $new) {
+                $contentChanged = true;
+
+                return;
+            }
         }
 
         $oldSafe = self::normalizeSafeValue($old);
@@ -256,7 +272,7 @@ class EntryActivity
         }
 
         if (is_string($value)) {
-            return mb_check_encoding($value) && strip_tags($value) === $value;
+            return Html::isPlainText($value);
         }
 
         if (is_float($value)) {
