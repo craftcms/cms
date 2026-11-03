@@ -234,7 +234,6 @@
           v-model="newFolderName"
           :label="t('Folder Name')"
           :error="newFolderError"
-          :aria-invalid="newFolderError ? 'true' : 'false'"
           autofocus
         />
       </form>
@@ -262,7 +261,6 @@
           v-model="renameName"
           :label="t('Folder Name')"
           :error="renameError"
-          :aria-invalid="renameError ? 'true' : 'false'"
           autofocus
         />
       </form>
@@ -290,7 +288,6 @@
           v-model="renameFilename"
           :label="t('Filename')"
           :error="renameFileError"
-          :aria-invalid="renameFileError ? 'true' : 'false'"
           autofocus
         />
       </form>

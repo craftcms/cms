@@ -64,7 +64,7 @@ describe('craft-select', () => {
     native(element).dispatchEvent(new Event('change', {bubbles: true}));
     await element.updateComplete;
 
-    expect(element.modelValue).toBe('en-US');
+    expect(element.value).toBe('en-US');
   });
 
   it('reflects small so the stylesheet can act on it', async () => {

@@ -140,13 +140,14 @@
     }
   });
 
-  const onInputChanged = ignoreModelValueInitialization((event) => {
-    if (!(event.target instanceof CraftInputColor)) {
+  function onInput(event: Event): void {
+    const input = event.currentTarget;
+    if (!(input instanceof CraftInputColor)) {
       throw new TypeError('Expected a color input event target.');
     }
 
-    update(String(event.target.modelValue ?? ''));
-  });
+    update(input.value);
+  }
 </script>
 
 <template>
@@ -170,13 +171,13 @@
     v-else
     v-bind="$attrs"
     :name="name"
-    .modelValue="value"
+    .value="value"
     .alpha="control.props.alpha ?? false"
     :required="editable && required"
     :readonly="control.mode === 'readOnly'"
     .disabled="!editable"
-    .validators="serverErrorValidators(invalid)"
-    @model-value-changed="onInputChanged"
+    :invalid="invalid"
+    @input="onInput"
   ></craft-input-color>
   <craft-input-color
     v-if="usesSelect && custom"
@@ -184,12 +185,12 @@
     class="mt-sm"
     :label="t('Custom color:')"
     :name="name ? `${name}[custom]` : ''"
-    .modelValue="value"
+    .value="value"
     .alpha="control.props.alpha ?? false"
     :required="editable && required"
     :readonly="control.mode === 'readOnly'"
     .disabled="!editable"
-    .validators="serverErrorValidators(invalid)"
-    @model-value-changed="onInputChanged"
+    :invalid="invalid"
+    @input="onInput"
   ></craft-input-color>
 </template>

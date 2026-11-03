@@ -874,7 +874,7 @@ export default class CraftActionMenu extends CraftPopover {
   /** Clear the search input and un-hide all items (runs when the menu closes). */
   private _resetSearchFilter(): void {
     if (this._searchField) {
-      this._searchField.modelValue = '';
+      this._searchField.value = '';
     }
     const content = this._getContentNode();
     if (content) {

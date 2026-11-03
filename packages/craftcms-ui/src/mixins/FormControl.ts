@@ -62,6 +62,56 @@ export declare class FormControlInterface {
   protected _feedbackTemplate(): unknown;
 }
 
+/** The chrome's own layout, for subclasses that compose their styles. */
+export const formControlStyles = css`
+  :host {
+    display: block;
+  }
+
+  :host([hidden]) {
+    display: none;
+  }
+
+  :host([disabled]) {
+    pointer-events: none;
+  }
+
+  :host([disabled]) .form-field__label ::slotted(*),
+  :host([disabled]) .form-field__help-text ::slotted(*),
+  :host([disabled]) .input-group ::slotted([slot='input']) {
+    color: var(--disabled-text-color, #767676);
+  }
+
+  :host([label-sr-only]) .form-field__label {
+    position: absolute;
+    inset-block-start: 0;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(100%);
+    clip: rect(1px, 1px, 1px, 1px);
+    white-space: nowrap;
+    border: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  .input-group__container {
+    display: flex;
+  }
+
+  .input-group__input {
+    flex: 1;
+    display: flex;
+  }
+
+  .input-group__container > .input-group__input ::slotted(.form-control) {
+    flex: 1 1 auto;
+    margin: 0;
+    font-size: 100%;
+  }
+`;
+
 /** Light-DOM slot children that can join the control's name or description. */
 const ADDITIONAL_SLOTS = ['prefix', 'suffix', 'before', 'after'];
 
@@ -78,56 +128,7 @@ const ADDITIONAL_SLOTS = ['prefix', 'suffix', 'before', 'after'];
  */
 export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
   class FormControlElement extends Base {
-    static styles = [
-      css`
-        :host {
-          display: block;
-        }
-
-        :host([hidden]) {
-          display: none;
-        }
-
-        :host([disabled]) {
-          pointer-events: none;
-        }
-
-        :host([disabled]) .form-field__label ::slotted(*),
-        :host([disabled]) .form-field__help-text ::slotted(*),
-        :host([disabled]) .input-group ::slotted([slot='input']) {
-          color: var(--disabled-text-color, #767676);
-        }
-
-        :host([label-sr-only]) .form-field__label {
-          position: absolute;
-          inset-block-start: 0;
-          width: 1px;
-          height: 1px;
-          overflow: hidden;
-          clip-path: inset(100%);
-          clip: rect(1px, 1px, 1px, 1px);
-          white-space: nowrap;
-          border: 0;
-          margin: 0;
-          padding: 0;
-        }
-
-        .input-group__container {
-          display: flex;
-        }
-
-        .input-group__input {
-          flex: 1;
-          display: flex;
-        }
-
-        .input-group__container > .input-group__input ::slotted(.form-control) {
-          flex: 1 1 auto;
-          margin: 0;
-          font-size: 100%;
-        }
-      `,
-    ];
+    static styles = [formControlStyles];
 
     /** The field's label. Slot `label` instead for markup. */
     @property()

@@ -3773,10 +3773,10 @@ describe('UiRenderer', () => {
     money.dispatchEvent(new Event('input', {bubbles: true}));
 
     const color = container.querySelector('craft-input-color')!;
-    color.modelValue = '00ff00';
-    color.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    color.value = '00ff00';
+    color
+      .querySelector('input, textarea, select')!
+      .dispatchEvent(new Event('input', {bubbles: true}));
     await nextTick();
     expect(new FormData(form).getAll('settings[tags][]')).toEqual(['b']);
     expect(Object.fromEntries(new FormData(form))).toMatchObject({
@@ -3820,7 +3820,7 @@ describe('UiRenderer', () => {
       expect(
         container.querySelector<HTMLInputElement>('input[type="time"]')?.value
       ).toBe('14:30');
-      expect(container.querySelector('craft-input-color')?.modelValue).toBe(
+      expect(container.querySelector('craft-input-color')?.value).toBe(
         'ff0000'
       );
     }
@@ -4158,15 +4158,15 @@ describe('UiRenderer', () => {
       },
     });
     const addressLine = required(
-      container.querySelector<HTMLElement & {modelValue: string}>(
+      container.querySelector<HTMLElement & {value: string}>(
         'craft-input[name="settings[address][addressLine1]"]'
       ),
       'Expected the address line input.'
     );
-    addressLine.modelValue = 'Changed address';
-    addressLine.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    addressLine.value = 'Changed address';
+    addressLine
+      .querySelector('input, textarea, select')!
+      .dispatchEvent(new Event('input', {bubbles: true}));
     await nextTick();
     expect(renderer.currentValues()).toMatchObject({
       settings: {address: {addressLine1: 'Changed address'}},
@@ -4208,12 +4208,12 @@ describe('UiRenderer', () => {
         data: {fieldDefinitions: selectLocalityFields},
       });
     const administrativeArea = container.querySelector<
-      HTMLElement & {modelValue: string}
+      HTMLElement & {value: string}
     >('craft-select[name="settings[address][administrativeArea]"]')!;
-    administrativeArea.modelValue = 'BE-WBR';
-    administrativeArea.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    administrativeArea.value = 'BE-WBR';
+    administrativeArea
+      .querySelector('input, textarea, select')!
+      .dispatchEvent(new Event('input', {bubbles: true}));
     await vi.waitFor(() => expect(request).toHaveBeenCalledOnce());
     expect(request).toHaveBeenCalledWith('addresses/fields', {
       namespace: 'settings[address]',
@@ -4224,10 +4224,10 @@ describe('UiRenderer', () => {
       settings: {address: {locality: 'Antwerp'}},
     });
 
-    administrativeArea.modelValue = 'BE-VAN';
-    administrativeArea.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    administrativeArea.value = 'BE-VAN';
+    administrativeArea
+      .querySelector('input, textarea, select')!
+      .dispatchEvent(new Event('input', {bubbles: true}));
     await vi.waitFor(() => expect(request).toHaveBeenCalledTimes(2));
     await vi.waitFor(() =>
       expect(renderer.currentValues()).toMatchObject({
@@ -4267,9 +4267,9 @@ describe('UiRenderer', () => {
         ).toBe(true)
       );
       expect(
-        container.querySelector<HTMLElement & {modelValue: unknown}>(
+        container.querySelector<HTMLElement & {value: unknown}>(
           '.address-fields craft-input'
-        )?.modelValue
+        )?.value
       ).toBe('Museumstraat 1');
 
       const refreshed = structuredClone(nonEditable);

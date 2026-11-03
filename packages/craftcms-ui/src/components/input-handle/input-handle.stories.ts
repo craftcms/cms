@@ -12,8 +12,8 @@ import type CraftInputHandle from './input-handle.js';
  * controls and the API tables follow the component's JSDoc. Adding a property
  * to `input-handle.ts` surfaces it here without touching this file.
  *
- * The template is written out rather than generated: the value is Lion's
- * `modelValue`, a property rather than an attribute, and the label is a slot.
+ * The template is written out rather than generated: the value is the
+ * `value` property rather than an attribute, and the label is a slot.
  */
 const {args, argTypes} =
   getStorybookHelpers<CraftInputHandle>('craft-input-handle');
@@ -27,7 +27,7 @@ const field = (args: Record<string, unknown>) => html`
     autocapitalize="${(args.autocapitalize as string) ?? 'off'}"
     maxlength="${(args.maxlength as number) ?? ''}"
     ?disabled="${args.disabled}"
-    .modelValue="${args.value ?? ''}"
+    .value="${args.value ?? ''}"
   >
     <label slot="label">${args['label-slot']}</label>
     ${args['help-text-slot']
@@ -60,10 +60,10 @@ export const ComparedToInput: Story = {
   parameters: {controls: {disable: true}},
   render: () => html`
     <div style="display: flex; flex-direction: column; gap: 0.75rem">
-      <craft-input .modelValue="${'entryType'}">
+      <craft-input .value="${'entryType'}">
         <label slot="label">craft-input</label>
       </craft-input>
-      <craft-input-handle .modelValue="${'entryType'}">
+      <craft-input-handle .value="${'entryType'}">
         <label slot="label">craft-input-handle</label>
       </craft-input-handle>
     </div>

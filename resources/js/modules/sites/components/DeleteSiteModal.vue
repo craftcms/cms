@@ -104,10 +104,8 @@
             :label="t('Transfer content to')"
             id="transfer-to"
             name="transferContentTo"
-            .modelValue="form.transferContentTo"
-            @model-value-changed="
-              form.transferContentTo = $event.target.modelValue
-            "
+            .value="form.transferContentTo"
+            @input="form.transferContentTo = $event.currentTarget.value"
           >
             <select slot="input">
               <option value="">

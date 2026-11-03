@@ -202,12 +202,10 @@ class Textarea extends ViewComponent
     {
         return [
             'monospace' => $this->monospace,
-            // Lion pushes these host properties onto the slotted textarea
-            // when the element upgrades (LionTextarea::updated()),
-            // overwriting the server-rendered attributes with its defaults —
-            // so any non-default value must also live on the host. The
-            // native textarea keeps them too, for pre-upgrade correctness
-            // (form posts, CSS).
+            // The component pushes the host properties it's given onto the
+            // slotted textarea, and styles itself from them. The native
+            // textarea keeps them too, for pre-upgrade correctness (form
+            // posts, CSS).
             'placeholder' => $this->placeholder !== null && $this->placeholder !== '' ? $this->placeholder : null,
             'name' => $this->name !== null && $this->name !== '' ? $this->name : null,
             'disabled' => $this->isDisabled(),

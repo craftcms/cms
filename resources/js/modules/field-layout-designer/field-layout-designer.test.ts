@@ -236,15 +236,19 @@ it('gives the card preview the owner’s name, color, and icon', async () => {
       </div>
     </form>`;
   const control = (key: string) =>
-    document.querySelector<HTMLElement & {modelValue: string}>(
+    document.querySelector<HTMLElement & {value: string}>(
       `[data-ui-control-path='["${key}"]']`
     )!;
-  control('name').modelValue = 'Article';
-  control('color').modelValue = 'rose';
-  control('icon').modelValue = 'newspaper';
-  // A select applies its value once its options have registered.
-  await (control('color') as unknown as {registrationComplete: Promise<void>})
-    .registrationComplete;
+  // A Lion select: it takes its value as `modelValue`, once its options have
+  // registered.
+  const color = control('color') as unknown as {
+    modelValue: string;
+    registrationComplete: Promise<void>;
+  };
+  control('name').value = 'Article';
+  color.modelValue = 'rose';
+  control('icon').value = 'newspaper';
+  await color.registrationComplete;
 
   // SAFETY: This test deliberately creates a CardViewDesigner without running its DOM-heavy constructor.
   const designer = Object.create(
@@ -269,8 +273,8 @@ it('gives the card preview the owner’s name, color, and icon', async () => {
   expect(chip.querySelector('craft-icon')).toBeNull();
   expect(chip.textContent).toBe('Title');
 
-  control('color').modelValue = '';
-  control('icon').modelValue = '';
+  color.modelValue = '';
+  control('icon').value = '';
   designer.syncPreviewAppearance();
 
   expect(card.hasAttribute('data-color')).toBe(false);
@@ -278,7 +282,7 @@ it('gives the card preview the owner’s name, color, and icon', async () => {
   expect(header.querySelector('craft-icon')).toBeNull();
   expect(header.textContent).toBe('Article');
 
-  control('color').modelValue = '__blank__';
+  color.modelValue = '__blank__';
   designer.syncPreviewAppearance();
 
   expect(card.hasAttribute('data-color')).toBe(false);

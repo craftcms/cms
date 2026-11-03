@@ -42,17 +42,17 @@ describe('craft-input-color', () => {
     );
     await element.updateComplete;
 
-    expect(element.modelValue).toBe('abc');
+    expect(element.value).toBe('abc');
     expect(input.value).toBe('abc');
   });
 
   it('preserves shorthand values while expanding the picker and preview values', async () => {
     const element = await createInputColor();
 
-    element.modelValue = 'abc';
+    element.value = 'abc';
     await element.updateComplete;
 
-    expect(element.modelValue).toBe('abc');
+    expect(element.value).toBe('abc');
     expect(pickerInput(element).value).toBe('#aabbcc');
     expect(preview(element).getAttribute('style')).toContain(
       'background-color: #aabbcc'
@@ -62,7 +62,7 @@ describe('craft-input-color', () => {
   it('keeps invalid text values and clears the preview', async () => {
     const element = await createInputColor();
 
-    element.modelValue = 'not-a-color';
+    element.value = 'not-a-color';
     await element.updateComplete;
 
     expect(textInput(element).value).toBe('not-a-color');
@@ -79,7 +79,7 @@ describe('craft-input-color', () => {
     );
     await element.updateComplete;
 
-    expect(element.modelValue).toBe('112233');
+    expect(element.value).toBe('112233');
     expect(textInput(element).value).toBe('112233');
   });
 
@@ -112,7 +112,7 @@ describe('craft-input-color', () => {
     element.name = 'fill';
     form.append(element);
     document.body.append(form);
-    element.modelValue = '#abc';
+    element.value = '#abc';
     await element.updateComplete;
 
     expect(new FormData(form).get('fill')).toBe('abc');
@@ -126,10 +126,10 @@ describe('craft-input-color', () => {
   it('previews translucent hex values, expanding 4-digit shorthand', async () => {
     const element = await createInputColor();
 
-    element.modelValue = 'f008';
+    element.value = 'f008';
     await element.updateComplete;
 
-    expect(element.modelValue).toBe('f008');
+    expect(element.value).toBe('f008');
     expect(preview(element).getAttribute('style')).toContain(
       'background-color: #ff000088'
     );
@@ -151,7 +151,7 @@ describe('craft-input-color', () => {
 
     element.alpha = true;
     element.setAttribute('presets', '["#ff000080"]');
-    element.modelValue = '11223344';
+    element.value = '11223344';
     await element.updateComplete;
 
     const option = element.shadowRoot!.querySelector('datalist option');
