@@ -10,4 +10,6 @@ existing plugin subclass escape hatch.
 core `jsClass` (`Craft.EntrySelectInput`, `Craft.AssetSelectInput`) picks the
 matching element; any other class name becomes `input-class`, which the Yii2
 adapter resolves to the plugin's class. The `Craft.*SelectInput` globals are
-registered by the adapter only (`compat.ts`).
+the adapter's own jQuery-based copies
+(`yii2-adapter/resources/js/element-select-input`), kept for plugins that
+subclass them; core's classes aren't on `Craft`.
