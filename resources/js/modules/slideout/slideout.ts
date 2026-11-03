@@ -499,9 +499,14 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
 
       // Check if target is still visible
       if (!focusTarget.checkVisibility()) {
-        // If it's a disclosure, get the disclosure trigger instead
+        // If it's in a menu, return focus to the menu's trigger instead
+        const actionMenu = focusTarget.closest('craft-action-menu');
         const disclosure = focusTarget.closest('.menu--disclosure');
-        if (disclosure) {
+        if (actionMenu) {
+          focusTarget = actionMenu.querySelector<HTMLElement>(
+            ':scope > [slot="invoker"]'
+          );
+        } else if (disclosure) {
           const disclosureId = disclosure.getAttribute('id');
           focusTarget = document.querySelector<HTMLElement>(
             `[aria-controls="${disclosureId}"]`

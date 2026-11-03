@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Components;
 
+use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\MenuHtml;
+use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Shared\Enums\Color;
@@ -272,9 +274,9 @@ class ActionMenu extends ViewComponent
      * Field mapping from the legacy `disclosureMenu()`/`menuitem.twig`
      * contract: `destructive` → `variant: 'danger'`, `color` → `iconColor`,
      * `url` → `href`, `action`/`params`/`confirm`/`redirect` → `action`.
-     * `label`/`html`, `description` and `handle` are kept as-is and become
-     * slotted content (HTML) or pass through to `craft-action-item` (client).
-     * Groups are flattened — `craft-action-item` has no group concept.
+     * `selected` → `current`. `label`/`html`, `description`, `handle`,
+     * `status` and `info` are kept as-is and become slotted content (HTML) or
+     * pass through to `craft-action-item` (client). Groups keep their heading.
      *
      * @param  list<array<string, mixed>>  $items
      * @return list<array<string, mixed>>
@@ -296,10 +298,14 @@ class ActionMenu extends ViewComponent
             }
 
             if ($type === MenuItemType::Group->value) {
-                $clientItems = [...$clientItems, ...$this->toClientItems(
-                    $menuHtml->normalizeMenuItems($item['items'] ?? []),
-                    $menuHtml,
-                )];
+                $clientItems[] = Arr::whereNotNull([
+                    'type' => MenuItemType::Group->value,
+                    'heading' => isset($item['heading']) ? (string) $item['heading'] : null,
+                    'items' => $this->toClientItems(
+                        $menuHtml->normalizeMenuItems($item['items'] ?? []),
+                        $menuHtml,
+                    ),
+                ]);
 
                 continue;
             }
@@ -322,6 +328,9 @@ class ActionMenu extends ViewComponent
                 'target' => $type === MenuItemType::Link->value ? ($item['target'] ?? null) : null,
                 'disabled' => ($item['disabled'] ?? false) ?: null,
                 'hidden' => ($item['hidden'] ?? false) ?: null,
+                'current' => ($item['selected'] ?? false) ?: null,
+                'status' => isset($item['status']) ? (string) $item['status'] : null,
+                'info' => ! empty($item['info']) ? (string) $item['info'] : null,
                 'variant' => ($item['destructive'] ?? false) ? 'danger' : null,
                 'action' => $this->itemAction($item),
                 'attributes' => $item['attributes'] ?? null,
@@ -391,6 +400,10 @@ class ActionMenu extends ViewComponent
      */
     protected function itemHtml(array $item): string
     {
+        if (($item['type'] ?? null) === MenuItemType::Group->value) {
+            return $this->groupHtml($item);
+        }
+
         if (($item['type'] ?? null) === MenuItemType::HR->value) {
             return Html::tag('hr', '', [
                 'class' => 'action-menu__separator',
@@ -414,12 +427,44 @@ class ActionMenu extends ViewComponent
             'href' => $item['href'] ?? false,
             'disabled' => $item['disabled'] ?? false,
             'hidden' => $item['hidden'] ?? false,
+            'current' => $item['current'] ?? false,
             'variant' => $item['variant'] ?? false,
             'data-keywords' => $item['keywords'] ?? false,
             'action' => $action ? Json::encode($action, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : false,
         ], $item['attributes'] ?? []);
 
         return Html::tag('craft-action-item', $this->itemContentHtml($item), $attributes);
+    }
+
+    /**
+     * Renders a group as its heading followed by its members, as siblings of
+     * the other items, the way `craft-action-menu` renders a `group` item.
+     *
+     * @param  array<string, mixed>  $group
+     */
+    protected function groupHtml(array $group): string
+    {
+        $html = '';
+
+        if (isset($group['heading'])) {
+            $html .= Html::tag('div', Html::encode($group['heading']), [
+                'class' => 'action-menu__heading',
+                'role' => 'presentation',
+                // Matches the styling `action-menu.ts` gives the headings it renders
+                'style' => [
+                    'padding-block' => 'var(--c-spacing-xs)',
+                    'padding-inline' => 'calc(var(--c-spacing-sm) * 2 + 1px) var(--c-spacing-md)',
+                    'font-size' => 'var(--c-text-sm)',
+                    'font-weight' => 'bold',
+                ],
+            ]);
+        }
+
+        foreach ($group['items'] ?? [] as $item) {
+            $html .= $this->itemHtml($item);
+        }
+
+        return $html;
     }
 
     /**
@@ -435,6 +480,12 @@ class ActionMenu extends ViewComponent
             ? Html::encode($item['label'])
             : (string) ($item['html'] ?? '');
 
+        if (isset($item['status'])) {
+            $labelHtml = Html::tag('span', app(StatusHtml::class)->statusIndicatorHtml($item['status']).$labelHtml, [
+                'class' => ['inline-flex', 'items-center', 'gap-xs'],
+            ]);
+        }
+
         $secondaryHtml = '';
 
         if (isset($item['handle'])) {
@@ -449,12 +500,16 @@ class ActionMenu extends ViewComponent
             ]);
         }
 
+        $infoHtml = isset($item['info'])
+            ? Html::tag('craft-info-icon', app(ContentHtml::class)->parseMarkdown(Html::encode($item['info'])))
+            : '';
+
         if ($secondaryHtml === '') {
-            return $labelHtml;
+            return $labelHtml.$infoHtml;
         }
 
         return Html::tag('span', $labelHtml.$secondaryHtml, [
             'class' => ['inline-flex', 'flex-col', 'items-start', 'gap-2xs'],
-        ]);
+        ]).$infoHtml;
     }
 }
