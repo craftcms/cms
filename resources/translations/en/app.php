@@ -53,6 +53,7 @@ return [
     'Edit Skill' => 'Edit Skill',
     'Edit “{name}”' => 'Edit “{name}”',
     'Enterprise Verified' => 'Enterprise Verified',
+    'External site' => 'External site',
     'Generate chat titles' => 'Generate chat titles',
     'All fields' => 'All fields',
     'Allow the assistant to use {tool}?' => 'Allow the assistant to use {tool}?',

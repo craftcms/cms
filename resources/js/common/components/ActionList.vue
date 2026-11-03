@@ -333,11 +333,19 @@
     return action.type === 'group' ? undefined : action.status;
   }
 
-  /** An external link to another site, rather than a full page load within this one. */
+  /**
+   * An external link to another site, rather than a full page load within this
+   * one. A branch keeps its suffix slot for the toggle, so it isn't marked.
+   */
   function leavesSite(action: NavItem): boolean {
     const href = hrefOf(action);
 
-    if (action.type !== 'link' || !action.external || !href) {
+    if (
+      action.type !== 'link' ||
+      !action.external ||
+      !href ||
+      childrenOf(action).length
+    ) {
       return false;
     }
 
@@ -490,6 +498,7 @@
         v-if="leavesSite(action)"
         slot="suffix"
         name="arrow-up-right-from-square"
+        :label="t('External site')"
       ></craft-icon>
 
       <craft-badge-indicator
