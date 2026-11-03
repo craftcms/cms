@@ -11,21 +11,12 @@ test.describe('Plugin Actions', () => {
   test('Install the plugin', async ({page, baseURL}) => {
     await page.goto('./plugin-store/seomatic');
 
-    // Wait plugin request to be done
-    await page.waitForResponse(
-      (response) =>
-        response
-          .url()
-          .includes('//api.craftcms.com/v1/plugin-store/plugin/seomatic'),
-      {timeout: 30 * 1000}
+    await expect(page.getByRole('heading', {level: 1})).toContainText(
+      'SEOmatic'
     );
 
-    // Developer name
-    const title = page.locator('.plugin-details-header h1');
-    await expect(title).toContainText('SEOmatic');
-
     // Try the plugin
-    await page.click('.plugin-editions-edition button:has-text("Try")');
+    await page.getByRole('button', {name: 'Try'}).first().click();
 
     // Go through the install process
     const status = page.locator('#status');

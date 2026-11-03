@@ -7,7 +7,7 @@
     serverErrorValidators,
   } from './runtime';
 
-  type ColorControlProps = {presets: string[]};
+  type ColorControlProps = {presets: string[]; alpha?: boolean};
 
   defineProps<{
     control: UiControlPayload<ColorControlProps>;
@@ -35,6 +35,7 @@
     :name="editable ? inputName(control.path) : ''"
     .modelValue="String(value ?? '')"
     .presets="control.props.presets"
+    .alpha="control.props.alpha ?? false"
     :required="editable && required"
     :readonly="control.mode === 'readOnly'"
     .disabled="!editable"

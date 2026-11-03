@@ -9,6 +9,7 @@ export interface InputColorConfig {
   disabled?: boolean;
   autofocus?: boolean;
   presets?: string[];
+  alpha?: boolean;
 }
 
 /**
@@ -40,6 +41,9 @@ export function createInputColor(
   }
   if (config.disabled) {
     el.setAttribute('disabled', '');
+  }
+  if (config.alpha) {
+    el.setAttribute('alpha', '');
   }
   if (config.presets && config.presets.length) {
     el.setAttribute('presets', JSON.stringify(config.presets));

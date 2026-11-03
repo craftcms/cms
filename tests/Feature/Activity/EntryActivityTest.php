@@ -31,6 +31,7 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Tests\Support\MatrixControllerFixture;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Date;
@@ -198,6 +199,41 @@ it('shows changes between disabled relation targets in the activity timeline', f
             'siteId' => $newTarget->siteId,
         ]],
     ]]);
+})->with([
+    'direct save' => false,
+    'provisional draft' => true,
+]);
+
+it('records edits to nested Matrix entries as an entry update', function (bool $provisional) {
+    $fixture = MatrixControllerFixture::create();
+    $owner = MatrixControllerFixture::saveBlocks($fixture, [['title' => 'Block', 'innerText' => 'Old heading']]);
+    $block = $owner->getFieldValue('matrixField')->one();
+    $edited = $provisional
+        ? app(Drafts::class)->createDraft($owner, User::findOne()->id, provisional: true)
+        : $owner;
+    DB::table(Table::ACTIVITYEVENTS)->delete();
+
+    $edited->setFieldValueFromRequest('matrixField', [
+        'entries' => ["uid:$block->uid" => [
+            'type' => $fixture['entryType']->handle,
+            'title' => 'Block',
+            'fields' => ['innerText' => 'New heading'],
+        ]],
+        'sortOrder' => [$block->uid],
+    ]);
+    expect(Elements::saveElement($edited, updateSearchIndex: false))->toBeTrue();
+
+    if ($provisional) {
+        app(Drafts::class)->applyDraft($edited);
+    }
+
+    $event = $this->activities->query()->subject(ActivitySubject::fromElement($owner))->sole();
+    $change = collect($event->changes)->sole();
+
+    expect($event->eventType)->toBe(ElementUpdated::class)
+        ->and($change->label)->toBe('Matrix Field')
+        ->and($change->old[$block->id]['fields']['innerText'])->toBe('Old heading')
+        ->and($change->new[$block->id]['fields']['innerText'])->toBe('New heading');
 })->with([
     'direct save' => false,
     'provisional draft' => true,

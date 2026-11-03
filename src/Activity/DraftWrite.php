@@ -14,6 +14,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 readonly class DraftWrite
 {
     /**
+     * @param  array<string, mixed>  $originalFieldValues
      * @param  string[]  $dirtyAttributes
      * @param  string[]  $dirtyFields
      */
@@ -21,6 +22,7 @@ readonly class DraftWrite
         public bool $isNew,
         public bool $metadataChanged,
         public ?Entry $original,
+        public array $originalFieldValues,
         public array $dirtyAttributes,
         public array $dirtyFields,
     ) {}

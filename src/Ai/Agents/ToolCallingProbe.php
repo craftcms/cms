@@ -35,6 +35,11 @@ class ToolCallingProbe implements Agent, HasTools
         {
             public function __construct(private string $code) {}
 
+            public function name(): string
+            {
+                return 'get_verification_code';
+            }
+
             public function description(): string
             {
                 return 'Returns the verification code.';

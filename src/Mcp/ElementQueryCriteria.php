@@ -9,8 +9,8 @@ use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Mcp\Attributes\Mcp;
 use CraftCms\Cms\Mcp\Schema\ElementSchemaTypes;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
-use Illuminate\Support\Arr;
 use LogicException;
 use Mcp\Exception\ToolCallException;
 
@@ -41,7 +41,7 @@ class ElementQueryCriteria
     public const array SchemaProperties = [
         'orderBy' => [
             'type' => 'string',
-            'description' => 'Native Craft element order expression.',
+            'description' => 'Comma-separated columns to order by, each optionally followed by `asc` or `desc`, such as `postDate desc, title`.',
         ],
         'offset' => [
             'type' => 'integer',
@@ -112,10 +112,33 @@ class ElementQueryCriteria
     {
         $criteria['limit'] = $this->limit($criteria['limit'] ?? self::DefaultLimit);
         $criteria['offset'] = $this->offset($criteria['offset'] ?? 0);
+        $orderBy = Arr::pull($criteria, 'orderBy');
 
         Typecast::configure($query, $criteria);
 
+        if ($orderBy !== null) {
+            $this->orderBy($query, $orderBy);
+            $criteria['orderBy'] = $orderBy;
+        }
+
         return $criteria;
+    }
+
+    /**
+     * Applies each column of a `column [asc|desc], ...` string on its own, since
+     * element queries deprecate directions and column lists in one string.
+     */
+    private function orderBy(ElementQueryInterface $query, mixed $orderBy): void
+    {
+        if (! is_string($orderBy)) {
+            throw new ToolCallException('Element query criteria.orderBy must be a string.');
+        }
+
+        foreach (explode(',', $orderBy) as $column) {
+            if (preg_match('/^\s*(\S.*?)(?:\s+(asc|desc))?\s*$/i', $column, $matches)) {
+                $query->orderBy($matches[1], strtolower($matches[2] ?? 'asc'));
+            }
+        }
     }
 
     /**

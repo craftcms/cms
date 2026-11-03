@@ -2,6 +2,7 @@ import {LionButtonSubmit} from '@lion/ui/button.js';
 import {html, nothing} from 'lit';
 import {property, state, query} from 'lit/decorators.js';
 import {t} from '@src/utilities/translate';
+import {linkRel, linkTarget, newTabCue} from '@src/utilities/external-links';
 import styles from './button.styles.js';
 import a11yErrorStyles from '@src/styles/a11y-error.styles.js';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
@@ -109,13 +110,20 @@ export default class CraftButton extends HasShortcut(
     this.addEventListener('click', this.#handleToggleClick);
 
     this.#syncContent();
-    this.#contentObserver = new MutationObserver(() => this.#syncContent());
+    // A name can arrive after the first render, as when a tooltip labels its
+    // invoker once its overlay sets up, so content and naming changes recheck it.
+    this.#contentObserver = new MutationObserver(() => {
+      this.#syncContent();
+      if (this.hasUpdated) {
+        this.#checkAccessibleName();
+      }
+    });
     this.#contentObserver.observe(this, {
       childList: true,
       characterData: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ['slot'],
+      attributeFilter: ['slot', 'aria-label', 'aria-labelledby', 'title'],
     });
 
     // Moved while it was still waiting to be shown: disconnecting dropped the
@@ -473,7 +481,10 @@ export default class CraftButton extends HasShortcut(
   /** When set, the button renders as a link to this URL. */
   @property({reflect: true}) href: string | null = null;
 
-  /** Anchor target (e.g. "_blank"). Forwarded to the rendered <a>. */
+  /**
+   * Anchor target (e.g. "_blank"). Forwarded to the rendered <a>. Unset, a
+   * link to another host opens in a new tab.
+   */
   @property() target: string | null = null;
 
   /** Anchor rel. Forwarded to the <a>; "noopener" is added for target="_blank". */
@@ -530,13 +541,8 @@ export default class CraftButton extends HasShortcut(
     return !!this.href && !this.disabled;
   }
 
-  private get computedRel(): string | null {
-    if (this.target === '_blank') {
-      const tokens = new Set((this.rel ?? '').split(/\s+/).filter(Boolean));
-      tokens.add('noopener');
-      return Array.from(tokens).join(' ');
-    }
-    return this.rel;
+  private get computedTarget(): string | null {
+    return linkTarget(this.href, this.target);
   }
 
   override render() {
@@ -591,15 +597,19 @@ export default class CraftButton extends HasShortcut(
     `;
 
     if (this.isLink) {
+      const target = this.computedTarget;
+
       return html`
         <a
           class="link"
           part="link"
           href="${this.href}"
-          target="${this.target ?? nothing}"
-          rel="${this.computedRel ?? nothing}"
+          target="${target ?? nothing}"
+          rel="${linkRel(target, this.rel) ?? nothing}"
           download="${this.download ?? nothing}"
-          >${content}</a
+          >${content}${!this.target && target
+            ? html`<span class="cp-visually-hidden">${newTabCue()}</span>`
+            : nothing}</a
         >
       `;
     }

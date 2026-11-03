@@ -89,12 +89,10 @@ export function parseToken(
         if (format !== null && format !== 'integer') {
           throw `Message format 'number' is only supported for integer values.`;
         }
-        let number = formatNumber(arg);
-        let pos;
-        if (format === null && (pos = `${arg}`.indexOf('.')) !== -1) {
-          number += `.${arg.substring(pos + 1)}`;
-        }
-        return number;
+        const fraction = format === null ? `${arg}`.split('.')[1] : undefined;
+        return fraction
+          ? formatNumber(arg, `,.${fraction.length}f`)
+          : formatNumber(arg);
       })();
     case 'none':
       return arg;

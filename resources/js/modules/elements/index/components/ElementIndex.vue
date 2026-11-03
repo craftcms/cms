@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {computed, provide, ref, useTemplateRef, watch} from 'vue';
+  import {computed, h, provide, ref, useTemplateRef, watch} from 'vue';
   import {onLongPress} from '@vueuse/core';
   import {ButtonVariant, t} from '@craftcms/ui';
   import PaginationControls from '@/common/components/PaginationControls.vue';
@@ -13,6 +13,7 @@
   import ElementCards from '@/modules/elements/components/ElementCards.vue';
   import ElementThumbs from '@/modules/elements/components/ElementThumbs.vue';
   import ElementIndexToolbar from '@/modules/elements/index/components/ElementIndexToolbar.vue';
+  import SelectAllBanner from '@/modules/elements/index/components/SelectAllBanner.vue';
   import type {ElementIndexView} from '@/modules/elements/index/types/model';
   import type {StructureMove} from '@/modules/elements/index/composables/useElementIndexStructure';
   import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
@@ -37,6 +38,11 @@
       view: ElementIndexView;
       contained?: boolean;
       footerActive?: boolean;
+      /**
+       * Whether selecting the whole page offers to select every result the
+       * index lists, on every page.
+       */
+      offersSelectAll?: boolean;
       itemBehavior?: ElementIndexItemBehavior;
       showSites?: boolean;
       enableAdjustPageSize?: boolean;
@@ -53,6 +59,7 @@
     {
       contained: false,
       footerActive: false,
+      offersSelectAll: false,
       enableAdjustPageSize: false,
       withBottomBorder: true,
       tableAppearance: TableAppearance.Flush,
@@ -90,6 +97,7 @@
     structureView,
     toggleStructure,
     selection,
+    selectAll,
   } = props.view;
   const structure = props.view.structure;
   const rowReorder = props.view.rowReorder;
@@ -148,6 +156,24 @@
   const multiSelect = computed(
     () => props.view.table.options.enableMultiRowSelection !== false
   );
+  const paginationProps = computed(() => ({
+    pageIndex: table.atoms.pagination.get().pageIndex,
+    pageSize: table.atoms.pagination.get().pageSize,
+    pageCount: table.getPageCount(),
+    paginated: Boolean(
+      table.options.manualPagination ||
+      'paginatedRowModel' in table.options.features
+    ),
+    disabled: processing.value,
+    onPageChange: table.setPageIndex,
+    onPageInput: () => props.view.cancelPageLoad(),
+  }));
+  /**
+   * The page controls alone, handed to the active footer so a selection can
+   * keep moving between pages.
+   */
+  const FooterPageControls = () =>
+    h(PaginationControls, {...paginationProps.value, controlsOnly: true});
   const showFooter = computed(
     () =>
       props.footerActive ||
@@ -157,6 +183,26 @@
       (elementIndex.pagination?.total ?? 0) > 0 ||
       table.getPageCount() > 1
   );
+  /**
+   * What the banner over the results offers: every result, once the whole
+   * page is selected, or just the page, once every result is.
+   */
+  const selectAllOffer = computed<'all' | 'page' | null>(() => {
+    if (
+      !props.offersSelectAll ||
+      !multiSelect.value ||
+      isInlineEditing.value ||
+      table.getPageCount() <= 1
+    ) {
+      return null;
+    }
+
+    if (selectAll.active.value) {
+      return selectAll.exceptIds.value.length === 0 ? 'page' : null;
+    }
+
+    return selection.selection.allSelected.value ? 'all' : null;
+  });
   const itemBehavior = computed<ElementIndexItemBehavior>(() => ({
     ...props.itemBehavior,
     ...(isInlineEditing.value
@@ -191,10 +237,10 @@
         total: elementIndex.pagination?.total ?? 0,
       });
   });
-  watch(selection.selectedIds, (ids) => {
-    liveMessage.value = ids.length
+  watch(selectAll.count, (count) => {
+    liveMessage.value = count
       ? t('{num, plural, =1{# item selected} other{# items selected}}', {
-          num: ids.length,
+          num: count,
         })
       : t('Selection cleared');
   });
@@ -340,7 +386,11 @@
                   exportElements?.(
                     format,
                     type,
-                    selection.selectedIds.value,
+                    selectAll.active.value
+                      ? selectAll.exceptIds.value.length
+                        ? ['not', ...selectAll.exceptIds.value]
+                        : []
+                      : selection.selectedIds.value,
                     limit
                   )
               "
@@ -399,6 +449,15 @@
           :render-server-actions="!$slots['card-actions']"
           @reorder="(from, to) => rowReorder?.move(from, to)"
         >
+          <template v-if="selectAllOffer" #header-after>
+            <SelectAllBanner
+              :offer="selectAllOffer"
+              :page-count="data.length"
+              :total="elementIndex.pagination.total"
+              @select-all="selectAll.selectAll()"
+              @select-page="selectAll.selectPage()"
+            />
+          </template>
           <template v-if="$slots['card-actions']" #actions="{element}">
             <slot name="card-actions" :element="element" />
           </template>
@@ -416,7 +475,17 @@
           :thumb-size="thumbSize"
           :placeholders="placeholderCount(8)"
           @edit="onThumbEdit"
-        />
+        >
+          <template v-if="selectAllOffer" #header-after>
+            <SelectAllBanner
+              :offer="selectAllOffer"
+              :page-count="data.length"
+              :total="elementIndex.pagination.total"
+              @select-all="selectAll.selectAll()"
+              @select-page="selectAll.selectPage()"
+            />
+          </template>
+        </ElementThumbs>
         <ElementTable
           v-else
           :table="table"
@@ -451,6 +520,15 @@
           @move-structure-row="moveRow"
           @reorder="(from, to) => rowReorder?.move(from, to)"
         >
+          <template v-if="selectAllOffer" #header-after>
+            <SelectAllBanner
+              :offer="selectAllOffer"
+              :page-count="data.length"
+              :total="elementIndex.pagination.total"
+              @select-all="selectAll.selectAll()"
+              @select-page="selectAll.selectPage()"
+            />
+          </template>
           <template #placeholder-cell="{index, width}">
             <craft-chip
               v-if="index === 0 && hasThumbs"
@@ -490,29 +568,22 @@
           >{{ t('Cancel') }}</craft-button
         >
       </div>
-      <slot v-else-if="footerActive" name="footer" />
+      <slot
+        v-else-if="footerActive"
+        name="footer"
+        :pagination="FooterPageControls"
+      />
       <PlaceholderShape
         v-else-if="pending"
         class="element-index__count-placeholder"
       />
       <PaginationControls
         v-else
-        :page-index="table.atoms.pagination.get().pageIndex"
-        :page-size="table.atoms.pagination.get().pageSize"
-        :page-count="table.getPageCount()"
-        :paginated="
-          Boolean(
-            table.options.manualPagination ||
-            'paginatedRowModel' in table.options.features
-          )
-        "
+        v-bind="paginationProps"
         :from="elementIndex.pagination.from"
         :to="elementIndex.pagination.to"
         :total="elementIndex.pagination.total"
         :enable-adjust-page-size="enableAdjustPageSize"
-        :disabled="processing"
-        @page-input="view.cancelPageLoad()"
-        @page-change="table.setPageIndex"
         @page-size-change="table.setPageSize"
       />
     </div>
@@ -573,11 +644,24 @@
 
     // Like a flush table, the select-all header spans the container's padding
     // and pads its content back in by the same amount.
-    > :deep(:is(.card-grid-header, .thumbsview-header)) {
+    > :deep(
+      :is(
+        .card-grid-header,
+        .thumbsview-header,
+        .card-grid-header-after,
+        .thumbsview-header-after
+      )
+    ) {
       margin-inline: calc(var(--cp-container-padding) * -1);
       margin-block-end: 0;
       padding-block-start: var(--c-spacing-sm);
       padding-inline: var(--cp-container-padding);
+    }
+
+    > :deep(:is(.card-grid-header-after, .thumbsview-header-after)) {
+      padding-block: var(--c-spacing-sm);
+      border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+      background-color: var(--c-surface-sunken);
     }
   }
 

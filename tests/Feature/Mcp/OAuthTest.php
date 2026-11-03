@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Auth\PersonalAccessTokens\PersonalAccessTokens;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Settings as CpSettings;
 use CraftCms\Cms\Edition;
@@ -118,6 +119,7 @@ it('discovers and completes dynamic client registration and authorization', func
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('clientName', 'Test MCP client')
             ->where('redirectUri', 'https://client.example/callback')
+            ->where('redirectHost', 'client.example')
             ->where('accessOptions', fn ($options): bool => collect($options)->pluck('value')->all() === ['mcp:read', 'mcp:write', 'mcp:admin'])
             ->where('scopes', [])
             ->where('approveAction', route('craft.mcp.oauth.approve'))
@@ -198,6 +200,7 @@ it('serves the endpoint and OAuth metadata from current settings when routes are
     Route::setCompiledRoutes($routes->compile());
     app()->instance('routes.cached', true);
     app()->forgetInstance(CpSettings::class);
+    app()->forgetInstance(PersonalAccessTokens::class);
     app()->call([app()->getProvider(McpServiceProvider::class), 'boot']);
 
     $this->postJson(route('craft.mcp.server'), McpRequest::payload('initialize'), McpRequest::headers('initialize'))
@@ -253,6 +256,48 @@ it('returns OAuth errors for malformed registration metadata', function (array $
     'malformed redirect' => [['redirect_uris' => ['not-a-url']], 'invalid_redirect_uri'],
     'malformed name' => [['client_name' => ['unexpected']], 'invalid_client_metadata'],
 ]);
+
+it('normalizes registered client names and rejects reserved and empty ones', function (string $name, ?string $stored): void {
+    $name = str_replace('{system}', Cms::systemName(), $name);
+    $response = $this->postJson(route('craft.mcp.oauth.register'), mcpRegistration(['client_name' => $name]));
+
+    if ($stored === null) {
+        $response->assertStatus(400)->assertJsonPath('error', 'invalid_client_metadata');
+
+        return;
+    }
+
+    $response->assertCreated();
+    expect(Passport::client()->newQuery()->find($response->json('client_id'))->name)->toBe($stored);
+})->with([
+    'invisible and private-use characters' => ["My\u{200B}  \u{E000}App\u{202E}", 'My App'],
+    'containing a reserved name' => ['Craft Companion', 'Craft Companion'],
+    'Craft' => ['craft cms', null],
+    'Craft look-alike' => ["\u{0421}raft", null],
+    'system name' => ['{system}', null],
+    'invisible only' => ["\u{200B}\u{FE0F}\u{E0041}", null],
+    'too long' => [str_repeat('a', 65), null],
+]);
+
+it('limits client registrations per IP address', function (): void {
+    foreach (range(1, 10) as $i) {
+        $this->postJson(route('craft.mcp.oauth.register'), mcpRegistration())->assertCreated();
+    }
+
+    $this->postJson(route('craft.mcp.oauth.register'), mcpRegistration())->assertTooManyRequests();
+});
+
+it('marks registered clients as authorized once they get a token', function (): void {
+    $clientId = $this->postJson(route('craft.mcp.oauth.register'), mcpRegistration())->json('client_id');
+    expect(Passport::client()->newQuery()->find($clientId)->updated_at)->toBeNull();
+
+    $this->actingAs(User::query()->firstOrFail(), Cms::config()->getAuthGuard());
+    $this->get(route('craft.mcp.oauth.authorize', mcpAuthorizationParameters($clientId)))->assertOk();
+    $location = $this->post(route('craft.mcp.oauth.approve'), ['auth_token' => session('authToken')])->headers->get('Location');
+    mcpExchangeAuthorizationCode($this, $clientId, $location);
+
+    expect(Passport::client()->newQuery()->find($clientId)->updated_at)->not->toBeNull();
+});
 
 it('answers CORS preflight requests without authentication or collecting user instructions', function (bool $public): void {
     config()->set('app.url', 'https://craft.test');

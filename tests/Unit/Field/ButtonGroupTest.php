@@ -22,7 +22,7 @@ function buttonGroupInput(bool $iconsOnly): Crawler
 
 it('renders its options as radios drawn as buttons', function () {
     $crawler = buttonGroupInput(false);
-    $inputs = $crawler->filter('craft-radio-group[buttons] craft-radio > input[type="radio"]');
+    $inputs = $crawler->filter('craft-radio-group[appearance="button-group"] craft-radio > input[type="radio"]');
 
     expect($crawler->filter('craft-button-group'))->toHaveCount(0)
         ->and($inputs)->toHaveCount(2)
