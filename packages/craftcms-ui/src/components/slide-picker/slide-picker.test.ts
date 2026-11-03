@@ -18,7 +18,7 @@ async function createSlidePicker(
 }
 
 function slider(element: CraftSlidePicker) {
-  return element.querySelector('craft-slide-picker-track')!;
+  return element.querySelector('craft-slide-picker-slider')!;
 }
 
 function segments(element: CraftSlidePicker): HTMLElement[] {
@@ -108,6 +108,30 @@ describe('craft-slide-picker', () => {
     await settle(element);
 
     expect(element.modelValue).toBe(20);
+  });
+
+  it('starts at the minimum when its value isn’t a number', async () => {
+    document.body.innerHTML = `<craft-slide-picker min="20" max="100" step="20" model-value="wide"></craft-slide-picker>`;
+    const element = document.querySelector('craft-slide-picker')!;
+    await settle(element);
+
+    expect(element.modelValue).toBe(20);
+    expect(slider(element).getAttribute('aria-valuenow')).toBe('20');
+  });
+
+  it('leaves the keys alone while read-only, so they still scroll the page', async () => {
+    const element = await createSlidePicker({modelValue: 50});
+    element.readOnly = true;
+    await settle(element);
+
+    const event = new KeyboardEvent('keydown', {
+      key: 'ArrowDown',
+      bubbles: true,
+      cancelable: true,
+    });
+    slider(element).dispatchEvent(event);
+
+    expect(event.defaultPrevented).toBe(false);
   });
 
   it('clamps out-of-range values and snaps off-step values', async () => {

@@ -33,8 +33,6 @@ class SelectColor extends ViewComponent
 
     protected bool $readOnly = false;
 
-    protected ?string $describedBy = null;
-
     protected function tagName(): string
     {
         return 'craft-select-color';
@@ -99,13 +97,6 @@ class SelectColor extends ViewComponent
         return $this;
     }
 
-    public function describedBy(?string $describedBy): static
-    {
-        $this->describedBy = $describedBy;
-
-        return $this;
-    }
-
     #[\Override]
     protected function hostAttributes(): array
     {
@@ -120,7 +111,6 @@ class SelectColor extends ViewComponent
             'required' => $this->required,
             'readonly' => $this->readOnly,
             'disabled' => $this->isDisabled(),
-            'aria' => ['describedby' => $this->describedBy],
         ];
     }
 }

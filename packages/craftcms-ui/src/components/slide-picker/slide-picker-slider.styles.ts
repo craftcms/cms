@@ -19,8 +19,6 @@ export default css`
       --c-slide-picker-segment-fill,
       var(--c-color-neutral-fill-quiet)
     );
-    /* Selected segments take a toned-down version of a selected button's
-       fill. */
     --_segment-active-fill: var(
       --c-slide-picker-segment-active-fill,
       color-mix(
@@ -66,14 +64,10 @@ export default css`
     border-color: var(--_segment-active-border);
   }
 
-  /* Selected segments are outlined as one; the dividers between them stay
-     light. */
   .slide-picker__segment.is-active:not(.is-last-active) {
     border-inline-end-color: var(--_segment-border);
   }
 
-  /* Hovering previews a value: the segments up to and including the hovered
-     one fill in, and the rest clear. */
   :host(:not([readonly]):not([disabled]))
     .slide-picker:has(.slide-picker__segment:hover)
     .slide-picker__segment {

@@ -21,30 +21,6 @@ import styles from './field.styles.js';
 import {HasSlotController} from '@src/utilities/slot';
 import {t} from '@src/utilities/translate';
 
-/**
- * What a control slotted into `craft-field` implements to receive the field's
- * label, instructions and errors.
- *
- * The field calls these with its own label, `help-text` and `feedback`
- * elements. Attach them to whatever element actually takes focus, so a screen
- * reader announces them when the control is focused. Lion-based fields
- * already implement both.
- *
- * A control without these methods still works: the field gives itself
- * `role="group"` and names that instead, which suits groups of inputs but not
- * a single control.
- */
-export interface FieldControl {
-  /** Adds `element` to the control's accessible name. */
-  addToAriaLabelledBy(element: HTMLElement): void;
-  /** Adds `element` to the control's accessible description. */
-  addToAriaDescribedBy(element: HTMLElement): void;
-}
-
-/**
- * The field also passes Lion's id-prefix and ordering options. They're
- * internal to Lion-based fields, so they stay out of `FieldControl`.
- */
 type FormControlTarget = HTMLElement & {
   addToAriaLabelledBy(
     element: HTMLElement,

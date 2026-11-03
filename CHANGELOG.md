@@ -354,11 +354,10 @@
 - Fixed an accessibility issue where pressing <kbd>Return</kbd> on a dialog’s close button could reopen the dialog, such as the “Check your email” dialog on the Reset Password screen. ([#20049](https://github.com/craftcms/cms/pull/20049))
 - `craft-spinner` now has a `label` property, which describes what is loading to screen readers. Slotted text still replaces it.
 - `craft-field` now has an `instructions-sr-only` attribute, and UI fields and the `Field` view component have `instructionsSrOnly()`, which visually hide instructions while keeping them in the input’s accessible description.
-- Added the `FieldControl` type to `@craftcms/ui`. Controls slotted into `<craft-field>` that implement it are given the field’s label, instructions, and errors, so screen readers announce them when the control is focused.
+- Improved slide pickers’ announced values, which now separate a unit that starts with a letter from the number with a space (“3 columns”).
 - Fixed an accessibility issue where slide pickers and color selects weren’t named or described by their field’s label, instructions, and errors.
 - Fixed an accessibility issue where read-only slide pickers couldn’t be focused, so their value couldn’t be read.
 - Fixed an accessibility issue where field layout designers’ width pickers were named “Number of Columns”. They’re now named “Width”.
-- Improved slide pickers’ announced values, which now separate a unit that starts with a letter from the number with a space (“3 columns”).
 - Fixed an accessibility issue where spinners in Content Block and Matrix inline-block fields weren’t announced as loading.
 - Fixed an accessibility issue where pressing Escape in a popover inside an element details panel also closed the panel.
 - Fixed an accessibility issue where keyboard focus was lost after moving an item with its reorder button’s “Move up” or “Move down” option. ([#20073](https://github.com/craftcms/cms/pull/20073))
@@ -717,14 +716,15 @@
 - Added the `--c-callout-icon-padding-inline` and `--c-callout-text-padding-inline` CSS custom properties to `<craft-callout>`. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Added the `--c-field-label-font-size`, `--c-field-label-font-weight`, `--c-field-label-color`, and `--c-field-label-line-height` CSS custom properties to `<craft-field>`. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Added the `--c-slide-picker-segment-fill`, `--c-slide-picker-segment-active-fill`, and `--c-slide-picker-segment-hover-fill` CSS custom properties to `<craft-slide-picker>`. ([#20001](https://github.com/craftcms/cms/pull/20001))
-- Rebuilt `<craft-slide-picker>` on Lion’s `LionField`, with its slider in the `input` slot. It now has the `label`, `help-text`, and `feedback` slots, and the `label-sr-only` attribute.
-- Renamed `<craft-slide-picker>`’s `value` property to `modelValue`, and its `value` attribute to `model-value`.
+- Rebuilt `<craft-slide-picker>` on Lion’s `LionField`, with its slider in the `input` slot. It now has the `label`, `help-text`, and `feedback` slots, and the `label-sr-only` attribute. The `slider` role, the `aria-value*` attributes, and focus are now on that slider, rather than on `<craft-slide-picker>` itself.
+- Renamed `<craft-slide-picker>`’s `value` property to `modelValue`, and its `value` attribute to `model-value`. Its `value` property is now Lion’s string view value, and setting it doesn’t change `modelValue`.
 - Renamed `<craft-slide-picker>`’s `readonly` property to `readOnly`.
-- `<craft-slide-picker>`’s `label` is now shown as a visible label, and no longer defaults to “Number of Columns”.
+- Changed `<craft-slide-picker>`’s `label` to a visible label, which no longer defaults to “Number of Columns”.
 - Removed the `described-by` attribute from `<craft-slide-picker>`, and the `describedBy` option from `createSlidePicker()`. Its help text, or its field’s instructions, describe it instead.
 - Removed the `form`, `validity`, `validationMessage`, and `willValidate` properties and the `checkValidity()` and `reportValidity()` methods from `<craft-slide-picker>`, which now posts its value through a hidden input.
 - Rebuilt `<craft-select-color>` as a subclass of `<craft-select-rich>`, so it has the rich select’s properties and slots, and its options render in its own listbox.
-- `<craft-select-color>`’s `model-value-changed` event no longer crosses shadow roots, and it no longer emits `input` and `change` when its value is set programmatically.
+- Changed `<craft-select-color>` so its `model-value-changed` event no longer crosses shadow roots, and it no longer emits `input` and `change` when its value is set programmatically.
+- Removed `CraftCms\Cms\Cp\Components\SelectColor::describedBy()`. Instructions and errors reach the color select through its field.
 - Added the `--c-thumbnail-height` CSS custom property to `<craft-thumbnail>`. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Added the `thumb-size` attribute to `<craft-chip>`, which sizes its thumbnail independently of the chip (`sm`, `md`, `lg`, `xl`, or `2xl`). Chips without a `size` now take the size that suits their `thumb-size`. ([#20083](https://github.com/craftcms/cms/discussions/20083), [#20124](https://github.com/craftcms/cms/pull/20124))
 - Added the `prefix-placement` attribute to `<craft-chip>`. Set to `block-start`, a chip stacks its thumbnail or icon above its label, with its checkbox and suffix along the top. ([#20083](https://github.com/craftcms/cms/discussions/20083), [#20124](https://github.com/craftcms/cms/pull/20124))

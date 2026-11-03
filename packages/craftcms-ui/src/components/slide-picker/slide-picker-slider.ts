@@ -2,7 +2,7 @@ import {DisabledWithTabIndexMixin} from '@lion/ui/core.js';
 import {html, LitElement, nothing, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
-import styles from './slide-picker-track.styles.js';
+import styles from './slide-picker-slider.styles.js';
 
 /**
  * @summary The slider itself — the segments a `craft-slide-picker` renders.
@@ -17,7 +17,7 @@ import styles from './slide-picker-track.styles.js';
  * @fires input - A person changed the value. Doesn't bubble; the picker
  *   announces the change from its own element.
  */
-export default class CraftSlidePickerTrack extends DisabledWithTabIndexMixin(
+export default class CraftSlidePickerSlider extends DisabledWithTabIndexMixin(
   LitElement
 ) {
   static override styles = [styles];
@@ -91,6 +91,10 @@ export default class CraftSlidePickerTrack extends DisabledWithTabIndexMixin(
   }
 
   #handleKeyDown = (event: KeyboardEvent) => {
+    if (!this.#editable) {
+      return;
+    }
+
     const forward = this.#isRtl() ? -this.step : this.step;
     const next: Record<string, number> = {
       ArrowUp: this.#number + this.step,
@@ -141,12 +145,12 @@ export default class CraftSlidePickerTrack extends DisabledWithTabIndexMixin(
   }
 }
 
-if (!customElements.get('craft-slide-picker-track')) {
-  customElements.define('craft-slide-picker-track', CraftSlidePickerTrack);
+if (!customElements.get('craft-slide-picker-slider')) {
+  customElements.define('craft-slide-picker-slider', CraftSlidePickerSlider);
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    'craft-slide-picker-track': CraftSlidePickerTrack;
+    'craft-slide-picker-slider': CraftSlidePickerSlider;
   }
 }

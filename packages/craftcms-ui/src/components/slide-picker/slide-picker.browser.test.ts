@@ -12,17 +12,17 @@ async function render(attributes = '', value = 100): Promise<CraftSlidePicker> {
   const picker =
     document.querySelector<CraftSlidePicker>('craft-slide-picker')!;
   await picker.updateComplete;
-  await track(picker).updateComplete;
+  await slider(picker).updateComplete;
   return picker;
 }
 
-function track(picker: CraftSlidePicker) {
-  return picker.querySelector('craft-slide-picker-track')!;
+function slider(picker: CraftSlidePicker) {
+  return picker.querySelector('craft-slide-picker-slider')!;
 }
 
 function segments(picker: CraftSlidePicker): HTMLElement[] {
   return [
-    ...track(picker).shadowRoot!.querySelectorAll<HTMLElement>(
+    ...slider(picker).shadowRoot!.querySelectorAll<HTMLElement>(
       '.slide-picker__segment'
     ),
   ];
@@ -107,8 +107,8 @@ it('draws one focus ring, around the current segment', async () => {
 
   await userEvent.tab();
 
-  const current = track(picker).shadowRoot!.querySelector('.is-last-active')!;
-  expect(getComputedStyle(track(picker)).outlineStyle).toBe('none');
+  const current = slider(picker).shadowRoot!.querySelector('.is-last-active')!;
+  expect(getComputedStyle(slider(picker)).outlineStyle).toBe('none');
   expect(getComputedStyle(current).outlineStyle).not.toBe('none');
 });
 

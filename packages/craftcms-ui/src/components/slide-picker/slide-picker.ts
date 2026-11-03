@@ -4,15 +4,15 @@ import {property} from 'lit/decorators.js';
 import {HasLabel} from '@src/mixins/HasLabel';
 import {baseFieldStyles} from '@src/styles/form.styles';
 import {emitChange, emitInput} from '@src/utilities/form-events';
-import type CraftSlidePickerTrack from './slide-picker-track.js';
-import './slide-picker-track.js';
+import type CraftSlidePickerSlider from './slide-picker-slider.js';
+import './slide-picker-slider.js';
 import styles from './slide-picker.styles.js';
 
 /**
  * @summary Segmented slider control for selecting numeric values in fixed steps.
  * @since 1.0
  *
- * A Lion field: the slider is a `craft-slide-picker-track` in its `input`
+ * A Lion field: the slider is a `craft-slide-picker-slider` in its `input`
  * slot, so the label, help text and feedback — its own, or a surrounding
  * `craft-field`'s — name and describe it the way they do any other control. A
  * hidden input carries the value, so a picker with a `name` posts like any
@@ -103,7 +103,7 @@ export default class CraftSlidePicker extends HasLabel(LionField) {
   override get slots() {
     return {
       ...super.slots,
-      input: () => document.createElement('craft-slide-picker-track'),
+      input: () => document.createElement('craft-slide-picker-slider'),
       'hidden-input': () => ({
         template: html`${this.name
           ? html`<input
@@ -117,8 +117,8 @@ export default class CraftSlidePicker extends HasLabel(LionField) {
     };
   }
 
-  get #track(): CraftSlidePickerTrack {
-    return this._inputNode as unknown as CraftSlidePickerTrack;
+  get #slider(): CraftSlidePickerSlider {
+    return this._inputNode as unknown as CraftSlidePickerSlider;
   }
 
   override attributeChangedCallback(
@@ -159,7 +159,7 @@ export default class CraftSlidePicker extends HasLabel(LionField) {
 
   #normalize(value: unknown): number {
     const {min, max, step} = this;
-    const number = typeof value === 'number' ? value : min;
+    const number = Number.isFinite(value) ? (value as number) : min;
     const clamped = Math.min(Math.max(number, min), max);
     const snapped = min + Math.round((clamped - min) / step) * step;
     return Math.min(Math.max(snapped, min), max);
@@ -187,19 +187,19 @@ export default class CraftSlidePicker extends HasLabel(LionField) {
   override updated(changed: PropertyValues<this>) {
     super.updated(changed);
 
-    const track = this.#track;
-    track.min = this.min;
-    track.max = this.max;
-    track.step = this.step;
-    track.readOnly = this.readOnly;
-    track.disabled = this.disabled;
-    track.valueText = (value) => this.#valueText(value);
+    const slider = this.#slider;
+    slider.min = this.min;
+    slider.max = this.max;
+    slider.step = this.step;
+    slider.readOnly = this.readOnly;
+    slider.disabled = this.disabled;
+    slider.valueText = (value) => this.#valueText(value);
   }
 
   /** Clicking the label focuses the slider, as it would a native input. */
   protected _onLabelClick() {
     if (!this.disabled) {
-      this.#track.focus();
+      this.#slider.focus();
     }
   }
 }
