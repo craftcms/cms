@@ -475,6 +475,9 @@ it('draws settings nav items with solid icons', function () {
     File::ensureDirectoryExists(dirname($solidIcon));
     File::put($solidIcon, '<svg></svg>');
     $this->beforeApplicationDestroyed(fn () => File::delete($solidIcon));
+    $customIcon = CmsAssets::resourcesPath('icons/custom-icons/navigation-test-custom.svg');
+    File::put($customIcon, '<svg></svg>');
+    $this->beforeApplicationDestroyed(fn () => File::delete($customIcon));
 
     $settings = Mockery::mock(Settings::class, [
         'sectionName' => 'System',
@@ -482,6 +485,8 @@ it('draws settings nav items with solid icons', function () {
             'System' => [
                 'with-solid' => ['label' => 'With Solid', 'iconName' => 'light/navigation-test-solid'],
                 'light-only' => ['label' => 'Light Only', 'iconName' => 'light/navigation-test-light-only'],
+                'custom-pair' => ['label' => 'Custom Pair', 'iconName' => 'custom-icons/navigation-test-custom-light'],
+                'custom-light-only' => ['label' => 'Custom Light Only', 'iconName' => 'custom-icons/navigation-test-unpaired-light'],
             ],
         ],
     ]);
@@ -501,7 +506,12 @@ it('draws settings nav items with solid icons', function () {
 
     $items = collect(findNavItem($navigation->getItems(), 'Settings')->subnav[0]->subnav);
 
-    expect($items->pluck('icon')->all())->toBe(['navigation-test-solid', 'light/navigation-test-light-only']);
+    expect($items->pluck('icon')->all())->toBe([
+        'navigation-test-solid',
+        'light/navigation-test-light-only',
+        'custom-icons/navigation-test-custom',
+        'custom-icons/navigation-test-unpaired-light',
+    ]);
 });
 
 it('selects the plugin settings item instead of the Plugins index', function () {

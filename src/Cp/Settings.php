@@ -9,6 +9,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\CmsAssets;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Container\Attributes\Singleton;
 use InvalidArgumentException;
@@ -106,7 +107,9 @@ class Settings
         if (Edition::get()->supportsCustomNavigations()) {
             $settings[$label]['cp-nav'] = [
                 'url' => route('craft.cp.settings.cp-nav.index'),
-                'iconName' => 'light/sitemap',
+                'iconName' => I18N::getLocale()->getOrientation() === 'rtl'
+                    ? 'custom-icons/sidebar-nav-flip-light'
+                    : 'custom-icons/sidebar-nav-light',
                 'label' => t('CP Navigation'),
             ];
         }

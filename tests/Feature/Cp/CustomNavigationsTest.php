@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cp\CustomNavigations;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Navigation;
+use CraftCms\Cms\Cp\Settings;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\UserGroups;
@@ -242,3 +243,14 @@ it('shows added sections and links only to users who match their user condition,
 
     expect(array_values(array_intersect(topNavLabels(), $added)))->toBe(['Everyone']);
 });
+
+it('draws the CP Navigation setting with the sidebar on the reading side', function (string $locale, string $icon) {
+    app()->setLocale($locale);
+
+    $setting = collect(app(Settings::class)->all())->collapse()->get('cp-nav');
+
+    expect($setting['iconName'])->toBe($icon);
+})->with([
+    'left-to-right' => ['en', 'custom-icons/sidebar-nav-light'],
+    'right-to-left' => ['ar', 'custom-icons/sidebar-nav-flip-light'],
+]);

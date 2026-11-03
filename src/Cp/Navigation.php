@@ -752,19 +752,32 @@ readonly class Navigation
 
     /**
      * Settings name the light icons drawn large on the settings index; the
-     * nav draws the solid ones, where they exist.
+     * nav draws the solid ones, where they exist. Craft's own custom icons
+     * come in pairs, with the light one named `<name>-light`.
      */
     private function solidIconName(?string $icon): ?string
     {
-        if ($icon === null || ! str_starts_with($icon, 'light/')) {
-            return $icon;
+        if ($icon === null) {
+            return null;
         }
 
-        $name = substr($icon, strlen('light/'));
+        if (str_starts_with($icon, 'light/')) {
+            $name = substr($icon, strlen('light/'));
 
-        return is_file(CmsAssets::resourcesPath("icons/solid/$name.svg"))
-            ? $name
-            : $icon;
+            return is_file(CmsAssets::resourcesPath("icons/solid/$name.svg"))
+                ? $name
+                : $icon;
+        }
+
+        if (str_starts_with($icon, 'custom-icons/') && str_ends_with($icon, '-light')) {
+            $solid = substr($icon, 0, -strlen('-light'));
+
+            if (is_file(CmsAssets::resourcesPath("icons/$solid.svg"))) {
+                return $solid;
+            }
+        }
+
+        return $icon;
     }
 
     /**
