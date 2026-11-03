@@ -20,7 +20,6 @@ use GuzzleHttp\Psr7\ServerRequest;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\RequestTypes\AuthorizationRequestInterface;
-use Normalizer;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use yii\filters\RateLimiter;
@@ -353,8 +352,9 @@ class OauthController extends Controller
      *
      * Anyone can register a client without authenticating, and the consent screen shows its name on this site’s own
      * domain, under its own branding. A client named after Craft or the site would look like a first-party app, so a
-     * phishing link to the real authorize URL could trick users into granting it access. We only block exact matches;
-     * the redirect host shown on the consent screen covers the rest.
+     * phishing link to the real authorize URL could trick users into granting it access. Look-alikes, such as “Craft”
+     * spelled with a Cyrillic “С” (U+0421), are blocked too. Names that only contain a reserved name are allowed; the
+     * redirect host shown on the consent screen covers those.
      */
     private function isReservedClientName(string $name): bool
     {
@@ -365,11 +365,8 @@ class OauthController extends Controller
             ...array_map(fn(Site $site) => $site->getName(), Craft::$app->getSites()->getAllSites(true)),
         ];
 
-        $key = fn(string $value) => mb_strtolower(Normalizer::normalize($this->normalizeClientName($value), Normalizer::FORM_KC) ?: $value);
-        $name = $key($name);
-
         foreach ($reserved as $value) {
-            if ($value !== '' && $key($value) === $name) {
+            if ($value !== '' && StringHelper::areConfusable($name, $value)) {
                 return true;
             }
         }

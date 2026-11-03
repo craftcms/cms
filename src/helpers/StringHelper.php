@@ -14,6 +14,7 @@ use Illuminate\Support\Str;
 use IteratorAggregate;
 use LitEmoji\LitEmoji;
 use Normalizer;
+use Spoofchecker;
 use Throwable;
 use Transliterator;
 use voku\helper\ASCII;
@@ -2843,6 +2844,53 @@ class StringHelper extends \yii\helpers\StringHelper
         }
 
         return preg_replace('/[\p{Co}\p{Cn}]/u', '', $str) ?? $str;
+    }
+
+    /**
+     * Returns whether two strings could be mistaken for each other when displayed.
+     *
+     * Case, full-width and other compatibility forms, invisible characters, and whitespace differences are ignored,
+     * and look-alike characters from different scripts (such as the Latin “C” and Cyrillic “С”, U+0421) are treated
+     * as the same, per [Unicode Technical Standard #39](https://www.unicode.org/reports/tr39/).
+     *
+     * Only whole strings are compared, so `Craft` and `Craft Companion` aren’t confusable, even when one is spelled
+     * with look-alikes.
+     *
+     * @param string $a
+     * @param string $b
+     * @return bool
+     * @since 5.12.0
+     */
+    public static function areConfusable(string $a, string $b): bool
+    {
+        $clean = function(string $str): string {
+            $str = preg_replace(static::invisibleCharsRegex(), '', $str) ?? $str;
+            return static::collapseWhitespace($str);
+        };
+        $fold = function(string $str): string {
+            $str = Normalizer::normalize($str, Normalizer::FORM_KC) ?: $str;
+            return mb_convert_case($str, MB_CASE_FOLD, 'UTF-8');
+        };
+
+        $a = $clean($a);
+        $b = $clean($b);
+        $foldedA = $fold($a);
+        $foldedB = $fold($b);
+
+        if ($foldedA === $foldedB) {
+            return true;
+        }
+
+        if (!class_exists(Spoofchecker::class)) {
+            return false;
+        }
+
+        $checker = new Spoofchecker();
+        $checker->setChecks(Spoofchecker::SINGLE_SCRIPT_CONFUSABLE | Spoofchecker::MIXED_SCRIPT_CONFUSABLE);
+
+        // Check the original strings too, since case folding and NFKC can turn look-alikes into different letters
+        // (e.g. the long “ſ” (U+017F) becomes “s”, not “f”)
+        return $checker->areConfusable($foldedA, $foldedB) || $checker->areConfusable($a, $b);
     }
 
     private static function modifyCase(string $str, ?string $language, string $case): ?string

@@ -117,6 +117,7 @@
 - Added `craft\gql\types\UserGroup`. ([#20055](https://github.com/craftcms/cms/pull/20055))
 - Added `craft\gql\types\Volume`. ([#20055](https://github.com/craftcms/cms/pull/20055))
 - Added `craft\helpers\Gql::getSchemaUser()`. ([#20147](https://github.com/craftcms/cms/pull/20147))
+- Added `craft\helpers\StringHelper::areConfusable()`.
 - Added `craft\helpers\StringHelper::stripPrivateAndUnassignedChars()`.
 - Added `craft\helpers\Template::render()`. ([#19988](https://github.com/craftcms/cms/pull/19988))
 - Added `craft\icons\DirectoryIconSet`. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))

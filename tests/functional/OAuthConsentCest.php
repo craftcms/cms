@@ -83,9 +83,14 @@ class OAuthConsentCest
             'craft cms',
             'Ｃｒａｆｔ ＣＭＳ',
             "Craft\u{200B} \u{00A0}CMS",
+            "\u{0421}raft \u{0421}MS", // Cyrillic Es
             Craft::$app->getSystemName(),
-            ...array_map(fn($site) => mb_strtoupper($site->getName()), Craft::$app->getSites()->getAllSites(true)),
+            $this->cyrillicLookalike(Craft::$app->getSystemName()),
         ];
+        foreach (Craft::$app->getSites()->getAllSites(true) as $site) {
+            $names[] = mb_strtoupper($site->getName());
+            $names[] = $this->cyrillicLookalike($site->getName());
+        }
 
         foreach ($names as $name) {
             $response = $this->register($I, $name);
@@ -95,6 +100,25 @@ class OAuthConsentCest
 
         $this->register($I, 'Craft CMS Companion');
         $I->assertSame(201, Craft::$app->getResponse()->getStatusCode());
+    }
+
+    /**
+     * Swaps Latin letters for look-alike Cyrillic ones.
+     */
+    private function cyrillicLookalike(string $str): string
+    {
+        return strtr($str, [
+            'a' => "\u{0430}",
+            'c' => "\u{0441}",
+            'e' => "\u{0435}",
+            'o' => "\u{043E}",
+            'p' => "\u{0440}",
+            'A' => "\u{0410}",
+            'C' => "\u{0421}",
+            'E' => "\u{0415}",
+            'O' => "\u{041E}",
+            'P' => "\u{0420}",
+        ]);
     }
 
     private function register(FunctionalTester $I, string $name): array

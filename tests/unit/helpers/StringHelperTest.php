@@ -4345,6 +4345,15 @@ class StringHelperTest extends TestCase
         self::assertSame($expected, StringHelper::stripPrivateAndUnassignedChars($str));
     }
 
+    /**
+     * @dataProvider areConfusableDataProvider
+     */
+    public function testAreConfusable(bool $expected, string $a, string $b): void
+    {
+        self::assertSame($expected, StringHelper::areConfusable($a, $b));
+        self::assertSame($expected, StringHelper::areConfusable($b, $a));
+    }
+
     public static function invisibleCharsRegexDataProvider(): array
     {
         return [
@@ -4357,6 +4366,27 @@ class StringHelperTest extends TestCase
             ['ab', "a\u{0083}\u{009F}b"],
             ["a \t\n\r\u{00A0}\u{0085}b", "a \t\n\r\u{00A0}\u{0085}b"],
             ['Ünïcödé 😀 こんにちは', 'Ünïcödé 😀 こんにちは'],
+        ];
+    }
+
+    public static function areConfusableDataProvider(): array
+    {
+        return [
+            [true, 'Craft', 'Craft'],
+            [true, 'craft cms', 'Craft CMS'],
+            [true, "\u{FF23}\u{FF52}\u{FF41}\u{FF46}\u{FF54}", 'Craft'], // full-width
+            [true, "Craft\u{200B}  \u{00A0}CMS", 'Craft CMS'], // zero-width space, extra spaces, NBSP
+            [true, "\u{0421}raft", 'Craft'], // Cyrillic Es
+            [true, "\u{0441}r\u{0430}ft \u{0441}ms", 'Craft CMS'], // Cyrillic es and a, lowercase
+            [true, "HAPPY LAG\u{0415}R", 'Happy Lager'], // Cyrillic Ie, uppercase
+            [true, "Cra\u{017F}t", 'Craft'], // long s
+            [true, "\u{0391}cme", 'Acme'], // Greek Alpha
+            [false, 'Crafty', 'Craft'],
+            [false, 'Cr4ft', 'Craft'],
+            [false, 'CraftCMS', 'Craft CMS'],
+            [false, 'Craft CMS Companion', 'Craft CMS'],
+            [false, "\u{0421}raft Companion", 'Craft'],
+            [false, 'Happy Lager', 'Sad Lager'],
         ];
     }
 
