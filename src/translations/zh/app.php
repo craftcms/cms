@@ -527,7 +527,7 @@ return [
     'Create a new section' => '创建新板块',
     'Create a new site' => '创建新站点',
     'Create a new tag group' => '创建新的标签组',
-    'Create a new token' => 'Create a new token',
+    'Create a new token' => '创建新令牌',
     'Create a new user group' => '创建新用户组',
     'Create a new volume…' => '创建新存储卷…',
     'Create a new {section} entry' => '创建一个新“{section}”条目',
