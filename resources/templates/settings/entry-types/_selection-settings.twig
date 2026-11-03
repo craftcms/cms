@@ -12,9 +12,19 @@
 
 {% js %}
 (() => {
-  $(document).on('dblclick taphold', '#{{chipId|namespaceInputId}}', (ev) => {
-    $(ev.currentTarget).find('[data-edit-action]').first().click();
+  const chip = document.getElementById('{{ chipId|namespaceInputId }}');
+  const edit = () => chip?.querySelector('[data-edit-action]')?.click();
+  let pressTimer = null;
+  chip?.addEventListener('dblclick', edit);
+  // A long press edits on touch screens
+  chip?.addEventListener('pointerdown', (ev) => {
+    if (ev.pointerType === 'touch') {
+      pressTimer = setTimeout(edit, 750);
+    }
   });
+  for (const type of ['pointerup', 'pointercancel', 'pointermove']) {
+    chip?.addEventListener(type, () => clearTimeout(pressTimer));
+  }
 })();
 {% endjs %}
 
