@@ -399,6 +399,10 @@ class OAuth extends Component
         }
         if (!str_contains($value, '-----BEGIN')) {
             $value = Craft::getAlias($value);
+            if (!is_readable(preg_replace('~^file://~', '', $value))) {
+                // CryptKey would throw a generic LogicException, which doesn’t say how to fix it.
+                throw new InvalidConfigException("The OAuth $type key file “{$value}” doesn’t exist or isn’t readable. Run `php craft oauth/generate-keys`, or set the `{$type}Key` OAuth config setting.");
+            }
         }
 
         return new CryptKey($value);

@@ -144,6 +144,13 @@ class OAuthTest extends TestCase
         $this->oauth->getResources();
     }
 
+    public function testMissingKeyFileIsAConfigError(): void
+    {
+        $this->app->oauthConfig->publicKey = '/nonexistent/oauth-public.key';
+        $this->expectException(InvalidConfigException::class);
+        $this->oauth->resourceServer('mcp');
+    }
+
     public function testResourcePermissionChangesDoNotRequireControlPanelAccess(): void
     {
         $this->app->identity->permissions = ['useApi'];
