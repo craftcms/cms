@@ -199,10 +199,10 @@ import './dashboard.scss';
       // Append the new widget after the last one
       // (can't simply append it to the grid container, since that will place it after the resize listener object)
 
-      if (this.grid.$items.length) {
-        $gridItem.insertAfter(this.grid.$items.last());
+      if (this.grid.items.length) {
+        $gridItem.insertAfter(this.grid.items[this.grid.items.length - 1]);
       } else {
-        $gridItem.prependTo(this.grid.$container);
+        $gridItem.prependTo(this.grid.container);
       }
 
       this.grid.addItems($gridItem);

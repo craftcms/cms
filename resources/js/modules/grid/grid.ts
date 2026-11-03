@@ -80,9 +80,7 @@ interface GridLayout {
  * absolutely-positions the items. (This is why it can't be a CSS `display:grid`
  * — native masonry isn't shipped cross-browser.)
  *
- * It works on plain elements. `$container` and `$items` still return jQuery
- * collections when jQuery is loaded, for the legacy dashboard, and `addItems()`
- * accepts them too. Booted via `new Craft.Grid(...)` and the `.grid` jQuery
+ * It works on plain elements; `addItems()` also accepts jQuery collections. Booted via `new Craft.Grid(...)` and the `.grid` jQuery
  * plugin, so exposed on `window.Craft`.
  */
 export class Grid extends Base<GridSettings> {
@@ -153,16 +151,6 @@ export class Grid extends Base<GridSettings> {
     this.addListener(this.container, 'resize', () => {
       this.refreshCols();
     });
-  }
-
-  /** The container as a jQuery collection, for legacy callers. */
-  get $container(): any {
-    return this.container ? jq()?.(this.container) : null;
-  }
-
-  /** The items as a jQuery collection, for legacy callers. */
-  get $items(): any {
-    return jq()?.(this.items) ?? null;
   }
 
   addItems(items: unknown): void {

@@ -1,7 +1,6 @@
 import * as d3 from 'd3';
 import {Base, isPlainObject} from '@craftcms/garnish';
 import {contentSize, resolveElement, type ElementArg} from '@/common/utils/dom';
-import {jq} from '@/common/utils/jquery';
 
 /** A deep merge with the semantics of jQuery's `$.extend(true, …)`. */
 function deepExtend(target: any, ...sources: any[]): any {
@@ -114,11 +113,6 @@ export class Tip extends Base {
     this.hide();
   }
 
-  /** The tooltip as a jQuery collection, for legacy code. */
-  get $tip(): any {
-    return jq()?.(this.tip) ?? null;
-  }
-
   setContent(content: string | Node): void {
     if (typeof content === 'string') {
       this.tip.innerHTML = content;
@@ -170,16 +164,6 @@ export class BaseChart extends Base {
 
   container: HTMLElement | null = null;
   chart: HTMLElement | null = null;
-
-  /** The container as a jQuery collection, for legacy chart widgets. */
-  get $container(): any {
-    return this.container ? jq()?.(this.container) : null;
-  }
-
-  /** The chart element as a jQuery collection, for legacy chart widgets. */
-  get $chart(): any {
-    return this.chart ? jq()?.(this.chart) : null;
-  }
 
   chartBaseClass = 'cp-chart';
   dataTable: any = null;

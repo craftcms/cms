@@ -134,6 +134,10 @@ export class CpScreenSlideout extends Slideout {
   hasSidebar = false;
 
   // --- jQuery public surface (see class docblock for why) -------------------
+  get $container(): any {
+    return this.container ? $(this.container) : null;
+  }
+
   $header: any = null;
   $toolbar: any = null;
   $tabContainer: any = null;
