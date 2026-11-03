@@ -144,7 +144,7 @@ export class AuthMethodSetup extends Base<AuthMethodSetupSettings> {
             await appendHeadHtml(data.headHtml);
             await appendBodyHtml(data.bodyHtml);
             this.addListener(
-              slideout.$container.find('.auth-method-close-btn'),
+              slideout.container!.querySelector('.auth-method-close-btn'),
               'activate',
               () => {
                 slideout.close();

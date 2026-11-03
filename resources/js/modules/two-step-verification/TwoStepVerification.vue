@@ -114,9 +114,9 @@
     const slideout = new AuthMethodSetupSlideout(data);
     await appendHeadHtml(data.headHtml);
     await appendBodyHtml(data.bodyHtml);
-    slideout.$container
-      .find('.auth-method-close-btn')
-      .on('click', () => slideout.close());
+    slideout
+      .container!.querySelector('.auth-method-close-btn')
+      ?.addEventListener('click', () => slideout.close());
   }
 
   const columnHelper = createCraftColumnHelper<AuthMethod>();

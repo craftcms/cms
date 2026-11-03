@@ -48,13 +48,11 @@ export class AuthMethodSetupSlideout extends Slideout {
     });
 
     // Add alt text to the QR code image
-    const $qrCodeImg = this.$container.find('[id*="qr-code-wrapper"] svg');
-
-    if ($qrCodeImg.length) {
-      $qrCodeImg.attr({
-        role: 'img',
-        'aria-label': t('QR Code'),
-      });
+    for (const qrCode of this.container!.querySelectorAll(
+      '[id*="qr-code-wrapper"] svg'
+    )) {
+      qrCode.setAttribute('role', 'img');
+      qrCode.setAttribute('aria-label', t('QR Code'));
     }
   }
 
@@ -66,14 +64,21 @@ export class AuthMethodSetupSlideout extends Slideout {
     const message = t('{name} added successfully.', {
       name: this.methodName,
     });
-    this.$container.find('.so-body').addClass('auth-method-setup-success')
-      .html(`
+    const container = this.container!;
+    for (const body of container.querySelectorAll('.so-body')) {
+      body.classList.add('auth-method-setup-success');
+      body.innerHTML = `
         <craft-icon name="check"></craft-icon>
         <h1 class="auth-method-setup-success-message" tabindex="-1">${message}</h1>
-      `);
+      `;
+    }
 
-    this.$container.find('.auth-method-setup-success-message').focus();
-    this.$container.find('.auth-method-close-btn').text(t('Close'));
+    container
+      .querySelector<HTMLElement>('.auth-method-setup-success-message')
+      ?.focus();
+    for (const button of container.querySelectorAll('.auth-method-close-btn')) {
+      button.textContent = t('Close');
+    }
   }
 }
 
