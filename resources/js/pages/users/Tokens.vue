@@ -291,7 +291,7 @@
         </AdminTable>
       </craft-pane>
 
-      <div>
+      <div v-if="page.props.groups.length">
         <craft-button type="button" icon="plus" @click="openNewTokenModal">
           {{ t('New token') }}
         </craft-button>

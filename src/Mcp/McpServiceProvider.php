@@ -9,6 +9,8 @@ use CraftCms\Cms\Auth\OAuthServer\Http\Middleware\AddOAuthChallenge;
 use CraftCms\Cms\Auth\OAuthServer\Http\Responses\AuthorizationView;
 use CraftCms\Cms\Auth\OAuthServer\OAuthResource;
 use CraftCms\Cms\Auth\OAuthServer\OAuthResources;
+use CraftCms\Cms\Auth\PersonalAccessTokens\PersonalAccessTokens;
+use CraftCms\Cms\Auth\PersonalAccessTokens\ScopeGroup;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Settings as CpSettings;
 use CraftCms\Cms\Mcp\Commands\ServeCommand;
@@ -65,6 +67,7 @@ class McpServiceProvider extends ServiceProvider
         CpSettings $cpSettings,
         RouteRegistrar $mcpRoutes,
         OAuthResources $oauthResources,
+        PersonalAccessTokens $personalAccessTokens,
     ): void {
         $this->commands([
             ServeCommand::class,
@@ -105,6 +108,17 @@ class McpServiceProvider extends ServiceProvider
                 routeName: 'craft.mcp.oauth',
             );
         });
+
+        // MCP clients the user has authorized are listed on their Tokens screen, but MCP tokens come from MCP clients,
+        // so users can’t grant MCP scopes to personal access tokens.
+        $personalAccessTokens->registerScopeGroup('mcp', fn (): ?ScopeGroup => $this->app->make(Settings::class)->enabled ? new ScopeGroup(
+            handle: 'mcp',
+            label: t('MCP'),
+            scopes: collect(McpScope::cases())
+                ->mapWithKeys(fn (McpScope $scope): array => [$scope->value => $scope->description()])
+                ->all(),
+            userScopes: fn (): array => [],
+        ) : null);
 
         $settings = static fn (): array => [
             'label' => t('MCP'),
