@@ -62,6 +62,11 @@ class ExtractEagerLoadingParameterTest extends TestCase
                         'context' => 'global',
                         'getEagerLoadingGqlConditions' => [],
                     ]),
+                    $this->make(Matrix::class, [
+                        'handle' => 'previewMatrixField',
+                        'context' => 'global',
+                        'getEagerLoadingGqlConditions' => ['withProvisionalDrafts' => false],
+                    ]),
                     $this->make(Entries::class, [
                         'handle' => 'entriesInMatrix',
                         'context' => 'global',
@@ -294,6 +299,12 @@ GQL;
                 '{ entry { assetField (volumeId: 4) { filename }}}',
                 [],
                 ['with' => [new EagerLoadPlan(['handle' => 'assetField', 'alias' => 'assetField', 'criteria' => ['id' => ['and', 1, 2]], 'siteIds' => []])]],
+                'EntryInterface',
+            ],
+            [
+                '{ entry { previewMatrixField (withProvisionalDrafts: true) { id }}}',
+                [],
+                ['with' => [new EagerLoadPlan(['handle' => 'previewMatrixField', 'alias' => 'previewMatrixField', 'criteria' => ['withProvisionalDrafts' => false], 'siteIds' => []])]],
                 'EntryInterface',
             ],
             [
