@@ -818,6 +818,7 @@ readonly class FormFields
             'name' => ($config['name'] ?? false) ?: false,
             'value' => ($config['value'] ?? null) ?: false,
             'free-only' => (bool) ($config['freeOnly'] ?? false),
+            'sets' => isset($config['sets']) ? Json::encode($config['sets']) : false,
             // `static` (editable table cells) maps to the disabled state.
             'disabled' => ($config['static'] ?? false) || ($config['disabled'] ?? false),
             'labelled-by' => ($config['labelledBy'] ?? false) ?: false,
