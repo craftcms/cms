@@ -1,4 +1,3 @@
-import $ from 'jquery';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type {OpenSlideoutOptions} from './types';
 
@@ -15,7 +14,6 @@ function lastOptions(): OpenSlideoutOptions {
 
 describe('createElementEditor', () => {
   beforeEach(() => {
-    vi.stubGlobal('$', $);
     vi.stubGlobal('Craft', {actionUrl: '/actions'});
     openSlideout.mockResolvedValue({id: 'slideout-1'});
   });
@@ -26,9 +24,9 @@ describe('createElementEditor', () => {
   });
 
   it('opens the element’s editor in a Vue slideout', async () => {
-    const chip = $(
-      '<div class="element" data-id="83" data-site-id="2" data-draft-id="5"></div>'
-    );
+    const chip = document.createElement('div');
+    chip.className = 'element';
+    Object.assign(chip.dataset, {id: '83', siteId: '2', draftId: '5'});
 
     const editor = createElementEditor('Entry', chip, {
       params: {fresh: 1},
@@ -44,7 +42,7 @@ describe('createElementEditor', () => {
       siteId: '2',
       fresh: '1',
     });
-    expect(lastOptions().opener).toBe(chip[0]);
+    expect(lastOptions().opener).toBe(chip);
   });
 
   it('reports a save as the legacy submit event', async () => {

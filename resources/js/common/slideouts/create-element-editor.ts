@@ -1,11 +1,11 @@
-import {Base} from '@craftcms/garnish';
+import {Base, isPlainObject} from '@craftcms/garnish';
 import {elementEditorParams} from '@/modules/slideout/element-editor-params';
 import type {UiValues} from '@/modules/ui/types';
 import {closeSlideout, openSlideout} from './store';
 import type {SlideoutInstance, SlideoutSaveResult} from './types';
 import {getActionUrl} from '@/common/craft/url';
+import {resolveElement} from '@/common/utils/dom';
 
-declare const $: any;
 declare const Craft: any;
 
 /** The legacy element editor settings a Vue slideout can honor. */
@@ -61,9 +61,11 @@ export class ElementEditorPanel extends Base {
   ) {
     super();
 
-    const $element = $(element);
+    const target = resolveElement(
+      element as Parameters<typeof resolveElement>[0]
+    );
     const params = {
-      ...elementEditorParams($element, {
+      ...elementEditorParams(target, {
         elementType: settings.elementType,
         elementId: settings.elementId,
         draftId: settings.draftId,
@@ -72,13 +74,14 @@ export class ElementEditorPanel extends Base {
         ownerId: settings.ownerId,
         siteId: settings.siteId,
         prevalidate:
-          settings.prevalidate ?? $element.parents('.prevalidate').length > 0,
+          settings.prevalidate ??
+          !!target?.parentElement?.closest('.prevalidate'),
       }),
       ...settings.params,
     };
 
     this.opened = openSlideout(getActionUrl('elements/edit', params), {
-      opener: $element[0] ?? undefined,
+      opener: target ?? undefined,
       onSaved: (result) => this.saved(result, settings),
       onClosed: () => {
         settings.onClose?.();
@@ -144,7 +147,7 @@ export function createElementEditor(
     | null,
   settings?: CreateElementEditorSettings
 ): ElementEditorPanel {
-  if (settings === undefined && $.isPlainObject(element)) {
+  if (settings === undefined && isPlainObject(element)) {
     settings = element as CreateElementEditorSettings;
     element = null;
   }
