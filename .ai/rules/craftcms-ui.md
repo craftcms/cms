@@ -26,7 +26,7 @@ it's to get a check (axe, a `play()` assertion) or to show a reviewer a case,
 it isn't an API story: verify the case in a `.browser.test.ts`, and add it to
 the edge-cases stories file only if a reviewer needs to see it. Placing the
 component somewhere, such as inside a `craft-field`, in a table cell or
-beside other content, to show how it's named or wired up (`aria-labelledby`
+beside other content, to show how it's named or wired up (`labelled-by`
 pointing at a column heading) isn't an API variant either. Document the attribute in the `.mdx` prose and verify
 it in a browser test.
 
@@ -62,9 +62,15 @@ A new single form control is built on Lion, so `craft-field`, validation and pos
 - Otherwise extend `HasLabel(LionField)` and render the element people interact with into its `input` slot from `get slots()`. `craft-slide-picker` does this with `craft-slide-picker-slider`, the same way `craft-switch` uses `craft-switch-button`.
 - When a listbox generates its own options, render them into `_listboxNode`, as `craft-combobox` does.
 - Expose the value as `modelValue`, adding a `model-value` attribute when markup needs to set it. Lion's `value` is the string view value.
-- To let markup point at a label or description the control doesn't own, such as a table column heading, apply the `HostAriaReferences` mixin, which reads `labelled-by` and `described-by` on the host. Don't read `aria-labelledby` or `aria-describedby` from the host: the host isn't the control, and the attribute names should say so. `craft-combobox` predates this and still reads `aria-labelledby`.
+- Keep the element people interact with in light DOM, and make it the only form control in the component.
 
-Don't hand-write `addToAriaLabelledBy`/`addToAriaDescribedBy`, don't put the focusable element in a shadow root, and don't nest one form control inside another.
+### Naming and describing the control
+Lion builds the control's `aria-labelledby` and `aria-describedby` from the elements passed to it, and rewrites them on every update:
+
+- To name or describe the control with an element the component renders, pass that element to Lion's `addToAriaLabelledBy()` or `addToAriaDescribedBy()`, as `FieldNotices` does.
+- When the control will be used in a table cell, where the column heading labels it, apply the `HostAriaReferences` mixin. It gives the host `labelled-by` and `described-by` attributes, which take element ids, so markup can name or describe the control with an element elsewhere on the page. List both with `@attr` tags in the component's doc comment, since the manifest doesn't pick up the mixin's properties.
+
+Set the control's `aria-labelledby` and `aria-describedby` only through these methods. Anything written onto the control directly is overwritten.
 
 ## Build the UI package before consumers
 Build `@craftcms/ui` with `vp run build:ui` before building or checking the main Vite application after UI package changes. Run its tests with `vp run test:ui`.
