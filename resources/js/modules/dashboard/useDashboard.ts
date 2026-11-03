@@ -106,7 +106,8 @@ export function useDashboard(props: {
   });
 
   function refreshGrid() {
-    if (!grid) return;
+    // A refresh can land after the dashboard unmounts and destroys the grid
+    if (!grid?.container) return;
 
     grid.setItems(
       Array.from(container.value!.children).filter((child) =>
@@ -114,7 +115,7 @@ export function useDashboard(props: {
       )
     );
     grid.refreshCols(true);
-    if (!grid.items.length) grid.container!.style.height = 'auto';
+    if (!grid.items.length) grid.container.style.height = 'auto';
   }
 
   function refreshTypes() {
