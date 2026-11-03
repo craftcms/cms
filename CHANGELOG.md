@@ -720,11 +720,10 @@
 - Renamed `<craft-slide-picker>`’s `value` property to `modelValue`, and its `value` attribute to `model-value`. Its `value` property is now Lion’s string view value, and setting it doesn’t change `modelValue`.
 - Renamed `<craft-slide-picker>`’s `readonly` property to `readOnly`.
 - Changed `<craft-slide-picker>`’s `label` to a visible label, which no longer defaults to “Number of Columns”.
-- Removed the `described-by` attribute from `<craft-slide-picker>`, and the `describedBy` option from `createSlidePicker()`. Its help text, or its field’s instructions, describe it instead.
 - Removed the `form`, `validity`, `validationMessage`, and `willValidate` properties and the `checkValidity()` and `reportValidity()` methods from `<craft-slide-picker>`, which now posts its value through a hidden input.
 - Rebuilt `<craft-select-color>` as a subclass of `<craft-select-rich>`, so it has the rich select’s properties and slots, and its options render in its own listbox.
 - Changed `<craft-select-color>` so its `model-value-changed` event no longer crosses shadow roots, and it no longer emits `input` and `change` when its value is set programmatically.
-- Removed `CraftCms\Cms\Cp\Components\SelectColor::describedBy()`. Instructions and errors reach the color select through its field.
+- Added the `labelled-by` attribute to `<craft-slide-picker>` and `<craft-select-color>`, and the `described-by` attribute to `<craft-select-color>`, which name and describe the control after elements elsewhere on the page, such as a table column heading. `createSlidePicker()` has a matching `labelledBy` option, and `CraftCms\Cms\Cp\Components\SelectColor` a matching `labelledBy()` method. ([#20293](https://github.com/craftcms/cms/pull/20293))
 - Added the `--c-thumbnail-height` CSS custom property to `<craft-thumbnail>`. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Added the `thumb-size` attribute to `<craft-chip>`, which sizes its thumbnail independently of the chip (`sm`, `md`, `lg`, `xl`, or `2xl`). Chips without a `size` now take the size that suits their `thumb-size`. ([#20083](https://github.com/craftcms/cms/discussions/20083), [#20124](https://github.com/craftcms/cms/pull/20124))
 - Added the `prefix-placement` attribute to `<craft-chip>`. Set to `block-start`, a chip stacks its thumbnail or icon above its label, with its checkbox and suffix along the top. ([#20083](https://github.com/craftcms/cms/discussions/20083), [#20124](https://github.com/craftcms/cms/pull/20124))

@@ -17,7 +17,8 @@ import styles from './slide-picker.styles.js';
  * slot, so the label, help text and feedback — its own, or a surrounding
  * `craft-field`'s — name and describe it the way they do any other control. A
  * hidden input carries the value, so a picker with a `name` posts like any
- * other field.
+ * other field, including through `$form.serialize()` and Garnish's
+ * `getPostData()`, which only collect native inputs.
  *
  * Outside a field, `labelled-by` and `described-by` on the picker name and
  * describe the slider after elements elsewhere, such as a table column
