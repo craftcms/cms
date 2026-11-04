@@ -4,6 +4,8 @@ import {BaseElementSelectInput} from './base-element-select-input';
 import {EntrySelectInput} from './entry-select-input';
 import {initLegacyUi} from '@/common/craft/legacy-ui';
 
+const INPUT_CLASS_TIMEOUT = 10_000;
+
 type ElementSelectInputConstructor = new (
   settings?: ConstructorParameters<typeof BaseElementSelectInput>[0]
 ) => BaseElementSelectInput;
@@ -13,28 +15,31 @@ export default class CraftElementSelectInput extends ControllerElement<BaseEleme
   protected readonly defaultInputClass: ElementSelectInputConstructor =
     BaseElementSelectInput;
 
+  /**
+   * Markup inserted over AJAX (a new Matrix entry, a slideout) can connect
+   * before the script defining a plugin's `input-class` runs, so boot waits
+   * for the class, for up to {@link INPUT_CLASS_TIMEOUT} ms.
+   */
   override connectedCallback(): void {
-    this.#whenInputClassLoaded(() => super.connectedCallback());
+    this.#bootOnceInputClassLoads(performance.now() + INPUT_CLASS_TIMEOUT);
   }
 
-  /**
-   * A plugin's input class comes from its own scripts, which can run after
-   * this element upgrades — markup added ahead of the scripts sent with it,
-   * say — so give them a few seconds' worth of frames before booting.
-   */
-  #whenInputClassLoaded(boot: () => void, frames = 300): void {
-    const name = this.getAttribute('input-class');
-
+  #bootOnceInputClassLoads(deadline: number): void {
     if (!this.isConnected) {
       return;
     }
 
-    if (!name || this.#globalInputClass(name) || frames === 0) {
-      boot();
+    const name = this.getAttribute('input-class');
+    if (
+      name &&
+      !(this.#globalInputClass(name) instanceof Function) &&
+      performance.now() < deadline
+    ) {
+      requestAnimationFrame(() => this.#bootOnceInputClassLoads(deadline));
       return;
     }
 
-    requestAnimationFrame(() => this.#whenInputClassLoaded(boot, frames - 1));
+    super.connectedCallback();
   }
 
   protected create(): BaseElementSelectInput {

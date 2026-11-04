@@ -27,6 +27,7 @@ export class AssetSelectInput extends BaseElementSelectInput {
   uploader: Uploader | null = null;
   progressBar: CraftProgressBar | null = null;
   #progressAnnouncer: IntervalManager | null = null;
+  #progressShade: HTMLElement | null = null;
 
   constructor(
     settings?: ConstructorParameters<typeof BaseElementSelectInput>[0]
@@ -60,6 +61,23 @@ export class AssetSelectInput extends BaseElementSelectInput {
     });
   }
 
+  override destroy(): void {
+    this.#progressAnnouncer?.stop();
+    this.#progressAnnouncer = null;
+    this.uploader?.destroy();
+    this.uploader = null;
+    this.uploadBtn?.remove();
+    this.uploadBtn = null;
+    this.fileInput?.remove();
+    this.fileInput = null;
+    this.#progressShade?.remove();
+    this.#progressShade = null;
+    this.progressBar = null;
+    this.container.classList.remove('uploading');
+
+    super.destroy();
+  }
+
   override elementSelectSettings(): Record<string, unknown> {
     return {...super.elementSelectSettings(), makeFocusable: true};
   }
@@ -88,6 +106,7 @@ export class AssetSelectInput extends BaseElementSelectInput {
     this.progressBar.hidden = true;
     shade.append(this.progressBar);
     this.container.append(shade);
+    this.#progressShade = shade;
 
     // The bar has no live region of its own, so progress is read out
     // periodically while an upload runs.
