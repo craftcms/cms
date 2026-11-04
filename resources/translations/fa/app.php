@@ -213,6 +213,7 @@ return [
     'Couldn’t generate alt text: {error}' => 'تولید متن جایگزین ممکن نبود: {error}',
     'Couldn’t load activity.' => 'بارگذاری فعالیت ممکن نبود.',
     'Couldn’t load table data.' => 'بارگذاری داده‌های جدول ممکن نبود.',
+    'Couldn’t load this field.' => 'Couldn’t load this field.',
     'Couldn’t mark notifications as read.' => 'علامت‌گذاری اعلان‌ها به‌عنوان خوانده‌شده ممکن نبود.',
     'Couldn’t move the selected items.' => 'انتقال موارد انتخاب‌شده ممکن نبود.',
     'Couldn’t open the settings.' => 'باز کردن تنظیمات ممکن نبود.',
