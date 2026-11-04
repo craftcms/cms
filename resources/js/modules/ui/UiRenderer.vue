@@ -247,6 +247,10 @@
     renderError.value = undefined;
     const restoreFocus = captureControlFocus();
 
+    valueState.adoptDeferred(
+      filledTabs(payload.value.nodes, refreshed.nodes),
+      refreshed.values
+    );
     valueState.adopt(refreshed);
     payload.value = pathsMatch(scope, payload.value.scope)
       ? refreshed
@@ -258,6 +262,20 @@
     if (restoreFocus) {
       nextTick(restoreFocus);
     }
+  }
+
+  /** The tabs in `refreshed` that are filled in for ones `current` deferred. */
+  function filledTabs(
+    current: UiNodePayload[],
+    refreshed: UiNodePayload[]
+  ): UiNodePayload[] {
+    const deferred = new Set(
+      current.filter((node) => node.props.deferred).map((node) => node.uid)
+    );
+
+    return refreshed.filter(
+      (node) => deferred.has(node.uid) && !node.props.deferred
+    );
   }
 
   /**

@@ -82,11 +82,16 @@
             :min="1"
             :max="Math.min(columns, widget.maxColspan)"
             :step="1"
-            :value="Math.min(widget.colspan, columns)"
+            .modelValue="Math.min(widget.colspan, columns)"
             .disabled="busy"
             :label="`${t('Number of columns')} ${widgetName(widget)}`"
+            label-sr-only
             @change="
-              emit('resize', widget, ($event.target as CraftSlidePicker).value)
+              emit(
+                'resize',
+                widget,
+                ($event.target as CraftSlidePicker).modelValue
+              )
             "
           ></craft-slide-picker>
           <craft-button

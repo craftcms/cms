@@ -168,6 +168,7 @@ class AuthServiceProvider extends ServiceProvider
 
             Sites::refreshSites();
             app(RequestedSite::class)->reset();
+            Cms::forgetTimezone();
         });
 
         Event::listen(Login::class, function (Login $event) {
@@ -208,6 +209,7 @@ class AuthServiceProvider extends ServiceProvider
             }
 
             app(Impersonation::class)->setImpersonatorId(null);
+            Cms::forgetTimezone();
         });
     }
 

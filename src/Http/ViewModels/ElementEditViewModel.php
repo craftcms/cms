@@ -51,6 +51,8 @@ use CraftCms\Cms\Workflow\Enums\WorkflowStatus;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
+use Override;
 use Tpetry\QueryExpressions\Operator\Comparison\IsNull;
 
 use function CraftCms\Cms\currentUser;
@@ -93,6 +95,9 @@ class ElementEditViewModel extends ViewModel
     }
 
     private ?UiPayload $ui = null;
+
+    /** @var list<string>|null The tabs {@see deferHiddenTabs()} leaves out of {@see ui()} */
+    private ?array $deferredTabs = null;
 
     private ?ElementPreview $elementPreview = null;
 
@@ -1003,15 +1008,67 @@ class ElementEditViewModel extends ViewModel
         }
 
         $this->uiResolved = true;
+
+        if ($this->deferredTabs === null) {
+            return $this->ui = $this->compileUi();
+        }
+
+        $eagerTabs = collect($this->element->getFieldLayout()?->getTabs() ?? [])
+            ->pluck('uid')
+            ->filter()
+            ->diff($this->deferredTabs)
+            ->values()
+            ->all();
+
+        return $this->ui = $this->compileUi($eagerTabs, deferOthers: true);
+    }
+
+    /**
+     * Sends the field layout tabs that don't show as the page loads in a deferred `deferredTabs` prop, which the page
+     * requests once it's loaded, so it has only the first tab's fields to compile and render before it's usable.
+     *
+     * Layouts with errors are sent whole, so every tab can show its errors as the page loads. Takes an argument, so
+     * {@see ViewModel} leaves it out of the payload.
+     */
+    public function deferHiddenTabs(bool $defer = true): static
+    {
+        $this->deferredTabs = null;
+        $fieldLayout = $this->element->getFieldLayout();
+
+        if ($defer && ! $this->uiResolved && $fieldLayout !== null && $this->element->uiErrors() === []) {
+            $this->deferredTabs = app(FieldLayoutCompiler::class)->deferrableTabs($fieldLayout, $this->element) ?: null;
+        }
+
+        return $this;
+    }
+
+    #[Override]
+    protected function arrayMethodClosures(): array
+    {
+        $closures = parent::arrayMethodClosures();
+
+        if ($this->deferredTabs !== null) {
+            $tabs = $this->deferredTabs;
+            $closures['deferredTabs'] = fn () => Inertia::defer(fn (): ?UiPayload => $this->compileUi($tabs));
+        }
+
+        return $closures;
+    }
+
+    /**
+     * @param  list<string>|null  $tabs
+     */
+    private function compileUi(?array $tabs = null, bool $deferOthers = false): ?UiPayload
+    {
         $fieldLayout = $this->element->getFieldLayout();
 
         if ($fieldLayout === null) {
-            return $this->ui = null;
+            return null;
         }
 
         // Delta tracking stays active so the compiled payload carries the same
         // initial values the autosave path compares against later in the stack.
-        return $this->ui = DeltaRegistry::withActive(true, fn () => app(FieldLayoutCompiler::class)->compile(
+        return DeltaRegistry::withActive(true, fn () => app(FieldLayoutCompiler::class)->compile(
             $fieldLayout,
             $this->element,
             new UiContext(
@@ -1020,6 +1077,8 @@ class ElementEditViewModel extends ViewModel
                 mode: $this->canSave ? ControlMode::Editable : ControlMode::ReadOnly,
                 refreshable: true,
             ),
+            $tabs,
+            $deferOthers,
         ));
     }
 
