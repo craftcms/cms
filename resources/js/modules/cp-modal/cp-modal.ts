@@ -439,9 +439,11 @@ export class CpModal extends Base {
   /** Legacy code can swap in its own serializer through jQuery's `data()`. */
   #serialize(): string {
     const serializer = jq()?.(this.#container).data('serializer');
+    // `findDeltaData()` reads spaces as `%20`, as jQuery's serialize() wrote
+    // them; URLSearchParams writes them as `+`, and a literal `+` as `%2B`
     return typeof serializer === 'function'
       ? serializer()
-      : serializeFormInputs(this.#container);
+      : serializeFormInputs(this.#container).replaceAll('+', '%20');
   }
 
   isDirty(): boolean {

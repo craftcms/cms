@@ -98,6 +98,21 @@ describe('CpModal', () => {
     expect(dialog().opened).toBe(false);
   });
 
+  it('submits spaces and plus signs as typed', async () => {
+    const onSubmit = vi.fn();
+    new CpModal('entries/reassign-modal', {onSubmit});
+    await loaded();
+
+    dialog().querySelector('input')!.value = 'Hello world + more';
+    button('Reassign').click();
+    await vi.waitFor(() => expect(onSubmit).toHaveBeenCalled());
+
+    const posted = request.mock.lastCall![0].data as string;
+    expect(new URLSearchParams(posted).get('ns[newOwner]')).toBe(
+      'Hello world + more'
+    );
+  });
+
   it('asks before a dismissal discards changes', async () => {
     const onCancel = vi.fn();
     const confirm = vi.fn(() => false);
