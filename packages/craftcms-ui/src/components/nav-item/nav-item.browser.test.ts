@@ -312,7 +312,7 @@ it('keeps the flyout open while Tab and Shift+Tab move through its subnav', asyn
   expect(item.flyoutOpen).toBe(true);
 });
 
-it('opens its flyout as a panel with no role', async () => {
+it('gives its flyout panel itself no role', async () => {
   const {page, userEvent} = await import('vite-plus/test/browser');
   const item = await railFixture();
   flyoutHoverIntent.reset();

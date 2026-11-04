@@ -9,7 +9,7 @@ beforeEach(() => {
   document.body.innerHTML = '';
 });
 
-it('discloses a panel that is not a dialog', async () => {
+it('gives the panel itself no role', async () => {
   document.body.innerHTML = `
     <craft-popover>
       <craft-button slot="invoker" type="button">Open</craft-button>

@@ -133,7 +133,7 @@
 - Links to other sites now show an external-link icon and tell screen readers that they open in a new window. ([#20306](https://github.com/craftcms/cms/pull/20306))
 - Improved the accessibility of the control panel, including element indexes, element edit screens, and the login page. ([#19025](https://github.com/craftcms/cms/pull/19025), [#19520](https://github.com/craftcms/cms/pull/19520), [#19699](https://github.com/craftcms/cms/pull/19699), [#19749](https://github.com/craftcms/cms/pull/19749), [#19785](https://github.com/craftcms/cms/pull/19785))
 - Added a “Skip to messages” link, and errors are now announced to screen readers immediately.
-- Popovers and action menus are no longer announced as dialogs.
+- Action menu buttons no longer announce a menu pop-up.
 - Error summaries now receive focus when a form fails validation, and each error links to its field, switching tabs if needed. ([#20044](https://github.com/craftcms/cms/issues/20044))
 
 ### Administration
