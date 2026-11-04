@@ -7,6 +7,7 @@ import type {} from '@open-wc/dedupe-mixin';
 import type {Modifier, VirtualElement} from '@popperjs/core';
 import {swallowHeldEnterKeyup} from '@src/utilities/enter-keyup.js';
 import {isFocusable} from '@src/utilities/focus-return.js';
+import {focusStaysWithin} from '@src/utilities/focus-out.js';
 import {wireOverlayLifecycleEvents} from '@src/utilities/overlay-events.js';
 import {viewportEscapingModifiers} from '@src/utilities/overlay-position.js';
 import {
@@ -188,17 +189,11 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
    * still in the content.
    */
   #closeOnFocusOut = (event: FocusEvent): void => {
-    const moved = event.relatedTarget;
-    if (!this.opened || !(moved instanceof Node)) {
+    if (!this.opened || !(event.relatedTarget instanceof Node)) {
       return;
     }
 
-    if (moved === this || this.contains(moved)) {
-      return;
-    }
-
-    const invoker = this._overlayInvokerNode;
-    if (invoker && (moved === invoker || invoker.contains(moved))) {
+    if (focusStaysWithin(event, this, this._overlayInvokerNode)) {
       return;
     }
 

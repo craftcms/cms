@@ -11,29 +11,31 @@ beforeEach(() => {
   document.body.innerHTML = '';
 });
 
-it('tells assistive tech the button expands, not that it opens a menu', async () => {
-  document.body.innerHTML = `
-    <craft-action-menu>
-      <craft-button slot="invoker" type="button">Open</craft-button>
-      <div slot="content">
-        <craft-action-item>First</craft-action-item>
-      </div>
-    </craft-action-menu>
-  `;
-  const menu = document.querySelector<CraftActionMenu>('craft-action-menu')!;
-  await menu.updateComplete;
-  const invoker = page.getByRole('button', {name: 'Open', expanded: false});
-
-  await expect.element(invoker).toBeInTheDocument();
-  await expect.element(invoker).not.toHaveAttribute('aria-haspopup');
-});
-
 async function renderMenu(markup: string): Promise<CraftActionMenu> {
   document.body.innerHTML = markup;
   const menu = document.querySelector<CraftActionMenu>('craft-action-menu')!;
   await menu.updateComplete;
   return menu;
 }
+
+function focusedText(): string | null | undefined {
+  return (document.activeElement as HTMLElement | null)?.textContent;
+}
+
+it('tells assistive tech the button expands, not that it opens a menu', async () => {
+  await renderMenu(`
+    <craft-action-menu>
+      <craft-button slot="invoker" type="button">Open</craft-button>
+      <div slot="content">
+        <craft-action-item>First</craft-action-item>
+      </div>
+    </craft-action-menu>
+  `);
+  const invoker = page.getByRole('button', {name: 'Open', expanded: false});
+
+  await expect.element(invoker).toBeInTheDocument();
+  await expect.element(invoker).not.toHaveAttribute('aria-haspopup');
+});
 
 it('keeps native roles on its items, with no menu around them', async () => {
   await renderMenu(`
@@ -141,9 +143,7 @@ it('closes on Escape from an item and returns focus to the invoker', async () =>
   const invoker = menu.querySelector<CraftButton>('craft-button')!;
 
   await userEvent.click(page.getByRole('button', {name: 'Open'}));
-  await expect
-    .poll(() => (document.activeElement as HTMLElement | null)?.textContent)
-    .toBe('Duplicate');
+  await expect.poll(focusedText).toBe('Duplicate');
   await userEvent.keyboard('{Escape}');
 
   await expect.poll(() => menu.opened).toBe(false);
@@ -161,9 +161,7 @@ it('follows a link item on Space', async () => {
   `);
 
   await userEvent.click(page.getByRole('button', {name: 'Open'}));
-  await expect
-    .poll(() => (document.activeElement as HTMLElement | null)?.textContent)
-    .toBe('Settings');
+  await expect.poll(focusedText).toBe('Settings');
   await userEvent.keyboard(' ');
 
   await expect.poll(() => location.hash).toBe('#space-target');
@@ -177,7 +175,7 @@ it.each([
 ])(
   'moves focus to the first item it can reach when opened with %s',
   async (_how, open) => {
-    document.body.innerHTML = `
+    const menu = await renderMenu(`
       <craft-action-menu>
         <craft-button slot="invoker" type="button">Open</craft-button>
         <div slot="content">
@@ -186,32 +184,26 @@ it.each([
           <craft-action-item>Three</craft-action-item>
         </div>
       </craft-action-menu>
-    `;
-    const menu = document.querySelector<CraftActionMenu>('craft-action-menu')!;
+    `);
     const invoker = menu.querySelector<CraftButton>('craft-button')!;
-    await menu.updateComplete;
     await invoker.updateComplete;
     invoker.focus();
 
     await open();
 
-    await expect
-      .poll(() => (document.activeElement as HTMLElement | null)?.textContent)
-      .toBe('Three');
+    await expect.poll(focusedText).toBe('Three');
   }
 );
 
 it('moves focus to the search field when a searchable menu opens', async () => {
-  document.body.innerHTML = `
+  await renderMenu(`
     <craft-action-menu searchable>
       <craft-button slot="invoker" type="button">Open</craft-button>
       <div slot="content">
         <craft-action-item>First</craft-action-item>
       </div>
     </craft-action-menu>
-  `;
-  const menu = document.querySelector<CraftActionMenu>('craft-action-menu')!;
-  await menu.updateComplete;
+  `);
 
   await userEvent.click(page.getByRole('button', {name: 'Open'}));
 
@@ -232,9 +224,7 @@ it('closes when Tab moves focus past its last item', async () => {
   `);
 
   await userEvent.click(page.getByRole('button', {name: 'Open'}));
-  await expect
-    .poll(() => (document.activeElement as HTMLElement | null)?.textContent)
-    .toBe('Duplicate');
+  await expect.poll(focusedText).toBe('Duplicate');
   await userEvent.keyboard('{Tab}');
 
   await expect.poll(() => menu.opened).toBe(false);
@@ -268,16 +258,14 @@ it('keeps the search icon as the visible label while text is entered', async () 
 
 it('keeps items within the popover when their content is wide', async () => {
   await import('../../styles/cp.css');
-  document.body.innerHTML = `
+  const menu = await renderMenu(`
     <craft-action-menu>
       <button slot="invoker" type="button">Open</button>
       <div slot="content">
         <craft-action-item>${'Unbreakable '.repeat(40)}</craft-action-item>
       </div>
     </craft-action-menu>
-  `;
-  const menu = document.querySelector<CraftActionMenu>('craft-action-menu')!;
-  await menu.updateComplete;
+  `);
   menu.opened = true;
   await menu.updateComplete;
   await new Promise((resolve) => requestAnimationFrame(resolve));
@@ -294,15 +282,14 @@ it('keeps items within the popover when their content is wide', async () => {
 });
 
 it('closes and returns focus to a craft-button invoker when an item is chosen with Enter', async () => {
-  document.body.innerHTML = `
+  const menu = await renderMenu(`
     <craft-action-menu>
       <craft-button slot="invoker" type="button">Open</craft-button>
       <div slot="content">
         <craft-action-item>First</craft-action-item>
       </div>
     </craft-action-menu>
-  `;
-  const menu = document.querySelector<CraftActionMenu>('craft-action-menu')!;
+  `);
   const invoker = menu.querySelector<CraftButton>('craft-button')!;
   await invoker.updateComplete;
   invoker.focus();
