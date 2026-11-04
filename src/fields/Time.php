@@ -283,6 +283,9 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
             'name' => $this->handle,
             'type' => DateTimeType::getType(),
             'description' => $this->instructions,
+            // MCP passes values nested in other fields’ input to normalizeValue() as given, so it describes them as the
+            // times of day that method parses, rather than as the `DateTime` type’s date-time strings.
+            'inputSchema' => $this->getInputSchema(),
         ];
     }
 

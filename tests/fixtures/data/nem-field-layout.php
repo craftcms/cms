@@ -9,6 +9,7 @@ use craft\elements\Entry;
 use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\fields\Matrix;
 use craft\fields\PlainText;
+use craft\fields\Time;
 
 return [
     [
@@ -51,6 +52,13 @@ return [
                         'handle' => 'nemText',
                         'type' => PlainText::class,
                         'searchable' => true,
+                        'required' => false,
+                    ],
+                    [
+                        'uid' => 'nem-field-time-------------------uid',
+                        'name' => 'NEM Time',
+                        'handle' => 'nemTime',
+                        'type' => Time::class,
                         'required' => false,
                     ],
                     // A Matrix field nested inside a Matrix block, so 2-level-nested regression
