@@ -40,6 +40,8 @@ class Textarea extends ViewComponent
 
     protected int $rows = 2;
 
+    protected ?int $maxRows = 30;
+
     protected ?int $cols = null;
 
     protected bool $monospace = false;
@@ -91,6 +93,14 @@ class Textarea extends ViewComponent
     public function rows(int $rows): static
     {
         $this->rows = $rows;
+
+        return $this;
+    }
+
+    /** Number of lines the textarea can auto-grow to. Defaults to `30`; `null` removes the limit. */
+    public function maxRows(?int $maxRows): static
+    {
+        $this->maxRows = $maxRows;
 
         return $this;
     }
@@ -203,6 +213,11 @@ class Textarea extends ViewComponent
             'disabled' => $this->isDisabled(),
             'readonly' => $this->readOnly,
             'rows' => $this->rows !== 2 ? $this->rows : null,
+            'max-rows' => match ($this->maxRows) {
+                30 => null,
+                null => 'none',
+                default => $this->maxRows,
+            },
         ];
     }
 
