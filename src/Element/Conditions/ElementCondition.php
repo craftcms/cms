@@ -15,6 +15,7 @@ use CraftCms\Cms\Element\Exceptions\InvalidTypeException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Conditions\GeneratedFieldConditionRule;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\ElementSources;
@@ -71,6 +72,13 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
      * @see setFieldLayouts()
      */
     private array $_fieldLayouts;
+
+    /**
+     * @var array{layouts: FieldLayout[], fields: array<string, list<array{field: FieldInterface, label: string|null}>>, labels: array<int, string|null>}
+     *
+     * @see customFieldIndex()
+     */
+    private array $_customFieldIndex;
 
     /** @var array<FieldLayout|array<string, mixed>> */
     public array $fieldLayouts {
@@ -137,6 +145,50 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
         }, $fieldLayouts);
     }
 
+    /**
+     * Returns the custom fields in the condition’s field layouts with their labels, indexed by their
+     * field UUID and by any old field UUID they were saved with, in layout order.
+     *
+     * Field condition rules look up their field instances here instead of each rescanning every layout
+     * and translating every instance’s label.
+     *
+     * @return array<string, list<array{field: FieldInterface, label: string|null}>>
+     */
+    public function getCustomFieldsByUid(): array
+    {
+        return $this->customFieldIndex()['fields'];
+    }
+
+    /**
+     * @return array{layouts: FieldLayout[], fields: array<string, list<array{field: FieldInterface, label: string|null}>>, labels: array<int, string|null>}
+     */
+    private function customFieldIndex(): array
+    {
+        $fieldLayouts = $this->getFieldLayouts();
+
+        if (isset($this->_customFieldIndex) && $this->_customFieldIndex['layouts'] === $fieldLayouts) {
+            return $this->_customFieldIndex;
+        }
+
+        $fields = [];
+        $labels = [];
+
+        foreach ($fieldLayouts as $fieldLayout) {
+            foreach ($fieldLayout->getCustomFields() as $field) {
+                $instance = ['field' => $field, 'label' => $field->layoutElement->label()];
+                $fields[$field->uid][] = $instance;
+                $labels[spl_object_id($field->layoutElement)] = $instance['label'];
+
+                $oldFieldUid = $field->layoutElement->oldFieldUid;
+                if ($oldFieldUid !== null && $oldFieldUid !== $field->uid) {
+                    $fields[$oldFieldUid][] = $instance;
+                }
+            }
+        }
+
+        return $this->_customFieldIndex = ['layouts' => $fieldLayouts, 'fields' => $fields, 'labels' => $labels];
+    }
+
     #[Override]
     protected function isConditionRuleSelectable(ConditionRuleInterface $rule): bool
     {
@@ -185,10 +237,12 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
                 $types[] = TitleConditionRule::class;
             }
 
+            $labels = $this->customFieldIndex()['labels'];
+
             foreach ($this->getFieldLayouts() as $fieldLayout) {
                 foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
                     // Discard fields with empty labels
-                    $label = $layoutElement->label();
+                    $label = $labels[spl_object_id($layoutElement)] ?? $layoutElement->label();
                     if ($label === null) {
                         continue;
                     }

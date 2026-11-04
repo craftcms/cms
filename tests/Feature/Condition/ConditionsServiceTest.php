@@ -12,8 +12,10 @@ use CraftCms\Cms\Element\Conditions\TitleConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField as CustomFieldElement;
 use Illuminate\Support\Str;
 
 beforeEach(function () {
@@ -220,4 +222,36 @@ it('rejects invalid layout conditions before saving', function () {
     expect(app(Fields::class)->saveLayout($layout))->toBeFalse()
         ->and($layout->errors()->has("tabs.0.elementCondition.{$rule->uid}.operator"))->toBeTrue()
         ->and($layout->id)->toBeNull();
+});
+
+it('resolves field rules that still reference a swapped-out field', function () {
+    $fields = app(Fields::class);
+    $newField = $fields->createField(['type' => PlainText::class, 'name' => 'Headline', 'handle' => 'headline']);
+    $fields->saveField($newField);
+    $oldFieldUid = (string) Str::uuid();
+
+    $swappedElementUid = (string) Str::uuid();
+    $layout = $fields->createLayout(['type' => Entry::class, 'tabs' => [[
+        'name' => 'Main',
+        'elements' => [
+            ['type' => CustomFieldElement::class, 'fieldUid' => $newField->uid, 'label' => 'Other headline'],
+            [
+                'type' => CustomFieldElement::class,
+                'uid' => $swappedElementUid,
+                'fieldUid' => $newField->uid,
+                'oldFieldUid' => $oldFieldUid,
+                'label' => 'Swapped headline',
+            ],
+        ],
+    ]]]);
+
+    $condition = new ElementCondition(Entry::class);
+    $condition->setFieldLayouts([$layout]);
+    $rule = $condition->createConditionRule([
+        'class' => TextFieldConditionRule::class,
+        'fieldUid' => $oldFieldUid,
+        'layoutElementUid' => $swappedElementUid,
+    ]);
+
+    expect($rule->getLabel())->toBe('Swapped headline');
 });
