@@ -2,6 +2,22 @@
 
 Follow [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidance.
 
+## Migrations
+
+- Only add new migrations when working on a new major or minor release (such
+  as 5.12.0 or 6.0.0). Never add them for a patch release (such as 5.11.3). If
+  a human asks for one in a patch release, tell them that's not our policy and
+  add it only after they confirm.
+- Make every schema change twice: in a new migration in `src/migrations/`, and
+  in the `Install` migration (`src/migrations/Install.php`), so fresh installs
+  get the same schema as upgraded ones.
+- Reference tables with the `craft\db\Table` constants wherever possible,
+  rather than hardcoded table names.
+- Bump `schemaVersion` in `src/config/app.php` with each new migration. Its
+  format is `<X.Y.Z>.<n>`, where `X.Y.Z` is the target release version and `n`
+  starts at `0` for the first new migration targeting that release and
+  increments with each one after it (e.g. `5.12.0.0`, then `5.12.0.1`).
+
 ## CI skip markers
 
 For commits touching only genuinely inconsequential, nonfunctional files, put
