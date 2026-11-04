@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Plugin;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -1326,11 +1327,9 @@ class Plugins
         $html = '';
 
         foreach ($this->viteConfigs as $vite) {
-            $html .= (clone app(Vite::class))
+            $html .= Cp::viteTags(array_values($vite['input']), (clone app(Vite::class))
                 ->useHotFile($vite['hotFile'])
-                ->useBuildDirectory(Str::chopEnd($vite['buildDirectory'], '/'))
-                ->withEntryPoints($vite['input'])
-                ->toHtml();
+                ->useBuildDirectory(Str::chopEnd($vite['buildDirectory'], '/')));
         }
 
         foreach ($this->styles as $styles) {

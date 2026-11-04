@@ -180,6 +180,14 @@ it('can get all fields with or without content', function () {
 
     expect($this->fields->getFieldsWithContent())->not()->toBeEmpty();
     expect($this->fields->getFieldsWithoutContent())->toBeEmpty();
+
+    $this->fields->saveField($this->fields->createField(['type' => Matrix::class, 'name' => 'Blocks', 'handle' => 'blocks']));
+    $this->fields->saveField($this->fields->createField(['type' => PlainText::class, 'name' => 'Gone', 'handle' => 'gone']));
+    DB::table(Table::FIELDS)->where('handle', 'gone')->update(['type' => 'some\\unrecognized\\Field']);
+    $this->fields->refreshFields();
+
+    expect($this->fields->getFieldsWithoutContent()->map(fn ($field) => [$field->handle, $field::class])->values()->all())
+        ->toEqualCanonicalizing([['blocks', Matrix::class], ['gone', MissingField::class]]);
 });
 
 it('can get fields by type', function () {
@@ -648,4 +656,51 @@ test('field layouts', function () {
 
     expect($savedLayout?->getTabs())->toHaveCount(1)
         ->and($savedLayout?->getTab('Updated'))->toBeInstanceOf(FieldLayoutTab::class);
+});
+
+it('knows the field handles that saved layouts give fields', function () {
+    $field = FieldModel::factory()->create([
+        'name' => 'Plain Text',
+        'handle' => 'plainTextHandleSource',
+        'type' => PlainText::class,
+    ]);
+
+    FieldLayoutModel::create([
+        'uid' => (string) Str::uuid(),
+        'type' => EntryElement::class,
+        'config' => [
+            'tabs' => [[
+                'uid' => (string) Str::uuid(),
+                'name' => 'Content',
+                'elements' => [
+                    [
+                        'type' => CustomFieldElement::class,
+                        'uid' => (string) Str::uuid(),
+                        'fieldUid' => $field->uid,
+                        'handle' => 'renamedPlainText',
+                    ],
+                    [
+                        'type' => CustomFieldElement::class,
+                        'uid' => (string) Str::uuid(),
+                        'fieldUid' => (string) Str::uuid(),
+                        'handle' => 'missingFieldHandle',
+                    ],
+                ],
+            ]],
+            'generatedFields' => [[
+                'uid' => (string) Str::uuid(),
+                'name' => 'Summary',
+                'handle' => 'generatedSummary',
+                'template' => '{title}',
+            ]],
+        ],
+    ]);
+    $this->fields->invalidateCaches();
+
+    expect($this->fields->isFieldHandle('plainTextHandleSource'))->toBeTrue()
+        ->and($this->fields->isFieldHandle('renamedPlainText'))->toBeTrue()
+        ->and($this->fields->isFieldHandle('missingFieldHandle'))->toBeFalse()
+        ->and($this->fields->isFieldHandle('generatedSummary'))->toBeFalse()
+        ->and($this->fields->isGeneratedFieldHandle('generatedSummary'))->toBeTrue()
+        ->and($this->fields->isGeneratedFieldHandle('renamedPlainText'))->toBeFalse();
 });

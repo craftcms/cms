@@ -64,6 +64,13 @@ class I18N
      */
     private array $registeredCategories = [];
 
+    /**
+     * @var array<string, string> Translations of messages without parameters, by category, locale and message
+     *
+     * @see translate()
+     */
+    private array $translations = [];
+
     public function __construct(
         private readonly Translator $translator,
     ) {}
@@ -372,6 +379,30 @@ class I18N
 
         $locale ??= str_replace('_', '-', app()->getLocale());
 
+        // Looking a message up costs more than most callers expect, mostly in walking the locale fallbacks of
+        // messages that have no translation, so messages without parameters are looked up once.
+        $translation = $parameters === []
+            ? $this->translations["$category\0$locale\0$message"] ??= $this->lookUp($message, [], $category, $locale)
+            : $this->lookUp($message, $parameters, $category, $locale);
+
+        if (Cms::config()->translationDebugOutput) {
+            $char = match ($category) {
+                'site' => '$',
+                'app' => '@',
+                default => '%',
+            };
+
+            $translation = $char.$translation.$char;
+        }
+
+        return $translation;
+    }
+
+    /**
+     * @param  array<string, mixed>  $parameters
+     */
+    private function lookUp(string|Stringable $message, array $parameters, ?string $category, string $locale): string
+    {
         $translation = $this->translator->translate($message, $parameters, $category, $locale);
 
         /**
@@ -387,21 +418,13 @@ class I18N
             }
         }
 
-        if (Cms::config()->translationDebugOutput) {
-            $char = match ($category) {
-                'site' => '$',
-                'app' => '@',
-                default => '%',
-            };
-
-            $translation = $char.$translation.$char;
-        }
-
         return $translation;
     }
 
     public function addCategorySources(CategorySource ...$categories): void
     {
+        $this->translations = [];
+
         foreach ($categories as $category) {
             $this->registeredCategories[$category->getName()][] = $category;
         }

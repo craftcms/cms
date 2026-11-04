@@ -201,7 +201,7 @@ class HandleInertiaRequests extends Middleware
             'craft' => fn () => [
                 'csrfTokenValue' => csrf_token(),
                 'csrfTokenName' => '_token',
-                'general' => Cp::config()->toArray(),
+                'general' => Cp::inertiaConfig(),
                 'system' => [
                     'name' => Cms::systemName(),
                     'icon' => $systemIcon,
