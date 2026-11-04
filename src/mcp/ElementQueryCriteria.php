@@ -67,7 +67,15 @@ class ElementQueryCriteria
         ],
         'relatedTo' => [
             'type' => 'array',
-            'description' => 'Native Craft relation criteria, such as related element IDs.',
+            'items' => [
+                'anyOf' => [
+                    ['type' => 'integer'],
+                    ['type' => 'string'],
+                    ['type' => 'array', 'items' => ['type' => ['integer', 'string']]],
+                    ['type' => 'object'],
+                ],
+            ],
+            'description' => 'Native Craft relation criteria: element IDs, an optional leading "and" or "or", or objects with element, sourceElement, targetElement, field, and sourceSite keys.',
         ],
         'with' => [
             'type' => 'array',
