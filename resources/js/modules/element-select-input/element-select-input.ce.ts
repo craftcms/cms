@@ -4,6 +4,8 @@ import {BaseElementSelectInput} from './base-element-select-input';
 import {EntrySelectInput} from './entry-select-input';
 import {initLegacyUi} from '@/common/craft/legacy-ui';
 
+const INPUT_CLASS_TIMEOUT = 10_000;
+
 type ElementSelectInputConstructor = new (
   settings?: ConstructorParameters<typeof BaseElementSelectInput>[0]
 ) => BaseElementSelectInput;
@@ -12,6 +14,33 @@ export default class CraftElementSelectInput extends ControllerElement<BaseEleme
   protected readonly rootSelector = ':scope > .elements';
   protected readonly defaultInputClass: ElementSelectInputConstructor =
     BaseElementSelectInput;
+
+  /**
+   * Markup inserted over AJAX (a new Matrix entry, a slideout) can connect
+   * before the script defining a plugin's `input-class` runs, so boot waits
+   * for the class, for up to {@link INPUT_CLASS_TIMEOUT} ms.
+   */
+  override connectedCallback(): void {
+    this.#bootOnceInputClassLoads(performance.now() + INPUT_CLASS_TIMEOUT);
+  }
+
+  #bootOnceInputClassLoads(deadline: number): void {
+    if (!this.isConnected) {
+      return;
+    }
+
+    const name = this.getAttribute('input-class');
+    if (
+      name &&
+      !(this.#globalInputClass(name) instanceof Function) &&
+      performance.now() < deadline
+    ) {
+      requestAnimationFrame(() => this.#bootOnceInputClassLoads(deadline));
+      return;
+    }
+
+    super.connectedCallback();
+  }
 
   protected create(): BaseElementSelectInput {
     initLegacyUi(this);

@@ -92,7 +92,7 @@ afterEach(() => {
   document.body.replaceChildren();
 });
 
-it('boots plugin input classes through the custom element interface', () => {
+it('boots plugin input classes through the custom element interface', async () => {
   const element = bootInput();
 
   expect(receivedSettings).toEqual({limit: 2, id: 'related-elements'});
@@ -100,7 +100,34 @@ it('boots plugin input classes through the custom element interface', () => {
   expect(window.Craft.initUiElements).toHaveBeenCalledWith(element);
 
   element.remove();
+  await Promise.resolve();
   expect(destroy).toHaveBeenCalledOnce();
+});
+
+it('keeps the input when the element is moved', async () => {
+  const element = bootInput();
+  const sibling = document.createElement('div');
+  document.body.append(sibling);
+  receivedSettings = undefined;
+
+  sibling.after(element);
+  await Promise.resolve();
+
+  expect(destroy).not.toHaveBeenCalled();
+  expect(receivedSettings).toBeUndefined();
+});
+
+it('boots a plugin input class whose script loads after the markup', async () => {
+  vi.stubGlobal('Craft', {initUiElements: vi.fn()});
+  const element = bootInput();
+
+  expect(receivedSettings).toBeUndefined();
+
+  window.Craft.PluginElementSelectInput = PluginElementSelectInput;
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  expect(receivedSettings).toEqual({limit: 2, id: 'related-elements'});
+  expect(element.selectedIds).toEqual([7, 3]);
 });
 
 it('forwards the chip actions to the input, resolved by element ID', () => {
