@@ -648,13 +648,18 @@ Craft.ui = {
     if (!config.labelId) {
       config.labelId = `${config.id}-label`;
     }
+    if (!config.labelledBy) {
+      config.labelledBy = config.labelId;
+    }
     if (!config.describedBy) {
-      config.describedBy = config.labelId;
+      config.describedBy = this.getDescribedByValue(config);
     }
 
-    return this.createField(this.createSlidePicker(config), config).addClass(
-      'slidepicker-field'
-    );
+    // The field's label names the picker, so it doesn't get one of its own.
+    return this.createField(
+      this.createSlidePicker($.extend({}, config, {label: null})),
+      config
+    ).addClass('slidepicker-field');
   },
 
   createColorInput: function (config) {

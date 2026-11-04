@@ -1,6 +1,5 @@
 {% extends "_layouts/base" %}
 
-{% import '_includes/forms.twig' as forms %}
 
 {% set bodyClass = 'setup-2fa' %}
 {% set title = 'Two-Step Verification Setup'|t('app') %}
@@ -13,9 +12,10 @@
     </div>
     {% include 'users/_auth-methods.twig' %}
     <div id="setup-2fa-btn" class="hidden">
-      {{ forms.submitButton({
+      {{ ui('button', {
+        type: 'submit',
         label: 'All done'|t('app'),
-        class: 'secondary',
+        attributes: {class: ['secondary', 'submit']},
       }) }}
     </div>
   </div>

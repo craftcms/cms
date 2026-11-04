@@ -757,8 +757,9 @@ import './dashboard.scss';
       this.colspanPicker = document.createElement('craft-slide-picker');
       this.colspanPicker.min = 1;
       this.colspanPicker.step = 1;
-      this.colspanPicker.value = this.getColspan();
+      this.colspanPicker.modelValue = this.getColspan();
       this.colspanPicker.label = Craft.t('app', 'Number of columns');
+      this.colspanPicker.labelSrOnly = true;
       this.colspanPicker.valueLabel = (colspan) => {
         return Craft.t(
           'app',
@@ -773,15 +774,15 @@ import './dashboard.scss';
       const refreshColspanPicker = () => {
         const maxCols = window.dashboard.grid.totalCols;
         this.colspanPicker.max = maxCols;
-        if (this.colspanPicker.value > maxCols) {
-          this.colspanPicker.value = maxCols;
+        if (this.colspanPicker.modelValue > maxCols) {
+          this.colspanPicker.modelValue = maxCols;
         }
       };
 
       refreshColspanPicker();
 
       this.colspanPicker.addEventListener('change', () => {
-        const colspan = this.colspanPicker.value;
+        const colspan = this.colspanPicker.modelValue;
 
         // Update the widget and grid
         this.setColspan(colspan);

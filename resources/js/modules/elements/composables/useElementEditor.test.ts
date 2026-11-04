@@ -1184,6 +1184,39 @@ describe('useElementEditor', () => {
     expect(saved).toEqual({title: 'Van Gogh', slug: 'van-gogh'});
   });
 
+  it('autosaves a nested entry duplicated for an owner’s draft as itself, not its canonical', async () => {
+    vi.useFakeTimers();
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+    postSpy.mockResolvedValue({data: {draftId: 7}});
+    mount(
+      payload({
+        elementId: 604,
+        canonicalId: 272,
+        canAutosave: true,
+        ui: fieldLayout('Nested'),
+      }),
+      null,
+      {
+        saveData: () => ({
+          elementType: 'craft\\elements\\Entry',
+          elementId: 604,
+          siteId: 1,
+        }),
+      }
+    );
+
+    await typeTitle('Nested!');
+    await vi.advanceTimersByTimeAsync(1000);
+
+    expect(postSpy).toHaveBeenCalledTimes(1);
+    const [url, sent] = postSpy.mock.calls[0]!;
+    expect(url).toBe('/actions/elements/save-draft');
+    expect(sent).toMatchObject({elementId: 604, provisional: 1});
+    expect(sent).not.toHaveProperty('draftId');
+  });
+
   it('refreshes the field layout without autosaving and preserves unsaved values', async () => {
     const {editor} = mount(
       payload({

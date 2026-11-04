@@ -1693,7 +1693,58 @@ describe('UiRenderer', () => {
         tab.textContent?.trim()
       )
     ).toEqual(['Content', 'Meta']);
+
+    container.querySelectorAll<HTMLElement>('craft-tab')[1]!.click();
+    await selectionSettled();
+
     expect(container.querySelectorAll('.width-50')).toHaveLength(2);
+  });
+
+  it('renders a tab’s fields once it’s first selected, and keeps them', async () => {
+    vi.stubGlobal('requestIdleCallback', vi.fn());
+    history.replaceState(null, '', location.pathname);
+    app.unmount();
+    await mount(sidebarTabsPayload());
+
+    const panel = (uid: string) =>
+      container.querySelector(`section[data-ui-tab="${uid}"]`);
+    const tabButtons = container.querySelectorAll<HTMLElement>('craft-tab');
+
+    expect(panel('tab-content')?.querySelector('craft-field')).not.toBeNull();
+    expect(panel('tab-meta')).not.toBeNull();
+    expect(panel('tab-meta')?.querySelector('craft-field')).toBeNull();
+
+    tabButtons[1]!.click();
+    await selectionSettled();
+
+    expect(panel('tab-meta')?.querySelector('craft-field')).not.toBeNull();
+
+    const metaInput = panel('tab-meta')?.querySelector('craft-input');
+    tabButtons[0]!.click();
+    await selectionSettled();
+
+    expect(panel('tab-meta')?.classList).toContain('hidden');
+    expect(panel('tab-meta')?.querySelector('craft-input')).toBe(metaInput);
+  });
+
+  it('renders the other tabs’ fields when the browser is idle', async () => {
+    const idle: Array<() => void> = [];
+    vi.stubGlobal(
+      'requestIdleCallback',
+      vi.fn((callback: () => void) => idle.push(callback))
+    );
+    history.replaceState(null, '', location.pathname);
+    app.unmount();
+    await mount(sidebarTabsPayload());
+
+    const meta = container.querySelector('section[data-ui-tab="tab-meta"]');
+    expect(meta?.querySelector('craft-field')).toBeNull();
+
+    idle.splice(0).forEach((callback) => callback());
+    await nextTick();
+
+    expect(meta?.querySelector('craft-field')).not.toBeNull();
+    expect(meta?.classList).toContain('hidden');
   });
 
   it('renders its tab strip in a tabs outlet', async () => {
@@ -1713,6 +1764,7 @@ describe('UiRenderer', () => {
   });
 
   it('renders FieldLayout tabs and semantic content', async () => {
+    vi.stubGlobal('requestIdleCallback', vi.fn());
     app.unmount();
     await mount({
       scope: [],
@@ -1898,6 +1950,7 @@ describe('UiRenderer', () => {
     expect(tabButtons[0]?.id).toBeTruthy();
     expect(tab?.classList).not.toContain('hidden');
     expect(seoTab?.classList).toContain('hidden');
+    expect(seoTab?.querySelector('craft-field')).not.toBeNull();
 
     tabButtons[1]!.click();
     await nextTick();
@@ -4729,6 +4782,15 @@ describe('UiRenderer', () => {
     expect(container.textContent).not.toContain('Failed to render');
     expect(container.querySelector('craft-input-date-time')).not.toBeNull();
   });
+
+  async function selectionSettled(): Promise<void> {
+    await (
+      container.querySelector('craft-tabs') as unknown as {
+        updateComplete: Promise<unknown>;
+      }
+    ).updateComplete;
+    await nextTick();
+  }
 
   async function mount(
     uiPayload: UiPayload,

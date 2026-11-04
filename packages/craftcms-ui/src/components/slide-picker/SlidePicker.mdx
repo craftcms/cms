@@ -17,9 +17,7 @@ Use it where the range is short and every step is meaningful — a column count,
 
 ## Posting a Value
 
-The control is form-associated. Give it a `name` and it posts with the form the way a native input does — `new FormData(form)` reads it, `form.reset()` puts back the value the markup started with, and there is no hidden input to keep in sync.
-
-<Canvas of={SlidePickerStories.InAForm} sourceState="shown" />
+Give it a `name` and it posts with the form the way a native input does: `new FormData(form)` reads it, and `form.reset()` puts back the value it started with. Set the starting value with `model-value`, or `.modelValue` from script.
 
 `readonly` and `disabled` differ in what they post: a read-only control still submits its value, a disabled one is left out of submission entirely.
 
@@ -27,7 +25,7 @@ It emits the same events a radio group does. Every step is a commit, so `change`
 
 ```js
 picker.addEventListener('change', () => {
-  console.log(picker.value);
+  console.log(picker.modelValue);
 });
 ```
 
@@ -41,11 +39,19 @@ A slider's value is a number, and a number on its own rarely means anything.
 <craft-slide-picker value-unit="columns"></craft-slide-picker>
 ```
 
+The picker puts a space before a unit that starts with a letter, so don't include one. A symbol such as `%` is attached to the number: `value-unit="%"` announces "100%".
+
 When a unit is not enough, `valueLabel` formats the announced value however you like. It is a property rather than an attribute, so bind it with `.valueLabel`.
 
 ## Accessibility
 
-The control is a slider. Give it a visible label, such as a [Field](?path=/docs/form-controls-field--docs) label, so people know what it sets and can name it by voice.
+The control is a slider and a Lion field, like [Input](?path=/docs/form-controls-text-controls-input--docs). The slider takes its name and description from one of these:
+
+- **Its own label.** Set `label`, and add help text to describe the slider. Keep the label visible, so people know what the slider sets and can name it by voice. When something next to the picker already says what it sets, add `label-sr-only` to hide the label visually.
+- **A surrounding [Field](?path=/docs/form-controls-field--docs).** Leave `label` off. The field's label names the slider, and its instructions and errors describe it.
+- **A table column heading.** In a table cell, point `labelled-by` at the heading, and `described-by` at anything that describes the slider.
+
+Without one of these, the slider has no name.
 
 Set `value-unit` or `valueLabel` whenever the number alone doesn't say what it counts.
 

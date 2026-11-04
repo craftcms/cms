@@ -237,6 +237,8 @@ class Users
             ], ['userId']);
 
         $this->userPreferences[$userId] = $preferences;
+
+        Cms::forgetTimezone();
     }
 
     /**

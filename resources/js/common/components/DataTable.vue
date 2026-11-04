@@ -17,6 +17,7 @@
     nextTick,
     ref,
     useId,
+    useSlots,
     useTemplateRef,
     watch,
   } from 'vue';
@@ -44,6 +45,11 @@
       };
       title?: string;
       reorderable?: boolean;
+      /**
+       * Whether a row can be moved. Rows that can't keep their place, with no
+       * handle; keep them at the start or end of the table.
+       */
+      canReorderRow?: (row: TData) => boolean;
       /**
        * Disables selection, sorting and reordering while a request runs,
        * keeping the controls in place so the layout doesn't shift.
@@ -181,9 +187,11 @@
 
   const {setRowRef, setHandleRef, getDragState, getDropState} =
     useReorderableRows({
-      getRowIds: () => props.table.getRowModel().rows.map((row: any) => row.id),
+      getRowIds: () => reorderableRows().map((row) => row.id),
+      // Indexes among the reorderable rows, which `reorder` counts among all.
       onReorder: (startIndex, finishIndex) => {
-        emit('reorder', startIndex, finishIndex);
+        const indexes = reorderableRows().map((row) => row.index);
+        emit('reorder', indexes[startIndex]!, indexes[finishIndex]!);
       },
       enabled: () =>
         !readOnly.value && props.reorderable && !props.interactionsDisabled,
@@ -292,12 +300,46 @@
     );
   }
 
+  function isRowReorderable(row: Row<CraftTableFeatures, TData>): boolean {
+    return props.canReorderRow?.(row.original) ?? true;
+  }
+
+  function reorderableRows(): Row<CraftTableFeatures, TData>[] {
+    return props.table
+      .getRowModel()
+      .rows.filter((row) => isRowReorderable(row));
+  }
+
+  /**
+   * Lines the drag handles up with the table's edge, when the table is
+   * aligned with its container and they're the first cell in each row.
+   */
+  const slots = useSlots();
+  const reorderHandleFlush = computed(() =>
+    props.appearance === TableAppearance.Aligned &&
+    !selectable.value &&
+    !slots['leading-cells']
+      ? 'inline-start'
+      : undefined
+  );
+
+  /** The first and last indexes rows can move between. */
+  const reorderBounds = computed(() => {
+    const indexes = reorderableRows().map((row) => row.index);
+
+    return {first: Math.min(...indexes), last: Math.max(...indexes)};
+  });
+
   function getRowPosition(index: number) {
-    if (index === 0) {
+    if (reorderBounds.value.first === reorderBounds.value.last) {
+      return 'only';
+    }
+
+    if (index === reorderBounds.value.first) {
       return 'first';
     }
 
-    if (index === props.table.getRowModel().rows.length - 1) {
+    if (index === reorderBounds.value.last) {
       return 'last';
     }
 
@@ -376,6 +418,7 @@
         'cp-table--spacious': spacing === TableSpacing.Spacious,
         'cp-table--auto': layout === 'auto',
         'cp-table--flush': appearance === TableAppearance.Flush,
+        'cp-table--aligned': appearance === TableAppearance.Aligned,
       }"
     >
       <caption class="sr-only">
@@ -558,7 +601,7 @@
             </td>
             <template v-if="reorderable && !readOnly">
               <td :class="{'border-b-0': hideBottomBorder(rowIdx)}">
-                <div>
+                <div v-if="isRowReorderable(row)">
                   <craft-reorder-button
                     .disabled="interactionsDisabled"
                     @craft-reorder="
@@ -572,6 +615,7 @@
                         )
                     "
                     :position="getRowPosition(row.index)"
+                    :flush="reorderHandleFlush"
                     :ref="(el: any) => setHandleRef(el, row.id)"
                   ></craft-reorder-button>
                 </div>

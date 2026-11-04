@@ -122,6 +122,43 @@ export interface ElementContextMenuItem {
   selected?: boolean;
 }
 
+/**
+ * Fills in the tabs `ui` deferred with the ones the page requested once it
+ * loaded. Until they arrive, the tabs stay placeholders.
+ */
+function withDeferredTabs(
+  ui: UiPayload | null,
+  deferred: UiPayload | null | undefined
+): UiPayload | null {
+  if (!ui || !deferred) {
+    return ui;
+  }
+
+  const filled = new Map(deferred.nodes.map((node) => [node.uid, node]));
+
+  return {
+    ...ui,
+    nodes: ui.nodes.map((node) =>
+      node.props.deferred ? (filled.get(node.uid) ?? node) : node
+    ),
+    values: mergeValues(ui.values, deferred.values),
+  };
+}
+
+function mergeValues(target: UiValues, source: UiValues): UiValues {
+  const merged: UiValues = {...target};
+
+  for (const [key, value] of Object.entries(source)) {
+    const current = merged[key];
+    merged[key] =
+      isRecord(current) && isRecord(value)
+        ? mergeValues(current, value)
+        : (current ?? value);
+  }
+
+  return merged;
+}
+
 /** The shared payload every {@link ElementEditViewModel} emits. */
 export interface ElementEditPayload {
   editorContainerId?: string;
@@ -139,6 +176,11 @@ export interface ElementEditPayload {
   crumbs: Array<{label: string; url?: string}>;
   readOnly: boolean;
   ui: UiPayload | null;
+  /**
+   * The tabs `ui` holds back as `deferred` placeholders, which Inertia
+   * requests once the page has loaded. Never sent to slideouts.
+   */
+  deferredTabs?: UiPayload | null;
   sidebarUi: UiPayload | null;
   metadataHtml: string | null;
   /** The element's status badge. `null` for element types without statuses. */
@@ -347,7 +389,9 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   // address) receives its own UI payload. Until it does, the block has
   // nothing to render but a spinner.
   const savedUi = shallowRef<UiPayload | null>(null);
-  const uiPayload = computed(() => savedUi.value ?? props.ui);
+  const uiPayload = computed(
+    () => savedUi.value ?? withDeferredTabs(props.ui, props.deferredTabs)
+  );
   const sidebarPayload = computed(() => props.sidebarUi);
   const form = useForm<ElementEditFormData>({});
   let refreshGeneration = 0;
@@ -401,6 +445,20 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     };
   }
 
+  /**
+   * The id of the element drafts are made from, as `elements/*` actions expect it.
+   *
+   * That's the canonical element for a draft, but the element itself otherwise —
+   * including a nested element duplicated for an owner's draft, which keeps track
+   * of its canonical without being a draft of it. `saveData()` carries the
+   * server's answer, the same one the legacy editor's hidden input posts.
+   */
+  function draftableElementId(): number | null {
+    const elementId = saveData?.().elementId;
+
+    return typeof elementId === 'number' ? elementId : props.canonicalId;
+  }
+
   const preparingOwnerGroups = new Map<symbol, string[]>();
   const draftElementIds = new Map<number, number>();
 
@@ -408,7 +466,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     url: props.autosaveUrl,
     params: contextParams,
     elementType: props.elementType,
-    elementId: props.canonicalId,
+    elementId: draftableElementId(),
     siteId: props.siteId,
     draftId: props.draftId,
     isProvisional: props.isProvisionalDraft,
@@ -461,7 +519,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   const activity = useElementActivity({
     url: props.activityUrl,
     elementType: props.elementType,
-    elementId: props.canonicalId,
+    elementId: draftableElementId(),
     // Autosave can create a provisional draft mid-session, and from then on
     // that's the element the screen is editing — so the poll has to ask about
     // it, not the canonical, or its timestamps won't be the ones the autosave
@@ -565,9 +623,20 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   // itself, which Inertia replaces on every visit and the slideout store
   // reassigns on every panel load — `props` here is the merged view, so
   // watching that would see the overlay's own writes.
+  //
+  // The deferred tabs arriving isn't a newer payload: the partial reload that
+  // brings them leaves `ui` as it was, and dropping what autosave stashed then
+  // would discard edits made while they loaded.
   watch(
     () => pageProps(),
-    () => {
+    (current, previous) => {
+      if (
+        current.ui === previous.ui &&
+        current.deferredTabs !== previous.deferredTabs
+      ) {
+        return;
+      }
+
       invalidateUiRefreshes();
       draftElementIds.clear();
       savedUi.value = null;
@@ -856,7 +925,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
         if (autosave.draftId.value !== null) {
           Object.assign(transformed, {
             elementType: props.elementType,
-            elementId: props.canonicalId,
+            elementId: draftableElementId(),
             siteId: props.siteId,
           });
           if (autosave.draftId.value !== null) {
@@ -1161,7 +1230,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       await actionClient.post(props.discardDraftUrl, {
         ...contextParams(),
         elementType: props.elementType,
-        elementId: props.canonicalId,
+        elementId: draftableElementId(),
         siteId: props.siteId,
         draftId: autosave.draftId.value,
         provisional: 1,

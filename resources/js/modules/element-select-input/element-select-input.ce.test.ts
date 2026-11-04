@@ -117,13 +117,14 @@ it('keeps the input when the element is moved', async () => {
   expect(receivedSettings).toBeUndefined();
 });
 
-it('boots a plugin input class whose script loads after the markup', async () => {
+it('waits for a plugin input class that loads after the element', async () => {
   vi.stubGlobal('Craft', {initUiElements: vi.fn()});
   const element = bootInput();
 
   expect(receivedSettings).toBeUndefined();
 
   window.Craft.PluginElementSelectInput = PluginElementSelectInput;
+  await new Promise((resolve) => requestAnimationFrame(resolve));
   await new Promise((resolve) => requestAnimationFrame(resolve));
 
   expect(receivedSettings).toEqual({limit: 2, id: 'related-elements'});

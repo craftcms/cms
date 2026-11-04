@@ -382,7 +382,10 @@ export default defineConfig(async ({mode}) => {
           extends: true,
           test: {
             name: 'browser',
-            include: ['resources/js/**/*.browser.test.ts'],
+            include: [
+              'resources/js/**/*.browser.test.ts',
+              'yii2-adapter/resources/js/**/*.browser.test.ts',
+            ],
             browser: {
               enabled: true,
               headless: true,

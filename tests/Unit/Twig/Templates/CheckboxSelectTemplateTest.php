@@ -9,7 +9,7 @@ use function CraftCms\Cms\renderString;
 
 it('renders the element from the legacy checkboxSelect variables', function () {
     $crawler = new Crawler(renderString(
-        "{% include '_includes/forms/checkboxSelect' with {id: 's', name: 'sources', options: {a: 'Alpha', b: 'Beta'}, values: ['b']} only %}",
+        "{{ craft.cp.checkboxSelect({id: 's', name: 'sources', options: {a: 'Alpha', b: 'Beta'}, values: ['b']})|raw }}",
         templateMode: TemplateMode::Cp,
     ));
 
@@ -21,7 +21,7 @@ it('renders the element from the legacy checkboxSelect variables', function () {
 
 it('posts only the “All” value while the “All” option is checked', function () {
     $crawler = new Crawler(renderString(
-        "{% include '_includes/forms/checkboxSelect' with {id: 's', name: 'sources', options: {a: 'Alpha'}, values: '*', showAllOption: true} only %}",
+        "{{ craft.cp.checkboxSelect({id: 's', name: 'sources', options: {a: 'Alpha'}, values: '*', showAllOption: true})|raw }}",
         templateMode: TemplateMode::Cp,
     ));
     $item = $crawler->filter('.cp-checkbox-select__item:not(.all) input[type="checkbox"]');
@@ -36,7 +36,7 @@ it('posts only the “All” value while the “All” option is checked', funct
 
 it('pre-orders sortable options by the values order, with the “Add item” menu', function () {
     $html = renderString(
-        "{% include '_includes/forms/checkboxSelect' with {id: 's', name: 'sources', options: {a: 'Alpha', b: 'Beta'}, values: ['b', 'a'], sortable: true} only %}",
+        "{{ craft.cp.checkboxSelect({id: 's', name: 'sources', options: {a: 'Alpha', b: 'Beta'}, values: ['b', 'a'], sortable: true})|raw }}",
         templateMode: TemplateMode::Cp,
     );
     $host = new Crawler($html)->filter('craft-checkbox-select');
@@ -48,7 +48,7 @@ it('pre-orders sortable options by the values order, with the “Add item” men
 
 it('takes a presentation for sortable options', function () {
     $host = new Crawler(renderString(
-        "{% include '_includes/forms/checkboxSelect' with {id: 's', name: 'sources', options: {a: 'Alpha'}, sortable: true, presentation: 'checkboxes'} only %}",
+        "{{ craft.cp.checkboxSelect({id: 's', name: 'sources', options: {a: 'Alpha'}, sortable: true, presentation: 'checkboxes'})|raw }}",
         templateMode: TemplateMode::Cp,
     ))->filter('craft-checkbox-select');
 

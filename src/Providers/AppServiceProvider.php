@@ -73,6 +73,14 @@ class AppServiceProvider extends ServiceProvider
         $this->registerMacros();
         $this->registerSerializableClasses();
         $this->registerThrottleExceptionHandler();
+
+        // Inertia DevTools records every request in local environments unless told otherwise, which adds hundreds of
+        // milliseconds to control panel requests, so it's opt-in. Set before providers boot, when DevTools checks it.
+        $this->app->booting(function () {
+            if (config('inertia.devtools.enabled') === null) {
+                config()->set('inertia.devtools.enabled', false);
+            }
+        });
     }
 
     public function boot(): void

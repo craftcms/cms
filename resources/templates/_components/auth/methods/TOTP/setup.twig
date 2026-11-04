@@ -1,4 +1,3 @@
-{% import '_includes/forms.twig' as forms %}
 
 <div class="grid gap-6">
   <div class="prose">
@@ -32,11 +31,14 @@
           </craft-field>
         {% endif %}
         {% if secret is defined and secret is not empty %}
-          {{ forms.copyTextField({
-            label: 'Setup Key' | t('app'),
-            name: 'setup-key',
-            class: 'code',
-            value: secret,
+          {{ ui('field', {
+            id: 'setup-key',
+            label: 'Setup Key'|t('app'),
+            input: ui('input-copy', {
+              name: 'setup-key',
+              value: secret,
+              inputAttributes: {class: ['code']},
+            }),
           }) }}
         {% endif %}
       </div>

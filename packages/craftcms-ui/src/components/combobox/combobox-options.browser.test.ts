@@ -1,4 +1,4 @@
-import {beforeEach, expect, it, vi} from 'vite-plus/test';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type CraftCombobox from './combobox.js';
 import './combobox.js';
 import '../../styles/cp.css';
@@ -75,6 +75,40 @@ it.each([
   expect(getComputedStyle(control.querySelector('craft-icon')!).color).toBe(
     computedColor(expected)
   );
+});
+
+describe.each([
+  ['a variant', 'danger', 'var(--c-color-danger-fill-loud)'],
+  ['a palette color', 'red', 'var(--c-color-red-fill-loud)'],
+  ['a hex color', '#00ff00', '#00ff00'],
+])('with %s', (_, color, expected) => {
+  it('colors the selected option’s icon in the field', async () => {
+    const control = await fixture([
+      {label: 'Icon', value: 'icon', data: {icon: 'circle', color}},
+    ]);
+    control.modelValue = 'icon';
+    await control.updateComplete;
+
+    expect(
+      getComputedStyle(control.shadowRoot!.querySelector('craft-icon.prefix')!)
+        .color
+    ).toBe(computedColor(expected));
+  });
+
+  it('colors a selected option’s icon on its token', async () => {
+    const control = await fixture([
+      {label: 'Icon', value: 'icon', data: {icon: 'circle', color}},
+    ]);
+    control.multipleChoice = true;
+    control.modelValue = ['icon'];
+    await control.updateComplete;
+
+    expect(
+      getComputedStyle(
+        control.querySelector('craft-combobox-token craft-icon')!
+      ).color
+    ).toBe(computedColor(expected));
+  });
 });
 
 it('leaves an icon without a colour unstyled', async () => {

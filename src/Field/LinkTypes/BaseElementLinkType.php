@@ -199,7 +199,6 @@ JS, [
                 'id' => $id,
                 'elements' => array_filter([$this->element($value)]),
                 'showSiteMenu' => true,
-                // The Twig template resolves the condition’s config itself, so give it the object
                 'condition' => $this->getSelectionCondition(),
                 'modalSettings' => [
                     'matchSiteBeforeDisablingElement' => true,

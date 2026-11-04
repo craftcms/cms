@@ -493,7 +493,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
         foreach ($sectionTypes as $type => $heading) {
             if (! empty($sectionsByType[$type])) {
-                $sources[] = ['heading' => $heading];
+                $sources[] = ['heading' => $heading, 'handle' => $type];
 
                 foreach ($sectionsByType[$type] as $section) {
                     /** @var Section $section */
@@ -523,8 +523,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                     if ($type === SectionType::Structure->value) {
                         $source['defaultSort'] = ['structure', 'asc'];
                         $source['structureId'] = $section->structureId;
-                        $structure = $section->structureId ? Structures::getStructureById($section->structureId) : null;
-                        $source['structureEditable'] = $user && $structure && $user->can('edit', $structure);
+                        // What StructurePolicy::edit() checks, without looking the structure and its section up again
+                        $source['structureEditable'] = $user && $section->structureId && $user->can("saveEntries:$section->uid");
                     } else {
                         $source['defaultSort'] = ['postDate', 'desc'];
                     }
