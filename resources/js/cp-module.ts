@@ -1,4 +1,5 @@
 import {defineAsyncComponent} from 'vue';
+import {ConfigService} from '@craftcms/ui/services/Config';
 import {FileUpload, UploadError, registerTransport} from './upload-client';
 import {
   closeCommandPalette,
@@ -210,6 +211,15 @@ export {
 } from '@craftcms/ui/utilities/dom';
 export {actionClient, http} from '@craftcms/ui';
 export {getActionUrl, getCpUrl, getUrl} from './common/craft/url';
+
+/**
+ * The control panel's own config — `siteId`, `sites`, `userIsAdmin`,
+ * `elementTypeNames`, `orientation` and the rest of the payload the control
+ * panel boots with.
+ */
+export function cpConfig(): ConfigService {
+  return ConfigService.getInstance();
+}
 
 /** Slideouts, element editors, chip actions and thumbnails. */
 export {openSlideout, createElementEditor} from './common/slideouts';
