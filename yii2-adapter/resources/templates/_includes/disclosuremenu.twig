@@ -6,103 +6,8 @@
 
 {% set hasSelected = items|map(i => (i.items ?? [i]))|flatten(1)|contains('selected') %}
 
-{% macro itemType(item) %}
-  {%- if item.type ?? false %}
-    {{- item.type }}
-  {%- elseif item.url ?? false %}
-    {{- 'link' }}
-  {%- elseif item.hr ?? false %}
-    {{- 'hr' }}
-  {%- elseif item.heading ?? item.items ?? false %}
-    {{- 'group' }}
-  {%- else %}
-    {{- 'button' }}
-  {%- endif %}
-{%- endmacro %}
-
-{% macro color(color) %}
-  {{- color is instance of ('CraftCms\\Cms\\Shared\\Enums\\Color') ? color.value : color -}}
-{% endmacro %}
-
-{% macro item(item, menuId) %}
-  {% set type = _self.itemType(item) %}
-  {% set id = item.id ?? "menu-item-#{random()}" %}
-  {% tag 'li' with {
-    class: {
-      hidden: item.hidden ?? false,
-    }|filter|keys,
-  }|merge(item.liAttributes ?? {}) %}
-    {% set selected = item.selected ?? false %}
-    {% tag (type == 'button' ? 'button' : 'a') with {
-      id: id,
-      class: {
-        'menu-item': true,
-        sel: selected,
-        error: item.destructive ?? false,
-        formsubmit: item.action ?? false,
-        disabled: item.disabled ?? false,
-      }|filter|keys,
-      href: type == 'button' ? null : url(item.url),
-      data: {
-        destructive: item.destructive ?? null,
-        action: item.action ?? null,
-        params: item.params ?? null,
-        confirm: item.confirm ?? null,
-        redirect: (item.redirect ?? false) ? item.redirect|hash : null,
-        'require-elevated-session': item.requireElevatedSession ?? false,
-        form: (item.action ?? false) ? 'false' : null,
-      }|filter,
-    }|merge(item.attributes ?? {}, recursive=true) %}
-      {%- apply spaceless %}
-        {% if item.icon ?? false %}
-          {{ tag('span', {
-            class: [
-              'icon',
-              _self.color(item.color ?? null),
-            ]|filter,
-            html: iconSvg(item.icon),
-          }) }}
-        {% endif %}
-        {% if item.status ?? false -%}
-          {{ statusIndicator(item.status) }}
-        {%- endif -%}
-        <span class="menu-item-label inline-flex flex-col items-start gap-2xs">
-          {{ item.label ?? item.html|raw }}
-          {% if item.description is defined %}
-            <span class="menu-item-description mt-2xs smalltext light">{{ item.description }}</span>
-          {% elseif item.handle is defined %}
-            <span class="menu-item-description mt-2xs smalltext light code">{{ item.handle }}</span>
-          {% endif %}
-        </span>
-        {% if selected %}
-          <span class="visually-hidden">, selected</span>
-        {% endif %}
-        {% if item.info is defined and item.info is not empty %}
-          <craft-info-icon>{{ item.info|e|cpmd }}</craft-info-icon>
-        {% endif %}
-      {% endapply -%}
-    {% endtag %}
-  {% endtag %}
-  {% js %}
-    (() => {
-      const item = document.getElementById('{{ id|namespaceInputId }}');
-      {% if type == 'link' %}
-      item?.addEventListener('keydown', (ev) => {
-        if (ev.key === ' ') {
-          ev.currentTarget.click();
-        }
-      });
-      {% endif %}
-      item?.addEventListener('click', () => {
-        setTimeout(() => {
-          // The menu is booted by the legacy jQuery plugin, when it's loaded
-          const menu = document.getElementById('{{ menuId|namespaceInputId }}');
-          window.jQuery?.(menu).data('disclosureMenu')?.hide();
-        }, 1);
-      });
-    })();
-  {% endjs %}
-{% endmacro %}
+{# The item macros are shared with core's legacy menu markup #}
+{% import '_includes/disclosuremenu.twig' as menuMacros %}
 
 {% if not withButton and (invoker ?? false) %}
   {{ invoker|raw }}
@@ -159,7 +64,7 @@
     {% set ulStarted = false %}
     {% for item in items %}
       {% set headingTag = item.headingTag ?? 'h3' %}
-      {% set type = _self.itemType(item) %}
+      {% set type = menuMacros.itemType(item) %}
       {% if type in ['hr', 'group'] %}
         {% if ulStarted %}
           {{ '</ul>'|raw }}
@@ -193,7 +98,7 @@
               }|filter|keys,
             }|merge(item.listAttributes ?? {}, recursive=true) %}
               {% for groupItem in item.items %}
-                {{ _self.item(groupItem, id) }}
+                {{ menuMacros.item(groupItem, id) }}
               {% endfor %}
             {% endtag %}
           {% endtag %}
@@ -207,7 +112,7 @@
           {% endif %}
           {% set ulStarted = true %}
         {% endif %}
-        {{ _self.item(item, id) }}
+        {{ menuMacros.item(item, id) }}
       {% endif %}
     {% endfor %}
     {% if ulStarted %}{{ '</ul>'|raw }}{% endif %}

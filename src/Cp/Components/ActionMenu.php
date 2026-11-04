@@ -301,6 +301,7 @@ class ActionMenu extends ViewComponent
                 $clientItems[] = Arr::whereNotNull([
                     'type' => MenuItemType::Group->value,
                     'heading' => isset($item['heading']) ? (string) $item['heading'] : null,
+                    'hidden' => ($item['hidden'] ?? false) ?: null,
                     'items' => $this->toClientItems(
                         $menuHtml->normalizeMenuItems($item['items'] ?? []),
                         $menuHtml,
@@ -450,6 +451,7 @@ class ActionMenu extends ViewComponent
             $html .= Html::tag('div', Html::encode($group['heading']), [
                 'class' => 'action-menu__heading',
                 'role' => 'presentation',
+                'hidden' => $group['hidden'] ?? false,
                 // Matches the styling `action-menu.ts` gives the headings it renders
                 'style' => [
                     'padding-block' => 'var(--c-spacing-xs)',

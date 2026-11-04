@@ -142,7 +142,10 @@ readonly class MenuHtml
         }
 
         if ($config['buttonSpinner'] ?? false) {
-            $contentHtml .= Html::tag('craft-spinner', '', ['class' => ['spinner', 'hidden']]);
+            $contentHtml .= Html::tag('craft-spinner', '', [
+                'class' => ['spinner', 'hidden'],
+                'label' => t('Loading'),
+            ]);
         }
 
         $buttonAttributes = $config['buttonAttributes'];
