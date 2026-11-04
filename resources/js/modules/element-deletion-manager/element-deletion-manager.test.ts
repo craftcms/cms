@@ -1,6 +1,9 @@
 import {afterEach, expect, it, vi} from 'vite-plus/test';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {initLegacyUi} from '@/common/craft/legacy-ui';
 import {ElementDeletionManager} from './element-deletion-manager';
+
+vi.mock('@/common/craft/legacy-ui', () => ({initLegacyUi: vi.fn()}));
 
 afterEach(() => {
   document.body.innerHTML = '';
@@ -55,4 +58,31 @@ it('lists the blockers and resolves one from its action', async () => {
     dialog.querySelector('.edm-blocker-resolved-message')?.textContent
   ).toBe('Reassigned.');
   expect(manager.blockers).toHaveLength(0);
+});
+
+it('initializes a blocker once all of its details are in', async () => {
+  vi.spyOn(actionClient, 'post').mockResolvedValue({
+    data: {
+      blockers: [
+        {
+          summary: 'The entry has authors.',
+          details:
+            '<script src="https://example.com/library.js"></script><div class="later-control"></div>',
+        },
+      ],
+      elementPreview: '<strong>Home</strong>',
+      totalElements: 1,
+      headHtml: '',
+      bodyHtml: '',
+    },
+  } as never);
+  let controlWasIn: boolean | null = null;
+  vi.mocked(initLegacyUi).mockImplementation((container) => {
+    controlWasIn = !!(container as Element).querySelector('.later-control');
+  });
+
+  new ElementDeletionManager('craft\\elements\\Entry', [1]);
+
+  await vi.waitFor(() => expect(controlWasIn).not.toBeNull());
+  expect(controlWasIn).toBe(true);
 });

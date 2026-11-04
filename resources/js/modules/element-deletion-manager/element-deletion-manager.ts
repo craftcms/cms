@@ -86,6 +86,8 @@ export class ElementDeletionManager extends Base {
       this.blockers.push(new Blocker(this, blocker));
     }
 
+    await Promise.all(this.blockers.map((blocker: Blocker) => blocker.ready));
+
     await appendHeadHtml(data.headHtml);
     await appendBodyHtml(data.bodyHtml);
   }
@@ -265,6 +267,8 @@ class Blocker extends Base {
   container: HTMLElement | null = null;
 
   buttons: CraftButton[] = [];
+  /** Settles once the details markup is in and the blocker's UI is initialized. */
+  ready: Promise<void> = Promise.resolve();
 
   constructor(manager?: any, data?: any) {
     super();
@@ -277,6 +281,7 @@ class Blocker extends Base {
     this.manager = manager;
     this.data = data;
     this.buttons = [];
+    let detailsAppended: Promise<unknown> = Promise.resolve();
 
     this.id = `blocker-${Math.floor(Math.random() * 1000000)}`;
     const container = document.createElement('div');
@@ -309,7 +314,7 @@ class Blocker extends Base {
       details.className = 'edm-details';
       details.hidden = true;
       container.append(details);
-      void appendElementHtml(this.data.details, details);
+      detailsAppended = appendElementHtml(this.data.details, details);
 
       const setExpanded = (expanded: boolean): void => {
         const rtl = getComputedStyle(toggle).direction === 'rtl';
@@ -437,7 +442,7 @@ class Blocker extends Base {
       }
     }
 
-    initLegacyUi(container);
+    this.ready = detailsAppended.then(() => initLegacyUi(container));
   }
 
   async resolve(message: any = null): Promise<void> {
