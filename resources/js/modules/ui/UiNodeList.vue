@@ -53,7 +53,11 @@
     props.nodes.filter(
       (
         node
-      ): node is UiNodePayload<{label: string; icon?: string}> & {
+      ): node is UiNodePayload<{
+        label: string;
+        icon?: string;
+        deferred?: boolean;
+      }> & {
         uid: string;
       } =>
         node.component === 'craft:tab' && node.uid != null && !inSidebar(node)
@@ -109,8 +113,11 @@
     );
   }
 
+  /** Tabs the server held back have nothing to render until they arrive. */
   function nextUnrenderedTab(): string | undefined {
-    return tabs.value.find((tab) => !renderedTabs.value.has(tab.uid))?.uid;
+    return tabs.value.find(
+      (tab) => !renderedTabs.value.has(tab.uid) && !tab.props.deferred
+    )?.uid;
   }
 
   function renderNextTabWhenIdle(): void {
@@ -180,10 +187,16 @@
 
   const fragment = fragmentId();
 
+  // Watched, as a deferred tab only holds the field once it arrives.
   if (fragment) {
-    tabs.value
-      .filter((tab) => nodeHolds(tab, fragment))
-      .forEach((tab) => renderTab(tab.uid));
+    watch(
+      tabs,
+      (currentTabs) =>
+        currentTabs
+          .filter((tab) => nodeHolds(tab, fragment))
+          .forEach((tab) => renderTab(tab.uid)),
+      {immediate: true}
+    );
   }
 
   onMounted(renderNextTabWhenIdle);
