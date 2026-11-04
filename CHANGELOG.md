@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where the MCP server required date-time values for Time fields within nested entries, which those fields couldn’t parse. ([#20319](https://github.com/craftcms/cms/issues/20319))
+- Fixed a bug where “New entry” buttons could offer entry types or sections that `craft\elements\Entry::EVENT_DEFINE_ENTRY_TYPES` had excluded, resulting in a 400 error. ([#20322](https://github.com/craftcms/cms/issues/20322))
 
 ## 5.12.0.1 - 2026-11-03
 

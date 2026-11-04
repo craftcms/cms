@@ -82,6 +82,14 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
         (s) => s.handle === sectionHandle
       );
 
+      // Ignore the source's entry type if it isn't available for the section
+      if (
+        entryTypeHandle &&
+        !selectedSection?.entryTypes.some((t) => t.handle === entryTypeHandle)
+      ) {
+        entryTypeHandle = undefined;
+      }
+
       this.$newEntryBtnGroup = $('<div class="btngroup submit" data-wrapper/>');
       let $menuBtn;
       const menuId = 'new-entry-menu-' + Craft.randomString(10);

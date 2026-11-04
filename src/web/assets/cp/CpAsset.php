@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\config\GeneralConfig;
+use craft\elements\Entry;
 use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\helpers\Assets;
@@ -750,8 +751,13 @@ JS;
 
         foreach (Craft::$app->getEntries()->getEditableSections() as $section) {
             if ($section->type !== Section::TYPE_SINGLE && $currentUser->can("createEntries:$section->uid")) {
+                $entryTypes = $this->_entryTypes($section);
+                if (empty($entryTypes)) {
+                    continue;
+                }
+
                 $sections[] = [
-                    'entryTypes' => $this->_entryTypes($section),
+                    'entryTypes' => $entryTypes,
                     'handle' => $section->handle,
                     'id' => (int)$section->id,
                     'name' => Craft::t('site', $section->name),
@@ -768,9 +774,17 @@ JS;
 
     private function _entryTypes(Section $section): array
     {
+        // Get the entry types the same way EntriesController::actionCreate() will
+        $siteIds = $section->getSiteIds();
+        $requestedSiteId = Cp::requestedSite()?->id;
+        $entry = new Entry([
+            'sectionId' => $section->id,
+            'siteId' => in_array($requestedSiteId, $siteIds) ? $requestedSiteId : reset($siteIds),
+        ]);
+
         $types = [];
 
-        foreach ($section->getEntryTypes() as $type) {
+        foreach ($entry->getAvailableEntryTypes() as $type) {
             $types[] = [
                 'handle' => $type->handle,
                 'id' => (int)$type->id,
