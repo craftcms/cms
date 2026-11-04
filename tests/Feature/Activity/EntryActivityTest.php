@@ -304,6 +304,24 @@ it('records HTML fields’ changes by their text, omitting ones that are still H
     'tags once decoded' => ['<p>&lt;img src=x onerror=alert(1)&gt;</p>', null],
 ]);
 
+it('records clearing an HTML field by its original text', function () {
+    $result = EntryModel::factory()
+        ->withField('bodyField', HtmlText::class, value: '<p>Old <em>body</em></p>')
+        ->createElementWithFields(['title' => 'Old title']);
+    $entry = $result->element;
+    $field = $entry->getFieldLayout()->getFieldByHandle('bodyField');
+    DB::table(Table::ACTIVITYEVENTS)->delete();
+
+    $entry->setFieldValue($field->handle, '');
+
+    expect(Elements::saveElement($entry, updateSearchIndex: false))->toBeTrue()
+        ->and($entry->getFieldValue($field->handle))->toBeNull();
+
+    $event = $this->activities->query()->subject(ActivitySubject::fromElement($entry))->firstOrFail();
+
+    expect($event->changes)->toEqual([new ActivityChange($field->name, 'Old body', null)]);
+});
+
 it('does not record cancelled saves', function () {
     $entry = EntryModel::factory()->createElement(['title' => 'Original title']);
     $entry->title = 'Cancelled title';

@@ -154,7 +154,9 @@ class EntryActivity
         $newFieldValues = self::fieldValues($entry, $dirtyFields);
 
         foreach ($entry->getFieldLayout()?->getCustomFields() ?? [] as $field) {
-            if (! array_key_exists((string) $field->handle, $newFieldValues)) {
+            $handle = (string) $field->handle;
+
+            if (! array_key_exists($handle, $newFieldValues)) {
                 continue;
             }
 
@@ -162,9 +164,11 @@ class EntryActivity
                 $changes,
                 $contentChanged,
                 t($field->name, category: 'site'),
-                $originalFieldValues[$field->handle] ?? null,
-                $newFieldValues[$field->handle],
-                $entry->getFieldValue((string) $field->handle) instanceof Markup,
+                $originalFieldValues[$handle] ?? null,
+                $newFieldValues[$handle],
+                // A cleared value can be null, so the original value can be the only HTML one.
+                $entry->getFieldValue($handle) instanceof Markup
+                    || (array_key_exists($handle, $originalFieldValues) && $original->getFieldValue($handle) instanceof Markup),
             );
         }
 
