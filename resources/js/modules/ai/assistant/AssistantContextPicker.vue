@@ -39,14 +39,8 @@
   }
 
   function onChange(event: Event): void {
-    // Its checkboxes fire their own `model-value-changed`, which bubbles up
-    // to this listener too.
-    if (event.target !== event.currentTarget) {
-      return;
-    }
-
     // SAFETY: The listener is bound to the `craft-checkbox-select`.
-    const value = (event.currentTarget as CraftCheckboxSelect).modelValue;
+    const value = (event.currentTarget as CraftCheckboxSelect).value;
 
     setElementContext(
       props.editor,
@@ -86,8 +80,8 @@
         :all-label="t('All fields')"
         :all-value="ALL_FIELDS"
         .options="options"
-        .modelValue="selected"
-        @model-value-changed="onChange"
+        .value="selected"
+        @change="onChange"
       ></craft-checkbox-select>
     </div>
   </craft-popover>

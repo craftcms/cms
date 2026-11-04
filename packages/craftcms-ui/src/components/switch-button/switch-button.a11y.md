@@ -9,12 +9,12 @@ The control inside `craft-switch`; see `switch.a11y.md` for the pattern. This fi
 - [ ] The host carries `role="switch"` and is focusable. Per WCAG 4.1.2 (Name, Role, Value). Not yet verified.
 - [x] `aria-checked` follows the state: `false` when off and `true` when on, and `true` wins when `checked` and `indeterminate` are both set. Per WCAG 4.1.2 (Name, Role, Value). Verified by `reports the off state`, `reports the on state` and `prefers checked over mixed` in `switch-button.test.ts`.
 - [ ] The indeterminate state is exposed to assistive technology. Per WCAG 4.1.2 (Name, Role, Value). Known gap: `indeterminate` sets `aria-checked="mixed"`, which `role="switch"` doesn't support, so it's announced as off. `reports the mixed state` in `switch-button.test.ts` asserts the unsupported value.
-- [ ] `disabled` sets `aria-disabled="true"` and removes the button from the Tab order. Per WCAG 4.1.2 (Name, Role, Value). Not yet verified.
+- [x] `disabled` sets `aria-disabled="true"` and removes the button from the Tab order. Per WCAG 4.1.2 (Name, Role, Value). Verified by `leaves the Tab order and ignores toggles while disabled` in `switch-button.test.ts`.
 
 ### Keyboard and focus
 
-- [ ] Space and Enter toggle the button on key release, and Space doesn't scroll the page. Per WCAG 2.1.1 (Keyboard). Not yet verified.
-- [ ] A keyboard-focused button shows the global focus ring at 3:1 against the surface, in the light and dark themes. Per WCAG 2.4.7 (Focus Visible) and 1.4.11 (Non-text Contrast). Not yet verified. Lion also draws a pale `#bde4ff` outline on the thumb on any focus, including a click.
+- [x] Space and Enter toggle the button on key release, and Space doesn't scroll the page. Per WCAG 2.1.1 (Keyboard). Verified by `toggles on Space and Enter release, without scrolling on Space` in `switch-button.test.ts`.
+- [ ] A keyboard-focused button shows the global focus ring at 3:1 against the surface, in the light and dark themes. Per WCAG 2.4.7 (Focus Visible) and 1.4.11 (Non-text Contrast). Not yet verified.
 
 ### Visual
 

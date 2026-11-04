@@ -9,7 +9,7 @@ import * as CheckboxGroupStories from './checkbox-group.stories';
 
 <Canvas of={CheckboxGroupStories.Default} sourceState="shown" />
 
-The group owns the name and the value: its `modelValue` is the array of what is checked, rather than each checkbox carrying its own.
+The group owns the name and the value: its `value` is the array of what is checked, rather than each checkbox carrying its own. The checkboxes' `input` and `change` events bubble through the group, which has the new `value` by the time they reach it.
 
 Use a [Radio Group](?path=/docs/form-controls-choice-controls-radio-group--docs) when exactly one option may be chosen.
 
@@ -23,7 +23,7 @@ Validation belongs at the group level too, since a rule like "choose at least on
 
 A group rendered by the server adopts the name already present on its inputs.
 
-That is load-bearing rather than a convenience: Lion syncs every registered child's name to the group's, so a group that upgraded without a name would strip the server's names off the inputs and break native posting.
+That is load-bearing rather than a convenience: the group gives every checkbox its name, so one that upgraded without a name of its own would have nothing to give them.
 
 ## In PHP
 

@@ -482,7 +482,7 @@ describe('ChoiceControl', () => {
       'two',
       'three',
     ]);
-    expect(element.modelValue).toEqual(['two']);
+    expect(element.value).toEqual(['two']);
     expect(allInput(element).value).toBe('*');
   });
 

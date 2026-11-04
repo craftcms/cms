@@ -103,6 +103,18 @@ interface SelectedElement {
   siteId?: number;
 }
 
+/** Sets a checkbox or switch the way a user would, ending with its `change`. */
+function toggleChoice(
+  choice: Element & {checked: boolean},
+  checked: boolean
+): void {
+  choice.checked = checked;
+  required(
+    choice.querySelector('[slot="input"]'),
+    'Expected the choice control.'
+  ).dispatchEvent(new Event('change', {bubbles: true}));
+}
+
 function required<T>(value: T | null | undefined, message: string): T {
   if (value === null || value === undefined) {
     throw new Error(message);
@@ -2558,10 +2570,7 @@ describe('UiRenderer', () => {
         ),
         'Expected the action lightswitch.'
       );
-      lightswitch.checked = true;
-      lightswitch.dispatchEvent(
-        new CustomEvent('model-value-changed', {bubbles: true})
-      );
+      toggleChoice(lightswitch, true);
       await nextTick();
 
       expect(refresh).toHaveBeenCalledTimes(expectedRefreshes);
@@ -2778,10 +2787,7 @@ describe('UiRenderer', () => {
       container.querySelector('craft-switch'),
       'Expected the lightswitch control.'
     );
-    lightswitch.checked = false;
-    lightswitch.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    toggleChoice(lightswitch, false);
     await nextTick();
 
     expect(refresh).toHaveBeenCalledOnce();
@@ -3494,7 +3500,7 @@ describe('UiRenderer', () => {
 
     expect(switchElement.indeterminate).toBe(true);
     expect(switchElement.size).toBe('small');
-    expect(switchElement.checkedValue).toBe('yes');
+    expect(switchElement.value).toBe('yes');
     expect(switchElement.indeterminateValue).toBe('maybe');
     expect(switchElement.onLabel).toBe('On');
     expect(switchElement.offLabel).toBe('Off');
@@ -4613,19 +4619,9 @@ describe('UiRenderer', () => {
     await mount(emptyMoney, {onMutation: (value) => (mutation = value)});
     await nextTick();
 
-    // The control announces itself once as it's populated. happy-dom won't
-    // bootstrap the underlying form control far enough to fire that on its own,
-    // so raise it exactly as the browser does — the field is still empty, and
-    // the announcement is not marked as coming from a person.
-    const control = required(
+    required(
       container.querySelector('craft-input-money'),
       'Expected the money control.'
-    );
-    control.dispatchEvent(
-      new CustomEvent('model-value-changed', {
-        bubbles: true,
-        detail: {isTriggeredByUser: false},
-      })
     );
     await nextTick();
 
@@ -4769,22 +4765,22 @@ describe('UiRenderer', () => {
       ).querySelectorAll<
         HTMLElement & {
           checked: boolean;
-          choiceValue: string;
+          value: string;
           disabled: boolean;
         }
       >('craft-checkbox'),
     ];
-    expect(checkboxes.map((checkbox) => checkbox.choiceValue)).toEqual([
+    expect(checkboxes.map((checkbox) => checkbox.value)).toEqual([
       'viewEntries',
       'editEntries',
       'deleteEntries',
     ]);
     const edit = required(
-      checkboxes.find((checkbox) => checkbox.choiceValue === 'editEntries'),
+      checkboxes.find((checkbox) => checkbox.value === 'editEntries'),
       'Expected the edit entries permission.'
     );
     const inherited = required(
-      checkboxes.find((checkbox) => checkbox.choiceValue === 'deleteEntries'),
+      checkboxes.find((checkbox) => checkbox.value === 'deleteEntries'),
       'Expected the delete entries permission.'
     );
 
@@ -4794,10 +4790,7 @@ describe('UiRenderer', () => {
       'viewEntries',
     ]);
 
-    edit.checked = true;
-    edit.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true, composed: true})
-    );
+    toggleChoice(edit, true);
     await nextTick();
 
     expect(renderer.currentValues()).toEqual({

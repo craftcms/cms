@@ -448,7 +448,7 @@
                 someListedRowsSelected() && !table.getIsAllRowsSelected()
               "
               .disabled="selectionDisabled"
-              @model-value-changed="toggleAllSelected"
+              @change="toggleAllSelected"
               ><label slot="label">{{ t('Select all') }}</label></craft-checkbox
             >
           </th>
@@ -593,7 +593,7 @@
                 .checked="row.getIsSelected()"
                 .disabled="selectionDisabled || !row.getCanSelect()"
                 @click="pendingShiftKey = $event.shiftKey"
-                @model-value-changed="selectRow(row, $event)"
+                @change="selectRow(row, $event)"
                 ><label slot="label">{{
                   t('Select {label}', {label: rowLabel(row)})
                 }}</label></craft-checkbox

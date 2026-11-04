@@ -58,15 +58,10 @@
     }))
   );
 
-  // The group also announces its initial value once it mounts, which can be
-  // a stale one from before the URL's size was restored. Only the user's own
-  // choices change the size.
   function onThumbSizeChanged(event: Event) {
-    if (event instanceof CustomEvent && event.detail?.isTriggeredByUser) {
-      thumbSize.value = (
-        event.target as HTMLElement & {modelValue: ThumbSize}
-      ).modelValue;
-    }
+    thumbSize.value = (
+      event.currentTarget as HTMLElement & {value: ThumbSize}
+    ).value;
   }
 
   const emit = defineEmits<{
@@ -193,13 +188,13 @@
           appearance="button-group"
           :name="thumbSizeIdPrefix"
           :label="t('Thumb Size')"
-          .modelValue="thumbSize"
-          @model-value-changed="onThumbSizeChanged"
+          .value="thumbSize"
+          @change="onThumbSizeChanged"
         >
           <craft-radio
             v-for="option in thumbSizeChoices"
             :key="option.value"
-            .choiceValue="option.value"
+            .value="option.value"
             .checked="thumbSize === option.value"
           >
             <input

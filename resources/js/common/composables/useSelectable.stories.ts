@@ -49,8 +49,8 @@ const SelectableList = defineComponent({
       rows.value = rows.value.filter((row) => remaining.includes(row.id));
     }
 
-    // `model-value-changed` carries no modifier keys, so a shift-range has to be
-    // read off the native click that preceded it.
+    // `change` carries no modifier keys, so a shift-range has to be read off
+    // the native click that preceded it.
     const pendingShiftKey = ref(false);
 
     function rememberShift(event: MouseEvent): void {

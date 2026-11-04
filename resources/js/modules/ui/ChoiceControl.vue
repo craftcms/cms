@@ -15,7 +15,7 @@
   import {t} from '@craftcms/ui/utilities/translate';
   import {computed, inject, nextTick, ref, watch} from 'vue';
   import type {UiControlPayload, UiValue} from './types';
-  import {FieldLabelSrOnly, inputName, serverErrorValidators} from './runtime';
+  import {FieldLabelSrOnly, inputName} from './runtime';
 
   type ChoiceValue = boolean | number | string;
   type ChoicePresentation = CraftCms.Cms.Ui.Enums.ChoicePresentation;
@@ -521,22 +521,11 @@
     Array.isArray(props.value) ? props.value.map(inputValue) : []
   );
 
-  function onCheckboxSelectValue(event: Event): void {
-    // Its checkboxes fire their own `model-value-changed`, which bubbles up
-    // to this listener too.
-    const select = event.currentTarget;
-    if (
-      event.target !== select ||
-      !(select instanceof HTMLElement) ||
-      select.localName !== 'craft-checkbox-select'
-    ) {
-      return;
-    }
-
-    // SAFETY: Checked by tag name above.
-    const element = select as CraftCheckboxSelect;
+  function onCheckboxSelectChange(event: Event): void {
+    // SAFETY: The listener is bound to the `craft-checkbox-select`.
+    const element = event.currentTarget as CraftCheckboxSelect;
     order.value = element.options.map((option) => option.value);
-    emit('update:value', element.modelValue);
+    emit('update:value', element.value);
   }
 </script>
 
@@ -653,8 +642,8 @@
     :aria-invalid="invalid ? 'true' : undefined"
     :aria-required="required ? 'true' : undefined"
     .options="selectOptionsInOrder"
-    .modelValue="groupValue"
-    @model-value-changed="onCheckboxSelectValue"
+    .value="groupValue"
+    @change="onCheckboxSelectChange"
   ></craft-checkbox-select>
   <component
     :is="control.props.multiple ? 'craft-checkbox-group' : 'craft-radio-group'"
@@ -667,9 +656,8 @@
     "
     :required="editable && required"
     .disabled="!editable"
-    :aria-invalid="invalid ? 'true' : undefined"
+    .invalid="invalid"
     :aria-required="required ? 'true' : undefined"
-    .validators="serverErrorValidators(invalid)"
   >
     <input
       v-if="control.props.multiple && editable"
@@ -689,7 +677,7 @@
             : undefined
         "
         .disabled="!editable || option.disabled"
-        .choiceValue="inputValue(option.value)"
+        .value="inputValue(option.value)"
         .checked="selected(option.value)"
       >
         <span
@@ -765,7 +753,7 @@
       >
         <craft-checkbox
           .disabled="!editable"
-          .choiceValue="option.text"
+          .value="option.text"
           .checked="option.checked"
         >
           <input
@@ -824,7 +812,7 @@
     >
       <craft-radio
         .disabled="!editable"
-        .choiceValue="customRadioText"
+        .value="customRadioText"
         .checked="customRadioSelected"
       >
         <input

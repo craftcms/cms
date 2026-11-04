@@ -1,8 +1,8 @@
 import {Base, type ModalSettings} from '@craftcms/garnish';
 import {t} from '@craftcms/ui/utilities/translate';
 
-/** A `craft-radio-group`; its `modelValue` is the checked radio's value. */
-type ChoiceGroup = HTMLElement & {modelValue: string};
+/** A `craft-radio-group`; its `value` is the checked radio's value. */
+type ChoiceGroup = HTMLElement & {value: string};
 
 /** A `craft-checkbox`. */
 type ApplyToRemainingCheckbox = HTMLElement & {checked: boolean; label: string};
@@ -157,10 +157,10 @@ export class PromptHandler extends Base {
     for (const choice of choices) {
       const radio = document.createElement('craft-radio') as HTMLElement & {
         label: string;
-        choiceValue: string;
+        value: string;
       };
       radio.label = choice.title;
-      radio.choiceValue = choice.value;
+      radio.value = choice.value;
       choiceGroup.append(radio);
     }
 
@@ -195,15 +195,12 @@ export class PromptHandler extends Base {
 
     dialog.append(body, cancelBtn, submitBtn);
 
-    this.addListener(choiceGroup, 'model-value-changed', () => {
-      submitBtn.disabled = !choiceGroup.modelValue;
+    this.addListener(choiceGroup, 'change', () => {
+      submitBtn.disabled = !choiceGroup.value;
     });
 
     this.addListener(submitBtn, 'click', () => {
-      this._selectPromptChoice(
-        choiceGroup.modelValue ?? '',
-        applyToRemaining.checked
-      );
+      this._selectPromptChoice(choiceGroup.value, applyToRemaining.checked);
     });
 
     this.addListener(cancelBtn, 'click', () => {

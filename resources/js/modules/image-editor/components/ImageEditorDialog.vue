@@ -573,7 +573,7 @@
                         <craft-radio
                           v-for="option in constraintOptions"
                           :key="option.key"
-                          .choiceValue="option.value"
+                          .value="option.value"
                           .checked="constraintKey === option.key"
                         >
                           <input

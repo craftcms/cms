@@ -80,7 +80,7 @@ it('moves the selection with the arrow keys', async () => {
   await userEvent.keyboard('{ArrowRight}');
   await settle();
   expect(document.activeElement).toBe(inputs[2]);
-  expect(group.modelValue).toBe('end');
+  expect(group.value).toBe('end');
 
   await userEvent.tab();
   expect(inputs).not.toContain(document.activeElement);
@@ -112,7 +112,7 @@ it('selects an option when its button is clicked', async () => {
   await parkPointer();
   await settle();
 
-  expect(group.modelValue).toBe('start');
+  expect(group.value).toBe('start');
 });
 
 it('joins the buttons, rounding only the outer corners', async () => {
@@ -313,7 +313,7 @@ it('lays wrapped cards out in the order the arrow keys follow', async () => {
   expect(document.activeElement).toBe(inputs[1]);
   await userEvent.keyboard('{ArrowRight}');
   await settle();
-  expect(group.modelValue).toBe('cards-grid');
+  expect(group.value).toBe('cards-grid');
 });
 
 it('selects an option when its illustration is clicked', async () => {
@@ -332,7 +332,7 @@ it('selects an option when its illustration is clicked', async () => {
   await parkPointer();
   await settle();
 
-  expect(group.modelValue).toBe('blocks');
+  expect(group.value).toBe('blocks');
 });
 
 it('draws the focus ring around the focused card', async () => {
