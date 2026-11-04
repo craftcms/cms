@@ -817,7 +817,16 @@ class Fields
             return new Collection;
         }
 
-        return $this->getAllLayouts()->filter(fn (FieldLayout $layout) => ComponentHelper::validateComponentClass($layout->type, ElementInterface::class) &&
+        // Only build the layouts whose stored config mentions the field
+        $layoutIds = [];
+        foreach ($this->_layouts()->raw() as $row) {
+            $config = $row->config ?? null;
+            if (str_contains(is_string($config) ? $config : JsonHelper::encode($config), $field->uid)) {
+                $layoutIds[] = $row->id;
+            }
+        }
+
+        return $this->_layouts()->whereIn('id', $layoutIds, true)->collect()->filter(fn (FieldLayout $layout) => ComponentHelper::validateComponentClass($layout->type, ElementInterface::class) &&
             $layout->isFieldIncluded(fn (BaseField $layoutField) => (
                 $layoutField instanceof CustomField &&
                 $layoutField->getFieldUid() === $field->uid
