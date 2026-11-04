@@ -104,7 +104,7 @@ readonly class Proposals
             }
 
             $layoutUid = (string) ($node->props['layoutUid'] ?? $node->uid);
-            $diff = FieldPreviews::diff($before, $after, $element, $element->getFieldLayout()?->getElementByUid($layoutUid));
+            $diff = FieldPreviews::diff($before, $after, [$element, $copy], $element->getFieldLayout()?->getElementByUid($layoutUid));
             $isText = $diff !== null;
             $preview = null;
 

@@ -103,7 +103,7 @@ readonly class FieldChangeComparisons
         [$fromPayload, $fromNode] = $from ? $this->compileField($from, $layoutElement, "{$namespace}From") : [null, null];
         $toValue = data_get($toPayload->values, $toNode->control->path ?? []);
         $fromValue = $fromPayload && $fromNode ? data_get($fromPayload->values, $fromNode->control->path ?? []) : null;
-        $diff = $fromNode ? FieldPreviews::diff($fromValue, $toValue, $to, $layoutElement) : null;
+        $diff = $fromNode ? FieldPreviews::diff($fromValue, $toValue, [$from, $to], $layoutElement) : null;
 
         return new FieldChangeComparison(
             fromLabel: $fromLabel,

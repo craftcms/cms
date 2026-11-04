@@ -161,10 +161,11 @@ readonly class FieldPreviews
      * changed. Other text with tags in it isn’t diffed either, as the activity timeline doesn’t list it. Two `null`s
      * aren’t diffed: fields that load their own values, such as Matrix fields shown as cards, have none in the form.
      *
-     * @param  ElementInterface  $element  An element with the field, to tell whether its values are HTML.
+     * @param  list<ElementInterface>  $elements  The versions compared, to tell whether the field’s values are HTML. A
+     *                                            cleared value can be `null`, so either version’s can tell.
      * @return array{current: string, proposed: string}|null
      */
-    public static function diff(mixed $before, mixed $after, ElementInterface $element, ?FieldLayoutElement $layoutElement): ?array
+    public static function diff(mixed $before, mixed $after, array $elements, ?FieldLayoutElement $layoutElement): ?array
     {
         $field = $layoutElement instanceof CustomField ? $layoutElement->getField() : null;
 
@@ -172,7 +173,11 @@ readonly class FieldPreviews
             return null;
         }
 
-        $html = $field !== null && $element->getFieldValue((string) $field->handle) instanceof Markup;
+        $handle = (string) $field?->handle;
+        $html = $field !== null && array_any($elements, fn (ElementInterface $element): bool => (
+            $element->getFieldLayout()?->getFieldByHandle($handle) !== null
+            && $element->getFieldValue($handle) instanceof Markup
+        ));
         $current = self::text($before, $html);
         $proposed = self::text($after, $html);
 
