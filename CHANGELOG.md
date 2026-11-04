@@ -160,6 +160,7 @@
 - The element details pane now spans the full viewport height once the page is scrolled, and the Activity panel’s timeline scrolls within the panel, keeping the comment form in view. ([#19919](https://github.com/craftcms/cms/pull/19919))
 - The “View all activity” and “View all revisions” links are now shown in their details panels’ headers. ([#19919](https://github.com/craftcms/cms/pull/19919))
 - The Activity panel now shows a change from one text to another as a word-level diff, rather than the text before and after.
+- The Activity panel now lists changes to rich text fields by their text, rather than leaving them out. ([#20307](https://github.com/craftcms/cms/pull/20307))
 - Comments can now be submitted with <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>Return</kbd> in the Activity and Workflow details panels. ([#19919](https://github.com/craftcms/cms/pull/19919))
 - Comment fields in the Activity and Workflow details panels now start one line high, keep the Comment button inside the field, and show how many characters a comment is over the limit. ([#19923](https://github.com/craftcms/cms/pull/19923))
 - Comments in the Activity and Workflow details panels are now more compact, with a background tinted by the gradient from their author’s default photo. The Activity panel’s change summaries are more compact too, and its comment field’s “Comment” button is now a round, icon-only button.
@@ -180,6 +181,7 @@
 - Removed `Craft.ElementEditor::createEditMetaAction()`, `showMetaModal()`, `createMetaModal()`, `checkMetaValues()`, `shakeMetaModal()`, `saveMeta()`, and `showFieldCopyModal()`, which were no longer reachable. Cross-site value copying is handled by the field’s own action menu. ([#20085](https://github.com/craftcms/cms/pull/20085))
 
 ### Drafts, Workflows, and Releases
+- Modified and outdated fields on drafts and revisions now have a “Compare changes” action, which shows how the field’s value differs from the current entry or the previous revision. ([#8135](https://github.com/craftcms/cms/discussions/8135), [#20307](https://github.com/craftcms/cms/pull/20307))
 - Workflow review stages now show their status in words beside a status dot, and a stage where a withdrawn review stopped now says “Withdrawn” rather than looking unstarted. ([#20258](https://github.com/craftcms/cms/pull/20258))
 - Workflow review notes can now be up to 10,000 characters long, matching activity comments. ([#19923](https://github.com/craftcms/cms/pull/19923))
 - The Workflow panel’s review action radio buttons and image transforms’ “Mode” radio buttons now look like the control panel’s other radio buttons.
@@ -722,6 +724,7 @@
 
 ### Bug Fixes
 - Fixed a bug where publishing an approved draft through a workflow marked all of the element’s fields as modified, on both the element and its new revision.
+- Fixed a bug where the edit buttons on read-only nested entry cards, such as on revisions, didn’t do anything. ([#20307](https://github.com/craftcms/cms/pull/20307))
 - Fixed a bug where keyboard shortcuts were shown with <kbd>Super</kbd> on Linux, rather than <kbd>Ctrl</kbd>.
 - Fixed a bug where fields on revisions were disabled, rather than read-only. ([#20297](https://github.com/craftcms/cms/pull/20297))
 - Fixed a bug where single-value checkbox selects unchecked “All” while their options loaded. ([#20109](https://github.com/craftcms/cms/pull/20109))
