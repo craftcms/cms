@@ -57,8 +57,25 @@ function closestComposed(el: Element, selector: string): HTMLElement | null {
   return null;
 }
 
+/**
+ * The button that opens `menu`: a slotted invoker, or one linked with `anchor`
+ * or `for`, which sits outside the menu.
+ */
 function invokerOf(menu: Element): HTMLElement | null {
-  return menu.querySelector<HTMLElement>(':scope > [slot="invoker"]');
+  const slotted = menu.querySelector<HTMLElement>(':scope > [slot="invoker"]');
+  if (slotted) {
+    return slotted;
+  }
+
+  const anchor = (menu as Element & {anchor?: unknown}).anchor;
+  if (anchor instanceof HTMLElement) {
+    return anchor;
+  }
+
+  const id = menu.getAttribute('for');
+  return id
+    ? (menu.getRootNode() as Document | ShadowRoot).getElementById(id)
+    : null;
 }
 
 /**

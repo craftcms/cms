@@ -97,6 +97,22 @@ describe('when focus moves', () => {
     expect(popover.opened).toBe(true);
   });
 
+  it('stays open when focus moves to another button that controls its content', async () => {
+    const popover = await openWith(`
+      <a href="#" id="anchor">Settings</a>
+      <button type="button" aria-controls="subnav">Show submenu</button>
+      <craft-popover for="anchor">
+        <div slot="content" id="subnav"><button type="button">Pick</button></div>
+      </craft-popover>
+    `);
+
+    page.getByRole('button', {name: 'Pick'}).element().focus();
+    page.getByRole('button', {name: 'Show submenu'}).element().focus();
+    await popover.updateComplete;
+
+    expect(popover.opened).toBe(true);
+  });
+
   it('stays open while focus is in a popover nested in its content', async () => {
     const outer = await openWith(`
       <craft-popover class="outer">

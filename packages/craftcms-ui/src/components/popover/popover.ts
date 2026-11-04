@@ -181,7 +181,9 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
    *
    * An invoker linked with `for` or `anchor` sits outside the popover, so it
    * counts as inside too: otherwise clicking it would close the popover and
-   * the same click would open it again. Focus moving to nothing, as when
+   * the same click would open it again. So does any other button whose
+   * `aria-controls` points into the content, such as a disclosure button kept
+   * apart from the positioning anchor. Focus moving to nothing, as when
    * someone clicks text in the panel, is left to Lion's outside click and
    * window blur. Focus stays where it went, since `#returnFocus` only acts
    * while focus is still in the content.
@@ -191,12 +193,31 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
       return;
     }
 
-    if (focusStaysWithin(event, this, this._overlayInvokerNode)) {
+    if (
+      focusStaysWithin(event, this, this._overlayInvokerNode) ||
+      this.#controlsContent(event.relatedTarget)
+    ) {
       return;
     }
 
     this.opened = false;
   };
+
+  /** Whether `node`'s `aria-controls` names an element in the popover. */
+  #controlsContent(node: Node): boolean {
+    if (!(node instanceof Element)) {
+      return false;
+    }
+
+    const root = node.getRootNode() as Document | ShadowRoot;
+    return (node.getAttribute('aria-controls') ?? '')
+      .split(/\s+/)
+      .filter(Boolean)
+      .some((id) => {
+        const controlled = root.getElementById(id);
+        return controlled !== null && this.contains(controlled);
+      });
+  }
 
   /**
    * Lion closes the popover on Escape's keyup, so its keydown would otherwise
