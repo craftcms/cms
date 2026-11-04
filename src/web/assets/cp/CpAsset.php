@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\config\GeneralConfig;
+use craft\elements\Entry;
 use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\helpers\Assets;
@@ -747,15 +748,26 @@ JS;
     private function _publishableSections(User $currentUser): array
     {
         $sections = [];
+        $requestedSiteId = Cp::requestedSite()?->id;
 
         foreach (Craft::$app->getEntries()->getEditableSections() as $section) {
             if ($section->type !== Section::TYPE_SINGLE && $currentUser->can("createEntries:$section->uid")) {
+                // Only include the sites where some entry types are available
+                $entryTypesBySite = array_filter(array_map(
+                    fn(int $siteId) => $this->_entryTypes($section, $siteId, $currentUser),
+                    array_combine($section->getSiteIds(), $section->getSiteIds()),
+                ));
+                if (empty($entryTypesBySite)) {
+                    continue;
+                }
+
                 $sections[] = [
-                    'entryTypes' => $this->_entryTypes($section),
+                    'entryTypes' => $entryTypesBySite[$requestedSiteId] ?? reset($entryTypesBySite),
+                    'entryTypesBySite' => $entryTypesBySite,
                     'handle' => $section->handle,
                     'id' => (int)$section->id,
                     'name' => Craft::t('site', $section->name),
-                    'sites' => $section->getSiteIds(),
+                    'sites' => array_keys($entryTypesBySite),
                     'type' => $section->type,
                     'uid' => $section->uid,
                     'canSave' => $currentUser->can("saveEntries:$section->uid"),
@@ -766,11 +778,20 @@ JS;
         return $sections;
     }
 
-    private function _entryTypes(Section $section): array
+    private function _entryTypes(Section $section, int $siteId, User $currentUser): array
     {
+        // Get the entry types the same way EntriesController::actionCreate() will
+        $entry = new Entry([
+            'sectionId' => $section->id,
+            'siteId' => $siteId,
+        ]);
+        if ($section->maxAuthors !== 0) {
+            $entry->setAuthorIds([$currentUser->id]);
+        }
+
         $types = [];
 
-        foreach ($section->getEntryTypes() as $type) {
+        foreach ($entry->getAvailableEntryTypes() as $type) {
             $types[] = [
                 'handle' => $type->handle,
                 'id' => (int)$type->id,
