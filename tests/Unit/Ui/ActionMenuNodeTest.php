@@ -55,6 +55,19 @@ it('converts menu-item configs into JSON-safe client descriptors', function () {
         ->and(json_encode($node->props()))->toBeString();
 });
 
+it('keeps the payload of grouped items stable across renders', function () {
+    $menuItems = [
+        ['type' => 'group', 'heading' => 'Settings', 'items' => [
+            ['label' => 'Field settings'],
+        ]],
+    ];
+
+    $items = ActionMenu::make('menu', $menuItems)->props()['items'];
+
+    expect($items[0]['items'][0]['label'])->toBe('Field settings')
+        ->and($items)->toBe(ActionMenu::make('menu', $menuItems)->props()['items']);
+});
+
 it('converts a string action into an http descriptor', function () {
     $items = ActionMenu::make('menu', [
         ['label' => 'Delete', 'action' => 'fields/delete', 'params' => ['id' => 3]],

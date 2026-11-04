@@ -53,12 +53,24 @@ class ActionMenu implements Node
         // path (where `ElementHtml` keys chip behavior off their prefixes).
         // Leaving them in `props()` would make the payload differ on every
         // render, which reads as a change to a refreshable UI.
-        foreach ($items as &$item) {
-            unset($item['id']);
-        }
-        unset($item);
+        return new self($uid, self::withoutIds($items));
+    }
 
-        return new self($uid, $items);
+    /**
+     * @param  list<array<string, mixed>>  $items
+     * @return list<array<string, mixed>>
+     */
+    private static function withoutIds(array $items): array
+    {
+        return array_map(function (array $item): array {
+            unset($item['id']);
+
+            if (isset($item['items'])) {
+                $item['items'] = self::withoutIds($item['items']);
+            }
+
+            return $item;
+        }, $items);
     }
 
     public static function renderHtml(NodePayload $node, UiPayload $payload, UiHtmlRenderer $renderer): string
