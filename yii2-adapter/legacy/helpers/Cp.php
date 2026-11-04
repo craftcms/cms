@@ -1082,7 +1082,7 @@ class Cp
     private static function flatAttributes(?DomElement $element): array
     {
         $attributes = [];
-        foreach ($element?->attributes ?? [] as $attribute) {
+        foreach ($element->attributes ?? [] as $attribute) {
             $attributes[$attribute->name] = $attribute->value;
         }
 
