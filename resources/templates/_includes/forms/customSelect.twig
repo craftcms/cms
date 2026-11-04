@@ -92,6 +92,10 @@
 {% if not disabled %}
   {% js %}
     (() => {
+      // jQuery comes with the Yii2 adapter
+      if (!window.jQuery) {
+        return;
+      }
       const $container = $('#{{ id|namespaceInputId }}');
       const $button = $('#{{ buttonId|namespaceInputId }}');
       const $buttonFlex = $button.find('.inline-flex:first');

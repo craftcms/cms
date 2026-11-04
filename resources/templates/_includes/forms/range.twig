@@ -69,18 +69,21 @@
 
 {% js %}
   (() =>{
-    const $rangeInput = $('#{{ id|namespaceInputId }}');
-    const $numInput = $('#{{ numberInputId|namespaceInputId }}');
+    const rangeInput = document.getElementById('{{ id|namespaceInputId }}');
+    const numInput = document.getElementById('{{ numberInputId|namespaceInputId }}');
+    if (!rangeInput || !numInput) {
+      return;
+    }
 
-    $rangeInput.on('input', () => {
-      $numInput.val($rangeInput.val());
+    rangeInput.addEventListener('input', () => {
+      numInput.value = rangeInput.value;
     });
-    $numInput.on('input', () => {
-      $rangeInput.val($numInput.val());
+    numInput.addEventListener('input', () => {
+      rangeInput.value = numInput.value;
     });
-    $numInput.on('blur', () => {
+    numInput.addEventListener('blur', () => {
       // update the number input in case the value was out of bounds
-      $numInput.val($rangeInput.val());
+      numInput.value = rangeInput.value;
     });
   })();
 {% endjs %}
