@@ -213,6 +213,7 @@ return [
     'Couldn’t generate alt text: {error}' => '无法生成替代文本：{error}',
     'Couldn’t load activity.' => '无法加载活动。',
     'Couldn’t load table data.' => '无法加载表格数据。',
+    'Couldn’t load this field.' => 'Couldn’t load this field.',
     'Couldn’t mark notifications as read.' => '无法将通知标记为已读。',
     'Couldn’t move the selected items.' => '无法移动所选项目。',
     'Couldn’t open the settings.' => '无法打开设置。',
