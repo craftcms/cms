@@ -18,11 +18,8 @@
   };
 
   export type PublishableSection = {
-    /**
-     * A nested resource collection, so it arrives wrapped as `{data: [...]}`
-     * rather than as the bare array it is on the server.
-     */
-    entryTypes: Array<EntryType> | {data: Array<EntryType>};
+    /** The entry types the user can create in each site, keyed by site ID. */
+    entryTypesBySite: Record<number, Array<EntryType>>;
     handle: string;
     id: number;
     name: string;
@@ -49,9 +46,7 @@
   const page = usePage();
 
   function entryTypesOf(section: PublishableSection): Array<EntryType> {
-    return Array.isArray(section.entryTypes)
-      ? section.entryTypes
-      : (section.entryTypes?.data ?? []);
+    return section.entryTypesBySite[site.value!.id] ?? [];
   }
 
   /** Sources can arrive grouped under headings; creation cares about both. */

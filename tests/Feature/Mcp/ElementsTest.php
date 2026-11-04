@@ -27,7 +27,7 @@ beforeEach(function (): void {
     ])->assertOk();
 });
 
-it('describes each element type through elements.schema and the element type resources', function (): void {
+it('describes each element type through elements_schema and the element type resources', function (): void {
     $types = McpRequest::send($this, 'resources/read', ['uri' => 'craft://element-types'])->json('result.contents.0.text');
     $assets = McpRequest::send($this, 'resources/read', ['uri' => 'craft://element-types/assets'])->json('result.contents.0.text');
     $asset = McpRequest::send($this, 'resources/read', ['uri' => 'craft://element-types/asset'])->json('result.contents.0.text');
@@ -39,10 +39,10 @@ it('describes each element type through elements.schema and the element type res
         ['type' => 'addresses', 'name' => 'Addresses', 'elementType' => Address::class, 'schema' => 'craft://element-types/addresses'],
     ])
         ->and(json_decode($assets, true))->not->toHaveKey('createAttributes')
-        ->and(json_decode($assets, true)['notes'][0])->toContain('assets.create')
+        ->and(json_decode($assets, true)['notes'][0])->toContain('assets_create')
         ->and($asset)->toBe($assets);
 
-    ($this->call)('elements.schema', ['type' => 'entries'])
+    ($this->call)('elements_schema', ['type' => 'entries'])
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.createAttributes.required', ['sectionId'])
         ->assertJsonPath('result.structuredContent.createAttributes.properties.slug.description', 'The entry’s slug.')
@@ -60,7 +60,7 @@ it('describes each element type through elements.schema and the element type res
         ->assertJsonPath('result.structuredContent.criteria.properties.ancestorOf.description', 'Narrows the query results to only entries that are ancestors of another entry in its structure, provided by its ID.')
         ->assertJsonPath('result.structuredContent.duplicateModes', ['unpublished', 'canonical']);
 
-    ($this->call)('elements.schema', ['type' => 'assets'])
+    ($this->call)('elements_schema', ['type' => 'assets'])
         ->assertJsonPath('result.isError', false)
         ->assertJsonMissingPath('result.structuredContent.criteria.properties.level')
         ->assertJsonMissingPath('result.structuredContent.criteria.properties.drafts')
@@ -72,37 +72,37 @@ it('rejects element tool inputs that the type does not accept', function (string
         ->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', fn (string $text): bool => str_contains($text, $message));
 })->with([
-    'unknown type' => ['elements.get', ['type' => 'widgets', 'id' => 1], 'Unsupported element type [widgets]. Supported types: entries, assets, users, addresses.'],
-    'criteria of the wrong type' => ['elements.list', ['type' => 'entries', 'criteria' => ['sectionId' => 'news']], 'Invalid criteria for entries: /sectionId:'],
-    'missing create attribute' => ['elements.create', ['type' => 'entries', 'attributes' => ['title' => 'No section']], 'Invalid attributes for entries:'],
-    'undeclared update attribute' => ['elements.update', ['type' => 'addresses', 'id' => 1, 'attributes' => ['id' => 2]], 'Invalid attributes for addresses: Additional object properties are not allowed: ["id"]'],
-    'context for a type with one layout' => ['elements.field-schema', ['type' => 'users', 'context' => ['sectionId' => 1]], 'Users do not accept a field-schema context.'],
-    'asset creation without a file' => ['elements.create', ['type' => 'assets', 'attributes' => ['title' => 'Logo']], 'Create assets with assets.create, which accepts the file to upload.'],
+    'unknown type' => ['elements_get', ['type' => 'widgets', 'id' => 1], 'Unsupported element type [widgets]. Supported types: entries, assets, users, addresses.'],
+    'criteria of the wrong type' => ['elements_list', ['type' => 'entries', 'criteria' => ['sectionId' => 'news']], 'Invalid criteria for entries: /sectionId:'],
+    'missing create attribute' => ['elements_create', ['type' => 'entries', 'attributes' => ['title' => 'No section']], 'Invalid attributes for entries:'],
+    'undeclared update attribute' => ['elements_update', ['type' => 'addresses', 'id' => 1, 'attributes' => ['id' => 2]], 'Invalid attributes for addresses: Additional object properties are not allowed: ["id"]'],
+    'context for a type with one layout' => ['elements_field_schema', ['type' => 'users', 'context' => ['sectionId' => 1]], 'Users do not accept a field-schema context.'],
+    'asset creation without a file' => ['elements_create', ['type' => 'assets', 'attributes' => ['title' => 'Logo']], 'Create assets with assets_create, which accepts the file to upload.'],
 ]);
 
 it('manages element types that plugins register with an adapter', function (): void {
     app(ElementTypes::class)->register(TestMcpPluginElement::class);
     app(ElementAdapterRegistry::class)->register(TestMcpPluginElementAdapter::class);
 
-    $created = ($this->call)('elements.create', ['type' => 'widgets', 'attributes' => ['title' => 'Sprocket']])
+    $created = ($this->call)('elements_create', ['type' => 'widgets', 'attributes' => ['title' => 'Sprocket']])
         ->assertJsonPath('result.isError', false)
         ->json('result.structuredContent.element');
 
-    ($this->call)('elements.update', ['type' => 'widgets', 'id' => $created['id'], 'attributes' => ['title' => 'Cog']])
+    ($this->call)('elements_update', ['type' => 'widgets', 'id' => $created['id'], 'attributes' => ['title' => 'Cog']])
         ->assertJsonPath('result.isError', false);
-    ($this->call)('elements.list', ['type' => 'widgets'])
+    ($this->call)('elements_list', ['type' => 'widgets'])
         ->assertJsonPath('result.structuredContent.count', 1)
         ->assertJsonPath('result.structuredContent.elements.0.id', $created['id']);
-    ($this->call)('elements.get', ['type' => 'widgets', 'id' => $created['id']])
+    ($this->call)('elements_get', ['type' => 'widgets', 'id' => $created['id']])
         ->assertJsonPath('result.structuredContent.element.title', 'Cog');
-    ($this->call)('elements.update', ['type' => 'widgets', 'id' => $created['id'], 'attributes' => ['slug' => 'cog']])
+    ($this->call)('elements_update', ['type' => 'widgets', 'id' => $created['id'], 'attributes' => ['slug' => 'cog']])
         ->assertJsonPath('result.isError', true)
-        ->assertJsonPath('result.content.0.text', 'Invalid attributes for widgets: Additional object properties are not allowed: ["slug"]. Call elements.schema for the accepted attributes.');
-    ($this->call)('elements.schema', ['type' => 'widgets'])
+        ->assertJsonPath('result.content.0.text', 'Invalid attributes for widgets: Additional object properties are not allowed: ["slug"]. Call elements_schema for the accepted attributes.');
+    ($this->call)('elements_schema', ['type' => 'widgets'])
         ->assertJsonPath('result.structuredContent.criteria.properties.level.anyOf.0.type', 'integer')
         ->assertJsonPath('result.structuredContent.attributes.properties.structureId.type', ['integer', 'null'])
         ->assertJsonMissingPath('result.structuredContent.criteria.properties.revisions');
-    ($this->call)('elements.delete', ['type' => 'widgets', 'id' => $created['id']])
+    ($this->call)('elements_delete', ['type' => 'widgets', 'id' => $created['id']])
         ->assertJsonPath('result.structuredContent.deleted', true);
 
     expect(TestMcpPluginElement::find()->id($created['id'])->exists())->toBeFalse();
@@ -184,10 +184,10 @@ it('explains when the edition’s user limit prevents creating users', function 
     Edition::set(Edition::Team);
     User::factory()->count(5 - User::query()->count())->create();
 
-    ($this->call)('elements.create', ['type' => 'users', 'attributes' => ['email' => 'new@example.com', 'username' => 'new']])
+    ($this->call)('elements_create', ['type' => 'users', 'attributes' => ['email' => 'new@example.com', 'username' => 'new']])
         ->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'This site has reached the Craft Team limit of 5 users. Upgrading to Craft Pro would allow more users.');
 
-    expect(McpRequest::send($this, 'tools/call', ['name' => 'info.get'])->json('result.structuredContent.instructions'))
-        ->toContain('- More than 5 users (Craft Pro): elements.create with type: users');
+    expect(McpRequest::send($this, 'tools/call', ['name' => 'info_get'])->json('result.structuredContent.instructions'))
+        ->toContain('- More than 5 users (Craft Pro): elements_create with type: users');
 });

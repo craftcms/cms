@@ -27,7 +27,7 @@ beforeEach(function (): void {
     app()->instance(Settings::class, new Settings([
         'publicEnabled' => true,
         'publicRoute' => '/_test/dual-protocol-mcp',
-        'publicTools' => ['craft-context-get'],
+        'publicTools' => ['craft_context_get'],
     ]));
     app()->forgetInstance(Access::class);
     app(RouteRegistrar::class)->register();
@@ -87,9 +87,9 @@ it('serves both HTTP protocols and persists handshake sessions until teardown', 
     $names = array_column($tools, 'name');
 
     if ($public) {
-        expect($names)->toBe(['craft-context-get']);
+        expect($names)->toBe(['craft_context_get']);
     } else {
-        expect($names)->toContain('elements.list')->not->toContain('elements.create', 'configuration.list');
+        expect($names)->toContain('elements_list')->not->toContain('elements_create', 'configuration_list');
     }
 
     mcpHttpRequest($this, $endpoint, 'POST', McpRequest::payload('tools/list'), McpRequest::headers('tools/list'))
@@ -132,7 +132,7 @@ it('isolates handshake sessions by endpoint, user, and scopes', function (string
 it('rechecks public approvals within an existing handshake session', function (): void {
     $endpoint = '/_test/dual-protocol-mcp';
     $headers = ['Mcp-Session-Id' => mcpHttpInitialize($this, $endpoint)];
-    $call = ['jsonrpc' => '2.0', 'id' => 2, 'method' => 'tools/call', 'params' => ['name' => 'craft-context-get']];
+    $call = ['jsonrpc' => '2.0', 'id' => 2, 'method' => 'tools/call', 'params' => ['name' => 'craft_context_get']];
 
     mcpHttpRequest($this, $endpoint, 'POST', $call, $headers)->assertOk()->assertJsonPath('result.isError', false);
 
@@ -140,7 +140,7 @@ it('rechecks public approvals within an existing handshake session', function ()
     app()->forgetInstance(Access::class);
 
     mcpHttpRequest($this, $endpoint, 'POST', $call, $headers)
-        ->assertOk()->assertJsonPath('error.message', 'Tool not found: "craft-context-get".');
+        ->assertOk()->assertJsonPath('error.message', 'Tool not found: "craft_context_get".');
 });
 
 it('keeps host checks and origin restrictions for both HTTP protocols', function (bool $modern): void {

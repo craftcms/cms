@@ -938,7 +938,6 @@ return [
     'Edit Skill' => 'Beceriyi Düzenle',
     'Edit “{name}”' => '“{name}” öğesini düzenle',
     'Enterprise Verified' => 'Enterprise Verified',
-    'External site' => 'Harici site',
     'deleted' => 'silindi',
     'failed the stage' => 'aşamayı başarısız kıldı',
     'Generate chat titles' => 'Sohbet başlıkları oluştur',

@@ -68,12 +68,12 @@ beforeEach(function (): void {
 });
 
 it('reviews and publishes a draft through MCP as distinct operations', function (): void {
-    ($this->callWorkflow)('workflows.review')
+    ($this->callWorkflow)('workflows_review')
         ->assertOk()
         ->assertJsonPath('result.structuredContent.review.status', 'notSubmitted')
         ->assertJsonPath('result.structuredContent.review.actions.canSubmit', true);
 
-    $submitted = ($this->callWorkflow)('workflows.submit', ['note' => 'Ready for review'])
+    $submitted = ($this->callWorkflow)('workflows_submit', ['note' => 'Ready for review'])
         ->assertOk()
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.review.status', 'pending')
@@ -81,14 +81,14 @@ it('reviews and publishes a draft through MCP as distinct operations', function 
         ->json('result.structuredContent.review');
     $target = ['runId' => $submitted['runId'], 'stageUid' => $submitted['stage']['uid']];
 
-    ($this->callWorkflow)('workflows.review', actor: $this->reviewer)
+    ($this->callWorkflow)('workflows_review', actor: $this->reviewer)
         ->assertOk()
         ->assertJsonPath('result.structuredContent.review.actions.canApprove', true)
         ->assertJsonPath('result.structuredContent.review.actions.canApply', false)
         ->assertJsonMissingPath('result.structuredContent.review.actionComponent');
-    ($this->callWorkflow)('drafts.apply')->assertJsonPath('result.isError', true);
+    ($this->callWorkflow)('drafts_apply')->assertJsonPath('result.isError', true);
 
-    ($this->callWorkflow)('workflows.approve', [...$target, 'message' => 'Approved copy'], $this->reviewer)
+    ($this->callWorkflow)('workflows_approve', [...$target, 'message' => 'Approved copy'], $this->reviewer)
         ->assertOk()
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.review.status', 'approved')
@@ -98,7 +98,7 @@ it('reviews and publishes a draft through MCP as distinct operations', function 
     expect(EntryElement::find()->id($this->entry->id)->siteId($this->entry->siteId)->status(null)->one()->title)->toBe('Canonical title')
         ->and(WorkflowRun::find($submitted['runId'])->payload[$target['stageUid']]['decisions'][0]['reviewerId'])->toBe($this->reviewer->id);
 
-    ($this->callWorkflow)('drafts.apply', ['workflowRunId' => $submitted['runId'], 'workflowCurrentStage' => $submitted['currentStage']])
+    ($this->callWorkflow)('drafts_apply', ['workflowRunId' => $submitted['runId'], 'workflowCurrentStage' => $submitted['currentStage']])
         ->assertOk()
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.element.title', 'Reviewed title');
@@ -113,7 +113,7 @@ it('saves enabled entries in a workflow section as drafts and suggests submittin
         ->assertOk()
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.savedAsDraft', true)
-        ->assertJsonPath('result.structuredContent.nextToolCall.name', 'workflows.submit')
+        ->assertJsonPath('result.structuredContent.nextToolCall.name', 'workflows_submit')
         ->json('result.structuredContent');
     $draft = EntryElement::find()->id($saved['element']['id'])->drafts()->status(null)->one();
 
@@ -128,56 +128,56 @@ it('saves enabled entries in a workflow section as drafts and suggests submittin
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.review.status', 'pending');
 })->with([
-    'new entry' => ['elements.create', fn ($test): array => ['type' => 'entries', 'attributes' => [
+    'new entry' => ['elements_create', fn ($test): array => ['type' => 'entries', 'attributes' => [
         'sectionId' => $test->section->id,
         'typeId' => $test->entry->typeId,
         'title' => 'Proposed entry',
         'enabled' => true,
     ]], true],
-    'new entry as unpublished draft' => ['elements.create', fn ($test): array => ['type' => 'entries', 'asUnpublishedDraft' => true, 'attributes' => [
+    'new entry as unpublished draft' => ['elements_create', fn ($test): array => ['type' => 'entries', 'asUnpublishedDraft' => true, 'attributes' => [
         'sectionId' => $test->section->id,
         'typeId' => $test->entry->typeId,
         'title' => 'Proposed entry',
         'enabled' => true,
     ]], true],
-    'existing entry' => ['elements.update', fn ($test): array => ['type' => 'entries', 'id' => $test->entry->id, 'attributes' => ['title' => 'Proposed title']], false],
+    'existing entry' => ['elements_update', fn ($test): array => ['type' => 'entries', 'id' => $test->entry->id, 'attributes' => ['title' => 'Proposed title']], false],
 ]);
 
 it('distinguishes re-review from restarting and rejects obsolete review targets', function (): void {
-    $submitted = ($this->callWorkflow)('workflows.submit')->json('result.structuredContent.review');
+    $submitted = ($this->callWorkflow)('workflows_submit')->json('result.structuredContent.review');
     $target = ['runId' => $submitted['runId'], 'stageUid' => $submitted['stage']['uid']];
 
-    ($this->callWorkflow)('workflows.requestChanges', [...$target, 'message' => 'Correct the heading'], $this->reviewer)
+    ($this->callWorkflow)('workflows_request_changes', [...$target, 'message' => 'Correct the heading'], $this->reviewer)
         ->assertOk()
         ->assertJsonPath('result.structuredContent.review.status', 'failed');
-    ($this->callWorkflow)('workflows.requestReview', $target, $this->reviewer)
+    ($this->callWorkflow)('workflows_request_review', $target, $this->reviewer)
         ->assertJsonPath('result.isError', true);
-    ($this->callWorkflow)('workflows.requestReview', $target)
+    ($this->callWorkflow)('workflows_request_review', $target)
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.review.runId', $submitted['runId'])
         ->assertJsonPath('result.structuredContent.review.status', 'pending');
 
-    $restarted = ($this->callWorkflow)('workflows.restart', ['runId' => $submitted['runId']])
+    $restarted = ($this->callWorkflow)('workflows_restart', ['runId' => $submitted['runId']])
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.review.runs.1.status', 'invalidated')
         ->json('result.structuredContent.review');
 
     expect($restarted['runId'])->not->toBe($submitted['runId']);
 
-    ($this->callWorkflow)('workflows.approve', $target, $this->reviewer)->assertJsonPath('result.isError', true);
-    ($this->callWorkflow)('workflows.restart', ['runId' => $submitted['runId']])->assertJsonPath('result.isError', true);
-    ($this->callWorkflow)('workflows.approve', ['runId' => $restarted['runId'], 'stageUid' => Str::uuid7()->toString()], $this->reviewer)->assertJsonPath('result.isError', true);
+    ($this->callWorkflow)('workflows_approve', $target, $this->reviewer)->assertJsonPath('result.isError', true);
+    ($this->callWorkflow)('workflows_restart', ['runId' => $submitted['runId']])->assertJsonPath('result.isError', true);
+    ($this->callWorkflow)('workflows_approve', ['runId' => $restarted['runId'], 'stageUid' => Str::uuid7()->toString()], $this->reviewer)->assertJsonPath('result.isError', true);
 
     expect(WorkflowRun::find($restarted['runId'])->status)->toBe(WorkflowStatus::Pending);
 });
 
 it('allows submission after rejection to create a new review run', function (): void {
-    $submitted = ($this->callWorkflow)('workflows.submit')->json('result.structuredContent.review');
-    ($this->callWorkflow)('workflows.requestChanges', [
+    $submitted = ($this->callWorkflow)('workflows_submit')->json('result.structuredContent.review');
+    ($this->callWorkflow)('workflows_request_changes', [
         'runId' => $submitted['runId'], 'stageUid' => $submitted['stage']['uid'], 'message' => 'Needs another pass',
     ], $this->reviewer)->assertJsonPath('result.isError', false);
 
-    $resubmitted = ($this->callWorkflow)('workflows.submit')
+    $resubmitted = ($this->callWorkflow)('workflows_submit')
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.review.status', 'pending')
         ->json('result.structuredContent.review');
@@ -187,44 +187,44 @@ it('allows submission after rejection to create a new review run', function (): 
 
 it('keeps workflow administration private while allowing draft-scoped review inspection', function (): void {
     Passport::actingAs($this->author, ['mcp:admin'], 'craft-mcp');
-    McpRequest::send($this, 'tools/call', ['name' => 'workflows.list'])
+    McpRequest::send($this, 'tools/call', ['name' => 'workflows_list'])
         ->assertOk()
         ->assertJsonPath('result.structuredContent.workflows.0.sections.0.id', $this->section->id)
         ->assertJsonPath('result.structuredContent.workflows.0.stages.0.settings.approvalsRequired', 1);
-    McpRequest::send($this, 'tools/call', ['name' => 'workflows.get', 'arguments' => ['uid' => $this->workflow->uid]])
+    McpRequest::send($this, 'tools/call', ['name' => 'workflows_get', 'arguments' => ['uid' => $this->workflow->uid]])
         ->assertOk()
         ->assertJsonPath('result.structuredContent.workflow.id', $this->workflow->id);
 
-    ($this->callWorkflow)('workflows.review', actor: $this->reviewer)
+    ($this->callWorkflow)('workflows_review', actor: $this->reviewer)
         ->assertOk()
         ->assertJsonPath('result.structuredContent.review.workflow.id', $this->workflow->id)
         ->assertJsonMissingPath('result.structuredContent.review.workflow.stages.0.settings');
-    McpRequest::send($this, 'tools/call', ['name' => 'workflows.get', 'arguments' => ['id' => $this->workflow->id]])
+    McpRequest::send($this, 'tools/call', ['name' => 'workflows_get', 'arguments' => ['id' => $this->workflow->id]])
         ->assertBadRequest()
         ->assertJsonPath('error.code', -32602);
-    McpRequest::send($this, 'tools/call', ['name' => 'workflows.list'])
+    McpRequest::send($this, 'tools/call', ['name' => 'workflows_list'])
         ->assertBadRequest()
         ->assertJsonPath('error.code', -32602);
 
     app(UserPermissions::class)->saveUserPermissions($this->reviewer->id, ['accessCp']);
-    ($this->callWorkflow)('workflows.review', actor: $this->reviewer)->assertJsonPath('result.isError', true);
+    ($this->callWorkflow)('workflows_review', actor: $this->reviewer)->assertJsonPath('result.isError', true);
 });
 
 it('does not treat an author or an unrelated admin as an eligible reviewer', function (string $actor): void {
-    $submitted = ($this->callWorkflow)('workflows.submit')->json('result.structuredContent.review');
+    $submitted = ($this->callWorkflow)('workflows_submit')->json('result.structuredContent.review');
     $user = $actor === 'author' ? $this->author : User::factory()->admin()->create();
 
-    ($this->callWorkflow)('workflows.approve', ['runId' => $submitted['runId'], 'stageUid' => $submitted['stage']['uid']], $user)
+    ($this->callWorkflow)('workflows_approve', ['runId' => $submitted['runId'], 'stageUid' => $submitted['stage']['uid']], $user)
         ->assertJsonPath('result.isError', true);
 
     expect(WorkflowRun::find($submitted['runId'])->status)->toBe(WorkflowStatus::Pending);
 })->with(['author', 'unrelated admin']);
 
 it('cannot use a readable draft to review another draft’s run', function (): void {
-    $submitted = ($this->callWorkflow)('workflows.submit')->json('result.structuredContent.review');
+    $submitted = ($this->callWorkflow)('workflows_submit')->json('result.structuredContent.review');
     $other = app(Drafts::class)->createDraft($this->entry, $this->author->id, name: 'Another draft');
 
-    ($this->callWorkflow)('workflows.approve', [
+    ($this->callWorkflow)('workflows_approve', [
         'id' => $other->id, 'runId' => $submitted['runId'], 'stageUid' => $submitted['stage']['uid'],
     ], $this->reviewer)->assertJsonPath('result.isError', true);
 
@@ -232,8 +232,8 @@ it('cannot use a readable draft to review another draft’s run', function (): v
 });
 
 it('rejects empty change requests', function (): void {
-    $submitted = ($this->callWorkflow)('workflows.submit')->json('result.structuredContent.review');
-    ($this->callWorkflow)('workflows.requestChanges', [
+    $submitted = ($this->callWorkflow)('workflows_submit')->json('result.structuredContent.review');
+    ($this->callWorkflow)('workflows_request_changes', [
         'runId' => $submitted['runId'], 'stageUid' => $submitted['stage']['uid'], 'message' => '   ',
     ], $this->reviewer)
         ->assertJsonPath('result.isError', true)
@@ -243,7 +243,7 @@ it('rejects empty change requests', function (): void {
 });
 
 it('rejects an overlong submission note before creating a review run', function (): void {
-    ($this->callWorkflow)('workflows.submit', ['note' => str_repeat('é', 5001)])
+    ($this->callWorkflow)('workflows_submit', ['note' => str_repeat('é', 5001)])
         ->assertBadRequest()
         ->assertJsonPath('error.code', -32602)
         ->assertJsonPath('error.data.validation_errors.0.pointer', '/note');
@@ -252,8 +252,8 @@ it('rejects an overlong submission note before creating a review run', function 
 });
 
 it('rejects an overlong approval note without approving the review', function (): void {
-    $submitted = ($this->callWorkflow)('workflows.submit')->json('result.structuredContent.review');
-    ($this->callWorkflow)('workflows.approve', [
+    $submitted = ($this->callWorkflow)('workflows_submit')->json('result.structuredContent.review');
+    ($this->callWorkflow)('workflows_approve', [
         'runId' => $submitted['runId'], 'stageUid' => $submitted['stage']['uid'], 'message' => str_repeat('é', 5001),
     ], $this->reviewer)
         ->assertBadRequest()
@@ -269,7 +269,7 @@ it('inspects custom stages without exposing settings or pretending they accept u
         'uid' => Str::uuid7()->toString(), 'name' => 'External review', 'type' => McpExternalReviewStage::class,
         'settings' => ['apiKey' => 'private-plugin-credential'],
     ]]]);
-    $submitted = ($this->callWorkflow)('workflows.submit')
+    $submitted = ($this->callWorkflow)('workflows_submit')
         ->assertJsonPath('result.structuredContent.review.stage.type', McpExternalReviewStage::class)
         ->assertJsonPath('result.structuredContent.review.actions.canApprove', false)
         ->assertJsonMissingPath('result.structuredContent.review.workflow.stages.0.settings')
@@ -277,23 +277,23 @@ it('inspects custom stages without exposing settings or pretending they accept u
         ->assertDontSee('private-plugin-credential', escape: false)
         ->json('result.structuredContent.review');
 
-    ($this->callWorkflow)('workflows.approve', ['runId' => $submitted['runId'], 'stageUid' => $submitted['stage']['uid']], $this->reviewer)
+    ($this->callWorkflow)('workflows_approve', ['runId' => $submitted['runId'], 'stageUid' => $submitted['stage']['uid']], $this->reviewer)
         ->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'The current workflow stage does not accept user reviews.');
 });
 
 it('requires edit permission and resets approval when MCP changes the existing draft', function (): void {
-    $submitted = ($this->callWorkflow)('workflows.submit')->json('result.structuredContent.review');
-    ($this->callWorkflow)('workflows.approve', [
+    $submitted = ($this->callWorkflow)('workflows_submit')->json('result.structuredContent.review');
+    ($this->callWorkflow)('workflows_approve', [
         'runId' => $submitted['runId'], 'stageUid' => $submitted['stage']['uid'],
     ], $this->reviewer)->assertJsonPath('result.structuredContent.review.status', 'approved');
     Passport::actingAs($this->reviewer, ['mcp:admin'], 'craft-mcp');
     McpRequest::send($this, 'tools/call', [
-        'name' => 'drafts.get', 'arguments' => ['draftId' => $this->draft->draftId],
+        'name' => 'drafts_get', 'arguments' => ['draftId' => $this->draft->draftId],
     ])->assertOk()->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.draft.title', 'Reviewed title');
     McpRequest::send($this, 'tools/call', [
-        'name' => 'drafts.update',
+        'name' => 'drafts_update',
         'arguments' => ['draftId' => $this->draft->draftId, 'attributes' => ['title' => 'Unauthorized edit']],
     ])->assertOk()->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'You are not authorized to save this entry.');
@@ -304,12 +304,12 @@ it('requires edit permission and resets approval when MCP changes the existing d
     Passport::actingAs($this->author, ['mcp:admin'], 'craft-mcp');
 
     McpRequest::send($this, 'tools/call', [
-        'name' => 'drafts.update',
+        'name' => 'drafts_update',
         'arguments' => ['draftId' => $this->draft->draftId, 'attributes' => ['title' => 'Unreviewed edit']],
     ])->assertOk()->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.draft.id', $this->draft->id);
 
-    ($this->callWorkflow)('drafts.apply')->assertJsonPath('result.isError', true);
+    ($this->callWorkflow)('drafts_apply')->assertJsonPath('result.isError', true);
     expect(WorkflowRun::find($submitted['runId'])->status)->not->toBe(WorkflowStatus::Approved)
         ->and(EntryElement::find()->draftId($this->draft->draftId)->status(null)->one()->title)->toBe('Unreviewed edit')
         ->and(EntryElement::find()->draftOf($this->entry->id)->status(null)->count())->toBe(1)
@@ -317,32 +317,32 @@ it('requires edit permission and resets approval when MCP changes the existing d
 });
 
 it('rejects stale approvals on draft application without changing the canonical entry', function (): void {
-    $submitted = ($this->callWorkflow)('workflows.submit')->json('result.structuredContent.review');
-    $restarted = ($this->callWorkflow)('workflows.restart', ['runId' => $submitted['runId']])->json('result.structuredContent.review');
-    ($this->callWorkflow)('workflows.approve', ['runId' => $restarted['runId'], 'stageUid' => $restarted['stage']['uid']], $this->reviewer)
+    $submitted = ($this->callWorkflow)('workflows_submit')->json('result.structuredContent.review');
+    $restarted = ($this->callWorkflow)('workflows_restart', ['runId' => $submitted['runId']])->json('result.structuredContent.review');
+    ($this->callWorkflow)('workflows_approve', ['runId' => $restarted['runId'], 'stageUid' => $restarted['stage']['uid']], $this->reviewer)
         ->assertJsonPath('result.isError', false);
 
-    ($this->callWorkflow)('drafts.apply', ['workflowRunId' => $submitted['runId'], 'workflowCurrentStage' => $submitted['currentStage']])
+    ($this->callWorkflow)('drafts_apply', ['workflowRunId' => $submitted['runId'], 'workflowCurrentStage' => $submitted['currentStage']])
         ->assertJsonPath('result.isError', true);
-    ($this->callWorkflow)('drafts.apply', ['workflowRunId' => $restarted['runId'], 'workflowCurrentStage' => $restarted['currentStage'] + 1])
+    ($this->callWorkflow)('drafts_apply', ['workflowRunId' => $restarted['runId'], 'workflowCurrentStage' => $restarted['currentStage'] + 1])
         ->assertJsonPath('result.isError', true);
-    ($this->callWorkflow)('drafts.apply', ['workflowRunId' => $restarted['runId']])
+    ($this->callWorkflow)('drafts_apply', ['workflowRunId' => $restarted['runId']])
         ->assertJsonPath('result.isError', true);
 
     expect(WorkflowRun::find($restarted['runId'])->status)->toBe(WorkflowStatus::Approved)
         ->and(EntryElement::find()->id($this->entry->id)->siteId($this->entry->siteId)->status(null)->one()->title)->toBe('Canonical title');
 
-    ($this->callWorkflow)('drafts.apply')
+    ($this->callWorkflow)('drafts_apply')
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.element.title', 'Reviewed title');
 });
 
 it('does not discard an expected approval when the draft no longer requires review', function (): void {
-    $submitted = ($this->callWorkflow)('workflows.submit')->json('result.structuredContent.review');
+    $submitted = ($this->callWorkflow)('workflows_submit')->json('result.structuredContent.review');
     Section::query()->whereKey($this->section->id)->update(['workflowId' => null]);
     Sections::refreshSections();
 
-    ($this->callWorkflow)('drafts.apply', ['workflowRunId' => $submitted['runId'], 'workflowCurrentStage' => $submitted['currentStage']])
+    ($this->callWorkflow)('drafts_apply', ['workflowRunId' => $submitted['runId'], 'workflowCurrentStage' => $submitted['currentStage']])
         ->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'This draft no longer requires workflow approval. Refresh and try again.');
 

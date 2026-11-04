@@ -1,7 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/ui';
-  import '@craftcms/ui/components/text-diff/text-diff';
-  import ActivityTimelineChangeValue from './ActivityTimelineChangeValue.vue';
+  import ChangeComparison from '@/modules/ui/ChangeComparison.vue';
   import type {ActivityChange} from '@/modules/activity/composables/useActivityTimeline';
 
   defineProps<{
@@ -9,18 +7,18 @@
   }>();
 
   /**
-   * Whether a change is from one text to another, shown as a word diff. Any
-   * other change shows its values before and after.
+   * A change from one text to another, shown as a word diff. Any other change
+   * shows its values before and after.
    */
-  function isTextChange(
+  function diff(
     change: ActivityChange
-  ): change is ActivityChange & {old: string; new: string} {
-    return (
-      typeof change.old === 'string' &&
+  ): {current: string; proposed: string} | null {
+    return typeof change.old === 'string' &&
       typeof change.new === 'string' &&
       change.old !== '' &&
       change.new !== ''
-    );
+      ? {current: change.old, proposed: change.new}
+      : null;
   }
 </script>
 
@@ -34,22 +32,12 @@
       <strong class="activity-timeline__change-label">
         {{ change.label }}
       </strong>
-      <craft-text-diff
-        v-if="isTextChange(change)"
-        :current="change.old"
-        :proposed="change.new"
-        class="activity-timeline__change-diff"
-      ></craft-text-diff>
-      <dl v-else class="activity-timeline__change-comparison">
-        <div>
-          <dt>{{ t('Before') }}</dt>
-          <dd><ActivityTimelineChangeValue :value="change.old" /></dd>
-        </div>
-        <div>
-          <dt>{{ t('After') }}</dt>
-          <dd><ActivityTimelineChangeValue :value="change.new" /></dd>
-        </div>
-      </dl>
+      <ChangeComparison
+        :diff="diff(change)"
+        :from="{value: change.old}"
+        :to="{value: change.new}"
+        class="activity-timeline__change-values"
+      />
     </li>
   </ul>
 </template>
@@ -71,39 +59,13 @@
     border-block-start: 0;
   }
 
-  .activity-timeline__change-label,
-  .activity-timeline__change-comparison dd {
-    overflow-wrap: anywhere;
-  }
-
-  .activity-timeline__change-diff {
-    margin-block-start: var(--c-spacing-xs);
-  }
-
   .activity-timeline__change-label {
+    overflow-wrap: anywhere;
     font-weight: var(--font-weight-semibold);
   }
 
-  .activity-timeline__change-comparison {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--c-spacing-sm);
-    margin-block: var(--c-spacing-xs) 0;
-  }
-
-  .activity-timeline__change-comparison div {
-    min-width: 0;
-  }
-
-  .activity-timeline__change-comparison dt {
-    color: var(--c-text-quiet);
-    font-size: var(--c-text-xs);
-    font-weight: 600;
-  }
-
-  .activity-timeline__change-comparison dd {
-    margin-block: var(--c-spacing-xs) 0;
-    margin-inline: 0;
+  .activity-timeline__change-values {
+    margin-block-start: var(--c-spacing-xs);
   }
 
   @container (min-width: 32rem) {
@@ -113,8 +75,7 @@
       gap: var(--c-spacing-md);
     }
 
-    .activity-timeline__change-comparison,
-    .activity-timeline__change-diff {
+    .activity-timeline__change-values {
       margin-block-start: 0;
     }
   }

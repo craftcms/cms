@@ -13,7 +13,7 @@ it('manages fields through MCP while preserving omitted attributes and merging s
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     $call = fn (string $operation, array $arguments) => McpRequest::send($this, 'tools/call', [
-        'name' => "configuration.$operation",
+        'name' => "configuration_$operation",
         'arguments' => ['type' => 'fields', ...$arguments],
     ])->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent');
 

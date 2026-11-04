@@ -56,8 +56,8 @@ readonly class AssetTransformers
     }
 
     /**
-     * @param  string  $driver  A driver handle from component-types.list with kind: asset-transform-driver.
-     * @param  array<string, mixed>  $settings  Settings matching component-types.get for the driver. Settings the driver doesn’t define are dropped.
+     * @param  string  $driver  A driver handle from component_types_list with kind: asset-transform-driver.
+     * @param  array<string, mixed>  $settings  Settings matching component_types_get for the driver. Settings the driver doesn’t define are dropped.
      * @return array{transformer: array<string, mixed>}
      */
     #[RequiresAdminChanges]
@@ -80,7 +80,7 @@ readonly class AssetTransformers
     /**
      * @param  string|null  $currentHandle  Existing asset transformer handle.
      * @param  string|null  $handle  New asset transformer handle.
-     * @param  string|null  $driver  A driver handle from component-types.list with kind: asset-transform-driver. Changing it clears settings that aren’t supplied.
+     * @param  string|null  $driver  A driver handle from component_types_list with kind: asset-transform-driver. Changing it clears settings that aren’t supplied.
      * @param  array<string, mixed>|null  $settings  Driver settings, replacing the current settings. Settings the driver doesn’t define are dropped. Redacted values keep their saved value.
      * @return array{transformer: array<string, mixed>}
      */

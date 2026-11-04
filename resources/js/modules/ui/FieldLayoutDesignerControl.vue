@@ -6,6 +6,7 @@
   import {inputName} from './runtime';
   import {registerOutlets} from './outlets';
   import {useServerRenderedControl} from './useServerRenderedControl';
+  import ServerRenderedControlFrame from './ServerRenderedControlFrame.vue';
 
   type FieldLayoutDesignerProps = {
     elementType: string;
@@ -23,7 +24,7 @@
   const emit = defineEmits<{
     (event: 'update:value', value: UiValues, kind: 'discrete'): void;
   }>();
-  const {host, html} = useServerRenderedControl({
+  const {host, html, status, retry} = useServerRenderedControl({
     value: () => props.value,
     dependencies: [() => props.control.props, () => props.editable],
     async render() {
@@ -127,7 +128,14 @@
 </script>
 
 <template>
-  <div ref="host">
-    <DynamicHtmlRenderer :html="html" />
-  </div>
+  <ServerRenderedControlFrame
+    :status="status"
+    :has-html="Boolean(html)"
+    block-size="24rem"
+    @retry="retry"
+  >
+    <div ref="host">
+      <DynamicHtmlRenderer :html="html" />
+    </div>
+  </ServerRenderedControlFrame>
 </template>
