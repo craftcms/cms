@@ -131,7 +131,7 @@ readonly class MenuHtml
         $contentHtml = trim($labelHtml.$buttonLabelHtml);
         $iconOnly = $contentHtml === '' || ($labelHtml === '' && str_contains($buttonLabelHtml, 'craft-icon'));
 
-        $ariaLabel = $config['hiddenLabel'];
+        $ariaLabel = $config['hiddenLabel'] ?? ($iconOnly ? t('Actions') : null);
 
         if ($contentHtml === '') {
             $contentHtml = Html::tag('craft-icon', '', ['name' => 'ellipsis']);

@@ -469,7 +469,7 @@ class ActionMenu extends ViewComponent
 
     /**
      * Renders a menu item's slotted content: its label (or raw `html`), plus
-     * optional secondary lines for its `handle` and `description` — the same
+     * optional secondary lines for its `handle`, `description` and `info` — the same
      * `menu-item-description` markup `_includes/menuitem.twig` uses.
      *
      * @param  array<string, mixed>  $item
@@ -500,16 +500,21 @@ class ActionMenu extends ViewComponent
             ]);
         }
 
-        $infoHtml = isset($item['info'])
-            ? Html::tag('craft-info-icon', app(ContentHtml::class)->parseMarkdown(Html::encode($item['info'])))
-            : '';
+        if (isset($item['info'])) {
+            // Plain text, since the item is a button: an info icon or a link
+            // in it would nest one control inside another
+            $infoText = trim(strip_tags(app(ContentHtml::class)->parseMarkdown(Html::encode($item['info']))));
+            $secondaryHtml .= Html::tag('span', $infoText, [
+                'class' => ['menu-item-description', 'mt-2xs', 'text-xs', 'text-quiet'],
+            ]);
+        }
 
         if ($secondaryHtml === '') {
-            return $labelHtml.$infoHtml;
+            return $labelHtml;
         }
 
         return Html::tag('span', $labelHtml.$secondaryHtml, [
             'class' => ['inline-flex', 'flex-col', 'items-start', 'gap-2xs'],
-        ]).$infoHtml;
+        ]);
     }
 }
