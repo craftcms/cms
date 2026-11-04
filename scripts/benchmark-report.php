@@ -11,14 +11,13 @@ declare(strict_types=1);
  * baseline by more than the limit in its `#[Bench\Assert]` attribute.
  */
 
-use Illuminate\Support\Facades\Request;
 use PhpBench\Attributes\Assert;
 use PhpBench\Model\Variant;
 use PhpBench\Serializer\XmlDecoder;
 
 require dirname(__DIR__).'/vendor/autoload.php';
 
-[, $resultsFile, $baselineFile] = Request::server('argv') + [2 => null];
+[, $resultsFile, $baselineFile] = $argv + [2 => null];
 
 /**
  * @return array<string, Variant> Variants keyed by benchmark, subject and parameter set
