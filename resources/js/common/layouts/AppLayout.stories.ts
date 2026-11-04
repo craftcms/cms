@@ -306,7 +306,7 @@ export const AllExtensionPointsInContext: Story = {
         </template>
 
         <template #error-summary>
-          <craft-callout data-color="error" title="Couldn't save entry">
+          <craft-callout variant="danger" label="Couldn't save entry">
             <ul>
               <li>Slug is already in use by another entry.</li>
             </ul>

@@ -1,10 +1,34 @@
 import {beforeEach, expect, it} from 'vite-plus/test';
+import {page} from 'vite-plus/test/browser';
 import './callout.js';
 import '../button/button.js';
 import type CraftCallout from './callout.js';
 
 beforeEach(() => {
   document.body.innerHTML = '';
+});
+
+it('shows its label as the title, with no native tooltip to repeat it', async () => {
+  document.body.innerHTML = `
+    <craft-callout label="Heads up">Your draft was withdrawn.</craft-callout>
+  `;
+  const callout = document.querySelector<CraftCallout>('craft-callout')!;
+  await callout.updateComplete;
+
+  await expect.element(page.getByText('Heads up')).toBeVisible();
+  expect(callout.hasAttribute('title')).toBe(false);
+  expect(callout.title).toBe('');
+});
+
+it('shows its title as bold text, not a heading', async () => {
+  document.body.innerHTML = `
+    <craft-callout label="Heads up">Your draft was withdrawn.</craft-callout>
+  `;
+  const callout = document.querySelector<CraftCallout>('craft-callout')!;
+  await callout.updateComplete;
+
+  await expect.element(page.getByText('Heads up')).toBeVisible();
+  await expect.element(page.getByRole('heading')).not.toBeInTheDocument();
 });
 
 function firstLineCenter(node: Node): number {
@@ -33,7 +57,7 @@ it.each([
   ],
   [
     'a title',
-    `<craft-callout icon="info" title="Heads up" style="inline-size: 12rem">
+    `<craft-callout icon="info" label="Heads up" style="inline-size: 12rem">
       This draft was withdrawn from review. Resubmit it when your edits are
       ready.
     </craft-callout>`,

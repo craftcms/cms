@@ -24,7 +24,7 @@ import {
  *
  * @slot - The callout's body content.
  * @slot title - Title content, shown above the body. Takes precedence over the
- *   `title` attribute, which is the shorthand for the same region.
+ *   `label` attribute, which is the shorthand for the same region.
  * @slot icon - Leading artwork, replacing the icon the variant would supply.
  *   Slotted content is honored even when no icon name resolves, and is
  *   suppressed entirely by `hide-icon`.
@@ -88,8 +88,12 @@ export default class CraftCallout extends Paddable(LitElement, {
   /**
    * Title text, shown above the body. A shorthand for the `title` slot; slot
    * it instead when the title needs markup.
+   *
+   * Named `label` rather than `title` on purpose, as on `craft-pane`: `title`
+   * is a global HTML attribute, so it would paint a native browser tooltip
+   * over the whole callout and be announced in addition to the visible title.
    */
-  @property() override title: string = '';
+  @property() label: string = '';
 
   /**
    * Name of the icon to show, replacing the one the variant would supply.
@@ -158,7 +162,7 @@ export default class CraftCallout extends Paddable(LitElement, {
   }
 
   protected override render(): unknown {
-    const hasTitle = this.title || hasSlotted(this, 'title');
+    const hasTitle = this.label || hasSlotted(this, 'title');
     // A slotted icon counts even when there's no name to resolve — it's the
     // consumer bringing their own artwork.
     const hasIcon =
@@ -189,7 +193,7 @@ export default class CraftCallout extends Paddable(LitElement, {
           <div class="callout__text">
             ${hasTitle
               ? html`<div class="callout__title">
-                  <slot name="title">${this.title}</slot>
+                  <slot name="title">${this.label}</slot>
                 </div>`
               : nothing}
 
