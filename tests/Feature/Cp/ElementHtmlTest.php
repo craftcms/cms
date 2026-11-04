@@ -350,6 +350,81 @@ describe('elementCardHtml', function () {
 
         expect($html)->toBe('<div>overridden-card</div>');
     });
+
+    it('lets ElementCardHtmlResolving listeners change the parts of both card renderers', function () {
+        $user = User::findOne(1);
+
+        Event::listen(function (ElementCardHtmlResolving $event) {
+            $event->parts->attributes['class'][] = 'listener-class';
+            $event->parts->contentHtml .= '<p>listener-content</p>';
+        });
+
+        $html = $this->elementHtml->elementCardHtml($user);
+        $data = $this->elementHtml->elementCardData($user);
+
+        expect($html)->toContain('listener-class')
+            ->and($html)->toContain('<p>listener-content</p>')
+            ->and($data['cardAttributes']['class'])->toContain('listener-class')
+            ->and($data['cardContentHtml'])->toContain('<p>listener-content</p>');
+    });
+
+    it('passes the same parts for both card renderers', function () {
+        $user = User::findOne(1);
+        $parts = [];
+
+        Event::listen(function (ElementCardHtmlResolving $event) use (&$parts) {
+            $parts[] = $event->parts;
+        });
+
+        $html = $this->elementHtml->elementCardHtml($user, ['id' => 'card-fixed']);
+        $data = $this->elementHtml->elementCardData($user, ['id' => 'card-fixed']);
+
+        expect($parts)->toHaveCount(2)
+            ->and($html)->toBe($this->elementHtml->elementCardPartsHtml($parts[0]))
+            ->and($data['cardHeaderHtml'])->toBe($parts[0]->headerHtml)
+            ->and($data['cardContentHtml'])->toBe('<div class="card-main">'.$parts[0]->contentHtml.'</div>');
+    });
+
+    it('splits a card HTML override back into parts for card data', function () {
+        $user = User::findOne(1);
+        $config = [
+            'id' => 'card-fixed',
+            'context' => 'field',
+            'inputName' => 'myFieldName[]',
+            'attributes' => ['class' => ['override-card']],
+        ];
+        $expected = $this->elementHtml->elementCardData($user, $config);
+
+        Event::listen(function (ElementCardHtmlResolving $event) {
+            $html = app(ElementHtml::class)->elementCardPartsHtml($event->parts);
+            $html = str_replace('class="card-content"', 'class="card-content override-content"', $html);
+            $event->html = str_replace('</craft-card>', '<input type="hidden" name="override">'.'</craft-card>', $html);
+        });
+
+        $data = $this->elementHtml->elementCardData($user, $config);
+
+        expect($data['cardAttributes']['class'])->toContain('override-card')
+            ->and($data['cardHeaderHtml'])->toBe($expected['cardHeaderHtml'])
+            ->and($data['cardThumbHtml'])->toContain('<svg')
+            ->and($data['cardContentHtml'])->toStartWith('<div class="card-main"><div class="card-content override-content">')
+            ->and($data['cardFooterHtml'])->toContain('name="myFieldName[]"')
+            ->and($data['cardFooterHtml'])->toContain('name="override"');
+    });
+
+    it('uses a card HTML override that isn’t a card as the card data’s content', function () {
+        $user = User::findOne(1);
+
+        Event::listen(function (ElementCardHtmlResolving $event) {
+            $event->html = '<div>overridden-card</div>';
+        });
+
+        $data = $this->elementHtml->elementCardData($user, ['attributes' => ['class' => ['kept-card']]]);
+
+        expect($data['cardAttributes']['class'])->toContain('kept-card')
+            ->and($data['cardHeaderHtml'])->toBe('')
+            ->and($data['cardActionsHtml'])->toBe('')
+            ->and($data['cardContentHtml'])->toBe('<div class="card-main"><div>overridden-card</div></div>');
+    });
 });
 
 class ElementHtmlTestElement extends Element

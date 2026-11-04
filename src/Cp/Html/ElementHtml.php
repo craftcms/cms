@@ -18,6 +18,7 @@ use CraftCms\Cms\Component\Contracts\Thumbable;
 use CraftCms\Cms\Cp\Components\ActionMenu;
 use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Components\Icon;
+use CraftCms\Cms\Cp\Data\ElementCardParts;
 use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\Enums\ButtonVariant;
 use CraftCms\Cms\Cp\Enums\ChipThumbSize;
@@ -43,6 +44,8 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
+use Dom\Element as DomElement;
+use Dom\HTMLDocument;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
@@ -419,17 +422,34 @@ readonly class ElementHtml
     {
         $config = $this->normalizeCardConfig($element, $config);
 
-        $attributes = $this->cardAttributes($element, $config);
+        [$showEditButton, $editAction] = $this->cardEditButtonConfig($element, $config);
 
-        $html = Html::beginTag('craft-card', $attributes).
-            $this->elementCardHeaderHtml($element, $config).
-            $this->elementCardContentHtml($element, $config).
-            $this->elementCardFooterHtml($element, $config).
-            Html::endTag('craft-card'); // .card
+        $parts = new ElementCardParts(
+            attributes: $this->cardAttributes($element, $config),
+            headerHtml: $this->elementCardLabelHtml($element, $config),
+            actionsHtml: ($config['selectable'] ? $this->componentCheckboxHtml(sprintf('%s-label', $config['id'])) : '').
+                $this->cardActionsHtml($element, $config, $showEditButton, $editAction),
+            contentHtml: $this->cardContentHtml($element, $config),
+            footerHtml: $this->elementCardFooterHtml($element, $config),
+            thumbHtml: $config['withThumb'] ? $this->elementCardThumbHtml($element) : '',
+            thumbAlignment: $this->elementCardThumbAlignment($element),
+        );
 
-        event($event = new ElementCardHtmlResolving($element, $config['context'], $html));
+        event($event = new ElementCardHtmlResolving($element, $config['context'], $parts));
 
-        return $event->html;
+        return $event->html ?? $this->elementCardPartsHtml($event->parts);
+    }
+
+    /**
+     * Renders an element card from its parts, the way {@see elementCardHtml()} does.
+     */
+    public function elementCardPartsHtml(ElementCardParts $parts): string
+    {
+        return Html::beginTag('craft-card', $parts->attributes).
+            $this->cardTitlebarHtml($parts->headerHtml, $parts->actionsHtml, null).
+            $this->cardMainHtml($parts->contentHtml, $parts->thumbHtml, $parts->thumbAlignment).
+            $parts->footerHtml.
+            Html::endTag('craft-card');
     }
 
     /**
@@ -534,15 +554,128 @@ readonly class ElementHtml
             'withThumb' => false,
         ]);
 
+        $parts = new ElementCardParts(
+            attributes: $this->cardAttributes($element, $config),
+            headerHtml: $this->elementCardLabelHtml($element, $config),
+            actionsHtml: $this->elementCardActionsHtml($element, $config),
+            contentHtml: $this->cardContentHtml($element, $config),
+            footerHtml: $this->elementCardFooterHtml($element, $config),
+            thumbHtml: $this->elementCardThumbHtml($element),
+            thumbAlignment: $this->elementCardThumbAlignment($element),
+        );
+
+        event($event = new ElementCardHtmlResolving($element, $config['context'], $parts));
+
+        $parts = $event->html !== null ? $this->cardPartsFromHtml($event->html, $event->parts) : $event->parts;
+
         return [
-            'cardAttributes' => $this->elementCardAttributes($element, $config),
-            'cardHeaderHtml' => $this->elementCardLabelHtml($element, $config),
-            'cardActionsHtml' => $this->elementCardActionsHtml($element, $config),
-            'cardContentHtml' => $this->elementCardContentHtml($element, $config),
-            'cardFooterHtml' => $this->elementCardFooterHtml($element, $config),
-            'cardThumbHtml' => $this->elementCardThumbHtml($element),
-            'thumbAlignment' => $this->elementCardThumbAlignment($element),
+            'cardAttributes' => $parts->attributes,
+            'cardHeaderHtml' => $parts->headerHtml,
+            'cardActionsHtml' => $parts->actionsHtml,
+            'cardContentHtml' => $this->cardMainHtml($parts->contentHtml),
+            'cardFooterHtml' => $parts->footerHtml,
+            'cardThumbHtml' => $parts->thumbHtml,
+            'thumbAlignment' => $parts->thumbAlignment === 'start' ? 'start' : 'end',
         ];
+    }
+
+    /**
+     * Splits a card’s HTML, as rendered by {@see elementCardPartsHtml()}, back into its parts.
+     *
+     * HTML that isn’t a `<craft-card>` becomes the card’s content, keeping the
+     * original card attributes.
+     */
+    private function cardPartsFromHtml(string $html, ElementCardParts $parts): ElementCardParts
+    {
+        $document = HTMLDocument::createFromString(
+            sprintf('<!DOCTYPE html><html><body>%s</body></html>', $html),
+            LIBXML_NOERROR,
+            'UTF-8',
+        );
+
+        $card = null;
+        foreach ($document->body->children as $child) {
+            if ($child->localName === 'craft-card') {
+                $card = $child;
+                break;
+            }
+        }
+
+        if ($card === null) {
+            return new ElementCardParts(attributes: $parts->attributes, contentHtml: $html);
+        }
+
+        $attributes = [];
+        foreach ($card->attributes as $attribute) {
+            $attributes[$attribute->name] = $attribute->value;
+        }
+
+        $split = new ElementCardParts(
+            attributes: Html::normalizeTagAttributes($attributes),
+            thumbAlignment: $parts->thumbAlignment,
+        );
+
+        foreach ($card->childNodes as $node) {
+            if ($node instanceof DomElement && $node->classList->contains('card-titlebar')) {
+                foreach ($node->childNodes as $titlebarNode) {
+                    if ($titlebarNode instanceof DomElement && $titlebarNode->classList->contains('card-actions-container')) {
+                        $split->actionsHtml .= $titlebarNode->querySelector('.card-actions')->innerHTML ?? $titlebarNode->innerHTML;
+                    } else {
+                        $split->headerHtml .= $document->saveHtml($titlebarNode);
+                    }
+                }
+            } elseif ($node instanceof DomElement && $node->classList->contains('card-main')) {
+                $this->splitCardMain($document, $node, $split);
+            } else {
+                $split->footerHtml .= $document->saveHtml($node);
+            }
+        }
+
+        $split->footerHtml = trim($split->footerHtml);
+
+        return $split;
+    }
+
+    /**
+     * Splits a card’s `.card-main` into its content and thumbnail parts.
+     */
+    private function splitCardMain(HTMLDocument $document, DomElement $main, ElementCardParts $parts): void
+    {
+        $content = null;
+        foreach ($main->children as $child) {
+            if ($child->classList->contains('card-content')) {
+                $content = $child;
+                break;
+            }
+        }
+
+        if ($content === null) {
+            $parts->contentHtml = $main->innerHTML;
+
+            return;
+        }
+
+        $parts->contentHtml = $document->saveHtml($content);
+
+        $seenContent = false;
+        foreach ($main->childNodes as $node) {
+            if ($node === $content) {
+                $seenContent = true;
+
+                continue;
+            }
+
+            $nodeHtml = $document->saveHtml($node);
+            if (trim($nodeHtml) === '') {
+                continue;
+            }
+
+            if ($parts->thumbHtml === '') {
+                $parts->thumbAlignment = $seenContent ? 'end' : 'start';
+            }
+
+            $parts->thumbHtml .= $nodeHtml;
+        }
     }
 
     private function cardTitlebarHtml(string $labelHtml, string $actionsHtml, ?string $checkboxCardId): string
@@ -663,6 +796,25 @@ readonly class ElementHtml
     {
         $config = $this->normalizeCardConfig($element, $config);
 
+        $contentHtml = $this->cardContentHtml($element, $config);
+
+        // Consumers that render the thumbnail themselves (e.g. a card
+        // component's `thumbnail` slot, via `elementCardThumbHtml()`) can
+        // opt out of the inline thumb.
+        if (! $config['withThumb']) {
+            return $this->cardMainHtml($contentHtml);
+        }
+
+        return $this->cardMainHtml($contentHtml, $this->elementCardThumbHtml($element), $this->elementCardThumbAlignment($element));
+    }
+
+    /**
+     * Renders a card’s `.card-content`.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    private function cardContentHtml(ElementInterface $element, array $config): string
+    {
         $attributes = $this->cardAttributes($element, $config);
 
         $headingContent = $this->elementLabelHtml($element, $config, $attributes, fn () => Html::encode($element->getUiLabel()));
@@ -680,31 +832,20 @@ readonly class ElementHtml
                 ->render();
         }
 
-        $contentHtml =
-            Html::beginTag('div', ['class' => 'card-content']).
+        return Html::beginTag('div', ['class' => 'card-content']).
             ($headingContent !== '' ? Html::tag('div', $headingContent, ['class' => 'card-heading']) : '').
             ($bodyContent !== '' ? Html::tag('div', $bodyContent, ['class' => 'card-body']) : '').
             Html::endTag('div'); // .card-content
+    }
 
-        // Consumers that render the thumbnail themselves (e.g. a card
-        // component's `thumbnail` slot, via `elementCardThumbHtml()`) can
-        // opt out of the inline thumb.
-        if (! $config['withThumb']) {
-            return Html::beginTag('div', ['class' => 'card-main']).$contentHtml.Html::endTag('div');
-        }
-
-        $thumbHtml = $this->elementCardThumbHtml($element);
-        $thumbAlignment = $this->elementCardThumbAlignment($element);
-
-        $html = Html::beginTag('div', ['class' => 'card-main']);
-
-        if ($thumbAlignment === 'start') {
-            $html .= $thumbHtml.$contentHtml;
-        } else {
-            $html .= $contentHtml.$thumbHtml;
-        } // .card-main
-
-        return $html.Html::endTag('div');
+    /**
+     * Wraps a card’s content in `.card-main`, with the thumbnail inline on the given side.
+     */
+    private function cardMainHtml(string $contentHtml, string $thumbHtml = '', string $thumbAlignment = 'end'): string
+    {
+        return Html::beginTag('div', ['class' => 'card-main']).
+            ($thumbAlignment === 'start' ? $thumbHtml.$contentHtml : $contentHtml.$thumbHtml).
+            Html::endTag('div'); // .card-main
     }
 
     /**

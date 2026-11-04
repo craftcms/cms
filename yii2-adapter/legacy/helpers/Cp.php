@@ -923,15 +923,20 @@ class Cp
 
         Event::listen(function(ElementCardHtmlResolving $event) {
             if (YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_ELEMENT_CARD_HTML)) {
+                $html = $event->html ?? app(ElementHtml::class)->elementCardPartsHtml($event->parts);
+
                 $yiiEvent = new DefineElementHtmlEvent([
                     'element' => $event->element,
                     'context' => $event->context,
-                    'html' => $event->html,
+                    'html' => $html,
                 ]);
 
                 YiiEvent::trigger(self::class, self::EVENT_DEFINE_ELEMENT_CARD_HTML, $yiiEvent);
 
-                $event->html = $yiiEvent->html;
+                // Only take over the card when a handler changed it, so slot-rendered cards keep their parts
+                if ($yiiEvent->html !== $html) {
+                    $event->html = $yiiEvent->html;
+                }
             }
         });
     }
