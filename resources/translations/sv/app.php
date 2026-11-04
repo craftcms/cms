@@ -213,6 +213,7 @@ return [
     'Couldn’t generate alt text: {error}' => 'Det gick inte att generera alt-text: {error}',
     'Couldn’t load activity.' => 'Det gick inte att läsa in aktivitet.',
     'Couldn’t load table data.' => 'Det gick inte att läsa in tabelldata.',
+    'Couldn’t load this field.' => 'Couldn’t load this field.',
     'Couldn’t mark notifications as read.' => 'Det gick inte att markera aviseringarna som lästa.',
     'Couldn’t move the selected items.' => 'Det gick inte att flytta de markerade objekten.',
     'Couldn’t open the settings.' => 'Det gick inte att öppna inställningarna.',
