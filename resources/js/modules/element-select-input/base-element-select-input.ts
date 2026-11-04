@@ -8,6 +8,7 @@ import {
   firstFocusableElement,
   getOffset,
   hasAttr,
+  isCtrlKeyPressed,
   isFocusable,
   RETURN_KEY,
   Select,
@@ -272,6 +273,17 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       });
     }
 
+    // Chip menu items announce themselves on the window; the ones from this
+    // input's chips are handled here, ahead of the global listeners, so they
+    // use this input's settings and update its chips.
+    const onChipAction = (ev: Event) => this.#onChipAction(ev as CustomEvent);
+    for (const name of ['craft:edit-element', 'craft:element-action']) {
+      window.addEventListener(name, onChipAction, {capture: true});
+      this.#cleanups.push(() =>
+        window.removeEventListener(name, onChipAction, {capture: true})
+      );
+    }
+
     // The legacy element editor stores itself on its form
     setTimeout(() => {
       this.elementEditor = this.form
@@ -348,7 +360,10 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
   }
 
   getSpinner(): HTMLElement | null {
-    return this.container.querySelector<HTMLElement>('.spinner');
+    // Not the search input's spinner, which is hidden once the limit is reached
+    return this.container.querySelector<HTMLElement>(
+      ':scope > .flex > .spinner'
+    );
   }
 
   initElementSelect(): void {
@@ -740,6 +755,51 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
   /** The chip for an element ID. */
   getElementById(id: number | string): HTMLElement | undefined {
     return this.elements.find((element) => element.dataset.id == String(id));
+  }
+
+  #onChipAction(ev: CustomEvent): void {
+    const trigger = ev.detail?.trigger;
+    const chip =
+      trigger instanceof Element
+        ? trigger.closest<HTMLElement>('.element')
+        : null;
+
+    if (
+      chip &&
+      this.elements.includes(chip) &&
+      this.handleChipAction(chip, ev.type, ev.detail)
+    ) {
+      ev.stopImmediatePropagation();
+    }
+  }
+
+  /**
+   * Handles an action from a chip's menu, returning whether it did. Edit opens
+   * the element editor with this input's settings, or the edit page in a new
+   * tab on ctrl-click.
+   */
+  protected handleChipAction(
+    chip: HTMLElement,
+    name: string,
+    detail: Record<string, any>
+  ): boolean {
+    if (name !== 'craft:edit-element') {
+      return false;
+    }
+
+    const cpEditUrl = chip.dataset.cpUrl;
+    if (
+      cpEditUrl &&
+      (detail.sourceEvent instanceof MouseEvent ||
+        detail.sourceEvent instanceof KeyboardEvent) &&
+      isCtrlKeyPressed(detail.sourceEvent)
+    ) {
+      window.open(cpEditUrl);
+    } else {
+      this.createElementEditor(chip);
+    }
+
+    return true;
   }
 
   /** Opens an element's editor slideout. */
@@ -1239,6 +1299,8 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
     await appendHeadHtml(data.headHtml);
     await appendBodyHtml(data.bodyHtml);
 
+    // The replaced chips are detached now, so drop them from the selection
+    this.elementSelect?.removeItems(this.elements);
     this.elements = [];
     this.resetElements();
 

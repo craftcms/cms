@@ -124,3 +124,32 @@ it('moves a chip when its reorder button asks to', () => {
   expect(input.getSelectedElementIds()).toEqual([2, 1]);
   expect(postedIds()).toEqual(['2', '1']);
 });
+
+it("opens its chips' Edit items with its own settings, ahead of the global listener", () => {
+  const openSlideout = vi.fn();
+  vi.stubGlobal('Craft', {...window.Craft, openSlideout});
+  const globalListener = vi.fn();
+  window.addEventListener('craft:edit-element', globalListener);
+  const input = boot({prevalidate: true});
+
+  const editFrom = (trigger: Element) =>
+    window.dispatchEvent(
+      new CustomEvent('craft:edit-element', {detail: {trigger}})
+    );
+
+  editFrom(input.getElementById(2)!.querySelector('.chip-actions')!);
+  expect(openSlideout).toHaveBeenCalledOnce();
+  expect(openSlideout.mock.calls[0]![0]).toMatch(/elementId=2.*prevalidate=1/);
+  expect(globalListener).not.toHaveBeenCalled();
+
+  editFrom(addButton());
+  expect(globalListener).toHaveBeenCalledOnce();
+
+  input.destroy();
+  editFrom(document.querySelector('.chip-actions')!);
+  expect(openSlideout).toHaveBeenCalledOnce();
+  expect(globalListener).toHaveBeenCalledTimes(2);
+
+  window.removeEventListener('craft:edit-element', globalListener);
+  vi.unstubAllGlobals();
+});
