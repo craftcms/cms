@@ -1170,6 +1170,7 @@
 - Fixed a bug where editing fields inside a Matrix entry wasn’t recorded in the entry’s Activity timeline. ([#20299](https://github.com/craftcms/cms/pull/20299))
 - Fixed a bug where configuration changes made through the stdio MCP server (`craft:mcp:serve`) weren’t saved until the server stopped, so the control panel didn’t see them, and they were lost if the server was killed.
 - Fixed a bug where some settings fields, such as section and Matrix fields’ “Entry Types” and field layout designers, jumped in height once their contents loaded, and stayed empty if they couldn’t be loaded. They now hold their space while loading, and show an error with a “Retry” button if loading fails. ([#20326](https://github.com/craftcms/cms/pull/20326))
+- Fixed a bug where the Settings nav item had no icon when `allowAdminChanges` was disabled. ([#20338](https://github.com/craftcms/cms/issues/20338))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 
