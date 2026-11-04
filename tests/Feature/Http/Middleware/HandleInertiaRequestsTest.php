@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Events\CpNavItemsResolving;
@@ -9,6 +10,7 @@ use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
+use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -145,3 +147,14 @@ it('leaves out the stable config the client already has, until it changes', func
     }],
     'the user’s permissions change' => [fn (UserModel $user) => app(UserPermissions::class)->saveUserPermissions($user->id, ['accessCp', 'utility:system-report'])],
 ]);
+
+it('marks only settings screens read-only when admin changes are disallowed', function () {
+    Cms::config()->allowAdminChanges = false;
+    actingAs(User::find()->one());
+
+    get(action([DashboardController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('readOnly', false));
+
+    get(action([SectionsController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('readOnly', true));
+});

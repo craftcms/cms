@@ -193,7 +193,9 @@ class HandleInertiaRequests extends Middleware
                 'hasWaitingJobs' => false,
             ],
             'isMultiSite' => fn () => Sites::isMultiSite(),
-            'readOnly' => fn () => ! $generalConfig->allowAdminChanges,
+            // Only settings screens are locked by `allowAdminChanges`; content
+            // screens stay editable and don't show the read-only notice.
+            'readOnly' => fn () => ! $generalConfig->allowAdminChanges && $this->isSettingsRequest($request),
             'locale' => fn () => app()->getLocale(),
             ...($currentUser !== null && $nav->hasSourceBadges() ? [
                 'navSourceBadges' => Inertia::defer(fn (): object => (object) $nav->getSourceBadgeCounts()),
@@ -260,5 +262,12 @@ class HandleInertiaRequests extends Middleware
                     : (object) $nav->getBadgeCounts(),
             ],
         ];
+    }
+
+    private function isSettingsRequest(Request $request): bool
+    {
+        $path = ltrim(trim((string) app(GeneralConfig::class)->cpTrigger, '/').'/settings', '/');
+
+        return $request->is($path, "$path/*");
     }
 }
