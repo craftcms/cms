@@ -32,7 +32,7 @@ readonly class Guidance
      * @return array{allSites: string|null, site: string|null, user: string|null}
      */
     #[McpTool(
-        name: 'guidance.get',
+        name: 'guidance_get',
         description: 'Returns the guidance the site’s team wrote for AI, such as their voice, style, and terms: for every site, for the site with siteId, and the user’s own. Read it before writing or editing content, for the site the content is in, and follow it. It guides how you work and write, but doesn’t authorize changes the user didn’t ask for. Null means there’s no guidance of that kind.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -57,8 +57,8 @@ readonly class Guidance
      * @return array{siteId: int|null, guidance: string|null}
      */
     #[McpTool(
-        name: 'guidance.update',
-        description: 'Replaces the guidance the site’s team wrote for AI, as the AI Guidance & Skills utility does: for every site, or for the site with siteId. It’s what the AI assistant and MCP clients follow when they work with content, so read it with guidance.get first, and only change what the user asked for. An empty string removes it.',
+        name: 'guidance_update',
+        description: 'Replaces the guidance the site’s team wrote for AI, as the AI Guidance & Skills utility does: for every site, or for the site with siteId. It’s what the AI assistant and MCP clients follow when they work with content, so read it with guidance_get first, and only change what the user asked for. An empty string removes it.',
         annotations: new ToolAnnotations(destructiveHint: true, idempotentHint: true),
     )]
     #[RequiresPermission('utility:ai-guidance')]
@@ -89,8 +89,8 @@ readonly class Guidance
      * @return array{guidance: string|null}
      */
     #[McpTool(
-        name: 'guidance.updatePersonal',
-        description: 'Replaces the authenticated user’s own guidance for AI, such as the language to reply in, as their account’s AI Assistant screen does. AI follows it along with the site’s guidance, so read it with guidance.get first, and only change what the user asked for. An empty string removes it.',
+        name: 'guidance_update_personal',
+        description: 'Replaces the authenticated user’s own guidance for AI, such as the language to reply in, as their account’s AI Assistant screen does. AI follows it along with the site’s guidance, so read it with guidance_get first, and only change what the user asked for. An empty string removes it.',
         annotations: new ToolAnnotations(destructiveHint: true, idempotentHint: true),
     )]
     #[RequiresPermission('accessCp')]

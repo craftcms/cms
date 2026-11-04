@@ -938,7 +938,6 @@ return [
     'Edit Skill' => 'Breyta færni',
     'Edit “{name}”' => 'Breyta „{name}“',
     'Enterprise Verified' => 'Enterprise Verified',
-    'External site' => 'Ytri síða',
     'deleted' => 'eytt',
     'failed the stage' => 'felldi þrepið',
     'Generate chat titles' => 'Búa til titla á spjall',

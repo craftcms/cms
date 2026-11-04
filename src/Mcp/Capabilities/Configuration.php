@@ -31,13 +31,13 @@ readonly class Configuration
 {
     private const array IdentifierSchema = [
         'type' => 'object',
-        'description' => 'Exactly one lookup key from configuration.schema.',
+        'description' => 'Exactly one lookup key from configuration_schema.',
         'additionalProperties' => true,
     ];
 
     private const array AttributesSchema = [
         'type' => 'object',
-        'description' => 'Values accepted by configuration.schema for this type and operation.',
+        'description' => 'Values accepted by configuration_schema for this type and operation.',
         'additionalProperties' => true,
     ];
 
@@ -51,7 +51,7 @@ readonly class Configuration
 
     /** @return array<string, mixed> */
     #[McpTool(
-        name: 'configuration.schema',
+        name: 'configuration_schema',
         description: 'Lists configuration types and available operations, or returns their detailed input schemas and effects. Omit type to discover types; supply type and operation for one schema.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -89,7 +89,7 @@ readonly class Configuration
 
     /** @return array<string, mixed> */
     #[McpTool(
-        name: 'configuration.list',
+        name: 'configuration_list',
         description: 'Lists configuration records of one type.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -104,8 +104,8 @@ readonly class Configuration
      * @return array<string, mixed>
      */
     #[McpTool(
-        name: 'configuration.get',
-        description: 'Gets a configuration record by its supported identifier. Read configuration.schema for lookup keys.',
+        name: 'configuration_get',
+        description: 'Gets a configuration record by its supported identifier. Read configuration_schema for lookup keys.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     #[RequiresAdmin]
@@ -123,8 +123,8 @@ readonly class Configuration
      * @return array<string, mixed>
      */
     #[McpTool(
-        name: 'configuration.create',
-        description: 'Creates a configuration record. Read configuration.schema for accepted attributes, required values, and defaults.',
+        name: 'configuration_create',
+        description: 'Creates a configuration record. Read configuration_schema for accepted attributes, required values, and defaults.',
     )]
     #[RequiresAdminChanges]
     public function create(
@@ -142,8 +142,8 @@ readonly class Configuration
      * @return array<string, mixed>
      */
     #[McpTool(
-        name: 'configuration.update',
-        description: 'Updates supplied configuration attributes, preserving omitted values. Read current values and configuration.schema first. Put lookup keys in identifier and new values in attributes.',
+        name: 'configuration_update',
+        description: 'Updates supplied configuration attributes, preserving omitted values. Read current values and configuration_schema first. Put lookup keys in identifier and new values in attributes.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     #[RequiresAdminChanges]
@@ -164,8 +164,8 @@ readonly class Configuration
      * @return array<string, mixed>
      */
     #[McpTool(
-        name: 'configuration.delete',
-        description: 'Deletes configuration using the selected type’s rules and content effects. Read configuration.schema for deletion effects and options. No configuration undo tool is provided.',
+        name: 'configuration_delete',
+        description: 'Deletes configuration using the selected type’s rules and content effects. Read configuration_schema for deletion effects and options. No configuration undo tool is provided.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     #[RequiresAdminChanges]
@@ -227,7 +227,7 @@ readonly class Configuration
         if ($errors !== []) {
             $messages = array_map(static fn (array $error): string => "{$error['pointer']}: {$error['message']}", array_slice($errors, 0, 3));
 
-            throw new ToolCallException("Invalid {$type->value} {$operation->value} input: ".implode('; ', $messages).'. Call configuration.schema for accepted values.');
+            throw new ToolCallException("Invalid {$type->value} {$operation->value} input: ".implode('; ', $messages).'. Call configuration_schema for accepted values.');
         }
 
         $arguments = $this->schemas->arguments($type, $operation, $identifier, $attributes, $options);

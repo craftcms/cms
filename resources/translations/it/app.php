@@ -938,7 +938,6 @@ return [
     'Edit Skill' => 'Modifica competenza',
     'Edit “{name}”' => 'Modifica “{name}”',
     'Enterprise Verified' => 'Enterprise Verified',
-    'External site' => 'Sito esterno',
     'deleted' => 'eliminato',
     'failed the stage' => 'ha respinto la fase',
     'Generate chat titles' => 'Genera titoli delle chat',

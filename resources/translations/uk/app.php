@@ -938,7 +938,6 @@ return [
     'Edit Skill' => 'Редагувати навичку',
     'Edit “{name}”' => 'Редагувати «{name}»',
     'Enterprise Verified' => 'Перевірено для Enterprise',
-    'External site' => 'Зовнішній сайт',
     'deleted' => 'видалений',
     'failed the stage' => 'позначив(-ла) етап як непройдений',
     'Generate chat titles' => 'Генерувати назви чатів',

@@ -11,6 +11,7 @@ import {
 import type {UiControlPayload} from '../types';
 import type {NestedElementsProps, NestedElement} from './nested-elements';
 import NestedElementsControl from './NestedElementsControl.vue';
+import {provideUiPreview} from '../uiPreview';
 import {
   DELETE_ACTION,
   nestedElementAction,
@@ -167,6 +168,7 @@ describe('NestedElementsControl', () => {
       prepare?: () => Promise<NestedOwnerContext | null>;
       refresh?: () => Promise<void>;
       editable?: boolean;
+      preview?: boolean;
       cards?: NestedElement[];
       manager?: Partial<NonNullable<NestedElementsProps['manager']>>;
     } = {}
@@ -228,6 +230,9 @@ describe('NestedElementsControl', () => {
     app = createApp({
       setup() {
         provide(NestedOwnerEditorKey, {prepare, refresh});
+        if (options.preview) {
+          provideUiPreview();
+        }
 
         return () =>
           h(NestedElementsControl as any, {
@@ -679,8 +684,8 @@ describe('NestedElementsControl', () => {
     expect(root.textContent).not.toContain('Paste entry');
   });
 
-  it('does not expose selection or mutation actions in read-only mode', () => {
-    mount({
+  it('does not expose selection or mutation actions in read-only mode', async () => {
+    const {prepare} = mount({
       editable: false,
       cards: [
         nestedElement({
@@ -700,7 +705,42 @@ describe('NestedElementsControl', () => {
     expect(root.querySelector('[aria-label="Select 14"]')).toBeNull();
     expect(action('Delete entry')).toBeUndefined();
     expect(action('Duplicate')).toBeUndefined();
-    expect(root.querySelector('[data-edit-element]')).not.toBeNull();
+
+    await nextTick();
+    root.querySelector<HTMLElement>('[data-edit-element]')!.click();
+    await vi.waitFor(() => expect(slideout).toHaveBeenCalledOnce());
+    expect(slideout.mock.lastCall![0]).toBe('/edit/14');
+    expect(slideout.mock.lastCall![1].prepareNestedOwner).toBeUndefined();
+    expect(prepare).not.toHaveBeenCalled();
+  });
+
+  it('opens cards in a new tab rather than a slideout in a preview', async () => {
+    mount({
+      editable: false,
+      preview: true,
+      cards: [
+        nestedElement({
+          id: 14,
+          editUrl: '/edit/14',
+          cardAttributes: {data: {editable: true, label: 'Intro'}},
+        }),
+        nestedElement({
+          id: 15,
+          editUrl: '/edit/15',
+          cardAttributes: {data: {}},
+        }),
+      ],
+    });
+    await nextTick();
+
+    expect(root.querySelector('[data-edit-element]')).toBeNull();
+    const links = root.querySelectorAll<HTMLElement>('[data-open-element]');
+    expect(links).toHaveLength(1);
+    expect(links[0]!.getAttribute('href')).toBe('/edit/14');
+    expect((links[0] as HTMLElement & {target: string}).target).toBe('_blank');
+    expect(links[0]!.getAttribute('aria-label')).toBe(
+      'Open Intro in a new tab'
+    );
   });
 
   it('gives the edit button the card’s color, like its action menu button', async () => {

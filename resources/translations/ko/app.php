@@ -938,7 +938,6 @@ return [
     'Edit Skill' => '스킬 편집',
     'Edit “{name}”' => '“{name}” 편집',
     'Enterprise Verified' => 'Enterprise 인증',
-    'External site' => '외부 사이트',
     'deleted' => '삭제됨',
     'failed the stage' => '단계를 통과하지 못함',
     'Generate chat titles' => '채팅 제목 생성',

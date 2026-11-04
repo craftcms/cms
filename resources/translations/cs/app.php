@@ -938,7 +938,6 @@ return [
     'Edit Skill' => 'Upravit dovednost',
     'Edit “{name}”' => 'Upravit „{name}“',
     'Enterprise Verified' => 'Enterprise Verified',
-    'External site' => 'Externí web',
     'deleted' => 'smazán',
     'failed the stage' => 'označil(a) fázi jako neúspěšnou',
     'Generate chat titles' => 'Generovat názvy chatů',

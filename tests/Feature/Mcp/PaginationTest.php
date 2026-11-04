@@ -26,9 +26,9 @@ it('continues past an invisible page and stops after the last result without exp
     $ids = [];
 
     foreach (['Hidden pagination', 'First pagination', 'Last pagination'] as $title) {
-        if ($tool === 'drafts.list') {
+        if ($tool === 'drafts_list') {
             $ids[] = app(Drafts::class)->createDraft($owner, newAttributes: ['title' => $title])->id;
-        } elseif ($tool === 'revisions.list') {
+        } elseif ($tool === 'revisions_list') {
             $ids[] = app(Revisions::class)->createRevision($owner, newAttributes: ['title' => $title], force: true);
         } else {
             $element = new TestPaginationElement(['title' => $title]);
@@ -38,8 +38,8 @@ it('continues past an invisible page and stops after the last result without exp
     }
 
     $arguments = match ($tool) {
-        'elements.list' => ['type' => 'pagination-items'],
-        'search.query' => ['query' => 'pagination', 'types' => ['pagination-item']],
+        'elements_list' => ['type' => 'pagination-items'],
+        'search_query' => ['query' => 'pagination', 'types' => ['pagination-item']],
         default => ['type' => 'pagination-item', 'id' => $owner->id],
     };
     $call = fn (int $offset): array => McpRequest::send($this, 'tools/call', [
@@ -47,16 +47,16 @@ it('continues past an invisible page and stops after the last result without exp
         'arguments' => [...$arguments, 'criteria' => ['limit' => 1, 'offset' => $offset, 'orderBy' => 'elements.id']],
     ])->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent');
     $recordKey = match ($tool) {
-        'elements.list' => 'elements',
-        'drafts.list' => 'drafts',
-        'revisions.list' => 'revisions',
+        'elements_list' => 'elements',
+        'drafts_list' => 'drafts',
+        'revisions_list' => 'revisions',
         default => 'results',
     };
-    $pageMetadata = static fn (array $page): array => $tool === 'search.query' ? $page['pagination']['pagination-item'] : $page;
+    $pageMetadata = static fn (array $page): array => $tool === 'search_query' ? $page['pagination']['pagination-item'] : $page;
 
-    $hiddenPage = $call($tool === 'elements.list' ? 1 : 0);
+    $hiddenPage = $call($tool === 'elements_list' ? 1 : 0);
     expect($hiddenPage[$recordKey])->toBe([])
-        ->and($pageMetadata($hiddenPage)['nextOffset'])->toBe($tool === 'elements.list' ? 2 : 1);
+        ->and($pageMetadata($hiddenPage)['nextOffset'])->toBe($tool === 'elements_list' ? 2 : 1);
 
     $firstPage = $call($pageMetadata($hiddenPage)['nextOffset']);
     $lastPage = $call($pageMetadata($firstPage)['nextOffset']);
@@ -64,12 +64,12 @@ it('continues past an invisible page and stops after the last result without exp
     $lastRecord = $lastPage[$recordKey][0];
 
     expect($firstPage[$recordKey])->toHaveCount(1)
-        ->and($tool === 'search.query' ? $firstRecord['element']['id'] : $firstRecord['id'])->toBe($ids[1])
+        ->and($tool === 'search_query' ? $firstRecord['element']['id'] : $firstRecord['id'])->toBe($ids[1])
         ->and($lastPage[$recordKey])->toHaveCount(1)
-        ->and($tool === 'search.query' ? $lastRecord['element']['id'] : $lastRecord['id'])->toBe($ids[2])
+        ->and($tool === 'search_query' ? $lastRecord['element']['id'] : $lastRecord['id'])->toBe($ids[2])
         ->and($pageMetadata($lastPage)['nextOffset'])->toBeNull()
         ->and($pageMetadata($lastPage)['limit'])->toBe(1);
-})->with(['elements.list', 'drafts.list', 'revisions.list', 'search.query']);
+})->with(['elements_list', 'drafts_list', 'revisions_list', 'search_query']);
 
 class TestPaginationElement extends Element
 {

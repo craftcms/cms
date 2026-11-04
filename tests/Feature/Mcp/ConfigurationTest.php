@@ -31,7 +31,7 @@ beforeEach(function (): void {
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     $this->call = fn (string $operation, array $arguments = []): TestResponse => McpRequest::send($this, 'tools/call', [
-        'name' => "configuration.$operation",
+        'name' => "configuration_$operation",
         'arguments' => $arguments,
     ])->assertOk();
     $this->operate = fn (string $operation, string $type, array $arguments = []): array => ($this->call)($operation, ['type' => $type, ...$arguments])
@@ -363,9 +363,9 @@ it('keeps read-only admin discovery usable while refusing configuration writes',
         expect($type['operations'])->toBe(['list', 'get']);
     }
 
-    McpRequest::send($this, 'tools/call', ['name' => 'configuration.create', 'arguments' => [
+    McpRequest::send($this, 'tools/call', ['name' => 'configuration_create', 'arguments' => [
         'type' => 'site-groups', 'attributes' => ['name' => 'New group'],
-    ]])->assertBadRequest()->assertJsonPath('error.message', 'Tool not found: "configuration.create".');
+    ]])->assertBadRequest()->assertJsonPath('error.message', 'Tool not found: "configuration_create".');
     ($this->call)('schema', ['type' => 'sites', 'operation' => 'delete'])->assertJsonPath('result.isError', true);
 
     expect(fn () => app(Configuration::class)->schema(ConfigurationType::Sites, ConfigurationOperation::Delete))
@@ -376,6 +376,6 @@ it('does not expose configuration to users without admin access', function (): v
     $user = User::factory()->withPermissions(['accessCp'])->create(['admin' => false]);
     Passport::actingAs($user, ['mcp:admin'], 'craft-mcp');
 
-    McpRequest::send($this, 'tools/call', ['name' => 'configuration.list', 'arguments' => ['type' => 'sites']])
-        ->assertBadRequest()->assertJsonPath('error.message', 'Tool not found: "configuration.list".');
+    McpRequest::send($this, 'tools/call', ['name' => 'configuration_list', 'arguments' => ['type' => 'sites']])
+        ->assertBadRequest()->assertJsonPath('error.message', 'Tool not found: "configuration_list".');
 });

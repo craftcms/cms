@@ -938,7 +938,6 @@ return [
     'Edit Skill' => 'تحرير المهارة',
     'Edit “{name}”' => 'تحرير “{name}”',
     'Enterprise Verified' => 'Enterprise Verified',
-    'External site' => 'موقع خارجي',
     'deleted' => 'محذوف',
     'failed the stage' => 'أخفق في المرحلة',
     'Generate chat titles' => 'إنشاء عناوين المحادثات',

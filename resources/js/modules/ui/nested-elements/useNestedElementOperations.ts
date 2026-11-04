@@ -36,9 +36,12 @@ import {
   type NestedElement,
 } from './nested-elements';
 import {showNotice} from '@/modules/messages/messages';
+import {useUiPreview} from '../uiPreview';
 
 export interface NestedElementQuickEdit {
   readonly longPress: true;
+  /** Whether an element can be opened from here. */
+  canOpen(element: NestedElement): boolean;
   openRow(element: NestedElement, opener?: HTMLElement | null): void;
   openById(id: string | number, opener?: HTMLElement | null): void;
   onDblClick(event: MouseEvent): void;
@@ -80,6 +83,7 @@ export function useNestedElementOperations(
   const ownerId = options.ownerId ?? shallowRef<number | null>(null);
   const preparedOwner = shallowRef<NestedOwnerContext | null>(null);
   const copied = useCopiedElements();
+  const previewing = useUiPreview();
   const {announce} = useAnnouncer();
   let focusElementId: number | null = null;
   let focusElementIndex = -1;
@@ -286,11 +290,21 @@ export function useNestedElementOperations(
     );
   }
 
+  /**
+   * Previews show in modals, which slideouts can't open over, so their
+   * elements can't be opened.
+   */
+  function canOpen(
+    element: NestedElement
+  ): element is NestedElement & {editUrl: string} {
+    return !previewing && canOpenElement(element);
+  }
+
   function openElement(
     element: NestedElement,
     opener: HTMLElement | null
   ): void {
-    if (!canOpenElement(element)) {
+    if (!canOpen(element)) {
       return;
     }
 
@@ -325,9 +339,7 @@ export function useNestedElementOperations(
     element: NestedElement,
     opener: HTMLElement | null = null
   ): void {
-    if (options.editable.value) {
-      openElement(element, opener);
-    }
+    openElement(element, opener);
   }
 
   function openQuickEditById(
@@ -414,6 +426,7 @@ export function useNestedElementOperations(
 
   const quickEdit: NestedElementQuickEdit = {
     longPress: true,
+    canOpen,
     openRow: openQuickEdit,
     openById: openQuickEditById,
     onDblClick: onQuickEditDblClick,

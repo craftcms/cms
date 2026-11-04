@@ -938,7 +938,6 @@ return [
     'Edit Skill' => 'Készség szerkesztése',
     'Edit “{name}”' => '„{name}” szerkesztése',
     'Enterprise Verified' => 'Enterprise Verified',
-    'External site' => 'Külső webhely',
     'deleted' => 'törölve',
     'failed the stage' => 'elbuktatta a szakaszt',
     'Generate chat titles' => 'Csevegéscímek generálása',

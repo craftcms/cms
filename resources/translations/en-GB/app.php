@@ -938,7 +938,6 @@ return [
     'Edit Skill' => 'Edit Skill',
     'Edit “{name}”' => 'Edit “{name}”',
     'Enterprise Verified' => 'Enterprise Verified',
-    'External site' => 'External site',
     'deleted' => 'deleted',
     'failed the stage' => 'failed the stage',
     'Generate chat titles' => 'Generate chat titles',

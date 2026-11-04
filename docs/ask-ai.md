@@ -8,10 +8,10 @@ The chat runs as the `craft:assistant` [AI task](ai.md), which needs a model wit
 
 Users steer the chat without code, in two ways:
 
-- **Guidance**: instructions the chat always follows. Guidance for every site, and additions for each site, are edited in the **AI Guidance & Skills** utility, which the `utility:ai-guidance` permission opens. Users can only edit the additions for sites they can edit, and the guidance for every site only if they can edit every site. Each user can add their own on their account’s **AI Assistant** screen. The chat gets the guidance for every site, the addition for the site the user is working in (the open element’s, or else the control panel’s), and the user’s own, in its instructions. MCP clients are told to read guidance with `guidance.get` before writing content, and the chat only reads it for other sites.
+- **Guidance**: instructions the chat always follows. Guidance for every site, and additions for each site, are edited in the **AI Guidance & Skills** utility, which the `utility:ai-guidance` permission opens. Users can only edit the additions for sites they can edit, and the guidance for every site only if they can edit every site. Each user can add their own on their account’s **AI Assistant** screen. The chat gets the guidance for every site, the addition for the site the user is working in (the open element’s, or else the control panel’s), and the user’s own, in its instructions. MCP clients are told to read guidance with `guidance_get` before writing content, and the chat only reads it for other sites.
 - **Skills**: instructions for kinds of tasks, with a unique title and a short description, created in the same utility. They apply to the whole site. The chat loads a skill with `laravel/ai`’s `LoadSkill` tool when a request matches its description. Users can also choose a skill by typing `/`, which adds a `craft:skill` item to the context.
 
-Guidance and skills are instructions, not data: they shape how the chat works and writes, but don’t allow changes the user didn’t ask for, and the chat still asks the user to approve each change. MCP clients get them with the `guidance.get`, `skills.list`, and `skills.get` tools. The chat isn’t offered `skills.list` or `skills.get`, as it has its own tool for loading skills. Users who can use the utility can also save guidance with `guidance.update`, held to the sites they can edit, and manage skills with `skills.create`, `skills.update`, and `skills.delete`, from an MCP client or the chat. Any user can save their own guidance with `guidance.updatePersonal`.
+Guidance and skills are instructions, not data: they shape how the chat works and writes, but don’t allow changes the user didn’t ask for, and the chat still asks the user to approve each change. MCP clients get them with the `guidance_get`, `skills_list`, and `skills_get` tools. The chat isn’t offered `skills_list` or `skills_get`, as it has its own tool for loading skills. Users who can use the utility can also save guidance with `guidance_update`, held to the sites they can edit, and manage skills with `skills_create`, `skills_update`, and `skills_delete`, from an MCP client or the chat. Any user can save their own guidance with `guidance_update_personal`.
 
 Plugins can read guidance with `CraftCms\Cms\Ai\Guidance\Guidance`, such as for their own AI features:
 
@@ -32,13 +32,13 @@ Plugins can extend the chat in three ways:
 The chat gets the same tools as Craft’s stdio MCP server. A plugin that [adds MCP capabilities](mcp.md#adding-capabilities-from-a-plugin) adds them to the chat as well, with nothing else to register:
 
 - The same edition, admin, and permission requirements apply. Tools marked with `#[RequiresHttp]` aren’t offered, and neither are tools marked with `#[PublicMcp]`, which only the public server has.
-- Tool names are renamed for providers, which only allow letters, numbers, underscores, and hyphens: `reviews.list` becomes `reviews_list`. The chat shows the original name.
+- The chat uses each tool’s MCP name, so name tools in [snake_case](mcp.md#capabilities), such as `reviews_list`. Model providers reject dots in tool names, so the chat replaces them with underscores.
 - The user must approve each call of a tool that can change anything, before it runs. Mark tools that only read with `readOnlyHint: true` so they run without asking. For tools that change things but can’t delete or overwrite them, set `destructiveHint: false`, which tells the user so in the approval request.
 - Changes made through tools are recorded in activity as the AI assistant’s.
 
 ```php
 #[McpTool(
-    name: 'reviews.list',
+    name: 'reviews_list',
     description: 'Lists reviews for an entry, newest first.',
     annotations: new ToolAnnotations(readOnlyHint: true),
 )]

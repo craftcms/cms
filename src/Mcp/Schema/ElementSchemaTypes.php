@@ -45,7 +45,12 @@ class ElementSchemaTypes
                 ['type' => ['integer', 'string']],
                 ['type' => 'array', 'items' => ['type' => ['integer', 'string']]],
             ]],
-            ElementQueryParamType::Array => ['type' => 'array'],
+            ElementQueryParamType::Array => ['type' => 'array', 'items' => ['anyOf' => [
+                ['type' => 'integer'],
+                ['type' => 'string'],
+                ['type' => 'array', 'items' => ['type' => ['integer', 'string']]],
+                ['type' => 'object'],
+            ]]],
         };
     }
 

@@ -8,6 +8,7 @@
   import {createElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
   import type {UiChangeKind, UiControlPayload} from './types';
   import {inputName} from './runtime';
+  import {useUiPreview} from './uiPreview';
   import AssetUploadButton from '@/pages/assets/AssetUploadButton.vue';
   import {openSlideout} from '@/common/slideouts';
   import EditElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/EditElementController';
@@ -402,8 +403,14 @@
     t('Edit {type}', {type: props.control.props.elementDisplayName})
   );
 
+  /**
+   * Previews show in modals, which slideouts can't open over, so their
+   * elements can't be edited.
+   */
+  const previewing = useUiPreview();
+
   function canEditElement(value: number | string): boolean {
-    return presentation(value).canEdit === true;
+    return !previewing && presentation(value).canEdit === true;
   }
 
   /**
@@ -416,9 +423,10 @@
         listData.value.map((element) => [
           element.id,
           chipMenu(element, menuField.value, {
-            edit: list.isCards.value
-              ? undefined
-              : {label: editLabel.value, open: () => openEditor(element.id)},
+            edit:
+              list.isCards.value || previewing
+                ? undefined
+                : {label: editLabel.value, open: () => openEditor(element.id)},
             replace: () => void openSelector(element.id),
             remove: () =>
               removeIds(
@@ -457,6 +465,10 @@
 
   /** Double-click opens the element's editor slideout, as it does on chips elsewhere. */
   function openEditor(value: number | string): void {
+    if (previewing) {
+      return;
+    }
+
     const element = presentation(value);
     const href =
       element.cpEditUrl ??
