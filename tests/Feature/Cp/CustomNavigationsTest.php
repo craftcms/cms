@@ -133,7 +133,7 @@ it('gives users the first matching group navigation, or the default navigation',
 
     Edition::set(Edition::Solo);
 
-    expect(topNavLabels())->toContain('Dashboard');
+    expect(topNavLabels())->toContain('Default home')->toContain('Plugin Store');
 });
 
 it('lays out a group’s navigation from what the group can see, and saves only that', function () {
@@ -193,6 +193,10 @@ it('lists group navigations in the order they apply, in a tab beside the default
         ]);
 
     Edition::set(Edition::Team);
+
+    expect(get(cp_url('settings/cp-nav'))->assertOk()->inertiaProps('groupsTable'))->toBeNull();
+
+    Edition::set(Edition::Solo);
 
     expect(get(cp_url('settings/cp-nav'))->assertOk()->inertiaProps('groupsTable'))->toBeNull();
 });
