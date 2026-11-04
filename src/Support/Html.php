@@ -104,7 +104,7 @@ class Html
     public static function toText(string $html): string
     {
         if (strip_tags($html) === $html) {
-            return $html;
+            return html_entity_decode($html, ENT_QUOTES | ENT_HTML5);
         }
 
         $text = preg_replace('/<li\\b[^>]*>/i', '• ', $html) ?? $html;

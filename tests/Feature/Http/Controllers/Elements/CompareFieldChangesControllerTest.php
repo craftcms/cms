@@ -566,6 +566,7 @@ it('compares HTML fields by their text, and previews ones that are still HTML or
     }
 })->with([
     'rich text' => ['body', '<p>Old</p><ul><li>One</li></ul>', '<p>New</p><ul><li>One</li></ul>', ['current' => "Old\n• One", 'proposed' => "New\n• One"]],
+    'rich text with entities, without tags' => ['body', '<p>AT&amp;T old</p>', 'AT&amp;T new', ['current' => 'AT&T old', 'proposed' => 'AT&T new']],
     'rich text markup only' => ['body', '<p>Same</p>', '<p><strong>Same</strong></p>', null],
     'rich text with tags once decoded' => ['body', '<p>Old</p>', '<p>&lt;img src=x onerror=alert(1)&gt;</p>', null],
     'plain text with tags' => ['summary', 'Old summary', '<img src=x onerror=alert(1)>', null],
