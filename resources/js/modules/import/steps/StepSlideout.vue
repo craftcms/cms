@@ -107,8 +107,7 @@
 
   /**
    * The importer type the rendered form was built for. The form's own type field changes
-   * first, and the fields that depend on it only arrive with the refresh, so the Mapping
-   * section follows this rather than the step's type to appear alongside them.
+   * first, and the fields that depend on it only arrive with the refresh.
    */
   const formType = ref(context.step.type);
   const loadingType = ref(false);
@@ -364,26 +363,24 @@
         :errors="formErrors"
         :refresh="payload.refreshable ? refresh : undefined"
         @change="onChange"
-      />
+      >
+        <template #mapping>
+          <craft-button
+            ref="mappingButton"
+            .disabled="!canMap"
+            .loading="openingMapping || checkingMap"
+            @click="editMapping"
+          >
+            {{ context.editable ? t('Edit mapping') : t('View mapping') }}
+          </craft-button>
+
+          <p v-if="mappingMessage" role="alert">{{ mappingMessage }}</p>
+        </template>
+      </UiRenderer>
 
       <craft-spinner v-if="showLoadingType" role="status">
         {{ t('Loading') }}
       </craft-spinner>
-
-      <section v-if="formType">
-        <h3 class="pbe-2">{{ t('Mapping') }}</h3>
-
-        <craft-button
-          ref="mappingButton"
-          .disabled="!canMap"
-          .loading="openingMapping || checkingMap"
-          @click="editMapping"
-        >
-          {{ context.editable ? t('Edit mapping') : t('View mapping') }}
-        </craft-button>
-
-        <p v-if="mappingMessage" role="alert">{{ mappingMessage }}</p>
-      </section>
     </craft-field-group>
   </CpContainer>
 </template>

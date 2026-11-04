@@ -46,7 +46,7 @@ class Import extends Job
      */
     public bool $failOnTimeout = true;
 
-    private int $defaultBatchSize = 100;
+    public const int DEFAULT_BATCH_SIZE = 100;
 
     /**
      * Promotes the owning import plan, the step's UID, the file path, the import run's ID
@@ -341,7 +341,7 @@ class Import extends Job
     {
         // if chunk size was left empty, it was cast to a null, and we should use the default chunk size
         if (($step->batchSize ?? null) === null) {
-            return $this->defaultBatchSize;
+            return self::DEFAULT_BATCH_SIZE;
         }
 
         // otherwise, return the number specified in the step

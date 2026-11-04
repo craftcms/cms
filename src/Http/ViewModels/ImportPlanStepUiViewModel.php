@@ -7,7 +7,9 @@ namespace CraftCms\Cms\Http\ViewModels;
 use CraftCms\Cms\Element\Import\ElementTransformer;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Import\Jobs\Import as ImportJob;
 use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Hidden;
 use CraftCms\Cms\Ui\Controls\Number;
 use CraftCms\Cms\Ui\Controls\Text;
 use CraftCms\Cms\Ui\Enums\ControlMode;
@@ -40,7 +42,6 @@ class ImportPlanStepUiViewModel extends ViewModel
 
     public function ui(): UiPayload
     {
-        $hasType = $this->importer !== null;
         $mode = $this->canSave ? ControlMode::Editable : ControlMode::ReadOnly;
         $refreshable = $this->canSave;
 
@@ -48,35 +49,36 @@ class ImportPlanStepUiViewModel extends ViewModel
 
         return $this->uiResolver->resolve(Ui::make([
             HiddenField::make('uid'),
+            UiField::make(t('Data Source'), Text::make('source')
+                ->placeholder('@root/resources/my-data.json'))
+                ->instructions(t('The aliased or @root-relative path to a file or a URL containing the data you want this step to import.'))
+                ->required(),
             UiField::make(t('Importer Type'), Choice::make('type')
                 ->options($this->importerTypeOptions())
                 ->placeholder(t('Please select'))
                 ->reactive())
                 ->instructions(t('What this step imports.')),
-            UiField::make(t('Data Source'), Text::make('source')
-                ->placeholder('@root/resources/my-data.json'))
-                ->instructions(t('The aliased or @root-relative path to a file or a URL containing the data you want this step to import.'))
-                ->required()
-                ->visible($hasType),
-            UiField::make(t('Transformer'), Text::make('transformer')
-                ->value($this->importer?->usesDefaultTransformer() ? null : $this->importer?->transformerAsString())
-                ->placeholder(ElementTransformer::class))
-                ->instructions(t('The fully qualified class name of the transformer you’d like to use.'))
-                ->visible($hasType),
-            UiField::make(t('Custom batch size'), Number::make('batchSize'))
-                ->instructions(t('By default, this step will be run in batches containing up to 100 items. You can provide a different size, if you wish. Set to 0 to disable batching.'))
-                ->visible($hasType),
             ...(empty($settingsNodes) ? [] : [
                 Scope::make('settings', [
                     Group::make('import-step-settings', $settingsNodes)->dependsOn('type'),
                 ]),
             ]),
+            // the slideout renders the mapping button in place of this control
+            UiField::make(t('Mapping'), Hidden::make('mapping')),
+            Group::make('import-step-advanced', [
+                UiField::make(t('Transformer'), Text::make('transformer')
+                    ->value($this->importer?->usesDefaultTransformer() ? null : $this->importer?->transformerAsString())
+                    ->placeholder(ElementTransformer::class))
+                    ->instructions(t('The fully qualified class name of the transformer you’d like to use.')),
+                UiField::make(t('Batch size'), Number::make('batchSize'))
+                    ->instructions(t('Set to 0 to disable batching.')),
+            ])->label(t('Advanced'))->collapsible(),
         ]), new UiContext(
             values: [
                 'uid' => $this->importer?->uid,
                 'type' => $this->importer !== null ? $this->importer::class : null,
                 'source' => $this->importer?->source,
-                'batchSize' => $this->batchSize,
+                'batchSize' => $this->batchSize ?? ImportJob::DEFAULT_BATCH_SIZE,
             ],
             mode: $mode,
             refreshable: $refreshable,
