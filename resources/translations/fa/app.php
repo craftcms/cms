@@ -938,7 +938,6 @@ return [
     'Edit Skill' => 'ویرایش مهارت',
     'Edit “{name}”' => 'ویرایش «{name}»',
     'Enterprise Verified' => 'Enterprise Verified',
-    'External site' => 'سایت خارجی',
     'deleted' => 'حذف‌شده',
     'failed the stage' => 'در مرحله رد شد',
     'Generate chat titles' => 'تولید عنوان گفتگوها',
