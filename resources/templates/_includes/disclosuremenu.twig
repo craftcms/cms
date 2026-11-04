@@ -87,13 +87,20 @@
         }
       });
       {% endif %}
-      item?.addEventListener('click', () => {
+      const hideMenu = () => {
         setTimeout(() => {
           // The menu is booted by the legacy jQuery plugin, when it's loaded
           const menu = document.getElementById('{{ menuId|namespaceInputId }}');
           window.jQuery?.(menu).data('disclosureMenu')?.hide();
         }, 1);
-      });
+      };
+      // Garnish's activate event also covers Enter and Space, which it
+      // handles without a click
+      if (window.jQuery?.event?.special?.activate) {
+        window.jQuery(item).on('activate', hideMenu);
+      } else {
+        item?.addEventListener('click', hideMenu);
+      }
     })();
   {% endjs %}
 {% endmacro %}
