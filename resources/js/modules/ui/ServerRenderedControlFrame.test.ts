@@ -3,7 +3,8 @@ import {createApp, h, nextTick} from 'vue';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
 import EntryTypeSelectControl from './EntryTypeSelectControl.vue';
 
-const html = '<ul data-field-html><li>Article</li><li>Page</li></ul>';
+const html =
+  '<ul data-field-html><li>Article</li><li>Page</li></ul><button data-field-button>Choose</button>';
 
 let app: ReturnType<typeof createApp> | undefined;
 
@@ -77,9 +78,14 @@ it('shows an error with a retry button when the field fails to load', async () =
   ).toBeNull();
   expect(alert()?.textContent).toContain('Couldn’t load this field.');
 
-  alert()!.querySelector<HTMLElement>('craft-button')!.click();
+  const retryButton = alert()!.querySelector<HTMLElement>('craft-button')!;
+  retryButton.focus();
+  retryButton.click();
   await flush();
 
-  expect(alert()).toBeNull();
+  expect(alert()?.textContent?.trim()).toBe('');
   expect(container.querySelector('[data-field-html]')).not.toBeNull();
+  expect(document.activeElement).toBe(
+    container.querySelector('[data-field-button]')
+  );
 });

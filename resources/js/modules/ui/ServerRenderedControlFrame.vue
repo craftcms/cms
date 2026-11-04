@@ -1,6 +1,7 @@
 <script setup lang="ts">
-  import {computed} from 'vue';
+  import {computed, nextTick, ref, watch} from 'vue';
   import {t} from '@craftcms/ui';
+  import {firstFocusableWithin} from '@/common/utils/dom';
   import type {ServerRenderedControlStatus} from './useServerRenderedControl';
 
   /**
@@ -14,19 +15,68 @@
       hasHtml: boolean;
       /** Placeholder chip rows, one per selected item. */
       chips?: number;
-      /** Placeholder buttons below the chips. */
+      /** Placeholder buttons below the chips, or below each group's chips. */
       buttons?: number;
+      /** Placeholder group boxes, given as each group's chip rows. Replaces `chips`. */
+      groups?: number[];
+      /** Whether an “Add Group” placeholder button follows the groups. */
+      addGroup?: boolean;
       /** The block size of a single placeholder block, for controls with no chips. */
       blockSize?: string;
     }>(),
-    {chips: 0, buttons: 0, blockSize: undefined}
+    {
+      chips: 0,
+      buttons: 0,
+      groups: undefined,
+      addGroup: false,
+      blockSize: undefined,
+    }
   );
   const emit = defineEmits<{
     (event: 'retry'): void;
   }>();
 
+  const content = ref<HTMLElement>();
+  const errorRegion = ref<HTMLElement>();
+  const retrying = ref(false);
+
   const showPlaceholder = computed(
     () => !props.hasHtml && props.status === 'loading'
+  );
+  const showError = computed(() => props.status === 'error' || retrying.value);
+  const sections = computed(() => props.groups ?? [props.chips]);
+
+  function retry(): void {
+    retrying.value = true;
+    emit('retry');
+  }
+
+  // Retry stays mounted while it loads, so keyboard focus isn't lost. Once the
+  // field loads, focus moves into it, unless the user has moved focus elsewhere.
+  watch(
+    () => props.status,
+    async (status) => {
+      if (!retrying.value || status === 'loading') {
+        return;
+      }
+
+      const retryHadFocus =
+        errorRegion.value?.contains(document.activeElement) ?? false;
+      retrying.value = false;
+
+      if (status !== 'loaded' || !retryHadFocus || !content.value) {
+        return;
+      }
+
+      await nextTick();
+      const target = firstFocusableWithin(content.value);
+      if (target) {
+        target.focus();
+      } else {
+        content.value.tabIndex = -1;
+        content.value.focus();
+      }
+    }
   );
 </script>
 
@@ -43,47 +93,94 @@
         class="server-rendered-control-placeholder__block"
         :style="{blockSize}"
       ></div>
-      <ul v-if="chips" class="server-rendered-control-placeholder__chips">
-        <li
-          v-for="index in chips"
-          :key="index"
-          class="server-rendered-control-placeholder__block server-rendered-control-placeholder__chip"
-        ></li>
-      </ul>
       <div
-        v-if="buttons"
-        class="server-rendered-control-placeholder__footer"
-        :class="{
-          'server-rendered-control-placeholder__footer--after-chips': chips,
-        }"
+        v-else
+        :class="{'server-rendered-control-placeholder__groups': groups}"
       >
         <div
-          v-for="index in buttons"
-          :key="index"
-          class="server-rendered-control-placeholder__block server-rendered-control-placeholder__button"
-        ></div>
+          v-for="(sectionChips, sectionIndex) in sections"
+          :key="sectionIndex"
+          :class="{'server-rendered-control-placeholder__group': groups}"
+        >
+          <div
+            v-if="groups"
+            class="server-rendered-control-placeholder__block server-rendered-control-placeholder__title"
+          ></div>
+          <ul
+            v-if="sectionChips || groups"
+            class="server-rendered-control-placeholder__chips"
+          >
+            <li
+              v-for="index in sectionChips"
+              :key="index"
+              class="server-rendered-control-placeholder__block server-rendered-control-placeholder__chip"
+            ></li>
+          </ul>
+          <div
+            v-if="buttons"
+            class="server-rendered-control-placeholder__footer"
+            :class="{
+              'server-rendered-control-placeholder__footer--after-chips':
+                sectionChips && !groups,
+            }"
+          >
+            <div
+              v-for="index in buttons"
+              :key="index"
+              class="server-rendered-control-placeholder__block server-rendered-control-placeholder__button"
+            ></div>
+          </div>
+        </div>
       </div>
+      <div
+        v-if="addGroup"
+        class="server-rendered-control-placeholder__block server-rendered-control-placeholder__button"
+      ></div>
     </div>
-    <slot />
-    <div
-      v-if="status === 'error'"
-      class="server-rendered-control-error"
-      role="alert"
-    >
-      <p>{{ t('Couldn’t load this field.') }}</p>
-      <craft-button
-        type="button"
-        size="small"
-        variant="outline"
-        @click="emit('retry')"
-      >
-        {{ t('Retry') }}
-      </craft-button>
+    <div ref="content">
+      <slot />
+    </div>
+    <div ref="errorRegion" role="alert">
+      <div v-if="showError" class="server-rendered-control-error">
+        <p>{{ t('Couldn’t load this field.') }}</p>
+        <craft-button
+          type="button"
+          size="small"
+          variant="outline"
+          .loading="retrying"
+          @click="retry"
+        >
+          {{ t('Retry') }}
+        </craft-button>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
+  .server-rendered-control-placeholder__groups {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: start;
+    gap: var(--c-spacing-md);
+    margin-block-end: var(--c-spacing-md);
+  }
+
+  .server-rendered-control-placeholder__group {
+    padding: var(--c-spacing-md);
+    border: 1px solid var(--c-color-neutral-border-quiet);
+    border-radius: var(--c-pane-radius);
+
+    .server-rendered-control-placeholder__chips {
+      min-block-size: var(--c-size-control-md);
+    }
+  }
+
+  .server-rendered-control-placeholder__title {
+    inline-size: 6rem;
+    margin-block-end: var(--c-spacing-md);
+  }
+
   .server-rendered-control-placeholder__chips {
     display: flex;
     flex-direction: column;

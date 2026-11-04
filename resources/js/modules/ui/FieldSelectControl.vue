@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {computed} from 'vue';
   import {actionClient, appendBodyHtml, appendHeadHtml} from '@craftcms/ui';
   import type {UiControlPayload} from './types';
   import {inputName} from './runtime';
@@ -61,6 +62,15 @@
     update: (value) =>
       emit('update:value', value == null ? null : Number(value), 'discrete'),
   });
+
+  /** Choose and Create are hidden once a selection reaches the `limit`. */
+  const placeholderButtons = computed(() => {
+    if (props.value != null && props.control.props.limit) {
+      return 0;
+    }
+
+    return props.control.props.create && props.editable ? 2 : 1;
+  });
 </script>
 
 <template>
@@ -68,7 +78,7 @@
     :status="status"
     :has-html="Boolean(html)"
     :chips="value == null ? 0 : 1"
-    :buttons="control.props.create && editable ? 2 : 1"
+    :buttons="placeholderButtons"
     @retry="retry"
   >
     <div ref="host" v-html="html"></div>

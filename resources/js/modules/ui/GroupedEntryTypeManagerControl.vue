@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {computed} from 'vue';
   import {actionClient} from '@craftcms/ui';
   import type {UiControlPayload, UiValues} from './types';
   import {inputName} from './runtime';
@@ -44,14 +45,25 @@
     },
     update: (value) => emit('update:value', value, 'discrete'),
   });
+
+  /** Each group's entry type count. An empty manager still shows one group. */
+  const placeholderGroups = computed(() => {
+    const counts = new Map<UiValues['group'], number>();
+    for (const entryType of props.value ?? []) {
+      counts.set(entryType.group, (counts.get(entryType.group) ?? 0) + 1);
+    }
+
+    return counts.size ? [...counts.values()] : [0];
+  });
 </script>
 
 <template>
   <ServerRenderedControlFrame
     :status="status"
     :has-html="Boolean(html)"
-    :chips="value?.length ?? 0"
+    :groups="placeholderGroups"
     :buttons="editable ? 2 : 1"
+    :add-group="editable"
     @retry="retry"
   >
     <!-- v-html, not DynamicHtmlRenderer: Vue would compile the select
