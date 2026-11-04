@@ -12,7 +12,9 @@ use CraftCms\Cms\FieldLayout\FieldPreviews;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Controls\NestedElements;
 use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\NestedUiPayload;
 use CraftCms\Cms\Ui\NodePayload;
 use CraftCms\Cms\Ui\UiPayload;
 use Illuminate\Container\Attributes\Singleton;
@@ -107,14 +109,35 @@ readonly class FieldChangeComparisons
             fromLabel: $fromLabel,
             toLabel: $toLabel,
             hasBase: $hasBase,
-            // Fields that load their own values, such as Matrix fields shown as cards, have none in the form to compare.
-            unchanged: $hasBase && $fromNode !== null && ($from->id === $to->id || ($toValue !== null && $fromValue === $toValue)),
+            unchanged: $hasBase && $fromNode !== null && (
+                $from->id === $to->id
+                || ($toValue !== null && $fromValue === $toValue && ! $this->loadsOwnValues($toNode))
+            ),
             diff: $diff,
             preview: $diff === null ? [
                 'current' => $fromPayload && $fromNode ? $this->previews->payloadFor($fromPayload, $fromNode) : null,
                 'proposed' => $this->previews->payloadFor($toPayload, $toNode),
             ] : null,
         );
+    }
+
+    /**
+     * Returns whether a field’s controls include ones that load their own values, such as Matrix fields shown as
+     * cards, including ones nested in other fields’ entries. They have no values in the form, so the same form values
+     * don’t mean the same content.
+     */
+    private function loadsOwnValues(NodePayload $node): bool
+    {
+        if ($node->control?->type === NestedElements::class) {
+            return true;
+        }
+
+        $nested = [
+            ...($node->children ?? []),
+            ...array_merge(...array_map(fn (NestedUiPayload $ui): array => $ui->nodes, $node->control->uis ?? [])),
+        ];
+
+        return array_any($nested, $this->loadsOwnValues(...));
     }
 
     /**

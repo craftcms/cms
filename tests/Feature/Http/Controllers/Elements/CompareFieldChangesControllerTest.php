@@ -7,6 +7,7 @@ use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Dropdown;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
@@ -422,6 +423,70 @@ it('previews Matrix fields as a list of cards, whatever their view mode', functi
     'cards grid' => [Matrix::VIEW_MODE_CARDS_GRID, Matrix::VIEW_MODE_CARDS],
     'index' => [Matrix::VIEW_MODE_INDEX, Matrix::VIEW_MODE_CARDS],
 ]);
+
+/** @return array{Entry, Entry} The entry with a Content Block holding an Index-mode Matrix field, and a draft of it */
+function contentBlockDraft(string $heading): array
+{
+    test()->blocksField->update(['settings' => [...test()->blocksField->settings, 'viewMode' => Matrix::VIEW_MODE_INDEX]]);
+    Fields::refreshFields();
+    $details = Fields::createField([
+        'name' => 'Details',
+        'handle' => 'details',
+        'type' => ContentBlock::class,
+        'settings' => ['fieldLayouts' => [Str::uuid()->toString() => ['tabs' => [[
+            'uid' => Str::uuid()->toString(),
+            'name' => 'Content',
+            'elements' => [['uid' => Str::uuid()->toString(), 'type' => CustomField::class, 'fieldUid' => test()->blocksField->uid]],
+        ]]]]],
+    ]);
+    expect(Fields::saveField($details))->toBeTrue();
+    $type = EntryType::factory()
+        ->withFieldLayout(FieldLayout::factory()->withContentTab([new CustomField(config: ['fieldUid' => $details->uid])]))
+        ->create(['hasTitleField' => true]);
+    EntryTypes::refreshEntryTypes();
+    test()->section->entryTypes()->attach($type, ['sortOrder' => 2]);
+    Sections::refreshSections();
+
+    $entry = EntryModel::factory()->forSection(test()->section)->forEntryType($type)->createElement(['title' => 'Article']);
+    $entry->setFieldValue('details', ['fields' => ['blocks' => [
+        'new1' => ['type' => 'block', 'title' => 'Intro', 'fields' => ['heading' => 'Old heading']],
+    ]]]);
+    expect(Elements::saveElement($entry))->toBeTrue();
+
+    /** @var Entry $draft */
+    $draft = app(Drafts::class)->createDraft($entry, auth()->id());
+    $block = $draft->getFieldValue('details')->getFieldValue('blocks')->status(null)->one();
+    $draft->setFieldValue('details', ['fields' => ['blocks' => [
+        'sortOrder' => [$block->id],
+        'entries' => [$block->id => ['type' => 'block', 'title' => 'Intro', 'fields' => ['heading' => $heading]]],
+    ]]]);
+    expect(Elements::saveElement($draft))->toBeTrue();
+
+    return [$entry, Entry::find()->id($draft->id)->drafts(null)->status(null)->one()];
+}
+
+it('previews Matrix fields in Content Blocks as cards, and doesn’t call them unchanged by their form values', function () {
+    [, $draft] = contentBlockDraft('New heading');
+    expect($draft->getFieldValue('details')->getFieldValue('blocks')->status(null)->one()->getFieldValue('heading'))
+        ->toBe('New heading');
+
+    $response = postJson(action(CompareFieldChangesController::class), [
+        'elementType' => Entry::class,
+        'elementId' => $draft->id,
+        'siteId' => $draft->siteId,
+        'layoutElementUid' => comparisonFieldUid($draft, 'details'),
+    ])->assertOk()
+        ->assertJsonPath('unchanged', false);
+
+    $matrixModes = fn (string $side): array => collect(Arr::dot($response->json("preview.$side.nodes")))
+        ->filter(fn ($value, string $key) => str_ends_with($key, 'control.props.viewMode'))
+        ->values()
+        ->all();
+
+    // The Content Block’s own control has a view mode too.
+    expect($matrixModes('current'))->toContain(Matrix::VIEW_MODE_CARDS)->not->toContain(Matrix::VIEW_MODE_INDEX)
+        ->and($matrixModes('proposed'))->toContain(Matrix::VIEW_MODE_CARDS)->not->toContain(Matrix::VIEW_MODE_INDEX);
+});
 
 it('compares a field in a nested entry with the owner’s previous revision', function () {
     $entry = comparisonEntry();
