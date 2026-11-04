@@ -938,7 +938,6 @@ return [
     'Edit Skill' => 'แก้ไขสกิล',
     'Edit “{name}”' => 'แก้ไข “{name}”',
     'Enterprise Verified' => 'Enterprise Verified',
-    'External site' => 'เว็บไซต์ภายนอก',
     'deleted' => 'ถูกลบแล้ว',
     'failed the stage' => 'ไม่ผ่านขั้นตอนนี้',
     'Generate chat titles' => 'สร้างชื่อแชท',

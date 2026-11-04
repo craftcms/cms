@@ -938,7 +938,6 @@ return [
     'Edit Skill' => '编辑技能',
     'Edit “{name}”' => '编辑“{name}”',
     'Enterprise Verified' => 'Enterprise Verified',
-    'External site' => '外部站点',
     'deleted' => '已删除',
     'failed the stage' => '使该阶段未通过',
     'Generate chat titles' => '生成聊天标题',

@@ -938,7 +938,6 @@ return [
     'Edit Skill' => 'Vaardigheid bewerken',
     'Edit “{name}”' => '“{name}” bewerken',
     'Enterprise Verified' => 'Enterprise Verified',
-    'External site' => 'Externe site',
     'deleted' => 'verwijderd',
     'failed the stage' => 'heeft de fase afgekeurd',
     'Generate chat titles' => 'Chattitels genereren',
