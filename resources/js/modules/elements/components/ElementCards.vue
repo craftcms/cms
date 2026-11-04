@@ -81,7 +81,7 @@
   const ITEM_CLASSES = new Set(['element', 'error']);
 
   function serverClasses(element: CardElement | undefined): string[] {
-    return normalizeClass(element?.cardAttributes?.class)
+    return normalizeClass(attrs(element?.cardAttributes).class)
       .split(/\s+/)
       .filter(Boolean);
   }

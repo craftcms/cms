@@ -976,13 +976,8 @@ class Cp
             );
         }
 
-        $attributes = [];
-        foreach ($card->attributes as $attribute) {
-            $attributes[$attribute->name] = $attribute->value;
-        }
-
         $parts = new ElementCardParts(
-            attributes: Html::normalizeTagAttributes($attributes),
+            attributes: self::mergeElementCardAttributes($original, self::flatAttributes($card)),
             thumbAlignment: $original->thumbAlignment,
         );
 
@@ -1012,6 +1007,86 @@ class Cp
         $parts->footerHtml = trim($parts->footerHtml);
 
         return $parts;
+    }
+
+    /**
+     * Applies the card attributes a handler added, changed, or removed to the
+     * original card’s attributes, so untouched attribute groups such as `data`
+     * keep their structure and value types.
+     *
+     * @param  array<string, string>  $attributes  The handler’s card attributes, as rendered
+     * @return array<string, mixed>
+     */
+    private static function mergeElementCardAttributes(ElementCardParts $original, array $attributes): array
+    {
+        $document = HTMLDocument::createFromString(
+            sprintf('<!DOCTYPE html><html><body>%s</body></html>', app(ElementHtml::class)->elementCardPartsHtml($original)),
+            LIBXML_NOERROR,
+            'UTF-8',
+        );
+        $originalFlat = self::flatAttributes($document->body->firstElementChild);
+        $merged = $original->attributes;
+
+        foreach ($originalFlat as $name => $value) {
+            if (!array_key_exists($name, $attributes)) {
+                [$group, $key] = self::attributeGroup($merged, $name);
+                if ($group !== null) {
+                    unset($merged[$group][$key]);
+                } else {
+                    unset($merged[$name]);
+                }
+            }
+        }
+
+        foreach ($attributes as $name => $value) {
+            if (($originalFlat[$name] ?? null) === $value) {
+                continue;
+            }
+
+            [$group, $key] = self::attributeGroup($merged, $name);
+            if ($group !== null) {
+                $merged[$group][$key] = $value;
+            } else {
+                $merged = array_merge($merged, Html::normalizeTagAttributes([$name => $value]));
+            }
+        }
+
+        return $merged;
+    }
+
+    /**
+     * Returns the attribute group (e.g. `data`) and key a rendered attribute
+     * name belongs to, if the attributes hold that group as an array.
+     *
+     * @param  array<string, mixed>  $attributes
+     * @return array{0: string|null, 1: string|null}
+     */
+    private static function attributeGroup(array $attributes, string $name): array
+    {
+        if (array_key_exists($name, $attributes)) {
+            return [null, null];
+        }
+
+        foreach ($attributes as $group => $value) {
+            if (is_array($value) && !in_array($group, ['class', 'style'], true) && str_starts_with($name, "$group-")) {
+                return [$group, substr($name, strlen($group) + 1)];
+            }
+        }
+
+        return [null, null];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function flatAttributes(?DomElement $element): array
+    {
+        $attributes = [];
+        foreach ($element?->attributes ?? [] as $attribute) {
+            $attributes[$attribute->name] = $attribute->value;
+        }
+
+        return $attributes;
     }
 
     /**

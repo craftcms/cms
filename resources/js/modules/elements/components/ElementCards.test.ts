@@ -89,6 +89,22 @@ describe('ElementCards', () => {
     expect(card?.closest('.element')?.tagName).toBe('LI');
   });
 
+  it('reads class lists the server sends with gaps in their keys', async () => {
+    const {root} = mount({
+      data: [
+        {
+          ...cards[0],
+          cardAttributes: {class: {0: 'card', 2: 'listener-class'}},
+        },
+      ],
+    });
+    await nextTick();
+
+    expect(root.querySelector('craft-card')?.classList).toContain(
+      'listener-class'
+    );
+  });
+
   it('renders server-provided card actions when the host does not replace them', async () => {
     const {root} = mount();
     await nextTick();

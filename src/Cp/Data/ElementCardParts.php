@@ -15,7 +15,8 @@ class ElementCardParts
     /**
      * @param  array<string, mixed>  $attributes  The card’s HTML attributes
      * @param  string  $labelHtml  The card’s label (icon, title, modified status)
-     * @param  string  $actionsHtml  The card’s actions (edit button, action menu, drag handle)
+     * @param  string  $actionsHtml  The card’s actions (edit button, action menu, drag handle). Hosts that draw
+     *                               their own card actions, such as Matrix fields’ nested element cards, don’t render it.
      * @param  string  $contentHtml  The card’s `.card-content` HTML
      * @param  string  $footerHtml  The card’s footer (e.g. the hidden input in the `field` context)
      * @param  string  $thumbHtml  The card’s thumbnail

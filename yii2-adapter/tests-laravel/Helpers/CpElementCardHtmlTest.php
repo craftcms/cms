@@ -130,3 +130,21 @@ it('keeps markup a Craft 5 handler adds next to the card', function() {
 
     expect($html)->toContain('name="extra"');
 });
+
+it('keeps structured card attributes when a Craft 5 handler changes the card', function() {
+    $user = User::findOne();
+    $expected = app(ElementHtml::class)->elementCardData($user, ['id' => 'card-fixed']);
+
+    YiiEvent::on(Cp::class, Cp::EVENT_DEFINE_ELEMENT_CARD_HTML, function(DefineElementHtmlEvent $event) {
+        $event->html = preg_replace('/ class="element card/', ' class="element card legacy-class', $event->html, 1);
+    });
+
+    try {
+        $data = app(ElementHtml::class)->elementCardData($user, ['id' => 'card-fixed']);
+    } finally {
+        YiiEvent::off(Cp::class, Cp::EVENT_DEFINE_ELEMENT_CARD_HTML);
+    }
+
+    expect($data['cardAttributes']['class'])->toContain('legacy-class')
+        ->and($data['cardAttributes']['data'])->toBe($expected['cardAttributes']['data']);
+});
