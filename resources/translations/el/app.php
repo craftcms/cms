@@ -213,6 +213,7 @@ return [
     'Couldn’t generate alt text: {error}' => 'Δεν ήταν δυνατή η δημιουργία εναλλακτικού κειμένου: {error}',
     'Couldn’t load activity.' => 'Δεν ήταν δυνατή η φόρτωση της δραστηριότητας.',
     'Couldn’t load table data.' => 'Δεν ήταν δυνατή η φόρτωση των δεδομένων του πίνακα.',
+    'Couldn’t load this field.' => 'Couldn’t load this field.',
     'Couldn’t mark notifications as read.' => 'Δεν ήταν δυνατή η σήμανση των ειδοποιήσεων ως αναγνωσμένων.',
     'Couldn’t move the selected items.' => 'Δεν ήταν δυνατή η μετακίνηση των επιλεγμένων στοιχείων.',
     'Couldn’t open the settings.' => 'Δεν ήταν δυνατό το άνοιγμα των ρυθμίσεων.',
