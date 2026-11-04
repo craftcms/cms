@@ -103,9 +103,9 @@ export default css`
     line-height: 1.45;
     padding-block: 0;
     padding-inline: 0.25em;
-    background-color: var(--gray-100, #e9ebec);
-    color: var(--gray-700, #3f4d5a);
-    border: 1px solid var(--border-hairline, hsl(211deg 20% 44% / 25%));
+    background-color: var(--c-color-neutral-fill-quiet);
+    color: var(--c-color-neutral-on-quiet);
+    border: 1px solid var(--c-color-neutral-border-quiet);
     border-radius: var(--c-radius-sm, 3px);
   }
 
