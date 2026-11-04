@@ -938,7 +938,6 @@ return [
     'Edit Skill' => 'スキルを編集',
     'Edit “{name}”' => '「{name}」を編集',
     'Enterprise Verified' => 'Enterprise Verified',
-    'External site' => '外部サイト',
     'deleted' => '削除済み',
     'failed the stage' => 'ステージを不合格にしました',
     'Generate chat titles' => 'チャットのタイトルを生成',
