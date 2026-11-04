@@ -77,12 +77,20 @@
 
   const ids = computed(() => props.data.map((element) => element.id));
 
+  /** Classes the list item carries instead of the card, such as for quick-edit's `.element` lookup. */
+  const ITEM_CLASSES = new Set(['element', 'error']);
+
+  function serverClasses(element: CardElement | undefined): string[] {
+    return normalizeClass(attrs(element?.cardAttributes).class)
+      .split(/\s+/)
+      .filter(Boolean);
+  }
+
   /** Per-card attributes the shared frame passes straight through. */
   function itemClass(id: string | number): unknown {
     const element = props.data.find((candidate) => candidate.id === id);
-    const classes = normalizeClass(element?.cardAttributes?.class).split(/\s+/);
 
-    return {element: true, error: classes.includes('error')};
+    return {element: true, error: serverClasses(element).includes('error')};
   }
 
   function itemAttrs(id: string | number): Record<string, unknown> | undefined {
@@ -102,6 +110,7 @@
 
     return {
       ...attrs(element.cardAttributes, {exclude: ['class']}),
+      class: serverClasses(element).filter((name) => !ITEM_CLASSES.has(name)),
       'thumb-alignment': element.thumbAlignment ?? undefined,
     };
   }

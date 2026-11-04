@@ -5,7 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis;
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
+use CraftCms\Cms\Cp\Events\ElementCardPartsResolving;
 use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Drafts;
@@ -345,17 +345,41 @@ describe('elementCardHtml', function () {
         'folder' => ['photo.jpg', 800, true, false],
     ]);
 
-    it('dispatches and allows overriding ElementCardHtmlResolving', function () {
+    it('lets ElementCardPartsResolving listeners change the cards of both card renderers', function () {
         $user = User::findOne(1);
-        expect($user)->toBeInstanceOf(User::class);
 
-        Event::listen(function (ElementCardHtmlResolving $event) {
-            $event->html = '<div>overridden-card</div>';
+        Event::listen(function (ElementCardPartsResolving $event) {
+            $event->parts->attributes['class'][] = 'listener-class';
+            $event->parts->contentHtml .= '<p>listener-content</p>';
         });
 
         $html = $this->elementHtml->elementCardHtml($user);
+        $data = $this->elementHtml->elementCardData($user);
 
-        expect($html)->toBe('<div>overridden-card</div>');
+        expect($html)->toContain('listener-class')
+            ->and($html)->toContain('<p>listener-content</p>')
+            ->and($data['cardAttributes']['class'])->toContain('listener-class')
+            ->and($data['cardContentHtml'])->toContain('<p>listener-content</p>');
+    });
+
+    it('gives listeners the same parts for both card renderers', function () {
+        $user = User::findOne(1);
+        $config = ['id' => 'card-fixed', 'selectable' => true];
+        $parts = [];
+
+        Event::listen(function (ElementCardPartsResolving $event) use (&$parts) {
+            $parts[] = clone $event->parts;
+        });
+
+        $html = $this->elementHtml->elementCardHtml($user, $config);
+        $this->elementHtml->elementCardData($user, $config);
+
+        expect($parts)->toHaveCount(2)
+            ->and($parts[0]->thumbHtml)->toContain('<svg')
+            ->and($parts[1]->thumbHtml)->toContain('<svg')
+            ->and([...get_object_vars($parts[1]), 'thumbHtml' => null])->toBe([...get_object_vars($parts[0]), 'thumbHtml' => null])
+            ->and($parts[0]->actionsHtml)->not->toContain('role="checkbox"')
+            ->and($html)->toContain('role="checkbox"');
     });
 });
 

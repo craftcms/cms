@@ -17,8 +17,9 @@ use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Statusable;
 use CraftCms\Cms\Cp\Alerts;
+use CraftCms\Cms\Cp\Data\ElementCardParts;
 use CraftCms\Cms\Cp\Events\CpAlertsResolving;
-use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
+use CraftCms\Cms\Cp\Events\ElementCardPartsResolving;
 use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
@@ -39,6 +40,8 @@ use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\View\TemplateMode;
+use Dom\Element as DomElement;
+use Dom\HTMLDocument;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 
@@ -921,18 +924,262 @@ class Cp
             }
         });
 
-        Event::listen(function(ElementCardHtmlResolving $event) {
+        Event::listen(function(ElementCardPartsResolving $event) {
             if (YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_ELEMENT_CARD_HTML)) {
+                $html = app(ElementHtml::class)->elementCardPartsHtml($event->parts);
+
                 $yiiEvent = new DefineElementHtmlEvent([
                     'element' => $event->element,
                     'context' => $event->context,
-                    'html' => $event->html,
+                    'html' => $html,
                 ]);
 
                 YiiEvent::trigger(self::class, self::EVENT_DEFINE_ELEMENT_CARD_HTML, $yiiEvent);
 
-                $event->html = $yiiEvent->html;
+                // Only reparse the card when a handler changed it
+                if ($yiiEvent->html !== $html) {
+                    $event->parts = self::elementCardPartsFromHtml($yiiEvent->html, $event->parts);
+                }
             }
         });
+    }
+
+    /**
+     * Splits a card’s HTML, as rendered by {@see ElementHtml::elementCardPartsHtml()}, back into its parts.
+     *
+     * HTML that isn’t a `<craft-card>` becomes the card’s content, keeping the
+     * original card’s attributes and footer (which may hold its input). Markup
+     * outside a `<craft-card>` root goes in the footer.
+     */
+    private static function elementCardPartsFromHtml(string $html, ElementCardParts $original): ElementCardParts
+    {
+        $document = HTMLDocument::createFromString(
+            sprintf('<!DOCTYPE html><html><body>%s</body></html>', $html),
+            LIBXML_NOERROR,
+            'UTF-8',
+        );
+
+        $card = null;
+        foreach ($document->body->children as $child) {
+            if ($child->localName === 'craft-card') {
+                $card = $child;
+                break;
+            }
+        }
+
+        if ($card === null) {
+            return new ElementCardParts(
+                attributes: $original->attributes,
+                contentHtml: $html,
+                // A handler that wrapped the original card already includes its footer
+                footerHtml: self::footerHtmlMissingFrom($document, $html, $original->footerHtml),
+            );
+        }
+
+        $parts = new ElementCardParts(
+            attributes: self::mergeElementCardAttributes($original, self::flatAttributes($card)),
+            thumbAlignment: $original->thumbAlignment,
+        );
+
+        foreach ($card->childNodes as $node) {
+            if ($node instanceof DomElement && $node->classList->contains('card-titlebar')) {
+                foreach ($node->childNodes as $titlebarNode) {
+                    if ($titlebarNode instanceof DomElement && $titlebarNode->classList->contains('card-actions-container')) {
+                        // Unwrap `.card-actions`, keeping anything a handler added beside it
+                        foreach ($titlebarNode->childNodes as $containerNode) {
+                            $parts->actionsHtml .= $containerNode instanceof DomElement && $containerNode->classList->contains('card-actions')
+                                ? $containerNode->innerHTML
+                                : $document->saveHtml($containerNode);
+                        }
+                    } else {
+                        $parts->labelHtml .= $document->saveHtml($titlebarNode);
+                    }
+                }
+            } elseif ($node instanceof DomElement && $node->classList->contains('card-main')) {
+                self::splitElementCardMain($document, $node, $parts);
+            } else {
+                $parts->footerHtml .= $document->saveHtml($node);
+            }
+        }
+
+        // Keep markup a handler added outside the card root
+        foreach ($document->body->childNodes as $node) {
+            if ($node !== $card) {
+                $parts->footerHtml .= $document->saveHtml($node);
+            }
+        }
+
+        $parts->footerHtml = trim($parts->footerHtml);
+
+        return $parts;
+    }
+
+    /**
+     * Returns the parts of a footer that a handler’s HTML doesn’t already have.
+     *
+     * Inputs are matched by name and value, however the handler serialized them.
+     */
+    private static function footerHtmlMissingFrom(HTMLDocument $document, string $html, string $footerHtml): string
+    {
+        if ($footerHtml === '' || str_contains($html, $footerHtml)) {
+            return '';
+        }
+
+        $inputs = [];
+        foreach ($document->getElementsByTagName('input') as $input) {
+            $inputs[] = [$input->getAttribute('name'), $input->getAttribute('value')];
+        }
+
+        $footer = HTMLDocument::createFromString(
+            sprintf('<!DOCTYPE html><html><body>%s</body></html>', $footerHtml),
+            LIBXML_NOERROR,
+            'UTF-8',
+        );
+
+        $missing = '';
+        foreach ($footer->body->childNodes as $node) {
+            if (
+                $node instanceof DomElement &&
+                $node->localName === 'input' &&
+                in_array([$node->getAttribute('name'), $node->getAttribute('value')], $inputs, true)
+            ) {
+                continue;
+            }
+
+            $missing .= $footer->saveHtml($node);
+        }
+
+        return trim($missing);
+    }
+
+    /**
+     * Applies the card attributes a handler added, changed, or removed to the
+     * original card’s attributes, so untouched attribute groups such as `data`
+     * keep their structure and value types.
+     *
+     * @param  array<string, string>  $attributes  The handler’s card attributes, as rendered
+     * @return array<string, mixed>
+     */
+    private static function mergeElementCardAttributes(ElementCardParts $original, array $attributes): array
+    {
+        $document = HTMLDocument::createFromString(
+            sprintf('<!DOCTYPE html><html><body>%s</body></html>', app(ElementHtml::class)->elementCardPartsHtml($original)),
+            LIBXML_NOERROR,
+            'UTF-8',
+        );
+        $originalFlat = self::flatAttributes($document->body->firstElementChild);
+        $merged = $original->attributes;
+
+        foreach ($originalFlat as $name => $value) {
+            if (!array_key_exists($name, $attributes)) {
+                [$group, $key] = self::attributeGroup($merged, $name);
+                if ($group !== null) {
+                    unset($merged[$group][$key]);
+                } else {
+                    unset($merged[$name]);
+                }
+            }
+        }
+
+        foreach ($attributes as $name => $value) {
+            if (($originalFlat[$name] ?? null) === $value) {
+                continue;
+            }
+
+            [$group, $key] = self::attributeGroup($merged, $name);
+            if ($group !== null) {
+                $merged[$group][$key] = $value;
+            } else {
+                $merged = array_merge($merged, Html::normalizeTagAttributes([$name => $value]));
+            }
+        }
+
+        return $merged;
+    }
+
+    /**
+     * Returns the attribute group (e.g. `data`) and key a rendered attribute
+     * name belongs to, if the attributes hold that group as an array.
+     *
+     * @param  array<string, mixed>  $attributes
+     * @return array{0: string|null, 1: string|null}
+     */
+    private static function attributeGroup(array $attributes, string $name): array
+    {
+        if (array_key_exists($name, $attributes)) {
+            return [null, null];
+        }
+
+        foreach ($attributes as $group => $value) {
+            if (is_array($value) && !in_array($group, ['class', 'style'], true) && str_starts_with($name, "$group-")) {
+                return [$group, substr($name, strlen($group) + 1)];
+            }
+        }
+
+        return [null, null];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function flatAttributes(?DomElement $element): array
+    {
+        $attributes = [];
+        foreach ($element->attributes ?? [] as $attribute) {
+            $attributes[$attribute->name] = $attribute->value;
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * Splits a card’s `.card-main` into its content and thumbnail parts.
+     */
+    private static function splitElementCardMain(HTMLDocument $document, DomElement $main, ElementCardParts $parts): void
+    {
+        $content = null;
+        foreach ($main->children as $child) {
+            if ($child->classList->contains('card-content')) {
+                $content = $child;
+                break;
+            }
+        }
+
+        if ($content === null) {
+            $parts->contentHtml = $main->innerHTML;
+
+            return;
+        }
+
+        $before = '';
+        $after = '';
+        $seenContent = false;
+        foreach ($main->childNodes as $node) {
+            if ($node === $content) {
+                $seenContent = true;
+
+                continue;
+            }
+
+            $nodeHtml = $document->saveHtml($node);
+            if (trim($nodeHtml) === '') {
+                continue;
+            }
+
+            if ($node instanceof DomElement && $node->classList->contains('thumb')) {
+                if ($parts->thumbHtml === '') {
+                    $parts->thumbAlignment = $seenContent ? 'end' : 'start';
+                }
+
+                $parts->thumbHtml .= $nodeHtml;
+            } elseif ($seenContent) {
+                // Other markup a handler added beside the content stays in the content
+                $after .= $nodeHtml;
+            } else {
+                $before .= $nodeHtml;
+            }
+        }
+
+        $parts->contentHtml = $before . $document->saveHtml($content) . $after;
     }
 }

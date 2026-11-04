@@ -18,10 +18,11 @@ use CraftCms\Cms\Component\Contracts\Thumbable;
 use CraftCms\Cms\Cp\Components\ActionMenu;
 use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Components\Icon;
+use CraftCms\Cms\Cp\Data\ElementCardParts;
 use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\Enums\ButtonVariant;
 use CraftCms\Cms\Cp\Enums\ChipThumbSize;
-use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
+use CraftCms\Cms\Cp\Events\ElementCardPartsResolving;
 use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Actions\ClientAction;
@@ -420,17 +421,48 @@ readonly class ElementHtml
     {
         $config = $this->normalizeCardConfig($element, $config);
 
-        $attributes = $this->cardAttributes($element, $config);
+        return $this->elementCardPartsHtml(
+            $this->elementCardParts($element, $config),
+            $config['selectable'] ? $config['id'] : null,
+        );
+    }
 
-        $html = Html::beginTag('craft-card', $attributes).
-            $this->elementCardHeaderHtml($element, $config).
-            $this->elementCardContentHtml($element, $config).
-            $this->elementCardFooterHtml($element, $config).
-            Html::endTag('craft-card'); // .card
+    /**
+     * Renders an element card from its parts, the way {@see elementCardHtml()} does.
+     *
+     * @param  string|null  $checkboxCardId  The card ID to label a selection checkbox with, if the card is selectable
+     */
+    public function elementCardPartsHtml(ElementCardParts $parts, ?string $checkboxCardId = null): string
+    {
+        return Html::beginTag('craft-card', $parts->attributes).
+            $this->cardTitlebarHtml($parts->labelHtml, $parts->actionsHtml, $checkboxCardId).
+            $this->cardMainHtml($parts->contentHtml, $parts->thumbHtml, $parts->thumbAlignment).
+            $parts->footerHtml.
+            Html::endTag('craft-card');
+    }
 
-        event($event = new ElementCardHtmlResolving($element, $config['context'], $html));
+    /**
+     * Builds an element card’s parts and lets {@see ElementCardPartsResolving} listeners modify them.
+     *
+     * @param  array<string, mixed>  $config  Normalized by {@see normalizeCardConfig()}
+     */
+    private function elementCardParts(ElementInterface $element, array $config): ElementCardParts
+    {
+        [$showEditButton, $editAction] = $this->cardEditButtonConfig($element, $config);
 
-        return $event->html;
+        $parts = new ElementCardParts(
+            attributes: $this->cardAttributes($element, $config),
+            labelHtml: $this->elementCardLabelHtml($element, $config),
+            actionsHtml: $this->cardActionsHtml($element, $config, $showEditButton, $editAction),
+            contentHtml: $this->cardContentHtml($element, $config),
+            footerHtml: $this->elementCardFooterHtml($element, $config),
+            thumbHtml: $config['withThumb'] ? $this->elementCardThumbHtml($element) : '',
+            thumbAlignment: $this->elementCardThumbAlignment($element),
+        );
+
+        event($event = new ElementCardPartsResolving($element, $config['context'], $parts));
+
+        return $event->parts;
     }
 
     /**
@@ -530,19 +562,16 @@ readonly class ElementHtml
      */
     public function elementCardData(ElementInterface $element, array $config = []): array
     {
-        $config = $this->normalizeCardConfig($element, [
-            ...$config,
-            'withThumb' => false,
-        ]);
+        $parts = $this->elementCardParts($element, $this->normalizeCardConfig($element, $config));
 
         return [
-            'cardAttributes' => $this->elementCardAttributes($element, $config),
-            'cardHeaderHtml' => $this->elementCardLabelHtml($element, $config),
-            'cardActionsHtml' => $this->elementCardActionsHtml($element, $config),
-            'cardContentHtml' => $this->elementCardContentHtml($element, $config),
-            'cardFooterHtml' => $this->elementCardFooterHtml($element, $config),
-            'cardThumbHtml' => $this->elementCardThumbHtml($element),
-            'thumbAlignment' => $this->elementCardThumbAlignment($element),
+            'cardAttributes' => $parts->attributes,
+            'cardHeaderHtml' => $parts->labelHtml,
+            'cardActionsHtml' => $parts->actionsHtml,
+            'cardContentHtml' => $this->cardMainHtml($parts->contentHtml),
+            'cardFooterHtml' => $parts->footerHtml,
+            'cardThumbHtml' => $parts->thumbHtml,
+            'thumbAlignment' => $parts->thumbAlignment === 'start' ? 'start' : 'end',
         ];
     }
 
@@ -664,6 +693,25 @@ readonly class ElementHtml
     {
         $config = $this->normalizeCardConfig($element, $config);
 
+        $contentHtml = $this->cardContentHtml($element, $config);
+
+        // Consumers that render the thumbnail themselves (e.g. a card
+        // component's `thumbnail` slot, via `elementCardThumbHtml()`) can
+        // opt out of the inline thumb.
+        if (! $config['withThumb']) {
+            return $this->cardMainHtml($contentHtml);
+        }
+
+        return $this->cardMainHtml($contentHtml, $this->elementCardThumbHtml($element), $this->elementCardThumbAlignment($element));
+    }
+
+    /**
+     * Renders a card’s `.card-content`.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    private function cardContentHtml(ElementInterface $element, array $config): string
+    {
         $attributes = $this->cardAttributes($element, $config);
 
         $headingContent = $this->elementLabelHtml($element, $config, $attributes, fn () => Html::encode($element->getUiLabel()));
@@ -681,31 +729,20 @@ readonly class ElementHtml
                 ->render();
         }
 
-        $contentHtml =
-            Html::beginTag('div', ['class' => 'card-content']).
+        return Html::beginTag('div', ['class' => 'card-content']).
             ($headingContent !== '' ? Html::tag('div', $headingContent, ['class' => 'card-heading']) : '').
             ($bodyContent !== '' ? Html::tag('div', $bodyContent, ['class' => 'card-body']) : '').
             Html::endTag('div'); // .card-content
+    }
 
-        // Consumers that render the thumbnail themselves (e.g. a card
-        // component's `thumbnail` slot, via `elementCardThumbHtml()`) can
-        // opt out of the inline thumb.
-        if (! $config['withThumb']) {
-            return Html::beginTag('div', ['class' => 'card-main']).$contentHtml.Html::endTag('div');
-        }
-
-        $thumbHtml = $this->elementCardThumbHtml($element);
-        $thumbAlignment = $this->elementCardThumbAlignment($element);
-
-        $html = Html::beginTag('div', ['class' => 'card-main']);
-
-        if ($thumbAlignment === 'start') {
-            $html .= $thumbHtml.$contentHtml;
-        } else {
-            $html .= $contentHtml.$thumbHtml;
-        } // .card-main
-
-        return $html.Html::endTag('div');
+    /**
+     * Wraps a card’s content in `.card-main`, with the thumbnail inline on the given side.
+     */
+    private function cardMainHtml(string $contentHtml, string $thumbHtml = '', string $thumbAlignment = 'end'): string
+    {
+        return Html::beginTag('div', ['class' => 'card-main']).
+            ($thumbAlignment === 'start' ? $thumbHtml.$contentHtml : $contentHtml.$thumbHtml).
+            Html::endTag('div'); // .card-main
     }
 
     /**
