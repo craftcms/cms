@@ -62,6 +62,13 @@ class Typecast
     private static array $assignableProperties = [];
 
     /**
+     * Each property's type, as {@see self::propertyType()} resolves it from the class's declarations.
+     *
+     * @var array<class-string, array<string, array{string, bool}|false>>
+     */
+    private static array $propertyTypes = [];
+
+    /**
      * Configures a component with the initial property values.
      *
      * @template T of object
@@ -75,9 +82,12 @@ class Typecast
         $class = $object::class;
 
         self::properties($class, $properties);
+        $assignableProperties = self::$assignableProperties[$class];
 
         foreach ($properties as $name => $value) {
-            if (! self::isAssignableProperty($class, $name)) {
+            $assignable = $assignableProperties[$name] ?? null;
+
+            if ($assignable === false) {
                 $setter = self::setter($class, $name);
                 if ($setter !== null) {
                     $object->$setter($value);
@@ -86,7 +96,8 @@ class Typecast
                 continue;
             }
 
-            if ($object instanceof Component && ! $object->canSetProperty($name)) {
+            // Declared, assignable properties can always be set
+            if ($assignable === null && $object instanceof Component && ! $object->canSetProperty($name)) {
                 continue;
             }
 
@@ -103,15 +114,6 @@ class Typecast
         }
 
         return $object;
-    }
-
-    private static function isAssignableProperty(string $class, string $property): bool
-    {
-        if (! isset(self::$assignableProperties[$class])) {
-            self::resolveClassTypes($class);
-        }
-
-        return self::$assignableProperties[$class][$property] ?? true;
     }
 
     private static function setter(string $class, string $property): ?string
@@ -131,6 +133,10 @@ class Typecast
      */
     public static function properties(string $class, array &$properties): void
     {
+        if (! isset(self::$types[$class])) {
+            self::resolveClassTypes($class);
+        }
+
         foreach ($properties as $name => &$value) {
             self::property($class, $name, $value);
         }
@@ -278,6 +284,12 @@ class Typecast
 
     /** @return array{string, bool}|false */
     private static function propertyType(string $class, string $property): array|false
+    {
+        return self::$propertyTypes[$class][$property] ??= self::resolvePropertyType($class, $property);
+    }
+
+    /** @return array{string, bool}|false */
+    private static function resolvePropertyType(string $class, string $property): array|false
     {
         if (! isset(self::$types[$class])) {
             self::resolveClassTypes($class);

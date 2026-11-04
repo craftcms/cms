@@ -6,11 +6,17 @@ use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Events\CpNavItemsResolving;
 use CraftCms\Cms\Cp\Navigation;
+use CraftCms\Cms\Edition;
+use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
 use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\User\UserPermissions;
 use CraftCms\Cms\User\Users;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Event;
 use Inertia\Testing\AssertableInertia;
 
@@ -108,3 +114,34 @@ it('updates dynamic navigation even when the client already has the tree', funct
     expect($removed)->toBeArray();
     expect($navLabels($removed))->not->toContain('Review queue');
 })->with(['listener', 'wildcard listener', 'plugin']);
+
+it('leaves out the stable config the client already has, until it changes', function (Closure $change) {
+    Edition::set(Edition::Pro);
+    $user = UserModel::factory()->withPermissions(['accessCp'])->create(['admin' => false]);
+    actingAs(User::findOne($user->id));
+
+    $url = action([DashboardController::class, 'index']);
+    $headers = [
+        'X-Inertia' => 'true',
+        'X-Inertia-Version' => (string) Cp::vite()->manifestHash(),
+    ];
+
+    $first = get($url, $headers)->assertOk();
+    expect($first->json('props.craft.general'))->toHaveKeys(['sites', 'translations', 'path']);
+
+    $headers['X-Inertia-Except-Once-Props'] = implode(',', array_keys($first->json('onceProps')));
+    $later = get($url, $headers)->assertOk()->json('props.craft.general');
+    expect($later)->toHaveKey('path')->not->toHaveKeys(['sites', 'translations']);
+
+    Date::setTestNow(now()->addMinute());
+    $change($user);
+
+    expect(get($url, $headers)->assertOk()->json('props.craft.general'))->toHaveKeys(['sites', 'translations']);
+})->with([
+    'a site is renamed' => [function (): void {
+        $site = Sites::getPrimarySite();
+        $site->setName('Renamed site');
+        Sites::saveSite($site);
+    }],
+    'the user’s permissions change' => [fn (UserModel $user) => app(UserPermissions::class)->saveUserPermissions($user->id, ['accessCp', 'utility:system-report'])],
+]);

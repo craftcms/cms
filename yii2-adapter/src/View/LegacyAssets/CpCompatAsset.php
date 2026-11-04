@@ -36,7 +36,7 @@ class CpCompatAsset implements LegacyAssetInterface
 
     public function register(HtmlStack $htmlStack): void
     {
-        $htmlStack->html(Cp::vite()(['yii2-adapter/resources/js/cp-compat.ts'])->toHtml(), Position::Head);
+        $htmlStack->html(Cp::viteTags(['yii2-adapter/resources/js/cp-compat.ts']), Position::Head);
         $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/component-select-input.js'));
         $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/legacy-html-control.js'));
         $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/cp-compat.js'));

@@ -7,6 +7,7 @@ import '../option/option.js';
 import '../icon/icon.js';
 import {HasLabel} from '@src/mixins/HasLabel';
 import {FormAssociated} from '@src/mixins/FormAssociated';
+import {emitChange, emitInput} from '@src/utilities/form-events';
 
 /**
  * @summary A rich `<select>` replacement built on Lion's select-rich. Unlike a
@@ -79,8 +80,8 @@ export default class CraftSelectRich extends FormAssociated(
       this.#syncInput();
 
       if ((ev as CustomEvent).detail?.isTriggeredByUser) {
-        this.dispatchEvent(new Event('input', {bubbles: true, composed: true}));
-        this.dispatchEvent(new Event('change', {bubbles: true}));
+        emitInput(this);
+        emitChange(this);
       }
     });
   }
