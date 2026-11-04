@@ -42,8 +42,10 @@ vi.mock('./step-mapping', () => ({
 
 // The real element is Lion's select-rich, whose options register before its invoker
 // exists under happy-dom, so a bare element stands in for it.
-vi.mock('@craftcms/ui/components/select-rich/select-rich', () => {
-  class CraftSelectRich extends HTMLElement {
+vi.mock('@craftcms/ui/components/select-rich/select-rich', async () => {
+  const {LitElement} = await import('lit');
+  class CraftSelectRich extends LitElement {
+    static override styles = [];
     modelValue: unknown = '';
   }
   if (!customElements.get('craft-select-rich')) {
