@@ -15,6 +15,8 @@ use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\NodePayload;
+use CraftCms\Cms\Ui\UiPayload;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -63,7 +65,6 @@ readonly class FieldChangeComparisons
             $before = $this->revisionBeforeChange($current, $layoutElement);
 
             return $this->comparison(
-                $element,
                 $layoutElement,
                 from: $before,
                 fromLabel: $before ? $this->label($before) : t('Earlier version'),
@@ -78,7 +79,6 @@ readonly class FieldChangeComparisons
             [$base, $previous] = $this->previousRevision($element);
 
             return $this->comparison(
-                $element,
                 $layoutElement,
                 from: $base,
                 fromLabel: $previous ? $this->label($previous) : t('No earlier revision'),
@@ -89,7 +89,6 @@ readonly class FieldChangeComparisons
         }
 
         return $this->comparison(
-            $element,
             $layoutElement,
             from: $element->getCanonical(),
             fromLabel: t('Current'),
@@ -99,11 +98,10 @@ readonly class FieldChangeComparisons
     }
 
     /**
-     * Compiles the field on both elements, read-only and with the compared element’s field layout, as the AI
-     * assistant previews its proposed changes: text as a diff, and anything else as the field’s own controls.
+     * Compiles the field on both elements, read-only and each with its own field layout, as the AI assistant previews
+     * its proposed changes: text as a diff, and anything else as the field’s own controls.
      */
     private function comparison(
-        ElementInterface $element,
         BaseField $layoutElement,
         ?ElementInterface $from,
         string $fromLabel,
@@ -113,15 +111,13 @@ readonly class FieldChangeComparisons
     ): ?FieldChangeComparison {
         // Unique to this comparison, so its fields don’t share IDs with the editor’s.
         $namespace = 'fieldChanges'.Str::random(8);
-        $toPayload = $this->previews->compile($element, $to, "{$namespace}To", ControlMode::ReadOnly);
-        $toNode = $toPayload ? $this->previews->findNode($toPayload->nodes, (string) $layoutElement->uid) : null;
+        [$toPayload, $toNode] = $this->compileField($to, $layoutElement, "{$namespace}To");
 
         if (! $toPayload || ! $toNode) {
             return null;
         }
 
-        $fromPayload = $from ? $this->previews->compile($element, $from, "{$namespace}From", ControlMode::ReadOnly) : null;
-        $fromNode = $fromPayload ? $this->previews->findNode($fromPayload->nodes, (string) $layoutElement->uid) : null;
+        [$fromPayload, $fromNode] = $from ? $this->compileField($from, $layoutElement, "{$namespace}From") : [null, null];
         $toValue = data_get($toPayload->values, $toNode->control->path ?? []);
         $fromValue = $fromPayload && $fromNode ? data_get($fromPayload->values, $fromNode->control->path ?? []) : null;
         $diff = $fromNode ? FieldPreviews::diff($fromValue, $toValue, $to, $layoutElement) : null;
@@ -137,6 +133,49 @@ readonly class FieldChangeComparisons
                 'current' => $fromPayload && $fromNode ? $this->previews->payloadFor($fromPayload, $fromNode) : null,
                 'proposed' => $this->previews->payloadFor($toPayload, $toNode),
             ] : null,
+        );
+    }
+
+    /**
+     * Compiles an element’s form with its own field layout, and finds the field in it. A draft can change its entry
+     * type, so the field can have another layout element, or none, on the element it’s compared with.
+     *
+     * @return array{?UiPayload, ?NodePayload}
+     */
+    private function compileField(ElementInterface $element, BaseField $layoutElement, string $namespace): array
+    {
+        $match = $this->matchingLayoutElement($element, $layoutElement);
+
+        if ($match === null) {
+            return [null, null];
+        }
+
+        $payload = $this->previews->compile($element, $element, $namespace, ControlMode::ReadOnly);
+
+        return [$payload, $payload ? $this->previews->findNode($payload->nodes, (string) $match->uid) : null];
+    }
+
+    /**
+     * Returns the layout element in an element’s field layout for the same field: the same layout element, or one
+     * with the same attribute, and for custom fields, the same field.
+     */
+    private function matchingLayoutElement(ElementInterface $element, BaseField $layoutElement): ?BaseField
+    {
+        $layout = $element->getFieldLayout();
+        $sameUid = $layout?->getElementByUid((string) $layoutElement->uid);
+
+        if ($sameUid instanceof BaseField) {
+            return $sameUid;
+        }
+
+        return array_find(
+            $layout?->getElementsByType(BaseField::class) ?? [],
+            fn (BaseField $candidate): bool => $candidate::class === $layoutElement::class
+                && $candidate->attribute() === $layoutElement->attribute()
+                && (! $layoutElement instanceof CustomField || (
+                    $candidate instanceof CustomField
+                    && $candidate->getField()->id === $layoutElement->getField()->id
+                )),
         );
     }
 

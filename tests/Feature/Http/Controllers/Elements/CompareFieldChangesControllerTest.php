@@ -21,6 +21,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\Support\Fields\HtmlText;
 use CraftCms\Cms\Ui\Nodes\ActionMenu;
@@ -254,6 +255,33 @@ it('compares a draft with the current entry', function () {
             'diff' => ['current' => 'Old summary', 'proposed' => 'New summary'],
             'preview' => null,
         ]);
+});
+
+it('compares a draft that changed its entry type, by the field’s layout element on each side', function () {
+    $otherType = EntryType::factory()
+        ->withFieldLayout(FieldLayout::factory()->withContentTab([
+            new CustomField(config: ['fieldUid' => $this->summaryField->uid]),
+            new CustomField(config: ['fieldUid' => $this->headingField->uid]),
+        ]))
+        ->create(['hasTitleField' => true]);
+    EntryTypes::refreshEntryTypes();
+    $this->section->entryTypes()->attach($otherType, ['sortOrder' => 2]);
+    Sections::refreshSections();
+
+    /** @var Entry $draft */
+    $draft = app(Drafts::class)->createDraft(comparisonEntry(), auth()->id());
+    $draft->setTypeId($otherType->id);
+    $draft->setFieldValue('summary', 'New summary');
+    $draft->setFieldValue('heading', 'Only on the other type');
+    expect(Elements::saveElement($draft))->toBeTrue();
+
+    postJson(action(CompareFieldChangesController::class), [
+        'elementType' => Entry::class,
+        'elementId' => $draft->id,
+        'siteId' => $draft->siteId,
+        'layoutElementUid' => comparisonFieldUid($draft, 'summary'),
+    ])->assertOk()
+        ->assertJsonPath('diff', ['current' => 'Old summary', 'proposed' => 'New summary']);
 });
 
 it('calls a provisional draft the user’s changes', function () {
