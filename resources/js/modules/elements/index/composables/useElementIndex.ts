@@ -157,8 +157,12 @@ export function useElementIndex(options: UseElementIndexOptions) {
     elementIndex,
     visitor
   );
+  // The selection watcher below is sync, so it reruns this when a visit swaps
+  // in the next page's props, before the index unmounts. Throwing there would
+  // reject Inertia's swap, which then skips loading the next page's deferred
+  // props.
   const visibleViewModes = computed(() =>
-    elementIndex.viewModes.filter(
+    (elementIndex.viewModes ?? []).filter(
       (viewMode) =>
         !viewMode.structuresOnly || elementIndex.source?.structureId != null
     )

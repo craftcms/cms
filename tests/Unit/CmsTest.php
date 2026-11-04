@@ -160,7 +160,12 @@ it('resolves CP timezone preferences after switching users and request context',
     Users::shouldReceive('getUserPreference')->once()->with(43, 'timeZone')->andReturn('America/New_York');
 
     expect(Cms::timezone())->toBe('Asia/Tokyo')
-        ->and(Cms::timezone())->toBe('America/New_York');
+        ->and(Cms::timezone())->toBe('Asia/Tokyo');
+
+    // Logging in as another user forgets the resolved time zone
+    Cms::forgetTimezone();
+
+    expect(Cms::timezone())->toBe('America/New_York');
 
     app()->instance('request', Request::create('/site'));
 

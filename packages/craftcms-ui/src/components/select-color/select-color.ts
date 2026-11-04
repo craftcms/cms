@@ -2,7 +2,6 @@ import {html, nothing, render, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {colors as paletteColors} from '@src/constants/colors';
 import {HostAriaReferences} from '@src/mixins/HostAriaReferences';
-import {emitChange, emitInput} from '@src/utilities/form-events';
 import {t} from '@src/utilities/translate';
 import CraftSelectRich from '../select-rich/select-rich.js';
 import styles from './select-color.styles.js';
@@ -194,17 +193,6 @@ export default class CraftSelectColor extends HostAriaReferences(
     super();
     /** No color is picked until one is asked for. */
     this.hasNoDefaultSelected = true;
-    // Picking a color is a commit, so the pair fires together, the way a radio
-    // group's does.
-    this.addEventListener('model-value-changed', (event) => {
-      if (
-        event.target === this &&
-        (event as CustomEvent).detail?.isTriggeredByUser
-      ) {
-        emitInput(this);
-        emitChange(this);
-      }
-    });
   }
 
   override connectedCallback() {

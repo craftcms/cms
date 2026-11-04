@@ -156,15 +156,26 @@ class Fields
             return $this->_allFieldHandles;
         }
 
+        // Read from the stored rows rather than the fields and layouts they configure: building every one of those
+        // costs far more than any page that checks whether a property is a field handle.
         $handles = [];
+        $fieldUids = [];
 
-        foreach ($this->getAllFields(false) as $field) {
-            $handles[$field->handle] = true;
+        foreach ($this->_fields(false)->raw() as $row) {
+            $handles[$row->handle] = true;
+            $fieldUids[$row->uid] = true;
         }
 
-        foreach ($this->getAllLayouts() as $layout) {
-            foreach ($layout->getCustomFields() as $field) {
-                $handles[$field->handle] = true;
+        foreach ($this->_layoutConfigs() as $config) {
+            foreach ($config['tabs'] ?? [] as $tab) {
+                foreach ($tab['elements'] ?? [] as $element) {
+                    if (
+                        isset($element['handle'], $fieldUids[$element['fieldUid'] ?? '']) &&
+                        is_a($element['type'] ?? '', CustomField::class, true)
+                    ) {
+                        $handles[$element['handle']] = true;
+                    }
+                }
             }
         }
 
@@ -184,8 +195,8 @@ class Fields
 
         $handles = [];
 
-        foreach ($this->getAllLayouts() as $layout) {
-            foreach ($layout->getGeneratedFields() as $generatedField) {
+        foreach ($this->_layoutConfigs() as $config) {
+            foreach ($config['generatedFields'] ?? [] as $generatedField) {
                 if (! empty($generatedField['handle'])) {
                     $handles[$generatedField['handle']] = true;
                 }
@@ -455,8 +466,16 @@ class Fields
      */
     public function getFieldsWithoutContent(mixed $context = null): Collection
     {
-        return $this->getAllFields($context)
-            ->filter(fn (FieldInterface $field) => $field::dbType() === null);
+        $fields = $this->_fields($context);
+
+        // Check the stored types rather than the fields, so only the fields that match get built.
+        // Types that no longer exist become missing fields, which don't store content either.
+        $types = array_filter(
+            array_unique(array_column($fields->raw(), 'type')),
+            fn (string $type) => ! is_subclass_of($type, FieldInterface::class) || $type::dbType() === null,
+        );
+
+        return $fields->whereIn('type', array_values($types), true)->collect();
     }
 
     /**
@@ -798,7 +817,16 @@ class Fields
             return new Collection;
         }
 
-        return $this->getAllLayouts()->filter(fn (FieldLayout $layout) => ComponentHelper::validateComponentClass($layout->type, ElementInterface::class) &&
+        // Only build the layouts whose stored config mentions the field
+        $layoutIds = [];
+        foreach ($this->_layouts()->raw() as $row) {
+            $config = $row->config ?? null;
+            if (str_contains(is_string($config) ? $config : JsonHelper::encode($config), $field->uid)) {
+                $layoutIds[] = $row->id;
+            }
+        }
+
+        return $this->_layouts()->whereIn('id', $layoutIds, true)->collect()->filter(fn (FieldLayout $layout) => ComponentHelper::validateComponentClass($layout->type, ElementInterface::class) &&
             $layout->isFieldIncluded(fn (BaseField $layoutField) => (
                 $layoutField instanceof CustomField &&
                 $layoutField->getFieldUid() === $field->uid
@@ -959,6 +987,20 @@ class Fields
         );
 
         return $this->_layouts = $layouts;
+    }
+
+    /**
+     * Returns the saved field layouts' configs, without building the layouts.
+     *
+     * @return iterable<array<string, mixed>>
+     */
+    private function _layoutConfigs(): iterable
+    {
+        foreach ($this->_layouts()->raw() as $row) {
+            $config = $row->config ?? null;
+
+            yield is_string($config) ? JsonHelper::decode($config) : (array) $config;
+        }
     }
 
     /** @param array<string, mixed> $config */
