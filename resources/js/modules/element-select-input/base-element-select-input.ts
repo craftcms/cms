@@ -206,6 +206,8 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
   replacing: HTMLElement | null = null;
   #ignoreSearchBlur = false;
   #cleanups: Array<() => void> = [];
+  /** Cleanups for each chip's own listeners, run when it leaves the input. */
+  #chipCleanups = new Map<HTMLElement, Array<() => void>>();
 
   constructor(settings?: Partial<BaseElementSelectInputSettings>) {
     super();
@@ -306,6 +308,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       cleanup();
     }
     this.#cleanups = [];
+    this.#cleanUpChips([...this.#chipCleanups.keys()]);
 
     this.elementSort?.destroy();
     this.elementSort = null;
@@ -597,7 +600,8 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
 
       if (this.settings.editable) {
         this.addListener(element, 'dblclick', () => this.#editElement(element));
-        this.#cleanups.push(
+        this.#onChipCleanup(
+          element,
           onLongPress(
             element,
             (ev) => {
@@ -672,7 +676,22 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       attributes: true,
       attributeFilter: ['opened'],
     });
-    this.#cleanups.push(() => observer.disconnect());
+    this.#onChipCleanup(element, () => observer.disconnect());
+  }
+
+  #onChipCleanup(element: HTMLElement, cleanup: () => void): void {
+    const cleanups = this.#chipCleanups.get(element) ?? [];
+    cleanups.push(cleanup);
+    this.#chipCleanups.set(element, cleanups);
+  }
+
+  #cleanUpChips(elements: HTMLElement[]): void {
+    for (const element of elements) {
+      for (const cleanup of this.#chipCleanups.get(element) ?? []) {
+        cleanup();
+      }
+      this.#chipCleanups.delete(element);
+    }
   }
 
   #editElement(element: HTMLElement): void {
@@ -943,6 +962,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
     }
 
     this.elements = this.elements.filter((el) => !removing.includes(el));
+    this.#cleanUpChips(removing);
 
     // Removing a relation makes it selectable again
     this.updateDisabledElementsInModal();
@@ -1301,6 +1321,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
 
     // The replaced chips are detached now, so drop them from the selection
     this.elementSelect?.removeItems(this.elements);
+    this.#cleanUpChips(this.elements);
     this.elements = [];
     this.resetElements();
 
