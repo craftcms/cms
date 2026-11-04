@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Events\CpNavItemsResolving;
@@ -20,6 +21,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Event;
 use Inertia\Testing\AssertableInertia;
 
+use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 
@@ -36,6 +38,18 @@ it('shares the CP language direction', function (string $language, string $orien
 })->with([
     'left-to-right' => ['en-US', 'ltr'],
     'right-to-left' => ['ar', 'rtl'],
+]);
+
+it('shares read-only only with settings screens when admin changes are disabled', function (string $path, bool $readOnly) {
+    Cms::config()->allowAdminChanges = false;
+    actingAs(User::find()->one());
+
+    get(cp_url($path))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('readOnly', $readOnly));
+})->with([
+    'settings' => ['settings/sections', true],
+    'entry index' => ['content/entries', false],
 ]);
 
 it('sends the nav tree even when the client already has it', function () {
