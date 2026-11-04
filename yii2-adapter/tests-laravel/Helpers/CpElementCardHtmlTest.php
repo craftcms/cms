@@ -47,3 +47,54 @@ it('keeps card data untouched when Craft 5 card HTML handlers leave the HTML alo
     expect($data['cardAttributes'])->toBe($expected['cardAttributes'])
         ->and($data['cardContentHtml'])->toBe($expected['cardContentHtml']);
 });
+
+it('splits a Craft 5 card HTML override back into parts for card data', function() {
+    $user = User::findOne();
+    $config = [
+        'id' => 'card-fixed',
+        'context' => 'field',
+        'inputName' => 'myFieldName[]',
+        'attributes' => ['class' => ['override-card']],
+    ];
+    $expected = app(ElementHtml::class)->elementCardData($user, $config);
+
+    YiiEvent::on(Cp::class, Cp::EVENT_DEFINE_ELEMENT_CARD_HTML, function(DefineElementHtmlEvent $event) {
+        $html = str_replace('class="card-content"', 'class="card-content override-content"', $event->html);
+        $event->html = str_replace('</craft-card>', '<input type="hidden" name="override"></craft-card>', $html);
+    });
+
+    try {
+        $data = app(ElementHtml::class)->elementCardData($user, $config);
+    } finally {
+        YiiEvent::off(Cp::class, Cp::EVENT_DEFINE_ELEMENT_CARD_HTML);
+    }
+
+    expect($data['cardAttributes']['class'])->toContain('override-card')
+        ->and($data['cardHeaderHtml'])->toBe($expected['cardHeaderHtml'])
+        ->and($data['cardThumbHtml'])->toContain('<svg')
+        ->and($data['cardContentHtml'])->toStartWith('<div class="card-main"><div class="card-content override-content">')
+        ->and($data['cardFooterHtml'])->toContain('name="myFieldName[]"')
+        ->and($data['cardFooterHtml'])->toContain('name="override"');
+});
+
+it('uses a Craft 5 card HTML override that isn’t a card as the card’s content, keeping its footer', function() {
+    YiiEvent::on(Cp::class, Cp::EVENT_DEFINE_ELEMENT_CARD_HTML, function(DefineElementHtmlEvent $event) {
+        $event->html = '<div>overridden-card</div>';
+    });
+
+    try {
+        $data = app(ElementHtml::class)->elementCardData(User::findOne(), [
+            'context' => 'field',
+            'inputName' => 'myFieldName[]',
+            'attributes' => ['class' => ['kept-card']],
+        ]);
+    } finally {
+        YiiEvent::off(Cp::class, Cp::EVENT_DEFINE_ELEMENT_CARD_HTML);
+    }
+
+    expect($data['cardAttributes']['class'])->toContain('kept-card')
+        ->and($data['cardHeaderHtml'])->toBe('')
+        ->and($data['cardActionsHtml'])->toBe('')
+        ->and($data['cardContentHtml'])->toBe('<div class="card-main"><div>overridden-card</div></div>')
+        ->and($data['cardFooterHtml'])->toContain('name="myFieldName[]"');
+});

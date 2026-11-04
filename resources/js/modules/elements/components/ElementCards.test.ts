@@ -71,6 +71,19 @@ describe('ElementCards', () => {
     expect(labels).toEqual(['Select Homepage', 'Select Untitled entry']);
   });
 
+  it("puts the server's card classes on the card", async () => {
+    const {root} = mount({
+      data: [
+        {...cards[0], cardAttributes: {class: ['card', 'listener-class']}},
+      ],
+    });
+    await nextTick();
+
+    expect(root.querySelector('craft-card')?.classList).toContain(
+      'listener-class'
+    );
+  });
+
   it('renders server-provided card actions when the host does not replace them', async () => {
     const {root} = mount();
     await nextTick();

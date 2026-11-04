@@ -101,7 +101,7 @@
     }
 
     return {
-      ...attrs(element.cardAttributes, {exclude: ['class']}),
+      ...attrs(element.cardAttributes),
       'thumb-alignment': element.thumbAlignment ?? undefined,
     };
   }
