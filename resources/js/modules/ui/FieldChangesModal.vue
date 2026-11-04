@@ -21,7 +21,6 @@
     ownerId: number | null;
     fieldId: number | null;
     layoutElementUid: string;
-    status: 'modified' | 'outdated';
     label?: string | null;
   }
 
@@ -89,7 +88,6 @@
             ownerId: detail.ownerId,
             fieldId: detail.fieldId,
             layoutElementUid: detail.layoutElementUid,
-            status: detail.status,
           }
         );
 
@@ -150,16 +148,6 @@
                 to: comparison.toLabel,
               })
             }}</span>
-          </p>
-          <p
-            v-if="detail?.status === 'outdated'"
-            class="field-changes__message"
-          >
-            {{
-              t(
-                'This field was changed after the draft was created, and the change was merged into the draft.'
-              )
-            }}
           </p>
 
           <p v-if="comparison.unchanged" class="field-changes__message">

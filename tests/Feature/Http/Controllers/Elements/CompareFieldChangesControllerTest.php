@@ -202,9 +202,8 @@ it('validates the request payload', function () {
         'elementType' => Entry::class,
         'elementId' => $draft->id,
         'siteId' => $draft->siteId,
-        'status' => 'nope',
     ])->assertUnprocessable()
-        ->assertJsonValidationErrors(['layoutElementUid', 'status']);
+        ->assertJsonValidationErrors(['layoutElementUid']);
 });
 
 it('returns 400 for invalid layout element uuids', function () {
@@ -351,35 +350,6 @@ it('has nothing to compare an entry’s first revision with', function () {
         ->assertJsonPath('hasBase', false)
         ->assertJsonPath('preview.current', null)
         ->assertJsonCount(1, 'preview.proposed.nodes');
-});
-
-it('compares an outdated field’s change on the current entry', function () {
-    $entry = comparisonEntry('Old summary');
-    $before = latestRevision($entry);
-
-    travel(1)->minutes();
-    $draft = app(Drafts::class)->createDraft($entry, auth()->id());
-
-    travel(1)->minutes();
-    $entry->setFieldValue('summary', 'Updated summary');
-    expect(Elements::saveElement($entry))->toBeTrue();
-    latestRevision($entry);
-
-    postJson(action(CompareFieldChangesController::class), [
-        'elementType' => Entry::class,
-        'elementId' => $draft->id,
-        'siteId' => $draft->siteId,
-        'layoutElementUid' => comparisonFieldUid($draft, 'summary'),
-        'status' => 'outdated',
-    ])->assertOk()
-        ->assertJson([
-            'fromLabel' => $before->getRevisionLabel(),
-            'toLabel' => t('Current'),
-            'hasBase' => true,
-            'unchanged' => false,
-            'diff' => ['current' => 'Old summary', 'proposed' => 'Updated summary'],
-            'preview' => null,
-        ]);
 });
 
 it('compares a field in a nested entry with the current entry’s', function () {
@@ -614,4 +584,18 @@ it('offers to compare modified fields on drafts', function () {
     expect(comparisonActionLabels($draft, 'summary'))->toContain(t('Compare changes'))
         ->and(comparisonActionLabels($draft, 'blocks'))->not->toContain(t('Compare changes'))
         ->and(comparisonActionLabels($entry, 'summary'))->not->toContain(t('Compare changes'));
+});
+
+it('doesn’t offer to compare outdated fields', function () {
+    $entry = comparisonEntry('Old summary');
+    $draft = app(Drafts::class)->createDraft($entry, auth()->id());
+
+    travel(1)->minutes();
+    $entry->setFieldValue('summary', 'Updated summary');
+    expect(Elements::saveElement($entry))->toBeTrue();
+
+    $draft = Entry::find()->id($draft->id)->drafts(null)->status(null)->one();
+
+    expect($draft->isFieldOutdated('summary'))->toBeTrue()
+        ->and(comparisonActionLabels($draft, 'summary'))->not->toContain(t('Compare changes'));
 });

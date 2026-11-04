@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
-use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\FieldChangeComparisons;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -39,7 +37,6 @@ readonly class CompareFieldChangesController
 
         $this->request->validate([
             'layoutElementUid' => ['required', 'uuid'],
-            'status' => ['nullable', Rule::enum(AttributeStatus::class)],
         ]);
 
         $layoutElementUid = $this->request->input('layoutElementUid');
@@ -55,9 +52,7 @@ readonly class CompareFieldChangesController
             'User not authorized to view this element.',
         );
 
-        $status = $this->request->enum('status', AttributeStatus::class) ?? AttributeStatus::Modified;
-
-        $comparison = $this->comparisons->compare($element, $layoutElement, $status);
+        $comparison = $this->comparisons->compare($element, $layoutElement);
 
         abort_if($comparison === null, 400, 'The field isn’t in the element’s form.');
 

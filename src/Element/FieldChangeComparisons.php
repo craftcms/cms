@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Data\FieldChangeComparison;
-use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\FieldLayout\FieldPreviews;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
@@ -19,7 +17,6 @@ use CraftCms\Cms\Ui\NodePayload;
 use CraftCms\Cms\Ui\UiPayload;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Database\Query\Builder;
-use Illuminate\Support\Facades\DB;
 
 use function CraftCms\Cms\t;
 
@@ -29,8 +26,6 @@ use function CraftCms\Cms\t;
  *
  * - A draft, or an element nested in one, is compared with the current element.
  * - A revision, or an element nested in one, is compared with the revision before it.
- * - An outdated field is compared the other way around: the current element before it last changed the field,
- *   with the current element. That’s the change that was merged into the draft.
  *
  * The field is shown with {@see FieldPreviews}, as the AI assistant shows its proposed changes.
  *
@@ -58,22 +53,8 @@ readonly class FieldChangeComparisons
     /**
      * Returns `null` when the field isn’t in the element’s form.
      */
-    public function compare(ElementInterface $element, BaseField $layoutElement, AttributeStatus $status): ?FieldChangeComparison
+    public function compare(ElementInterface $element, BaseField $layoutElement): ?FieldChangeComparison
     {
-        if ($status === AttributeStatus::Outdated && ! $element->getIsRevision()) {
-            $current = $element->getCanonical();
-            $before = $this->revisionBeforeChange($current, $layoutElement);
-
-            return $this->comparison(
-                $layoutElement,
-                from: $before,
-                fromLabel: $before ? $this->label($before) : t('Earlier version'),
-                to: $current,
-                toLabel: t('Current'),
-                hasBase: $before !== null,
-            );
-        }
-
         if ($element->getIsRevision()) {
             // An unchanged nested element can be shared by its owner’s revisions, so its base can be itself.
             [$base, $previous] = $this->previousRevision($element);
@@ -241,35 +222,5 @@ readonly class FieldChangeComparisons
             ->one();
 
         return [$previous, $previous];
-    }
-
-    /**
-     * Returns the current element’s last revision from before it last changed a field.
-     */
-    private function revisionBeforeChange(ElementInterface $current, BaseField $layoutElement): ?ElementInterface
-    {
-        $query = $layoutElement instanceof CustomField
-            ? DB::table(Table::CHANGEDFIELDS)
-                ->where('fieldId', $layoutElement->getField()->id)
-                ->where('layoutElementUid', $layoutElement->uid)
-            : DB::table(Table::CHANGEDATTRIBUTES)
-                ->where('attribute', $layoutElement->attribute());
-
-        $changedAt = $query
-            ->where('elementId', $current->id)
-            ->where('siteId', $current->siteId)
-            ->value('dateUpdated');
-
-        if ($changedAt === null) {
-            return null;
-        }
-
-        return $current::find()
-            ->revisionOf($current->id)
-            ->siteId($current->siteId)
-            ->status(null)
-            ->where('elements.dateCreated', '<', $changedAt)
-            ->orderByDesc('revisions.num')
-            ->one();
     }
 }

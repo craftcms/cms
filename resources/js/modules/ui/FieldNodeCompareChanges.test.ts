@@ -20,7 +20,6 @@ const detail = {
   ownerId: null,
   fieldId: null,
   layoutElementUid: 'layout-uid',
-  status: 'modified',
   label: 'Summary',
 };
 
@@ -135,7 +134,6 @@ describe('FieldNode change comparisons', () => {
       ownerId: null,
       fieldId: null,
       layoutElementUid: 'layout-uid',
-      status: 'modified',
     });
     await vi.waitFor(() =>
       expect(modal.querySelector('craft-text-diff')).not.toBeNull()

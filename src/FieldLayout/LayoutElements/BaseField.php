@@ -590,7 +590,8 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns an action that compares the field’s value on a draft, revision, or nested element with the value it
-     * was based on, for fields marked as modified or outdated.
+     * was based on, for fields marked as modified. Outdated fields aren’t compared: the revision before the current
+     * element changed them can’t be told reliably from when the change was recorded.
      *
      * @return array<string, mixed>|null
      */
@@ -608,9 +609,7 @@ abstract class BaseField extends FieldLayoutElement
         }
 
         $static = $context->mode !== ControlMode::Editable || $context->ui->mode !== ControlMode::Editable;
-        $status = AttributeStatus::tryFrom((string) $this->statusClass($element, $static));
-
-        if ($status === null) {
+        if ($this->statusClass($element, $static) !== AttributeStatus::Modified->value) {
             return null;
         }
 
@@ -627,7 +626,6 @@ abstract class BaseField extends FieldLayoutElement
                     'ownerId' => $element instanceof NestedElementInterface ? $element->getOwnerId() : null,
                     'fieldId' => $element instanceof NestedElementInterface ? $element->getField()?->id : null,
                     'layoutElementUid' => $this->uid,
-                    'status' => $status->value,
                     'label' => $this->showLabel() ? $this->label() : null,
                 ],
             ],
