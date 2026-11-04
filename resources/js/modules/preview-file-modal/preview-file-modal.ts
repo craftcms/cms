@@ -55,8 +55,8 @@ const EMPTY_CLASSES = 'zilch flex items-center justify-center';
  *
  * Preview templates reach the open preview through
  * `Craft.PreviewFileModal.openInstance`: `container` is the element holding
- * the preview HTML (`$container` wraps it in jQuery when that's loaded), and `resizePreviewImage()` fits an
- * image preview to the viewport once it has loaded. Top-level
+ * the preview HTML, and `resizePreviewImage()` fits an image preview to the
+ * viewport once it has loaded. Top-level
  * `slot="footer"` elements in a preview's HTML move to the start of the
  * dialog's footer, ahead of its Download and Close buttons.
  */
