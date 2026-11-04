@@ -49,7 +49,6 @@ it('returns focus to a popover’s button once a slideout opened from inside it 
   await userEvent.click(page.getByRole('button', {name: 'View'}));
   await userEvent.click(page.getByRole('button', {name: 'Edit columns'}));
 
-  // Focus moving into the slideout closes the popover behind it.
   await expect.poll(() => panelId).not.toBe('');
   await expect.poll(() => popover.opened).toBe(false);
 

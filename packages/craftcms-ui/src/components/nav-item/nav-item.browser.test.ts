@@ -312,6 +312,21 @@ it('keeps the flyout open while Tab and Shift+Tab move through its subnav', asyn
   expect(item.flyoutOpen).toBe(true);
 });
 
+it('opens its flyout as a panel with no role', async () => {
+  const {page, userEvent} = await import('vite-plus/test/browser');
+  const item = await railFixture();
+  flyoutHoverIntent.reset();
+
+  item
+    .shadowRoot!.querySelector<HTMLElement>('.rail-toggle craft-button')!
+    .focus();
+  await userEvent.keyboard('{Enter}');
+  await item.updateComplete;
+
+  await expect.element(page.getByRole('link', {name: 'Schemas'})).toBeVisible();
+  await expect.element(page.getByRole('dialog')).not.toBeInTheDocument();
+});
+
 /** A rail holding the page itself, with no subnav, beside a branch it's in. */
 async function railPairFixture(): Promise<{
   leaf: CraftNavItem;

@@ -243,7 +243,7 @@ it('lets one Escape close the popover around it after it was closed another way'
 it('keeps Escape from reaching a container while it closes the popover', async () => {
   document.body.innerHTML = `
     <section>
-      <craft-popover label="Context">
+      <craft-popover>
         <craft-button slot="invoker" type="button">Context</craft-button>
         <div slot="content"><label><input type="checkbox"> Title</label></div>
       </craft-popover>
@@ -277,7 +277,7 @@ async function openTallPopover(
 ): Promise<{pane: DOMRect; footer: DOMRect}> {
   document.body.innerHTML = `
     <div style="${wrapperStyle}">
-      <craft-popover label="View" style="${popoverStyle}">
+      <craft-popover style="${popoverStyle}">
         <craft-button slot="invoker" type="button">View</craft-button>
         <div slot="content-body" style="block-size: 3000px">Columns</div>
         <div slot="content-footer"><button type="button">Close</button></div>

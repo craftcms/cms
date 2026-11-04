@@ -356,7 +356,6 @@ it('returns focus to a popover’s button once a dialog opened from inside it cl
   await expect.element(opener).toBeVisible();
   await userEvent.click(opener);
 
-  // Focus moving into the dialog closes the popover behind it.
   await expect.poll(() => dialog.matches(':focus-within')).toBe(true);
   await expect.poll(() => popover.opened).toBe(false);
 

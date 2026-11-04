@@ -179,14 +179,12 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
    * Navigation Menu example, so the open panel can't cover the control that
    * now has focus (WCAG 2.4.11).
    *
-   * Focus in the shadow tree retargets to the host, and slotted content and a
-   * slotted invoker are light-DOM descendants, so all of those count as
-   * inside. An invoker linked with `for` or `anchor` sits elsewhere, so it's
-   * checked too: otherwise clicking it would close the popover and the same
-   * click would open it again. Focus moving to nothing, as when someone
-   * clicks text in the panel, is left to Lion's outside click and window blur.
-   * Focus stays where it went, since `#returnFocus` only acts while focus is
-   * still in the content.
+   * An invoker linked with `for` or `anchor` sits outside the popover, so it
+   * counts as inside too: otherwise clicking it would close the popover and
+   * the same click would open it again. Focus moving to nothing, as when
+   * someone clicks text in the panel, is left to Lion's outside click and
+   * window blur. Focus stays where it went, since `#returnFocus` only acts
+   * while focus is still in the content.
    */
   #closeOnFocusOut = (event: FocusEvent): void => {
     if (!this.opened || !(event.relatedTarget instanceof Node)) {

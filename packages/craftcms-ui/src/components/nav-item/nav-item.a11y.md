@@ -25,7 +25,7 @@ Used inside `craft-nav-list`; see [`nav-list.a11y.md`](../nav-list/nav-list.a11y
 - [x] The flyout toggle carries `aria-expanded`, `aria-controls` pointing at the flyout, and an `aria-label` naming its branch. Per WCAG 4.1.2 (Name, Role, Value). Verified by `opens the flyout from its own disclosure instead` in `nav-item.test.ts`.
 - [x] A row with a flyout carries `aria-expanded` and `aria-controls` on its own link or button, not on the positioning anchor, and a childless row carries neither. Per WCAG 4.1.2 (Name, Role, Value). Verified by `tells a screen reader that a labeled item discloses a flyout`, `points the rail item at the flyout it expands`, `keeps the anchor out of the flyout aria, which it cannot carry` and `leaves a childless item without a disclosure to announce` in `nav-item.test.ts`.
 - [ ] Only a button carries `aria-expanded`, as in the Disclosure Navigation Menu example. Per WCAG 4.1.2 (Name, Role, Value). Known deviation: a link row with a flyout also carries it, although activating the link navigates rather than toggling the flyout.
-- [ ] The flyout panel has no role, so it isn't announced as an unnamed dialog. Per WCAG 4.1.2 (Name, Role, Value). Not yet verified. The item opens its flyout with `without-invoker-aria`, which turns off Lion's accessibility handling, including the `role="dialog"` Lion gives other popover panels.
+- [x] The flyout panel has no role, so it isn't announced as an unnamed dialog. Per WCAG 4.1.2 (Name, Role, Value). Verified by `opens its flyout as a panel with no role` in `nav-item.browser.test.ts`.
 
 ### Keyboard and focus
 
