@@ -89,6 +89,7 @@ export async function appendElementHtml(
       } else {
         // Just inserted into `parent`, so it's a child node.
         appended.push(node as ChildNode);
+        await runNestedScripts(node, rejectOnError);
       }
 
       if (loaded) {
@@ -104,19 +105,34 @@ export async function appendElementHtml(
   }
 }
 
+/**
+ * Scripts nested in a wrapper clone as already started, so they're inert once
+ * the wrapper is inserted. Recreate them one at a time, waiting for each
+ * external script to load, so they run in order, as jQuery's `.html()` did.
+ */
+async function runNestedScripts(
+  node: Node,
+  rejectOnError: boolean
+): Promise<void> {
+  if (!(node instanceof Element)) {
+    return;
+  }
+
+  for (const inert of node.querySelectorAll('script')) {
+    const script = cloneNode(inert) as HTMLScriptElement;
+    const loaded = script.src ? waitForScript(script, script.src) : null;
+
+    inert.replaceWith(script);
+
+    if (loaded) {
+      await awaitAsset(loaded, rejectOnError);
+    }
+  }
+}
+
 function cloneNode(source: Node): Node {
   if (!(source instanceof HTMLScriptElement)) {
-    const node = source.cloneNode(true);
-
-    // Scripts nested in a wrapper clone as already started, so they'd never
-    // run. Recreate them, as jQuery's `.html()` did.
-    if (node instanceof Element) {
-      for (const script of node.querySelectorAll('script')) {
-        script.replaceWith(cloneNode(script));
-      }
-    }
-
-    return node;
+    return source.cloneNode(true);
   }
 
   const script = document.createElement('script');
