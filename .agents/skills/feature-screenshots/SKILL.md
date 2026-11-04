@@ -189,9 +189,11 @@ the difference. Shadows come out as real partial transparency.
 ## Adding them to a PR
 
 Only add screenshots to a PR by uploading them to github.com as below, which
-needs the person's signed-in GitHub session in Chrome. Never put them in the
-repository instead: no commits, branches or custom refs (such as
-`refs/screenshots/…`) to link `raw` URLs from. If you can't upload them, leave
+needs the person's signed-in GitHub session in Chrome. Every image in a PR must
+be a `https://github.com/user-attachments/assets/…` URL. Never host them
+anywhere else: not in the repository (no commits, branches or custom refs such
+as `refs/screenshots/…` to link `raw` URLs from), and not on another service,
+such as an agent tool's artifact or file host. If you can't upload them, leave
 them out and say so.
 
 1. Name the files for what they show, such as `command-palette-docs.png`.
