@@ -17,8 +17,14 @@ For this path:
 1. Fetch the latest PR head and actual target branch. Confirm that the exact PR
    head commit has passed all required CI and has the required approvals. Check
    the target's branch protections, required merged-result checks, and merge
-   queue requirements. Do not bypass them or use an administrative override.
-   If they prevent this direct merge path, stop and ask how to proceed.
+   queue requirements before pushing. With explicit authorization to merge the
+   PR and only genuinely nonfunctional conflicts, an ordinary push of the final
+   target-based merge commit may use the credential's existing bypass permission
+   solely for the PR-only rule, after the exact PR-head CI and approval checks
+   above. Never bypass failed or pending required checks, fresh merged-result
+   checks, merge queues, or any other protection. Do not use an administrative
+   override. If another protection prevents this path or compliance is unclear,
+   stop and ask how to proceed.
 2. Use a clean worktree based on the fetched target commit, then run
    `git merge --no-ff --no-commit <verified-pr-head-sha>`. Resolve only the
    inconsequential conflicts covered above, preserving both sides' intended
