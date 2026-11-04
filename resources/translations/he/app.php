@@ -938,7 +938,6 @@ return [
     'Edit Skill' => 'ערוך מיומנות',
     'Edit “{name}”' => 'ערוך את “{name}”',
     'Enterprise Verified' => 'Enterprise Verified',
-    'External site' => 'אתר חיצוני',
     'deleted' => 'נמחק',
     'failed the stage' => 'נכשל בשלב',
     'Generate chat titles' => 'צור כותרות לצ\'אטים',

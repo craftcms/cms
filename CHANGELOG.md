@@ -49,6 +49,7 @@
 - Field action menu items can now dispatch a `craft:generate-field-value` event with a `url` and `params`, to fill the field with a value generated on the server. ([#20103](https://github.com/craftcms/cms/pull/20103))
 
 ### MCP and OAuth
+- Renamed Craft’s MCP tools to use snake_case names, such as `elements_list` instead of `elements.list`, `workflows_request_changes` instead of `workflows.requestChanges`, and `craft_query` instead of `craft-query`, because VS Code, claude.ai, and other MCP clients reject or rename tools with dots in their names. Public MCP server approvals are updated automatically. Plugins should name their MCP tools the same way, such as `my_plugin_orders_list`. ([#20355](https://github.com/craftcms/cms/pull/20355))
 - The MCP server page’s setup snippets are now syntax-highlighted. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - The authenticated MCP server’s connection instructions now only point to `info.get` for users with control panel access.
 - The MCP server’s field layout configs now support tabs’ `icon` and `type` settings. ([#20005](https://github.com/craftcms/cms/pull/20005))
@@ -160,6 +161,7 @@
 - The element details pane now spans the full viewport height once the page is scrolled, and the Activity panel’s timeline scrolls within the panel, keeping the comment form in view. ([#19919](https://github.com/craftcms/cms/pull/19919))
 - The “View all activity” and “View all revisions” links are now shown in their details panels’ headers. ([#19919](https://github.com/craftcms/cms/pull/19919))
 - The Activity panel now shows a change from one text to another as a word-level diff, rather than the text before and after.
+- The Activity panel now lists changes to rich text fields by their text, rather than leaving them out. ([#20307](https://github.com/craftcms/cms/pull/20307))
 - Comments can now be submitted with <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>Return</kbd> in the Activity and Workflow details panels. ([#19919](https://github.com/craftcms/cms/pull/19919))
 - Comment fields in the Activity and Workflow details panels now start one line high, keep the Comment button inside the field, and show how many characters a comment is over the limit. ([#19923](https://github.com/craftcms/cms/pull/19923))
 - Comments in the Activity and Workflow details panels are now more compact, with a background tinted by the gradient from their author’s default photo. The Activity panel’s change summaries are more compact too, and its comment field’s “Comment” button is now a round, icon-only button.
@@ -180,6 +182,8 @@
 - Removed `Craft.ElementEditor::createEditMetaAction()`, `showMetaModal()`, `createMetaModal()`, `checkMetaValues()`, `shakeMetaModal()`, `saveMeta()`, and `showFieldCopyModal()`, which were no longer reachable. Cross-site value copying is handled by the field’s own action menu. ([#20085](https://github.com/craftcms/cms/pull/20085))
 
 ### Drafts, Workflows, and Releases
+- Modified fields on drafts and revisions now have a “Compare changes” action, which shows how the field’s value differs from the current entry or the previous revision. Matrix fields that show their entries as cards or in an index show them as cards, with the edited and new ones marked, and each card can be opened in a new tab. ([#8135](https://github.com/craftcms/cms/discussions/8135), [#20307](https://github.com/craftcms/cms/pull/20307))
+- Nested entry cards in drafts and revisions now have a violet bar along their edge, as modified fields do, when the entry was edited or added in that draft or revision. Screen readers read the status as part of the card.
 - Workflow review stages now show their status in words beside a status dot, and a stage where a withdrawn review stopped now says “Withdrawn” rather than looking unstarted. ([#20258](https://github.com/craftcms/cms/pull/20258))
 - Workflow review notes can now be up to 10,000 characters long, matching activity comments. ([#19923](https://github.com/craftcms/cms/pull/19923))
 - The Workflow panel’s review action radio buttons and image transforms’ “Mode” radio buttons now look like the control panel’s other radio buttons.
@@ -722,6 +726,7 @@
 
 ### Bug Fixes
 - Fixed a bug where publishing an approved draft through a workflow marked all of the element’s fields as modified, on both the element and its new revision.
+- Fixed a bug where read-only nested entry cards, such as on revisions, couldn’t be opened from their edit buttons or by double-clicking them. ([#20307](https://github.com/craftcms/cms/pull/20307))
 - Fixed a bug where keyboard shortcuts were shown with <kbd>Super</kbd> on Linux, rather than <kbd>Ctrl</kbd>.
 - Fixed a bug where fields on revisions were disabled, rather than read-only. ([#20297](https://github.com/craftcms/cms/pull/20297))
 - Fixed a bug where single-value checkbox selects unchecked “All” while their options loaded. ([#20109](https://github.com/craftcms/cms/pull/20109))
@@ -1158,6 +1163,7 @@
 - Fixed a bug where PHP-style date formats, such as `{{ date|date('M Y') }}`, always showed month and day names in English, rather than in the formatting locale. ([#20237](https://github.com/craftcms/cms/pull/20237))
 - Fixed a bug where editing fields inside a Matrix entry wasn’t recorded in the entry’s Activity timeline. ([#20299](https://github.com/craftcms/cms/pull/20299))
 - Fixed a bug where configuration changes made through the stdio MCP server (`craft:mcp:serve`) weren’t saved until the server stopped, so the control panel didn’t see them, and they were lost if the server was killed.
+- Fixed a bug where some settings fields, such as section and Matrix fields’ “Entry Types” and field layout designers, jumped in height once their contents loaded, and stayed empty if they couldn’t be loaded. They now hold their space while loading, and show an error with a “Retry” button if loading fails. ([#20326](https://github.com/craftcms/cms/pull/20326))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 

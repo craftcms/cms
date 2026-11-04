@@ -31,6 +31,7 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Tests\Support\Fields\HtmlText;
 use CraftCms\Cms\Tests\Support\MatrixControllerFixture;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
@@ -279,6 +280,46 @@ it('records an update while omitting unsafe field values', function () {
 
     expect($event->eventType)->toBe(ElementUpdated::class)
         ->and($event->changes)->toBeEmpty();
+});
+
+it('records HTML fields’ changes by their text, omitting ones that are still HTML', function (string $value, ?string $text) {
+    $result = EntryModel::factory()
+        ->withField('bodyField', HtmlText::class, value: '<p>Old <em>body</em></p>')
+        ->createElementWithFields(['title' => 'Old title']);
+    $entry = $result->element;
+    $field = $entry->getFieldLayout()->getFieldByHandle('bodyField');
+    DB::table(Table::ACTIVITYEVENTS)->delete();
+
+    $entry->setFieldValue($field->handle, $value);
+
+    expect(Elements::saveElement($entry, updateSearchIndex: false))->toBeTrue();
+
+    $event = $this->activities->query()->subject(ActivitySubject::fromElement($entry))->firstOrFail();
+
+    expect($event->eventType)->toBe(ElementUpdated::class)
+        ->and($event->changes)->toEqual($text === null ? [] : [new ActivityChange($field->name, 'Old body', $text)]);
+})->with([
+    'rich text' => ['<p>New <strong>body</strong></p><ul><li>One</li></ul>', "New body\n• One"],
+    'markup only' => ['<p>Old <strong>body</strong></p>', null],
+    'tags once decoded' => ['<p>&lt;img src=x onerror=alert(1)&gt;</p>', null],
+]);
+
+it('records clearing an HTML field by its original text', function () {
+    $result = EntryModel::factory()
+        ->withField('bodyField', HtmlText::class, value: '<p>Old <em>body</em></p>')
+        ->createElementWithFields(['title' => 'Old title']);
+    $entry = $result->element;
+    $field = $entry->getFieldLayout()->getFieldByHandle('bodyField');
+    DB::table(Table::ACTIVITYEVENTS)->delete();
+
+    $entry->setFieldValue($field->handle, '');
+
+    expect(Elements::saveElement($entry, updateSearchIndex: false))->toBeTrue()
+        ->and($entry->getFieldValue($field->handle))->toBeNull();
+
+    $event = $this->activities->query()->subject(ActivitySubject::fromElement($entry))->firstOrFail();
+
+    expect($event->changes)->toEqual([new ActivityChange($field->name, 'Old body', null)]);
 });
 
 it('does not record cancelled saves', function () {

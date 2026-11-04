@@ -323,28 +323,21 @@ it('tells the page you are on apart from the parents on the way to it', async ()
   expect(all?.current).toBe(false);
 });
 
-it('marks a link to another site with a labeled icon, unless it has a subnav to toggle', async () => {
+// craft-nav-item draws its own external-link icon, so another one would double it.
+it('leaves the external-link icon to the nav item', async () => {
   await mount({
     items: [
       node('Craft Console', {
         href: 'https://console.craftcms.com/',
         external: true,
       }),
-      node('Same Site', {href: '/admin/legacy', external: true}),
-      node('Resources', {
-        href: 'https://craftcms.com/',
-        external: true,
-        subnav: [node('Docs', {href: 'https://craftcms.com/docs'})],
-      }),
     ],
   });
 
-  const suffixIcon = (label: string) =>
-    item(label)?.querySelector(':scope > craft-icon[slot="suffix"]');
+  const link = item('Craft Console') as
+    | (Element & {external?: boolean})
+    | undefined;
 
-  expect(suffixIcon('Craft Console')?.getAttribute('label')).toBe(
-    'External site'
-  );
-  expect(suffixIcon('Same Site')).toBeNull();
-  expect(suffixIcon('Resources')).toBeNull();
+  expect(link?.external).toBe(true);
+  expect(link?.querySelector('craft-icon[slot="suffix"]')).toBeNull();
 });

@@ -245,7 +245,7 @@
           />
 
           <craft-radio-group
-            buttons
+            appearance="button-group"
             name="theme"
             :label="t('Theme')"
             .modelValue="form.theme"
@@ -319,7 +319,7 @@
           <craft-radio-group
             v-for="setting in positionSettings"
             :key="setting.name"
-            buttons
+            appearance="button-group"
             :name="setting.name"
             :label="setting.label"
             .modelValue="form[setting.name]"

@@ -125,6 +125,6 @@ readonly class AssetUploads implements UploadHandler
     /** @param array<string, mixed> $parameters */
     public function complete(Request $request, array $parameters, UploadedFile $file): JsonResponse
     {
-        throw new ConflictHttpException('Complete this upload with the assets.create or assets.replace MCP tool.');
+        throw new ConflictHttpException('Complete this upload with the assets_create or assets_replace MCP tool.');
     }
 }

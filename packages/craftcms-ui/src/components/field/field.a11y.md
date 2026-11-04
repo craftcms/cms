@@ -27,6 +27,7 @@ The field supplies the label, instructions, notices, and errors around a slotted
 - [ ] When the field has errors, the control is marked `aria-invalid="true"`, and the attribute is removed once they clear. Per WCAG 3.3.1 (Error Identification) and 4.1.2 (Name, Role, Value). Known gap: `has-errors` only changes styling, and nothing sets `aria-invalid`.
 - [x] Tip and warning notices start with visually hidden "Tip:" and "Warning:" text, so their kind isn't carried by the callout's icon or color alone. Per WCAG 1.1.1 (Non-text Content) and 1.4.1 (Use of Color). Verified by `renders tip and warning content inside callouts` in `field.test.ts`.
 - [x] Read-only state is shown as a "Read Only" text badge in the heading. Per WCAG 1.4.1 (Use of Color). Verified by `renders the badge in the heading when read-only` in `field.test.ts`.
+- [x] The "Read Only" badge takes the theme's neutral colors, with its text at 4.5:1 against its fill in the light and dark themes. Per WCAG 1.4.3 (Contrast (Minimum)). Verified by `draws the read-only badge as a quiet chip with 4.5:1 text in the %s theme` in `field.browser.test.ts`.
 
 ### Announcements
 

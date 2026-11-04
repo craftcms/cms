@@ -70,7 +70,7 @@ it('creates an asset from a completed upload session once', function () {
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     $created = McpRequest::send($this, 'tools/call', [
-        'name' => 'assets.create',
+        'name' => 'assets_create',
         'arguments' => ['uploadId' => $upload['id'], 'attributes' => ['title' => 'Uploaded document']],
     ])->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent');
     $asset = Asset::findOne($created['asset']['id']);
@@ -88,14 +88,14 @@ it('accepts client file references through MCP and stores the downloaded bytes',
     Http::fake(['https://files.example.test/*' => Http::response('Downloaded content')]);
     $temporaryFiles = File::files(Path::temp());
 
-    $create = collect(McpRequest::tools($this))->firstWhere('name', 'assets.create');
+    $create = collect(McpRequest::tools($this))->firstWhere('name', 'assets_create');
 
     expect($create['_meta']['openai/fileParams'])->toBe(['file'])
         ->and($create['inputSchema']['properties']['file']['properties'])->toHaveKeys(['download_url', 'file_id', 'mime_type', 'file_name'])
         ->and($create['inputSchema']['properties']['file']['required'])->toBe(['download_url', 'file_id']);
 
     $created = McpRequest::send($this, 'tools/call', [
-        'name' => 'assets.create',
+        'name' => 'assets_create',
         'arguments' => array_filter([
             'file' => $reference,
             'folderId' => $this->folder->id,
@@ -147,7 +147,7 @@ it('ingests an image reference through the shared asset upload workflow', functi
         ->and(File::files(Path::temp()))->toEqual($temporaryFiles);
 });
 
-it('sets and clears an image’s focal point through elements.update', function (): void {
+it('sets and clears an image’s focal point through elements_update', function (): void {
     Http::fake(['https://files.example.test/*' => Http::response(File::get(dirname(__DIR__, 2).'/_data/assets/files/google.png'))]);
     $id = app(Assets::class)->create(
         file: ['download_url' => 'https://files.example.test/download', 'file_id' => 'file_image', 'file_name' => 'image.png'],
@@ -156,7 +156,7 @@ it('sets and clears an image’s focal point through elements.update', function 
     config()->set('passport.public_key', openssl_pkey_get_details(openssl_pkey_new(['private_key_bits' => 2048]))['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     $update = fn (mixed $focalPoint) => McpRequest::send($this, 'tools/call', [
-        'name' => 'elements.update',
+        'name' => 'elements_update',
         'arguments' => ['type' => 'assets', 'id' => $id, 'attributes' => ['focalPoint' => $focalPoint]],
     ])->assertOk();
 
@@ -172,7 +172,7 @@ it('sets and clears an image’s focal point through elements.update', function 
     expect(Asset::findOne($id)->getHasFocalPoint())->toBeFalse();
 });
 
-it('sets an asset’s uploader through elements.update', function (bool $peer, bool $allowed): void {
+it('sets an asset’s uploader through elements_update', function (bool $peer, bool $allowed): void {
     Http::fake(['https://files.example.test/*' => Http::response('abc')]);
     $user = User::factory()->create(['admin' => false]);
     $volume = Volume::findOrFail($this->folder->volumeId);
@@ -193,7 +193,7 @@ it('sets an asset’s uploader through elements.update', function (bool $peer, b
     config()->set('passport.public_key', openssl_pkey_get_details(openssl_pkey_new(['private_key_bits' => 2048]))['key']);
     Passport::actingAs($user, ['mcp:admin'], 'craft-mcp');
     $update = fn (mixed $uploaderId) => McpRequest::send($this, 'tools/call', [
-        'name' => 'elements.update',
+        'name' => 'elements_update',
         'arguments' => ['type' => 'assets', 'id' => $id, 'attributes' => ['uploaderId' => $uploaderId]],
     ])->assertOk();
 
@@ -344,7 +344,7 @@ describe('file replacement', function (): void {
 
         if ($source === 'upload') {
             $upload = McpRequest::send($this, 'tools/call', [
-                'name' => 'assets.upload.prepare',
+                'name' => 'assets_upload_prepare',
                 'arguments' => ['filename' => 'replacement.txt', 'size' => 3, 'assetId' => $originalId],
             ])->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent.upload');
             ($this->transferUpload)($upload);
@@ -364,11 +364,11 @@ describe('file replacement', function (): void {
                 $arguments['filename'] = 'replacement.txt';
             }
 
-            expect(collect(McpRequest::tools($this))->firstWhere('name', 'assets.replace')['_meta']['openai/fileParams'])->toBe(['file']);
+            expect(collect(McpRequest::tools($this))->firstWhere('name', 'assets_replace')['_meta']['openai/fileParams'])->toBe(['file']);
         }
 
         McpRequest::send($this, 'tools/call', [
-            'name' => 'assets.replace',
+            'name' => 'assets_replace',
             'arguments' => $arguments,
         ])
             ->assertOk()
@@ -515,7 +515,7 @@ describe('file replacement', function (): void {
     });
 });
 
-describe('assets.analyze', function () {
+describe('assets_analyze', function () {
     beforeEach(function () {
         Queue::fake();
         $this->image = AssetModel::factory()->createElement(['volumeId' => $this->folder->volumeId, 'folderId' => $this->folder->id, 'kind' => 'image', 'filename' => 'photo.png']);

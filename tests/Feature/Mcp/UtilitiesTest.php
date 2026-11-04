@@ -43,17 +43,17 @@ it('lists and clears caches', function (): void {
         $cleared[] = 'gadgets';
     }]);
 
-    expect(($this->result)('caches.list')['caches'])->toBe([
+    expect(($this->result)('caches_list')['caches'])->toBe([
         ['key' => 'gadgets', 'label' => 'Gadget caches', 'info' => null],
         ['key' => 'widgets', 'label' => 'Widget caches', 'info' => 'Rendered widgets.'],
     ])
-        ->and(($this->result)('caches.clear', ['caches' => ['widgets']]))->toBe(['cleared' => ['widgets']])
+        ->and(($this->result)('caches_clear', ['caches' => ['widgets']]))->toBe(['cleared' => ['widgets']])
         ->and($cleared)->toBe(['widgets'])
-        ->and(($this->result)('caches.clear')['cleared'])->toEqualCanonicalizing(['gadgets', 'widgets']);
+        ->and(($this->result)('caches_clear')['cleared'])->toEqualCanonicalizing(['gadgets', 'widgets']);
 
-    ($this->call)('caches.clear', ['caches' => ['nope']])
+    ($this->call)('caches_clear', ['caches' => ['nope']])
         ->assertJsonPath('result.isError', true)
-        ->assertJsonPath('result.content.0.text', 'Unknown cache keys: nope. Call caches.list for the available keys.');
+        ->assertJsonPath('result.content.0.text', 'Unknown cache keys: nope. Call caches_list for the available keys.');
 });
 
 it('reports, runs, retries and releases queue jobs', function (): void {
@@ -61,14 +61,14 @@ it('reports, runs, retries and releases queue jobs', function (): void {
     app(JobProgress::class)->queued('job-2', 'Updating search indexes');
     Artisan::partialMock()->shouldReceive('call')->once()->with('queue:retry', ['id' => 'all']);
 
-    $status = ($this->result)('queue.status');
+    $status = ($this->result)('queue_status');
 
     expect($status['total'])->toBe(2)
         ->and(array_column($status['jobs'], 'description'))->toEqualCanonicalizing(['Resaving entries', 'Updating search indexes'])
-        ->and(($this->result)('queue.retry-all'))->toBe(['retried' => true])
-        ->and(($this->result)('queue.release-all'))->toBe(['released' => true])
+        ->and(($this->result)('queue_retry_all'))->toBe(['retried' => true])
+        ->and(($this->result)('queue_release_all'))->toBe(['released' => true])
         ->and(app(JobProgress::class)->getTotalJobs())->toBe(0)
-        ->and(($this->result)('queue.run'))->toBe(['remaining' => 0]);
+        ->and(($this->result)('queue_run'))->toBe(['remaining' => 0]);
 });
 
 it('runs pending queue jobs for a limited time', function (): void {
@@ -79,7 +79,7 @@ it('runs pending queue jobs for a limited time', function (): void {
             && $options['--max-time'] === 10,
     );
 
-    expect(($this->result)('queue.run', ['maxSeconds' => 10]))->toBe(['remaining' => 1]);
+    expect(($this->result)('queue_run', ['maxSeconds' => 10]))->toBe(['remaining' => 1]);
 });
 
 it('updates the indexes of the given volumes', function (): void {
@@ -93,12 +93,12 @@ it('updates the indexes of the given volumes', function (): void {
     ]);
     Artisan::partialMock()->shouldReceive('output')->andReturn("Indexed photos\n");
 
-    expect(($this->result)('asset-indexes.update', ['volumes' => ['photos']]))->toBe([
+    expect(($this->result)('asset_indexes_update', ['volumes' => ['photos']]))->toBe([
         'volumes' => ['photos'],
         'output' => 'Indexed photos',
     ]);
 
-    ($this->call)('asset-indexes.update', ['volumes' => ['missing']])
+    ($this->call)('asset_indexes_update', ['volumes' => ['missing']])
         ->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'Volume [missing] not found.');
 });
@@ -109,26 +109,26 @@ it('only offers utility tools to users who can use those utilities', function ()
 
     $tools = array_column(McpRequest::tools($this), 'name');
 
-    expect($tools)->toContain('caches.clear')
-        ->not->toContain('queue.release-all')
-        ->not->toContain('asset-indexes.update')
-        ->not->toContain('maintenance-mode.enable')
-        ->not->toContain('project-config.rebuild');
+    expect($tools)->toContain('caches_clear')
+        ->not->toContain('queue_release_all')
+        ->not->toContain('asset_indexes_update')
+        ->not->toContain('maintenance_mode_enable')
+        ->not->toContain('project_config_rebuild');
 });
 
 it('refuses utilities that are disabled', function (): void {
     Cms::config()->disabledUtilities(['clear-caches']);
 
-    ($this->call)('caches.clear')
+    ($this->call)('caches_clear')
         ->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'The clear-caches utility is disabled.');
 });
 
 it('turns maintenance mode on and off, staying reachable while it’s on', function (): void {
-    expect(($this->result)('maintenance-mode.enable'))->toBe(['enabled' => true])
+    expect(($this->result)('maintenance_mode_enable'))->toBe(['enabled' => true])
         ->and(app()->maintenanceMode()->active())->toBeTrue()
-        ->and(($this->result)('maintenance-mode.get'))->toBe(['enabled' => true])
-        ->and(($this->result)('maintenance-mode.disable'))->toBe(['enabled' => false])
+        ->and(($this->result)('maintenance_mode_get'))->toBe(['enabled' => true])
+        ->and(($this->result)('maintenance_mode_disable'))->toBe(['enabled' => false])
         ->and(app()->maintenanceMode()->active())->toBeFalse();
 });
 
@@ -145,11 +145,11 @@ it('only lets users who can access the system while it’s off use MCP during ma
 ]);
 
 it('rebuilds the project config, unless it’s read-only', function (): void {
-    expect(($this->result)('project-config.rebuild'))->toBe(['rebuilt' => true]);
+    expect(($this->result)('project_config_rebuild'))->toBe(['rebuilt' => true]);
 
     app(ProjectConfig::class)->readOnly = true;
 
-    ($this->call)('project-config.rebuild')
+    ($this->call)('project_config_rebuild')
         ->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'Rebuilding the project config is not allowed while it’s in read-only mode.');
 });

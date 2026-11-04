@@ -41,7 +41,7 @@ it('returns readable resource links alongside element list data and checks acces
         : "craft://$plural/$element->id/sites/$element->siteId";
 
     $listed = McpRequest::send($this, 'tools/call', [
-        'name' => 'elements.list',
+        'name' => 'elements_list',
         'arguments' => ['type' => $plural, 'criteria' => $criteria],
     ])
         ->assertOk()
@@ -74,7 +74,7 @@ it('returns readable resource links alongside element list data and checks acces
         ->assertJsonMissingPath('result.contents');
 
     $relisted = McpRequest::send($this, 'tools/call', [
-        'name' => 'elements.list',
+        'name' => 'elements_list',
         'arguments' => ['type' => $plural, 'criteria' => $criteria],
     ])->assertOk();
 

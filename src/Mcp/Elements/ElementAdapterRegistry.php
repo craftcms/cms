@@ -13,7 +13,7 @@ use CraftCms\Cms\Mcp\Elements\Adapters\UserAdapter;
 use Illuminate\Container\Attributes\Singleton;
 
 /**
- * Registers the element types the `elements.*` MCP tools support, keyed by their handles.
+ * Registers the element types the `elements_*` MCP tools support, keyed by their handles.
  *
  * Plugins may register adapters from their service provider:
  *

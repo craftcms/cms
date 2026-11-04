@@ -48,8 +48,8 @@ readonly class Workflows
             'properties' => [
                 'uid' => ['type' => 'string', 'format' => 'uuid'],
                 'name' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 255],
-                'type' => ['type' => 'string', 'description' => 'A workflow stage class from component-types.list with kind: workflow-stage.'],
-                'settings' => ['type' => 'object', 'additionalProperties' => true, 'description' => 'Settings matching component-types.get for the stage type.'],
+                'type' => ['type' => 'string', 'description' => 'A workflow stage class from component_types_list with kind: workflow-stage.'],
+                'settings' => ['type' => 'object', 'additionalProperties' => true, 'description' => 'Settings matching component_types_get for the stage type.'],
             ],
             'required' => ['name', 'type'],
             'additionalProperties' => false,
@@ -65,7 +65,7 @@ readonly class Workflows
     ) {}
 
     /** @return array{count: int, workflows: list<array<string, mixed>>} */
-    #[McpTool(name: 'workflows.list', description: 'Lists editorial workflow definitions and their assigned sections.', annotations: new ToolAnnotations(readOnlyHint: true))]
+    #[McpTool(name: 'workflows_list', description: 'Lists editorial workflow definitions and their assigned sections.', annotations: new ToolAnnotations(readOnlyHint: true))]
     #[RequiresAdmin]
     public function list(): array
     {
@@ -79,7 +79,7 @@ readonly class Workflows
     }
 
     /** @return array{workflow: array<string, mixed>} */
-    #[McpTool(name: 'workflows.get', description: 'Gets an editorial workflow definition and its assigned sections by ID or UID.', annotations: new ToolAnnotations(readOnlyHint: true))]
+    #[McpTool(name: 'workflows_get', description: 'Gets an editorial workflow definition and its assigned sections by ID or UID.', annotations: new ToolAnnotations(readOnlyHint: true))]
     #[RequiresAdmin]
     public function get(
         ?int $id = null,
@@ -145,9 +145,9 @@ readonly class Workflows
     }
 
     /** @return array{review: array<string, mixed>|null} */
-    #[McpTool(name: 'workflows.review', description: 'Inspects a draft’s assigned editorial workflow, review state, history, and actions available to the authenticated user. Refresh before each decision or apply. Use review.runId and review.stage.uid for review decisions; use review.runId and review.currentStage as workflowRunId and workflowCurrentStage for drafts.apply. Approval does not publish.', annotations: new ToolAnnotations(readOnlyHint: true))]
+    #[McpTool(name: 'workflows_review', description: 'Inspects a draft’s assigned editorial workflow, review state, history, and actions available to the authenticated user. Refresh before each decision or apply. Use review.runId and review.stage.uid for review decisions; use review.runId and review.currentStage as workflowRunId and workflowCurrentStage for drafts_apply. Approval does not publish.', annotations: new ToolAnnotations(readOnlyHint: true))]
     public function review(
-        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info_get.')]
         string $type,
         #[Schema(description: 'Draft element ID, not the canonical element ID or draft record ID.')]
         ?int $id = null,
@@ -159,9 +159,9 @@ readonly class Workflows
     }
 
     /** @return array{review: array<string, mixed>|null} */
-    #[McpTool(name: 'workflows.submit', description: 'Submits an enabled, saved named draft for editorial review. After rejection, creates a new run from the first stage.')]
+    #[McpTool(name: 'workflows_submit', description: 'Submits an enabled, saved named draft for editorial review. After rejection, creates a new run from the first stage.')]
     public function submit(
-        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info_get.')]
         string $type,
         ?int $id = null,
         #[Schema(format: 'uuid')]
@@ -177,13 +177,13 @@ readonly class Workflows
     }
 
     /** @return array{review: array<string, mixed>|null} */
-    #[McpTool(name: 'workflows.approve', description: 'Records the authenticated reviewer’s approval at a user-review stage. Does not publish the draft.')]
+    #[McpTool(name: 'workflows_approve', description: 'Records the authenticated reviewer’s approval at a user-review stage. Does not publish the draft.')]
     public function approve(
-        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info_get.')]
         string $type,
-        #[Schema(minimum: 1, description: 'review.runId from a fresh workflows.review result for the draft.')]
+        #[Schema(minimum: 1, description: 'review.runId from a fresh workflows_review result for the draft.')]
         int $runId,
-        #[Schema(format: 'uuid', description: 'review.stage.uid from the same workflows.review result; not the numeric review.currentStage index.')]
+        #[Schema(format: 'uuid', description: 'review.stage.uid from the same workflows_review result; not the numeric review.currentStage index.')]
         string $stageUid,
         ?int $id = null,
         #[Schema(format: 'uuid')]
@@ -196,13 +196,13 @@ readonly class Workflows
     }
 
     /** @return array{review: array<string, mixed>|null} */
-    #[McpTool(name: 'workflows.requestChanges', description: 'Requests changes to a draft at its current user-review stage. Requires a message explaining the changes.')]
+    #[McpTool(name: 'workflows_request_changes', description: 'Requests changes to a draft at its current user-review stage. Requires a message explaining the changes.')]
     public function requestChanges(
-        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info_get.')]
         string $type,
-        #[Schema(minimum: 1, description: 'review.runId from a fresh workflows.review result for the draft.')]
+        #[Schema(minimum: 1, description: 'review.runId from a fresh workflows_review result for the draft.')]
         int $runId,
-        #[Schema(format: 'uuid', description: 'review.stage.uid from the same workflows.review result; not the numeric review.currentStage index.')]
+        #[Schema(format: 'uuid', description: 'review.stage.uid from the same workflows_review result; not the numeric review.currentStage index.')]
         string $stageUid,
         #[Schema(minLength: 1, maxLength: 5000)]
         string $message,
@@ -215,13 +215,13 @@ readonly class Workflows
     }
 
     /** @return array{review: array<string, mixed>|null} */
-    #[McpTool(name: 'workflows.requestReview', description: 'Lets the submitting author request another review after changes were requested. Resets decisions at the current user-review stage within the same run.')]
+    #[McpTool(name: 'workflows_request_review', description: 'Lets the submitting author request another review after changes were requested. Resets decisions at the current user-review stage within the same run.')]
     public function requestReview(
-        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info_get.')]
         string $type,
-        #[Schema(minimum: 1, description: 'review.runId from a fresh workflows.review result for the draft.')]
+        #[Schema(minimum: 1, description: 'review.runId from a fresh workflows_review result for the draft.')]
         int $runId,
-        #[Schema(format: 'uuid', description: 'review.stage.uid from the same workflows.review result; not the numeric review.currentStage index.')]
+        #[Schema(format: 'uuid', description: 'review.stage.uid from the same workflows_review result; not the numeric review.currentStage index.')]
         string $stageUid,
         ?int $id = null,
         #[Schema(format: 'uuid')]
@@ -234,11 +234,11 @@ readonly class Workflows
     }
 
     /** @return array{review: array<string, mixed>|null} */
-    #[McpTool(name: 'workflows.restart', description: 'Restarts a pending or approved editorial workflow from the first stage, invalidating the specified run.', annotations: new ToolAnnotations(destructiveHint: true))]
+    #[McpTool(name: 'workflows_restart', description: 'Restarts a pending or approved editorial workflow from the first stage, invalidating the specified run.', annotations: new ToolAnnotations(destructiveHint: true))]
     public function restart(
-        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info_get.')]
         string $type,
-        #[Schema(minimum: 1, description: 'review.runId from a fresh workflows.review result for the draft.')]
+        #[Schema(minimum: 1, description: 'review.runId from a fresh workflows_review result for the draft.')]
         int $runId,
         ?int $id = null,
         #[Schema(format: 'uuid')]

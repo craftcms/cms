@@ -938,7 +938,6 @@ return [
     'Edit Skill' => 'Upraviť zručnosť',
     'Edit “{name}”' => 'Upraviť „{name}“',
     'Enterprise Verified' => 'Enterprise Verified',
-    'External site' => 'Externý web',
     'deleted' => 'zmazaný',
     'failed the stage' => 'označil(a) fázu ako neúspešnú',
     'Generate chat titles' => 'Generovať názvy chatov',

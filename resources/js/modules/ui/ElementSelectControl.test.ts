@@ -2,6 +2,7 @@ import {createApp, h, nextTick, ref} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {ConfigService} from '@craftcms/ui/services/Config';
 import type {UiControlPayload} from './types';
+import {provideUiPreview} from './uiPreview';
 
 const stub = vi.hoisted(() => {
   const show = vi.fn(async () => {});
@@ -177,12 +178,18 @@ describe('ElementSelectControl', () => {
       props?: Record<string, unknown>;
       editable?: boolean;
       value?: number[] | number | null;
+      preview?: boolean;
     } = {}
   ): Promise<HTMLElement> {
     updates = [];
     container = document.createElement('div');
     document.body.append(container);
     app = createApp({
+      setup: () => {
+        if (options.preview) {
+          provideUiPreview();
+        }
+      },
       render: () =>
         h(ElementSelectControl, {
           control: control(options.props),
@@ -616,6 +623,25 @@ describe('ElementSelectControl', () => {
     });
 
     expect(actionLabels(menus(root)[0])).toEqual(['Edit entry']);
+  });
+
+  it('offers no editor in a preview, which slideouts can’t open over', async () => {
+    const root = await mount({
+      editable: false,
+      preview: true,
+      props: {
+        elementDisplayName: 'entry',
+        elements: [{id: 5, label: 'Some entry', canEdit: true}],
+      },
+    });
+    const event = new MouseEvent('dblclick', {bubbles: false});
+    Object.defineProperty(event, 'composedPath', {
+      value: () => [root.querySelector('craft-chip')],
+    });
+    root.querySelector('craft-chip')!.dispatchEvent(event);
+
+    expect(menus(root)).toHaveLength(0);
+    expect(stub.openSlideout).not.toHaveBeenCalled();
   });
 
   it('keeps server card actions alongside the field actions', async () => {

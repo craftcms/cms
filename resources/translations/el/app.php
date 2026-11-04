@@ -938,7 +938,6 @@ return [
     'Edit Skill' => 'Επεξεργασία δεξιότητας',
     'Edit “{name}”' => 'Επεξεργασία «{name}»',
     'Enterprise Verified' => 'Επαληθευμένο για Enterprise',
-    'External site' => 'Εξωτερικός ιστότοπος',
     'deleted' => 'διαγραμμένος',
     'failed the stage' => 'σημείωσε αποτυχία του σταδίου',
     'Generate chat titles' => 'Δημιουργία τίτλων συνομιλιών',
