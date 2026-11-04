@@ -64,12 +64,11 @@ describe('SSR name adoption', () => {
     expect(element.name).toBe('parent');
   });
 
-  it('aggregates SSR checked state into the group modelValue', async () => {
+  it('aggregates SSR checked state into the group value', async () => {
     const element = await createFromMarkup(SSR_MARKUP);
-    await element.registrationComplete;
     await element.updateComplete;
 
-    expect(element.modelValue).toBe('green');
+    expect(element.value).toBe('green');
   });
 });
 
@@ -81,7 +80,6 @@ describe('button-group appearance', () => {
         '<craft-radio-group appearance="button-group"'
       )
     );
-    await element.registrationComplete;
     await element.updateComplete;
 
     const radios = Array.from(element.querySelectorAll('craft-radio'));
@@ -122,7 +120,6 @@ describe('button-group appearance', () => {
         '<craft-radio-group appearance="button-group"'
       )
     );
-    await element.registrationComplete;
 
     element.appearance = undefined;
     await element.updateComplete;
@@ -135,5 +132,89 @@ describe('button-group appearance', () => {
     expect(
       radios.some((radio) => radio.hasAttribute('data-button-start'))
     ).toBe(false);
+  });
+});
+
+describe('semantics', () => {
+  it('is a radiogroup named by its label, marked required and invalid', async () => {
+    const element = await createFromMarkup(
+      SSR_MARKUP.replace('label="Color"', 'label="Color" required invalid')
+    );
+    const label = element.querySelector<HTMLElement>(
+      ':scope > [slot="label"]'
+    )!;
+
+    expect(element.getAttribute('role')).toBe('radiogroup');
+    expect(element.getAttribute('aria-labelledby')).toBe(label.id);
+    expect(element.getAttribute('aria-required')).toBe('true');
+    expect(element.getAttribute('aria-invalid')).toBe('true');
+  });
+
+  it('disables every option', async () => {
+    const element = await createFromMarkup(SSR_MARKUP);
+    element.disabled = true;
+    await element.updateComplete;
+
+    expect(
+      [...element.querySelectorAll('input')].every((input) => input.disabled)
+    ).toBe(true);
+  });
+});
+
+describe('value', () => {
+  const NAMELESS = `
+    <craft-radio-group label="Size">
+      <craft-radio value="s" label="Small" checked></craft-radio>
+      <craft-radio value="m" label="Medium"></craft-radio>
+      <craft-radio value="l" label="Large"></craft-radio>
+    </craft-radio-group>
+  `;
+
+  it('keeps one option selected even when the radios share no name', async () => {
+    const element = await createFromMarkup(NAMELESS);
+    const radios = [...element.querySelectorAll('craft-radio')];
+    const seen: string[] = [];
+    element.addEventListener('change', () => seen.push(element.value));
+
+    radios[2]!.querySelector('input')!.click();
+    await element.updateComplete;
+
+    expect(seen).toEqual(['l']);
+    expect(radios.map((radio) => radio.checked)).toEqual([false, false, true]);
+    expect(radios.map((radio) => radio.hasAttribute('checked'))).toEqual([
+      false,
+      false,
+      true,
+    ]);
+  });
+
+  it('selects the option a value names, or none', async () => {
+    const element = await createFromMarkup(NAMELESS);
+
+    element.value = 'm';
+    expect(element.value).toBe('m');
+
+    element.value = '';
+    expect(element.value).toBe('');
+    expect(
+      [...element.querySelectorAll('craft-radio')].some(
+        (radio) => radio.checked
+      )
+    ).toBe(false);
+  });
+
+  it('applies a value set before its options arrive', async () => {
+    const element = await createFromMarkup(
+      '<craft-radio-group label="Size"></craft-radio-group>'
+    );
+    element.value = 'm';
+
+    element.innerHTML = `
+      <craft-radio value="s" label="Small"></craft-radio>
+      <craft-radio value="m" label="Medium"></craft-radio>
+    `;
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(element.value).toBe('m');
   });
 });

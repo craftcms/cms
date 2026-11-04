@@ -2,7 +2,7 @@
 
 Follows the WAI-ARIA APG [Radio Group](https://www.w3.org/WAI/ARIA/apg/patterns/radio/) pattern. The options are `craft-radio`s, covered by `radio.a11y.md`. With `appearance` set, the radios are drawn as buttons or cards, separate or joined, but either way they keep the pattern's roles and keyboard behavior.
 
-The group adds `role="radiogroup"` and the label, help text and feedback wiring through Lion's `FormGroupMixin`. The keyboard behavior comes from the browser: each option is a native `<input type="radio">`, and radios that share a `name` form one group. `HasLabel` only reflects `has-label` for spacing; see `input.a11y.md`.
+The group adds `role="radiogroup"` and the label, help text and feedback wiring through the `ChoiceGroup` mixin. The keyboard behavior comes from the browser: each option is a native `<input type="radio">`, and radios that share a `name` form one group. A group without a `name` still keeps only one option selected. `HasLabel` only reflects `has-label` for spacing; see `input.a11y.md`.
 
 **Not for:**
 
@@ -15,10 +15,11 @@ The group adds `role="radiogroup"` and the label, help text and feedback wiring 
 
 ### Semantics
 
-- [ ] The host carries `role="radiogroup"`, and its label (the `label` attribute or a slotted `label`) is referenced by the host's `aria-labelledby`, so the group has an accessible name. Per WCAG 1.3.1 (Info and Relationships) and 4.1.2 (Name, Role, Value). Not yet verified.
+- [x] The host carries `role="radiogroup"`, and its label (the `label` attribute or a slotted `label`) is referenced by the host's `aria-labelledby`, so the group has an accessible name. Per WCAG 1.3.1 (Info and Relationships) and 4.1.2 (Name, Role, Value). Verified by `is a radiogroup named by its label, marked required and invalid` in `radio-group.test.ts`.
 - [x] Every option's native input carries the group's `name`, including when a server-rendered group takes its name from its inputs, so the browser treats the options as one group. Per WCAG 1.3.1 (Info and Relationships). Verified by `adopts the group name from the slotted inputs instead of wiping theirs` and `respects an explicit host name` in `radio-group.test.ts`.
-- [x] A server-rendered checked option becomes the group's value on upgrade, so the selection shown matches the one posted. Per WCAG 4.1.2 (Name, Role, Value). Verified by `aggregates SSR checked state into the group modelValue` in `radio-group.test.ts`.
-- [ ] `disabled` disables every option, so they leave the Tab order and are announced as unavailable. Per WCAG 4.1.2 (Name, Role, Value). Not yet verified.
+- [x] A server-rendered checked option becomes the group's value on upgrade, so the selection shown matches the one posted. Per WCAG 4.1.2 (Name, Role, Value). Verified by `aggregates SSR checked state into the group value` in `radio-group.test.ts`.
+- [x] Selecting an option clears the others, even in a group whose radios share no `name`, so only one is ever announced as checked. Per WCAG 4.1.2 (Name, Role, Value). Verified by `keeps one option selected even when the radios share no name` in `radio-group.test.ts`.
+- [x] `disabled` disables every option, so they leave the Tab order and are announced as unavailable. Per WCAG 4.1.2 (Name, Role, Value). Verified by `disables every option` in `radio-group.test.ts`.
 - [x] With `appearance="button-group"`, each option is still a native radio input, named by its label, so it's announced as a radio with its checked state. Per WCAG 4.1.2 (Name, Role, Value). Verified by `keeps each option a named radio input` in `radio-group.test.ts`.
 
 ### Keyboard and focus
@@ -36,8 +37,9 @@ The group adds `role="radiogroup"` and the label, help text and feedback wiring 
 ### Forms and validation
 
 - [ ] Help text, from the `help-text` attribute or slot, is referenced by the host's `aria-describedby`. Per WCAG 1.3.1 (Info and Relationships) and 3.3.2 (Labels or Instructions). Not yet verified.
-- [ ] A `Required` validator sets `aria-required="true"` on the host, and removes it when the validator is removed. Per WCAG 3.3.2 (Labels or Instructions) and 4.1.2 (Name, Role, Value). Not yet verified.
-- [ ] While an error is shown, the host carries `aria-invalid="true"`, and the message in the `feedback` slot is referenced by its `aria-describedby`. Per WCAG 3.3.1 (Error Identification). Not yet verified.
+- [x] `required` sets `aria-required="true"` on the host. Per WCAG 3.3.2 (Labels or Instructions) and 4.1.2 (Name, Role, Value). Verified by `is a radiogroup named by its label, marked required and invalid` in `radio-group.test.ts`.
+- [x] `invalid` sets `aria-invalid="true"` on the host. Per WCAG 3.3.1 (Error Identification). Verified by `is a radiogroup named by its label, marked required and invalid` in `radio-group.test.ts`.
+- [ ] The message in the `feedback` slot is referenced by the host's `aria-describedby`. Per WCAG 3.3.1 (Error Identification). Not yet verified.
 - [ ] Validation messages are announced when they appear. Per WCAG 4.1.3 (Status Messages). Not yet verified.
 
 ### Reflow and zoom

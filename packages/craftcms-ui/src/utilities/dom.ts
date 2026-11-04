@@ -255,27 +255,14 @@ export function isVisible(el: HTMLElement): boolean {
 }
 
 /**
- * A custom element that carries form state on the host (e.g. Lion-based
- * controls like `craft-select-rich` that have no light-DOM posting input).
+ * A custom element that carries form state on the host, with no light-DOM
+ * input posting for it.
  */
 interface FormValueHost extends HTMLElement {
   name?: unknown;
   disabled?: unknown;
-  modelValue?: unknown;
-  serializedValue?: unknown;
+  checked?: unknown;
   value?: unknown;
-}
-
-/** Lion choice-input model shape (`craft-checkbox`, `craft-option`, …). */
-function isChoiceModelValue(
-  modelValue: unknown
-): modelValue is {value: unknown; checked: boolean} {
-  return (
-    typeof modelValue === 'object' &&
-    modelValue !== null &&
-    'checked' in modelValue &&
-    typeof (modelValue as {checked: unknown}).checked === 'boolean'
-  );
 }
 
 /**
@@ -283,8 +270,8 @@ function isChoiceModelValue(
  * string, mirroring jQuery's `.serialize()` semantics (unchecked checkboxes
  * and radios, disabled controls, and buttons/files are omitted).
  *
- * Custom elements that hold their value on the host (a `name` plus a Lion
- * `modelValue`/`serializedValue`, or a `value` property) are serialized too —
+ * Custom elements that hold their value on the host (a `name` plus a `value`
+ * property, and a `checked` one for a choice) are serialized too —
  * unless their light DOM contains a named native control, in which case that
  * control is the posting surface and already covered (the SSR pattern used by
  * `craft-checkbox`, `craft-switch`, etc.).
@@ -340,7 +327,7 @@ function collectFormInputs(
 
   for (const control of controls) {
     // Like native form submission, skip controls with an empty name — e.g.
-    // the native input of a Lion field (`craft-input`) without a name.
+    // the native input of a `craft-input` without a name.
     if (control.disabled || !control.name || exclude?.contains(control)) {
       continue;
     }
@@ -388,15 +375,15 @@ function collectFormInputs(
       continue;
     }
 
-    if (isChoiceModelValue(host.modelValue)) {
-      if (host.modelValue.checked) {
-        params.append(name, String(host.modelValue.value ?? ''));
+    if (typeof host.checked === 'boolean') {
+      if (host.checked) {
+        params.append(name, String(host.value ?? ''));
       }
 
       continue;
     }
 
-    const value = host.serializedValue ?? host.value;
+    const value = host.value;
 
     if (value === undefined || value === null) {
       continue;

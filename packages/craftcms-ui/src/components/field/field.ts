@@ -355,7 +355,6 @@ export default class CraftField extends FieldNotices(FormControl(LitElement)) {
       this.__hasSlot.test('heading-suffix');
 
     if (!hasLabel && !hasOtherContent && !this.readOnly) {
-      // Lion types this override as returning a TemplateResult.
       return html``;
     }
 

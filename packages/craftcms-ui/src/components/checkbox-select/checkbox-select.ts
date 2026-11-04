@@ -63,11 +63,10 @@ let nextKey = 0;
  *   `all` class as well. Rendered for you when you set `options`.
  *
  * @fires {Event} change - When an option is checked or unchecked, from its
- *   input.
+ *   input, or moved, from the element. The value is up to date by the time
+ *   it reaches the element.
  * @fires {CustomEvent<CheckboxSelectOrderChangeDetail>} craft-order-change -
  *   When an option is moved.
- * @fires {Event} model-value-changed - When the value changes, including its
- *   order.
  *
  * @dependency craft-action-menu
  * @dependency craft-button
@@ -174,7 +173,7 @@ export default class CraftCheckboxSelect extends LitElement {
    * The checked values in display order — or, while “All” is checked in
    * `single-value` mode, just the “All” value.
    */
-  get modelValue(): string[] {
+  get value(): string[] {
     if (this.#allIsSingleValue() && this.#allInput()?.checked) {
       return [this.allValue];
     }
@@ -184,7 +183,7 @@ export default class CraftCheckboxSelect extends LitElement {
       .map((item) => this.#valueOf(item));
   }
 
-  set modelValue(value: string[]) {
+  set value(value: string[]) {
     // Set before the first render, the “All” item isn't there to check yet.
     if (this.allLabel && !this.#allItem()) {
       this.#ensureEmptyInput();
@@ -208,7 +207,7 @@ export default class CraftCheckboxSelect extends LitElement {
     }
 
     this.#syncAll();
-    this.requestUpdate('modelValue');
+    this.requestUpdate('value');
   }
 
   /** Adds an option, at `index` among the options or at the end. */
@@ -258,11 +257,12 @@ export default class CraftCheckboxSelect extends LitElement {
 
   constructor() {
     super();
-    // Added here so it runs ahead of any listener added to the element later.
-    this.addEventListener('model-value-changed', this.#onModelValueChanged);
+    // Capturing, so “All” is settled before any listener on the element reads
+    // the value.
+    this.addEventListener('change', this.#onChange, true);
     // Re-apply values set on the element before it was upgraded, which
     // would otherwise shadow the accessors.
-    for (const property of ['options', 'modelValue'] as const) {
+    for (const property of ['options', 'value'] as const) {
       if (Object.prototype.hasOwnProperty.call(this, property)) {
         // SAFETY: Only the two accessors above are read back.
         const value = (this as Record<string, unknown>)[property];
@@ -276,7 +276,6 @@ export default class CraftCheckboxSelect extends LitElement {
 
   override connectedCallback(): void {
     super.connectedCallback();
-    this.addEventListener('change', this.#onChange);
     this.#observer = new MutationObserver(() => this.#revisionChanged());
     this.#observer.observe(this, {
       childList: true,
@@ -287,7 +286,6 @@ export default class CraftCheckboxSelect extends LitElement {
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
-    this.removeEventListener('change', this.#onChange);
     this.#observer?.disconnect();
     this.#observer = null;
   }
@@ -584,7 +582,7 @@ export default class CraftCheckboxSelect extends LitElement {
         detail: {value: this.#valueOf(item), index: finish},
       })
     );
-    this.#emitModelValue();
+    this.dispatchEvent(new Event('change', {bubbles: true}));
   }
 
   /** Reacts to a checkbox changing, by the user or by {@link #check}. */
@@ -601,17 +599,6 @@ export default class CraftCheckboxSelect extends LitElement {
     }
 
     this.requestUpdate();
-    this.#emitModelValue();
-  };
-
-  /**
-   * The checkboxes' own value events would pass for the element's, so they
-   * stop here, while still reaching the checkboxes themselves.
-   */
-  #onModelValueChanged = (event: Event): void => {
-    if (event.target !== this) {
-      event.stopImmediatePropagation();
-    }
   };
 
   #check(item: HTMLElement, checked: boolean, notify = false): void {
@@ -700,12 +687,6 @@ export default class CraftCheckboxSelect extends LitElement {
         delete input.dataset[DISABLED_BY_GROUP];
       }
     }
-  }
-
-  #emitModelValue(): void {
-    this.dispatchEvent(
-      new Event('model-value-changed', {bubbles: true, composed: true})
-    );
   }
 
   #revisionChanged(): void {
@@ -899,9 +880,8 @@ export default class CraftCheckboxSelect extends LitElement {
   }
 
   /**
-   * Reads the native input, never the `craft-checkbox` host: the host's
-   * `checked` is Lion state that can lag a `change` by a tick, and isn't
-   * adopted yet while the component first renders.
+   * Reads the native input rather than the `craft-checkbox` host, which
+   * may not have upgraded yet while the component first renders.
    */
   #inputOf(item: Element): HTMLInputElement | null {
     return item.querySelector<HTMLInputElement>('input[type="checkbox"]');

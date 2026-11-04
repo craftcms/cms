@@ -669,3 +669,46 @@ describe('craft-switch imperative API (legacy Craft.LightSwitch)', () => {
     expect(changes()).toBe(0);
   });
 });
+
+describe('craft-switch semantics', () => {
+  it('names the switch button with its label', async () => {
+    const element = await createSwitch({label: 'Enabled'});
+    const label = element.querySelector<HTMLElement>('[slot="label"]')!;
+
+    expect(switchButton(element)!.getAttribute('role')).toBe('switch');
+    expect(switchButton(element)!.getAttribute('aria-labelledby')).toBe(
+      label.id
+    );
+  });
+
+  it('toggles and focuses when its label is clicked', async () => {
+    const element = await createSwitch({label: 'Enabled'});
+    const changes: boolean[] = [];
+    element.addEventListener('change', () => changes.push(element.checked));
+
+    element.querySelector<HTMLElement>('[slot="label"]')!.click();
+
+    expect(changes).toEqual([true]);
+    expect(document.activeElement).toBe(switchButton(element));
+  });
+
+  it('passes disabled to the switch button', async () => {
+    const element = await createSwitch({label: 'Enabled', disabled: ''});
+
+    expect(switchButton(element)!.getAttribute('aria-disabled')).toBe('true');
+    expect(switchButton(element)!.tabIndex).toBe(-1);
+  });
+});
+
+describe('craft-switch disabled', () => {
+  it('can be enabled again', async () => {
+    const element = await createSwitch({label: 'Enabled', disabled: ''});
+
+    element.disabled = false;
+    await element.updateComplete;
+    switchButton(element)!.click();
+
+    expect(element.disabled).toBe(false);
+    expect(element.checked).toBe(true);
+  });
+});

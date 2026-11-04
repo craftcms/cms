@@ -65,3 +65,46 @@ describe('craft-switch-button', () => {
     expect(element.hasAttribute('indeterminate')).toBe(true);
   });
 });
+
+describe('craft-switch-button keyboard and state', () => {
+  it('toggles on Space and Enter release, without scrolling on Space', async () => {
+    const element = await createSwitchButton();
+    const changes: boolean[] = [];
+    element.addEventListener('change', () => changes.push(element.checked));
+
+    const space = new KeyboardEvent('keydown', {key: ' ', cancelable: true});
+    element.dispatchEvent(space);
+    expect(space.defaultPrevented).toBe(true);
+
+    element.dispatchEvent(new KeyboardEvent('keyup', {key: ' '}));
+    element.dispatchEvent(new KeyboardEvent('keyup', {key: 'Enter'}));
+
+    expect(changes).toEqual([true, false]);
+  });
+
+  it('is silent when checked from code', async () => {
+    const element = await createSwitchButton();
+    const seen: string[] = [];
+    element.addEventListener('change', () => seen.push('change'));
+
+    element.checked = true;
+    await element.updateComplete;
+
+    expect(seen).toEqual([]);
+    expect(element.getAttribute('aria-checked')).toBe('true');
+  });
+
+  it('leaves the Tab order and ignores toggles while disabled', async () => {
+    const element = await createSwitchButton({disabled: ''});
+
+    expect(element.getAttribute('aria-disabled')).toBe('true');
+    expect(element.tabIndex).toBe(-1);
+
+    element.click();
+    expect(element.checked).toBe(false);
+
+    element.disabled = false;
+    await element.updateComplete;
+    expect(element.tabIndex).toBe(0);
+  });
+});

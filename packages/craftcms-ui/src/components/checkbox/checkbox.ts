@@ -1,172 +1,84 @@
-import {LionCheckbox} from '@lion/ui/checkbox-group.js';
-import {css, type PropertyValues} from 'lit';
+import {css, LitElement, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
-import {SsrChoiceInputMixin} from '../../mixins/SsrChoiceInputMixin.js';
+import {ChoiceInput, choiceInputStyles} from '../../mixins/ChoiceInput.js';
 
 /**
  * @summary A single checkbox, for a choice that stands on its own or one of
  * several in a `craft-checkbox-group`.
  *
- * Built on Lion's checkbox, so it carries a label, validation, and a
- * `modelValue` alongside the native input. It also understands
- * server-rendered markup: a checkbox that arrives from the server with its
- * input already in place keeps that input's `checked`, `disabled`, and `name`
- * rather than having them reset on upgrade.
+ * The native checkbox in its light DOM is what posts and what holds the state,
+ * so `checked` reads it, and its `input` and `change` events are the
+ * checkbox's. A checkbox that arrives from the server with its input already
+ * in place keeps that input's `checked`, `disabled`, `name` and `value`.
  *
  * @slot label - The checkbox's label, as an alternative to the `label`
  *   attribute.
  * @slot help-text - Guidance shown below the label.
- * @slot feedback - Validation messages.
+ *
+ * @fires {Event} input - When the user checks or unchecks it.
+ * @fires {Event} change - When the user checks or unchecks it.
  */
-export default class CraftCheckbox extends SsrChoiceInputMixin(LionCheckbox) {
-  private __inputPatched = false;
-
+export default class CraftCheckbox extends ChoiceInput(LitElement) {
   /**
-   * LionCheckbox has no native indeterminate state, so mirror this property onto
-   * the underlying input. Used for "select all" affordances where some — but not
-   * all — items are selected.
+   * Shows the checkbox as partly checked, for a "select all" whose items are
+   * only some of them checked. Display only: `checked` is unaffected.
    */
   @property({type: Boolean, reflect: true}) indeterminate = false;
 
-  override connectedCallback() {
-    super.connectedCallback();
-    this.__patchSlottedInputProps();
+  /** The native checkbox, unless the markup brings its own. */
+  override get slots() {
+    return {
+      ...super.slots,
+      input: () => {
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        return input;
+      },
+    };
   }
 
-  // Patch fallback for streaming parsing, where the input can be absent on
-  // connect; also mirrors `indeterminate` onto the underlying input.
-  override updated(changedProperties: PropertyValues) {
-    super.updated(changedProperties);
-    this.__patchSlottedInputProps();
+  override updated(changed: PropertyValues) {
+    super.updated(changed);
 
-    const input = this._inputNode as HTMLInputElement | undefined;
-    if (input) {
+    const input = this._inputNode;
+    if (input instanceof HTMLInputElement) {
       input.indeterminate = this.indeterminate;
     }
   }
 
-  /**
-   * Keep the host's `checked`/`disabled` in step with the slotted input when
-   * the input's properties are written directly, bypassing Lion. Lion only
-   * learns of checkedness through `change`/`user-input-changed`, but the
-   * legacy checkbox select "All" handler flips every option with jQuery
-   * `.prop({checked, disabled})`, which sets the properties and fires no
-   * event — leaving Lion's model stale. A stale `checked` breaks consumers
-   * that read it off the host (`SortableCheckboxSelect`'s `isItemChecked`); a
-   * stale `disabled` is worse: Lion's `_toggleChecked` refuses user input
-   * while the host is disabled, so after unchecking "All" (which re-enables
-   * the inputs) no option could be selected.
-   *
-   * We wrap the input instance's own accessors to mirror external writes into
-   * the host, rather than overriding the host's properties — those are
-   * load-bearing for Lion (model sync, checkbox groups, its own input
-   * reflection), and reading them off the input there breaks that sync.
-   * Lion's own writes already match the host value, so the guard makes them
-   * no-ops and avoids recursion.
-   */
-  private __patchSlottedInputProps() {
-    if (this.__inputPatched) {
-      return;
-    }
-
-    const input = this.__slottedInputElement();
-    if (!input) {
-      return;
-    }
-
-    this.__inputPatched = true;
-
-    const host = this;
-
-    for (const prop of ['checked', 'disabled'] as const) {
-      const descriptor = Object.getOwnPropertyDescriptor(
-        HTMLInputElement.prototype,
-        prop
-      );
-      if (!descriptor?.get || !descriptor.set) {
-        continue;
+  static override styles = [
+    choiceInputStyles,
+    css`
+      :host(:not([label-sr-only])) {
+        --_gap-x: var(--gap-x, var(--c-spacing-md));
+        display: grid;
+        align-items: center;
+        gap: 0 var(--_gap-x);
+        grid-template-areas: 'input label' '. help-text';
+        grid-template-columns: auto 1fr;
+        grid-template-rows: repeat(2, auto);
       }
 
-      const {get, set} = descriptor;
+      ::slotted(label) {
+        font: inherit;
+        grid-area: label;
+      }
 
-      Object.defineProperty(input, prop, {
-        configurable: true,
-        enumerable: descriptor.enumerable,
-        get() {
-          return get.call(this);
-        },
-        set(value: boolean) {
-          set.call(this, value);
-          if (host[prop] !== value) {
-            host[prop] = value;
-          }
-        },
-      });
-    }
-  }
-
-  private __slottedInputElement(): HTMLInputElement | undefined {
-    return Array.from(this.children).find(
-      (child): child is HTMLInputElement =>
-        child instanceof HTMLInputElement && child.slot === 'input'
-    );
-  }
-  static override get styles() {
-    return [
-      ...LionCheckbox.styles,
-      css`
-        /* same as radio, potentially consolidate */
-        :host(:not([label-sr-only])) {
-          --_gap-x: var(--gap-x, var(--c-spacing-md));
-          display: grid;
-          align-items: center;
-          gap: 0 var(--_gap-x);
-          grid-template-areas: 'input label' '. help-text';
-          grid-template-columns: auto 1fr;
-          grid-template-rows: repeat(2, auto);
-        }
-
-        /*
-         * Choice inputs render their label/help-text in \`.choice-field__*\`, so
-         * Lion's built-in \`label-sr-only\` rule (which targets
-         * \`.form-field__label\`) never matches. When the label is hidden we also
-         * hide the help text, but both stay available to screen readers: Lion
-         * associates the help text with the input via \`aria-describedby\`, and we
-         * clip rather than use \`display:none\`/\`visibility:hidden\` so the content
-         * remains in the accessibility tree (WCAG 1.3.1 / 4.1.2). \`white-space:
-         * nowrap\` avoids clipped multi-line text being announced oddly, and the
-         * \`:not(:focus-within)\` guard reveals any focusable help-text content
-         * (e.g. links) when focused (WCAG 2.4.7).
-         */
-        :host([label-sr-only]) .choice-field__label,
-        :host([label-sr-only]) .choice-field__help-text:not(:focus-within) {
-          position: absolute;
-          width: 1px;
-          height: 1px;
-          overflow: hidden;
-          clip-path: inset(100%);
-          clip: rect(1px, 1px, 1px, 1px);
-          white-space: nowrap;
-          border: 0;
-          margin: 0;
-          padding: 0;
-        }
-
-        ::slotted(label) {
-          font: inherit;
-          grid-area: label;
-        }
-
-        .choice-field__help-text {
-          font-size: 1em;
-          color: var(--c-text-quiet);
-          grid-area: help-text;
-        }
-      `,
-    ];
-  }
+      .choice-field__help-text {
+        font-size: 1em;
+        color: var(--c-text-quiet);
+        grid-area: help-text;
+      }
+    `,
+  ];
 }
 
 if (!customElements.get('craft-checkbox')) {
   customElements.define('craft-checkbox', CraftCheckbox);
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'craft-checkbox': CraftCheckbox;
+  }
 }

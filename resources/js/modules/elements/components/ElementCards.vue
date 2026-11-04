@@ -178,14 +178,6 @@
       event.preventDefault();
     }
   }
-
-  function checkboxValue(event: Event): boolean {
-    // `craft-checkbox` dispatches `model-value-changed` from the host, not from
-    // an inner `<input>`, so an `instanceof HTMLInputElement` test reads every
-    // change as unchecked. Since it also re-fires on programmatic `.checked`
-    // updates, that turned each selection into an immediate deselection.
-    return Boolean((event.target as {checked?: boolean} | null)?.checked);
-  }
 </script>
 
 <template>
@@ -232,7 +224,9 @@
         .checked="selection.allSelected.value"
         .indeterminate="selection.someSelected.value"
         .disabled="readOnly || interactionsDisabled"
-        @model-value-changed="selection.toggleAll(checkboxValue($event))"
+        @change="
+          selection.toggleAll(($event.target as HTMLInputElement).checked)
+        "
       >
         <label slot="label">{{ t('Select all') }}</label>
       </craft-checkbox>

@@ -9,7 +9,7 @@ import * as RadioGroupStories from './radio-group.stories';
 
 <Canvas of={RadioGroupStories.Default} sourceState="shown" />
 
-The group owns the name and the value: its `modelValue` is the value of whichever radio is checked.
+The group owns the name and the value: its `value` is the value of whichever radio is checked, or empty when none is. The radios' `input` and `change` events bubble through the group, which has the new `value` by the time they reach it.
 
 Use a [Checkbox Group](?path=/docs/form-controls-choice-controls-checkbox-group--docs) when more than one option may be chosen.
 
@@ -104,7 +104,7 @@ Choice::make('viewMode')
 
 ## Server-Rendered Markup
 
-A group rendered by the server adopts the name already present on its inputs, for the same reason as the checkbox group: Lion syncs each child's name to the group's, so upgrading a nameless group would strip the server's names and break native posting.
+A group rendered by the server adopts the name already present on its inputs, for the same reason as the checkbox group: the group gives every radio its name, so one that upgraded without a name of its own would have nothing to give them.
 
 ## In PHP
 

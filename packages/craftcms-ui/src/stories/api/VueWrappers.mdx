@@ -16,11 +16,11 @@ import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
 
 ## Why they are needed
 
-A form control's value is a **property** — `value` for the controls around a native input, `modelValue` for the select, choice and combobox controls — and Vue's `v-model` on a custom element binds an attribute and listens for `update:modelValue`, so the two do not meet: the value never reaches the element, and a change never comes back.
+A form control's value is a **property** — `value` for most controls and groups, `checked` for a checkbox or switch — and Vue's `v-model` on a custom element binds an attribute and listens for `update:modelValue`, so the two do not meet: the value never reaches the element, and a change never comes back.
 
-Each wrapper is a thin single-file component that does the bridging — binds the value as a property, listens for the control's change event (`input`, or `model-value-changed`), and writes the result back through `defineModel()`. It also forwards an `error` prop into the control's `feedback` slot, and marks the control `invalid`, so validation messages render the way the design system expects.
+Each wrapper is a thin single-file component that does the bridging — binds the value as a property, listens for the control's native `input` or `change` event, and writes the result back through `defineModel()`. It also forwards an `error` prop into the control's `feedback` slot, and marks the control `invalid`, so validation messages render the way the design system expects.
 
-The `model-value-changed` controls emit one on mount carrying the element's own default, before Vue's binding has settled. Their wrappers ignore that one — `detail.initialize` marks it — because acting on it would clobber the bound value with an empty default the moment the component appeared.
+Setting the value from code fires no event, as on a native input, so binding the model never echoes back as a change.
 
 ## What is wrapped
 

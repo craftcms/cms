@@ -104,24 +104,21 @@ stray highlighted text behind.
 ## Checkboxes
 
 `setChecked(id, checked, {shiftKey})` is the path for a checkbox reporting its
-own new state, and it exists because `craft-checkbox` needs two accommodations:
+own new state:
 
 ```html
 <craft-checkbox
   .checked="isSelected(id)"
   .disabled="readOnly"
   @click="rememberShift"
-  @model-value-changed="
-    setChecked(id, $event.target.checked, {shiftKey: pendingShiftKey})
-  "
+  @change="setChecked(id, $event.target.checked, {shiftKey: pendingShiftKey})"
 />
 ```
 
-- Lion re-fires `model-value-changed` when `.checked` is set **programmatically**,
-  so a value that already matches is ignored rather than pointlessly moving the
-  anchor.
-- Modifier keys never reach that event, so `shiftKey` has to be captured from the
-  native click that preceded it — hence the `@click="rememberShift"` alongside.
+- A value that already matches is ignored rather than moving the anchor.
+- Modifier keys never reach a `change` event, so `shiftKey` has to be captured
+  from the native click that preceded it — hence the `@click="rememberShift"`
+  alongside.
 
 Clicks on the checkbox don't also reach an enclosing row's click handler:
 `handleClick` walks the composed path, which pierces shadow DOM and finds the
@@ -160,7 +157,7 @@ function removeIds(remove: Set<number>): void {
 | `toggle(id)`                  | Sets the anchor                            |
 | `selectRange(id, selected)`   | Anchor → `id`, inclusive; keeps the anchor |
 | `extendTo(id)`                | `selectRange(id, true)`                    |
-| `setChecked(id, checked, …)`  | Checkbox path; ignores no-op re-fires      |
+| `setChecked(id, checked, …)`  | Checkbox path; ignores no-op changes       |
 | `selectAll(selected)`         |                                            |
 | `clear()`                     | Clears the selection and the anchor        |
 | `prune(available?)`           | Drops departed ids                         |
