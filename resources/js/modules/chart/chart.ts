@@ -552,6 +552,9 @@ export class Area extends BaseChart {
         // Set tip position
         const margin = this.getChartMargin();
 
+        // Show the tip before measuring it: a hidden tip has no width
+        this.tip.show();
+
         const offset = 24;
         const top = y(dataValue[1]) + offset;
         let left;
@@ -577,7 +580,6 @@ export class Area extends BaseChart {
         }
 
         this.tip.setPosition({top, left});
-        this.tip.show();
       })
       .on('mouseout', (event: any) => {
         const index = d3.select(event.target).attr('data-index');
