@@ -47,9 +47,6 @@ class Entries extends BaseRelationField
     public bool $showUnpermittedSections = false;
 
     #[Override]
-    protected string $settingsTemplate = '_components/fieldtypes/Entries/settings.twig';
-
-    #[Override]
     protected ?string $inputJsClass = 'Craft.EntrySelectInput';
 
     #[Override]
@@ -158,7 +155,7 @@ class Entries extends BaseRelationField
         ];
     }
 
-    /** @return array{sectionId:list<int>, typeId:list<int>}|null */
+    /** @return array{sectionId:list<int>, typeId:list<int>, editable?:true}|null */
     #[Override]
     public function getEagerLoadingGqlConditions(): ?array
     {
@@ -182,10 +179,17 @@ class Entries extends BaseRelationField
             }
         }
 
-        return [
+        $conditions = [
             'sectionId' => $sectionIds,
             'typeId' => array_unique($entryTypeIds),
         ];
+
+        // Limit authenticated queries to entries the user can view
+        if (Gql::getSchemaUser()) {
+            $conditions['editable'] = true;
+        }
+
+        return $conditions;
     }
 
     protected function createSelectionCondition(): ElementCondition

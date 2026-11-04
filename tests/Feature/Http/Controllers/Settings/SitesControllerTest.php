@@ -94,7 +94,8 @@ test('index shows all sites', function () {
             ->where('ui.nodes.0.props.rows.1.name.url', route('craft.cp.settings.sites.edit', ['site' => $newSite->id]))
             ->where('ui.nodes.0.props.rows.1.handle.html', fn (string $html): bool => new Crawler($html)->filter('code')->text() === 'newSite')
             ->where('ui.nodes.0.props.rows.1.language.html', fn (string $html): bool => new Crawler($html)->filter('code')->text() === 'nl')
-            ->where('ui.nodes.0.props.rows.1.status.html', fn (string $html): bool => new Crawler($html)->filter('craft-badge')->text() === 'Disabled')
+            ->where('ui.nodes.0.props.rows.1.status.html', fn (string $html): bool => new Crawler($html)->filter('craft-badge')->text() === 'Disabled'
+                && new Crawler($html)->filter('craft-badge')->attr('fill') === 'gray')
             ->where('ui.nodes.0.props.rows.1.baseUrl.html', fn (string $html): bool => new Crawler($html)->filter('code')->text() === 'https://example.com/?a=1&b=2/')
             ->where('ui.nodes.0.props.rows.1.group', SiteGroup::first()->name)
             ->where('ui.nodes.0.props.rows.1.primary', null)

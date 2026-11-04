@@ -13,7 +13,6 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * @since 6.0.0
@@ -160,7 +159,7 @@ readonly class FieldReferences
     private function referencesToTargetsQuery(array $targetIds): Builder
     {
         return DB::table(Table::FIELDREFERENCES, 'fr')
-            ->join(new Alias(Table::ELEMENTS, 'e'), 'e.id', 'fr.sourceId')
+            ->join(Table::ELEMENTS.' as e', 'e.id', 'fr.sourceId')
             ->whereIn('fr.targetId', $targetIds)
             ->whereNull('e.dateDeleted')
             ->whereNull('e.revisionId');

@@ -7,12 +7,17 @@ namespace CraftCms\Cms\Element\Queries;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\EagerloadsTransforms;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesAlt;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesAssetLocation;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesAssetProperties;
+use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesImageType;
+use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesOrientation;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesSizes;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
@@ -20,7 +25,6 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Override;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUser;
 
@@ -35,6 +39,8 @@ class AssetQuery extends ElementQuery
     use QueriesAlt;
     use QueriesAssetLocation;
     use QueriesAssetProperties;
+    use QueriesImageType;
+    use QueriesOrientation;
     use QueriesSizes;
 
     #[Override]
@@ -79,8 +85,9 @@ class AssetQuery extends ElementQuery
             'assets.height as height',
             'assets.size as size',
             'assets.focalPoint as focalPoint',
-            'assets.colors as colors',
-            'assets.keptFile as keptFile',
+            'assets.analysis as analysis',
+            'assets.deletedWithVolume as deletedWithVolume',
+            'assets.trashedFileExists as trashedFileExists',
             'assets.dateModified as dateModified',
             'assets.mimeType as mimeType',
             'assets_sites.alt as siteAlt',
@@ -88,7 +95,7 @@ class AssetQuery extends ElementQuery
         ]);
 
         $this->beforeQuery(static function (self $elementQuery) {
-            $elementQuery->query->leftJoin(new Alias(Table::ASSETS_SITES, 'assets_sites'), function (JoinClause $join) {
+            $elementQuery->query->leftJoin(Table::ASSETS_SITES.' as assets_sites', function (JoinClause $join) {
                 $join->on('assets_sites.assetId', '=', 'assets.id')
                     ->whereColumn('assets_sites.siteId', '=', 'elements_sites.siteId');
             });
@@ -103,6 +110,8 @@ class AssetQuery extends ElementQuery
      *
      * @uses $editable
      */
+    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether to only return {elements} that the user has permission to edit.')]
+    #[Gql(exclude: true)]
     public function editable(?bool $value = true): self
     {
         $this->editable = $value;

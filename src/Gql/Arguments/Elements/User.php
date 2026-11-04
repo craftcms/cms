@@ -7,10 +7,10 @@ namespace CraftCms\Cms\Gql\Arguments\Elements;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Gql\Arguments\ElementArguments;
 use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentFieldInterface;
-use CraftCms\Cms\Gql\Types\QueryArgument;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use GraphQL\Type\Definition\Argument;
 use GraphQL\Type\Definition\Type;
+use Override;
 
 /**
  * @phpstan-import-type ArgumentConfig from Argument
@@ -19,74 +19,20 @@ use GraphQL\Type\Definition\Type;
  */
 class User extends ElementArguments
 {
-    #[\Override]
+    #[Override]
     public static function getArguments(): array
     {
-        return array_merge(parent::getArguments(), self::getContentArguments(), [
-            'email' => [
-                'name' => 'email',
-                'type' => Type::listOf(Type::string()),
-                'description' => 'Narrows the query results based on the users’ email addresses.',
-            ],
-            'username' => [
-                'name' => 'username',
-                'type' => Type::listOf(Type::string()),
-                'description' => 'Narrows the query results based on the users’ usernames.',
-            ],
-            'fullName' => [
-                'name' => 'fullName',
-                'type' => Type::listOf(Type::string()),
-                'description' => 'Narrows the query results based on the users’ full names.',
-            ],
-            'firstName' => [
-                'name' => 'firstName',
-                'type' => Type::listOf(Type::string()),
-                'description' => 'Narrows the query results based on the users’ first names.',
-            ],
-            'lastName' => [
-                'name' => 'lastName',
-                'type' => Type::listOf(Type::string()),
-                'description' => 'Narrows the query results based on the users’ last names.',
-            ],
-            'hasPhoto' => [
-                'name' => 'hasPhoto',
-                'type' => Type::boolean(),
-                'description' => 'Narrows the query results to only users that have (or don’t have) a user photo.',
-            ],
-            'assetUploaders' => [
-                'name' => 'assetUploaders',
-                'type' => Type::boolean(),
-                'description' => 'Narrows the query results based on whether the users have uploaded any assets.',
-            ],
-            'authors' => [
-                'name' => 'authors',
-                'type' => Type::boolean(),
-                'description' => 'Narrows the query results based on whether the users are listed as the author of any entries.',
-            ],
-            'groupId' => [
-                'name' => 'groupId',
-                'type' => Type::listOf(QueryArgument::getType()),
-                'description' => 'Narrows the query results based on the user group the users belong to, per the groups’ IDs.',
-            ],
-            'group' => [
-                'name' => 'group',
-                'type' => Type::listOf(QueryArgument::getType()),
-                'description' => 'Narrows the query results based on the user group the users belong to.',
-            ],
-            'affiliatedSite' => [
-                'name' => 'affiliatedSite',
-                'type' => Type::listOf(Type::string()),
-                'description' => 'Determines which site(s) the users should be affiliated with.',
-            ],
-            'affiliatedSiteId' => [
-                'name' => 'affiliatedSiteId',
-                'type' => Type::listOf(QueryArgument::getType()),
-                'description' => 'Determines which site(s) the users should be affiliated with.',
-            ],
-        ]);
+        // Custom field arguments can’t shadow the user’s own arguments.
+        return array_merge(self::getContentArguments(), parent::getArguments());
     }
 
-    #[\Override]
+    #[Override]
+    protected static function elementType(): string
+    {
+        return UserElement::class;
+    }
+
+    #[Override]
     public static function getContentArguments(): array
     {
         $contentArguments = [];
@@ -100,19 +46,5 @@ class User extends ElementArguments
         }
 
         return array_merge(parent::getContentArguments(), $contentArguments);
-    }
-
-    #[\Override]
-    /** @return array<string, ArgumentConfig> */
-    public static function getDraftArguments(): array
-    {
-        return [];
-    }
-
-    #[\Override]
-    /** @return array<string, ArgumentConfig> */
-    public static function getRevisionArguments(): array
-    {
-        return [];
     }
 }

@@ -13,7 +13,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
  */
 readonly class FieldLayoutConfig
 {
-    private const string Description = 'Native Craft field layout config: a `tabs` list, each with a `name`, an optional `icon` (a Font Awesome icon name, such as `newspaper`, shown before the tab’s name), an optional `type` (`content`, the default, or `sidebar`; sidebar tabs always come after content tabs), and its `elements`. Create fields before referencing their UIDs.';
+    private const string Description = 'Native Craft field layout config: a `tabs` list, each with a `name`, an optional `icon` (a Font Awesome icon name, such as `newspaper`, shown before the tab’s name), an optional `type` (`content`, the default, or `sidebar`; sidebar tabs always come after content tabs), and its `elements`. component-types.list with kind: field-layout-element and the layout’s element type as scope lists the elements a layout accepts; component-types.get describes their settings. Create fields before referencing their UIDs.';
 
     public const array Schema = [
         'type' => 'object',

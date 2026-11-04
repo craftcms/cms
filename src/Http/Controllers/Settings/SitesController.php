@@ -11,6 +11,7 @@ use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Table as DbTable;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Models\Site as SiteModel;
 use CraftCms\Cms\Site\SiteGroups;
@@ -91,7 +92,7 @@ readonly class SitesController
                 ],
                 'handle' => ['html' => Html::tag('code', Html::encode($site->handle))],
                 'status' => ['html' => Html::tag('craft-badge', Html::encode($site->getEnabled() ? t('Enabled') : t('Disabled')), [
-                    'fill' => $site->getEnabled() ? 'success' : 'default',
+                    'fill' => $site->getEnabled() ? 'success' : Color::Gray->value,
                 ])],
                 'language' => ['html' => Html::tag('code', Html::encode($site->getLanguage()))],
                 'primary' => $site->primary ? ['icon' => 'check', 'label' => t('Yes')] : null,

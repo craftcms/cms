@@ -1,36 +1,17 @@
 <script setup lang="ts">
-  import {type JobInfo, JobStatus} from '@/modules/queue/types';
   import {t} from '@craftcms/ui/utilities/translate';
-  import {computed} from 'vue';
   import {useMessages} from '@/modules/messages/useMessages';
   import {useForm} from '@inertiajs/vue3';
-  import {show} from '@routes/cp/utilities';
-  import CpButtonLink from '@/common/components/CpButtonLink.vue';
-  import RetryJobButton from '@/modules/utilities/components/queue-manager/RetryJobButton.vue';
-  import ReleaseJobButton from '@/modules/utilities/components/queue-manager/ReleaseJobButton.vue';
   import {
     cancelAll,
     retryAll as retryAllAction,
   } from '@actions/QueueController';
 
-  const props = withDefaults(
-    defineProps<{
-      activeJob?: JobInfo | null;
-      jobs?: Array<JobInfo>;
-    }>(),
-    {jobs: () => [], activeJob: null}
-  );
+  withDefaults(defineProps<{hasJobs?: boolean}>(), {hasJobs: false});
 
   const messages = useMessages();
   const retryAllForm = useForm({});
   const releaseAllForm = useForm({});
-
-  const isRetryable = computed(() => {
-    return (
-      props.activeJob?.status.value == JobStatus.Reserved ||
-      props.activeJob?.status.value == JobStatus.Failed
-    );
-  });
 
   function retryAll() {
     retryAllForm.submit(retryAllAction(), {
@@ -66,24 +47,11 @@
 </script>
 
 <template>
-  <template v-if="activeJob">
-    <CpButtonLink :href="show.url({id: 'queue-manager'})">
-      <craft-icon name="arrow-left" slot="prefix"></craft-icon>
-      {{ t('Back') }}
-    </CpButtonLink>
-    <div class="grow"></div>
-    <RetryJobButton v-if="isRetryable" :job="activeJob" size="default" />
-    <ReleaseJobButton
-      :job="activeJob"
-      size="default"
-      v-if="activeJob.status.value !== JobStatus.Done"
-    />
-  </template>
-  <template v-else-if="jobs.length">
+  <template v-if="hasJobs">
     <craft-button
       type="button"
       @click="retryAll"
-      :loading="retryAllForm.processing"
+      .loading="retryAllForm.processing"
     >
       <craft-icon name="play" slot="prefix"></craft-icon>
       {{ t('Retry all failed jobs') }}
@@ -91,7 +59,7 @@
     <craft-button
       type="button"
       @click="releaseAll"
-      :loading="releaseAllForm.processing"
+      .loading="releaseAllForm.processing"
     >
       <craft-icon name="remove" slot="prefix"></craft-icon>
       {{ t('Release all jobs') }}

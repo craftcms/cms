@@ -3,6 +3,12 @@ import {getCurrentScope, onScopeDispose, ref, watchEffect} from 'vue';
 import type {CraftData} from './useCraftData';
 
 /**
+ * Tells the server which theme is showing, matching `Theme::COOKIE`, since it
+ * can't see the operating system's setting behind the System theme.
+ */
+const THEME_COOKIE = 'CraftTheme';
+
+/**
  * Applies the control panel theme as `data-theme="dark"` on `<html>`, when the
  * user chose Dark, or System — the default, and what logged-out pages use — and
  * the operating system is dark. Read from the shared page props, so saving the preference takes effect
@@ -32,5 +38,7 @@ export function useTheme(): void {
     } else {
       delete document.documentElement.dataset.theme;
     }
+
+    document.cookie = `${THEME_COOKIE}=${dark ? 'dark' : 'light'}; path=/; max-age=31536000; samesite=lax${location.protocol === 'https:' ? '; secure' : ''}`;
   });
 }

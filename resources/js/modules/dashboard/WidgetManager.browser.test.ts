@@ -24,6 +24,7 @@ async function mountManager() {
   const widgets = ref([widget(1, 'Feed'), widget(2, 'Updates')]);
   const busy = ref(false);
   const opened = ref(true);
+  const resizes: [number, number][] = [];
   let finishSave: (() => void) | undefined;
 
   const container = document.createElement('div');
@@ -44,6 +45,9 @@ async function mountManager() {
           widgets.value = order;
           busy.value = false;
         },
+        onResize(resized: DashboardWidget, colspan: number) {
+          resizes.push([resized.id, colspan]);
+        },
       }),
   });
   app.mount(container);
@@ -54,7 +58,12 @@ async function mountManager() {
       .find((li) => li.textContent?.includes(title))!
       .querySelector('craft-reorder-button')!;
 
-  return {widgets, reorderButton, finishSave: () => finishSave?.()};
+  return {
+    widgets,
+    resizes,
+    reorderButton,
+    finishSave: () => finishSave?.(),
+  };
 }
 
 function renderedTitles(): string[] {
@@ -109,14 +118,25 @@ it('names each widget’s reorder button, column picker and delete button after 
   await picker.updateComplete;
 
   expect(reorder.label).toBe('Reorder Updates');
-  expect(
-    picker
-      .shadowRoot!.querySelector('[role="slider"]')!
-      .getAttribute('aria-label')
-  ).toBe('Number of columns Updates');
+  await expect
+    .element(page.getByRole('slider', {name: 'Number of columns Updates'}))
+    .toBeInTheDocument();
   await expect
     .element(page.getByRole('button', {name: 'Delete Updates', exact: true}))
     .toBeInTheDocument();
+});
+
+it('resizes a widget to the column count picked from the keyboard', async () => {
+  const {resizes} = await mountManager();
+  const picker = [...document.querySelectorAll('li')]
+    .find((li) => li.textContent?.includes('Updates'))!
+    .querySelector('craft-slide-picker')!;
+  await picker.updateComplete;
+
+  picker.focus();
+  await userEvent.keyboard('{End}');
+
+  expect(resizes).toEqual([[2, 2]]);
 });
 
 it('closes with one Escape after a widget is moved', async () => {

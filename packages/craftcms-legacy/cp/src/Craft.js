@@ -23,10 +23,8 @@ import './js/BaseElementIndexView.js';
 
 // Finally load the remaining files
 import './js/AdminTable.js';
-import './js/AssetImageEditor.js';
 import './js/AssetIndex.js';
 import './js/AssetsFieldSettings';
-import './js/AuthManager.js';
 import './js/CP.js';
 import './js/CardsElementIndexView.js';
 import './js/CategoryIndex.js';
@@ -34,8 +32,6 @@ import './js/ElementEditor.js';
 import './js/ElementFieldSettings.js';
 import './js/EntryIndex.js';
 import './js/ImageUpload.js';
-import './js/LivePreview.js';
-import './js/Preview.js';
 import './js/ProgressBar.js';
 import './js/Structure.js';
 import './js/StructureDrag.js';

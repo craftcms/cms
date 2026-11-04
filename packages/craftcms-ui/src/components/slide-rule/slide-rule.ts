@@ -34,6 +34,15 @@ const DEFAULT_GRADUATION_WIDTH = 10;
  * @fires {CustomEvent<{value:number}>} craft-drag-end - A drag ended.
  */
 export default class CraftSlideRule extends FormAssociated(LitElement) {
+  /**
+   * Delegate focus into the shadow root, so `host.focus()` and a `<label for>`
+   * pointing at the host land on the slider.
+   */
+  static override shadowRootOptions: ShadowRootInit = {
+    ...LitElement.shadowRootOptions,
+    delegatesFocus: true,
+  };
+
   static override styles = [styles];
 
   /** Minimum selectable value (the slide range floor). */
@@ -302,19 +311,33 @@ export default class CraftSlideRule extends FormAssociated(LitElement) {
 
     if (this.#dragging) {
       event.preventDefault();
-      this.#dragging = false;
-      this._root.classList.remove('dragging');
     } else {
       // A tap without a drag sets the value at the tapped position.
       this.#setValueFromPointer(event);
     }
+
+    this.#endDrag(event);
+  }
+
+  /** Ends a press the browser took over, keeping whatever the drag reached. */
+  #handlePointerCancel(event: PointerEvent) {
+    if (this.#rotateIntent) {
+      this.#endDrag(event);
+    }
+  }
+
+  #endDrag(event: PointerEvent) {
+    this.#dragging = false;
+    this._root.classList.remove('dragging');
 
     if (this.value !== this.#valueAtDragStart) {
       this.#emitChange();
     }
 
     this.#emitDrag('craft-drag-end');
-    this._root.releasePointerCapture(event.pointerId);
+    if (this._root.hasPointerCapture(event.pointerId)) {
+      this._root.releasePointerCapture(event.pointerId);
+    }
     this.#startPositionX = 0;
     this.#rotateIntent = false;
   }
@@ -390,6 +413,7 @@ export default class CraftSlideRule extends FormAssociated(LitElement) {
         @pointerdown=${this.#handlePointerDown}
         @pointermove=${this.#handlePointerMove}
         @pointerup=${this.#handlePointerUp}
+        @pointercancel=${this.#handlePointerCancel}
       >
         <div class="cursor"></div>
         <div class="graduations">

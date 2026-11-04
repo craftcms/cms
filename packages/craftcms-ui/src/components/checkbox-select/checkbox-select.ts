@@ -141,10 +141,14 @@ export default class CraftCheckboxSelect extends LitElement {
       }
     }
 
+    const added: HTMLElement[] = [];
     let previous: Element | null = this.#allItem() ?? this.#emptyInput();
     for (const option of options) {
-      const item =
-        this.#itemFor(String(option.value)) ?? this.#createItem(option);
+      let item = this.#itemFor(String(option.value));
+      if (!item) {
+        item = this.#createItem(option);
+        added.push(item);
+      }
       this.#applyOption(item, option);
 
       if (previous) {
@@ -153,6 +157,14 @@ export default class CraftCheckboxSelect extends LitElement {
         this.prepend(item);
       }
       previous = item;
+    }
+
+    // “All” in single-value mode stands for every option, new ones included.
+    if (this.#allIsSingleValue() && this.#allInput()?.checked) {
+      for (const item of added) {
+        this.#check(item, true);
+      }
+      this.#syncAll();
     }
 
     this.requestUpdate('options');
@@ -187,6 +199,12 @@ export default class CraftCheckboxSelect extends LitElement {
       if (input && !input.disabled) {
         input.checked = all || values.has(this.#valueOf(item));
       }
+    }
+
+    // Set before its options, “All” is only checked here.
+    const allInput = this.#allInput();
+    if (allInput && this.#allIsSingleValue()) {
+      allInput.checked = all;
     }
 
     this.#syncAll();
@@ -635,7 +653,11 @@ export default class CraftCheckboxSelect extends LitElement {
       (item) => this.#inputOf(item)?.checked
     ).length;
 
-    if (allItem && allInput) {
+    // Without options yet, “All” in single-value mode stands for the ones to
+    // come, so it stays as it was set.
+    const awaitsOptions = this.#allIsSingleValue() && enabled.length === 0;
+
+    if (allItem && allInput && !awaitsOptions) {
       const everything = enabled.length > 0 && checkedCount === enabled.length;
       allInput.checked = everything;
       const checkbox = allItem.querySelector<CraftCheckbox>('craft-checkbox');

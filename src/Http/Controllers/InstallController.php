@@ -312,7 +312,7 @@ readonly class InstallController
         $data['port'] ??= (int) $defaults['port'];
         $data['username'] ??= $defaults['username'];
         $data['password'] ??= '';
-        $data['prefix'] ??= $defaults['prefix'];
+        $data['prefix'] = ($data['prefix'] ?? null) ? Str::finish($data['prefix'], '_') : $defaults['prefix'];
 
         return collect($data)->mapWithKeys(fn (mixed $value, string $key) => [$key => $value])->all();
     }
@@ -375,6 +375,6 @@ readonly class InstallController
             isset($data['schema']) && Env::writeVariable('DB_SCHEMA', $data['schema'], $path, overwrite: true);
         }
 
-        isset($data['prefix']) && Env::writeVariable('DB_TABLE_PREFIX', $data['prefix'], $path, overwrite: true);
+        isset($data['prefix']) && Env::writeVariable('DB_PREFIX', $data['prefix'], $path, overwrite: true);
     }
 }

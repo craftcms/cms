@@ -29,6 +29,7 @@ export default class CraftIconPicker extends HTMLElement {
       labelledBy: this.getAttribute('labelled-by') ?? undefined,
       describedBy: this.getAttribute('described-by') ?? undefined,
       freeOnly: this.hasAttribute('free-only'),
+      sets: this.#sets(),
       disabled: this.hasAttribute('disabled'),
       modelValue: this.getAttribute('value') ?? '',
       'onUpdate:modelValue': (value: string) => {
@@ -39,6 +40,31 @@ export default class CraftIconPicker extends HTMLElement {
     });
 
     this.#app.mount(this);
+  }
+
+  /** `sets` is `*`, or a JSON array of icon set handles. */
+  #sets(): string[] | '*' | null {
+    const sets = this.getAttribute('sets');
+
+    if (!sets) {
+      return null;
+    }
+
+    if (sets === '*') {
+      return '*';
+    }
+
+    try {
+      const parsed: unknown = JSON.parse(sets);
+
+      if (parsed === '*') {
+        return '*';
+      }
+
+      return Array.isArray(parsed) ? parsed.map(String) : null;
+    } catch {
+      return null;
+    }
   }
 
   disconnectedCallback(): void {

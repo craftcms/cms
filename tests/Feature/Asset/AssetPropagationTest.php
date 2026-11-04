@@ -14,11 +14,13 @@ use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Jobs\PropagateElements;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
+use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
 use CraftCms\Cms\Site\Data\Site as SiteData;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Assets;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Controls\ElementSites;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Bus;
@@ -174,6 +176,42 @@ it('resaves assets when a volume is switched to save assets to all sites', funct
     Bus::assertDispatched(ResaveElements::class);
 });
 
+it('keeps existing volumes’ propagation method when applying config saved before the setting existed', function () {
+    $volume = assetPropagationVolume(PropagationMethod::Custom);
+    $config = $volume->getConfig();
+    unset($config['propagationMethod']);
+
+    Bus::fake([ResaveElements::class]);
+
+    app(Volumes::class)->handleChangedVolume(new ItemUpdated(
+        path: "volumes.$volume->uid",
+        newValue: $config,
+        tokenMatches: [$volume->uid],
+    ));
+
+    expect(DB::table(Table::VOLUMES)->where('id', $volume->id)->value('propagationMethod'))
+        ->toBe(PropagationMethod::Custom->value);
+    Bus::assertNotDispatched(ResaveElements::class);
+});
+
+it('saves assets to all sites for new volumes from config saved before the setting existed, on multi-site installs', function () {
+    $uid = Str::uuid()->toString();
+
+    app(Volumes::class)->handleChangedVolume(new ItemUpdated(
+        path: "volumes.$uid",
+        newValue: [
+            'name' => 'Legacy Volume',
+            'handle' => 'legacyVolume',
+            'fs' => 'asset-propagation-test',
+            'sortOrder' => 1,
+        ],
+        tokenMatches: [$uid],
+    ));
+
+    expect(DB::table(Table::VOLUMES)->where('uid', $uid)->value('propagationMethod'))
+        ->toBe(PropagationMethod::All->value);
+});
+
 it('only propagates assets in volumes that save assets to all sites to new sites', function () {
     $allVolume = assetPropagationVolume(PropagationMethod::All);
     assetPropagationVolume(PropagationMethod::Custom);
@@ -239,4 +277,48 @@ it('shows a Sites pane for assets on multi-site installs', function () {
     expect($html)->toContain("site-{$this->secondSite->id}-field")
         ->toContain("site={$this->secondSite->handle}")
         ->not->toContain('element-sites-toggle');
+});
+
+it('only lists other sites within a disclosure when there are more than 10 sites', function () {
+    $sitesFieldHtml = new ReflectionMethod(Asset::class, 'sitesFieldHtml');
+    $asset = assetPropagationAsset(assetPropagationVolume(PropagationMethod::Custom));
+
+    $saveToAllSites = function () use ($asset): Asset {
+        $asset->setEnabledForSite(array_fill_keys(Sites::getAllSiteIds()->all(), true));
+        expect(Elements::saveElement($asset))->toBeTrue();
+
+        return Assets::getAssetById($asset->id, $this->primarySite->id);
+    };
+
+    // Bring the total number of sites up to 10
+    $num = 0;
+    while (Sites::getAllSiteIds()->count() < 10) {
+        $num++;
+        Site::factory()->create(['handle' => "extraSite$num", 'name' => "Extra Site $num"]);
+        Sites::refreshSites();
+    }
+
+    // 10 sites should all be listed
+    $html = (string) $sitesFieldHtml->invoke($saveToAllSites());
+
+    foreach (Sites::getAllSiteIds() as $siteId) {
+        expect($html)->toContain("site-$siteId-field");
+    }
+
+    expect($html)->not->toContain('element-sites-toggle')
+        ->not->toContain('field hidden"');
+
+    // 11 sites should list the other 10 within a disclosure, after the current site
+    Site::factory()->create(['handle' => 'extraSite'.($num + 1), 'name' => 'Extra Site '.($num + 1)]);
+    Sites::refreshSites();
+    $html = (string) $sitesFieldHtml->invoke($saveToAllSites());
+
+    expect($html)->toContain('>10 other sites</button>')
+        ->not->toContain("site-{$this->primarySite->id}-field sel hidden");
+
+    foreach (Sites::getAllSiteIds()->reject(fn (int $siteId) => $siteId === $this->primarySite->id) as $siteId) {
+        expect($html)->toContain("site-$siteId-field hidden");
+    }
+
+    expect(strpos($html, "site-{$this->primarySite->id}-field sel"))->toBeLessThan(strpos($html, 'element-sites-toggle'));
 });

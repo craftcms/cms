@@ -1,4 +1,3 @@
-{% import '_includes/forms' as forms %}
 
 {% tag 'div' with {
   id: 'auth-method-setup',
@@ -36,7 +35,7 @@
           }) %}
           <div class="auth-method-footer">
             <div class="auth-method-active">
-              <div data-icon="checkmark"></div>
+              <craft-icon class="auth-method-active-icon" name="check"></craft-icon>
               <div class="smalltext">{{ 'Active'|t('app') }}</div>
             </div>
             {{ disclosureMenu(actionMenuItems, {
@@ -52,11 +51,11 @@
       </div>
 
       {% if not isActive %}
-        {{ forms.button({
-          class: ['auth-method-setup-btn', 'hairline'],
+        {{ ui('button', {
           type: 'button',
           label: 'Set up'|t('app'),
           attributes: {
+            class: ['auth-method-setup-btn', 'hairline'],
             data: {
               method: className(method),
             }

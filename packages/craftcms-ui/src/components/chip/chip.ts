@@ -5,11 +5,50 @@ import styles from './chip.styles.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {Appearance, type AppearanceValue} from '@src/constants/appearances';
 import {Variant, type VariantValue} from '@src/constants/variants';
-import type {SizeValue} from '@src/constants/size';
 import {ThumbnailLoader} from '@src/utilities/thumbnail-loader';
 import {t} from '@src/utilities/translate';
 import variantsStyles from '@src/styles/variants.styles.js';
 import {LightDomController} from '@src/controllers/LightDomController';
+import {Size, type SizeValue} from '@src/constants/size';
+
+/**
+ * How big a chip's thumbnail is: `sm` suits a chip in a line of text or a
+ * table cell, `lg` matches a card's thumbnail, and `xl` and `2xl` go larger
+ * still.
+ */
+export const ChipThumbSize = {
+  Sm: 'sm',
+  Md: 'md',
+  Lg: 'lg',
+  Xl: 'xl',
+  '2xl': '2xl',
+} as const;
+
+export const chipThumbSizes = Object.values(ChipThumbSize);
+
+export type ChipThumbSizeValue =
+  (typeof ChipThumbSize)[keyof typeof ChipThumbSize];
+
+/** The chip size that suits each thumbnail size, when none is set. */
+const sizeForThumbSize: Record<ChipThumbSizeValue, SizeValue> = {
+  sm: Size.Small,
+  md: Size.Medium,
+  lg: Size.Large,
+  xl: Size.Large,
+  '2xl': Size.Large,
+};
+
+/**
+ * Which side of the label the prefix sits on, as a logical side so it follows
+ * the writing direction.
+ */
+export const ChipPrefixPlacement = {
+  InlineStart: 'inline-start',
+  BlockStart: 'block-start',
+} as const;
+
+export type ChipPrefixPlacementValue =
+  (typeof ChipPrefixPlacement)[keyof typeof ChipPrefixPlacement];
 
 /** Which of the chip's parts have something to show. */
 type FilledParts = Record<
@@ -95,8 +134,37 @@ export default class CraftChip extends LitElement {
    * its own. `small` is also as tall as a small suffix button, so adding one
    * doesn't change its height; `auto` has the same padding without that
    * minimum, for a chip as compact as its content allows.
+   *
+   * Left unset, it follows `thumb-size`: `small` for `sm`, `medium` for `md`,
+   * and `large` from `lg` up. Without either, it's `small`.
    */
-  @property() size: SizeValue | 'auto' = 'small';
+  @property() size: SizeValue | 'auto' | null = null;
+
+  /**
+   * The size of the thumbnail in the prefix, overriding the one `size` gives
+   * it: from `sm`, which suits a table cell, through `lg`, a card's
+   * thumbnail, to `xl` and `2xl`. Sets the chip's `size` too, unless that's
+   * set itself.
+   */
+  @property({attribute: 'thumb-size', reflect: true})
+  thumbSize: ChipThumbSizeValue | null = null;
+
+  /** The size the chip renders at: its own, or the one its thumbnail suits. */
+  get #size(): SizeValue | 'auto' {
+    return (
+      this.size ??
+      (this.thumbSize ? sizeForThumbSize[this.thumbSize] : null) ??
+      Size.Small
+    );
+  }
+
+  /**
+   * Which side of the label the prefix (thumbnail or icon) sits on.
+   * `block-start` stacks it above the label, centered, for a tile in a grid;
+   * the checkbox and suffix then share a row along the top.
+   */
+  @property({attribute: 'prefix-placement', reflect: true})
+  prefixPlacement: ChipPrefixPlacementValue = ChipPrefixPlacement.InlineStart;
 
   /**
    * The semantic color group the chip draws its tokens from. It is combined
@@ -159,6 +227,13 @@ export default class CraftChip extends LitElement {
    * identically labeled checkboxes.
    */
   @property({attribute: 'select-label'}) selectLabel: string | null = null;
+
+  /**
+   * Disables the `selectable` checkbox, e.g. while the list it's in is busy,
+   * or for an entity that can't be selected.
+   */
+  @property({attribute: 'select-disabled', type: Boolean})
+  selectDisabled: boolean = false;
 
   /**
    * The modifier state of the click that preceded `change`, captured because
@@ -231,6 +306,7 @@ export default class CraftChip extends LitElement {
       class="cp-chip__select"
       part="select"
       .checked=${this.selected}
+      ?disabled=${this.selectDisabled}
       aria-label=${this.selectLabel ?? t('Select')}
       @click=${this.#onSelectClick}
       @mousedown=${this.#onSelectPress}
@@ -339,6 +415,20 @@ export default class CraftChip extends LitElement {
     </div>`;
   }
 
+  override connectedCallback() {
+    super.connectedCallback();
+
+    if (this.hasUpdated) {
+      this.#thumbLoader = new ThumbnailLoader();
+      this.#thumbLoader.load(this);
+    }
+  }
+
+  override disconnectedCallback() {
+    this.#thumbLoader.destroy();
+    super.disconnectedCallback();
+  }
+
   protected override firstUpdated(_changedProperties: PropertyValues) {
     super.firstUpdated(_changedProperties);
     this.#thumbLoader.load(this);
@@ -353,9 +443,15 @@ export default class CraftChip extends LitElement {
         part="chip"
         class="${classMap({
           'cp-chip': true,
-          'cp-chip--small': this.size === 'small',
-          'cp-chip--medium': this.size === 'medium',
-          'cp-chip--large': this.size === 'large',
+          'cp-chip--small': this.#size === 'small',
+          'cp-chip--medium': this.#size === 'medium',
+          'cp-chip--large': this.#size === 'large',
+          [`cp-chip--thumb-${this.thumbSize}`]: this.thumbSize !== null,
+          'cp-chip--stacked':
+            this.prefixPlacement === ChipPrefixPlacement.BlockStart,
+          'cp-chip--has-header':
+            this.prefixPlacement === ChipPrefixPlacement.BlockStart &&
+            (this.selectable || filled.suffix),
           'cp-chip--align-start': this.alignItems === 'start',
           'cp-chip--align-end': this.alignItems === 'end',
           'cp-chip--plain': this.appearance === Appearance.Plain,

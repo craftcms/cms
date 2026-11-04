@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Html;
 
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Colorable;
@@ -19,10 +20,11 @@ use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Components\Icon;
 use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\Enums\ButtonVariant;
+use CraftCms\Cms\Cp\Enums\ChipThumbSize;
 use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
 use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
 use CraftCms\Cms\Cp\Icons;
-use CraftCms\Cms\Element\Actions\Copy;
+use CraftCms\Cms\Element\Actions\ClientAction;
 use CraftCms\Cms\Element\Actions\Delete;
 use CraftCms\Cms\Element\Actions\Duplicate;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -57,6 +59,8 @@ readonly class ElementHtml
 {
     public const string CHIP_SIZE_SMALL = 'small';
 
+    public const string CHIP_SIZE_MEDIUM = 'medium';
+
     public const string CHIP_SIZE_LARGE = 'large';
 
     /** The thumbnail size for small chips, other than plain ones. */
@@ -89,9 +93,16 @@ readonly class ElementHtml
             'showLabel' => true,
             'showStatus' => true,
             'showThumb' => true,
-            'size' => self::CHIP_SIZE_SMALL,
+            'size' => null,
             'sortable' => false,
+            'thumbSize' => null,
         ];
+
+        // Without a size of its own, a chip takes the one its thumbnail suits.
+        $thumbSize = $config['thumbSize'] instanceof ChipThumbSize
+            ? $config['thumbSize']
+            : ChipThumbSize::tryFrom((string) $config['thumbSize']);
+        $config['size'] ??= $thumbSize?->chipSize() ?? self::CHIP_SIZE_SMALL;
 
         $config['showActionMenu'] = $config['showActionMenu'] && $component instanceof Actionable;
         $config['showHandle'] = $config['showHandle'] && $component instanceof Grippable;
@@ -101,12 +112,13 @@ readonly class ElementHtml
         $config['showDescription'] = $config['showDescription'] && $component instanceof Describable;
 
         $color = $component instanceof Colorable ? $component->getColor() : null;
-        $thumbHtml = $config['showThumb'] ? $this->chipThumbHtml($component, $config['size'], $config['appearance'] ?? null) : null;
+        $thumbHtml = $config['showThumb'] ? $this->chipThumbHtml($component, $config['size'], $thumbSize, $config['appearance'] ?? null) : null;
         $icon = $config['showThumb'] ? $this->chipIcon($component) : null;
 
         $attributes = Arr::merge([
             'id' => $config['id'],
             'size' => $config['size'],
+            'thumb-size' => $thumbSize?->value,
             'class' => [
                 ...($color ? ["cp-color-$color->value"] : []),
                 $config['size'],
@@ -136,6 +148,7 @@ readonly class ElementHtml
                     'showDescription' => $config['showDescription'],
                     'overrides' => $config['overrides'],
                     'size' => $config['size'],
+                    'thumbSize' => $thumbSize?->value,
                     'ui' => 'chip',
                 ] : false,
             ]),
@@ -237,7 +250,7 @@ readonly class ElementHtml
     /**
      * Returns a chip’s thumbnail HTML, or `null` if the component doesn’t have one.
      */
-    private function chipThumbHtml(Chippable $component, string $size, ?string $appearance = null): ?string
+    private function chipThumbHtml(Chippable $component, string $size, ?ChipThumbSize $thumbSize, ?string $appearance = null): ?string
     {
         if (! $component instanceof Thumbable) {
             return null;
@@ -245,13 +258,13 @@ readonly class ElementHtml
 
         // A small chip's thumbnail fits within its 32px height, inside its
         // border and padding, unless the chip is plain, without either.
-        $thumbSize = match (true) {
+        $pixels = $thumbSize?->pixels() ?? match (true) {
             $size !== self::CHIP_SIZE_SMALL => 120,
             $appearance === Appearance::Plain->value => 30,
             default => self::CHIP_THUMB_SIZE,
         };
 
-        return $component->getThumbHtml($thumbSize, ImageTransformMode::Fit) ?: null;
+        return $component->getThumbHtml($pixels, ImageTransformMode::Fit) ?: null;
     }
 
     /**
@@ -299,8 +312,9 @@ readonly class ElementHtml
      * - `showProvisionalDraftLabel` – Whether an “Edited” badge should be added to the label if the element is a provisional draft
      * - `showStatus` – Whether the element’s status should be shown
      * - `showThumb` – Whether the element’s thumbnail should be shown
-     * - `size` – The size of the chip (`small` or `large`)
+     * - `size` – The size of the chip (`small`, `medium`, or `large`). Defaults to the size that suits `thumbSize`, or `small`.
      * - `sortable` – Whether the chip should include a drag handle
+     * - `thumbSize` – The size of the thumbnail (`sm`, `md`, `lg`, `xl`, or `2xl`, or a {@see ChipThumbSize}), if not the one `size` gives it
      */
     /** @param array<string, mixed> $config */
     public function elementChipHtml(ElementInterface $element, array $config = []): string
@@ -319,7 +333,7 @@ readonly class ElementHtml
             'showProvisionalDraftLabel' => null,
             'showStatus' => true,
             'showThumb' => true,
-            'size' => self::CHIP_SIZE_SMALL,
+            'size' => null,
             'sortable' => false,
         ];
 
@@ -437,7 +451,7 @@ readonly class ElementHtml
 
         foreach ($items as &$item) {
             if ($config['nestedActionEvents'] && str_starts_with($item['id'] ?? '', 'action-copy-')) {
-                $item['action'] = $this->nestedElementAction($element, Copy::class);
+                $item['action'] = $this->nestedElementAction($element, ClientAction::copy());
             }
         }
         unset($item);
@@ -560,7 +574,7 @@ readonly class ElementHtml
             'class' => ['flex', 'flex-nowrap', 'gap-1', 'grow-1', 'items-center'],
         ]).
             ($icon ? Html::tag('craft-icon', '', ['name' => $icon]) : '').
-            ($title ? Html::tag('div', Html::encode($title), ['class' => 'card-titlebar-label']) : '').
+            ($title ? Html::tag('div', Html::encode($title), ['class' => 'card-titlebar-label', 'data-card-label' => true]) : '').
             Html::endTag('div'). // .flex
             $this->cardModifiedStatusHtml($element);
     }
@@ -911,17 +925,17 @@ readonly class ElementHtml
     }
 
     /**
-     * @param  class-string<Copy|Duplicate|Delete>  $actionClass
+     * @param  ClientAction|class-string<Duplicate|Delete>  $action
      * @return array{type: string, name: string, detail: array{action: string, elementId: int|null, item: array<string, mixed>}}
      */
-    private function nestedElementAction(ElementInterface $element, string $actionClass): array
+    private function nestedElementAction(ElementInterface $element, ClientAction|string $action): array
     {
         $elementActions = app(ElementActions::class);
         $item = $elementActions->serializeActionItems([
-            $elementActions->createAction($actionClass, $element::class),
+            $action instanceof ClientAction ? $action : $elementActions->createAction($action, $element::class),
         ])[0];
 
-        if ($actionClass === Copy::class) {
+        if ($action instanceof ClientAction && $action->key === 'copy') {
             $item['action']['detail']['elements'] = [[
                 'type' => $element::class,
                 'id' => $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id,
@@ -960,7 +974,16 @@ readonly class ElementHtml
             $classes[] = 'error';
         }
 
-        $thumb = $element->getThumbHtml(120, ImageTransformMode::Fit);
+        $elementThumb = $element->getThumb();
+        $coverAsset = match ($this->cardThumbStyle($element)) {
+            'cover' => $elementThumb?->getAsset(),
+            'auto' => $elementThumb?->supportsCover() ? $elementThumb->getAsset() : null,
+            default => null,
+        };
+        $coverUrl = $coverAsset?->getCardCoverUrl();
+        $luminance = $coverUrl !== null ? $coverAsset->analysis?->colors?->luminance : null;
+
+        $thumb = $elementThumb?->getHtml(120, ImageTransformMode::Fit);
         $thumbAlignment = $element->getFieldLayout()?->getCardThumbAlignment() ?? 'end';
 
         if ($thumb) {
@@ -973,6 +996,8 @@ readonly class ElementHtml
             $this->baseElementAttributes($element, $config),
             [
                 'class' => $classes,
+                'cover-src' => $coverUrl,
+                'luminance' => $luminance ?: null,
                 'style' => array_filter([
                     '--custom-border-color' => $color?->cssVar(200),
                     '--custom-titlebar-bg-color' => $color?->cssVar(100),
@@ -995,6 +1020,14 @@ readonly class ElementHtml
             ],
             $config['attributes'],
         );
+    }
+
+    /**
+     * Returns the thumb style of an element's card: its field layout's, or else `auto` for assets.
+     */
+    private function cardThumbStyle(ElementInterface $element): string
+    {
+        return $element->getFieldLayout()?->getCardThumbStyle() ?? ($element instanceof Asset ? 'auto' : 'normal');
     }
 
     /**

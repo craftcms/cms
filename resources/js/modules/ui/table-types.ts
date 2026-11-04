@@ -85,6 +85,7 @@ export interface TableStatus {
 export type TableRow = Record<string, TableCellValue> & {
   id?: string | number;
   _deletable?: boolean;
+  _reorderable?: boolean;
   _deleteDisabledReason?: string | null;
   _deleteUrl?: string;
   _deleteConfirmMessage?: string;
@@ -115,7 +116,6 @@ export interface TableProps {
   deleteUrl: string | null;
   deletable?: boolean;
   deleteConfirmMessage: string | null;
-  deleteModalUrl: string | null;
   bulkDeleteUrl: string | null;
   bulkDeleteConfirmMessage: string | null;
   bulkActions: BulkActionDescriptor[];

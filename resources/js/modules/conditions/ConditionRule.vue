@@ -60,15 +60,13 @@
   function change(_change: UiChange, values: UiValues): void {
     const inputs = valueAt(values, payload.value.ui.scope);
 
-    editor.rules[props.rule.id] = {
+    editor.updateRule(props.rule.id, {
       ...payload.value,
       config: {
         ...payload.value.config,
         ...(inputs as UiValues),
       },
-    };
-
-    editor.changed();
+    });
   }
 
   async function refresh(values: UiValues): Promise<UiPayload> {
@@ -90,11 +88,9 @@
 
     if (!refreshed) return;
 
-    editor.rules[props.rule.id] = refreshed;
     latestUiPayload.value = refreshed.ui;
     uiKey.value++;
-
-    editor.changed();
+    editor.updateRule(props.rule.id, refreshed);
   }
 </script>
 
@@ -134,7 +130,12 @@
         />
       </div>
 
-      <craft-callout v-if="error" role="alert" variant="danger" class="mt-2">
+      <craft-callout
+        v-if="error"
+        role="alert"
+        variant="danger"
+        class="block mt-md"
+      >
         {{ error }}
       </craft-callout>
     </div>

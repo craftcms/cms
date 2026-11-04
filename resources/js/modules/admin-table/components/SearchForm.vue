@@ -33,7 +33,7 @@
         v-model="searchTerm"
         @input="autoSearch(submit)"
       />
-      <craft-button type="submit" :loading="processing" slot="suffix">{{
+      <craft-button type="submit" .loading="processing" slot="suffix">{{
         t('Search')
       }}</craft-button>
     </div>

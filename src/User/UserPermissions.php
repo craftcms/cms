@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User;
 
 use Closure;
+use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -26,6 +27,7 @@ use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
+use CraftCms\Cms\User\Data\UserGroup as UserGroupData;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\UserGroupPermissionsSaved;
 use CraftCms\Cms\User\Events\UserPermissionsSaved;
@@ -39,8 +41,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use RuntimeException;
-use Tpetry\QueryExpressions\Language\Alias;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
@@ -63,6 +65,9 @@ use function CraftCms\Cms\t;
 #[Scoped]
 class UserPermissions
 {
+    /** The ID {@see actingAsGroup()} gives its stand-in, which no saved user can have. */
+    private const int GROUP_STAND_IN_ID = -1;
+
     /**
      * @var Collection<int, Collection<int, string>>
      */
@@ -72,6 +77,11 @@ class UserPermissions
      * @var Collection<int, Collection<int, string>>
      */
     private Collection $permissionsByUserId;
+
+    /**
+     * @var array<int, array<string, true>> Users’ permissions, indexed by user ID and permission name
+     */
+    private array $permissionMapsByUserId = [];
 
     public function __construct(
         private readonly PermissionGroupCatalog $permissionGroupCatalog,
@@ -118,6 +128,7 @@ class UserPermissions
         $this->releasePermissions($permissions);
         $this->volumePermissions($permissions);
         $this->utilityPermissions($permissions);
+        $this->aiPermissions($permissions);
 
         return $this->permissionGroupCatalog->apply($permissions);
     }
@@ -161,7 +172,7 @@ class UserPermissions
         return $this->permissionsByGroupId->getOrPut(
             $groupId,
             fn () => $this->createUserPermissionsQuery()
-                ->join(new Alias(Table::USERPERMISSIONS_USERGROUPS, 'p_g'), 'p_g.permissionId', 'p.id')
+                ->join(Table::USERPERMISSIONS_USERGROUPS.' as p_g', 'p_g.permissionId', 'p.id')
                 ->where('p_g.groupId', $groupId)
                 ->pluck('p.name')
                 ->pipe(fn (Collection $permissions) => collect($this->canonicalPermissionNames($permissions->all()))),
@@ -182,11 +193,52 @@ class UserPermissions
         }
 
         return $this->createUserPermissionsQuery()
-            ->join(new Alias(Table::USERPERMISSIONS_USERGROUPS, 'p_g'), 'p_g.permissionId', 'p.id')
-            ->join(new Alias(Table::USERGROUPS_USERS, 'g_u'), 'g_u.groupId', 'p_g.groupId')
+            ->join(Table::USERPERMISSIONS_USERGROUPS.' as p_g', 'p_g.permissionId', 'p.id')
+            ->join(Table::USERGROUPS_USERS.' as g_u', 'g_u.groupId', 'p_g.groupId')
             ->where('g_u.userId', $userId)
             ->pluck('p.name')
             ->pipe(fn (Collection $permissions) => collect($this->canonicalPermissionNames($permissions->all())));
+    }
+
+    /**
+     * Runs a callback as a stand-in user who has exactly a group's permissions,
+     * isn't an admin, and is in no other group, such as to see what a group's
+     * members get. The signed-in user is put back afterward.
+     *
+     * Nothing is saved: the stand-in's permissions are only remembered for as
+     * long as the callback runs.
+     *
+     * @template T
+     *
+     * @param  Closure(): T  $callback
+     * @return T
+     */
+    public function actingAsGroup(UserGroupData $group, Closure $callback): mixed
+    {
+        $standIn = new User;
+        $standIn->id = self::GROUP_STAND_IN_ID;
+        $standIn->admin = false;
+        $standIn->setGroups([$group]);
+
+        $guard = craftAuth();
+        $user = $guard->user();
+
+        $this->permissionsByUserId ??= collect();
+        $this->permissionsByUserId[$standIn->id] = $this->getPermissionsByGroupId((int) $group->id);
+
+        try {
+            $guard->setUser($standIn);
+
+            return $callback();
+        } finally {
+            unset($this->permissionsByUserId[$standIn->id], $this->permissionMapsByUserId[$standIn->id]);
+
+            if ($user !== null) {
+                $guard->setUser($user);
+            } else {
+                $guard->forgetUser();
+            }
+        }
     }
 
     /**
@@ -258,7 +310,7 @@ class UserPermissions
         }
 
         return $this->createUserPermissionsQuery()
-            ->join(new Alias(Table::USERPERMISSIONS_USERS, 'p_u'), 'p_u.permissionId', 'p.id')
+            ->join(Table::USERPERMISSIONS_USERS.' as p_u', 'p_u.permissionId', 'p.id')
             ->where('p_u.userId', $userId)
             ->pluck('p.name')
             ->pipe(fn (Collection $permissions) => collect($this->canonicalPermissionNames($permissions->all())));
@@ -295,7 +347,10 @@ class UserPermissions
             return true;
         }
 
-        return $this->getPermissionsByUserId($userId)->containsStrict($this->canonicalPermissionName($checkPermission));
+        // Build the map from getPermissionsByUserId(), in case it's been overridden
+        $this->permissionMapsByUserId[$userId] ??= array_fill_keys($this->getPermissionsByUserId($userId)->all(), true);
+
+        return isset($this->permissionMapsByUserId[$userId][$this->canonicalPermissionName($checkPermission)]);
     }
 
     /**
@@ -339,6 +394,7 @@ class UserPermissions
         $this->permissionsByUserId ??= collect();
         $userPermissions = $groupPermissions->merge($permissions)->unique();
         $this->permissionsByUserId[$userId] = $userPermissions;
+        unset($this->permissionMapsByUserId[$userId]);
 
         event(new UserPermissionsSaved($userId, $permissions));
 
@@ -393,6 +449,7 @@ class UserPermissions
         $this->permissionsByGroupId ??= collect();
         $this->permissionsByGroupId->put($userGroup->id, collect($permissions));
         unset($this->permissionsByUserId);
+        $this->permissionMapsByUserId = [];
     }
 
     /** @param Collection<int, PermissionGroup> $permissions */
@@ -794,6 +851,18 @@ class UserPermissions
         ));
     }
 
+    /** @param Collection<int, PermissionGroup> $permissions */
+    private function aiPermissions(Collection $permissions): void
+    {
+        $permissions->add(new PermissionGroup(
+            handle: 'ai',
+            heading: t('AI'),
+            permissions: collect([
+                new Permission(key: Assistant::PERMISSION, label: t('Use the AI assistant')),
+            ]),
+        ));
+    }
+
     /**
      * Filters out any permissions that aren't assignable by the current user.
      *
@@ -958,5 +1027,6 @@ class UserPermissions
             $this->permissionsByGroupId,
             $this->permissionsByUserId,
         );
+        $this->permissionMapsByUserId = [];
     }
 }

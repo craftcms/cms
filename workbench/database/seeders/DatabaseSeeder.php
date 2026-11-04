@@ -114,6 +114,12 @@ class DatabaseSeeder extends Seeder
 
         $this->components->task('Installing test plugin', fn () => Plugins::installPlugin('test-plugin'));
 
+        // The workbench’s scripted provider needs no API key. See Workbench\App\Ai\WorkbenchAiProvider.
+        $this->components->task('Setting the default AI provider', fn () => app(ProjectConfig::class)->set(
+            ProjectConfig::PATH_AI.'.defaults.text',
+            ['provider' => 'workbench', 'model' => null],
+        ));
+
         $this->components->task('Creating notifications', function (): void {
             $user = User::query()->firstOrFail();
 
@@ -239,11 +245,12 @@ class DatabaseSeeder extends Seeder
 
         $this->createSection($site, 'Home', SectionType::Single, Element::HOMEPAGE_URI, [$pageType]);
         $this->createSection($site, 'Pages', SectionType::Structure, '{parent.uri}/{slug}', [$pageType]);
-        $this->createSection($site, 'Posts', SectionType::Channel, 'blog/{slug}', [$pageType]);
+        $this->createSection($site, 'Posts', SectionType::Channel, 'blog/{slug}', [$pageType], '_blog/entry');
 
         $this->createSampleEntries($site);
         $this->seedWorkflow(Sections::getSectionByHandle('posts') ?? throw new RuntimeException('Posts section not found.'));
         $this->call(MatrixPlaygroundSeeder::class);
+        $this->call(FieldShowcaseSeeder::class);
     }
 
     private function createSampleEntries(Site $site): void
@@ -485,11 +492,11 @@ MARKDOWN,
     }
 
     /** @param list<EntryType> $entryTypes */
-    public function createSection(Site $site, string $title, SectionType $sectionType = SectionType::Channel, ?string $uriFormat = null, array $entryTypes = []): ?Section
+    public function createSection(Site $site, string $title, SectionType $sectionType = SectionType::Channel, ?string $uriFormat = null, array $entryTypes = [], ?string $template = null): ?Section
     {
         $section = null;
 
-        $this->components->task("{$title} section ({$sectionType->label()})", function () use ($uriFormat, $entryTypes, $sectionType, $title, $site, &$section) {
+        $this->components->task("{$title} section ({$sectionType->label()})", function () use ($uriFormat, $entryTypes, $sectionType, $title, $site, $template, &$section) {
             Sections::saveSection($section = new Section([
                 'name' => $title,
                 'handle' => Str::slug($title),
@@ -499,6 +506,7 @@ MARKDOWN,
                         'siteId' => $site->id,
                         'hasUrls' => ! is_null($uriFormat),
                         'uriFormat' => $uriFormat,
+                        'template' => $template,
                     ]),
                 ],
                 'entryTypes' => $entryTypes,

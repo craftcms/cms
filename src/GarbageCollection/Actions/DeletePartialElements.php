@@ -9,7 +9,6 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use Illuminate\Support\Facades\DB;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * Deletes elements that are missing data in the given element extension table.
@@ -35,7 +34,7 @@ class DeletePartialElements extends GarbageCollectionAction
             sprintf('deleting partial %s data', $this->elementType::lowerDisplayName()),
             function () {
                 DB::table(Table::ELEMENTS, 'e')
-                    ->leftJoin(new Alias($this->table, 't'), "t.{$this->foreignKey}", 'e.id')
+                    ->leftJoin($this->table.' as t', "t.{$this->foreignKey}", 'e.id')
                     ->where('e.type', $this->elementType)
                     ->whereNull("t.{$this->foreignKey}")
                     ->pluck('e.id')

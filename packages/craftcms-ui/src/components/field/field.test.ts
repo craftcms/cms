@@ -82,6 +82,43 @@ describe('craft-field label association', () => {
     expect(labelNode(element)!.hasAttribute('for')).toBe(false);
   });
 
+  it('enhances a native input swapped in after the field connects', async () => {
+    const element = await createField({label: 'My field'});
+    const replacement = document.createElement('input');
+    replacement.slot = 'input';
+    input(element)!.replaceWith(replacement);
+    await Promise.resolve();
+    await element.updateComplete;
+
+    expect(replacement.classList.contains('form-control')).toBe(true);
+    expect(replacement.id).toBeTruthy();
+    expect(labelNode(element)!.getAttribute('for')).toBe(replacement.id);
+    expect(replacement.getAttribute('aria-labelledby')?.split(/\s+/)).toContain(
+      labelNode(element)!.id
+    );
+  });
+
+  it('labels a nested form control swapped in after the field connects', async () => {
+    const element = await createField(
+      {label: 'My field'},
+      '<input slot="input" type="hidden">'
+    );
+    const nestedControl = document.createElement('craft-input');
+    nestedControl.slot = 'input';
+    input(element)!.replaceWith(nestedControl);
+    await Promise.resolve();
+    await element.updateComplete;
+    await nestedControl.updateComplete;
+
+    expect(nestedControl.classList.contains('form-control')).toBe(true);
+    expect(
+      nestedControl
+        .querySelector('input')!
+        .getAttribute('aria-labelledby')
+        ?.split(/\s+/)
+    ).toContain(labelNode(element)!.id);
+  });
+
   it('uses group semantics for a composite control wrapper', async () => {
     const element = await createField(
       {label: 'My group'},

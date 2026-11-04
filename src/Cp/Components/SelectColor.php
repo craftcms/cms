@@ -35,6 +35,8 @@ class SelectColor extends ViewComponent
 
     protected ?string $describedBy = null;
 
+    protected ?string $labelledBy = null;
+
     protected function tagName(): string
     {
         return 'craft-select-color';
@@ -106,6 +108,18 @@ class SelectColor extends ViewComponent
         return $this;
     }
 
+    /**
+     * Names the element labelling this control, for a caller that provides the
+     * label itself rather than through the `label` attribute — a table column
+     * heading, say.
+     */
+    public function labelledBy(?string $labelledBy): static
+    {
+        $this->labelledBy = $labelledBy;
+
+        return $this;
+    }
+
     #[\Override]
     protected function hostAttributes(): array
     {
@@ -120,7 +134,8 @@ class SelectColor extends ViewComponent
             'required' => $this->required,
             'readonly' => $this->readOnly,
             'disabled' => $this->isDisabled(),
-            'aria' => ['describedby' => $this->describedBy],
+            'described-by' => $this->describedBy,
+            'labelled-by' => $this->labelledBy,
         ];
     }
 }

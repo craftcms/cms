@@ -37,6 +37,21 @@ class IconDataType implements GeneratorInterface, SingleGeneratorInterface
                 $fields = [
                     'name' => Type::string(),
                     'styles' => Type::listOf(Type::string()),
+                    'set' => [
+                        'name' => 'set',
+                        'type' => Type::string(),
+                        'description' => 'The handle of the custom icon set the icon belongs to, or `null` for Font Awesome icons.',
+                    ],
+                    'svg' => [
+                        'name' => 'svg',
+                        'type' => Type::string(),
+                        'description' => 'The icon’s SVG markup.',
+                    ],
+                    'keywords' => [
+                        'name' => 'keywords',
+                        'type' => Type::listOf(Type::string()),
+                        'description' => 'The icon’s search keywords.',
+                    ],
                 ];
 
                 return Gql::prepareFieldDefinitions($fields, $typeName);

@@ -52,6 +52,9 @@ export default class CraftTooltip extends LionTooltip {
     this.opened = !this.opened;
   };
 
+  /** The invoker the click listener is bound to, which `for` can change. */
+  #clickInvoker: HTMLElement | null = null;
+
   constructor() {
     super();
     wireOverlayLifecycleEvents(this);
@@ -175,18 +178,27 @@ export default class CraftTooltip extends LionTooltip {
   // @ts-ignore Lion's OverlayMixin is typed via JSDoc.
   override _setupOpenCloseListeners() {
     super._setupOpenCloseListeners();
-    if (this.#isClickTriggered) {
-      this._overlayInvokerNode?.addEventListener('click', this.#onInvokerClick);
-    }
+    this.#bindInvokerClick();
   }
 
   // @ts-ignore Lion's OverlayMixin is typed via JSDoc.
   override _teardownOpenCloseListeners() {
     super._teardownOpenCloseListeners();
-    this._overlayInvokerNode?.removeEventListener(
-      'click',
-      this.#onInvokerClick
-    );
+    this.#unbindInvokerClick();
+  }
+
+  #bindInvokerClick() {
+    this.#unbindInvokerClick();
+
+    if (this.#isClickTriggered) {
+      this.#clickInvoker = this._overlayInvokerNode ?? null;
+      this.#clickInvoker?.addEventListener('click', this.#onInvokerClick);
+    }
+  }
+
+  #unbindInvokerClick() {
+    this.#clickInvoker?.removeEventListener('click', this.#onInvokerClick);
+    this.#clickInvoker = null;
   }
 
   override _setupOverlayCtrl() {
@@ -209,13 +221,25 @@ export default class CraftTooltip extends LionTooltip {
   protected override updated(changed: PropertyValues) {
     super.updated(changed);
 
+    // Until the controller is set up on first connect, it reads both itself.
     if (
-      changed.has('for') &&
-      changed.get('for') !== undefined &&
-      this._overlayCtrl
+      !this._overlayCtrl ||
+      !this.isConnected ||
+      !(changed.has('for') || changed.has('trigger'))
     ) {
-      this._overlayCtrl.updateConfig({invokerNode: this._overlayInvokerNode});
+      return;
     }
+
+    // `trigger` decides the hover/focus interaction, which the controller only
+    // reads from its config.
+    const {visibilityTriggerFunction} = this._defineOverlayConfig();
+
+    this.#unbindInvokerClick();
+    this._overlayCtrl.updateConfig({
+      invokerNode: this._overlayInvokerNode,
+      visibilityTriggerFunction,
+    });
+    this.#bindInvokerClick();
   }
 
   /**

@@ -39,26 +39,31 @@
       'cs-column': true,
       'cs-column--fill': fill,
       'cs-column--selected': selected,
+      'cs-column--nav': nav,
     }"
     :role="nav ? 'navigation' : undefined"
     :aria-labelledby="nav && heading ? headingId : undefined"
   >
-    <div class="cs-column__back" v-if="back">
-      <craft-button
-        type="button"
-        size="small"
-        variant="plain"
-        flush
-        icon="chevron-left"
-        @click="emit('back')"
-      >
-        {{ back }}
-      </craft-button>
-    </div>
+    <div class="cs-column__header">
+      <div class="cs-column__back" v-if="back">
+        <craft-button
+          type="button"
+          size="small"
+          variant="plain"
+          flush
+          icon="chevron-left"
+          @click="emit('back')"
+        >
+          {{ back }}
+        </craft-button>
+      </div>
 
-    <h2 v-if="heading" :id="headingId" class="cs-column__heading">
-      {{ heading }}
-    </h2>
+      <h2 v-if="heading" :id="headingId" class="cs-column__heading">
+        {{ heading }}
+      </h2>
+      <!-- Holds a heading's line, so the hairline below lines up with the other columns'. -->
+      <span v-else class="cs-column__heading" aria-hidden="true">&nbsp;</span>
+    </div>
 
     <!-- Scrolls on its own, beneath the heading, so a long list doesn't carry
       the other columns with it. -->
@@ -75,18 +80,39 @@
 
 <style scoped lang="scss">
   .cs-column {
+    --_padding-inline: var(--c-spacing-lg);
+
     display: flex;
     flex-direction: column;
     flex: 0 0 20%;
     min-width: 200px;
     min-height: 0;
     border-inline-end: 1px solid var(--c-color-border-quiet);
-    padding-inline-end: var(--c-spacing-lg);
+    padding-inline: var(--_padding-inline);
+  }
+
+  .cs-column__header {
+    margin-inline: calc(var(--_padding-inline) * -1);
+    padding-inline: var(--_padding-inline);
+    padding-block: var(--c-spacing-md);
+    border-block-end: 1px solid var(--c-color-border-quiet);
+  }
+
+  .cs-column--nav {
+    --_inset: var(--c-spacing-md);
+    --_padding-inline: calc(var(--c-spacing-lg) - var(--_inset));
+
+    .cs-column__back,
+    .cs-column__heading,
+    .cs-column__footer {
+      margin-inline: var(--_inset) calc(var(--_inset) + var(--c-spacing-sm) / 2);
+    }
   }
 
   // Scrolling clips on every side, which would cut off the focus rings of the
-  // controls at its edges. Room for them is padded in and taken back out with
-  // a matching negative margin, so the content doesn't move.
+  // controls at its edges. The block padding leaves room above and below; at
+  // the sides it's padded in and taken back out with a matching negative
+  // margin, so the content doesn't move.
   .cs-column__body {
     --_ring-room: calc(
       var(--c-focus-outline-width) + max(var(--c-focus-outline-offset), 0px)
@@ -95,16 +121,14 @@
     flex: 1;
     min-height: 0;
     overflow-y: auto;
-    padding: var(--_ring-room);
-    margin: calc(var(--_ring-room) * -1);
-  }
-
-  .cs-column + .cs-column {
-    padding-inline-start: var(--c-spacing-lg);
+    padding-block: var(--_padding-inline);
+    padding-inline: var(--_ring-room);
+    margin-inline: calc(var(--_ring-room) * -1);
   }
 
   .cs-column__heading {
-    margin-block: 0 var(--c-spacing-md);
+    display: block;
+    margin: 0;
     font-size: var(--c-text-sm);
     font-weight: bold;
   }
@@ -124,10 +148,8 @@
   // with a way back to the one before. The modal's body is the container: an
   // element can't match a container query on itself.
   @container (max-width: 699px) {
-    .cs-column,
-    .cs-column + .cs-column {
+    .cs-column {
       flex-basis: 100%;
-      padding-inline: 0;
       border-inline-end: none;
     }
 

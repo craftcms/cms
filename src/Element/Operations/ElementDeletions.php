@@ -45,7 +45,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Throwable;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * @internal
@@ -83,7 +82,7 @@ readonly class ElementDeletions
         return DB::transaction(function () use ($mergedElement, $prevailingElement, $mergedSubject, $prevailingSubject) {
             $data = DB::table(Table::RELATIONS, 'r')
                 ->select(['r.sourceId', 'r.sourceSiteId', 'e.type'])
-                ->join(new Alias(Table::ELEMENTS, 'e'), 'e.id', 'r.sourceId')
+                ->join(Table::ELEMENTS.' as e', 'e.id', 'r.sourceId')
                 ->where('r.targetId', $mergedElement->id)
                 ->get()
                 ->groupBy(['type', fn ($relation) => $relation->sourceSiteId ?? '*']);
@@ -319,6 +318,8 @@ readonly class ElementDeletions
                     DB::table(Table::DRAFTS)->where('canonicalId', $element->id)->delete();
                     DB::table(Table::REVISIONS)->where('canonicalId', $element->id)->delete();
                     DB::table(Table::ELEMENTS)->delete($element->id);
+                    // Forget any memoized element types, as their elements could have been cascade-deleted
+                    $this->elements->forgetElementTypes();
                     DB::table(Table::SEARCHINDEX)
                         ->where('elementId', $element->id)
                         ->delete();
@@ -631,10 +632,10 @@ readonly class ElementDeletions
     private function setDraftAndRevisionDeletionState(int $canonicalId, bool $delete = true): void
     {
         foreach (['draftId' => Table::DRAFTS, 'revisionId' => Table::REVISIONS] as $foreignKey => $table) {
-            DB::table(new Alias(Table::ELEMENTS, 'e'))
+            DB::table(Table::ELEMENTS, 'e')
                 ->whereIn(
                     "e.$foreignKey",
-                    DB::table(new Alias($table, 't'))
+                    DB::table($table, 't')
                         ->select('t.id')
                         ->where('t.canonicalId', $canonicalId),
                 )

@@ -340,7 +340,10 @@ describe('equal width', () => {
     // environment, so the widths themselves are covered by the EqualWidth
     // play function in tabs.stories.ts.
     const selector = [...rules().keys()].find(
-      (key) => key.includes('[equal-width]') && key.includes("slot='tab'")
+      (key) =>
+        key.includes('[equal-width]') &&
+        !key.includes(':not([equal-width])') &&
+        key.includes("slot='tab'")
     );
 
     expect(selector).toBeDefined();

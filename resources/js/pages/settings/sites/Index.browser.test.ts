@@ -111,7 +111,6 @@ function mount(readOnly = false) {
     deleteUrl: null,
     deletable: !readOnly,
     deleteConfirmMessage: null,
-    deleteModalUrl: null,
     bulkDeleteUrl: null,
     bulkDeleteConfirmMessage: null,
     bulkActions: [],

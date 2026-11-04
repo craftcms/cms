@@ -128,7 +128,7 @@ return new class extends Migration
 
         try {
             $projectConfig->set(ProjectConfig::PATH_VOLUMES, $volumes, 'Convert volumes to Laravel filesystem disks');
-            $projectConfig->set(ProjectConfig::PATH_ASSET_TRANSFORMERS, $transformers, 'Convert Asset Transformers to Laravel filesystem disks');
+            $projectConfig->set(ProjectConfig::PATH_ASSET_TRANSFORMERS, $transformers, 'Convert asset transformers to Laravel filesystem disks');
             $projectConfig->remove('fs', 'Remove Craft filesystem definitions');
             $projectConfig->saveModifiedConfigData();
         } finally {

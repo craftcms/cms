@@ -11,6 +11,8 @@ import type {
 export interface UseAppLayoutOptions {
   title?: string;
   saveDisabled?: boolean;
+  /** See `ScreenProps.handlesReadOnly`. */
+  handlesReadOnly?: boolean;
   /** See `ScreenProps.hideFooter`. */
   hideFooter?: boolean;
   submitButtonLabel?: string;
@@ -25,6 +27,8 @@ export interface UseAppLayoutOptions {
   subnav?: Array<CraftCms.Cms.Cp.Data.NavItem>;
   /** Caps and centers the content column. See `ScreenProps.contentMaxWidth`. */
   contentMaxWidth?: boolean | string;
+  /** Ends the content header with a rule. See `ScreenProps.headerRule`. */
+  headerRule?: boolean;
   /** The screen's own edit page. See `ScreenProps.editUrl`. */
   editUrl?: string | null;
   /**

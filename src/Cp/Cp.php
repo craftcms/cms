@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Cp;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
+use CraftCms\Cms\Auth\SessionTimeout;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Events\CpDataResolving;
@@ -93,19 +94,27 @@ readonly class Cp
     /**
      * The illustration for a view mode option, for a Choice Control's `thumbnail`.
      *
-     * @return array{src: string, width: int, height: int, aspectRatio: string}
+     * @return array{svg: string, width: int, height: int, aspectRatio: string}
      */
     public static function viewModeThumbnail(string $viewMode): array
     {
         // The list illustration is narrower than the rest, as in Craft 5.
-        $width = $viewMode === 'list' ? 48 : 80;
+        return static::illustration("images/view-modes/$viewMode.svg", $viewMode === 'list' ? 48 : 80);
+    }
 
+    /**
+     * An illustration under `resources/public`, inlined for a radio's `thumbnail` so its `--c-illustration-*` colors
+     * follow the theme and the selected state.
+     *
+     * @return array{svg: string, width: int, height: int, aspectRatio: string}
+     */
+    public static function illustration(string $path, int $width = 80, int $height = 60): array
+    {
         return [
-            // Illustrations live in Vite's publicDir; see publicAssetUrl().
-            'src' => static::publicAssetUrl("images/view-modes/$viewMode.svg"),
+            'svg' => Html::svg("@resources/public/$path", namespace: true),
             'width' => $width,
-            'height' => 60,
-            'aspectRatio' => "$width / 60",
+            'height' => $height,
+            'aspectRatio' => "$width / $height",
         ];
     }
 
@@ -178,7 +187,9 @@ readonly class Cp
             'clientOs' => request()->clientOs(),
             'datepickerOptions' => self::datepickerOptions($formattingLocale, $locale),
             'defaultCookieOptions' => self::defaultCookieOptions(),
+            'earthIcon' => Icons::earth(),
             'fileKinds' => AssetsHelper::getFileKinds(),
+            'formattingLocale' => $formattingLocale->getLanguageTag(),
             'iconBaseUrl' => craftAsset('icons'),
             'language' => app()->getLocale(),
             'left' => $orientation === 'ltr' ? 'left' : 'right',
@@ -278,6 +289,7 @@ readonly class Cp
             'sites' => self::sites(),
             'siteToken' => $generalConfig->siteToken,
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
+            'sessionExpiresAt' => app(SessionTimeout::class)->expiresAt(request())?->getTimestamp(),
             'userEmail' => $currentUser->email,
             'userHasPasskeys' => app(Passkeys::class)->hasPasskeys(app(Impersonation::class)->getImpersonator() ?? $currentUser),
             'userId' => $currentUser->id,

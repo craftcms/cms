@@ -92,4 +92,10 @@ class UsernameField extends TextField
             'autocomplete' => $element->getIsCurrent() ? 'username' : 'off',
         ];
     }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'user';
+    }
 }

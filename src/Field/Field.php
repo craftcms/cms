@@ -404,7 +404,20 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             return reset($valuesSql);
         }
 
-        return new Coalesce($valuesSql);
+        $sql = new Coalesce($valuesSql);
+
+        // COALESCE doesn't preserve its arguments' type affinity on SQLite.
+        if (DB::getDriverName() === 'sqlite') {
+            $dbType = $instances[0]->dbTypeForValueSql();
+            if (is_array($dbType)) {
+                $dbType = $dbType[$key ?? array_key_first($dbType)];
+            }
+            if ($dbType !== null && (Query::isNumericColumnType($dbType) || $dbType === Query::TYPE_BOOLEAN)) {
+                return new Cast($sql, 'NUMERIC');
+            }
+        }
+
+        return $sql;
     }
 
     /**
@@ -932,7 +945,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             $sql = new Coalesce([
                 new JsonExtract(
                     'elements_sites.content',
-                    "$.\"{$this->layoutElement->uid}\".\"{$key}\"",
+                    [$this->layoutElement->uid, $key],
                 ),
                 $sql,
             ]);
@@ -962,14 +975,24 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             };
         }
 
-        // for pgsql, we have to make sure decimals column type is cast to decimal, otherwise they won't be sorted correctly
+        // PostgreSQL extracts JSON values as text, so numeric field types need explicit casts.
         // see https://github.com/craftcms/cms/issues/15828, https://github.com/craftcms/cms/issues/15973
         if (DB::getDriverName() === 'pgsql') {
             $castType = match (Query::parseColumnType($dbType)) {
                 Query::TYPE_DECIMAL => 'DECIMAL',
+                Query::TYPE_TINYINT,
+                Query::TYPE_SMALLINT => 'SMALLINT',
                 Query::TYPE_INTEGER => 'INTEGER',
+                Query::TYPE_BIGINT => 'BIGINT',
+                Query::TYPE_FLOAT => 'REAL',
+                Query::TYPE_DOUBLE => 'DOUBLE PRECISION',
                 default => null,
             };
+        }
+
+        // JSON extraction has no type affinity on SQLite, even for numeric values.
+        if (DB::getDriverName() === 'sqlite' && (Query::isNumericColumnType($dbType) || $dbType === Query::TYPE_BOOLEAN)) {
+            $castType = 'NUMERIC';
         }
 
         if ($castType !== null) {

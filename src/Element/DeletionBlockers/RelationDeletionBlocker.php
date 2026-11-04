@@ -84,20 +84,23 @@ class RelationDeletionBlocker extends BaseDeletionBlocker
         /** @var class-string<ElementInterface> $targetElementType */
         $targetElementType = $this->elements->first()::class;
         $numTargets = $this->elements->count();
+        $replaceLabel = t('Replace {numRelations, plural, =1{relation} other{relations}}', [
+            'numRelations' => $this->relationCount,
+        ]);
 
         return [
             [
                 'icon' => 'swap',
-                'label' => t('Replace {numRelations, plural, =1{relation} other{relations}}', [
-                    'numRelations' => $this->relationCount,
-                ]),
+                'label' => $replaceLabel,
                 'callback' => Html::jsWithVars(fn (
+                    $title,
                     $targetElementType,
                     $targetIds,
                     $hardDelete,
                     $sourceElementType,
                 ) => <<<JS
 new Craft.CpModal('delete-elements/replace-relations-modal', {
+  title: $title,
   params: {
     elementType: $targetElementType,
     elementIds: $targetIds,
@@ -112,6 +115,7 @@ new Craft.CpModal('delete-elements/replace-relations-modal', {
   },
 })
 JS, [
+                    $replaceLabel,
                     $targetElementType,
                     $this->elements->ids()->all(),
                     $this->hardDelete,

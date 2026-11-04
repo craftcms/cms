@@ -1,0 +1,42 @@
+import {css} from 'lit';
+
+export default css`
+  :host {
+    box-sizing: border-box;
+    max-width: 100%;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--c-spacing-xs);
+    padding: var(--c-spacing-xs);
+    border-radius: var(--c-radius-sm);
+    background: var(--c-color-neutral-fill-quiet);
+    overflow-wrap: anywhere;
+  }
+
+  :host([removable]) {
+    padding: 0;
+  }
+
+  button {
+    box-sizing: border-box;
+    max-width: 100%;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--c-spacing-xs);
+    padding: var(--c-spacing-xs);
+    border: 0;
+    border-radius: inherit;
+    background: transparent;
+    font: inherit;
+    color: inherit;
+    text-align: start;
+    overflow-wrap: inherit;
+    cursor: pointer;
+  }
+
+  button:focus-visible {
+    outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
+      var(--c-color-focus-outline);
+    outline-offset: var(--c-focus-outline-offset);
+  }
+`;

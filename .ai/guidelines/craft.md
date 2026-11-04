@@ -30,6 +30,8 @@ All UI — PHP view components, Twig templates, Vue components, and the Lit web 
 - Access trait-provided constants through a class that uses the trait; PHP 8.2 and later do not support accessing them on the trait itself.
 - Classes are non-final by default. Use `readonly` when it fits.
 - Let Pint remove unused imports.
+- Never call `json_encode()` or `json_decode()` directly; use `CraftCms\Cms\Support\Json`.
+- Never import `Illuminate\Support\Env`; use `CraftCms\Cms\Support\Env`. In `src/`, also use `CraftCms\Cms\Support\Arr`, `Str`, and `File` instead of `Illuminate\Support\Arr`, `Illuminate\Support\Str`, and `Illuminate\Support\Facades\File`. Each Craft helper extends its Laravel equivalent.
 
 Some files contain Unicode characters in comments and strings. If a text edit fails, inspect the exact bytes or copy the surrounding text from the file.
 
@@ -46,6 +48,12 @@ Some files contain Unicode characters in comments and strings. If a text edit fa
 - Apply the `test-audit` authoring gate after a bug fix or behavior change. Add a
   regression test only when it closes a genuine behavior-coverage gap, and
   demonstrate that it fails on the pre-fix code for the intended reason.
+
+## Test oracles
+
+- Take a test's expected result from an independent oracle: measure the real output (what's rendered, returned, or stored) rather than recomputing it with the model or simplifications the code itself relies on. An oracle that shares the code's assumptions agrees with it whenever those assumptions are wrong.
+- Choose inputs that could make the test fail: extremes, and inputs where the code's assumptions break, such as data that's missing, stale, or doesn't match what it describes.
+- Watch every new test go red once: weaken the code it guards, confirm the failure, then restore it.
 
 ## Working through tasks
 

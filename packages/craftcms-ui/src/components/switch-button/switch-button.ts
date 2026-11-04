@@ -117,6 +117,7 @@ export default class CraftSwitchButton extends LionSwitchButton {
           inset-inline-start: var(--_checkmark-offset);
           mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' version='1.1' viewBox='0 0 255.8 234.9'%3E%3Cpath d='M245.9,4.6c-10.7-7.8-25.7-5.4-33.5,5.3l-119.4,164.2-52.1-52.1c-9.4-9.4-24.6-9.4-33.9,0-9.3,9.4-9.4,24.6,0,33.9l72,72c5,5,11.8,7.5,18.8,7s13.4-4.1,17.5-9.8L251.2,38.1c7.8-10.7,5.4-25.7-5.3-33.5Z'/%3E%3C/svg%3E");
           mask-repeat: no-repeat;
+          mask-position: center;
           width: var(--_checkmark-size);
           aspect-ratio: 1;
           background-color: var(--c-color-accent-fill-loud);

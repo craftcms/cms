@@ -45,7 +45,7 @@
     :size="control.props.size ?? 'medium'"
     .onLabel="control.props.onLabel ?? ''"
     .offLabel="control.props.offLabel ?? ''"
-    :disabled="!editable"
+    .disabled="!editable"
     :required="editable && required"
     .validators="serverErrorValidators(invalid)"
     @model-value-changed="onModelValueChanged"

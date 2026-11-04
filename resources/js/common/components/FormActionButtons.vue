@@ -40,8 +40,8 @@
       :variant="button.variant ?? ButtonVariant.Solid"
       .action="button.action"
       .feedback="button.feedback"
-      :loading="submitter.isSubmitting(button.label)"
-      :disabled="form.processing || button.disabled"
+      .loading="submitter.isSubmitting(button.label)"
+      .disabled="form.processing || button.disabled"
       :focusable-when-disabled="
         button.disabled && button.disabledReason ? true : undefined
       "

@@ -76,7 +76,7 @@
    */
   const tabErrorKeys: Record<string, string[]> = {
     content: ['customFields', 'tabs', 'generatedFields'],
-    appearance: ['cardView', 'thumbFieldKey'],
+    appearance: ['cardView', 'thumbSources'],
   };
 
   /** Flags the designer's Content and Appearance tabs that have errors. */
@@ -122,8 +122,7 @@
       if (host.value) {
         syncTabErrors(host.value);
       }
-    },
-    {deep: true}
+    }
   );
 </script>
 

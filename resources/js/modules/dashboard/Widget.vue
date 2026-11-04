@@ -1,5 +1,12 @@
 <script setup lang="ts">
-  import {nextTick, onBeforeUnmount, onMounted, ref, watch} from 'vue';
+  import {
+    nextTick,
+    onBeforeUnmount,
+    onMounted,
+    ref,
+    shallowRef,
+    watch,
+  } from 'vue';
   import {t} from '@craftcms/ui';
   import {useResizeObserver} from '@vueuse/core';
   import WidgetSettings from './WidgetSettings.vue';
@@ -17,7 +24,7 @@
 
   useResizeObserver(container, () => emit('resize'));
   const settingsButton = ref<HTMLElement>();
-  const widgetSettings = ref<InstanceType<typeof WidgetSettings>>();
+  const settingsSending = shallowRef(false);
   let savedWidget: DashboardWidget | false | undefined;
 
   onMounted(() => {
@@ -44,7 +51,7 @@
   });
 
   async function closeSettings() {
-    if (widgetSettings.value?.sending) return;
+    if (settingsSending.value) return;
 
     if (props.widget.id < 0) {
       emit('cancel');
@@ -155,11 +162,11 @@
             size="small"
             variant="plain"
             :aria-label="t('Cancel')"
-            :disabled="widgetSettings?.sending"
+            .disabled="settingsSending"
             @click="closeSettings"
           ></craft-button>
           <WidgetSettings
-            ref="widgetSettings"
+            v-model:sending="settingsSending"
             :widget="widget"
             @saved="saved"
             @cancel="closeSettings"

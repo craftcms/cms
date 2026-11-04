@@ -25,6 +25,9 @@ import {resolveIcon} from '../../utilities/icons.js';
  * after "View". Beside text that already says it, leave the label off.
  *
  * @slot - Your own icon markup, used in place of the named one.
+ *
+ * @cssproperty [--c-icon-size=0.8em] - The icon's size, relative to the
+ *   surrounding text.
  */
 export default class CraftIcon extends LitElement {
   /** Icon name, optionally prefixed with a variant (e.g. `custom-icons/foo`). */
@@ -172,7 +175,7 @@ export default class CraftIcon extends LitElement {
           vertical-align: -0.125em;
           width: 1.25em;
           height: 1em;
-          font-size: 0.8em;
+          font-size: var(--c-icon-size, 0.8em);
         }
 
         :host([data-color]) {

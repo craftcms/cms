@@ -14,15 +14,18 @@ use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Ui\Controls\Lightswitch;
 use CraftCms\Cms\Ui\Controls\PermissionTree;
 use CraftCms\Cms\Ui\Controls\Text;
-use CraftCms\Cms\Ui\Enums\ControlMode;
-use CraftCms\Cms\Ui\Nodes\CopyAttribute;
+use CraftCms\Cms\Ui\Nodes\Callout;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\Heading;
+use CraftCms\Cms\Ui\Nodes\MarkdownContent;
 use CraftCms\Cms\Ui\Nodes\Separator;
+use CraftCms\Cms\Ui\Nodes\Tab;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\UserGroups;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use LogicException;
 use Mcp\Capability\Registry\ElementReference;
@@ -37,6 +40,9 @@ use function CraftCms\Cms\t;
  */
 readonly class SettingsUi
 {
+    /** The Users group's key for all users. */
+    private const string ALL_USERS = '*';
+
     public function __construct(
         private CapabilityDiscovery $capabilities,
         private Fields $fields,
@@ -47,46 +53,94 @@ readonly class SettingsUi
         private Volumes $volumes,
     ) {}
 
-    public function make(): Ui
+    /** @param array<string, mixed> $values The form's current values, which decide which notices show. */
+    public function make(array $values = []): Ui
     {
-        $endpoint = route('craft.cp.mcp.server');
+        $settings = new Settings;
+        $route = (string) ($values['route'] ?? $settings->route);
+        $publicRoute = (string) ($values['publicRoute'] ?? $settings->publicRoute);
+        $shared = ($values['enabled'] ?? false) && ($values['publicEnabled'] ?? false) && trim($route, '/') === trim($publicRoute, '/');
 
         return Ui::make([
-            Heading::make('mcp-connection-heading', t('Connection'))
-                ->description(t('Clients authenticate through Laravel Passport. The authorizing user must have control panel access and the “Use Craft MCP” permission.')),
-            Field::make(t('MCP Endpoint'), Text::make('endpoint')->monospace()->mode(ControlMode::ReadOnly))
-                ->instructions(t('Use this URL when connecting an authenticated MCP client to Craft.'))
-                ->actions(CopyAttribute::make('mcp-endpoint-copy', $endpoint)),
-            Separator::make('public-mcp-separator'),
-            Heading::make('public-mcp-heading', t('Public MCP'))
-                ->description(t('Public MCP is disabled until it is enabled here. Every public capability and content source also requires explicit approval below.')),
-            $this->booleanField(
-                t('Enable Public MCP'),
-                'publicEnabled',
-                t('Allow unauthenticated MCP clients to access explicitly approved capabilities and content.'),
-            ),
-            Field::make(t('Public Endpoint'), Text::make('publicRoute')->monospace())
-                ->instructions(t('Enter an app-relative path, such as `/mcp`.'))
-                ->required(),
-            Separator::make('public-capabilities-separator'),
-            Heading::make('public-capabilities-heading', t('Public Capabilities'))
-                ->description(t('Approve each capability that unauthenticated MCP clients may discover and execute.')),
-            ...$this->capabilityFields(),
-            Separator::make('public-content-separator'),
-            Heading::make('public-content-heading', t('Public Content'))
-                ->description(t('Choose the content that approved public capabilities may expose.')),
-            $this->permissionTreeField(t('Sites'), 'publicSiteHandles', $this->sitePermissions()),
-            $this->permissionTreeField(t('Sections'), 'publicSectionHandles', $this->sectionPermissions()),
-            $this->permissionTreeField(t('Nested Entry Fields'), 'publicNestedEntryFieldHandles', $this->nestedEntryFieldPermissions()),
-            $this->permissionTreeField(t('Volumes'), 'publicVolumeHandles', $this->volumePermissions()),
-            $this->permissionTreeField(t('Element Types'), 'publicElementTypes', $this->elementTypePermissions()),
-            $this->permissionTreeField(t('User Groups'), 'publicUserGroupHandles', $this->userGroupPermissions()),
-            Separator::make('element-states-separator'),
-            Heading::make('element-states-heading', t('Element States')),
-            $this->booleanField(t('Allow Drafts'), 'publicAllowDrafts', t('Allow public queries to include drafts.')),
-            $this->booleanField(t('Allow Revisions'), 'publicAllowRevisions', t('Allow public queries to include revisions.')),
-            $this->booleanField(t('Allow Inactive Elements'), 'publicAllowInactive', t('Allow public queries to include elements that are not enabled.')),
+            Tab::make('mcp-public', t('Public'), [
+                MarkdownContent::make('public-mcp-description', t('Lets anyone use the tools and content you approve below, without signing in.')),
+                Field::make(t('Enable the Public MCP Server'), Lightswitch::make('publicEnabled')->reactive()),
+                Field::make(t('Endpoint'), Text::make('publicRoute')->monospace()->reactive())
+                    ->instructions(t('The app-relative path public MCP clients connect to, such as `/mcp`.'))
+                    ->required(),
+                ...($shared ? [
+                    Callout::make('mcp-shared-endpoint-warning', t('The authenticated server uses this endpoint too. Requests without an access token go to the public server, so MCP clients can’t discover how to sign in at this endpoint.'))
+                        ->variant('warning'),
+                ] : []),
+                Separator::make('public-capabilities-separator'),
+                Heading::make('public-capabilities-heading', t('Capabilities'))
+                    ->description(t('Approve each capability that unauthenticated MCP clients may discover and execute.')),
+                ...$this->capabilityFields(),
+                Separator::make('public-content-separator'),
+                Heading::make('public-content-heading', t('Content'))
+                    ->description(t('Choose the content that approved public capabilities may expose.')),
+                $this->permissionTreeField(t('Sites'), 'publicSiteHandles', $this->sitePermissions()),
+                $this->permissionTreeField(t('Entries'), 'publicSectionHandles', $this->sectionPermissions()),
+                $this->permissionTreeField(t('Nested Entry Fields'), 'publicNestedEntryFieldHandles', $this->nestedEntryFieldPermissions()),
+                $this->permissionTreeField(t('Assets'), 'publicVolumeHandles', $this->volumePermissions()),
+                ...$this->elementTypeFields(),
+                $this->permissionTreeField(t('Users'), 'publicUsers', $this->userPermissions()),
+                Separator::make('element-states-separator'),
+                Heading::make('element-states-heading', t('Element States')),
+                $this->booleanField(t('Allow Drafts'), 'publicAllowDrafts', t('Allow public queries to include drafts.')),
+                $this->booleanField(t('Allow Revisions'), 'publicAllowRevisions', t('Allow public queries to include revisions.')),
+                $this->booleanField(t('Allow Inactive Elements'), 'publicAllowInactive', t('Allow public queries to include elements that are not enabled.')),
+            ]),
+            Tab::make('mcp-authenticated', t('Authenticated'), [
+                MarkdownContent::make('mcp-authenticated-description', t('Lets MCP clients act as a Craft user after the user signs in and approves access. Any active user can sign in. Tools still check their permissions.')),
+                Field::make(t('Enable the Authenticated MCP Server'), Lightswitch::make('enabled')->reactive()),
+                Field::make(t('Endpoint'), Text::make('route')->monospace()->reactive())
+                    ->instructions(t('The app-relative path MCP clients connect to, such as `/mcp`.'))
+                    ->required(),
+                ...($settings->isCpRoute($route) ? [
+                    Callout::make('mcp-route-cp-notice', t('This endpoint is in the control panel, so only users with control panel access can use it.')),
+                ] : []),
+                Field::make(t('Authorization Endpoint'), Text::make('authorizationRoute')->monospace())
+                    ->instructions(t('The app-relative path to give MCP clients that sign in with OAuth. It always requires an access token, so clients can discover how to sign in.'))
+                    ->required(),
+            ]),
         ]);
+    }
+
+    /**
+     * Returns the form values for the settings. The Users group's `publicUsers` value combines the user element type
+     * (as `*`) with the public user group handles.
+     *
+     * @return array<string, mixed>
+     */
+    public function values(Settings $settings): array
+    {
+        $userType = $this->publicElementTypes->name(User::class);
+        $values = Arr::except($settings->toArray(), ['publicUserGroupHandles']);
+        $values['publicElementTypes'] = array_values(array_diff($settings->publicElementTypes, [$userType]));
+        $values['publicUsers'] = [
+            ...(in_array($userType, $settings->publicElementTypes, true) ? [self::ALL_USERS] : []),
+            ...$settings->publicUserGroupHandles,
+        ];
+
+        return $values;
+    }
+
+    /**
+     * Applies the Users group's `publicUsers` value to the settings.
+     *
+     * @param  list<string>  $users
+     */
+    public function applyUsers(Settings $settings, array $users): void
+    {
+        $userType = $this->publicElementTypes->name(User::class);
+        $settings->publicElementTypes = array_values(array_diff($settings->publicElementTypes, [$userType]));
+
+        if (in_array(self::ALL_USERS, $users, true)) {
+            $settings->publicElementTypes[] = $userType;
+        }
+
+        $settings->publicUserGroupHandles = array_values(array_diff($users, [self::ALL_USERS]));
     }
 
     /** @return list<Field> */
@@ -173,25 +227,45 @@ readonly class SettingsUi
             ->all();
     }
 
-    /** @return list<Permission> */
-    private function elementTypePermissions(): array
+    /**
+     * Returns a field for the element types without their own content group, with a group for each type.
+     *
+     * @return list<Field>
+     */
+    private function elementTypeFields(): array
     {
-        return collect($this->publicElementTypes->all())
-            ->reject(static fn (string $type): bool => is_a($type, Entry::class, true) || is_a($type, Asset::class, true))
-            ->map(fn (string $type): Permission => new Permission(
-                $this->publicElementTypes->name($type),
-                t('Query {type}', ['type' => t($type::pluralLowerDisplayName(), category: 'site')]),
+        $groups = collect($this->publicElementTypes->all())
+            ->reject(static fn (string $type): bool => is_a($type, Entry::class, true) || is_a($type, Asset::class, true) || is_a($type, User::class, true))
+            ->map(fn (string $type): PermissionGroup => new PermissionGroup(
+                handle: $this->publicElementTypes->name($type),
+                heading: t($type::pluralDisplayName(), category: 'site'),
+                permissions: collect([new Permission(
+                    $this->publicElementTypes->name($type),
+                    t('Query {type}', ['type' => t($type::pluralLowerDisplayName(), category: 'site')]),
+                )]),
             ))
-            ->values()
-            ->all();
+            ->values();
+
+        if ($groups->isEmpty()) {
+            return [];
+        }
+
+        return [
+            Field::make(control: PermissionTree::make('publicElementTypes')
+                ->ariaLabel(t('Element Types'))
+                ->groups($groups)),
+        ];
     }
 
     /** @return list<Permission> */
-    private function userGroupPermissions(): array
+    private function userPermissions(): array
     {
-        return $this->userGroups->getAllGroups()
-            ->map(fn ($group): Permission => new Permission($this->requiredHandle($group->handle, 'user group'), t('Query users in the “{name}” user group', ['name' => $group->name])))
-            ->all();
+        return [
+            new Permission(self::ALL_USERS, t('Query all users')),
+            ...$this->userGroups->getAllGroups()
+                ->map(fn ($group): Permission => new Permission($this->requiredHandle($group->handle, 'user group'), t('Query users in the “{name}” user group', ['name' => $group->name])))
+                ->all(),
+        ];
     }
 
     private function requiredHandle(?string $handle, string $type): string

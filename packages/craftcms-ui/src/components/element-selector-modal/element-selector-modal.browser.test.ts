@@ -72,3 +72,23 @@ it('holds the height it opened at while the index reloads, until the window resi
 
   await vi.waitFor(() => expect(modal.hasAttribute('size-locked')).toBe(true));
 });
+
+it('follows its width after it is moved in the document', async () => {
+  const modal = document.createElement(
+    'craft-element-selector-modal'
+  ) as CraftElementSelectorModal;
+  modal.append(document.createElement('div'));
+  modal.controller = fakeController();
+  document.body.append(modal);
+  await modal.updateComplete;
+  await vi.waitFor(() => expect(modal.narrow).toBe(false));
+
+  const target = document.createElement('div');
+  document.body.append(target);
+  target.append(modal);
+  await modal.updateComplete;
+  modal.style.setProperty('--c-dialog-inline-size', '400px');
+  modal.style.setProperty('--c-dialog-min-inline-size', '400px');
+
+  await vi.waitFor(() => expect(modal.narrow).toBe(true));
+});

@@ -34,7 +34,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Throwable;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
@@ -490,7 +489,7 @@ readonly class Drafts
 
         $drafts = DB::table(Table::ELEMENTS, 'elements')
             ->select('elements.draftId', 'elements.type')
-            ->join(new Alias(Table::DRAFTS, 'drafts'), 'drafts.id', '=', 'elements.draftId')
+            ->join(Table::DRAFTS.' as drafts', 'drafts.id', '=', 'elements.draftId')
             ->where('drafts.saved', false)
             ->whereNull('drafts.canonicalId')
             ->where('elements.dateUpdated', '<', Query::prepareDateForDb(now()->subSeconds(Cms::config()->purgeUnsavedDraftsDuration)))

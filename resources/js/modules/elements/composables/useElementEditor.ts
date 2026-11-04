@@ -27,6 +27,7 @@ import type {
 } from '@/modules/elements/composables/useElementActionMenu';
 import {useInertiaUiRenderer} from '@/modules/ui/useInertiaUiRenderer';
 import {useElementAutosave} from '@/modules/elements/composables/useElementAutosave';
+import type {ElementPreview} from '@/modules/elements/live-preview/useLivePreview';
 import {useElementActivity} from '@/modules/elements/composables/useElementActivity';
 import {useSiteStatuses} from '@/modules/elements/composables/useSiteStatuses';
 import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
@@ -116,6 +117,10 @@ export interface ElementEditPayload {
   elementId: number | null;
   canonicalId: number | null;
   elementType: string;
+  /** The element type's reference handle, which its reference tags start with. */
+  refHandle?: string | null;
+  /** The element's front-end URL, when it has one. */
+  elementUrl?: string | null;
   siteId: number | null;
   fieldLayoutId: number | null;
   title: string;
@@ -149,8 +154,17 @@ export interface ElementEditPayload {
   canDiscardDraft: boolean;
   actionMenu: Array<ElementActionMenuItem>;
   previewTargets: Array<ElementPreviewTarget>;
+  /** What Live Preview needs; `null` when the element has no preview targets. */
+  preview?: ElementPreview | null;
+  /**
+   * Set when the screen is only there for Live Preview, which stays open.
+   * `redirect` is where saving leaves for, pre-encrypted by the server.
+   */
+  standalonePreview?: {redirect: string; editUrl: string | null} | null;
   elementDisplayName: string;
   activityUrl: string | null;
+  /** Identifies the element to the AI assistant, when the user can add it to the assistant’s context. */
+  aiAssistant: CraftCms.Cms.Ai.Assistant.Data.ElementParams | null;
   activityTimelineUrl: string | null;
   activityPageUrl: string | null;
   updatedTimestamps: {element: number | null; canonical: number | null};
@@ -249,24 +263,61 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   );
 
   const editingDraft = shallowRef(false);
+
+  const blocksRelease = computed(() => Boolean(props.release?.blockers.length));
+
+  /**
+   * Whether the draft belongs to a scheduled release, so edits that leave it
+   * unready would make the release fail, until the user chooses to edit it.
+   * A draft that's already blocking the release can't make it any worse.
+   */
   const releaseDraftLocked = computed(
-    () => Boolean(props.release) && !editingDraft.value
-  );
-
-  watch([() => props.draftId, () => props.release?.id], () => {
-    editingDraft.value = false;
-  });
-
-  const workflowReviewLocked = computed(
     () =>
-      !editingDraft.value &&
-      ['pending', 'approved'].includes(props.workflow?.current?.status ?? '')
+      props.release?.status === 'scheduled' &&
+      !blocksRelease.value &&
+      !editingDraft.value
   );
+
+  watch(
+    [() => props.draftId, () => props.release?.id, blocksRelease],
+    (
+      [draftId, releaseId, blocking],
+      [previousDraftId, previousReleaseId, wasBlocking]
+    ) => {
+      if (draftId !== previousDraftId || releaseId !== previousReleaseId) {
+        editingDraft.value = false;
+      } else if (wasBlocking && !blocking) {
+        // Fixing the draft's last issue mustn't lock the user out of it.
+        editingDraft.value = true;
+      }
+    }
+  );
+
+  /**
+   * Whether the draft's in review or approved, so editing it would undo its
+   * approvals, until the user chooses to edit it. A reviewer of the stage it's
+   * in who hasn't approved it yet can edit it and then approve it, so it isn't
+   * locked for them while it's in review.
+   */
+  const workflowReviewLocked = computed(() => {
+    const current = props.workflow?.current;
+
+    if (editingDraft.value || !current) {
+      return false;
+    }
+
+    return current.status === 'pending'
+      ? !current.isReviewer || current.hasApproved
+      : current.status === 'approved';
+  });
 
   watch(
     () => props.workflow?.current?.status,
     (status, previousStatus) => {
+      // Saving the user's own edits can reopen the review, which mustn't lock
+      // them out of the edits they just chose to make.
       if (
+        !applyingSavedPayload &&
         status !== previousStatus &&
         (status === 'pending' || status === 'approved')
       ) {
@@ -339,6 +390,20 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     };
   }
 
+  /**
+   * The id of the element drafts are made from, as `elements/*` actions expect it.
+   *
+   * That's the canonical element for a draft, but the element itself otherwise —
+   * including a nested element duplicated for an owner's draft, which keeps track
+   * of its canonical without being a draft of it. `saveData()` carries the
+   * server's answer, the same one the legacy editor's hidden input posts.
+   */
+  function draftableElementId(): number | null {
+    const elementId = saveData?.().elementId;
+
+    return typeof elementId === 'number' ? elementId : props.canonicalId;
+  }
+
   const preparingOwnerGroups = new Map<symbol, string[]>();
   const draftElementIds = new Map<number, number>();
 
@@ -346,7 +411,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     url: props.autosaveUrl,
     params: contextParams,
     elementType: props.elementType,
-    elementId: props.canonicalId,
+    elementId: draftableElementId(),
     siteId: props.siteId,
     draftId: props.draftId,
     isProvisional: props.isProvisionalDraft,
@@ -399,7 +464,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   const activity = useElementActivity({
     url: props.activityUrl,
     elementType: props.elementType,
-    elementId: props.canonicalId,
+    elementId: draftableElementId(),
     // Autosave can create a provisional draft mid-session, and from then on
     // that's the element the screen is editing — so the poll has to ask about
     // it, not the canonical, or its timestamps won't be the ones the autosave
@@ -621,6 +686,14 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   }
 
   /**
+   * The form's current values, including the sidebar's, as a save would post
+   * them.
+   */
+  function formValues(): UiValues {
+    return {...saveData?.(), ...requestValues(form.data())};
+  }
+
+  /**
    * Re-renders the field layout from the server, keeping unsaved values.
    *
    * Resolves with the server's response once it's been applied, or nothing
@@ -758,6 +831,25 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     {
       keyboardShortcutEnabled: () =>
         !props.readOnly && !releaseDraftLocked.value,
+      // Cmd/Ctrl + Shift + S submits the Save menu's shortcut action that
+      // takes Shift, such as “Save and add another”, as clicking it would.
+      onSaveShortcut: (event) => {
+        const action = event.shiftKey
+          ? props.editorActions.menu.find(
+              (item) => item.shortcut && item.shift && !item.disabled
+            )
+          : undefined;
+
+        if (action) {
+          submitAction(action);
+        } else if (!event.shiftKey) {
+          save({redirect: false});
+        }
+      },
+      hasShiftSaveShortcut: () =>
+        props.editorActions.menu.some(
+          (item) => item.shortcut && item.shift && !item.disabled
+        ),
       transform: (data) => {
         // Identity first, so the form wins where they overlap: the entry type
         // can be changed in the sidebar, and `saveData()` only knows the one
@@ -771,7 +863,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
         if (autosave.draftId.value !== null) {
           Object.assign(transformed, {
             elementType: props.elementType,
-            elementId: props.canonicalId,
+            elementId: draftableElementId(),
             siteId: props.siteId,
           });
           if (autosave.draftId.value !== null) {
@@ -789,6 +881,8 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
         Object.assign(transformed, action.params);
         if (action.redirect) {
           transformed.redirect = action.redirect;
+        } else if (!pendingAction.value && props.standalonePreview) {
+          transformed.redirect = props.standalonePreview.redirect;
         }
 
         return transformed;
@@ -846,9 +940,11 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
         autosave.cancel();
         autosave.acknowledgeChanges();
 
-        if (!slideout) {
-          // The save itself moved the element's `dateUpdated`; without this the
-          // next poll would report our own write as someone else's change.
+        // The save itself moved the element's `dateUpdated`; without this the
+        // next poll would report our own write as someone else's change. A
+        // save that redirects lands on another screen, whose props carry no
+        // stamps and which has nothing left to poll.
+        if (!slideout && props.updatedTimestamps) {
           activity.rebase(props.updatedTimestamps);
         }
 
@@ -1077,7 +1173,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       await actionClient.post(props.discardDraftUrl, {
         ...contextParams(),
         elementType: props.elementType,
-        elementId: props.canonicalId,
+        elementId: draftableElementId(),
         siteId: props.siteId,
         draftId: autosave.draftId.value,
         provisional: 1,
@@ -1218,6 +1314,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     nestedOwnerEditor,
     refreshUi,
     refreshLayout,
+    formValues,
     save,
     sidebarErrors,
     sidebarPayload,

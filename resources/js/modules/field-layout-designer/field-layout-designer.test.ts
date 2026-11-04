@@ -1,4 +1,4 @@
-import {afterEach, expect, it, vi} from 'vite-plus/test';
+import {afterAll, afterEach, beforeAll, expect, it, vi} from 'vite-plus/test';
 import $ from 'jquery';
 import {Base} from '@craftcms/garnish';
 import {CardViewDesigner} from './card-view-designer';
@@ -7,6 +7,34 @@ import {FieldLayoutDesigner} from './field-layout-designer';
 const {openSlideout} = vi.hoisted(() => ({openSlideout: vi.fn()}));
 
 vi.mock('@/common/slideouts', () => ({openSlideout}));
+
+// `craft-select-color` renders a form-associated `craft-select-rich`, which
+// calls attachInternals(), which happy-dom doesn't implement. Same stub
+// UiRenderer.test.ts uses, kept for the whole file because the element
+// renders after the test that creates it returns.
+const attachInternals = Object.getOwnPropertyDescriptor(
+  HTMLElement.prototype,
+  'attachInternals'
+);
+
+beforeAll(() => {
+  Object.defineProperty(HTMLElement.prototype, 'attachInternals', {
+    configurable: true,
+    value: () => ({setFormValue: vi.fn()}),
+  });
+});
+
+afterAll(() => {
+  if (attachInternals) {
+    Object.defineProperty(
+      HTMLElement.prototype,
+      'attachInternals',
+      attachInternals
+    );
+  } else {
+    delete (HTMLElement.prototype as Partial<HTMLElement>).attachInternals;
+  }
+});
 
 afterEach(() => {
   delete window.Craft;
@@ -203,7 +231,7 @@ it('opens the field editor from the library HUD trigger and closes the HUD', () 
   panel.remove();
 });
 
-it('gives the card preview the owner’s name, color, and icon', () => {
+it('gives the card preview the owner’s name, color, and icon', async () => {
   document.body.innerHTML = `
     <form>
       <craft-input data-ui-control-path='["name"]'></craft-input>
@@ -223,6 +251,9 @@ it('gives the card preview the owner’s name, color, and icon', () => {
   control('name').modelValue = 'Article';
   control('color').modelValue = 'rose';
   control('icon').modelValue = 'newspaper';
+  // A select applies its value once its options have registered.
+  await (control('color') as unknown as {registrationComplete: Promise<void>})
+    .registrationComplete;
 
   // SAFETY: This test deliberately creates a CardViewDesigner without running its DOM-heavy constructor.
   const designer = Object.create(

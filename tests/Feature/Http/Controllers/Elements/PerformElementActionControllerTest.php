@@ -6,8 +6,10 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\Delete;
 use CraftCms\Cms\Element\Actions\Duplicate;
 use CraftCms\Cms\Element\Actions\ElementAction;
+use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Actions\SetStatus;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\ElementActions;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Events\ElementActionsResolving;
@@ -350,6 +352,33 @@ it('deletes only the prepared derivative nested entry', function () {
         ->not->toBeNull();
 });
 
+it('restores a trashed nested entry from the embedded index', function () {
+    $fixture = embeddedActionFixture();
+    $manager = $fixture['control']->props()['manager'];
+    $embeddedAction = fn (string $action, int $elementId, array $criteria = []) => ($this->performElementAction)([
+        ...$manager,
+        'context' => ElementSources::CONTEXT_EMBEDDED_INDEX,
+        'elementType' => Entry::class,
+        'source' => '__IMP__',
+        'elementAction' => $action,
+        'elementIds' => [$elementId],
+        'criteria' => $criteria,
+    ]);
+    $draftEntries = fn () => Entry::find()
+        ->fieldId($fixture['field']->id)
+        ->ownerId($fixture['draft']->id)
+        ->status(null)
+        ->drafts(null);
+
+    $embeddedAction(Delete::class, $fixture['nested']->id)->assertOk();
+    $trashedId = $draftEntries()->trashed()->one()->id;
+
+    $embeddedAction(Restore::class, $trashedId, ['status' => 'trashed'])->assertOk();
+
+    expect($draftEntries()->ids())->toBe([$trashedId])
+        ->and($draftEntries()->trashed()->ids())->toBeEmpty();
+});
+
 it('rolls back the prepared derivative when nested deletion fails', function () {
     $fixture = embeddedActionFixture();
     $manager = $fixture['control']->props()['manager'];
@@ -469,4 +498,52 @@ it('stops duplicating when the field maximum is reached', function () {
         ->all();
 
     expect(array_column($entries, 'title'))->toBe(['Alpha', 'Alpha', 'Bravo']);
+});
+
+it('performs an action on every listed element but the deselected ones from a queue job', function () {
+    $entries = collect(range(1, ElementActions::SYNC_LIMIT + 2))
+        ->map(fn () => EntryModel::factory()->createElement());
+    $kept = $entries->first();
+
+    ($this->performElementAction)([
+        'elementType' => Entry::class,
+        'elementAction' => SetStatus::class,
+        'status' => SetStatus::DISABLED,
+        'selectAll' => true,
+        'exceptIds' => [$kept->id],
+    ])
+        ->assertOk()
+        ->assertJsonPath('queued', true);
+
+    $enabledIds = Entry::find()->id($entries->pluck('id')->all())->status('live')->ids();
+
+    expect(array_map(intval(...), $enabledIds))->toBe([$kept->id])
+        ->and(auth()->id())->toBe(User::findOne()->id);
+});
+
+it('refuses an action that can’t be queued on more elements than the sync limit', function () {
+    $action = new class extends ElementAction
+    {
+        public function supportsQueue(): bool
+        {
+            return false;
+        }
+
+        public function performAction(ElementQueryInterface $query): bool
+        {
+            return true;
+        }
+    };
+
+    Event::listen(function (ElementActionsResolving $event) use ($action) {
+        if ($event->elementType === Entry::class) {
+            $event->actions[] = clone $action;
+        }
+    });
+
+    ($this->performElementAction)([
+        'elementType' => Entry::class,
+        'elementAction' => $action::class,
+        'elementIds' => range(1, ElementActions::SYNC_LIMIT + 1),
+    ])->assertStatus(400);
 });

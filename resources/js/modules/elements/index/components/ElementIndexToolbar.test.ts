@@ -279,6 +279,30 @@ it('puts the site menu and the status menu in one cell', () => {
   expect(cell.querySelectorAll('select-rich')).toHaveLength(2);
 });
 
+it('offers Drafts and Trashed after the statuses', () => {
+  mount({
+    statusOptions: [
+      {label: 'All', value: ''},
+      {label: 'Live', value: 'live'},
+      {label: 'Drafts', value: 'drafts', icon: 'draft'},
+      {label: 'Trashed', value: 'trashed', icon: 'trash'},
+    ],
+  });
+
+  const options = [
+    ...container!.querySelectorAll<HTMLOptionElement>(
+      '.element-toolbar__status option'
+    ),
+  ];
+
+  expect(options.map((option) => option.value)).toEqual([
+    '',
+    'live',
+    'drafts',
+    'trashed',
+  ]);
+});
+
 it('keeps score available until clearing search restores the sort, and locks its direction', async () => {
   const {toolbarProps} = mount({
     search: 'needle',
@@ -321,6 +345,18 @@ it('removes score without a search and locks custom ordering', () => {
 
   expect(select.getAttribute('data-options')).toBe('sortOrder,title');
   expect(descending.disabled).toBe(true);
+});
+
+it.each([
+  ['table', true],
+  ['structure', true],
+  ['thumbs', false],
+  ['cards', false],
+])('shows table columns in the %s view: %s', async (mode, shown) => {
+  mount({mode});
+  await nextTick();
+
+  expect(container!.querySelector('checkbox-group-stub') !== null).toBe(shown);
 });
 
 it('names the view mode and sort direction button groups', () => {

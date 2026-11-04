@@ -98,7 +98,7 @@ readonly class ActionController
         if ($request->boolean('force')) {
             /** @var Asset|null $conflictingAsset */
             $conflictingAsset = Asset::find()
-                ->select(['elements.id'])
+                ->select(['elements.id', 'assets.volumeId', 'assets.uploaderId'])
                 ->folderId($folder->id)
                 ->filename(Query::escapeParam($asset->getFilename()))
                 ->site('*')

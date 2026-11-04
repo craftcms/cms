@@ -19,6 +19,10 @@ class IconData extends ObjectType
         $fieldName = $resolveInfo->fieldName;
 
         /** @var FieldIconData $source */
-        return $source->$fieldName;
+        return match ($fieldName) {
+            'svg' => $source->getSvg(),
+            'keywords' => $source->getKeywords(),
+            default => $source->$fieldName,
+        };
     }
 }

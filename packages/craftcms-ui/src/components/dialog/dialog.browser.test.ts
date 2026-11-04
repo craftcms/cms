@@ -90,6 +90,19 @@ it('moves focus into the dialog on open', async () => {
   expect(deepActiveElement()).toBe(shadow(dialog, '.close'));
 });
 
+it('draws no focus ring around the dialog when it takes focus itself', async () => {
+  const dialog = await openDialog((dialog) => {
+    dialog.noHeader = true;
+  });
+  const native = shadow<HTMLDialogElement>(dialog, 'dialog');
+
+  await userEvent.keyboard('{Shift}');
+  native.focus();
+
+  expect(native.matches(':focus-visible')).toBe(true);
+  expect(getComputedStyle(native).outlineStyle).toBe('none');
+});
+
 it('focuses an autofocus element on open', async () => {
   const target = button('Autofocus');
   target.autofocus = true;
@@ -351,6 +364,44 @@ it('stays open on Escape when craft-before-hide is canceled', async () => {
   expect(shadow<HTMLDialogElement>(dialog, 'dialog').open).toBe(true);
 });
 
+it('handles Escape itself in modal mode, not through the platform', async () => {
+  // Dispatched rather than typed: an untrusted key never reaches the
+  // platform's close watchers, which can stop delivering Escape to a dialog
+  // beneath one that closed itself asynchronously.
+  const inside = button('Inside');
+  const dialog = await openDialog((dialog) => dialog.append(inside));
+  const escape = new KeyboardEvent('keydown', {
+    key: 'Escape',
+    bubbles: true,
+    composed: true,
+    cancelable: true,
+  });
+
+  inside.dispatchEvent(escape);
+  await dialog.updateComplete;
+
+  expect(escape.defaultPrevented).toBe(true);
+  expect(dialog.opened).toBe(false);
+});
+
+it('leaves Escape to content that claims it', async () => {
+  const inside = button('Inside');
+  inside.addEventListener('keydown', (event) => event.preventDefault());
+  const dialog = await openDialog((dialog) => dialog.append(inside));
+
+  inside.dispatchEvent(
+    new KeyboardEvent('keydown', {
+      key: 'Escape',
+      bubbles: true,
+      composed: true,
+      cancelable: true,
+    })
+  );
+  await dialog.updateComplete;
+
+  expect(dialog.opened).toBe(true);
+});
+
 it('lets the keyboard reach a scrolling body with nothing focusable', async () => {
   const dialog = await openDialog((dialog) => {
     dialog.noClose = true;
@@ -453,8 +504,8 @@ it('outlines the surface when it overlays the page', async () => {
   const dialog = await openDialog();
   const style = getComputedStyle(shadow(dialog, '.surface'));
 
-  expect(style.borderTopStyle).toBe('solid');
-  expect(parseFloat(style.borderTopWidth)).toBeGreaterThanOrEqual(1);
+  expect(style.outlineStyle).toBe('solid');
+  expect(parseFloat(style.outlineWidth)).toBeGreaterThanOrEqual(1);
 });
 
 it('fits a 320px viewport without horizontal scroll', async () => {
@@ -572,8 +623,12 @@ describe('closing with a held key', () => {
 
   it('gives up waiting for the keyup once the window loses focus', async () => {
     const {dialog, openCount} = await fixture();
+    const pick = dialog.querySelector<HTMLButtonElement>('.pick')!;
+    pick.addEventListener('click', () => {
+      dialog.opened = false;
+    });
 
-    closeButton(dialog).focus();
+    pick.focus();
     await userEvent.keyboard('{Enter>}');
     await dialog.updateComplete;
     window.dispatchEvent(new Event('blur'));
@@ -584,8 +639,12 @@ describe('closing with a held key', () => {
 
   it('gives up waiting for the keyup once the same key is pressed again', async () => {
     const {dialog, openCount} = await fixture();
+    const pick = dialog.querySelector<HTMLButtonElement>('.pick')!;
+    pick.addEventListener('click', () => {
+      dialog.opened = false;
+    });
 
-    closeButton(dialog).focus();
+    pick.focus();
     await userEvent.keyboard('{Enter>}');
     await dialog.updateComplete;
     window.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}));

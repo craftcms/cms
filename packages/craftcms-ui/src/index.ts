@@ -30,7 +30,14 @@ export {
   type CheckboxSelectPresentation,
 } from './components/checkbox-select/checkbox-select.js';
 export {default as CraftCheckbox} from './components/checkbox/checkbox.js';
-export {default as CraftChip} from './components/chip/chip.js';
+export {
+  default as CraftChip,
+  ChipPrefixPlacement,
+  ChipThumbSize,
+  chipThumbSizes,
+  type ChipPrefixPlacementValue,
+  type ChipThumbSizeValue,
+} from './components/chip/chip.js';
 export {default as CraftCombobox} from './components/combobox/combobox.js';
 export {default as CraftCopyAttribute} from './components/copy-attribute/copy-attribute.js';
 export {default as CraftCopyButton} from './components/copy-button/copy-button.js';
@@ -55,6 +62,7 @@ export {default as CraftInputPassword} from './components/input-password/input-p
 export {default as CraftInputSearch} from './components/input-search/input-search.js';
 export {default as CraftInputTime} from './components/input-time/input-time.js';
 export {default as CraftInput} from './components/input/input.js';
+export {default as CraftLink} from './components/link/link.js';
 export {default as CraftMissingComponent} from './components/missing-component/missing-component.js';
 export {default as CraftNavItem} from './components/nav-item/nav-item.js';
 export {default as CraftNavList} from './components/nav-list/nav-list.js';
@@ -99,7 +107,12 @@ export {default as CraftSpinner} from './components/spinner/spinner.js';
 export {default as CraftStatus} from './components/status/status.js';
 export {default as CraftSwitchButton} from './components/switch-button/switch-button.js';
 export {default as CraftSwitch} from './components/switch/switch.js';
-export {default as CraftTabs} from './components/tabs/tabs.js';
+export {
+  default as CraftTabs,
+  TabsAppearance,
+  tabsAppearances,
+  type TabsAppearanceValue,
+} from './components/tabs/tabs.js';
 export {default as CraftTab} from './components/tab/tab.js';
 export {default as CraftTextDiff} from './components/text-diff/text-diff.js';
 export {default as CraftTextarea} from './components/textarea/textarea.js';
@@ -168,3 +181,4 @@ export {default as visuallyHiddenStyles} from './styles/visually-hidden.styles.j
 export * from './constants/variants';
 export * from './constants/appearances';
 export * from './constants/colors';
+export * from './constants/statuses';

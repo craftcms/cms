@@ -75,19 +75,22 @@ class FieldReferencesDeletionBlocker extends BaseDeletionBlocker
     public function getActions(): array
     {
         $targetElementType = $this->targetElementType();
+        $replaceLabel = t('Replace {numReferences, plural, =1{reference} other{references}}', [
+            'numReferences' => $this->referenceCount,
+        ]);
 
         return [
             [
                 'icon' => 'swap',
-                'label' => t('Replace {numReferences, plural, =1{reference} other{references}}', [
-                    'numReferences' => $this->referenceCount,
-                ]),
+                'label' => $replaceLabel,
                 'callback' => Html::jsWithVars(fn (
+                    $title,
                     $targetElementType,
                     $targetIds,
                     $hardDelete,
                 ) => <<<JS
 new Craft.CpModal('delete-elements/replace-references-modal', {
+  title: $title,
   params: {
     elementType: $targetElementType,
     elementIds: $targetIds,
@@ -101,6 +104,7 @@ new Craft.CpModal('delete-elements/replace-references-modal', {
   },
 })
 JS, [
+                    $replaceLabel,
                     $targetElementType,
                     $this->elements->ids()->all(),
                     $this->hardDelete,

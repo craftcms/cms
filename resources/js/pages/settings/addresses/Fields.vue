@@ -1,13 +1,13 @@
 <script setup lang="ts">
   import {ref} from 'vue';
   import {useForm} from '@inertiajs/vue3';
-  import AppLayout from '@/common/layouts/AppLayout.vue';
+  import {useAppLayout} from '@/common/composables/useAppLayout';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import {store} from '@actions/Settings/AddressSettingsController';
   import CpContainer from '@/common/components/CpContainer.vue';
 
-  defineProps<{
+  const props = defineProps<{
     title: string;
     fieldLayoutDesigner: {html: string};
   }>();
@@ -37,19 +37,19 @@
           ?.serialize() ?? [],
     }),
   });
+
+  useAppLayout({
+    title: props.title,
+    form,
+    defaultFormActions: [],
+    onSave: save,
+  });
 </script>
 
 <template>
-  <AppLayout
-    :title="title"
-    :form="form"
-    :default-form-actions="[]"
-    @save="save"
-  >
-    <CpContainer>
-      <div ref="fldHost">
-        <DynamicHtmlRenderer :html="fieldLayoutDesigner.html" />
-      </div>
-    </CpContainer>
-  </AppLayout>
+  <CpContainer>
+    <div ref="fldHost">
+      <DynamicHtmlRenderer :html="fieldLayoutDesigner.html" />
+    </div>
+  </CpContainer>
 </template>

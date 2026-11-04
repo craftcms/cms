@@ -155,7 +155,7 @@
       @reorder="moveStage"
     >
       <template #label="{index}">
-        {{ stageTypeLabel(modelValue[index]!) }}
+        <span data-card-label>{{ stageTypeLabel(modelValue[index]!) }}</span>
       </template>
 
       <template #actions="{index}">
@@ -203,7 +203,7 @@
             type="button"
             variant="dashed"
             icon="plus"
-            :disabled="!stageTypes.length"
+            .disabled="!stageTypes.length"
           >
             {{ t('Add stage') }}
           </craft-button>

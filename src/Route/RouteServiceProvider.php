@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Route;
 
 use CraftCms\Cms\Auth\DefaultRateLimit;
 use CraftCms\Cms\Auth\LoginRateLimiter;
+use CraftCms\Cms\Auth\OAuthServer\OAuthResources;
 use CraftCms\Cms\Auth\TwoFactorRateLimiter;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\AddLogContext;
@@ -22,6 +23,7 @@ use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\HandleTemplateRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\PreventRequestsDuringMaintenance as CraftMaintenanceMiddleware;
+use CraftCms\Cms\Http\Middleware\PreventStaleDatabaseReads;
 use CraftCms\Cms\Http\Middleware\RenderBridgedScreen;
 use CraftCms\Cms\Http\Middleware\RequireConfirmedPassword;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
@@ -30,9 +32,10 @@ use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Http\Middleware\RunQueue;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Http\Middleware\ShowBrokenImage;
+use CraftCms\Cms\Http\Middleware\StartSessionWithoutPersistence;
+use CraftCms\Cms\Http\Middleware\TrackSessionActivity;
 use CraftCms\Cms\Http\Middleware\UpdateLocale;
 use CraftCms\Cms\Http\Middleware\UseCraftAuthGuard;
-use CraftCms\Cms\Http\Middleware\UseWriteConnection;
 use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
@@ -47,6 +50,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Events\RouteMatched;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Routing\Router;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
@@ -68,9 +72,11 @@ class RouteServiceProvider extends ServiceProvider
          * as they rewrite the incoming request.
          */
         $kernel = $this->app->get(HttpKernel::class);
+        $kernel->addToMiddlewarePriorityAfter(StartSession::class, StartSessionWithoutPersistence::class);
         $kernel->addToMiddlewarePriorityBefore(AuthenticatesRequests::class, UseCraftAuthGuard::class);
         $kernel->addToMiddlewarePriorityBefore(SubstituteBindings::class, ResolveSite::class);
         $kernel->addToMiddlewarePriorityAfter(SubstituteBindings::class, ResolveElementRoute::class);
+        $kernel->addToMiddlewarePriorityAfter([StartSession::class, StartSessionWithoutPersistence::class], PreventStaleDatabaseReads::class);
         $globalMiddleware = array_map(
             fn (string $middleware): string => $middleware === LaravelMaintenanceMiddleware::class
                 ? CraftMaintenanceMiddleware::class
@@ -150,6 +156,11 @@ class RouteServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for(
+            OAuthResources::REGISTRATION_RATE_LIMITER,
+            fn (Request $request) => Limit::perHour(10)->by($request->ip() ?? 'unknown'),
+        );
+
+        RateLimiter::for(
             LoginRateLimiter::NAME,
             fn (Request $request) => app(LoginRateLimiter::class)->limit($request),
         );
@@ -182,7 +193,7 @@ class RouteServiceProvider extends ServiceProvider
         }
 
         collect([
-            UseWriteConnection::class,
+            PreventStaleDatabaseReads::class,
             ForgetTriggerParameters::class,
             EnsureInstalled::class,
             AddLogContext::class,
@@ -190,6 +201,7 @@ class RouteServiceProvider extends ServiceProvider
             UpdateLocale::class,
             CheckForUpdates::class,
             Enforce2fa::class,
+            TrackSessionActivity::class,
             SetHeaders::class,
             ShowBrokenImage::class,
             CraftMaintenanceMiddleware::class,

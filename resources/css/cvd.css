@@ -23,9 +23,11 @@
   gap: var(--cp-container-padding);
 }
 
+/* The settings are just wide enough for the Thumb Style radios, which don't
+   wrap, and the preview gets the rest. */
 @container cvd (width > 37.5rem) {
   .cvd-container {
-    grid-template-columns: 1fr 2fr;
+    grid-template-columns: min-content 1fr;
   }
 }
 
@@ -39,6 +41,24 @@
   /* A grid cell of space below the Content/Appearance tabs (which it sits right
      under) and above its bottom edge, like the preview's padding. */
   padding-block: var(--c-spacing-lg);
+}
+
+/* Beside the preview, the settings scroll rather than stretching the
+   designer taller than the preview needs. */
+@container cvd (width > 37.5rem) {
+  .cvd-library {
+    /* Its fields all span the full width, so it doesn't need the field
+       group's 12 columns or size containment, which would keep them from
+       setting its width. */
+    container-type: normal;
+    grid-template-columns: auto;
+    max-block-size: calc(500rem / 16);
+    overflow-y: auto;
+    /* Reaches across the gap to the preview's hairline, so it scrolls right
+       up to it, with its content kept where it was. */
+    margin-inline-end: calc(-1 * var(--cp-container-padding));
+    padding-inline-end: var(--cp-container-padding);
+  }
 }
 
 .cvd-library .draggable {
@@ -150,11 +170,13 @@
   background-position: right top;
 }
 
-/* Thumbnail Source starts as wide as its longest option and takes whatever
-   room Alignment leaves. When the two don't fit side by side, the row wraps and
-   Source spans the full width. */
-.thumb-management craft-field[data-attribute='thumb-source'] {
-  flex: 1 1 auto;
+/* The thumb fields are spaced like the library's other fields. */
+.thumb-management {
+  display: contents;
+}
+
+.thumb-management > * {
+  grid-column: 1 / -1;
 }
 
 .thumb-management
@@ -180,21 +202,33 @@
   --c-size-control-md: calc(32rem / 16 + 1px);
 }
 
+/* A pixel taller header, so its bottom border lands on the grid, as the
+   chip's edges do. */
 .cvd-preview > craft-card {
+  --c-size-header: calc(
+    var(--c-size-control-sm) + var(--c-spacing-sm) * 2 + 1px
+  );
   justify-self: stretch;
 }
 
-/* Fills the chip's thumbnail box, like the card's thumbnail placeholder. */
+/* Its height is snapped to the grid (see CardViewDesigner::snapPreviewCard()).
+   Set on the card's base, as the host's percentage height wouldn't pass a
+   minimum on to it. */
+.cvd-preview > craft-card::part(base) {
+  min-block-size: var(--cvd-card-min-block-size, auto);
+}
+
+/* Sized like a cover card in an element index, not the whole pane. */
+.cvd-preview > craft-card[cover-src] {
+  justify-self: start;
+  inline-size: min(100%, calc(360rem / 16));
+}
+
 .cvd-chip-thumbnail {
-  display: grid;
-  place-items: center;
   inline-size: 100%;
   block-size: 100%;
-  box-sizing: border-box;
-  border: 1px solid var(--c-color-border-quiet);
-  background-color: var(--c-color-fill-quiet);
   border-radius: var(--c-radius-sm);
-  font-size: 0.75em;
+  overflow: clip;
 }
 
 /* Both previews get a ring just darker than the page outside their outlines
@@ -232,20 +266,27 @@
 .cvd-thumbnail {
   width: 100%;
   aspect-ratio: 4/3;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  border: 1px solid var(--c-color-border-quiet);
-  background-color: var(--c-color-fill-quiet);
   border-radius: var(--c-radius-md);
+  overflow: clip;
 }
 
-/* White's quiet fill is the card's own white, so a white card's thumbnail
-   takes the neutral tint instead, as it has without a color. */
-craft-card[data-color='white'] .cvd-thumbnail {
-  border-color: var(--c-color-neutral-border-quiet);
-  background-color: var(--c-color-neutral-fill-quiet);
+/* The owner's icon, shown when it's the first thumb source, fills its
+   thumbnail box as the SVG in an element's icon thumbnail does. */
+.cvd-preview .icon-thumb {
+  container-type: size;
+}
+
+.cvd-preview .icon-thumb > craft-icon {
+  --c-icon-size: 100cqmin;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+:is(.cvd-thumbnail, .cvd-chip-thumbnail) > img {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
 }
 
 .card-placeholder {

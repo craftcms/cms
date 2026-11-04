@@ -192,6 +192,21 @@ class Text extends Control
     }
 
     #[\Override]
+    public function inputSchema(): array
+    {
+        $numeric = static fn (mixed $value): int|float|null => is_numeric($value) ? $value + 0 : null;
+
+        return match ($this->inputType) {
+            'number', 'range' => Arr::whereNotNull(['type' => 'number', 'minimum' => $numeric($this->min), 'maximum' => $numeric($this->max)]),
+            'date' => ['type' => 'string', 'format' => 'date'],
+            'time' => ['type' => 'string', 'description' => 'A 24-hour time, such as 14:30.'],
+            'email' => ['type' => 'string', 'format' => 'email'],
+            'url' => ['type' => 'string', 'format' => 'uri'],
+            default => Arr::whereNotNull(['type' => 'string', 'maxLength' => $this->maxLength]),
+        };
+    }
+
+    #[\Override]
     public function props(mixed $value = null): array
     {
         return Arr::whereNotNull([

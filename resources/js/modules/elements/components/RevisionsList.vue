@@ -26,40 +26,39 @@
     </p>
 
     <div v-else class="grid gap-3">
-      <div
-        v-for="group in sections.groups"
-        :key="group.id"
-        class="revision-group"
-      >
-        <h3 v-if="group.label" class="mb-1 text-xs font-bold">
-          {{ group.label }}
-        </h3>
-        <ul class="grid gap-2">
-          <li
-            class="revision-item"
-            v-for="item in group.items"
-            :key="item.id"
-            :active="item.active || null"
-            :aria-current="item.active ? 'true' : undefined"
-          >
-            <craft-icon
-              v-show="item.active"
-              name="check"
-              class="revision-item__icon"
-            ></craft-icon>
-            <div class="revision-item__label">
-              <!-- The one you're looking at isn't worth a link back to itself. -->
-              <CpLink v-if="item.href && !item.active" :href="item.href">
-                {{ item.label }}
-              </CpLink>
-              <span v-else>{{ item.label }}</span>
-            </div>
-            <div v-if="item.description" class="revision-item__description">
-              {{ item.description }}
-            </div>
-          </li>
-        </ul>
-      </div>
+      <template v-for="(group, index) in sections.groups" :key="group.id">
+        <hr v-if="index > 0" />
+        <div class="revision-group">
+          <h3 v-if="group.label" class="mb-1 text-xs font-bold">
+            {{ group.label }}
+          </h3>
+          <ul class="grid gap-2">
+            <li
+              class="revision-item"
+              v-for="item in group.items"
+              :key="item.id"
+              :active="item.active || null"
+              :aria-current="item.active ? 'true' : undefined"
+            >
+              <craft-icon
+                v-show="item.active"
+                name="check"
+                class="revision-item__icon"
+              ></craft-icon>
+              <div class="revision-item__label">
+                <!-- The one you're looking at isn't worth a link back to itself. -->
+                <CpLink v-if="item.href && !item.active" :href="item.href">
+                  {{ item.label }}
+                </CpLink>
+                <span v-else>{{ item.label }}</span>
+              </div>
+              <div v-if="item.description" class="revision-item__description">
+                {{ item.description }}
+              </div>
+            </li>
+          </ul>
+        </div>
+      </template>
     </div>
   </div>
 </template>

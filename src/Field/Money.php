@@ -355,7 +355,6 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             'name' => $this->handle,
             'size' => $this->size,
             'currency' => $this->currency,
-            'currencyLabel' => $this->currencyLabel(),
             'showCurrency' => $this->showCurrency,
             'decimals' => $decimals,
             'defaultValue' => $defaultValue,

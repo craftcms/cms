@@ -30,6 +30,10 @@ export interface BulkActionItem {
    * over `action` when both are given.
    */
   onClick?: (event: Event) => void;
+  /** The most selected elements the action is performed on within the request. */
+  syncLimit?: number;
+  /** Whether the action can run from a queue job, for more elements than `syncLimit`. */
+  queueable?: boolean;
   /** Row capability that every selected element must expose as truthy. */
   selectionAttribute?: keyof ElementCapabilities;
   /** The primitive action descriptor. Ignored when `onClick` is set; absent for disabled/placeholder items. */
@@ -66,7 +70,7 @@ export interface ElementCapabilities {
   copyable: boolean;
   duplicatable: boolean;
   deletable: boolean;
-  /** Asset rows: the file can be renamed or moved. */
+  /** Asset rows: the file can be renamed or moved. Entry rows: the entry can be moved to another section. */
   movable?: boolean;
   /** Asset rows: the file can be replaced with an upload. */
   replaceable?: boolean;

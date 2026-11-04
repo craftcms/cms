@@ -1,4 +1,4 @@
-import {expect, test} from 'vite-plus/test';
+import {expect, test, vi} from 'vite-plus/test';
 import {html, render} from 'lit';
 
 import './action-item.js';
@@ -107,4 +107,43 @@ test('stops resetting its state once it is removed', async () => {
   );
 
   expect(states).toEqual(['success']);
+});
+
+test('announces its shortcut on its control', async () => {
+  vi.spyOn(navigator, 'platform', 'get').mockReturnValue('Win32');
+  const item = await mount(
+    html`<craft-action-item shortcut='{"key": "S", "shift": true}'>
+      Save and add another
+    </craft-action-item>`
+  );
+
+  expect(
+    item.shadowRoot
+      ?.querySelector('[part="control"]')
+      ?.getAttribute('aria-keyshortcuts')
+  ).toBe('Control+Shift+S');
+  vi.restoreAllMocks();
+});
+
+test('a link to another host opens in a new tab and says so', async () => {
+  const item = await mount(
+    html`<craft-action-item href="https://craftcms.com/"
+      >Craft CMS</craft-action-item
+    >`
+  );
+  const link = item.shadowRoot!.querySelector('a')!;
+
+  expect(link.getAttribute('target')).toBe('_blank');
+  expect(link.getAttribute('rel')).toBe('noopener');
+  expect(link.textContent).toContain('Opens in a new window');
+});
+
+test('a link to this host opens in the same tab', async () => {
+  const item = await mount(
+    html`<craft-action-item href="/admin/entries">Entries</craft-action-item>`
+  );
+  const link = item.shadowRoot!.querySelector('a')!;
+
+  expect(link.hasAttribute('target')).toBe(false);
+  expect(link.textContent).not.toContain('Opens in a new window');
 });

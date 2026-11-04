@@ -106,3 +106,64 @@ it('shows in full beside an invoker in a blurred backdrop that clips', async () 
     document.elementFromPoint(rect.right - 4, rect.top + rect.height / 2)
   ).toBe(content);
 });
+
+async function renderWithTwoInvokers(trigger: string): Promise<{
+  first: HTMLButtonElement;
+  second: HTMLButtonElement;
+  tooltip: CraftTooltip;
+}> {
+  document.body.innerHTML = `
+    <button id="first" type="button">First</button>
+    <button id="second" type="button">Second</button>
+    <craft-tooltip for="first" trigger="${trigger}">Help</craft-tooltip>`;
+  const tooltip = document.querySelector('craft-tooltip')!;
+  await tooltip.updateComplete;
+  await after(0);
+
+  return {
+    first: document.querySelector<HTMLButtonElement>('#first')!,
+    second: document.querySelector<HTMLButtonElement>('#second')!,
+    tooltip,
+  };
+}
+
+it('moves its wiring and click toggle to the new invoker when for changes', async () => {
+  const {first, second, tooltip} = await renderWithTwoInvokers('click');
+  expect(first.hasAttribute('aria-describedby')).toBe(true);
+
+  tooltip.for = 'second';
+  await tooltip.updateComplete;
+
+  expect(first.hasAttribute('aria-describedby')).toBe(false);
+  expect(second.getAttribute('aria-describedby')).toBe(
+    tooltip.querySelector('[slot="content"]')!.id
+  );
+
+  second.click();
+  await after(50);
+  expect(tooltip.opened).toBe(true);
+
+  first.click();
+  await after(50);
+  expect(tooltip.opened).toBe(true);
+
+  second.click();
+  await tooltip.updateComplete;
+  expect(tooltip.opened).toBe(false);
+});
+
+it('opens on click rather than hover once its trigger changes to click', async () => {
+  const {userEvent} = await import('vite-plus/test/browser');
+  const {first, tooltip} = await renderWithTwoInvokers('hover focus');
+
+  tooltip.trigger = 'click';
+  await tooltip.updateComplete;
+
+  await userEvent.hover(first);
+  await after(300);
+  expect(tooltip.opened).toBe(false);
+
+  first.click();
+  await tooltip.updateComplete;
+  expect(tooltip.opened).toBe(true);
+});

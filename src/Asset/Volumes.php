@@ -182,8 +182,15 @@ class Volumes
             $volumeModel->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
             $volumeModel->altTranslationMethod = $data['altTranslationMethod'] ?? TranslationMethod::None->value;
             $volumeModel->altTranslationKeyFormat = $data['altTranslationKeyFormat'] ?? null;
-            // Volumes saved before the setting existed should keep propagating to all sites
-            $volumeModel->propagationMethod = $data['propagationMethod'] ?? PropagationMethod::All->value;
+            if (isset($data['propagationMethod'])) {
+                $volumeModel->propagationMethod = $data['propagationMethod'];
+            } elseif ($isNewVolume) {
+                // The config was saved before the setting existed, so follow the add_propagation_method_to_volumes
+                // migration: keep saving assets to all sites on multi-site installs
+                $isMultiSite = DB::table(Table::SITES)->whereNull('dateDeleted')->count() > 1;
+                $volumeModel->propagationMethod = ($isMultiSite ? PropagationMethod::All : PropagationMethod::Custom)->value;
+            }
+            // Otherwise keep the existing volume's value, which the add_propagation_method_to_volumes migration set
             $volumeModel->uid = $volumeUid;
 
             // If assets are now saved to all sites, existing assets will need to be propagated to any sites they're missing from

@@ -72,7 +72,7 @@ class SendUserReviewNotifications
             collect([$event->run->author]),
             'workflow_changes_requested',
             t('Changes requested'),
-            t('Changes were requested for “{entry}”.', ['entry' => $event->draft->title]),
+            t('{user} requested changes to “{entry}”.', ['user' => $this->actorName($event), 'entry' => $event->draft->title]),
         );
     }
 
@@ -110,7 +110,7 @@ class SendUserReviewNotifications
             $recipients,
             'workflow_review_commented',
             t('New review comment'),
-            t('A comment was added to the review for “{entry}”.', ['entry' => $event->draft->title]),
+            t('{user} commented on the review for “{entry}”.', ['user' => $this->actorName($event), 'entry' => $event->draft->title]),
         );
     }
 
@@ -122,8 +122,13 @@ class SendUserReviewNotifications
             collect([$event->run->author]),
             'workflow_invalidated',
             t('Approval reset'),
-            t('The review for “{entry}” was reset because the draft changed.', ['entry' => $event->draft->title]),
+            t('The review for “{entry}” was reset because its workflow changed.', ['entry' => $event->draft->title]),
         );
+    }
+
+    private function actorName(WorkflowTransitioned|WorkflowCommented $event): string
+    {
+        return $event->actor?->asElement()->getName() ?? t('Someone');
     }
 
     /** @return Collection<int, User> */
@@ -170,6 +175,7 @@ class SendUserReviewNotifications
             entryUrl: Uri::of($event->draft->getCpEditUrl())->withFragment('workflow')->value(),
             stageName: $stage === null ? null : t($stage->name),
             note: $event->note,
+            userName: $event->actor === null ? null : $this->actorName($event),
         ));
     }
 }

@@ -22,6 +22,13 @@ export default class CraftTextarea extends HasLabel(LionTextarea) {
     return [...super.styles, inputStyles, styles];
   }
 
+  /**
+   * Visually hides the label, keeping it available to screen readers.
+   * `FormControlMixin` declares this property (`label-sr-only`), but its
+   * types leave it out.
+   */
+  declare labelSrOnly: boolean;
+
   /** Renders the value in a monospace font, for code or structured text. */
   @property({type: Boolean, reflect: true})
   monospace: boolean = false;
@@ -41,7 +48,17 @@ export default class CraftTextarea extends HasLabel(LionTextarea) {
     this.#resizeObserver = undefined;
     this.#styleObserver?.disconnect();
     this.#styleObserver = undefined;
+    this._inputNode?.removeEventListener(
+      'autosize:resized',
+      this.#onAutosizeResized
+    );
   }
+
+  #onAutosizeResized = (event: Event) => {
+    this.#lastAutosizeHeight = (
+      event.target as HTMLTextAreaElement
+    ).style.height;
+  };
 
   /**
    * `autosize` (used by `LionTextarea`) auto-grows the textarea and disables
@@ -80,9 +97,7 @@ export default class CraftTextarea extends HasLabel(LionTextarea) {
     this.#lastAutosizeHeight = input.style.height;
     input.style.removeProperty('resize');
 
-    input.addEventListener('autosize:resized', () => {
-      this.#lastAutosizeHeight = input.style.height;
-    });
+    input.addEventListener('autosize:resized', this.#onAutosizeResized);
 
     this.#styleObserver = new MutationObserver(() => {
       // Skip if already clear, so our own removeProperty call below doesn't

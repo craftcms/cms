@@ -5,7 +5,11 @@
   import ElementStatus from '@/modules/elements/ElementStatus.vue';
   import IndexViewSettings from '@/modules/elements/index/components/IndexViewSettings.vue';
   import type {CheckboxOption} from '@/common/types';
-  import type {SortOption, ViewMode} from '@/modules/elements/types/view-state';
+  import type {
+    ThumbSize,
+    SortOption,
+    ViewMode,
+  } from '@/modules/elements/types/view-state';
   import FilterHud from './FilterHud.vue';
   import type {ConditionConfig} from '@/modules/conditions/types';
   import type {IndexSite} from '@/modules/elements/types/sites';
@@ -14,10 +18,14 @@
 
   const props = withDefaults(
     defineProps<{
-      statusOptions?: Array<{label: string; value: string}>;
+      statusOptions?: Array<{label: string; value: string; icon?: string}>;
       viewModes?: Array<ViewMode>;
       columnOptions: Array<CheckboxOption>;
+      /** The thumbnail sizes the active view mode offers. */
+      thumbSizeOptions?: Array<ThumbSize>;
       sortOptions: Array<SortOption>;
+      /** Whether any View menu setting differs from the source's default. */
+      viewCustomized?: boolean;
       processing?: boolean;
       /**
        * The sites this index can be switched between.
@@ -44,6 +52,7 @@
   const tableColumns = defineModel<Array<string>>('tableColumns', {
     required: true,
   });
+  const thumbSize = defineModel<ThumbSize>('thumbSize', {required: true});
   const conditions = defineModel<ConditionConfig | null>('conditions', {
     required: true,
   });
@@ -51,6 +60,7 @@
   const emit = defineEmits<{
     (e: 'submit'): void;
     (e: 'reorder', options: Array<CheckboxOption>): void;
+    (e: 'use-default-view'): void;
     (e: 'site-change', handle: string): void;
   }>();
 
@@ -76,6 +86,10 @@
   const sortDirectionLocked = computed(() =>
     ['score', 'sortOrder'].includes(sortField.value)
   );
+
+  function statusOptionIcon(value: string | number): string | undefined {
+    return props.statusOptions?.find((option) => option.value === value)?.icon;
+  }
 
   const siteOptions = computed(() =>
     (props.sites ?? []).map((site) => ({label: site.name, value: site.handle}))
@@ -129,7 +143,23 @@
                 }
               }
             "
-          />
+          >
+            <template #option="{option}">
+              <!-- The menu button shows a copy of this option in its own shadow
+                root, out of reach of utility classes, so the layout is inline
+                and the icon's name is an attribute the copy keeps. -->
+              <span
+                style="
+                  display: inline-flex;
+                  align-items: center;
+                  gap: var(--c-spacing-sm);
+                "
+              >
+                <craft-icon :name.attr="'world'"></craft-icon>
+                {{ option.label }}
+              </span>
+            </template>
+          </CraftSelectRich>
         </div>
 
         <CraftSelectRich
@@ -148,7 +178,20 @@
           "
         >
           <template #option="{option}">
-            <ElementStatus :label="option.label" :value="option.value" />
+            <span
+              v-if="statusOptionIcon(option.value)"
+              style="
+                display: inline-flex;
+                align-items: center;
+                gap: var(--c-spacing-sm);
+              "
+            >
+              <craft-icon
+                :name.attr="statusOptionIcon(option.value)"
+              ></craft-icon>
+              {{ option.label }}
+            </span>
+            <ElementStatus v-else :label="option.label" :value="option.value" />
           </template>
         </CraftSelectRich>
       </div>
@@ -221,10 +264,15 @@
             :sort-options="visibleSortOptions"
             :sort-direction-locked="sortDirectionLocked"
             :disabled="processing"
+            :thumb-size-options="thumbSizeOptions"
+            :show-table-columns="mode === 'table' || mode === 'structure'"
+            :customized="viewCustomized"
             v-model:sort-field="sortField"
             v-model:sort-direction="sortDirection"
             v-model:table-columns="tableColumns"
+            v-model:thumb-size="thumbSize"
             @reorder="(options) => emit('reorder', options)"
+            @use-defaults="emit('use-default-view')"
           />
         </div>
       </div>

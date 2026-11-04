@@ -7,10 +7,13 @@ import PageScreen from './PageScreen.vue';
 
 type NavItem = CraftCms.Cms.Cp.Data.NavItem;
 
-const {Stub} = await vi.hoisted(async () => {
+const {Stub, pageProps} = await vi.hoisted(async () => {
   const {h} = await import('vue');
 
-  return {Stub: {render: () => h('div')}};
+  return {
+    Stub: {render: () => h('div')},
+    pageProps: {} as Record<string, unknown>,
+  };
 });
 
 vi.mock('@inertiajs/vue3', async () => ({
@@ -18,15 +21,28 @@ vi.mock('@inertiajs/vue3', async () => ({
   Head: Stub,
   usePage: () => ({
     url: '/admin/commerce/store-management',
-    props: {title: 'General', subnav: [navItem({label: 'General'})]},
+    props: {
+      title: 'General',
+      subnav: [navItem({label: 'General'})],
+      ...pageProps,
+    },
   }),
 }));
 vi.mock('@/common/composables/useCraftData', () => ({
-  default: () => ({nav: computed(() => []), siteCrumb: computed(() => null)}),
+  default: () => ({
+    nav: computed(() => []),
+    siteCrumb: computed(() => null),
+    currentUser: computed(() => null),
+  }),
 }));
 vi.mock('@/common/components/CpSidebar.vue', () => ({default: Stub}));
 vi.mock('@/common/components/CpHeaderBar.vue', () => ({default: Stub}));
 vi.mock('./page/ScreenOverlays.vue', () => ({default: Stub}));
+// Loaded asynchronously, so its imports could still be loading when the file ends.
+vi.mock('@/modules/command-palette/components/CommandPalette.vue', () => ({
+  __esModule: true,
+  default: Stub,
+}));
 
 const realMatchMedia = window.matchMedia;
 
@@ -90,6 +106,9 @@ beforeEach(() => {
 afterEach(() => {
   teardown?.();
   teardown = undefined;
+  for (const key of Object.keys(pageProps)) {
+    delete pageProps[key];
+  }
   vi.unstubAllGlobals();
   window.matchMedia = realMatchMedia;
 });
@@ -257,6 +276,41 @@ describe('PageScreen', () => {
     await vi.waitFor(() => expect(header().style.display).toBe(''));
   });
 
+  it('shows the notices region once a page fills its slot', async () => {
+    stubViewport(true);
+
+    const filled = ref(false);
+    const container = document.createElement('div');
+    document.body.append(container);
+
+    const app = createApp({
+      render: () =>
+        h(PageScreen, null, {
+          default: () => null,
+          ...(filled.value
+            ? {'content-notices': () => h('p', 'Saved as a draft.')}
+            : {}),
+        }),
+    });
+    app.mount(container);
+    teardown = () => {
+      app.unmount();
+      container.remove();
+    };
+    await nextTick();
+
+    const notices = () =>
+      container.querySelector<HTMLElement>('#content-notice')!;
+    expect(notices().style.display).toBe('none');
+
+    filled.value = true;
+
+    await vi.waitFor(() => {
+      expect(notices().textContent).toContain('Saved as a draft.');
+      expect(notices().style.display).toBe('');
+    });
+  });
+
   it('hides the footer for a page that asks it to, even with a form', async () => {
     stubViewport(true);
 
@@ -298,4 +352,46 @@ describe('PageScreen', () => {
       footer()?.closest<HTMLElement>('[style*="display: none"]')
     ).not.toBeNull();
   });
+
+  it.each([
+    {handlesReadOnly: false, notice: true, revert: false},
+    {handlesReadOnly: true, notice: false, revert: true},
+  ])(
+    'treats a read-only page by its own read-only handling (handles: $handlesReadOnly)',
+    async ({handlesReadOnly, notice, revert}) => {
+      stubViewport(true);
+      pageProps.readOnly = true;
+
+      const form = {
+        hasErrors: false,
+        errors: {},
+        processing: false,
+        isDirty: false,
+      } as unknown as InstanceType<typeof Object>;
+      const container = document.createElement('div');
+      document.body.append(container);
+
+      const app = createApp({
+        render: () =>
+          h(PageScreen, {
+            form,
+            defaultFormActions: [],
+            saveDisabled: true,
+            handlesReadOnly,
+            formAdditionalButtons: [{label: 'Revert content'}],
+          } as never),
+      });
+      app.mount(container);
+      teardown = () => {
+        app.unmount();
+        container.remove();
+      };
+      await nextTick();
+
+      expect(
+        container.textContent?.includes('permitted in this environment')
+      ).toBe(notice);
+      expect(container.textContent?.includes('Revert content')).toBe(revert);
+    }
+  );
 });

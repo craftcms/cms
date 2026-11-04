@@ -21,6 +21,7 @@ use CraftCms\Cms\Asset\PreviewHandlers\Text;
 use CraftCms\Cms\Asset\PreviewHandlers\Video;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Elements;
@@ -44,7 +45,6 @@ use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 use RuntimeException;
 use Throwable;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
@@ -172,7 +172,7 @@ class Assets
 
         $assets = array_values(array_filter($assets, fn (Asset $asset): bool => $asset::class === Asset::class
             && ! $asset->isFolder
-            && ! $asset->getFieldLayout()?->thumbFieldKey));
+            && empty($asset->getFieldLayout()->thumbSources)));
 
         $this->assetTransformers->preload($assets, fn (Asset $asset): array => array_map(
             fn (int $size): array => ['width' => $size, 'height' => $size, 'mode' => ImageTransformMode::Fit->value],
@@ -214,12 +214,22 @@ class Assets
                 'mode' => $mode->value,
             ])->url;
         } catch (NotSupportedException|FilesystemException) {
-            return $iconFallback ? Url::actionUrl('assets/icon', [
-                'extension' => $extension,
-            ]) : null;
+            return $iconFallback ? self::iconUrl($extension) : null;
         }
 
         return AssetsHelper::revUrl($url, $asset, fsOnly: true);
+    }
+
+    /**
+     * Returns the URL of a file icon, in the variant for the control panel
+     * theme that's showing, since icon responses are cached by URL.
+     */
+    private static function iconUrl(string $extension): string
+    {
+        return Url::actionUrl('assets/icon', array_filter([
+            'extension' => $extension,
+            'theme' => Theme::resolveFor(currentUserElement()) === Theme::Dark ? Theme::Dark->value : null,
+        ]));
     }
 
     /**
@@ -254,9 +264,7 @@ class Assets
                 )
                 : $asset->getUrl();
         } catch (NotSupportedException) {
-            return Url::actionUrl('assets/icon', [
-                'extension' => $asset->getExtension(),
-            ]);
+            return self::iconUrl($asset->getExtension());
         }
 
         if (! $url) {
@@ -295,8 +303,8 @@ class Assets
 
         $baseFileName = $buildFilename(pathinfo($originalFilename, PATHINFO_FILENAME));
 
-        $dbFileList = DB::table(new Alias(Table::ASSETS, 'assets'))
-            ->join(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', 'assets.id')
+        $dbFileList = DB::table(Table::ASSETS, 'assets')
+            ->join(Table::ELEMENTS.' as elements', 'elements.id', 'assets.id')
             ->where('assets.folderId', $folderId)
             ->whereNull('elements.dateDeleted')
             ->whereLike('assets.filename', $baseFileName.'%.'.$extension)

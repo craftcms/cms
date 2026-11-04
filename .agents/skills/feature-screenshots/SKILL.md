@@ -34,8 +34,24 @@ captures at the display's pixel density, so Retina shots come out at 2×.
    [screenX, screenY + outerHeight - innerHeight]
    ```
 
-3. Use the theme the person is using, normally the control panel's dark theme,
-   and keep it the same across the set.
+3. Capture every shot in both themes, light and dark, so it matches the
+   reader's own GitHub theme. Switch the page's theme without touching the
+   person's preference:
+
+   ```js
+   const original = document.documentElement.dataset.theme;
+   document.documentElement.dataset.theme = 'dark';  // or 'light'
+   ```
+
+   Set `light` explicitly rather than deleting the attribute, which falls back
+   to the person's own theme. Put `original` back when you're done.
+
+   Colors transition when the theme changes, so wait about 800ms before
+   reading a background color for `__iso()` or capturing. Read too soon, and
+   the shot comes out with the other theme's background.
+
+   Keep the page size, crop and padding the same in both, and name the files
+   `…-light.png` and `…-dark.png`.
 4. Show real, representative content: a seeded entry or asset, a search that
    returns a good mix of results.
 
@@ -60,7 +76,6 @@ window.__iso = (bg) => {
       body * { visibility: hidden !important; }
       FEATURE, FEATURE * { visibility: visible !important; }
       input, textarea { caret-color: transparent !important; }
-      #claude-agent-glow-border, #claude-phantom-cursor { display: none !important; }
     `;
     document.head.append(s);
   }
@@ -85,12 +100,46 @@ Replace `FEATURE` with the feature's outermost element.
 - Hiding the caret keeps two captures of the same state identical.
 - Blur any focus ring that isn't part of what you're showing
   (`document.activeElement.blur()`), such as a view heading focused on open.
-- Move the pointer off the feature, unless you're showing a hover state.
-  `screencapture -x` leaves the cursor out.
 - A tooltip or menu that extends past the feature's edges gets cut off by the
   crop. Leave it out, or capture a larger region.
 
-Call `__unIso()` when done, and close any tabs you opened.
+### Keep the extension's overlays out
+
+While the Claude in Chrome extension drives a tab, it draws a glowing border
+around the page's edges and its own cursor where the last click or hover
+was. Neither is in the page's DOM, so CSS can't hide them, and
+`screencapture -x` records both: it only leaves out the system cursor.
+
+- Hover somewhere outside the capture region before capturing, unless you're
+  showing a hover state. Clicking or hovering moves the drawn cursor there.
+- Keep the capture region about 24px clear of the window's edges. For a
+  feature that sits against an edge, such as a slideout, a sidebar or the
+  header, move it in for the shot and capture it there:
+
+  ```js
+  feature.style.translate = '-24px 24px'; // a slideout against the top and right edges
+  ```
+
+- For a full-page shot, inset the whole app, with the page's background
+  around it, and capture the inset area:
+
+  ```js
+  const inset = document.createElement('style');
+  inset.id = 'shot-inset';
+  inset.textContent = `
+    html { background: var(--shot-bg) !important; }
+    #app { position: fixed !important; inset: 24px !important; overflow: hidden !important; transform: translateZ(0); }
+  `;
+  document.documentElement.style.setProperty('--shot-bg', getComputedStyle(document.body).backgroundColor);
+  document.head.append(inset);
+  ```
+
+  `transform` makes `#app` the containing block for the page's own fixed
+  elements, so they move in with it. The inset area is the capture region,
+  and its margin is a good place to park the pointer.
+
+Call `__unIso()` when done, undo any inset or `translate`, and close any tabs
+you opened.
 
 ## Transparent PNG
 
@@ -131,7 +180,7 @@ the difference. Shadows come out as real partial transparency.
 ## Focused crop
 
 1. `__iso(bg)` with the color the feature normally sits on, e.g. the page's
-   `--c-surface-default`, read from the page.
+   `--c-surface-default`, read from the page in each theme.
 2. Add the same padding to all four sides of the feature's rect. Around 24 CSS
    pixels suits most features; use the same value across a set.
 3. Capture that region once with `capture.sh`. Nothing but the feature
@@ -144,6 +193,26 @@ the difference. Shadows come out as real partial transparency.
 2. Upload them through the PR's comment box. Open the PR in a new tab, find
    the comment box's file input, and upload with the `file_upload` tool. It
    only reads from folders this session can access, such as the scratchpad.
+
+   The input (`#fc-new_comment_field`) is hidden, so `find` may only offer the
+   "Add files" button, which `file_upload` rejects. Expose the input to the
+   accessibility tree for the upload, then put it back:
+
+   ```js
+   const input = document.getElementById('fc-new_comment_field');
+   input.dataset.shotStyle = input.getAttribute('style') ?? '';
+   input.setAttribute('aria-label', 'Screenshot upload target');
+   input.style.cssText =
+     'position:fixed;inset-block-start:0;inset-inline-start:0;width:40px;height:40px;opacity:0.01;z-index:99999;display:block';
+   ```
+
+   Then `find` "file input labeled Screenshot upload target" and upload to
+   it. Afterwards, restore it:
+
+   ```js
+   input.setAttribute('style', input.dataset.shotStyle);
+   input.removeAttribute('aria-label');
+   ```
 3. Wait a few seconds, then read each upload's
    `https://github.com/user-attachments/assets/…` URL from the comment
    textarea.
@@ -159,18 +228,56 @@ the difference. Shadows come out as real partial transparency.
    window.onbeforeunload = null;
    ```
 
-5. Put them in the description with `gh pr edit --body-file`. For more than
-   two, use a two-column table with a caption under each image. GitHub scales
-   each image to its cell and links it to the full size:
+5. Put them in the description with `gh pr edit --body-file`, as a `<picture>`
+   per shot, so GitHub shows the one matching the reader's theme:
+
+   ```html
+   <picture>
+     <source
+       media="(prefers-color-scheme: dark)"
+       srcset="https://github.com/user-attachments/assets/…"
+     >
+     <source
+       media="(prefers-color-scheme: light)"
+       srcset="https://github.com/user-attachments/assets/…"
+     >
+     <img
+       alt="The command palette, searching “image”"
+       src="https://github.com/user-attachments/assets/…"
+       width="640"
+     >
+   </picture>
+   ```
+
+   The `<img>` uses the light shot, as the fallback. Set its `width` to exactly
+   half the image file's pixel width, since `screencapture` shoots at 2× on
+   Retina displays, so it isn't shown larger than the UI it was taken from.
+   Read it from the file with `sips -g pixelWidth shot.png`, never from the
+   size GitHub happens to display it at. Leave `height` off: GitHub caps an
+   image's width to fit its container but keeps a set height, which squashes
+   it. Give it alt text that says what the shot shows.
+
+   For a gallery of more than two shots, use a two-column table with a
+   caption under each shot:
 
    ```html
    <table>
    <tr>
-   <td width="50%" valign="top"><img alt="Default state" src="https://github.com/user-attachments/assets/…" /><br />The default state on an entry.</td>
-   <td width="50%" valign="top"><img alt="Searching" src="https://github.com/user-attachments/assets/…" /><br />Searching “image”.</td>
+   <td width="50%" valign="top">
+   <picture>…</picture>
+   <br />The default state on an entry.
+   </td>
+   <td width="50%" valign="top">
+   <picture>…</picture>
+   <br />Searching “image”.
+   </td>
    </tr>
    </table>
    ```
+
+   Each shot is scaled down to fit its cell. Unlike a bare `<img>`, GitHub
+   doesn't link a `<picture>` to the full-size file, so readers can't click a
+   shot to enlarge it.
 
 6. Open the PR page to check the images render.
 

@@ -5,8 +5,9 @@ import type {BulkAction} from '@/modules/elements/types/actions';
 import {useCraftTable} from '@/common/table/craftTable';
 import AdminTable from './AdminTable.vue';
 
+const pageProps = vi.hoisted(() => ({readOnly: false}));
 vi.mock('@inertiajs/vue3', () => ({
-  usePage: () => ({props: {readOnly: false}}),
+  usePage: () => ({props: pageProps}),
 }));
 beforeEach(() => {
   vi.stubGlobal(
@@ -16,6 +17,7 @@ beforeEach(() => {
 });
 let teardown: (() => void) | undefined;
 afterEach(() => {
+  pageProps.readOnly = false;
   teardown?.();
   document.body.innerHTML = '';
   vi.unstubAllGlobals();
@@ -109,7 +111,7 @@ function mountSelectionTable(selectable: boolean, statuses: BulkAction[] = []) {
 
 it('preserves status colors in bulk-action menus after selecting a row', async () => {
   const {host, rows} = mountSelectionTable(true, [
-    {key: 'pending', label: 'Pending', fill: 'orange', onClick: () => {}},
+    {key: 'pending', label: 'Pending', fill: 'sky', onClick: () => {}},
     {
       key: 'enabled',
       label: 'Enabled',
@@ -138,7 +140,7 @@ it('preserves status colors in bulk-action menus after selecting a row', async (
           }
         )?.fill
     )
-  ).toEqual(['orange', 'green']);
+  ).toEqual(['sky', 'green']);
 });
 
 it('connects selectable rows and their labelled controls to the table selection', async () => {
@@ -178,6 +180,17 @@ it('omits selection controls and ignores row clicks when not selectable', () => 
 
   expect(selectedIds()).toEqual([]);
   expect(rows()[0]!.hasAttribute('tabindex')).toBe(false);
+});
+
+it('falls back to the page read-only state when no readOnly prop is passed', () => {
+  pageProps.readOnly = true;
+  const {rows, selectedIds} = mountSelectionTable(true);
+
+  rows()[0]!
+    .querySelector('td:last-child')!
+    .dispatchEvent(new MouseEvent('click', {bubbles: true}));
+
+  expect(selectedIds()).toEqual([]);
 });
 
 it('toggles a focused row with space and extends with shift+arrow', async () => {
@@ -229,3 +242,32 @@ it.each(['plain', 'flush', 'raised'] as const)(
     ).toBe(appearance === 'flush');
   }
 );
+
+it('lists the table columns in the view menu when columns are toggleable', async () => {
+  const host = document.createElement('div');
+  document.body.append(host);
+  const app = createApp({
+    render: () =>
+      h(AdminTable, {
+        rows: [{id: 1, name: 'First', count: 1}],
+        columns: [
+          {accessorKey: 'name', header: 'Name'},
+          {accessorKey: 'count', header: 'Count'},
+        ],
+        columnsToggleable: true,
+      } as never),
+  });
+  app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
+  app.mount(host);
+  teardown = () => app.unmount();
+  await nextTick();
+
+  expect(
+    Array.from(
+      host.querySelectorAll<HTMLInputElement>(
+        'input[name="viewState[tableColumns][]"]'
+      ),
+      (input) => input.value
+    )
+  ).toEqual(['name', 'count']);
+});

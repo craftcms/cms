@@ -69,7 +69,8 @@ export interface ChipIndicator {
 export interface BreadcrumbItem {
   /**
    * Identifies a crumb the screen owns. `site-crumb` marks a screen's own site
-   * switcher, which the shared one defers to.
+   * switcher, which the shared one defers to; `revision-crumb` marks an element
+   * editor's switcher between its current state, drafts and revisions.
    */
   id?: string | null;
   href?: string | null;
@@ -375,6 +376,11 @@ export const TableAppearance = {
    * `--cp-container-padding` to match.
    */
   Flush: 'flush',
+  /**
+   * Sits inside the container's padding, with its outer cells' content flush
+   * with its edges.
+   */
+  Aligned: 'aligned',
   /** Sits in a raised pane. */
   Raised: 'raised',
 } as const;

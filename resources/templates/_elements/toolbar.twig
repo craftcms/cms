@@ -1,4 +1,3 @@
-{% from "_includes/forms" import text -%}
 
 {# Inherited quirks: no caller has ever passed `idPrefix` or
    `isAdministrative` (in Craft 5 they resolved to undefined→empty/falsy).
@@ -28,9 +27,9 @@
                 {% if showStatusMenu %}<hr class="padded" role="presentation">{% endif %}
                 <ul class="padded">
                     {% if canHaveDrafts ?? false %}
-                        <li><a data-drafts><span class="icon" data-icon="draft" aria-hidden="true"></span>{{ 'Drafts'|t('app') }}</a></li>
+                        <li><a data-drafts><span class="icon"><craft-icon name="draft"></craft-icon></span>{{ 'Drafts'|t('app') }}</a></li>
                     {% endif %}
-                    <li><a data-trashed><span class="icon" data-icon="trash" aria-hidden="true"></span>{{ "Trashed"|t('app') }}</a></li>
+                    <li><a data-trashed><span class="icon"><craft-icon name="trash"></craft-icon></span>{{ "Trashed"|t('app') }}</a></li>
                 </ul>
             {% endif %}
         </div>
@@ -41,11 +40,11 @@
 {% endif %}
 <div class="search-container flex-grow texticon has-filter-btn">
     <span class="texticon-icon search icon" aria-hidden="true"></span>
-    {{ text({
-        class: 'clearable',
+    {{ ui('input', {
         placeholder: "Search"|t('app'),
         value: Request.input('search'),
         inputAttributes: {
+            class: ['clearable'],
             aria: {
                 label: 'Search'|t('app'),
             },

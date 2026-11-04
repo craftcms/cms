@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Models\Section;
@@ -19,6 +20,7 @@ use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\Sites as SitesFacade;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
@@ -452,3 +454,28 @@ it('can restore a site by id', function () {
 
     expect(Site::count())->toBe(2);
 });
+
+it('loads sites when the connection has a table prefix', function () {
+    $connection = DB::connection();
+    $originalPrefix = $connection->getTablePrefix();
+    $prefix = $originalPrefix.'prefixed_';
+
+    // Table renames roll back with the test transaction, except on MySQL, which commits DDL implicitly.
+    foreach ([Table::INFO, Table::SITES, Table::SITEGROUPS] as $table) {
+        $connection->statement(sprintf(
+            'ALTER TABLE %s RENAME TO %s',
+            $connection->getQueryGrammar()->wrapTable($table),
+            $connection->getQueryGrammar()->wrapTable($table, $prefix),
+        ));
+    }
+
+    $connection->setTablePrefix($prefix);
+
+    try {
+        $this->sites->refreshSites();
+
+        expect($this->sites->getAllSites())->toHaveCount(1);
+    } finally {
+        $connection->setTablePrefix($originalPrefix);
+    }
+})->skip(fn () => DB::isMysql(), 'MySQL commits table renames immediately.');

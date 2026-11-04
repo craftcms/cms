@@ -157,7 +157,9 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
                   this.elementIndex.settings.context === 'embedded-index'
                     ? () => {
                         slideout.elementEditor.on('update', () => {
-                          Craft.Preview.refresh();
+                          window.dispatchEvent(
+                            new CustomEvent('craft:refresh-previews')
+                          );
                         });
                       }
                     : null,
@@ -414,6 +416,15 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
      */
     canLoadMore: function () {
       if (!this.getMorePending() || !this.elementIndex.settings.batchSize) {
+        return false;
+      }
+
+      // A hidden scroll area (e.g. a closed element selector modal) reports a height of 0,
+      // which would otherwise look like the user has reached the bottom
+      if (
+        this.$scroller[0] !== Garnish.$win[0] &&
+        !this.$scroller.is(':visible')
+      ) {
         return false;
       }
 

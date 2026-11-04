@@ -18,19 +18,19 @@
   type UserPermissionsPageProps =
     CraftCms.Cms.Http.ViewModels.UserPermissionsViewModel;
 
-  const props = usePage<UserPermissionsPageProps>().props;
+  const page = usePage<UserPermissionsPageProps>();
 
   const form = useForm({
-    admin: props.user.admin,
-    groups: props.currentGroupIds,
-    permissions: props.directPermissions,
+    admin: page.props.user.admin,
+    groups: page.props.currentGroupIds,
+    permissions: page.props.directPermissions,
   });
 
   const routeAction = () =>
-    props.user.isCurrent
+    page.props.user.isCurrent
       ? update['/{cpTrigger?}/myaccount/permissions']()
       : update['/{cpTrigger?}/users/{userId}/permissions']({
-          userId: props.user.id,
+          userId: page.props.user.id,
         });
 
   const {save} = useSettingsSave(form, routeAction, {
@@ -41,13 +41,14 @@
     ...new Set(
       form.groups.flatMap(
         (groupId) =>
-          props.groups.find((group) => group.id === groupId)?.permissions ?? []
+          page.props.groups.find((group) => group.id === groupId)
+            ?.permissions ?? []
       )
     ),
   ]);
 
   const additionalButtons = computed(() => {
-    if (!props.can.canSendActivationEmail) {
+    if (!page.props.can.canSendActivationEmail) {
       return [];
     }
 
@@ -79,12 +80,15 @@
       :value="form.permissions.join(',')"
     />
 
-    <craft-field-group v-if="props.can.assignUserGroups" class="grid gap-3">
+    <craft-field-group
+      v-if="page.props.can.assignUserGroups"
+      class="grid gap-3"
+    >
       <h2 class="text-lg m-0!">{{ t('User Groups') }}</h2>
 
       <UserGroupSelect
-        :groups="props.groups"
-        :can-create="props.can.createGroups"
+        :groups="page.props.groups"
+        :can-create="page.props.can.createGroups"
         :error="form.errors.groups"
         v-model="form.groups"
         @created="router.reload({only: ['groups']})"
@@ -93,14 +97,16 @@
 
     <hr
       class="my-3"
-      v-if="props.can.assignUserGroups && props.can.assignUserPermissions"
+      v-if="
+        page.props.can.assignUserGroups && page.props.can.assignUserPermissions
+      "
     />
 
-    <craft-field-group v-if="props.can.assignUserPermissions">
+    <craft-field-group v-if="page.props.can.assignUserPermissions">
       <h2 class="text-lg m-0!">{{ t('Permissions') }}</h2>
 
       <CraftSwitch
-        v-if="props.showAdminSwitch"
+        v-if="page.props.showAdminSwitch"
         :label="t('Admin')"
         id="admin"
         name="admin"
@@ -111,12 +117,12 @@
       />
 
       <craft-callout
-        v-if="props.teamPermissionsNotice && !form.admin"
+        v-if="page.props.teamPermissionsNotice && !form.admin"
         data-color="info"
       >
-        <template v-if="props.teamPermissionsNotice.allowAdminChanges">
+        <template v-if="page.props.teamPermissionsNotice.allowAdminChanges">
           {{ t('Team permissions can be managed from') }}
-          <CpLink :href="props.teamPermissionsNotice.settingsUrl">
+          <CpLink :href="page.props.teamPermissionsNotice.settingsUrl">
             {{ t('User Permissions') }}
           </CpLink>
         </template>
@@ -125,7 +131,7 @@
             t(
               'Team permissions can be managed from {path} on a development environment.',
               {
-                path: props.teamPermissionsNotice.path.join(' -> '),
+                path: page.props.teamPermissionsNotice.path.join(' -> '),
               }
             )
           }}
@@ -134,9 +140,9 @@
 
       <craft-field-group v-if="!form.admin">
         <PermissionTree
-          :groups="props.permissions"
+          :groups="page.props.permissions"
           :locked-permissions="lockedPermissions"
-          :disabled="Boolean(props.teamPermissionsNotice)"
+          :disabled="Boolean(page.props.teamPermissionsNotice)"
           v-model="form.permissions"
         />
       </craft-field-group>

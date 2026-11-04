@@ -1,0 +1,22 @@
+/**
+ * A Content Block field's container, per its View Mode, as Craft 5 drew it:
+ * a hairline border when grouped, a filled pane, or nothing when inline.
+ *
+ * `ContentBlockControl.vue` and `Ui\Controls\ContentBlock::renderHtml()` both
+ * set `view-mode` on `craft-content-block-input`. Selected by that rather than
+ * Craft 5's `pane` classes, which the legacy stylesheet would restyle.
+ */
+craft-content-block-input:is(
+    [view-mode='grouped'],
+    [view-mode='pane'],
+    :not([view-mode])
+  )
+  > [data-content-block] {
+  padding: var(--c-spacing-lg);
+  border: 1px solid var(--c-color-neutral-border-quiet);
+  border-radius: var(--c-radius-md);
+}
+
+craft-content-block-input[view-mode='pane'] > [data-content-block] {
+  background-color: var(--c-surface-sunken);
+}

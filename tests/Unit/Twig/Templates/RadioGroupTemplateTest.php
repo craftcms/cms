@@ -8,7 +8,7 @@ use function CraftCms\Cms\renderString;
 
 it('renders radios from the legacy radioGroup variables', function () {
     $html = renderString(
-        "{% include '_includes/forms/radioGroup' with {id: 'g', name: 'mode', options: {auto: 'Auto', manual: 'Manual'}, value: 'manual'} only %}",
+        "{{ craft.cp.radioGroup({id: 'g', name: 'mode', options: {auto: 'Auto', manual: 'Manual'}, value: 'manual'})|raw }}",
         templateMode: TemplateMode::Cp,
     );
 
@@ -23,7 +23,7 @@ it('renders radios from the legacy radioGroup variables', function () {
 
 it('wires the fieldtoggle class and target prefix when toggling', function () {
     $html = renderString(
-        "{% include '_includes/forms/radioGroup' with {id: 'g', options: {a: 'A'}, toggle: true, targetPrefix: 'opt-'} only %}",
+        "{{ craft.cp.radioGroup({id: 'g', options: {a: 'A'}, toggle: true, targetPrefix: 'opt-'})|raw }}",
         templateMode: TemplateMode::Cp,
     );
 

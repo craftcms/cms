@@ -27,7 +27,10 @@
     useScreenDetailsOverlay,
     useScreenDetailsRail,
   } from '@/common/composables/screen';
-  import type {ScreenPanels} from '@/common/composables/screenPanels';
+  import type {
+    PreferredPanel,
+    ScreenPanels,
+  } from '@/common/composables/screenPanels';
   import {initialOf} from '@/common/utils/initialIcon';
   import type {DetailsPanel} from './detailsPanels';
 
@@ -67,19 +70,6 @@
   }
 
   /**
-   * The panel a column opens on: the page's first, so a panel that stays from
-   * page to page doesn't take over the page's details, or that one when the
-   * page has none.
-   */
-  function defaultPanelId(): string | null {
-    return (
-      visiblePanels.value.find((panel) => !panel.persistent)?.id ??
-      visiblePanels.value[0]?.id ??
-      null
-    );
-  }
-
-  /**
    * Slideouts don't mirror the open panel in the URL hash, so they remember
    * the panel the person last left open, or that they folded the column,
    * and open the next slideout the same way. A remembered panel this element
@@ -90,61 +80,25 @@
     ? useLocalStorage<string | null>('Slideout.detailsPanel', null)
     : null;
 
-  /**
-   * Whether the open panel was opened on purpose: by the person, the URL
-   * hash, or a request, rather than by default.
-   */
-  let openedOnPurpose = false;
-
-  /** The panel to open on when a page's panels arrive. */
-  function initialPanelId(): string | null {
-    // One that stays from page to page, opened on purpose, stays open.
-    if (openedOnPurpose && findPanel(openPanelId.value)?.persistent) {
-      return openPanelId.value;
-    }
-
-    openedOnPurpose = false;
-
+  /** The panel this column would rather open on, for the registry's policy. */
+  function preferredPanelId(): PreferredPanel {
     if (slideoutPanelId) {
-      const remembered = slideoutPanelId.value;
-
-      if (remembered === null) {
-        return null;
-      }
-
-      return isVisible(remembered) ? remembered : defaultPanelId();
+      return slideoutPanelId.value;
     }
 
-    const hash =
-      props.syncLocationHash && window.location.hash
-        ? window.location.hash.slice(1)
-        : null;
-
-    return hash && isVisible(hash) ? hash : defaultPanelId();
+    return props.syncLocationHash && window.location.hash
+      ? window.location.hash.slice(1)
+      : undefined;
   }
 
-  openPanelId.value = initialPanelId();
+  props.registry.start(preferredPanelId());
 
   // Each page's panels open as they would on a fresh page.
   watch(props.registry.pageGeneration, () => {
-    openPanelId.value = overlaid?.value ? null : initialPanelId();
+    props.registry.startPage(preferredPanelId(), overlaid?.value ?? false);
   });
 
-  // An open panel that goes away falls back to the page's first, or folds
-  // the column when the page has none. Until a panel is opened on purpose,
-  // the column follows the page's first, as panels arrive in turn.
-  watch(visiblePanels, (panels) => {
-    if (
-      openPanelId.value &&
-      !panels.some((panel) => panel.id === openPanelId.value)
-    ) {
-      openPanelId.value = panels.some((panel) => !panel.persistent)
-        ? defaultPanelId()
-        : null;
-    } else if (openPanelId.value !== null && !openedOnPurpose) {
-      openPanelId.value = initialPanelId();
-    }
-  });
+  watch(visiblePanels, () => props.registry.reconcile(preferredPanelId()));
 
   /**
    * The column folds to its rail once the shell overlays it. The width that
@@ -152,19 +106,20 @@
    * measuring.
    *
    * A panel the shell closed for lack of room comes back once there's room
-   * again; one the person closed stays closed. So this remembers which panel
-   * the shell closed, and forgets it as soon as the person opens or closes a
-   * panel themselves.
+   * again; one the person closed stays closed. The registry remembers which
+   * panel the shell closed, and forgets it as soon as the person opens or
+   * closes a panel themselves.
    */
   const overlaid = useScreenDetailsOverlay();
 
   /**
-   * On a page, a panel that overlays the content is modal: the panels move
-   * into a `craft-dialog`, which makes the rest of the page inert, stops it
-   * scrolling, and closes on Escape or a click outside. A slideout's panels
-   * stay as they are.
+   * With the rail kept apart from the panels, as on a page, a panel that
+   * overlays the content is modal: the panels move into a `craft-dialog`,
+   * which makes the rest of the page inert, stops it scrolling, and closes on
+   * Escape or a click outside. Panels beside their rail, as in a slideout or
+   * a preview's editor, stay as they are.
    */
-  const isModal = computed(() => !isSlideout && (overlaid?.value ?? false));
+  const isModal = computed(() => rail !== null && (overlaid?.value ?? false));
   const dialogBody = useTemplateRef<HTMLElement>('dialogBody');
 
   const openPanel = computed(() => findPanel(openPanelId.value));
@@ -238,28 +193,10 @@
       focusPanelNow(openPanelId.value);
     }
   });
-  let panelClosedByShell: string | null = null;
 
   watch(
     () => overlaid?.value ?? false,
-    (isOverlaid) => {
-      if (isOverlaid) {
-        if (openPanelId.value !== null) {
-          panelClosedByShell = openPanelId.value;
-          openPanelId.value = null;
-        }
-
-        return;
-      }
-
-      if (panelClosedByShell !== null && openPanelId.value === null) {
-        openPanelId.value = isVisible(panelClosedByShell)
-          ? panelClosedByShell
-          : defaultPanelId();
-      }
-
-      panelClosedByShell = null;
-    },
+    (isOverlaid) => props.registry.setOverlaid(isOverlaid),
     {immediate: true}
   );
 
@@ -289,9 +226,7 @@
   }
 
   function open(panelId: string, withFocus: boolean): void {
-    openPanelId.value = panelId;
-    openedOnPurpose = true;
-    panelClosedByShell = null;
+    props.registry.select(panelId);
     updateLocationHash();
 
     if (slideoutPanelId) {
@@ -304,12 +239,9 @@
   }
 
   function close(panelId: string, returnFocus: boolean): void {
-    if (openPanelId.value !== panelId) {
+    if (!props.registry.deselect(panelId)) {
       return;
     }
-
-    openPanelId.value = null;
-    panelClosedByShell = null;
 
     if (slideoutPanelId) {
       slideoutPanelId.value = null;
@@ -410,13 +342,11 @@
     let ref = sectionRefs.get(panelId);
 
     if (!ref) {
-      ref = (element) => {
-        if (element instanceof HTMLElement) {
-          props.registry.sections.set(panelId, element);
-        } else if (props.registry.sections.get(panelId)) {
-          props.registry.sections.delete(panelId);
-        }
-      };
+      ref = (element) =>
+        props.registry.setSection(
+          panelId,
+          element instanceof HTMLElement ? element : null
+        );
       sectionRefs.set(panelId, ref);
     }
 
@@ -481,6 +411,7 @@
             type="button"
             class="details-panels__trigger"
             :aria-controls="panelElementId(panel.id)"
+            :data-unlisted-in-palette="panel.unlistedInPalette || undefined"
           >
             <template v-if="panel.initialIcon">
               <span class="initial-icon" aria-hidden="true">{{
@@ -580,6 +511,7 @@
     box-sizing: border-box;
     inline-size: var(--cp-rail-width);
     padding: var(--c-spacing-md);
+    padding-block-start: calc(var(--c-spacing-md) + 2px);
     border-inline-start: 1px solid var(--c-color-border-quiet);
     background-color: var(--c-surface-sunken);
   }

@@ -150,7 +150,7 @@ trait HasControlPanelUI
                         'type' => t('draft'),
                     ])),
                     'action' => 'elements/save-draft',
-                    'redirect' => sprintf('%s#', ElementHelper::postEditUrl($this)),
+                    'redirect' => sprintf('%s#', ElementHelper::postEditRedirectUrl($this)),
                     'eventData' => ['autosave' => false],
                 ];
             }
@@ -351,7 +351,7 @@ JS, [
         $isUnpublishedDraft = $this->getIsUnpublishedDraft();
         $isCurrent = $this->getIsCanonical() || $this->isProvisionalDraft;
         $canonical = $this->getCanonical(true);
-        $redirectUrl = ElementHelper::postEditUrl($this);
+        $redirectUrl = ElementHelper::postEditRedirectUrl($this);
         $sourceId = $this->isProvisionalDraft ? $this->getCanonicalId() : $this->id;
 
         if (! $this->getIsRevision()) {
@@ -575,7 +575,7 @@ JS, [
         $isUnpublishedDraft = $this->getIsUnpublishedDraft();
         $isCurrent = $isCanonical || $this->isProvisionalDraft;
         $canonical = $this->getCanonical(true);
-        $redirectUrl = ElementHelper::postEditUrl($this);
+        $redirectUrl = ElementHelper::postEditRedirectUrl($this);
 
         $isNewSite = match (true) {
             $isUnpublishedDraft => true,
@@ -1167,9 +1167,9 @@ JS,
         $cpEditUrl = $this->getCpEditUrl();
         [$currentSites, $otherSites] = $sites->partition(fn (Site $site) => $site->id === $this->siteId);
 
-        // If the element is saved to 2+ other sites, list them within a disclosure
+        // If there are more than 10 sites, list the other sites within a disclosure
         $idPrefix = sprintf('element-sites-%s', Str::random(10));
-        $collapsible = $otherSites->count() > 1;
+        $collapsible = $sites->count() > 10;
 
         $siteField = fn (Site $site) => Html::tag('div', implode('', [
             Html::tag('div', Html::tag('label', implode('', [
@@ -1428,6 +1428,12 @@ JS,
                 return Html::encode($revision->revisionNotes);
             },
         ]);
+    }
+
+    /** @return list<array<string,mixed>> */
+    public function getMetadataGroups(): array
+    {
+        return [$this->getMetadata()];
     }
 
     /**

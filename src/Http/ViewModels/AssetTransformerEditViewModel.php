@@ -130,7 +130,7 @@ class AssetTransformerEditViewModel extends ViewModel
 
         if (! is_string($driver) || ! $this->assetTransformDrivers->has($driver)) {
             return Group::make('asset-transformer-settings', [
-                Callout::make('unavailable-driver', t('This Asset Transformer’s driver is unavailable. Select an available driver to save it.')),
+                Callout::make('unavailable-driver', t('This asset transformer’s driver is unavailable. Select an available driver to save it.')),
                 Field::make(
                     t('Stored Settings'),
                     Textarea::make('unavailableSettings')

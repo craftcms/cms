@@ -1,11 +1,14 @@
 import {readdirSync, readFileSync} from 'node:fs';
-import {extname, join, relative, resolve} from 'node:path';
+import {dirname, extname, join, relative, resolve} from 'node:path';
+import {fileURLToPath} from 'node:url';
 import {breakpointsTailwind} from '@vueuse/core';
 import {afterEach, expect, it} from 'vite-plus/test';
 import {useCpBreakpoints} from './useCpBreakpoints';
 
+const HERE = dirname(fileURLToPath(import.meta.url));
+
 const VARIABLES = resolve(
-  import.meta.dirname,
+  HERE,
   '../../../../packages/craftcms-ui/src/styles/shared/variables.css'
 );
 
@@ -49,7 +52,7 @@ it('takes its widths from the stylesheet rather than a copy of the scale', () =>
   expect(lg.value).toBe(window.innerWidth >= 1234);
 });
 
-const ROOT = resolve(import.meta.dirname, '../../../..');
+const ROOT = resolve(HERE, '../../../..');
 
 /**
  * A viewport media query names its width through `var(--breakpoint-*)`, which

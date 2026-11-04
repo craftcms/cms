@@ -14,24 +14,18 @@
     ScreenPanelsKey,
     createScreenPanels,
   } from '@/common/composables/screenPanels';
-  import DetailsPanels from '@/common/components/DetailsPanels.vue';
+  import ScreenDetailsLayout from '@/common/components/ScreenDetailsLayout.vue';
   import ScreenPanel from '@/common/components/ScreenPanel.vue';
   import {t} from '@craftcms/ui/utilities/translate';
   import {ButtonVariant} from '@craftcms/ui';
   import {
     computed,
     onBeforeUnmount,
-    onMounted,
     provide,
     ref,
     useId,
     useTemplateRef,
   } from 'vue';
-  import {useElementSize, useEventListener} from '@vueuse/core';
-  import {useDetailsOverlay} from '@/common/composables/useDetailsOverlay';
-  import {router} from '@inertiajs/vue3';
-  import {submitScreenForm} from '@/common/slideouts/submitScreenForm';
-  import {setSlideoutDirtyCheck} from '@/common/slideouts/store';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import PassthroughScreen from './PassthroughScreen.vue';
@@ -40,23 +34,22 @@
   import {provideLayoutSlotRegistry} from '@/common/composables/layoutSlots';
   import {
     ScreenContentReadyKey,
-    ScreenDetailsRailKey,
     ScreenShellKey,
     type ScreenPageProps as GenericScreenPageProps,
     useScreenPageProps,
     useScreenPropsStore,
-    ScreenDetailsOverlayKey,
   } from '@/common/composables/screen';
   import {useSlideout} from '@/common/slideouts/useSlideout';
   import {useElementEditor} from '@/common/slideouts/useElementEditor';
-  import {firstMessages} from '@/common/slideouts/errors';
-  import {showMessagesFromResponse} from '@/modules/messages';
   import type {FormSaveOptions} from '@/common/types';
   import type {ScreenProps, ScreenSlots} from './types';
   import {useScreenRegions} from './useScreenRegions';
   import CpContainer from '@/common/components/CpContainer.vue';
   import ContentFooter from './page/ContentFooter.vue';
   import {DEFAULT_FORM_ACTIONS} from './formActionItems';
+  import {useHtmlScreenSubmit} from './slideout/useHtmlScreenSubmit';
+  import {useSlideoutDirtyCheck} from './slideout/useSlideoutDirtyCheck';
+  import {useSlideoutSaveHandlers} from './slideout/useSlideoutSaveHandlers';
 
   const emit = defineEmits<{
     (e: 'save', options?: FormSaveOptions): void;
@@ -117,34 +110,18 @@
     () => props.value.editUrl || chrome.value.screen?.editUrl || null
   );
   const editLinkId = `slideout-edit-link-${useId()}`;
-  const readOnly = computed(() => Boolean(chrome.value.readOnly));
+  const readOnly = computed(
+    () => !props.value.handlesReadOnly && Boolean(chrome.value.readOnly)
+  );
   const form = computed(() => props.value.form ?? null);
 
-  const regions = useScreenRegions(slots, registry);
-  const hasToolbarMeta = computed(() => regions.has('content-toolbar-meta'));
-  const hasTabs = computed(() => regions.has('content-tabs'));
-  const hasNotices = computed(() => regions.has('content-notices'));
-  // The details column: the panels the page adds with `ScreenPanel`, or
-  // whatever it puts in `content-details`. With panels as well, that becomes
-  // a panel of its own.
-  const hasDetailsContent = computed(() => regions.has('content-details'));
-  const hasPanels = computed(() => panels.panels.value.length > 0);
-  const hasOtherPanels = computed(() =>
-    panels.panels.value.some((panel) => panel.id !== DETAILS_PANEL_ID)
-  );
-  const hasDetails = computed(() => hasDetailsContent.value || hasPanels.value);
+  // A slideout has panels of its own; the page's stay on the page.
+  const panels = createScreenPanels();
+  provide(ScreenPanelsKey, panels);
+  const panelIdPrefix = `slideout-details-${useId()}`;
 
-  // The same footer slots a full page forwards, only when the page filled them
-  // so the footer's own fallbacks still apply.
-  const FOOTER_SLOTS = [
-    'content-footer',
-    'footer-meta',
-    'additional-buttons',
-    'primary-action',
-  ] as const;
-  const footerSlots = computed(() =>
-    FOOTER_SLOTS.filter((name) => slots[name])
-  );
+  // Slot presence isn't reactive, so the template calls these on each render.
+  const regions = useScreenRegions(slots, registry, panels);
 
   // The Save menu's entries. "Save and continue editing" keeps the panel open:
   // in a slideout that's what `redirect: false` means.
@@ -167,30 +144,17 @@
   const screenAction = computed(() => chrome.value.screen?.action ?? null);
 
   const formEl = useTemplateRef<HTMLFormElement>('formEl');
-  const contentEl = useTemplateRef<HTMLElement>('contentEl');
-  const detailsEl = useTemplateRef<HTMLElement>('detailsEl');
+  const bodyLayout =
+    useTemplateRef<InstanceType<typeof ScreenDetailsLayout>>('bodyLayout');
   const toolbarEl = useTemplateRef<HTMLElement>('toolbarEl');
   const tabsEl = useTemplateRef<HTMLElement>('tabsEl');
 
-  // The overlay threshold lives in the stylesheet below; this reads it back.
-  // Re-read as the slideout's width changes, which is what the container query
-  // measures. The column's own width won't do: folded to its rail, it holds
-  // still as the slideout is resized, so it would never unfold again.
-  const {width: screenWidth} = useElementSize(formEl);
-  provide(
-    ScreenDetailsOverlayKey,
-    useDetailsOverlay(() => detailsEl.value, screenWidth)
-  );
-  // A slideout keeps its details rail beside its panels, even when it
-  // opens over a page that has a rail of its own.
-  provide(ScreenDetailsRailKey, null);
-  // A slideout has panels of its own; the page's stay on the page.
-  const panels = createScreenPanels();
-  provide(ScreenPanelsKey, panels);
-  const panelIdPrefix = `slideout-details-${useId()}`;
-
-  const submittingHtml = ref(false);
+  /** Errors for a screen with no Vue form to hang them off. */
   const screenErrors = ref<Record<string, string> | null>(null);
+  const saveHandlers = useSlideoutSaveHandlers({
+    slideout,
+    errors: screenErrors,
+  });
 
   /**
    * The element-edit screen brings its own controller: drafts, autosaving and
@@ -202,14 +166,14 @@
     slideout,
     regions: {
       form: formEl,
-      content: contentEl,
-      details: detailsEl,
+      content: () => bodyLayout.value?.content ?? null,
+      details: () => bodyLayout.value?.details ?? null,
       toolbar: toolbarEl,
       tabs: tabsEl,
     },
-    onSaved: handleElementSaved,
-    onDraftSaved: handleElementDraftSaved,
-    onError: handleElementSaveError,
+    onSaved: saveHandlers.onElementSaved,
+    onDraftSaved: saveHandlers.onElementDraftSaved,
+    onError: saveHandlers.onElementSaveError,
   });
 
   // The editor snapshots the form to detect changes, so it can't be built
@@ -236,146 +200,21 @@
       (elementEditor.isStatic.value ? t('Close') : t('Cancel'))
   );
 
-  const craft = () => window.Craft;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function handleElementSaved(response: any): void {
-    const data = response?.data ?? {};
-
-    if (data.message) {
-      craft()?.cp?.displaySuccess(data.message, data.notificationSettings);
-    }
-
-    if (data.modelClass && data.modelId) {
-      craft()?.refreshComponentInstances?.(data.modelClass, data.modelId);
-    }
-
-    // Tell other tabs — and the legacy element index behind this panel — that
-    // the element changed, exactly as `ElementEditorSlideout` does.
-    if (data.element?.id) {
-      craft()?.broadcaster?.postMessage({
-        event: 'saveElement',
-        id: data.element.id,
-      });
-    }
-
-    craft()?.Preview?.refresh?.();
-
-    const handled = slideout?.saved({data});
-
-    slideout?.close({force: true});
-
-    if (!handled) {
-      router.reload();
-    }
-  }
-
-  /**
-   * An autosaved draft. The panel stays open — this only lets the opener show
-   * the provisional changes, the way the legacy index picks up a `saveDraft`
-   * broadcast.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function handleElementDraftSaved(response: any): void {
-    slideout?.saved({draft: true, data: response?.data});
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function handleElementSaveError(error: any): void {
-    const data = error?.response?.data;
-
-    if (!data) {
-      throw error;
-    }
-
-    craft()?.cp?.displayError(data.message);
-
-    // The server's own summary gets drawn into the screen HTML, split across
-    // its tabs. Only stand in for it when there wasn't one.
-    screenErrors.value = data.errorSummary
-      ? null
-      : data.errors
-        ? firstMessages(data.errors)
-        : {error: data.message ?? t('Couldn’t save.')};
-  }
-
-  /**
-   * Whether the panel holds unsaved changes, so the store can prompt before
-   * discarding it.
-   *
-   * A Vue page has Inertia's own precise `isDirty`. A server-rendered screen
-   * has no such tracking, and snapshot-diffing its markup isn't reliable —
-   * `Craft.initUiElements()` rewrites inputs after load, which would read as
-   * user edits. So that path tracks whether the user has interacted at all:
-   * more conservative (undoing an edit still counts), but never wrong in the
-   * direction that loses work.
-   */
-  const touched = ref(false);
-  useEventListener(formEl, 'input', () => (touched.value = true));
-  useEventListener(formEl, 'change', () => (touched.value = true));
-
-  const isDirty = () => {
-    // Autosaved drafts persist every edit as it's made, so there's nothing to
-    // warn about — and warning anyway would make every element slideout
-    // prompt on close.
-    if (elementEditor.autosaves.value) {
-      return false;
-    }
-
-    return form.value ? Boolean(form.value.isDirty) : touched.value;
-  };
-
-  onMounted(() => {
-    if (slideout) {
-      setSlideoutDirtyCheck(slideout.instance.id, isDirty);
-    }
+  useSlideoutDirtyCheck({
+    slideout,
+    formEl,
+    form,
+    autosaves: elementEditor.autosaves,
   });
 
-  onBeforeUnmount(() => {
-    if (slideout) {
-      setSlideoutDirtyCheck(slideout.instance.id, null);
-    }
+  const htmlScreen = useHtmlScreenSubmit({
+    form: formEl,
+    action: screenAction,
+    namespace: () => chrome.value.screen?.namespace,
+    containerId: () => slideout?.instance.containerId,
+    errors: screenErrors,
+    onSaved: saveHandlers.closeAfterSave,
   });
-
-  async function saveHtmlScreen(): Promise<void> {
-    if (!formEl.value || !screenAction.value) {
-      return;
-    }
-
-    submittingHtml.value = true;
-    screenErrors.value = null;
-
-    const result = await submitScreenForm(formEl.value, {
-      action: screenAction.value,
-      namespace: chrome.value.screen?.namespace,
-      containerId: slideout?.instance.containerId,
-    });
-
-    submittingHtml.value = false;
-
-    if (!result.ok) {
-      if (result.fatal) {
-        throw result.fatal;
-      }
-
-      screenErrors.value = result.errors ?? {
-        error: result.message ?? t('Couldn’t save.'),
-      };
-
-      return;
-    }
-
-    showMessagesFromResponse(result.data);
-
-    const handled = slideout?.saved({data: result.data});
-
-    slideout?.close({force: true});
-
-    if (!handled) {
-      // Refresh the page behind to pick up whatever changed.
-      router.reload();
-    }
-  }
 
   function save(event: Event) {
     if (props.value.saveDisabled) {
@@ -389,7 +228,7 @@
     }
 
     if (!form.value && screenAction.value) {
-      void saveHtmlScreen();
+      void htmlScreen.submit();
 
       return;
     }
@@ -425,11 +264,26 @@
     <header class="slideout-screen__header">
       <CpContainer>
         <div class="flex items-center gap-sm justify-between">
-          <div class="flex gap-md items-center">
-            <h2 class="slideout-screen__title">{{ title }}</h2>
-            <LayoutSlotOutlet name="content-toolbar-meta">
-              <slot name="content-toolbar-meta"></slot>
-            </LayoutSlotOutlet>
+          <!-- Nested in a preview's editor, the panel is a view to go back
+            from, as the command palette's are. -->
+          <div class="flex gap-lg items-center min-w-0">
+            <craft-button
+              v-if="slideout?.coversPreviewEditor"
+              type="button"
+              size="small"
+              icon="arrow-left"
+              flush="inline-start"
+              :variant="ButtonVariant.Plain"
+              @click="close"
+            >
+              {{ t('Back') }}
+            </craft-button>
+            <div class="slideout-screen__heading flex gap-md items-center">
+              <h2 class="slideout-screen__title">{{ title }}</h2>
+              <LayoutSlotOutlet name="content-toolbar-meta">
+                <slot name="content-toolbar-meta"></slot>
+              </LayoutSlotOutlet>
+            </div>
           </div>
 
           <div class="slideout-screen__actions flex gap-sm items-center">
@@ -468,6 +322,7 @@
             </template>
 
             <craft-button
+              v-if="!slideout?.coversPreviewEditor"
               icon
               type="button"
               size="small"
@@ -483,63 +338,77 @@
       </CpContainer>
     </header>
 
-    <div v-show="hasTabs" ref="tabsEl" class="slideout-screen__tabs">
+    <div
+      v-show="regions.has('content-tabs')"
+      ref="tabsEl"
+      class="slideout-screen__tabs"
+    >
       <LayoutSlotOutlet name="content-tabs">
         <slot name="content-tabs"></slot>
       </LayoutSlotOutlet>
     </div>
 
-    <div class="slideout-screen__body">
-      <div ref="contentEl" class="slideout-screen__content">
-        <div v-show="hasNotices" class="slideout-screen__notices" role="status">
-          <LayoutSlotOutlet name="content-notices">
-            <slot name="content-notices"></slot>
-          </LayoutSlotOutlet>
-        </div>
-
-        <LayoutSlotOutlet name="error-summary">
-          <slot name="error-summary">
-            <ErrorSummary v-if="form && form.hasErrors" :errors="form.errors" />
-            <!-- Server-HTML screens have no Vue form to hang errors off. -->
-            <ErrorSummary v-else-if="screenErrors" :errors="screenErrors" />
-          </slot>
+    <ScreenDetailsLayout
+      ref="bodyLayout"
+      class="slideout-screen__body"
+      :panels="panels"
+      :id-prefix="panelIdPrefix"
+      :show-details="regions.hasDetails()"
+      :has-panels="regions.hasPanels()"
+    >
+      <div
+        v-if="!slideout?.docked"
+        v-show="regions.has('content-notices')"
+        class="slideout-screen__notices"
+        role="status"
+      >
+        <LayoutSlotOutlet name="content-notices">
+          <slot name="content-notices"></slot>
         </LayoutSlotOutlet>
-
-        <CalloutReadOnly
-          v-if="readOnly && chrome.showReadOnlyNotice !== false"
-        />
-
-        <craft-field-group>
-          <slot></slot>
-        </craft-field-group>
       </div>
 
-      <!-- v-show, not v-if: the outlet is a teleport target and must stay in
-        the DOM so page content can mount before registration flips hasDetails. -->
-      <aside
-        v-show="hasDetails"
-        ref="detailsEl"
-        class="slideout-screen__details"
-      >
-        <DetailsPanels
-          v-if="hasPanels"
-          :registry="panels"
-          :id-prefix="panelIdPrefix"
-        />
-        <LayoutSlotOutlet v-else name="content-details">
-          <slot name="content-details"></slot>
-        </LayoutSlotOutlet>
-      </aside>
-      <ScreenPanel
-        v-if="hasDetailsContent && hasOtherPanels"
-        :id="DETAILS_PANEL_ID"
-        :label="t('Details')"
-        icon="circle-info"
-      >
+      <LayoutSlotOutlet name="error-summary">
+        <slot name="error-summary">
+          <ErrorSummary v-if="form && form.hasErrors" :errors="form.errors" />
+          <!-- Server-HTML screens have no Vue form to hang errors off. -->
+          <ErrorSummary v-else-if="screenErrors" :errors="screenErrors" />
+        </slot>
+      </LayoutSlotOutlet>
+
+      <CalloutReadOnly v-if="readOnly && chrome.showReadOnlyNotice !== false" />
+
+      <craft-field-group>
+        <slot></slot>
+      </craft-field-group>
+
+      <template #details>
         <LayoutSlotOutlet name="content-details">
           <slot name="content-details"></slot>
         </LayoutSlotOutlet>
-      </ScreenPanel>
+      </template>
+    </ScreenDetailsLayout>
+    <ScreenPanel
+      v-if="regions.detailsContentIsPanel()"
+      :id="DETAILS_PANEL_ID"
+      :label="t('Details')"
+      icon="circle-info"
+    >
+      <LayoutSlotOutlet name="content-details">
+        <slot name="content-details"></slot>
+      </LayoutSlotOutlet>
+    </ScreenPanel>
+
+    <!-- Docked beside a preview, the notices sit above the footer, as Live
+      Preview's do. -->
+    <div
+      v-if="slideout?.docked"
+      v-show="regions.has('content-notices')"
+      class="slideout-screen__notices"
+      role="status"
+    >
+      <LayoutSlotOutlet name="content-notices">
+        <slot name="content-notices"></slot>
+      </LayoutSlotOutlet>
     </div>
 
     <footer v-if="!props.hideFooter" class="slideout-screen__footer">
@@ -553,14 +422,14 @@
         :full-page-form="canSave && !props.saveDisabled"
         :submit-button-label="submitLabel"
         :primary-action-html="chrome.primaryAction"
-        :submitting="submittingHtml || elementEditor.saving.value"
+        :submitting="htmlScreen.submitting.value || elementEditor.saving.value"
         :save-disabled="props.saveDisabled"
         @save="saveWithOptions"
       >
-        <template v-for="name in footerSlots" :key="name" #[name]>
+        <template v-for="name in regions.footerSlots()" :key="name" #[name]>
           <slot :name="name"></slot>
         </template>
-        <template #shell-actions>
+        <template v-if="!slideout?.workflowActionsOnly" #shell-actions>
           <craft-button type="button" @click="close">
             {{ cancelLabel }}
           </craft-button>
@@ -576,6 +445,7 @@
       <LayoutSlotOutlet name="content-toolbar" />
       <LayoutSlotOutlet name="content-sidebar" />
       <LayoutSlotOutlet name="subnav-actions" />
+      <LayoutSlotOutlet name="page-header" />
       <LayoutSlotOutlet name="page-footer" />
     </div>
   </form>
@@ -596,15 +466,25 @@
     align-items: center;
   }
 
+  /* A long title truncates, so the header keeps to one line. */
+  .slideout-screen__heading {
+    min-width: 0;
+  }
+
   .slideout-screen__title {
+    overflow: hidden;
     font-size: 1.125rem;
     font-weight: 600;
     margin: 0;
     margin-inline-end: auto;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .slideout-screen__actions {
     --_link-min-width: calc(24px + var(--c-spacing-sm));
+
+    flex-shrink: 0;
   }
 
   .slideout-screen__toolbar {
@@ -618,93 +498,14 @@
     border-block-end: 1px solid var(--c-color-border-quiet);
   }
 
+  /* Fills the space between the header and footer. */
   .slideout-screen__body {
-    display: flex;
-    /* One layout at every width: the details column collapses to its rail
-       rather than dropping below the content. */
-    flex-direction: row;
     flex: 1;
-    min-height: 0;
-    /* The positioning context for the overlaid column, which is why the content
-       scrolls and not this — an absolutely positioned child of a scroll
-       container scrolls away with it. */
-    position: relative;
-    overflow: hidden;
-    background-color: var(--c-surface-overlay);
   }
 
   .slideout-screen__notices {
     display: grid;
     gap: var(--c-spacing-sm, 0.5rem);
-  }
-
-  .slideout-screen__content {
-    display: grid;
-    gap: var(--c-spacing-md, 1rem);
-    align-content: start;
-    flex: 1;
-    min-width: 0;
-    min-height: 0;
-    overflow-y: auto;
-  }
-
-  .slideout-screen__details {
-    display: grid;
-    gap: var(--c-spacing-md, 1rem);
-    border-inline-start: 1px solid var(--c-color-border-quiet);
-    align-content: stretch;
-    align-self: stretch;
-
-    /* Overlaid by default, a panel being narrower than the threshold more often
-       than not. Only the panels lift out; the rail stays in the flow. The width
-       itself is in the query below. */
-    --cp-details-overlay: 1;
-
-    /* The panels anchor to this, above the scrim so the rail stays lit. */
-    position: relative;
-    z-index: var(--c-layer-sticky);
-
-    &:has(.details-panels__rail[data-open='false']) {
-      border-inline-start-color: transparent;
-    }
-  }
-
-  /* The panels, and only the panels, sit over the content. Flat rather than
-     nested in the rule above, where `:deep()` loses its parent selector and
-     would reach every panel container in the shell. */
-  .slideout-screen__details :deep(.details-panels__content) {
-    position: absolute;
-    inset-block: 0;
-    /* The rail's leading edge: at 0 it would open on top of the rail. */
-    inset-inline-end: 100%;
-    z-index: var(--c-layer-sticky);
-    /* `cqi`, not a percentage: percentages resolve against the rail this hangs
-       off rather than against the content. */
-    inline-size: clamp(calc(300rem / 16), 80cqi, calc(400rem / 16));
-    max-inline-size: 80cqi;
-    background-color: var(--c-surface-overlay);
-    border-inline-start: 1px solid var(--c-color-border-quiet);
-    box-shadow: var(--c-shadow-overlay);
-  }
-
-  /* Wide enough to seat the column in the flow beside the content. */
-  @container slideout (width > 700px) {
-    /* Sized by its panels plus the rail, so closing it hands the room back. */
-    .slideout-screen__details {
-      --cp-details-overlay: 0;
-
-      flex: 0 0 auto;
-    }
-
-    /* Room of its own, so the panels stay in the flow. */
-    .slideout-screen__details :deep(.details-panels__content) {
-      position: static;
-      inline-size: calc(350rem / 16);
-      min-inline-size: 0;
-      max-inline-size: none;
-      border-inline-start: 0;
-      box-shadow: none;
-    }
   }
 
   /* Matches the page shell's `.cp-content__footer`. */

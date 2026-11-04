@@ -61,6 +61,8 @@ test('convertToUtf8', function (string $expected, string $string) {
     ['😂😁', '😂😁'],
     ['Foo © bar 𝌆 baz ☃ qux', 'Foo © bar 𝌆 baz ☃ qux'],
     ['İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±', 'İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±'],
+    ['Café terrace', "Caf\xe9 terrace"],
+    ['“Quoted”', "\x93Quoted\x94"],
 ]);
 
 test('convertToUtf8 accepts explicit source encoding', function () {
@@ -302,4 +304,49 @@ test('upper', function (string $expected, string $string, ?string $language = nu
     // (https://github.com/craftcms/cms/discussions/19555)
     ['ΑΝΘΡΩΠΟΣ', 'άνθρωπος', 'el'],
     ['ΆΝΘΡΩΠΟΣ', 'άνθρωπος'],
+]);
+
+test('invisibleCharsPattern', function (string $expected, string $str) {
+    expect(preg_replace(Str::invisibleCharsPattern(), '', $str))->toBe($expected);
+})->with([
+    ['Craft CMS', "Craft\u{200B} CMS"],
+    ['invoicefdp.exe', "invoice\u{202E}fdp.exe"],
+    ['abc', "a\u{2066}b\u{2069}c"],
+    ['ab', "a\u{2060}\u{034F}\u{180E}b"],
+    ['ab', "a\u{3164}\u{115F}\u{1160}\u{FFA0}\u{2800}b"],
+    ['ab', "a\x00\x07\x1B\x7Fb"],
+    ['ab', "a\u{0083}\u{009F}b"],
+    ["a \t\n\r\u{00A0}\u{0085}b", "a \t\n\r\u{00A0}\u{0085}b"],
+    ['Ünïcödé 😀 こんにちは', 'Ünïcödé 😀 こんにちは'],
+]);
+
+test('stripPrivateAndUnassignedChars', function (string $expected, string $str) {
+    expect(Str::stripPrivateAndUnassignedChars($str))->toBe($expected);
+})->with([
+    ['', ''],
+    ['Apple', "\u{F8FF}Apple"],
+    ['ab', "a\u{E000}\u{F0000}\u{10FFFD}b"],
+    ['ab', "a\u{0378}b"],
+    ['ab', "a\u{FFFE}b"],
+    ['Ünïcödé 😀 こんにちは', 'Ünïcödé 😀 こんにちは'],
+]);
+
+test('areConfusable', function (bool $expected, string $a, string $b) {
+    expect(Str::areConfusable($a, $b))->toBe($expected)
+        ->and(Str::areConfusable($b, $a))->toBe($expected);
+})->with([
+    [true, 'craft cms', 'Craft CMS'],
+    [true, "\u{FF23}\u{FF52}\u{FF41}\u{FF46}\u{FF54}", 'Craft'], // full-width
+    [true, "Craft\u{200B}  \u{00A0}CMS", 'Craft CMS'], // zero-width space, extra spaces, NBSP
+    [true, "\u{0421}raft", 'Craft'], // Cyrillic Es
+    [true, "\u{0441}r\u{0430}ft \u{0441}ms", 'Craft CMS'], // Cyrillic es and a, lowercase
+    [true, "HAPPY LAG\u{0415}R", 'Happy Lager'], // Cyrillic Ie, uppercase
+    [true, "cra\u{017F}t", 'Craft'], // long s, lowercase
+    [true, 'Apex', "\u{0410}\u{0440}\u{0435}\u{0445}"], // all-Cyrillic “Арех”
+    [true, 'kato', "\u{039A}\u{0391}\u{03A4}\u{039F}"], // all-Greek “ΚΑΤΟ”, lowercase
+    [false, 'Apex', "\u{041C}\u{043E}\u{0441}\u{043A}\u{0432}\u{0430}"], // Cyrillic “Москва”
+    [false, 'Crafty', 'Craft'],
+    [false, 'Cr4ft', 'Craft'],
+    [false, 'CraftCMS', 'Craft CMS'],
+    [false, "\u{0421}raft Companion", 'Craft'],
 ]);

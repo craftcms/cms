@@ -1,9 +1,8 @@
-import {execFileSync} from 'child_process';
 import {readFileSync} from 'fs';
-import {createRequire} from 'module';
 import {dirname, resolve} from 'path';
-import {fileURLToPath} from 'url';
+import {fileURLToPath, pathToFileURL} from 'url';
 import {transformSync} from 'esbuild';
+import {format} from 'vite-plus/fmt';
 import {
   BLACK_CONTENTS_SELECTOR,
   NEUTRAL_CARD_SELECTOR,
@@ -325,45 +324,64 @@ ${variants}
 export default async function main() {
   const {paletteColors, semanticColors} = await loadColorData();
 
+  const [css, lit] = await Promise.all([
+    formatOutput(OUT_FILE, generateStyles(paletteColors, semanticColors)),
+    formatOutput(
+      OUT_LIT_FILE,
+      generateLitStyles(paletteColors, semanticColors)
+    ),
+  ]);
+
   // Only write files whose contents changed, so a running Vite dev server
   // doesn't hot-update every component that imports them
-  if (
-    writeFileIfChanged(
-      OUT_FILE,
-      formatOutput(OUT_FILE, generateStyles(paletteColors, semanticColors))
-    )
-  ) {
+  if (writeFileIfChanged(OUT_FILE, css)) {
     console.log(`Generated ${OUT_FILE}`);
   }
 
-  if (
-    writeFileIfChanged(
-      OUT_LIT_FILE,
-      formatOutput(
-        OUT_LIT_FILE,
-        generateLitStyles(paletteColors, semanticColors)
-      )
-    )
-  ) {
+  if (writeFileIfChanged(OUT_LIT_FILE, lit)) {
     console.log(`Generated ${OUT_LIT_FILE}`);
   }
 }
 
 /*
-Both outputs are committed, so run them through the repo formatter. Otherwise
-every build rewrites them unformatted and `vp fmt` flips them back again.
+Both outputs are committed, so run them through the repo formatter, with the
+`fmt` settings from the root Vite config that `vp fmt` uses. Otherwise every
+build rewrites them unformatted and `vp fmt` flips them back again.
  */
-function formatOutput(file, content) {
-  const vpBin = resolve(
-    dirname(createRequire(import.meta.url).resolve('vite-plus/package.json')),
-    'bin/vp'
+let fmtOptions;
+
+async function formatOutput(file, content) {
+  fmtOptions ??= loadFmtOptions();
+
+  const {code, errors} = await format(file, content, await fmtOptions);
+  if (errors.length) {
+    throw new Error(`Couldn't format ${file}: ${errors[0].message}`);
+  }
+
+  return code;
+}
+
+async function loadFmtOptions() {
+  const {default: config} = await import(
+    pathToFileURL(resolve(ROOT, '../../vite.config.js')).href
   );
 
-  return execFileSync(
-    process.execPath,
-    [vpBin, 'fmt', `--stdin-filepath=${file}`],
-    {input: content, encoding: 'utf8'}
-  );
+  // As `vp fmt` does, skip the plugins while the config evaluates. This runs
+  // inside build.js, so put the variable back for the bundler afterwards.
+  const previous = process.env.VP_RESOLVING_CONFIG_METADATA;
+  process.env.VP_RESOLVING_CONFIG_METADATA = '1';
+
+  try {
+    const {fmt} = await config({mode: 'production', command: 'build'});
+
+    return fmt;
+  } finally {
+    if (previous === undefined) {
+      delete process.env.VP_RESOLVING_CONFIG_METADATA;
+    } else {
+      process.env.VP_RESOLVING_CONFIG_METADATA = previous;
+    }
+  }
 }
 
 // Run when invoked directly (node scripts/generate-colors.js), but not when

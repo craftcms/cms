@@ -140,4 +140,10 @@ class CountryCodeField extends BaseNativeField
 
         return $items;
     }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'flag';
+    }
 }

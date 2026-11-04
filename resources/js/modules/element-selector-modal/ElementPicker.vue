@@ -11,6 +11,7 @@
     type FolderCrumb,
     type SelectedElement,
   } from './useModalElementIndex';
+  import {writeModalIndexLook} from './modalIndexLook';
 
   const props = defineProps<{
     /** Bare action path; `actionClient` expands it against the CP trigger. */
@@ -74,9 +75,7 @@
 
   // The modal's Select button and its enabled state live outside Vue, so the
   // selection is pushed out rather than read in.
-  watch(selectedElements, (elements) => emit('selection-change', elements), {
-    deep: true,
-  });
+  watch(selectedElements, (elements) => emit('selection-change', elements));
 
   // Published rather than read, for the same reason the selection is: what the
   // footer can offer depends on where the index is — uploading needs the folder
@@ -91,6 +90,17 @@
   watch(folderBreadcrumbs, (path) => emit('folder-path-change', path), {
     immediate: true,
   });
+
+  // Remembered for the placeholders the next modal draws before its payload.
+  watch(
+    () => ({
+      mode: index.view.mode.value,
+      thumbSize: index.view.thumbSize.value,
+      cardThumbs: index.view.cardThumbs.value,
+    }),
+    (look) => writeModalIndexLook(elementIndex.elementType, look),
+    {immediate: true}
+  );
 
   defineExpose({
     selectedElements,
@@ -134,7 +144,7 @@
       >
         <template v-if="index.canSearchSubfolders.value" #search-options>
           <craft-checkbox
-            class="mt-md"
+            class="modal-element-index__subfolders mt-sm"
             .checked="index.includeSubfolders.value"
             @model-value-changed="onIncludeSubfoldersChange"
           >
@@ -170,7 +180,6 @@
 <style lang="scss" scoped>
   .modal-element-index {
     display: grid;
-    background-color: var(--c-color-neutral-fill-quiet);
     height: 100%;
   }
 
@@ -184,8 +193,7 @@
   }
 
   .modal-element-index__sidebar {
-    padding-block: var(--c-spacing-lg);
-    padding-inline: var(--c-spacing-sm);
+    padding: var(--c-spacing-md);
     // Long source lists scroll on their own rather than stretching the modal.
     min-height: 0;
     overflow-y: auto;
@@ -223,9 +231,26 @@
     width: 100%;
   }
 
-  // The modal has no header above the index, so the toolbar gets the same
-  // breathing room as the sidebar beside it.
+  // The modal has no header of its own, so the toolbar takes its place.
   .modal-element-index__main :deep(.element-index__header) {
-    padding-block-start: var(--c-spacing-lg);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+    min-block-size: var(--c-modal-header-height);
+    margin-block-end: 0;
+    padding-block: var(--c-spacing-sm);
+    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+  }
+
+  .modal-element-index__main
+    :deep(.element-index__header:has(.modal-element-index__subfolders)) {
+    padding-block: var(--c-spacing-md);
+  }
+
+  .modal-element-index__main :deep(.cp-table > thead th) {
+    height: auto;
+    padding-block: var(--c-spacing-md);
+    font-size: var(--c-text-sm);
   }
 </style>

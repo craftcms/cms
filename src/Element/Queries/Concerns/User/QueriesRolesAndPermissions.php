@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns\User;
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\UserQuery;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Function\String\Lower;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * @internal
@@ -109,6 +111,8 @@ trait QueriesRolesAndPermissions
      *
      * @uses $admin
      */
+    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Narrows the query results to only users that have (or don’t have) admin accounts.')]
+    #[Gql(exclude: true)]
     public function admin(bool $value = true): self
     {
         $this->admin = $value;
@@ -174,7 +178,7 @@ trait QueriesRolesAndPermissions
             // Get the users that have that permission via a user group
             $permittedUserIdsViaGroups = DB::table(Table::USERGROUPS_USERS, 'g_u')
                 ->select('g_u.userId')
-                ->join(new Alias(Table::USERPERMISSIONS_USERGROUPS, 'p_g'), 'p_g.groupId', '=', 'g_u.groupId')
+                ->join(Table::USERPERMISSIONS_USERGROUPS.' as p_g', 'p_g.groupId', '=', 'g_u.groupId')
                 ->whereIn('p_g.permissionId', Arr::wrap($value))
                 ->pluck('userId');
 

@@ -45,6 +45,7 @@ class Matrix extends InputObjectType
                                             'id' => [
                                                 'name' => 'id',
                                                 'type' => Type::id(),
+                                                'description' => 'The ID or UUID of an existing entry in this field to update, or a unique key of your choice for a new entry. `sortOrder` refers to the entry by this ID or key. New entries without one are `new:1`, `new:2`, etc.',
                                             ],
                                         ];
 

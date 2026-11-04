@@ -211,9 +211,9 @@
         field.visible ? undefined : 'hidden',
       ]"
       :label="field.label"
-      :required="editable && field.required"
+      .required="editable && field.required"
       :readonly="control.mode === 'readOnly'"
-      :disabled="control.mode === 'disabled'"
+      .disabled="control.mode === 'disabled'"
       :status="field.status?.[0]"
       :status-label="field.status?.[1]"
     >
@@ -223,7 +223,7 @@
           :name="editable ? inputName([...control.path, field.name]) : ''"
           .modelValue="value[field.name] ?? ''"
           :required="editable && field.required"
-          :disabled="!editable"
+          .disabled="!editable"
           @model-value-changed="change(field, $event, 'discrete')"
         >
           <select slot="input" :autocomplete="field.autocomplete">
@@ -244,7 +244,7 @@
           :autocomplete="field.autocomplete"
           :required="editable && field.required"
           :readonly="control.mode === 'readOnly'"
-          :disabled="control.mode === 'disabled'"
+          .disabled="control.mode === 'disabled'"
           @model-value-changed="change(field, $event, 'typing')"
         />
         <div

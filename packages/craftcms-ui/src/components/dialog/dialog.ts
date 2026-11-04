@@ -12,6 +12,7 @@ import {
 } from '@src/utilities/focus-return.js';
 import {swallowHeldEnterKeyup} from '@src/utilities/enter-keyup.js';
 import styles from './dialog.styles.js';
+import '../button/button.js';
 import '../icon/icon.js';
 import '../resize-grips/resize-grips.js';
 import type {ResizeGripsSize} from '../resize-grips/resize-grips.js';
@@ -330,15 +331,18 @@ export default class CraftDialog extends LitElement {
             </h2>`}
         ${this.noClose
           ? nothing
-          : html`<button
+          : html`<craft-button
               type="button"
+              icon="xmark-large"
+              size="small"
+              variant="plain"
+              flush="inline-end block"
               class="close"
               part="close"
+              tabindex="0"
               aria-label=${t('Close')}
               @click=${() => this.requestClose()}
-            >
-              <craft-icon name="xmark-large"></craft-icon>
-            </button>`}
+            ></craft-button>`}
       </header>
     `;
   }
@@ -521,12 +525,29 @@ export default class CraftDialog extends LitElement {
     this.opened = false;
   };
 
-  /** Escape is ours to handle only when the platform isn't managing the dialog. */
+  /**
+   * Escape dismisses the dialog unless something inside it claimed the key
+   * first — an open menu or popover, or a search field clearing itself.
+   *
+   * Handled here in modal mode too, rather than left to the platform: modal
+   * dialogs opened without user activation share a close watcher group, and
+   * once one closes itself asynchronously (as the element selector does), the
+   * browser can stop sending Escape to the dialog beneath it. Preventing the
+   * key keeps the platform from also acting on it; `#onNativeCancel` still
+   * covers Escape pressed with focus outside the dialog.
+   */
   #onHostKeydown = (event: KeyboardEvent): void => {
-    if (this.nonModal && this.opened && event.key === 'Escape') {
-      event.preventDefault();
-      this.requestClose();
+    if (
+      !this.opened ||
+      event.key !== 'Escape' ||
+      event.defaultPrevented ||
+      event.isComposing
+    ) {
+      return;
     }
+
+    event.preventDefault();
+    this.requestClose();
   };
 
   /**

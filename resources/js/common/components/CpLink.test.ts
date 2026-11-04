@@ -121,3 +121,27 @@ it('leaves non-GET links unprefetched, which Inertia only allows for GET', async
   app.unmount();
   container.remove();
 });
+
+it('leaves a link to another host to the browser, rather than making an Inertia visit', async () => {
+  const container = document.createElement('div');
+  document.body.append(container);
+  const app = createApp({
+    render: () =>
+      h(
+        CpLink,
+        {as: 'craft-nav-item', href: 'https://craftcms.com/'},
+        {default: () => 'craftcms.com'}
+      ),
+  });
+
+  app.mount(container);
+  await nextTick();
+
+  const link = container.querySelector(':scope > craft-nav-item')!;
+
+  expect(link.getAttribute('data-inertia')).toBe('false');
+  expect(dispatchClick(link, {}).defaultPrevented).toBe(false);
+
+  app.unmount();
+  container.remove();
+});

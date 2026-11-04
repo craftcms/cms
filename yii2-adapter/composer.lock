@@ -476,7 +476,7 @@
             "dist": {
                 "type": "path",
                 "url": "..",
-                "reference": "85a2e1c789de3729feaaf82b7b2d624487198be9"
+                "reference": "5e7fe9eb0a7e14da5962cfed21f40423ca886b0e"
             },
             "require": {
                 "bacon/bacon-qr-code": "^3.0",
@@ -504,9 +504,10 @@
                 "guzzlehttp/guzzle": "^7.2.0",
                 "inertiajs/inertia-laravel": "^3.0",
                 "intervention/image": "^4.2",
-                "laravel/framework": "^13.17",
+                "laravel/ai": "^1.2",
+                "laravel/framework": "^13.38",
                 "laravel/passport": "^13.0",
-                "laravel/wayfinder": "^0.1.12",
+                "laravel/wayfinder": "^0.1.23",
                 "league/commonmark": "^2.8",
                 "league/flysystem-path-prefixing": "^3.31",
                 "league/uri": "^7.0",
@@ -538,11 +539,11 @@
                 "barryvdh/laravel-debugbar": "^4.2",
                 "craftcms/test-plugin": "1.0.1",
                 "dg/bypass-finals": "^1.9",
-                "driftingly/rector-laravel": "^2.1",
+                "driftingly/rector-laravel": "^2.6.2",
                 "fakerphp/faker": "^1.19.0",
                 "intervention/image-driver-vips": "^4.1",
-                "larastan/larastan": "^3.12",
-                "laravel/boost": "^2.6",
+                "larastan/larastan": "^3.13",
+                "laravel/boost": "^2.10.3",
                 "laravel/pao": "^1.0",
                 "laravel/pint": "^1.22",
                 "laravel/socialite": "^5.23",
@@ -572,6 +573,7 @@
                     "aliases": {
                         "Activities": "CraftCms\\Cms\\Support\\Facades\\Activities",
                         "Addresses": "CraftCms\\Cms\\Support\\Facades\\Addresses",
+                        "Ai": "CraftCms\\Cms\\Support\\Facades\\Ai",
                         "AssetIndexer": "CraftCms\\Cms\\Support\\Facades\\AssetIndexer",
                         "Assets": "CraftCms\\Cms\\Support\\Facades\\Assets",
                         "AuthMethods": "CraftCms\\Cms\\Support\\Facades\\AuthMethods",
@@ -2740,17 +2742,99 @@
             "time": "2026-07-09T13:07:14+00:00"
         },
         {
-            "name": "laravel/framework",
-            "version": "v13.34.0",
+            "name": "laravel/ai",
+            "version": "v1.3.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/laravel/framework.git",
-                "reference": "c829b4982d29344cbcf1d7ad78eb5d2bb8ae66c4"
+                "url": "https://github.com/laravel/ai.git",
+                "reference": "6837b4c557f67e04e8a13d882fe7724032278c27"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/c829b4982d29344cbcf1d7ad78eb5d2bb8ae66c4",
-                "reference": "c829b4982d29344cbcf1d7ad78eb5d2bb8ae66c4",
+                "url": "https://api.github.com/repos/laravel/ai/zipball/6837b4c557f67e04e8a13d882fe7724032278c27",
+                "reference": "6837b4c557f67e04e8a13d882fe7724032278c27",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/console": "^12.0|^13.0",
+                "illuminate/container": "^12.0|^13.0",
+                "illuminate/contracts": "^12.0|^13.0",
+                "illuminate/database": "^12.0|^13.0",
+                "illuminate/filesystem": "^12.0|^13.0",
+                "illuminate/json-schema": "^12.62|^13.15",
+                "illuminate/support": "^12.0|^13.0",
+                "laravel/prompts": "^0.3.6",
+                "laravel/serializable-closure": "^2.0",
+                "php": "^8.3",
+                "symfony/yaml": "^7.2|^8.0"
+            },
+            "conflict": {
+                "aws/aws-sdk-php": "<3.369.1",
+                "laravel/mcp": "<1.0"
+            },
+            "require-dev": {
+                "aws/aws-sdk-php": "^3.369.1",
+                "driftingly/rector-laravel": "^2.5",
+                "jasonmccreary/double": "^1.0",
+                "laravel/mcp": "^1.0",
+                "laravel/pint": "^1.26",
+                "orchestra/testbench": "^10.6|^11.0",
+                "pestphp/pest": "^3.0|^4.0",
+                "pestphp/pest-plugin-laravel": "^3.0|^4.0",
+                "phpstan/phpstan": "^2.1",
+                "rector/rector": "^2.5"
+            },
+            "suggest": {
+                "aws/aws-sdk-php": "Required to use the Bedrock provider.",
+                "laravel/mcp": "Required to use MCP client tools or MCP server tools with Laravel AI agents."
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Laravel\\Ai\\AiServiceProvider"
+                    ]
+                },
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "functions.php"
+                ],
+                "psr-4": {
+                    "Laravel\\Ai\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "The official AI SDK for Laravel.",
+            "homepage": "https://github.com/laravel/ai",
+            "keywords": [
+                "ai",
+                "laravel"
+            ],
+            "support": {
+                "issues": "https://github.com/laravel/ai/issues",
+                "source": "https://github.com/laravel/ai"
+            },
+            "time": "2026-10-19T16:50:18+00:00"
+        },
+        {
+            "name": "laravel/framework",
+            "version": "v13.39.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/laravel/framework.git",
+                "reference": "d52c3b3129e4c8e213c97cdc68f94b0b7d27f181"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/d52c3b3129e4c8e213c97cdc68f94b0b7d27f181",
+                "reference": "d52c3b3129e4c8e213c97cdc68f94b0b7d27f181",
                 "shasum": ""
             },
             "require": {
@@ -2771,7 +2855,7 @@
                 "guzzlehttp/promises": "^2.0.3 || ^3.0",
                 "guzzlehttp/psr7": "^2.9 || ^3.0",
                 "guzzlehttp/uri-template": "^1.0 || ^2.0",
-                "laravel/prompts": "^0.3.11",
+                "laravel/prompts": "^0.3.25",
                 "laravel/serializable-closure": "^2.0.10",
                 "league/commonmark": "^2.8.1",
                 "league/flysystem": "^3.25.1",
@@ -2857,7 +2941,7 @@
                 "aws/aws-sdk-php": "^3.322.9",
                 "ext-gmp": "*",
                 "fakerphp/faker": "^1.24",
-                "intervention/image": "^4.0",
+                "intervention/image": "^4.2",
                 "laravel/pint": "^1.18",
                 "league/flysystem-aws-s3-v3": "^3.25.1",
                 "league/flysystem-ftp": "^3.25.1",
@@ -2866,10 +2950,10 @@
                 "league/flysystem-sftp-v3": "^3.25.1",
                 "mockery/mockery": "^1.6.10",
                 "opis/json-schema": "^2.4.1",
-                "orchestra/testbench-core": "^11.5.0",
+                "orchestra/testbench-core": "^11.6.0",
                 "pda/pheanstalk": "^7.0.0 || ^8.0.0",
                 "php-http/discovery": "^1.15",
-                "phpstan/phpstan": "2.2.15",
+                "phpstan/phpstan": "2.3.1",
                 "phpunit/phpunit": "^11.5.50 || ^12.5.8 || ^13.0.3",
                 "predis/predis": "^2.3 || ^3.0",
                 "rector/rector": "2.6.3",
@@ -2896,7 +2980,7 @@
                 "ext-redis": "Required to use the Redis cache and queue drivers (^4.0 || ^5.0 || ^6.0).",
                 "fakerphp/faker": "Required to generate fake data using the fake() helper (^1.23).",
                 "filp/whoops": "Required for friendly error pages in development (^2.14.3).",
-                "intervention/image": "Required to use the image processing features (^4.0).",
+                "intervention/image": "Required to use the image processing features (^4.2).",
                 "laravel/tinker": "Required to use the tinker console command (^2.0).",
                 "league/flysystem-aws-s3-v3": "Required to use the Flysystem S3 driver (^3.25.1).",
                 "league/flysystem-ftp": "Required to use the Flysystem FTP driver (^3.25.1).",
@@ -2968,7 +3052,7 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2026-09-29T12:46:21+00:00"
+            "time": "2026-10-27T14:04:39+00:00"
         },
         {
             "name": "laravel/passport",
@@ -3047,16 +3131,16 @@
         },
         {
             "name": "laravel/prompts",
-            "version": "v0.3.18",
+            "version": "v0.3.26",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/prompts.git",
-                "reference": "a19af51bb144bf87f08397921fa619f85c7d4e72"
+                "reference": "2d1e9bf6bab8d3f383c254db7f2b4ea8816d55e0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/prompts/zipball/a19af51bb144bf87f08397921fa619f85c7d4e72",
-                "reference": "a19af51bb144bf87f08397921fa619f85c7d4e72",
+                "url": "https://api.github.com/repos/laravel/prompts/zipball/2d1e9bf6bab8d3f383c254db7f2b4ea8816d55e0",
+                "reference": "2d1e9bf6bab8d3f383c254db7f2b4ea8816d55e0",
                 "shasum": ""
             },
             "require": {
@@ -3099,10 +3183,9 @@
             ],
             "description": "Add beautiful and user-friendly forms to your command-line applications.",
             "support": {
-                "issues": "https://github.com/laravel/prompts/issues",
-                "source": "https://github.com/laravel/prompts/tree/v0.3.18"
+                "source": "https://github.com/laravel/prompts/tree/v0.3.26"
             },
-            "time": "2026-05-19T00:47:18+00:00"
+            "time": "2026-10-09T14:45:13+00:00"
         },
         {
             "name": "laravel/serializable-closure",
@@ -3167,16 +3250,16 @@
         },
         {
             "name": "laravel/wayfinder",
-            "version": "v0.1.20",
+            "version": "v0.1.23",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/wayfinder.git",
-                "reference": "91d958a6f99fe9187c6eda84e62aa93d79330be5"
+                "reference": "e7b0914d194201e54ba320ef38137b47a7daca98"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/wayfinder/zipball/91d958a6f99fe9187c6eda84e62aa93d79330be5",
-                "reference": "91d958a6f99fe9187c6eda84e62aa93d79330be5",
+                "url": "https://api.github.com/repos/laravel/wayfinder/zipball/e7b0914d194201e54ba320ef38137b47a7daca98",
+                "reference": "e7b0914d194201e54ba320ef38137b47a7daca98",
                 "shasum": ""
             },
             "require": {
@@ -3186,6 +3269,9 @@
                 "illuminate/support": "^11.0|^12.0|^13.0",
                 "php": "^8.2",
                 "phpstan/phpdoc-parser": "^2.3"
+            },
+            "conflict": {
+                "laravel/boost": "<2.5.0"
             },
             "require-dev": {
                 "laravel/pint": "^1.21",
@@ -3226,7 +3312,7 @@
                 "issues": "https://github.com/laravel/wayfinder/issues",
                 "source": "https://github.com/laravel/wayfinder"
             },
-            "time": "2026-05-12T01:44:17+00:00"
+            "time": "2026-10-16T14:24:32+00:00"
         },
         {
             "name": "lcobucci/jwt",

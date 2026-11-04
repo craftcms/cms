@@ -34,22 +34,12 @@ readonly class CredentialRepository
         }
 
         $serializer = $this->passkeys->webauthnServer()->getSerializer();
-        $credentialRecord = $serializer->deserialize(
+
+        return $serializer->deserialize(
             $model->credential,
             CredentialRecord::class,
             'json',
         );
-
-        // if the userHandle is already a fully decoded user UID it means it was created with webauthn v4;
-        // in that case, we should be able to find user by it
-        $found = Users::getUserByUid($credentialRecord->userHandle) !== null;
-
-        // and if that's the case, we want to base64 encode it again, so that we're comparing correct values
-        if ($found) {
-            $credentialRecord->userHandle = Base64UrlSafe::encodeUnpadded($credentialRecord->userHandle);
-        }
-
-        return $credentialRecord;
     }
 
     /**

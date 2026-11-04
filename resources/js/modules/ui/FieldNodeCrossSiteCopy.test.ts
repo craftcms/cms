@@ -1,7 +1,7 @@
 import {actionClient} from '@craftcms/ui';
 import {createApp, defineComponent, h, nextTick, reactive} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
-import {UiFailure} from './runtime';
+import {stubUiRenderer} from './renderer/context.test-support';
 import ActionMenuNode from './ActionMenuNode.vue';
 import FieldNode from './FieldNode.vue';
 import type {UiChange, UiNodePayload, UiValues} from './types';
@@ -112,7 +112,7 @@ describe('FieldNode cross-site copying', () => {
     });
     app.component('craft:text', TextControl);
     app.component('craft:action-menu', ActionMenuNode);
-    app.provide(UiFailure, vi.fn());
+    app.provide(...stubUiRenderer(values));
     app.mount(container);
 
     await vi.waitFor(() => {

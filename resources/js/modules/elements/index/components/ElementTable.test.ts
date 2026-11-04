@@ -221,9 +221,9 @@ describe('DataTable', () => {
   it('keeps selection and sort controls in place but inert while interactions are disabled', async () => {
     const {root} = mount({interactionsDisabled: true});
     const row = rows(root)[0]!;
-    const controls = [
+    const checkboxes = [
       ...root.querySelectorAll<HTMLElement & {disabled: boolean}>(
-        'tbody craft-checkbox, th button'
+        'tbody craft-checkbox'
       ),
     ];
 
@@ -237,7 +237,12 @@ describe('DataTable', () => {
     expect(root.querySelectorAll('tbody craft-checkbox')).toHaveLength(
       rows(root).length
     );
-    expect(controls.every((control) => control.disabled)).toBe(true);
+    expect(checkboxes.every((checkbox) => checkbox.disabled)).toBe(true);
+    expect(
+      [...root.querySelectorAll('th button')].every(
+        (button) => button.getAttribute('aria-disabled') === 'true'
+      )
+    ).toBe(true);
     expect(selected(root)).toEqual([]);
   });
 
@@ -305,6 +310,50 @@ describe('DataTable', () => {
     const restoredButton = sortButton(container, 'Title');
     expect(restoredButton).not.toBeNull();
     expect(document.activeElement).toBe(restoredButton);
+  });
+
+  it('keeps focus on the sort button while placeholders stand in for the reloading rows', async () => {
+    const table = createSampleTable();
+    const loading = ref(false);
+
+    container = document.createElement('div');
+    document.body.append(container);
+    app = createApp({
+      render: () =>
+        h(DataTable, {
+          table,
+          selection: useTableRowSelection(table, {
+            selectable: false,
+            readOnly: false,
+          }),
+          loading: loading.value,
+          interactionsDisabled: loading.value,
+          placeholderRows: loading.value ? 3 : 0,
+        } as never),
+    });
+    app.mount(container);
+    await nextTick();
+
+    const titleButton = sortButton(container, 'Title')!;
+    titleButton.focus();
+    titleButton.click();
+
+    loading.value = true;
+    await nextTick();
+    await nextTick();
+
+    expect(container.querySelector('craft-spinner')).toBeNull();
+    expect(
+      container.querySelectorAll('tbody tr[aria-hidden="true"]')
+    ).toHaveLength(3);
+    expect(document.activeElement).toBe(titleButton);
+    expect(titleButton.getAttribute('aria-disabled')).toBe('true');
+
+    loading.value = false;
+    await nextTick();
+    await nextTick();
+
+    expect(document.activeElement).toBe(sortButton(container, 'Title'));
   });
 
   it('leaves focus alone when loading toggles without a preceding sort', async () => {

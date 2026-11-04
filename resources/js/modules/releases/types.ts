@@ -1,15 +1,53 @@
+import {formatDate} from '@craftcms/ui/utilities/format';
+import type {ElementPreview} from '@/modules/elements/live-preview/useLivePreview';
+
 export type ReleaseStatus = CraftCms.Cms.Release.Enums.ReleaseStatus;
 export type ReleaseSummary = CraftCms.Cms.Release.Data.ReleaseSummaryData;
 export type ReleaseReadiness = CraftCms.Cms.Release.Data.ReleaseReadiness;
 
+export interface ReleasePreviewItem {
+  id: number;
+  title: string;
+  /** Where the release preview opens on this draft. */
+  url: string;
+  /** The draft's edit screen, when the user can edit it. */
+  editUrl: string | null;
+  /** `null` when the draft has no preview targets the user can view. */
+  preview: ElementPreview | null;
+  /** Why the draft would stop the release from publishing, if it would. */
+  blockers: Array<string>;
+}
+
+export interface ReleasePreviewPayload {
+  items: Array<ReleasePreviewItem>;
+  selectedItemId: number;
+  /** The release screen, which closing the preview returns to. */
+  closeUrl: string;
+}
+
+/**
+ * A release's date and time in the system time zone, followed by that zone's
+ * abbreviation, as the control panel shows other timestamps.
+ */
 export function formatReleaseDate(value: string | null): string {
   if (!value) {
     return '';
   }
 
-  return new Intl.DateTimeFormat(undefined, {
+  const date = new Date(value);
+  const timeZone = window.Craft?.timezone;
+  const formatted = formatDate(date, {
     dateStyle: 'medium',
     timeStyle: 'short',
-    timeZone: window.Craft?.timezone,
-  }).format(new Date(value));
+    timeZone,
+  });
+  // `dateStyle` can't be combined with `timeZoneName`, so it's read separately.
+  const zone = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    timeZoneName: 'short',
+  })
+    .formatToParts(date)
+    .find((part) => part.type === 'timeZoneName')?.value;
+
+  return zone ? `${formatted} ${zone}` : formatted;
 }
