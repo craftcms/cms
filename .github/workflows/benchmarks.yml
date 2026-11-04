@@ -52,6 +52,13 @@ jobs:
               }
             }
 
+      # The icons and front-end builds are generated and gitignored, so they come from the published cms-assets
+      # package. It's untracked, so it stays in place while the base and the pull request are checked out.
+      - name: Install CMS assets
+        run: |
+          git clone --depth 1 --branch 6.x https://github.com/craftcms/cms-assets.git "$RUNNER_TEMP/cms-assets"
+          cp -rn "$RUNNER_TEMP/cms-assets/resources/." cms-assets/resources/
+
       # Both are measured on the same runner, so the comparison isn't thrown off by differences between machines. The
       # base runs its own benchmarks and seed, so a change to either shows from the next pull request on.
       - name: Benchmark the base branch
