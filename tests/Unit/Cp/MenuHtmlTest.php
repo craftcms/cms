@@ -88,3 +88,14 @@ it('renders item info as text rather than a control inside the item', function (
         ->and($html)->not->toContain('<script>')
         ->and($html)->toContain('Read the docs');
 });
+
+it('hides the heading of a hidden group', function () {
+    $html = app(MenuHtml::class)->disclosureMenu([
+        ['label' => 'Visible'],
+        ['heading' => 'Other sites', 'hidden' => true, 'items' => [
+            ['label' => 'Omitted', 'hidden' => true],
+        ]],
+    ]);
+
+    expect($html)->toMatch('/<div class="action-menu__heading"[^>]* hidden[ >]/');
+});
