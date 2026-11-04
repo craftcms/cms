@@ -106,7 +106,17 @@ export async function appendElementHtml(
 
 function cloneNode(source: Node): Node {
   if (!(source instanceof HTMLScriptElement)) {
-    return source.cloneNode(true);
+    const node = source.cloneNode(true);
+
+    // Scripts nested in a wrapper clone as already started, so they'd never
+    // run. Recreate them, as jQuery's `.html()` did.
+    if (node instanceof Element) {
+      for (const script of node.querySelectorAll('script')) {
+        script.replaceWith(cloneNode(script));
+      }
+    }
+
+    return node;
   }
 
   const script = document.createElement('script');
