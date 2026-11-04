@@ -2,7 +2,8 @@
   import {t} from '@craftcms/ui';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {Selectable} from '@/common/composables/useSelectable';
-  import type {NestedElement} from './nested-elements';
+  import {canOpenElement, type NestedElement} from './nested-elements';
+  import {useUiPreview} from '../uiPreview';
   import {nestedElementActions} from './nested-element-actions';
   import type {
     NestedElementOperations,
@@ -54,6 +55,19 @@
     });
   }
 
+  /**
+   * Previews can't open slideouts over their modal, so their elements open in
+   * a new tab instead, as the draft or revision they belong to.
+   */
+  const previewing = useUiPreview();
+
+  function openLabel(): string {
+    return t('Open {title} in a new tab', {
+      title:
+        props.element.cardAttributes?.data?.label ?? `#${props.element.id}`,
+    });
+  }
+
   function editLabel(): string {
     return t('Edit {title}', {
       title:
@@ -71,7 +85,19 @@
 
 <template>
   <craft-button
-    v-if="quickEdit.canOpen(element)"
+    v-if="previewing && canOpenElement(element)"
+    data-open-element
+    variant="plain"
+    inherit
+    size="small"
+    icon="external"
+    :href="element.editUrl"
+    target="_blank"
+    :aria-label="openLabel()"
+    :title="t('Open in a new tab')"
+  ></craft-button>
+  <craft-button
+    v-else-if="quickEdit.canOpen(element)"
     data-edit-element
     variant="plain"
     inherit

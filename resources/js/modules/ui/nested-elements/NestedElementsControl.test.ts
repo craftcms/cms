@@ -710,7 +710,7 @@ describe('NestedElementsControl', () => {
     expect(prepare).not.toHaveBeenCalled();
   });
 
-  it('does not offer to open cards in a preview', async () => {
+  it('opens cards in a new tab rather than a slideout in a preview', async () => {
     mount({
       editable: false,
       preview: true,
@@ -718,13 +718,25 @@ describe('NestedElementsControl', () => {
         nestedElement({
           id: 14,
           editUrl: '/edit/14',
-          cardAttributes: {data: {editable: true}},
+          cardAttributes: {data: {editable: true, label: 'Intro'}},
+        }),
+        nestedElement({
+          id: 15,
+          editUrl: '/edit/15',
+          cardAttributes: {data: {}},
         }),
       ],
     });
     await nextTick();
 
     expect(root.querySelector('[data-edit-element]')).toBeNull();
+    const links = root.querySelectorAll<HTMLElement>('[data-open-element]');
+    expect(links).toHaveLength(1);
+    expect(links[0]!.getAttribute('href')).toBe('/edit/14');
+    expect((links[0] as HTMLElement & {target: string}).target).toBe('_blank');
+    expect(links[0]!.getAttribute('aria-label')).toBe(
+      'Open Intro in a new tab'
+    );
   });
 
   it('gives the edit button the card’s color, like its action menu button', async () => {
