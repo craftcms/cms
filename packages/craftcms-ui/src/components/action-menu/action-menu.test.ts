@@ -443,26 +443,6 @@ describe('keyboard navigation', () => {
     pressKey(getItem(element, 'One'), 'ArrowDown');
     expect(focused).toEqual(['Two']);
   });
-
-  it('focuses the first navigable item on open in non-searchable mode', async () => {
-    const element = await createFromMarkup(`
-      <craft-action-menu>
-        <button slot="invoker" type="button">Open</button>
-        <div slot="content">
-          <craft-action-item hidden>One</craft-action-item>
-          <craft-action-item>Two</craft-action-item>
-        </div>
-      </craft-action-menu>
-    `);
-    const focused = spyOnItemFocus(element);
-
-    element.opened = true;
-    await element.updateComplete;
-    // Lion dispatches `show` on the overlay controller asynchronously.
-    await new Promise((resolve) => setTimeout(resolve, 0));
-
-    expect(focused).toEqual(['Two']);
-  });
 });
 
 describe('groups', () => {

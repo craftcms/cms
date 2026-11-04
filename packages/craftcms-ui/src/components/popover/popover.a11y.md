@@ -23,7 +23,7 @@ Its open and close behavior comes from APG's [Disclosure Navigation Menu](https:
 
 - [x] The invoker carries `aria-expanded`, `false` while the popover is closed and `true` once it opens. Per WCAG 4.1.2 (Name, Role, Value). Verified by `marks the invoker as the thing that expands the overlay` in `popover.test.ts`. That case doesn't assert that `aria-expanded` returns to `false` on close.
 - [x] With `without-invoker-aria`, the popover writes no `aria-expanded` onto its invoker, so a positioning anchor that isn't the control isn't given state it can't carry. Per WCAG 4.1.2 (Name, Role, Value). Verified by `leaves the invoker alone when the consumer owns the aria` in `popover.test.ts`.
-- [ ] The panel isn't exposed as a dialog or a menu. It's a plain container whose links and controls keep their own roles, as in the Disclosure Navigation Menu example, which avoids `menu` because that role promises keyboard behavior the panel doesn't have. Per WCAG 4.1.2 (Name, Role, Value) and 1.3.1 (Info and Relationships). Known deviation: Lion's `withDropdownConfig()` gives the panel `role="dialog"`, and `label` is applied to it as `aria-label`. Without `label`, the panel is announced as an unnamed dialog.
+- [x] The panel isn't exposed as a dialog or a menu. It's a plain container whose links and controls keep their own roles, as in the Disclosure Navigation Menu example, which avoids `menu` because that role promises keyboard behavior the panel doesn't have. The panel has `role="none"`, which stops Lion from giving it its default `role="dialog"`, and it takes no name, since a container with no role can't carry one. Per WCAG 4.1.2 (Name, Role, Value) and 1.3.1 (Info and Relationships). Verified by `discloses a panel that is not a dialog` in `popover.browser.test.ts`.
 - [ ] The invoker points at the panel with `aria-controls`, as the Disclosure Navigation Menu example does. Known deviation: the docs for Lion's overlay say it sets `aria-controls` on the invoker, but the installed version doesn't. The panel also lives in the popover's shadow root, so an IDREF from a light-DOM invoker couldn't resolve. `aria-controls` is optional in the Disclosure pattern, so this isn't a conformance failure.
 
 ### Keyboard and focus
@@ -53,6 +53,5 @@ Its open and close behavior comes from APG's [Disclosure Navigation Menu](https:
 
 ## Depends on usage
 
-- 4.1.2 (Name, Role, Value): set `label` to name the panel. See [Accessibility](./Popover.mdx#accessibility).
 - 4.1.2 (Name, Role, Value) and 2.1.1 (Keyboard): use a real button as the invoker. See [Accessibility](./Popover.mdx#accessibility).
 - 2.4.3 (Focus Order): with `for` or `anchor`, place `<craft-popover>` right after its trigger. See [Accessibility](./Popover.mdx#accessibility).

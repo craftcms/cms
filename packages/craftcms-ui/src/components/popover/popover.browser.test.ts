@@ -1,5 +1,5 @@
 import {beforeEach, expect, it} from 'vite-plus/test';
-import {userEvent} from 'vite-plus/test/browser';
+import {page, userEvent} from 'vite-plus/test/browser';
 import type CraftButton from '../button/button.js';
 import type CraftPopover from './popover.js';
 import '../button/button.js';
@@ -7,6 +7,29 @@ import './popover.js';
 
 beforeEach(() => {
   document.body.innerHTML = '';
+});
+
+it('discloses a panel that is not a dialog', async () => {
+  document.body.innerHTML = `
+    <craft-popover>
+      <craft-button slot="invoker" type="button">Open</craft-button>
+      <div slot="content"><button type="button">Pick</button></div>
+    </craft-popover>
+  `;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  await popover.updateComplete;
+
+  await expect
+    .element(page.getByRole('button', {name: 'Open', expanded: false}))
+    .toBeInTheDocument();
+
+  await userEvent.click(page.getByRole('button', {name: 'Open'}));
+
+  await expect
+    .element(page.getByRole('button', {name: 'Open', expanded: true}))
+    .toBeInTheDocument();
+  await expect.element(page.getByRole('button', {name: 'Pick'})).toBeVisible();
+  await expect.element(page.getByRole('dialog')).not.toBeInTheDocument();
 });
 
 it('returns focus to the invoker, and stays closed, when Enter inside it calls hide()', async () => {

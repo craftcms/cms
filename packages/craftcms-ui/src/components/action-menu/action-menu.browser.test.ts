@@ -1,5 +1,5 @@
-import {beforeEach, expect, it} from 'vite-plus/test';
-import {userEvent} from 'vite-plus/test/browser';
+import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {page, userEvent} from 'vite-plus/test/browser';
 import {contrast} from '../../../test/contrast';
 import type CraftButton from '../button/button.js';
 import type CraftActionMenu from './action-menu.js';
@@ -9,6 +9,240 @@ import '../button/button.js';
 
 beforeEach(() => {
   document.body.innerHTML = '';
+});
+
+it('tells assistive tech the button expands, not that it opens a menu', async () => {
+  document.body.innerHTML = `
+    <craft-action-menu>
+      <craft-button slot="invoker" type="button">Open</craft-button>
+      <div slot="content">
+        <craft-action-item>First</craft-action-item>
+      </div>
+    </craft-action-menu>
+  `;
+  const menu = document.querySelector<CraftActionMenu>('craft-action-menu')!;
+  await menu.updateComplete;
+  const invoker = page.getByRole('button', {name: 'Open', expanded: false});
+
+  await expect.element(invoker).toBeInTheDocument();
+  await expect.element(invoker).not.toHaveAttribute('aria-haspopup');
+});
+
+async function renderMenu(markup: string): Promise<CraftActionMenu> {
+  document.body.innerHTML = markup;
+  const menu = document.querySelector<CraftActionMenu>('craft-action-menu')!;
+  await menu.updateComplete;
+  return menu;
+}
+
+it('keeps native roles on its items, with no menu around them', async () => {
+  await renderMenu(`
+    <craft-action-menu>
+      <craft-button slot="invoker" type="button">Open</craft-button>
+      <div slot="content">
+        <craft-action-item>Duplicate</craft-action-item>
+        <craft-action-item href="#settings">Settings</craft-action-item>
+      </div>
+    </craft-action-menu>
+  `);
+
+  await userEvent.click(page.getByRole('button', {name: 'Open'}));
+
+  await expect
+    .element(page.getByRole('button', {name: 'Duplicate'}))
+    .toBeVisible();
+  await expect
+    .element(page.getByRole('link', {name: 'Settings'}))
+    .toBeVisible();
+  await expect.element(page.getByRole('menu')).not.toBeInTheDocument();
+  await expect.element(page.getByRole('menuitem')).not.toBeInTheDocument();
+});
+
+it('points the invoker at the content it controls', async () => {
+  const menu = await renderMenu(`
+    <craft-action-menu>
+      <craft-button slot="invoker" type="button">Open</craft-button>
+      <div slot="content">
+        <craft-action-item>Duplicate</craft-action-item>
+      </div>
+    </craft-action-menu>
+  `);
+  const controls = menu
+    .querySelector('[slot="invoker"]')!
+    .getAttribute('aria-controls');
+
+  expect(document.getElementById(controls!)).toBe(
+    menu.querySelector('[slot="content"]')
+  );
+});
+
+it.each([
+  [undefined, 'Actions'],
+  ['Entry actions', 'Entry actions'],
+])('names its generated invoker from label %s', async (label, expected) => {
+  const menu = document.createElement('craft-action-menu') as CraftActionMenu;
+  if (label) {
+    menu.label = label;
+  }
+  menu.actions = [{label: 'Duplicate'}];
+  document.body.append(menu);
+  await menu.updateComplete;
+
+  await expect
+    .element(page.getByRole('button', {name: expected, exact: true}))
+    .toBeInTheDocument();
+});
+
+describe('when disabled', () => {
+  it('marks a slotted invoker disabled and stays closed', async () => {
+    const menu = await renderMenu(`
+      <craft-action-menu disabled>
+        <craft-button slot="invoker" type="button">Open</craft-button>
+        <div slot="content">
+          <craft-action-item>Duplicate</craft-action-item>
+        </div>
+      </craft-action-menu>
+    `);
+    const invoker = page.getByRole('button', {name: 'Open'});
+
+    await expect.element(invoker).toHaveAttribute('aria-disabled', 'true');
+
+    await userEvent.click(invoker, {force: true});
+    menu.querySelector<HTMLElement>('[slot="invoker"]')!.focus();
+    await userEvent.keyboard('{Enter}');
+    await userEvent.keyboard(' ');
+    await menu.updateComplete;
+
+    expect(menu.opened).toBe(false);
+  });
+
+  it('disables a generated invoker', async () => {
+    const menu = document.createElement('craft-action-menu') as CraftActionMenu;
+    menu.disabled = true;
+    menu.actions = [{label: 'Duplicate'}];
+    document.body.append(menu);
+    await menu.updateComplete;
+
+    await expect
+      .element(page.getByRole('button', {name: 'Actions'}))
+      .toBeDisabled();
+  });
+});
+
+it('closes on Escape from an item and returns focus to the invoker', async () => {
+  const menu = await renderMenu(`
+    <craft-action-menu>
+      <craft-button slot="invoker" type="button">Open</craft-button>
+      <div slot="content">
+        <craft-action-item>Duplicate</craft-action-item>
+      </div>
+    </craft-action-menu>
+  `);
+  const invoker = menu.querySelector<CraftButton>('craft-button')!;
+
+  await userEvent.click(page.getByRole('button', {name: 'Open'}));
+  await expect
+    .poll(() => (document.activeElement as HTMLElement | null)?.textContent)
+    .toBe('Duplicate');
+  await userEvent.keyboard('{Escape}');
+
+  await expect.poll(() => menu.opened).toBe(false);
+  expect(document.activeElement).toBe(invoker);
+});
+
+it('follows a link item on Space', async () => {
+  await renderMenu(`
+    <craft-action-menu>
+      <craft-button slot="invoker" type="button">Open</craft-button>
+      <div slot="content">
+        <craft-action-item href="#space-target">Settings</craft-action-item>
+      </div>
+    </craft-action-menu>
+  `);
+
+  await userEvent.click(page.getByRole('button', {name: 'Open'}));
+  await expect
+    .poll(() => (document.activeElement as HTMLElement | null)?.textContent)
+    .toBe('Settings');
+  await userEvent.keyboard(' ');
+
+  await expect.poll(() => location.hash).toBe('#space-target');
+  history.replaceState(null, '', location.pathname + location.search);
+});
+
+it.each([
+  ['Enter', () => userEvent.keyboard('{Enter}')],
+  ['Space', () => userEvent.keyboard(' ')],
+  ['a click', () => userEvent.click(page.getByRole('button', {name: 'Open'}))],
+])(
+  'moves focus to the first item it can reach when opened with %s',
+  async (_how, open) => {
+    document.body.innerHTML = `
+      <craft-action-menu>
+        <craft-button slot="invoker" type="button">Open</craft-button>
+        <div slot="content">
+          <craft-action-item hidden>One</craft-action-item>
+          <craft-action-item disabled>Two</craft-action-item>
+          <craft-action-item>Three</craft-action-item>
+        </div>
+      </craft-action-menu>
+    `;
+    const menu = document.querySelector<CraftActionMenu>('craft-action-menu')!;
+    const invoker = menu.querySelector<CraftButton>('craft-button')!;
+    await menu.updateComplete;
+    await invoker.updateComplete;
+    invoker.focus();
+
+    await open();
+
+    await expect
+      .poll(() => (document.activeElement as HTMLElement | null)?.textContent)
+      .toBe('Three');
+  }
+);
+
+it('moves focus to the search field when a searchable menu opens', async () => {
+  document.body.innerHTML = `
+    <craft-action-menu searchable>
+      <craft-button slot="invoker" type="button">Open</craft-button>
+      <div slot="content">
+        <craft-action-item>First</craft-action-item>
+      </div>
+    </craft-action-menu>
+  `;
+  const menu = document.querySelector<CraftActionMenu>('craft-action-menu')!;
+  await menu.updateComplete;
+
+  await userEvent.click(page.getByRole('button', {name: 'Open'}));
+
+  await expect
+    .element(page.getByRole('textbox', {name: 'Search'}))
+    .toHaveFocus();
+});
+
+it('keeps the search icon as the visible label while text is entered', async () => {
+  const menu = await renderMenu(`
+    <craft-action-menu searchable>
+      <craft-button slot="invoker" type="button">Open</craft-button>
+      <div slot="content">
+        <craft-action-item>First</craft-action-item>
+      </div>
+    </craft-action-menu>
+  `);
+
+  await userEvent.click(page.getByRole('button', {name: 'Open'}));
+  const search = page.getByRole('textbox', {name: 'Search'});
+  await expect.element(search).toHaveFocus();
+  await userEvent.keyboard('Fi');
+
+  await expect.element(search).toHaveValue('Fi');
+  await expect
+    .element(
+      menu.querySelector(
+        'craft-input-search > craft-icon[slot="prefix"][name="search"]'
+      )!
+    )
+    .toBeVisible();
 });
 
 it('keeps items within the popover when their content is wide', async () => {

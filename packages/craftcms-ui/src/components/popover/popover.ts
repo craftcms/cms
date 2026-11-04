@@ -1,4 +1,4 @@
-import {html, LitElement, nothing, type PropertyValues} from 'lit';
+import {html, LitElement, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {OverlayMixin, withDropdownConfig} from '@lion/ui/overlays.js';
 // Named explicitly so the emitted .d.ts can reference Lion's mixin
@@ -117,12 +117,6 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
   // from the page: without it the pane's 1px border sits outside its width and
   // it overshoots whatever it was sized to.
   static override styles = [hostStyles, topLayerStyles, styles];
-
-  /**
-   * Names the popup for assistive tech. Lion gives the content `role="dialog"`,
-   * and a dialog without a name is a WCAG 4.1.2 failure.
-   */
-  @property() label?: string;
 
   /** Id of the trigger element within the same document/shadow root. */
   @property({reflect: true}) for?: string;
@@ -350,16 +344,15 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
     return this.anchor as HTMLElement | undefined;
   }
 
+  // The pane is a disclosure panel, not a dialog. Lion gives overlay content
+  // that has no role `role="dialog"`, so `role="none"` claims it first, while
+  // Lion still keeps the invoker's `aria-expanded` in sync.
   protected override render(): unknown {
     return html`
       <slot name="invoker"></slot>
       <slot name="backdrop"></slot>
       <div id="overlay-content-node-wrapper">
-        <div
-          class="popover-pane"
-          part="popup"
-          aria-label="${this.label ?? nothing}"
-        >
+        <div class="popover-pane" part="popup" role="none">
           <slot name="content">
             <slot name="content-body"></slot>
             <slot name="content-footer"></slot>
