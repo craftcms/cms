@@ -49,9 +49,9 @@ type TabArg = number | string | HTMLElement | {0?: HTMLElement} | null;
  *
  * jQuery-free logic, with two documented seams: the overflow menu button is the
  * legacy `.disclosureMenu()` plugin (read via `.data('trigger')`), and the
- * `selectTab`/`deselectTab` events carry a jQuery-wrapped `$tab` because every
- * consumer (CP, Preview, matrix-entry, cp-screen-slideout) reads
- * `ev.$tab.attr('href')`. Booted as `new Craft.Tabs(...)`, so exposed on
+ * `selectTab`/`deselectTab` events carry the tab as `tab`, and jQuery-wrapped
+ * as `$tab` when jQuery is loaded, for the legacy consumers (CP, Preview,
+ * matrix-entry, cp-screen-slideout) that read `ev.$tab.attr('href')`. Booted as `new Craft.Tabs(...)`, so exposed on
  * `window.Craft`.
  */
 export class Tabs extends Base<TabsSettings> {
@@ -251,7 +251,7 @@ export class Tabs extends Base<TabsSettings> {
       }
     }
 
-    this.trigger('selectTab', {$tab: jq()?.(tabEl)});
+    this.trigger('selectTab', {tab: tabEl, $tab: jq()?.(tabEl)});
 
     document.getElementById('content')?.dispatchEvent(new Event('scroll'));
 
@@ -270,7 +270,10 @@ export class Tabs extends Base<TabsSettings> {
     this.#selectedTab = null;
 
     const $ = jq();
-    this.trigger('deselectTab', {$tab: $ && tabEl ? $(tabEl) : undefined});
+    this.trigger('deselectTab', {
+      tab: tabEl,
+      $tab: $ && tabEl ? $(tabEl) : undefined,
+    });
   }
 
   makeTabFocusable(tab: TabArg): void {

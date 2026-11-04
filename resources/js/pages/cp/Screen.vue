@@ -14,6 +14,7 @@
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import {useScreenContentReady} from '@/common/composables/screen';
   import {useAppLayout} from '@/common/composables/useAppLayout';
+  import {Tabs} from '@/modules/tabs';
 
   const props = defineProps<{
     content?: string | null;
@@ -190,23 +191,17 @@
   });
 
   /**
-   * Boots the legacy tab controller over the injected tabs fragment.
+   * Boots the tab controller over the injected tabs fragment.
    *
-   * `Craft.Tabs` is never auto-initialized — it's constructed explicitly, the
-   * way `cp-screen-slideout` does for the same fragment. Without this the tab
-   * strip renders but selecting a tab does nothing, because nothing is
-   * toggling `.hidden` on the panes the legacy content declares.
+   * It's constructed explicitly, the way `cp-screen-slideout` does for the
+   * same fragment. Without this the tab strip renders but selecting a tab does
+   * nothing, because nothing is toggling `.hidden` on the panes the legacy
+   * content declares.
    */
-  let tabManager: any = null;
+  let tabManager: Tabs | null = null;
 
   function bootTabs(element: HTMLElement): void {
     fragmentReady();
-
-    const Tabs = (window as any).Craft?.Tabs;
-
-    if (!Tabs) {
-      return;
-    }
 
     const pane = (element.querySelector('.pane-tabs') ??
       element) as HTMLElement;
@@ -214,7 +209,7 @@
     tabManager = new Tabs(pane);
 
     const paneFor = (ev: any): HTMLElement | null => {
-      const href = ev?.$tab?.attr?.('href');
+      const href = ev?.tab?.getAttribute('href');
 
       return href ? document.querySelector<HTMLElement>(href) : null;
     };
@@ -228,7 +223,7 @@
   }
 
   onBeforeUnmount(() => {
-    tabManager?.destroy?.();
+    tabManager?.destroy();
     tabManager = null;
   });
 </script>
