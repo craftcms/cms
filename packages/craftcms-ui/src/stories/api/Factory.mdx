@@ -38,7 +38,7 @@ Import them from `@craftcms/ui/factory`, or one at a time from `@craftcms/ui/fac
 
 ## Form values
 
-The controls that carry a value are form-associated, so a `name` is all it takes to post one:
+The controls that carry a value post it under their `name`:
 
 ```js
 const picker = createSlidePicker({name: 'columns', min: 1, max: 6, value: 3});
@@ -47,7 +47,7 @@ form.append(picker);
 new FormData(form).get('columns'); // "3"
 ```
 
-There is no hidden input behind them, and `form.reset()` puts back the value the control started with.
+`form.reset()` puts back the value the control started with.
 
 ## Not the whole legacy surface
 

@@ -1,7 +1,8 @@
 import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
-import {userEvent} from 'vite-plus/test/browser';
+import {page, userEvent} from 'vite-plus/test/browser';
 import {computeAccessibleName} from 'dom-accessibility-api';
 import type CraftField from './field.js';
+import {LionField} from '@lion/ui/form-core.js';
 import './field.js';
 import '../textarea/textarea.js';
 import '../input/input.js';
@@ -24,6 +25,37 @@ it('labels nested native controls', async () => {
   expect(computeAccessibleName(document.querySelector('select')!)).toBe(
     'Operator'
   );
+});
+
+class TestSlider extends LionField {
+  override get slots() {
+    return {
+      ...super.slots,
+      input: () => {
+        const slider = document.createElement('div');
+        slider.setAttribute('role', 'slider');
+        slider.setAttribute('aria-valuenow', '1');
+        slider.tabIndex = 0;
+        return slider;
+      },
+    };
+  }
+}
+customElements.define('test-slider', TestSlider);
+
+it('hands its label and descriptions to a custom control built on LionField', async () => {
+  document.body.innerHTML =
+    '<craft-field label="Card width" help-text="How many columns the card spans."><test-slider slot="input"></test-slider><ul slot="feedback"><li>Card width must be at least 2 columns.</li></ul></craft-field>';
+  const field = document.querySelector('craft-field')!;
+  const control = page.getByRole('slider');
+
+  await expect.element(control).toHaveAccessibleName('Card width');
+  await expect
+    .element(control)
+    .toHaveAccessibleDescription(
+      'How many columns the card spans. Card width must be at least 2 columns.'
+    );
+  expect(field.getAttribute('role')).toBeNull();
 });
 
 it.each([false, true])(

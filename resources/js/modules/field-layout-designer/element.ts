@@ -94,19 +94,20 @@ export class Element extends Base {
 
     if (this.hasCustomWidth) {
       const widthSlider = document.createElement('craft-slide-picker');
-      widthSlider.setAttribute('label', Craft.t('app', 'Number of Columns'));
+      widthSlider.setAttribute('label', Craft.t('app', 'Width'));
+      widthSlider.setAttribute('label-sr-only', '');
       widthSlider.setAttribute('value-unit', '%');
       widthSlider.setAttribute('min', '25');
       widthSlider.setAttribute('max', '100');
       widthSlider.setAttribute('step', '25');
-      widthSlider.setAttribute('value', `${this.config.width || 100}`);
+      widthSlider.setAttribute('model-value', `${this.config.width || 100}`);
 
       if (this.tab.designer.settings!.readOnly) {
         widthSlider.setAttribute('readonly', '');
       }
 
       widthSlider.addEventListener('change', () => {
-        const width = widthSlider.value;
+        const width = widthSlider.modelValue;
         this.updateConfig((config: any) => {
           config.width = width;
           return config;
