@@ -1,4 +1,3 @@
-{% from '_includes/forms' import text %}
 
 {%- set id = id ?? field.getInputId() %}
 {%- set descriptionId = descriptionId ?? "#{id}-desc" %}
@@ -30,31 +29,26 @@
         </div>
     {% endif %}
     <div class="number-container">
-        {% set config = {
-            type: field.step ? 'number' : 'text',
-            id: id,
-            name: formatNumber ? "#{field.handle}[value]" : field.handle,
-            value: value,
-            inputmode: field.decimals ? 'decimal' : 'numeric',
-            step: field.step,
-            size: field.size,
-            describedBy: [describedBy ?? null, hasPrefix or hasSuffix ? descriptionId : null]|filter|join(' ') ?: false,
-        } %}
-
-        {% if config.type == 'number' %}
-            {% set config = config|merge({
-                min: field.min ?? null,
-                max: field.max ?? null,
-            }) %}
-        {% endif %}
-
         {% if currencyLabel %}
             <div class="number-currency-label">
                 <span>{{ currencyLabel }}</span>
             </div>
         {% endif %}
 
-        {{ text(config) }}
+        {% set isNumber = field.step ? true : false %}
+        {{ ui('input', {
+            type: isNumber ? 'number' : 'text',
+            id: id,
+            name: formatNumber ? "#{field.handle}[value]" : field.handle,
+            value: value,
+            inputmode: field.decimals ? 'decimal' : 'numeric',
+            step: field.step ?: null,
+            min: isNumber ? field.min : null,
+            max: isNumber ? field.max : null,
+            inputSize: field.size ?: null,
+            width: field.size ? 'auto' : null,
+            describedBy: [describedBy ?? null, hasPrefix or hasSuffix ? descriptionId : null]|filter|join(' ') ?: null,
+        }) }}
     </div>
     {% if hasSuffix %}
         <div aria-hidden="true">

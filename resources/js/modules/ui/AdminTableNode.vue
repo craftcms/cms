@@ -670,6 +670,7 @@
         (row) => row._deletable !== false && !row._deleteDisabledReason
       "
       :reorderable="!!node.props.reorderUrl"
+      :can-reorder-row="(row) => row._reorderable !== false"
       :reorder-rows="node.props.reorderUrl ? reorderRows : undefined"
       :move-to-page="node.props.moveToPageUrl ? moveToPage : undefined"
       :selectable="hasBulkFooter"

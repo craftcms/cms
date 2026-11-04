@@ -847,6 +847,11 @@ class ElementHelper
      */
     public static function isMultiSite(ElementInterface $element): bool
     {
+        // Spares element types from working out their supported sites, which can take a query
+        if (! SitesFacade::isMultiSite()) {
+            return false;
+        }
+
         $supportedSites = self::supportedSitesForElement($element, true);
 
         if (count($supportedSites) <= 1) {

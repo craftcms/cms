@@ -1,0 +1,57 @@
+
+{% set chipId = "chip#{random()}" %}
+<div class="p-2 border rounded bg-gray-100">
+  {{ chip(entryType.original, {
+    id: chipId,
+    class: 'hairline',
+    showActionMenu: true,
+    showHandle: true,
+    hyperlink: false,
+  }) }}
+</div>
+
+{% js %}
+(() => {
+  $(document).on('dblclick taphold', '#{{chipId|namespaceInputId}}', (ev) => {
+    $(ev.currentTarget).find('[data-edit-action]').first().click();
+  });
+})();
+{% endjs %}
+
+{{ ui('field', {
+  id: 'name',
+  label: 'Name'|t('app'),
+  errors: errors.get('name'),
+  input: ui('input', {
+    name: 'name',
+    value: old('name', entryType.name != entryType.original.name ? entryType.name : null),
+    placeholder: entryType.original.name,
+  }),
+}) }}
+
+{{ ui('field', {
+  id: 'handle',
+  label: 'Handle'|t('app'),
+  errors: errors.get('handle'),
+  input: ui('input', {
+    name: 'handle',
+    autocorrect: false,
+    autocapitalize: false,
+    maxlength: 64,
+    value: old('handle', entryType.handle != entryType.original.handle ? entryType.handle : null),
+    placeholder: entryType.original.handle,
+    width: 'full',
+    inputAttributes: {class: ['code']},
+  }),
+}) }}
+
+{{ ui('field', {
+  id: 'description',
+  label: 'Description'|t('app'),
+  errors: errors.get('description'),
+  input: ui('textarea', {
+    name: 'description',
+    value: old('description', entryType.description != entryType.original.description ? entryType.description : null),
+    placeholder: entryType.original.description,
+  }),
+}) }}

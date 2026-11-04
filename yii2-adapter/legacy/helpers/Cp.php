@@ -784,6 +784,10 @@ class Cp
      */
     public static function entryTypeSelectHtml(array $config): string
     {
+        if (!empty($config['jsClass'])) {
+            return static::renderTemplate('_includes/forms/entryTypeSelect', $config);
+        }
+
         return FormFields::entryTypeSelectHtml(config: $config);
     }
 
@@ -792,6 +796,12 @@ class Cp
      */
     public static function entryTypeSelectFieldHtml(array $config): string
     {
+        if (!empty($config['jsClass'])) {
+            $config['id'] ??= 'entrytypeselect' . mt_rand();
+
+            return static::fieldHtml('template:_includes/forms/entryTypeSelect', $config);
+        }
+
         return FormFields::entryTypeSelectFieldHtml(config: $config);
     }
 

@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Gql\Resolvers;
 
 use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Gql\GqlHelper;
 use Exception;
 use GraphQL\Error\Error;
+use Illuminate\Support\Facades\DB;
 
 /**
  * @since 6.0.0
@@ -78,5 +81,23 @@ abstract class MutationResolver extends Component
         }
 
         throw new Error('Unable to perform the action.');
+    }
+
+    /**
+     * Check if the schema has access to every site the given element (and its canonical element) exists in,
+     * and throw an exception if not.
+     *
+     * @throws Error
+     */
+    protected function requireAllowedSitesForElement(ElementInterface $element): void
+    {
+        $siteIds = DB::table(Table::ELEMENTS_SITES)
+            ->whereIn('elementId', array_unique([$element->id, $element->getCanonicalId()]))
+            ->distinct()
+            ->pluck('siteId');
+
+        foreach ($siteIds as $siteId) {
+            $this->requireAllowedSite((int) $siteId);
+        }
     }
 }

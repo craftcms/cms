@@ -170,15 +170,14 @@ abstract class BaseElementLinkType extends BaseLinkType
   const container = $('#' + $id);
   const field = container.closest('[data-link-field]').parent().data('linkField');
   const input = container.next('input');
-  const elementSelect = container.data('elementSelect');
   const refHandle = $refHandle;
-  elementSelect.on('selectElements', (ev) => {
-    const element = ev.elements[0];
+  container[0].addEventListener('selectElements', (ev) => {
+    const element = ev.detail.elements[0];
     input.val(`{\${refHandle}:\${element.id}@\${element.siteId}:url}`);
     field.updateLabel(element.label);
     field.updateFilename(element.\$element.data('filename'));
   });
-  elementSelect.on('removeElements', () => {
+  container[0].addEventListener('removeElements', () => {
     input.val('');
     field.updateLabel('');
     field.updateFilename('');
@@ -194,7 +193,6 @@ JS, [
                 'id' => $id,
                 'elements' => array_filter([$this->element($value)]),
                 'showSiteMenu' => true,
-                // The Twig template resolves the condition’s config itself, so give it the object
                 'condition' => $this->getSelectionCondition(),
                 'modalSettings' => [
                     'matchSiteBeforeDisablingElement' => true,

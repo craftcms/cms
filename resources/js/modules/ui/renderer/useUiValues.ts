@@ -77,6 +77,26 @@ export function useUiValues(initial: UiPayload) {
     });
   }
 
+  /**
+   * Takes in nodes the server held back, such as a deferred tab's, along with
+   * their values. Those values are what the server already holds, so they join
+   * the baseline as well as the values, rather than reading as edits.
+   */
+  function adoptDeferred(nodes: UiNodePayload[], source: UiValues): void {
+    visitControls(nodes, (control) => {
+      const group = control.deltaGroup;
+
+      if (valueAt(baseline, group) === undefined) {
+        setPathValue(baseline, group, cloneRaw(valueAt(source, group)));
+      }
+
+      if (valueAt(values, group) === undefined) {
+        write(group, cloneRaw(valueAt(source, group)));
+      }
+    });
+    rememberControls(nodes);
+  }
+
   /** Seeds the values again from `source`, as mounting it would have. */
   function reset(source: UiPayload): void {
     touchedPaths.clear();
@@ -274,6 +294,7 @@ export function useUiValues(initial: UiPayload) {
     write,
     recordEdit,
     adopt,
+    adoptDeferred,
     reset,
     rebase,
     snapshot,

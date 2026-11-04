@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Cp\Components;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\EntryTypes;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
 
@@ -35,6 +36,9 @@ class EntryTypeSelect extends ComponentSelect
 
     protected bool $includeGroupInValues = false;
 
+    /** @var array<int, array<string, mixed>> */
+    protected array $extraValues = [];
+
     /**
      * Whether each selection can override the entry type's name, handle, and
      * description. The chips then post `{id, name?, handle?, description?}`
@@ -51,6 +55,18 @@ class EntryTypeSelect extends ComponentSelect
     public function includeGroupInValues(bool $includeGroupInValues = true): static
     {
         $this->includeGroupInValues = $includeGroupInValues;
+
+        return $this;
+    }
+
+    /**
+     * Additional values to include in each selection’s value, indexed by entry type ID (requires overrides).
+     *
+     * @param  array<int, array<string, mixed>>  $extraValues
+     */
+    public function extraValues(array $extraValues): static
+    {
+        $this->extraValues = $extraValues;
 
         return $this;
     }
@@ -86,7 +102,11 @@ class EntryTypeSelect extends ComponentSelect
 
         return [
             ...$config,
-            'inputValue' => Json::encode([...$value, ...$overrides]),
+            'inputValue' => Json::encode([
+                ...$value,
+                ...$overrides,
+                ...Arr::except($this->extraValues[$component->id] ?? [], ['id', 'uid', 'name', 'handle', 'description', 'group']),
+            ]),
             'overrides' => $overrides,
         ];
     }

@@ -153,6 +153,8 @@ class EditElementController
             $viewModelClass = $element::editViewModelClass();
 
             $viewModel = new $viewModelClass($element, $this->request, $canSave, $mergeCanonicalChanges);
+            // Slideouts fetch the page without Inertia's router, so nothing would request the deferred tabs.
+            $viewModel->deferHiddenTabs(! $this->request->hasHeader('X-Craft-Container-Id'));
 
             event($event = new ElementEditorPayloadResolving(
                 $element,

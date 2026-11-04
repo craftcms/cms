@@ -88,7 +88,9 @@ it('keeps persisted Category and Tag fields usable through legacy HTML islands',
             ->and($payload->nodes[0]->control?->type)->toBe(LegacyHtmlControl::class)
             ->and($payload->nodes[1]->control?->type)->toBe(LegacyHtmlControl::class)
             ->and($payload->nodes[1]->control?->props['fragment']['html'])->toContain("name=\"fields[$handle]\"")
-            ->and($payload->nodes[1]->control?->props['fragment']['bodyHtml'])->not->toBeEmpty()
+            // The input boots through its custom element, or through the JS its template registers.
+            ->and($payload->nodes[1]->control?->props['fragment']['html'] . $payload->nodes[1]->control?->props['fragment']['bodyHtml'])
+            ->toMatch('/<craft-element-select-input |new Craft\\./')
             ->and($html)->toContain("name=\"fields[$handle]\"")
             ->and(app(LegacyHtml::class)->expand($fieldValue))->toBe(['fields' => [$handle => '']])
             ->and(json_encode($payload, JSON_THROW_ON_ERROR))->toBeString();

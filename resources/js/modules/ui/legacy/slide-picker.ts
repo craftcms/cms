@@ -1,5 +1,4 @@
 import type CraftSlidePicker from '@craftcms/ui/components/slide-picker/slide-picker';
-import {t} from '@craftcms/ui/utilities/translate';
 
 export interface SlidePickerConfig {
   id?: string;
@@ -10,8 +9,9 @@ export interface SlidePickerConfig {
   step?: number;
   value?: number;
   label?: string;
-  valueLabel?: (value: number) => string;
+  labelledBy?: string;
   describedBy?: string;
+  valueLabel?: (value: number) => string;
   readOnly?: boolean;
   disabled?: boolean;
   static?: boolean;
@@ -19,9 +19,8 @@ export interface SlidePickerConfig {
 }
 
 /**
- * Creates a `<craft-slide-picker>` (segmented slider). The element is
- * form-associated, so `name` is all it takes to post the value; `onChange`
- * fires on the element's `change` event.
+ * Creates a `<craft-slide-picker>` (segmented slider). `name` is all it takes
+ * to post the value; `onChange` fires on the element's `change` event.
  */
 export function createSlidePicker(
   config: SlidePickerConfig = {}
@@ -38,14 +37,19 @@ export function createSlidePicker(
   el.min = min;
   el.max = max;
   el.step = step;
-  el.value = value || 0;
-  el.label = config.label || t('Number of Columns');
-  el.valueLabel = config.valueLabel || ((v) => `${v}`);
+  el.modelValue = value || 0;
+  if (config.label) {
+    el.label = config.label;
+  }
+  if (config.labelledBy) {
+    el.setAttribute('labelled-by', config.labelledBy);
+  }
   if (config.describedBy) {
     el.setAttribute('described-by', config.describedBy);
   }
+  el.valueLabel = config.valueLabel || ((v) => `${v}`);
   if (readOnly) {
-    el.readonly = true;
+    el.readOnly = true;
   }
   if (config.disabled) {
     el.disabled = true;
@@ -61,7 +65,7 @@ export function createSlidePicker(
   }
 
   el.addEventListener('change', () => {
-    config.onChange?.(el.value);
+    config.onChange?.(el.modelValue);
   });
 
   return el;

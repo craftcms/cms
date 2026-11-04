@@ -9,6 +9,7 @@ use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Field\Time;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Mcp\Capabilities\Elements as ElementCapabilities;
@@ -243,6 +244,33 @@ it('accepts Matrix entries only in the format the field schema describes', funct
     expect(fn () => $elements->validate('entries', id: $created['id'], fields: [
         'contentBlocks' => ['entries' => [['body' => ['richText' => '<p>Example body</p>']]], 'sortOrder' => ['new:1']],
     ]))->toThrow(ToolCallException::class, 'Invalid fields: /contentBlocks/entries/0: Additional object properties are not allowed: ["body"]');
+});
+
+it('accepts times of day for Time fields in Matrix entries', function (): void {
+    $time = Field::factory()->create(['handle' => 'startsAt', 'type' => Time::class]);
+    $blockType = EntryType::factory()->withField($time)->create(['handle' => 'slot', 'hasTitleField' => false, 'titleFormat' => '{id}']);
+    $slots = Field::factory()->create([
+        'handle' => 'slots',
+        'type' => Matrix::class,
+        'settings' => ['entryTypes' => [$blockType->id]],
+    ]);
+    $section = Section::factory()->withEntryTypes(EntryType::factory()->withField($slots)->create())->create();
+    Fields::refreshFields();
+    EntryTypes::refreshEntryTypes();
+
+    $elements = app(ElementCapabilities::class);
+    $schema = $elements->fieldSchema('entries', context: ['sectionId' => $section->id])['schema']['properties']['slots'];
+
+    expect($schema['properties']['entries']['items']['properties']['slot']['properties']['startsAt'])->not->toHaveKey('format');
+
+    $id = $elements->create('entries', ['sectionId' => $section->id, 'title' => 'Owner'], [
+        'slots' => ['entries' => [['slot' => ['startsAt' => '16:30']]]],
+    ])['element']['id'];
+
+    expect(Entry::find()->id($id)->one()->getFieldValue('slots')->all()[0]->getFieldValue('startsAt')?->format('H:i'))->toBe('16:30')
+        ->and(fn () => $elements->update('entries', id: $id, fields: [
+            'slots' => ['entries' => [['slot' => ['startsAt' => 'not-a-time']]]],
+        ]))->toThrow(ToolCallException::class, 'startsAt: The value couldn’t be parsed.');
 });
 
 it('adds new Matrix entries after the existing ones when sortOrder is omitted', function (): void {

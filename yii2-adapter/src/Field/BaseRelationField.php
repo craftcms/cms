@@ -10,6 +10,7 @@ use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Yii2Adapter\Field\Concerns\LegacyFieldControl;
 use CraftCms\Yii2Adapter\Field\Concerns\LegacyFieldHtml;
+use CraftCms\Yii2Adapter\Field\Concerns\LegacyRelationFieldInput;
 use CraftCms\Yii2Adapter\Field\Concerns\LegacyRelationFieldSettings;
 use CraftCms\Yii2Adapter\Field\Contracts\LegacyField;
 use CraftCms\Yii2Adapter\Ui\Concerns\LegacySettingsUi;
@@ -19,6 +20,7 @@ abstract class BaseRelationField extends CoreBaseRelationField implements Legacy
 {
     use LegacyFieldControl;
     use LegacyFieldHtml;
+    use LegacyRelationFieldInput;
     use LegacyRelationFieldSettings {
         getSettingsHtml as private legacyRelationSettingsHtml;
     }

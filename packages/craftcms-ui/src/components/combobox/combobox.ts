@@ -1,16 +1,19 @@
 import {LionCombobox} from '@lion/ui/combobox.js';
 import {html, nothing, render} from 'lit';
-import {property} from 'lit/decorators.js';
+import {property, state} from 'lit/decorators.js';
 import {repeat} from 'lit/directives/repeat.js';
 import styles from './combobox.styles.js';
 import type CraftOption from '../option/option.js';
 import {emitChange, emitInput} from '@src/utilities/form-events';
 import {t} from '@src/utilities/translate';
 import '../option/option.js';
+import '../option/option-group.js';
+import './combobox-token.js';
 import '../icon/icon.js';
 import '../indicator/indicator.js';
 import '../button/button.js';
 import {HasLabel} from '@src/mixins/HasLabel';
+import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import {colors} from '@src/constants/colors';
 import {variants} from '@src/constants/variants';
 
@@ -62,9 +65,17 @@ function iconColor(color: string): string {
     : color;
 }
 
+const announcementTimeout = 5000;
+
 interface VisibleEntry {
   groupLabel?: string;
   option: ComboboxOption;
+}
+
+interface EntryRun {
+  key: string;
+  groupLabel?: string;
+  entries: VisibleEntry[];
 }
 
 /**
@@ -139,7 +150,7 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
   }
 
   static override get styles() {
-    return [...super.styles, styles];
+    return [...super.styles, visuallyHiddenStyles, styles];
   }
 
   /** Options to render. Groups are supported via `type: 'optgroup'`. */
@@ -324,26 +335,38 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
   override updated(changed: Map<PropertyKey, unknown>) {
     super.updated(changed);
     this.#syncFormValue();
+    if (this.multipleChoice) {
+      this.#syncSelection();
+    } else {
+      this.#selection?.remove();
+      this.#selection = undefined;
+    }
     // An `aria-labelledby` on the host names a label the consumer renders
     // itself — a table column heading, say — rather than one in the `label`
     // slot. Lion rewrites the textbox's own `aria-labelledby` from its (empty)
     // label on every update, so this has to be reapplied after `super`.
-    const labelledBy = this.getAttribute('aria-labelledby');
-    if (labelledBy) {
-      this._inputNode?.setAttribute('aria-labelledby', labelledBy);
-    }
+    const selectionId = this.#selection?.id;
+    const labelledBy = (
+      this.getAttribute('aria-labelledby') ||
+      this._inputNode?.getAttribute('aria-labelledby') ||
+      ''
+    )
+      .split(' ')
+      .filter((id) => id && id !== selectionId)
+      .join(' ');
+    // In multiple-choice mode the textbox is named by its label and then the
+    // selected values, so focusing it says what's already chosen.
+    const textboxLabelledBy = selectionId
+      ? `${labelledBy} ${selectionId}`.trim()
+      : labelledBy;
+    this._inputNode?.setAttribute('aria-labelledby', textboxLabelledBy);
     // Lion names the listbox after its own label only, which is empty when a
     // wrapping craft-field provides the label.
-    this._listboxNode?.setAttribute(
-      'aria-labelledby',
-      this._inputNode.getAttribute('aria-labelledby') ?? ''
-    );
+    this._listboxNode?.setAttribute('aria-labelledby', labelledBy);
     // In Chromium, Lion puts the combobox role on the textbox's wrapper (the
-    // ARIA 1.1 pattern), which needs the same name as the textbox.
-    this._comboboxNode?.setAttribute(
-      'aria-labelledby',
-      this._inputNode.getAttribute('aria-labelledby') ?? ''
-    );
+    // ARIA 1.1 pattern), which needs the same name as the textbox: it's the
+    // name a screen reader announces when the textbox is focused.
+    this._comboboxNode?.setAttribute('aria-labelledby', textboxLabelledBy);
     if (this.multipleChoice) {
       this.syncInputs();
       this._inputNode.removeAttribute('name');
@@ -613,43 +636,50 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
       })),
       ...visible,
     ];
-    let lastGroup: string | undefined;
-    const rows = entries.map((entry) => {
-      const header =
-        entry.groupLabel && entry.groupLabel !== lastGroup
-          ? html`<div class="combobox__optgroup" aria-hidden="true">
-              ${entry.groupLabel}
-            </div>`
-          : nothing;
-      lastGroup = entry.groupLabel;
+    const runs: EntryRun[] = [];
+    const occurrences = new Map<string, number>();
+    for (const entry of entries) {
+      const last = runs.at(-1);
+      if (last && last.groupLabel === entry.groupLabel) {
+        last.entries.push(entry);
+        continue;
+      }
+      const name = entry.groupLabel ?? '';
+      const occurrence = occurrences.get(name) ?? 0;
+      occurrences.set(name, occurrence + 1);
+      runs.push({
+        key: `${entry.groupLabel === undefined ? 'options' : 'group'}:${name}:${occurrence}`,
+        groupLabel: entry.groupLabel,
+        entries: [entry],
+      });
+    }
+    const optionsTemplate = (run: EntryRun) =>
+      repeat(
+        run.entries,
+        (entry) => entry.option.value,
+        (entry) =>
+          this.#optionTemplate(
+            entry.option,
+            selected.includes(entry.option.value)
+          )
+      );
 
-      return {
-        value: entry.option.value,
-        template: html`${header}${this.#optionTemplate(
-          entry.option,
-          selected.includes(entry.option.value)
-        )}`,
-      };
-    });
-
-    const footer =
-      matched.length > this.limit
-        ? html`<div class="combobox__footer" aria-hidden="true">
-            ${t('Showing {shown} of {total} — keep typing to narrow results.', {
-              shown: this.limit,
-              total: matched.length,
-            })}
-          </div>`
-        : nothing;
+    this.overflowTotal = matched.length > this.limit ? matched.length : 0;
+    this.#announceMatches(matched.length);
 
     // Retain selected option elements while filtering: Lion derives checked
     // values from registered options, including selections outside the limit.
     render(
       html`${repeat(
-        rows,
-        (row) => row.value,
-        (row) => row.template
-      )}${footer}`,
+        runs,
+        (run) => run.key,
+        (run) =>
+          run.groupLabel === undefined
+            ? optionsTemplate(run)
+            : html`<craft-option-group .label=${run.groupLabel}>
+                ${optionsTemplate(run)}
+              </craft-option-group>`
+      )}`,
       node
     );
   }
@@ -667,10 +697,9 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
         .hint=${data.hint ?? null}
         ?disabled=${option.disabled ?? false}
       >
-        <span class="combobox__option">
-          ${this.#decorationTemplate(data)}
-          ${isEnv ? html`<code>${label}</code>` : label}
-        </span>
+        ${this.#decorationTemplate(data)}${isEnv
+          ? html`<code>${label}</code>`
+          : label}
       </craft-option>
     `;
   }
@@ -736,42 +765,118 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
     this.opened = !this.#openedOnIndicatorMousedown;
   };
 
+  @state()
+  private announcement = '';
+
+  #announceTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  /** The match count last announced while the list was open, if any. */
+  #announcedMatches = '';
+
+  override disconnectedCallback() {
+    if (this.#announceTimeout !== null) {
+      clearTimeout(this.#announceTimeout);
+      this.#announceTimeout = null;
+    }
+    this.#announcingRemoval = false;
+    this.#announcedMatches = '';
+    this.announcement = '';
+    super.disconnectedCallback();
+  }
+
+  #announceMatches(count: number): void {
+    if (!this.opened && !this.#filtering) {
+      this.#announcedMatches = '';
+      return;
+    }
+
+    const message =
+      count === 0
+        ? t('No results')
+        : t('{num, number} {num, plural, =1{result} other{results}}', {
+            num: count,
+          });
+
+    if (message === this.#announcedMatches) {
+      return;
+    }
+    // Backspace reopens the list on keyup, which would talk over the removal
+    // it just announced; the count is announced once typing starts.
+    if (this.#announcingRemoval && !this.#filtering) {
+      return;
+    }
+    this.#announcedMatches = message;
+    this.#announce(message);
+  }
+
+  /** Whether the live region is showing which values were just removed. */
+  #announcingRemoval = false;
+
+  #announce(message: string, removal = false): void {
+    this.#announcingRemoval = removal;
+    if (this.#announceTimeout !== null) {
+      clearTimeout(this.#announceTimeout);
+      this.#announceTimeout = null;
+    }
+
+    this.announcement = '';
+    queueMicrotask(() => {
+      if (this.isConnected) {
+        this.announcement = message;
+      }
+    });
+
+    this.#announceTimeout = setTimeout(() => {
+      this.#announceTimeout = null;
+      this.#announcingRemoval = false;
+      this.announcement = '';
+    }, announcementTimeout);
+  }
+
+  /** How many options match when that's more than `limit`, or 0. */
+  @state()
+  private overflowTotal = 0;
+
+  override _overlayListboxTemplate() {
+    return html`
+      <div
+        id="overlay-content-node-wrapper"
+        role="dialog"
+        aria-label="${this.msgLit('lion-combobox:optionsPopup')}"
+      >
+        <slot name="listbox"></slot>
+        ${this.overflowTotal
+          ? html`<div class="combobox__footer" aria-hidden="true">
+              ${t(
+                'Showing {shown} of {total} — keep typing to narrow results.',
+                {shown: this.limit, total: this.overflowTotal}
+              )}
+            </div>`
+          : nothing}
+      </div>
+      <slot id="options-outlet"></slot>
+      <div class="cp-visually-hidden" aria-live="polite" aria-atomic="true">
+        ${this.announcement}
+      </div>
+    `;
+  }
+
   override _inputGroupInputTemplate() {
     const selectedData = this.#selectedOption()?.data;
     const icon = selectedData?.icon;
+    const color = selectedData?.color;
     const indicator = selectedData?.indicator;
 
     return html`
       <div class="input-group__input">
-        ${this.multipleChoice
-          ? repeat(
-              this.selectedValues,
-              (value) => value,
-              (value) => html`
-                <span class="token">
-                  ${this.#decorationTemplate(this.#option(value)?.data ?? {})}
-                  ${this.valueLabel(value)}
-                  ${!this.inactive
-                    ? html`<button
-                        type="button"
-                        aria-label=${t('Remove {label}', {
-                          label: this.valueLabel(value),
-                        })}
-                        @click=${() =>
-                          this.changeValues(
-                            this.selectedValues.filter((item) => item !== value)
-                          )}
-                      >
-                        ×
-                      </button>`
-                    : nothing}
-                </span>
-              `
-            )
-          : nothing}
+        <slot name="selection"></slot>
         <div class="combobox__textbox">
           ${icon
-            ? html`<craft-icon class="prefix" name=${icon}></craft-icon>`
+            ? html`<craft-icon
+                class="prefix"
+                name=${icon}
+                style=${color ? `color: ${iconColor(color)}` : nothing}
+              ></craft-icon>`
             : indicator
               ? html`<span class="prefix prefix--indicator">
                   <craft-indicator
@@ -859,6 +964,47 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
     this.internals.setFormValue(omit ? null : value);
   }
 
+  /**
+   * The selected values, as a list in the light DOM so the textbox's
+   * `aria-labelledby` can reach it. It's a polite live region, so a value is
+   * announced as it's added.
+   */
+  #selection?: HTMLUListElement;
+
+  #syncSelection() {
+    if (!this.#selection) {
+      this.#selection = document.createElement('ul');
+      this.#selection.slot = 'selection';
+      this.#selection.id = `selection-${this._inputId}`;
+      // Safari drops the list role from a list without bullets.
+      this.#selection.setAttribute('role', 'list');
+      this.#selection.setAttribute('aria-live', 'polite');
+      this.#selection.setAttribute('aria-atomic', 'false');
+      this.append(this.#selection);
+    }
+    render(
+      repeat(
+        this.selectedValues,
+        (value) => value,
+        (value) => html`
+          <li>
+            <craft-combobox-token
+              ?removable=${!this.inactive}
+              @craft-remove=${() =>
+                this.changeValues(
+                  this.selectedValues.filter((item) => item !== value)
+                )}
+            >
+              ${this.#decorationTemplate(this.#option(value)?.data ?? {})}
+              ${this.valueLabel(value)}
+            </craft-combobox-token>
+          </li>
+        `
+      ),
+      this.#selection
+    );
+  }
+
   private syncInputs() {
     if (!this.inputs) {
       this.inputs = document.createElement('span');
@@ -912,6 +1058,9 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
     if (this.inactive) {
       return;
     }
+    const removed = this.selectedValues.filter(
+      (value) => !values.includes(value)
+    );
     this.changingValues = true;
     try {
       this.modelValue = values;
@@ -924,6 +1073,21 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
     this.syncInputs();
     this._notifyModelValueChanged();
     this._inputNode.focus();
+    // The list of values announces additions only; a removed value leaves no
+    // node behind to announce, so say what went.
+    if (removed.length) {
+      this.#announce(
+        t('Removed {name}', {
+          name: new Intl.ListFormat(
+            document.documentElement.lang || undefined,
+            {
+              type: 'conjunction',
+            }
+          ).format(removed.map((value) => this.valueLabel(value))),
+        }),
+        true
+      );
+    }
   }
 
   private commitQuery() {

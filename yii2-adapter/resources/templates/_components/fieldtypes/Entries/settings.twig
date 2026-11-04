@@ -13,14 +13,6 @@
     on: field.showUnpermittedSections,
   }) }}
 
-  {{ forms.lightswitchField({
-    label: 'Show unpermitted entries'|t('app'),
-    instructions: 'Whether to show entries that the user doesn’t have permission to view, per the “View other users’ entries” permission.'|t('app'),
-    id: 'showUnpermittedEntries',
-    name: 'showUnpermittedEntries',
-    on: field.showUnpermittedEntries,
-  }) }}
-
   {{ block('maintainHierarchy') }}
   {{ block('limitFields') }}
   {{ block('defaultPlacementField') }}

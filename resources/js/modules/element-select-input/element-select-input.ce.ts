@@ -13,6 +13,30 @@ export default class CraftElementSelectInput extends ControllerElement<BaseEleme
   protected readonly defaultInputClass: ElementSelectInputConstructor =
     BaseElementSelectInput;
 
+  override connectedCallback(): void {
+    this.#whenInputClassLoaded(() => super.connectedCallback());
+  }
+
+  /**
+   * A plugin's input class comes from its own scripts, which can run after
+   * this element upgrades — markup added ahead of the scripts sent with it,
+   * say — so give them a few seconds' worth of frames before booting.
+   */
+  #whenInputClassLoaded(boot: () => void, frames = 300): void {
+    const name = this.getAttribute('input-class');
+
+    if (!this.isConnected) {
+      return;
+    }
+
+    if (!name || this.#globalInputClass(name) || frames === 0) {
+      boot();
+      return;
+    }
+
+    requestAnimationFrame(() => this.#whenInputClassLoaded(boot, frames - 1));
+  }
+
   protected create(): BaseElementSelectInput {
     initLegacyUi(this);
 

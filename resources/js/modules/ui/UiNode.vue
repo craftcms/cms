@@ -15,6 +15,7 @@
     refreshable: boolean;
     initiallyHidden?: boolean;
     tabButtonId?: string;
+    deferred?: boolean;
   }>();
   const emit = defineEmits<{
     (event: 'change', change: UiChange): void;
@@ -47,7 +48,11 @@
    */
   const tabProps = computed(() =>
     props.node.component === 'craft:tab'
-      ? {initiallyHidden: props.initiallyHidden, tabButtonId: props.tabButtonId}
+      ? {
+          initiallyHidden: props.initiallyHidden,
+          tabButtonId: props.tabButtonId,
+          deferred: props.deferred,
+        }
       : {}
   );
 

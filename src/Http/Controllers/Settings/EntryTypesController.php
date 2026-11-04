@@ -319,6 +319,8 @@ class EntryTypesController
             'create' => ['required', 'boolean'],
             'name' => ['required', 'string'],
             'disabled' => ['required', 'boolean'],
+            'extraValueKeys' => ['sometimes', 'array'],
+            'extraValueKeys.*' => ['string'],
         ]);
 
         $html = EntryTypeSelectControl::selectHtml(
@@ -327,6 +329,7 @@ class EntryTypesController
             $data['create'],
             $data['name'],
             $data['disabled'],
+            $data['extraValueKeys'] ?? [],
         );
 
         return new JsonResponse([
@@ -346,7 +349,7 @@ class EntryTypesController
         $namespace = Str::random(10);
 
         $html = InputNamespace::namespaceInputs(
-            fn () => template('_includes/forms/entry-type-select/selection-settings', [
+            fn () => template('settings/entry-types/_selection-settings', [
                 'entryType' => $entryType,
             ]),
             $namespace,
