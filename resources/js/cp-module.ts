@@ -192,3 +192,28 @@ export const CommandPalette = {
 
 export type * from './modules/command-palette/types';
 export type {CommandPaletteRegistration} from './modules/command-palette/registry';
+
+/**
+ * The utilities a plugin's own bundle needs to behave like control panel code:
+ * translating, talking to controller actions, and appending markup the server
+ * returned. They're re-exported here, rather than left to be imported from
+ * `@craftcms/ui`, so a plugin bundle shares the control panel's instances
+ * instead of bundling second copies.
+ */
+export {t} from '@craftcms/ui/utilities/translate';
+export {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
+export {
+  appendBodyHtml,
+  appendElementHtml,
+  appendHeadHtml,
+  type AppendHtmlDisposer,
+} from '@craftcms/ui/utilities/dom';
+export {actionClient, http} from '@craftcms/ui';
+export {getActionUrl, getCpUrl, getUrl} from './common/craft/url';
+
+/** Slideouts, element editors, chip actions and thumbnails. */
+export {openSlideout, createElementEditor} from './common/slideouts';
+export type {ElementEditorPanel} from './common/slideouts';
+export {addActionsToChip, type ChipAction} from './common/craft/chip-actions';
+export {loadElementThumbs} from './modules/element-thumb-loader';
+export {openAssetImageEditor} from './modules/image-editor/open-asset-image-editor';
