@@ -59,7 +59,7 @@ export interface ElementEditorSlideoutSettings extends CpScreenSlideoutSettings 
  *
  * @example
  * ```ts
- * import {ElementEditorSlideout} from '@/modules/slideout';
+ * import {ElementEditorSlideout} from '@/modules/slideout/element-editor-slideout';
  *
  * const slideout = new ElementEditorSlideout($chip, {siteId: 2});
  * slideout.on('submit', ({data}) => console.log('saved', data.id));

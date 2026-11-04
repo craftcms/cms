@@ -73,13 +73,17 @@ ordering. `open()` registers with it; `close()` unregisters.
 
 - `containerSlideouts` (module export) — a `WeakMap` from the container
   element to its instance.
-- `$container.data('slideout')` — the jQuery back-reference (CP screens also
+- `$container.data('slideout')` — the jQuery back-reference, when jQuery is loaded (CP screens also
   set `data('cpScreen')`).
 
 ## `CpScreenSlideout`
 
+`Craft.CpScreenSlideout` and `Craft.ElementEditorSlideout` are registered by
+`compat.ts`, which only the Yii2 adapter loads; core imports the classes
+directly.
+
 ```ts
-import {CpScreenSlideout} from '@/modules/slideout';
+import {CpScreenSlideout} from '@/modules/slideout/cp-screen-slideout';
 
 const slideout = new CpScreenSlideout('fields/edit-field', {
   params: {fieldId: 1},
