@@ -278,7 +278,7 @@ readonly class CustomFieldSchema
     }
 
     /**
-     * Applies the `normalizeValue` callbacks of a GraphQL input type and the input types nested within it.
+     * Applies the `normalizeValue` callbacks of a GraphQL input type and the input types and fields nested within it.
      *
      * @param  Type|array<string, mixed>  $definition
      */
@@ -294,7 +294,9 @@ readonly class CustomFieldSchema
         } elseif ($type instanceof InputObjectType && is_array($value)) {
             foreach ($value as $name => $fieldValue) {
                 if ($type->hasField((string) $name)) {
-                    $value[$name] = $this->normalizeGqlValue($type->getField((string) $name)->getType(), $fieldValue);
+                    $field = $type->getField((string) $name);
+                    // Field definitions can have their own `normalizeValue` callbacks, such as Time fields'.
+                    $value[$name] = $this->normalizeGqlValue(['type' => $field->getType()] + $field->config, $fieldValue);
                 }
             }
 
