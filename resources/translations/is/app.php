@@ -213,6 +213,7 @@ return [
     'Couldn’t generate alt text: {error}' => 'Ekki tókst að búa til alt-texta: {error}',
     'Couldn’t load activity.' => 'Ekki tókst að hlaða virkni.',
     'Couldn’t load table data.' => 'Ekki tókst að hlaða gögnum töflunnar.',
+    'Couldn’t load this field.' => 'Couldn’t load this field.',
     'Couldn’t mark notifications as read.' => 'Ekki tókst að merkja tilkynningar sem lesnar.',
     'Couldn’t move the selected items.' => 'Ekki tókst að færa valin atriði.',
     'Couldn’t open the settings.' => 'Ekki tókst að opna stillingarnar.',
