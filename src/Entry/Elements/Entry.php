@@ -493,7 +493,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
         foreach ($sectionTypes as $type => $heading) {
             if (! empty($sectionsByType[$type])) {
-                $sources[] = ['heading' => $heading];
+                $sources[] = ['heading' => $heading, 'handle' => $type];
 
                 foreach ($sectionsByType[$type] as $section) {
                     /** @var Section $section */

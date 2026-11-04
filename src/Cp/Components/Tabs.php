@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Components;
 
 use CraftCms\Cms\Cp\Concerns\HasSize;
+use CraftCms\Cms\Cp\Enums\TabsAppearance;
 use CraftCms\Cms\Cp\Enums\TabsLayout;
 use CraftCms\Cms\Cp\Enums\TabsPlacement;
 use CraftCms\Cms\Support\Html;
@@ -53,6 +54,8 @@ class Tabs extends ViewComponent
     protected TabsLayout|string|null $layout = null;
 
     protected TabsPlacement|string|null $placement = null;
+
+    protected TabsAppearance|string|null $appearance = null;
 
     protected bool $equalWidth = false;
 
@@ -153,6 +156,28 @@ class Tabs extends ViewComponent
     }
 
     /**
+     * How the strip is drawn; the web component defaults to `line`. Strings
+     * are validated against {@see TabsAppearance}.
+     */
+    public function appearance(TabsAppearance|string|null $appearance): static
+    {
+        $this->appearance = $appearance;
+
+        return $this;
+    }
+
+    public function getAppearance(): ?string
+    {
+        if ($this->appearance === null) {
+            return null;
+        }
+
+        return $this->appearance instanceof TabsAppearance
+            ? $this->appearance->value
+            : TabsAppearance::from($this->appearance)->value;
+    }
+
+    /**
      * Gives every tab the same share of the strip’s width rather than the width
      * of its own label. Tabs that share the width always fit, so nothing
      * collapses into the overflow menu; long labels wrap instead. Only the
@@ -248,6 +273,7 @@ class Tabs extends ViewComponent
             'selected-index' => $this->selectedIndex,
             'size' => $this->getSize(),
             'placement' => $this->getPlacement(),
+            'appearance' => $this->getAppearance(),
             'equal-width' => $this->equalWidth,
             'sync-location-hash' => $this->syncLocationHash ? null : 'false',
             'layout' => $this->getLayout(),

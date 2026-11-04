@@ -10,6 +10,8 @@ import '../popover/popover.js';
 import '../tooltip/tooltip.js';
 import styles from './nav-item.styles';
 import {t} from '@src/utilities/translate.js';
+import {isExternalUrl, newTabCue} from '@src/utilities/external-links.js';
+import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import {
   hasSlotted,
   LightDomController,
@@ -42,7 +44,7 @@ import {
  *   flyout beside it.
  */
 export default class CraftNavItem extends LitElement {
-  static override styles = styles;
+  static override styles = [visuallyHiddenStyles, styles];
 
   /** Icon to render within the prefix. */
   @property()
@@ -71,7 +73,10 @@ export default class CraftNavItem extends LitElement {
   @property({type: Boolean, reflect: true})
   button: boolean = false;
 
-  /** Opens the item in a new tab and displays an external link icon in the suffix. */
+  /**
+   * Opens the item in a new tab and displays an external link icon in the
+   * suffix. A link to another host does so without it.
+   */
   @property({type: Boolean})
   external: boolean = false;
 
@@ -205,6 +210,11 @@ export default class CraftNavItem extends LitElement {
     return this.labelNodes.some(
       (node) => node.nodeType !== Node.TEXT_NODE || !!node.textContent?.trim()
     );
+  }
+
+  /** Whether the item is a link that opens in a new tab. */
+  private get opensInNewTab(): boolean {
+    return !!this.href && (this.external || isExternalUrl(this.href));
   }
 
   /** The row itself, which the flyout and the tooltip anchor to. */
@@ -490,12 +500,16 @@ export default class CraftNavItem extends LitElement {
         id="${this.itemId}"
         type="${this.buttonType(useFlyout)}"
         href="${ifDefined(this.href || undefined)}"
+        target="${this.opensInNewTab ? '_blank' : nothing}"
+        rel="${this.opensInNewTab ? 'noopener' : nothing}"
         aria-current="${this.href || this.button ? this.ariaCurrentState : nothing}"
         aria-expanded="${useFlyout ? (this.flyoutOpen ? 'true' : 'false') : nothing}"
         aria-controls="${useFlyout ? this.subnavId : nothing}"
         aria-label="${
           (this.href || hasSubnav || this.button) && this.labelText
-            ? this.labelText
+            ? this.opensInNewTab
+              ? `${this.labelText}, ${newTabCue()}`
+              : this.labelText
             : nothing
         }"
         @click="${useFlyout && !this.href ? this.#toggleFlyout : nothing}"
@@ -679,6 +693,12 @@ export default class CraftNavItem extends LitElement {
   ) {
     return html`
       <div class="nav-item__suffix">
+        ${this.opensInNewTab && !this.iconOnly
+          ? html`<craft-icon
+              class="external-icon"
+              name="arrow-up-right-from-square"
+            ></craft-icon>`
+          : nothing}
         ${this.iconOnly
           ? nothing
           : html`<slot
@@ -728,12 +748,18 @@ export default class CraftNavItem extends LitElement {
         class="nav-item__action-item"
         type="${this.buttonType(useFlyout)}"
         href="${ifDefined(this.href || undefined)}"
+        target="${this.opensInNewTab ? '_blank' : nothing}"
+        rel="${this.opensInNewTab ? 'noopener' : nothing}"
         aria-current="${this.href || this.button ? this.ariaCurrentState : nothing}"
         aria-expanded="${useFlyout ? (this.flyoutOpen ? 'true' : 'false') : nothing}"
         aria-controls="${useFlyout ? this.subnavId : nothing}"
         @click="${useFlyout && !this.href ? this.#toggleFlyout : nothing}"
       >
-        <slot id="${this.id}-label"></slot>
+        <slot id="${this.id}-label"></slot>${
+          this.opensInNewTab
+            ? html`<span class="cp-visually-hidden">${newTabCue()}</span>`
+            : nothing
+        }
       </${tag}>
     `;
   }

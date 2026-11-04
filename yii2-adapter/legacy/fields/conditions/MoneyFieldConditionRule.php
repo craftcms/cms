@@ -54,7 +54,7 @@ class MoneyFieldConditionRule extends \CraftCms\Cms\Field\Conditions\MoneyFieldC
         return FormFields::moneyInputHtml($this->inputOptions());
     }
 
-    /** @return array{type: 'text', id: 'value', name: 'value', value: string|false, autocomplete: false, currency: string, currencyLabel: string, showCurrency: bool, decimals: int, defaultValue: string|false|null, describedBy: string|null, field: Money, showClear: false} */
+    /** @return array{type: 'text', id: 'value', name: 'value', value: string|false, autocomplete: false, currency: string, showCurrency: bool, decimals: int, defaultValue: string|false|null, describedBy: string|null, field: Money, showClear: false} */
     protected function inputOptions(): array
     {
         /** @var Money $field */
@@ -73,7 +73,6 @@ class MoneyFieldConditionRule extends \CraftCms\Cms\Field\Conditions\MoneyFieldC
             'value' => $value,
             'autocomplete' => false,
             'currency' => $field->currency,
-            'currencyLabel' => $field->currencyLabel(),
             'showCurrency' => $field->showCurrency,
             'decimals' => $field->subunits(),
             'defaultValue' => $defaultValue,

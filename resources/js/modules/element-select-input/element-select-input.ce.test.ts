@@ -103,6 +103,20 @@ it('boots plugin input classes through the custom element interface', () => {
   expect(destroy).toHaveBeenCalledOnce();
 });
 
+it('waits for a plugin input class that loads after the element', async () => {
+  vi.stubGlobal('Craft', {initUiElements: vi.fn()});
+  const element = bootInput();
+
+  expect(receivedSettings).toBeUndefined();
+
+  window.Craft.PluginElementSelectInput = PluginElementSelectInput;
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  expect(receivedSettings).toEqual({limit: 2, id: 'related-elements'});
+  expect(element.selectedIds).toEqual([7, 3]);
+});
+
 it('forwards the chip actions to the input, resolved by element ID', () => {
   const element = bootInput();
 

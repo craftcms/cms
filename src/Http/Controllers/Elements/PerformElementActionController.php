@@ -68,10 +68,14 @@ class PerformElementActionController
             $nestedSource = $nestedElementScope->indexSource($elementType);
             [$sourceKey, $source] = [$nestedSource::NESTED_KEY, $nestedSource->source];
             $owner = $nestedElementScope->owner();
+            // The scope keeps request criteria out, so the status menu's
+            // Drafts and Trashed come from its value alone.
+            $statusSelection = $this->elementIndexes->statusSelection($elementType, $request->input('criteria.status'));
             $elementQuery = $this->elementIndexes->buildQueryState(
                 elementType: $elementType,
                 source: $source,
                 baseCriteria: $nestedSource->criteria,
+                criteria: $this->elementIndexes->statusSelectionCriteria($statusSelection),
             )['query'];
         } else {
             [$sourceKey, $source] = $this->elementIndexes->resolveSource(
@@ -115,7 +119,7 @@ class PerformElementActionController
         }
 
         if ($embedded) {
-            $selectedElements = $nestedElementScope->selectedElements($elementIds, ! $action->isDownload());
+            $selectedElements = $nestedElementScope->selectedElements($elementIds, ! $action->isDownload(), $statusSelection['trashed']);
         }
 
         $actionQuery = (clone $elementQuery)
@@ -166,6 +170,10 @@ class PerformElementActionController
                             ->ids();
                         $positionsByElementId = array_flip(array_map(intval(...), $orderedElementIds));
                     }
+                } elseif ($statusSelection['trashed']) {
+                    // Trashed elements are restored or deleted as they are,
+                    // rather than copied over to the owner first.
+                    $preparedElements = $selectedElements;
                 } else {
                     $preparedElements = $selectedElements
                         ->map(fn (NestedElementInterface $element): NestedElementInterface => NestedElementManager::prepareElementForOwner($element, $owner));
@@ -223,11 +231,20 @@ class PerformElementActionController
             return $this->asFailure($result['message']);
         }
 
+        // A JSON request's body carries the action's own settings, which can
+        // include a plain `successMessage`, so it skips asSuccess()'s signed
+        // message override.
         if ($embedded) {
-            return $this->asSuccess($result['message']);
+            return $request->expectsJson()
+                ? $this->asJsonSuccess($result['message'])
+                : $this->asSuccess($result['message']);
         }
 
-        return $this->asSuccess($result['message'], $this->indexData($request, $elementType, $context), $this->actionRedirect($action));
+        $data = $this->indexData($request, $elementType, $context);
+
+        return $request->expectsJson()
+            ? $this->asJsonSuccess($result['message'], $data, $this->actionRedirect($action))
+            : $this->asSuccess($result['message'], $data, $this->actionRedirect($action));
     }
 
     /**
@@ -260,14 +277,16 @@ class PerformElementActionController
             ]),
         ));
 
-        return $this->asSuccess(
-            t('{action} will run in the background for {count, number} {type}.', [
-                'action' => $label,
-                'count' => count($elementIds),
-                'type' => $elementType::pluralLowerDisplayName(),
-            ]),
-            [...$this->indexData($request, $elementType, $request->context()), 'queued' => true],
-        );
+        $message = t('{action} will run in the background for {count, number} {type}.', [
+            'action' => $label,
+            'count' => count($elementIds),
+            'type' => $elementType::pluralLowerDisplayName(),
+        ]);
+        $data = [...$this->indexData($request, $elementType, $request->context()), 'queued' => true];
+
+        return $request->expectsJson()
+            ? $this->asJsonSuccess($message, $data)
+            : $this->asSuccess($message, $data);
     }
 
     /**

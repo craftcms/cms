@@ -59,7 +59,9 @@ readonly class ServerFactory
 
     public function stdio(): Server
     {
-        return $this->builder($this->stdioCapabilities, $this->instructions->brief())->build();
+        return $this->builder($this->stdioCapabilities, $this->instructions->brief())
+            ->setEventDispatcher(new StdioEventDispatcher)
+            ->build();
     }
 
     private function builder(DiscovererInterface $discoverer, ?string $instructions = null): Builder

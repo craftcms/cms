@@ -9,7 +9,9 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Mcp\Events\CollectingAdminInstructions;
 use CraftCms\Cms\Mcp\StdioTransport;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 
@@ -97,3 +99,55 @@ it('refuses to serve missing or inactive users', function (Closure $user, string
     'unknown user' => [fn (): string => 'nobody', 'No user exists with the ID, username, or email [nobody].'],
     'suspended user' => [fn (): string => User::factory()->withPermissions([])->create(['username' => 'suspended', 'suspended' => true])->username, 'The user [suspended] is not active.'],
 ]);
+
+it('saves project config changes before responding, rather than when the server stops', function (): void {
+    $input = fopen('php://memory', 'r+');
+    fwrite($input, implode('', array_map(static fn (array $message): string => json_encode($message).PHP_EOL, [
+        ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
+            'protocolVersion' => '2025-11-25',
+            'capabilities' => (object) [],
+            'clientInfo' => ['name' => 'stdio-test', 'version' => '1.0'],
+        ]],
+        ['jsonrpc' => '2.0', 'method' => 'notifications/initialized'],
+        ['jsonrpc' => '2.0', 'id' => 'create', 'method' => 'tools/call', 'params' => ['name' => 'configuration.create', 'arguments' => ['type' => 'site-groups', 'attributes' => ['name' => 'Archive']]]],
+    ])));
+    rewind($input);
+    StdioTestOutput::$saved = [];
+    stream_wrapper_register('stdio-test-output', StdioTestOutput::class);
+    $this->beforeApplicationDestroyed(fn () => stream_wrapper_unregister('stdio-test-output'));
+    app()->bind(StdioTransport::class, fn ($app): StdioTransport => new StdioTransport($app, $input, fopen('stdio-test-output://', 'w')));
+
+    $this->artisan('craft:mcp:serve', ['--user' => User::query()->where('admin', true)->firstOrFail()->username])->assertSuccessful();
+
+    expect(StdioTestOutput::$saved['create'])->toBeTrue();
+});
+
+/** Records, as each response is written, whether the Archive site group has been saved yet. */
+class StdioTestOutput
+{
+    /** @var array<string, bool> */
+    public static array $saved = [];
+
+    /** @var resource|null */
+    public $context;
+
+    public function stream_open(string $path, string $mode, int $options, ?string &$openedPath): bool
+    {
+        return true;
+    }
+
+    private string $buffer = '';
+
+    public function stream_write(string $data): int
+    {
+        $this->buffer .= $data;
+
+        while (($end = strpos($this->buffer, PHP_EOL)) !== false) {
+            $line = substr($this->buffer, 0, $end);
+            $this->buffer = substr($this->buffer, $end + strlen(PHP_EOL));
+            self::$saved[Json::decode($line)['id'] ?? ''] = DB::table('projectconfig')->where('path', 'like', 'siteGroups.%.name')->where('value', Json::encode('Archive'))->exists();
+        }
+
+        return strlen($data);
+    }
+}

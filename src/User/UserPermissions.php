@@ -27,6 +27,7 @@ use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
+use CraftCms\Cms\User\Data\UserGroup as UserGroupData;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\UserGroupPermissionsSaved;
 use CraftCms\Cms\User\Events\UserPermissionsSaved;
@@ -41,6 +42,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use RuntimeException;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
@@ -63,6 +65,9 @@ use function CraftCms\Cms\t;
 #[Scoped]
 class UserPermissions
 {
+    /** The ID {@see actingAsGroup()} gives its stand-in, which no saved user can have. */
+    private const int GROUP_STAND_IN_ID = -1;
+
     /**
      * @var Collection<int, Collection<int, string>>
      */
@@ -193,6 +198,47 @@ class UserPermissions
             ->where('g_u.userId', $userId)
             ->pluck('p.name')
             ->pipe(fn (Collection $permissions) => collect($this->canonicalPermissionNames($permissions->all())));
+    }
+
+    /**
+     * Runs a callback as a stand-in user who has exactly a group's permissions,
+     * isn't an admin, and is in no other group, such as to see what a group's
+     * members get. The signed-in user is put back afterward.
+     *
+     * Nothing is saved: the stand-in's permissions are only remembered for as
+     * long as the callback runs.
+     *
+     * @template T
+     *
+     * @param  Closure(): T  $callback
+     * @return T
+     */
+    public function actingAsGroup(UserGroupData $group, Closure $callback): mixed
+    {
+        $standIn = new User;
+        $standIn->id = self::GROUP_STAND_IN_ID;
+        $standIn->admin = false;
+        $standIn->setGroups([$group]);
+
+        $guard = craftAuth();
+        $user = $guard->user();
+
+        $this->permissionsByUserId ??= collect();
+        $this->permissionsByUserId[$standIn->id] = $this->getPermissionsByGroupId((int) $group->id);
+
+        try {
+            $guard->setUser($standIn);
+
+            return $callback();
+        } finally {
+            unset($this->permissionsByUserId[$standIn->id], $this->permissionMapsByUserId[$standIn->id]);
+
+            if ($user !== null) {
+                $guard->setUser($user);
+            } else {
+                $guard->forgetUser();
+            }
+        }
     }
 
     /**

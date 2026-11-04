@@ -416,7 +416,14 @@ class ElementDraftsController
             );
         }
 
-        $elementToSave = $validateOnly ? clone $element : $element;
+        $elementToSave = $element;
+
+        if ($validateOnly) {
+            // Cloning marks every attribute and field as dirty, which would record them all as changed by the draft
+            $elementToSave = clone $element;
+            $elementToSave->setDirtyAttributes($element->getDirtyAttributes(), false);
+            $elementToSave->setDirtyFields($element->getDirtyFields(), false);
+        }
 
         // Validate and save the draft
         if ($elementToSave->enabled && $elementToSave->getEnabledForSite()) {

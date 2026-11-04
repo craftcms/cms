@@ -39,7 +39,7 @@ bubbling `change` CustomEvent.
 
 Imported for side effects from `resources/js/cp.ts` and `resources/js/legacy.ts`.
 Consumers emit the element instead of `new Craft.IconPicker(...)`:
-`_includes/forms/iconPicker.twig`, the `Craft.ui.createIconPicker` /
+`FormFields::iconPickerHtml()` (and the adapter’s `_includes/forms/iconPicker.twig`), the `Craft.ui.createIconPicker` /
 `createIconPickerField` factories (editable-table icon cells,
 CustomizeSourcesModal). A deprecation shim for stray plugin `new
 Craft.IconPicker(...)` callers lives in the yii2-adapter cpcompat bundle.

@@ -172,6 +172,8 @@ it('does not duplicate pending before query callbacks when cloned while preparin
 });
 
 it('uses clone criteria without changing the original query', function (Closure $factory, array $initial, array $changed, bool $executed, bool $cloneFirst) {
+    $this->freezeTime();
+
     $original = $factory($initial);
     if ($executed) {
         $original->get();
