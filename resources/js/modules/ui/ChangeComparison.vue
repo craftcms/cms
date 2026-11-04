@@ -75,7 +75,7 @@
           {{ sideLabel }}
           <span v-if="label && hasPreviews" class="sr-only">{{ label }}</span>
         </dt>
-        <dd>
+        <dd :data-change-side="key">
           <UiRenderer v-if="'payload' in side" :payload="side.payload" />
           <ChangeValue v-else :value="side.value" />
         </dd>

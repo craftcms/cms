@@ -591,6 +591,21 @@ craft-card:has(> [data-cover]):has(
   inset: 0;
 }
 
+/* A comparison's earlier side, such as the previous revision in “Compare
+   changes”, marks what changed in it since the one before, not in this change,
+   so its cards show no status. */
+[data-change-side='from'] craft-card .status-badge {
+  display: none;
+}
+
+[data-change-side='from']
+  craft-card:has(
+    > [slot='header'] .status-badge.modified,
+    > .card-titlebar > .status-badge.modified
+  )::part(base)::after {
+  content: none;
+}
+
 @media (forced-colors: active) {
   craft-card:has(
     > [slot='header'] .status-badge.modified,
