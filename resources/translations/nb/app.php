@@ -938,7 +938,6 @@ return [
     'Edit Skill' => 'Rediger ferdighet',
     'Edit “{name}”' => 'Rediger «{name}»',
     'Enterprise Verified' => 'Enterprise Verified',
-    'External site' => 'Eksternt nettsted',
     'deleted' => 'slettet',
     'failed the stage' => 'avviste trinnet',
     'Generate chat titles' => 'Generer chattitler',
