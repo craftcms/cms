@@ -213,6 +213,7 @@ return [
     'Couldn’t generate alt text: {error}' => 'ไม่สามารถสร้างข้อความแสดงแทนได้: {error}',
     'Couldn’t load activity.' => 'ไม่สามารถโหลดกิจกรรมได้',
     'Couldn’t load table data.' => 'ไม่สามารถโหลดข้อมูลตารางได้',
+    'Couldn’t load this field.' => 'Couldn’t load this field.',
     'Couldn’t mark notifications as read.' => 'ไม่สามารถทำเครื่องหมายการแจ้งเตือนว่าอ่านแล้วได้',
     'Couldn’t move the selected items.' => 'ไม่สามารถย้ายรายการที่เลือกได้',
     'Couldn’t open the settings.' => 'ไม่สามารถเปิดการตั้งค่าได้',
