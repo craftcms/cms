@@ -66,6 +66,7 @@
 - Added support for controller actions and named Laravel routes in section and Matrix site settings, via a single “Route To” setting in place of Craft 5’s template setting, which suggests the app’s named routes and controller actions as well as templates. ([#19762](https://github.com/craftcms/cms/pull/19762), [#19942](https://github.com/craftcms/cms/pull/19942))
 - Collapsed Matrix blocks are now remembered per site, like their enabled status. ([#20119](https://github.com/craftcms/cms/pull/20119))
 - Nested entry cards in revisions now have a violet “modified” bar when the entry was edited or added in that revision, as they already did in drafts.
+- “New entry” buttons now only offer the entry types and sections that `CraftCms\Cms\Entry\Events\EntryTypesResolving` listeners leave available for the site, instead of ones that then fail with a 400 error. ([#20322](https://github.com/craftcms/cms/issues/20322))
 
 ### Assets
 - Added background uploads in the Assets index, which continue during control panel navigation, with persistent progress, retry, cancellation, and filename-conflict controls.
