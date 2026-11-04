@@ -65,17 +65,21 @@ readonly class Cp
     /** @return Collection<string, mixed> */
     public static function config(): Collection
     {
-        $generalConfig = Cms::config();
+        // Built once per request: each page renders it for the Inertia props, the legacy `window.Craft` object and
+        // the app view.
+        return once(static function (): Collection {
+            $generalConfig = Cms::config();
 
-        return collect(self::craftData())
-            ->merge([
-                'cpLogoUrl' => $generalConfig->cpLogoUrl,
-                'cpTrigger' => $generalConfig->cpTrigger,
-                'baseCpUrl' => Url::cpUrl(),
-                'defaultCpLocale' => $generalConfig->defaultCpLocale,
-                'rememberedUserSessionDuration' => (int) config(sprintf('auth.guards.%s.remember', Cms::config()->getAuthGuard()), 20160) * 60,
-                'runQueueAutomatically' => $generalConfig->runQueueAutomatically,
-            ]);
+            return collect(self::craftData())
+                ->merge([
+                    'cpLogoUrl' => $generalConfig->cpLogoUrl,
+                    'cpTrigger' => $generalConfig->cpTrigger,
+                    'baseCpUrl' => Url::cpUrl(),
+                    'defaultCpLocale' => $generalConfig->defaultCpLocale,
+                    'rememberedUserSessionDuration' => (int) config(sprintf('auth.guards.%s.remember', Cms::config()->getAuthGuard()), 20160) * 60,
+                    'runQueueAutomatically' => $generalConfig->runQueueAutomatically,
+                ]);
+        });
     }
 
     public static function vite(): Vite
