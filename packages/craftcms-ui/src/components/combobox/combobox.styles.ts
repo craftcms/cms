@@ -26,7 +26,9 @@ export default css`
     box-shadow: var(--c-shadow-sm);
   }
 
+  /* Lion gives the listbox a white background, which the overlay's own surface has to show through. */
   ::slotted([slot='listbox']) {
+    background: transparent;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: var(--c-spacing-xs);
