@@ -167,6 +167,7 @@
 - The `elements.*` MCP tools no longer list draft, revision, or structure criteria and attributes for element types that don’t support them, such as structure params for assets and users. ([#20254](https://github.com/craftcms/cms/pull/20254))
 - MCP tools that set Matrix field values now add new entries after the existing ones when `sortOrder` is omitted, and reject a `sortOrder` that doesn’t list every new entry. ([#20292](https://github.com/craftcms/cms/pull/20292))
 - MCP tools now accept times of day for Time fields within nested entries, and reject times they can’t parse. ([#20319](https://github.com/craftcms/cms/issues/20319))
+- MCP tool input schemas now declare the items of `relatedTo` and `notRelatedTo` element query criteria, so strict MCP clients such as VS Code accept the `search.query` tool. ([#20329](https://github.com/craftcms/cms/issues/20329))
 - The MCP server’s configuration tools can now manage control panel navigations, via the `cp-navigations` configuration type, which reads and writes each navigation as the tree the navigation builder edits. ([#20247](https://github.com/craftcms/cms/pull/20247))
 
 #### General
