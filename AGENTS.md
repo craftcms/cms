@@ -2,6 +2,18 @@
 
 Follow [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidance.
 
+## CI skip markers
+
+For commits touching only genuinely inconsequential, nonfunctional files, put
+`[ci skip]` at the end of the extended commit message (the commit body). Judge
+eligibility by the actual effect, not filenames alone. Code, dependencies,
+executable configuration, workflows, and behavior-changing generated artifacts
+are not eligible.
+
+Skip markers can leave required checks pending and do not establish green CI.
+Never use them to evade required checks, merged-result verification, or merge
+queues. The merge safeguards below still apply.
+
 ## Merging pull requests
 
 When explicitly instructed to merge a PR, resolve conflicts in the final merge
