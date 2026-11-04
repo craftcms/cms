@@ -1,0 +1,97 @@
+name: 'ci / Benchmarks'
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'config/**'
+      - 'database/**'
+      - 'routes/**'
+      - 'composer.lock'
+      - 'tests/Benchmark/**'
+      - 'phpbench.json'
+      - 'scripts/benchmark*'
+      - 'workbench/**'
+
+concurrency:
+  group: benchmarks-${{ github.ref }}
+  cancel-in-progress: true
+
+# Pull requests from forks only get a read-only token, so this workflow uploads the report and
+# benchmarks-comment.yml posts it on the pull request.
+permissions:
+  contents: read
+
+jobs:
+  benchmarks:
+    name: 'Benchmarks'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, intl, gd, exif, iconv, fileinfo, opcache
+          tools: composer:v2
+          coverage: none
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMPOSER_AUTH_JSON: |
+            {
+              "http-basic": {
+                "repo.packagist.com": {
+                  "username": "${{ secrets.packagist_username }}",
+                  "password": "${{ secrets.packagist_token }}"
+                }
+              }
+            }
+
+      # Both are measured on the same runner, so the comparison isn't thrown off by differences between machines. The
+      # base runs its own benchmarks and seed, so a change to either shows from the next pull request on.
+      - name: Benchmark the base branch
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git checkout --force "$BASE_SHA"
+          if [ ! -f phpbench.json ]; then
+            echo "The base branch has no benchmarks."
+            exit 0
+          fi
+          composer config version "6.x-dev"
+          composer install --no-interaction --no-progress
+          scripts/benchmark-setup.sh
+          scripts/benchmark.sh --progress=none --dump-file="$RUNNER_TEMP/base.xml" \
+            || echo "::warning::The base branch's benchmarks failed, so there's nothing to compare with."
+
+      - name: Benchmark the pull request
+        env:
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          git checkout --force "$HEAD_SHA"
+          composer config version "6.x-dev"
+          composer install --no-interaction --no-progress
+          scripts/benchmark-setup.sh
+          scripts/benchmark.sh --report=aggregate --dump-file="$RUNNER_TEMP/pr.xml" \
+            || echo "::warning::Some benchmarks failed."
+
+      - name: Write the report
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/benchmarks"
+          php scripts/benchmark-report.php "$RUNNER_TEMP/pr.xml" "$RUNNER_TEMP/base.xml" > "$RUNNER_TEMP/benchmarks/report.md"
+          echo "$PR_NUMBER" > "$RUNNER_TEMP/benchmarks/pr-number"
+          cat "$RUNNER_TEMP/benchmarks/report.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the report
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmarks
+          path: ${{ runner.temp }}/benchmarks
+          retention-days: 7

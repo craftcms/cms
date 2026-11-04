@@ -97,6 +97,7 @@
     "pestphp/pest-plugin-agent": "^5.0",
     "pestphp/pest-plugin-arch": "^5.0",
     "pestphp/pest-plugin-laravel": "^5.0",
+    "phpbench/phpbench": "^1.7",
     "phpstan/phpstan": "^2.1",
     "rector/rector": "^2.3",
     "spatie/laravel-typescript-transformer": "^3.2"
