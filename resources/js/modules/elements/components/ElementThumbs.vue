@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import {t, type ChipThumbSizeValue} from '@craftcms/ui';
   import {computed} from 'vue';
-  import {usePage} from '@inertiajs/vue3';
   import DragShadow from '@/common/components/DragShadow.vue';
   import {
     useReorderableItems,
@@ -64,15 +63,12 @@
       selectable: false,
       selectAll: true,
       sortable: false,
-      readOnly: undefined,
+      readOnly: false,
       loading: false,
       thumbSize: 'lg',
       placeholders: 0,
     }
   );
-
-  const page = usePage<{readOnly: boolean}>();
-  const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
 
   // Selection is handed in rather than derived from a table, so this body works
   // for anything with an ordered list of ids.
@@ -125,7 +121,7 @@
       return;
     }
 
-    if (props.selectable && !readOnly.value && !props.interactionsDisabled) {
+    if (props.selectable && !props.readOnly && !props.interactionsDisabled) {
       props.selection.handleClick(element.id, event);
     }
   }

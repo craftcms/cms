@@ -560,6 +560,7 @@
 - Added `CraftCms\Cms\Ui\Nodes\Group::outlet()`, which renders a group in a named outlet elsewhere in the form when the form is rendered by Vue, such as the field layout designer’s Appearance tab (`field-layout-designer.appearance`). ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Added the `labelSrOnly` config option to `CraftCms\Cms\Cp\FormFields::fieldHtml()`. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Added `CraftCms\Cms\Ui\Controls\Textarea::singleLine()`. ([#20074](https://github.com/craftcms/cms/pull/20074))
+- Added `CraftCms\Cms\Cp\Components\Textarea::maxRows()`. `null` lets the textarea grow without limit. ([#20324](https://github.com/craftcms/cms/pull/20324))
 - `Garnish.uiLayerManager.registerShortcut()` now accepts `description` and `group` keys on its shortcut definition, which list the shortcut in the command palette’s “Keyboard shortcuts” view. ([#20263](https://github.com/craftcms/cms/pull/20263))
 - `<craft-action-menu>` now spaces `<hr>` elements in its slotted content as it does the dividers it renders from its `actions`. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - `craft-radio` now has an `icon` slot, shown before its label. `craft-radio-group` has a new `appearance` property, which replaces `buttons`: `buttons` and `button-group` draw its radios as separate or joined buttons, and `cards` and `card-group` as separate or joined cards with their icon drawn large above the label. Options wrap when they don’t fit in one row, and a joined group comes apart as it wraps. `CraftCms\Cms\Cp\Components\RadioGroup::buttons()` is now `appearance()`. `Choice` options and `CraftCms\Cms\Cp\Components\Radio` with a `thumbnail` use this automatically. A thumbnail can be inline `svg` markup colored with the `--c-illustration-*` tokens, so it follows the theme and its outlines turn blue when selected; `CraftCms\Cms\Cp\Cp::illustration()` inlines one from `resources/public`. ([#20233](https://github.com/craftcms/cms/pull/20233), [#20285](https://github.com/craftcms/cms/pull/20285))
@@ -594,6 +595,7 @@
 - UI table columns’ `info` is now rendered as Markdown, and passed to the client as `infoHtml`. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Element select chips’ payloads now include the element’s `color`. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Control panel elements with a `data-icon` attribute, such as those in plugins’ templates and scripts, now show the matching SVG icon via `<craft-icon>` when `craftcms/yii2-adapter` is installed, since the legacy icon font is no longer loaded. Core control panel markup uses `<craft-icon>` instead. ([#20179](https://github.com/craftcms/cms/pull/20179))
+- `<craft-textarea>` now auto-grows up to 30 rows by default, rather than 6. Set `max-rows="none"` to let it grow without limit. ([#20324](https://github.com/craftcms/cms/pull/20324))
 - Deprecated `CraftCms\Cms\Cp\Components\CheckboxSelect::storageKey()`, which now does nothing. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Deprecated `Craft.SortableCheckboxSelect`. `<craft-checkbox-select>` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Removed the `prefixSelect` editable table column option. ([#19942](https://github.com/craftcms/cms/pull/19942))
@@ -665,6 +667,9 @@
 - Added `CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements::mustHaveField()` and `mustHaveOwner()`.
 - Added `CraftCms\Cms\Translation\Locale::languageId()`.
 - Added `CraftCms\Cms\Plugin\Plugins::hasPluginIcon()`. ([#20074](https://github.com/craftcms/cms/pull/20074))
+- Added `CraftCms\Cms\Cp\Data\ElementCardParts` and `CraftCms\Cms\Cp\Html\ElementHtml::elementCardPartsHtml()`. ([#20335](https://github.com/craftcms/cms/pull/20335))
+- Renamed `CraftCms\Cms\Cp\Events\ElementCardHtmlResolving` to `ElementCardPartsResolving`. It’s now fired for every element card, including cards rendered by the card component’s slots, such as those in Matrix fields, relation fields, element indexes, and CKEditor fields, and its `$html` property has been replaced by `$parts`, which listeners can modify to change the card wherever it’s shown. ([#20335](https://github.com/craftcms/cms/pull/20335))
+- `craft\helpers\Cp::EVENT_DEFINE_ELEMENT_CARD_HTML` handlers now apply to every element card when the Yii adapter is installed, as they did in Craft 5. Changes they make to the card’s HTML are split back into the card’s parts. ([#20335](https://github.com/craftcms/cms/pull/20335))
 - `CraftCms\Cms\Element\Element::attributes()` no longer includes elements’ internal state, such as `forceSave`, `siteSettingsId`, and `trackDraftChanges`, so it’s left out of MCP tools’ results, element responses, and exports. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - `craft\web\assets\prismjs\PrismJsAsset` no longer registers Prism, or Craft 5.12’s Prism shim. Plugins that rely on Prism should bundle it themselves, or use `Craft.highlighter` instead. ([#20088](https://github.com/craftcms/cms/pull/20088))
 - `craft\web\assets\pluginstore\PluginStoreAsset` is now deprecated and does nothing.
@@ -725,6 +730,7 @@
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
 
 ### Bug Fixes
+- Fixed a bug where elements couldn’t be selected, edited inline, or reordered on element indexes when the `allowAdminChanges` config setting was disabled, and the “Changes to these settings aren’t permitted in this environment.” notice was shown on screens other than settings. ([#20339](https://github.com/craftcms/cms/issues/20339), [#20340](https://github.com/craftcms/cms/issues/20340), [#20344](https://github.com/craftcms/cms/issues/20344))
 - Fixed a bug where publishing an approved draft through a workflow marked all of the element’s fields as modified, on both the element and its new revision.
 - Fixed a bug where read-only nested entry cards, such as on revisions, couldn’t be opened from their edit buttons or by double-clicking them. ([#20307](https://github.com/craftcms/cms/pull/20307))
 - Fixed a bug where keyboard shortcuts were shown with <kbd>Super</kbd> on Linux, rather than <kbd>Ctrl</kbd>.
@@ -1164,6 +1170,7 @@
 - Fixed a bug where editing fields inside a Matrix entry wasn’t recorded in the entry’s Activity timeline. ([#20299](https://github.com/craftcms/cms/pull/20299))
 - Fixed a bug where configuration changes made through the stdio MCP server (`craft:mcp:serve`) weren’t saved until the server stopped, so the control panel didn’t see them, and they were lost if the server was killed.
 - Fixed a bug where some settings fields, such as section and Matrix fields’ “Entry Types” and field layout designers, jumped in height once their contents loaded, and stayed empty if they couldn’t be loaded. They now hold their space while loading, and show an error with a “Retry” button if loading fails. ([#20326](https://github.com/craftcms/cms/pull/20326))
+- Fixed a bug where the Settings nav item had no icon when `allowAdminChanges` was disabled. ([#20338](https://github.com/craftcms/cms/issues/20338))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 

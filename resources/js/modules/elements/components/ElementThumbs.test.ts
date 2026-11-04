@@ -3,9 +3,11 @@ import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import ElementThumbs from './ElementThumbs.vue';
 import {useSelectable} from '@/common/composables/useSelectable';
 
+// The page's `readOnly` prop means admin changes are disabled, which locks
+// settings, not content, so the tiles stay selectable under it.
 vi.mock('@inertiajs/vue3', async () => ({
   ...(await vi.importActual('@inertiajs/vue3')),
-  usePage: () => ({props: {readOnly: false}}),
+  usePage: () => ({props: {readOnly: true}}),
 }));
 
 describe('ElementThumbs', () => {

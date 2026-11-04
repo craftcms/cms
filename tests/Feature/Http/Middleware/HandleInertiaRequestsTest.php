@@ -10,7 +10,6 @@ use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
-use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -22,6 +21,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Event;
 use Inertia\Testing\AssertableInertia;
 
+use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 
@@ -38,6 +38,18 @@ it('shares the CP language direction', function (string $language, string $orien
 })->with([
     'left-to-right' => ['en-US', 'ltr'],
     'right-to-left' => ['ar', 'rtl'],
+]);
+
+it('shares read-only only with settings screens when admin changes are disabled', function (string $path, bool $readOnly) {
+    Cms::config()->allowAdminChanges = false;
+    actingAs(User::find()->one());
+
+    get(cp_url($path))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('readOnly', $readOnly));
+})->with([
+    'settings' => ['settings/sections', true],
+    'entry index' => ['content/entries', false],
 ]);
 
 it('sends the nav tree even when the client already has it', function () {
@@ -147,14 +159,3 @@ it('leaves out the stable config the client already has, until it changes', func
     }],
     'the user’s permissions change' => [fn (UserModel $user) => app(UserPermissions::class)->saveUserPermissions($user->id, ['accessCp', 'utility:system-report'])],
 ]);
-
-it('marks only settings screens read-only when admin changes are disallowed', function () {
-    Cms::config()->allowAdminChanges = false;
-    actingAs(User::find()->one());
-
-    get(action([DashboardController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->where('readOnly', false));
-
-    get(action([SectionsController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->where('readOnly', true));
-});
