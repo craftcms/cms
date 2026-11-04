@@ -10,14 +10,11 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Elements\ContentBlock as ContentBlockElement;
 use CraftCms\Cms\Field\Matrix;
-use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
+use CraftCms\Cms\FieldLayout\FieldPreviews;
 use CraftCms\Cms\Mcp\Capabilities\Elements;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\NodePayload;
-use CraftCms\Cms\Ui\Nodes\ActionMenu;
-use CraftCms\Cms\Ui\UiContext;
-use CraftCms\Cms\Ui\UiPayload;
 use Illuminate\Support\Facades\DB;
 use Mcp\Exception\ToolCallException;
 
@@ -36,7 +33,7 @@ readonly class Proposals
 {
     public function __construct(
         private Elements $elements,
-        private FieldLayoutCompiler $compiler,
+        private FieldPreviews $previews,
     ) {}
 
     /**
@@ -75,8 +72,8 @@ readonly class Proposals
         $this->elements->populate($element::refHandle(), $copy, $attributes, $fields);
 
         $namespace = [...$context->namespace, ...$path];
-        $current = $this->compile($element, $element, $namespace);
-        $proposed = $this->compile($element, $copy, $namespace);
+        $current = $this->previews->compile($element, $element, $namespace);
+        $proposed = $this->previews->compile($element, $copy, $namespace);
 
         if (! $current || ! $proposed) {
             return ['proposals' => [], 'notInEditor' => [...array_keys($attributes), ...array_keys($fields)]];
@@ -85,7 +82,7 @@ readonly class Proposals
         // What the editor has controls for, by their paths below the element’s own.
         $controls = array_map(
             static fn (NodePayload $node): array => array_slice($node->control->path ?? [], count($namespace)),
-            $this->fieldNodes($current->nodes),
+            $this->previews->fieldNodes($current->nodes),
         );
         $notInEditor = [
             ...array_filter(array_keys($attributes), static fn (string $attribute): bool => ! array_any($controls, static fn (array $control): bool => ($control[0] ?? null) === $attribute)),
@@ -97,7 +94,7 @@ readonly class Proposals
         $previews = null;
         $proposals = [];
 
-        foreach ($this->fieldNodes($proposed->nodes) as $node) {
+        foreach ($this->previews->fieldNodes($proposed->nodes) as $node) {
             $controlPath = $node->control->path ?? [];
             $before = data_get($current->values, $controlPath);
             $after = data_get($proposed->values, $controlPath);
@@ -106,25 +103,26 @@ readonly class Proposals
                 continue;
             }
 
-            $isText = self::text($before) !== null && self::text($after) !== null;
+            $layoutUid = (string) ($node->props['layoutUid'] ?? $node->uid);
+            $diff = FieldPreviews::diff($before, $after, [$element, $copy], $element->getFieldLayout()?->getElementByUid($layoutUid));
+            $isText = $diff !== null;
             $preview = null;
 
             if (! $isText) {
                 $previews ??= [
-                    $this->compile($element, $element, "{$previewNamespace}Current", ControlMode::ReadOnly),
-                    $this->compile($element, $copy, "{$previewNamespace}Proposed", ControlMode::ReadOnly),
+                    $this->previews->compile($element, $element, "{$previewNamespace}Current", ControlMode::ReadOnly),
+                    $this->previews->compile($element, $copy, "{$previewNamespace}Proposed", ControlMode::ReadOnly),
                 ];
-                $layoutUid = (string) ($node->props['layoutUid'] ?? $node->uid);
-                $currentNode = $previews[0] ? $this->findNode($previews[0]->nodes, $layoutUid) : null;
-                $proposedNode = $previews[1] ? $this->findNode($previews[1]->nodes, $layoutUid) : null;
+                $currentNode = $previews[0] ? $this->previews->findNode($previews[0]->nodes, $layoutUid) : null;
+                $proposedNode = $previews[1] ? $this->previews->findNode($previews[1]->nodes, $layoutUid) : null;
 
                 if (! $previews[0] || ! $previews[1] || ! $currentNode || ! $proposedNode) {
                     continue;
                 }
 
                 $preview = [
-                    'current' => $this->payloadFor($previews[0], $currentNode),
-                    'proposed' => $this->payloadFor($previews[1], $proposedNode),
+                    'current' => $this->previews->payloadFor($previews[0], $currentNode),
+                    'proposed' => $this->previews->payloadFor($previews[1], $proposedNode),
                 ];
             }
 
@@ -141,7 +139,7 @@ readonly class Proposals
                 cpEditUrl: $context->element->getCpEditUrl(),
                 path: $controlPath,
                 value: $after,
-                diff: $isText ? ['current' => (string) self::text($before), 'proposed' => (string) self::text($after)] : null,
+                diff: $diff,
                 preview: $preview,
                 node: $isText ? null : $node,
             );
@@ -198,94 +196,5 @@ readonly class Proposals
         } finally {
             DB::rollBack();
         }
-    }
-
-    /**
-     * @param  string|list<string>  $namespace
-     */
-    private function compile(ElementInterface $layoutElement, ElementInterface $element, string|array $namespace, ControlMode $mode = ControlMode::Editable): ?UiPayload
-    {
-        $layout = $layoutElement->getFieldLayout();
-
-        return $layout ? $this->compiler->compile($layout, $element, new UiContext(namespace: $namespace, mode: $mode)) : null;
-    }
-
-    /**
-     * Returns the nodes of the fields in a form, which can be in tabs. Fields nested in other fields’ controls are
-     * left out.
-     *
-     * @param  list<NodePayload>  $nodes
-     * @return list<NodePayload>
-     */
-    private function fieldNodes(array $nodes): array
-    {
-        $fields = [];
-
-        foreach ($nodes as $node) {
-            $fields = [...$fields, ...($node->control ? [$node] : $this->fieldNodes($node->children ?? []))];
-        }
-
-        return $fields;
-    }
-
-    /**
-     * Returns a value as text, for showing what changed, or `null` if it isn’t text. An empty value is empty text.
-     */
-    private static function text(mixed $value): ?string
-    {
-        return $value === null || is_string($value) || is_int($value) || is_float($value) ? (string) $value : null;
-    }
-
-    /**
-     * Returns a read-only payload of a single field, for a preview. The card labels the field itself, so the field’s
-     * own label, status, and action menu are left out, and the payload only has the field’s own values, as it’s the
-     * model’s tool result too.
-     */
-    private function payloadFor(UiPayload $payload, NodePayload $node): UiPayload
-    {
-        $path = $node->control->path ?? [];
-        $values = [];
-        data_set($values, $path, data_get($payload->values, $path));
-
-        $node = new NodePayload(
-            type: $node->type,
-            component: $node->component,
-            props: [...$node->props, 'labelSrOnly' => true, 'showStatus' => false],
-            uid: $node->uid,
-            control: $node->control,
-            children: array_values(array_filter(
-                $node->children ?? [],
-                static fn (NodePayload $child): bool => $child->type !== ActionMenu::class,
-            )),
-        );
-
-        return new UiPayload(
-            scope: $payload->scope,
-            refreshable: false,
-            nodes: [$node],
-            values: $values,
-            errors: [],
-            globalErrors: [],
-        );
-    }
-
-    /**
-     * Finds a field’s node, which can be in a tab, or at the top level for fields outside of a tab.
-     *
-     * @param  list<NodePayload>  $nodes
-     */
-    private function findNode(array $nodes, string $uid): ?NodePayload
-    {
-        foreach ($nodes as $node) {
-            if (($node->props['layoutUid'] ?? $node->uid) === $uid) {
-                return $node;
-            }
-
-            if ($found = $this->findNode($node->children ?? [], $uid)) {
-                return $found;
-            }
-        }
-
-        return null;
     }
 }

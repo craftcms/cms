@@ -16,6 +16,9 @@
   } from 'vue';
   import CopyElementValuesController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/CopyElementValuesController';
   import CrossSiteCopyModal from './CrossSiteCopyModal.vue';
+  import FieldChangesModal, {
+    type CompareFieldChangesDetail,
+  } from './FieldChangesModal.vue';
   import {revealElement} from '@/common/utils/dom';
   import {assistantApi} from '@/bootstrap/assistant';
   import {addElementField} from '@/modules/ai/assistant/element-context';
@@ -290,6 +293,19 @@
     );
   });
 
+  const compareDetail = shallowRef<CompareFieldChangesDetail>();
+
+  useEventListener(window, 'craft:compare-field-changes', (event: Event) => {
+    const detail = (event as CustomEvent<CompareFieldChangesDetail>).detail;
+
+    if (
+      detail?.trigger instanceof HTMLElement &&
+      detail.trigger.closest('craft-field') === field.value
+    ) {
+      compareDetail.value = detail;
+    }
+  });
+
   const assistantEditor = inject(AssistantEditorKey, null);
 
   // Adds this field to the AI assistant's context, and opens the assistant.
@@ -561,5 +577,9 @@
     :loading="copying"
     @close="copyDetail = undefined"
     @submit="copyValue"
+  />
+  <FieldChangesModal
+    :detail="compareDetail"
+    @close="compareDetail = undefined"
   />
 </template>
