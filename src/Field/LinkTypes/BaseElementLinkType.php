@@ -167,21 +167,26 @@ abstract class BaseElementLinkType extends BaseLinkType
 
         HtmlStack::jsWithVars(fn ($id, $refHandle) => <<<JS
 (() => {
-  const container = $('#' + $id);
-  const field = container.closest('[data-link-field]').parent().data('linkField');
-  const input = container.next('input');
-  const elementSelect = container.data('elementSelect');
+  const container = document.getElementById($id);
+  const input = container?.nextElementSibling;
+  if (!container || !(input instanceof HTMLInputElement)) {
+    return;
+  }
+  const field = () => Craft.LinkField.forContainer(
+    container.closest('[data-link-field]')?.parentElement
+  );
   const refHandle = $refHandle;
-  elementSelect.on('selectElements', (ev) => {
-    const element = ev.elements[0];
-    input.val(`{\${refHandle}:\${element.id}@\${element.siteId}:url}`);
-    field.updateLabel(element.label);
-    field.updateFilename(element.\$element.data('filename'));
+  container.addEventListener('selectElements', (ev) => {
+    const element = ev.detail.elements[0];
+    const chip = element.element ?? element.\$element?.[0];
+    input.value = `{\${refHandle}:\${element.id}@\${element.siteId}:url}`;
+    field()?.updateLabel(element.label);
+    field()?.updateFilename(chip?.dataset.filename ?? '');
   });
-  elementSelect.on('removeElements', () => {
-    input.val('');
-    field.updateLabel('');
-    field.updateFilename('');
+  container.addEventListener('removeElements', () => {
+    input.value = '';
+    field()?.updateLabel('');
+    field()?.updateFilename('');
   });
 })();
 JS, [

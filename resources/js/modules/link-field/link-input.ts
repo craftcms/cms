@@ -9,7 +9,7 @@ import {createTextInput as buildTextInput} from '@/modules/ui/legacy/text-input'
 import {resolveElement, type ElementArg} from '@/common/utils/dom';
 import {jq} from '@/common/utils/jquery';
 import punycode from 'punycode/';
-import type {LinkField} from './link-field';
+import {LinkField} from './link-field';
 import {
   removeLeft,
   removeRight,
@@ -44,7 +44,7 @@ interface LinkInputSettings extends GarnishBaseSettings {
  * jQuery-free, but carries a few documented seams: the chip's action menu is
  * built through `addActionsToChip()` (the smart `craft-action-menu` helper,
  * still in the cp bundle — same seam component-select uses), and the paired
- * {@link LinkField} instance is read via the legacy `.data('linkField')` cache.
+ * {@link LinkField} instance is found with {@link LinkField.forContainer}.
  * Booted from `BaseTextLinkType.php`.
  */
 export class LinkInput extends Base<LinkInputSettings> {
@@ -75,14 +75,11 @@ export class LinkInput extends Base<LinkInputSettings> {
     }
     this.setSettings(settings, LinkInput.defaults);
 
-    const $ = jq();
-    // Legacy self-reference + read the paired LinkField, both via `.data`.
-    $?.(this.container).data('linkInput', this);
-    this.#field =
-      $?.(this.container)
-        .closest('[data-link-field]')
-        .parent()
-        .data('linkField') ?? null;
+    // Legacy self-reference for jQuery code reading `.data('linkInput')`
+    jq()?.(this.container).data('linkInput', this);
+    this.#field = LinkField.forContainer(
+      this.container.closest('[data-link-field]')?.parentElement
+    );
 
     this.#chip = this.container.querySelector<HTMLElement>(':scope > .chip');
     this.#textInput =
