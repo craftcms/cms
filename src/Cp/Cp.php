@@ -317,7 +317,8 @@ readonly class Cp
             'previewIframeResizerOptions' => self::previewIframeResizerOptions($generalConfig),
             'primarySiteId' => $primarySite ? (int) $primarySite->id : null,
             'primarySiteLanguage' => $primarySite?->getLanguage(),
-            'publishableSections' => $upToDate ? SectionResource::collection(Sections::getPublishableSections()) : [],
+            // Serialized once here, rather than as a resource each time the config is encoded
+            'publishableSections' => $upToDate ? Json::decode(Json::encode(SectionResource::collection(Sections::getPublishableSections()))) : [],
             'runQueueAutomatically' => $generalConfig->runQueueAutomatically,
             'siteId' => $upToDate ? (app(RequestedSite::class)->get()->id ?? Sites::getCurrentSite()->id) : null,
             'sites' => self::sites(),
