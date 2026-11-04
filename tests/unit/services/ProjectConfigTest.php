@@ -218,6 +218,26 @@ class ProjectConfigTest extends TestCase
         $pc->saveModifiedConfigData();
     }
 
+    public function testSavingModifiedConfigDataOnlySavesNewChanges(): void
+    {
+        $persisted = [];
+        $pc = $this->getProjectConfig(null, null, [
+            'persistInternalConfigValues' => function(array $values) use (&$persisted) {
+                $persisted[] = array_keys($values);
+            },
+            'storeYamlHistory' => null,
+        ]);
+
+        $pc->set('some.path', 'value');
+        $pc->saveModifiedConfigData();
+        $pc->saveModifiedConfigData();
+        $pc->set('other.path', 'value');
+        $pc->saveModifiedConfigData();
+
+        $paths = array_values(array_intersect(array_merge(...$persisted), ['some.path', 'other.path']));
+        self::assertSame(['some.path', 'other.path'], $paths);
+    }
+
     public function testApplyingConfigChangesDoesNotExposePartialElementSourcesToSectionHandlers(): void
     {
         $projectConfig = new ProjectConfig();
