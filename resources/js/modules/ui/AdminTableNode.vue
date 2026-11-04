@@ -30,6 +30,7 @@
     BulkActionItem,
   } from '@/modules/elements/types/actions';
   import {AdminTableCreateSlideout} from '@/modules/admin-table/create-slideout';
+  import {openSlideout, useSlideout} from '@/common/slideouts';
   import {useElementQuickEdit} from '@/modules/elements/composables/useElementQuickEdit';
   import UiModal from './UiModal.vue';
   import {useInertiaTable} from './useInertiaTable';
@@ -63,6 +64,7 @@
   }>();
   const pageTableFlush = inject(UiTableFlush, ref(false));
   const onRefresh = props.onRefresh ?? inject(UiTableRefresh, undefined);
+  const slideout = useSlideout();
   provide(UiTableFlush, ref(false));
   const quickEdit = useElementQuickEdit({refreshResults: refreshTable});
   provide(
@@ -265,6 +267,18 @@
     link: TableLink & {url: string},
     opener: HTMLElement | null
   ): void {
+    if (link.refreshOnClose) {
+      // Saving closes the slideout too, so refreshing on close covers both.
+      void openSlideout(link.url, {
+        width: link.slideoutWidth ?? undefined,
+        opener,
+        onSaved: () => {},
+        onClosed: refreshTable,
+      });
+
+      return;
+    }
+
     quickEdit.openEditor(link.url, opener, {
       width: link.slideoutWidth ?? undefined,
     });
@@ -611,6 +625,13 @@
   function refreshUi(): void {
     if (onRefresh) {
       onRefresh();
+
+      return;
+    }
+
+    // A table in a slideout belongs to the slideout's screen, not the page behind it.
+    if (slideout) {
+      void slideout.reload();
 
       return;
     }
