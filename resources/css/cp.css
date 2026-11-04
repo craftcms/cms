@@ -554,27 +554,34 @@ craft-field[data-highlighted] {
 }
 
 /* A nested element's "modified" status: a bar down the card's inline-start
-   edge, as a modified field has. It's in the card's header, and positioned
-   against the card itself. Its label is sr-only text and a title. */
+   edge, as a modified field has. The status badge in the card's header holds
+   its sr-only label. The bar is drawn on the card itself, as the header can be
+   a containing block of its own, such as a cover card's blurred header bar.
+   It's drawn on the layer a cover card draws its border on. */
 craft-card .status-badge {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: 0;
-  width: 2px;
-  cursor: help;
-  z-index: 1;
+  display: contents;
 }
 
-craft-card .status-badge.modified {
-  background-color: var(--c-field-modified-indicator);
-  box-shadow: 0 0 5px
-    color-mix(in srgb, var(--c-field-modified-indicator) 15%, transparent);
+craft-card:has(
+  > [slot='header'] .status-badge.modified,
+  > .card-titlebar > .status-badge.modified
+)::part(base)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  border-inline-start: 2px solid var(--c-field-modified-indicator);
+  pointer-events: none;
 }
 
 @media (forced-colors: active) {
-  craft-card .status-badge.modified {
+  craft-card:has(
+    > [slot='header'] .status-badge.modified,
+    > .card-titlebar > .status-badge.modified
+  )::part(base)::after {
     /* The bar is the only visual sign of the status */
     forced-color-adjust: none;
-    background-color: Highlight;
+    border-inline-start-color: Highlight;
   }
 }
