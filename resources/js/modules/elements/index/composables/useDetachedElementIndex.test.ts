@@ -166,6 +166,7 @@ it('uses the new source default when clearing a search without a saved sort', as
 
   expect(fetch).toHaveBeenLastCalledWith({
     source: 'section:news',
+    viewMode: 'table',
     sort: [],
   });
   expect(index.view.elementIndex.sort).toEqual([
