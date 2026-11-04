@@ -22,6 +22,7 @@ use craft\helpers\DateTimeHelper;
 use craft\i18n\Locale;
 use craft\validators\TimeValidator;
 use DateTime;
+use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 
@@ -283,6 +284,18 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
             'name' => $this->handle,
             'type' => DateTimeType::getType(),
             'description' => $this->instructions,
+            // MCP passes values nested in other fields’ input to normalizeValue() as given, so it describes them as the
+            // times of day that method parses, rather than as the `DateTime` type’s date-time strings.
+            'inputSchema' => $this->getInputSchema(),
+            // That schema accepts any string, so a time this field can’t parse is rejected rather than clearing it.
+            // GraphQL parses values into `DateTime` objects before this is called.
+            'normalizeValue' => function(mixed $value): mixed {
+                if (is_string($value) && $value !== '' && $this->normalizeValue($value, null) === null) {
+                    throw new UserError(sprintf('%s: The value couldn’t be parsed.', $this->handle));
+                }
+
+                return $value;
+            },
         ];
     }
 

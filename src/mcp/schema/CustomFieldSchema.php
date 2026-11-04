@@ -268,7 +268,7 @@ class CustomFieldSchema
     }
 
     /**
-     * Applies the `normalizeValue` callbacks of a GraphQL input type and the input types nested within it.
+     * Applies the `normalizeValue` callbacks of a GraphQL input type and the input types and fields nested within it.
      *
      * @param  Type|array<string, mixed>  $definition
      */
@@ -286,7 +286,7 @@ class CustomFieldSchema
 
             foreach ($value as $name => $fieldValue) {
                 if (isset($fields[$name])) {
-                    $value[$name] = $this->normalizeGqlValue($fields[$name]->getType(), $fieldValue);
+                    $value[$name] = $this->normalizeGqlValue($fields[$name]->config + ['type' => $fields[$name]->getType()], $fieldValue);
                 }
             }
 

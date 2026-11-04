@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where the MCP server required date-time values for Time fields within nested entries, which those fields couldn’t parse. ([#20319](https://github.com/craftcms/cms/issues/20319))
+
 ## 5.12.0.1 - 2026-11-03
 
 - Fixed a bug where icon pickers were showing duplicate icons.

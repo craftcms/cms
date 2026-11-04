@@ -52,6 +52,26 @@ class CustomFieldSchemaMatrixTest extends TestCase
         self::assertSame(['Existing', 'Added'], $this->texts($owner));
     }
 
+    public function testNestedTimeFieldsAcceptTimesOfDay(): void
+    {
+        $owner = $this->save($this->owner(), [
+            'entries' => [['nemBlock' => ['nemText' => 'Evening', 'nemTime' => '16:30']]],
+        ]);
+
+        $entry = Entry::find()->ownerId($owner->id)->status(null)->one();
+        self::assertSame('16:30', $entry->getFieldValue('nemTime')?->format('H:i'));
+    }
+
+    public function testNestedTimeFieldsRejectUnparseableValues(): void
+    {
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('nemMatrix: nemTime: The value couldn’t be parsed.');
+
+        (new CustomFieldSchema())->prepareValues($this->owner(), ['nemMatrix' => [
+            'entries' => [['nemBlock' => ['nemTime' => 'not-a-time']]],
+        ]]);
+    }
+
     public function testSortOrderMustListNewEntries(): void
     {
         $this->expectException(ToolCallException::class);
