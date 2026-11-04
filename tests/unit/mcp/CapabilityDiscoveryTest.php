@@ -80,16 +80,16 @@ class CapabilityDiscoveryTest extends TestCase
 
     public function testPermissionsAndAdminChangesControlPluginDiscovery(): void
     {
-        self::assertSame(['plugin.read'], $this->toolNames($this->discovery->discover(__DIR__, [])));
+        self::assertSame(['plugin_read'], $this->toolNames($this->discovery->discover(__DIR__, [])));
 
         $this->app->identity->allowed = ['editContent'];
-        self::assertSame(['plugin.edit', 'plugin.read'], $this->toolNames($this->discovery->discover(__DIR__, [])));
+        self::assertSame(['plugin_edit', 'plugin_read'], $this->toolNames($this->discovery->discover(__DIR__, [])));
 
         $this->app->identity->admin = true;
-        self::assertSame(['plugin.edit', 'plugin.read'], $this->toolNames($this->discovery->discover(__DIR__, [])));
+        self::assertSame(['plugin_edit', 'plugin_read'], $this->toolNames($this->discovery->discover(__DIR__, [])));
 
         $this->config->allowAdminChanges = true;
-        self::assertSame(['plugin.configure', 'plugin.edit', 'plugin.read'], $this->toolNames($this->discovery->discover(__DIR__, [])));
+        self::assertSame(['plugin_configure', 'plugin_edit', 'plugin_read'], $this->toolNames($this->discovery->discover(__DIR__, [])));
     }
 
     /**
@@ -102,17 +102,17 @@ class CapabilityDiscoveryTest extends TestCase
         Craft::$app->get('mcp')->tokenScopes = $scopes;
 
         self::assertSame($expected, $this->toolNames($this->discovery->discover(__DIR__, [])));
-        self::assertSame(['plugin.configure', 'plugin.edit', 'plugin.read'], $this->toolNames($this->discovery->discoverStdio(__DIR__, [])));
+        self::assertSame(['plugin_configure', 'plugin_edit', 'plugin_read'], $this->toolNames($this->discovery->discoverStdio(__DIR__, [])));
     }
 
     public static function tokenScopeProvider(): array
     {
         return [
             'no token' => [null, []],
-            'read' => [[McpService::SCOPE_READ], ['plugin.read']],
-            'write' => [[McpService::SCOPE_READ, McpService::SCOPE_WRITE], ['plugin.edit', 'plugin.read']],
-            'write alone' => [[McpService::SCOPE_WRITE], ['plugin.edit', 'plugin.read']],
-            'admin' => [[McpService::SCOPE_READ, McpService::SCOPE_WRITE, McpService::SCOPE_ADMIN], ['plugin.configure', 'plugin.edit', 'plugin.read']],
+            'read' => [[McpService::SCOPE_READ], ['plugin_read']],
+            'write' => [[McpService::SCOPE_READ, McpService::SCOPE_WRITE], ['plugin_edit', 'plugin_read']],
+            'write alone' => [[McpService::SCOPE_WRITE], ['plugin_edit', 'plugin_read']],
+            'admin' => [[McpService::SCOPE_READ, McpService::SCOPE_WRITE, McpService::SCOPE_ADMIN], ['plugin_configure', 'plugin_edit', 'plugin_read']],
         ];
     }
 
@@ -123,9 +123,9 @@ class CapabilityDiscoveryTest extends TestCase
         $public = new PublicCapabilityDiscovery($this->discovery, $access);
         self::assertSame([], $this->toolNames($public->discover(__DIR__, [])));
 
-        $settings->publicTools = ['plugin.public'];
-        self::assertSame(['plugin.public'], $this->toolNames($public->discover(__DIR__, [])));
-        self::assertNotContains('plugin.public', $this->toolNames($this->discovery->discover(__DIR__, [])));
+        $settings->publicTools = ['plugin_public'];
+        self::assertSame(['plugin_public'], $this->toolNames($public->discover(__DIR__, [])));
+        self::assertNotContains('plugin_public', $this->toolNames($this->discovery->discover(__DIR__, [])));
     }
 
     public function testPluginsCanHideCapabilitiesFromUsers(): void
@@ -134,18 +134,18 @@ class CapabilityDiscoveryTest extends TestCase
         $users = [];
         Event::on(McpService::class, McpService::EVENT_DISCOVERING_CAPABILITY, function(DiscoveringCapability $event) use (&$users) {
             $users[] = $event->user;
-            if ($event->reference instanceof ToolReference && $event->reference->tool->name === 'plugin.edit' && !$event->user?->can('accessCp')) {
+            if ($event->reference instanceof ToolReference && $event->reference->tool->name === 'plugin_edit' && !$event->user?->can('accessCp')) {
                 $event->allowed = false;
             }
         });
 
-        self::assertSame(['plugin.read'], $this->toolNames($this->discovery->discover(__DIR__, [])));
-        self::assertSame(['plugin.read'], $this->toolNames($this->discovery->discoverStdio(__DIR__, [])));
+        self::assertSame(['plugin_read'], $this->toolNames($this->discovery->discover(__DIR__, [])));
+        self::assertSame(['plugin_read'], $this->toolNames($this->discovery->discoverStdio(__DIR__, [])));
         self::assertContains($this->app->identity, $users);
 
         $this->app->identity->allowed[] = 'accessCp';
-        self::assertSame(['plugin.edit', 'plugin.read'], $this->toolNames($this->discovery->discover(__DIR__, [])));
-        self::assertSame(['plugin.edit', 'plugin.read'], $this->toolNames($this->discovery->discoverStdio(__DIR__, [])));
+        self::assertSame(['plugin_edit', 'plugin_read'], $this->toolNames($this->discovery->discover(__DIR__, [])));
+        self::assertSame(['plugin_edit', 'plugin_read'], $this->toolNames($this->discovery->discoverStdio(__DIR__, [])));
     }
 
     public function testPluginsCannotHideApprovedPublicCapabilities(): void
@@ -153,10 +153,10 @@ class CapabilityDiscoveryTest extends TestCase
         Event::on(McpService::class, McpService::EVENT_DISCOVERING_CAPABILITY, function(DiscoveringCapability $event) {
             $event->allowed = false;
         });
-        $settings = new Settings(['publicEnabled' => true, 'publicTools' => ['plugin.public']]);
+        $settings = new Settings(['publicEnabled' => true, 'publicTools' => ['plugin_public']]);
         $access = new Access($settings, new PublicElementTypes(new ElementQueryFactory(new Elements(['bulkOpDb' => new Connection()]))));
 
-        self::assertSame(['plugin.public'], $this->toolNames((new PublicCapabilityDiscovery($this->discovery, $access))->discover(__DIR__, [])));
+        self::assertSame(['plugin_public'], $this->toolNames((new PublicCapabilityDiscovery($this->discovery, $access))->discover(__DIR__, [])));
     }
 
     public function testServerInstructionsOnlyPointToInfoGetForControlPanelUsers(): void
@@ -170,12 +170,12 @@ class CapabilityDiscoveryTest extends TestCase
         });
 
         $brief = $instructions->brief();
-        self::assertStringNotContainsString('info.get', $brief);
+        self::assertStringNotContainsString('info_get', $brief);
         self::assertStringEndsWith("\n\nStart with account.get.", $brief);
 
         $this->app->identity->allowed = ['accessCp'];
         $brief = $instructions->brief();
-        self::assertStringStartsWith('Call info.get', $brief);
+        self::assertStringStartsWith('Call info_get', $brief);
         self::assertStringEndsWith("\n\nStart with account.get.", $brief);
     }
 
@@ -234,27 +234,27 @@ class DiscoveryTestUser extends User
 
 class PluginTools
 {
-    #[McpTool(name: 'plugin.read', annotations: new ToolAnnotations(readOnlyHint: true))]
+    #[McpTool(name: 'plugin_read', annotations: new ToolAnnotations(readOnlyHint: true))]
     public function read(): string
     {
         return 'read';
     }
 
-    #[McpTool(name: 'plugin.edit')]
+    #[McpTool(name: 'plugin_edit')]
     #[RequiresPermission('editContent')]
     public function edit(): string
     {
         return 'edited';
     }
 
-    #[McpTool(name: 'plugin.configure')]
+    #[McpTool(name: 'plugin_configure')]
     #[RequiresAdminChanges]
     public function configure(): string
     {
         return 'configured';
     }
 
-    #[McpTool(name: 'plugin.public')]
+    #[McpTool(name: 'plugin_public')]
     #[PublicMcp]
     public function publicInfo(): string
     {

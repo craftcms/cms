@@ -62,12 +62,12 @@ readonly class Drafts
      * @return array{count: int, limit: int, offset: int, nextOffset: int|null, drafts: list<array<string, mixed>>}
      */
     #[McpTool(
-        name: 'drafts.list',
+        name: 'drafts_list',
         description: 'Lists Craft CMS drafts of existing elements for a supported element type. Unpublished drafts (new elements that have never been published) have no canonical element and are only listed with unpublished: true.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     public function list(
-        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info_get.')]
         string $type,
         ?int $id = null,
         #[Schema(format: 'uuid')]
@@ -103,7 +103,7 @@ readonly class Drafts
                 $draft = $canonical ? null : $this->findDraft($type, $id, $uid, $siteId);
 
                 if ($draft?->getIsUnpublishedDraft() && Authorization::allows($actor, 'view', $draft)) {
-                    throw new ToolCallException("Element {$draft->id} is an unpublished draft and has no canonical element. Load it with elements.get, or list unpublished drafts with unpublished: true.");
+                    throw new ToolCallException("Element {$draft->id} is an unpublished draft and has no canonical element. Load it with elements_get, or list unpublished drafts with unpublished: true.");
                 }
 
                 throw new ToolCallException('Canonical element not found.');
@@ -130,9 +130,9 @@ readonly class Drafts
     }
 
     /** @return array{draft: array<string, mixed>} */
-    #[McpTool(name: 'drafts.create', description: 'Creates a draft of an existing Craft CMS element. Edit the draft with elements.update using the draft’s ID. To create a new entry as a draft, use elements.create with asUnpublishedDraft.')]
+    #[McpTool(name: 'drafts_create', description: 'Creates a draft of an existing Craft CMS element. Edit the draft with elements_update using the draft’s ID. To create a new entry as a draft, use elements_create with asUnpublishedDraft.')]
     public function create(
-        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info_get.')]
         string $type,
         ?int $id = null,
         #[Schema(format: 'uuid')]
@@ -166,12 +166,12 @@ readonly class Drafts
 
     /** @return array{element: array<string, mixed>} */
     #[McpTool(
-        name: 'drafts.apply',
+        name: 'drafts_apply',
         description: 'Applies a Craft CMS draft to its canonical element.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     public function apply(
-        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info_get.')]
         string $type,
         ?int $id = null,
         #[Schema(format: 'uuid')]
@@ -203,12 +203,12 @@ readonly class Drafts
 
     /** @return array{deleted: true} */
     #[McpTool(
-        name: 'drafts.delete',
+        name: 'drafts_delete',
         description: 'Deletes a Craft CMS draft.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     public function delete(
-        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info_get.')]
         string $type,
         ?int $id = null,
         #[Schema(format: 'uuid')]

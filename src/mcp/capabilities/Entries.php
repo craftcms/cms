@@ -14,7 +14,7 @@ use Mcp\Capability\Attribute\McpResourceTemplate;
 use Mcp\Exception\ResourceReadException;
 
 /**
- * Entry-specific MCP capabilities. Entries are listed and managed through the `elements.*` tools.
+ * Entry-specific MCP capabilities. Entries are listed and managed through the `elements_*` tools.
  *
  * @since 5.12.0
  */

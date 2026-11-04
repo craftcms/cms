@@ -29,7 +29,7 @@ class Craft
 {
     private const CriteriaSchema = [
         'type' => 'object',
-        'description' => 'ElementQuery criteria for the selected type. Use craft-context-get to discover supported criteria and public constraints.',
+        'description' => 'ElementQuery criteria for the selected type. Use craft_context_get to discover supported criteria and public constraints.',
         'additionalProperties' => true,
     ];
 
@@ -44,7 +44,7 @@ class Craft
 
     /** @return array{version: string, edition: string, name: string, isInstalled: bool, siteCount: ?int, instructions: string} */
     #[McpTool(
-        name: 'info.get',
+        name: 'info_get',
         description: 'Returns Craft application information and full MCP instructions, including site and plugin guidance. Read these instructions before using other Craft capabilities.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -65,7 +65,7 @@ class Craft
 
     /** @return array<string, mixed> */
     #[McpTool(
-        name: 'craft-context-get',
+        name: 'craft_context_get',
         title: 'Get the public Craft query context',
         description: 'Returns public Craft MCP query types, criteria, sites, sections, volumes, user groups, and element types.',
         annotations: new ToolAnnotations(readOnlyHint: true),
@@ -97,12 +97,12 @@ class Craft
     }
 
     /**
-     * @param  array<string, mixed>  $criteria  Native Craft ElementQuery criteria. Use craft-context-get for supported values.
+     * @param  array<string, mixed>  $criteria  Native Craft ElementQuery criteria. Use craft_context_get for supported values.
      * @param  list<string>|null  $fields
      * @return array<string, mixed>
      */
     #[McpTool(
-        name: 'craft-query',
+        name: 'craft_query',
         title: 'Query approved public Craft content',
         description: 'Queries allowed public Craft element types using ElementQuery criteria.',
         annotations: new ToolAnnotations(readOnlyHint: true),

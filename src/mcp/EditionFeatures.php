@@ -18,9 +18,9 @@ readonly class EditionFeatures
 {
     /** @var list<array{feature: string, edition: CmsEdition, tools: string}> */
     private const Features = [
-        ['feature' => 'User group permissions', 'edition' => CmsEdition::Team, 'tools' => 'user-permissions.group.set'],
-        ['feature' => 'Custom user groups', 'edition' => CmsEdition::Pro, 'tools' => 'configuration.create with type: user-groups; Craft Team only has its Team group'],
-        ['feature' => 'Individual user permissions', 'edition' => CmsEdition::Pro, 'tools' => 'user-permissions.user.set'],
+        ['feature' => 'User group permissions', 'edition' => CmsEdition::Team, 'tools' => 'user_permissions_group_set'],
+        ['feature' => 'Custom user groups', 'edition' => CmsEdition::Pro, 'tools' => 'configuration_create with type: user-groups; Craft Team only has its Team group'],
+        ['feature' => 'Individual user permissions', 'edition' => CmsEdition::Pro, 'tools' => 'user_permissions_user_set'],
     ];
 
     public function __construct(private Users $users)
@@ -45,7 +45,7 @@ readonly class EditionFeatures
             $features[] = [
                 'feature' => "More than $maxUsers " . ($maxUsers === 1 ? 'user' : 'users'),
                 'requiredEdition' => self::name($upgrade),
-                'tools' => 'elements.create with type: users',
+                'tools' => 'elements_create with type: users',
             ];
         }
 

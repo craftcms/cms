@@ -48,7 +48,7 @@ readonly class AssetFolders
      * @return array{count: int, folders: list<array<string, mixed>>}
      */
     #[McpTool(
-        name: 'asset-folders.list',
+        name: 'asset_folders_list',
         description: 'Lists Craft CMS asset folders available to the current user.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -71,7 +71,7 @@ readonly class AssetFolders
 
     /** @return array{folder: array<string, mixed>} */
     #[McpTool(
-        name: 'asset-folders.get',
+        name: 'asset_folders_get',
         description: 'Gets a Craft CMS asset folder by ID or UID.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -90,7 +90,7 @@ readonly class AssetFolders
     }
 
     /** @return array{folder: array<string, mixed>} */
-    #[McpTool(name: 'asset-folders.create', description: 'Creates a Craft CMS asset folder.')]
+    #[McpTool(name: 'asset_folders_create', description: 'Creates a Craft CMS asset folder.')]
     public function create(
         #[Schema(minLength: 1, maxLength: 255)]
         string $name,
@@ -130,7 +130,7 @@ readonly class AssetFolders
 
     /** @return array{folder: array<string, mixed>} */
     #[McpTool(
-        name: 'asset-folders.update',
+        name: 'asset_folders_update',
         description: 'Renames a Craft CMS asset folder.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
@@ -168,8 +168,8 @@ readonly class AssetFolders
 
     /** @return array{deleted: true} */
     #[McpTool(
-        name: 'asset-folders.delete',
-        description: 'Permanently deletes a folder, its subfolders, and all their asset records. These assets cannot be restored with elements.restore, even when deleteDirectory is false. Defaults to also deleting the directory and its files.',
+        name: 'asset_folders_delete',
+        description: 'Permanently deletes a folder, its subfolders, and all their asset records. These assets cannot be restored with elements_restore, even when deleteDirectory is false. Defaults to also deleting the directory and its files.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     public function delete(

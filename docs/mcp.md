@@ -51,7 +51,7 @@ return [
 ];
 ```
 
-`filters` contains Yii action-filter definitions applied to authenticated MCP requests. `instructions` adds site-specific guidance to the instructions returned by `info.get`.
+`filters` contains Yii action-filter definitions applied to authenticated MCP requests. `instructions` adds site-specific guidance to the instructions returned by `info_get`.
 
 Signing keys, token lifetimes, and client redirect restrictions are configured separately in [`config/oauth.php`](oauth.md#configuration).
 
@@ -61,7 +61,7 @@ Under **Settings → MCP**, choose a public route, enable the server, and approv
 
 On the Public tab, approve the sites, entries, nested-entry fields, assets, addresses, and users the public content tools may read. Categories, tags, and global sets aren't available through MCP. These approvals are stored in project config under `mcp`. Drafts, revisions, and inactive content each require a separate approval. An empty source list exposes none of that source's content.
 
-Public callers have no Craft user identity. They receive only approved capabilities. The core public tools `craft-context-get` and `craft-query` describe and query approved content. Public queries default to 25 results and are capped at 100.
+Public callers have no Craft user identity. They receive only approved capabilities. The core public tools `craft_context_get` and `craft_query` describe and query approved content. Public queries default to 25 results and are capped at 100.
 
 ## Capabilities and permissions
 
@@ -69,18 +69,18 @@ Authenticated and stdio clients can inspect and manage sites, sections, entry ty
 
 Clients can also perform these maintenance tasks:
 
-- **Caches and queue:** `caches.list`, `caches.clear`, `queue.status`, `queue.run`, `queue.retry-all`, and `queue.release-all` do what the Caches and Queue Manager utilities do. They require access to the utility, and are unavailable when it is listed in `disabledUtilities`. `queue.run` runs waiting jobs for up to `maxSeconds` (30 by default, 120 at most) and requires `craft\queue\Queue`. The other queue tools require a queue that implements `craft\queue\QueueInterface`.
-- **System status:** `system-status.get` reads whether the system is live. `system-status.enable` and `system-status.disable` change it for administrators when `allowAdminChanges` is enabled. They refuse when `isSystemLive` is set in the general config, when the project config stores an environment variable reference for the status, or when the project config is read-only.
-- **Project config:** `project-config.rebuild` rebuilds the project config from the database, as the Project Config utility does. It requires an administrator and refuses while the project config is read-only.
-- **Preferences:** `preferences.get` and `preferences.update` read and change the authenticated user's preferred language and formatting locale.
+- **Caches and queue:** `caches_list`, `caches_clear`, `queue_status`, `queue_run`, `queue_retry_all`, and `queue_release_all` do what the Caches and Queue Manager utilities do. They require access to the utility, and are unavailable when it is listed in `disabledUtilities`. `queue_run` runs waiting jobs for up to `maxSeconds` (30 by default, 120 at most) and requires `craft\queue\Queue`. The other queue tools require a queue that implements `craft\queue\QueueInterface`.
+- **System status:** `system_status_get` reads whether the system is live. `system_status_enable` and `system_status_disable` change it for administrators when `allowAdminChanges` is enabled. They refuse when `isSystemLive` is set in the general config, when the project config stores an environment variable reference for the status, or when the project config is read-only.
+- **Project config:** `project_config_rebuild` rebuilds the project config from the database, as the Project Config utility does. It requires an administrator and refuses while the project config is read-only.
+- **Preferences:** `preferences_get` and `preferences_update` read and change the authenticated user's preferred language and formatting locale.
 
 Field settings and project config values whose keys look sensitive, as defined by the `security` component's `sensitiveKeywords`, are returned redacted as `•` characters. This includes environment variable references. Project config diffs are redacted the same way. To keep a saved value when updating field settings, send its redacted value back.
 
 Asset creation and replacement accept HTTPS file references. Craft rejects local paths, private network addresses, redirects, and files that exceed the configured upload limits.
 
-Capability discovery applies user permissions, `allowAdminChanges`, and the access token's scope. `info.get`, `elements.schema`, the `craft://element-types` resources, and `preferences.*` require control panel access. Record operations also enforce the corresponding element permissions. Unavailable capabilities are omitted from discovery and cannot be called directly.
+Capability discovery applies user permissions, `allowAdminChanges`, and the access token's scope. `info_get`, `elements_schema`, the `craft://element-types` resources, and `preferences_*` require control panel access. Record operations also enforce the corresponding element permissions. Unavailable capabilities are omitted from discovery and cannot be called directly.
 
-Start with `info.get`, if it's available. Read `elements.schema` or `craft://element-types/{type}` before changing elements, and `elements.field-schema` before writing custom fields. `configuration.schema` describes each configuration operation. List results supply pagination information; retain the query criteria and use the returned offsets to continue.
+Start with `info_get`, if it's available. Read `elements_schema` or `craft://element-types/{type}` before changing elements, and `elements_field_schema` before writing custom fields. `configuration_schema` describes each configuration operation. List results supply pagination information; retain the query criteria and use the returned offsets to continue.
 
 ## Plugin extensions
 
@@ -106,7 +106,7 @@ use Mcp\Capability\Attribute\McpTool;
 
 class MyCapabilities
 {
-    #[McpTool(name: 'my-plugin.site-name', description: 'Returns the site system name.')]
+    #[McpTool(name: 'my_plugin_site_name', description: 'Returns the site system name.')]
     #[RequiresPermission('accessCp')]
     public function siteName(): string
     {
@@ -114,6 +114,8 @@ class MyCapabilities
     }
 }
 ```
+
+Name tools in lowercase snake_case, prefixed with your plugin handle, such as `my_plugin_site_name` or `my_plugin_orders_list`. Use only lowercase letters, digits, and underscores, and keep names to 64 characters or fewer. The MCP spec also allows dots and hyphens, but not every client accepts them. VS Code and Cursor warn about dots, and claude.ai and the Claude and OpenAI APIs reject them. Craft's own tools follow the same convention, such as `elements_list` and `info_get`.
 
 The SDK attributes `McpTool`, `McpResource`, `McpResourceTemplate`, and `McpPrompt` identify capabilities. Craft collects plugin classes on first capability discovery; it does not scan plugin directories. Duplicate capability identities are rejected.
 
@@ -125,6 +127,6 @@ Additional extension points are:
 - `Craft::$app->get('mcp')->getCheckRegistry()->register(MyCheck::class)` for content-model checks implementing `craft\mcp\contentmodel\Check`.
 - `craft\mcp\serializers\ElementSerializer::EVENT_SERIALIZING`, with `craft\mcp\events\ElementSerializing`, to change serialized data. Check the event's `public` flag before adding fields.
 - `craft\base\InputSchemaFieldInterface` on custom field types to describe the values they accept with `getInputSchema()`.
-- `craft\mcp\AdminInstructions::EVENT_COLLECT_INSTRUCTIONS`, with `craft\mcp\events\CollectingAdminInstructions`, to append plugin guidance to `info.get`.
-- `craft\mcp\AdminInstructions::EVENT_COLLECT_SERVER_INSTRUCTIONS`, with `craft\mcp\events\CollectingServerInstructions`, to append short guidance to the instructions the authenticated and stdio servers send every client when it connects. Unlike `info.get`, users without control panel access receive these.
+- `craft\mcp\AdminInstructions::EVENT_COLLECT_INSTRUCTIONS`, with `craft\mcp\events\CollectingAdminInstructions`, to append plugin guidance to `info_get`.
+- `craft\mcp\AdminInstructions::EVENT_COLLECT_SERVER_INSTRUCTIONS`, with `craft\mcp\events\CollectingServerInstructions`, to append short guidance to the instructions the authenticated and stdio servers send every client when it connects. Unlike `info_get`, users without control panel access receive these.
 - `craft\services\Mcp::EVENT_DISCOVERING_CAPABILITY`, with `craft\mcp\events\DiscoveringCapability`, to hide a tool, resource, or prompt from the current user on the authenticated and stdio servers. It fires only for capabilities that already passed Craft's permission and token scope checks; set `allowed` to `false` to hide one. It can't hide capabilities approved for the public server.

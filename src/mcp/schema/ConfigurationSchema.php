@@ -62,7 +62,7 @@ class ConfigurationSchema
         }
 
         return (new Tool(
-            name: 'configuration.' . $operation->value,
+            name: 'configuration_' . $operation->value,
             title: null,
             inputSchema: $this->object($properties, $required),
             description: null,

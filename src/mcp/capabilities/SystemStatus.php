@@ -28,7 +28,7 @@ class SystemStatus
 
     /** @return array{live: bool} */
     #[McpTool(
-        name: 'system-status.get',
+        name: 'system_status_get',
         description: 'Returns whether the system is live (online). When it is off, only users who can access the site while it’s offline can see the front end.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -40,7 +40,7 @@ class SystemStatus
 
     /** @return array{live: bool} */
     #[McpTool(
-        name: 'system-status.enable',
+        name: 'system_status_enable',
         description: 'Turns the system on, as the General settings do.',
         annotations: new ToolAnnotations(destructiveHint: false, idempotentHint: true),
     )]
@@ -52,7 +52,7 @@ class SystemStatus
 
     /** @return array{live: bool} */
     #[McpTool(
-        name: 'system-status.disable',
+        name: 'system_status_disable',
         description: 'Turns the system off, as the General settings do. Visitors and users without access while the system is off are shown an offline page.',
         annotations: new ToolAnnotations(destructiveHint: true, idempotentHint: true),
     )]

@@ -24,7 +24,7 @@ use Mcp\Schema\ToolAnnotations;
 
 /**
  * Asset-specific MCP capabilities: creating assets from files, replacing files, uploads, and transform URLs. Assets
- * are listed and managed through the `elements.*` tools.
+ * are listed and managed through the `elements_*` tools.
  *
  * @since 5.12.0
  */
@@ -43,7 +43,7 @@ readonly class Assets
 
     private const FieldsSchema = [
         'type' => 'object',
-        'description' => 'Custom field values keyed by field handle. Use elements.field-schema for the applicable schema.',
+        'description' => 'Custom field values keyed by field handle. Use elements_field_schema for the applicable schema.',
         'additionalProperties' => true,
     ];
 
@@ -77,7 +77,7 @@ readonly class Assets
      * @return array{url: string, mimeType: string, width: int|null, height: int|null}
      */
     #[McpTool(
-        name: 'assets.transform-url',
+        name: 'assets_transform_url',
         description: 'Gets a transformed asset URL for previewing. Accepts a named image transform handle or inline parameters such as width, height, mode, and format. Uses Craft 5 transform generation settings and may return a temporary generation URL.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -122,8 +122,8 @@ readonly class Assets
     }
 
     #[McpTool(
-        name: 'assets.create',
-        description: 'Creates an asset from a temporary HTTPS file reference, plus folderId or volumeId. Use elements.field-schema to discover custom fields.',
+        name: 'assets_create',
+        description: 'Creates an asset from a temporary HTTPS file reference, plus folderId or volumeId. Use elements_field_schema to discover custom fields.',
         meta: ['openai/fileParams' => ['file']],
     )]
     public function create(
@@ -174,7 +174,7 @@ readonly class Assets
     }
 
     #[McpTool(
-        name: 'assets.replace',
+        name: 'assets_replace',
         description: 'Replaces an existing asset file from a temporary HTTPS file reference while preserving its ID and references. Adopts the incoming filename, which may change its URL.',
         annotations: new ToolAnnotations(destructiveHint: true),
         meta: ['openai/fileParams' => ['file']],

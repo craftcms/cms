@@ -99,8 +99,8 @@ class EntryAdapter extends BaseElementAdapter
     protected function notes(): array
     {
         return [
-            'elements.create with asUnpublishedDraft: true saves a new entry as an unpublished draft instead of a live entry, optionally named with draftName and draftNotes. The result sets savedAsDraft and explains the next step.',
-            'elements.get/update/field-schema load canonical entries and saved drafts by their own element ID or UID, excluding provisional drafts and revisions. A canonical ID selects the original entry; a draft ID selects that draft. Updating a draft saves only the draft and leaves the canonical entry unchanged until the draft is applied with drafts.apply. To find drafts of an entry, use drafts.list with the canonical ID.',
+            'elements_create with asUnpublishedDraft: true saves a new entry as an unpublished draft instead of a live entry, optionally named with draftName and draftNotes. The result sets savedAsDraft and explains the next step.',
+            'elements_get, elements_update, and elements_field_schema load canonical entries and saved drafts by their own element ID or UID, excluding provisional drafts and revisions. A canonical ID selects the original entry; a draft ID selects that draft. Updating a draft saves only the draft and leaves the canonical entry unchanged until the draft is applied with drafts_apply. To find drafts of an entry, use drafts_list with the canonical ID.',
             'Duplicating defaults to an unpublished draft. The canonical mode preserves the enabled state. Nested entries keep their owner.',
         ];
     }
@@ -267,7 +267,7 @@ class EntryAdapter extends BaseElementAdapter
         return [
             'element' => $this->serialize($draft),
             'savedAsDraft' => true,
-            'instructions' => "$summary Use the draft ID with elements.get, elements.update, and the drafts.* tools. Publish it with drafts.apply when it is ready.",
+            'instructions' => "$summary Use the draft ID with elements_get, elements_update, and the drafts_* tools. Publish it with drafts_apply when it is ready.",
         ];
     }
 

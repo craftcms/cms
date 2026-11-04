@@ -62,12 +62,12 @@ readonly class Search
     }
 
     /**
-     * @param  list<string>  $types  Registered element reference handles or PHP classes; see craft://element-types and info.get. Defaults to all registered types.
+     * @param  list<string>  $types  Registered element reference handles or PHP classes; see craft://element-types and info_get. Defaults to all registered types.
      * @param  array<string, mixed>  $criteria  Search criteria applied to each compatible element type.
      * @param  list<string>|null  $fields
      */
     #[McpTool(
-        name: 'search.query',
+        name: 'search_query',
         description: 'Searches across registered Craft CMS element types using Craft search syntax.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]

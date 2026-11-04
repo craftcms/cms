@@ -41,7 +41,7 @@ readonly class ElementQuery
         $type = $this->elementTypes->make($name);
 
         if (!$this->allows($type)) {
-            throw new ToolCallException("Public element type [$type->name] is not enabled. Use craft-context-get for allowed queryTypes.");
+            throw new ToolCallException("Public element type [$type->name] is not enabled. Use craft_context_get for allowed queryTypes.");
         }
 
         $this->criteria->assertSupported($type, $criteria);
@@ -280,7 +280,7 @@ readonly class ElementQuery
         foreach (explode(',', $orderBy) as $sort) {
             if (!preg_match('/^\s*([a-zA-Z][a-zA-Z0-9]*)\s*(?:\s+(asc|desc))?\s*$/i', $sort, $matches)
                 || !isset($fields[$matches[1]])) {
-                throw new ToolCallException('Unsupported public sort field. Use craft-context-get for allowed orderBy fields.');
+                throw new ToolCallException('Unsupported public sort field. Use craft_context_get for allowed orderBy fields.');
             }
 
             $query->addOrderBy([$fields[$matches[1]] => strtolower($matches[2] ?? 'asc') === 'desc' ? SORT_DESC : SORT_ASC]);
