@@ -649,3 +649,50 @@ test('field layouts', function () {
     expect($savedLayout?->getTabs())->toHaveCount(1)
         ->and($savedLayout?->getTab('Updated'))->toBeInstanceOf(FieldLayoutTab::class);
 });
+
+it('knows the field handles that saved layouts give fields', function () {
+    $field = FieldModel::factory()->create([
+        'name' => 'Plain Text',
+        'handle' => 'plainTextHandleSource',
+        'type' => PlainText::class,
+    ]);
+
+    FieldLayoutModel::create([
+        'uid' => (string) Str::uuid(),
+        'type' => EntryElement::class,
+        'config' => [
+            'tabs' => [[
+                'uid' => (string) Str::uuid(),
+                'name' => 'Content',
+                'elements' => [
+                    [
+                        'type' => CustomFieldElement::class,
+                        'uid' => (string) Str::uuid(),
+                        'fieldUid' => $field->uid,
+                        'handle' => 'renamedPlainText',
+                    ],
+                    [
+                        'type' => CustomFieldElement::class,
+                        'uid' => (string) Str::uuid(),
+                        'fieldUid' => (string) Str::uuid(),
+                        'handle' => 'missingFieldHandle',
+                    ],
+                ],
+            ]],
+            'generatedFields' => [[
+                'uid' => (string) Str::uuid(),
+                'name' => 'Summary',
+                'handle' => 'generatedSummary',
+                'template' => '{title}',
+            ]],
+        ],
+    ]);
+    $this->fields->invalidateCaches();
+
+    expect($this->fields->isFieldHandle('plainTextHandleSource'))->toBeTrue()
+        ->and($this->fields->isFieldHandle('renamedPlainText'))->toBeTrue()
+        ->and($this->fields->isFieldHandle('missingFieldHandle'))->toBeFalse()
+        ->and($this->fields->isFieldHandle('generatedSummary'))->toBeFalse()
+        ->and($this->fields->isGeneratedFieldHandle('generatedSummary'))->toBeTrue()
+        ->and($this->fields->isGeneratedFieldHandle('renamedPlainText'))->toBeFalse();
+});

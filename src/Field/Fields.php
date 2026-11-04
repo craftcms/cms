@@ -156,15 +156,26 @@ class Fields
             return $this->_allFieldHandles;
         }
 
+        // Read from the stored rows rather than the fields and layouts they configure: building every one of those
+        // costs far more than any page that checks whether a property is a field handle.
         $handles = [];
+        $fieldUids = [];
 
-        foreach ($this->getAllFields(false) as $field) {
-            $handles[$field->handle] = true;
+        foreach ($this->_fields(false)->raw() as $row) {
+            $handles[$row->handle] = true;
+            $fieldUids[$row->uid] = true;
         }
 
-        foreach ($this->getAllLayouts() as $layout) {
-            foreach ($layout->getCustomFields() as $field) {
-                $handles[$field->handle] = true;
+        foreach ($this->_layoutConfigs() as $config) {
+            foreach ($config['tabs'] ?? [] as $tab) {
+                foreach ($tab['elements'] ?? [] as $element) {
+                    if (
+                        isset($element['handle'], $fieldUids[$element['fieldUid'] ?? '']) &&
+                        is_a($element['type'] ?? '', CustomField::class, true)
+                    ) {
+                        $handles[$element['handle']] = true;
+                    }
+                }
             }
         }
 
@@ -184,8 +195,8 @@ class Fields
 
         $handles = [];
 
-        foreach ($this->getAllLayouts() as $layout) {
-            foreach ($layout->getGeneratedFields() as $generatedField) {
+        foreach ($this->_layoutConfigs() as $config) {
+            foreach ($config['generatedFields'] ?? [] as $generatedField) {
                 if (! empty($generatedField['handle'])) {
                     $handles[$generatedField['handle']] = true;
                 }
@@ -959,6 +970,20 @@ class Fields
         );
 
         return $this->_layouts = $layouts;
+    }
+
+    /**
+     * Returns the saved field layouts' configs, without building the layouts.
+     *
+     * @return iterable<array<string, mixed>>
+     */
+    private function _layoutConfigs(): iterable
+    {
+        foreach ($this->_layouts()->raw() as $row) {
+            $config = $row->config ?? null;
+
+            yield is_string($config) ? JsonHelper::decode($config) : (array) $config;
+        }
     }
 
     /** @param array<string, mixed> $config */
