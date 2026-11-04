@@ -181,7 +181,7 @@
 - Removed `Craft.ElementEditor::createEditMetaAction()`, `showMetaModal()`, `createMetaModal()`, `checkMetaValues()`, `shakeMetaModal()`, `saveMeta()`, and `showFieldCopyModal()`, which were no longer reachable. Cross-site value copying is handled by the field’s own action menu. ([#20085](https://github.com/craftcms/cms/pull/20085))
 
 ### Drafts, Workflows, and Releases
-- Modified and outdated fields on drafts and revisions now have a “Compare changes” action, which shows how the field’s value differs from the current entry or the previous revision. ([#8135](https://github.com/craftcms/cms/discussions/8135), [#20307](https://github.com/craftcms/cms/pull/20307))
+- Modified and outdated fields on drafts and revisions now have a “Compare changes” action, which shows how the field’s value differs from the current entry or the previous revision. Matrix fields that show their entries as cards or in an index show them as cards, with the edited and new ones marked, and each card can be opened in a new tab. ([#8135](https://github.com/craftcms/cms/discussions/8135), [#20307](https://github.com/craftcms/cms/pull/20307))
 - Nested entry cards in drafts and revisions now have a violet bar along their edge, as modified fields do, when the entry was edited or added in that draft or revision. Screen readers read the status as part of the card.
 - Workflow review stages now show their status in words beside a status dot, and a stage where a withdrawn review stopped now says “Withdrawn” rather than looking unstarted. ([#20258](https://github.com/craftcms/cms/pull/20258))
 - Workflow review notes can now be up to 10,000 characters long, matching activity comments. ([#19923](https://github.com/craftcms/cms/pull/19923))

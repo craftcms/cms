@@ -432,6 +432,27 @@ it('previews fields that aren’t text, such as Matrix fields, read-only on both
         ->and($types('proposed'))->toContain(FieldNode::class)->not->toContain(ActionMenu::class);
 });
 
+it('previews Matrix fields as a list of cards, whatever their view mode', function (string $viewMode, string $previewMode) {
+    $this->blocksField->update(['settings' => [...$this->blocksField->settings, 'viewMode' => $viewMode]]);
+    Fields::refreshFields();
+    [$draft] = draftWithEditedBlock();
+
+    $response = postJson(action(CompareFieldChangesController::class), [
+        'elementType' => Entry::class,
+        'elementId' => $draft->id,
+        'siteId' => $draft->siteId,
+        'layoutElementUid' => comparisonFieldUid($draft, 'blocks'),
+    ])->assertOk();
+
+    foreach (['current', 'proposed'] as $side) {
+        expect($response->json("preview.$side.nodes.0.control.props.viewMode"))->toBe($previewMode)
+            ->and($response->json("preview.$side.nodes.0.control.props.manager.showInGrid") ?? false)->toBeFalse();
+    }
+})->with([
+    'cards grid' => [Matrix::VIEW_MODE_CARDS_GRID, Matrix::VIEW_MODE_CARDS],
+    'index' => [Matrix::VIEW_MODE_INDEX, Matrix::VIEW_MODE_CARDS],
+]);
+
 it('compares a field in a nested entry with the owner’s previous revision', function () {
     $entry = comparisonEntry();
     travel(1)->minutes();

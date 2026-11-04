@@ -32,7 +32,8 @@ readonly class FieldPreviews
     ) {}
 
     /**
-     * Compiles an element’s form with another element’s field layout, such as a copy’s, or the element a draft is of.
+     * Compiles an element’s form with another element’s field layout, such as a copy’s, or the element a draft is of,
+     * as a preview.
      *
      * @param  string|list<string>  $namespace
      */
@@ -40,7 +41,7 @@ readonly class FieldPreviews
     {
         $layout = $layoutElement->getFieldLayout();
 
-        return $layout ? $this->compiler->compile($layout, $element, new UiContext(namespace: $namespace, mode: $mode)) : null;
+        return $layout ? $this->compiler->compile($layout, $element, new UiContext(namespace: $namespace, mode: $mode, preview: true)) : null;
     }
 
     /**
