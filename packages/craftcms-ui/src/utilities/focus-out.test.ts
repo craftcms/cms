@@ -29,6 +29,13 @@ describe('focusStaysWithin', () => {
     expect(focusStaysWithin(focusOut(outside), region, outside)).toBe(true);
   });
 
+  it('counts focus moving into a region’s own shadow tree', () => {
+    const shadowButton = document.createElement('button');
+    region.attachShadow({mode: 'open'}).append(shadowButton);
+
+    expect(focusStaysWithin(focusOut(shadowButton), region)).toBe(true);
+  });
+
   it('doesn’t count focus moving outside every region', () => {
     expect(focusStaysWithin(focusOut(outside), region)).toBe(false);
   });

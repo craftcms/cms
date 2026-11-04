@@ -281,6 +281,37 @@ it('opens the flyout from its chevron instead of following the link', async () =
   expect(reachedRow).toEqual([]);
 });
 
+it('keeps the flyout open while Tab and Shift+Tab move through its subnav', async () => {
+  const {userEvent} = await import('vite-plus/test/browser');
+  const item = await railFixture();
+  const second = document.createElement('craft-nav-item');
+  second.setAttribute('href', '/admin/graphql/tokens');
+  second.textContent = 'Tokens';
+  item.querySelector('[slot="subnav"]')!.append(second);
+  const [schemas, tokens] = item.querySelectorAll<HTMLElement>(
+    '[slot="subnav"] craft-nav-item'
+  );
+  flyoutHoverIntent.reset();
+
+  item
+    .shadowRoot!.querySelector<HTMLElement>('.rail-toggle craft-button')!
+    .focus();
+  await userEvent.keyboard('{Enter}');
+  await item.updateComplete;
+  schemas!.focus();
+  await userEvent.keyboard('{Tab}');
+  await item.updateComplete;
+
+  expect(document.activeElement).toBe(tokens);
+  expect(item.flyoutOpen).toBe(true);
+
+  await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+  await item.updateComplete;
+
+  expect(document.activeElement).toBe(schemas);
+  expect(item.flyoutOpen).toBe(true);
+});
+
 /** A rail holding the page itself, with no subnav, beside a branch it's in. */
 async function railPairFixture(): Promise<{
   leaf: CraftNavItem;
