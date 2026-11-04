@@ -39,6 +39,9 @@ jobs:
   # and its deploy jobs restored nothing and failed to find Storybook.
   build-assets:
     name: 'Build assets'
+    # Installing frontend dependencies needs the Font Awesome token, and
+    # deploying needs the Cloudflare one; GitHub passes neither to fork PRs.
+    if: ${{ !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     outputs:

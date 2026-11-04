@@ -317,7 +317,7 @@ trait FormatsResults
                 return $order;
             }
 
-            if (isset($elementQuery->columnMap[$order['column']])) {
+            if ($elementQuery->hasColumnMapping($order['column'])) {
                 $column = $elementQuery->resolveColumnMapping($order['column']);
                 $order['column'] = is_array($column)
                     ? (count($column) === 1 ? reset($column) : new Coalesce($column))

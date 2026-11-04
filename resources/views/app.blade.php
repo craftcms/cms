@@ -14,7 +14,7 @@
              during a client-side visit are inserted here rather than appended,
              so they sit above the control panel stylesheet in both cases. --}}
         <meta name="craft-head-anchor">
-        {!! \CraftCms\Cms\Cp\Cp::viteScripts()->toHtml() !!}
+        {!! \CraftCms\Cms\Cp\Cp::viteScripts() !!}
         {!! app(\CraftCms\Cms\Plugin\Plugins::class)->getAssetsHtml() !!}
         <script>
             window.Craft = window.Craft || {};

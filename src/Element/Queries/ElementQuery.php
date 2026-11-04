@@ -593,7 +593,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /** @return Collection<array-key, mixed> */
     public function pluck(string $column, ?string $key = null): Collection
     {
-        $column = $this->columnMap[$column] ?? $column;
+        $column = $this->hasColumnMapping($column) ? $this->columnMap[$column] : $column;
 
         if (! is_null($result = $this->getResultOverride())) {
             return collect($result)->pluck($column, $key);
@@ -605,7 +605,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return new Collection;
         }
 
-        $column = $this->columnMap[$column] ?? $column;
+        $column = $this->hasColumnMapping($column) ? $this->columnMap[$column] : $column;
 
         if ((int) $this->queryCacheDuration >= 0) {
             return DependencyCache::remember(
@@ -1390,7 +1390,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
                 $includeDefaults = true;
             } else {
                 // Is this a mapped column name?
-                if (is_string($column) && isset($this->columnMap[$column])) {
+                if (is_string($column) && $this->hasColumnMapping($column)) {
                     $column = $this->resolveColumnMapping($column);
 
                     // Completely ditch the mapped name if instantiated elements are going to be returned
@@ -1445,7 +1445,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /** @return string|array<array-key, mixed> */
     private function resolveColumnMapping(string $key): string|array
     {
-        if (! isset($this->columnMap[$key])) {
+        if (! $this->hasColumnMapping($key)) {
             throw new InvalidArgumentException("Invalid column map key: $key");
         }
 
