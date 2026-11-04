@@ -552,3 +552,29 @@ craft-field[data-highlighted] {
   width: 100%;
   height: 100%;
 }
+
+/* A nested element's "modified" status: a bar down the card's inline-start
+   edge, as a modified field has. It's in the card's header, and positioned
+   against the card itself. Its label is sr-only text and a title. */
+craft-card .status-badge {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 2px;
+  cursor: help;
+  z-index: 1;
+}
+
+craft-card .status-badge.modified {
+  background-color: var(--c-field-modified-indicator);
+  box-shadow: 0 0 5px
+    color-mix(in srgb, var(--c-field-modified-indicator) 15%, transparent);
+}
+
+@media (forced-colors: active) {
+  craft-card .status-badge.modified {
+    /* The bar is the only visual sign of the status */
+    forced-color-adjust: none;
+    background-color: Highlight;
+  }
+}

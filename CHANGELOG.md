@@ -180,6 +180,7 @@
 - Removed `Craft.ElementEditor::createEditMetaAction()`, `showMetaModal()`, `createMetaModal()`, `checkMetaValues()`, `shakeMetaModal()`, `saveMeta()`, and `showFieldCopyModal()`, which were no longer reachable. Cross-site value copying is handled by the field’s own action menu. ([#20085](https://github.com/craftcms/cms/pull/20085))
 
 ### Drafts, Workflows, and Releases
+- Nested entry cards in drafts and revisions now have a violet bar along their edge, as modified fields do, when the entry was edited or added in that draft or revision. Screen readers read the status as part of the card.
 - Workflow review stages now show their status in words beside a status dot, and a stage where a withdrawn review stopped now says “Withdrawn” rather than looking unstarted. ([#20258](https://github.com/craftcms/cms/pull/20258))
 - Workflow review notes can now be up to 10,000 characters long, matching activity comments. ([#19923](https://github.com/craftcms/cms/pull/19923))
 - The Workflow panel’s review action radio buttons and image transforms’ “Mode” radio buttons now look like the control panel’s other radio buttons.

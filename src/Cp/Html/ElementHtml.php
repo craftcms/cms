@@ -35,6 +35,7 @@ use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\NestedElementManager;
+use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Shared\Enums\Color;
@@ -1031,44 +1032,96 @@ readonly class ElementHtml
     }
 
     /**
-     * Renders the “modified” status badge for a nested element that will replace
-     * its canonical counterpart when the owner is saved, or an empty string.
+     * Renders the “modified” status badge for a nested element that was added
+     * or edited in its owner draft or revision, or an empty string.
      */
     private function cardModifiedStatusHtml(ElementInterface $element): string
     {
-        if (
-            ! (
-                $element instanceof NestedElementInterface &&
-                $element->getOwnerId() !== null &&
-                $element->getOwnerId() === $element->getPrimaryOwnerId() &&
-                ! $element->getIsDraft() &&
-                ! $element->getIsRevision() &&
-                $element->getOwner()->getIsDerivative()
-            )
-        ) {
+        $isNew = $this->nestedElementIsNew($element);
+
+        if ($isNew === null) {
             return '';
         }
 
-        if ($element->getIsCanonical()) {
-            // this element was created for the owner
-            $statusLabel = t('This is a new {type}.', [
-                'type' => $element::lowerDisplayName(),
-            ]);
-        } else {
-            // this element is a derivative of another element owned by the canonical owner
-            $statusLabel = t('This {type} has been edited.', [
-                'type' => $element::lowerDisplayName(),
-            ]);
-        }
+        $statusLabel = $isNew
+            ? t('This is a new {type}.', ['type' => $element::lowerDisplayName()])
+            : t('This {type} has been edited.', ['type' => $element::lowerDisplayName()]);
 
         return Html::beginTag('div', [
             'class' => ['status-badge', AttributeStatus::Modified->value],
             'title' => $statusLabel,
         ]).
             Html::tag('span', $statusLabel, [
-                'class' => 'visually-hidden',
+                'class' => 'sr-only',
             ]).
             Html::endTag('div');
+    }
+
+    /**
+     * Returns whether a nested element was added (`true`) or edited (`false`)
+     * in its owner draft or revision, or `null` when it's unchanged there.
+     *
+     * In a draft, a nested element is changed when the draft is its primary
+     * owner: it was created for the draft, or duplicated from the canonical
+     * owner's to be edited.
+     *
+     * An owner revision reuses a nested element's last revision when the
+     * element hasn't changed since, so a nested revision is changed when the
+     * owner's previous revision doesn't have it too, and new when that revision
+     * has no revision of the element at all. (Its primary owner doesn't tell:
+     * with versioning on, a nested element saves its own revision, owned by the
+     * canonical owner, before the owner revision reuses it.) Nothing is changed
+     * in an owner's first revision.
+     */
+    private function nestedElementIsNew(ElementInterface $element): ?bool
+    {
+        if (
+            ! $element instanceof NestedElementInterface ||
+            $element->getOwnerId() === null ||
+            $element->getIsDraft()
+        ) {
+            return null;
+        }
+
+        $owner = $element->getOwner();
+
+        if (! $element->getIsRevision()) {
+            return $element->getOwnerId() === $element->getPrimaryOwnerId() && $owner?->getIsDerivative()
+                ? $element->getIsCanonical()
+                : null;
+        }
+
+        if (! $owner?->getIsRevision()) {
+            return null;
+        }
+
+        $previousOwnerRevisionId = $owner::find()
+            ->revisionOf($owner->getCanonicalId())
+            ->siteId($owner->siteId)
+            ->status(null)
+            ->where('revisions.num', '<', $owner->revisionNum)
+            ->orderByDesc('num')
+            ->limit(1)
+            ->ids()[0] ?? null;
+
+        $query = $element::find();
+
+        if ($previousOwnerRevisionId === null || ! $query instanceof NestedElementQueryInterface) {
+            return null;
+        }
+
+        $previousRevisionIds = $query
+            ->revisionOf($element->getCanonicalId())
+            ->ownerId($previousOwnerRevisionId)
+            ->siteId($element->siteId)
+            ->status(null)
+            ->ids();
+
+        if (in_array($element->id, $previousRevisionIds, true)) {
+            return null;
+        }
+
+        return $previousRevisionIds === [];
     }
 
     /**
