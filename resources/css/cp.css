@@ -552,3 +552,36 @@ craft-field[data-highlighted] {
   width: 100%;
   height: 100%;
 }
+
+/* A nested element's "modified" status: a bar down the card's inline-start
+   edge, as a modified field has. The status badge in the card's header holds
+   its sr-only label. The bar is drawn on the card itself, as the header can be
+   a containing block of its own, such as a cover card's blurred header bar.
+   It's drawn on the layer a cover card draws its border on. */
+craft-card .status-badge {
+  display: contents;
+}
+
+craft-card:has(
+  > [slot='header'] .status-badge.modified,
+  > .card-titlebar > .status-badge.modified
+)::part(base)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  border-inline-start: 2px solid var(--c-field-modified-indicator);
+  pointer-events: none;
+}
+
+@media (forced-colors: active) {
+  craft-card:has(
+    > [slot='header'] .status-badge.modified,
+    > .card-titlebar > .status-badge.modified
+  )::part(base)::after {
+    /* The bar is the only visual sign of the status */
+    forced-color-adjust: none;
+    border-inline-start-color: Highlight;
+  }
+}
