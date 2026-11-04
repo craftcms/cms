@@ -220,6 +220,27 @@ it('moves focus to the search field when a searchable menu opens', async () => {
     .toHaveFocus();
 });
 
+it('closes when Tab moves focus past its last item', async () => {
+  const menu = await renderMenu(`
+    <craft-action-menu>
+      <craft-button slot="invoker" type="button">Open</craft-button>
+      <div slot="content">
+        <craft-action-item>Duplicate</craft-action-item>
+      </div>
+    </craft-action-menu>
+    <button type="button">Next</button>
+  `);
+
+  await userEvent.click(page.getByRole('button', {name: 'Open'}));
+  await expect
+    .poll(() => (document.activeElement as HTMLElement | null)?.textContent)
+    .toBe('Duplicate');
+  await userEvent.keyboard('{Tab}');
+
+  await expect.poll(() => menu.opened).toBe(false);
+  await expect.element(page.getByRole('button', {name: 'Next'})).toHaveFocus();
+});
+
 it('keeps the search icon as the visible label while text is entered', async () => {
   const menu = await renderMenu(`
     <craft-action-menu searchable>

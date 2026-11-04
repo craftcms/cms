@@ -332,6 +332,43 @@ it('returns focus to the action menu invoker when the native dialog closes by it
   expect(document.activeElement).toBe(menuInvoker);
 });
 
+it('returns focus to a popover’s button once a dialog opened from inside it closes', async () => {
+  await import('../popover/popover.js');
+  document.body.innerHTML = `
+    <craft-popover>
+      <craft-button slot="invoker" type="button">View</craft-button>
+      <div slot="content"><button type="button">Edit columns</button></div>
+    </craft-popover>
+    <craft-dialog label="Columns"><button type="button">Done</button></craft-dialog>
+  `;
+  const popover = document.querySelector('craft-popover') as HTMLElement & {
+    opened: boolean;
+    updateComplete: Promise<unknown>;
+  };
+  const dialog = document.querySelector('craft-dialog') as CraftDialog;
+  popover
+    .querySelector('[slot="content"] button')!
+    .addEventListener('click', () => (dialog.opened = true));
+  const opener = page.getByRole('button', {name: 'Edit columns'});
+  await popover.updateComplete;
+
+  await userEvent.click(page.getByRole('button', {name: 'View'}));
+  await expect.element(opener).toBeVisible();
+  await userEvent.click(opener);
+
+  // Focus moving into the dialog closes the popover behind it.
+  await expect.poll(() => dialog.matches(':focus-within')).toBe(true);
+  await expect.poll(() => popover.opened).toBe(false);
+
+  await userEvent.keyboard('{Escape}');
+  await dialog.updateComplete;
+
+  expect(dialog.opened).toBe(false);
+  expect(document.activeElement).toBe(
+    popover.querySelector('[slot="invoker"]')
+  );
+});
+
 it('closes on Escape through craft-before-hide', async () => {
   const dialog = await openDialog();
   let asked = 0;

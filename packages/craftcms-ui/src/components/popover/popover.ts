@@ -170,7 +170,40 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
     super();
     wireOverlayLifecycleEvents(this);
     this.addEventListener('keydown', this.#claimEscape);
+    this.addEventListener('focusout', this.#closeOnFocusOut);
   }
+
+  /**
+   * Closes the popover once focus moves outside it, as in the APG Disclosure
+   * Navigation Menu example, so the open panel can't cover the control that
+   * now has focus (WCAG 2.4.11).
+   *
+   * Focus in the shadow tree retargets to the host, and slotted content and a
+   * slotted invoker are light-DOM descendants, so all of those count as
+   * inside. An invoker linked with `for` or `anchor` sits elsewhere, so it's
+   * checked too: otherwise clicking it would close the popover and the same
+   * click would open it again. Focus moving to nothing, as when someone
+   * clicks text in the panel, is left to Lion's outside click and window blur.
+   * Focus stays where it went, since `#returnFocus` only acts while focus is
+   * still in the content.
+   */
+  #closeOnFocusOut = (event: FocusEvent): void => {
+    const moved = event.relatedTarget;
+    if (!this.opened || !(moved instanceof Node)) {
+      return;
+    }
+
+    if (moved === this || this.contains(moved)) {
+      return;
+    }
+
+    const invoker = this._overlayInvokerNode;
+    if (invoker && (moved === invoker || invoker.contains(moved))) {
+      return;
+    }
+
+    this.opened = false;
+  };
 
   /**
    * Lion closes the popover on Escape's keyup, so its keydown would otherwise

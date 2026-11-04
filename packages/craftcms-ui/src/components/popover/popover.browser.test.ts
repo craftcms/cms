@@ -1,4 +1,4 @@
-import {beforeEach, expect, it} from 'vite-plus/test';
+import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import {page, userEvent} from 'vite-plus/test/browser';
 import type CraftButton from '../button/button.js';
 import type CraftPopover from './popover.js';
@@ -30,6 +30,115 @@ it('discloses a panel that is not a dialog', async () => {
     .toBeInTheDocument();
   await expect.element(page.getByRole('button', {name: 'Pick'})).toBeVisible();
   await expect.element(page.getByRole('dialog')).not.toBeInTheDocument();
+});
+
+describe('when focus moves', () => {
+  async function openWith(markup: string): Promise<CraftPopover> {
+    document.body.innerHTML = markup;
+    const popover = document.querySelector<CraftPopover>('craft-popover')!;
+    await popover.updateComplete;
+    popover.opened = true;
+    await popover.updateComplete;
+    return popover;
+  }
+
+  it('stays open while focus moves within it', async () => {
+    const popover = await openWith(`
+      <craft-popover>
+        <craft-button slot="invoker" type="button">Open</craft-button>
+        <div slot="content">
+          <button type="button">One</button>
+          <button type="button">Two</button>
+        </div>
+      </craft-popover>
+    `);
+
+    page.getByRole('button', {name: 'One'}).element().focus();
+    await userEvent.keyboard('{Tab}');
+    await userEvent.keyboard('{Shift>}{Tab}{Tab}{/Shift}');
+    await popover.updateComplete;
+
+    expect(document.activeElement).toBe(
+      popover.querySelector('[slot="invoker"]')
+    );
+    expect(popover.opened).toBe(true);
+  });
+
+  it('closes once focus leaves, leaving focus on the next control', async () => {
+    const popover = await openWith(`
+      <craft-popover>
+        <craft-button slot="invoker" type="button">Open</craft-button>
+        <div slot="content"><button type="button">Pick</button></div>
+      </craft-popover>
+      <button type="button">Next</button>
+    `);
+
+    page.getByRole('button', {name: 'Pick'}).element().focus();
+    await userEvent.keyboard('{Tab}');
+
+    await expect.poll(() => popover.opened).toBe(false);
+    await expect
+      .element(page.getByRole('button', {name: 'Next'}))
+      .toHaveFocus();
+  });
+
+  it('stays open when focus moves to an invoker linked with for', async () => {
+    const popover = await openWith(`
+      <button type="button" id="trigger">Open</button>
+      <craft-popover for="trigger">
+        <div slot="content"><button type="button">Pick</button></div>
+      </craft-popover>
+    `);
+
+    page.getByRole('button', {name: 'Pick'}).element().focus();
+    document.getElementById('trigger')!.focus();
+    await popover.updateComplete;
+
+    expect(popover.opened).toBe(true);
+  });
+
+  it('stays open while focus is in a popover nested in its content', async () => {
+    const outer = await openWith(`
+      <craft-popover class="outer">
+        <craft-button slot="invoker" type="button">Outer</craft-button>
+        <div slot="content">
+          <craft-popover class="inner">
+            <craft-button slot="invoker" type="button">Inner</craft-button>
+            <div slot="content"><button type="button">Deep</button></div>
+          </craft-popover>
+        </div>
+      </craft-popover>
+    `);
+    const inner = outer.querySelector<CraftPopover>('.inner')!;
+    await inner.updateComplete;
+    inner.opened = true;
+    await inner.updateComplete;
+
+    page.getByRole('button', {name: 'Inner'}).element().focus();
+    page.getByRole('button', {name: 'Deep'}).element().focus();
+    await outer.updateComplete;
+
+    expect(outer.opened).toBe(true);
+    expect(inner.opened).toBe(true);
+  });
+
+  it('stays open when text in the panel is clicked', async () => {
+    const popover = await openWith(`
+      <craft-popover>
+        <craft-button slot="invoker" type="button">Open</craft-button>
+        <div slot="content">
+          <p>Columns</p>
+          <button type="button">Pick</button>
+        </div>
+      </craft-popover>
+    `);
+
+    page.getByRole('button', {name: 'Pick'}).element().focus();
+    await userEvent.click(page.getByText('Columns'));
+    await popover.updateComplete;
+
+    expect(popover.opened).toBe(true);
+  });
 });
 
 it('returns focus to the invoker, and stays closed, when Enter inside it calls hide()', async () => {
