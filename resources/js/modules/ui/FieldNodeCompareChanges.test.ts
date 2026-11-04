@@ -144,6 +144,9 @@ describe('FieldNode change comparisons', () => {
       current: string;
       proposed: string;
     };
+    expect(modal.querySelector('[role="status"]')?.textContent).toBe(
+      'Changes loaded.'
+    );
     expect(diff.current).toBe('Old summary');
     expect(diff.proposed).toBe('New summary');
     expect(
@@ -173,7 +176,7 @@ describe('FieldNode change comparisons', () => {
     const modal = await openComparison();
 
     await vi.waitFor(() =>
-      expect(modal.textContent).toContain(
+      expect(modal.querySelector('[role="status"]')?.textContent).toBe(
         'Revision 4 and Revision 5 have the same value.'
       )
     );

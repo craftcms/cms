@@ -51,6 +51,23 @@
       : t('Compare changes')
   );
 
+  /**
+   * Announced when the comparison loads. The dialog makes the page behind it
+   * inert, so this has its own live region rather than the page’s announcer.
+   */
+  const status = computed(() => {
+    if (!comparison.value) {
+      return '';
+    }
+
+    return comparison.value.unchanged
+      ? t('{from} and {to} have the same value.', {
+          from: comparison.value.fromLabel,
+          to: comparison.value.toLabel,
+        })
+      : t('Changes loaded.');
+  });
+
   watch(
     () => props.detail,
     async (detail) => {
@@ -111,6 +128,7 @@
       ></craft-button>
 
       <div class="field-changes" data-field-changes-modal>
+        <p class="sr-only" role="status">{{ status }}</p>
         <p v-if="error" class="field-changes__message" role="alert">
           {{ error }}
         </p>
