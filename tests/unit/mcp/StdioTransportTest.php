@@ -38,7 +38,7 @@ class StdioTransportTest extends TestCase
             ]],
             ['jsonrpc' => '2.0', 'method' => 'notifications/initialized'],
             ['jsonrpc' => '2.0', 'id' => 'create', 'method' => 'tools/call', 'params' => [
-                'name' => 'configuration.create',
+                'name' => 'configuration_create',
                 'arguments' => ['type' => 'site-groups', 'attributes' => ['name' => 'MCP Stdio Archive']],
             ]],
         ] as $message) {

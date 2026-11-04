@@ -13,7 +13,7 @@ use craft\mcp\elements\adapters\UserAdapter;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 
-/** Registers element adapters exposed through the elements.* tools. */
+/** Registers element adapters exposed through the elements_* tools. */
 class ElementAdapterRegistry extends Component
 {
     public const EVENT_REGISTER_ADAPTERS = 'registerAdapters';

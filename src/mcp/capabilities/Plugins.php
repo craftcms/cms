@@ -30,7 +30,7 @@ class Plugins
 
     /** @return array{count: int, updatesChecked: bool, plugins: list<array<string, mixed>>} */
     #[McpTool(
-        name: 'plugins.list',
+        name: 'plugins_list',
         description: 'Lists Craft CMS plugins with their version, enabled state, license status, and available updates.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -70,10 +70,10 @@ class Plugins
     /**
      * @param  string|null  $packageName  Composer package name when the plugin is not already Composer-installed.
      * @param  string|null  $version  Composer version constraint when the plugin is not already Composer-installed.
-     * @return array{plugin: array<string, mixed>}|array{composerInstalled: true, handle: string, packageName: string, restartRequired: true, instructions: string, nextToolCall: array{name: 'plugins.install', arguments: array{handle: string, edition?: string}}}
+     * @return array{plugin: array<string, mixed>}|array{composerInstalled: true, handle: string, packageName: string, restartRequired: true, instructions: string, nextToolCall: array{name: 'plugins_install', arguments: array{handle: string, edition?: string}}}
      */
     #[McpTool(
-        name: 'plugins.install',
+        name: 'plugins_install',
         description: 'Installs a Composer-installed Craft CMS plugin.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
@@ -95,7 +95,7 @@ class Plugins
         return ['plugin' => $this->serialize($handle)];
     }
 
-    /** @return array{composerInstalled: true, handle: string, packageName: string, restartRequired: true, instructions: string, nextToolCall: array{name: 'plugins.install', arguments: array{handle: string, edition?: string}}} */
+    /** @return array{composerInstalled: true, handle: string, packageName: string, restartRequired: true, instructions: string, nextToolCall: array{name: 'plugins_install', arguments: array{handle: string, edition?: string}}} */
     private function installComposerPackage(
         string $handle,
         ?string $edition,
@@ -119,7 +119,7 @@ class Plugins
             'restartRequired' => true,
             'instructions' => 'Reconnect to the Craft MCP server so it loads the new Composer dependencies, then make the indicated tool call to complete the Craft plugin installation.',
             'nextToolCall' => [
-                'name' => 'plugins.install',
+                'name' => 'plugins_install',
                 'arguments' => array_filter([
                     'handle' => $handle,
                     'edition' => $edition,
@@ -130,7 +130,7 @@ class Plugins
 
     /** @return array{plugin: array<string, mixed>} */
     #[McpTool(
-        name: 'plugins.enable',
+        name: 'plugins_enable',
         description: 'Enables an installed Craft CMS plugin.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
@@ -148,7 +148,7 @@ class Plugins
 
     /** @return array{plugin: array<string, mixed>} */
     #[McpTool(
-        name: 'plugins.disable',
+        name: 'plugins_disable',
         description: 'Disables an installed Craft CMS plugin.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
@@ -166,7 +166,7 @@ class Plugins
 
     /** @return array{plugin: array<string, mixed>} */
     #[McpTool(
-        name: 'plugins.uninstall',
+        name: 'plugins_uninstall',
         description: 'Uninstalls a Craft CMS plugin, removing its data from the database and project config.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]

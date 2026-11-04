@@ -139,7 +139,7 @@ class CustomFieldSchema
         );
 
         throw new ToolCallException(sprintf(
-            'Invalid fields: %s. Call elements.field-schema for the accepted fields.',
+            'Invalid fields: %s. Call elements_field_schema for the accepted fields.',
             implode('; ', $messages),
         ));
     }

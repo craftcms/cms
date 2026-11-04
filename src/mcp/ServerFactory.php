@@ -30,7 +30,7 @@ class ServerFactory
 
     public function public(): Server
     {
-        return $this->builder($this->publicCapabilities, 'Use craft-context-get for approved public content and supported query criteria. Then query it with craft-query.')
+        return $this->builder($this->publicCapabilities, 'Use craft_context_get for approved public content and supported query criteria. Then query it with craft_query.')
             ->setSession(new SessionStore(Craft::$app->getCache(), ['public']))
             ->build();
     }

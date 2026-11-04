@@ -17,7 +17,7 @@ use Illuminate\Support\Arr;
 use Mcp\Exception\ToolCallException;
 
 /**
- * Default `elements.*` behavior for an element type.
+ * Default `elements_*` behavior for an element type.
  *
  * A subclass must define {@see handle()}, {@see elementType()}, and {@see updateAttributesSchema()}. It can opt into
  * creation by defining {@see createAttributesSchema()}, and override any other method to add type-specific rules.
@@ -33,7 +33,7 @@ abstract class BaseElementAdapter implements ElementAdapter
     }
 
     /**
-     * Returns the JSON Schema for attributes `elements.update` and `elements.validate` accept.
+     * Returns the JSON Schema for attributes `elements_update` and `elements_validate` accept.
      *
      * Only declared properties are accepted.
      *
@@ -42,7 +42,7 @@ abstract class BaseElementAdapter implements ElementAdapter
     abstract protected function updateAttributesSchema(): array;
 
     /**
-     * Returns the JSON Schema for attributes `elements.create` accepts, or `null` if it cannot create this type.
+     * Returns the JSON Schema for attributes `elements_create` accepts, or `null` if it cannot create this type.
      *
      * @return array<string, mixed>|null
      */
@@ -219,7 +219,7 @@ abstract class BaseElementAdapter implements ElementAdapter
     /**
      * Returns a new, unsaved element.
      *
-     * @param  array<string, mixed>  $context  Values matching the `fieldSchemaContext` schema, or `[]` for `elements.create`.
+     * @param  array<string, mixed>  $context  Values matching the `fieldSchemaContext` schema, or `[]` for `elements_create`.
      */
     protected function newElement(array $context, User $actor): ElementInterface
     {
@@ -242,7 +242,7 @@ abstract class BaseElementAdapter implements ElementAdapter
     }
 
     /**
-     * Sets custom field values given in the format `elements.field-schema` describes.
+     * Sets custom field values given in the format `elements_field_schema` describes.
      *
      * @param  array<string, mixed>  $fields
      */

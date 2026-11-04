@@ -75,7 +75,7 @@ enum ConfigurationType: string
         return match ($this) {
             self::EntryTypes, self::Volumes => ['On update, an omitted fieldLayout retains the current layout; null clears it.'],
             self::Fields => ['Creating a field requires a valid, selectable field class. Updates cannot change the field class. Supplied settings merge with existing settings.'],
-            self::UserGroups => ['Assign permissions separately with user-permissions.group.set, which replaces the complete permission list.'],
+            self::UserGroups => ['Assign permissions separately with user_permissions_group_set, which replaces the complete permission list.'],
             self::Routes => ['Lookup accepts UID or computed URI. uriParts contains literal strings or [name, regex] tuples. Lists routes available to the current site.'],
             default => [],
         };

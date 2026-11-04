@@ -37,7 +37,7 @@ class Structures
     }
 
     /**
-     * @param  string  $elementType  Registered element reference handle or PHP class; see craft://element-types and info.get.
+     * @param  string  $elementType  Registered element reference handle or PHP class; see craft://element-types and info_get.
      * @param  string  $operation  Move to the start or end of the root, or before or after a target element.
      * @param  int|null  $structureId  Structure ID. It may be inferred when the element belongs to exactly one structure.
      * @param  int|null  $elementId  Element ID.
@@ -48,7 +48,7 @@ class Structures
      * @return array{moved: true, operation: string, structureId: int, element: array<string, mixed>}
      */
     #[McpTool(
-        name: 'structures.move-element',
+        name: 'structures_move_element',
         description: 'Moves an element within a Craft CMS structure.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]

@@ -25,7 +25,7 @@ class HttpTransportTest extends TestCase
         $this->cachePath = sys_get_temp_dir() . '/craft-mcp-' . bin2hex(random_bytes(8));
         $this->originalCache = Craft::$app->getCache();
         $this->originalIdentity = Craft::$app->getUser()->getIdentity();
-        Craft::$app->get('mcp')->getSettings()->publicTools = ['craft-context-get'];
+        Craft::$app->get('mcp')->getSettings()->publicTools = ['craft_context_get'];
     }
 
     protected function _after(): void
@@ -51,7 +51,7 @@ class HttpTransportTest extends TestCase
         $list = ['jsonrpc' => '2.0', 'id' => 2, 'method' => 'tools/list'];
         $response = $this->exchange('public', $list, $headers);
         self::assertSame(200, $response->getStatusCode(), (string)$response->getBody());
-        self::assertSame(['craft-context-get'], array_column(json_decode((string)$response->getBody(), true)['result']['tools'], 'name'));
+        self::assertSame(['craft_context_get'], array_column(json_decode((string)$response->getBody(), true)['result']['tools'], 'name'));
 
         // Public approvals still apply to an already initialized session.
         Craft::$app->get('mcp')->getSettings()->publicTools = [];
@@ -85,7 +85,7 @@ class HttpTransportTest extends TestCase
 
         self::assertSame(200, $response->getStatusCode(), (string)$response->getBody());
         self::assertSame('', $response->getHeaderLine('Mcp-Session-Id'));
-        self::assertSame(['craft-context-get'], array_column(json_decode((string)$response->getBody(), true)['result']['tools'], 'name'));
+        self::assertSame(['craft_context_get'], array_column(json_decode((string)$response->getBody(), true)['result']['tools'], 'name'));
     }
 
     public function testAdminSessionsCannotCrossEndpointUserOrScopeBoundaries(): void

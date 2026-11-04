@@ -54,12 +54,12 @@ readonly class Revisions
      * @return array{count: int, limit: int, offset: int, nextOffset: int|null, revisions: list<array<string, mixed>>}
      */
     #[McpTool(
-        name: 'revisions.list',
+        name: 'revisions_list',
         description: 'Lists Craft CMS revisions for a registered element type.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     public function list(
-        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info_get.')]
         string $type,
         ?int $id = null,
         #[Schema(format: 'uuid')]
@@ -108,12 +108,12 @@ readonly class Revisions
      * @return array{revision: array<string, mixed>}
      */
     #[McpTool(
-        name: 'revisions.get',
+        name: 'revisions_get',
         description: 'Gets a Craft CMS revision by ID or UID.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     public function get(
-        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info_get.')]
         string $type,
         ?int $id = null,
         #[Schema(format: 'uuid')]
@@ -133,12 +133,12 @@ readonly class Revisions
 
     /** @return array{element: array<string, mixed>} */
     #[McpTool(
-        name: 'revisions.apply',
+        name: 'revisions_apply',
         description: 'Applies a Craft CMS revision to its canonical element.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     public function apply(
-        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info_get.')]
         string $type,
         ?int $id = null,
         #[Schema(format: 'uuid')]

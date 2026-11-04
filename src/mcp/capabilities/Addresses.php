@@ -23,7 +23,7 @@ use Mcp\Exception\ToolCallException;
 use Mcp\Schema\ToolAnnotations;
 
 /**
- * Address-specific MCP capabilities. Addresses are listed and managed through the `elements.*` tools.
+ * Address-specific MCP capabilities. Addresses are listed and managed through the `elements_*` tools.
  *
  * @since 5.12.0
  */
@@ -40,7 +40,7 @@ readonly class Addresses
 
     /** @return array{fieldLayout: array<string, mixed>} */
     #[McpTool(
-        name: 'addresses.field-layout.get',
+        name: 'addresses_field_layout_get',
         description: 'Gets the Craft CMS address field layout.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -55,7 +55,7 @@ readonly class Addresses
      * @return array{fieldLayout: array<string, mixed>}
      */
     #[McpTool(
-        name: 'addresses.field-layout.update',
+        name: 'addresses_field_layout_update',
         description: 'Updates the Craft CMS address field layout.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
