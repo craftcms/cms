@@ -375,3 +375,24 @@ test('getAllTranslationsForLocale returns few or no app translations for English
     expect($enCount)->toBeLessThan(50)
         ->and($nlCount)->toBeGreaterThan(500);
 });
+
+test('translate picks up category sources added after a message was looked up', function () {
+    $reader = new class implements MessageReaderInterface
+    {
+        public function getMessage(string $id, string $category, string $locale, array $parameters = []): ?string
+        {
+            return $this->getMessages($category, $locale)[$id]['message'] ?? null;
+        }
+
+        public function getMessages(string $category, string $locale): array
+        {
+            return ['Save' => ['message' => 'Opslaan']];
+        }
+    };
+
+    expect(I18N::translate('Save', category: 'latecat', locale: 'nl'))->toBe('Save');
+
+    I18N::addCategorySources(new CategorySource('latecat', $reader));
+
+    expect(I18N::translate('Save', category: 'latecat', locale: 'nl'))->toBe('Opslaan');
+});
