@@ -47,6 +47,10 @@
   const sections = computed(() => props.groups ?? [props.chips]);
 
   function retry(): void {
+    if (retrying.value) {
+      return;
+    }
+
     retrying.value = true;
     emit('retry');
   }
