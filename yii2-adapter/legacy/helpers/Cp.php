@@ -948,7 +948,8 @@ class Cp
      * Splits a card’s HTML, as rendered by {@see ElementHtml::elementCardPartsHtml()}, back into its parts.
      *
      * HTML that isn’t a `<craft-card>` becomes the card’s content, keeping the
-     * original card’s attributes and footer (which may hold its input).
+     * original card’s attributes and footer (which may hold its input). Markup
+     * outside a `<craft-card>` root goes in the footer.
      */
     private static function elementCardPartsFromHtml(string $html, ElementCardParts $original): ElementCardParts
     {
@@ -970,7 +971,8 @@ class Cp
             return new ElementCardParts(
                 attributes: $original->attributes,
                 contentHtml: $html,
-                footerHtml: $original->footerHtml,
+                // A handler that wrapped the original card already includes its footer
+                footerHtml: str_contains($html, $original->footerHtml) ? '' : $original->footerHtml,
             );
         }
 
@@ -996,6 +998,13 @@ class Cp
             } elseif ($node instanceof DomElement && $node->classList->contains('card-main')) {
                 self::splitElementCardMain($document, $node, $parts);
             } else {
+                $parts->footerHtml .= $document->saveHtml($node);
+            }
+        }
+
+        // Keep markup a handler added outside the card root
+        foreach ($document->body->childNodes as $node) {
+            if ($node !== $card) {
                 $parts->footerHtml .= $document->saveHtml($node);
             }
         }
