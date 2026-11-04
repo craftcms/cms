@@ -12,7 +12,7 @@ use Mcp\Exception\ToolCallException;
 
 /**
  * The AI assistant’s tool that proposes changes to an element in the context, which the user reviews and applies to
- * their editor themselves. It takes the attributes and fields the MCP server’s `elements.update` tool does.
+ * their editor themselves. It takes the attributes and fields the MCP server’s `elements_update` tool does.
  *
  * @internal
  *
@@ -37,7 +37,7 @@ readonly class ProposeChanges implements Tool
 
     public function description(): string
     {
-        return 'Proposes changes to an element in the context, or an element nested in one, which the user reviews and applies to their editor themselves. Takes the attributes and fields elements.update does; call elements.field-schema for an element’s fields. To change a nested entry, pass its own id rather than its field’s value. Nothing is saved.';
+        return 'Proposes changes to an element in the context, or an element nested in one, which the user reviews and applies to their editor themselves. Takes the attributes and fields elements_update does; call elements_field_schema for an element’s fields. To change a nested entry, pass its own id rather than its field’s value. Nothing is saved.';
     }
 
     public function handle(Request $request): string
@@ -58,7 +58,7 @@ readonly class ProposeChanges implements Tool
         $one = count($notInEditor) === 1;
         $messages = array_filter([
             $proposals !== [] ? sprintf('Proposed %d change(s). The user can now review and apply them.', count($proposals)) : null,
-            $notInEditor !== [] ? strtr('{names} {verb} in the user’s editor, so you can’t propose {it}. To change {it}, save {it} with elements.update, which the user approves.', [
+            $notInEditor !== [] ? strtr('{names} {verb} in the user’s editor, so you can’t propose {it}. To change {it}, save {it} with elements_update, which the user approves.', [
                 '{names}' => implode(', ', $notInEditor),
                 '{verb}' => $one ? 'isn’t' : 'aren’t',
                 '{it}' => $one ? 'it' : 'them',
@@ -75,8 +75,8 @@ readonly class ProposeChanges implements Tool
     {
         return [
             'id' => $schema->integer()->description('The ID of the element to change.')->required(),
-            'attributes' => $schema->object()->description('Built-in element attributes, as elements.update takes them.'),
-            'fields' => $schema->object()->description('Custom field values keyed by field handle, as elements.field-schema describes them. Only include the fields to change.'),
+            'attributes' => $schema->object()->description('Built-in element attributes, as elements_update takes them.'),
+            'fields' => $schema->object()->description('Custom field values keyed by field handle, as elements_field_schema describes them. Only include the fields to change.'),
         ];
     }
 }

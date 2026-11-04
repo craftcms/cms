@@ -60,7 +60,7 @@ it('returns usable preview URLs through MCP for named and inline transforms', fu
     );
 
     $result = McpRequest::send($this, 'tools/call', [
-        'name' => 'assets.transform-url',
+        'name' => 'assets_transform_url',
         'arguments' => array_filter([
             'uid' => $this->asset->uid,
             'transform' => $transform,
@@ -96,7 +96,7 @@ it('requires asset view permission before generating a preview', function (): vo
     Passport::actingAs($user, ['mcp:admin'], 'craft-mcp');
     Cms::config()->allowAdminChanges = false;
     $params = [
-        'name' => 'assets.transform-url',
+        'name' => 'assets_transform_url',
         'arguments' => ['id' => $this->asset->id, 'transform' => ['width' => 160]],
     ];
 
@@ -122,7 +122,7 @@ it('requires asset view permission before generating a preview', function (): vo
 
 it('converts transform validation failures into MCP tool errors', function (): void {
     McpRequest::send($this, 'tools/call', [
-        'name' => 'assets.transform-url',
+        'name' => 'assets_transform_url',
         'arguments' => ['id' => $this->asset->id, 'transform' => ['width' => 0]],
     ])
         ->assertOk()

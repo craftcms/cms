@@ -31,7 +31,7 @@ readonly class AssetTransformDriverKind implements ComponentKind
 
     public function usage(): string
     {
-        return 'configuration.* with type: asset-transformers takes the handle as driver and its settings as settings. Image transforms take parametersSchema values in parameters, keyed by the asset transformer’s UID.';
+        return 'configuration_* with type: asset-transformers takes the handle as driver and its settings as settings. Image transforms take parametersSchema values in parameters, keyed by the asset transformer’s UID.';
     }
 
     public function scope(): ?string

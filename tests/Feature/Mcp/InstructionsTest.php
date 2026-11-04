@@ -35,14 +35,14 @@ it('keeps startup instructions brief and delivers full guidance through the admi
 
     $brief = McpRequest::send($this, 'server/discover')->assertOk()->json('result.instructions');
     expect(strlen($brief))->toBeLessThanOrEqual(2048)
-        ->and($brief)->toContain('info.get')
+        ->and($brief)->toContain('info_get')
         ->not->toContain('Preserve legal notices.', 'reviews.list', 'reviews.submit');
 
-    $instructions = McpRequest::send($this, 'tools/call', ['name' => 'info.get'])
+    $instructions = McpRequest::send($this, 'tools/call', ['name' => 'info_get'])
         ->assertOk()->assertJsonPath('result.isError', false)
         ->json('result.structuredContent.instructions');
 
-    expect($instructions)->toContain('hardDelete', 'elements.schema')
+    expect($instructions)->toContain('hardDelete', 'elements_schema')
         ->toEndWith("$siteInstructions\n\nUse reviews.list before changing a product.\n\nUse reviews.submit to request approval.");
 
     $route = '/_test/public-instructions';
@@ -53,12 +53,12 @@ it('keeps startup instructions brief and delivers full guidance through the admi
         ->assertOk()
         ->json('result.instructions');
 
-    expect($publicInstructions)->toContain('craft-context-get')
+    expect($publicInstructions)->toContain('craft_context_get')
         ->not->toContain('Preserve legal notices.', 'reviews.list', 'reviews.submit');
 
     Route::getCurrentRoute()->flushController();
-    $this->postJson($route, McpRequest::payload('tools/call', ['name' => 'info.get']), McpRequest::headers('tools/call', 'info.get'))
-        ->assertBadRequest()->assertJsonPath('error.message', 'Tool not found: "info.get".');
+    $this->postJson($route, McpRequest::payload('tools/call', ['name' => 'info_get']), McpRequest::headers('tools/call', 'info_get'))
+        ->assertBadRequest()->assertJsonPath('error.message', 'Tool not found: "info_get".');
 })->with([
     'array config' => [fn (string $instructions): array => ['instructions' => $instructions]],
     'JSON config' => [fn (string $instructions): string => json_encode(['instructions' => $instructions], JSON_THROW_ON_ERROR)],
@@ -79,7 +79,7 @@ it('includes registered plugin element references in the admin info guidance', f
     };
     app(ElementTypes::class)->register($type::class);
 
-    $instructions = McpRequest::send($this, 'tools/call', ['name' => 'info.get'])->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent.instructions');
+    $instructions = McpRequest::send($this, 'tools/call', ['name' => 'info_get'])->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent.instructions');
 
     expect($instructions)->toContain('hardDelete', 'product: `'.$type::class.'`');
 });
@@ -90,10 +90,10 @@ it('tells clients which features need a higher Craft edition', function (Edition
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     Edition::set($edition);
 
-    $instructions = McpRequest::send($this, 'tools/call', ['name' => 'info.get'])->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent.instructions');
+    $instructions = McpRequest::send($this, 'tools/call', ['name' => 'info_get'])->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent.instructions');
 
     if ($listed) {
-        expect($instructions)->toContain('This site runs Craft Team.', '- Releases (Craft Pro): releases.*', '- Editorial workflows (Craft Pro)');
+        expect($instructions)->toContain('This site runs Craft Team.', '- Releases (Craft Pro): releases_*', '- Editorial workflows (Craft Pro)');
     } else {
         expect($instructions)->not->toContain('need a higher edition');
     }
@@ -102,7 +102,7 @@ it('tells clients which features need a higher Craft edition', function (Edition
     'Pro' => [Edition::Pro, false],
 ]);
 
-it('adds plugin guidance to the startup instructions, and only points users with control panel access to info.get', function (bool $accessCp): void {
+it('adds plugin guidance to the startup instructions, and only points users with control panel access to info_get', function (bool $accessCp): void {
     $key = openssl_pkey_new(['private_key_bits' => 2048]);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     $user = User::query()->firstOrFail();
@@ -118,5 +118,5 @@ it('adds plugin guidance to the startup instructions, and only points users with
     $brief = McpRequest::send($this, 'server/discover')->assertOk()->json('result.instructions');
 
     expect($brief)->toEndWith("\n\nUse reviews.list to find product reviews.");
-    $accessCp ? expect($brief)->toContain('info.get') : expect($brief)->not->toContain('info.get');
+    $accessCp ? expect($brief)->toContain('info_get') : expect($brief)->not->toContain('info_get');
 })->with(['with control panel access' => true, 'without control panel access' => false]);

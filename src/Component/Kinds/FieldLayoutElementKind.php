@@ -42,7 +42,7 @@ readonly class FieldLayoutElementKind implements ComponentKind
 
     public function usage(): string
     {
-        return 'Field layout configs list elements in each tab’s elements. Start each from the type’s config, which identifies it, such as a native field’s attribute or a custom field’s fieldUid, and add settings from component-types.get. Keep an existing element’s uid to keep it the same element; new elements get one.';
+        return 'Field layout configs list elements in each tab’s elements. Start each from the type’s config, which identifies it, such as a native field’s attribute or a custom field’s fieldUid, and add settings from component_types_get. Keep an existing element’s uid to keep it the same element; new elements get one.';
     }
 
     public function scope(): ?string

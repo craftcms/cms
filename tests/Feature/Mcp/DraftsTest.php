@@ -188,12 +188,12 @@ it('requires entry permissions to create and edit drafts', function (): void {
     $createDraft = ['asUnpublishedDraft' => true, 'attributes' => ['sectionId' => $this->section->id, 'title' => 'Proposed article']];
     $updateDraft = ['id' => $draft['id'], 'attributes' => ['title' => 'Draft title']];
 
-    expect($call($viewer, 'elements.create', $createDraft)['content'][0]['text'])->toBe('You are not authorized to save this entry.')
-        ->and($call($viewer, 'elements.update', $updateDraft)['content'][0]['text'])->toBe('You are not authorized to save this entry.')
+    expect($call($viewer, 'elements_create', $createDraft)['content'][0]['text'])->toBe('You are not authorized to save this entry.')
+        ->and($call($viewer, 'elements_update', $updateDraft)['content'][0]['text'])->toBe('You are not authorized to save this entry.')
         ->and(Entry::find()->drafts()->sectionId($this->section->id)->status(null)->ids())->toBe([$draft['id']])
         ->and(Entry::find()->drafts()->id($draft['id'])->status(null)->one()->title)->toBe('Canonical title')
-        ->and($call($editor, 'elements.create', $createDraft))->toMatchArray(['isError' => false])
-        ->and($call($editor, 'elements.update', $updateDraft))->toMatchArray(['isError' => false])
+        ->and($call($editor, 'elements_create', $createDraft))->toMatchArray(['isError' => false])
+        ->and($call($editor, 'elements_update', $updateDraft))->toMatchArray(['isError' => false])
         ->and(Entry::find()->id($entry['id'])->one()->title)->toBe('Canonical title');
 });
 

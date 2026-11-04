@@ -65,8 +65,8 @@ readonly class Fields
     }
 
     /**
-     * @param  string  $type  A field class from component-types.list with kind: field.
-     * @param  array<string, mixed>  $settings  Settings matching component-types.get for the field type.
+     * @param  string  $type  A field class from component_types_list with kind: field.
+     * @param  array<string, mixed>  $settings  Settings matching component_types_get for the field type.
      * @return array{field: array<string, mixed>}
      */
     #[RequiresAdminChanges]

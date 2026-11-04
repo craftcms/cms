@@ -49,6 +49,7 @@
 - Field action menu items can now dispatch a `craft:generate-field-value` event with a `url` and `params`, to fill the field with a value generated on the server. ([#20103](https://github.com/craftcms/cms/pull/20103))
 
 ### MCP and OAuth
+- Renamed Craft’s MCP tools to use snake_case names, such as `elements_list` instead of `elements.list`, `workflows_request_changes` instead of `workflows.requestChanges`, and `craft_query` instead of `craft-query`, because VS Code, claude.ai, and other MCP clients reject or rename tools with dots in their names. Public MCP server approvals are updated automatically. Plugins should name their MCP tools the same way, such as `my_plugin_orders_list`. ([#20355](https://github.com/craftcms/cms/pull/20355))
 - The MCP server page’s setup snippets are now syntax-highlighted. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - The authenticated MCP server’s connection instructions now only point to `info.get` for users with control panel access.
 - The MCP server’s field layout configs now support tabs’ `icon` and `type` settings. ([#20005](https://github.com/craftcms/cms/pull/20005))

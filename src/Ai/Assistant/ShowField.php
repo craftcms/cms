@@ -122,7 +122,7 @@ readonly class ShowField implements Tool
     public function schema(JsonSchema $schema): array
     {
         return [
-            'type' => $schema->string()->description('The element type, as elements.schema lists it, such as entries.')->required(),
+            'type' => $schema->string()->description('The element type, as elements_schema lists it, such as entries.')->required(),
             'id' => $schema->integer()->description('The element’s ID.')->required(),
             'siteId' => $schema->integer()->description('The site to show it in. Defaults to the primary site.'),
             'field' => $schema->string()->description('The handle of a custom field, or a built-in attribute the editor shows as a field, such as title, slug, or postDate.')->required(),

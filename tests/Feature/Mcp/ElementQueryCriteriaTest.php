@@ -46,3 +46,16 @@ it('declares items for every array in tool input schemas', function () {
     expect($tools)->not->toBeEmpty()
         ->and(collect($tools)->flatMap(fn (array $tool) => $arraysWithoutItems($tool['inputSchema'], $tool['name']))->all())->toBe([]);
 });
+
+it('names every tool in snake_case', function () {
+    Edition::set(Edition::Pro);
+    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
+    Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
+
+    // VS Code, claude.ai, and model provider APIs reject or rename tools with dots in their names
+    $names = array_column(McpRequest::tools($this), 'name');
+
+    expect($names)->not->toBeEmpty()
+        ->and(array_values(array_filter($names, fn (string $name) => ! preg_match('/^[a-z0-9_]{1,64}$/', $name))))->toBe([]);
+});
