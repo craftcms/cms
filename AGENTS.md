@@ -26,17 +26,26 @@ including code, dependencies, or generated artifacts.
 
 For this path:
 
-1. Fetch the latest PR head and actual target branch. Confirm that the exact PR
-   head commit has passed all required CI and has the required approvals. Check
-   the target's branch protections, required merged-result checks, and merge
-   queue requirements before pushing. With explicit authorization to merge the
-   PR and only genuinely nonfunctional conflicts, an ordinary push of the final
-   target-based merge commit may use the credential's existing bypass permission
-   solely for the PR-only rule, after the exact PR-head CI and approval checks
-   above. Never bypass failed or pending required checks, fresh merged-result
-   checks, merge queues, or any other protection. Do not use an administrative
-   override. If another protection prevents this path or compliance is unclear,
-   stop and ask how to proceed.
+1. Fetch the latest PR head and actual target branch. Confirm that the PR head
+   has passed all required CI, or use earlier successful required CI for agent
+   pre-merge verification only if the tested commit is an ancestor of the current
+   PR head, every subsequent PR commit ends its body with `[ci skip]`, and
+   inspection of every subsequent commit plus the complete cumulative diff from
+   the tested commit to the current head confirms genuinely nonfunctional-only
+   changes under the eligibility rules above. Required approvals must remain
+   satisfied for the current PR state. When using inherited CI, report both the
+   tested SHA and current-head SHA; never claim the current head itself passed.
+   Check the target's branch protections, required merged-result checks, and
+   merge queue requirements before pushing. CI inheritance cannot override
+   GitHub's head-check requirements or any other protection. With explicit
+   authorization to merge the PR and only genuinely nonfunctional conflicts, an
+   ordinary push of the final target-based merge commit may use the credential's
+   existing bypass permission solely for the PR-only rule, after the CI
+   verification and current-state approval checks above. Never bypass failed or
+   pending required checks, fresh merged-result checks, merge queues, or any
+   other protection. Do not use an administrative override. If another
+   protection prevents this path or compliance is unclear, stop and ask how to
+   proceed.
 2. Use a clean worktree based on the fetched target commit, then run
    `git merge --no-ff --no-commit <verified-pr-head-sha>`. Resolve only the
    inconsequential conflicts covered above, preserving both sides' intended
@@ -46,11 +55,12 @@ For this path:
    and run `git diff --cached --check`. These lightweight checks validate the
    documentation resolution, not the substantive merged result. Run all
    required tests and merged-result verification for the PR's substantive
-   changes; passing PR-head CI does not replace required merged-result checks.
+   changes; passing or inherited PR CI does not replace required merged-result
+   checks.
 4. Before committing and pushing, confirm that the PR head is still the
-   verified commit and that required CI and approvals remain valid. If the
-   head changed, restart with the latest head and repeat those checks. Commit
-   the merge and use an ordinary push to the actual target branch, never a
-   force-push. If the target advances before the push succeeds, discard the
+   verified commit and that CI verification and current-state approvals remain
+   valid. If the head changed, restart with the latest head and repeat those
+   checks. Commit the merge and use an ordinary push to the actual target branch,
+   never a force-push. If the target advances before the push succeeds, discard the
    unpublished merge, fetch the latest heads, and repeat from a clean worktree
    based on the latest target, including inspection and required validation.
