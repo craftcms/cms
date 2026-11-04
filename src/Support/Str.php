@@ -41,6 +41,14 @@ class Str extends \Illuminate\Support\Str
     private static ?array $shortcodeEscapeMap = null;
 
     /**
+     * Each language’s case transliterator, or `false` if ICU has none for it. Creating one takes 10–30µs, and most
+     * languages have none, so each is created once.
+     *
+     * @var array<string, Transliterator|false>
+     */
+    private static array $transliterators = [];
+
+    /**
      * Returns ASCII character mappings, merging in any custom defined mappings
      * from the <config5:customAsciiCharMappings> config setting.
      *
@@ -746,7 +754,8 @@ class Str extends \Illuminate\Support\Str
             }
         }
 
-        $transliterator = Transliterator::create(sprintf('%s-%s', Locale::languageId($language), $case));
+        $id = sprintf('%s-%s', Locale::languageId($language), $case);
+        $transliterator = self::$transliterators[$id] ??= Transliterator::create($id) ?? false;
 
         if (! $transliterator) {
             return null;
