@@ -3,6 +3,7 @@
   import type {UiControlPayload, UiValues} from './types';
   import {inputName} from './runtime';
   import {useServerRenderedControl} from './useServerRenderedControl';
+  import ServerRenderedControlFrame from './ServerRenderedControlFrame.vue';
 
   const props = defineProps<{
     control: UiControlPayload;
@@ -12,7 +13,7 @@
   const emit = defineEmits<{
     (event: 'update:value', value: UiValues[], kind: 'discrete'): void;
   }>();
-  const {host, html} = useServerRenderedControl({
+  const {host, html, status, retry} = useServerRenderedControl({
     value: () => props.value,
     dependencies: [() => props.editable],
     async render() {
@@ -46,7 +47,15 @@
 </script>
 
 <template>
-  <!-- v-html, not DynamicHtmlRenderer: Vue would compile the select
-       <template> into child nodes, leaving its content empty. -->
-  <div ref="host" v-html="html"></div>
+  <ServerRenderedControlFrame
+    :status="status"
+    :has-html="Boolean(html)"
+    :chips="value?.length ?? 0"
+    :buttons="editable ? 2 : 1"
+    @retry="retry"
+  >
+    <!-- v-html, not DynamicHtmlRenderer: Vue would compile the select
+         <template> into child nodes, leaving its content empty. -->
+    <div ref="host" v-html="html"></div>
+  </ServerRenderedControlFrame>
 </template>

@@ -3,6 +3,7 @@
   import type {UiControlPayload} from './types';
   import {inputName} from './runtime';
   import {useServerRenderedControl} from './useServerRenderedControl';
+  import ServerRenderedControlFrame from './ServerRenderedControlFrame.vue';
 
   type FieldSelectProps = {
     limit?: number;
@@ -19,7 +20,7 @@
   }>();
   let headHtml = '';
   let bodyHtml = '';
-  const {host, html} = useServerRenderedControl({
+  const {host, html, status, retry} = useServerRenderedControl({
     value: () => props.value,
     dependencies: [() => props.control.props, () => props.editable],
     events: ['change'],
@@ -63,5 +64,13 @@
 </script>
 
 <template>
-  <div ref="host" v-html="html"></div>
+  <ServerRenderedControlFrame
+    :status="status"
+    :has-html="Boolean(html)"
+    :chips="value == null ? 0 : 1"
+    :buttons="control.props.create && editable ? 2 : 1"
+    @retry="retry"
+  >
+    <div ref="host" v-html="html"></div>
+  </ServerRenderedControlFrame>
 </template>
