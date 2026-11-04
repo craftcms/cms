@@ -99,9 +99,10 @@ it('uses a Craft 5 card HTML override that isn’t a card as the card’s conten
         ->and($data['cardFooterHtml'])->toContain('name="myFieldName[]"');
 });
 
-it('keeps one field input when a Craft 5 handler wraps the card', function() {
+it('keeps one field input when a Craft 5 handler wraps the card and reserializes its input', function() {
     YiiEvent::on(Cp::class, Cp::EVENT_DEFINE_ELEMENT_CARD_HTML, function(DefineElementHtmlEvent $event) {
-        $event->html = "<div class=\"wrapper\">$event->html</div>";
+        $html = preg_replace('/<input type="hidden" name="([^"]+)" value="([^"]+)">/', '<input value="$2" name="$1" type="hidden">', $event->html);
+        $event->html = "<div class=\"wrapper\">$html</div>";
     });
 
     try {
@@ -147,4 +148,18 @@ it('keeps structured card attributes when a Craft 5 handler changes the card', f
 
     expect($data['cardAttributes']['class'])->toContain('legacy-class')
         ->and($data['cardAttributes']['data'])->toBe($expected['cardAttributes']['data']);
+});
+
+it('keeps buttons a Craft 5 handler adds beside the card actions', function() {
+    YiiEvent::on(Cp::class, Cp::EVENT_DEFINE_ELEMENT_CARD_HTML, function(DefineElementHtmlEvent $event) {
+        $event->html = str_replace('<div class="card-actions">', '<button class="legacy-action"></button><div class="card-actions">', $event->html);
+    });
+
+    try {
+        $data = app(ElementHtml::class)->elementCardData(User::findOne());
+    } finally {
+        YiiEvent::off(Cp::class, Cp::EVENT_DEFINE_ELEMENT_CARD_HTML);
+    }
+
+    expect($data['cardActionsHtml'])->toContain('legacy-action');
 });

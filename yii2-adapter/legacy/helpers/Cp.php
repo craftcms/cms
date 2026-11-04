@@ -972,7 +972,7 @@ class Cp
                 attributes: $original->attributes,
                 contentHtml: $html,
                 // A handler that wrapped the original card already includes its footer
-                footerHtml: str_contains($html, $original->footerHtml) ? '' : $original->footerHtml,
+                footerHtml: self::containsInputs($document, $original->footerHtml) ? '' : $original->footerHtml,
             );
         }
 
@@ -985,7 +985,12 @@ class Cp
             if ($node instanceof DomElement && $node->classList->contains('card-titlebar')) {
                 foreach ($node->childNodes as $titlebarNode) {
                     if ($titlebarNode instanceof DomElement && $titlebarNode->classList->contains('card-actions-container')) {
-                        $parts->actionsHtml .= $titlebarNode->querySelector('.card-actions')->innerHTML ?? $titlebarNode->innerHTML;
+                        // Unwrap `.card-actions`, keeping anything a handler added beside it
+                        foreach ($titlebarNode->childNodes as $containerNode) {
+                            $parts->actionsHtml .= $containerNode instanceof DomElement && $containerNode->classList->contains('card-actions')
+                                ? $containerNode->innerHTML
+                                : $document->saveHtml($containerNode);
+                        }
                     } else {
                         $parts->labelHtml .= $document->saveHtml($titlebarNode);
                     }
@@ -1007,6 +1012,32 @@ class Cp
         $parts->footerHtml = trim($parts->footerHtml);
 
         return $parts;
+    }
+
+    /**
+     * Returns whether a document already has every input in a footer’s HTML,
+     * matched by name and value, however the handler serialized them.
+     */
+    private static function containsInputs(HTMLDocument $document, string $footerHtml): bool
+    {
+        $footer = HTMLDocument::createFromString(
+            sprintf('<!DOCTYPE html><html><body>%s</body></html>', $footerHtml),
+            LIBXML_NOERROR,
+            'UTF-8',
+        );
+
+        $inputs = [];
+        foreach ($document->getElementsByTagName('input') as $input) {
+            $inputs[] = [$input->getAttribute('name'), $input->getAttribute('value')];
+        }
+
+        foreach ($footer->getElementsByTagName('input') as $input) {
+            if (!in_array([$input->getAttribute('name'), $input->getAttribute('value')], $inputs, true)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
