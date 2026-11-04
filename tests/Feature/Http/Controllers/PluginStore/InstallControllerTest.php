@@ -10,7 +10,9 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Crypt;
+use Inertia\Testing\AssertableInertia;
 
+use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
 
@@ -89,8 +91,12 @@ test('index', function () {
         'edition' => 'standard',
         'version' => '1.0.0',
     ])
-        ->assertSee('Plugin Installer')
-        ->assertSee('Craft.updater');
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('updater/Index')
+            ->where('title', 'Plugin Installer')
+            ->where('initialState.nextUrl', action([InstallController::class, 'precheck']))
+            ->where('initialState.finishUrl', action([InstallController::class, 'finish']))
+        );
 });
 
 test('craftInstall', function () {
@@ -114,7 +120,7 @@ test('enable', function () {
     postJson(action([InstallController::class, 'enable']), [
         'data' => $this->hashedData,
     ])->assertJsonFragment([
-        'nextAction' => InstallController::ACTION_MIGRATE,
+        'nextUrl' => action([InstallController::class, 'migrate']),
         'status' => 'Updating the plugin…',
     ]);
 });
@@ -139,6 +145,6 @@ test('finish', function () {
         'data' => $this->hashedData,
     ])->assertJsonFragment([
         'finished' => true,
-        'returnUrl' => 'plugin-store',
+        'returnUrl' => cp_url('plugin-store'),
     ]);
 });

@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\User\Users as UsersService;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\MessageBag;
 use Inertia\Testing\AssertableInertia;
@@ -107,6 +109,26 @@ test('store verifies email when user has unverified email and is active', functi
     expect($refreshedUser->email)->toBe($unverifiedEmail);
     expect($refreshedUser->unverifiedEmail)->toBeNull();
     expect($refreshedUser->active)->toBeTrue();
+});
+
+test('store renders the email-taken page when the new email can’t be verified', function () {
+    $user = User::findOne();
+    $code = Users::setVerificationCodeOnUser($user);
+
+    UserModel::where('id', $user->id)->update([
+        'unverifiedEmail' => 'taken@example.com',
+    ]);
+
+    $this->partialMock(UsersService::class)
+        ->shouldReceive('verifyEmailForUser')
+        ->andThrow(new InvalidElementException($user));
+
+    postJson(action([VerifyEmailController::class, 'store']), [
+        'uid' => $user->uid,
+        'code' => $code,
+    ])->assertInertia(fn (AssertableInertia $page) => $page
+        ->component('auth/EmailTaken')
+        ->where('email', 'taken@example.com'));
 });
 
 test('store activates user when pending with no unverified email', function () {

@@ -39,7 +39,7 @@ export default class CraftVerifyEmailForm extends LitElement {
           <div class="auth-form__actions">
             <craft-button
               type="submit"
-              variant="accent"
+              variant="primary"
               ?loading="${this._busy}"
               style="width: 100%"
             >
