@@ -108,7 +108,7 @@ class Html
         }
 
         $text = preg_replace('/<li\\b[^>]*>/i', '• ', $html) ?? $html;
-        $text = preg_replace('/<br\\s*\\/?>|<\\/(p|div|li|h[1-6]|blockquote|pre|tr|figure)>/i', "\n", $text) ?? $text;
+        $text = preg_replace('/<br\\b(?:[^>"\']|"[^"]*"|\'[^\']*\')*>|<\\/(p|div|li|h[1-6]|blockquote|pre|tr|figure)>/i', "\n", $text) ?? $text;
         $text = html_entity_decode(strip_tags($text), ENT_QUOTES | ENT_HTML5);
         $text = preg_replace("/[ \t]+\n/", "\n", $text) ?? $text;
 
