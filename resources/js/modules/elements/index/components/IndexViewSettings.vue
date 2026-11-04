@@ -190,7 +190,7 @@
       </div>
       <div v-if="thumbSizeChoices.length">
         <craft-radio-group
-          buttons
+          appearance="button-group"
           :name="thumbSizeIdPrefix"
           :label="t('Thumb Size')"
           .modelValue="thumbSize"
