@@ -724,7 +724,7 @@
 
 ### Bug Fixes
 - Fixed a bug where publishing an approved draft through a workflow marked all of the element’s fields as modified, on both the element and its new revision.
-- Fixed a bug where the edit buttons on read-only nested entry cards, such as on revisions, didn’t do anything. ([#20307](https://github.com/craftcms/cms/pull/20307))
+- Fixed a bug where read-only nested entry cards, such as on revisions, couldn’t be opened from their edit buttons or by double-clicking them. ([#20307](https://github.com/craftcms/cms/pull/20307))
 - Fixed a bug where keyboard shortcuts were shown with <kbd>Super</kbd> on Linux, rather than <kbd>Ctrl</kbd>.
 - Fixed a bug where fields on revisions were disabled, rather than read-only. ([#20297](https://github.com/craftcms/cms/pull/20297))
 - Fixed a bug where single-value checkbox selects unchecked “All” while their options loaded. ([#20109](https://github.com/craftcms/cms/pull/20109))

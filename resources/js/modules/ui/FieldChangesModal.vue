@@ -119,9 +119,19 @@
         </div>
         <template v-else>
           <p v-if="comparison.hasBase" class="field-changes__versions">
-            <del>{{ comparison.fromLabel }}</del>
+            <span class="field-changes__from" aria-hidden="true">{{
+              comparison.fromLabel
+            }}</span>
             <span aria-hidden="true">→</span>
-            <ins>{{ comparison.toLabel }}</ins>
+            <span class="field-changes__to" aria-hidden="true">{{
+              comparison.toLabel
+            }}</span>
+            <span class="sr-only">{{
+              t('{from} compared with {to}', {
+                from: comparison.fromLabel,
+                to: comparison.toLabel,
+              })
+            }}</span>
           </p>
           <p
             v-if="detail?.status === 'outdated'"
@@ -129,7 +139,7 @@
           >
             {{
               t(
-                'The current entry changed this field after the draft was created, and the change was merged into the draft.'
+                'This field was changed after the draft was created, and the change was merged into the draft.'
               )
             }}
           </p>
@@ -194,5 +204,13 @@
     align-items: baseline;
     color: var(--c-text-quiet);
     font-size: var(--c-text-sm);
+  }
+
+  .field-changes__from {
+    text-decoration: line-through;
+  }
+
+  .field-changes__to {
+    text-decoration: underline;
   }
 </style>

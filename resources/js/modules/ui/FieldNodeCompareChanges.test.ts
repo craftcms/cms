@@ -146,8 +146,9 @@ describe('FieldNode change comparisons', () => {
     };
     expect(diff.current).toBe('Old summary');
     expect(diff.proposed).toBe('New summary');
-    expect(modal.querySelector('del')?.textContent).toBe('Current');
-    expect(modal.querySelector('ins')?.textContent).toBe('Draft 1');
+    expect(
+      modal.querySelector('.field-changes__versions .sr-only')?.textContent
+    ).toBe('Current compared with Draft 1');
     expect(
       (
         document.body.querySelector('craft-pane') as HTMLElement & {

@@ -16,6 +16,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 use function CraftCms\Cms\t;
@@ -52,7 +53,10 @@ readonly class FieldChangeComparisons
             && ! $element->getIsUnpublishedDraft();
     }
 
-    public function compare(ElementInterface $element, BaseField $layoutElement, AttributeStatus $status): FieldChangeComparison
+    /**
+     * Returns `null` when the field isn’t in the element’s form.
+     */
+    public function compare(ElementInterface $element, BaseField $layoutElement, AttributeStatus $status): ?FieldChangeComparison
     {
         if ($status === AttributeStatus::Outdated && ! $element->getIsRevision()) {
             $current = $element->getCanonical();
@@ -106,14 +110,14 @@ readonly class FieldChangeComparisons
         ElementInterface $to,
         string $toLabel,
         bool $hasBase = true,
-    ): FieldChangeComparison {
+    ): ?FieldChangeComparison {
         // Unique to this comparison, so its fields don’t share IDs with the editor’s.
         $namespace = 'fieldChanges'.Str::random(8);
         $toPayload = $this->previews->compile($element, $to, "{$namespace}To", ControlMode::ReadOnly);
         $toNode = $toPayload ? $this->previews->findNode($toPayload->nodes, (string) $layoutElement->uid) : null;
 
         if (! $toPayload || ! $toNode) {
-            abort(400, 'The field isn’t in the element’s form.');
+            return null;
         }
 
         $fromPayload = $from ? $this->previews->compile($element, $from, "{$namespace}From", ControlMode::ReadOnly) : null;
@@ -174,16 +178,17 @@ readonly class FieldChangeComparisons
                 return [null, $previous];
             }
 
-            $base = array_find(
-                $query
-                    ->ownerId($previousOwner->id)
-                    ->fieldId($revision->getField()?->id)
-                    ->siteId($revision->siteId)
-                    ->revisions(null)
-                    ->status(null)
-                    ->all(),
-                fn (ElementInterface $element): bool => $element->getCanonicalId() === $revision->getCanonicalId(),
-            );
+            $canonicalId = $revision->getCanonicalId();
+            $base = $query
+                ->ownerId($previousOwner->id)
+                ->fieldId($revision->getField()?->id)
+                ->siteId($revision->siteId)
+                ->revisions(null)
+                ->status(null)
+                ->where(fn (Builder $query) => $query
+                    ->where('elements.id', $canonicalId)
+                    ->orWhere('elements.canonicalId', $canonicalId))
+                ->one();
 
             return [$base, $previous];
         }
