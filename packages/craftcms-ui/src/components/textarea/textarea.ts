@@ -46,6 +46,10 @@ export default class CraftTextarea extends HasLabel(LionTextarea) {
   })
   override maxRows: number = 30;
 
+  /**
+   * Caps the textarea's height at `maxRows`, or removes the cap when it's
+   * unlimited.
+   */
   override setTextareaMaxHeight() {
     if (!Number.isFinite(this.maxRows)) {
       this._inputNode?.style.removeProperty('max-height');
