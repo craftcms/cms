@@ -3,6 +3,7 @@ import {UploadError} from '@/upload-client';
 import type {UploaderCallbacks} from '@/modules/uploader/base-uploader';
 import {BaseElementSelectInput} from '@/modules/element-select-input/base-element-select-input';
 import {IntervalManager} from '@/modules/interval-manager/interval-manager';
+import {openImageEditorDialog} from '@/modules/image-editor/open-image-editor-dialog';
 import {PreviewFileModal} from '@/modules/preview-file-modal/preview-file-modal';
 import '@craftcms/ui/components/progress-bar/progress-bar';
 import type CraftProgressBar from '@craftcms/ui/components/progress-bar/progress-bar';
@@ -76,6 +77,31 @@ export class AssetSelectInput extends BaseElementSelectInput {
     this.container.classList.remove('uploading');
 
     super.destroy();
+  }
+
+  /**
+   * Opens the image editor for the chip's asset, and puts an image saved as a
+   * new asset in its place.
+   */
+  protected override handleChipAction(
+    chip: HTMLElement,
+    name: string,
+    detail: Record<string, any>
+  ): boolean {
+    const behavior = detail.behavior;
+    if (name !== 'craft:element-action' || behavior?.type !== 'editImage') {
+      return super.handleChipAction(chip, name, detail);
+    }
+
+    void openImageEditorDialog(behavior.settings, (result) => {
+      if (result.newAssetId) {
+        this.replaceElement(behavior.assetId, result.newAssetId).catch(
+          (error) => showError(error?.message)
+        );
+      }
+    });
+
+    return true;
   }
 
   override elementSelectSettings(): Record<string, unknown> {
