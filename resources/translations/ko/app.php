@@ -213,6 +213,7 @@ return [
     'Couldn’t generate alt text: {error}' => '대체 텍스트를 생성할 수 없음: {error}',
     'Couldn’t load activity.' => '활동을 불러올 수 없습니다.',
     'Couldn’t load table data.' => '테이블 데이터를 불러올 수 없습니다.',
+    'Couldn’t load this field.' => 'Couldn’t load this field.',
     'Couldn’t mark notifications as read.' => '알림을 읽음으로 표시할 수 없습니다.',
     'Couldn’t move the selected items.' => '선택한 항목을 이동할 수 없습니다.',
     'Couldn’t open the settings.' => '설정을 열 수 없습니다.',
