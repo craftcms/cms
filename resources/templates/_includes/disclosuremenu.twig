@@ -97,3 +97,12 @@
     })();
   {% endjs %}
 {% endmacro %}
+
+{# Including this template directly renders the menu through `disclosureMenu()` #}
+{% if items is defined %}
+  {{ disclosureMenu(items, _context|filter((value, key) => key in [
+    'id', 'class', 'withButton', 'label', 'html', 'buttonLabel', 'buttonHtml',
+    'autoLabel', 'buttonAttributes', 'hiddenLabel', 'buttonSpinner', 'disabled',
+    'withSearchInput', 'omitIfEmpty', 'invoker',
+  ])) }}
+{% endif %}

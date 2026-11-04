@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Element\Enums\MenuItemType;
+use CraftCms\Cms\View\TemplateMode;
+
+use function CraftCms\Cms\template;
 
 it('returns empty html for empty menu when omitIfEmpty is true', function () {
     $html = app(MenuHtml::class)->disclosureMenu([], ['omitIfEmpty' => true]);
@@ -56,4 +59,16 @@ it('uses the given invoker when the menu has no button of its own', function () 
     ]);
 
     expect($html)->toContainTag('button', ['slot' => 'invoker', 'class' => 'btn menubtn']);
+});
+
+it('renders the menu when _includes/disclosuremenu is included directly', function () {
+    $html = template('_includes/disclosuremenu', [
+        'items' => [['label' => 'Included item', 'url' => '/included']],
+        'id' => 'included-menu',
+        'hiddenLabel' => 'Included actions',
+    ], templateMode: TemplateMode::Cp);
+
+    expect($html)->toContainTag('craft-action-menu', ['id' => 'included-menu'])
+        ->and($html)->toContainTag('craft-button', ['slot' => 'invoker', 'aria-label' => 'Included actions'])
+        ->and($html)->toContain('Included item');
 });
