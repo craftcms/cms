@@ -227,3 +227,4 @@ export type {ElementEditorPanel} from './common/slideouts';
 export {addActionsToChip, type ChipAction} from './common/craft/chip-actions';
 export {loadElementThumbs} from './modules/element-thumb-loader';
 export {openAssetImageEditor} from './modules/image-editor/open-asset-image-editor';
+export {Uploader} from './modules/uploader/uploader';
