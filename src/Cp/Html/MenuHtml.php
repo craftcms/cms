@@ -129,7 +129,11 @@ readonly class MenuHtml
             default => '',
         };
         $contentHtml = trim($labelHtml.$buttonLabelHtml);
-        $iconOnly = $contentHtml === '' || ($labelHtml === '' && str_contains($buttonLabelHtml, 'craft-icon'));
+        $iconOnly = $contentHtml === '' || (
+            $labelHtml === '' &&
+            str_contains($buttonLabelHtml, 'craft-icon') &&
+            trim(strip_tags($buttonLabelHtml)) === ''
+        );
 
         $ariaLabel = $config['hiddenLabel'] ?? ($iconOnly ? t('Actions') : null);
 
