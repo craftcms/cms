@@ -466,8 +466,16 @@ class Fields
      */
     public function getFieldsWithoutContent(mixed $context = null): Collection
     {
-        return $this->getAllFields($context)
-            ->filter(fn (FieldInterface $field) => $field::dbType() === null);
+        $fields = $this->_fields($context);
+
+        // Check the stored types rather than the fields, so only the fields that match get built.
+        // Types that no longer exist become missing fields, which don't store content either.
+        $types = array_filter(
+            array_unique(array_column($fields->raw(), 'type')),
+            fn (string $type) => ! is_subclass_of($type, FieldInterface::class) || $type::dbType() === null,
+        );
+
+        return $fields->whereIn('type', array_values($types), true)->collect();
     }
 
     /**

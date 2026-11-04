@@ -180,6 +180,14 @@ it('can get all fields with or without content', function () {
 
     expect($this->fields->getFieldsWithContent())->not()->toBeEmpty();
     expect($this->fields->getFieldsWithoutContent())->toBeEmpty();
+
+    $this->fields->saveField($this->fields->createField(['type' => Matrix::class, 'name' => 'Blocks', 'handle' => 'blocks']));
+    $this->fields->saveField($this->fields->createField(['type' => PlainText::class, 'name' => 'Gone', 'handle' => 'gone']));
+    DB::table(Table::FIELDS)->where('handle', 'gone')->update(['type' => 'some\\unrecognized\\Field']);
+    $this->fields->refreshFields();
+
+    expect($this->fields->getFieldsWithoutContent()->map(fn ($field) => [$field->handle, $field::class])->values()->all())
+        ->toEqualCanonicalizing([['blocks', Matrix::class], ['gone', MissingField::class]]);
 });
 
 it('can get fields by type', function () {
