@@ -408,6 +408,7 @@ class ActionMenu extends ViewComponent
         if (($item['type'] ?? null) === MenuItemType::HR->value) {
             return Html::tag('hr', '', [
                 'class' => 'action-menu__separator',
+                'hidden' => $item['hidden'] ?? false,
                 // `craft-action-menu`'s `::slotted()` styles can't reach a
                 // light-DOM `<hr>`, so style it inline (mirrors
                 // `action-menu.ts`'s `_renderItem()`).
@@ -463,6 +464,10 @@ class ActionMenu extends ViewComponent
         }
 
         foreach ($group['items'] ?? [] as $item) {
+            // A hidden group hides everything in it
+            if ($group['hidden'] ?? false) {
+                $item['hidden'] = true;
+            }
             $html .= $this->itemHtml($item);
         }
 

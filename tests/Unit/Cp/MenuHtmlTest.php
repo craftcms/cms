@@ -89,13 +89,23 @@ it('renders item info as text rather than a control inside the item', function (
         ->and($html)->toContain('Read the docs');
 });
 
-it('hides the heading of a hidden group', function () {
+it('hides a hidden group along with everything in it', function () {
     $html = app(MenuHtml::class)->disclosureMenu([
-        ['label' => 'Visible'],
+        ['label' => 'Visible', 'id' => 'visible'],
         ['heading' => 'Other sites', 'hidden' => true, 'items' => [
-            ['label' => 'Omitted', 'hidden' => true],
+            ['label' => 'Omitted', 'id' => 'omitted'],
         ]],
     ]);
 
-    expect($html)->toMatch('/<div class="action-menu__heading"[^>]* hidden[ >]/');
+    expect($html)->toMatch('/<div class="action-menu__heading"[^>]* hidden[ >]/')
+        ->and($html)->toContainTag('craft-action-item', ['id' => 'omitted', 'hidden' => true])
+        ->and($html)->toContainTag('craft-action-item', ['id' => 'visible', 'hidden' => false]);
+});
+
+it('keeps the visible text of a button with an icon and a label as its name', function () {
+    $html = app(MenuHtml::class)->disclosureMenu([['label' => 'Child']], [
+        'buttonHtml' => '<craft-icon name="plus"></craft-icon> Add',
+    ]);
+
+    expect($html)->toContainTag('craft-button', ['slot' => 'invoker', 'aria-label' => false, 'icon' => false]);
 });
