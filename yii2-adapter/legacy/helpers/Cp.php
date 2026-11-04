@@ -972,7 +972,7 @@ class Cp
                 attributes: $original->attributes,
                 contentHtml: $html,
                 // A handler that wrapped the original card already includes its footer
-                footerHtml: self::containsInputs($document, $original->footerHtml) ? '' : $original->footerHtml,
+                footerHtml: self::footerHtmlMissingFrom($document, $html, $original->footerHtml),
             );
         }
 
@@ -1015,29 +1015,41 @@ class Cp
     }
 
     /**
-     * Returns whether a document already has every input in a footer’s HTML,
-     * matched by name and value, however the handler serialized them.
+     * Returns the parts of a footer that a handler’s HTML doesn’t already have.
+     *
+     * Inputs are matched by name and value, however the handler serialized them.
      */
-    private static function containsInputs(HTMLDocument $document, string $footerHtml): bool
+    private static function footerHtmlMissingFrom(HTMLDocument $document, string $html, string $footerHtml): string
     {
-        $footer = HTMLDocument::createFromString(
-            sprintf('<!DOCTYPE html><html><body>%s</body></html>', $footerHtml),
-            LIBXML_NOERROR,
-            'UTF-8',
-        );
+        if ($footerHtml === '' || str_contains($html, $footerHtml)) {
+            return '';
+        }
 
         $inputs = [];
         foreach ($document->getElementsByTagName('input') as $input) {
             $inputs[] = [$input->getAttribute('name'), $input->getAttribute('value')];
         }
 
-        foreach ($footer->getElementsByTagName('input') as $input) {
-            if (!in_array([$input->getAttribute('name'), $input->getAttribute('value')], $inputs, true)) {
-                return false;
+        $footer = HTMLDocument::createFromString(
+            sprintf('<!DOCTYPE html><html><body>%s</body></html>', $footerHtml),
+            LIBXML_NOERROR,
+            'UTF-8',
+        );
+
+        $missing = '';
+        foreach ($footer->body->childNodes as $node) {
+            if (
+                $node instanceof DomElement &&
+                $node->localName === 'input' &&
+                in_array([$node->getAttribute('name'), $node->getAttribute('value')], $inputs, true)
+            ) {
+                continue;
             }
+
+            $missing .= $footer->saveHtml($node);
         }
 
-        return true;
+        return trim($missing);
     }
 
     /**
@@ -1139,8 +1151,8 @@ class Cp
             return;
         }
 
-        $parts->contentHtml = $document->saveHtml($content);
-
+        $before = '';
+        $after = '';
         $seenContent = false;
         foreach ($main->childNodes as $node) {
             if ($node === $content) {
@@ -1154,11 +1166,20 @@ class Cp
                 continue;
             }
 
-            if ($parts->thumbHtml === '') {
-                $parts->thumbAlignment = $seenContent ? 'end' : 'start';
-            }
+            if ($node instanceof DomElement && $node->classList->contains('thumb')) {
+                if ($parts->thumbHtml === '') {
+                    $parts->thumbAlignment = $seenContent ? 'end' : 'start';
+                }
 
-            $parts->thumbHtml .= $nodeHtml;
+                $parts->thumbHtml .= $nodeHtml;
+            } elseif ($seenContent) {
+                // Other markup a handler added beside the content stays in the content
+                $after .= $nodeHtml;
+            } else {
+                $before .= $nodeHtml;
+            }
         }
+
+        $parts->contentHtml = $before . $document->saveHtml($content) . $after;
     }
 }

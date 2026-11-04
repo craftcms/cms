@@ -163,3 +163,19 @@ it('keeps buttons a Craft 5 handler adds beside the card actions', function() {
 
     expect($data['cardActionsHtml'])->toContain('legacy-action');
 });
+
+it('keeps markup a Craft 5 handler adds beside the card content in the content', function() {
+    YiiEvent::on(Cp::class, Cp::EVENT_DEFINE_ELEMENT_CARD_HTML, function(DefineElementHtmlEvent $event) {
+        $event->html = str_replace('<div class="card-content">', '<p class="legacy-notice"></p><div class="card-content">', $event->html);
+    });
+
+    try {
+        $data = app(ElementHtml::class)->elementCardData(User::findOne());
+    } finally {
+        YiiEvent::off(Cp::class, Cp::EVENT_DEFINE_ELEMENT_CARD_HTML);
+    }
+
+    expect($data['cardContentHtml'])->toContain('legacy-notice')
+        ->and($data['cardThumbHtml'])->not->toContain('legacy-notice')
+        ->and($data['cardThumbHtml'])->toContain('class="thumb');
+});
