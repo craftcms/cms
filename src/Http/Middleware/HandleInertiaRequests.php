@@ -193,7 +193,14 @@ class HandleInertiaRequests extends Middleware
                 'hasWaitingJobs' => false,
             ],
             'isMultiSite' => fn () => Sites::isMultiSite(),
-            'readOnly' => fn () => ! $generalConfig->allowAdminChanges,
+            // Disabling admin changes locks settings, not content, so only
+            // settings screens are read-only for it. Other screens that can be
+            // read-only, such as releases, pass their own `readOnly` prop.
+            'readOnly' => function () use ($request, $generalConfig): bool {
+                $settingsPath = ltrim(trim((string) $generalConfig->cpTrigger, '/').'/settings', '/');
+
+                return ! $generalConfig->allowAdminChanges && $request->is($settingsPath, "$settingsPath/*");
+            },
             'locale' => fn () => app()->getLocale(),
             ...($currentUser !== null && $nav->hasSourceBadges() ? [
                 'navSourceBadges' => Inertia::defer(fn (): object => (object) $nav->getSourceBadgeCounts()),
