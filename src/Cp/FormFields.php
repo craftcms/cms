@@ -545,11 +545,13 @@ readonly class FormFields
         if ($custom) {
             HtmlStack::jsWithVars(fn ($radio, $text) => <<<JS
                 (() => {
-                  const \$radio = $($radio);
-                  const \$text = $($text);
-                  \$text.on('input', () => {
-                    \$radio.val(\$text.val());
-                  });
+                  const radio = document.querySelector($radio);
+                  const text = document.querySelector($text);
+                  if (radio && text) {
+                    text.addEventListener('input', () => {
+                      radio.value = text.value;
+                    });
+                  }
                 })();
                 JS, [
                 'radio' => '#'.InputNamespace::namespaceId($id),
