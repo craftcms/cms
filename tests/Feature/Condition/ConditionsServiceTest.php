@@ -255,3 +255,25 @@ it('resolves field rules that still reference a swapped-out field', function () 
 
     expect($rule->getLabel())->toBe('Swapped headline');
 });
+
+it('offers one rule for each label a field has across layouts', function () {
+    $fields = app(Fields::class);
+    $field = $fields->createField(['type' => PlainText::class, 'name' => 'Headline', 'handle' => 'headline']);
+    $fields->saveField($field);
+
+    $layout = fn (?string $label) => $fields->createLayout(['type' => Entry::class, 'tabs' => [[
+        'name' => 'Main',
+        'elements' => [['type' => CustomFieldElement::class, 'uid' => (string) Str::uuid(), 'fieldUid' => $field->uid, 'label' => $label]],
+    ]]]);
+
+    $condition = new ElementCondition(Entry::class);
+    $condition->setFieldLayouts([$layout(null), $layout(null), $layout('Teaser headline'), $layout(null)]);
+
+    $labels = collect($condition->getSelectableConditionRules())
+        ->filter(fn ($rule) => $rule instanceof TextFieldConditionRule)
+        ->map(fn (TextFieldConditionRule $rule) => $rule->getLabel())
+        ->values()
+        ->all();
+
+    expect($labels)->toBe(['Headline', 'Teaser headline']);
+});

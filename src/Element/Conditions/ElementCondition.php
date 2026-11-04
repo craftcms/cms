@@ -21,6 +21,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Json;
 use Illuminate\Database\Query\Builder;
 use Override;
 use RuntimeException;
@@ -238,6 +239,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
             }
 
             $labels = $this->customFieldIndex()['labels'];
+            $seenFieldRules = [];
 
             foreach ($this->getFieldLayouts() as $fieldLayout) {
                 foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
@@ -260,6 +262,15 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
                     }
 
                     $type['fieldUid'] = $field->uid;
+
+                    // A field shared by many layouts would otherwise offer one rule per layout, which the
+                    // condition builder can't tell apart and only shows once
+                    $key = Json::encode([$type, $label, $field->handle]);
+                    if (isset($seenFieldRules[$key])) {
+                        continue;
+                    }
+                    $seenFieldRules[$key] = true;
+
                     $type['layoutElementUid'] = $field->layoutElement->uid;
 
                     $types[] = $type;
