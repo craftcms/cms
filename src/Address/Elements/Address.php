@@ -15,7 +15,7 @@ use CraftCms\Cms\Address\Models\Address as AddressModel;
 use CraftCms\Cms\Address\Validation\AddressRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Actions\Copy;
+use CraftCms\Cms\Element\Actions\ClientAction;
 use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Concerns\NestedElement;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
@@ -25,6 +25,7 @@ use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Support\Html;
@@ -135,6 +136,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      */
     #[AllowedInSandbox]
     #[ElementProperty(ElementPropertyType::Float, 'The address’s latitude coordinate.', nullable: true, readable: true)]
+    #[Gql(exclude: true)]
     public ?string $latitude = null;
 
     /**
@@ -142,6 +144,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      */
     #[AllowedInSandbox]
     #[ElementProperty(ElementPropertyType::Float, 'The address’s longitude coordinate.', nullable: true, readable: true)]
+    #[Gql(exclude: true)]
     public ?string $longitude = null;
 
     /** @param array<string, mixed>|object $config */
@@ -230,12 +233,12 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         return new AddressCondition(self::class);
     }
 
-    /** @return list<class-string<Copy>> */
+    /** @return list<ClientAction> */
     #[Override]
     protected static function defineActions(string $source): array
     {
         return [
-            Copy::class,
+            ClientAction::copy(),
         ];
     }
 

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Date;
 use IntlDateFormatter;
 use Locale as IntlLocale;
 use NumberFormatter;
+use ResourceBundle;
 use RuntimeException;
 use Stringable;
 
@@ -111,7 +112,7 @@ class Locale implements Stringable
     public const string FORMAT_HUMAN = 'human';
 
     /**
-     * @var list<string> The languages that use RTL orientation.
+     * @var list<string> The languages that use RTL orientation, if ICU doesn’t have layout data for a locale.
      */
     private static array $rtlLanguages = [
         'ar',
@@ -274,6 +275,13 @@ class Locale implements Stringable
      */
     public function getOrientation(): string
     {
+        $bundle = ResourceBundle::create(str_replace('-', '_', $this->aliasOf ?? $this->id), 'ICUDATA');
+        $layout = $bundle['layout']['characters'] ?? null;
+
+        if (is_string($layout)) {
+            return $layout === 'right-to-left' ? 'rtl' : 'ltr';
+        }
+
         if (in_array($this->getLanguageID(), self::$rtlLanguages, true)) {
             return 'rtl';
         }

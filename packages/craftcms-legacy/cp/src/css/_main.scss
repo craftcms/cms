@@ -6429,8 +6429,13 @@ table.editable {
   z-index: 1;
 
   &.modified {
-    background-color: var(--blue-600);
-    box-shadow: 0 0 5px hsl(221deg 83% 53% / 15%);
+    background-color: var(--c-field-modified-indicator, var(--violet-600));
+    box-shadow: 0 0 5px
+      color-mix(
+        in srgb,
+        var(--c-field-modified-indicator, var(--violet-600)) 15%,
+        transparent
+      );
   }
 
   &.outdated {

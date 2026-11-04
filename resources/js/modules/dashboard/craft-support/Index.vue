@@ -106,10 +106,6 @@
     box-shadow: var(--c-card-shadow, var(--c-shadow-sm));
   }
   .support-tile {
-    --c-color-fill-normal: color-mix(
-      var(--c-color-gray-fill-quiet),
-      transparent 70%
-    );
     display: flex;
     width: 100%;
     min-height: 150px;
@@ -119,6 +115,13 @@
       var(--c-color-gray-border-quiet);
     border-radius: 0;
     white-space: normal;
+  }
+  /* At rest, tiles match the other widgets' bodies (a gray card's fill). */
+  .support-tile:not(:hover, :active) {
+    background-color: color-mix(
+      var(--c-color-gray-fill-quiet),
+      transparent 70%
+    );
   }
   .support-tile:first-child {
     border-start-start-radius: var(--c-card-radius, var(--c-radius-md));

@@ -140,7 +140,7 @@ it('tours Live Preview: devices, targets, and a slideout in the editor', async (
   // Opening it slides in the editor beside the previewed page.
   await page.getByRole('button', {name: 'Preview'}).click();
   await expect
-    .element(page.getByRole('button', {name: 'Close Preview'}))
+    .element(page.getByRole('button', {name: 'Close', exact: true}))
     .toBeVisible();
   let frame = await waitForFrame();
   expect(frame.src).toContain('/live-preview/entry');
@@ -208,7 +208,7 @@ it('tours Live Preview: devices, targets, and a slideout in the editor', async (
   expect(controller.isOpen.value).toBe(true);
 
   // Closing slides it out and hands the editor's content back to the page.
-  await page.getByRole('button', {name: 'Close Preview'}).click();
+  await page.getByRole('button', {name: 'Close', exact: true}).click();
   await expect.poll(() => getComputedStyle(overlay()).display).toBe('none');
   await nextTick();
   expect(host!.querySelector('#title')).not.toBeNull();
@@ -278,7 +278,7 @@ it('moves the editor in once the pane has slid in, and back once it has slid out
     .toBe(true);
   expect(spinner()).toBeNull();
 
-  await page.getByRole('button', {name: 'Close Preview'}).click();
+  await page.getByRole('button', {name: 'Close', exact: true}).click();
   expect(document.querySelector('.lp-editor')!.contains(title())).toBe(true);
 
   await expect.poll(() => host!.contains(title())).toBe(true);

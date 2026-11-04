@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {computed} from 'vue';
-  import {t} from '@craftcms/ui';
+  import {t, type ChipThumbSizeValue} from '@craftcms/ui';
   import '@craftcms/ui/components/chip/chip';
   import DragShadow from '@/common/components/DragShadow.vue';
   import {
@@ -52,6 +52,11 @@
       linked?: boolean;
       /** The chips are nested under another, and draw a branch line to it. */
       nested?: boolean;
+      /**
+       * The chips' thumbnail size. The chips take a size to suit it; left
+       * unset, they're small.
+       */
+      thumbSize?: ChipThumbSizeValue;
     }>(),
     {
       data: () => [],
@@ -217,7 +222,8 @@
       ></span>
 
       <craft-chip
-        size="small"
+        :size="thumbSize ? undefined : 'small'"
+        :thumb-size="thumbSize"
         :data-id="String(element.id)"
         :data-site-id="element.siteId ?? undefined"
         :data-color="element.color ?? undefined"
@@ -307,6 +313,7 @@
         :selectable="selectable"
         :read-only="readOnly"
         :linked="linked"
+        :thumb-size="thumbSize"
         @edit="emit('edit', $event)"
       >
         <template v-if="$slots.prefix" #prefix="slotProps">

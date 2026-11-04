@@ -16,7 +16,7 @@ use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Element\Actions\Copy;
+use CraftCms\Cms\Element\Actions\ClientAction;
 use CraftCms\Cms\Element\Actions\Delete;
 use CraftCms\Cms\Element\Actions\DeleteForSite;
 use CraftCms\Cms\Element\Actions\Duplicate;
@@ -39,10 +39,6 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Element\Validation\ElementRules;
-use CraftCms\Cms\Entry\Actions\MoveToSection;
-use CraftCms\Cms\Entry\Actions\NewChild;
-use CraftCms\Cms\Entry\Actions\NewSiblingAfter;
-use CraftCms\Cms\Entry\Actions\NewSiblingBefore;
 use CraftCms\Cms\Entry\Concerns\LegacyConstants;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Conditions\SectionConditionRule;
@@ -60,9 +56,11 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\ViewModels\EntryEditViewModel;
+use CraftCms\Cms\Mcp\Attributes\Mcp;
 use CraftCms\Cms\Route\ElementRoute;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
@@ -74,7 +72,6 @@ use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Attributes\Importable;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
-use CraftCms\Cms\Support\Facades\ElementActions;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Entries;
@@ -156,6 +153,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     #[AllowedInSandbox]
     #[Importable('sectionId', 'Section ID', excludeFromUiMapping: true, canBeCleared: false)]
     #[ElementProperty(ElementPropertyType::Id, 'The ID of the section that contains the entry.', readable: true)]
+    #[Gql(write: false)]
+    #[Mcp(update: false)]
     public ?int $sectionId = null;
 
     /**
@@ -338,6 +337,18 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     #[Override]
+    public static function supportsRevisions(): bool
+    {
+        return true;
+    }
+
+    #[Override]
+    public static function hasStructures(): bool
+    {
+        return true;
+    }
+
+    #[Override]
     public static function trackChanges(): bool
     {
         return true;
@@ -488,7 +499,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
         foreach ($sectionTypes as $type => $heading) {
             if (! empty($sectionsByType[$type])) {
-                $sources[] = ['heading' => $heading];
+                $sources[] = ['heading' => $heading, 'handle' => $type];
 
                 foreach ($sectionsByType[$type] as $section) {
                     /** @var Section $section */
@@ -518,8 +529,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                     if ($type === SectionType::Structure->value) {
                         $source['defaultSort'] = ['structure', 'asc'];
                         $source['structureId'] = $section->structureId;
-                        $structure = $section->structureId ? Structures::getStructureById($section->structureId) : null;
-                        $source['structureEditable'] = $user && $structure && $user->can('edit', $structure);
+                        // What StructurePolicy::edit() checks, without looking the structure and its section up again
+                        $source['structureEditable'] = $user && $section->structureId && $user->can("saveEntries:$section->uid");
                     } else {
                         $source['defaultSort'] = ['postDate', 'desc'];
                     }
@@ -660,29 +671,37 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 $section->type === SectionType::Structure &&
                 $user->can('createEntries:'.$section->uid)
             ) {
-                $newEntryUrl = 'entries/'.$section->handle.'/new';
-                // $newEntryUrl = sprintf('%s/new', $section->getCpIndexUri());
+                $newEntryUrl = Url::cpUrl(
+                    'entries/'.$section->handle.'/new',
+                    Sites::isMultiSite() ? ['site' => $site->handle] : [],
+                );
+                $type = static::lowerDisplayName();
 
-                if (Sites::isMultiSite()) {
-                    $newEntryUrl .= '?site='.$site->handle;
-                }
+                $actions[] = new ClientAction(
+                    key: 'new-sibling-before',
+                    label: t('Create a new {type} before', ['type' => $type]),
+                    event: 'craft:new-element',
+                    detail: ['url' => $newEntryUrl, 'param' => 'before'],
+                    bulk: false,
+                );
 
-                $actions[] = ElementActions::createAction([
-                    'type' => NewSiblingBefore::class,
-                    'newSiblingUrl' => $newEntryUrl,
-                ], static::class);
-
-                $actions[] = ElementActions::createAction([
-                    'type' => NewSiblingAfter::class,
-                    'newSiblingUrl' => $newEntryUrl,
-                ], static::class);
+                $actions[] = new ClientAction(
+                    key: 'new-sibling-after',
+                    label: t('Create a new {type} after', ['type' => $type]),
+                    event: 'craft:new-element',
+                    detail: ['url' => $newEntryUrl, 'param' => 'after'],
+                    bulk: false,
+                );
 
                 if ($section->maxLevels !== 1) {
-                    $actions[] = ElementActions::createAction([
-                        'type' => NewChild::class,
-                        'maxLevels' => $section->maxLevels,
-                        'newChildUrl' => $newEntryUrl,
-                    ], static::class);
+                    $actions[] = new ClientAction(
+                        key: 'new-child',
+                        label: t('Create a new child {type}', ['type' => $type]),
+                        event: 'craft:new-element',
+                        detail: ['url' => $newEntryUrl, 'param' => 'parentId'],
+                        bulk: false,
+                        selectionAttribute: 'acceptsChildren',
+                    );
                 }
             }
 
@@ -703,8 +722,17 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                     ];
                 }
 
-                $actions[] = Copy::class;
-                $actions[] = MoveToSection::class;
+                $actions[] = ClientAction::copy();
+                $actions[] = new ClientAction(
+                    key: 'move-to-section',
+                    label: t('Move to…'),
+                    event: 'entries:move-to-section',
+                    detail: [
+                        'siteId' => $site->id,
+                        'currentSectionUid' => $section->uid,
+                    ],
+                    selectionAttribute: 'movable',
+                );
             }
 
             $actions[] = Delete::class;
@@ -720,7 +748,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 ];
             }
         } else {
-            $actions[] = Copy::class;
+            $actions[] = ClientAction::copy();
         }
 
         if (
@@ -1585,6 +1613,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     #[ElementProperty(ElementPropertyType::Id, 'The ID of the entry type that contains the entry.', readable: true, nonNull: true)]
+    #[Gql(write: false)]
+    #[Mcp(hint: 'New entries default to the section’s first entry type.')]
     public function setTypeId(int $typeId): void
     {
         $this->_typeId = $typeId;
@@ -1702,6 +1732,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      * @param  int|array{0:int}|string|null  $authorId
      */
     #[ElementProperty(ElementPropertyType::Id, 'The primary entry author’s ID.', nullable: true, readable: true)]
+    #[Gql(Gql::CanQueryAllUsers)]
+    #[Mcp(hint: 'New entries default to the acting user.')]
     public function setAuthorId(array|int|string|null $authorId): void
     {
         $authorId = $this->normalizeAuthorIds($authorId)[0] ?? null;
@@ -1731,6 +1763,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      * @param  User[]|int[]|string|int|null  $authorIds
      */
     #[ElementProperty(ElementPropertyType::IdList, 'The entry authors’ IDs.', readable: true)]
+    #[Gql(Gql::CanQueryAllUsers)]
     public function setAuthorIds(array|string|int|null $authorIds): void
     {
         $authorIds = $this->normalizeAuthorIds($authorIds);

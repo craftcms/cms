@@ -849,8 +849,8 @@ class Sections
             throw $e;
         }
 
-        // Clear caches
-        $this->refreshSections();
+        // Clear caches, including the section's entry type assignments
+        EntryTypes::refreshEntryTypes();
 
         if ($wasTrashed) {
             /** @var ElementCollection<int, Entry> $entries */
@@ -1189,8 +1189,8 @@ class Sections
             throw $e;
         }
 
-        // Clear caches
-        $this->refreshSections();
+        // Clear caches, including the section's entry type assignments
+        EntryTypes::refreshEntryTypes();
 
         event(new SectionDeleted($section));
 

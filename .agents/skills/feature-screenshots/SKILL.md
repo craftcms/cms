@@ -39,9 +39,16 @@ captures at the display's pixel density, so Retina shots come out at 2×.
    person's preference:
 
    ```js
-   document.documentElement.dataset.theme = 'dark'; // dark
-   delete document.documentElement.dataset.theme;   // light
+   const original = document.documentElement.dataset.theme;
+   document.documentElement.dataset.theme = 'dark';  // or 'light'
    ```
+
+   Set `light` explicitly rather than deleting the attribute, which falls back
+   to the person's own theme. Put `original` back when you're done.
+
+   Colors transition when the theme changes, so wait about 800ms before
+   reading a background color for `__iso()` or capturing. Read too soon, and
+   the shot comes out with the other theme's background.
 
    Keep the page size, crop and padding the same in both, and name the files
    `…-light.png` and `…-dark.png`.
@@ -69,7 +76,6 @@ window.__iso = (bg) => {
       body * { visibility: hidden !important; }
       FEATURE, FEATURE * { visibility: visible !important; }
       input, textarea { caret-color: transparent !important; }
-      #claude-agent-glow-border, #claude-phantom-cursor { display: none !important; }
     `;
     document.head.append(s);
   }
@@ -94,12 +100,46 @@ Replace `FEATURE` with the feature's outermost element.
 - Hiding the caret keeps two captures of the same state identical.
 - Blur any focus ring that isn't part of what you're showing
   (`document.activeElement.blur()`), such as a view heading focused on open.
-- Move the pointer off the feature, unless you're showing a hover state.
-  `screencapture -x` leaves the cursor out.
 - A tooltip or menu that extends past the feature's edges gets cut off by the
   crop. Leave it out, or capture a larger region.
 
-Call `__unIso()` when done, and close any tabs you opened.
+### Keep the extension's overlays out
+
+While the Claude in Chrome extension drives a tab, it draws a glowing border
+around the page's edges and its own cursor where the last click or hover
+was. Neither is in the page's DOM, so CSS can't hide them, and
+`screencapture -x` records both: it only leaves out the system cursor.
+
+- Hover somewhere outside the capture region before capturing, unless you're
+  showing a hover state. Clicking or hovering moves the drawn cursor there.
+- Keep the capture region about 24px clear of the window's edges. For a
+  feature that sits against an edge, such as a slideout, a sidebar or the
+  header, move it in for the shot and capture it there:
+
+  ```js
+  feature.style.translate = '-24px 24px'; // a slideout against the top and right edges
+  ```
+
+- For a full-page shot, inset the whole app, with the page's background
+  around it, and capture the inset area:
+
+  ```js
+  const inset = document.createElement('style');
+  inset.id = 'shot-inset';
+  inset.textContent = `
+    html { background: var(--shot-bg) !important; }
+    #app { position: fixed !important; inset: 24px !important; overflow: hidden !important; transform: translateZ(0); }
+  `;
+  document.documentElement.style.setProperty('--shot-bg', getComputedStyle(document.body).backgroundColor);
+  document.head.append(inset);
+  ```
+
+  `transform` makes `#app` the containing block for the page's own fixed
+  elements, so they move in with it. The inset area is the capture region,
+  and its margin is a good place to park the pointer.
+
+Call `__unIso()` when done, undo any inset or `translate`, and close any tabs
+you opened.
 
 ## Transparent PNG
 
@@ -147,6 +187,14 @@ the difference. Shadows come out as real partial transparency.
    remains inside the padding.
 
 ## Adding them to a PR
+
+Only add screenshots to a PR by uploading them to github.com as below, which
+needs the person's signed-in GitHub session in Chrome. Every image in a PR must
+be a `https://github.com/user-attachments/assets/…` URL. Never host them
+anywhere else: not in the repository (no commits, branches or custom refs such
+as `refs/screenshots/…` to link `raw` URLs from), and not on another service,
+such as an agent tool's artifact or file host. If you can't upload them, leave
+them out and say so.
 
 1. Name the files for what they show, such as `command-palette-docs.png`.
    GitHub uses the file name as the image's alt text.

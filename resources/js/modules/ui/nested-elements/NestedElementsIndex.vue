@@ -411,11 +411,14 @@
           :context="model.view.elementIndex.context"
           :params="
             manager
-              ? nestedIndexParams(
-                  manager,
-                  manager.ownerId,
-                  control.index?.initial
-                )
+              ? {
+                  ...nestedIndexParams(
+                    manager,
+                    manager.ownerId,
+                    control.index?.initial
+                  ),
+                  criteria: {status: model.view.status.value || null},
+                }
               : {}
           "
           :perform="actions.perform"

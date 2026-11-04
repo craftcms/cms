@@ -7,16 +7,7 @@ namespace CraftCms\Cms\Asset\Elements;
 use Closure;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Actions\AnalyzeImages;
-use CraftCms\Cms\Asset\Actions\CopyReferenceTag;
-use CraftCms\Cms\Asset\Actions\CopyUrl;
 use CraftCms\Cms\Asset\Actions\DeleteAssets;
-use CraftCms\Cms\Asset\Actions\DownloadAssetFile;
-use CraftCms\Cms\Asset\Actions\EditImage;
-use CraftCms\Cms\Asset\Actions\MoveAssets;
-use CraftCms\Cms\Asset\Actions\PreviewAsset;
-use CraftCms\Cms\Asset\Actions\RenameFile;
-use CraftCms\Cms\Asset\Actions\ReplaceFile;
-use CraftCms\Cms\Asset\Actions\ShowInFolder;
 use CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis;
 use CraftCms\Cms\Asset\Analysis\ImageAnalyzer;
 use CraftCms\Cms\Asset\Analysis\Tasks\TagImage;
@@ -50,6 +41,7 @@ use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Actions\ClientAction;
 use CraftCms\Cms\Element\Actions\DeleteForSite;
 use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Attributes\ElementProperty;
@@ -71,6 +63,7 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\ViewModels\AssetEditViewModel;
@@ -84,6 +77,7 @@ use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\ImageHash;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Image\ImageTransformHelper;
+use CraftCms\Cms\Mcp\Attributes\Mcp;
 use CraftCms\Cms\Search\SearchQuery;
 use CraftCms\Cms\Search\SearchQueryTerm;
 use CraftCms\Cms\Search\SearchQueryTermGroup;
@@ -133,7 +127,6 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Imagick;
-use Intervention\Image\Encoders\PngEncoder;
 use InvalidArgumentException;
 use League\Flysystem\MountManager;
 use League\Flysystem\UnableToDeleteFile;
@@ -199,6 +192,9 @@ class Asset extends Element
 
     public const string ERROR_FILENAME_CONFLICT = 'filename_conflict';
 
+    /** The width and height of the image that covers element cards, from {@see getCardCoverUrl()}. */
+    public const array CARD_COVER_SIZE = [800, 600];
+
     /** How many times the color grid is scaled up for {@see getPlaceholderDataUrl()}. */
     private const int PLACEHOLDER_SCALE = 3;
 
@@ -226,6 +222,8 @@ class Asset extends Element
     #[AllowedInSandbox]
     #[Importable('folderId', 'Folder ID')]
     #[ElementProperty(ElementPropertyType::Id, 'The ID of the folder that the asset belongs to.', readable: true, nonNull: true)]
+    #[Gql(write: false)]
+    #[Mcp(hint: 'Changing it moves the file.')]
     public ?int $folderId = null;
 
     /**
@@ -233,6 +231,8 @@ class Asset extends Element
      */
     #[AllowedInSandbox]
     #[ElementProperty(ElementPropertyType::Id, 'The ID of the user who first added the asset, if known.', nullable: true, readable: true)]
+    #[Gql(Gql::CanQueryAllUsers)]
+    #[Mcp(hint: 'Null marks it unknown. Changing it requires permission to save other users’ assets in the volume.')]
     public ?int $uploaderId = null;
 
     /**
@@ -350,6 +350,7 @@ class Asset extends Element
      * @var int|null New folder ID
      */
     #[ElementProperty(ElementPropertyType::Id, 'The ID of the folder to move the asset to.')]
+    #[Mcp(create: false, update: false)]
     public ?int $newFolderId = null;
 
     /**
@@ -450,6 +451,9 @@ class Asset extends Element
      * @var array{x: float, y: float}|null Focal point
      */
     private ?array $_focalPoint = null;
+
+    /** @var array{list<list<string>>, string}|null The color grid {@see getPlaceholderDataUrl()} last painted, and its data URL */
+    private ?array $_placeholder = null;
 
     private ?Volume $_volume = null;
 
@@ -788,7 +792,7 @@ class Asset extends Element
         return array_map(fn (Volume $volume) => $volume->getFieldLayout(), $volumes);
     }
 
-    /** @return list<class-string|array{type: class-string, label?: string, restorableElementsOnly?: bool}> */
+    /** @return list<class-string|array{type: class-string, restorableElementsOnly?: bool}|ClientAction> */
     #[Override]
     protected static function defineActions(string $source): array
     {
@@ -805,23 +809,45 @@ class Asset extends Element
         if (isset($volume)) {
             $isTemp = $volume->isTemporary();
 
-            $actions[] = [
-                'type' => PreviewAsset::class,
-                'label' => t('Preview file'),
-            ];
+            $actions[] = new ClientAction(
+                key: 'preview-file',
+                label: t('Preview file'),
+                event: 'craft:preview-file',
+                bulk: false,
+            );
 
-            // Download
-            $actions[] = DownloadAssetFile::class;
+            $actions[] = new ClientAction(
+                key: 'download-file',
+                label: t('Download'),
+                event: 'assets:download-file',
+                bulk: false,
+            );
 
             if ($isTemp || Gate::check("replaceFiles:$volume->uid")) {
-                // Rename/Replace File
-                $actions[] = RenameFile::class;
-                $actions[] = ReplaceFile::class;
+                $actions[] = new ClientAction(
+                    key: 'rename-file',
+                    label: t('Rename file'),
+                    event: 'assets:rename-file',
+                    bulk: false,
+                    selectionAttribute: 'movable',
+                );
+                $actions[] = new ClientAction(
+                    key: 'replace-file',
+                    label: t('Replace file'),
+                    event: 'assets:replace-file',
+                    bulk: false,
+                    selectionAttribute: 'replaceable',
+                );
             }
 
-            // Copy URL
             if ($volume->sourceHasUrls()) {
-                $actions[] = CopyUrl::class;
+                $actions[] = new ClientAction(
+                    key: 'copy-url',
+                    label: t('Copy URL'),
+                    event: 'assets:copy-url',
+                    bulk: false,
+                    selectionAttribute: 'hasUrl',
+                );
             }
 
             // Show in folder
@@ -833,23 +859,43 @@ class Asset extends Element
                 isset($query->search) &&
                 $query->includeSubfolders
             ) {
-                $actions[] = ShowInFolder::class;
+                $actions[] = new ClientAction(
+                    key: 'show-in-folder',
+                    label: t('Show in folder'),
+                    event: 'assets:show-in-folder',
+                    bulk: false,
+                );
             }
 
-            // Copy Reference Tag
-            $actions[] = CopyReferenceTag::class;
+            $actions[] = new ClientAction(
+                key: 'copy-reference-tag',
+                label: t('Copy reference tag'),
+                event: 'assets:copy-reference-tag',
+                bulk: false,
+            );
 
-            // Edit Image
             if ($isTemp || Gate::check("editImages:$volume->uid")) {
-                $actions[] = EditImage::class;
+                $actions[] = new ClientAction(
+                    key: 'edit-image',
+                    label: t('Edit Image'),
+                    event: 'assets:edit-image',
+                    detail: self::sharedImageEditorSettings(),
+                    bulk: false,
+                    selectionAttribute: 'imageEditable',
+                );
             }
 
             if (app(ImageAnalyzer::class)->available()) {
                 $actions[] = AnalyzeImages::class;
             }
 
-            // Move
-            $actions[] = MoveAssets::class;
+            // The index adds the folders the assets can move to
+            $actions[] = new ClientAction(
+                key: 'move-assets',
+                label: t('Move…'),
+                event: 'assets:move-assets',
+                selectionAttribute: 'movable',
+            );
 
             // Restore
             $actions[] = [
@@ -2504,6 +2550,8 @@ JS, [
      * Sets the filename (with extension).
      */
     #[ElementProperty(ElementPropertyType::String, 'The filename of the asset file.', readable: true, nonNull: true)]
+    #[Gql(write: false)]
+    #[Mcp(hint: 'Changing it renames the file.')]
     public function setFilename(string $filename): void
     {
         $this->_filename = $filename;
@@ -2791,7 +2839,7 @@ JS, [
      */
     public function getCardCoverUrl(): ?string
     {
-        return AssetsService::getThumbUrl($this, 800, 600, false, ImageTransformMode::Crop);
+        return AssetsService::getThumbUrl($this, ...self::CARD_COVER_SIZE, iconFallback: false, mode: ImageTransformMode::Crop);
     }
 
     /**
@@ -2834,16 +2882,36 @@ JS, [
             return null;
         }
 
-        $pixels = ColorGrid::interpolate($grid, self::PLACEHOLDER_SCALE);
-        $image = Images::getManager()->createImage(count($pixels[0]), count($pixels));
+        // Cards show it twice: behind their cover image and their thumbnail
+        if ($this->_placeholder !== null && $this->_placeholder[0] === $grid) {
+            return $this->_placeholder[1];
+        }
 
-        foreach ($pixels as $y => $row) {
-            foreach ($row as $x => $color) {
-                $image->drawPixel($x, $y, $color);
+        $pixels = ColorGrid::interpolate($grid, self::PLACEHOLDER_SCALE);
+
+        // Encoded by hand: drawing it pixel by pixel with an image library took ~20ms per image, and element
+        // indexes show one for every image on the page.
+        $data = '';
+
+        foreach ($pixels as $row) {
+            // Each scanline starts with its filter type: none
+            $data .= "\0";
+
+            foreach ($row as $color) {
+                [$red, $green, $blue, $alpha] = ColorGrid::parse($color);
+                $data .= pack('C4', $red, $green, $blue, (int) round($alpha * 255));
             }
         }
 
-        return $image->encode(new PngEncoder)->toDataUri()->toString();
+        $chunk = fn (string $type, string $body): string => pack('N', strlen($body)).$type.$body.pack('N', crc32($type.$body));
+        // 8-bit RGBA, with default compression, filtering, and no interlacing
+        $header = pack('N2C5', count($pixels[0]), count($pixels), 8, 6, 0, 0, 0);
+        $png = "\x89PNG\r\n\x1a\n".$chunk('IHDR', $header).$chunk('IDAT', (string) gzcompress($data)).$chunk('IEND', '');
+
+        $url = 'data:image/png;base64,'.base64_encode($png);
+        $this->_placeholder = [$grid, $url];
+
+        return $url;
     }
 
     /**

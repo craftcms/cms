@@ -11,7 +11,9 @@ import NestedElementsIndex from './NestedElementsIndex.vue';
 import {NestedElementsControlKey} from './nested-elements-context';
 import {
   button,
+  COPY_ACTION,
   DELETE_ACTION,
+  DUPLICATE_ACTION,
   goToPage,
   inlineTitleInput,
   nestedElement,
@@ -93,14 +95,14 @@ describe('NestedElementsIndex', () => {
     action: string,
     label: string
   ): ActionItemButton {
-    const item = standardNestedActions.find((candidate) =>
-      candidate.key.endsWith(
-        action === 'copy'
-          ? '\\Copy'
-          : action === 'duplicate'
-            ? '\\Duplicate'
-            : '\\Delete'
-      )
+    const key =
+      action === 'copy'
+        ? COPY_ACTION
+        : action === 'duplicate'
+          ? DUPLICATE_ACTION
+          : DELETE_ACTION;
+    const item = standardNestedActions.find(
+      (candidate) => candidate.key === key
     )!;
 
     return nestedElementAction(elementId, item, label) as ActionItemButton;
@@ -115,12 +117,14 @@ describe('NestedElementsIndex', () => {
     ],
     reorderable = true,
     actions,
+    statusMenuValue,
   }: {
     editable?: boolean;
     mode?: 'table' | 'cards';
     pages?: NestedElement[][];
     reorderable?: boolean;
     actions?: BulkActionItem[] | null;
+    statusMenuValue?: string;
   } = {}) {
     restoreElementInternals = stubElementInternals();
     const server = {reorderable};
@@ -134,6 +138,7 @@ describe('NestedElementsIndex', () => {
         mode: viewMode,
         reorderable: server.reorderable,
         actions,
+        statusMenuValue,
       });
     const craft = {
       cp: {
@@ -299,23 +304,24 @@ describe('NestedElementsIndex', () => {
 
     const release = holdLoads();
     button(root, 'Refresh').click();
-    await vi.waitFor(() => expect(pageInput(root).disabled).toBe(true));
-    expect(previous().disabled).toBe(true);
+    await vi.waitFor(() => expect(previous().disabled).toBe(true));
     expect(next().disabled).toBe(true);
     expect(button(root, 'Export').disabled).toBe(true);
+    expect(pageInput(root).disabled).toBeFalsy();
     release();
-    await vi.waitFor(() => expect(pageInput(root).disabled).toBe(false));
+    await vi.waitFor(() => expect(previous().disabled).toBe(false));
+    expect(button(root, 'Export').disabled).toBe(false);
 
     let finishExport!: () => void;
     actions.run.mockImplementationOnce(
       () => new Promise<void>((resolve) => (finishExport = resolve))
     );
     exportButton(root, 'XLSX').click();
-    await vi.waitFor(() => expect(pageInput(root).disabled).toBe(true));
-    expect(previous().disabled).toBe(true);
+    await vi.waitFor(() => expect(previous().disabled).toBe(true));
     expect(button(root, 'Export').disabled).toBe(true);
+    expect(pageInput(root).disabled).toBeFalsy();
     finishExport();
-    await vi.waitFor(() => expect(pageInput(root).disabled).toBe(false));
+    await vi.waitFor(() => expect(previous().disabled).toBe(false));
   });
 
   it('stops Enter in embedded pager and export inputs from reaching the owner', async () => {
@@ -648,6 +654,37 @@ describe('NestedElementsIndex', () => {
     );
   });
 
+  it('runs server bulk actions against the status menu’s selection', async () => {
+    const {root} = mount({
+      statusMenuValue: 'trashed',
+      actions: [
+        {
+          key: 'Restore',
+          label: 'Restore',
+          action: {
+            type: 'http',
+            method: 'POST',
+            url: '/actions/element-indexes/perform-action',
+            body: {elementAction: 'Restore'},
+          },
+        },
+      ],
+    });
+    selectRow(root, 11);
+    await nextTick();
+
+    actionItem(root, 'Restore').click();
+    await vi.waitFor(() => expect(actions.run).toHaveBeenCalledOnce());
+
+    expect(actions.run.mock.calls[0]![0]).toMatchObject({
+      body: {
+        elementAction: 'Restore',
+        elementIds: [11],
+        criteria: {status: 'trashed'},
+      },
+    });
+  });
+
   it('preserves server table actions and intercepts only the primary edit link', async () => {
     const pluginAction = vi.fn();
     window.addEventListener('plugin:inspect', pluginAction, {once: true});
@@ -744,7 +781,7 @@ describe('NestedElementsIndex', () => {
   });
 
   it('leaves table links native when the owner is read-only', () => {
-    const {root, craft} = mount({editable: false, pages: [[element(11)]]});
+    const {root} = mount({editable: false, pages: [[element(11)]]});
     const link = root.querySelector<HTMLAnchorElement>(
       'a[href="/edit/11?elementId=11"]'
     )!;

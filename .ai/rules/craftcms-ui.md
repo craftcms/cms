@@ -21,11 +21,22 @@ copy its pattern without applying that test first. Give each thing a
 consumer can vary its own story. Describe behavior every instance shares in
 a story that already shows it, rather than a story of its own.
 
+Before adding to `<component>.stories.ts`, check why you want the story. If
+it's to get a check (axe, a `play()` assertion) or to show a reviewer a case,
+it isn't an API story: verify the case in a `.browser.test.ts`, and add it to
+the edge-cases stories file only if a reviewer needs to see it. Placing the
+component somewhere, such as inside a `craft-field`, in a table cell or
+beside other content, to show how it's named or wired up (`labelled-by`
+pointing at a column heading) isn't an API variant either. Document the attribute in the `.mdx` prose and verify
+it in a browser test.
+
 Edge cases a reviewer needs to see — hard inputs, stress content, failure
 states, and fallbacks for missing data — go in
-`<component>.edge-cases.stories.ts`, titled `Components/<Name>/Edge Cases`
-with `tags: ['!autodocs']`, so they sit beside the component in the sidebar
-but stay off its docs page. Name each after the mode it exercises
+`<component>.edge-cases.stories.ts`, titled with the component's own
+`<component>.stories.ts` title plus `/Edge Cases` (`Form Controls/Slide
+Picker/Edge Cases`, `Components/Card/Edge Cases`) and tagged
+`tags: ['!autodocs']`, so they sit inside the component's folder in the
+sidebar but stay off its docs page. Name each after the mode it exercises
 (`CoverHardImages`), and size its canvas so the whole case is visible.
 They're published with the rest of Storybook, so they can be reviewed with
 or without a PR.
@@ -43,6 +54,23 @@ The checklist holds only what the component itself does, so every item can be ve
 
 ## Name the component's interaction pattern when one exists
 If a documented pattern fits the component — a WAI-ARIA APG pattern, or another well-documented or researched one — name and link it at the top of its `.a11y.md`, followed by a "Not for" list: behaviors that would break the pattern, and the component to use instead (see `tabs/tabs.a11y.md`). Check any new attribute, mode or state against both before adding it. If it contradicts the pattern, use the component that matches the behavior, per "Choosing an interaction pattern" in `.github/instructions/a11y.instructions.md`. `craft-tabs` grew a `collapsible` mode this way and had to be removed. If no documented pattern applies, the requirements checklist alone is enough.
+
+## Build form controls on Lion
+A new single form control is built on Lion, so `craft-field`, validation and posting work as they do for every other control:
+
+- Extend an existing Craft control when yours is a variation of one, as `craft-select-color` extends `craft-select-rich`.
+- Otherwise extend `HasLabel(LionField)` and render the element people interact with into its `input` slot from `get slots()`. `craft-slide-picker` does this with `craft-slide-picker-slider`, the same way `craft-switch` uses `craft-switch-button`.
+- When a listbox generates its own options, render them into `_listboxNode`, as `craft-combobox` does.
+- Expose the value as `modelValue`, adding a `model-value` attribute when markup needs to set it. Lion's `value` is the string view value.
+- Keep the element people interact with in light DOM, and make it the only form control in the component.
+
+### Naming and describing the control
+Lion builds the control's `aria-labelledby` and `aria-describedby` from the elements passed to it, and rewrites them on every update:
+
+- To name or describe the control with an element the component renders, pass that element to Lion's `addToAriaLabelledBy()` or `addToAriaDescribedBy()`, as `FieldNotices` does.
+- When the control will be used in a table cell, where the column heading labels it, apply the `HostAriaReferences` mixin. It gives the host `labelled-by` and `described-by` attributes, which take element ids, so markup can name or describe the control with an element elsewhere on the page. List both with `@attr` tags in the component's doc comment, since the manifest doesn't pick up the mixin's properties.
+
+Set the control's `aria-labelledby` and `aria-describedby` only through these methods. Anything written onto the control directly is overwritten.
 
 ## Build the UI package before consumers
 Build `@craftcms/ui` with `vp run build:ui` before building or checking the main Vite application after UI package changes. Run its tests with `vp run test:ui`.

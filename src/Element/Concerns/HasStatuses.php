@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Element\Concerns;
 
 use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Enums\ElementPropertyType;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Support\Attributes\Importable;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 
@@ -61,6 +62,7 @@ trait HasStatuses
      * @param  int|null  $siteId  The site ID to check. Defaults to the current site.
      */
     #[ElementProperty(ElementPropertyType::Boolean, 'Whether the {element} is enabled for the site.', readable: true, writable: false)]
+    #[Gql(exclude: true)]
     public function getEnabledForSite(?int $siteId = null): ?bool
     {
         $siteId ??= $this->siteId;

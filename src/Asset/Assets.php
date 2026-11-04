@@ -161,10 +161,12 @@ class Assets
     }
 
     /**
+     * Loads the transform indexes for assets' thumbnails up front, so they aren't looked up one at a time.
+     *
      * @param  list<Asset>  $assets
-     * @param  list<int>  $sizes
+     * @param  list<int|array{int, int}>  $sizes  The sizes of square thumbnails, or their widths and heights
      */
-    public function preloadThumbs(array $assets, array $sizes): void
+    public function preloadThumbs(array $assets, array $sizes, ImageTransformMode $mode = ImageTransformMode::Fit): void
     {
         if (Event::hasListeners(ThumbUrlResolving::class)) {
             return;
@@ -175,7 +177,11 @@ class Assets
             && empty($asset->getFieldLayout()->thumbSources)));
 
         $this->assetTransformers->preload($assets, fn (Asset $asset): array => array_map(
-            fn (int $size): array => ['width' => $size, 'height' => $size, 'mode' => ImageTransformMode::Fit->value],
+            fn (int|array $size): array => [
+                'width' => is_array($size) ? $size[0] : $size,
+                'height' => is_array($size) ? $size[1] : $size,
+                'mode' => $mode->value,
+            ],
             $sizes,
         ));
     }

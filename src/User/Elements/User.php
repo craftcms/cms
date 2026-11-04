@@ -37,10 +37,12 @@ use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Field\Addresses;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Http\ViewModels\UserEditViewModel;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\ImportHelper;
+use CraftCms\Cms\Mcp\Attributes\Mcp;
 use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
@@ -204,6 +206,8 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     #[AllowedInSandbox]
     #[Importable('photoId', 'Photo (ID, URL, or path)')]
     #[ElementProperty(ElementPropertyType::Id, 'The ID of the user’s photo asset.', nullable: true)]
+    #[Gql(exclude: true)]
+    #[Mcp(update: false)]
     public ?int $photoId = null;
 
     /**
@@ -211,6 +215,8 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      */
     #[AllowedInSandbox]
     #[ElementProperty(ElementPropertyType::Boolean, 'Whether the user is active.')]
+    #[Gql(exclude: true)]
+    #[Mcp(update: false)]
     public bool $active = false;
 
     /**
@@ -218,6 +224,8 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      */
     #[AllowedInSandbox]
     #[ElementProperty(ElementPropertyType::Boolean, 'Whether the user is pending activation.')]
+    #[Gql(exclude: true)]
+    #[Mcp(update: false)]
     public bool $pending = false;
 
     /**
@@ -237,6 +245,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      */
     #[AllowedInSandbox]
     #[ElementProperty(ElementPropertyType::Boolean, 'Whether the user is an admin.')]
+    #[Gql(exclude: true)]
     public bool $admin = false;
 
     /**
@@ -266,6 +275,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     #[AllowedInSandbox]
     #[Importable('affiliatedSiteId', 'Affiliated Site ID', canBeMatchCriteria: false)]
     #[ElementProperty(ElementPropertyType::Id, 'The ID of the site the user is affiliated with.', nullable: true, readable: true)]
+    #[Mcp(update: false)]
     public ?int $affiliatedSiteId = null;
 
     /**
@@ -293,6 +303,8 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * @var bool Whether the user has a dashboard
      */
     #[ElementProperty(ElementPropertyType::Boolean, 'Whether the user has a dashboard.')]
+    #[Gql(exclude: true)]
+    #[Mcp(update: false)]
     public bool $hasDashboard = false;
 
     /**
@@ -315,6 +327,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * @var string|null New password
      */
     #[ElementProperty(ElementPropertyType::String, 'A new password for the user.')]
+    #[Gql(exclude: true)]
     public ?string $newPassword = null;
 
     /**
@@ -535,7 +548,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
             ],
             self::STATUS_PENDING => [
                 'label' => t('Pending'),
-                'color' => Color::Orange,
+                'color' => Color::Sky,
             ],
             self::STATUS_SUSPENDED => [
                 'label' => t('Suspended'),
@@ -614,6 +627,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
                 ],
                 [
                     'heading' => t('Account Type'),
+                    'handle' => 'account-type',
                 ],
                 [
                     'key' => 'credentialed',
@@ -642,7 +656,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
             $groups = UserGroups::getAllGroups();
 
             if ($groups->isNotEmpty()) {
-                $sources[] = ['heading' => t('Groups')];
+                $sources[] = ['heading' => t('Groups'), 'handle' => 'groups'];
 
                 foreach ($groups as $group) {
                     $sources[] = [

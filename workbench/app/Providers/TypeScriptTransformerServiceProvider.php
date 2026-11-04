@@ -13,6 +13,7 @@ use CraftCms\Cms\Condition\Enums\GroupOperator;
 use CraftCms\Cms\Cp\CommandPalette\CommandPaletteItem;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Data\NavItem;
+use CraftCms\Cms\Cp\Data\NavNode;
 use CraftCms\Cms\Cp\Data\NotificationButtonData;
 use CraftCms\Cms\Cp\Data\NotificationData;
 use CraftCms\Cms\Dashboard\Data\WidgetData;
@@ -129,6 +130,7 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     NodePayload::class,
                     ActionItem::class,
                     NavItem::class,
+                    NavNode::class,
                     CommandPaletteItem::class,
                     NotificationButtonData::class,
                     NotificationData::class,

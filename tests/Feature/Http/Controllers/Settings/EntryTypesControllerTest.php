@@ -437,6 +437,24 @@ it('renders the entry type select', function () {
         ->toContain('>otherType</span>');
 });
 
+it('keeps extra value keys when rendering the entry type select', function () {
+    $entryType = EntryType::first();
+
+    $html = postJson(action([EntryTypesController::class, 'renderSelect']), [
+        'value' => [['id' => $entryType->id, 'name' => 'Renamed', 'pluginSetting' => 'x', 'other' => 'y']],
+        'allowOverrides' => true,
+        'create' => false,
+        'name' => 'entryTypes',
+        'disabled' => false,
+        'extraValueKeys' => ['pluginSetting', 'id'],
+    ])->assertOk()->json('html');
+
+    expect($html)->toContainTag('input', [
+        'name' => 'entryTypes[]',
+        'value' => sprintf('{"id":%s,"name":"Renamed","pluginSetting":"x"}', $entryType->id),
+    ]);
+});
+
 it('can render override settings', function () {
     postJson(action([EntryTypesController::class, 'renderOverrideSettings']), [
         'id' => EntryType::first()->id,

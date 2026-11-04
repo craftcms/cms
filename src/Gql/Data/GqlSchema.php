@@ -6,7 +6,9 @@ namespace CraftCms\Cms\Gql\Data;
 
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Validation\Rule;
 use Override;
 use Stringable;
@@ -26,6 +28,15 @@ class GqlSchema extends Component implements Stringable
     public bool $isPublic = false;
 
     public ?string $uid = null;
+
+    /**
+     * The user an authenticated schema was created for.
+     *
+     * Schema components should limit their results to what this user is permitted to access.
+     *
+     * @see Gql::getSchemaForUser()
+     */
+    public ?User $user = null;
 
     /** @var array<string, array<string, list<string>|true>> */
     private array $_cachedPairs = [];

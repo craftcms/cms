@@ -8,7 +8,7 @@ use function CraftCms\Cms\renderString;
 
 it('renders the web component from the legacy checkbox variables', function () {
     $html = renderString(
-        "{% include '_includes/forms/checkbox' with {id: 'cb', name: 'agree', label: 'I agree', checked: true} only %}",
+        "{{ craft.cp.checkbox({id: 'cb', name: 'agree', label: 'I agree', checked: true})|raw }}",
         templateMode: TemplateMode::Cp,
     );
 
@@ -22,7 +22,7 @@ it('renders the web component from the legacy checkbox variables', function () {
 
 it('prefers checkboxLabel and suppresses labelledby when aria-label is set', function () {
     $html = renderString(
-        "{% include '_includes/forms/checkbox' with {id: 'cb', label: 'Generic', checkboxLabel: 'Specific', labelledBy: 'external', aria: {label: 'Spoken'}} only %}",
+        "{{ craft.cp.checkbox({id: 'cb', label: 'Generic', checkboxLabel: 'Specific', labelledBy: 'external', aria: {label: 'Spoken'}})|raw }}",
         templateMode: TemplateMode::Cp,
     );
 
@@ -33,7 +33,7 @@ it('prefers checkboxLabel and suppresses labelledby when aria-label is set', fun
 
 it('wires field toggles from the legacy variables', function () {
     $html = renderString(
-        "{% include '_includes/forms/checkbox' with {id: 'cb', targetPrefix: 'opt-'} only %}",
+        "{{ craft.cp.checkbox({id: 'cb', targetPrefix: 'opt-'})|raw }}",
         templateMode: TemplateMode::Cp,
     );
 

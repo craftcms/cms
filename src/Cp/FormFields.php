@@ -14,6 +14,8 @@ use CraftCms\Cms\Cp\Components\CheckboxGroup;
 use CraftCms\Cms\Cp\Components\CheckboxSelect;
 use CraftCms\Cms\Cp\Components\Combobox;
 use CraftCms\Cms\Cp\Components\ComponentSelect;
+use CraftCms\Cms\Cp\Components\CopyAttribute;
+use CraftCms\Cms\Cp\Components\ElementSelect;
 use CraftCms\Cms\Cp\Components\EntryTypeSelect;
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\FieldGroup;
@@ -22,12 +24,14 @@ use CraftCms\Cms\Cp\Components\InputColor;
 use CraftCms\Cms\Cp\Components\InputCopy;
 use CraftCms\Cms\Cp\Components\InputDate;
 use CraftCms\Cms\Cp\Components\InputDateTime;
+use CraftCms\Cms\Cp\Components\InputMoney;
 use CraftCms\Cms\Cp\Components\InputPassword;
 use CraftCms\Cms\Cp\Components\InputTime;
 use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\Radio;
 use CraftCms\Cms\Cp\Components\RadioGroup;
 use CraftCms\Cms\Cp\Components\Select;
+use CraftCms\Cms\Cp\Components\SelectRich;
 use CraftCms\Cms\Cp\Components\Textarea;
 use CraftCms\Cms\Cp\Enums\CheckboxSelectPresentation;
 use CraftCms\Cms\Cp\Enums\Size;
@@ -36,6 +40,7 @@ use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -44,6 +49,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Ui\Controls\Table as TableControl;
 use CraftCms\Cms\Ui\Controls\TableColumn;
 use CraftCms\Cms\Ui\Enums\ControlMode;
@@ -153,11 +159,7 @@ readonly class FormFields
                 ])
                 : null,
             $showAttribute
-                ? self::renderTemplate('_includes/forms/copytextbtn', [
-                    'id' => "$id-attribute",
-                    'class' => ['code', 'small', 'light'],
-                    'value' => $config['attribute'],
-                ])
+                ? CopyAttribute::make()->value((string) $config['attribute'])->toHtml()
                 : null,
             isset($config['actions']) ? (string) $config['actions'] : null,
         ]));
@@ -732,7 +734,9 @@ readonly class FormFields
             'autocapitalize' => false,
         ]), $input);
 
-        return $input->presets($config['presets'] ?? []);
+        return $input
+            ->presets($config['presets'] ?? [])
+            ->alpha($config['alpha'] ?? false);
     }
 
     /** @param array<string, mixed> $config */
@@ -752,13 +756,74 @@ readonly class FormFields
     {
         $config['id'] ??= 'colorselect'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/colorSelect', $config);
+        return self::fieldHtml(self::colorSelectHtml(...), $config);
+    }
+
+    /**
+     * A `<craft-combobox>` of colors, built from the legacy colorSelect
+     * variables. Without `options` it lists the named palette colors.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public static function colorSelectHtml(array $config): string
+    {
+        $withBlankOption = (bool) ($config['withBlankOption'] ?? true);
+        $value = $config['value'] ?? null;
+
+        if ($value instanceof Color) {
+            $value = $value->value;
+        }
+
+        $options = array_map(
+            fn (array $option): array => str_starts_with((string) $option['value'], '_')
+                ? $option
+                : Arr::merge($option, ['data' => ['color' => $option['value']]]),
+            $config['options'] ?? [
+                ['label' => t('Red'), 'value' => 'red'],
+                ['label' => t('Orange'), 'value' => 'orange'],
+                ['label' => t('Amber'), 'value' => 'amber'],
+                ['label' => t('Yellow'), 'value' => 'yellow'],
+                ['label' => t('Lime'), 'value' => 'lime'],
+                ['label' => t('Green'), 'value' => 'green'],
+                ['label' => t('Emerald'), 'value' => 'emerald'],
+                ['label' => t('Teal'), 'value' => 'teal'],
+                ['label' => t('Cyan'), 'value' => 'cyan'],
+                ['label' => t('Sky'), 'value' => 'sky'],
+                ['label' => t('Blue'), 'value' => 'blue'],
+                ['label' => t('Indigo'), 'value' => 'indigo'],
+                ['label' => t('Violet'), 'value' => 'violet'],
+                ['label' => t('Purple'), 'value' => 'purple'],
+                ['label' => t('Fuchsia'), 'value' => 'fuchsia'],
+                ['label' => t('Pink'), 'value' => 'pink'],
+                ['label' => t('Rose'), 'value' => 'rose'],
+            ],
+        );
+
+        if ($withBlankOption) {
+            array_unshift($options, ['label' => t('No color'), 'value' => '__blank__', 'data' => ['color' => '']]);
+        }
+
+        return self::selectizeHtml([
+            ...$config,
+            'id' => $config['id'] ?? 'fs'.mt_rand(),
+            'options' => $options,
+            'value' => $value ?: ($withBlankOption ? '__blank__' : null),
+        ]);
     }
 
     /** @param array<string, mixed> $config */
     public static function iconPickerHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/iconPicker', $config);
+        return Html::tag('craft-icon-picker', '', [
+            'name' => ($config['name'] ?? false) ?: false,
+            'value' => ($config['value'] ?? null) ?: false,
+            'free-only' => (bool) ($config['freeOnly'] ?? false),
+            'sets' => isset($config['sets']) ? Json::encode($config['sets']) : false,
+            // `static` (editable table cells) maps to the disabled state.
+            'disabled' => ($config['static'] ?? false) || ($config['disabled'] ?? false),
+            'labelled-by' => ($config['labelledBy'] ?? false) ?: false,
+            'described-by' => ($config['describedBy'] ?? false) ?: false,
+        ]);
     }
 
     /** @param array<string, mixed> $config */
@@ -770,7 +835,7 @@ readonly class FormFields
         // `for=` label — and keep the component itself label-less.
         $config['fieldset'] = true;
 
-        return self::fieldHtml('template:_includes/forms/iconPicker', $config);
+        return self::fieldHtml(self::iconPickerHtml(...), $config);
     }
 
     /** @param array<string, mixed> $config */
@@ -955,7 +1020,77 @@ readonly class FormFields
     /** @param array<string, mixed> $config */
     public static function rangeHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/range', $config);
+        $id = $config['id'] ?? 'range'.mt_rand();
+        $numberInputId = $config['numberInputId'] ?? "$id-num";
+        $descriptionId = $config['descriptionId'] ?? "$id-desc";
+        $step = $config['step'] ?? 1;
+        $value = $config['value'] ?? null;
+        $inputAttributes = $config['inputAttributes'] ?? [];
+        $labelledBy = empty($inputAttributes['aria']['label'])
+            ? (($config['labelledBy'] ?? $config['labelId'] ?? false) ?: null)
+            : null;
+        $suffix = $config['suffix'] ?? false;
+        $hasSuffix = $suffix !== false;
+
+        $rangeInput = Html::tag('input', '', Arr::merge([
+            'class' => [...Html::explodeClass($config['class'] ?? []), 'range'],
+            'type' => 'range',
+            'id' => $id,
+            'name' => ($config['name'] ?? false) ?: false,
+            'value' => $value,
+            'disabled' => (bool) ($config['disabled'] ?? false),
+            'title' => ($config['title'] ?? false) ?: false,
+            'step' => $step,
+            'min' => $config['min'] ?? null,
+            'max' => $config['max'] ?? null,
+            'dir' => $config['orientation'] ?? $inputAttributes['dir'] ?? I18N::getLocale()->getOrientation(),
+            'aria' => [
+                'labelledby' => $labelledBy ?? false,
+                'describedby' => implode(' ', array_filter([
+                    $config['describedBy'] ?? null,
+                    $hasSuffix ? $descriptionId : null,
+                ])) ?: false,
+            ],
+        ], $inputAttributes));
+
+        $numberInput = self::textHtml([
+            'type' => 'number',
+            'id' => $numberInputId,
+            'descriptionId' => $descriptionId,
+            'value' => $value,
+            'inputmode' => 'numeric',
+            'min' => $config['min'] ?? null,
+            'max' => $config['max'] ?? null,
+            'step' => $step,
+            'suffix' => $suffix,
+            'labelledBy' => $labelledBy,
+        ]);
+
+        // Keep the slider and the number input in step; the number snaps back to the slider's clamped value on blur.
+        HtmlStack::js(sprintf(<<<'JS'
+(() => {
+  const range = document.getElementById(%s);
+  const number = document.getElementById(%s);
+  if (!range || !number) {
+    return;
+  }
+  range.addEventListener('input', () => {
+    number.value = range.value;
+  });
+  number.addEventListener('input', () => {
+    range.value = number.value;
+  });
+  number.addEventListener('blur', () => {
+    number.value = range.value;
+  });
+})();
+JS, Json::encode(InputNamespace::namespaceId($id)), Json::encode(InputNamespace::namespaceId($numberInputId))));
+
+        return Html::tag('div',
+            Html::tag('div', $rangeInput, ['class' => 'range-wrapper']).
+            Html::tag('div', $numberInput),
+            ['class' => 'flex'],
+        );
     }
 
     /** @param array<string, mixed> $config */
@@ -963,13 +1098,46 @@ readonly class FormFields
     {
         $config['id'] ??= 'range'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/range', $config);
+        return self::fieldHtml(self::rangeHtml(...), $config);
     }
 
     /** @param array<string, mixed> $config */
     public static function moneyInputHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/money', $config);
+        return self::moneyFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Maps the legacy money config surface onto the {@see InputMoney}
+     * component, which formats the amount and shows the currency itself.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public static function moneyFromConfig(array $config): InputMoney
+    {
+        self::deprecateConfig('money', $config, [
+            'currencyLabel' => 'is no longer supported. `<craft-input-money>` labels the amount from `currency`.',
+            'jsSettings' => 'is no longer supported. `<craft-input-money>` formats the amount itself.',
+        ]);
+
+        $disabled = (bool) ($config['disabled'] ?? false);
+        $value = $config['value'] ?? null;
+
+        $input = InputMoney::make();
+        self::textFromConfig(array_merge($config, [
+            'id' => $config['id'] ?? 'money'.mt_rand(),
+            'value' => $value === '' || $value === false ? null : $value,
+            'inputmode' => $config['inputmode'] ?? 'decimal',
+        ]), $input);
+
+        return $input
+            ->currency((string) ($config['currency'] ?? 'USD'))
+            ->locale((string) ($config['formattingLocale'] ?? I18N::getFormattingLocale()->id))
+            ->decimals(isset($config['decimals']) ? (int) $config['decimals'] : 2)
+            ->decimalSeparator($config['decimalSeparator'] ?? null)
+            ->groupSeparator($config['groupSeparator'] ?? null)
+            ->showCurrency((bool) ($config['showCurrency'] ?? true))
+            ->clearable(($config['showClear'] ?? true) && ! $disabled);
     }
 
     /** @param array<string, mixed> $config */
@@ -977,13 +1145,13 @@ readonly class FormFields
     {
         $config['id'] ??= 'money'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/money', $config);
+        return self::fieldHtml(self::moneyInputHtml(...), $config);
     }
 
     /** @param array<string, mixed> $config */
     public static function selectHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/select', $config);
+        return self::selectFromConfig($config)->toHtml();
     }
 
     /** @param array<string, mixed> $config */
@@ -991,13 +1159,16 @@ readonly class FormFields
     {
         $config['id'] ??= 'select'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/select', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::selectFromConfig($c)->toHtml(),
+            $config,
+        );
     }
 
     /** @param array<string, mixed> $config */
     public static function customSelectHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/customSelect', $config);
+        return self::customSelectFromConfig($config)->toHtml();
     }
 
     /** @param array<string, mixed> $config */
@@ -1005,13 +1176,59 @@ readonly class FormFields
     {
         $config['id'] ??= 'customselect'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/customSelect', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::customSelectFromConfig($c)->toHtml(),
+            $config,
+        );
+    }
+
+    /**
+     * Maps a legacy custom select config onto {@see SelectRich}. The menu and
+     * button attribute keys styled the old menu button and have no equivalent.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public static function customSelectFromConfig(array $config): SelectRich
+    {
+        return SelectRich::make()
+            ->id($config['id'] ?? null)
+            ->name(($config['name'] ?? false) ?: null)
+            ->value(($config['value'] ?? '') === '' ? null : $config['value'])
+            ->options(array_map(fn (array $option): array => [
+                'label' => isset($option['labelHtml']) ? new HtmlString($option['labelHtml']) : (string) ($option['label'] ?? ''),
+                'value' => $option['value'],
+                'icon' => ($option['icon'] ?? '') === '' ? null : (string) $option['icon'],
+                'iconColor' => $option['iconColor'] ?? null,
+                'disabled' => (bool) ($option['disabled'] ?? false),
+            ], array_values($config['options'] ?? [])))
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->attributes($config['attributes'] ?? []);
     }
 
     /** @param array<string, mixed> $config */
     public static function selectizeHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/selectize', $config);
+        // Multi-selects keep the native `<select name="…[]" multiple>`, which is what posts an array.
+        if ($config['multi'] ?? false) {
+            return self::multiSelectHtml($config);
+        }
+
+        return self::selectizeFromConfig($config)->toHtml();
+    }
+
+    /**
+     * A time zone `<craft-combobox>`, built from the legacy timeZone variables.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public static function timeZoneHtml(array $config): string
+    {
+        $config['options'] ??= array_map(
+            fn (array $option): array => ['label' => $option['label'], 'value' => $option['value'], 'data' => $option['data'] ?? null],
+            SelectOptions::getTimeZoneOptions($config['offsetDate'] ?? null),
+        );
+
+        return self::selectizeHtml($config);
     }
 
     /** @param array<string, mixed> $config */
@@ -1019,13 +1236,51 @@ readonly class FormFields
     {
         $config['id'] ??= 'selectize'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/selectize', $config);
+        return self::fieldHtml(self::selectizeHtml(...), $config);
     }
 
     /** @param array<string, mixed> $config */
     public static function multiSelectHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/multiselect', $config);
+        $name = ($config['name'] ?? false) ?: null;
+        $values = array_map(strval(...), (array) ($config['values'] ?? []));
+        $options = '';
+        $group = null;
+        $groupHtml = '';
+
+        foreach (self::normalizeSelectOptions($config['options'] ?? []) as $option) {
+            if ($option['group'] !== $group) {
+                $options .= $group === null ? $groupHtml : Html::tag('optgroup', $groupHtml, ['label' => $group]);
+                $group = $option['group'];
+                $groupHtml = '';
+            }
+
+            $groupHtml .= Html::tag('option', Html::encode($option['label']), [
+                'value' => (string) $option['value'],
+                'selected' => in_array((string) $option['value'], $values, true),
+                'disabled' => $option['disabled'] ?? false,
+                'hidden' => $option['hidden'] ?? false,
+                'data' => ($option['data'] ?? []) ?: false,
+            ]);
+        }
+
+        $options .= $group === null ? $groupHtml : Html::tag('optgroup', $groupHtml, ['label' => $group]);
+
+        // The empty hidden input posts the name when nothing is selected.
+        return ($name !== null ? Html::hiddenInput($name, '') : '').
+            Html::tag('div', Html::tag('select', $options, Arr::merge([
+                'multiple' => true,
+                'id' => $config['id'] ?? false,
+                'name' => $name !== null ? "{$name}[]" : false,
+                'autofocus' => ($config['autofocus'] ?? false) && ! request()->isMobileBrowser(true),
+                'disabled' => (bool) ($config['disabled'] ?? false),
+                'size' => $config['size'] ?? false,
+                'aria' => [
+                    'describedby' => ($config['describedBy'] ?? false) ?: false,
+                ],
+            ], $config['inputAttributes'] ?? [])), Arr::merge([
+                'class' => [...Html::explodeClass($config['class'] ?? []), 'multiselect'],
+            ], $config['containerAttributes'] ?? []));
     }
 
     /** @param array<string, mixed> $config */
@@ -1033,7 +1288,7 @@ readonly class FormFields
     {
         $config['id'] ??= 'multiselect'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/multiselect', $config);
+        return self::fieldHtml(self::multiSelectHtml(...), $config);
     }
 
     /** @param array<string, mixed> $config */
@@ -1268,7 +1523,8 @@ readonly class FormFields
             ->disabled((bool) ($config['disabled'] ?? false))
             ->required((bool) ($config['required'] ?? false))
             ->describedBy(($config['describedBy'] ?? false) ?: null)
-            ->labelledBy(empty($config['inputAttributes']['aria']['label'] ?? null) ? (($config['labelledBy'] ?? false) ?: null) : null);
+            ->labelledBy(empty($config['inputAttributes']['aria']['label'] ?? null) ? (($config['labelledBy'] ?? false) ?: null) : null)
+            ->attributes($config['containerAttributes'] ?? []);
 
         /**
          * `toggle` marked the select as driving the visibility of other fields,
@@ -1682,7 +1938,7 @@ readonly class FormFields
     /** @param array<string, mixed> $config */
     public static function elementSelectHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/elementSelect', $config);
+        return self::elementSelectFromConfig($config)->toHtml();
     }
 
     /** @param array<string, mixed> $config */
@@ -1690,7 +1946,66 @@ readonly class FormFields
     {
         $config['id'] ??= 'elementselect'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/elementSelect', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::elementSelectFromConfig($c)->toHtml(),
+            $config,
+        );
+    }
+
+    /**
+     * Maps a legacy element select config onto {@see ElementSelect}. The
+     * selector always boots through its custom element, so `registerJs` and
+     * `useCustomElement` no longer apply; `jsClass` names the class it boots.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public static function elementSelectFromConfig(array $config): ElementSelect
+    {
+        $int = fn (string $key): ?int => ($config[$key] ?? null) === null || $config[$key] === '' ? null : (int) $config[$key];
+
+        return ElementSelect::make()
+            ->id($config['id'] ?? 'elementselect'.mt_rand())
+            ->name(($config['name'] ?? false) ?: null)
+            ->elementType($config['elementType'] ?? null)
+            ->elements($config['elements'] ?? [])
+            ->inputClass(($config['inputClass'] ?? $config['jsClass'] ?? null) ?: null)
+            ->context($config['context'] ?? 'field')
+            ->sources($config['sources'] ?? null)
+            ->condition($config['condition'] ?? null)
+            ->criteria($config['criteria'] ?? null)
+            ->searchCriteria($config['searchCriteria'] ?? null)
+            ->referenceElement($config['referenceElement'] ?? null)
+            ->sourceElementId($int('sourceElementId'))
+            ->storageKey($config['storageKey'] ?? null)
+            ->defaultPlacement($config['defaultPlacement'] ?? 'end')
+            ->viewMode($config['viewMode'] ?? 'list')
+            ->prevalidate((bool) ($config['prevalidate'] ?? false))
+            ->fieldId($int('fieldId'))
+            ->single((bool) ($config['single'] ?? false))
+            ->limit($int('limit'))
+            ->showActionMenu((bool) ($config['showActionMenu'] ?? true))
+            ->sortable((bool) ($config['sortable'] ?? true))
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->maintainHierarchy((bool) ($config['maintainHierarchy'] ?? false))
+            ->branchLimit($int('branchLimit'))
+            ->allowAdd((bool) ($config['allowAdd'] ?? true))
+            ->allowRemove((bool) ($config['allowRemove'] ?? true))
+            ->allowSelfRelations((bool) ($config['allowSelfRelations'] ?? false))
+            ->disabledElementIds($config['disabledElementIds'] ?? null)
+            ->showSiteMenu($config['showSiteMenu'] ?? false)
+            ->siteIds($config['siteIds'] ?? null)
+            ->selectionLabel($config['selectionLabel'] ?? null)
+            ->modalSettings($config['modalSettings'] ?? [])
+            ->settings($config['jsSettings'] ?? [])
+            ->describedBy(($config['describedBy'] ?? false) ?: null)
+            ->labelId(($config['labelId'] ?? false) ?: null)
+            ->size($config['size'] ?? null)
+            ->inline($config['inline'] ?? null)
+            ->showInGrid($config['showInGrid'] ?? null)
+            ->attributes(Arr::merge(
+                ['class' => Html::explodeClass($config['class'] ?? [])],
+                $config['containerAttributes'] ?? [],
+            ));
     }
 
     /**
@@ -1772,27 +2087,35 @@ readonly class FormFields
     /** @param array<string, mixed> $config */
     public static function entryTypeSelectHtml(array $config): string
     {
-        if (! empty($config['jsClass'])) {
-            return self::renderTemplate('_includes/forms/entryTypeSelect', $config);
-        }
-
         return self::entryTypeSelectFromConfig($config)->toHtml();
     }
 
     /** @param array<string, mixed> $config */
     public static function fieldSelectHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/fieldSelect', $config);
+        return self::fieldSelectFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Maps the legacy fieldSelect config surface onto a {@see ComponentSelect}
+     * listing every field, with handles shown.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public static function fieldSelectFromConfig(array $config): ComponentSelect
+    {
+        $config['id'] ??= 'fieldselect'.mt_rand();
+        $config['options'] ??= Fields::getAllFields()->all();
+        $config['showHandles'] = true;
+        $config['createAction'] = ($config['create'] ?? false) ? Url::cpUrl('settings/fields/edit') : null;
+
+        return self::componentSelectFromConfig($config);
     }
 
     /** @param array<string, mixed> $config */
     public static function entryTypeSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'entrytypeselect'.mt_rand();
-
-        if (! empty($config['jsClass'])) {
-            return self::fieldHtml('template:_includes/forms/entryTypeSelect', $config);
-        }
 
         return self::fieldHtml(
             fn (array $c): string => self::entryTypeSelectFromConfig($c)->toHtml(),
@@ -1965,7 +2288,10 @@ readonly class FormFields
             }
         }
 
-        return self::fieldHtml('template:_includes/forms/autosuggest', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::autosuggestFromConfig($c)->toHtml(),
+            $config,
+        );
     }
 
     public static function addressFieldsHtml(

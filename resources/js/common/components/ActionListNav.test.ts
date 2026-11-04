@@ -322,3 +322,22 @@ it('tells the page you are on apart from the parents on the way to it', async ()
   expect(blog?.current).toBe(true);
   expect(all?.current).toBe(false);
 });
+
+// craft-nav-item draws its own external-link icon, so another one would double it.
+it('leaves the external-link icon to the nav item', async () => {
+  await mount({
+    items: [
+      node('Craft Console', {
+        href: 'https://console.craftcms.com/',
+        external: true,
+      }),
+    ],
+  });
+
+  const link = item('Craft Console') as
+    | (Element & {external?: boolean})
+    | undefined;
+
+  expect(link?.external).toBe(true);
+  expect(link?.querySelector('craft-icon[slot="suffix"]')).toBeNull();
+});

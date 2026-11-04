@@ -27,7 +27,8 @@ the Wayfinder `IconController.pickerOptions` URL helper) is standalone.
 
 ## Attributes → props
 
-`name`, `value` (→ `modelValue`), `free-only`, `disabled`, `label`, `error`,
+`name`, `value` (→ `modelValue`), `free-only`, `sets` (`*` or a JSON array of
+icon set handles), `disabled`, `label`, `error`,
 `labelled-by`, `described-by`. The component owns its label (matching the modern
 entry-types page), so field surfaces pass `label`; label-less table cells pass
 `labelled-by`. The component renders its own `craft-input` with `hidden-input` +
@@ -38,7 +39,7 @@ bubbling `change` CustomEvent.
 
 Imported for side effects from `resources/js/cp.ts` and `resources/js/legacy.ts`.
 Consumers emit the element instead of `new Craft.IconPicker(...)`:
-`_includes/forms/iconPicker.twig`, the `Craft.ui.createIconPicker` /
+`FormFields::iconPickerHtml()` (and the adapter’s `_includes/forms/iconPicker.twig`), the `Craft.ui.createIconPicker` /
 `createIconPickerField` factories (editable-table icon cells,
 CustomizeSourcesModal). A deprecation shim for stray plugin `new
 Craft.IconPicker(...)` callers lives in the yii2-adapter cpcompat bundle.

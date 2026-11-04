@@ -123,6 +123,50 @@ class UserReviewStage extends WorkflowStage
         return $this->stateMachine($context)->outstandingReviewers();
     }
 
+    /**
+     * Returns whether a user is one of the stage’s reviewers, as its details list them.
+     */
+    public function isReviewer(WorkflowStageContext $context, CraftUser $user): bool
+    {
+        $userId = $user->getCraftUserId();
+
+        return $userId !== null && $this->stateMachine($context)->state()->reviewers->contains('id', $userId);
+    }
+
+    /**
+     * Returns whether a user’s approval of the stage stands, including one carried from an earlier stage.
+     */
+    public function hasApproved(WorkflowStageContext $context, CraftUser $user): bool
+    {
+        $userId = $user->getCraftUserId();
+
+        return $userId !== null && $this->stateMachine($context)->state()->effectiveApprovalIds->contains($userId);
+    }
+
+    /**
+     * Returns the stage’s payload without a user’s approval, including one carried from an earlier stage, so they
+     * have to approve it again.
+     *
+     * @return array<string, mixed>
+     */
+    public function revokeApproval(WorkflowStageContext $context, CraftUser $user): array
+    {
+        $userId = $user->getCraftUserId();
+        $payload = $context->payload;
+        $payload['decisions'] = collect(UserReviewDecisions::fromPayload($payload)->all)
+            ->reject(fn (UserReviewDecisionData $decision): bool => $decision->reviewerId === $userId)
+            ->map(fn (UserReviewDecisionData $decision): array => $decision->toArray())
+            ->values()
+            ->all();
+        $payload['revokedApprovalIds'] = UserReviewDecisions::revokedApprovalIds($payload)
+            ->push($userId)
+            ->unique()
+            ->values()
+            ->all();
+
+        return $payload;
+    }
+
     private function stateMachine(WorkflowStageContext $context): UserReviewStateMachine
     {
         return UserReviewStateMachine::for($this, $context);

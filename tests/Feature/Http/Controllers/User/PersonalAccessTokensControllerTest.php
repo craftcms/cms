@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Auth\PersonalAccessTokens\PersonalAccessTokens;
 use CraftCms\Cms\Auth\PersonalAccessTokens\ScopeGroup;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Users\PersonalAccessTokensController;
 use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
+use CraftCms\Cms\Mcp\Settings;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User;
@@ -24,6 +26,8 @@ beforeEach(function (): void {
     openssl_pkey_export($key, $privateKey);
     config()->set('passport.private_key', $privateKey);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
+
+    Cms::config()->enableGql = false;
 
     $this->user = User::query()->firstOrFail();
     actingAs($this->user);
@@ -92,6 +96,30 @@ it('offers the screen in the user menu only when the user may grant a scope', fu
     'a grantable scope' => [['test-api:read'], true],
 ]);
 
+it('lists authorized MCP clients for users who can’t create tokens', function (): void {
+    app()->instance(Settings::class, new Settings(['enabled' => true]));
+    $client = app(ClientRepository::class)->createAuthorizationCodeGrantClient('MCP client', ['https://client.example/callback']);
+
+    get(action([PersonalAccessTokensController::class, 'index']))->assertForbidden();
+
+    Passport::token()->newQuery()->forceCreate([
+        'id' => 'mcp-token',
+        'user_id' => $this->user->id,
+        'client_id' => $client->id,
+        'scopes' => ['mcp:read'],
+        'revoked' => false,
+        'expires_at' => Query::prepareDateForDb(now()->addHour()),
+    ]);
+
+    get(action([PersonalAccessTokensController::class, 'index']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('groups', [])
+            ->where('grants.0.name', 'MCP client')
+            ->where('grants.0.scopes', ['mcp' => ['mcp:read']])
+            ->where('craft.currentUser.showTokens', true));
+});
+
 it('requires an elevated session to create a token', function (): void {
     registerTestScopeGroup();
     Session::forget('auth.password_confirmed_at');
@@ -109,8 +137,8 @@ it('creates Passport personal access tokens that authenticate as the user', func
 
     $stored = Passport::token()->newQuery()->where('name', 'Build script')->sole();
     expect($stored->scopes)->toBe(['test-api:read'])
-        ->and($stored->expires_at->diffInSeconds(now()->addDays(7), true))->toBeLessThan(60)
-        ->and(Passport::token()->newQuery()->where('name', 'Preview')->sole()->expires_at->diffInSeconds(now()->addDays(365), true))->toBeLessThan(60)
+        ->and($stored->expires_at->diffInSeconds(new DateTimeImmutable('+7 days'), true))->toBeLessThan(60)
+        ->and(Passport::token()->newQuery()->where('name', 'Preview')->sole()->expires_at->diffInSeconds(new DateTimeImmutable('+365 days'), true))->toBeLessThan(60)
         ->and(Passport::personalAccessTokensExpireIn()->y)->toBe(1);
 
     $client = app(ClientRepository::class)->personalAccessClient($this->user->getProviderName());

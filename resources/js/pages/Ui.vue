@@ -27,28 +27,38 @@
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import CpContainer from '@/common/components/CpContainer.vue';
 
-  const props = defineProps<{
-    ui: UiPayload;
-    /** Omit for node-only screens with no form submission. */
-    submit?: UrlMethodPair;
-    elevatedFields?: string[] | '*';
-    refreshUrl?: string;
-    formActions?: FormAction[];
-    defaultFormActions?: UseAppLayoutOptions['defaultFormActions'];
-    /** Server-rendered markup for the details column. */
-    metadataHtml?: string;
-    /** Controls for the details column, submitted alongside `ui`. */
-    sidebarUi?: UiPayload;
-    contentMaxWidth?: boolean;
-    formAdditionalButtons?: ActionItemButton[];
-    /**
-     * Leaves the form actions out of the footer, for a page that renders its
-     * own Save button in the `sidebar-actions` slot, which receives them.
-     */
-    formActionsInSidebar?: boolean;
-    /** See `ScreenProps.hideFooter`. */
-    hideFooter?: boolean;
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      ui: UiPayload;
+      /** Omit for node-only screens with no form submission. */
+      submit?: UrlMethodPair;
+      elevatedFields?: string[] | '*';
+      refreshUrl?: string;
+      formActions?: FormAction[];
+      defaultFormActions?: UseAppLayoutOptions['defaultFormActions'];
+      /** Server-rendered markup for the details column. */
+      metadataHtml?: string;
+      /** Controls for the details column, submitted alongside `ui`. */
+      sidebarUi?: UiPayload;
+      /**
+       * Caps and centers the content column. Unset, a page is centered unless
+       * it's a lone admin table, which spans the pane. See
+       * `ScreenProps.contentMaxWidth`.
+       */
+      contentMaxWidth?: boolean;
+      formAdditionalButtons?: ActionItemButton[];
+      /**
+       * Leaves the form actions out of the footer, for a page that renders its
+       * own Save button in the `sidebar-actions` slot, which receives them.
+       */
+      formActionsInSidebar?: boolean;
+      /** See `ScreenProps.hideFooter`. */
+      hideFooter?: boolean;
+    }>(),
+    // Without a default, Vue casts an absent boolean prop to `false`, which
+    // would read as the page opting out.
+    {contentMaxWidth: undefined}
+  );
   const emit = defineEmits<{
     (event: 'change', change: UiChange, values: UiPayload['values']): void;
   }>();
@@ -82,6 +92,11 @@
             save?.({redirect: false});
           }
         },
+        hasShiftSaveShortcut: () =>
+          submissionActions.value.some(
+            (item) =>
+              item.shortcut && item.shift && !item.hidden && !item.disabled
+          ),
         transform: currentValues,
         onSuccess: () => {
           elevatedBaseline.value = structuredClone(currentValues());
@@ -212,7 +227,7 @@
     formActions: props.formActionsInSidebar ? [] : translatedFormActions.value,
     formAdditionalButtons: props.formAdditionalButtons,
     hideFooter: props.hideFooter,
-    contentMaxWidth: props.contentMaxWidth ?? true,
+    contentMaxWidth: props.contentMaxWidth ?? !isBareTable.value,
     onSave: save,
   }));
 

@@ -6,7 +6,9 @@ namespace CraftCms\Yii2Adapter\Field\Concerns;
 
 use CraftCms\Cms\Condition\ConditionBuilderRenderer;
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Field\Assets;
 use CraftCms\Cms\Field\BaseRelationField;
+use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -24,6 +26,11 @@ use function CraftCms\Cms\template;
  */
 trait LegacyRelationFieldSettings
 {
+    /**
+     * @var string Template to use for settings rendering. Defaults to the built-in template for the field type.
+     */
+    protected string $settingsTemplate;
+
     public function getSettingsHtml(): ?string
     {
         $variables = $this->settingsTemplateVariables();
@@ -43,7 +50,11 @@ JS, [
             ],
         ]);
 
-        return template($this->settingsTemplate, $variables);
+        return template($this->settingsTemplate ?? match (true) {
+            $this instanceof Assets => '_components/fieldtypes/Assets/settings.twig',
+            $this instanceof Entries => '_components/fieldtypes/Entries/settings.twig',
+            default => '_components/fieldtypes/elementfieldsettings.twig',
+        }, $variables);
     }
 
     /**

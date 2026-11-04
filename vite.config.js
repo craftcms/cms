@@ -384,7 +384,10 @@ export default defineConfig(async ({mode}) => {
           extends: true,
           test: {
             name: 'browser',
-            include: ['resources/js/**/*.browser.test.ts'],
+            include: [
+              'resources/js/**/*.browser.test.ts',
+              'yii2-adapter/resources/js/**/*.browser.test.ts',
+            ],
             browser: {
               enabled: true,
               headless: true,
@@ -407,7 +410,12 @@ export default defineConfig(async ({mode}) => {
     },
 
     optimizeDeps: {
-      include: ['lit'],
+      include: [
+        'lit',
+        // Found late, they'd reload the browser tests mid-run.
+        '@tanstack/highlight/core',
+        '@tanstack/highlight/languages/*',
+      ],
       // WebAwesome must NOT be pre-bundled. It's imported through many deep
       // entry points (dist/components/*/*.js), and esbuild's dep optimizer
       // duplicates their shared component modules across chunks — which makes

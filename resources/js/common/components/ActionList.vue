@@ -84,6 +84,16 @@
     iconOnly?: boolean;
   }>();
 
+  defineSlots<{
+    /**
+     * Added to a nav item's row, beside its link. Give it `slot="actions"`.
+     * Passed on to nested items too.
+     */
+    'item-actions'?(props: {
+      action: ActionItemGroup | ActionItemButton | ActionItemLink;
+    }): unknown;
+  }>();
+
   const isNav = computed(() => as === 'craft-nav-item');
 
   function defined(attrs: Record<string, unknown>): Record<string, unknown> {
@@ -480,13 +490,23 @@
         @click="lent.onClick"
       ></craft-button>
 
+      <!-- Whatever the caller adds to the row; give it `slot="actions"`. -->
+      <slot name="item-actions" :action="action"></slot>
+
       <craft-nav-list v-if="childrenOf(action).length" slot="subnav">
         <ActionList
           :actions="childrenOf(action)"
           as="craft-nav-item"
           :mode="iconOnly ? 'flyout' : mode"
           :icon-only="iconOnly && subnavDisplay(action) === 'inline'"
-        />
+        >
+          <template
+            v-if="$slots['item-actions']"
+            #item-actions="{action: child}"
+          >
+            <slot name="item-actions" :action="child"></slot>
+          </template>
+        </ActionList>
       </craft-nav-list>
     </component>
   </template>

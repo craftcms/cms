@@ -120,6 +120,18 @@ export function getPreviews(): LivePreviewController[] {
   return [...previews];
 }
 
+/**
+ * How far an open preview's editor sits from the window's inline-start edge,
+ * for slideouts that cover it.
+ */
+export function previewEditorOffset(editor: HTMLElement): number {
+  const rect = editor.getBoundingClientRect();
+
+  return getComputedStyle(editor).direction === 'rtl'
+    ? window.innerWidth - rect.right
+    : rect.left;
+}
+
 /** The open preview, if there is one. */
 export function getActivePreview(): LivePreviewController | null {
   return getPreviews().find((preview) => preview.isOpen.value) ?? null;

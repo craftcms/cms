@@ -659,3 +659,17 @@ test('destroyOtherSessions preserves the current session', function () {
 
     expect(DB::table(Table::SESSIONS)->where('user_id', $user->id)->pluck('id')->all())->toBe([$currentSessionId]);
 });
+
+test('a user model’s element follows changes to the model and its element record', function () {
+    $model = UserModel::findOrFail(UserModel::factory()->create(['firstName' => 'Ada'])->id);
+
+    expect($model->asElement()->firstName)->toBe('Ada');
+
+    $model->element->enabled = false;
+
+    expect($model->asElement()->enabled)->toBeFalse();
+
+    $model->firstName = 'Grace';
+
+    expect($model->asElement()->firstName)->toBe('Grace');
+});

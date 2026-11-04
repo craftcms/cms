@@ -11,7 +11,7 @@ interface ModifierKey {
 /**
  * Display keyboard shortcut helpers
  *
- * Cmd/Ctrl/Super is implied and the OS is automatically detected via the
+ * Cmd/Ctrl is implied and the OS is automatically detected via the
  * navigator.platform string. Each key is its own `<kbd>` keycap.
  *
  * @slot - Non-modifier key
@@ -94,10 +94,8 @@ export default class CraftShortcut extends LitElement {
       ];
     }
 
-    const primary = this.os === 'Linux' ? 'Super' : 'Ctrl';
-
     return [
-      primary,
+      'Ctrl',
       ...(this.alt ? ['Alt'] : []),
       ...(this.shift ? ['Shift'] : []),
     ].map((key) => ({label: key, name: key}));

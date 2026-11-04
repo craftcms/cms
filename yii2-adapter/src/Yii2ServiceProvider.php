@@ -178,6 +178,10 @@ class Yii2ServiceProvider extends ServiceProvider
         $this->registerLegacySiteTemplateRoot();
         $this->app->make(TemplateRoots::class)->register(TemplateMode::Cp, 'yii2-adapter', __DIR__ . '/../resources/templates');
         $this->app->make(TemplateRoots::class)->register(TemplateMode::Cp, '_components/fieldtypes/Matrix', __DIR__ . '/../resources/templates/_components/fieldtypes/Matrix');
+        // Legacy relation field settings templates, which plugin settings templates extend.
+        $this->app->make(TemplateRoots::class)->register(TemplateMode::Cp, '_components/fieldtypes', __DIR__ . '/../resources/templates/_components/fieldtypes');
+        // Core templates resolve first, so this only serves the legacy form includes core no longer ships.
+        $this->app->make(TemplateRoots::class)->register(TemplateMode::Cp, '_includes', __DIR__ . '/../resources/templates/_includes');
         $this->registerExceptionHandling();
     }
 

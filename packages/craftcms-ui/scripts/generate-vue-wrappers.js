@@ -210,16 +210,23 @@ const VALUE_COMPONENTS = [
     ],
   },
   {
-    // Plain LitElement wrapping <craft-select-rich>. Its own modelValue is now
-    // kept in sync with the inner select and it re-dispatches a composed
-    // `model-value-changed`, so the standard value-wrapper works. Options are
-    // supplied via the default slot; the label is an attribute (not a slot).
+    // A craft-select-rich that renders its own color options, so it takes the
+    // rich select's slots but not its default slot.
     tagName: 'craft-select-color',
     className: 'CraftSelectColor',
     fileName: 'CraftSelectColor',
     modelType: 'string',
     importPath: '../components/select-color/select-color',
-    slots: ['feedback'],
+    slots: [
+      'label',
+      'help-text',
+      'input',
+      'feedback',
+      'prefix',
+      'suffix',
+      'before',
+      'after',
+    ],
   },
 ];
 

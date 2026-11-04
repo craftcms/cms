@@ -27,12 +27,12 @@ class AddressAdapter extends BaseElementAdapter
 
     protected function createAttributesSchema(): array
     {
-        return $this->attributesSchema();
+        return $this->attributesSchema('create');
     }
 
     protected function updateAttributesSchema(): array
     {
-        return $this->attributesSchema();
+        return $this->attributesSchema('update');
     }
 
     protected function fieldSchemaContextSchema(): array
@@ -86,31 +86,15 @@ class AddressAdapter extends BaseElementAdapter
         return $this->lifecycle->duplicate($element);
     }
 
-    /** @return array<string, mixed> */
-    private function attributesSchema(): array
+    /**
+     * @param  'create'|'update'  $operation
+     * @return array<string, mixed>
+     */
+    private function attributesSchema(string $operation): array
     {
         return [
             'type' => 'object',
-            'properties' => $this->propertySchemas([
-                'ownerId',
-                'title',
-                'countryCode',
-                'administrativeArea',
-                'locality',
-                'dependentLocality',
-                'postalCode',
-                'sortingCode',
-                'addressLine1',
-                'addressLine2',
-                'addressLine3',
-                'organization',
-                'organizationTaxId',
-                'firstName',
-                'lastName',
-                'fullName',
-                'latitude',
-                'longitude',
-            ], [
+            'properties' => $this->attributeSchemas($operation, ['ownerId', 'title'], [
                 'title' => 'Used as the address label, such as Home.',
                 'firstName' => 'This is the recipient’s name.',
                 'lastName' => 'This is the recipient’s name.',

@@ -20,14 +20,12 @@ class Entry extends ElementMutationArguments
     #[\Override]
     public static function getArguments(): array
     {
-        return array_merge(parent::getArguments(), static::propertyArguments(EntryElement::class, [
-            'authorId',
-            'authorIds',
-            'postDate',
-            'expiryDate',
-            'slug',
-            'siteId',
-            'revisionNotes',
-        ]));
+        return array_merge(parent::getArguments(), static::propertyArguments(EntryElement::class, ['slug', 'siteId', 'revisionNotes']));
+    }
+
+    #[\Override]
+    protected static function elementType(): string
+    {
+        return EntryElement::class;
     }
 }

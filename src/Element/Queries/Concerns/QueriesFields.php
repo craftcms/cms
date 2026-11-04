@@ -9,6 +9,8 @@ use CraftCms\Cms\Element\Enums\ElementQueryParamType;
 use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
+use CraftCms\Cms\Gql\Attributes\Gql;
+use CraftCms\Cms\Mcp\Attributes\Mcp;
 use CraftCms\Cms\Support\Query;
 use Illuminate\Contracts\Database\Query\Builder;
 
@@ -218,7 +220,7 @@ trait QueriesFields
      * This can be combined with [[fixedOrder()]] if you want the results to be returned in a specific order.
      * :::
      */
-    #[ElementQueryParam(ElementQueryParamType::IntOrInts, 'Narrows the query results based on the elements’ IDs.')]
+    #[ElementQueryParam(ElementQueryParamType::IntOrInts, 'Narrows the query results based on the {elements}’ IDs.')]
     public function id(mixed $value): static
     {
         $this->id = $value;
@@ -245,7 +247,7 @@ trait QueriesFields
      *     ->one();
      * ```
      */
-    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the elements’ UIDs.')]
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the {elements}’ UIDs.')]
     public function uid(mixed $value): static
     {
         $this->uid = $value;
@@ -310,7 +312,9 @@ trait QueriesFields
      *
      * @param  bool|null  $value  The property value (defaults to true)
      */
-    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Narrows the query results to only elements that have been soft-deleted.')]
+    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Narrows the query results to only {elements} that have been soft-deleted.')]
+    #[Gql(Gql::CanQueryInactiveElements)]
+    #[Mcp(hint: 'Pass null to include both trashed and non-trashed elements. Use status: null when listing deleted elements.')]
     public function trashed(?bool $value = true): static
     {
         $this->trashed = $value;
@@ -352,7 +356,7 @@ trait QueriesFields
      *     ->all();
      * ```
      */
-    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the elements’ creation dates.')]
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the {elements}’ creation dates.')]
     public function dateCreated(mixed $value): static
     {
         $this->dateCreated = $value;
@@ -392,7 +396,7 @@ trait QueriesFields
      *     ->all();
      * ```
      */
-    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the elements’ last-updated dates.')]
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the {elements}’ last-updated dates.')]
     public function dateUpdated(mixed $value): static
     {
         $this->dateUpdated = $value;
@@ -431,7 +435,7 @@ trait QueriesFields
      *     ->all();
      * ```
      */
-    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the elements’ titles.')]
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the {elements}’ titles.')]
     public function title(mixed $value): static
     {
         $this->title = $value;
@@ -476,7 +480,7 @@ trait QueriesFields
      *     ->one();
      * ```
      */
-    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the elements’ slugs.')]
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the {elements}’ slugs.')]
     public function slug(mixed $value): static
     {
         $this->slug = $value;
@@ -521,7 +525,7 @@ trait QueriesFields
      *     ->one();
      * ```
      */
-    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the elements’ URIs.')]
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the {elements}’ URIs.')]
     public function uri(mixed $value): static
     {
         $this->uri = $value;

@@ -43,14 +43,12 @@ sidebar, preview thumb, image actions) are not included here.
 }
 
 .slideout-container.so-lp {
-  /* The gap around a slideout over Live Preview's editor. The inline width
-     set from `Slideout.updateWidthsForPreviewPane()` uses it too. */
-  --m: var(--c-spacing-md);
+  /* Covers Live Preview's editor exactly. Its width and offset are set from
+     `Slideout.updateWidthsForPreviewPane()`. */
   position: fixed;
-  inset-block-start: var(--m);
-  inset-inline-start: var(--m);
-  width: calc(100% - var(--m) * 2);
-  height: calc(100vh - var(--m) * 2);
+  inset-block-start: 0;
+  inset-inline-start: var(--lp-editor-start, 0px);
+  height: 100vh;
 }
 
 body.has-debug-toolbar .slideout-container {
@@ -70,14 +68,30 @@ body.has-debug-toolbar .slideout-container {
   container-type: inline-size;
 }
 
-.slideout.so-mobile,
-.slideout.so-lp {
+.slideout.so-mobile {
   width: 100%;
   height: 100%;
   inset-inline-start: 0;
   transition: inset-block-start linear 250ms;
   will-change: inset-block-start;
   box-shadow: none;
+}
+
+/* Over Live Preview's editor, as a nested view sliding in from the end. */
+.slideout.so-lp {
+  width: 100%;
+  height: 100%;
+  inset-block-start: 0;
+  /* Over the editor's own border, so it carries one of its own. */
+  border-inline-start: 1px solid var(--c-color-border-quiet);
+  box-shadow: none;
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  .slideout.so-lp {
+    transition: inset-inline-start linear 250ms;
+    will-change: inset-inline-start;
+  }
 }
 
 /*.slideout.so-lp {*/

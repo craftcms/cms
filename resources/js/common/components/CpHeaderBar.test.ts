@@ -124,12 +124,11 @@ it('orders sections to match the mobile visual layout (breadcrumbs last)', async
 function pressCommandI(): KeyboardEvent {
   const event = new KeyboardEvent('keydown', {
     key: 'i',
-    metaKey: true,
     ctrlKey: true,
     bubbles: true,
     cancelable: true,
   });
-  window.dispatchEvent(event);
+  document.dispatchEvent(event);
 
   return event;
 }

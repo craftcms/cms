@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Mcp\Schema;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Date;
 use CraftCms\Cms\Field\Json;
+use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Time;
 use CraftCms\Cms\Gql\GqlInputSchema;
 use CraftCms\Cms\Support\Arr;
@@ -103,10 +106,25 @@ readonly class CustomFieldSchema
                 continue;
             }
 
+            // The GraphQL API rejects new Matrix entries when `sortOrder` is omitted, but MCP adds them after the
+            // existing ones, so the normalizer gets an empty `sortOrder` until sortNewEntries() fills it in.
+            $omitsSortOrder = $field instanceof Matrix && is_array($value) && ! isset($value['sortOrder']);
+
             try {
-                $values[$handle] = $this->normalizeGqlValue($field->getContentGqlMutationArgumentType(), $value);
+                $values[$handle] = $this->normalizeGqlValue(
+                    $field->getContentGqlMutationArgumentType(),
+                    $omitsSortOrder ? [...$value, 'sortOrder' => []] : $value,
+                );
             } catch (UserError $exception) {
                 throw new ToolCallException(sprintf('%s: %s', $handle, $exception->getMessage()), previous: $exception);
+            }
+
+            if ($field instanceof Matrix) {
+                if ($omitsSortOrder) {
+                    unset($values[$handle]['sortOrder']);
+                }
+
+                $values[$handle] = $this->sortNewEntries($element, $field, $values[$handle]);
             }
         }
 
@@ -164,6 +182,49 @@ readonly class CustomFieldSchema
     }
 
     /**
+     * Ensures a normalized Matrix value lists its new entries in `sortOrder`.
+     *
+     * Matrix fields keep only the entries `sortOrder` lists, and default it to the existing entries, so new entries
+     * missing from it would be dropped without an error. When `sortOrder` is omitted, new entries are added after the
+     * existing ones, in the order they appear in `entries`. When it is given, new entries missing from it are rejected.
+     */
+    private function sortNewEntries(ElementInterface $element, Matrix $field, mixed $value): mixed
+    {
+        if (! is_array($value) || ! is_array($value['entries'] ?? null)) {
+            return $value;
+        }
+
+        // Entries keyed by UUID are matched to existing entries by UUID, which the field resolves on its own.
+        if (ElementHelper::nestedElementDelta($value)['uids']) {
+            return $value;
+        }
+
+        $ids = array_map(strval(...), array_keys($value['entries']));
+        $existingIds = $element->id
+            ? array_map(strval(...), Entry::find()->fieldId($field->id)->owner($element)->drafts(null)->status(null)->ids())
+            : [];
+        $newIds = array_values(array_diff($ids, $existingIds));
+
+        if (! isset($value['sortOrder'])) {
+            $value['sortOrder'] = [...$existingIds, ...$newIds];
+
+            return $value;
+        }
+
+        $unlisted = array_diff($newIds, array_map(strval(...), (array) $value['sortOrder']));
+
+        if ($unlisted !== []) {
+            throw new ToolCallException(sprintf(
+                '%s: Add %s to `sortOrder`, which lists the entries to keep in order, or omit `sortOrder` to add new entries after the existing ones.',
+                $field->handle,
+                implode(', ', $unlisted),
+            ));
+        }
+
+        return $value;
+    }
+
+    /**
      * @param  array<string, array<string, mixed>>  $properties
      * @param  list<string>  $required
      * @return array<string, mixed>
@@ -193,6 +254,11 @@ readonly class CustomFieldSchema
             $schema = [];
         }
 
+        // Unlike the GraphQL API, MCP adds new entries when sortOrder is omitted. {@see sortNewEntries()}
+        if ($field instanceof Matrix && isset($schema['properties']['sortOrder'])) {
+            $schema['properties']['sortOrder']['description'] = 'The entries the field should contain, in order: IDs of existing entries, and the IDs of new entries, or `new:1`, `new:2`, etc. for new entries without an ID, numbered in the order they appear in `entries`. Entries it omits are removed. If omitted, existing entries are kept in their order, and new entries are added after them, in the order they appear in `entries`.';
+        }
+
         $schema = $required ? GqlInputSchema::withoutNull($schema) : GqlInputSchema::withNull($schema);
         $schema['title'] = $field->name;
 
@@ -212,7 +278,7 @@ readonly class CustomFieldSchema
     }
 
     /**
-     * Applies the `normalizeValue` callbacks of a GraphQL input type and the input types nested within it.
+     * Applies the `normalizeValue` callbacks of a GraphQL input type and the input types and fields nested within it.
      *
      * @param  Type|array<string, mixed>  $definition
      */
@@ -228,7 +294,9 @@ readonly class CustomFieldSchema
         } elseif ($type instanceof InputObjectType && is_array($value)) {
             foreach ($value as $name => $fieldValue) {
                 if ($type->hasField((string) $name)) {
-                    $value[$name] = $this->normalizeGqlValue($type->getField((string) $name)->getType(), $fieldValue);
+                    $field = $type->getField((string) $name);
+                    // Field definitions can have their own `normalizeValue` callbacks, such as Time fields'.
+                    $value[$name] = $this->normalizeGqlValue(['type' => $field->getType()] + $field->config, $fieldValue);
                 }
             }
 

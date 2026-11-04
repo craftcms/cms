@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
+use craft\elements\actions\ChangeSortOrder;
+use craft\elements\actions\MoveDown;
+use craft\elements\actions\MoveUp;
 use craft\elements\NestedElementManager as LegacyNestedElementManager;
 use craft\fields\Addresses as LegacyAddresses;
 use craft\fields\Matrix as LegacyMatrix;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Auth\SessionAuth;
-use CraftCms\Cms\Element\Actions\ChangeSortOrder;
-use CraftCms\Cms\Element\Actions\MoveDown;
-use CraftCms\Cms\Element\Actions\MoveUp;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;

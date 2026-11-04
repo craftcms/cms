@@ -23,8 +23,6 @@ use Mcp\Exception\ToolCallException;
  */
 class UserAdapter extends BaseElementAdapter
 {
-    private const array SharedAttributes = ['email', 'username', 'firstName', 'lastName', 'fullName', 'newPassword', 'admin'];
-
     /**
      * Attributes non-admins may set on any user they are allowed to save.
      */
@@ -61,14 +59,7 @@ class UserAdapter extends BaseElementAdapter
     {
         return [
             'type' => 'object',
-            'properties' => $this->propertySchemas([
-                ...self::SharedAttributes,
-                'active',
-                'pending',
-                'affiliatedSiteId',
-                'photoId',
-                'hasDashboard',
-            ]),
+            'properties' => $this->attributeSchemas('create'),
             'additionalProperties' => false,
         ];
     }
@@ -77,7 +68,7 @@ class UserAdapter extends BaseElementAdapter
     {
         return [
             'type' => 'object',
-            'properties' => $this->propertySchemas([...self::SharedAttributes, 'enabled']),
+            'properties' => $this->attributeSchemas('update', ['enabled']),
             'additionalProperties' => false,
         ];
     }

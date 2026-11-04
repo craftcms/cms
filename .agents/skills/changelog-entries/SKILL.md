@@ -11,6 +11,19 @@ description: >
 
 Write entries that match the established format in the target changelog file.
 
+## Skip Fixes for Unreleased Changes
+
+Release notes describe changes from one release to the next, so a fix for behavior that was never in a release gets no entry in either file. That covers a bug introduced since the last tagged release, counting alpha and beta pre-releases as releases, and a bug in a feature or change that's still under `## Unreleased`. Nobody upgrading has seen the broken behavior, so there's nothing to report.
+
+To check, find the commit that introduced the bug and test whether the latest tag contains it:
+
+```sh
+git describe --tags --abbrev=0                                   # the latest tag reachable from this branch
+git merge-base --is-ancestor <introducing-commit> <latest-tag> && echo released
+```
+
+If it isn't released, don't add an entry. If the fix changes how an unreleased feature works, update that feature's existing entry instead, when it no longer describes the feature accurately. When it's unclear whether the behavior shipped, ask rather than adding an entry.
+
 ## Determine Target Files
 
 1. If the user specifies a file, use that, otherwise use `CHANGELOG.md`.
@@ -106,8 +119,9 @@ For the full set of templates and examples, see `references/entry-templates.md`.
 ## Workflow
 
 1. Identify what changed (from conversation context, git diff, or user description).
+   Leave out fixes for behavior that was never released (see [Skip Fixes for Unreleased Changes](#skip-fixes-for-unreleased-changes)).
 2. Determine the target files (`CHANGELOG.md`, plus `CHANGELOG-WIP.md` when it exists and the change is relevant to someone upgrading from the previous version) and each one's section/insertion point.
 3. Write entries following the format and writing rules above.
 4. Insert entries into the section, positioned per the Entry Ordering rules above.
 
-Done when: each user-facing change in the diff has exactly one entry in `CHANGELOG.md`, and, when `CHANGELOG-WIP.md` exists, each change relevant to someone upgrading from the previous version is covered there too, all in the right sections and order, with existing entries unchanged except where they no longer describe the change accurately.
+Done when: each user-facing change in the diff has exactly one entry in `CHANGELOG.md`, except fixes for behavior that was never released, which have none, and, when `CHANGELOG-WIP.md` exists, each change relevant to someone upgrading from the previous version is covered there too, all in the right sections and order, with existing entries unchanged except where they no longer describe the change accurately.

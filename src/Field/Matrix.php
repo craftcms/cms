@@ -290,6 +290,15 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
      */
     private NestedElementManager $_entryManager;
 
+    /**
+     * Owners' entry counts while {@see nestedEntriesControl()} renders, keyed by field, owner, and site IDs.
+     *
+     * Static, as nested entries' permission checks get their own instances of the field.
+     *
+     * @var array<string, int>|null
+     */
+    private static ?array $renderingTotalEntries = null;
+
     public function __construct($config = [])
     {
         // Config normalization
@@ -1091,14 +1100,26 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         /** @var EntryQuery<Entry>|ElementCollection<int,Entry> $value */
         $value = $owner->getFieldValue($this->handle);
 
-        if ($value instanceof EntryQuery) {
-            return (clone $value)
-                ->status(null)
-                ->siteId($owner->siteId)
-                ->getCountForPagination();
+        if (! $value instanceof EntryQuery) {
+            return $value->count();
         }
 
-        return $value->count();
+        $key = "$this->id:$owner->id:$owner->siteId";
+
+        if (isset(self::$renderingTotalEntries[$key])) {
+            return self::$renderingTotalEntries[$key];
+        }
+
+        $total = (clone $value)
+            ->status(null)
+            ->siteId($owner->siteId)
+            ->getCountForPagination();
+
+        if (self::$renderingTotalEntries !== null && $this->id && $owner->id) {
+            self::$renderingTotalEntries[$key] = $total;
+        }
+
+        return $total;
     }
 
     #[Override]
@@ -1435,12 +1456,21 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             && $context->ui->mode === ControlMode::Editable
             && ! ($owner?->getIsRevision() ?? false);
 
-        return $this->entryManager()->uiControl(
-            $context->path,
-            $owner,
-            $this->viewMode,
-            $this->nestedElementManagerConfig($context->value, $owner, ! $editable),
-        );
+        // Every nested entry's permission checks ask whether the owner has reached Max Entries, and nothing adds entries
+        // while they render, so the owner's entries are counted once.
+        $totalEntries = self::$renderingTotalEntries;
+        self::$renderingTotalEntries ??= [];
+
+        try {
+            return $this->entryManager()->uiControl(
+                $context->path,
+                $owner,
+                $this->viewMode,
+                $this->nestedElementManagerConfig($context->value, $owner, ! $editable),
+            );
+        } finally {
+            self::$renderingTotalEntries = $totalEntries;
+        }
     }
 
     /**

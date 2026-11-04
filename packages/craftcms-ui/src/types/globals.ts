@@ -57,6 +57,8 @@ type Site = {
 /** Shape of the legacy global `Craft` object that this package relies on. */
 export interface CraftGlobal {
   setCookie(name: string, value: string): void;
+  /** The user's formatting locale, as a BCP 47 language tag. */
+  formattingLocale?: string;
 }
 
 /**

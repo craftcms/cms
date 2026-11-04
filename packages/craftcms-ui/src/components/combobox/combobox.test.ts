@@ -2,6 +2,7 @@ import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type CraftCombobox from './combobox.js';
 import type {ComboboxItem} from './combobox.js';
 import './combobox.js';
+import type CraftOptionGroup from '../option/option-group.js';
 
 function makeOptions(count: number): ComboboxItem[] {
   return Array.from({length: count}, (_, i) => ({
@@ -109,7 +110,7 @@ describe('craft-combobox', () => {
     expect(labels).toEqual(['United States']);
   });
 
-  it('renders optgroup headers for grouped options', async () => {
+  it('groups grouped options under their labels', async () => {
     const combobox = await createFixture((c) => {
       c.options = [
         {
@@ -122,11 +123,11 @@ describe('craft-combobox', () => {
         },
       ];
     });
-    const node = combobox.querySelector('[role=listbox]')!;
-    expect(node.querySelector('.combobox__optgroup')?.textContent?.trim()).toBe(
-      'North America'
-    );
-    expect(optionEls(combobox)).toHaveLength(2);
+    const group = combobox.querySelector<CraftOptionGroup>(
+      '[role=listbox] craft-option-group'
+    )!;
+    expect(group.label).toBe('North America');
+    expect(group.querySelectorAll('craft-option')).toHaveLength(2);
   });
 
   it('sets modelValue to the option value (not its label) when chosen', async () => {
@@ -541,8 +542,10 @@ describe('craft-combobox', () => {
       c.limit = 10;
       c.options = makeOptions(50);
     });
-    const node = combobox.querySelector('[role=listbox]')!;
-    expect(node.querySelector('.combobox__footer')).not.toBeNull();
+    await combobox.updateComplete;
+    expect(
+      combobox.shadowRoot!.querySelector('.combobox__footer')
+    ).not.toBeNull();
   });
 });
 

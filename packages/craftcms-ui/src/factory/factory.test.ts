@@ -182,18 +182,24 @@ describe('createSlidePicker', () => {
     expect(el.min).toBe(0);
     expect(el.max).toBe(100);
     expect(el.step).toBe(25);
-    expect(el.value).toBe(50);
-
-    // The element is form-associated, so the name goes on it — there is no
-    // hidden input standing in for the value.
+    expect(el.modelValue).toBe(50);
     expect(el.name).toBe('cols');
-    expect(el.querySelector('input[type="hidden"]')).toBeNull();
   });
 
   it('resolves function min/max', () => {
     const el = createSlidePicker({min: () => 10, max: () => 90, step: 20});
     expect(el.min).toBe(10);
     expect(el.max).toBe(90);
+  });
+
+  it('references the elements that label and describe it', () => {
+    const el = createSlidePicker({
+      labelledBy: 'width-label',
+      describedBy: 'width-instructions',
+    });
+
+    expect(el.getAttribute('labelled-by')).toBe('width-label');
+    expect(el.getAttribute('described-by')).toBe('width-instructions');
   });
 });
 
@@ -212,6 +218,11 @@ describe('createInputColor', () => {
     const input = el.querySelector<HTMLInputElement>('input[slot="input"]');
     expect(input?.getAttribute('value')).toBe('7ab55c');
     expect(input?.classList.contains('color-input')).toBe(true);
+  });
+
+  it('sets alpha only when requested', () => {
+    expect(createInputColor({alpha: true}).hasAttribute('alpha')).toBe(true);
+    expect(createInputColor().hasAttribute('alpha')).toBe(false);
   });
 });
 

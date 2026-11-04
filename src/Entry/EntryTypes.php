@@ -77,6 +77,13 @@ class EntryTypes
      */
     private ?MemoizableArray $entryTypes = null;
 
+    /**
+     * @var array<int, list<array<string, mixed>>>|null Each section's entry type assignments, in order, by section ID
+     *
+     * @see getEntryTypesBySectionId()
+     */
+    private ?array $sectionEntryTypes = null;
+
     public function __construct(
         private readonly ProjectConfig $projectConfig,
         private readonly ElementCaches $elementCaches,
@@ -96,12 +103,19 @@ class EntryTypes
      */
     public function getEntryTypesBySectionId(int $sectionId): Collection
     {
-        return DB::table(Table::SECTIONS_ENTRYTYPES)
-            ->select([new Alias('typeId', 'id'), 'name', 'description', 'handle'])
-            ->where('sectionId', $sectionId)
+        // Every section's assignments are fetched at once, as pages list many sections' entry types.
+        $this->sectionEntryTypes ??= DB::table(Table::SECTIONS_ENTRYTYPES)
+            ->select(['sectionId', new Alias('typeId', 'id'), 'name', 'description', 'handle'])
             ->orderBy('sortOrder')
             ->get()
-            ->map(fn (object $entryType) => $this->getEntryType((array) $entryType))
+            ->groupBy('sectionId')
+            ->map(fn (Collection $assignments) => $assignments
+                ->map(fn (object $assignment) => Arr::except((array) $assignment, 'sectionId'))
+                ->all())
+            ->all();
+
+        return collect($this->sectionEntryTypes[$sectionId] ?? [])
+            ->map(fn (array $entryType) => $this->getEntryType($entryType))
             ->filter()
             ->values();
     }
@@ -603,6 +617,7 @@ class EntryTypes
     public function refreshEntryTypes(): void
     {
         $this->entryTypes = null;
+        $this->sectionEntryTypes = null;
 
         // Sections cache entry types internally, so ensure those get refreshed as well.
         Sections::refreshSections();

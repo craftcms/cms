@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
@@ -11,7 +12,6 @@ use Illuminate\Support\Collection;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Checkboxes represents a Checkboxes field.
@@ -57,13 +57,13 @@ class Checkboxes extends BaseOptionsField
             DeltaRegistry::setInitialValue($this->handle, null);
         }
 
-        return template('_includes/forms/checkboxGroup', [
+        return FormFields::checkboxGroupFromConfig([
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'values' => $this->encodeValue($value),
             'options' => $this->translatedOptions(true, $value, $element),
             'allowCustomOptions' => $this->customOptions,
-        ]);
+        ])->toHtml();
     }
 
     #[Override]
