@@ -72,3 +72,19 @@ it('renders the menu when _includes/disclosuremenu is included directly', functi
         ->and($html)->toContainTag('craft-button', ['slot' => 'invoker', 'aria-label' => 'Included actions'])
         ->and($html)->toContain('Included item');
 });
+
+it('names an icon-only menu button when no label is given', function () {
+    $html = app(MenuHtml::class)->disclosureMenu([['label' => 'Child']]);
+
+    expect($html)->toContainTag('craft-button', ['slot' => 'invoker', 'aria-label' => 'Actions']);
+});
+
+it('renders item info as text rather than a control inside the item', function () {
+    $html = app(MenuHtml::class)->disclosureMenu([
+        ['label' => 'Child', 'info' => 'Read the **docs** <script>alert(1)</script>'],
+    ]);
+
+    expect($html)->not->toContain('craft-info-icon')
+        ->and($html)->not->toContain('<script>')
+        ->and($html)->toContain('Read the docs');
+});
