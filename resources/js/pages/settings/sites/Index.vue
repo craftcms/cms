@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
-  import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import FieldTip from '@/common/components/FieldTip.vue';
   import {envVarsDocsUrl} from '@/common/utils/docsUrls';
   import AdminTableNode from '@/modules/ui/AdminTableNode.vue';
@@ -122,10 +121,6 @@
       </div>
     </LayoutSlot>
     <div class="@container">
-      <template v-if="readOnly">
-        <CalloutReadOnly />
-      </template>
-
       <AdminTableNode appearance="flush" :node="tableNode">
         <template #delete-modal="{row, label, close}">
           <DeleteSiteModal
