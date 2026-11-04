@@ -565,14 +565,30 @@ craft-card .status-badge {
 craft-card:has(
   > [slot='header'] .status-badge.modified,
   > .card-titlebar > .status-badge.modified
+)::part(base) {
+  /* Lets the bar cover the card's border, so it's flush with the outer edge */
+  overflow-clip-margin: border-box;
+}
+
+craft-card:has(
+  > [slot='header'] .status-badge.modified,
+  > .card-titlebar > .status-badge.modified
 )::part(base)::after {
   content: '';
   position: absolute;
-  inset: 0;
+  inset: calc(var(--c-card-border-width, 1px) * -1);
   z-index: 1;
   border-radius: inherit;
   border-inline-start: 2px solid var(--c-field-modified-indicator);
   pointer-events: none;
+}
+
+/* A cover card's border is drawn inside its edge, so the bar already sits on it */
+craft-card:has(> [data-cover]):has(
+  > [slot='header'] .status-badge.modified,
+  > .card-titlebar > .status-badge.modified
+)::part(base)::after {
+  inset: 0;
 }
 
 @media (forced-colors: active) {
