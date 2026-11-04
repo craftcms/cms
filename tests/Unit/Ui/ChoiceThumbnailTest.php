@@ -95,3 +95,22 @@ it('inlines an SVG thumbnail, hidden from assistive tech', function () {
         ->and($thumbnail->filter('svg > rect')->attr('stroke'))->toBe('#828FA4')
         ->and($crawler->filter('img[slot="icon"]'))->toHaveCount(0);
 });
+
+it('draws a card option\'s icon in its radio\'s icon slot', function () {
+    $payload = app(UiResolver::class)->resolve(Ui::make([
+        Field::make('Type', Choice::make('type')
+            ->presentation(ChoicePresentation::Cards)
+            ->options([
+                ['label' => 'Entries', 'value' => 'entries', 'icon' => 'newspaper'],
+                ['label' => 'Other', 'value' => 'other'],
+            ])
+            ->value('entries')),
+    ]), new UiContext);
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
+    $radios = $crawler->filter('craft-radio');
+
+    expect($crawler->filter('craft-radio-group')->attr('appearance'))->toBe('cards')
+        ->and($radios->first()->filter('[slot="icon"] svg'))->toHaveCount(1)
+        ->and($radios->eq(1)->filter('[slot="icon"]'))->toHaveCount(0)
+        ->and($radios->first()->filter('.cp-icon'))->toHaveCount(0);
+});

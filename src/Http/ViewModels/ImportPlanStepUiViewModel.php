@@ -50,28 +50,25 @@ class ImportPlanStepUiViewModel extends ViewModel
 
         return $this->uiResolver->resolve(Ui::make([
             HiddenField::make('uid'),
-            UiField::make(t('Importer Type'), Choice::make('type')
-                ->options($this->importerTypeOptions())
-                ->placeholder(t('Please select'))
-                ->reactive())
-                ->instructions(t('What this step imports.')),
             UiField::make(t('Data Source'), Text::make('source')
                 ->placeholder('resources/my-data.json')
                 ->textExpanderTriggers($this->canSave ? SourceSuggestions::triggers('import/source-suggestions') : []))
                 ->instructions(t('The aliased or @root-relative path to a file or a URL containing the data you want this step to import.'))
                 ->tip($this->canSave ? t('Type `./` to browse the project folder, or `@` for an alias.') : null)
-                ->required()
-                ->visible($hasType),
+                ->required(),
+            UiField::make(t('Importer Type'), Choice::make('type')
+                ->options($this->importerTypeOptions())
+                ->placeholder(t('Select type'))
+                ->reactive())
+                ->instructions(t('What this step imports.')),
             UiField::make(t('Transformer'), Text::make('transformer')
                 ->value($this->importer?->usesDefaultTransformer() ? null : $this->importer?->transformerAsString())
                 ->placeholder(ElementTransformer::class))
                 ->instructions(t('The fully qualified class name of the transformer you’d like to use.'))
                 ->visible($hasType),
-            // how the data is read in, which most steps leave as it is
-            Group::make('import-step-advanced', [
-                UiField::make(t('Batch Size'), Number::make('batchSize'))
-                    ->instructions(t('How many items this step imports per batch. Set to 0 to disable batching.')),
-            ])->label(t('Advanced'))->collapsible()->visible($hasType),
+            UiField::make(t('Batch Size'), Number::make('batchSize'))
+                ->instructions(t('How many items this step imports per batch. Set to 0 to disable batching.'))
+                ->visible($hasType),
             ...(empty($settingsNodes) ? [] : [
                 Scope::make('settings', [
                     Group::make('import-step-settings', $settingsNodes)->dependsOn('type'),
@@ -89,12 +86,13 @@ class ImportPlanStepUiViewModel extends ViewModel
         ));
     }
 
-    /** @return list<array{value: class-string<BaseImporter>, label: string}> */
+    /** @return list<array{value: class-string<BaseImporter>, label: string, icon?: string}> */
     private function importerTypeOptions(): array
     {
         return array_map(fn (string $type): array => [
             'label' => $type::displayName(),
             'value' => $type,
+            ...($type::icon() !== null ? ['icon' => $type::icon()] : []),
         ], $this->importService->getAllImporterTypes());
     }
 }

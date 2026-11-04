@@ -161,6 +161,14 @@ abstract class BaseImporter
     abstract public static function displayName(): string;
 
     /**
+     * Returns the name of the icon shown for the importer type when choosing one.
+     */
+    public static function icon(): ?string
+    {
+        return null;
+    }
+
+    /**
      * Defines the type-specific settings nodes for this importer, scoped under `settings` in the step's UI.
      *
      * @return list<Node>

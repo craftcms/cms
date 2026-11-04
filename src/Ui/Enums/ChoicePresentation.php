@@ -12,6 +12,8 @@ enum ChoicePresentation: string
      */
     case AddMenu = 'add-menu';
     case Buttons = 'buttons';
+    /** Radios drawn as cards, each option's icon shown large above its label. */
+    case Cards = 'cards';
     case Checkboxes = 'checkboxes';
     case Radios = 'radios';
     case Select = 'select';

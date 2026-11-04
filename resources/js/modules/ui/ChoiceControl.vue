@@ -374,14 +374,32 @@
     return props.control.props.allValue ?? '*';
   }
 
-  function groupAppearance(): 'button-group' | 'card-group' | undefined {
+  function groupAppearance():
+    | 'button-group'
+    | 'cards'
+    | 'card-group'
+    | undefined {
     if (props.control.props.presentation === 'buttons') {
       return 'button-group';
+    }
+
+    if (props.control.props.presentation === 'cards') {
+      return 'cards';
     }
 
     return props.control.props.options.some((option) => option.thumbnail)
       ? 'card-group'
       : undefined;
+  }
+
+  /** Whether a card draws the option's icon large, where a thumbnail would go. */
+  function cardIcon(option: ChoiceOption): boolean {
+    return (
+      props.control.props.presentation === 'cards' &&
+      !props.control.props.multiple &&
+      !option.thumbnail &&
+      option.icon !== undefined
+    );
   }
 
   // Sorting, an “All” option, and the “Add item” menu render through
@@ -626,6 +644,11 @@
           aria-hidden="true"
           v-html="option.thumbnail.svg"
         />
+        <craft-icon
+          v-else-if="cardIcon(option)"
+          slot="icon"
+          :name="option.icon"
+        />
         <img
           v-else-if="option.thumbnail && !control.props.multiple"
           slot="icon"
@@ -662,11 +685,11 @@
             :label="option.label"
           />
           <span
-            v-else-if="option.icon || option.color"
+            v-else-if="(option.icon && !cardIcon(option)) || option.color"
             class="inline-flex items-center gap-sm"
           >
             <craft-icon
-              v-if="option.icon"
+              v-if="option.icon && !cardIcon(option)"
               :name="option.icon"
               :style="option.color ? {color: option.color} : undefined"
             />

@@ -196,6 +196,23 @@ craft-radio[data-card][checked] > [slot='icon'] {
   --c-illustration-line: var(--color-blue-500);
 }
 
+/* An icon's glyph sizes to its font, so it's scaled to fill the slot. */
+craft-radio > craft-icon[slot='icon'] {
+  --c-icon-size: var(--c-radio-icon-size);
+
+  inline-size: auto;
+}
+
+craft-radio[data-card] > craft-icon[slot='icon'] {
+  --c-icon-size: calc(var(--c-radio-card-icon-size) * 0.6);
+
+  block-size: var(--c-radio-card-icon-size);
+}
+
+craft-radio[data-card][checked] > craft-icon[slot='icon'] {
+  color: var(--color-blue-500);
+}
+
 /*
   The input's corners (and so its focus ring's) follow its button's: rounded
   only on the group's outer ends, and square where options meet. It sits

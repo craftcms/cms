@@ -50,6 +50,12 @@ class EntryImporter extends ElementImporter
     }
 
     #[Override]
+    public static function icon(): string
+    {
+        return 'light/newspaper';
+    }
+
+    #[Override]
     public static function getDefaultTransformer(): ?string
     {
         return EntryTransformer::class;

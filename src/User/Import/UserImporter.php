@@ -54,6 +54,12 @@ class UserImporter extends ElementImporter
         return t('Users');
     }
 
+    #[Override]
+    public static function icon(): string
+    {
+        return 'light/user-group';
+    }
+
     /**
      * Users have one field layout for the element type, so there's nothing for the step to
      * choose — resolve it as soon as the importer is built.

@@ -190,6 +190,37 @@ describe('ChoiceControl', () => {
     expect(inputs[1]!.labels?.[0]?.textContent?.trim()).toBe('Descending');
   });
 
+  it('renders cards with each option’s icon drawn large above its label', async () => {
+    await mount(
+      {
+        presentation: 'cards',
+        multiple: false,
+        options: [
+          {label: 'Entries', icon: 'newspaper', value: 'entries'},
+          {label: 'Other', value: 'other'},
+        ],
+      },
+      'entries'
+    );
+
+    const group = container!.querySelector('craft-radio-group')!;
+    const radios = [...group.querySelectorAll('craft-radio')];
+
+    expect(group.getAttribute('appearance')).toBe('cards');
+    expect(
+      radios.map(
+        (radio) =>
+          radio
+            .querySelector(':scope > craft-icon[slot="icon"]')
+            ?.getAttribute('name') ?? null
+      )
+    ).toEqual(['newspaper', null]);
+    expect(group.querySelector('label craft-icon')).toBeNull();
+    expect(radios[0]!.querySelector('label')!.textContent!.trim()).toBe(
+      'Entries'
+    );
+  });
+
   it('renders an icon option as an empty, labeled button', async () => {
     await mount(
       {

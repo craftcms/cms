@@ -36,4 +36,10 @@ class SystemMessageImporter extends ModelImporter
     {
         return t('System Messages');
     }
+
+    #[Override]
+    public static function icon(): string
+    {
+        return 'light/envelope';
+    }
 }

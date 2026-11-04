@@ -52,6 +52,12 @@ class AssetImporter extends ElementImporter
     }
 
     #[Override]
+    public static function icon(): string
+    {
+        return 'light/image';
+    }
+
+    #[Override]
     public static function getDefaultTransformer(): ?string
     {
         return AssetTransformer::class;

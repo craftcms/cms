@@ -325,16 +325,14 @@ it('forbids data source suggestions without permission to save import plans', fu
     getJson(action([ImportPlansController::class, 'sourceSuggestions'], ['query' => './']))->assertForbidden();
 });
 
-it('fills in the default batch size, under its label in the advanced settings', function () {
+it('fills in the default batch size, in its own field', function () {
     $response = postJson(action([ImportPlansController::class, 'stepSettings']), [
         'step' => ($this->entryStep)(),
     ])->assertOk();
 
-    $advanced = collect($response->json('ui.nodes'))->first(fn (array $node) => ($node['props']['label'] ?? null) === 'Advanced');
-    $field = collect($advanced['children'] ?? [])->first(fn (array $node) => ($node['control']['path'] ?? null) === ['batchSize']);
+    $field = collect($response->json('ui.nodes'))->first(fn (array $node) => ($node['control']['path'] ?? null) === ['batchSize']);
 
-    expect($advanced['props']['collapsible'] ?? null)->toBeTrue()
-        ->and($field['props']['label'])->toBe('Batch Size')
+    expect($field['props']['label'])->toBe('Batch Size')
         ->and($response->json('ui.values.batchSize'))->toBe(ImportJob::DEFAULT_BATCH_SIZE);
 });
 

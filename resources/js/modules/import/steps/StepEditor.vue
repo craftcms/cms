@@ -14,6 +14,8 @@
   import type {UiPayload} from '@/modules/ui/types';
   import type {ImportStep, MappingValues} from '@/modules/import/mapping/types';
   import {dirtyState} from '@/modules/import/mapping/paths';
+  import '@craftcms/ui/components/button/button';
+  import '@craftcms/ui/components/icon/icon';
   import {fetchStepUi} from './step-settings';
   import {
     loadStepMapping,
@@ -45,6 +47,12 @@
     part?: 'source' | 'advanced' | 'settings' | 'mapping' | 'matching';
     /** Lets the mapping's fields be narrowed to a search, or to what's mapped. */
     searchable?: boolean;
+    /** Shows the step's matching beneath its mapping, in place of the Match column. */
+    withMatching?: boolean;
+    /** What the `heading` slot calls the step, for its collapse toggle. */
+    headingLabel?: string;
+    /** The step's place in the list, shown on its collapse toggle until that's hovered or focused. */
+    headingNumber?: number;
   }>();
 
   const emit = defineEmits<{
@@ -56,6 +64,8 @@
   /** The step as it currently stands, including the mapping the form doesn't render. */
   const step = ref<ImportStep>(JSON.parse(JSON.stringify(props.step)));
   const payload = shallowRef<UiPayload | null>(null);
+  /** Whether the step's fields are folded away under its heading. */
+  const collapsed = ref(false);
   const loadError = ref<string | null>(null);
   const renderer = ref<{currentValues(): UiPayload['values']} | null>(null);
 
@@ -250,6 +260,10 @@
     });
   }
 
+  const matchingApart = computed(
+    () => props.part === 'mapping' || props.withMatching
+  );
+
   function onMappingChange(values: MappingValues): void {
     // just the mapping leaves what's matched on to the matching, which has its own part
     const {matchCriteria, ...rest} = values;
@@ -259,8 +273,8 @@
       ...step.value,
       settings: {
         ...settings,
-        ...(props.part === 'mapping' ? rest : values),
-        ...(props.part === 'mapping'
+        ...(matchingApart.value ? rest : values),
+        ...(matchingApart.value
           ? {matchCriteria: settings.matchCriteria ?? matchCriteria}
           : {}),
       },
@@ -445,70 +459,138 @@
 </script>
 
 <template>
-  <div class="step-editor" @focusout="onFocusOut">
-    <p v-if="loadError" class="error m-0" role="alert">{{ loadError }}</p>
+  <div
+    :class="{
+      'step-editor': true,
+      'step-editor--card': $slots.heading,
+      'step-editor--collapsed': $slots.heading && collapsed,
+    }"
+    @focusout="onFocusOut"
+  >
+    <template v-if="$slots.heading">
+      <div class="step-editor__toggle">
+        <craft-button
+          class="step-editor__toggle-button"
+          type="button"
+          variant="plain"
+          icon
+          :aria-expanded="String(!collapsed)"
+          @click="collapsed = !collapsed"
+        >
+          <span class="step-editor__toggle-face">
+            <span
+              v-if="headingNumber !== undefined"
+              class="step-editor__number"
+              aria-hidden="true"
+              >{{ headingNumber }}</span
+            >
+            <craft-icon
+              class="step-editor__chevron"
+              :name="collapsed ? 'chevron-right' : 'chevron-down'"
+              :label="
+                collapsed
+                  ? t('Expand {title}', {title: headingLabel ?? t('Step')})
+                  : t('Collapse {title}', {title: headingLabel ?? t('Step')})
+              "
+            ></craft-icon>
+          </span>
+        </craft-button>
+      </div>
+      <template v-if="collapsed">
+        <div class="step-editor__heading-content">
+          <slot name="heading" />
+        </div>
+        <div class="step-editor__heading-actions">
+          <slot name="heading-actions" />
+        </div>
+      </template>
+    </template>
+    <div v-show="!collapsed" class="step-editor__body">
+      <p v-if="loadError" class="error m-0" role="alert">{{ loadError }}</p>
 
-    <craft-spinner v-else-if="!payload" role="status">
-      {{ t('Loading') }}
-    </craft-spinner>
-
-    <craft-field-group v-else-if="part !== 'mapping'">
-      <UiRenderer
-        ref="renderer"
-        :payload="shownPayload!"
-        :errors="formErrors"
-        :refresh="payload.refreshable ? refresh : undefined"
-        @change="syncFromForm"
-      />
-
-      <craft-spinner v-if="showLoadingType" role="status">
+      <craft-spinner v-else-if="!payload" role="status">
         {{ t('Loading') }}
       </craft-spinner>
-    </craft-field-group>
 
-    <!-- shown once the step knows what it imports into and where its data comes from -->
-    <p
-      v-if="readsMapping && part && payload && sourceReadError"
-      class="error m-0"
-      role="alert"
-    >
-      {{ sourceReadError.message }}
-    </p>
-    <section
-      v-if="readsMapping && payload && formType && canMap"
-      class="step-editor__mapping"
-    >
-      <!-- once it's loaded, the mapping heads its own sections -->
-      <h3 v-if="!mapping && !part" class="step-editor__heading m-0">
-        {{ t('Mapping') }}
-      </h3>
+      <craft-field-group v-else-if="part !== 'mapping' && part !== 'matching'">
+        <UiRenderer
+          ref="renderer"
+          :payload="shownPayload!"
+          :errors="formErrors"
+          :refresh="payload.refreshable ? refresh : undefined"
+          @change="syncFromForm"
+        />
 
-      <MappingLoading v-if="showLoadingMapping && !mapping" />
-      <p v-if="mappingMessage" class="error m-0" role="alert">
-        {{ mappingMessage }}
+        <craft-spinner v-if="showLoadingType" role="status">
+          {{ t('Loading') }}
+        </craft-spinner>
+      </craft-field-group>
+
+      <!-- shown once the step knows what it imports into and where its data comes from -->
+      <p
+        v-if="readsMapping && part && payload && sourceReadError"
+        class="error m-0"
+        role="alert"
+      >
+        {{ sourceReadError.message }}
       </p>
-      <StepMatching
-        v-if="mapping && part === 'matching'"
-        :cols="mapping.destinationCols"
-        :step="step"
-        :target-name="mapping.targetName"
-        @change="onMatchingChange"
-      />
-      <StepMappingEditor
-        v-else-if="mapping"
-        :key="mappingKey"
-        :mapping="mapping"
-        :step="step"
-        :editable="editable"
-        :template-errors="templateErrors"
-        :loading="showLoadingMapping"
-        :headless="part === 'mapping'"
-        :hide-match-summary="part === 'mapping'"
-        :hide-match="part === 'mapping'"
-        :searchable="searchable"
-        @change="onMappingChange"
-      />
-    </section>
+      <section
+        v-if="readsMapping && payload && formType && canMap"
+        class="step-editor__mapping"
+      >
+        <!-- once it's loaded, the mapping heads its own sections -->
+        <h3 v-if="!mapping && !part" class="step-editor__heading m-0">
+          {{ t('Mapping') }}
+        </h3>
+
+        <MappingLoading v-if="showLoadingMapping && !mapping" />
+        <p v-if="mappingMessage" class="error m-0" role="alert">
+          {{ mappingMessage }}
+        </p>
+        <StepMatching
+          v-if="mapping && part === 'matching'"
+          :cols="mapping.destinationCols"
+          :step="step"
+          :target-name="mapping.targetName"
+          @change="onMatchingChange"
+        />
+        <StepMappingEditor
+          v-else-if="mapping"
+          :key="mappingKey"
+          :mapping="mapping"
+          :step="step"
+          :editable="editable"
+          :template-errors="templateErrors"
+          :loading="showLoadingMapping"
+          :headless="part === 'mapping'"
+          :hide-match-summary="matchingApart"
+          :hide-match="matchingApart"
+          :searchable="searchable"
+          @change="onMappingChange"
+        />
+      </section>
+      <section
+        v-if="withMatching && !part && mapping && canMap"
+        class="step-editor__mapping"
+        :aria-labelledby="`step-editor-matching-${step.uid}`"
+      >
+        <h3
+          :id="`step-editor-matching-${step.uid}`"
+          class="step-editor__heading m-0"
+        >
+          {{ t('Matching') }}
+        </h3>
+        <StepMatching
+          :cols="mapping.destinationCols"
+          :step="step"
+          :target-name="mapping.targetName"
+          @change="onMatchingChange"
+        />
+      </section>
+    </div>
+    <footer v-if="$slots.footer && !collapsed" class="step-editor__footer">
+      <slot name="footer" />
+    </footer>
   </div>
 </template>
 
@@ -517,9 +599,114 @@
     display: flex;
     flex-direction: column;
     gap: var(--c-spacing-xl);
-    padding: var(--c-spacing-lg);
+    padding: var(--c-spacing-md);
     border-radius: var(--c-radius-lg);
     border: 1px solid var(--c-color-border-quiet);
+  }
+
+  /* a card: a small column for the chevron, beside the heading or the fields */
+  .step-editor--card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    column-gap: var(--c-spacing-md);
+    row-gap: var(--c-spacing-xl);
+  }
+
+  .step-editor--card > .step-editor__body {
+    grid-column: 2 / -1;
+  }
+
+  .step-editor--collapsed {
+    align-items: start;
+  }
+
+  .step-editor__toggle {
+    position: sticky;
+    inset-block-start: var(--c-spacing-sm);
+    align-self: start;
+  }
+
+  /* centered on the heading's first line, the title, rather than the whole heading */
+  .step-editor--collapsed > .step-editor__toggle {
+    margin-block-start: calc((1lh - 1.5rem) / 2);
+  }
+
+  /* the button is the number's circle, so the chevron shows in the same shape */
+  .step-editor__toggle-button {
+    --c-button-radius: 50%;
+    --c-button-height: 1.5rem;
+    --c-button-width: 1.5rem;
+    --c-button-spacing-inline: 0px;
+    --c-button-border-width: 0px;
+
+    aspect-ratio: 1;
+  }
+
+  .step-editor__toggle-face {
+    display: grid;
+    place-items: center;
+  }
+
+  .step-editor__toggle-face > * {
+    grid-area: 1 / 1;
+    transition: opacity 0.1s;
+  }
+
+  .step-editor__number {
+    display: grid;
+    place-items: center;
+    inline-size: 1.5rem;
+    block-size: 1.5rem;
+    border-radius: 50%;
+    background-color: var(--c-color-neutral-fill-quiet);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* opacity rather than visibility, so the chevron keeps naming the button */
+  .step-editor__number + .step-editor__chevron,
+  .step-editor__toggle-button:is(:hover, :focus-within) .step-editor__number {
+    opacity: 0;
+  }
+
+  .step-editor__toggle-button:is(:hover, :focus-within) .step-editor__chevron {
+    opacity: 1;
+  }
+
+  .step-editor__chevron:dir(rtl)[name='chevron-right'] {
+    transform: scaleX(-1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .step-editor__toggle-face > * {
+      transition: none;
+    }
+  }
+
+  .step-editor__heading-content {
+    min-inline-size: 0;
+  }
+
+  .step-editor__footer {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--c-spacing-sm);
+    margin: calc(var(--c-spacing-lg) * -1);
+    margin-block-start: 0;
+    padding-block: var(--c-spacing-md);
+    padding-inline: var(--c-spacing-lg);
+    border-block-start: 1px solid var(--c-color-border-quiet);
+    border-end-start-radius: inherit;
+    border-end-end-radius: inherit;
+    background-color: var(--c-surface-sunken);
+  }
+
+  .step-editor__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--c-spacing-xl);
   }
 
   .step-editor__mapping {

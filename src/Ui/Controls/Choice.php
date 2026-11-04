@@ -16,6 +16,7 @@ use CraftCms\Cms\Cp\Components\Select as SelectComponent;
 use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\Enums\CheckboxSelectPresentation;
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\Enums\AllOptionMode;
@@ -70,6 +71,7 @@ class Choice extends Control
             ChoicePresentation::Buttons => $multiple
                 ? self::multipleButtonsHtml($control, $value, $attributes)
                 : self::radiosHtml($control, $value, $attributes, buttons: true),
+            ChoicePresentation::Cards => self::radiosHtml($control, $value, $attributes, cards: true),
         };
     }
 
@@ -476,7 +478,7 @@ class Choice extends Control
      *
      * @param  array<string, mixed>  $attributes
      */
-    private static function radiosHtml(ControlPayload $control, mixed $value, array $attributes, bool $buttons = false): string
+    private static function radiosHtml(ControlPayload $control, mixed $value, array $attributes, bool $buttons = false, bool $cards = false): string
     {
         $values = self::values($value);
         $iconsOnly = $control->props['iconsOnly'] ?? true;
@@ -489,9 +491,11 @@ class Choice extends Control
             $options = array_values(array_filter($options, fn (array $option): bool => ! ($option['custom'] ?? false)));
         }
 
-        $radios = array_map(function (array $option, int $index) use ($attributes, $values, $buttons, $iconsOnly): Radio {
+        $radios = array_map(function (array $option, int $index) use ($attributes, $values, $buttons, $cards, $iconsOnly): Radio {
             $optionValue = (string) $option['value'];
             $icon = $buttons && $iconsOnly ? ($option['icon'] ?? null) : null;
+            // a card draws its icon large, in the slot a thumbnail would fill
+            $cardIcon = $cards && ! isset($option['thumbnail']) ? Icons::svg($option['icon'] ?? null) : null;
 
             return Radio::make()
                 ->id("{$attributes['id']}-{$index}")
@@ -501,9 +505,9 @@ class Choice extends Control
                 ->disabled($attributes['name'] === null || ($option['disabled'] ?? false))
                 ->label($icon !== null ? Icon::make()->name($icon)->label($option['label']) : self::optionLabel($option))
                 ->attributes(['title' => $icon !== null ? $option['label'] : null])
-                ->icon($icon === null ? ($option['icon'] ?? null) : null)
+                ->icon($icon === null && $cardIcon === null ? ($option['icon'] ?? null) : null)
                 ->color($buttons ? null : ($option['color'] ?? null))
-                ->thumbnail($option['thumbnail'] ?? null)
+                ->thumbnail($cardIcon !== null ? ['svg' => $cardIcon] : ($option['thumbnail'] ?? null))
                 ->describedBy($attributes['aria']['describedby'] ?? null)
                 ->inputAttributes([
                     'required' => $attributes['required'],
@@ -525,7 +529,7 @@ class Choice extends Control
 
         return RadioGroup::make()
             ->id($attributes['id'])
-            ->appearance($buttons ? 'button-group' : null)
+            ->appearance($buttons ? 'button-group' : ($cards ? 'cards' : null))
             ->options($radios)
             ->attributes(self::groupAttributes($attributes, 'radiogroup'))
             ->toHtml();

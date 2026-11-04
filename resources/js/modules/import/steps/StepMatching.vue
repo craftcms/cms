@@ -105,34 +105,6 @@
 <template>
   <div class="step-matching">
     <craft-field fieldset>
-      <span slot="label">{{ t('What if a row already exists?') }}</span>
-      <div slot="input" class="step-matching__modes">
-        <label
-          v-for="option in modes"
-          :key="option.value"
-          :class="{
-            'step-matching__mode': true,
-            'step-matching__mode--checked': mode === option.value,
-          }"
-        >
-          <input
-            type="radio"
-            :name="`match-mode-${step.uid}`"
-            :value="option.value"
-            :checked="mode === option.value"
-            @change="setMode(option.value)"
-          />
-          <span class="step-matching__mode-text">
-            <span class="step-matching__mode-label">{{ option.label }}</span>
-            <span class="step-matching__mode-instructions">{{
-              option.instructions
-            }}</span>
-          </span>
-        </label>
-      </div>
-    </craft-field>
-
-    <craft-field fieldset>
       <span slot="label">{{ t('Match against') }}</span>
       <div slot="input" class="step-matching__criteria">
         <craft-checkbox
@@ -162,6 +134,31 @@
         </p>
       </div>
     </craft-field>
+
+    <craft-field fieldset>
+      <span slot="label">{{ t('What if a row already exists?') }}</span>
+      <div slot="input" class="step-matching__modes">
+        <label
+          v-for="option in modes"
+          :key="option.value"
+          class="step-matching__mode"
+        >
+          <input
+            type="radio"
+            :name="`match-mode-${step.uid}`"
+            :value="option.value"
+            :checked="mode === option.value"
+            @change="setMode(option.value)"
+          />
+          <span class="step-matching__mode-text">
+            <span class="step-matching__mode-label">{{ option.label }}</span>
+            <span class="step-matching__mode-instructions">{{
+              option.instructions
+            }}</span>
+          </span>
+        </label>
+      </div>
+    </craft-field>
   </div>
 </template>
 
@@ -182,19 +179,7 @@
     display: flex;
     align-items: flex-start;
     gap: var(--c-spacing-md);
-    padding: var(--c-spacing-md);
-    border: 1px solid var(--c-color-neutral-border-quiet);
-    border-radius: var(--c-radius-md);
     cursor: pointer;
-  }
-
-  .step-matching__mode:hover {
-    background-color: var(--c-color-neutral-fill-quiet);
-  }
-
-  .step-matching__mode--checked {
-    border-color: var(--c-color-accent-border-loud);
-    box-shadow: 0 0 0 1px var(--c-color-accent-border-loud);
   }
 
   .step-matching__mode input {
