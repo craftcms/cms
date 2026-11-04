@@ -36,7 +36,7 @@ readonly class ReadEditorElement implements Tool
 
     public function description(): string
     {
-        return 'Reads the element the user has open in their editor, as elements.get does, but as they have it there, including changes they haven’t saved.';
+        return 'Reads the element the user has open in their editor, as elements_get does, but as they have it there, including changes they haven’t saved.';
     }
 
     public function handle(Request $request): string

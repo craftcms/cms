@@ -346,7 +346,7 @@
         ? [
             {
               id: interrupt.interruptId,
-              tool: mcpToolName(metadata.toolName ?? ''),
+              tool: metadata.toolName ?? '',
               reason: interrupt.message ?? null,
               input: metadata.input ?? {},
             },
@@ -412,11 +412,6 @@
     } finally {
       sendingDecisions.value = false;
     }
-  }
-
-  /** A tool’s name as Craft’s MCP server knows it, such as `elements.get`. */
-  function mcpToolName(name: string): string {
-    return name.replaceAll('_', '.');
   }
 
   /**
@@ -634,7 +629,7 @@
     approval?: {approved?: boolean};
   }): string {
     const own = ownTools[part.name];
-    const tool = mcpToolName(part.name);
+    const tool = part.name;
 
     if ((part.approval?.approved ?? decisions.value[part.id]) === false) {
       return t('Denied {tool}', {tool});
@@ -681,7 +676,7 @@
     return {
       approval: {
         id: part.id,
-        tool: mcpToolName(part.name),
+        tool: part.name,
         reason: null,
         input: resultOf(part.arguments ?? '{}') ?? {},
       },
@@ -712,7 +707,7 @@
 
   /**
    * The images replies show inline: those Craft made for the conversation with
-   * `assets.transform-url`. Any other image could be on a server that a reply
+   * `assets_transform_url`. Any other image could be on a server that a reply
    * steered by injected content sends data to, so it’s a link.
    */
   const inlineImages = computed(
@@ -721,8 +716,7 @@
         messages.value.flatMap((message) =>
           message.parts.flatMap((part) => {
             const url =
-              part.type === 'tool-call' &&
-              mcpToolName(part.name) === 'assets.transform-url'
+              part.type === 'tool-call' && part.name === 'assets_transform_url'
                 ? (resultOf(part.output) as {url?: unknown} | null)?.url
                 : null;
 

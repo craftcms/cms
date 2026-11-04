@@ -24,7 +24,7 @@ use Mcp\Exception\ToolCallException;
 /**
  * Turns the changes the AI assistant proposes into changes the user can apply to their editor.
  *
- * The changes are set on a copy of the element, as the MCP server’s `elements.validate` tool sets them, and the
+ * The changes are set on a copy of the element, as the MCP server’s `elements_validate` tool sets them, and the
  * element’s form is compiled before and after. Each field whose value changed is a proposal: text as a diff, and
  * anything else as the field’s own read-only control, before and after. Nothing is saved.
  *

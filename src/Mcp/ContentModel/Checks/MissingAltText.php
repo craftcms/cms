@@ -37,7 +37,7 @@ class MissingAltText implements Check
     private function note(): string
     {
         return app(Ai::class)->available(GenerateAltText::handle())
-            ? 'Craft’s “Generate alt text” AI task is set up, so these images can be queued with `assets.analyze` (tasks: ["'.GenerateAltText::handle().'"]), which writes alt text for each site’s language without overwriting any.'
+            ? 'Craft’s “Generate alt text” AI task is set up, so these images can be queued with `assets_analyze` (tasks: ["'.GenerateAltText::handle().'"]), which writes alt text for each site’s language without overwriting any.'
             : 'Craft’s “Generate alt text” AI task isn’t set up. An administrator can set it up in Settings → AI Connections, so images get alt text when they’re uploaded or analyzed.';
     }
 

@@ -33,7 +33,7 @@ readonly class ConditionRuleKind implements ComponentKind
 
     public function usage(): string
     {
-        return 'Conditions list rules in conditionRules.rules. Start each rule from the type’s config, give it a uid, and add settings from component-types.get, such as its operator and values.';
+        return 'Conditions list rules in conditionRules.rules. Start each rule from the type’s config, give it a uid, and add settings from component_types_get, such as its operator and values.';
     }
 
     public function scope(): ?string

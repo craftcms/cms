@@ -141,7 +141,7 @@ readonly class ShowElements implements Tool
         return [
             'elements' => $schema->array()
                 ->items($schema->object([
-                    'type' => $schema->string()->description('The element type, as elements.schema lists it, such as entries.')->required(),
+                    'type' => $schema->string()->description('The element type, as elements_schema lists it, such as entries.')->required(),
                     'id' => $schema->integer()->description('The element’s ID.')->required(),
                     'siteId' => $schema->integer()->description('The site to show it in. Defaults to the primary site.'),
                 ]))

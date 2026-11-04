@@ -20,14 +20,14 @@ readonly class Example
     public function __construct(private Settings $settings) {}
 
     /** @return array{endpoint: string, greeting: string} */
-    #[McpTool(name: 'example.greet', title: 'Greet a visitor', description: 'Returns a greeting for the supplied name.')]
+    #[McpTool(name: 'example_greet', title: 'Greet a visitor', description: 'Returns a greeting for the supplied name.')]
     #[PublicMcp]
     public function greet(string $name): array
     {
         return ['endpoint' => $this->settings->publicRoute, 'greeting' => "Hello, $name!"];
     }
 
-    #[McpTool(name: 'example.manage')]
+    #[McpTool(name: 'example_manage')]
     #[RequiresPermission('manageExample')]
     public function manage(): string
     {
