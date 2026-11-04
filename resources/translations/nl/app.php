@@ -213,6 +213,7 @@ return [
     'Couldn’t generate alt text: {error}' => 'Kan geen alt-tekst genereren: {error}',
     'Couldn’t load activity.' => 'Kan activiteit niet laden.',
     'Couldn’t load table data.' => 'Kan tabelgegevens niet laden.',
+    'Couldn’t load this field.' => 'Couldn’t load this field.',
     'Couldn’t mark notifications as read.' => 'Kan meldingen niet als gelezen markeren.',
     'Couldn’t move the selected items.' => 'Kan de geselecteerde items niet verplaatsen.',
     'Couldn’t open the settings.' => 'Kan de instellingen niet openen.',
