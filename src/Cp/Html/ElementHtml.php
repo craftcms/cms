@@ -1095,33 +1095,63 @@ readonly class ElementHtml
             return null;
         }
 
-        $previousOwnerRevisionId = $owner::find()
-            ->revisionOf($owner->getCanonicalId())
-            ->siteId($owner->siteId)
-            ->status(null)
-            ->where('revisions.num', '<', $owner->revisionNum)
-            ->orderByDesc('num')
-            ->limit(1)
-            ->ids()[0] ?? null;
+        $previousCanonicalIds = $this->previousOwnerRevisionCanonicalIds(
+            $owner::class,
+            $owner->getCanonicalId(),
+            $owner->revisionNum,
+            $element::class,
+            $element->siteId,
+        );
 
-        $query = $element::find();
-
-        if ($previousOwnerRevisionId === null || ! $query instanceof NestedElementQueryInterface) {
+        if ($previousCanonicalIds === null || isset($previousCanonicalIds[$element->id])) {
             return null;
         }
 
-        $previousRevisionIds = $query
-            ->revisionOf($element->getCanonicalId())
-            ->ownerId($previousOwnerRevisionId)
-            ->siteId($element->siteId)
-            ->status(null)
-            ->ids();
+        return ! in_array($element->getCanonicalId(), $previousCanonicalIds, true);
+    }
 
-        if (in_array($element->id, $previousRevisionIds, true)) {
-            return null;
-        }
+    /**
+     * Returns the canonical IDs of the nested revisions owned by an owner's
+     * revision before the given one, indexed by their IDs, or `null` when
+     * that's the owner's first revision. Memoized, so a revision's cards
+     * share one lookup.
+     *
+     * @param  class-string<ElementInterface>  $ownerType
+     * @param  class-string<ElementInterface>  $elementType
+     * @return array<int, int>|null
+     */
+    private function previousOwnerRevisionCanonicalIds(
+        string $ownerType,
+        int $ownerCanonicalId,
+        int $revisionNum,
+        string $elementType,
+        int $siteId,
+    ): ?array {
+        return once(function () use ($ownerType, $ownerCanonicalId, $revisionNum, $elementType, $siteId): ?array {
+            $previousOwnerRevisionId = $ownerType::find()
+                ->revisionOf($ownerCanonicalId)
+                ->siteId($siteId)
+                ->status(null)
+                ->where('revisions.num', '<', $revisionNum)
+                ->orderByDesc('num')
+                ->limit(1)
+                ->ids()[0] ?? null;
 
-        return $previousRevisionIds === [];
+            $query = $elementType::find();
+
+            if ($previousOwnerRevisionId === null || ! $query instanceof NestedElementQueryInterface) {
+                return null;
+            }
+
+            return $query
+                ->revisions()
+                ->ownerId($previousOwnerRevisionId)
+                ->siteId($siteId)
+                ->status(null)
+                ->pluck('canonicalId', 'id')
+                ->map(fn (mixed $canonicalId) => (int) $canonicalId)
+                ->all();
+        });
     }
 
     /**
