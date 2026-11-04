@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import {attrs, t, type ServerAttributes} from '@craftcms/ui';
   import {computed, normalizeClass} from 'vue';
-  import {usePage} from '@inertiajs/vue3';
   import SelectableCardList from '@/common/components/SelectableCardList.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import PlaceholderShape from '@/common/components/PlaceholderShape.vue';
@@ -55,16 +54,13 @@
       selectAll: true,
       singleColumn: false,
       sortable: false,
-      readOnly: undefined,
+      readOnly: false,
       loading: false,
       renderServerActions: true,
       placeholders: 0,
       placeholderThumb: null,
     }
   );
-
-  const page = usePage<{readOnly: boolean}>();
-  const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
 
   // Selection is handed in rather than derived from a table, so this body works
   // for anything with an ordered list of ids — the element index, a relation
@@ -121,7 +117,7 @@
       return;
     }
 
-    if (props.selectable && !readOnly.value && !props.interactionsDisabled) {
+    if (props.selectable && !props.readOnly && !props.interactionsDisabled) {
       props.selection.handleClick(id, event);
     }
   }
