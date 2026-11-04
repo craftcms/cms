@@ -378,6 +378,19 @@ class UserPermissions
     }
 
     /**
+     * Returns a hash of a user’s permissions, which changes along with them.
+     *
+     * @internal
+     */
+    public function permissionsHash(int $userId): string
+    {
+        $permissions = array_keys($this->permissionMap($userId));
+        sort($permissions);
+
+        return md5(implode(',', $permissions));
+    }
+
+    /**
      * Returns a user’s permissions, keyed by lowercase name.
      *
      * A permission’s stored name and its canonical name are the same once lowercased, so this doesn’t need the list
