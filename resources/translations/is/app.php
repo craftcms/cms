@@ -1313,6 +1313,7 @@ return [
     'Compatibility' => 'Samhæfni',
     'Compiled classes' => 'Samsettir flokkar',
     'Compiled templates' => 'Samsett sniðmát',
+    'Compiled views' => 'Compiled views',
     'Complete the Update' => 'Ljúktu við uppfærsluna',
     'Completed job' => 'Keyrslu lokið',
     'Completed' => 'Lokið',
