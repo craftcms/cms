@@ -3677,7 +3677,7 @@ return [
     '{num, number} {num, plural, =1{hour} other{hours}}' => '{num, number} {num, plural,=1{שעה} other{שעות}}',
     '{num, number} {num, plural, =1{issue} other{issues}}' => '{num, number} {num, plural, =1{בעיה} other{בעיות}}',
     '{num, number} {num, plural, =1{item} other{items}}' => '{num, number} {num, plural, =1{פריט} other{פריטים}}',
-    '{num, number} {num, plural, =1{item} other{items}} selected' => '{num, number} {num, plural, =1{פריט נבחר} other{פריטים נבחרו}}',
+    '{num, number} {num, plural, =1{{item}} other{{items}}} selected' => '{num, number} {num, plural, =1{{item}} other{{items}}} selected',
     '{num, number} {num, plural, =1{minute} other{minutes}}' => '{num, number} {num, plural,=1{דקה} other{דקות}}',
     '{num, number} {num, plural, =1{month} other{months}}' => '{num, number} {num, plural,=1{חודש} other{חודשים}}',
     '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number} {num, plural, =1{הודעה} other{הודעות}}',
