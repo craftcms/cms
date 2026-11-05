@@ -3248,6 +3248,7 @@ return [
     'Upload failed for “{filename}”.' => 'Η μεταφόρτωση απέτυχε για «{filename}».',
     'Upload failed.' => 'Η μεταφόρτωση απέτυχε.',
     'Upload files' => 'Μεταφόρτωση αρχείων',
+    'Upload progress' => 'Πρόοδος μεταφόρτωσης',
     'Uploaded By' => 'Μεταφορτώθηκε από',
     'Uploaded by' => 'Μεταφορτώθηκε από',
     'Use the AI assistant' => 'Χρήση του βοηθού AI',
