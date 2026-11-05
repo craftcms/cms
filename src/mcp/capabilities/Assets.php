@@ -277,6 +277,13 @@ readonly class Assets
             throw new ToolCallException('fieldId must be the ID of an Assets field.');
         }
 
+        // Check the field’s volume before resolving its dynamic path, which can create folders
+        $volume = $field->_volumeBySourceKey($field->restrictLocation ? $field->restrictedLocationSource : $field->defaultUploadLocationSource);
+
+        if ($volume && !$this->actor->user()->can("saveAssets:$volume->uid")) {
+            throw new ToolCallException('You are not authorized to upload assets to this folder.');
+        }
+
         $element = null;
 
         if ($elementId !== null) {

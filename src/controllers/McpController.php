@@ -81,6 +81,12 @@ class McpController extends Controller
             Craft::$app->getUser()->enableSession = false;
             Craft::$app->getUser()->enableAutoLogin = false;
             Craft::$app->getUser()->setIdentity(null);
+
+            // The single-use token authorizes uploads, which the user requested via the authenticated server,
+            // so they work while the system is offline too
+            if ($action->id === 'upload') {
+                $this->allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
+            }
         }
 
         return parent::beforeAction($action);

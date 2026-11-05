@@ -137,8 +137,13 @@ class AssetUploads
             throw new ToolCallException('This upload URL is not valid.');
         }
 
+        // Stream to a staging file, so the upload can't be claimed until it's complete
         $maxSize = ConfigHelper::sizeInBytes(Craft::$app->getConfig()->getGeneral()->maxUploadFileSize);
-        $target = fopen($path, 'xb');
+        $target = @fopen("$path.part", 'xb');
+
+        if ($target === false) {
+            throw new ToolCallException('This upload URL is not valid.');
+        }
 
         try {
             $size = stream_copy_to_stream($stream, $target, $maxSize + 1);
@@ -146,8 +151,8 @@ class AssetUploads
             fclose($target);
         }
 
-        if ($size === false || $size > $maxSize || $size === 0) {
-            unlink($path);
+        if ($size === false || $size > $maxSize || $size === 0 || !rename("$path.part", $path)) {
+            @unlink("$path.part");
             throw new ToolCallException($size ? 'The file exceeds the maximum upload size.' : 'The request body was empty.');
         }
 
