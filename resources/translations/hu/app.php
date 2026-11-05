@@ -1313,6 +1313,7 @@ return [
     'Compatibility' => 'Kompatibilitás',
     'Compiled classes' => 'Lefordított osztályok',
     'Compiled templates' => 'Szerkesztett sablonok',
+    'Compiled views' => 'Compiled views',
     'Complete the Update' => 'A frissítés befejezése',
     'Completed job' => 'Befejezett feladat',
     'Completed' => 'Befejezve',
