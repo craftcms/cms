@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Address\Validation\AddressRules;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -114,11 +115,11 @@ describe('elementSelectFieldHtml', function () {
             ->and($input->filter('input[type="hidden"][name="featuredEntryIds"][value=""]'))->toHaveCount(1);
     })->with([false, true]);
 
-    it('boots through a custom element rather than an inline script', function (?string $jsClass, string $element, ?string $inputClass) {
+    it('boots through a custom element rather than an inline script', function (string $elementType, ?string $jsClass, string $element, ?string $inputClass) {
         $html = FormFields::elementSelectHtml([
             'id' => 'related',
             'name' => 'relatedIds',
-            'elementType' => Entry::class,
+            'elementType' => $elementType,
             'jsClass' => $jsClass,
         ]);
 
@@ -129,10 +130,11 @@ describe('elementSelectFieldHtml', function () {
             ->and(json_decode((string) $input->attr('settings'), true)['name'])->toBe('relatedIds')
             ->and($html)->not->toContain('<script');
     })->with([
-        'default' => [null, 'craft-element-select-input', null],
-        'entries' => ['Craft.EntrySelectInput', 'craft-entry-select-input', null],
-        'assets' => ['Craft.AssetSelectInput', 'craft-asset-select-input', null],
-        'plugin class' => ['MyPlugin.SelectInput', 'craft-element-select-input', 'MyPlugin.SelectInput'],
+        'entries' => [Entry::class, null, 'craft-entry-select-input', null],
+        'assets' => [Asset::class, null, 'craft-asset-select-input', null],
+        'other element types' => [Address::class, null, 'craft-element-select-input', null],
+        'core jsClass' => [Entry::class, 'Craft.EntrySelectInput', 'craft-entry-select-input', null],
+        'plugin jsClass' => [Entry::class, 'MyPlugin.SelectInput', 'craft-entry-select-input', 'MyPlugin.SelectInput'],
     ]);
 
     it('renders a plain container when disabled', function () {
