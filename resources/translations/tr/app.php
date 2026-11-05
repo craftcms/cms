@@ -3248,6 +3248,7 @@ return [
     'Upload failed for “{filename}”.' => '“{filename}” karşıya yüklenemedi.',
     'Upload failed.' => 'Yükleme başarısız.',
     'Upload files' => 'Dosya yükleme',
+    'Upload progress' => 'Yükleme ilerlemesi',
     'Uploaded By' => 'Yükleyen: ',
     'Uploaded by' => 'Yükleyen:',
     'Use the AI assistant' => 'YZ asistanını kullan',
