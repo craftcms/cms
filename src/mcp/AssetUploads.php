@@ -300,6 +300,11 @@ class AssetUploads
             throw new ToolCallException('The path must be an absolute path to a readable file.');
         }
 
+        // Only allow files where a local volume could live: within the project, outside system directories
+        if (!FileHelper::isWithin($real, Craft::getAlias('@root')) || Craft::$app->getSecurity()->isRestrictedDir(dirname($real))) {
+            throw new ToolCallException('The path must be within the Craft project, outside of system directories and the project root itself.');
+        }
+
         if (filesize($real) > $maxSize) {
             throw new ToolCallException('The file exceeds the maximum upload size.');
         }

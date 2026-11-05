@@ -61,7 +61,7 @@ readonly class Assets
         'properties' => [
             'download_url' => ['type' => 'string', 'format' => 'uri', 'description' => 'Public HTTPS URL to download. Up to 3 redirects are followed.'],
             'data' => ['type' => 'string', 'description' => 'Base64-encoded file contents, or a base64 data URL. Best for small files; use upload_id for larger ones.'],
-            'path' => ['type' => 'string', 'description' => 'Absolute path to a file on the machine running the server. Only supported by the stdio server (craft mcp/serve).'],
+            'path' => ['type' => 'string', 'description' => 'Absolute path to a file within the Craft project, outside of system directories such as config/, storage/, and vendor/. Only supported by the stdio server (craft mcp/serve).'],
             'upload_id' => ['type' => 'string', 'description' => 'ID from assets_upload_url, after sending the file to its upload_url. Requires file_name or filename.'],
             'file_id' => ['type' => 'string', 'minLength' => 1],
             'mime_type' => ['type' => 'string'],

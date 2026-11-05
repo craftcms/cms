@@ -10,14 +10,17 @@ use craft\elements\User;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\Assets as AssetsField;
 use craft\fields\PlainText;
+use craft\helpers\FileHelper;
+use craft\mcp\AssetUploads;
 use craft\mcp\ServerFactory;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\test\TestCase;
 use crafttests\fixtures\AssetFixture;
+use Mcp\Exception\ToolCallException;
 use Mcp\Server\Transport\StdioTransport;
 
-/** Uploads to Assets fields with selection conditions are staged in the user’s temporary folder before being moved. */
+/** Exercises local-path uploads and field uploads through the stdio MCP server. */
 class AssetFieldUploadTest extends TestCase
 {
     private string $file;
@@ -36,7 +39,9 @@ class AssetFieldUploadTest extends TestCase
         // Other tests may leave a lower limit behind
         $this->originalMaxUploadFileSize = Craft::$app->getConfig()->getGeneral()->maxUploadFileSize;
         Craft::$app->getConfig()->getGeneral()->maxUploadFileSize = 1024 * 1024;
-        $this->file = sys_get_temp_dir() . '/photo.png';
+        // Local paths must be within the project, outside system directories (which include tests/)
+        FileHelper::createDirectory(Craft::getAlias('@root/mcp-upload-test'));
+        $this->file = Craft::getAlias('@root/mcp-upload-test/photo.png');
         file_put_contents($this->file, base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='));
     }
 
@@ -58,7 +63,7 @@ class AssetFieldUploadTest extends TestCase
             Craft::$app->getFields()->deleteField($field);
         }
 
-        @unlink($this->file);
+        FileHelper::removeDirectory(Craft::getAlias('@root/mcp-upload-test'));
         Craft::$app->getConfig()->getGeneral()->maxUploadFileSize = $this->originalMaxUploadFileSize;
         Craft::$app->getUser()->setIdentity(null);
     }
@@ -100,6 +105,33 @@ class AssetFieldUploadTest extends TestCase
         self::assertSame('photo.png', $asset->getFilename());
         self::assertSame('field-upload-test/', $asset->getFolder()->path);
         self::assertSame('Hello', $asset->getFieldValue('caption'));
+    }
+
+    /** @dataProvider restrictedPaths */
+    public function testRejectsPathsWhereVolumesCannotLive(string $path): void
+    {
+        $path = Craft::getAlias($path);
+        copy($this->file, $path);
+
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('within the Craft project, outside of system directories');
+
+        try {
+            (new AssetUploads())->consumeFile(['path' => $path], 'photo.png', static function(): void {
+                self::fail('Restricted paths must not be read.');
+            });
+        } finally {
+            unlink($path);
+        }
+    }
+
+    public static function restrictedPaths(): array
+    {
+        return [
+            'outside the project' => [sys_get_temp_dir() . '/mcp-upload-test.png'],
+            'project root' => ['@root/mcp-upload-test.png'],
+            'config directory' => ['@config/mcp-upload-test.png'],
+        ];
     }
 
     private function createAsset(array $arguments): array
