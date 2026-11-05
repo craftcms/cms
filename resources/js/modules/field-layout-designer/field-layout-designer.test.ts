@@ -1,5 +1,4 @@
 import {afterAll, afterEach, beforeAll, expect, it, vi} from 'vite-plus/test';
-import $ from 'jquery';
 import {Base} from '@craftcms/garnish';
 import {CardViewDesigner} from './card-view-designer';
 import {FieldLayoutDesigner} from './field-layout-designer';
@@ -38,16 +37,13 @@ afterAll(() => {
 
 afterEach(() => {
   delete window.Craft;
-  delete window.$;
   vi.clearAllMocks();
   vi.restoreAllMocks();
   vi.useRealTimers();
 });
 
-it('waits for the jQuery seam before initializing', async () => {
+it('waits for the field search, not jQuery, before initializing', async () => {
   vi.useFakeTimers();
-  window.Craft = Object.assign(Object.create(null), {Grid: class {}});
-  delete window.$;
 
   const deferredInit = vi
     .spyOn(FieldLayoutDesigner.prototype, 'deferredInit')
@@ -81,7 +77,6 @@ it('waits for the jQuery seam before initializing', async () => {
   if (!library) throw new Error('Expected the field library fixture.');
   library.prepend(field);
 
-  window.$ = $;
   await vi.advanceTimersByTimeAsync(100);
 
   expect(deferredInit).toHaveBeenCalledOnce();

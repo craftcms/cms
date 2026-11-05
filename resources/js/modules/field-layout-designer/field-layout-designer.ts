@@ -25,11 +25,6 @@ import {openSlideout} from '@/common/slideouts';
 import {getCpUrl} from '@/common/craft/url';
 import {escapeHtml} from '@/common/craft/attributes';
 
-// `Craft` and jQuery (`$`) are still globals on the page. FLD is native; `$` is
-// used ONLY at the Craft-interop seams (Craft.ui/Grid/listbox/Slideout return or
-// require jQuery). Everywhere else FLD uses native DOM.
-declare const Craft: any;
-
 /**
  * Field Layout Designer — a port of the legacy `Craft.FieldLayoutDesigner` onto
  * the modern, jQuery-free `@craftcms/garnish` named API. FLD's own DOM work is
@@ -136,15 +131,9 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
       this.$fieldLibrary.setAttribute('tabindex', '-1');
     }
 
-    // `typeof` rather than a bare `$`: until the legacy bundle loads there is no
-    // global to reference at all, and an undeclared identifier throws a
-    // ReferenceError instead of evaluating falsy — which `deferUntil` would
-    // surface as a rejected promise that never polls again.
+    // The search field's inner input renders once its custom element upgrades.
     void deferUntil(
-      () =>
-        !!Craft?.Grid &&
-        typeof $ === 'function' &&
-        !!this.$fieldLibrary.querySelector('craft-input-search input')
+      () => !!this.$fieldLibrary.querySelector('craft-input-search input')
     ).then(() => {
       this.$fieldSearch = this.$fieldLibrary.querySelector(
         'craft-input-search input'

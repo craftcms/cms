@@ -9,8 +9,6 @@ import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {showError} from '@/modules/messages/messages';
 import {announce} from '@/common/announcer';
 
-declare const Craft: any;
-
 /**
  * The card view designer (preview + thumbnail/attribute management). Native DOM
  * port of the legacy `Craft.FieldLayoutDesigner.CardViewDesigner`. jQuery
