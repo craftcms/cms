@@ -139,19 +139,13 @@ export class PreviewFileModal {
     this.$bumperButtonStart = bumperButton();
     this.$bumperButtonEnd = bumperButton();
 
-    this.#downloadButton = this.#footerButton(
-      t('Download'),
-      'download',
-      () => {
-        // A real form post: the response is the file.
-        submitNativeForm(Craft.getActionUrl('assets/download-asset'), {
-          assetId: this.assetId,
-        });
-      }
-    );
-    const closeButton = this.#footerButton(t('Close'), null, () =>
-      this.hide()
-    );
+    this.#downloadButton = this.#footerButton(t('Download'), 'download', () => {
+      // A real form post: the response is the file.
+      submitNativeForm(Craft.getActionUrl('assets/download-asset'), {
+        assetId: this.assetId,
+      });
+    });
+    const closeButton = this.#footerButton(t('Close'), null, () => this.hide());
     this.dialog.append(this.#downloadButton, closeButton);
 
     this.dialog.addEventListener('keydown', this.#onKeydown);
