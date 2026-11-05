@@ -115,7 +115,7 @@
     "humanize-duration": "^3.33.2",
     "lit": "catalog:",
     "ora": "^9.4.0",
-    "playwright": "^1.59.1",
+    "playwright": "catalog:",
     "plop": "^4.0.5",
     "recursive-copy": "^2.0.14",
     "refractor": "^3.6.0",
