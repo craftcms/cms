@@ -90,7 +90,7 @@ describe('NestedElements', () => {
 
   function mount(refresh: () => Promise<void>, canCreate = false) {
     vi.stubGlobal('Craft', {
-      cp: {displayNotice: vi.fn()},
+      cp: {},
       elementTypeNames: {
         Address: ['Address', 'Addresses', 'address', 'addresses'],
       },

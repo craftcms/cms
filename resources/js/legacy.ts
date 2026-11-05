@@ -10,6 +10,7 @@
  * barrel belongs here instead, so there is one Lit instance and one set of
  * element definitions on every CP page.
  */
+import './bootstrap/seed-translations';
 import '@craftcms/ui';
 
 // We need to globally register these for the moment because an
@@ -25,6 +26,8 @@ import {
   mountSessionTimeoutHost,
 } from './modules/auth/session-timeout';
 import {installMessages} from './modules/messages';
+import {bootUpdater} from './modules/updater/updater';
+import {bootLicensingIssues} from './modules/licensing/licensing-issues';
 import {defineDashboardWidgetSettingsUiHost} from './modules/ui/dashboard-widget-settings-ui-host';
 import {defineConditionBuilderHost} from './modules/conditions/condition-builder-host';
 import {defineEntryFieldLayoutUiHost} from './modules/ui/entry-field-layout-ui-host';
@@ -37,7 +40,9 @@ import {defineLayoutComponentSettingsUiHost} from './modules/ui/layout-component
 import './modules/listbox/index';
 import './modules/field-layout-designer/index';
 import './modules/sortable-checkbox-select/index';
-import './modules/editable-table/index';
+import './modules/fields';
+import './modules/elements/element-action-events';
+import './common/craft/preview-count-badge';
 import './modules/grouped-entry-type-manager/index';
 import './modules/queue/index';
 import './modules/slideout/index';
@@ -53,13 +58,9 @@ import './modules/entry-mover/index';
 import './modules/prompt-handler/index';
 import './modules/link-field/index';
 import './modules/cp-modal/index';
-import './modules/tabs/index';
 import './modules/grid/index';
 import './modules/chart/index';
-import './modules/data-table-sorter/index';
-import './modules/element-action-trigger/index';
 import './modules/element-thumb-loader/index';
-import './modules/element-table-sorter/index';
 import './modules/asset-mover/index';
 import './modules/element-selector-modal/index';
 import './modules/element-select-input/index';
@@ -67,7 +68,6 @@ import './modules/preview-file-modal/index';
 import './modules/asset-select-input/index';
 import './modules/element-deletion-manager/index';
 import './modules/uploader/index';
-import './modules/ui/index';
 
 const {default: Cp} = await import('./bootstrap/cp.js');
 
@@ -95,6 +95,8 @@ defineFieldSettingsUiHost(Cp.$components);
 defineLayoutComponentSettingsUiHost(Cp.$components);
 
 mountElevatedSessionHost();
+bootUpdater();
+bootLicensingIssues();
 installSessionTimeout();
 mountSessionTimeoutHost();
 

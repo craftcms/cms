@@ -98,16 +98,6 @@ export default defineConfig({
           tsconfigPaths: true,
         },
         test: {
-          name: 'factory',
-          root: './src/factory',
-          environment: 'happy-dom',
-        },
-      },
-      {
-        resolve: {
-          tsconfigPaths: true,
-        },
-        test: {
           name: 'styles',
           root: './src/styles',
           environment: 'happy-dom',

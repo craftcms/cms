@@ -291,7 +291,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         $id = $this->getInputId();
 
         HtmlStack::jsWithVars(fn ($id) => <<<JS
-new Craft.LinkField($('#' + $id));
+new Craft.LinkField(document.getElementById($id));
 JS, [
             InputNamespace::namespaceId($id),
         ]);
@@ -303,11 +303,11 @@ JS, [
         } else {
             $namespacedId = InputNamespace::namespaceId($id);
             $js = <<<JS
-$('#$namespacedId-type').on('change', e => {
-  const type = $('#$namespacedId-type').val();
-  $('#$namespacedId')
-    .attr('type', type)
-    .attr('inputmode', type);
+document.getElementById('$namespacedId-type')?.addEventListener('change', e => {
+  const type = e.target.value;
+  const input = document.getElementById('$namespacedId');
+  input?.setAttribute('type', type);
+  input?.setAttribute('inputmode', type);
 });
 JS;
             HtmlStack::js($js);
@@ -397,7 +397,6 @@ JS;
             foreach ($this->advancedFields as $field) {
                 $html .= match ($field) {
                     'urlSuffix' => FormFields::textFieldHtml([
-                        'fieldClass' => 'info-icon-instructions',
                         'label' => t('URL Suffix'),
                         'instructions' => t('Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.', [
                             'ex1' => '`?p1=foo&p2=bar`',
@@ -421,7 +420,6 @@ JS;
                         'value' => $value?->title,
                     ]),
                     'class' => FormFields::textFieldHtml([
-                        'fieldClass' => 'info-icon-instructions',
                         'class' => 'code',
                         'label' => t('Class Name'),
                         'instructions' => t('Separate multiple values with spaces.'),
@@ -437,7 +435,6 @@ JS;
                         'value' => $value?->id,
                     ]),
                     'rel' => FormFields::textFieldHtml([
-                        'fieldClass' => 'info-icon-instructions',
                         'class' => 'code',
                         'label' => t('Relation ({ex})', ['ex' => '<code>rel</code>']),
                         'instructions' => t('Separate multiple values with spaces.'),

@@ -55,13 +55,18 @@ trait QueriesUniqueElements
             return;
         }
 
-        $preferSites = collect($elementQuery->preferSites ?? [Sites::getCurrentSite()->id])
+        $preferSites = collect($elementQuery->preferSites ?? [])
             ->map(fn (string|int $preferSite) => match (true) {
                 is_numeric($preferSite) => $preferSite,
                 ! is_null($site = Sites::getSiteByHandle($preferSite)) => $site->id,
                 default => null,
             })
-            ->filter();
+            ->filter()
+            ->values();
+
+        if ($preferSites->isEmpty()) {
+            $preferSites = collect([Sites::getCurrentSite()->id]);
+        }
 
         $cases = [];
 

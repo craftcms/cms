@@ -132,9 +132,10 @@
    *
    * It's only worth offering when more than one element can be related — a
    * single-relation field has nothing to bulk-act on. A `null` limit is
-   * unlimited, so it counts as more than one.
+   * unlimited, so it counts as more than one. A read-only field offers it too:
+   * its selection can still be copied, just not removed.
    */
-  const selectable = computed(() => props.editable && limit.value !== 1);
+  const selectable = computed(() => limit.value !== 1);
 
   const viewMode = computed(() => props.control.props.viewMode);
 
@@ -162,7 +163,6 @@
     ids,
     viewMode,
     selectable,
-    readOnly: () => !props.editable,
   });
 
   const {selectedIds, isSelected, prune: pruneSelection} = list.selection;
@@ -533,6 +533,8 @@
           :actions="bulkActions"
           :total="ids.length"
           :limit="limit"
+          :element-display-name="control.props.elementDisplayName"
+          :element-plural-display-name="control.props.elementPluralDisplayName"
         />
         <div class="elements-stage">
           <ElementList
@@ -542,7 +544,6 @@
             :selection="list.selection"
             :selectable="selectable"
             :select-all="false"
-            :read-only="!editable"
             :sortable="sortable"
             @edit="(element) => openEditor(element.id)"
             @reorder="reorder"
@@ -606,7 +607,7 @@
           v-if="control.props.canUpload !== undefined"
           variant="dashed"
           :can-upload="control.props.canUpload"
-          :folder-id="control.props.uploadFolderId ?? undefined"
+          :params="control.props.uploadParams ?? undefined"
           :allowed-kinds="uploadKinds"
           :drop-zone="dropZone"
           :reload-on-complete="false"

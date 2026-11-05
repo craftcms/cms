@@ -1,6 +1,14 @@
 import {actionClient, t} from '@craftcms/ui';
-import {useEventListener, useTimeoutFn} from '@vueuse/core';
-import {computed, nextTick, shallowRef, watch, type Ref} from 'vue';
+import {useTimeoutFn} from '@vueuse/core';
+import {
+  computed,
+  nextTick,
+  onScopeDispose,
+  shallowRef,
+  watch,
+  type Ref,
+} from 'vue';
+import {broadcast, onBroadcast} from '@/common/craft/broadcast';
 import CreateElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/CreateElementController';
 import EditElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/EditElementController';
 import NestedElementsController from '@/actions/CraftCms/Cms/Http/Controllers/NestedElementsController';
@@ -13,7 +21,7 @@ import type {
   NestedOwnerEditor,
 } from '@/modules/elements/nested-owner';
 import {useCopiedElements} from '@/modules/matrix/copied-elements';
-import {craft} from '@/modules/matrix/clipboard';
+import {pasteElements} from '@/modules/elements/clipboard';
 import {ELEMENT_QUICK_EDIT_CONTROL_SELECTOR} from '@/modules/elements/composables/useElementQuickEdit';
 import {
   canOpenElement,
@@ -28,6 +36,7 @@ import {
   type NestedElement,
 } from './nested-elements';
 import {useUiPreview} from '../uiPreview';
+import {showNotice} from '@/modules/messages/messages';
 
 export interface NestedElementQuickEdit {
   readonly longPress: true;
@@ -476,7 +485,7 @@ export function useNestedElementOperations(
     await mutate(
       async (preparedOwnerId) => {
         const manager = options.manager.value!;
-        const pasted = await craft().cp.pasteElements({
+        const pasted = await pasteElements({
           primaryOwnerId: preparedOwnerId,
           ownerId: preparedOwnerId,
           fieldId: manager.fieldId,
@@ -558,9 +567,9 @@ export function useNestedElementOperations(
         }
       );
       reordered = true;
-      window.Craft?.cp?.displayNotice(data.message);
-      window.Craft?.broadcaster?.postMessage({
-        pageId: window.Craft.pageId,
+      showNotice(data.message);
+      broadcast({
+        pageId: window.Craft?.pageId,
         event: 'reorderNestedElements',
         canonicalId: preparedOwner.value?.canonicalId,
         draftId: preparedOwner.value?.draftId,
@@ -608,11 +617,9 @@ export function useNestedElementOperations(
     await options.refresh();
   }
 
-  useEventListener(
-    () => window.Craft?.broadcaster,
-    'message',
-    (event: MessageEvent) => {
-      const data = event.data;
+  // Other tabs that reorder these nested elements
+  onScopeDispose(
+    onBroadcast('reorderNestedElements', (data: any) => {
       if (
         data.event === 'reorderNestedElements' &&
         data.ownerId ===
@@ -622,7 +629,7 @@ export function useNestedElementOperations(
       ) {
         void refreshFromBroadcaster().catch(setError);
       }
-    }
+    })
   );
 
   watch(

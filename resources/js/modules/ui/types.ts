@@ -42,6 +42,7 @@ export type TextControlProps = {
   placeholder?: string;
   inputMode?: string;
   autofocus?: boolean;
+  selectOnFocus?: boolean;
   autocomplete?: boolean | string;
   autocorrect?: boolean;
   autocapitalize?: boolean;

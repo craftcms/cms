@@ -12,6 +12,7 @@ use CraftCms\Cms\Mcp\RouteRegistrar;
 use CraftCms\Cms\Mcp\Settings;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Flash;
+use CraftCms\Cms\Tests\BrowserTestCase;
 use CraftCms\Cms\Tests\TestCase;
 use CraftCms\Cms\Tests\UnitTestCase;
 use CraftCms\Cms\Ui\Ui;
@@ -23,11 +24,13 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\RouteCollection;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Testing\TestResponse;
+use Pest\Browser\Api\AwaitableWebpage;
 use PHPUnit\Framework\Assert;
 use Symfony\Component\DomCrawler\Crawler;
 
 uses(TestCase::class)->in('Feature');
 uses(UnitTestCase::class)->in('Unit');
+uses(BrowserTestCase::class)->in('Browser');
 
 // MCP routes follow the MCP settings, and tests start from cached routes registered before any settings existed.
 pest()->beforeEach(fn () => enableMcp())->in('Feature/Mcp');
@@ -170,6 +173,31 @@ expect()->extend('toContainTag', function (string $tag, array $attributes = []) 
 beforeEach(function () {
     app()->forgetInstance(GeneralConfig::class);
 });
+
+/**
+ * Opens a control panel page in the browser, once its main landmark has rendered.
+ *
+ *     visitCp('settings/sections')->assertSee('Sections');
+ */
+function visitCp(string $path = ''): AwaitableWebpage
+{
+    $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+
+    return visit('/'.ltrim("$cpTrigger/".ltrim($path, '/'), '/'))->assertPresent('main[id]');
+}
+
+/**
+ * Asserts the page has thrown no JavaScript errors. Chromium's “ResizeObserver loop” notice is left out: it reports
+ * that a resize observer's callback ran out of frame time, not an error in the page, and it comes and goes.
+ */
+function assertNoJavaScriptErrors(AwaitableWebpage $page): AwaitableWebpage
+{
+    return $page->assertScript(<<<'JS'
+        window.__pestBrowser.jsErrors
+            .map(error => error.message)
+            .filter(message => ! message.startsWith('ResizeObserver loop'))
+        JS, []);
+}
 
 function swapUrlRequest(string $uri, string $method = 'GET', array $parameters = []): void
 {

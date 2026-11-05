@@ -11,6 +11,7 @@ use CraftCms\Cms\Support\Facades\Workflows;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Workflow\Data\WorkflowDraftReviewData;
 use CraftCms\Cms\Workflow\Data\WorkflowReviewData;
+use CraftCms\Cms\Workflow\Enums\WorkflowStatus;
 use Illuminate\Support\Uri;
 use Override;
 
@@ -148,7 +149,7 @@ class EntryEditViewModel extends ElementEditViewModel
 
                 $review = Workflows::reviewData($draft, $viewer);
 
-                if ($review === null) {
+                if ($review === null || $review->status === WorkflowStatus::Withdrawn) {
                     return null;
                 }
 

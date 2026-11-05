@@ -1,10 +1,23 @@
-import $ from 'jquery';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {CpModal} from './cp-modal';
+
+const messages = vi.hoisted(() => ({
+  showError: vi.fn(),
+  showNotice: vi.fn(),
+  showSuccess: vi.fn(),
+}));
+vi.mock('@/modules/messages/messages', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  ...messages,
+}));
+beforeEach(() => {
+  Object.values(messages).forEach((fn) => fn.mockReset());
+});
 
 type Dialog = HTMLElement & {opened: boolean; label: string};
 
-const sendActionRequest = vi.fn();
+let request: ReturnType<typeof vi.spyOn>;
 
 function dialog(): Dialog {
   return document.body.querySelector('craft-dialog') as Dialog;
@@ -25,40 +38,32 @@ async function loaded(): Promise<void> {
 
 describe('CpModal', () => {
   beforeEach(() => {
-    vi.stubGlobal('$', $);
     vi.stubGlobal('Craft', {
       t: (_category: string, message: string) => message,
-      cp: {
-        displayError: vi.fn(),
-        displaySuccess: vi.fn(),
-        elementThumbLoader: {load: vi.fn()},
-      },
-      sendActionRequest,
-      setElementAttributes: vi.fn(),
-      appendHeadHtml: vi.fn(),
-      appendBodyHtml: vi.fn(),
+      baseCpUrl: 'https://example.test/admin',
       initUiElements: vi.fn(),
-      setFocusWithin: vi.fn(),
       findDeltaData: (_initial: string, current: string) => current,
       refreshComponentInstances: vi.fn(),
     });
-    sendActionRequest.mockImplementation(async (method: string) =>
-      method === 'GET'
-        ? {
-            data: {
-              namespace: 'ns',
-              submitButtonLabel: 'Reassign',
-              content: '<input name="ns[newOwner]" value="1">',
-            },
-          }
-        : {data: {message: 'Entries reassigned.'}}
-    );
+    request = vi
+      .spyOn(actionClient, 'request')
+      .mockImplementation(async ({method}) =>
+        method === 'get'
+          ? {
+              data: {
+                namespace: 'ns',
+                submitButtonLabel: 'Reassign',
+                content: '<input name="ns[newOwner]" value="1">',
+              },
+            }
+          : {data: {message: 'Entries reassigned.'}}
+      );
   });
 
   afterEach(() => {
     document.body.replaceChildren();
     vi.unstubAllGlobals();
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('loads the screen into a titled dialog, and submits it', async () => {
@@ -71,10 +76,12 @@ describe('CpModal', () => {
     await loaded();
 
     expect(dialog().label).toBe('Reassign entries');
-    expect(sendActionRequest).toHaveBeenCalledWith(
-      'GET',
-      'entries/reassign-modal',
-      expect.objectContaining({params: {oldUserIds: [5]}})
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        method: 'get',
+        url: 'entries/reassign-modal',
+        params: {oldUserIds: [5]},
+      })
     );
 
     const save = button('Reassign');
@@ -82,11 +89,28 @@ describe('CpModal', () => {
     save.click();
     await vi.waitFor(() => expect(onSubmit).toHaveBeenCalled());
 
-    expect(sendActionRequest).toHaveBeenLastCalledWith('POST', null, {
+    expect(request).toHaveBeenLastCalledWith({
+      method: 'post',
+      url: 'https://example.test/admin',
       data: 'ns%5BnewOwner%5D=1',
       headers: {'X-Craft-Namespace': 'ns'},
     });
     expect(dialog().opened).toBe(false);
+  });
+
+  it('submits spaces and plus signs as typed', async () => {
+    const onSubmit = vi.fn();
+    new CpModal('entries/reassign-modal', {onSubmit});
+    await loaded();
+
+    dialog().querySelector('input')!.value = 'Hello world + more';
+    button('Reassign').click();
+    await vi.waitFor(() => expect(onSubmit).toHaveBeenCalled());
+
+    const posted = request.mock.lastCall![0].data as string;
+    expect(new URLSearchParams(posted).get('ns[newOwner]')).toBe(
+      'Hello world + more'
+    );
   });
 
   it('asks before a dismissal discards changes', async () => {

@@ -89,7 +89,8 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
   /**
    * Optional Craft color name used to tint the item's icon, in the color's
    * loud tone. Black and white icons take the default text color, so they
-   * stay visible in both themes.
+   * stay visible in both themes. A custom property name (`--…`) uses the
+   * color it holds instead, such as one that means something on its own.
    */
   @property({attribute: 'icon-color'}) iconColor: string | null = null;
 
@@ -99,6 +100,10 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
    * vanish against the surface; they take the default text color instead.
    */
   #iconColorValue(color: string): string {
+    if (color.startsWith('--')) {
+      return `var(${color}, currentColor)`;
+    }
+
     return color === 'black' || color === 'white'
       ? 'var(--c-text-default)'
       : `var(--c-color-${color}-fill-loud, currentColor)`;
@@ -116,7 +121,10 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
   /** Anchor `rel`. Defaults to `noopener` when targeting a new context. */
   @property() rel: string | null = null;
 
-  /** Prevents the item from being activated, and dims it. */
+  /**
+   * Prevents the item from being activated, and dims it. A disabled item stays
+   * focusable, and is announced as unavailable.
+   */
   @property({type: Boolean}) disabled: boolean = false;
 
   /**
@@ -169,14 +177,29 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
 
   override connectedCallback() {
     super.connectedCallback();
+    this.addEventListener('click', this._blockDisabledClick, {capture: true});
     this.addEventListener('click', this);
   }
 
   override disconnectedCallback() {
     super.disconnectedCallback();
+    this.removeEventListener('click', this._blockDisabledClick, {
+      capture: true,
+    });
     this.removeEventListener('click', this);
     this._clearResetStateTimeout();
   }
+
+  /**
+   * Stops a disabled item's clicks before anything listening to it hears them.
+   * Its button or link is only `aria-disabled`, which doesn't stop them.
+   */
+  private _blockDisabledClick = (event: Event) => {
+    if (this.disabled) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  };
 
   private _clearResetStateTimeout() {
     if (this._resetStateTimeout !== null) {
@@ -366,6 +389,7 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
             })}"
             href="${this.href}"
             aria-current="${this.current ? 'true' : nothing}"
+            aria-disabled="${this.disabled ? 'true' : nothing}"
             aria-keyshortcuts="${this.shortcutAriaKeys ?? nothing}"
             target="${ifDefined(target ?? undefined)}"
             rel="${ifDefined(
@@ -387,7 +411,7 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
             })}"
             aria-current="${this.current ? 'true' : nothing}"
             aria-keyshortcuts="${this.shortcutAriaKeys ?? nothing}"
-            ?disabled="${this.disabled}"
+            aria-disabled="${this.disabled ? 'true' : nothing}"
           >
             ${this.renderBody()}
           </button>

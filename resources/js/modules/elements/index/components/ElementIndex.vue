@@ -233,14 +233,21 @@
   watch(loading, (isLoading, wasLoading) => {
     if (isLoading) liveMessage.value = t('Loading…');
     else if (wasLoading)
-      liveMessage.value = t('{total, plural, =1{# item} other{# items}}', {
-        total: elementIndex.pagination?.total ?? 0,
-      });
+      liveMessage.value = t(
+        '{total, number} {total, plural, =1{{item}} other{{items}}}',
+        {
+          total: elementIndex.pagination?.total ?? 0,
+          item: elementIndex.elementLowerDisplayName,
+          items: elementIndex.elementPluralLowerDisplayName,
+        }
+      );
   });
   watch(selectAll.count, (count) => {
     liveMessage.value = count
-      ? t('{num, plural, =1{# item selected} other{# items selected}}', {
+      ? t('{num, number} {num, plural, =1{{item}} other{{items}}} selected', {
           num: count,
+          item: elementIndex.elementLowerDisplayName,
+          items: elementIndex.elementPluralLowerDisplayName,
         })
       : t('Selection cleared');
   });
@@ -584,6 +591,11 @@
         :to="elementIndex.pagination.to"
         :total="elementIndex.pagination.total"
         :enable-adjust-page-size="enableAdjustPageSize"
+        :item-label="elementIndex.elementLowerDisplayName"
+        :items-label="elementIndex.elementPluralLowerDisplayName"
+        :page-size-label="
+          t('{type} per Page', {type: elementIndex.elementPluralDisplayName})
+        "
         @page-size-change="table.setPageSize"
       />
     </div>

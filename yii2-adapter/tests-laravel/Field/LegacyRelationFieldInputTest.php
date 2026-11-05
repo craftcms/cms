@@ -45,7 +45,11 @@ it('still serves the legacy element select template for plugin inputs that exten
         protected string $inputTemplate = '_includes/forms/elementSelect.twig';
     };
 
+    // The template still renders for a subclass that points at it, and now
+    // boots through the custom element rather than an inline
+    // `new Craft.BaseElementSelectInput(…)`. A plugin's own class rides along
+    // as `input-class`.
     expect(legacyRelationInputHtml($field))
         ->toContain('class="elementselect"')
-        ->not->toContain('<craft-element-select-input');
+        ->toContain('<craft-element-select-input');
 });

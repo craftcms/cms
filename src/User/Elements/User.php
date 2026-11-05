@@ -45,9 +45,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\Elements;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
@@ -1850,31 +1848,17 @@ XML;
                         'requireElevatedSession' => true,
                     ];
 
-                    $copyImpersonationUrlId = sprintf('action-copy-impersonation-url-%s', mt_rand());
                     $sessionItems[] = [
-                        'id' => $copyImpersonationUrlId,
+                        'id' => sprintf('action-copy-impersonation-url-%s', mt_rand()),
                         'icon' => 'clipboard',
                         'label' => t('Copy impersonation URL…'),
+                        'action' => self::behaviorAction([
+                            'type' => 'copyUrl',
+                            'actionUrl' => Url::actionUrl('users/get-impersonation-url'),
+                            'params' => ['userId' => $this->id],
+                            'prompt' => t('Copy the impersonation URL, and open it in a new private window.'),
+                        ]),
                     ];
-
-                    HtmlStack::jsWithVars(fn ($id, $userId, $message) => <<<JS
-$('#' + $id).on('activate', () => {
-  Craft.elevatedSessionManager.requireElevatedSession(() => {
-      Craft.sendActionRequest('POST', 'users/get-impersonation-url', {
-        data: {userId: $userId},
-      }).then((response) => {
-        Craft.ui.createCopyTextPrompt({
-          label: $message,
-          value: response.data.url,
-        })
-      });
-  });
-});
-JS, [
-                        InputNamespace::namespaceId($copyImpersonationUrlId),
-                        $this->id,
-                        t('Copy the impersonation URL, and open it in a new private window.'),
-                    ]);
                 }
             }
         }
@@ -1943,36 +1927,19 @@ JS, [
         ];
     }
 
-    /** @return array<string, string> */
+    /** @return array<string, mixed> */
     private function _copyPasswordResetUrlActionItem(string $label): array
     {
-        $id = sprintf('action-copy-password-reset-url-%s', mt_rand());
-
-        HtmlStack::jsWithVars(fn ($id, $userId, $message) => <<<JS
-$('#' + $id).on('activate', () => {
-  Craft.elevatedSessionManager.requireElevatedSession(() => {
-    Craft.sendActionRequest('POST', 'users/get-password-reset-url', {
-      data: {userId: $userId}
-    }).then((response) => {
-      Craft.ui.createCopyTextPrompt({
-        label: $message,
-        value: response.data.url,
-      })
-    }).catch(({response}) => {
-      Craft.cp.displayError(response.data.message);
-    });
-  });
-});
-JS, [
-            InputNamespace::namespaceId($id),
-            $this->id,
-            t('Copy the activation URL'),
-        ]);
-
         return [
-            'id' => $id,
+            'id' => sprintf('action-copy-password-reset-url-%s', mt_rand()),
             'icon' => 'clipboard',
             'label' => $label,
+            'action' => self::behaviorAction([
+                'type' => 'copyUrl',
+                'actionUrl' => Url::actionUrl('users/get-password-reset-url'),
+                'params' => ['userId' => $this->id],
+                'prompt' => t('Copy the activation URL'),
+            ]),
         ];
     }
 

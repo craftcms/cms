@@ -1,10 +1,11 @@
 import {onBeforeUnmount, onMounted} from 'vue';
 import {
-  showMessage,
   registerMessageOutlet,
+  showError,
+  showMessage,
+  showNotice,
+  showSuccess,
   type MessageOutlet,
-  type MessageSettings,
-  type MessageType,
 } from './messages';
 
 /**
@@ -17,15 +18,11 @@ import {
  * messages.error(t('Couldn’t save widget.'));
  */
 export function useMessages() {
-  const show =
-    (type: MessageType) => (message: string, settings?: MessageSettings) =>
-      showMessage({type, message, settings});
-
   return {
     showMessage,
-    notice: show('notice'),
-    success: show('success'),
-    error: show('error'),
+    notice: showNotice,
+    success: showSuccess,
+    error: showError,
   };
 }
 

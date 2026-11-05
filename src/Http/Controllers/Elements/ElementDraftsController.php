@@ -235,9 +235,11 @@ class ElementDraftsController
         // Make sure the user is authorized to preview the draft
         SessionAuth::authorize("previewDraft:$element->draftId");
 
+        // Saving an element with a workflow makes a draft of the changes, which still needs to be submitted for review
+        // there, so it goes there rather than wherever saving the element would.
         return new ElementResponse()->success($element, t('{type} saved.', [
             'type' => t('Draft'),
-        ]), $data, true, $element->isProvisionalDraft ? null : $element->getCpEditUrl());
+        ]), $data, true, $element->isProvisionalDraft ? null : $element->getCpEditUrl(), overridePostedRedirect: $convertedByWorkflow);
     }
 
     /**

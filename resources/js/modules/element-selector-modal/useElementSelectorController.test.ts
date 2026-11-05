@@ -17,7 +17,7 @@ function element(id: number): ElementInfo {
 function controller(options = {}) {
   return new ElementSelectorController({
     elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
-    loadIndexBody: async () => ({html: '', props: {total: 1}}),
+    loadIndexBody: async () => ({props: {total: 1}}),
     ...options,
   });
 }

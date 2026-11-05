@@ -394,6 +394,6 @@ window.LOCATION_HASH = document.location.hash ? decodeURIComponent(document.loca
 
 {% if currentUser.can('performUpdates') and not Updates.isUpdateInfoCached() %}
     {% js %}
-    Craft.cp.checkForUpdates();
+    Craft.cp?.checkForUpdates();
     {% endjs %}
 {% endif %}

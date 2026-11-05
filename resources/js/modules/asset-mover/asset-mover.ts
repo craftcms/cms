@@ -1,4 +1,9 @@
 import {Base} from '@craftcms/garnish';
+import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {create} from '@craftcms/ui/utilities/create';
+import {showError, showNotice} from '@/modules/messages/messages';
+import {QueueService} from '@/modules/queue/queue';
 
 // Mostly Craft.* runtime seams (the still-legacy element index + prompt handler
 // + progress bar); the only jQuery is via the objects Craft.ui/Craft.cp return
@@ -46,11 +51,12 @@ export class AssetMover extends Base {
 
     try {
       // get total size of elements that should be moved
-      response = await Craft.sendActionRequest('POST', 'assets/move-info', {
-        data: {folderIds, assetIds},
+      response = await actionClient.post('assets/move-info', {
+        folderIds,
+        assetIds,
       });
     } catch (e: any) {
-      Craft.cp.displayError(e?.response?.data?.message);
+      showError(e?.response?.data?.message);
       return;
     }
 
@@ -58,9 +64,7 @@ export class AssetMover extends Base {
       response.data.count > AssetMover.countLimit ||
       response.data.totalSize > AssetMover.sizeLimit
     ) {
-      proceed = confirm(
-        Craft.t('app', 'Are you sure you want to move the selected items?')
-      );
+      proceed = confirm(t('Are you sure you want to move the selected items?'));
       confirmed = true;
     }
 
@@ -68,31 +72,25 @@ export class AssetMover extends Base {
   }
 
   successNotice(moveParams: any, message: any, allowUndo = true): void {
-    let details = null;
-    let $undoBtn = null;
+    let undoBtn: HTMLElement | null = null;
 
     if (allowUndo && this.conflictCount === 0) {
-      $undoBtn = Craft.ui.createButton({
-        label: Craft.t('app', 'Undo'),
-        spinner: true,
-      });
+      undoBtn = create('craft-button', {type: 'button'}, t('Undo'));
     }
 
     // if we didn't reach the limit, so the move was not confirmed, we want to give the option to undo
-    if (!moveParams.confirmed && allowUndo) {
-      details = {
-        details: $undoBtn,
-      };
-    }
-
-    const notice = Craft.cp.displayNotice(message, details);
+    const notice = showNotice(
+      message,
+      !moveParams.confirmed && allowUndo && undoBtn
+        ? {details: undoBtn}
+        : undefined
+    );
 
     if (allowUndo) {
-      $undoBtn?.on('activate', async () => {
+      // `<craft-button>` fires click for Enter and Space too
+      undoBtn?.addEventListener('click', async () => {
         // ask to confirm if they want to undo
-        if (
-          confirm(Craft.t('app', 'Are you sure you want to undo the move?'))
-        ) {
+        if (confirm(t('Are you sure you want to undo the move?'))) {
           // if yes, undo
           const totalFoldersMoved = await this.moveFolders(
             this.undoMovedFolders.folderIds,
@@ -104,16 +102,12 @@ export class AssetMover extends Base {
           );
           const totalItemsMoved = totalFoldersMoved + totalAssetsMoved;
           if (totalItemsMoved) {
-            this.successNotice(
-              moveParams,
-              Craft.t('app', 'Move reverted.'),
-              false
-            );
+            this.successNotice(moveParams, t('Move reverted.'), false);
             Craft.elementIndex.updateElements(true);
           }
         }
         // if no, just close the notice;
-        notice.$closeBtn.trigger('click');
+        notice?.close();
       });
     }
   }
@@ -132,8 +126,8 @@ export class AssetMover extends Base {
     });
     return this._batchMoveRequests(requests, {
       conflictChoices: [
-        {value: 'keepBoth', title: Craft.t('app', 'Keep both')},
-        {value: 'replace', title: Craft.t('app', 'Replace it')},
+        {value: 'keepBoth', title: t('Keep both')},
+        {value: 'replace', title: t('Replace it')},
       ],
       handleConflictChoice: function (prompt: any) {
         const params: any = {
@@ -185,15 +179,11 @@ export class AssetMover extends Base {
         conflictChoices: [
           {
             value: 'replace',
-            title: Craft.t(
-              'app',
-              'Replace the folder (all existing files will be deleted)'
-            ),
+            title: t('Replace the folder (all existing files will be deleted)'),
           },
           {
             value: 'merge',
-            title: Craft.t(
-              'app',
+            title: t(
               'Merge the folder (any conflicting files will be replaced)'
             ),
           },
@@ -304,7 +294,7 @@ export class AssetMover extends Base {
           }
 
           if (response.error) {
-            Craft.cp.displayError(response.error);
+            showError(response.error);
           }
         }
 
@@ -355,9 +345,8 @@ export class AssetMover extends Base {
       let activeRequests = requests.length;
 
       for (const request of requests) {
-        Craft.sendActionRequest('POST', request.action, {
-          data: request.params,
-        })
+        actionClient
+          .post(request.action, request.params)
           .then((response: any) => {
             responses.push(
               Object.assign({success: true}, response.data, {request})
@@ -381,7 +370,7 @@ export class AssetMover extends Base {
               Craft.elementIndex.setIndexAvailable();
               Craft.elementIndex.progressBar.hideProgressBar();
               // If assets were just merged we should get the reference tags updated right away
-              Craft.cp.runQueue();
+              void QueueService.getInstance().runQueue();
               resolve(responses);
             } else {
               Craft.elementIndex.progressBar.incrementProcessedItemCount(1);

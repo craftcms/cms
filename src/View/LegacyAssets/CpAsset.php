@@ -9,7 +9,6 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\HtmlStack;
 
-use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\craftAuth;
 
 /**
@@ -25,24 +24,11 @@ class CpAsset implements LegacyAssetInterface
         // TailwindResetAsset::class,
         AnimationBlockerAsset::class,
         D3Asset::class,
-        GarnishAsset::class,
-        JqueryAsset::class,
-        JqueryTouchEventsAsset::class,
-        JqueryUiAsset::class,
-        JqueryPaymentAsset::class,
-        DatepickerI18nAsset::class,
-        SelectizeAsset::class,
-        VelocityAsset::class,
-        IframeResizerAsset::class,
         ThemeAsset::class,
-        PicturefillAsset::class,
     ];
 
     public function register(HtmlStack $htmlStack): void
     {
-        // CP
-        $htmlStack->jsFile(craftAsset('legacy/cp/dist/cp.js'));
-
         $htmlStack->icons([
             'arrow-down',
             'arrow-left',

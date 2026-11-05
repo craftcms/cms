@@ -1,5 +1,6 @@
 import {createApp, h, nextTick, ref} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {ConfigService} from '@craftcms/ui/services/Config';
 import type {UiControlPayload} from './types';
 import {provideUiPreview} from './uiPreview';
 
@@ -32,9 +33,21 @@ const stub = vi.hoisted(() => {
     openSlideout,
     post,
     copy: null as ((elementInfo: unknown[]) => void) | null,
+    copyElements: vi.fn(),
     clearCopiedElements: vi.fn(),
   };
 });
+
+vi.mock('@/modules/elements/clipboard', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  copyElements: stub.copyElements,
+  clearCopiedElements: stub.clearCopiedElements,
+  getCopiedElements: () => [],
+  onCopiedElementsChange: (callback: (elementInfo: unknown[]) => void) => {
+    stub.copy = callback;
+    return () => {};
+  },
+}));
 
 vi.mock('@craftcms/ui', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@craftcms/ui')>()),
@@ -129,8 +142,7 @@ describe('ElementSelectControl', () => {
       'fetch',
       vi.fn(async () => new Response('<svg></svg>'))
     );
-    vi.stubGlobal('Craft', {
-      siteId: 1,
+    ConfigService.getInstance().initialize({
       elementTypeNames: {
         'CraftCms\\Cms\\Elements\\Entry': [
           'Entry',
@@ -139,14 +151,8 @@ describe('ElementSelectControl', () => {
           'entries',
         ],
       },
-      cp: {
-        getCopiedElements: () => [],
-        onCopyElements: (callback: (elementInfo: unknown[]) => void) => {
-          stub.copy = callback;
-        },
-        clearCopiedElements: stub.clearCopiedElements,
-      },
     });
+    vi.stubGlobal('Craft', {siteId: 1});
   });
 
   afterEach(() => {
@@ -159,6 +165,8 @@ describe('ElementSelectControl', () => {
     stub.openSlideout.mockClear();
     stub.copy?.([]);
     stub.clearCopiedElements.mockClear();
+    stub.copyElements.mockClear();
+    ConfigService.resetInstance();
     stub.post.mockReset();
     stub.post.mockResolvedValue({data: {elements: []}});
   });
@@ -793,10 +801,10 @@ describe('ElementSelectControl', () => {
     expect(chips(root).every(isSelectable)).toBe(true);
   });
 
-  it('leaves the chips unselectable on a read-only field', async () => {
+  it('lets the chips of a read-only field be selected, to copy them', async () => {
     const root = await mount({props: {limit: 3}, value: [5], editable: false});
 
-    expect(chips(root).some(isSelectable)).toBe(false);
+    expect(chips(root).every(isSelectable)).toBe(true);
   });
 
   it('ignores a body click on a single-relation field', async () => {
@@ -829,6 +837,25 @@ describe('ElementSelectControl', () => {
     selectChip(chips(root)[0]!, false);
     await nextTick();
     expect(selectedChips(root)).toEqual([]);
+  });
+
+  it('names the selected elements by their type', async () => {
+    const root = await mount({
+      props: {
+        limit: 3,
+        elementDisplayName: 'entry',
+        elementPluralDisplayName: 'entries',
+      },
+      value: [5, 6],
+    });
+
+    selectChip(chips(root)[0]!, true);
+    await nextTick();
+    expect(root.textContent).toContain('1 entry selected');
+
+    selectChip(chips(root)[1]!, true);
+    await nextTick();
+    expect(root.textContent).toContain('2 entries selected');
   });
 
   it('selects a range when the chip reports a shift-click', async () => {
@@ -1274,14 +1301,14 @@ describe('ElementSelectControl', () => {
       ).toBeNull();
     });
 
-    it('has no toolbar on a read-only field', async () => {
+    it('has a toolbar on a read-only field too', async () => {
       const root = await mount({
         props: {limit: 3},
         value: [5, 6],
         editable: false,
       });
 
-      expect(root.querySelector('.element-selections-header')).toBeNull();
+      expect(root.querySelector('.element-selections-header')).not.toBeNull();
     });
 
     it('shows no count, clear button or actions until something is selected', async () => {
@@ -1401,10 +1428,14 @@ describe('ElementSelectControl', () => {
       return actionLabels(bulkMenu(root));
     }
 
-    async function mountSelected(props: Record<string, unknown> = {}) {
+    async function mountSelected(
+      props: Record<string, unknown> = {},
+      editable = true
+    ) {
       const root = await mount({
         props: {limit: 5, elements: copyable, ...props},
         value: [5, 6, 7],
+        editable,
       });
 
       const box = selectAllBox(root)!;
@@ -1452,8 +1483,7 @@ describe('ElementSelectControl', () => {
     });
 
     it('copies the selected elements through the clipboard', async () => {
-      const copyElements = vi.fn();
-      vi.stubGlobal('Craft', {cp: {copyElements}});
+      const copyElements = stub.copyElements;
 
       const root = await mountSelected();
       menuItem(bulkMenu(root)!, 'Copy selected').click();
@@ -1477,20 +1507,11 @@ describe('ElementSelectControl', () => {
       expect(labels(root)).toEqual(['Remove selected']);
     });
 
-    /**
-     * Selection needs an editable field, so a read-only one has no toolbar and
-     * therefore no bulk menu — the per-chip actions are still how you copy from
-     * one. `bulkActions` guards Remove on `editable` regardless, so the list
-     * stays correct if the toolbar's own gate ever changes.
-     */
-    it('offers no bulk menu on a read-only field', async () => {
-      const root = await mount({
-        props: {limit: 5, elements: copyable},
-        value: [5, 6, 7],
-        editable: false,
-      });
+    /** What's related can be copied from a read-only field, but not removed from it. */
+    it('offers only Copy for a selection on a read-only field', async () => {
+      const root = await mountSelected({}, false);
 
-      expect(bulkMenu(root)).toBeNull();
+      expect(labels(root)).toEqual(['Copy selected']);
     });
   });
   describe('element actions', () => {

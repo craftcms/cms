@@ -60,6 +60,33 @@ describe('ElementCards', () => {
     return {root: container, selection};
   }
 
+  it.each([
+    ['nothing', {}, null],
+    [
+      'a disabled stand-in that assistive tech skips',
+      {placeholderSelectAll: true},
+      true,
+    ],
+  ])(
+    'heads cards that can’t be selected with %s',
+    async (_, props, disabled) => {
+      const {root} = mount({selectable: false, ...props});
+      await nextTick();
+
+      const header = root.querySelector('.card-grid-header');
+      const checkbox = header?.querySelector('craft-checkbox') as
+        | (HTMLElement & {disabled?: boolean})
+        | null
+        | undefined;
+
+      expect(checkbox?.disabled ?? null).toBe(disabled);
+      if (disabled) {
+        expect(header!.getAttribute('aria-hidden')).toBe('true');
+        expect(header!.hasAttribute('inert')).toBe(true);
+      }
+    }
+  );
+
   it("labels each card's checkbox with that card's own title", async () => {
     const {root} = mount();
     await nextTick();
@@ -69,6 +96,40 @@ describe('ElementCards', () => {
     ].map((el) => el.textContent);
 
     expect(labels).toEqual(['Select Homepage', 'Select Untitled entry']);
+  });
+
+  it("puts the server's card classes on the card, and its element class on the list item", async () => {
+    const {root} = mount({
+      data: [
+        {
+          ...cards[0],
+          cardAttributes: {class: ['element', 'card', 'listener-class']},
+        },
+      ],
+    });
+    await nextTick();
+
+    const card = root.querySelector('craft-card');
+
+    expect(card?.classList).toContain('listener-class');
+    expect(card?.classList).not.toContain('element');
+    expect(card?.closest('.element')?.tagName).toBe('LI');
+  });
+
+  it('reads class lists the server sends with gaps in their keys', async () => {
+    const {root} = mount({
+      data: [
+        {
+          ...cards[0],
+          cardAttributes: {class: {0: 'card', 2: 'listener-class'}},
+        },
+      ],
+    });
+    await nextTick();
+
+    expect(root.querySelector('craft-card')?.classList).toContain(
+      'listener-class'
+    );
   });
 
   it('renders server-provided card actions when the host does not replace them', async () => {

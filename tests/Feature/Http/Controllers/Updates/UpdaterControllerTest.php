@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Shared\Models\Info;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Updates;
@@ -136,6 +137,19 @@ test('finish preserves full return URLs', function (string $returnUrl) {
     'absolute URL' => ['https://example.test/admin/login'],
     'root-relative URL' => ['/admin/login'],
 ]);
+
+test('serverCheck clears compiled views when no migrations are pending', function () {
+    File::ensureDirectoryExists(config('view.compiled'));
+    $staleView = config('view.compiled').'/stale-compiled-view.php';
+    File::put($staleView, '<?php echo $headHtml->toHtml(); ?>');
+
+    postJson(action([UpdaterController::class, 'serverCheck']), [
+        'data' => $this->hashedData,
+    ])->assertOk()
+        ->assertJsonPath('finished', true);
+
+    expect(File::exists($staleView))->toBeFalse();
+});
 
 it('renders without the navigation while a Craft update is pending', function () {
     // The nav tree is built from sections, volumes and the rest, so a

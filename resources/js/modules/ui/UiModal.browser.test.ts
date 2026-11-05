@@ -244,7 +244,7 @@ it('shows composite input errors and focuses the invalid field without discardin
     errors: [],
     globalErrors: [],
   };
-  vi.stubGlobal('Craft', {cp: {displayError: vi.fn()}});
+  vi.stubGlobal('Craft', {cp: {}});
   vi.spyOn(actionClient, 'get').mockResolvedValue({
     data: {ui, title: 'Schedule release', submitLabel: 'Schedule'},
   });
@@ -284,4 +284,56 @@ it('shows composite input errors and focuses the invalid field without discardin
   await expect
     .element(page.getByRole('dialog', {name: 'Schedule release'}))
     .toBeVisible();
+});
+
+it('focuses and selects an autofocused number control when the modal opens, so typing replaces its value', async () => {
+  vi.stubGlobal('Craft', {autofocusPreferred: true});
+  vi.spyOn(actionClient, 'get').mockResolvedValue({
+    data: {
+      title: 'Set quantity',
+      ui: {
+        scope: [],
+        refreshable: false,
+        nodes: [
+          {
+            type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+            component: 'craft:field',
+            props: {label: 'Quantity'},
+            control: {
+              type: 'CraftCms\\Cms\\Ui\\Controls\\Number',
+              component: 'craft:number',
+              props: {
+                inputType: 'number',
+                autofocus: true,
+                selectOnFocus: true,
+              },
+              path: ['quantity'],
+              deltaGroup: ['quantity'],
+              mode: 'editable',
+            },
+          },
+        ],
+        values: {quantity: 42},
+        errors: [],
+        globalErrors: [],
+      } satisfies UiPayload,
+    },
+  });
+
+  host = document.createElement('div');
+  document.body.append(host);
+  app = createApp(() =>
+    h(UiModal, {modalUrl: '/inventory/form', actionUrl: '/inventory/set'})
+  );
+  const registry = createCpComponentRegistry();
+  registerUiComponents(registry);
+  registry.install(app);
+  app.mount(host);
+
+  const quantity = page.getByRole('spinbutton', {name: 'Quantity'});
+  await expect.element(quantity).toHaveFocus();
+
+  await userEvent.keyboard('7');
+
+  await expect.element(quantity).toHaveValue(7);
 });

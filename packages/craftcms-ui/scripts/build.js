@@ -62,7 +62,6 @@ async function generateBundle(config = {}) {
         )),
         ...(await resolveFrom('./src/services/**/!(*.(styles|test)).ts')),
         ...(await resolveFrom('./src/utilities/**/!(*.(styles|test)).ts')),
-        ...(await resolveFrom('./src/factory/**/!(*.(styles|test)).ts')),
         ...(await resolveFrom('./src/core/**/!(*.(styles|test)).ts')),
       },
       minify: !isDeveloping,

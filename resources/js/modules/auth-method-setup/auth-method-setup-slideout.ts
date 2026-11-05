@@ -7,8 +7,7 @@
  */
 
 import {Slideout} from '@/modules/slideout';
-
-declare const Craft: any;
+import {t} from '@craftcms/ui/utilities/translate';
 
 export interface AuthMethodSetupSlideoutData {
   /** The auth method's display name, used in the success message. */
@@ -37,10 +36,7 @@ export class AuthMethodSetupSlideout extends Slideout {
 <div class="slideout__footer">
   <div class="flex-grow"></div>
   <div class="flex flex-nowrap">
-    <craft-button type="button" class="auth-method-close-btn">${Craft.t(
-      'app',
-      'Cancel'
-    )}</craft-button>
+    <craft-button type="button" class="auth-method-close-btn">${t('Cancel')}</craft-button>
   </div>
 </div>
 `;
@@ -52,13 +48,11 @@ export class AuthMethodSetupSlideout extends Slideout {
     });
 
     // Add alt text to the QR code image
-    const $qrCodeImg = this.$container.find('[id*="qr-code-wrapper"] svg');
-
-    if ($qrCodeImg.length) {
-      $qrCodeImg.attr({
-        role: 'img',
-        'aria-label': Craft.t('app', 'QR Code'),
-      });
+    for (const qrCode of this.container!.querySelectorAll(
+      '[id*="qr-code-wrapper"] svg'
+    )) {
+      qrCode.setAttribute('role', 'img');
+      qrCode.setAttribute('aria-label', t('QR Code'));
     }
   }
 
@@ -67,19 +61,24 @@ export class AuthMethodSetupSlideout extends Slideout {
    * the Cancel button into a Close button.
    */
   showSuccess(): void {
-    const message = Craft.t('app', '{name} added successfully.', {
+    const message = t('{name} added successfully.', {
       name: this.methodName,
     });
-    this.$container.find('.so-body').addClass('auth-method-setup-success')
-      .html(`
+    const container = this.container!;
+    for (const body of container.querySelectorAll('.so-body')) {
+      body.classList.add('auth-method-setup-success');
+      body.innerHTML = `
         <craft-icon name="check"></craft-icon>
         <h1 class="auth-method-setup-success-message" tabindex="-1">${message}</h1>
-      `);
+      `;
+    }
 
-    this.$container.find('.auth-method-setup-success-message').focus();
-    this.$container
-      .find('.auth-method-close-btn')
-      .text(Craft.t('app', 'Close'));
+    container
+      .querySelector<HTMLElement>('.auth-method-setup-success-message')
+      ?.focus();
+    for (const button of container.querySelectorAll('.auth-method-close-btn')) {
+      button.textContent = t('Close');
+    }
   }
 }
 

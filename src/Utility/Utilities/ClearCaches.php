@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utility;
+use CraftCms\Cms\View\CompiledViews;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -219,6 +220,7 @@ class ClearCaches extends Utility
     private static function defaultCacheOptions(): array
     {
         $pathService = app(\CraftCms\Cms\Support\Path::class);
+        $compiledViewsPath = CompiledViews::path();
 
         return [
             [
@@ -252,6 +254,14 @@ class ClearCaches extends Utility
                 ]),
                 'action' => $pathService->compiledTemplates(create: false),
             ],
+            ...($compiledViewsPath === null ? [] : [[
+                'key' => 'compiled-views',
+                'label' => t('Compiled views'),
+                'info' => t('Contents of {path}', [
+                    'path' => sprintf('`%s/`', File::relativePath($compiledViewsPath, Aliases::get('@root'))),
+                ]),
+                'action' => CompiledViews::clear(...),
+            ]]),
             [
                 'key' => 'compiled-classes',
                 'label' => t('Compiled classes'),

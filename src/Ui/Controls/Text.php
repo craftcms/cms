@@ -33,6 +33,8 @@ class Text extends Control
 
     private bool $autofocus = false;
 
+    private bool $selectOnFocus = false;
+
     private bool|string|null $autocomplete = null;
 
     private bool $autocorrect = true;
@@ -143,6 +145,16 @@ class Text extends Control
     }
 
     /**
+     * Select the control's value whenever it's focused, so it can be typed over.
+     */
+    public function selectOnFocus(bool $selectOnFocus = true): static
+    {
+        $this->selectOnFocus = $selectOnFocus;
+
+        return $this;
+    }
+
+    /**
      * Sets the input’s `autocomplete` attribute, which is `off` unless set.
      *
      * Pass `true` for `on`, or a token such as `name` or `email` when the input collects the current user’s own data.
@@ -223,6 +235,7 @@ class Text extends Control
             'placeholder' => $this->placeholder,
             'inputMode' => $this->inputMode,
             'autofocus' => $this->autofocus ?: null,
+            'selectOnFocus' => $this->selectOnFocus ?: null,
             'autocomplete' => $this->autocomplete,
             'autocorrect' => $this->autocorrect ? null : false,
             'autocapitalize' => $this->autocapitalize ? null : false,

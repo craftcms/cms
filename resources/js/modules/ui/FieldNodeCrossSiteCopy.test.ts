@@ -6,6 +6,19 @@ import ActionMenuNode from './ActionMenuNode.vue';
 import FieldNode from './FieldNode.vue';
 import type {UiChange, UiNodePayload, UiValues} from './types';
 
+const messages = vi.hoisted(() => ({
+  showError: vi.fn(),
+  showNotice: vi.fn(),
+  showSuccess: vi.fn(),
+}));
+vi.mock('@/modules/messages/messages', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  ...messages,
+}));
+beforeEach(() => {
+  Object.values(messages).forEach((fn) => fn.mockReset());
+});
+
 const TextControl = defineComponent({
   props: ['value'],
   render() {
@@ -70,10 +83,7 @@ describe('FieldNode cross-site copying', () => {
         {id: 1, uid: 'primary', handle: 'primary', name: 'Primary'},
         {id: 2, uid: 'secondary', handle: 'secondary', name: 'Secondary'},
       ],
-      cp: {
-        displayNotice: vi.fn(),
-        displayError: vi.fn(),
-      },
+      cp: {},
     } as never;
   });
 
@@ -155,8 +165,6 @@ describe('FieldNode cross-site copying', () => {
       container.querySelector<HTMLInputElement>('[data-text-control]')!.value
     ).toBe('Copied');
     expect(changed).toHaveBeenCalledOnce();
-    expect(window.Craft.cp!.displayNotice).toHaveBeenCalledWith(
-      'Field value copied.'
-    );
+    expect(messages.showNotice).toHaveBeenCalledWith('Field value copied.');
   });
 });

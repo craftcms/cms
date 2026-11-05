@@ -52,7 +52,7 @@ afterEach(() => {
 });
 
 async function initializeCp(): Promise<void> {
-  await import('../../../../packages/craftcms-legacy/cp/src/js/CP.js');
+  await import('../../../../packages/craftcms-legacy/cpcompat/src/craft-cp.js');
 }
 
 it('waits for the thumbnail module even when it loads after the old 500 ms deadline', async () => {

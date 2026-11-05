@@ -2,6 +2,7 @@ import {ref} from 'vue';
 import type {QueryParams} from '@/common/types/query';
 import type {PaginationState, Updater} from '@tanstack/vue-table';
 import type {PaginationData} from '@/common/types';
+import {pageParam} from '@/common/craft/url';
 
 interface OnChangeArgs {
   state: PaginationState;
@@ -27,7 +28,7 @@ export function useServerPagination({
   onChange,
   currentQuery,
 }: UseServerPaginationParams) {
-  const pageParam = Craft.pageTrigger ?? 'page';
+  const pageKey = pageParam();
   const paginationState = ref<PaginationState>({
     pageIndex: initialState.current_page ? initialState.current_page - 1 : 0,
     pageSize: initialState.per_page,
@@ -45,7 +46,7 @@ export function useServerPagination({
         Object.fromEntries(
           new URLSearchParams(window.location.search)
         )) as Record<string, string>),
-      [pageParam]: next.pageIndex + 1,
+      [pageKey]: next.pageIndex + 1,
       per_page: next.pageSize,
     };
   }

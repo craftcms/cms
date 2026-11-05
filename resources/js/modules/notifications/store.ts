@@ -1,6 +1,7 @@
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {t} from '@craftcms/ui';
 import {markRead} from '@actions/NotificationsController';
+import {showError} from '@/modules/messages/messages';
 
 type NotificationData = CraftCms.Cms.Cp.Data.NotificationData;
 
@@ -61,7 +62,7 @@ export async function markNotificationsRead(ids: string[]): Promise<void> {
     await actionClient.post(markRead().url, {ids: changedIds});
   } catch {
     setUnread(changedIds, true);
-    Craft.cp?.displayError?.(t('Couldn’t mark notifications as read.'));
+    showError(t('Couldn’t mark notifications as read.'));
   }
 }
 
