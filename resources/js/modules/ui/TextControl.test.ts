@@ -2,7 +2,7 @@ import {createApp, h, nextTick, reactive} from 'vue';
 import {afterEach, describe, expect, it} from 'vite-plus/test';
 import type CraftInput from '@craftcms/ui/components/input/input';
 import TextControl from './TextControl.vue';
-import type {UiControlPayload} from './types';
+import type {TextControlProps, UiControlPayload} from './types';
 
 describe('TextControl', () => {
   let app: ReturnType<typeof createApp> | undefined;
@@ -88,5 +88,56 @@ describe('TextControl', () => {
 
     expect(nativeInput.hasAttribute('autocorrect')).toBe(false);
     expect(nativeInput.hasAttribute('autocapitalize')).toBe(false);
+  });
+
+  async function mountText(props: TextControlProps): Promise<HTMLInputElement> {
+    const control = reactive<UiControlPayload<TextControlProps>>({
+      type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
+      component: 'craft:text',
+      props,
+      path: ['quantity'],
+      mode: 'editable',
+      deltaGroup: ['quantity'],
+    });
+    container = document.createElement('div');
+    document.body.append(container);
+    app = createApp({
+      render: () =>
+        h(TextControl, {
+          control,
+          value: '42',
+          editable: true,
+          invalid: false,
+          required: false,
+        }),
+    });
+    app.mount(container);
+    await nextTick();
+
+    const input = container.querySelector<CraftInput>('craft-input')!;
+    await input.updateComplete;
+    // Autofocus waits a frame for anything opening the control, such as a modal, to settle.
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await input.updateComplete;
+
+    return input.querySelector<HTMLInputElement>('input')!;
+  }
+
+  it('focuses an autofocused control rendered after page load, without selecting its value', async () => {
+    const nativeInput = await mountText({autofocus: true});
+
+    expect(document.activeElement).toBe(nativeInput);
+    expect(nativeInput.selectionStart).toBe(nativeInput.selectionEnd);
+  });
+
+  it('selects the value when a selectOnFocus control is focused', async () => {
+    const nativeInput = await mountText({selectOnFocus: true});
+
+    expect(document.activeElement).not.toBe(nativeInput);
+
+    nativeInput.focus();
+
+    expect(nativeInput.selectionStart).toBe(0);
+    expect(nativeInput.selectionEnd).toBe(nativeInput.value.length);
   });
 });

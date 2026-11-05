@@ -33,7 +33,7 @@
   const input = useTemplateRef<CraftInput>('input');
 
   // The browser only autofocuses on page load, so a control rendered later (such as in a
-  // modal or slideout) focuses itself, and selects its value so it can be typed over.
+  // modal or slideout) focuses itself.
   onMounted(() => {
     if (props.control.props.autofocus !== true) {
       return;
@@ -41,13 +41,23 @@
 
     requestAnimationFrame(async () => {
       await input.value?.updateComplete;
-      const nativeInput = input.value?.querySelector<
-        HTMLInputElement | HTMLTextAreaElement
-      >('input, textarea');
-      nativeInput?.focus();
-      nativeInput?.select();
+      nativeInput()?.focus();
     });
   });
+
+  function nativeInput(): HTMLInputElement | HTMLTextAreaElement | null {
+    return (
+      input.value?.querySelector<HTMLInputElement | HTMLTextAreaElement>(
+        'input, textarea'
+      ) ?? null
+    );
+  }
+
+  function onFocusIn(): void {
+    if (props.control.props.selectOnFocus === true) {
+      nativeInput()?.select();
+    }
+  }
 
   const onModelValueChanged = ignoreModelValueInitialization((event) => {
     if (!(event.target instanceof CraftInput)) {
@@ -69,6 +79,7 @@
 <template>
   <craft-input
     ref="input"
+    @focusin="onFocusIn"
     v-bind="$attrs"
     :name="editable ? inputName(control.path) : ''"
     :type="control.props.inputType ?? 'text'"
