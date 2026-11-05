@@ -30,7 +30,7 @@
     BulkActionItem,
   } from '@/modules/elements/types/actions';
   import {AdminTableCreateSlideout} from '@/modules/admin-table/create-slideout';
-  import {openSlideout, useSlideout} from '@/common/slideouts';
+  import {useSlideout} from '@/common/slideouts';
   import {useElementQuickEdit} from '@/modules/elements/composables/useElementQuickEdit';
   import UiModal from './UiModal.vue';
   import {useInertiaTable} from './useInertiaTable';
@@ -229,6 +229,7 @@
               'data-cp-url': url,
               'data-editable': '',
               'data-slideout-width': link.slideoutWidth ?? undefined,
+              'data-refresh-on-close': link.refreshOnClose ? '' : undefined,
               onClick: (event: MouseEvent) =>
                 onLinkClick({...link, url}, event),
             }
@@ -267,20 +268,9 @@
     link: TableLink & {url: string},
     opener: HTMLElement | null
   ): void {
-    if (link.refreshOnClose) {
-      // Saving closes the slideout too, so refreshing on close covers both.
-      void openSlideout(link.url, {
-        width: link.slideoutWidth ?? undefined,
-        opener,
-        onSaved: () => {},
-        onClosed: refreshTable,
-      });
-
-      return;
-    }
-
     quickEdit.openEditor(link.url, opener, {
       width: link.slideoutWidth ?? undefined,
+      refreshOnClose: link.refreshOnClose,
     });
   }
 
