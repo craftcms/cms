@@ -30,6 +30,12 @@
       data?: Array<CardElement>;
       selectable?: boolean;
       selectAll?: boolean;
+      /**
+       * Draws the select-all header for cards that can't be selected, with a
+       * disabled checkbox that assistive tech skips, so they line up with
+       * selectable cards beside them.
+       */
+      placeholderSelectAll?: boolean;
       singleColumn?: boolean;
       sortable?: boolean;
       interactionsDisabled?: boolean;
@@ -228,6 +234,16 @@
         .disabled="readOnly || interactionsDisabled"
         @model-value-changed="selection.toggleAll(checkboxValue($event))"
       >
+        <label slot="label">{{ t('Select all') }}</label>
+      </craft-checkbox>
+    </div>
+    <div
+      v-else-if="placeholderSelectAll"
+      class="card-grid-header"
+      aria-hidden="true"
+      inert
+    >
+      <craft-checkbox label-sr-only disabled>
         <label slot="label">{{ t('Select all') }}</label>
       </craft-checkbox>
     </div>

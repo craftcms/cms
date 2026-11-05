@@ -111,6 +111,7 @@
     :loading="loading"
     :sortable="sortable"
     :thumb-size="thumbSize"
+    :fallback-color="null"
     @edit="(element) => edit(element.id)"
     @reorder="
       (startIndex, finishIndex) => $emit('reorder', startIndex, finishIndex)
