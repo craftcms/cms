@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Table;
 use craft\elements\User;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\models\Site;
 use FunctionalTester;
 use yii\i18n\MessageSource;
@@ -58,6 +59,44 @@ class OAuthConsentCest
         $I->seeResponseCodeIs(200);
         $I->seeElement("form[action*=\"$actionTrigger/oauth/approve\"][action*=\"resource=mcp\"]");
         $I->seeElement("button[formaction*=\"$actionTrigger/oauth/deny\"][formaction*=\"resource=mcp\"]");
+    }
+
+    public function testControlPanelDomainLoginContinuesOnFrontEnd(FunctionalTester $I): void
+    {
+        $general = Craft::$app->getConfig()->getGeneral();
+        $original = ['baseCpUrl' => $general->baseCpUrl, 'cpTrigger' => $general->cpTrigger];
+        $loginUrl = UrlHelper::siteUrl($general->getLoginPath() ?: "$general->actionTrigger/users/login");
+        $params = $this->authorizeParams();
+        $I->stopFollowingRedirects();
+        Craft::$app->getUser()->logout(false);
+
+        try {
+            // When the control panel shares the site's domain, guests log in on the front end and return here
+            $I->haveServerParameter('HTTP_HOST', parse_url($loginUrl, PHP_URL_HOST));
+            $I->amOnPage("/$general->cpTrigger/oauth/mcp/authorize?" . http_build_query($params));
+            $I->seeResponseCodeIsRedirection();
+            $I->assertSame($loginUrl, Craft::$app->getResponse()->getHeaders()->get('Location'));
+
+            // When it has its own domain, guests continue the authorization on the front end first
+            $general->baseCpUrl = 'https://cp.example.com';
+            $general->cpTrigger = null;
+            $I->haveServerParameter('HTTP_HOST', 'cp.example.com');
+            $I->haveServerParameter('HTTPS', 'on');
+            $I->amOnPage('/oauth/mcp/authorize?' . http_build_query($params));
+            $I->seeResponseCodeIsRedirection();
+            $location = Craft::$app->getResponse()->getHeaders()->get('Location');
+            $I->assertStringStartsWith(UrlHelper::siteUrl("$general->actionTrigger/oauth/authorize"), $location);
+            parse_str(parse_url($location, PHP_URL_QUERY), $query);
+            $I->assertSame(['resource' => 'mcp'] + $params, $query);
+
+            // Signed-in users stay on the control panel's domain
+            $I->amLoggedInAs(User::find()->admin()->one());
+            $I->amOnPage('/oauth/mcp/authorize?' . http_build_query($params));
+            $I->seeResponseCodeIs(200);
+            $I->seeElement('form[action^="https://cp.example.com/oauth/mcp/approve"]');
+        } finally {
+            Craft::configure($general, $original);
+        }
     }
 
     public function testRegistrationNormalizesClientNames(FunctionalTester $I): void

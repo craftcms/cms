@@ -199,6 +199,18 @@ class OauthController extends Controller
                 $general = Craft::$app->getConfig()->getGeneral();
                 $loginPath = $general->getLoginPath() ?: $general->actionTrigger . '/users/login';
                 $userSession->loginUrl = UrlHelper::siteUrl($loginPath);
+
+                // When the control panel has its own domain, the front-end login can’t return to this request, so
+                // continue the authorization on the front end before logging in.
+                if (
+                    $this->request->getIsCpRequest() &&
+                    ($userSession->getIsGuest() || in_array('login', $prompts, true)) &&
+                    !in_array('none', $prompts, true) &&
+                    strcasecmp((string)parse_url($userSession->loginUrl, PHP_URL_HOST), $this->request->getHostName()) !== 0
+                ) {
+                    $params = ['resource' => $resource] + $this->request->getQueryParamsWithoutPath();
+                    return $this->redirect(UrlHelper::siteUrl("$general->actionTrigger/oauth/authorize", $params));
+                }
             }
             $promptedLoginKey = 'oauthPromptedLogin:' . $resource;
             if ($userSession->getIsGuest()) {

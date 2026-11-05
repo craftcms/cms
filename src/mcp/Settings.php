@@ -119,7 +119,7 @@ class Settings extends Model
         }
 
         // Requests go to the control panel when its base URL matches them more closely than the site’s does
-        $url = $this->url($route);
+        $url = UrlHelper::siteUrl(trim($route, '/'));
         $site = Craft::$app->getSites()->getCurrentSite();
         $siteScore = ($site->getBaseUrl() ? $this->scoreBaseUrl($site->getBaseUrl(), $url) : 0) + ($site->primary ? 1 : 0);
         $cpBaseUrl = implode('/', array_filter([rtrim($general->baseCpUrl, '/'), $general->cpTrigger]));
@@ -150,13 +150,19 @@ class Settings extends Model
         return 1000 + strlen($basePath) * 100 + ($basePort == $port ? 100 : 0) + ($baseScheme === $scheme ? 10 : 0);
     }
 
-    /** Returns the absolute URL for a route. */
+    /**
+     * Returns the absolute URL for a route.
+     *
+     * Without a control panel trigger, the control panel’s own domain serves the authenticated routes too, so
+     * control panel requests get URLs on that domain.
+     */
     public function url(string $route): string
     {
         $path = trim($route, '/');
+        $cpTrigger = Craft::$app->getConfig()->getGeneral()->cpTrigger;
 
-        if ($this->isCpRoute($path)) {
-            $path = ltrim(substr($path, strlen(Craft::$app->getConfig()->getGeneral()->cpTrigger)), '/');
+        if ($this->isCpRoute($path) || (!$cpTrigger && Craft::$app->getRequest()->getIsCpRequest())) {
+            $path = $cpTrigger ? ltrim(substr($path, strlen($cpTrigger)), '/') : $path;
             return UrlHelper::removeParam(UrlHelper::cpUrl($path), 'site');
         }
 

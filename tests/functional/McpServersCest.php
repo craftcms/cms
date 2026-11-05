@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Table;
 use craft\elements\User;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\mcp\Settings;
 use craft\oauth\User as OAuthUser;
 use craft\services\Mcp;
@@ -105,6 +106,32 @@ class McpServersCest
         $I->sendAjaxPostRequest('/mcp');
         $I->dontSeeResponseCodeIs(401);
         $I->dontSeeResponseCodeIs(403);
+    }
+
+    public function testControlPanelDomainWithoutTrigger(FunctionalTester $I): void
+    {
+        $general = Craft::$app->getConfig()->getGeneral();
+        $original = ['baseCpUrl' => $general->baseCpUrl, 'cpTrigger' => $general->cpTrigger];
+        $general->baseCpUrl = 'https://cp.example.com';
+        $general->cpTrigger = null;
+        $this->settings(['enabled' => true, 'route' => '/mcp', 'authorizationRoute' => '/mcp/auth']);
+
+        try {
+            // The site's domain advertises the authorization endpoint on the site
+            $I->amOnPage('/.well-known/oauth-protected-resource/mcp/auth');
+            $I->assertSame(UrlHelper::siteUrl('mcp/auth'), json_decode($I->grabPageSource(), true)['resource']);
+
+            // The control panel's domain advertises it on that domain
+            $I->haveServerParameter('HTTP_HOST', 'cp.example.com');
+            $I->haveServerParameter('HTTPS', 'on');
+            $I->sendAjaxPostRequest('/mcp/auth');
+            $I->seeResponseCodeIs(401);
+            $I->assertStringContainsString('"https://cp.example.com/.well-known/oauth-protected-resource/mcp/auth"', Craft::$app->getResponse()->getHeaders()->get('WWW-Authenticate'));
+            $I->amOnPage('/.well-known/oauth-protected-resource/mcp/auth');
+            $I->assertSame('https://cp.example.com/mcp/auth', json_decode($I->grabPageSource(), true)['resource']);
+        } finally {
+            Craft::configure($general, $original);
+        }
     }
 
     private function settings(array $config): void
