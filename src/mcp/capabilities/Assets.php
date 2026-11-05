@@ -188,13 +188,18 @@ readonly class Assets
         $asset->newFolderId = $folder->id;
         $asset->setVolumeId($folder->volumeId);
         $asset->uploaderId = $actor->id;
-        $asset->setFieldValues((new CustomFieldSchema())->prepareValues($asset, $fields));
+        $fieldValues = (new CustomFieldSchema())->prepareValues($asset, $fields);
+        $asset->setFieldValues($fieldValues);
         $this->assetAdapter->authorizeAssetSave($actor, $asset);
 
-        return $this->mcpAssetUploads->consumeFile($file, $filename, function(string $path, string $filename) use ($actor, $asset, $folder, $selectionCondition): array {
+        return $this->mcpAssetUploads->consumeFile($file, $filename, function(string $path, string $filename) use ($actor, $asset, $fieldValues, $folder, $selectionCondition): array {
             $filename = \craft\helpers\Assets::prepareAssetName($filename);
             $tempFolder = $selectionCondition ? $this->assets->getUserTemporaryUploadFolder($actor) : null;
             $staged = $tempFolder && $tempFolder->id !== $folder->id;
+
+            if ($staged) {
+                $filename = $this->assets->getNameReplacementInFolder($filename, $folder->id);
+            }
 
             // Like the control panel, stage files for fields with selection conditions in the user’s temporary
             // folder, so rejected files never reach the destination volume
@@ -215,9 +220,21 @@ readonly class Assets
                 throw new ToolCallException(implode("\n", $asset->getErrorSummary(true)) ?: 'Asset could not be created.');
             }
 
-            if ($selectionCondition && !$selectionCondition->matchElement($asset)) {
-                $this->elements->deleteElement($asset, true);
-                throw new ToolCallException("$filename isn’t selectable for this field.");
+            if ($selectionCondition) {
+                // Match the asset as it will be once it’s moved to its upload location
+                $candidate = $asset;
+
+                if ($staged) {
+                    $candidate = clone $asset;
+                    $candidate->setFilename($filename);
+                    $candidate->folderId = $folder->id;
+                    $candidate->setVolumeId($folder->volumeId);
+                }
+
+                if (!$selectionCondition->matchElement($candidate)) {
+                    $this->elements->deleteElement($asset, true);
+                    throw new ToolCallException("$filename isn’t selectable for this field.");
+                }
             }
 
             if ($staged) {
@@ -229,6 +246,19 @@ readonly class Assets
                     $errors = implode("\n", $asset->getErrorSummary(true));
                     $this->elements->deleteElement($asset, true);
                     throw new ToolCallException($errors ?: 'Asset could not be moved to its upload location.');
+                }
+
+                // The staged asset was saved with the temporary volume’s field layout, so save its field values now
+                if ($fieldValues) {
+                    $asset->setVolumeId($folder->volumeId);
+                    $asset->setFieldValues($fieldValues);
+                    $asset->setScenario(Asset::SCENARIO_DEFAULT);
+
+                    if (!$this->elements->saveElement($asset)) {
+                        $errors = implode("\n", $asset->getErrorSummary(true));
+                        $this->elements->deleteElement($asset, true);
+                        throw new ToolCallException($errors ?: 'Asset could not be created.');
+                    }
                 }
             }
 
