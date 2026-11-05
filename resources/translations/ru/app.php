@@ -3675,7 +3675,7 @@ return [
     '{num, number} {num, plural, =1{hour} other{hours}}' => '{num, number} {num, plural, =1{час} other{часы}}',
     '{num, number} {num, plural, =1{issue} other{issues}}' => '{num, number} {num, plural, =1{проблема} one{проблема} few{проблемы} many{проблем} other{проблемы}}',
     '{num, number} {num, plural, =1{item} other{items}}' => '{num, number} {num, plural, =1{элемент} one{элемент} few{элемента} many{элементов} other{элемента}}',
-    '{num, number} {num, plural, =1{{item}} other{{items}}} selected' => 'Выбрано: {num, number} {num, plural, =1{{item}} other{{items}}}',
+    '{num, number} {num, plural, =1{{item}} other{{items}}} selected' => 'Выбрано: {num, number} ({num, plural, =1{{item}} other{{items}}})',
     '{num, number} {num, plural, =1{minute} other{minutes}}' => '{num, number} {num, plural, =1{минута} other{минуты}}',
     '{num, number} {num, plural, =1{month} other{months}}' => '{num, number} {num, plural, =1{месяц} other{месяцы}}
 ',
