@@ -40,7 +40,7 @@ fi
 # intl is installed below instead.
 packages=(php8.2-cli php8.2-bcmath php8.2-curl php8.2-gd php8.2-imagick
     php8.2-mbstring php8.2-mysql php8.2-pgsql php8.2-xml php8.2-zip
-    unzip zstd mysql-community-server-core mysql-community-client-core postgresql-15)
+    unzip zstd fonts-noto-core mysql-community-server-core mysql-community-client-core postgresql-15)
 missing=()
 for package in "${packages[@]}"; do
     if [[ $(dpkg-query -W -f='${Status}' "$package" 2>/dev/null || true) != 'install ok installed' ]]; then
@@ -51,6 +51,13 @@ if ((${#missing[@]})); then
     step 'Refresh apt indexes' sudo apt-get update -qq
     step 'Install PHP and database engines' sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${missing[@]}"
 fi
+
+# So the fonts we install (e.g. Noto Sans, for the control panel's system-ui
+# stack) resolve for every user of the orb. Runs even when nothing was just
+# installed, in case the base image's fontconfig state changed.
+sudo env DEBIAN_FRONTEND=noninteractive dpkg-reconfigure fontconfig-config
+sudo env DEBIAN_FRONTEND=noninteractive dpkg-reconfigure fontconfig
+
 sudo update-alternatives --set php /usr/bin/php8.2
 
 # CI's setup-php links intl against ICU 74.2, and date formats differ across
@@ -168,6 +175,7 @@ $guidance_marker
 - PHP 8.2, Composer, and Node $node_major are installed; Composer and npm dependencies are ready.
 - Codeception tests need a database. Run \`amp orb services ensure\` to start the local MySQL and PostgreSQL services (both have an empty \`craft_test\` database, user \`root\`, no password). \`tests/.env\` uses PostgreSQL; copy \`tests/.env.example.mysql\` over it to test MySQL.
 - Run tests with \`vendor/bin/codecept run unit,functional\`.
+- Screenshots are 1x by default. Prefer 2x or higher screenshots by running \`agent-browser set viewport 1440 900 2\` after opening a session or new tab.
 EOF
 fi
 
