@@ -279,33 +279,12 @@ class Gql
      */
     public static function populateFieldValues(ElementInterface $element, array $values): void
     {
-        $fieldLayout = $element->getFieldLayout();
-        if (!$fieldLayout) {
-            return;
-        }
+        $lockedHandles = ElementHelper::setEditableFieldValuesFromRequest($element, $values);
 
-        // Ignore values for fields that aren't in the layout, like setFieldValuesFromRequest() does
-        $layoutHandles = array_map(fn(FieldInterface $field) => $field->handle, $fieldLayout->getCustomFields());
-        $values = array_intersect_key($values, array_flip($layoutHandles));
-
-        // Run through this multiple times, in case any fields become visible or editable as a result of other field
-        // value changes
-        do {
-            $processedAnyFields = false;
-
-            foreach ($fieldLayout->getEditableCustomFields($element) as $field) {
-                if (array_key_exists($field->handle, $values)) {
-                    $element->setFieldValueFromRequest($field->handle, $values[$field->handle]);
-                    unset($values[$field->handle]);
-                    $processedAnyFields = true;
-                }
-            }
-        } while ($processedAnyFields && !empty($values));
-
-        if (!empty($values)) {
+        if (!empty($lockedHandles)) {
             throw new Error(sprintf(
                 'You don’t have permission to edit the following fields: %s',
-                implode(', ', array_keys($values)),
+                implode(', ', $lockedHandles),
             ));
         }
     }

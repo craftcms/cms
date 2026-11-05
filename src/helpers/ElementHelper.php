@@ -12,13 +12,17 @@ use craft\base\Element;
 use craft\base\ElementActionInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\base\FieldInterface;
 use craft\base\NestedElementInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User as UserElement;
 use craft\errors\FieldNotFoundException;
+use craft\errors\GqlException;
+use craft\errors\InvalidFieldException;
 use craft\errors\OperationAbortedException;
 use craft\fieldlayoutelements\CustomField;
+use craft\helpers\Gql as GqlHelper;
 use craft\i18n\Locale;
 use craft\services\ElementSources;
 use DateTime;
@@ -1247,5 +1251,81 @@ class ElementHelper
         }
 
         return $criteria;
+    }
+
+    /**
+     * Sets custom field values on an element from request data, mirroring
+     * [[ElementInterface::setFieldValuesFromRequest()]]: only fields that are visible and editable for the element
+     * are set.
+     *
+     * Values for fields that aren’t in the element’s field layout are ignored.
+     *
+     * @param ElementInterface $element
+     * @param array $values The field values, indexed by field handle
+     * @return string[] The handles of fields in the layout that weren’t set, because they aren’t editable
+     * @internal
+     */
+    public static function setEditableFieldValuesFromRequest(ElementInterface $element, array $values): array
+    {
+        $fieldLayout = $element->getFieldLayout();
+        if (!$fieldLayout) {
+            return [];
+        }
+
+        $layoutHandles = array_map(fn(FieldInterface $field) => $field->handle, $fieldLayout->getCustomFields());
+        $values = array_intersect_key($values, array_flip($layoutHandles));
+
+        // Run through this multiple times, in case any fields become visible or editable as a result of other field
+        // value changes
+        do {
+            $processedAnyFields = false;
+
+            foreach ($fieldLayout->getEditableCustomFields($element) as $field) {
+                if (array_key_exists($field->handle, $values)) {
+                    $element->setFieldValueFromRequest($field->handle, $values[$field->handle]);
+                    unset($values[$field->handle]);
+                    $processedAnyFields = true;
+                }
+            }
+        } while ($processedAnyFields && !empty($values));
+
+        return array_map('strval', array_keys($values));
+    }
+
+    /**
+     * Sets custom field values on a nested element from request data submitted with its owner.
+     *
+     * Fields that aren’t visible and editable for the nested element are ignored, like they are for top-level
+     * elements. For GraphQL requests authenticated as a user, an error is thrown for them instead. GraphQL requests
+     * made with a schema token can set any field.
+     *
+     * @param ElementInterface $element
+     * @param array $values The field values, indexed by field handle
+     * @internal
+     */
+    public static function setNestedFieldValuesFromRequest(ElementInterface $element, array $values): void
+    {
+        try {
+            $gqlSchema = Craft::$app->getGql()->getActiveSchema();
+        } catch (GqlException) {
+            $gqlSchema = null;
+        }
+
+        if ($gqlSchema?->user) {
+            GqlHelper::populateFieldValues($element, $values);
+            return;
+        }
+
+        if ($gqlSchema) {
+            foreach ($values as $fieldHandle => $fieldValue) {
+                try {
+                    $element->setFieldValueFromRequest($fieldHandle, $fieldValue);
+                } catch (InvalidFieldException) {
+                }
+            }
+            return;
+        }
+
+        self::setEditableFieldValuesFromRequest($element, $values);
     }
 }
