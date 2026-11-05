@@ -2,6 +2,7 @@
 
 namespace craft\elements\conditions\addresses;
 
+use CommerceGuys\Addressing\Subdivision\SubdivisionRepository as BaseSubdivisionRepository;
 use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
@@ -25,6 +26,26 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
      * @var string
      */
     public string $countryCode = 'US';
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
+    {
+        parent::init();
+
+        // Craft used to store GB counties by their names rather than ISO codes
+        if ($this->countryCode === 'GB' && !empty($this->getValues())) {
+            $codesByName = array_flip((new BaseSubdivisionRepository())->getList(['GB'], 'en')) + [
+                'Bristol, City of' => 'BST',
+                'Edinburgh, City of' => 'EDH',
+                'London, City of' => 'LND',
+                'Durham, County' => 'DUR',
+                'Vale of Glamorgan, The' => 'VGL',
+            ];
+            $this->setValues(array_map(fn(string $value) => $codesByName[$value] ?? $value, $this->getValues()));
+        }
+    }
 
     /**
      * @inheritdoc

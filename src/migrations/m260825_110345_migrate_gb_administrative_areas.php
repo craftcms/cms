@@ -2,7 +2,7 @@
 
 namespace craft\migrations;
 
-use Craft;
+use CommerceGuys\Addressing\Subdivision\SubdivisionRepository;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
@@ -17,7 +17,8 @@ class m260825_110345_migrate_gb_administrative_areas extends Migration
      */
     public function safeUp(): bool
     {
-        $codesByName = array_flip(Craft::$app->getAddresses()->getSubdivisionRepository()->getList(['GB']));
+        // use the unmodified upstream list in English, since that's what the old county names were stored in
+        $codesByName = array_flip((new SubdivisionRepository())->getList(['GB'], 'en'));
 
         $renames = [
             'Bristol, City of' => 'City of Bristol',
