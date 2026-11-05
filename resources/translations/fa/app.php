@@ -1313,6 +1313,7 @@ return [
     'Compatibility' => 'سازگاری',
     'Compiled classes' => 'کلاس‌های کامپایل‌شده',
     'Compiled templates' => 'قالب های کامپایل شده',
+    'Compiled views' => 'Compiled views',
     'Complete the Update' => 'به اتمام رساندن بروزرسانی ها',
     'Completed job' => 'کار کامل شد',
     'Completed' => 'تکمیل‌شده',
