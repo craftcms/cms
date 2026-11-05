@@ -3248,6 +3248,7 @@ return [
     'Upload failed for “{filename}”.' => 'ההעלאה נכשלה עבור “{filename}”.',
     'Upload failed.' => 'ההעלאה נכשלה.',
     'Upload files' => 'העלה קבצים',
+    'Upload progress' => 'התקדמות ההעלאה',
     'Uploaded By' => 'הועלה על ידי',
     'Uploaded by' => 'הועלה על ידי',
     'Use the AI assistant' => 'השתמש בעוזר ה-AI',
