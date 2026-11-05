@@ -3248,6 +3248,7 @@ return [
     'Upload failed for “{filename}”.' => 'A(z) “{filename}” feltöltése nem sikerült.',
     'Upload failed.' => 'Feltöltés sikertelen.',
     'Upload files' => 'Fájl feltöltése',
+    'Upload progress' => 'Feltöltés állapota',
     'Uploaded By' => 'Feltöltötte',
     'Uploaded by' => 'Feltöltötte',
     'Use the AI assistant' => 'Az MI-asszisztens használata',
