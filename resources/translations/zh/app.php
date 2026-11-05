@@ -3248,6 +3248,7 @@ return [
     'Upload failed for “{filename}”.' => '“{filename}” 上传失败.',
     'Upload failed.' => '上传失败。',
     'Upload files' => '上传文件',
+    'Upload progress' => '上传进度',
     'Uploaded By' => '上传人',
     'Uploaded by' => '上传人',
     'Use the AI assistant' => '使用 AI 助手',
