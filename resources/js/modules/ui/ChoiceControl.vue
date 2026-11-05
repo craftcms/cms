@@ -86,9 +86,23 @@
     invalid: boolean;
     required: boolean;
   }>();
-  const emit = defineEmits<{
+  const emitEvent = defineEmits<{
     (event: 'update:value', value: string | string[]): void;
   }>();
+
+  /** The value this control last emitted, which comes back as its value. */
+  let emittedValue: string | undefined;
+
+  function valueKey(value: unknown): string {
+    return Array.isArray(value)
+      ? `[${value.map(String).join('\0')}]`
+      : String(value ?? '');
+  }
+
+  function emit(event: 'update:value', value: string | string[]): void {
+    emittedValue = valueKey(value);
+    emitEvent(event, value);
+  }
   const fieldLabelSrOnly = inject(FieldLabelSrOnly, undefined);
 
   /** Whether a button shows only its option's icon, named by the label. */
@@ -259,11 +273,15 @@
   const customOptionInputs = new Map<number, HTMLInputElement>();
 
   // A value written from outside, such as one copied from another version,
-  // can hold different custom options than the rows show. The rows' own edits
-  // always match the value, so only an outside change rebuilds them.
+  // can hold different custom options than the rows show. The control's own
+  // edits come back as its value too, and leave the rows as they are.
   watch(
     () => props.value,
     () => {
+      if (valueKey(props.value) === emittedValue) {
+        return;
+      }
+
       const choiceValues = new Set(
         choiceOptions.value.map((option) => inputValue(option.value))
       );
@@ -295,9 +313,7 @@
         } else if (value !== '') {
           customRadioText.value = value;
           customRadioSelected.value = true;
-        } else if (customRadioText.value !== '') {
-          // Clearing the custom text empties the value too, but leaves the
-          // text empty first, so only an outside write gets here.
+        } else {
           customRadioText.value = '';
           customRadioSelected.value = false;
         }

@@ -47,7 +47,10 @@ async function mount(
         editable: true,
         invalid: false,
         required: false,
-        'onUpdate:value': (next: unknown) => emitted.push(next),
+        'onUpdate:value': (next: string | string[]) => {
+          emitted.push(next);
+          value.value = next;
+        },
       }),
   });
   app.mount(container);
@@ -161,7 +164,6 @@ it('keeps the custom radio selected while its text is cleared', async () => {
   )!;
 
   await userEvent.clear(input);
-  value.value = emitted.at(-1) as string;
   await nextTick();
 
   expect(emitted.at(-1)).toBe('');
@@ -170,4 +172,35 @@ it('keeps the custom radio selected while its text is cleared', async () => {
       '[data-custom] input[type=radio]'
     )!.checked
   ).toBe(true);
+});
+
+it('keeps a custom option that’s being typed when its text matches a regular option', async () => {
+  await mount(['mine']);
+  const input = container!.querySelector<HTMLInputElement>(
+    '[data-custom] input[type=text]'
+  )!;
+
+  await userEvent.clear(input);
+  await userEvent.type(input, 'abc');
+
+  expect(
+    [
+      ...container!.querySelectorAll<HTMLInputElement>(
+        '[data-custom] input[type=text]'
+      ),
+    ].map((custom) => custom.value)
+  ).toEqual(['abc']);
+  expect(document.activeElement).toBe(input);
+});
+
+it('keeps the custom radio selected while typing text that matches a regular option', async () => {
+  const emitted = await mount('mine', false);
+  const input = container!.querySelector<HTMLInputElement>(
+    '[data-custom] input[type=text]'
+  )!;
+
+  await userEvent.clear(input);
+  await userEvent.type(input, 'abc');
+
+  expect(emitted.at(-1)).toBe('abc');
 });
