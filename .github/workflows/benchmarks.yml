@@ -63,7 +63,7 @@ jobs:
       # base runs its own benchmarks and seed, so a change to either shows from the next pull request on.
       - name: Benchmark the base branch
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BASE_SHA: ${{ github.sha }} # TEMPORARY: measure the PR against itself to gauge noise
         run: |
           git checkout --force "$BASE_SHA"
           if [ ! -f phpbench.json ]; then
