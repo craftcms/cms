@@ -45,7 +45,9 @@ readonly class CompareElementsController
 
     public function __invoke(ElementRequest $request): CpScreenResponse|Response
     {
-        $to = $request->element(['id' => $request->route('id')]);
+        // As on the edit screen, the current entry is shown with the user’s unsaved edits, when they have any, unless
+        // the request asks for it as it’s saved.
+        $to = $request->element(['id' => $request->route('id')], checkForProvisionalDraft: $request->query('edits') !== '0');
 
         if ($to instanceof Response) {
             return $to;
@@ -56,8 +58,9 @@ readonly class CompareElementsController
         }
 
         $canonical = $to->getCanonical(true);
+        $hasEdits = $to->isProvisionalDraft || $this->edits($request, $canonical, $to->siteId) !== null;
         $from = $this->fromVersion($request, $to, $canonical);
-        $versions = $this->versions($request, $canonical, [$from, $to]);
+        $versions = $this->versions($request, $canonical, [$from, $to], $hasEdits);
         $siteIds = $this->siteIds($canonical);
         $state = [
             'from' => ['version' => $this->versionKey($from), 'siteId' => $from->siteId],
@@ -72,17 +75,19 @@ readonly class CompareElementsController
                 ...$this->crumbs($canonical),
                 ['label' => t('Compare'), 'current' => true],
             ])
-            ->redirectUrl($this->compareUrl($request, $state))
+            ->redirectUrl($this->compareUrl($request, $state, $hasEdits))
             ->inertiaPage('elements/Compare', [
                 'from' => [
-                    ...$this->side($request, 'from', $from, $state, $versions, $siteIds),
+                    ...$this->side($request, 'from', $from, $state, $versions, $siteIds, $hasEdits),
                     'ui' => $comparison['from'],
                 ],
                 'to' => [
-                    ...$this->side($request, 'to', $to, $state, $versions, $siteIds),
+                    ...$this->side($request, 'to', $to, $state, $versions, $siteIds, $hasEdits),
                     'ui' => $comparison['to'],
-                    'editor' => $this->editor($request, $to),
+                    'editor' => $this->editor($request, $to, $hasEdits),
                 ],
+                // The sides that badge their changed fields.
+                'badged' => $comparison['badged'],
                 'rows' => array_map(
                     fn (FieldComparisonRow $row): array => $row->toArray(),
                     $comparison['rows'],
@@ -90,19 +95,25 @@ readonly class CompareElementsController
                 'editUrl' => $to->getCpEditUrl(),
                 // The same comparison the other way around, which edits the other version, when it can be.
                 'reverseUrl' => $state['from'] !== $state['to']
-                    ? $this->compareUrl($request, ['from' => $state['to'], 'to' => $state['from']])
+                    ? $this->compareUrl($request, ['from' => $state['to'], 'to' => $state['from']], $hasEdits)
                     : null,
             ]);
     }
 
     /**
-     * The edit screen’s payload for the newer version, when the user can edit it.
+     * The edit screen’s payload for the newer version, when the user can edit it. The current entry as it’s saved
+     * can’t be, while the user has unsaved edits to it: saving would go into those edits, as it does on the edit
+     * screen, which shows them in its place.
      *
      * @return array<string, mixed>|null
      */
-    private function editor(ElementRequest $request, ElementInterface $to): ?array
+    private function editor(ElementRequest $request, ElementInterface $to, bool $hasEdits): ?array
     {
-        if ($to->getIsRevision() || ! $request->craftUser()->can('save', $to->isProvisionalDraft ? $to->getCanonical(true) : $to)) {
+        if (
+            $to->getIsRevision() ||
+            ($hasEdits && $to->getIsCanonical()) ||
+            ! $request->craftUser()->can('save', $to->isProvisionalDraft ? $to->getCanonical(true) : $to)
+        ) {
             return null;
         }
 
@@ -135,6 +146,7 @@ readonly class CompareElementsController
             'draft' => $query->draftId((int) $id)->one(),
             'revision' => $query->revisionId((int) $id)->trashed(null)->one(),
             'current' => $query->id($canonical->id)->one(),
+            'edits' => $this->edits($request, $canonical, $siteId),
             default => abort(400, "Invalid version: $version"),
         };
 
@@ -150,24 +162,38 @@ readonly class CompareElementsController
      *
      * @param  'from'|'to'  $key
      * @param  array{from: array{version: string, siteId: int}, to: array{version: string, siteId: int}}  $state
-     * @param  list<array{key: string, label: string, group: string}>  $versions
+     * @param  list<array{key: string, label: string, group: string, badge?: array{label: string, fill: string, icon: string}}>  $versions
      * @param  list<int>  $siteIds
-     * @return array{label: string, siteName: string|null, versionMenu: list<array<string, mixed>>, siteMenu: list<array<string, mixed>>}
+     * @return array{label: string, edited: bool, siteName: string|null, versionMenu: list<array<string, mixed>>, siteMenu: list<array<string, mixed>>}
      */
-    private function side(ElementRequest $request, string $key, ElementInterface $element, array $state, array $versions, array $siteIds): array
+    private function side(ElementRequest $request, string $key, ElementInterface $element, array $state, array $versions, array $siteIds, bool $hasEdits): array
     {
-        $link = fn (string $label, array $change, bool $selected): array => [
-            'type' => 'link',
-            'label' => $label,
-            'href' => $this->compareUrl($request, array_replace_recursive($state, [$key => $change])),
-            'selected' => $selected,
-        ];
+        $other = $key === 'from' ? 'to' : 'from';
+
+        // A choice that would show the same site and version as the other side is there, but can’t be made.
+        $link = fn (string $label, array $change, bool $selected, ?array $badge = null): array => array_filter(
+            ! $selected && array_replace($state[$key], $change) === $state[$other]
+                ? [
+                    'type' => 'button',
+                    'label' => $label,
+                    'disabled' => true,
+                    'badge' => $badge,
+                ]
+                : [
+                    'type' => 'link',
+                    'label' => $label,
+                    'href' => $this->compareUrl($request, array_replace_recursive($state, [$key => $change]), $hasEdits),
+                    'selected' => $selected,
+                    'badge' => $badge,
+                ],
+            fn (mixed $value): bool => $value !== null,
+        );
         $groups = ['current' => null, 'drafts' => t('Drafts'), 'revisions' => t('Revisions')];
         $versionMenu = [];
 
         foreach ($groups as $group => $heading) {
             $items = array_map(
-                fn (array $version): array => $link($version['label'], ['version' => $version['key']], $version['key'] === $state[$key]['version']),
+                fn (array $version): array => $link($version['label'], ['version' => $version['key']], $version['key'] === $state[$key]['version'], $version['badge'] ?? null),
                 array_values(array_filter($versions, fn (array $version): bool => $version['group'] === $group)),
             );
 
@@ -179,6 +205,7 @@ readonly class CompareElementsController
         return [
             // As in the editor, the user’s unsaved edits are the current version, marked “Edited”.
             'label' => $element->isProvisionalDraft ? t('Current') : $this->comparisons->label($element),
+            'edited' => (bool) $element->isProvisionalDraft,
             'siteName' => $siteIds !== [] ? $element->getSite()->getName() : null,
             'versionMenu' => $versionMenu,
             'siteMenu' => array_map(
@@ -189,16 +216,18 @@ readonly class CompareElementsController
     }
 
     /**
-     * The URL of the Compare screen with both sides as given.
+     * The URL of the Compare screen with both sides as given. The newer one is the current entry with the user’s
+     * unsaved edits unless it says otherwise, so the current entry as it’s saved does when there are any.
      *
      * @param  array{from: array{version: string, siteId: int}, to: array{version: string, siteId: int}}  $state
      */
-    private function compareUrl(ElementRequest $request, array $state): string
+    private function compareUrl(ElementRequest $request, array $state, bool $hasEdits): string
     {
         [$type, $id] = array_pad(explode('-', $state['to']['version'], 2), 2, null);
         $params = [
             'draftId' => $type === 'draft' ? $id : null,
             'revisionId' => $type === 'revision' ? $id : null,
+            'edits' => $type === 'current' && $hasEdits ? 0 : null,
             'siteId' => $state['to']['siteId'],
             'from' => $state['from']['version'],
             'fromSiteId' => $state['from']['siteId'],
@@ -208,26 +237,41 @@ readonly class CompareElementsController
     }
 
     /**
-     * Identifies a version in the pickers: `current`, `draft-{draftId}`, or `revision-{revisionId}`. The user’s
-     * provisional draft is their edits to the current entry, which the editor loads in its place.
+     * Identifies a version in the pickers: `current`, the user’s unsaved edits to it (`edits`), `draft-{draftId}`, or
+     * `revision-{revisionId}`.
      */
     private function versionKey(ElementInterface $element): string
     {
         return match (true) {
-            $element->getIsDraft() && ! $element->isProvisionalDraft => "draft-$element->draftId",
+            $element->isProvisionalDraft => 'edits',
+            $element->getIsDraft() => "draft-$element->draftId",
             $element->getIsRevision() => "revision-$element->revisionId",
             default => 'current',
         };
     }
 
     /**
-     * The versions either side can show: the current entry, its drafts, and its recent revisions, along with any
-     * older revision that’s being compared.
+     * The user’s unsaved edits to the current entry in a site, if they have any.
+     */
+    private function edits(ElementRequest $request, ElementInterface $canonical, int $siteId): ?ElementInterface
+    {
+        return $canonical::find()
+            ->provisionalDrafts()
+            ->draftOf($canonical)
+            ->draftCreator($request->craftUser()->getCraftUserId())
+            ->siteId($siteId)
+            ->status(null)
+            ->one();
+    }
+
+    /**
+     * The versions either side can show: the current entry, along with the user’s unsaved edits to it when there are
+     * any, its drafts, and its recent revisions, along with any older revision that’s being compared.
      *
      * @param  list<ElementInterface>  $selected
-     * @return list<array{key: string, label: string, group: string}>
+     * @return list<array{key: string, label: string, group: string, badge?: array{label: string, fill: string, icon: string}}>
      */
-    private function versions(ElementRequest $request, ElementInterface $canonical, array $selected): array
+    private function versions(ElementRequest $request, ElementInterface $canonical, array $selected, bool $hasEdits): array
     {
         $user = $request->craftUser();
 
@@ -257,6 +301,13 @@ readonly class CompareElementsController
 
         return [
             ['key' => 'current', 'label' => t('Current'), 'group' => 'current'],
+            // Marked as the editor marks it.
+            ...($hasEdits ? [[
+                'key' => 'edits',
+                'label' => t('Current'),
+                'group' => 'current',
+                'badge' => ['label' => t('Edited'), 'fill' => 'violet', 'icon' => 'pen-circle'],
+            ]] : []),
             ...$drafts->map(fn (ElementInterface $draft): array => [
                 'key' => $this->versionKey($draft),
                 'label' => $draft->draftName ?: t('Draft'),

@@ -1,30 +1,64 @@
 <script setup lang="ts">
   /**
-   * Two versions of an entry as two read-only editor panes side by side: a
-   * draft and the current entry, two revisions, or the entry in two sites.
-   * Both forms list their fields in the same order, and each field is pushed
-   * down to line up with the same field on the other side. When the newer
-   * version can be edited, its pane is its editor.
+   * Two versions of an entry side by side: a draft and the current entry, two
+   * revisions, or the entry in two sites. The screen lays out a row for each
+   * field, within the newer version's tabs. Each side still renders its own
+   * form, out of sight, and each of its fields renders in the field's row, so
+   * the page reads and tabs through the rows in order. When the newer version
+   * can be edited, its form is its editor. Like Live Preview, the screen
+   * takes over the whole window until it's closed.
    */
-  import {ButtonVariant, t} from '@craftcms/ui';
-  import {useResizeObserver} from '@vueuse/core';
-  import {computed, nextTick, shallowRef, useTemplateRef, watch} from 'vue';
-  import ActionMenu from '@/common/components/ActionMenu.vue';
-  import CpContainer from '@/common/components/CpContainer.vue';
+  import '@craftcms/ui/components/empty/empty';
+  import '@craftcms/ui/components/indicator/indicator';
+  import {router} from '@inertiajs/vue3';
+  import {useElementSize} from '@vueuse/core';
+  import {ButtonVariant, create, t} from '@craftcms/ui';
+  import {
+    computed,
+    nextTick,
+    onBeforeUnmount,
+    onMounted,
+    shallowReactive,
+    shallowRef,
+    useTemplateRef,
+    watch,
+  } from 'vue';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import type {ActionItems} from '@/common/types';
   import CompareEditor from '@/modules/elements/components/CompareEditor.vue';
+  import CompareVersionHeader from '@/modules/elements/components/CompareVersionHeader.vue';
+  import {useFullScreenPanel} from '@/modules/elements/composables/useFullScreenPanel';
   import type {ElementEditPayload} from '@/modules/elements/composables/useElementEditor';
+  import {
+    compareTabs,
+    copyableValue,
+    fieldNodes,
+    layoutUid,
+    rememberValues,
+    liveRows,
+    tabsWithChanges,
+    tabsWithErrors,
+    withServerTabFields,
+    withSideIcon,
+    type CompareRow,
+    type CompareSide,
+    type CompareTab,
+  } from '@/modules/elements/compareLayout';
+  import {showNotice, type CpNotification} from '@/modules/messages/messages';
+  import type {UiFieldOutlets} from '@/modules/ui/fieldOutlets';
+  import type {UiValueSnapshot} from '@/modules/ui/valueAccess';
   import NestedEntryLinks from '@/modules/ui/NestedEntryLinks.vue';
   import type {NestedEntryScope} from '@/modules/ui/nestedEntryLinks';
   import UiRenderer from '@/modules/ui/UiRenderer.vue';
   import {provideUiPreview} from '@/modules/ui/uiPreview';
   import {provideUiValueGroup} from '@/modules/ui/uiValueGroup';
-  import type {UiNodePayload, UiPayload, UiValues} from '@/modules/ui/types';
+  import type {UiPayload, UiValue, UiValues} from '@/modules/ui/types';
 
   interface Side {
     label: string;
+    /** Whether it's the user's unsaved edits to the current version. */
+    edited: boolean;
     /** Set when the entry is in more than one site the user can edit. */
     siteName: string | null;
     versionMenu: ActionItems;
@@ -36,355 +70,747 @@
 
   type TabStrip = HTMLElement & {selectedIndex: number};
 
-  interface Row {
-    fromUid: string | null;
-    toUid: string | null;
-    /** `null` when it can’t be told, such as for Matrix fields shown as cards. */
-    changed: boolean | null;
-  }
-
   const props = defineProps<{
     from: Side;
     to: Side;
-    rows: Row[];
+    rows: CompareRow[];
+    /**
+     * The sides that badge their changed fields: the one that made the
+     * changes, when one did, and otherwise both.
+     */
+    badged: Record<CompareSide, boolean>;
     editUrl: string | null;
     /** The same comparison with the two sides swapped. */
     reverseUrl: string | null;
     title: string;
   }>();
 
-  // Each pane’s values are its own, not the page’s.
+  // Each side's values are its own, not the page's.
   provideUiValueGroup();
   provideUiPreview();
 
   /** Whether the editable side has unsaved edits, as the editor's “Edited” badge shows. */
   const edited = shallowRef(false);
 
-  /** Whether a form starts with a tab strip, which sits flush with its top, as in the editor. */
-  const hasTabStrip = (ui: UiPayload) =>
-    ui.nodes.filter((node) => node.component === 'craft:tab').length > 1;
+  /** The layout UIDs of the editable side's fields with errors. */
+  const erroredUids = shallowRef<string[]>([]);
+  /** The fields edited on this screen: each one's value, as a canonical string, by layout UID. */
+  const editedValues = shallowRef<Record<string, string>>({});
 
-  const hasUntabbedFields = (ui: UiPayload) =>
-    ui.nodes.some((node) => node.component !== 'craft:tab');
+  /** Each of a side's fields' values as the page loaded them, as canonical strings, by layout UID. */
+  function loadedValues(ui: UiPayload): Map<string, string> {
+    const values = new Map<string, string>();
+    rememberValues(ui.nodes, ui.values, values);
 
-  const panes = computed(() => [
-    {key: 'from' as const, side: props.from, ui: props.from.ui},
-    {key: 'to' as const, side: props.to, ui: props.to.ui},
+    return values;
+  }
+
+  /** The older version's value of each of its fields. */
+  const fromValues = computed(() => loadedValues(props.from.ui));
+
+  /**
+   * The newer version's value of each of its fields as the page loaded it,
+   * which is what a field holds when it isn't among the `editedValues`. The
+   * editor's own form moves on as it autosaves, so it can't say that.
+   */
+  const toLoadedValues = computed(() => loadedValues(props.to.ui));
+
+  /**
+   * Whether each field edited on this screen differs from the older version's,
+   * whatever the server found when the page loaded: a field edited to match,
+   * as by copying it across, no longer counts as changed.
+   */
+  const editedChanged = computed(
+    () =>
+      new Map(
+        serverRows().flatMap((row) =>
+          row.toUid !== null && row.toUid in editedValues.value
+            ? [
+                [
+                  row.toUid,
+                  row.fromUid === null ||
+                    editedValues.value[row.toUid] !==
+                      fromValues.value.get(row.fromUid),
+                ] as [string, boolean],
+              ]
+            : []
+        )
+      )
+  );
+
+  const sides = computed(() => [
+    {key: 'from' as const, side: props.from},
+    {key: 'to' as const, side: props.to},
   ]);
 
-  const editorUids = computed(() =>
-    props.rows.flatMap((row) => (row.toUid ? [row.toUid] : []))
+  /** The editable side's form as it stands, once its editor reports it. */
+  const liveToUi = shallowRef<UiPayload | null>(null);
+  /** Whether the newer version can't be edited for now, as while it's in review. */
+  const editorLocked = shallowRef(false);
+  /** The newer version's editor, in a list as it's rendered in a loop over the sides. */
+  const editor =
+    useTemplateRef<Array<InstanceType<typeof CompareEditor>>>('editor');
+
+  /** The newer version's form: the editor's as it stands, or the server's. */
+  const toUi = computed(() =>
+    liveToUi.value
+      ? withServerTabFields(liveToUi.value, props.to.ui)
+      : props.to.ui
+  );
+
+  /** The comparison's rows, following conditions as the editable side changes. */
+  /** The rows as the server compared them, following the newer version's form as it changes. */
+  function serverRows(): CompareRow[] {
+    return liveToUi.value ? liveRows(props.rows, toUi.value) : props.rows;
+  }
+
+  const compareRows = computed(() =>
+    serverRows().map((row) =>
+      row.toUid !== null && editedChanged.value.has(row.toUid)
+        ? {...row, changed: editedChanged.value.get(row.toUid)!}
+        : row
+    )
+  );
+
+  /** Which of the two labels each side shows is the same on both, which give way first when space is short. */
+  const sharedLabels = computed(() => ({
+    site: props.from.siteName === props.to.siteName,
+    version: props.from.label === props.to.label,
+  }));
+
+  /** Each read-only side's form, with its icon before each field's label. */
+  const sideForms = computed(() => ({
+    from: withSideIcon(props.from.ui, 'from'),
+    to: withSideIcon(props.to.ui, 'to'),
+  }));
+
+  const tabs = computed(() =>
+    compareTabs(props.from.ui, toUi.value, compareRows.value)
+  );
+
+  /** The tab the screen shows, by key, which stays selected as tabs come and go. */
+  const selectedKey = shallowRef<string | null>(null);
+  const selectedTab = computed(
+    () =>
+      tabs.value.find((tab) => tab.key === selectedKey.value) ?? tabs.value[0]
+  );
+
+  /** The first of the sidebar tabs, after the others, which starts their group at the end of each strip. */
+  const firstSidebarTabKey = computed(
+    () =>
+      tabs.value.find(
+        (tab, index) =>
+          index > 0 && tab.sidebar && !tabs.value[index - 1]!.sidebar
+      )?.key
+  );
+
+  /** The tabs holding a field with errors, which are marked as the editor's tabs are. */
+  const erroredTabs = computed(() =>
+    tabsWithErrors(tabs.value, compareRows.value, erroredUids.value)
+  );
+
+  /**
+   * The older version's value for each changed row whose field the newer
+   * version can take it as it is, by row index, while the newer one is being
+   * edited here.
+   */
+  const copyValues = computed(
+    () =>
+      new Map(
+        props.to.editor && !editorLocked.value
+          ? compareRows.value.flatMap((row, index) => {
+              const value = copyableValue(
+                row,
+                props.from.ui,
+                toUi.value,
+                row.toUid === null
+                  ? undefined
+                  : (editedValues.value[row.toUid] ??
+                      toLoadedValues.value.get(row.toUid))
+              );
+
+              return value === undefined
+                ? []
+                : [[index, value] as [number, UiValueSnapshot]];
+            })
+          : []
+      )
+  );
+
+  function fieldLabel(rowIndex: number): string {
+    const uid = compareRows.value[rowIndex]?.toUid;
+    const label = fieldNodes(toUi.value.nodes).find(
+      (node) => layoutUid(node) === uid
+    )?.props.label;
+
+    return typeof label === 'string' ? label : '';
+  }
+
+  /** Copies the older version's value for a row into the newer version's field. */
+  function copyFromOlder(rowIndex: number): void {
+    const uid = compareRows.value[rowIndex]?.toUid;
+
+    if (!uid || !copyValues.value.has(rowIndex)) {
+      return;
+    }
+
+    const copied = editor.value?.[0]?.copyValue(
+      uid,
+      copyValues.value.get(rowIndex)!
+    );
+
+    if (copied) {
+      announceCopy(uid, copied.previous);
+    }
+  }
+
+  /**
+   * The notice of the last copy, offering to undo it while it still can: it's
+   * closed by another copy, or once the field changes again, so Undo never
+   * throws away anything entered after the copy.
+   */
+  let undoOffer: {
+    uid: string;
+    value: string | undefined;
+    notice: CpNotification | null;
+  } | null = null;
+
+  function closeUndoOffer(): void {
+    undoOffer?.notice?.close();
+    undoOffer = null;
+  }
+
+  /**
+   * Says a field's value was copied, offering to put back what it had before,
+   * when that could be read.
+   */
+  function announceCopy(uid: string, previous: UiValueSnapshot | null): void {
+    closeUndoOffer();
+
+    if (!previous) {
+      showNotice(t('Field value copied.'));
+      return;
+    }
+
+    const undoButton = create('craft-button', {type: 'button'}, t('Undo'));
+    const offer = {
+      uid,
+      value: editedValues.value[uid],
+      notice: showNotice(t('Field value copied.'), {details: undoButton}),
+    };
+    undoOffer = offer;
+
+    undoButton.addEventListener('click', () => {
+      if (undoOffer !== offer) {
+        return;
+      }
+
+      closeUndoOffer();
+      editor.value?.[0]?.copyValue(uid, previous);
+    });
+  }
+
+  watch(editedValues, (values) => {
+    if (undoOffer && values[undoOffer.uid] !== undoOffer.value) {
+      closeUndoOffer();
+    }
+  });
+
+  onBeforeUnmount(closeUndoOffer);
+
+  /** The tabs holding a changed field, which are marked on the sides that badge their fields. */
+  const changedTabs = computed(() =>
+    tabsWithChanges(tabs.value, compareRows.value)
+  );
+
+  /**
+   * The tabs holding a field edited on this screen. Edits are the newer
+   * side's own, so they're marked there whichever side the rest are.
+   */
+  const editedTabs = computed(() =>
+    tabsWithChanges(
+      tabs.value,
+      compareRows.value.map((row) => ({
+        ...row,
+        changed:
+          row.toUid !== null && editedChanged.value.get(row.toUid) === true,
+      }))
+    )
+  );
+
+  /** The newer side's badged fields: the changes when it's badged, and its own edits either way. */
+  const toBadges = computed(() =>
+    props.badged.to
+      ? changedByUid.value
+      : Object.fromEntries(
+          [...editedChanged.value].filter(([, changed]) => changed)
+        )
   );
 
   const changedByUid = computed(() =>
     Object.fromEntries(
-      props.rows.flatMap((row) => (row.toUid ? [[row.toUid, row.changed]] : []))
+      compareRows.value.flatMap((row) =>
+        row.toUid ? [[row.toUid, row.changed]] : []
+      )
     )
   );
 
-  const paneElements = useTemplateRef<HTMLElement[]>('pane');
+  /** Each row's cell for each side, which the side's field renders into. */
+  const cells = shallowReactive(new Map<string, HTMLElement>());
+  const cellKey = (side: CompareSide, uid: string) => `${side}:${uid}`;
+  const rowUid = (rowIndex: number, side: CompareSide) =>
+    compareRows.value[rowIndex]?.[side === 'from' ? 'fromUid' : 'toUid'] ??
+    null;
 
-  /**
-   * Pushes the higher of each pair of fields down to the lower one, in order,
-   * so every field starts level with the same field on the other side. Panes
-   * that are stacked rather than side by side are left alone.
-   */
-  function field(pane: HTMLElement, uid: string | null): HTMLElement | null {
-    const element = uid
-      ? pane.querySelector<HTMLElement>(
-          `[data-layout-element="${CSS.escape(uid)}"]`
-        )
-      : null;
+  /** Identifies a row by its fields, so its cells stay its own as rows come and go. */
+  const rowKey = (rowIndex: number) =>
+    `${rowUid(rowIndex, 'from') ?? ''}|${rowUid(rowIndex, 'to') ?? ''}`;
 
-    // A field in a tab that isn't selected has nothing to line up or connect.
-    return element?.getClientRects().length ? element : null;
+  const cellRefs = new Map<string, (element: unknown) => void>();
+
+  /** The ref for a row's cell on one side, the same function each render. */
+  function cellRef(side: CompareSide, uid: string | null) {
+    if (!uid) {
+      return undefined;
+    }
+
+    const key = cellKey(side, uid);
+    let ref = cellRefs.get(key);
+
+    if (!ref) {
+      let current: HTMLElement | null = null;
+
+      ref = (element: unknown) => {
+        if (element instanceof HTMLElement) {
+          current = element;
+          cells.set(key, element);
+        } else if (current && cells.get(key) === current) {
+          cells.delete(key);
+          current = null;
+        }
+      };
+      cellRefs.set(key, ref);
+    }
+
+    return ref;
   }
 
-  /** A pane's own tab strip, not one in a nested entry's form. */
-  function tabStrip(pane: HTMLElement): TabStrip | null {
+  const fieldOutlets: Record<CompareSide, UiFieldOutlets> = {
+    from: (uid) => cells.get(cellKey('from', uid)),
+    to: (uid) => cells.get(cellKey('to', uid)),
+  };
+
+  const root = useTemplateRef<HTMLElement>('root');
+  const panels = useTemplateRef<HTMLElement>('panels');
+  /** Where the editable version's footer goes, under its side. */
+  const footerNotices = useTemplateRef<HTMLElement>('footerNotices');
+  const footerActions = useTemplateRef<HTMLElement>('footerActions');
+  const footerTargets = computed(() => ({
+    notices: footerNotices.value,
+    actions: footerActions.value,
+  }));
+
+  useFullScreenPanel(root, () => {
+    if (props.editUrl) {
+      router.visit(props.editUrl);
+    }
+  });
+  const headers = useTemplateRef<HTMLElement>('headers');
+  const {height: headersHeight} = useElementSize(headers, undefined, {
+    box: 'border-box',
+  });
+
+  /**
+   * Keeps fields that focus scrolls to clear of the version menus, while
+   * they're stuck to the top of the panel (WCAG 2.4.11).
+   */
+  watch(headersHeight, (height) => {
+    const panel = root.value?.closest<HTMLElement>('.cp-body__panel');
+    const sticky =
+      headers.value && getComputedStyle(headers.value).position === 'sticky';
+
+    panel?.style.setProperty(
+      'scroll-padding-block-start',
+      sticky ? `${height}px` : ''
+    );
+  });
+
+  onBeforeUnmount(() =>
+    root.value
+      ?.closest<HTMLElement>('.cp-body__panel')
+      ?.style.removeProperty('scroll-padding-block-start')
+  );
+
+  const forms = useTemplateRef<HTMLElement>('forms');
+  const tabStrips = useTemplateRef<TabStrip[]>('tabStrips');
+
+  /** Each side's tab strip on the screen, by side. */
+  function tabStrip(side: CompareSide): TabStrip | null {
     return (
-      [...pane.querySelectorAll<TabStrip>('craft-tabs')].find(
-        (strip) => !strip.parentElement?.closest('[data-layout-element]')
+      tabStrips.value?.find((strip) => strip.dataset.compareSide === side) ??
+      null
+    );
+  }
+
+  const panelId = (tab: CompareTab) => `compare-tab-${tab.key}`;
+
+  /** A side's own tab strip, out of sight with its form. */
+  function formTabStrip(side: CompareSide): TabStrip | null {
+    return (
+      forms.value?.querySelector<TabStrip>(
+        `[data-compare-side="${side}"] craft-tabs`
       ) ?? null
     );
   }
 
-  /** Identifies a tab across versions: its layout tab's UID, or failing that, its label. */
-  function tabKeys(tab: Element): string[] {
-    const panel = document.getElementById(tab.getAttribute('controls') ?? '');
-    const uid = (
-      panel?.closest<HTMLElement>('[data-layout-tab]') ??
-      panel?.querySelector<HTMLElement>('[data-layout-tab]')
-    )?.dataset.layoutTab;
-
-    return [uid ? `uid:${uid}` : '', `label:${tab.textContent?.trim()}`];
-  }
-
   /**
-   * Selects the same tab on the other side as the one just selected, so both
-   * sides show the same fields, side by side.
+   * Selects the tab in each side's own strip that matches the screen's, so a
+   * side whose tabs load when first shown loads that tab's fields.
    */
-  function syncTabs(event: Event): void {
-    const source = event.target as TabStrip;
-    const panes = paneElements.value ?? [];
-    const sourcePane = panes.find((pane) => tabStrip(pane) === source);
-    const selected = sourcePane
-      ? [...source.querySelectorAll(':scope > craft-tab')][source.selectedIndex]
-      : undefined;
+  function syncFormTabs(): void {
+    const tab = selectedTab.value;
 
-    if (!selected) {
+    if (!tab) {
       return;
     }
 
-    const [uid, label] = tabKeys(selected);
-
-    for (const pane of panes) {
-      const strip = pane === sourcePane ? null : tabStrip(pane);
-      const tabs = strip
-        ? [...strip.querySelectorAll(':scope > craft-tab')].map(tabKeys)
+    for (const side of ['from', 'to'] as const) {
+      const strip = formTabStrip(side);
+      const formTabs = strip
+        ? [...strip.querySelectorAll(':scope > craft-tab')]
         : [];
-      const index = [uid, label].reduce(
-        (found, key) =>
-          found >= 0 || !key
-            ? found
-            : tabs.findIndex((keys) => keys.includes(key)),
-        -1
-      );
+      const match = [
+        formTabs.findIndex(
+          (formTab) =>
+            document.getElementById(formTab.getAttribute('controls') ?? '')
+              ?.dataset.layoutTab === tab.key
+        ),
+        formTabs.findIndex(
+          (formTab) => formTab.textContent?.trim() === tab.label
+        ),
+      ].find((found) => found >= 0);
 
-      if (strip && index >= 0 && strip.selectedIndex !== index) {
+      if (strip && match !== undefined && strip.selectedIndex !== match) {
+        strip.selectedIndex = match;
+      }
+    }
+  }
+
+  /**
+   * Both strips list every tab, marking the ones their version doesn't have,
+   * so selecting one in either strip selects the same one in the other.
+   */
+  function selectTab(index: number): void {
+    const tab = tabs.value[index];
+    selectedKey.value = tab?.key ?? null;
+
+    for (const side of ['from', 'to'] as const) {
+      const strip = tabStrip(side);
+
+      if (strip && strip.selectedIndex !== index) {
         strip.selectedIndex = index;
       }
     }
 
-    // After both panes have rendered the tab they switched to.
-    requestAnimationFrame(alignFields);
+    syncFormTabs();
+  }
+
+  function onTabShow(event: Event): void {
+    selectTab((event.target as TabStrip).selectedIndex);
+  }
+
+  onMounted(() =>
+    requestAnimationFrame(() =>
+      selectTab((tabStrip('to') ?? tabStrip('from'))?.selectedIndex ?? 0)
+    )
+  );
+
+  // A condition can add or remove a tab, which the strip then rewires, staying
+  // on the tab it was showing.
+  watch(
+    () => tabs.value.map((tab) => tab.key).join(),
+    async () => {
+      await nextTick();
+
+      for (const strip of tabStrips.value ?? []) {
+        (strip as TabStrip & {refresh?(): void}).refresh?.();
+      }
+
+      selectTab(Math.max(tabs.value.indexOf(selectedTab.value!), 0));
+    }
+  );
+
+  /** A side's field for a row, if it's showing. */
+  function field(side: CompareSide, uid: string | null): HTMLElement | null {
+    const element = uid
+      ? cells
+          .get(cellKey(side, uid))
+          ?.querySelector<HTMLElement>('[data-layout-element]')
+      : null;
+
+    return element?.getClientRects().length ? element : null;
   }
 
   /** Each field on both sides, for connecting their nested entries. */
   function linkScopes(): NestedEntryScope[] {
-    const [from, to] = paneElements.value ?? [];
-
-    return from && to
-      ? props.rows.map((row) => [
-          field(from, row.fromUid),
-          field(to, row.toUid),
-        ])
-      : [];
+    return compareRows.value.map((row) => [
+      field('from', row.fromUid),
+      field('to', row.toUid),
+    ]);
   }
-
-  function alignFields(): void {
-    const [from, to] = paneElements.value ?? [];
-
-    if (!from || !to) {
-      return;
-    }
-
-    for (const element of [from, to].flatMap((pane) => [
-      ...pane.querySelectorAll<HTMLElement>('[data-compare-pushed]'),
-    ])) {
-      element.style.marginBlockStart = '';
-      delete element.dataset.comparePushed;
-    }
-
-    if (from.offsetTop !== to.offsetTop) {
-      return;
-    }
-
-    for (const row of props.rows) {
-      const a = field(from, row.fromUid);
-      const b = field(to, row.toUid);
-
-      if (!a || !b) {
-        continue;
-      }
-
-      const offset =
-        b.getBoundingClientRect().top - a.getBoundingClientRect().top;
-      const higher = offset > 0 ? a : b;
-
-      if (Math.abs(offset) >= 1) {
-        higher.style.marginBlockStart = `${
-          parseFloat(getComputedStyle(higher).marginBlockStart) +
-          Math.abs(offset)
-        }px`;
-        higher.dataset.comparePushed = '';
-      }
-    }
-  }
-
-  useResizeObserver(
-    () => paneElements.value ?? [],
-    () => alignFields()
-  );
-
-  watch(
-    () => props.rows,
-    () => nextTick(alignFields),
-    {flush: 'post'}
-  );
 </script>
 
 <template>
-  <div class="compare">
+  <div ref="root" class="compare">
     <LayoutSlot name="title">
-      <div class="flex gap-lg items-center min-w-0">
-        <CpButtonLink
-          v-if="editUrl"
-          :href="editUrl"
-          size="small"
-          icon="arrow-left"
-          flush="inline-start"
-          :variant="ButtonVariant.Plain"
-        >
-          {{ t('Back') }}
-        </CpButtonLink>
-        <h1 class="text-xl">{{ title }}</h1>
-      </div>
+      <h1 class="text-xl">{{ title }}</h1>
     </LayoutSlot>
 
-    <div class="compare__panes" @craft-tab-show.capture="syncTabs">
-      <section
-        v-for="{key, side, ui} in panes"
-        :key="key"
-        ref="pane"
-        class="compare__pane"
-        :aria-labelledby="`compare-${key}-title`"
+    <LayoutSlot v-if="editUrl" name="content-actions">
+      <CpButtonLink
+        id="compare-close"
+        :href="editUrl"
+        icon=""
+        size="small"
+        flush="inline-end"
+        :variant="ButtonVariant.Plain"
       >
-        <div class="compare__header">
-          <template v-if="key === 'to' && reverseUrl">
-            <CpButtonLink
-              id="compare-reverse"
-              :href="reverseUrl"
-              icon=""
-              size="small"
-              :variant="ButtonVariant.Outline"
-              class="compare__reverse"
-            >
-              <craft-icon
-                name="arrow-right-arrow-left"
-                :label="t('Reverse comparison')"
-              ></craft-icon>
-            </CpButtonLink>
-            <craft-tooltip for="compare-reverse">
-              {{ t('Reverse comparison') }}
-            </craft-tooltip>
-          </template>
-          <div class="compare__versions">
-            <template v-if="side.siteMenu.length && side.siteName">
-              <ActionMenu
-                :key="`${key}-site-${side.siteName}`"
-                :label="side.siteName"
-                :actions="side.siteMenu"
-              >
-                <template #invoker>
-                  <craft-button
-                    slot="invoker"
-                    type="button"
-                    variant="plain"
-                    size="small"
-                    icon="world"
-                    flush="inline-start"
-                  >
-                    {{ side.siteName }}
-                    <span class="sr-only">{{ t('Choose a site') }}</span>
-                    <craft-icon slot="suffix" name="chevron-down"></craft-icon>
-                  </craft-button>
-                </template>
-              </ActionMenu>
-              <span class="compare__separator" aria-hidden="true">/</span>
-            </template>
-            <h2 :id="`compare-${key}-title`" class="compare__title">
-              <span class="sr-only">{{
-                key === 'from' ? t('Compared with:') : t('Showing:')
-              }}</span>
-              <ActionMenu
-                :key="`${key}-${side.label}`"
-                :label="side.label"
-                :actions="side.versionMenu"
-              >
-                <template #invoker>
-                  <craft-button
-                    slot="invoker"
-                    type="button"
-                    variant="plain"
-                    size="small"
-                    :flush="
-                      side.siteMenu.length && side.siteName
-                        ? null
-                        : 'inline-start'
-                    "
-                  >
-                    {{ side.label }}
-                    <span class="sr-only">{{ t('Choose a version') }}</span>
-                    <craft-icon slot="suffix" name="chevron-down"></craft-icon>
-                  </craft-button>
-                </template>
-              </ActionMenu>
-              <craft-badge
-                v-if="key === 'to' && edited"
-                fill="violet"
-                class="compare__edited"
-              >
-                <craft-icon name="pen-circle" slot="prefix"></craft-icon>
-                {{ t('Edited') }}
-              </craft-badge>
-            </h2>
-          </div>
-        </div>
+        <craft-icon name="xmark-large" :label="t('Close')"></craft-icon>
+      </CpButtonLink>
+      <craft-tooltip for="compare-close">{{ t('Close') }}</craft-tooltip>
+    </LayoutSlot>
 
-        <div class="compare__body" :class="hasTabStrip(ui) ? 'pb-lg' : 'py-lg'">
-          <CpContainer>
-            <CompareEditor
-              v-if="key === 'to' && side.editor"
-              :editor="side.editor"
-              :uids="editorUids"
-              :changed="changedByUid"
-              @edited="edited = $event"
-            />
-            <component
-              :is="hasUntabbedFields(ui) ? 'craft-field-group' : 'div'"
-              v-else-if="ui.nodes.length"
+    <div ref="headers" class="compare__headers">
+      <template v-for="{key, side} in sides" :key="key">
+        <CompareVersionHeader
+          :side="key"
+          :heading-id="`compare-${key}-title`"
+          :label="side.label"
+          :site-name="side.siteName"
+          :version-menu="side.versionMenu"
+          :site-menu="side.siteMenu"
+          :edited="side.edited || (key === 'to' && edited)"
+          :shared="sharedLabels"
+        />
+        <template v-if="key === 'from' && reverseUrl">
+          <CpButtonLink
+            id="compare-reverse"
+            :href="reverseUrl"
+            icon=""
+            size="small"
+            :variant="ButtonVariant.Plain"
+            class="compare__reverse"
+          >
+            <craft-icon
+              name="arrow-right-arrow-left"
+              :label="t('Reverse comparison')"
+            ></craft-icon>
+          </CpButtonLink>
+          <craft-tooltip for="compare-reverse">
+            {{ t('Reverse comparison') }}
+          </craft-tooltip>
+        </template>
+      </template>
+    </div>
+
+    <div v-if="tabs.length > 1" class="compare__tabs">
+      <div
+        v-for="{key, side} in sides"
+        :key="key"
+        class="compare__tabs-cell"
+        :class="`compare__tabs-cell--${key}`"
+      >
+        <craft-tabs
+          ref="tabStrips"
+          :data-compare-side="key"
+          :label="t('Tabs for {version}', {version: side.label})"
+          @craft-tab-show="onTabShow"
+        >
+          <craft-tab
+            v-for="tab in tabs"
+            :key="tab.key"
+            slot="tab"
+            :controls="panelId(tab)"
+            :class="{
+              'compare__tab--absent': !tab.sides[key],
+              'compare__tab--sidebar-start': tab.key === firstSidebarTabKey,
+            }"
+          >
+            <craft-icon
+              v-if="tab.icon"
+              :name="tab.icon"
+              slot="prefix"
+            ></craft-icon>
+            {{ tab.label }}
+            <craft-icon
+              v-if="!tab.sides[key]"
+              name="eye-slash"
+              :label="t('Not in this version')"
+              slot="suffix"
+            ></craft-icon>
+            <span
+              v-if="
+                tab.sides[key] &&
+                ((badged[key] && changedTabs.has(tab.key)) ||
+                  (key === 'to' && editedTabs.has(tab.key)))
+              "
+              slot="suffix"
+              class="compare__tab-changed"
             >
-              <UiRenderer :payload="ui" />
-            </component>
-          </CpContainer>
+              <craft-indicator
+                fill="var(--c-field-modified-indicator)"
+                :label="t('Changed')"
+              ></craft-indicator>
+            </span>
+            <craft-icon
+              v-if="key === 'to' && erroredTabs.has(tab.key)"
+              name="circle-exclamation"
+              :label="t('Errors')"
+              slot="suffix"
+            ></craft-icon>
+          </craft-tab>
+        </craft-tabs>
+      </div>
+    </div>
+
+    <div ref="panels" class="compare__panels">
+      <section
+        v-for="tab in tabs"
+        :key="tab.key"
+        :id="panelId(tab)"
+        class="compare__panel"
+        :class="{
+          hidden: tabs.length > 1 && tab.key !== selectedTab?.key,
+          'compare__panel--absent-from': !tab.sides.from,
+          'compare__panel--absent-to': !tab.sides.to,
+        }"
+      >
+        <template v-for="{key, side} in sides" :key="key">
+          <div
+            v-if="!tab.sides[key]"
+            class="compare__absent"
+            :class="`compare__absent--${key}`"
+          >
+            <craft-empty
+              :label="
+                t('{version} doesn’t have this tab.', {version: side.label})
+              "
+            ></craft-empty>
+          </div>
+        </template>
+        <div
+          v-for="rowIndex in tab.rows"
+          :key="rowKey(rowIndex)"
+          class="compare__row"
+          :class="{'compare__row--changed': compareRows[rowIndex]?.changed}"
+        >
+          <div
+            v-for="{key} in sides"
+            :key="key"
+            :ref="cellRef(key, rowUid(rowIndex, key))"
+            class="compare__cell"
+            :class="`compare__cell--${key}`"
+            role="group"
+            :aria-labelledby="`compare-${key}-title`"
+          >
+            <p v-if="!rowUid(rowIndex, key)" class="compare__missing">
+              {{ t('Not in this version') }}
+            </p>
+          </div>
+          <span v-if="copyValues.has(rowIndex)" class="compare__copy">
+            <craft-button
+              :id="`compare-copy-${rowIndex}`"
+              type="button"
+              variant="outline"
+              size="xsmall"
+              icon="arrow-right"
+              :aria-label="
+                t('Copy {field} from {version}', {
+                  field: fieldLabel(rowIndex),
+                  version: from.label,
+                })
+              "
+              @click="copyFromOlder(rowIndex)"
+            ></craft-button>
+            <craft-tooltip :for="`compare-copy-${rowIndex}`">{{
+              t('Copy {field} from {version}', {
+                field: fieldLabel(rowIndex),
+                version: from.label,
+              })
+            }}</craft-tooltip>
+          </span>
         </div>
       </section>
       <NestedEntryLinks :scopes="linkScopes" />
+    </div>
+
+    <div class="compare__footer">
+      <!-- Empty, it takes no room. The notices' region stays, so they're
+           announced when they arrive, as the page's own notices are. They're
+           the editable version's, so they keep to its side. -->
+      <div class="compare__footer-notices">
+        <div
+          ref="footerNotices"
+          class="compare__footer-notices-cell"
+          role="status"
+        ></div>
+      </div>
+      <div ref="footerActions" class="compare__footer-actions"></div>
+    </div>
+
+    <div ref="forms" hidden>
+      <div v-for="{key, side} in sides" :key="key" :data-compare-side="key">
+        <CompareEditor
+          v-if="key === 'to' && side.editor"
+          ref="editor"
+          :editor="side.editor"
+          :changed="toBadges"
+          :field-outlets="fieldOutlets.to"
+          :root="panels"
+          :footer-targets="footerTargets"
+          @edited="edited = $event"
+          @errors="erroredUids = $event"
+          @edits="editedValues = $event"
+          @locked="editorLocked = $event"
+          @layout="liveToUi = $event"
+        />
+        <UiRenderer
+          v-else-if="side.ui.nodes.length"
+          :payload="sideForms[key]"
+          :field-outlets="fieldOutlets[key]"
+        />
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
   .compare {
+    flex: 1 0 auto;
+    --compare-cell-padding-inline: var(
+      --cp-container-padding,
+      var(--c-spacing-lg)
+    );
+    --compare-cell-padding-block: var(--compare-cell-padding-inline);
+
+    container: compare / inline-size;
     display: flex;
     flex-direction: column;
   }
 
-  .compare__panes {
-    container: compare-panes / inline-size;
-    position: relative;
+  .compare__headers {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: var(--c-layer-sticky);
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
-  }
-
-  .compare__pane {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-  }
-
-  .compare__body {
-    flex: 1;
-  }
-
-  .compare__pane + .compare__pane .compare__header {
-    position: relative;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+    background-color: var(--c-surface-default);
   }
 
   .compare__reverse {
     position: absolute;
-    inset-inline-start: 0;
+    inset-inline-start: 50%;
     inset-block-start: 50%;
     translate: -50% -50%;
     z-index: 2;
@@ -394,103 +820,309 @@
     translate: 50% -50%;
   }
 
-  @container compare-panes (width < 48rem) {
-    .compare__reverse {
-      position: static;
-      translate: none;
-    }
+  .compare__tabs {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  @container compare-panes (width >= 48rem) {
-    .compare__pane {
-      --compare-gutter: calc(var(--c-size-control-sm) / 2);
-    }
-
-    .compare__pane:first-child .compare__body {
-      padding-inline-end: var(--compare-gutter);
-    }
-
-    .compare__pane:first-child .compare__header {
-      padding-inline-end: calc(
-        var(--cp-container-padding, var(--c-spacing-lg)) + var(--compare-gutter)
-      );
-    }
-
-    .compare__pane + .compare__pane .compare__body {
-      padding-inline-start: var(--compare-gutter);
-    }
-
-    .compare__pane + .compare__pane .compare__header {
-      padding-inline-start: calc(
-        var(--cp-container-padding, var(--c-spacing-lg)) + var(--compare-gutter)
-      );
-    }
-  }
-
-  .compare__pane + .compare__pane .compare__body {
-    border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
-  }
-
-  .compare__header {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--c-spacing-sm);
-    align-items: center;
-    padding-block: var(--c-spacing-sm);
-    padding-inline: var(--cp-container-padding, var(--c-spacing-lg));
-    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
-  }
-
-  .compare__versions {
-    display: flex;
-    flex: 1;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--c-spacing-xs);
+  .compare__tabs-cell {
     min-width: 0;
+    padding-inline: var(--compare-cell-padding-inline);
   }
 
-  .compare__separator {
+  .compare__tabs-cell craft-tabs {
+    --c-tabs-gap: 0;
+  }
+
+  .compare__tabs-cell--from {
+    display: none;
+  }
+
+  .compare__tab--absent {
     color: var(--c-text-quiet);
   }
 
-  .compare__title {
-    margin: 0;
-    font-size: inherit;
-    font-weight: inherit;
-    min-width: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--c-spacing-sm);
+  .compare__tab--sidebar-start {
+    margin-inline-start: auto;
+  }
+
+  /* Keeps the dot round, where the tab would stretch it to its height. */
+  .compare__tab-changed {
+    display: inline-flex;
     align-items: center;
   }
 
-  .compare__edited {
+  .compare__panels {
+    position: relative;
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
+  }
+
+  .compare__panel {
+    position: relative;
+    flex: 1 0 auto;
+    padding-block: var(--c-spacing) 0;
+  }
+
+  .compare__row {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .compare__copy {
+    display: none;
+    border-radius: var(--c-radius-md);
+    background-color: var(--c-surface-default);
+  }
+
+  .compare__row--changed .compare__copy {
+    background-color: inherit;
+  }
+
+  .compare__copy craft-button {
+    --c-form-control-border-color: var(--compare-hairline);
+    --c-color-fill-quiet: var(--c-color-violet-fill-quiet);
+    --c-color-on-quiet: color-mix(
+      in oklab,
+      var(--c-text-quiet) 70%,
+      var(--c-field-modified-indicator)
+    );
+  }
+
+  .compare__footer {
+    position: sticky;
+    inset-block-end: 0;
+    z-index: var(--c-layer-sticky);
+  }
+
+  /* Only the clicks on the editable side's notices are their own. */
+  .compare__footer-notices {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    pointer-events: none;
+  }
+
+  .compare__footer-notices-cell {
+    min-width: 0;
+    pointer-events: auto;
+  }
+
+  .compare__row + .compare__row {
+    border-block-start: 1px solid var(--c-color-neutral-border-quiet);
+  }
+
+  .compare__row--changed {
+    background-color: light-dark(
+      color-mix(
+        in oklab,
+        var(--c-color-violet-fill-quiet) 40%,
+        var(--c-surface-default)
+      ),
+      color-mix(
+        in oklab,
+        var(--c-color-violet-fill-quiet) 30%,
+        var(--c-surface-default)
+      )
+    );
+  }
+
+  @media (forced-colors: active) {
+    .compare__row--changed {
+      border-inline-start: 4px solid Highlight;
+    }
+  }
+
+  .compare__cell {
+    min-width: 0;
+    padding-block: var(--compare-cell-padding-block);
+    padding-inline: var(--compare-cell-padding-inline);
+  }
+
+  .compare__panel:is(.compare__panel--absent-from, .compare__panel--absent-to) {
+    min-height: 16rem;
+  }
+
+  .compare__absent {
+    padding-block: var(--compare-cell-padding-block);
+    padding-inline: var(--compare-cell-padding-inline);
+  }
+
+  .compare__panel--absent-from .compare__cell--from,
+  .compare__panel--absent-to .compare__cell--to {
+    display: none;
+  }
+
+  /*
+   * The side icons only tell stacked sides apart. Hidden with the slot that
+   * holds them, which would otherwise keep its gap before the field's label.
+   */
+  .compare__panels :deep([slot='heading-prefix']:has(> .compare-side-icon)) {
+    display: none;
+  }
+
+  .compare__missing {
+    margin: 0;
+    color: var(--c-text-quiet);
     font-size: var(--c-text-sm);
-    font-weight: normal;
+    font-style: italic;
+  }
+
+  @container compare (width < 48rem) {
+    .compare__panels :deep([slot='heading-prefix']:has(> .compare-side-icon)) {
+      display: inline-flex;
+    }
+
+    .compare__panel:not(
+      .compare__panel--absent-from,
+      .compare__panel--absent-to
+    ) {
+      .compare__cell--to {
+        position: relative;
+        grid-area: 2 / 1;
+      }
+
+      .compare__cell--to::before {
+        content: '';
+        position: absolute;
+        inset-block-start: 0;
+        inset-inline: var(--compare-cell-padding-inline);
+        border-block-start: 1px solid var(--c-color-neutral-border-quiet);
+      }
+    }
+
+    .compare__copy {
+      position: relative;
+      z-index: 3;
+      grid-area: 2 / 1;
+      align-self: start;
+      justify-self: center;
+      display: flex;
+      translate: 0 -50%;
+    }
+
+    .compare__copy craft-button::part(prefix) {
+      rotate: 90deg;
+    }
+  }
+
+  @container compare (width >= 48rem) {
+    .compare__tabs {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .compare__tabs-cell--from {
+      display: block;
+    }
+
+    .compare__tabs-cell--to {
+      border-inline-start: 1px solid var(--compare-hairline);
+    }
+
+    .compare__row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .compare__copy {
+      position: absolute;
+      z-index: 3;
+      inset-block-start: 50%;
+      inset-inline-start: 50%;
+      display: flex;
+      translate: -50% -50%;
+    }
+
+    :dir(rtl) .compare__copy {
+      translate: 50% -50%;
+      scale: -1 1;
+    }
+
+    .compare__footer-notices {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .compare__footer-notices-cell {
+      grid-column: 2;
+      border-inline-start: 1px solid var(--compare-hairline);
+    }
+
+    .compare__row + .compare__row {
+      border-block-start: 0;
+    }
+
+    .compare__cell--to {
+      grid-column: 2;
+    }
+
+    .compare__absent {
+      position: absolute;
+      z-index: 1;
+      inset-block: 0;
+      inline-size: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--c-surface-default);
+    }
+
+    .compare__absent--from {
+      inset-inline-start: 0;
+    }
+
+    .compare__absent--to {
+      inset-inline-start: 50%;
+    }
+
+    .compare__panel--absent-from .compare__cell--from,
+    .compare__panel--absent-to .compare__cell--to {
+      display: block;
+      visibility: hidden;
+    }
+
+    .compare__panel::after {
+      content: '';
+      position: absolute;
+      z-index: 2;
+      inset-block: 0;
+      inset-inline-start: 50%;
+      border-inline-start: 1px solid var(--compare-hairline);
+      pointer-events: none;
+    }
   }
 </style>
 
 <style>
-  /* The footer is the page shell's, so it's reached from here. */
-  .cp-content__main:has(.compare__panes) {
-    container: compare-page / inline-size;
+  /* The page's panel is the page shell's, so it's reached from here. */
+  html:has(.compare__panels) {
+    overflow: hidden;
   }
 
-  @container compare-page (width >= 48rem) {
-    .cp-content__main:has(.compare__panes) > .sticky::before {
-      content: '';
-      position: absolute;
-      inset-block: calc(var(--c-spacing-lg) * -1) 0;
-      inset-inline-start: 50%;
-      border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
-      pointer-events: none;
-    }
+  .cp-body__panel:has(.compare__panels) {
+    --compare-hairline: light-dark(
+      color-mix(in srgb, black 18%, transparent),
+      color-mix(in srgb, white 22%, transparent)
+    );
 
-    .cp-content__main:has(.compare__panes) .cp-content__footer {
-      padding-inline-start: calc(
-        50% + 1px + var(--cp-container-padding) + var(--c-size-control-sm) / 2
-      );
-    }
+    position: fixed;
+    inset: 0;
+    z-index: var(--c-layer-overlay);
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .cp-content__main:has(.compare__panels) {
+    container: compare-page / inline-size;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .cp-content__main > .cp-content-view:has(.compare__panels) {
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
   }
 </style>

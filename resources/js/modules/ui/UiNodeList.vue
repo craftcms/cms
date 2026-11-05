@@ -10,14 +10,16 @@
     ref,
     shallowRef,
     watch,
+    inject,
   } from 'vue';
   import {useIsSlideout} from '@/common/composables/screen';
   import UiNode from './UiNode.vue';
+  import {UiFieldOutletsKey} from './fieldOutlets';
   import {
     fieldId,
     inputId,
+    nodeHasErrors,
     uiTabPanelId,
-    pathsMatch,
     visitControls,
   } from './runtime';
   import {
@@ -63,6 +65,29 @@
         node.component === 'craft:tab' && node.uid != null && !inSidebar(node)
     )
   );
+
+  /**
+   * The first of the sidebar tabs shown as ordinary ones, after the others,
+   * which starts their group at the end of the strip.
+   */
+  const firstSidebarTabUid = computed(
+    () =>
+      tabs.value.find(
+        (tab, index) =>
+          index > 0 &&
+          isSidebarTab(tab) &&
+          !isSidebarTab(tabs.value[index - 1]!)
+      )?.uid
+  );
+
+  const fieldOutlets = inject(UiFieldOutletsKey, null);
+
+  /** Where a field renders instead of here, if anywhere. */
+  function fieldOutlet(node: UiNodePayload): HTMLElement | null | undefined {
+    return fieldOutlets && node.control
+      ? fieldOutlets(String(node.props.layoutUid ?? node.uid))
+      : undefined;
+  }
 
   function inSidebar(node: UiNodePayload): node is SidebarTabNode {
     return Boolean(props.sidebarTabOutlets) && isSidebarTab(node);
@@ -180,7 +205,10 @@
   );
 
   watch(
-    () => tabs.value.filter(nodeHasErrors).map((tab) => tab.uid),
+    () =>
+      tabs.value
+        .filter((tab) => nodeHasErrors(tab, props.errors))
+        .map((tab) => tab.uid),
     (uids) => uids.forEach(renderTab),
     {immediate: true}
   );
@@ -219,25 +247,6 @@
     return {id: `${uiTabPanelId(node.uid, props.scope)}-tab`};
   }
 
-  function nodeHasErrors(node: UiNodePayload): boolean {
-    const controlPath = node.control?.path;
-
-    if (
-      controlPath &&
-      props.errors.some((error) => pathsMatch(error.path, controlPath))
-    ) {
-      return true;
-    }
-
-    if (node.children?.some(nodeHasErrors)) {
-      return true;
-    }
-
-    return Boolean(
-      node.control?.uis?.some((ui) => ui.nodes.some(nodeHasErrors))
-    );
-  }
-
   /**
    * `craft-tabs` owns the selection — clicks, keyboard navigation, and the
    * overflow menu all resolve to a `selectedIndex` — so the panel visibility
@@ -269,6 +278,9 @@
         slot="tab"
         :key="tab.uid"
         :controls="`${tabPanelId(tab)}-tab`"
+        :class="{
+          'ui-node-list__tab--sidebar-start': tab.uid === firstSidebarTabUid,
+        }"
       >
         <craft-icon
           v-if="tab.props.icon"
@@ -277,7 +289,7 @@
         ></craft-icon>
         {{ tab.props.label }}
         <craft-icon
-          v-if="nodeHasErrors(tab)"
+          v-if="nodeHasErrors(tab, errors)"
           name="circle-exclamation"
           :label="t('Errors')"
           slot="suffix"
@@ -308,6 +320,23 @@
         />
       </div>
     </Teleport>
+    <!-- Fields render in place until their outlet exists, then move there
+      without remounting. -->
+    <Teleport
+      v-else-if="fieldOutlets && node.control"
+      :to="fieldOutlet(node) ?? 'body'"
+      :disabled="!fieldOutlet(node)"
+    >
+      <UiNode
+        :node="node"
+        :values="values"
+        :errors="errors"
+        :touched-paths="touchedPaths"
+        :scope="scope"
+        :refreshable="refreshable"
+        @change="emit('change', $event)"
+      />
+    </Teleport>
     <UiNode
       v-else
       :node="node"
@@ -327,6 +356,10 @@
 </template>
 
 <style scoped>
+  .ui-node-list__tab--sidebar-start {
+    margin-inline-start: auto;
+  }
+
   .ui-node-list__tabs::part(strip) {
     box-sizing: border-box;
     block-size: var(--cp-header-height);
