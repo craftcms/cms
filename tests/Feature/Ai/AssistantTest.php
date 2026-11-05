@@ -167,7 +167,7 @@ it('looks things up with Craft’s MCP tools, and shows the conversation again',
 it('offers the MCP tools the user can use, asking for approval before those that change anything', function () {
     $tools = offeredTools();
 
-    expect(array_keys($tools))->toContain('elements_get', 'elements_update', 'content-model_audit')
+    expect(array_keys($tools))->toContain('elements_get', 'elements_update', 'content_model_audit')
         ->and($tools['elements_get']->shouldRequestApproval(new ToolRequest))->toBeNull()
         ->and($tools['elements_update']->shouldRequestApproval(new ToolRequest))->not->toBeNull();
 
@@ -175,7 +175,7 @@ it('offers the MCP tools the user can use, asking for approval before those that
 
     expect(array_keys(offeredTools()))
         ->toContain('elements_get')
-        ->not->toContain('content-model_audit');
+        ->not->toContain('content_model_audit');
 });
 
 it('waits for the user to approve a tool call that changes anything, then resumes with their answer', function (bool $approved) {
@@ -563,13 +563,13 @@ it('won’t continue or show another user’s conversation', function () {
 
 class ResultContentCapability
 {
-    #[McpTool(name: 'test.result.structured')]
+    #[McpTool(name: 'test_result_structured')]
     public function structured(): CallToolResult
     {
         return new CallToolResult(content: [], structuredContent: ['url' => 'https://example.com/a', 'title' => 'Café']);
     }
 
-    #[McpTool(name: 'test.result.blocks')]
+    #[McpTool(name: 'test_result_blocks')]
     public function blocks(): CallToolResult
     {
         return new CallToolResult(content: [

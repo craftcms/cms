@@ -38,8 +38,8 @@ beforeEach(function (): void {
 it('describes workflow stage types and the values their settings accept', function (): void {
     $group = UserGroup::factory()->create(['name' => 'Editors']);
 
-    $types = ($this->result)('component-types.list', ['kind' => 'workflow-stage'])['types'];
-    $settings = ($this->result)('component-types.get', ['kind' => 'workflow-stage', 'type' => UserReviewStage::class])['settingsSchema'];
+    $types = ($this->result)('component_types_list', ['kind' => 'workflow-stage'])['types'];
+    $settings = ($this->result)('component_types_get', ['kind' => 'workflow-stage', 'type' => UserReviewStage::class])['settingsSchema'];
 
     expect($types)->toContain(['type' => UserReviewStage::class, 'name' => 'User Review'])
         ->and($settings['required'])->toEqualCanonicalizing(['userGroups', 'approvalsRequired', 'approvalMode'])
@@ -49,9 +49,9 @@ it('describes workflow stage types and the values their settings accept', functi
 });
 
 it('describes field types and asset transform drivers', function (): void {
-    $fieldTypes = array_column(($this->result)('component-types.list', ['kind' => 'field'])['types'], 'type');
-    $plainText = ($this->result)('component-types.get', ['kind' => 'field', 'type' => PlainText::class])['settingsSchema']['properties'];
-    $driver = ($this->result)('component-types.get', ['kind' => 'asset-transform-driver', 'type' => 'craft']);
+    $fieldTypes = array_column(($this->result)('component_types_list', ['kind' => 'field'])['types'], 'type');
+    $plainText = ($this->result)('component_types_get', ['kind' => 'field', 'type' => PlainText::class])['settingsSchema']['properties'];
+    $driver = ($this->result)('component_types_get', ['kind' => 'asset-transform-driver', 'type' => 'craft']);
 
     expect($fieldTypes)->toContain(PlainText::class)
         ->and($plainText['multiline'])->toMatchArray(['type' => 'boolean', 'default' => false])
@@ -59,15 +59,15 @@ it('describes field types and asset transform drivers', function (): void {
         ->and($driver['settingsSchema']['properties']['hasUrls']['type'])->toBe('boolean')
         ->and($driver)->toHaveKey('parametersSchema');
 
-    ($this->call)('component-types.get', ['kind' => 'field', 'type' => 'Nope'])
+    ($this->call)('component_types_get', ['kind' => 'field', 'type' => 'Nope'])
         ->assertJsonPath('result.isError', true)
-        ->assertJsonPath('result.content.0.text', 'Unknown field type [Nope]. Call component-types.list for the available types.');
+        ->assertJsonPath('result.content.0.text', 'Unknown field type [Nope]. Call component_types_list for the available types.');
 });
 
 it('describes the elements an element type’s field layouts accept', function (): void {
-    $types = collect(($this->result)('component-types.list', ['kind' => 'field-layout-element', 'scope' => 'users'])['types'])->keyBy('type');
-    $warning = ($this->result)('component-types.get', ['kind' => 'field-layout-element', 'scope' => 'users', 'type' => Tip::class.'(style: warning)']);
-    $customField = ($this->result)('component-types.get', ['kind' => 'field-layout-element', 'scope' => 'users', 'type' => CustomField::class])['settingsSchema']['properties'];
+    $types = collect(($this->result)('component_types_list', ['kind' => 'field-layout-element', 'scope' => 'users'])['types'])->keyBy('type');
+    $warning = ($this->result)('component_types_get', ['kind' => 'field-layout-element', 'scope' => 'users', 'type' => Tip::class.'(style: warning)']);
+    $customField = ($this->result)('component_types_get', ['kind' => 'field-layout-element', 'scope' => 'users', 'type' => CustomField::class])['settingsSchema']['properties'];
 
     expect($types[EmailField::class.'(attribute: email)']['config'])->toBe(['type' => EmailField::class, 'attribute' => 'email'])
         ->and($types)->toHaveKeys([CustomField::class, Heading::class, Tip::class.'(style: tip)'])
@@ -77,15 +77,15 @@ it('describes the elements an element type’s field layouts accept', function (
         ->and($customField['required'])->toMatchArray(['type' => 'boolean', 'default' => false])
         ->and($customField['width']['enum'])->toContain(25, 50, 100);
 
-    ($this->call)('component-types.list', ['kind' => 'field-layout-element'])
+    ($this->call)('component_types_list', ['kind' => 'field-layout-element'])
         ->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'Provide scope: The element type handle or class whose field layouts the elements go in, such as entries.');
 });
 
 it('describes the rules a condition accepts and points condition settings to them', function (): void {
-    $rules = collect(($this->result)('component-types.list', ['kind' => 'condition-rule', 'scope' => EntryCondition::class])['types'])->keyBy('type');
-    $slug = ($this->result)('component-types.get', ['kind' => 'condition-rule', 'scope' => EntryCondition::class, 'type' => SlugConditionRule::class])['settingsSchema']['properties'];
-    $selectionCondition = ($this->result)('component-types.get', ['kind' => 'field', 'type' => Entries::class])['settingsSchema']['properties']['selectionCondition'];
+    $rules = collect(($this->result)('component_types_list', ['kind' => 'condition-rule', 'scope' => EntryCondition::class])['types'])->keyBy('type');
+    $slug = ($this->result)('component_types_get', ['kind' => 'condition-rule', 'scope' => EntryCondition::class, 'type' => SlugConditionRule::class])['settingsSchema']['properties'];
+    $selectionCondition = ($this->result)('component_types_get', ['kind' => 'field', 'type' => Entries::class])['settingsSchema']['properties']['selectionCondition'];
 
     expect($rules[SlugConditionRule::class])->toMatchArray(['name' => 'Slug', 'config' => ['class' => SlugConditionRule::class]])
         ->and(array_column($slug['operator']['oneOf'], 'const'))->toContain('=', 'bw', 'empty')
@@ -94,7 +94,7 @@ it('describes the rules a condition accepts and points condition settings to the
         ->and($selectionCondition['properties']['class'])->toBe(['const' => EntryCondition::class])
         ->and($selectionCondition['properties']['conditionRules']['properties']['operator']['enum'])->toBe(['and', 'or']);
 
-    ($this->call)('component-types.list', ['kind' => 'condition-rule', 'scope' => 'Nope'])
+    ($this->call)('component_types_list', ['kind' => 'condition-rule', 'scope' => 'Nope'])
         ->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'Provide scope: the condition class, which settings schemas name.');
 });
@@ -102,9 +102,9 @@ it('describes the rules a condition accepts and points condition settings to the
 it('lists the component kinds, including those plugins register', function (): void {
     app(ComponentKinds::class)->register(WidgetStageKind::class);
 
-    $kinds = collect(($this->result)('component-types.list', [])['kinds'])->keyBy('kind');
-    $types = ($this->result)('component-types.list', ['kind' => 'widget-stage'])['types'];
-    $schema = ($this->result)('component-types.get', ['kind' => 'widget-stage', 'type' => UserReviewStage::class])['settingsSchema'];
+    $kinds = collect(($this->result)('component_types_list', [])['kinds'])->keyBy('kind');
+    $types = ($this->result)('component_types_list', ['kind' => 'widget-stage'])['types'];
+    $schema = ($this->result)('component_types_get', ['kind' => 'widget-stage', 'type' => UserReviewStage::class])['settingsSchema'];
 
     expect($kinds->keys()->all())->toContain('field', 'workflow-stage', 'asset-transform-driver', 'field-layout-element', 'condition-rule', 'widget-stage')
         ->and($kinds['field-layout-element']['scope'])->toContain('element type')
@@ -112,7 +112,7 @@ it('lists the component kinds, including those plugins register', function (): v
         ->and($types)->toBe([['type' => UserReviewStage::class, 'name' => 'User Review']])
         ->and($schema['properties'])->toHaveKey('approvalMode');
 
-    ($this->call)('component-types.list', ['kind' => 'nope'])
+    ($this->call)('component_types_list', ['kind' => 'nope'])
         ->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', fn (string $text): bool => str_starts_with($text, 'Unknown component kind [nope]. Available kinds: field, '));
 });

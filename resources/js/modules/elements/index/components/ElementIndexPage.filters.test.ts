@@ -184,6 +184,7 @@ it.each([
     'condition[conditionRules][0][value]': 'Alpha',
     'sort[0][field]': 'score',
     'sort[0][direction]': 'desc',
+    viewMode: 'table',
   });
   expect(options).toMatchObject({
     only: [],

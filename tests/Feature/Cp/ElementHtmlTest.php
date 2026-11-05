@@ -5,17 +5,23 @@ declare(strict_types=1);
 use CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis;
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
+use CraftCms\Cms\Cp\Events\ElementCardPartsResolving;
 use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Assets;
 use CraftCms\Cms\Field\ContentBlock;
+use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Image\Data\ImageColors;
+use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\TestClasses\Asset\ControlPanelAssetTransformDriver;
@@ -25,6 +31,7 @@ use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\travel;
 
 beforeEach(function () {
     actingAs(User::findOne());
@@ -338,17 +345,132 @@ describe('elementCardHtml', function () {
         'folder' => ['photo.jpg', 800, true, false],
     ]);
 
-    it('dispatches and allows overriding ElementCardHtmlResolving', function () {
+    it('lets ElementCardPartsResolving listeners change the cards of both card renderers', function () {
         $user = User::findOne(1);
-        expect($user)->toBeInstanceOf(User::class);
 
-        Event::listen(function (ElementCardHtmlResolving $event) {
-            $event->html = '<div>overridden-card</div>';
+        Event::listen(function (ElementCardPartsResolving $event) {
+            $event->parts->attributes['class'][] = 'listener-class';
+            $event->parts->contentHtml .= '<p>listener-content</p>';
         });
 
         $html = $this->elementHtml->elementCardHtml($user);
+        $data = $this->elementHtml->elementCardData($user);
 
-        expect($html)->toBe('<div>overridden-card</div>');
+        expect($html)->toContain('listener-class')
+            ->and($html)->toContain('<p>listener-content</p>')
+            ->and($data['cardAttributes']['class'])->toContain('listener-class')
+            ->and($data['cardContentHtml'])->toContain('<p>listener-content</p>');
+    });
+
+    it('gives listeners the same parts for both card renderers', function () {
+        $user = User::findOne(1);
+        $config = ['id' => 'card-fixed', 'selectable' => true];
+        $parts = [];
+
+        Event::listen(function (ElementCardPartsResolving $event) use (&$parts) {
+            $parts[] = clone $event->parts;
+        });
+
+        $html = $this->elementHtml->elementCardHtml($user, $config);
+        $this->elementHtml->elementCardData($user, $config);
+
+        expect($parts)->toHaveCount(2)
+            ->and($parts[0]->thumbHtml)->toContain('<svg')
+            ->and($parts[1]->thumbHtml)->toContain('<svg')
+            ->and([...get_object_vars($parts[1]), 'thumbHtml' => null])->toBe([...get_object_vars($parts[0]), 'thumbHtml' => null])
+            ->and($parts[0]->actionsHtml)->not->toContain('role="checkbox"')
+            ->and($html)->toContain('role="checkbox"');
+    });
+});
+
+describe('elementCardLabelHtml', function () {
+    beforeEach(function () {
+        $this->createPage = function (bool $enableVersioning): EntryElement {
+            $blockType = EntryTypeModel::factory()->create(['handle' => 'block', 'hasTitleField' => true]);
+            $blocksField = Field::factory()->create([
+                'handle' => 'blocks',
+                'type' => Matrix::class,
+                'settings' => ['entryTypes' => [$blockType->id], 'enableVersioning' => $enableVersioning],
+            ]);
+            Fields::refreshFields();
+            $pageType = EntryTypeModel::factory()->withField($blocksField)->create(['hasTitleField' => true]);
+            EntryTypes::refreshEntryTypes();
+            $section = Section::factory()->withEntryTypes($pageType)->create(['enableVersioning' => true]);
+
+            $page = new EntryElement(['sectionId' => $section->id, 'typeId' => $pageType->id, 'title' => 'Page']);
+            $page->setFieldValue('blocks', [
+                'new1' => ['type' => 'block', 'title' => 'A'],
+                'new2' => ['type' => 'block', 'title' => 'B'],
+            ]);
+            expect(Elements::saveElement($page))->toBeTrue();
+
+            return $page;
+        };
+
+        $this->cardStatuses = fn (EntryElement $owner): array => EntryElement::find()
+            ->ownerId($owner->id)
+            ->revisions($owner->getIsRevision() ? null : false)
+            ->drafts($owner->getIsDraft() ? null : false)
+            ->status(null)
+            ->orderBy('sortOrder')
+            ->collect()
+            ->mapWithKeys(fn (EntryElement $entry) => [
+                $entry->title => preg_match('/<span class="sr-only">([^<]+)</', $this->elementHtml->elementCardLabelHtml($entry), $match)
+                    ? $match[1]
+                    : null,
+            ])
+            ->all();
+    });
+
+    it('marks the nested entries added or edited in an owner revision since its previous one', function (bool $enableVersioning) {
+        $page = ($this->createPage)($enableVersioning);
+        [$a, $b] = EntryElement::find()->ownerId($page->id)->orderBy('sortOrder')->all();
+
+        travel(1)->minutes();
+
+        $page->setFieldValue('blocks', [
+            'sortOrder' => [$a->id, $b->id, 'new1'],
+            'entries' => [
+                $b->id => ['type' => 'block', 'title' => 'B edited'],
+                'new1' => ['type' => 'block', 'title' => 'C'],
+            ],
+        ]);
+        expect(Elements::saveElement($page))->toBeTrue();
+
+        [$firstRevision, $secondRevision] = EntryElement::find()->revisionOf($page)->status(null)->orderBy('num')->all();
+
+        expect(($this->cardStatuses)($firstRevision))->toBe([
+            'A' => null,
+            'B' => null,
+        ])->and(($this->cardStatuses)($secondRevision))->toBe([
+            'A' => null,
+            'B edited' => 'This entry has been edited.',
+            'C' => 'This is a new entry.',
+        ]);
+    })->with([
+        'versioned nested entries' => true,
+        'unversioned nested entries' => false,
+    ]);
+
+    it('marks the nested entries added or edited in a draft', function () {
+        $page = ($this->createPage)(true);
+        $draft = app(Drafts::class)->createDraft($page, auth()->id());
+        [$a, $b] = EntryElement::find()->ownerId($draft->id)->drafts(null)->orderBy('sortOrder')->all();
+
+        $draft->setFieldValue('blocks', [
+            'sortOrder' => [$a->id, $b->id, 'new1'],
+            'entries' => [
+                $b->id => ['type' => 'block', 'title' => 'B edited'],
+                'new1' => ['type' => 'block', 'title' => 'C'],
+            ],
+        ]);
+        expect(Elements::saveElement($draft))->toBeTrue();
+
+        expect(($this->cardStatuses)($draft))->toBe([
+            'A' => null,
+            'B edited' => 'This entry has been edited.',
+            'C' => 'This is a new entry.',
+        ]);
     });
 });
 

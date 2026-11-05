@@ -12,10 +12,8 @@ type EntryType = {
   icon: {name: string; family?: string} | null;
 };
 
-// The shape the index actually receives: a nested resource collection comes
-// through wrapped in `data`.
 type PublishableSection = {
-  entryTypes: {data: Array<EntryType>};
+  entryTypesBySite: Record<number, Array<EntryType>>;
   handle: string;
   id: number;
   name: string;
@@ -92,7 +90,7 @@ function section(
     type: 'channel',
     sites,
     canSave: true,
-    entryTypes: {data: entryTypes},
+    entryTypesBySite: Object.fromEntries(sites.map((id) => [id, entryTypes])),
   };
 }
 
@@ -138,6 +136,26 @@ it('links directly to the entry type when it is the only one on screen', async (
   const href = button.href!;
   expect(href).toContain('/entries/blog/new');
   expect(href).toContain('type=article');
+});
+
+it('only offers the entry types available in the site being viewed', async () => {
+  const blog = {
+    ...section('blog', [entryType('article', 1)], [1, 2]),
+    entryTypesBySite: {
+      1: [entryType('article', 1)],
+      2: [entryType('article', 1), entryType('review', 2)],
+    },
+  };
+  const container = await mount({
+    sources: [sectionSource('blog')],
+    source: sectionSource('blog'),
+    publishableSections: [blog],
+  });
+
+  expect(container.querySelector('.menu')).toBeNull();
+  expect(container.querySelector('craft-button')!.href).toContain(
+    'type=article'
+  );
 });
 
 it('sends the new entry’s editor back to the index it was created from', async () => {

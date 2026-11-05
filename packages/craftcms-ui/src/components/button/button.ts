@@ -106,6 +106,7 @@ export default class CraftButton extends HasShortcut(
       this.linkHostStateApplied = true;
     }
     super.connectedCallback();
+    this._hostLabel = this.getAttribute('aria-label');
     this.syncLinkHostState();
     this.addEventListener('click', this.#handleToggleClick);
 
@@ -114,8 +115,10 @@ export default class CraftButton extends HasShortcut(
     // invoker once its overlay sets up, so content and naming changes recheck it.
     this.#contentObserver = new MutationObserver(() => {
       this.#syncContent();
+      this._hostLabel = this.getAttribute('aria-label');
       if (this.hasUpdated) {
-        this.#checkAccessibleName();
+        // After the anchor has rendered the label it may have just taken.
+        void this.updateComplete.then(() => this.#checkAccessibleName());
       }
     });
     this.#contentObserver.observe(this, {
@@ -515,6 +518,13 @@ export default class CraftButton extends HasShortcut(
   @state()
   private _hasAccessibilityError: boolean = false;
 
+  /**
+   * The host's `aria-label`. In link mode the host is presentational, so the
+   * inner anchor carries it instead.
+   */
+  @state()
+  private _hostLabel: string | null = null;
+
   /** Which parts of the content have something in them; see #syncContent. */
   @state()
   private _content = {
@@ -598,7 +608,11 @@ export default class CraftButton extends HasShortcut(
 
     if (this.isLink) {
       const target = this.computedTarget;
+      const label = this._hostLabel?.trim() || null;
+      const cue = !this.target && !!target;
 
+      // A label replaces the anchor's content as its name, cue included, so
+      // the cue describes it instead.
       return html`
         <a
           class="link"
@@ -607,8 +621,12 @@ export default class CraftButton extends HasShortcut(
           target="${target ?? nothing}"
           rel="${linkRel(target, this.rel) ?? nothing}"
           download="${this.download ?? nothing}"
-          >${content}${!this.target && target
-            ? html`<span class="cp-visually-hidden">${newTabCue()}</span>`
+          aria-label="${label ?? nothing}"
+          aria-describedby="${label && cue ? 'new-tab-cue' : nothing}"
+          >${content}${cue
+            ? html`<span id="new-tab-cue" class="cp-visually-hidden"
+                >${newTabCue()}</span
+              >`
             : nothing}</a
         >
       `;

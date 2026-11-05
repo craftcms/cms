@@ -10,7 +10,7 @@ use CraftCms\Cms\Component\TypeRegistry;
  * A kind of extendable component that can be chosen and configured, such as field types.
  *
  * Kinds list their available types and describe each type’s settings as JSON Schema, for clients such as the
- * MCP server’s `component-types.*` tools. Register kinds with {@see ComponentKinds}:
+ * MCP server’s `component_types_*` tools. Register kinds with {@see ComponentKinds}:
  *
  * ```php
  * public function boot(ComponentKinds $componentKinds): void

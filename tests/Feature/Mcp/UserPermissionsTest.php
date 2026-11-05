@@ -27,23 +27,23 @@ it('preserves direct permission assignments without copying inherited grants dur
         'arguments' => ['userId' => $user->id, ...$arguments],
     ])->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent');
 
-    $current = $call('user-permissions.user.get', []);
+    $current = $call('user_permissions_user_get', []);
 
     expect($current['permissions'])->toContain('accessCp', 'accessSiteWhenSystemIsOff')
         ->and($current['directPermissions'])->toBe(['accessCp']);
 
-    $updated = $call('user-permissions.user.set', ['permissions' => [...$current['directPermissions'], 'viewUsers']]);
+    $updated = $call('user_permissions_user_set', ['permissions' => [...$current['directPermissions'], 'viewUsers']]);
     expect($updated['directPermissions'])->toEqualCanonicalizing(['accessCp', 'viewUsers']);
 
     app(Users::class)->assignUserToGroups($user->id, []);
     app()->forgetInstance(UserPermissions::class);
-    $afterRemoval = $call('user-permissions.user.get', []);
+    $afterRemoval = $call('user_permissions_user_get', []);
 
     expect($afterRemoval['permissions'])->toContain('accessCp', 'viewUsers')
         ->not->toContain('accessSiteWhenSystemIsOff');
 
     app(Users::class)->assignUserToGroups($user->id, [$group->id]);
-    $cleared = $call('user-permissions.user.set', ['permissions' => []]);
+    $cleared = $call('user_permissions_user_set', ['permissions' => []]);
     expect($cleared['directPermissions'])->toBe([])
         ->and($cleared['permissions'])->toContain('accessCp', 'accessSiteWhenSystemIsOff')
         ->not->toContain('viewUsers');

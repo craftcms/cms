@@ -41,7 +41,11 @@ use Symfony\Component\Process\Process;
 | components can't be drift-checked against a stale manifest. Manual regen:
 | cd packages/craftcms-ui && npm run build:manifest
 | The checked-in ROOT packages/craftcms-ui/custom-elements.json is stale; do not use it.
+| Fork PRs can't generate it in CI (no Font Awesome token), so on a cache miss
+| laravel-ci.yml excludes this file's group.
 */
+
+pest()->group('custom-elements-manifest');
 
 /**
  * Path to the generated Custom Elements Manifest. Resolved relative to this
