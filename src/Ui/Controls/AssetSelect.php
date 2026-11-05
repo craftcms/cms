@@ -24,7 +24,8 @@ class AssetSelect extends ElementSelect
 {
     private bool $canUpload = false;
 
-    private ?int $uploadFolderId = null;
+    /** @var array<string, int> */
+    private array $uploadParams = [];
 
     private bool $showFolders = true;
 
@@ -42,9 +43,15 @@ class AssetSelect extends ElementSelect
         return $this;
     }
 
-    public function uploadFolderId(?int $uploadFolderId): static
+    /**
+     * Sets the destination parameters uploads are sent with, such as a `folderId`, or a `fieldId` with an `elementId`
+     * and `siteId`.
+     *
+     * @param  array<string, int>  $uploadParams
+     */
+    public function uploadParams(array $uploadParams): static
     {
-        $this->uploadFolderId = $uploadFolderId;
+        $this->uploadParams = $uploadParams;
 
         return $this;
     }
@@ -56,7 +63,7 @@ class AssetSelect extends ElementSelect
         return [
             ...parent::props($value),
             'canUpload' => $this->canUpload,
-            'uploadFolderId' => $this->uploadFolderId,
+            'uploadParams' => $this->uploadParams ?: null,
             'showFolders' => $this->showFolders,
         ];
     }

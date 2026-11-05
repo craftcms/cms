@@ -281,6 +281,7 @@
 - `CraftCms\Cms\Asset\Assets::getAssetById()` now returns the asset in another site if it doesn’t exist in the requested site, when no site ID is passed. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - Deprecated `Craft.AssetImageEditor`. `Craft.openAssetImageEditor()` should be used instead. Constructing it now opens the image editor dialog, and only its `onSave` setting is supported. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Removed `CraftCms\Cms\Asset\Elements\Asset::$keptFile`, and the `assets` table’s `keptFile` column. `$trashedFileExists` should be used instead. ([#20093](https://github.com/craftcms/cms/pull/20093))
+- Fixed a bug where files uploaded to Assets fields when saving an element, such as from front-end forms, weren’t held to the `maxUploadFileSize` config setting, and were left behind as assets when the element couldn’t be saved because a file wasn’t allowed in the field.
 
 ### Fields
 - Link fields now show their Link Type and destination inputs side by side, with their other settings nested under an “Advanced” section, within an outlined pane. ([#19942](https://github.com/craftcms/cms/pull/19942))
@@ -733,6 +734,7 @@
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
 
 ### Bug Fixes
+- Fixed a bug where users with an authenticator app or recovery codes couldn’t sign in to the control panel, because the verification step showed an empty pane.
 - Fixed a bug where the control panel could error after updating Craft, when Laravel’s compiled Blade views were newer than the updated views they were compiled from. Compiled views are now cleared after updates, and the Caches utility has a “Compiled views” option. ([#20366](https://github.com/craftcms/cms/issues/20366), [#20374](https://github.com/craftcms/cms/pull/20374))
 - Fixed a bug where elements couldn’t be selected, edited inline, or reordered on element indexes when the `allowAdminChanges` config setting was disabled, and the “Changes to these settings aren’t permitted in this environment.” notice was shown on screens other than settings, and twice on the Settings and Sites index pages. ([#20339](https://github.com/craftcms/cms/issues/20339), [#20340](https://github.com/craftcms/cms/issues/20340), [#20344](https://github.com/craftcms/cms/issues/20344), [#20364](https://github.com/craftcms/cms/pull/20364))
 - Fixed a bug where publishing an approved draft through a workflow marked all of the element’s fields as modified, on both the element and its new revision.
