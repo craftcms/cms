@@ -3248,6 +3248,7 @@ return [
     'Upload failed for “{filename}”.' => 'Przesłanie pliku “{filename}” nie powiodło się.',
     'Upload failed.' => 'Przesłanie nie powiodło się.',
     'Upload files' => 'Prześlij pliki',
+    'Upload progress' => 'Postęp przesyłania',
     'Uploaded By' => 'Przesłany przez',
     'Uploaded by' => 'Przesłany przez',
     'Use the AI assistant' => 'Korzystanie z asystenta AI',
