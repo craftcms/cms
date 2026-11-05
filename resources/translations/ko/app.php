@@ -1313,6 +1313,7 @@ return [
     'Compatibility' => '호환성',
     'Compiled classes' => '컴파일된 클래스',
     'Compiled templates' => '컴파일된 템플릿',
+    'Compiled views' => 'Compiled views',
     'Complete the Update' => '업데이트 완료',
     'Completed job' => '완료된 작업',
     'Completed' => '완료됨',
