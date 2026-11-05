@@ -71,4 +71,32 @@ describe('nestedEntryLinks', () => {
     expect(links).toHaveLength(1);
     expect(changes).toEqual({moved: 1, added: 1, removed: 1});
   });
+
+  it('connects the facing edges when the sides are in a right-to-left layout', () => {
+    const at = (element: Element, left: number, right: number, top = 0) => {
+      element.getBoundingClientRect = () =>
+        new DOMRect(left, top, right - left, 20);
+    };
+    const from = side(cards(1, 2));
+    const to = side(cards(2, 1));
+    at(from, 500, 900);
+    at(to, 0, 400);
+    from
+      .querySelectorAll('li')
+      .forEach((item, index) => at(item, 520, 600, index * 40));
+    to.querySelectorAll('li').forEach((item, index) =>
+      at(item, 20, 100, index * 40)
+    );
+
+    const {links} = linksBetween(from, to);
+
+    expect(linkedIds(links)).toEqual(['1']);
+    // From the left edge of the older side’s item, along to the edge of its
+    // field, then curving to the right edge of the newer side’s item.
+    expect(links[0]!.ends).toEqual([
+      [520, 10],
+      [100, 50],
+    ]);
+    expect(links[0]!.path).toBe('M 520 10 H 500 C 300 10, 300 50, 100 50');
+  });
 });

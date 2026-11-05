@@ -126,7 +126,8 @@ export interface NestedEntryChanges {
  * Connects each nested element that moved to the same one on the other side.
  * Elements that kept their order among the ones both sides have, such as
  * those after an added one, aren’t connected. Sides that aren’t next to each
- * other, such as stacked panes, get no links.
+ * other, such as stacked panes, get no links. The sides can be in either
+ * order, as they are in right-to-left layouts.
  */
 export function nestedEntryLinks(
   origin: DOMRect,
@@ -145,8 +146,12 @@ export function nestedEntryLinks(
     const shared = [...toItems.keys()].filter((key) => fromItems.has(key));
     const fromOrder = [...fromItems.keys()].filter((key) => toItems.has(key));
     const kept = unmoved(fromOrder, shared);
-    const fromRight = from.getBoundingClientRect().right;
-    const sideBySide = fromRight <= to.getBoundingClientRect().left;
+    const fromRect = from.getBoundingClientRect();
+    const toRect = to.getBoundingClientRect();
+    // In a right-to-left layout, the older side is on the right.
+    const ltr = fromRect.right <= toRect.left;
+    const sideBySide = ltr || toRect.right <= fromRect.left;
+    const direction = ltr ? 1 : -1;
 
     changes.added += toItems.size - shared.length;
     changes.removed += fromItems.size - shared.length;
@@ -168,13 +173,15 @@ export function nestedEntryLinks(
       const b = box(toItem);
       const y1 = a.top + a.height / 2 - origin.top;
       const y2 = b.top + b.height / 2 - origin.top;
-      const x1 = a.right - origin.left;
-      const x2 = b.left - origin.left;
+      const x1 = (ltr ? a.right : a.left) - origin.left;
+      const x2 = (ltr ? b.left : b.right) - origin.left;
       // A short item, such as a chip, leads straight out to the edge of its
       // field, so the curve stays between the two sides rather than crossing
       // whatever else is beside the item.
-      const curveStart = Math.max(x1, fromRight - origin.left);
-      const bend = Math.max((x2 - curveStart) / 2, 12);
+      const fromEdge = (ltr ? fromRect.right : fromRect.left) - origin.left;
+      const curveStart = ltr ? Math.max(x1, fromEdge) : Math.min(x1, fromEdge);
+      const bend =
+        direction * Math.max(((x2 - curveStart) * direction) / 2, 12);
 
       links.push({
         path: `M ${x1} ${y1} H ${curveStart} C ${curveStart + bend} ${y1}, ${x2 - bend} ${y2}, ${x2} ${y2}`,
