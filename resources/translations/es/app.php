@@ -3248,6 +3248,7 @@ return [
     'Upload failed for “{filename}”.' => 'Error al cargar “{filename}”.',
     'Upload failed.' => 'Error al cargar.',
     'Upload files' => 'Subir archivos',
+    'Upload progress' => 'Progreso de la subida',
     'Uploaded By' => 'Cargado por',
     'Uploaded by' => 'Cargado por',
     'Use the AI assistant' => 'Usar el asistente de IA',
