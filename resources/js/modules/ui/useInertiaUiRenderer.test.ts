@@ -3,7 +3,9 @@ import {
   createApp,
   defineComponent,
   nextTick,
+  reactive,
   ref,
+  shallowRef,
   type ComputedRef,
   type ShallowRef,
 } from 'vue';
@@ -388,6 +390,31 @@ describe('useInertiaUiRenderer', () => {
     await nextTick();
 
     expect(form.isDirty).toBe(false);
+  });
+
+  it('copies values that hold reactive objects below the top level', async () => {
+    const currentPayload = shallowRef<UiPayload>(rootPayload);
+    const fields = reactive({
+      assets: [1, 2],
+      link: {value: 'https://craftcms.com'},
+    });
+    let integration!: TestIntegration;
+
+    mount(() => {
+      integration = useInertiaUiRenderer(useForm({}), currentPayload);
+    });
+
+    currentPayload.value = {
+      ...rootPayload,
+      values: {title: 'Restored', fields},
+    };
+    await nextTick();
+    fields.assets.push(3);
+
+    expect(integration.values.value).toEqual({
+      title: 'Restored',
+      fields: {assets: [1, 2], link: {value: 'https://craftcms.com'}},
+    });
   });
 
   it('lets two root-scoped bridges share one form without clobbering each other', async () => {

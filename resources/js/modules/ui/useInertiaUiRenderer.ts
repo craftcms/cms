@@ -1,14 +1,8 @@
 import type {InertiaForm} from '@inertiajs/vue3';
-import {
-  computed,
-  shallowRef,
-  toRaw,
-  toValue,
-  watch,
-  type MaybeRefOrGetter,
-} from 'vue';
+import {computed, shallowRef, toValue, watch, type MaybeRefOrGetter} from 'vue';
 import type {UiChangeKind, UiPayload, UiValue} from './types';
 import {pathsMatch, visitControls} from './runtime';
+import {cloneRaw} from './renderer/uiTree';
 
 export interface UiRendererInstance {
   advanceBaseline(): void;
@@ -41,7 +35,7 @@ export function useInertiaUiRenderer<
   {mutationKey, mapErrorPath}: Options<T, Key> = {}
 ) {
   const renderer = shallowRef<UiRendererInstance | null>(null);
-  const values = shallowRef(clone(toValue(payload)?.values ?? {}));
+  const values = shallowRef(cloneRaw(toValue(payload)?.values ?? {}));
   const formData: T = form;
   const rootKeys = new Set(Object.keys(form.data()));
 
@@ -50,7 +44,7 @@ export function useInertiaUiRenderer<
 
   watch(
     () => toValue(payload),
-    (currentPayload) => (values.value = clone(currentPayload?.values ?? {}))
+    (currentPayload) => (values.value = cloneRaw(currentPayload?.values ?? {}))
   );
 
   watch(
@@ -93,7 +87,7 @@ export function useInertiaUiRenderer<
   function replaceMutation(mutation: UiPayload['values']): void {
     if (mutationKey !== undefined) {
       Object.assign(formData, {
-        [mutationKey]: clone(mutation[mutationKey] ?? {}),
+        [mutationKey]: cloneRaw(mutation[mutationKey] ?? {}),
       });
 
       return;
@@ -109,7 +103,7 @@ export function useInertiaUiRenderer<
         rootKeys.add(key);
       }
 
-      Object.assign(formData, {[key]: clone(value)});
+      Object.assign(formData, {[key]: cloneRaw(value)});
     }
   }
 
@@ -154,7 +148,7 @@ export function useInertiaUiRenderer<
     // The renderer's reset emits an empty mutation of its own, but the bridge
     // has to hold up on its own when nothing is mounted to emit one.
     replaceMutation({});
-    values.value = clone(toValue(payload)?.values ?? {});
+    values.value = cloneRaw(toValue(payload)?.values ?? {});
     form.defaults();
   }
 
@@ -220,8 +214,4 @@ function defaultErrorPath(
   // Unowned keys stay as they are, so they surface as global errors rather
   // than being dropped.
   return withinScope ? segments : null;
-}
-
-function clone<T>(value: T): T {
-  return structuredClone(toRaw(value));
 }
