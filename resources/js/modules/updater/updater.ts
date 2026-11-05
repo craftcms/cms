@@ -94,18 +94,24 @@ export class Updater {
     buttons.className = 'buttons';
 
     for (const option of state.options ?? []) {
-      const button = document.createElement('a');
+      // Options that go somewhere are links; the rest are buttons, so they can
+      // be tabbed to and taken with Enter or Space.
+      const href = option.email
+        ? emailLink(state, option)
+        : (option.url ?? null);
+      const button = document.createElement(href === null ? 'button' : 'a');
       button.className = 'btn big';
       button.textContent = option.label;
       button.classList.toggle('submit', !!option.submit);
 
-      if (option.email) {
-        button.href = emailLink(state, option);
-      } else if (option.url) {
-        button.href = option.url;
-        button.target = '_blank';
+      if (button instanceof HTMLAnchorElement) {
+        button.href = href!;
+
+        if (option.url) {
+          button.target = '_blank';
+        }
       } else {
-        button.setAttribute('role', 'button');
+        button.type = 'button';
         button.addEventListener('click', () =>
           this.setState(option as UpdaterState)
         );

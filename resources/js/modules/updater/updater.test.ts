@@ -58,3 +58,31 @@ it('offers a step’s options, and continues with the one chosen', () => {
 
   expect(status().textContent).toBe('Retrying…');
 });
+
+it('makes options without a destination keyboard-reachable buttons', () => {
+  page({
+    error: 'Couldn’t back up the database.',
+    options: [
+      {label: 'Try again', submit: true, status: 'Retrying…'},
+      {label: 'Troubleshoot', url: 'https://craftcms.com'},
+      {label: 'Email support', email: 'support@craftcms.com'},
+    ],
+  });
+
+  bootUpdater();
+
+  const [retry, troubleshoot, email] =
+    document.querySelectorAll<HTMLElement>('#options .btn');
+
+  // A `<button>` is focusable and takes Enter and Space for free; an `<a>`
+  // without an `href` is neither.
+  expect(retry!.tagName).toBe('BUTTON');
+  expect((retry as HTMLButtonElement).type).toBe('button');
+  expect(troubleshoot!.tagName).toBe('A');
+  expect(troubleshoot!.getAttribute('href')).toBe('https://craftcms.com');
+  expect(email!.tagName).toBe('A');
+  expect(email!.getAttribute('href')).toContain('mailto:');
+
+  retry!.focus();
+  expect(document.activeElement).toBe(retry);
+});
