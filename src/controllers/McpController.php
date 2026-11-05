@@ -49,6 +49,12 @@ class McpController extends Controller
             throw new NotFoundHttpException();
         }
 
+        // The public server and discovery only live on the front end, as with their routes in Settings::requestRoute(),
+        // and not on the control panel’s own host
+        if ($action->id !== 'authenticated' && ($this->request->getIsCpRequest() || $settings->isCpHostRequest())) {
+            throw new NotFoundHttpException();
+        }
+
         // CORS preflight requests and GET requests, which show setup instructions or are rejected, don't need
         // credentials, including while the system is offline.
         if ($action->id === 'authenticated' && ($this->request->getIsOptions() || $this->request->getIsGet())) {

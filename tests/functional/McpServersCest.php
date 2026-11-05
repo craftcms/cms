@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Table;
 use craft\elements\User;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\mcp\Settings;
 use craft\oauth\User as OAuthUser;
 use craft\services\Mcp;
@@ -105,6 +106,105 @@ class McpServersCest
         $I->sendAjaxPostRequest('/mcp');
         $I->dontSeeResponseCodeIs(401);
         $I->dontSeeResponseCodeIs(403);
+    }
+
+    public function testControlPanelDomainWithoutTrigger(FunctionalTester $I): void
+    {
+        $general = Craft::$app->getConfig()->getGeneral();
+        $original = ['baseCpUrl' => $general->baseCpUrl, 'cpTrigger' => $general->cpTrigger];
+        $general->baseCpUrl = 'https://cp.example.com';
+        $general->cpTrigger = null;
+        $this->settings(['enabled' => true, 'route' => '/mcp', 'authorizationRoute' => '/mcp/auth', 'publicEnabled' => true, 'publicRoute' => '/ai']);
+
+        try {
+            // The site's domain advertises the authorization endpoint on the site
+            $I->amOnPage('/.well-known/oauth-protected-resource/mcp/auth');
+            $I->assertSame(UrlHelper::siteUrl('mcp/auth'), json_decode($I->grabPageSource(), true)['resource']);
+            $I->amOnPage('/actions/mcp/catalog');
+            $I->seeResponseCodeIs(200);
+
+            // The control panel's domain advertises it on that domain
+            $I->haveServerParameter('HTTP_HOST', 'cp.example.com');
+            $I->haveServerParameter('HTTPS', 'on');
+            $I->sendAjaxPostRequest('/mcp/auth');
+            $I->seeResponseCodeIs(401);
+            $I->assertStringContainsString('"https://cp.example.com/.well-known/oauth-protected-resource/mcp/auth"', Craft::$app->getResponse()->getHeaders()->get('WWW-Authenticate'));
+            $I->amOnPage('/.well-known/oauth-protected-resource/mcp/auth');
+            $I->assertSame('https://cp.example.com/mcp/auth', json_decode($I->grabPageSource(), true)['resource']);
+
+            // The public server and discovery stay on the front end
+            $I->amOnPage('/actions/mcp/catalog');
+            $I->seeResponseCodeIs(404);
+            $I->sendAjaxPostRequest('/actions/mcp/public');
+            $I->seeResponseCodeIs(404);
+        } finally {
+            Craft::configure($general, $original);
+        }
+    }
+
+    public function testControlPanelBasePathWithoutTrigger(FunctionalTester $I): void
+    {
+        // The control panel lives at /backoffice on the site's own host
+        $general = Craft::$app->getConfig()->getGeneral();
+        $original = ['baseCpUrl' => $general->baseCpUrl, 'cpTrigger' => $general->cpTrigger, 'omitScriptNameInUrls' => $general->omitScriptNameInUrls];
+        $general->baseCpUrl = UrlHelper::siteUrl('backoffice');
+        $general->cpTrigger = null;
+        $this->settings(['enabled' => true, 'route' => '/backoffice/mcp', 'authorizationRoute' => '/backoffice/mcp/auth']);
+
+        try {
+            $I->haveServerParameter('HTTP_HOST', parse_url($general->baseCpUrl, PHP_URL_HOST));
+            $I->sendAjaxPostRequest('/backoffice/mcp/auth');
+            $I->seeResponseCodeIs(401);
+            $I->assertStringContainsString('"' . UrlHelper::siteUrl('.well-known/oauth-protected-resource/backoffice/mcp/auth') . '"', Craft::$app->getResponse()->getHeaders()->get('WWW-Authenticate'));
+
+            // URLs with the script name keep the base URL's path too
+            $general->omitScriptNameInUrls = false;
+            $I->assertSame(UrlHelper::siteUrl('backoffice/mcp/auth'), Craft::$app->getOAuth()->resource('mcp'));
+        } finally {
+            Craft::configure($general, $original);
+        }
+    }
+
+    public function testControlPanelDomainBasePathWithoutTrigger(FunctionalTester $I): void
+    {
+        $general = Craft::$app->getConfig()->getGeneral();
+        $original = ['baseCpUrl' => $general->baseCpUrl, 'cpTrigger' => $general->cpTrigger, 'omitScriptNameInUrls' => $general->omitScriptNameInUrls, 'usePathInfo' => $general->usePathInfo];
+        $general->baseCpUrl = 'https://cp.example.com/backoffice';
+        $general->cpTrigger = null;
+        $this->settings(['enabled' => true, 'route' => '/backoffice/mcp', 'authorizationRoute' => '/backoffice/mcp/auth', 'publicEnabled' => true, 'publicRoute' => '/backoffice/ai']);
+
+        try {
+            // The site's host serves the public server's discovery
+            $I->amOnPage('/.well-known/ai-catalog.json');
+            $I->seeResponseCodeIs(200);
+            $I->amOnPage('/backoffice/ai/server-card');
+            $I->seeResponseCodeIs(200);
+
+            $I->haveServerParameter('HTTP_HOST', 'cp.example.com');
+            $I->haveServerParameter('HTTPS', 'on');
+            $I->sendAjaxPostRequest('/backoffice/mcp/auth');
+            $I->seeResponseCodeIs(401);
+            $I->assertStringContainsString('"https://cp.example.com/.well-known/oauth-protected-resource/backoffice/mcp/auth"', Craft::$app->getResponse()->getHeaders()->get('WWW-Authenticate'));
+
+            // Discovery requests outside the base URL's path are site requests, but stay on the control panel's host
+            $I->amOnPage('/.well-known/oauth-protected-resource/backoffice/mcp/auth');
+            $I->assertSame('https://cp.example.com/backoffice/mcp/auth', json_decode($I->grabPageSource(), true)['resource']);
+
+            // The control panel's host doesn't, even for site requests outside the base URL's path
+            $I->amOnPage('/.well-known/ai-catalog.json');
+            $I->seeResponseCodeIs(404);
+            $I->amOnPage('/backoffice/ai/server-card');
+            $I->seeResponseCodeIs(404);
+
+            // URLs with the script name start at the web root
+            $general->omitScriptNameInUrls = false;
+            $general->usePathInfo = true;
+            $I->assertSame('https://cp.example.com/index.php/backoffice/mcp/auth', Craft::$app->getOAuth()->resource('mcp'));
+            $general->usePathInfo = false;
+            $I->assertSame('https://cp.example.com/index.php?p=backoffice/mcp/auth', Craft::$app->getOAuth()->resource('mcp'));
+        } finally {
+            Craft::configure($general, $original);
+        }
     }
 
     private function settings(array $config): void

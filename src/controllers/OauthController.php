@@ -198,7 +198,21 @@ class OauthController extends Controller
             if (!in_array('accessCp', $definition->permissions, true)) {
                 $general = Craft::$app->getConfig()->getGeneral();
                 $loginPath = $general->getLoginPath() ?: $general->actionTrigger . '/users/login';
-                $userSession->loginUrl = UrlHelper::siteUrl($loginPath);
+                $userSession->loginUrl = UrlHelper::isFullUrl($loginPath) ? $loginPath : $this->siteHostUrl(UrlHelper::siteUrl($loginPath));
+
+                // When the control panel has its own domain, the front-end login can’t return to this request, so
+                // continue the authorization on the site’s domain before logging in.
+                $host = (string)$this->request->getHostName();
+                if (
+                    $this->request->getIsCpRequest() &&
+                    ($userSession->getIsGuest() || in_array('login', $prompts, true)) &&
+                    !in_array('none', $prompts, true) &&
+                    strcasecmp((string)parse_url($userSession->loginUrl, PHP_URL_HOST), $host) !== 0 &&
+                    strcasecmp((string)parse_url(UrlHelper::siteHost(), PHP_URL_HOST), $host) !== 0
+                ) {
+                    $params = ['resource' => $resource] + $this->request->getQueryParamsWithoutPath();
+                    return $this->redirect($this->siteHostUrl(UrlHelper::siteUrl("$general->actionTrigger/oauth/authorize", $params)));
+                }
             }
             $promptedLoginKey = 'oauthPromptedLogin:' . $resource;
             if ($userSession->getIsGuest()) {
@@ -330,6 +344,12 @@ class OauthController extends Controller
         } catch (OAuthServerException $e) {
             return $this->psrResponse($e->generateHttpResponse(new PsrResponse()));
         }
+    }
+
+    /** Moves a site URL to the site’s host, as URLs with the script name are built on the current request’s host. */
+    private function siteHostUrl(string $url): string
+    {
+        return UrlHelper::siteHost() . substr($url, strlen(UrlHelper::hostInfo($url)));
     }
 
     private function promptError(AuthorizationRequestInterface $request, string $error): Response

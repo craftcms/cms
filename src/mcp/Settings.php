@@ -119,7 +119,7 @@ class Settings extends Model
         }
 
         // Requests go to the control panel when its base URL matches them more closely than the site’s does
-        $url = $this->url($route);
+        $url = UrlHelper::siteUrl(trim($route, '/'));
         $site = Craft::$app->getSites()->getCurrentSite();
         $siteScore = ($site->getBaseUrl() ? $this->scoreBaseUrl($site->getBaseUrl(), $url) : 0) + ($site->primary ? 1 : 0);
         $cpBaseUrl = implode('/', array_filter([rtrim($general->baseCpUrl, '/'), $general->cpTrigger]));
@@ -150,17 +150,79 @@ class Settings extends Model
         return 1000 + strlen($basePath) * 100 + ($basePort == $port ? 100 : 0) + ($baseScheme === $scheme ? 10 : 0);
     }
 
-    /** Returns the absolute URL for a route. */
+    /**
+     * Returns the absolute URL for a route.
+     *
+     * Without a control panel trigger, the control panel can have its own host, which also serves the routes within
+     * its base URL’s path. Requests on that host get URLs on it for those routes, including discovery requests
+     * outside the base URL’s path.
+     */
     public function url(string $route): string
     {
         $path = trim($route, '/');
+        $general = Craft::$app->getConfig()->getGeneral();
 
         if ($this->isCpRoute($path)) {
-            $path = ltrim(substr($path, strlen(Craft::$app->getConfig()->getGeneral()->cpTrigger)), '/');
+            $path = ltrim(substr($path, strlen($general->cpTrigger)), '/');
             return UrlHelper::removeParam(UrlHelper::cpUrl($path), 'site');
         }
 
+        $cpPath = $this->cpHostPath($path);
+        if ($cpPath !== null) {
+            // URLs with the script name are built from the web root on the current request’s host, which can be the
+            // site’s, while others start at the control panel’s base URL.
+            $url = UrlHelper::removeParam(UrlHelper::cpUrl($general->omitScriptNameInUrls ? $cpPath : $path), 'site');
+            return UrlHelper::hostInfo($general->baseCpUrl) . substr($url, strlen(UrlHelper::hostInfo($url)));
+        }
+
         return UrlHelper::siteUrl($path);
+    }
+
+    /**
+     * Whether the current request is on the control panel’s own host, separate from the site’s, without a control
+     * panel trigger. Requests outside the base URL’s path are site requests, but still on that host.
+     */
+    public function isCpHostRequest(): bool
+    {
+        $general = Craft::$app->getConfig()->getGeneral();
+        $request = Craft::$app->getRequest();
+        $cpHost = parse_url((string)$general->baseCpUrl, PHP_URL_HOST);
+
+        return (
+            !$general->cpTrigger &&
+            $cpHost &&
+            !$request->getIsConsoleRequest() &&
+            strcasecmp($cpHost, (string)$request->getHostName()) === 0 &&
+            strcasecmp($cpHost, (string)parse_url(UrlHelper::siteHost(), PHP_URL_HOST)) !== 0
+        );
+    }
+
+    /**
+     * Returns a route’s path within the control panel’s base URL, when the current request is on the control panel’s
+     * own host and there’s no control panel trigger.
+     *
+     * Routes are relative to the web root, like control panel requests’ full paths, so the base URL’s path is removed
+     * the way craft\web\Request::init() does.
+     */
+    private function cpHostPath(string $path): ?string
+    {
+        if (!$this->isCpHostRequest()) {
+            return null;
+        }
+
+        $general = Craft::$app->getConfig()->getGeneral();
+        $request = Craft::$app->getRequest();
+        $basePath = trim((string)parse_url($general->baseCpUrl, PHP_URL_PATH), '/');
+        $requestBasePath = trim($request->getBaseUrl(), '/');
+        if ($requestBasePath !== '' && str_starts_with("$basePath/", "$requestBasePath/")) {
+            $basePath = ltrim(substr($basePath, strlen($requestBasePath)), '/');
+        }
+
+        if ($basePath === '') {
+            return $path;
+        }
+
+        return str_starts_with("$path/", "$basePath/") ? ltrim(substr($path, strlen($basePath)), '/') : null;
     }
 
     public function validateRoute(string $attribute): void
