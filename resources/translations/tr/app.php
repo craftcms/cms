@@ -1313,6 +1313,7 @@ return [
     'Compatibility' => 'Uyumluluk',
     'Compiled classes' => 'Derlenmiş sınıflar',
     'Compiled templates' => 'Derlenmiş şablonlar',
+    'Compiled views' => 'Compiled views',
     'Complete the Update' => 'Güncellemeyi Tamamla',
     'Completed job' => 'Tamamlanan iş',
     'Completed' => 'Tamamlandı',
