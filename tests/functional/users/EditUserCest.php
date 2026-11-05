@@ -87,6 +87,21 @@ class EditUserCest
         $config->privateKey = $config->publicKey = null;
     }
 
+    public function testTokensPageExplainsInvalidOAuthKeys(FunctionalTester $I): void
+    {
+        $config = Craft::$app->getConfig()->getOAuth();
+        $path = Craft::$app->getPath()->getStoragePath() . '/invalid-oauth.key';
+        file_put_contents($path, 'not a key');
+        $config->privateKey = $config->publicKey = $path;
+
+        $I->amOnPage('/' . $this->cpTrigger . '/myaccount/tokens');
+        $I->seeResponseCodeIs(200);
+        $I->see('Tokens can’t be created until Craft has OAuth signing keys.');
+
+        $config->privateKey = $config->publicKey = null;
+        unlink($path);
+    }
+
     public function testTokensPageWithOAuthKeys(FunctionalTester $I): void
     {
         $config = Craft::$app->getConfig()->getOAuth();

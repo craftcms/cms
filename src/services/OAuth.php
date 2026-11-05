@@ -30,6 +30,7 @@ use League\OAuth2\Server\Grant\AuthCodeGrant;
 use League\OAuth2\Server\Grant\RefreshTokenGrant;
 use League\OAuth2\Server\RequestTypes\AuthorizationRequestInterface;
 use League\OAuth2\Server\ResourceServer;
+use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -451,7 +452,11 @@ class OAuth extends Component
             }
         }
 
-        return new CryptKey($value);
+        try {
+            return new CryptKey($value);
+        } catch (LogicException $e) {
+            throw new InvalidConfigException("The OAuth $type key isn’t valid: {$e->getMessage()}. Run `php craft oauth/generate-keys`, or set the `{$type}Key` OAuth config setting.", previous: $e);
+        }
     }
 
     private function keyPath(string $type): string
