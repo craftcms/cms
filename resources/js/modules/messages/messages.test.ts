@@ -21,6 +21,8 @@ interface FakeNotification {
   settings: Record<string, unknown>;
   closing: boolean;
   element: HTMLElement | null;
+  on(event: string, listener: () => void): void;
+  emit(event: string): void;
 }
 
 const fakes = vi.hoisted(() => ({rendered: [] as FakeNotification[]}));
@@ -29,12 +31,26 @@ vi.mock('./notification', () => ({
   Notification: class {
     closing = false;
     element: HTMLElement | null = null;
+    listeners = new Map<string, Set<() => void>>();
 
     constructor(
       public type: string,
       public message: string,
       public settings: Record<string, unknown>
     ) {}
+
+    on(event: string, listener: () => void) {
+      if (!this.listeners.has(event)) {
+        this.listeners.set(event, new Set());
+      }
+      this.listeners.get(event)!.add(listener);
+    }
+
+    emit(event: string) {
+      for (const listener of this.listeners.get(event) ?? []) {
+        listener();
+      }
+    }
 
     show() {
       this.element = document.createElement('div');
@@ -191,4 +207,34 @@ it('returns null when the message goes to an outlet', () => {
   expect(
     showMessage({type: 'error', message: 'Invalid.', target: 'form'})
   ).toBeNull();
+});
+
+it('re-fires the legacy Craft.cp notification events', () => {
+  const events: Array<[string, unknown]> = [];
+
+  function CP() {}
+  CP.prototype.displayNotification = vi.fn();
+  CP.prototype.trigger = function (name: string, data?: unknown) {
+    events.push([name, data]);
+  };
+
+  const cp = new (CP as unknown as new () => {
+    displayNotification: (t: string, m: string) => FakeNotification;
+  })();
+  (window as unknown as {Craft: unknown}).Craft = {CP, cp};
+  installLegacyShim();
+
+  const notification = cp.displayNotification('notice', 'Saved');
+  notification.emit('show');
+
+  expect(events).toEqual([
+    [
+      'displayNotification',
+      {notificationType: 'notice', message: 'Saved', notification},
+    ],
+  ]);
+
+  notification.emit('close');
+
+  expect(events[1]).toEqual(['notificationClose', undefined]);
 });

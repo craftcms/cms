@@ -276,6 +276,34 @@ export function registerMessageOutlet(
   };
 }
 
+/** Notifications already wired to re-fire the legacy events, so repeats don't double up. */
+const legacyEventsWired = new WeakSet<CpNotification>();
+
+/**
+ * Re-fires the `displayNotification` and `notificationClose` events on
+ * `Craft.cp`, which plugins still listen for. The legacy renderer triggered
+ * them itself, and the shim below replaces it.
+ */
+function fireLegacyEvents(cp: unknown, notification: CpNotification): void {
+  const trigger = (cp as {trigger?: (name: string, data?: unknown) => void})
+    ?.trigger;
+
+  if (typeof trigger !== 'function' || legacyEventsWired.has(notification)) {
+    return;
+  }
+
+  legacyEventsWired.add(notification);
+
+  notification.on('show', () =>
+    trigger.call(cp, 'displayNotification', {
+      notificationType: notification.type,
+      message: notification.message,
+      notification,
+    })
+  );
+  notification.on('close', () => trigger.call(cp, 'notificationClose'));
+}
+
 /**
  * Routes `Craft.cp.displayNotification()` — and with it `displayNotice()`,
  * `displaySuccess()` and `displayError()`, which call it — through
@@ -315,13 +343,19 @@ export function installLegacyShim(): boolean {
 
     if (id) {
       if (hasSeen(id)) {
-        return findVisibleDuplicate(message) ?? stub(type, text);
+        const duplicate = findVisibleDuplicate(message) ?? stub(type, text);
+        fireLegacyEvents(this, duplicate);
+
+        return duplicate;
       }
 
       markSeen(id);
     }
 
-    return renderDefault(message) ?? stub(type, text);
+    const notification = renderDefault(message) ?? stub(type, text);
+    fireLegacyEvents(this, notification);
+
+    return notification;
   } as DisplayNotification;
 
   return true;
