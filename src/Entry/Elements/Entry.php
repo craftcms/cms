@@ -414,9 +414,16 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     #[Override]
     public static function sourceCpUri(array $source, ?string $page = null): ?string
     {
-        $handle = ($source['key'] ?? null) === 'singles'
-            ? 'singles'
-            : ($source['data']['handle'] ?? null);
+        $key = (string) ($source['key'] ?? '');
+
+        // A custom source limited to one section carries its handle too (see
+        // modifyCustomSource()), but the handle URL would select the section's
+        // own source, not the custom one.
+        $handle = match (true) {
+            $key === 'singles' => 'singles',
+            str_starts_with($key, 'section:') => $source['data']['handle'] ?? null,
+            default => null,
+        };
 
         if (! is_string($handle) || $handle === '') {
             return null;
