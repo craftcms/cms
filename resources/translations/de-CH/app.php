@@ -3248,6 +3248,7 @@ return [
     'Upload failed for “{filename}”.' => '«{filename}» konnte nicht hochgeladen werden.',
     'Upload failed.' => 'Hochladen fehlgeschlagen.',
     'Upload files' => 'Dateien hochladen',
+    'Upload progress' => 'Upload-Fortschritt',
     'Uploaded By' => 'Hochgeladen von',
     'Uploaded by' => 'Hochgeladen von',
     'Use the AI assistant' => 'Den KI-Assistenten verwenden',
