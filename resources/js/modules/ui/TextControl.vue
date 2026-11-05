@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {isMobileBrowser} from '@craftcms/garnish';
   import CraftInput from '@craftcms/ui/components/input/input';
   import '@craftcms/ui/components/text-expander/text-expander';
   import {computed, onMounted, useId, useTemplateRef} from 'vue';
@@ -32,11 +33,13 @@
 
   const input = useTemplateRef<CraftInput>('input');
 
-  // Respect the user's "Disable autofocus" accessibility preference.
+  // Respect the user's "Disable autofocus" accessibility preference, and don't pop up
+  // the on-screen keyboard on mobile and tablet browsers.
   const autofocus = computed(
     () =>
       props.control.props.autofocus === true &&
-      window.Craft?.autofocusPreferred === true
+      window.Craft?.autofocusPreferred === true &&
+      !isMobileBrowser(true)
   );
 
   // The browser only autofocuses on page load, so a control rendered later (such as in a
