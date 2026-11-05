@@ -42,16 +42,21 @@ class Address extends ElementMutationResolver
     {
         $this->requireSchemaAction('addresses.all', 'save');
 
-        $id = $arguments['id'] ?? null;
+        $canIdentify = !empty($arguments['id']) || !empty($arguments['uid']);
         $ownerId = $arguments['ownerId'] ?? null;
         unset($arguments['ownerId']);
 
-        if ($id) {
-            $address = AddressElement::find()->id($id)->one();
+        if ($canIdentify) {
+            $query = AddressElement::find();
+            $address = (!empty($arguments['uid']) ? $query->uid($arguments['uid']) : $query->id($arguments['id']))->one();
 
+            // The same error whether the address doesn’t exist, isn’t in an address book, or isn’t the user’s to change
             if (!$address || !$this->isUserAddress($address)) {
                 throw new Error('Unable to perform the action.');
             }
+
+            // Authorize before saying anything else about the address, such as who owns it
+            $this->requireUserAuthorization($address, 'save');
 
             // An address stays with the user it was created for
             if ($ownerId && (int)$ownerId !== $address->getPrimaryOwnerId()) {
@@ -60,13 +65,16 @@ class Address extends ElementMutationResolver
         } else {
             $owner = $this->resolveOwner($ownerId);
 
-            if (empty($arguments['countryCode'])) {
-                throw new UserError('A country code is required.');
-            }
-
             $address = new AddressElement();
             $address->setPrimaryOwner($owner);
             $address->setOwner($owner);
+
+            // Authorize before validating anything, so the errors can't be used to find out which users exist
+            $this->requireUserAuthorization($address, 'save');
+
+            if (empty($arguments['countryCode'])) {
+                throw new UserError('A country code is required.');
+            }
         }
 
         $address = $this->populateElementWithData($address, $arguments, $resolveInfo);

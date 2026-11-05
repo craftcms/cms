@@ -111,6 +111,23 @@ class AddressMutationsTest extends TestCase
         self::assertSame($this->user->id, Address::find()->id($address->id)->one()->getPrimaryOwnerId());
     }
 
+    public function testExistingAddressesCanBeIdentifiedByUid(): void
+    {
+        $address = $this->createAddress($this->user);
+
+        $result = $this->execute($this->schema(), "mutation { save_Address(uid: \"$address->uid\", addressLine1: \"3 Uid St\") { id addressLine1 } }");
+
+        self::assertArrayNotHasKey('errors', $result, json_encode($result));
+        self::assertSame((string)$address->id, $result['data']['save_Address']['id']);
+        self::assertSame('3 Uid St', $result['data']['save_Address']['addressLine1']);
+        self::assertEquals(1, Address::find()->primaryOwnerId($this->user->id)->count());
+
+        // Unknown UIDs are errors, rather than new addresses
+        $result = $this->execute($this->schema(), 'mutation { save_Address(uid: "' . StringHelper::UUID() . '", countryCode: "US") { id } }');
+        self::assertSame('Unable to perform the action.', $result['errors'][0]['message']);
+        self::assertEquals(1, Address::find()->primaryOwnerId($this->user->id)->count());
+    }
+
     public function testAddressesNeedACountry(): void
     {
         $result = $this->execute($this->schema(), 'mutation { save_Address(addressLine1: "1 Main St") { id } }');
@@ -136,8 +153,18 @@ class AddressMutationsTest extends TestCase
         self::assertSame('Unable to perform the action.', $result['errors'][0]['message']);
         self::assertEquals(1, Address::find()->primaryOwnerId($this->other->id)->count());
 
-        // Without revealing whether the user exists
+        // Without revealing whether the user exists, with or without the rest of the address
         $result = $this->execute($this->schema(), 'mutation { save_Address(ownerId: 999999, countryCode: "US") { id } }');
+        self::assertSame('Unable to perform the action.', $result['errors'][0]['message']);
+        $result = $this->execute($this->schema(), 'mutation { save_Address(ownerId: 999999) { id } }');
+        self::assertSame('Unable to perform the action.', $result['errors'][0]['message']);
+        $result = $this->execute($this->schema(), "mutation { save_Address(ownerId: {$this->other->id}) { id } }");
+        self::assertSame('Unable to perform the action.', $result['errors'][0]['message']);
+
+        // Or who an address belongs to
+        $result = $this->execute($this->schema(), "mutation { save_Address(id: $theirs->id, ownerId: {$this->user->id}) { id } }");
+        self::assertSame('Unable to perform the action.', $result['errors'][0]['message']);
+        $result = $this->execute($this->schema(), "mutation { save_Address(id: $theirs->id, ownerId: {$this->other->id}) { id } }");
         self::assertSame('Unable to perform the action.', $result['errors'][0]['message']);
     }
 
