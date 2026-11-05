@@ -78,6 +78,11 @@ export function checkedValue(event: Event): string {
   return checkbox?.checked ? '1' : '';
 }
 
+/** The value a checked or unchecked box writes into one of the trees. See {@link checkedValue}. */
+export function checkedTreeValue(checked: boolean): string {
+  return checked ? '1' : '';
+}
+
 /** Whether a `destinationCols` entry is a compound column, mapped through several subfields. */
 export function isCompoundMappingColumn(
   entry: MappingColumnEntry

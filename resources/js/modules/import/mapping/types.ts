@@ -1,4 +1,4 @@
-import type {InjectionKey, Ref} from 'vue';
+import {inject, type InjectionKey, type Ref} from 'vue';
 import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
 
 /**
@@ -75,3 +75,16 @@ export interface MappingContext {
 export const MappingContextKey: InjectionKey<MappingContext> = Symbol(
   'importMappingContext'
 );
+
+/** The mapping panel this component sits in. */
+export function useMappingContext(): MappingContext {
+  const context = inject(MappingContextKey);
+
+  if (!context) {
+    throw new Error(
+      'Mapping components must be rendered inside a mapping panel.'
+    );
+  }
+
+  return context;
+}

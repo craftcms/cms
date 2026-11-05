@@ -1,7 +1,7 @@
 /**
  * The shell shared by every mapping slideout: `StepMapping.vue` and `NestedMapping.vue`
  * both edit a copy of the mapping trees and provide the same {@link MappingContextKey}
- * for `MappingTable`/`MappingRow` to read and write through, differing only in what
+ * for `MappingTable` and its cells to read and write through, differing only in what
  * they render around that context.
  */
 import {nextTick, provide, reactive, ref, useId, watch} from 'vue';

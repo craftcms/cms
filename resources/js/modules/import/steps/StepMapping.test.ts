@@ -422,7 +422,7 @@ it('shows a suggested source column and flags it as a best guess', async () => {
   mount([title], {...emptyValues(), map: {title: 'name'}}, {title: true});
 
   expect(sourceSelect().modelValue).toBe('name');
-  expect(cells()[0]!.classList).toContain('best-guess');
+  expect(cells()[0]!.closest('tr')!.classList).toContain('best-guess');
 });
 
 it('clears the best-guess flag once the user chooses a column themselves', async () => {
@@ -431,7 +431,7 @@ it('clears the best-guess flag once the user chooses a column themselves', async
   chooseSource('email');
   await nextTick();
 
-  expect(cells()[0]!.classList).not.toContain('best-guess');
+  expect(cells()[0]!.closest('tr')!.classList).not.toContain('best-guess');
 });
 
 it('keeps a freshly guessed column flagged once the select renders', async () => {
@@ -442,7 +442,7 @@ it('keeps a freshly guessed column flagged once the select renders', async () =>
   mount([title], values, suggestedMap);
 
   expect(sourceSelect().modelValue).toBe('name');
-  expect(cells()[0]!.classList).toContain('best-guess');
+  expect(cells()[0]!.closest('tr')!.classList).toContain('best-guess');
   expect(apply().map).toEqual({title: 'name'});
 });
 
