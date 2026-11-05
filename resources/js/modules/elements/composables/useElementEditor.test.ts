@@ -1433,6 +1433,31 @@ describe('useElementEditor', () => {
     expect(editor.uiPayload.value?.values).toEqual({title: 'Saved title'});
   });
 
+  it('merges the deferred tabs into the layout once they load', async () => {
+    const ui = fieldLayout('Original title');
+    ui.values = {title: 'Original title', fields: {summary: {text: 'Intro'}}};
+    const {editor, page} = mount(payload({canAutosave: false, ui}));
+    await nextTick();
+
+    page.props = {
+      ...page.props,
+      deferredTabs: {
+        ...fieldLayout('Original title'),
+        nodes: [],
+        values: {fields: {body: {blocks: [{text: 'Deferred'}]}}},
+      },
+    };
+    await nextTick();
+
+    expect(editor.uiPayload.value?.values).toEqual({
+      title: 'Original title',
+      fields: {
+        summary: {text: 'Intro'},
+        body: {blocks: [{text: 'Deferred'}]},
+      },
+    });
+  });
+
   it('reloads the owner when another tab reorders the same draft, but not an unrelated draft', async () => {
     const slideout = slideoutController();
     mount(payload({draftId: 7}), slideout);

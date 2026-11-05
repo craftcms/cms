@@ -8,7 +8,7 @@ import {
   type MaybeRefOrGetter,
 } from 'vue';
 import type {UiChangeKind, UiPayload, UiValue} from './types';
-import {pathsMatch, visitControls} from './runtime';
+import {isRecord, pathsMatch, visitControls} from './runtime';
 
 export interface UiRendererInstance {
   advanceBaseline(): void;
@@ -222,6 +222,25 @@ function defaultErrorPath(
   return withinScope ? segments : null;
 }
 
-function clone<T>(value: T): T {
-  return structuredClone(toRaw(value));
+function clone<T extends UiValue>(value: T): T {
+  return structuredClone(unwrap(value)) as T;
+}
+
+/**
+ * Strips reactive proxies at every depth, not just the top: a payload merged
+ * from reactive props — such as the deferred tabs — is a plain object holding
+ * proxies, and `structuredClone()` can't clone those.
+ */
+function unwrap(value: UiValue): UiValue {
+  const raw = toRaw(value);
+
+  if (Array.isArray(raw)) {
+    return raw.map(unwrap);
+  }
+
+  return isRecord(raw)
+    ? Object.fromEntries(
+        Object.entries(raw).map(([key, item]) => [key, unwrap(item)])
+      )
+    : raw;
 }
