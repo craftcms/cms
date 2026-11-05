@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Cp\Components;
 
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 
@@ -57,6 +58,13 @@ class InputDateTime extends ViewComponent
     protected ?string $describedBy = null;
 
     protected ?string $width = null;
+
+    /** @var array<string, mixed> */
+    protected array $inputAttributes = [];
+
+    protected bool $outputLocaleParam = true;
+
+    protected bool $outputTimezoneParam = true;
 
     protected function tagName(): string
     {
@@ -190,6 +198,28 @@ class InputDateTime extends ViewComponent
         return $this;
     }
 
+    /** @param array<string, mixed> $inputAttributes */
+    public function inputAttributes(array $inputAttributes): static
+    {
+        $this->inputAttributes = $inputAttributes;
+
+        return $this;
+    }
+
+    public function outputLocaleParam(bool $outputLocaleParam): static
+    {
+        $this->outputLocaleParam = $outputLocaleParam;
+
+        return $this;
+    }
+
+    public function outputTimezoneParam(bool $outputTimezoneParam): static
+    {
+        $this->outputTimezoneParam = $outputTimezoneParam;
+
+        return $this;
+    }
+
     /**
      * Set to `full` to stretch the inputs across the container.
      */
@@ -243,10 +273,10 @@ class InputDateTime extends ViewComponent
                 ->disabled($this->isDisabled())
                 ->readOnly($this->readOnly)
                 ->describedBy($this->describedBy)
-                ->inputAttributes([
+                ->inputAttributes(Arr::merge([
                     'required' => $this->required,
                     'aria' => ['label' => $this->showTime ? t('Date') : null],
-                ])
+                ], $this->inputAttributes))
                 ->outputLocaleParam(false)
                 ->outputTimezoneParam(false);
         }
@@ -264,10 +294,10 @@ class InputDateTime extends ViewComponent
                 ->disabled($this->isDisabled())
                 ->readOnly($this->readOnly)
                 ->describedBy($this->describedBy)
-                ->inputAttributes([
+                ->inputAttributes(Arr::merge([
                     'required' => $this->required,
                     'aria' => ['label' => $this->showDate ? t('Time') : null],
-                ])
+                ], $this->inputAttributes))
                 ->outputLocaleParam(false)
                 ->outputTimezoneParam(false);
         }
@@ -279,13 +309,13 @@ class InputDateTime extends ViewComponent
                 ->disabled($this->isDisabled())
                 ->readOnly($this->readOnly)
                 ->describedBy($this->describedBy);
-        } elseif ($this->name !== null) {
+        } elseif ($this->name !== null && $this->outputTimezoneParam) {
             $inputs[] = Html::hiddenInput("{$this->name}[timezone]", $this->timezone, [
                 'data' => ['date-time-metadata' => 'timezone'],
             ]);
         }
 
-        if ($this->name !== null && $this->locale !== null) {
+        if ($this->name !== null && $this->locale !== null && $this->outputLocaleParam) {
             $inputs[] = Html::hiddenInput("{$this->name}[locale]", $this->locale, [
                 'data' => ['date-time-metadata' => 'locale'],
             ]);

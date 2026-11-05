@@ -1878,6 +1878,9 @@ JS, Json::encode(InputNamespace::namespaceId($id)), Json::encode(InputNamespace:
             ->required((bool) ($config['required'] ?? false))
             ->describedBy(($config['describedBy'] ?? false) ?: null)
             ->width($config['width'] ?? null)
+            ->inputAttributes($config['inputAttributes'] ?? [])
+            ->outputLocaleParam((bool) ($config['outputLocaleParam'] ?? true))
+            ->outputTimezoneParam((bool) ($config['outputTzParam'] ?? true))
             ->attributes(Arr::merge(
                 ['class' => Html::explodeClass($config['class'] ?? [])],
                 $config['containerAttributes'] ?? [],

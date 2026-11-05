@@ -222,6 +222,60 @@ describe('dateTimeHtml', function () {
     });
 });
 
+describe('dateHtml and timeHtml', function () {
+    it('keeps the value and name, and adds no second input', function (string $method, string $tag, string $type, string $value) {
+        $html = app(TemplateManager::class)->renderString(
+            "{{ craft.cp.{$method}(_context)|raw }}",
+            [
+                'id' => 'starts-at',
+                'name' => 'startsAt',
+                'value' => new DateTimeImmutable('2026-08-05 12:30:00', new DateTimeZone('Europe/Brussels')),
+                'timeZone' => false,
+            ],
+            TemplateMode::Cp,
+        );
+
+        $crawler = new Crawler($html);
+
+        expect($html)->toContainTag($tag, ['name' => "startsAt[{$type}]"])
+            ->and($html)->toContainTag('input', ['type' => $type, 'name' => "startsAt[{$type}]", 'value' => $value])
+            ->and($crawler->filter('input[type="date"], input[type="time"]'))->toHaveCount(1);
+    })->with([
+        'date' => ['date', 'craft-input-date', 'date', '2026-08-05'],
+        'time' => ['time', 'craft-input-time', 'time', '12:30'],
+    ]);
+
+    it('passes inputAttributes through to the input', function () {
+        $html = app(TemplateManager::class)->renderString(
+            '{{ craft.cp.date(_context)|raw }}',
+            [
+                'id' => 'starts-at',
+                'name' => 'startsAt',
+                'inputAttributes' => ['data' => ['target' => 'picker']],
+            ],
+            TemplateMode::Cp,
+        );
+
+        expect($html)->toContainTag('input', ['type' => 'date', 'data-target' => 'picker']);
+    });
+
+    it('omits the locale and timezone params when asked to', function () {
+        $html = app(TemplateManager::class)->renderString(
+            '{{ craft.cp.date(_context)|raw }}',
+            [
+                'id' => 'starts-at',
+                'name' => 'startsAt',
+                'outputLocaleParam' => false,
+                'outputTzParam' => false,
+            ],
+            TemplateMode::Cp,
+        );
+
+        expect($html)->not->toContain('startsAt[locale]')
+            ->and($html)->not->toContain('startsAt[timezone]');
+    });
+});
+
 describe('config deprecations', function () {
     it('logs a deprecation for unsupported legacy config keys', function (string $method, array $config, string $needle) {
         $logged = false;
