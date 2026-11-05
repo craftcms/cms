@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type CraftInput from '../input/input.js';
 import type CraftInputDateTime from './input-date-time.js';
 import './input-date-time.js';
@@ -88,5 +88,36 @@ describe('craft-input-date-time', () => {
     expect(
       element.querySelector('input[type="hidden"][name="startsAt[timezone]"]')
     ).toBeNull();
+  });
+});
+
+describe('a clearable craft-input-date-time', () => {
+  async function clearable(attrs = '') {
+    document.body.innerHTML = `<craft-input-date-time name="d" date-value="2026-08-05" time-value="12:30" clearable ${attrs}></craft-input-date-time>`;
+    const element = document.querySelector('craft-input-date-time')!;
+    await element.updateComplete;
+
+    return element;
+  }
+
+  const clearButton = (element: CraftInputDateTime) =>
+    element.shadowRoot!.querySelector<HTMLElement>('[part="clear"]');
+
+  it('clears its inputs and reports the change', async () => {
+    const element = await clearable();
+    const changed = vi.fn();
+    element.addEventListener('change', changed);
+
+    clearButton(element)!.click();
+    await element.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect([element.dateValue, element.timeValue]).toEqual(['', '']);
+    expect(changed).toHaveBeenCalledOnce();
+    expect(clearButton(element)!.classList).toContain('invisible');
+  });
+
+  it('has no clear button when it is disabled', async () => {
+    expect(clearButton(await clearable('disabled'))).toBeNull();
   });
 });

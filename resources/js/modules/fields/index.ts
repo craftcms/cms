@@ -1,7 +1,9 @@
-import {createCopyTextPrompt} from '@craftcms/ui/factory';
+import {showCopyTextPrompt} from '@craftcms/ui/utilities/copy-text-prompt';
 import {openSlideout} from '@/common/slideouts';
 import type {SlideoutSaveResult} from '@/common/slideouts/types';
 import {matrixField} from '@/modules/matrix/selection-menu';
+import {getCpUrl} from '@/common/craft/url';
+import {copyElements} from '@/modules/elements/clipboard';
 
 /**
  * Window listeners for the declarative actions carried by a field's "⋮" action
@@ -33,7 +35,7 @@ window.addEventListener('craft:edit-field', ((ev: CustomEvent) => {
     );
   };
 
-  const url = Craft.getCpUrl('settings/fields/edit', {fieldId});
+  const url = getCpUrl('settings/fields/edit', {fieldId});
 
   void openSlideout(url, {
     opener: trigger instanceof HTMLElement ? trigger : null,
@@ -57,7 +59,7 @@ window.addEventListener('craft:edit-entry-type', ((ev: CustomEvent) => {
     return;
   }
 
-  const url = Craft.getCpUrl(`settings/entry-types/${entryTypeId}`);
+  const url = getCpUrl(`settings/entry-types/${entryTypeId}`);
 
   void openSlideout(url, {
     opener: trigger instanceof HTMLElement ? trigger : null,
@@ -75,7 +77,7 @@ window.addEventListener('craft:copy-text-prompt', ((ev: CustomEvent) => {
     return;
   }
 
-  createCopyTextPrompt({label, value});
+  showCopyTextPrompt({label, value});
 }) as EventListener);
 
 /**
@@ -145,5 +147,5 @@ window.addEventListener('craft:copy-nested-elements', ((ev: CustomEvent) => {
     return;
   }
 
-  Craft.cp?.copyElements?.(elements);
+  copyElements(elements);
 }) as EventListener);

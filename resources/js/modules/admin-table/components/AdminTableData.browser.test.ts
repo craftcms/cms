@@ -4,6 +4,7 @@ import {
   mergeDataIntoQueryString,
   router as inertiaRouter,
 } from '@inertiajs/core';
+import {ConfigService} from '@craftcms/ui/services/Config';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {page, userEvent} from 'vite-plus/test/browser/context';
 import AdminTable from './AdminTable.vue';
@@ -15,6 +16,19 @@ import type {
   AdminTablePage,
   AdminTableRequest,
 } from '../types';
+
+const messages = vi.hoisted(() => ({
+  showError: vi.fn(),
+  showNotice: vi.fn(),
+  showSuccess: vi.fn(),
+}));
+vi.mock('@/modules/messages/messages', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  ...messages,
+}));
+beforeEach(() => {
+  Object.values(messages).forEach((fn) => fn.mockReset());
+});
 
 const {reload, get, visit} = vi.hoisted(() => ({
   reload: vi.fn(),
@@ -59,6 +73,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   teardown?.();
+  ConfigService.resetInstance();
   document.body.innerHTML = '';
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
@@ -450,8 +465,7 @@ it.each([
 ])(
   'keeps a row after failed deletion, reports $message, and permits a retry',
   async ({error, message}) => {
-    const displayError = vi.fn();
-    vi.stubGlobal('Craft', {cp: {displayError}});
+    vi.stubGlobal('Craft', {cp: {}});
     vi.spyOn(window, 'confirm').mockReturnValue(true);
     let rejectDelete!: (error: unknown) => void;
     const request = vi
@@ -478,7 +492,9 @@ it.each([
     button.click();
     expect(request).toHaveBeenCalledOnce();
     rejectDelete(error);
-    await vi.waitFor(() => expect(displayError).toHaveBeenCalledWith(message));
+    await vi.waitFor(() =>
+      expect(messages.showError).toHaveBeenCalledWith(message)
+    );
     expect(rowNames(host)).toEqual(['Beta', 'Alpha']);
     expect(reload).not.toHaveBeenCalled();
 
@@ -527,8 +543,7 @@ it('deletes through a row-specific resource route without offering bulk deletion
 });
 
 it('rolls back a refused static reorder and saves array IDs after a retry', async () => {
-  const displayError = vi.fn();
-  vi.stubGlobal('Craft', {cp: {displayError}});
+  vi.stubGlobal('Craft', {cp: {}});
   let rejectReorder!: (error: unknown) => void;
   const post = vi
     .spyOn(actionClient, 'post')
@@ -551,7 +566,7 @@ it('rolls back a refused static reorder and saves array IDs after a retry', asyn
   rejectReorder(new Error('Failed to save'));
   await vi.waitFor(() => expect(rowNames(host)).toEqual(['Beta', 'Alpha']));
   await vi.waitFor(() =>
-    expect(displayError).toHaveBeenCalledWith('Couldn’t reorder.')
+    expect(messages.showError).toHaveBeenCalledWith('Couldn’t reorder.')
   );
   expect(reload).not.toHaveBeenCalled();
   await moveFirstRowDown(host);
@@ -563,8 +578,7 @@ it('rolls back a refused static reorder and saves array IDs after a retry', asyn
 });
 
 it('retains bulk selection when deletion is refused and removes the rows after a retry', async () => {
-  const displayError = vi.fn();
-  vi.stubGlobal('Craft', {cp: {displayError}});
+  vi.stubGlobal('Craft', {cp: {}});
   vi.spyOn(window, 'confirm').mockReturnValue(true);
   const request = vi
     .spyOn(actionClient, 'delete')
@@ -587,7 +601,7 @@ it('retains bulk selection when deletion is refused and removes the rows after a
   ).find((item) => item.textContent?.trim() === 'Delete')!;
   remove.click();
   await vi.waitFor(() =>
-    expect(displayError).toHaveBeenCalledWith('Deletion refused.')
+    expect(messages.showError).toHaveBeenCalledWith('Deletion refused.')
   );
 
   expect(rowNames(host)).toEqual(['Beta', 'Alpha']);
@@ -726,7 +740,8 @@ it('loads the requested page and returns to page one when the page size changes'
 });
 
 it('renders the initial server page and updates it through Inertia without echoing restored state', async () => {
-  vi.stubGlobal('Craft', {systemUid: 'admin-table-test', pageTrigger: 'p'});
+  vi.stubGlobal('Craft', {systemUid: 'admin-table-test'});
+  ConfigService.getInstance().initialize({pageTrigger: 'p'});
   const originalPageUrl =
     '/settings/entry-types?site=secondary&p=2&per_page=100&search=Article&sort[0][field]=name&sort[0][direction]=desc';
   inertiaPage.url = originalPageUrl;

@@ -107,7 +107,7 @@ function controller(options = {}) {
     elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
     modalTitle: 'Choose an entry',
     hideOnSelect: false,
-    loadIndexBody: async () => ({html: '', props: {total: 2}}),
+    loadIndexBody: async () => ({props: {total: 2}}),
     ...options,
   });
 }
@@ -301,7 +301,7 @@ describe('the transform menu', () => {
       elementType: 'CraftCms\\Cms\\Asset\\Elements\\Asset',
       transforms,
       hideOnSelect: false,
-      loadIndexBody: async () => ({html: '', props: {}}),
+      loadIndexBody: async () => ({props: {}}),
       fetchTransformUrl: async (id, handle) => `/t/${handle}/${id}.jpg`,
       ...options,
     });

@@ -14,10 +14,6 @@ import {
 import {fldElementData, fldTabData, isSidebarTab} from './support';
 import type {FieldLayoutDesigner} from './field-layout-designer';
 
-// jQuery (`$`) survives only at the Craft.Grid seam (`tabGrid.addItems/removeItems`
-// require jQuery). All other DOM work here is native.
-declare const $: any;
-
 /**
  * Drag-sort logic for tabs and elements. Native DOM port of the legacy
  * `Craft.FieldLayoutDesigner.BaseDrag` / `.TabDrag` / `.ElementDrag` onto the
@@ -332,19 +328,19 @@ export class TabDrag extends BaseDrag {
     const inContentColumn = this.inContentColumn(this.$draggee[0]!);
     super.swapDraggeeWithInsertion();
     if (inContentColumn) {
-      this.designer.tabGrid.removeItems($(this.$draggee));
-      this.designer.tabGrid.addItems($(this.$insertion));
+      this.designer.tabGrid?.removeItems(this.$draggee);
+      this.designer.tabGrid?.addItems(this.$insertion);
     }
   }
 
   override swapInsertionWithDraggee(): void {
     const inContentColumn = this.inContentColumn(this.$insertion);
     if (inContentColumn) {
-      this.designer.tabGrid.removeItems($(this.$insertion));
+      this.designer.tabGrid?.removeItems(this.$insertion);
     }
     super.swapInsertionWithDraggee();
     if (inContentColumn) {
-      this.designer.tabGrid.addItems($(this.$draggee));
+      this.designer.tabGrid?.addItems(this.$draggee);
     }
   }
 
@@ -363,9 +359,9 @@ export class TabDrag extends BaseDrag {
     }
 
     if (isInContentColumn) {
-      this.designer.tabGrid.addItems($(this.$insertion));
+      this.designer.tabGrid?.addItems(this.$insertion);
     } else {
-      this.designer.tabGrid.removeItems($(this.$insertion));
+      this.designer.tabGrid?.removeItems(this.$insertion);
       this.$insertion.style.removeProperty('height');
     }
 
@@ -411,7 +407,7 @@ export class TabDrag extends BaseDrag {
     };
 
     const $contentCaboose = createCaboose(this.designer.$contentTabContainer);
-    this.designer.tabGrid.addItems($($contentCaboose));
+    this.designer.tabGrid?.addItems($contentCaboose);
 
     return [$contentCaboose, createCaboose(this.designer.$sidebarTabContainer)];
   }
@@ -420,8 +416,8 @@ export class TabDrag extends BaseDrag {
    * Removes the caboose
    */
   override removeCaboose(): void {
-    this.designer.tabGrid.removeItems(
-      $(this.$caboose.filter(($caboose) => this.inContentColumn($caboose)))
+    this.designer.tabGrid?.removeItems(
+      this.$caboose.filter(($caboose) => this.inContentColumn($caboose))
     );
     super.removeCaboose();
   }

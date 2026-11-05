@@ -11,6 +11,11 @@ import {registerSlideoutGlobals} from '@/common/slideouts';
 import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import {configureIcons} from './icons.js';
 import {installSessionTimeout} from '@/modules/auth/session-timeout';
+import {installClipboard} from '@/modules/elements/clipboard';
+import {installAnnouncer} from '@/common/announcer';
+import {observeFieldToggles} from '@/modules/field-toggle/observe';
+import {answerElevatedSessionRequests} from '@/modules/auth/elevated-session';
+import {relayBroadcastEvents} from '@/common/craft/broadcast';
 import {config, installCpApp, queue} from './cp-app';
 import {cpComponentRegistry} from './components.js';
 import {assistantApi} from './assistant.js';
@@ -133,6 +138,12 @@ const Cp = {
       appId: config.get('systemUid', ''),
       canAccessQueueManager: config.get('canAccessQueueManager', false),
     });
+
+    installAnnouncer();
+    installClipboard();
+    observeFieldToggles();
+    answerElevatedSessionRequests();
+    relayBroadcastEvents();
 
     // The command palette's “Run pending queue jobs”.
     window.addEventListener('craft:run-queue', () => {

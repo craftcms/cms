@@ -26,7 +26,7 @@ function create(options: Partial<AssetSelectorOptions> = {}) {
     elementType: ASSET,
     transforms: TRANSFORMS,
     hideOnSelect: false,
-    loadIndexBody: async () => ({html: '', props: {}}),
+    loadIndexBody: async () => ({props: {}}),
     fetchTransformUrl: async (id, handle) => `/transformed/${handle}/${id}.jpg`,
     ...options,
   });

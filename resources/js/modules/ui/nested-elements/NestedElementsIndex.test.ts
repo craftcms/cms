@@ -5,6 +5,7 @@ import {
   NestedOwnerEditorKey,
   type NestedOwnerContext,
 } from '@/modules/elements/nested-owner';
+import {ConfigService} from '@craftcms/ui/services/Config';
 import type {BulkActionItem} from '@/modules/elements/types/actions';
 import type {NestedElementsProps, NestedElement} from './nested-elements';
 import NestedElementsIndex from './NestedElementsIndex.vue';
@@ -35,6 +36,11 @@ vi.mock('@craftcms/ui', async (original) => ({
   actionClient: request,
 }));
 vi.mock('@craftcms/ui/actions.mjs', () => ({runAction: actions.run}));
+const copyElements = vi.hoisted(() => vi.fn());
+vi.mock('@/modules/elements/clipboard', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  copyElements,
+}));
 const openSlideout = vi.hoisted(() => vi.fn(async () => null));
 vi.mock('@/common/slideouts', () => ({openSlideout}));
 
@@ -49,6 +55,7 @@ describe('NestedElementsIndex', () => {
   let restoreElementInternals = () => {};
 
   afterEach(() => {
+    ConfigService.resetInstance();
     openSlideout.mockClear();
     app?.unmount();
     root?.remove();
@@ -141,19 +148,12 @@ describe('NestedElementsIndex', () => {
         statusMenuValue,
       });
     const craft = {
-      cp: {
-        copyElements: vi.fn(),
-        displayError: vi.fn(),
-        displayNotice: vi.fn(),
-        getCopiedElements: () => [],
-        onCopyElements: vi.fn(),
-      },
       elementTypeNames: {Entry: ['Entry', 'Entries', 'entry', 'entries']},
       findDeltaData: (_before: string, after: string, names: string[]) =>
         `${after}&modifiedDeltaNames[]=${encodeURIComponent(names[0]!)}`,
-      pageTrigger: 'p',
       systemUid: 'test',
     };
+    ConfigService.getInstance().initialize({pageTrigger: 'p'});
     vi.stubGlobal('Craft', craft);
     vi.stubGlobal(
       'fetch',
@@ -689,7 +689,7 @@ describe('NestedElementsIndex', () => {
     const pluginAction = vi.fn();
     window.addEventListener('plugin:inspect', pluginAction, {once: true});
     const editUrl = '/edit/11?elementId=11';
-    const {root, craft} = mount({
+    const {root} = mount({
       pages: [
         [
           element(
@@ -727,7 +727,7 @@ describe('NestedElementsIndex', () => {
     actionItem(firstRow, 'Inspect in plugin').click();
     actionItem(firstRow, 'Copy from server').click();
     await vi.waitFor(() => expect(pluginAction).toHaveBeenCalledOnce());
-    expect(craft.cp.copyElements).toHaveBeenCalledWith([
+    expect(copyElements).toHaveBeenCalledWith([
       expect.objectContaining({id: 11}),
     ]);
 

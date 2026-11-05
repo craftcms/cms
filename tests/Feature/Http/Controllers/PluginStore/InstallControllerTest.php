@@ -90,7 +90,7 @@ test('index', function () {
         'version' => '1.0.0',
     ])
         ->assertSee('Plugin Installer')
-        ->assertSee('Craft.updater');
+        ->assertSee('data-updater', false);
 });
 
 test('craftInstall', function () {

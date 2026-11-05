@@ -66,6 +66,7 @@
   import ResultSection from './ResultSection.vue';
   import ShortcutsView from './ShortcutsView.vue';
   import UiFormView from './UiFormView.vue';
+  import {showError, showNotice} from '@/modules/messages/messages';
 
   const BUILT_IN_VIEWS: Record<string, Component> = {
     confirm: ConfirmView,
@@ -298,7 +299,7 @@
       serverProviders.value = data.providers;
       serverActions.value = data.actions.map(fromServerItem);
     } catch (error: any) {
-      Craft.cp?.displayError?.(
+      showError(
         error?.response?.data?.message ?? t('A server error occurred.')
       );
     }
@@ -437,7 +438,7 @@
     close();
 
     if (result.message) {
-      Craft.cp?.displayNotice?.(result.message);
+      showNotice(result.message);
     }
 
     if (result.reload) {
@@ -458,7 +459,7 @@
       console.error(
         `No command palette view is registered for “${view.type}”.`
       );
-      Craft.cp?.displayError?.(t('A server error occurred.'));
+      showError(t('A server error occurred.'));
 
       return;
     }

@@ -31,14 +31,23 @@ it('owns the registry rather than reaching into the legacy bundle', async () => 
     await importModule();
   const Craft = (window as any).Craft;
 
-  // The factory and the registration hook come from here, so the legacy bundle
-  // no longer has to ship either.
-  expect(typeof Craft.createElementSelectorModal).toBe('function');
-  expect(typeof Craft.registerElementSelectorController).toBe('function');
   // Still constructible from PHP-emitted boots.
   expect(typeof Craft.VolumeFolderSelectorModal).toBe('function');
+  // Plugins import these from `@craftcms/cp`; the adapter restores the factory.
+  expect(Craft.createElementSelectorModal).toBeUndefined();
+  expect(Craft.registerElementSelectorController).toBeUndefined();
 
   expect(elementSelectorControllerClass(ASSET)).toBe(AssetSelectorController);
+});
+
+it('leaves the legacy factory global to the adapter', async () => {
+  vi.stubGlobal('Craft', {});
+
+  await import('./compat');
+
+  expect(typeof (window as any).Craft.createElementSelectorModal).toBe(
+    'function'
+  );
 });
 
 it('yields to a controller the legacy bundle already registered for assets', async () => {

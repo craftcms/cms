@@ -1,6 +1,6 @@
 import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {elevatedSessionManager} from './manager';
-import './index';
+import {answerElevatedSessionRequests} from './index';
 
 describe('legacy elevated-session adapter', () => {
   beforeEach(() => {
@@ -40,4 +40,16 @@ describe('legacy elevated-session adapter', () => {
     expect(onSuccess).not.toHaveBeenCalled();
     expect(onCancel).toHaveBeenCalledOnce();
   });
+});
+
+it('answers elevated-session requests from @craftcms/ui actions', async () => {
+  vi.spyOn(elevatedSessionManager, 'require').mockResolvedValue(true);
+  answerElevatedSessionRequests();
+  const detail: {confirmed?: Promise<boolean>} = {};
+
+  window.dispatchEvent(
+    new CustomEvent('craft:require-elevated-session', {detail})
+  );
+
+  await expect(detail.confirmed).resolves.toBe(true);
 });

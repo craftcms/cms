@@ -6,6 +6,19 @@ import ActionMenuNode from './ActionMenuNode.vue';
 import FieldNode from './FieldNode.vue';
 import type {UiChange, UiNodePayload, UiValues} from './types';
 
+const messages = vi.hoisted(() => ({
+  showError: vi.fn(),
+  showNotice: vi.fn(),
+  showSuccess: vi.fn(),
+}));
+vi.mock('@/modules/messages/messages', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  ...messages,
+}));
+beforeEach(() => {
+  Object.values(messages).forEach((fn) => fn.mockReset());
+});
+
 const TextControl = defineComponent({
   props: ['value'],
   render() {
@@ -95,7 +108,7 @@ describe('FieldNode generated values', () => {
     container = document.createElement('div');
     document.body.append(container);
     window.Craft = {
-      cp: {displayNotice: vi.fn(), displayError: vi.fn()},
+      cp: {},
     } as never;
   });
 
@@ -129,9 +142,7 @@ describe('FieldNode generated values', () => {
     expect(
       container.querySelector('craft-field')!.getAttribute('aria-busy')
     ).toBeNull();
-    expect(window.Craft.cp!.displayNotice).toHaveBeenCalledWith(
-      'Alt text generated.'
-    );
+    expect(messages.showNotice).toHaveBeenCalledWith('Alt text generated.');
   });
 
   it('marks the field busy while generating, and reports errors', async () => {
@@ -153,7 +164,7 @@ describe('FieldNode generated values', () => {
     reject(new Error('Network down'));
 
     await vi.waitFor(() =>
-      expect(window.Craft.cp!.displayError).toHaveBeenCalledWith(
+      expect(messages.showError).toHaveBeenCalledWith(
         'Couldn’t generate a value for this field.'
       )
     );

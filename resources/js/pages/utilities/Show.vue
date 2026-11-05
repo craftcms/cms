@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {initLegacyUi} from '@/common/craft/legacy-ui';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
@@ -22,25 +23,14 @@
   const footer = useTemplateRef<HTMLElement>('footer');
 
   /**
-   * Boots the legacy UI a utility's markup declares.
-   *
-   * A utility hands over server-rendered HTML — that's what `contentHtml()` is
-   * — and the behaviors in it are wired per element rather than delegated:
-   * `Craft.initUiElements()` is what calls `$('.formsubmit', $container)
-   * .formsubmit()`, and the same for lightswitches, menus and field toggles.
-   * Without it a utility's buttons are inert, which is how Shopify's Sync all
-   * button came to do nothing at all.
-   *
-   * `HtmlFragmentRenderer` does this for every other patch of legacy markup in
-   * the control panel; utility content renders through `DynamicHtmlRenderer`
-   * instead, because core utilities reference Vue components in their HTML, so
-   * it needs doing here.
-   *
-   * After `nextTick`, so the markup the renderer compiles is in the document.
+   * Starts the legacy UI (form-submit links, menus, …) in a utility's
+   * server-rendered markup, which is inert without it. Utility content renders
+   * through `DynamicHtmlRenderer`, not `HtmlFragmentRenderer`, so it needs
+   * doing here, after `nextTick` so the compiled markup is in the document.
    */
   function bootLegacyUi(element: HTMLElement | null): void {
     if (element) {
-      window.Craft?.initUiElements?.(element);
+      initLegacyUi(element);
     }
   }
 

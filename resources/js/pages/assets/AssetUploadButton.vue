@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {QueueService} from '@/modules/queue/queue';
   import {t} from '@craftcms/ui';
   import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
   import {router} from '@inertiajs/vue3';
@@ -12,6 +13,7 @@
   import type {AssetUploadDestination} from '@/modules/uploader/upload-notification';
 
   import {Uploader as FileUploader} from '@/modules/uploader/uploader';
+  import {showError} from '@/modules/messages/messages';
 
   interface Uploader {
     destroy(): void;
@@ -40,6 +42,12 @@
     defineProps<{
       canUpload: boolean;
       folderId?: number;
+      /**
+       * Destination parameters to upload with instead of `folderId` and
+       * `siteId`, such as a relation field's `fieldId`, `elementId`, and
+       * `siteId`, so the field's own restrictions apply.
+       */
+      params?: Record<string, number>;
       /** The site uploaded assets should be saved in, if not the primary site. */
       siteId?: number;
       allowedKinds?: string[];
@@ -71,7 +79,9 @@
   }>();
 
   const fileInput = ref<HTMLInputElement>();
-  const enabled = computed(() => props.canUpload && !!props.folderId);
+  const enabled = computed(
+    () => props.canUpload && (!!props.params || !!props.folderId)
+  );
   const promptHandler = new PromptHandler(
     () =>
       fileInput.value?.closest<HTMLElement>('craft-element-selector-modal') ??
@@ -137,9 +147,7 @@
         }
       }
     } catch (error) {
-      Craft.cp?.displayError?.(
-        error instanceof Error ? error.message : t('Upload failed.')
-      );
+      showError(error instanceof Error ? error.message : t('Upload failed.'));
     } finally {
       finishUploads();
     }
@@ -172,7 +180,7 @@
       on: {
         start: () => promptHandler.resetPrompts(),
         done: ({result}: {result: UploadResult}) => {
-          Craft.cp?.runQueue?.();
+          void QueueService.getInstance().runQueue();
 
           if (result.assetId && result.filename && result.conflict) {
             queueConflict(result as Omit<ConflictPrompt, 'prompt'>);
@@ -182,7 +190,7 @@
         },
         fail: ({error, canceled}) => {
           if (!canceled) {
-            Craft.cp?.displayError?.(
+            showError(
               error instanceof Error ? error.message : t('Upload failed.')
             );
           }
@@ -203,10 +211,12 @@
       } satisfies UploaderCallbacks,
     }) as Uploader;
 
-    uploader.setParams({
-      folderId: props.folderId,
-      ...(props.siteId ? {siteId: props.siteId} : {}),
-    });
+    uploader.setParams(
+      props.params ?? {
+        folderId: props.folderId,
+        ...(props.siteId ? {siteId: props.siteId} : {}),
+      }
+    );
   }
 
   onMounted(createUploader);
@@ -218,6 +228,7 @@
     [
       () => props.canUpload,
       () => props.folderId,
+      () => props.params,
       () => props.siteId,
       () => props.allowedKinds,
       () => props.dropZone,
