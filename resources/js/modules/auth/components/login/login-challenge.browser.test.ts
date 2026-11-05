@@ -68,3 +68,37 @@ it.each([
     expect(Craft.appendBodyHtml).toHaveBeenCalledTimes(1);
   }
 );
+
+it.each([
+  ['CraftCms\\Cms\\Auth\\Methods\\TOTP', 'craft-totp-form'],
+  ['CraftCms\\Cms\\Auth\\Methods\\RecoveryCodes', 'craft-recovery-code-form'],
+])(
+  'renders the native form for %s without a legacy handler',
+  async (authMethod, tagName) => {
+    const Craft = {
+      appendHeadHtml: vi.fn().mockResolvedValue(undefined),
+      appendBodyHtml: vi.fn().mockResolvedValue(undefined),
+      initUiElements: vi.fn(),
+      createAuthFormHandler: vi.fn(),
+    };
+    vi.stubGlobal('Craft', Craft);
+
+    const challenge = document.createElement('craft-login-challenge');
+    challenge.data = {
+      authForm: `<${tagName} return-url="/admin/dashboard"></${tagName}>`,
+      headHtml: '',
+      bodyHtml: '',
+      returnUrl: '/admin/dashboard',
+      authMethod,
+      otherMethods: [],
+    };
+    document.body.append(challenge);
+
+    await vi.waitFor(() =>
+      expect(
+        challenge.shadowRoot!.querySelector(tagName)?.shadowRoot
+      ).toBeTruthy()
+    );
+    expect(Craft.createAuthFormHandler).not.toHaveBeenCalled();
+  }
+);

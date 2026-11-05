@@ -60,6 +60,6 @@ describe('uiControl', function () {
 
         expect($control)->toBeInstanceOf(AssetSelect::class)
             ->and($control->props()['canUpload'])->toBeFalse()
-            ->and($control->props()['uploadFolderId'])->toBeNull();
+            ->and($control->props()['uploadParams'])->toBeNull();
     });
 });

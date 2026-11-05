@@ -110,6 +110,27 @@ it('opens the file picker and configures uploads for the selected folder', async
   expect(destroy).toHaveBeenCalledOnce();
 });
 
+it('uploads with destination params in place of a folder', async () => {
+  const app = createApp({
+    render: () =>
+      h(AssetUploadButton, {
+        canUpload: true,
+        params: {fieldId: 3, elementId: 8, siteId: 2},
+      }),
+  });
+
+  app.mount(container);
+  await nextTick();
+
+  expect(setParams).toHaveBeenCalledWith({fieldId: 3, elementId: 8, siteId: 2});
+  expect(
+    container.querySelector<HTMLElement & {disabled: boolean}>('craft-button')!
+      .disabled
+  ).toBe(false);
+
+  app.unmount();
+});
+
 it('captures the background destination before the picker is destroyed', () => {
   const enqueue = vi
     .spyOn(assetUploadQueue, 'enqueue')

@@ -608,7 +608,7 @@
           v-if="control.props.canUpload !== undefined"
           variant="dashed"
           :can-upload="control.props.canUpload"
-          :folder-id="control.props.uploadFolderId ?? undefined"
+          :params="control.props.uploadParams ?? undefined"
           :allowed-kinds="uploadKinds"
           :drop-zone="dropZone"
           :reload-on-complete="false"
