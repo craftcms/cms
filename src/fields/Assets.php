@@ -687,9 +687,16 @@ class Assets extends BaseRelationField
             return $volume->id ?? null;
         }, $volumeUids));
 
-        return [
+        $conditions = [
             'volumeId' => $volumeIds,
         ];
+
+        // Limit authenticated queries to assets the user can view
+        if (Gql::getSchemaUser()) {
+            $conditions['editable'] = true;
+        }
+
+        return $conditions;
     }
 
     /**

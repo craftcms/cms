@@ -43,6 +43,8 @@ class Matrix extends InputObjectType
                 $entryTypeContainerName = $context->handle . '_MatrixEntryContainerInput';
                 $entryContainerInputType = GqlEntityRegistry::createEntity($entryTypeContainerName, new InputObjectType([
                     'name' => $entryTypeContainerName,
+                    // Not enforced by GraphQL; tells GqlInputSchema the container accepts one entry type.
+                    'isOneOf' => true,
                     'fields' => function() use ($context) {
                         $entryInputTypes = [];
                         foreach ($context->getEntryTypes() as $entryType) {
@@ -56,6 +58,7 @@ class Matrix extends InputObjectType
                                             'id' => [
                                                 'name' => 'id',
                                                 'type' => Type::id(),
+                                                'description' => 'The ID of an existing entry in this field to update, or a unique key of your choice for a new entry, such as `new:1`. `sortOrder` refers to the entry by this ID or key.',
                                             ],
                                         ];
 
@@ -86,10 +89,12 @@ class Matrix extends InputObjectType
                     'sortOrder' => [
                         'name' => 'sortOrder',
                         'type' => Type::listOf(QueryArgument::getType()),
+                        'description' => 'The IDs of the entries to keep, in order, including the keys of new entries. Entries that aren’t listed are removed from the field.',
                     ],
                     'entries' => [
                         'name' => 'entries',
                         'type' => Type::listOf($entryContainerInputType),
+                        'description' => 'The entries to create or update. Each item holds one entry, keyed by its entry type handle, with the entry’s `id`, `title`, and custom field values. Existing entries that aren’t included keep their content.',
                     ],
                 ];
             },

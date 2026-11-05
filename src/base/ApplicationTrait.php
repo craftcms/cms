@@ -49,6 +49,7 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Markdown as MarkdownHelper;
 use craft\helpers\Session;
+use craft\helpers\Template as TemplateHelper;
 use craft\i18n\Formatter;
 use craft\i18n\I18N;
 use craft\i18n\Locale;
@@ -82,9 +83,11 @@ use craft\services\Fs;
 use craft\services\Gc;
 use craft\services\Globals;
 use craft\services\Gql;
+use craft\services\Icons;
 use craft\services\Images;
 use craft\services\ImageTransforms;
 use craft\services\Path;
+use craft\services\PersonalAccessTokens;
 use craft\services\Plugins;
 use craft\services\PluginStore;
 use craft\services\ProjectConfig;
@@ -162,6 +165,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read Globals $globals The globals service
  * @property-read Gql $gql The GraphQl service
  * @property-read I18N $i18n The internationalization (i18n) component
+ * @property-read Icons $icons The icons service
  * @property-read Images $images The images service
  * @property-read ImageTransforms $imageTransforms The image transforms service
  * @property-read Locale $formattingLocale The Locale object that should be used to define the formatter
@@ -171,6 +175,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read MigrationManager $migrator The application’s migration manager
  * @property-read Mutex $mutex The application’s mutex service
  * @property-read Path $path The path service
+ * @property-read PersonalAccessTokens $personalAccessTokens The personal access tokens service
  * @property-read PluginStore $pluginStore The plugin store service
  * @property-read Plugins $plugins The plugins service
  * @property-read ProjectConfig $projectConfig The project config service
@@ -1299,6 +1304,17 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the icons service.
+     *
+     * @return Icons The icons service
+     * @since 5.12.0
+     */
+    public function getIcons(): Icons
+    {
+        return $this->get('icons');
+    }
+
+    /**
      * Returns the images service.
      *
      * @return Images The images service
@@ -1346,6 +1362,23 @@ trait ApplicationTrait
     public function getMutex(): Mutex
     {
         return $this->get('mutex');
+    }
+
+    /** Returns the shared OAuth authorization service. @since 5.12.0 */
+    public function getOAuth(): \craft\services\OAuth
+    {
+        return $this->get('oauth');
+    }
+
+    /**
+     * Returns the personal access tokens service.
+     *
+     * @return PersonalAccessTokens The personal access tokens service
+     * @since 5.12.0
+     */
+    public function getPersonalAccessTokens(): PersonalAccessTokens
+    {
+        return $this->get('personalAccessTokens');
     }
 
     /**
@@ -1600,6 +1633,12 @@ trait ApplicationTrait
         Collection::macro('one', function() {
             assert($this instanceof Collection);
             return $this->first(...func_get_args());
+        });
+
+        // Register Collection::render() for rendering collections of Renderable objects
+        Collection::macro('render', function(array $variables = []) {
+            assert($this instanceof Collection);
+            return TemplateHelper::render($this, $variables);
         });
 
         // Set the Craft edition

@@ -36,8 +36,10 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use craft\helpers\Template;
 use craft\models\FieldLayout;
 use craft\models\Site;
+use craft\web\twig\AllowedInSandbox;
 use Illuminate\Support\Collection;
 use ReflectionClass;
 use ReflectionException;
@@ -550,6 +552,12 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     // For internal use
     // -------------------------------------------------------------------------
+
+    /**
+     * @var array|null The [[orderBy]] value at the time [[prepForEagerLoading()]] was called.
+     * @see eagerLoad()
+     */
+    private ?array $_eagerLoadOrderBy = null;
 
     /**
      * @var mixed The placeholder condition for this query.
@@ -1503,6 +1511,9 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         $this->eagerLoadSourceElement = $sourceElement;
 
+        // Remember the current `orderBy` value, so eagerLoad() can tell whether it was customized afterward
+        $this->_eagerLoadOrderBy = $this->orderBy;
+
         return $this;
     }
 
@@ -1922,6 +1933,19 @@ class ElementQuery extends Query implements ElementQueryInterface
         };
 
         if (!$eagerLoaded) {
+            // Only pass `orderBy` along if it was customized after prepForEagerLoading() was called.
+            // Otherwise it's either the placeholder or ordering that only applies to this query's source element
+            // (e.g. a relation field’s fixed order), and the eager-loading map's order should be used instead.
+            if ($this->orderBy !== $this->_eagerLoadOrderBy) {
+                $criteria += ['orderBy' => $this->orderBy];
+            }
+
+            // `offset` and `limit` aren't included in getCriteria() either
+            $criteria += array_filter([
+                'offset' => $this->offset,
+                'limit' => $this->limit,
+            ], fn($value) => $value !== null);
+
             Craft::$app->getElements()->eagerLoadElements(
                 $this->eagerLoadSourceElement::class,
                 $this->eagerLoadSourceElement->elementQueryResult,
@@ -2083,12 +2107,13 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @return Markup
      * @throws InvalidConfigException
      * @throws NotSupportedException
-     * @see ElementHelper::renderElements()
+     * @see Template::render()
      * @since 5.0.0
      */
+    #[AllowedInSandbox]
     public function render(array $variables = []): Markup
     {
-        return ElementHelper::renderElements($this->all(), $variables);
+        return Template::render($this->all(), $variables);
     }
 
     /**

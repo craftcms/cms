@@ -26,6 +26,7 @@ use craft\helpers\Component;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\services\ElementSources;
 use Illuminate\Support\Collection;
@@ -891,7 +892,12 @@ class ElementIndexesController extends BaseElementsController
                 if ($validated !== false) {
                     $returnUrl = $validated;
                 } elseif (str_contains($returnUrl, '{')) {
-                    throw new BadRequestHttpException("Invalid returnUrl param: $returnUrl");
+                    // the URL may contain its own (hashed) returnUrl param
+                    // (see https://github.com/craftcms/cms/issues/19983)
+                    $returnUrl = UrlHelper::removeParam($returnUrl, 'returnUrl');
+                    if (str_contains($returnUrl, '{')) {
+                        throw new BadRequestHttpException("Invalid returnUrl param: $returnUrl");
+                    }
                 }
                 $returnUrl = str_replace('?', ':QS:', $returnUrl);
             }

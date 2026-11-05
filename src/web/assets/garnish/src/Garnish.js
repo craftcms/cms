@@ -25,7 +25,7 @@ import UiLayerManager from './UiLayerManager.js';
  */
 
 // Bail if Garnish is already defined
-if (typeof Garnish !== 'undefined') {
+if (typeof window.Garnish !== 'undefined') {
   throw 'Garnish is already defined!';
 }
 

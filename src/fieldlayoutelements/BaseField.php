@@ -410,6 +410,8 @@ abstract class BaseField extends FieldLayoutElement
             'field' => $this,
             'defaultLabel' => $this->defaultLabel(),
             'defaultInstructions' => $this->defaultInstructions(),
+            'defaultTip' => $this->defaultTip(),
+            'defaultWarning' => $this->defaultWarning(),
             'labelHidden' => !$this->showLabel(),
         ]);
     }
@@ -834,7 +836,20 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function tip(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return $this->tip ? Craft::t('site', $this->tip) : null;
+        return $this->tip ? Craft::t('site', $this->tip) : $this->defaultTip($element, $static);
+    }
+
+    /**
+     * Returns the field’s default tip text, which will be used if [[tip]] is null.
+     *
+     * @param ElementInterface|null $element The element the form is being rendered for
+     * @param bool $static Whether the form should be static (non-interactive)
+     * @return string|null
+     * @since 5.12.0
+     */
+    protected function defaultTip(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        return null;
     }
 
     /**
@@ -846,7 +861,20 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function warning(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return $this->warning ? Craft::t('site', $this->warning) : null;
+        return $this->warning ? Craft::t('site', $this->warning) : $this->defaultWarning($element, $static);
+    }
+
+    /**
+     * Returns the field’s default warning text, which will be used if [[warning]] is null.
+     *
+     * @param ElementInterface|null $element The element the form is being rendered for
+     * @param bool $static Whether the form should be static (non-interactive)
+     * @return string|null
+     * @since 5.12.0
+     */
+    protected function defaultWarning(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        return null;
     }
 
     /**

@@ -68,6 +68,22 @@ class ElementHelper
     }
 
     /**
+     * Returns whether a string contains a temporary slug.
+     *
+     * @param string|null $str
+     * @return bool
+     * @since 5.11.0
+     */
+    public static function containsTempSlug(?string $str): bool
+    {
+        if ($str === null) {
+            return false;
+        }
+
+        return (bool)preg_match('/\b__temp_[a-z]{36}\b/', $str);
+    }
+
+    /**
      * Generates a new slug based on a given string.
      *
      * This is different from [[normalizeSlug()]] in two ways:
@@ -92,17 +108,18 @@ class ElementHelper
             $slug = StringHelper::toAscii($slug, $language);
         }
 
-        return static::normalizeSlug($slug);
+        return static::normalizeSlug($slug, $language);
     }
 
     /**
      * Normalizes a slug.
      *
      * @param string $slug
+     * @param string|null $language The slug’s langauge
      * @return string
      * @since 3.5.0
      */
-    public static function normalizeSlug(string $slug): string
+    public static function normalizeSlug(string $slug, ?string $language = null): string
     {
         // Special case for the homepage
         if ($slug === Element::HOMEPAGE_URI) {
@@ -118,7 +135,7 @@ class ElementHelper
         // Make it lowercase
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if (!$generalConfig->allowUppercaseInSlug) {
-            $slug = mb_strtolower($slug);
+            $slug = StringHelper::toLowerCase($slug, $language);
         }
 
         // Get the "words". Split on anything that is not alphanumeric or allowed punctuation
@@ -597,7 +614,7 @@ class ElementHelper
         }
 
         // try again with the owner's canonical element, in case it is also a derivative
-        return static::belongsToCanonicalOwner($element, $owner->getCanonical());
+        return static::belongsToCanonicalOwner($element, $owner->getCanonical(true));
     }
 
     /**
@@ -1053,11 +1070,11 @@ class ElementHelper
      * @throws InvalidConfigException
      * @throws NotSupportedException
      * @since 5.0.0
+     * @deprecated in 5.12.0. [[\craft\helpers\Template::render()]] should be used instead.
      */
     public static function renderElements(array $elements, array $variables = []): Markup
     {
-        $output = array_map(fn(ElementInterface $element) => (string)$element->render($variables), $elements);
-        return new Markup(implode("\n", $output), Craft::$app->charset);
+        return Template::render($elements, $variables);
     }
 
     /**
@@ -1224,6 +1241,11 @@ class ElementHelper
             $criteria['with'],
             $criteria['withQueries'],
         );
+
+        if (isset($criteria['search']) && !is_string($criteria['search'])) {
+            unset($criteria['search']);
+        }
+
         return $criteria;
     }
 }

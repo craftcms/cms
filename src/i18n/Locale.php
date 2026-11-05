@@ -12,6 +12,7 @@ use craft\web\twig\AllowedInSandbox;
 use DateTime;
 use IntlDateFormatter;
 use NumberFormatter;
+use ResourceBundle;
 use yii\base\BaseObject;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -25,6 +26,19 @@ use yii\base\InvalidArgumentException;
  */
 class Locale extends BaseObject
 {
+    /**
+     * Returns a locale’s language ID.
+     *
+     * @return string
+     * @since 5.12.0
+     */
+    public static function languageId(string $locale): string
+    {
+        $pos = strpos($locale, '-');
+        $lang = $pos !== false ? substr($locale, 0, $pos) : $locale;
+        return strtolower($lang);
+    }
+
     /**
      * @var int Positive prefix.
      */
@@ -226,7 +240,7 @@ class Locale extends BaseObject
     public const FORMAT_HUMAN = 'human';
 
     /**
-     * @var array The languages that use RTL orientation.
+     * @var array The languages that use RTL orientation, if ICU doesn’t have layout data for a locale.
      */
     private static array $_rtlLanguages = [
         'ar',
@@ -296,11 +310,7 @@ class Locale extends BaseObject
     #[AllowedInSandbox]
     public function getLanguageID(): string
     {
-        if (($pos = strpos($this->id, '-')) !== false) {
-            return substr($this->id, 0, $pos);
-        }
-
-        return $this->id;
+        return static::languageId($this->id);
     }
 
     /**
@@ -396,6 +406,13 @@ class Locale extends BaseObject
     #[AllowedInSandbox]
     public function getOrientation(): string
     {
+        $bundle = ResourceBundle::create(str_replace('-', '_', $this->aliasOf ?? $this->id), 'ICUDATA');
+        $layout = $bundle['layout']['characters'] ?? null;
+
+        if (is_string($layout)) {
+            return $layout === 'right-to-left' ? 'rtl' : 'ltr';
+        }
+
         if (in_array($this->getLanguageID(), self::$_rtlLanguages, true)) {
             return 'rtl';
         }

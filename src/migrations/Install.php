@@ -80,6 +80,7 @@ class Install extends Migration
         }
 
         $this->createTables();
+        (new m261007_100000_oauth())->createTables();
         $this->createIndexes();
         $this->addForeignKeys();
         $this->db->getSchema()->refresh();
@@ -478,6 +479,8 @@ class Install extends Migration
             'context' => $this->string()->notNull()->defaultValue('global'),
             'columnSuffix' => $this->char(8),
             'instructions' => $this->text(),
+            'tip' => $this->text(),
+            'warning' => $this->text(),
             'searchable' => $this->boolean()->notNull()->defaultValue(true),
             'translationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_NONE),
             'translationKeyFormat' => $this->text(),
@@ -835,6 +838,7 @@ class Install extends Migration
             'titleTranslationKeyFormat' => $this->text(),
             'altTranslationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE),
             'altTranslationKeyFormat' => $this->text(),
+            'propagationMethod' => $this->string()->defaultValue(PropagationMethod::Custom->value)->notNull(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),

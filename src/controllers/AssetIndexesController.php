@@ -245,6 +245,8 @@ class AssetIndexesController extends Controller
             $assets = Asset::find()
                 ->status(null)
                 ->id($deleteFiles)
+                ->site('*')
+                ->unique()
                 ->all();
 
             foreach ($assets as $asset) {

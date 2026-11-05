@@ -24,4 +24,22 @@ return [
         'template' => null,
         'enabledByDefault' => true,
     ],
+    [
+        'id' => '3002',
+        'sectionId' => '3001',
+        'siteId' => '1',
+        'hasUrls' => false,
+        'uriFormat' => null,
+        'template' => null,
+        'enabledByDefault' => true,
+    ],
+    [
+        'id' => '3003',
+        'sectionId' => '3001',
+        'siteId' => '1000',
+        'hasUrls' => false,
+        'uriFormat' => null,
+        'template' => null,
+        'enabledByDefault' => true,
+    ],
 ];

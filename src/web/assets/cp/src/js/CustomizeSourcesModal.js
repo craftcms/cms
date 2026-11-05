@@ -1,6 +1,5 @@
 /** global: Craft */
 /** global: Garnish */
-import Garnish from '../../../garnish/src';
 import $ from 'jquery';
 
 /**
@@ -693,6 +692,7 @@ Craft.CustomizeSourcesModal.PageSettingsModal = Garnish.Modal.extend({
       .createIconPickerField({
         label: Craft.t('app', 'Icon'),
         value: this.icon,
+        sets: '*',
       })
       .appendTo($body);
     const $footer = $(

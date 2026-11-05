@@ -312,15 +312,26 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             this.$uploadButton,
             options
           );
-          this.uploader.setParams({
-            folderId: this.currentFolderId,
-          });
+          this._setUploaderParams();
         } else {
           this.$uploadButton.addClass('disabled');
         }
       }
 
       this.base();
+    },
+
+    onSelectSite: function () {
+      // Keep uploads in sync with the selected site
+      this._setUploaderParams();
+      this.base();
+    },
+
+    _setUploaderParams: function () {
+      this.uploader?.setParams({
+        folderId: this.currentFolderId,
+        siteId: this.siteId,
+      });
     },
 
     onSourcePathChange: function () {
@@ -330,9 +341,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       this.currentFolderId = currentFolder?.folderId;
 
       if (!this.settings.foldersOnly && this.currentFolderId) {
-        this.uploader?.setParams({
-          folderId: this.currentFolderId,
-        });
+        this._setUploaderParams();
 
         // will the user be allowed to move items in this folder?
         const canMoveSubItems =

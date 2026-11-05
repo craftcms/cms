@@ -763,6 +763,7 @@ Craft.ui = {
 
     const iconPicker = new Craft.IconPicker($container, {
       freeOnly: config.freeOnly,
+      sets: config.sets,
     });
 
     if (config.value) {
@@ -830,7 +831,9 @@ Craft.ui = {
       'aria-label': Craft.t('app', 'Color hex value'),
     }).appendTo($inputContainer);
 
-    new Craft.ColorInput($container);
+    new Craft.ColorInput($container, {
+      alpha: config.alpha || false,
+    });
     return $container;
   },
 

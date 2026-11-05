@@ -10,9 +10,13 @@ namespace crafttests\unit\elements;
 use Craft;
 use craft\base\Fs;
 use craft\elements\Asset;
+use craft\elements\db\EagerLoadPlan;
+use craft\elements\User;
+use craft\fs\Local;
 use craft\imagetransforms\ImageTransformer;
 use craft\models\ImageTransform;
 use craft\models\Volume;
+use craft\models\VolumeFolder;
 use craft\test\TestCase;
 use UnitTester;
 
@@ -66,5 +70,81 @@ class AssetElementTest extends TestCase
         self::assertSame('w=200&h=200', $url);
 
         Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad = $previousValue;
+    }
+
+    /**
+     * `uploader` is a magic property that resolves to `getUploader()`. Since eager-loading the
+     * `uploader` handle bypasses the generic `Element::$_eagerLoadedElements` array (see
+     * `Asset::setEagerLoadedElements()`), property access should always match `getUploader()`,
+     * whether or not the uploader has been eager-loaded.
+     */
+    public function testUploaderPropertyMatchesGetter(): void
+    {
+        // No uploader set at all
+        $asset = new Asset(['id' => 1]);
+        self::assertNull($asset->getUploader());
+        self::assertSame($asset->getUploader(), $asset->uploader);
+
+        // Uploader set directly, not via eager-loading
+        $uploader = new User(['id' => 100]);
+        $asset->setUploader($uploader);
+        self::assertSame($uploader, $asset->getUploader());
+        self::assertSame($asset->getUploader(), $asset->uploader);
+
+        // Uploader eager-loaded
+        $asset2 = new Asset(['id' => 2]);
+        $plan = new EagerLoadPlan(['handle' => 'uploader']);
+        $asset2->setEagerLoadedElements('uploader', [$uploader], $plan);
+        self::assertSame($uploader, $asset2->getUploader());
+        self::assertSame($asset2->getUploader(), $asset2->uploader);
+
+        // No uploader eager-loaded (empty result)
+        $asset3 = new Asset(['id' => 3]);
+        $asset3->setEagerLoadedElements('uploader', [], $plan);
+        self::assertNull($asset3->getUploader());
+        self::assertSame($asset3->getUploader(), $asset3->uploader);
+    }
+
+    /**
+     * @see https://github.com/craftcms/cms/issues/19950
+     * @dataProvider renameKeepsExtensionDataProvider
+     * @param string $expected
+     * @param string $filename
+     * @param string $newFilename
+     */
+    public function testRenameKeepsExtension(string $expected, string $filename, string $newFilename): void
+    {
+        $this->tester->mockCraftMethods('assets', [
+            'getFolderById' => $this->make(VolumeFolder::class, [
+                'getVolume' => $this->make(Volume::class, [
+                    'getFs' => $this->make(Local::class),
+                ]),
+            ]),
+        ]);
+
+        $asset = $this->make(Asset::class, [
+            'getFieldLayout' => null,
+            'id' => 1,
+            'folderId' => 2,
+            'filename' => $filename,
+        ]);
+        $asset->newFilename = $newFilename;
+
+        self::assertTrue($asset->beforeSave(false));
+        self::assertSame("{folder:2}$expected", $asset->newLocation);
+    }
+
+    /**
+     * @return array
+     */
+    public static function renameKeepsExtensionDataProvider(): array
+    {
+        return [
+            ['Test-Renamed.pdf', 'Test.pdf', 'Test-Renamed'],
+            ['Test-Renamed.pdf', 'Test.pdf', 'Test-Renamed.'],
+            ['Test-Renamed.PDF', 'Test.PDF', 'Test-Renamed'],
+            ['Test-Renamed.txt', 'Test.pdf', 'Test-Renamed.txt'],
+            ['Test-Renamed', 'Test', 'Test-Renamed'],
+        ];
     }
 }

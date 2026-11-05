@@ -31,6 +31,12 @@ class User extends ElementResolver
      */
     public static function prepareQuery(mixed $source, array $arguments, ?string $fieldName = null): mixed
     {
+        // The authenticated user can always query themselves
+        if ($source === null && $fieldName === 'currentUser') {
+            $user = GqlHelper::getSchemaUser();
+            return $user ? UserElement::find()->id($user->id) : ElementCollection::empty();
+        }
+
         // If this is the beginning of a resolver chain, start fresh
         if ($source === null) {
             $query = UserElement::find();
@@ -45,7 +51,7 @@ class User extends ElementResolver
             return $query;
         }
 
-        if (!GqlHelper::canSchema('usergroups.everyone')) {
+        if (!GqlHelper::canQueryAllUsers()) {
             $groups = ArrayHelper::remove($arguments, 'group');
             if ($groups) {
                 $query->group($groups);

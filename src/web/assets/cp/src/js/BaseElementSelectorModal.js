@@ -384,8 +384,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     getElementIndexParams: function () {
       // Get the modal body HTML based on the settings
       const params = {
-        context: 'modal',
         elementType: this.elementType,
+        context: this.settings.context,
         sources: this.settings.sources,
         condition: this.settings.condition,
       };
@@ -454,7 +454,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     getIndexSettings: function () {
       return Object.assign(
         {
-          context: 'modal',
+          context: this.settings.context,
           modal: this,
           storageKey: this.settings.storageKey,
           condition: this.settings.condition,
@@ -494,6 +494,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       fullscreen: false,
       resizable: true,
       storageKey: null,
+      context: 'modal',
       sources: null,
       condition: null,
       referenceElementId: null,

@@ -733,6 +733,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       let sourceKey;
       if (this.settings.context === 'index') {
         sourceKey = Craft.getQueryParam('source');
+        // defaultSourcePath is relative to defaultSource, so discard it if the `source` param points elsewhere
+        // (https://github.com/craftcms/cms/issues/19689)
+        if (sourceKey && sourceKey !== this.settings.defaultSource) {
+          this.settings.defaultSourcePath = null;
+        }
       }
 
       if (!sourceKey) {
@@ -2507,9 +2512,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.$source.data('default-source-path');
 
       if (this.settings.context === 'index') {
-        const urlParams = Craft.getQueryParams();
-        urlParams.source = this.sourceKey;
-        Craft.setUrl(Craft.getUrl(Craft.path, urlParams));
+        // Use setQueryParam so that the current URL is used and not Craft.path that might be stale by now
+        Craft.setQueryParam('source', this.sourceKey);
       }
 
       this.updatePasteButton();

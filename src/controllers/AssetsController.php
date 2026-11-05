@@ -150,7 +150,11 @@ class AssetsController extends Controller
         $width = $this->request->getRequiredParam('width');
         $height = $this->request->getRequiredParam('height');
 
-        $asset = Asset::findOne($assetId);
+        if (!is_numeric($assetId)) {
+            throw new BadRequestHttpException('Invalid asset ID.');
+        }
+
+        $asset = Craft::$app->getAssets()->getAssetById((int)$assetId);
         if ($asset === null) {
             throw new BadRequestHttpException("Invalid asset ID: $assetId");
         }
@@ -261,6 +265,7 @@ class AssetsController extends Controller
 
         $folderId = (int)$this->request->getBodyParam('folderId') ?: null;
         $fieldId = (int)$this->request->getBodyParam('fieldId') ?: null;
+        $siteId = (int)$this->request->getBodyParam('siteId') ?: null;
 
         if (!$folderId && !$fieldId) {
             throw new BadRequestHttpException('No target destination provided for uploading');
@@ -279,7 +284,6 @@ class AssetsController extends Controller
             }
 
             if ($elementId = $this->request->getBodyParam('elementId')) {
-                $siteId = $this->request->getBodyParam('siteId') ?: null;
                 $element = $elementsService->getElementById($elementId, null, $siteId);
             } else {
                 $element = null;
@@ -329,6 +333,11 @@ class AssetsController extends Controller
         $asset->uploaderId = Craft::$app->getUser()->getId();
         $asset->avoidFilenameConflicts = true;
 
+        // Save the asset in the site it was uploaded from
+        if ($siteId && in_array($siteId, Craft::$app->getSites()->getEditableSiteIds(), true)) {
+            $asset->siteId = $siteId;
+        }
+
         if (isset($originalFilename)) {
             $asset->title = Assets::filename2Title(pathinfo($originalFilename, PATHINFO_FILENAME));
         }
@@ -371,7 +380,13 @@ class AssetsController extends Controller
         }
 
         if ($asset->conflictingFilename !== null) {
-            $conflictingAsset = Asset::findOne(['folderId' => $folder->id, 'filename' => $asset->conflictingFilename]);
+            $conflictingAsset = Asset::find()
+                ->folderId($folder->id)
+                ->filename(Db::escapeParam($asset->conflictingFilename))
+                ->site('*')
+                ->preferSites([Craft::$app->getSites()->getCurrentSite()->id])
+                ->unique()
+                ->one();
 
             return $this->asJson([
                 'conflict' => Craft::t('app', 'A file with the name “{filename}” already exists.', ['filename' => $asset->conflictingFilename]),
@@ -470,6 +485,8 @@ class AssetsController extends Controller
                     ->select(['elements.id'])
                     ->folderId($sourceAsset->folderId)
                     ->filename(Db::escapeParam($targetFilename))
+                    ->site('*')
+                    ->unique()
                     ->one();
 
                 if ($assetToReplace) {
@@ -709,9 +726,11 @@ class AssetsController extends Controller
             // Check for a conflicting asset
             /** @var Asset|null $conflictingAsset */
             $conflictingAsset = Asset::find()
-                ->select(['elements.id'])
+                ->select(['elements.id', 'assets.volumeId', 'assets.uploaderId'])
                 ->folderId($folderId)
                 ->filename(Db::escapeParam($asset->getFilename()))
+                ->site('*')
+                ->unique()
                 ->one();
 
             // If there's a conflicting asset, then merge and replace the file.
@@ -821,6 +840,8 @@ class AssetsController extends Controller
             /** @var Asset[] $foundAssets */
             $foundAssets = Asset::find()
                 ->folderId($allSourceFolderIds)
+                ->site('*')
+                ->unique()
                 ->all();
             $fileTransferList = Assets::fileTransferList($foundAssets, $folderIdChanges);
         } else {
@@ -860,6 +881,8 @@ class AssetsController extends Controller
             /** @var Asset[] $foundAssets */
             $foundAssets = Asset::find()
                 ->folderId($allSourceFolderIds)
+                ->site('*')
+                ->unique()
                 ->all();
             $fileTransferList = Assets::fileTransferList($foundAssets, $folderIdChanges);
         }
@@ -919,7 +942,7 @@ class AssetsController extends Controller
         $assetId = (int)$this->request->getRequiredQueryParam('assetId');
         $size = (int)$this->request->getRequiredQueryParam('size');
 
-        $asset = Asset::findOne($assetId);
+        $asset = Craft::$app->getAssets()->getAssetById($assetId);
         if (!$asset) {
             throw new BadRequestHttpException("Invalid asset ID: $asset");
         }
@@ -1136,6 +1159,9 @@ class AssetsController extends Controller
         /** @var Asset[] $assets */
         $assets = Asset::find()
             ->id($assetIds)
+            ->site('*')
+            ->preferSites([Craft::$app->getSites()->getCurrentSite()->id])
+            ->unique()
             ->all();
 
         if (empty($assets)) {
@@ -1237,7 +1263,7 @@ class AssetsController extends Controller
             $transformer = $transform->getImageTransformer();
         }
 
-        $asset = Asset::findOne(['id' => $assetId]);
+        $asset = Craft::$app->getAssets()->getAssetById((int)$assetId);
 
         if (!$asset) {
             throw new BadRequestHttpException("Invalid asset ID: $assetId");
@@ -1266,8 +1292,7 @@ class AssetsController extends Controller
         $assetId = $this->request->getRequiredParam('assetId');
         $requestId = $this->request->getRequiredParam('requestId');
 
-        /** @var Asset|null $asset */
-        $asset = Asset::find()->id($assetId)->one();
+        $asset = Craft::$app->getAssets()->getAssetById((int)$assetId);
 
         if (!$asset) {
             return $this->asFailure(Craft::t('app', 'Asset not found with that id'));
@@ -1336,7 +1361,12 @@ class AssetsController extends Controller
         }
 
         /** @var Asset|null $asset */
-        $asset = Asset::find()->uid($assetUid)->one();
+        $asset = Asset::find()
+            ->uid($assetUid)
+            ->site('*')
+            ->preferSites([Craft::$app->getSites()->getCurrentSite()->id])
+            ->unique()
+            ->one();
 
         if (!$asset) {
             throw new BadRequestHttpException("Invalid asset UID: $assetUid");
@@ -1385,6 +1415,7 @@ class AssetsController extends Controller
         $allowedExtensions = Craft::$app->getConfig()->getGeneral()->allowedFileExtensions;
         $extension = strtolower(pathinfo($uploadedFile->name, PATHINFO_EXTENSION));
 
+        // @phpstan-ignore function.alreadyNarrowedType (Call to function is_array() with array will always evaluate to true.)
         if (is_array($allowedExtensions) && !in_array($extension, $allowedExtensions, true)) {
             throw new AssetDisallowedExtensionException(Craft::t('app', '“{extension}” is not an allowed file extension.', [
                 'extension' => $extension,
@@ -1417,8 +1448,7 @@ class AssetsController extends Controller
 
         [$assetId, $transformString] = explode(',', $transform, 2);
 
-        /** @var Asset|null $asset */
-        $asset = Asset::find()->id($assetId)->one();
+        $asset = Craft::$app->getAssets()->getAssetById((int)$assetId);
         if (!$asset) {
             throw new BadRequestHttpException("Invalid asset ID: $assetId");
         }
@@ -1495,8 +1525,11 @@ class AssetsController extends Controller
         $this->requireCpRequest();
 
         $assetId = Craft::$app->getRequest()->getRequiredParam('assetId');
+        if (!is_numeric($assetId)) {
+            throw new BadRequestHttpException('Invalid asset ID.');
+        }
 
-        $asset = Asset::findOne($assetId);
+        $asset = Craft::$app->getAssets()->getAssetById((int)$assetId);
         if ($asset === null) {
             throw new BadRequestHttpException("Invalid asset ID: $assetId");
         }

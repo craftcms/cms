@@ -25,4 +25,13 @@ return [
         'fieldLayoutUid' => 'nem-field-layout-block-----------uid',
         'uid' => 'nem-entry-type-block-------------uid',
     ],
+    [
+        'id' => '3002',
+        'fieldLayoutId' => null,
+        'name' => 'NEM Propagating Owner',
+        'handle' => 'nemPropagatingOwner',
+        'titleFormat' => null,
+        'fieldLayoutUid' => 'nem-field-layout-prop-owner------uid',
+        'uid' => 'nem-entry-type-prop-owner--------uid',
+    ],
 ];

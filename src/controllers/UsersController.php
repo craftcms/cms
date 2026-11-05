@@ -52,6 +52,7 @@ use craft\web\Request;
 use craft\web\ServiceUnavailableHttpException;
 use craft\web\UploadedFile;
 use craft\web\View;
+use DateInterval;
 use DateTime;
 use Throwable;
 use yii\base\Exception;
@@ -194,12 +195,14 @@ class UsersController extends Controller
                 'class' => RateLimiter::class,
                 'only' => ['send-password-reset-email'],
                 'enableRateLimitHeaders' => false,
-                'user' => fn() => new IpRateLimitIdentity([
-                    'limit' => 1,
-                    'window' => 1,
-                    'keyPrefix' => 'reset-password',
-                    'ip' => Craft::$app->getRequest()->getUserIP() ?? 'unknown',
-                ]),
+                'user' => fn() => IpRateLimitIdentity::createDefault('reset-password'),
+            ],
+            'loginRateLimiter' => [
+                'class' => RateLimiter::class,
+                'only' => ['login'],
+                'enableRateLimitHeaders' => false,
+                // only count login attempts, not login page requests
+                'user' => fn() => $this->request->getIsPost() ? IpRateLimitIdentity::createDefault('login') : null,
             ],
         ];
     }
@@ -1550,6 +1553,201 @@ JS);
     }
 
     /**
+     * Personal access tokens screen
+     *
+     * @return Response
+     * @since 5.12.0
+     */
+    public function actionTokens(): Response
+    {
+        $this->requireCpRequest();
+        $user = static::currentUser();
+        /**
+         * @var Response|CpScreenResponseBehavior $response
+         * @phpstan-ignore varTag.nativeType
+         */
+        $response = $this->asEditUserScreen($user, self::SCREEN_TOKENS);
+
+        if (!Craft::$app->getOAuth()->hasKeys()) {
+            $response->contentTemplate('users/_tokens-setup');
+            return $response;
+        }
+
+        $tokens = Craft::$app->getPersonalAccessTokens();
+
+        $this->getView()->registerJsWithVars(fn($action) => <<<JS
+$('#new-token-btn').on('activate', () => {
+  Craft.elevatedSessionManager.requireElevatedSession(
+    () => {
+      new Craft.CpModal($action, {
+        onSubmit: () => window.location.reload(),
+      });
+    },
+    null,
+    Math.min(Craft.elevatedSessionDuration, 300)
+  );
+});
+$(document).on('click', '.token-edit-btn', (ev) => {
+  const {clientId, tokenId} = ev.currentTarget.dataset;
+  new Craft.CpModal($action, {
+    params: {clientId, tokenId},
+    showSubmitButton: !!tokenId,
+    onSubmit: () => window.location.reload(),
+  });
+});
+JS, ['users/token-modal']);
+
+        $response->contentTemplate('users/_tokens', [
+            'groups' => $tokens->scopeGroups(),
+            'grants' => $tokens->grants($user),
+            'canCreate' => (bool)$tokens->scopeGroupsFor($user),
+            'newToken' => Craft::$app->getSession()->getFlash('accessToken'),
+        ]);
+
+        return $response;
+    }
+
+    /**
+     * Returns the modal for creating a personal access token, or for viewing an existing token or authorized app.
+     *
+     * Personal access tokens can be renamed. Their scopes are signed into the token, so they can’t be changed.
+     *
+     * @return Response
+     * @since 5.12.0
+     */
+    public function actionTokenModal(): Response
+    {
+        $this->requireCpRequest();
+        $user = static::currentUser();
+        $tokens = Craft::$app->getPersonalAccessTokens();
+        $clientId = $this->request->getParam('clientId');
+        $tokenId = $this->request->getParam('tokenId') ?: null;
+        $grant = null;
+
+        if ($clientId) {
+            $grant = ArrayHelper::firstWhere($tokens->grants($user), fn(array $grant) => $grant['clientId'] === $clientId && $grant['tokenId'] === $tokenId);
+            if (!$grant) {
+                throw new NotFoundHttpException('Token not found.');
+            }
+        } else {
+            $this->requireElevatedSession();
+        }
+
+        $response = $this->asCpModal()->contentTemplate('users/_token', [
+            'groups' => $grant ? $tokens->scopeGroups() : $tokens->scopeGroupsFor($user),
+            'grant' => $grant,
+        ]);
+
+        if (!$grant) {
+            return $response->action('users/create-token')->submitButtonLabel(Craft::t('app', 'Create'));
+        }
+
+        return $response->action($grant['personal'] ? 'users/save-token' : null);
+    }
+
+    /**
+     * Creates a personal access token for the current user.
+     *
+     * @return Response|null
+     * @since 5.12.0
+     */
+    public function actionCreateToken(): ?Response
+    {
+        $this->requirePostRequest();
+        $this->requireCpRequest();
+        $this->requireElevatedSession();
+        $user = static::currentUser();
+
+        $name = trim($this->request->getBodyParam('name', ''));
+        $scopes = array_values(array_filter((array)($this->request->getBodyParam('scopes') ?: [])));
+        $errors = [];
+        if ($error = $this->tokenNameError($name)) {
+            $errors['name'][] = $error;
+        }
+        if (!$scopes) {
+            $errors['scopes'][] = Craft::t('app', 'Choose at least one scope.');
+        }
+        if ($errors) {
+            return $this->asFailure(Craft::t('app', 'Couldn’t create the token.'), ['errors' => $errors]);
+        }
+
+        $days = (int)$this->request->getRequiredBodyParam('expiresIn');
+        if (!in_array($days, [7, 30, 90, 365], true)) {
+            throw new BadRequestHttpException('Invalid expiration.');
+        }
+
+        try {
+            $token = Craft::$app->getPersonalAccessTokens()->create($user, $name, $scopes, new DateInterval("P{$days}D"));
+        } catch (InvalidArgumentException) {
+            return $this->asFailure(Craft::t('app', 'Couldn’t create the token.'), [
+                'errors' => ['scopes' => [Craft::t('app', 'Choose at least one scope.')]],
+            ]);
+        }
+        Craft::$app->getSession()->setFlash('accessToken', $token);
+
+        return $this->asSuccess(Craft::t('app', 'Token created.'), redirect: UrlHelper::cpUrl('myaccount/tokens'));
+    }
+
+    /**
+     * Renames one of the current user’s personal access tokens.
+     *
+     * @return Response|null
+     * @since 5.12.0
+     */
+    public function actionSaveToken(): ?Response
+    {
+        $this->requirePostRequest();
+        $this->requireCpRequest();
+
+        $name = trim($this->request->getBodyParam('name', ''));
+        if ($error = $this->tokenNameError($name)) {
+            return $this->asFailure(Craft::t('app', 'Couldn’t save the token.'), ['errors' => ['name' => [$error]]]);
+        }
+
+        try {
+            Craft::$app->getPersonalAccessTokens()->rename(static::currentUser(), $this->request->getRequiredBodyParam('tokenId'), $name);
+        } catch (InvalidArgumentException $e) {
+            throw new BadRequestHttpException($e->getMessage(), previous: $e);
+        }
+
+        return $this->asSuccess(Craft::t('app', 'Token saved.'), redirect: UrlHelper::cpUrl('myaccount/tokens'));
+    }
+
+    private function tokenNameError(string $name): ?string
+    {
+        if ($name === '') {
+            return Craft::t('yii', '{attribute} cannot be blank.', ['attribute' => Craft::t('app', 'Name')]);
+        }
+        if (mb_strlen($name) > 255) {
+            return Craft::t('yii', '{attribute} should contain at most {max, number} {max, plural, one{character} other{characters}}.', [
+                'attribute' => Craft::t('app', 'Name'),
+                'max' => 255,
+            ]);
+        }
+        return null;
+    }
+
+    /**
+     * Revokes one of the current user’s personal access tokens, or their tokens for an authorized app.
+     *
+     * @return Response|null
+     * @since 5.12.0
+     */
+    public function actionRevokeToken(): ?Response
+    {
+        $this->requirePostRequest();
+        $this->requireCpRequest();
+
+        Craft::$app->getPersonalAccessTokens()->revoke(
+            static::currentUser(),
+            $this->request->getRequiredBodyParam('clientId'),
+            $this->request->getBodyParam('tokenId') ?: null,
+        );
+
+        return $this->asSuccess(Craft::t('app', 'Access revoked.'), redirect: UrlHelper::cpUrl('myaccount/tokens'));
+    }
+
+    /**
      * Returns a 2FA setup screen, for users who require a 2FA method.
      *
      * @return Response
@@ -1604,6 +1802,7 @@ JS);
         $newEmail = trim($this->request->getBodyParam('email') ?? '') ?: null;
 
         $isPublicRegistration = false;
+        $isInactiveUserRegistration = false;
 
         // Are we editing an existing user?
         if ($userId) {
@@ -1640,14 +1839,17 @@ JS);
 
                 $isPublicRegistration = true;
 
-                // See if there's an inactive user with the same email
+                // See if there's an inactive (and not suspended) user with the same email
                 if ($newEmail) {
                     $user = User::find()
                         ->email(Db::escapeParam($newEmail))
                         ->status(User::STATUS_INACTIVE)
+                        ->andWhere(['users.suspended' => false])
                         ->one();
 
                     if ($user) {
+                        $isInactiveUserRegistration = true;
+
                         // ignore their previous admin status, if they had it
                         $user->admin = false;
                     }
@@ -1796,6 +1998,11 @@ JS);
             $user->setScenario(User::SCENARIO_REGISTRATION);
         }
 
+        // Don't expose an existing inactive user's data in the response
+        $responseUser = $isInactiveUserRegistration
+            ? $this->_publicRegistrationResponseModel($newEmail, $fieldsLocation)
+            : $user;
+
         // Manually validate the user so we can pass $clearErrors=false
         $success = $user->validate(null, false) && Craft::$app->getElements()->saveElement($user, false);
 
@@ -1814,8 +2021,12 @@ JS);
                 $user->clearErrors('unverifiedEmail');
             }
 
+            if ($responseUser !== $user) {
+                $responseUser->addErrors($user->getErrors());
+            }
+
             return $this->asModelFailure(
-                $user,
+                $responseUser,
                 StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t save {type}.', [
                     'type' => User::lowerDisplayName(),
                 ])),
@@ -1841,6 +2052,11 @@ JS);
         $this->_processUserPhoto($user);
 
         if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
+            // If an existing inactive user was just registered, clear out any permissions they had
+            if ($isInactiveUserRegistration) {
+                Craft::$app->getUserPermissions()->saveUserPermissions($user->id, []);
+            }
+
             // If this is public registration, assign the user to the default user group
             if ($isPublicRegistration) {
                 // Assign them to the default user group
@@ -1851,9 +2067,9 @@ JS);
         // Do we need to send a verification email out?
         if ($sendActivationEmail) {
             // Temporarily set the unverified email on the User so the verification email goes to the
-            // right place
+            // right place (unless it was already verified when the user was activated)
             $originalEmail = $user->email;
-            $user->email = $user->unverifiedEmail;
+            $user->email = $user->unverifiedEmail ?? $user->email;
 
             try {
                 if ($isNewUser) {
@@ -1876,7 +2092,7 @@ JS);
 
         if ($this->request->getAcceptsJson()) {
             return $this->asModelSuccess(
-                $user,
+                $responseUser,
                 Craft::t('app', '{type} saved.', ['type' => User::displayName()]),
                 $userVariable,
                 array_filter([
@@ -2343,7 +2559,11 @@ JS);
         $addressId = $this->request->getBodyParam('addressId');
 
         if ($addressId) {
-            $address = Address::findOne($addressId);
+            if (!is_numeric($addressId)) {
+                throw new BadRequestHttpException('Invalid address ID.');
+            }
+
+            $address = Address::findOne((int)$addressId);
 
             if (!$address) {
                 throw new BadRequestHttpException("Invalid address ID: $addressId");
@@ -2404,7 +2624,11 @@ JS);
     public function actionDeleteAddress(): ?Response
     {
         $addressId = $this->request->getRequiredBodyParam('addressId');
-        $address = Address::findOne($addressId);
+        if (!is_numeric($addressId)) {
+            throw new BadRequestHttpException('Invalid address ID.');
+        }
+
+        $address = Address::findOne((int)$addressId);
 
         if (!$address) {
             throw new BadRequestHttpException("Invalid address ID: $addressId");
@@ -2787,6 +3011,24 @@ JS);
                 throw $e;
             }
         }
+    }
+
+    /**
+     * Returns a user model for a public registration response, populated solely from the submitted values.
+     *
+     * @param string|null $email
+     * @param string $fieldsLocation
+     * @return User
+     */
+    private function _publicRegistrationResponseModel(?string $email, string $fieldsLocation): User
+    {
+        $user = new User(['email' => $email]);
+        $user->username = Craft::$app->getConfig()->getGeneral()->useEmailAsUsername
+            ? $email
+            : $this->request->getBodyParam('username', $email);
+        $this->populateNameAttributes($user);
+        $user->setFieldValuesFromRequest($fieldsLocation);
+        return $user;
     }
 
     /**

@@ -16,7 +16,11 @@ Craft.Uploader = Craft.BaseUploader.extend(
       this.base($element, settings);
       delete this.settings.events;
 
-      this.uploader = this.$element.fileupload(this.settings);
+      // BaseUploader handles pasted files
+      this.uploader = this.$element.fileupload({
+        ...this.settings,
+        pasteZone: null,
+      });
 
       Object.entries(this.events).forEach(([name, handler]) => {
         this.$element.on(name, handler);
@@ -107,7 +111,13 @@ Craft.Uploader = Craft.BaseUploader.extend(
       return true;
     },
 
+    addFiles: function (files) {
+      this.uploader.fileupload('add', {files});
+    },
+
     destroy: function () {
+      this.base();
+
       if (this.uploader.fileupload('instance')) {
         this.uploader.fileupload('destroy');
       }

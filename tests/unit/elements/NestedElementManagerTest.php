@@ -8,6 +8,8 @@
 namespace crafttests\unit\elements;
 
 use Craft;
+use craft\base\ElementInterface;
+use craft\behaviors\RevisionBehavior;
 use craft\db\Table;
 use craft\elements\Address;
 use craft\elements\Entry;
@@ -15,6 +17,7 @@ use craft\elements\NestedElementManager;
 use craft\elements\User;
 use craft\enums\PropagationMethod;
 use craft\errors\InvalidElementException;
+use craft\queue\jobs\PruneRevisions;
 use craft\services\Drafts;
 use craft\services\Elements;
 use craft\services\Revisions;
@@ -322,6 +325,115 @@ class NestedElementManagerTest extends TestCase
         self::assertSame('v3', $finalNested[0]->getFieldValue('nemText'));
     }
 
+    // Fixed #20226: "Save as a new draft" from an explicit draft (ElementsController::actionDuplicate()
+    // passing the source draft's draftId) produced a new draft with no nested elements, because
+    // maintainNestedElements() skipped drafts and expected Drafts::createDraft() to copy them.
+    public function testDuplicatingDraftAsNewDraftKeepsNestedElements(): void
+    {
+        $owner = $this->_makeOwner([
+            'new1' => ['type' => 'nemBlock', 'fields' => ['nemText' => 'Shared']],
+            'new2' => ['type' => 'nemBlock', 'fields' => ['nemText' => 'Original']],
+        ]);
+        [$canonicalShared, $canonicalEdited] = $this->_nestedEntries($owner);
+
+        /** @var Entry $draft */
+        $draft = $this->drafts->createDraft($owner, 1);
+        $draft->setFieldValue('nemMatrix', [
+            $canonicalShared->id => [],
+            $canonicalEdited->id => ['type' => 'nemBlock', 'fields' => ['nemText' => 'Edited']],
+            'new1' => ['type' => 'nemBlock', 'fields' => ['nemText' => 'Added']],
+        ]);
+        if (!$this->elements->saveElement($draft)) {
+            throw new InvalidElementException($draft);
+        }
+        $draft = Entry::find()->id($draft->id)->drafts()->one();
+        $draftNested = $this->_nestedEntries($draft);
+        $draftAdded = $draftNested[2];
+
+        /** @var Entry $newDraft */
+        $newDraft = $this->elements->duplicateElement($draft, [
+            'isProvisionalDraft' => false,
+            'draftId' => $draft->draftId,
+        ], copyModifiedFields: true);
+        self::assertNotSame($draft->draftId, $newDraft->draftId);
+        self::assertSame($owner->id, $newDraft->getCanonicalId());
+
+        // Discard the source draft so nothing it owns can leak into the new draft
+        $this->elements->deleteElement($draft, true);
+
+        $newDraft = Entry::find()->id($newDraft->id)->drafts()->one();
+        $newNested = $this->_nestedEntries($newDraft);
+        self::assertSame(['Shared', 'Edited', 'Added'], array_map(fn(Entry $e) => $e->getFieldValue('nemText'), $newNested));
+        // Unmodified nested entries stay shared with the canonical owner
+        self::assertSame($canonicalShared->id, $newNested[0]->id);
+        // Modified ones are the new draft's own, still derived from the canonical nested entry
+        self::assertSame($newDraft->id, $newNested[1]->getPrimaryOwnerId());
+        self::assertSame($canonicalEdited->id, $newNested[1]->getCanonicalId());
+        // Entries added in the source draft must not point back at the source draft's copies
+        self::assertSame($newDraft->id, $newNested[2]->getPrimaryOwnerId());
+        self::assertNotSame($draftAdded->id, $newNested[2]->getCanonicalId());
+
+        $this->drafts->applyDraft($newDraft);
+
+        $owner = Entry::find()->id($owner->id)->one();
+        $finalNested = $this->_nestedEntries($owner);
+        self::assertSame(['Shared', 'Edited', 'Added'], array_map(fn(Entry $e) => $e->getFieldValue('nemText'), $finalNested));
+        self::assertSame($canonicalShared->id, $finalNested[0]->id);
+        self::assertSame($canonicalEdited->id, $finalNested[1]->id);
+    }
+
+    // #20226 follow-up: the draft’s own nested entries must keep their modified-field tracking when duplicated,
+    // or edits to doubly-nested entries get dropped when the new draft is applied.
+    public function testDuplicatingDraftAsNewDraftKeepsDoublyNestedEdits(): void
+    {
+        $owner = $this->_makeOwner([
+            'new1' => [
+                'type' => 'nemBlock',
+                'fields' => [
+                    'nemText' => 'A',
+                    'nemInnerMatrix' => [
+                        'new1' => ['type' => 'nemBlock', 'fields' => ['nemText' => 'v1']],
+                    ],
+                ],
+            ],
+        ]);
+        $originalInnerId = $this->_nestedEntries($this->_nestedEntries($owner)[0])[0]->id;
+
+        /** @var Entry $draft */
+        $draft = $this->drafts->createDraft($owner, 1);
+        $blockA = $this->_nestedEntries($draft)[0];
+        $draft->setFieldValue('nemMatrix', [
+            $blockA->id => [
+                'type' => 'nemBlock',
+                'fields' => [
+                    'nemInnerMatrix' => [
+                        $originalInnerId => ['type' => 'nemBlock', 'fields' => ['nemText' => 'v2']],
+                    ],
+                ],
+            ],
+        ]);
+        if (!$this->elements->saveElement($draft)) {
+            throw new InvalidElementException($draft);
+        }
+        $draft = Entry::find()->id($draft->id)->drafts()->one();
+
+        /** @var Entry $newDraft */
+        $newDraft = $this->elements->duplicateElement($draft, [
+            'isProvisionalDraft' => false,
+            'draftId' => $draft->draftId,
+        ], copyModifiedFields: true);
+        $this->elements->deleteElement($draft, true);
+
+        $newDraft = Entry::find()->id($newDraft->id)->drafts()->one();
+        $this->drafts->applyDraft($newDraft);
+
+        $owner = Entry::find()->id($owner->id)->one();
+        $finalInner = $this->_nestedEntries($this->_nestedEntries($owner)[0]);
+        self::assertCount(1, $finalInner);
+        self::assertSame('v2', $finalInner[0]->getFieldValue('nemText'));
+        self::assertSame($originalInnerId, $finalInner[0]->id);
+    }
+
     // Models "fixes an issue where nested content could be lost or overwritten when adding new
     // site" (e2e4698) and d39f1f9: with a Matrix field whose propagation method is more restrictive
     // than its owner, adding a new site to the owner must duplicate the nested elements into that
@@ -357,6 +469,58 @@ class NestedElementManagerTest extends TestCase
         self::assertCount(1, $newSiteNested);
         self::assertSame('Default site content', $newSiteNested[0]->getFieldValue('nemText'));
         self::assertNotSame($defaultSiteNested[0]->id, $newSiteNested[0]->id);
+    }
+
+    // Fixed #18281: adding a site to a draft whose unchanged top-level Matrix entry is still shared
+    // with the canonical owner used to throw "Attempting to duplicate an element in an unsupported
+    // site." The top-level entry propagated to the new site, but was then re-fetched there without
+    // its owner context, so it fell back to its primary (canonical) owner, which doesn't exist in
+    // that site, and duplicating its own non-propagating nested entries into the site failed.
+    public function testAddingSiteToDraftDuplicatesDoublyNestedElements(): void
+    {
+        $owner = new Entry([
+            'sectionId' => 3001,
+            'typeId' => 3002,
+            'siteId' => 1,
+            'title' => 'NEM Owner ' . mt_rand(),
+        ]);
+        $owner->setFieldValue('nemPropagatingMatrix', [
+            'new1' => [
+                'type' => 'nemBlock',
+                'fields' => [
+                    'nemText' => 'Top level',
+                    'nemInnerMatrix' => [
+                        'new1' => ['type' => 'nemBlock', 'fields' => ['nemText' => 'Nested']],
+                    ],
+                ],
+            ],
+        ]);
+        if (!$this->elements->saveElement($owner)) {
+            throw new InvalidElementException($owner);
+        }
+
+        self::assertNull(Entry::find()->id($owner->id)->siteId(1000)->status(null)->one());
+        $topLevel = $this->_nestedEntries($owner)[0];
+        $nested = $this->_nestedEntries($topLevel)[0];
+
+        /** @var Entry $draft */
+        $draft = $this->drafts->createDraft($owner, 1);
+        $draft->setEnabledForSite([1 => true, 1000 => true]);
+        if (!$this->elements->saveElement($draft)) {
+            throw new InvalidElementException($draft);
+        }
+
+        $draftInNewSite = Entry::find()->draftId($draft->draftId)->siteId(1000)->status(null)->one();
+        self::assertNotNull($draftInNewSite, 'Draft should have propagated to the new site');
+
+        $newSiteTopLevel = $this->_nestedEntries($draftInNewSite);
+        self::assertCount(1, $newSiteTopLevel);
+        self::assertSame($topLevel->id, $newSiteTopLevel[0]->id);
+
+        $newSiteNested = $this->_nestedEntries($newSiteTopLevel[0]);
+        self::assertCount(1, $newSiteNested);
+        self::assertSame('Nested', $newSiteNested[0]->getFieldValue('nemText'));
+        self::assertNotSame($nested->id, $newSiteNested[0]->id);
     }
 
     // Models the scenario behind "Avoid internal server error - SQLSTATE Integrity constraint
@@ -396,5 +560,60 @@ class NestedElementManagerTest extends TestCase
         $restoredNested = $this->_nestedEntries($owner);
         self::assertCount(1, $restoredNested);
         self::assertSame('Revision 1 content', $restoredNested[0]->getFieldValue('nemText'));
+    }
+
+    // Fixed #20042: when pruning revisions, deleteNestedElements() only looked for nested element
+    // revisions in the owner's own site, because the Matrix query factory resets the query's site
+    // to the owner's. Nested revisions in other sites weren't reassigned to a newer revision that
+    // still used them, and were hard-deleted along with the pruned revision.
+    public function testPruningRevisionsKeepsOtherSitesNestedElementsUsedByNewerRevisions(): void
+    {
+        $owner = $this->_makeOwner([
+            'new1' => ['type' => 'nemBlock', 'fields' => ['nemText' => 'Site 1 v1']],
+        ], ['siteId' => 1]);
+
+        // Give the other site its own content, then only edit the primary site
+        sleep(1);
+        $ownerInSite2 = Entry::find()->id($owner->id)->siteId(1000)->status(null)->one();
+        $ownerInSite2->setFieldValue('nemMatrix', [
+            'new1' => ['type' => 'nemBlock', 'fields' => ['nemText' => 'Site 2 content']],
+        ]);
+        if (!$this->elements->saveElement($ownerInSite2)) {
+            throw new InvalidElementException($ownerInSite2);
+        }
+
+        foreach (['Site 1 v2', 'Site 1 v3'] as $text) {
+            sleep(1);
+            $owner = Entry::find()->id($owner->id)->siteId(1)->status(null)->one();
+            $owner->setFieldValue('nemMatrix', [
+                'new1' => ['type' => 'nemBlock', 'fields' => ['nemText' => $text]],
+            ]);
+            if (!$this->elements->saveElement($owner)) {
+                throw new InvalidElementException($owner);
+            }
+        }
+
+        // Prune down to the two newest revisions, which both still use the other site's nested revision
+        (new PruneRevisions([
+            'elementType' => Entry::class,
+            'canonicalId' => $owner->id,
+            'siteId' => 1,
+            'maxRevisions' => 2,
+        ]))->execute(Craft::$app->getQueue());
+
+        $revisions = Entry::find()
+            ->revisionOf($owner)
+            ->siteId(1000)
+            ->status(null)
+            ->orderBy(['num' => SORT_ASC])
+            ->all();
+        self::assertCount(2, $revisions);
+
+        /** @var RevisionBehavior|ElementInterface $revision */
+        foreach ($revisions as $revision) {
+            $nested = $revision->getFieldValue('nemMatrix')->status(null)->all();
+            self::assertCount(1, $nested, "Revision $revision->revisionNum lost the other site's nested elements");
+            self::assertSame('Site 2 content', $nested[0]->getFieldValue('nemText'));
+        }
     }
 }

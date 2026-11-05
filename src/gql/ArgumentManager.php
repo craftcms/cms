@@ -20,7 +20,7 @@ use craft\gql\handlers\RelatedTags;
 use craft\gql\handlers\RelatedUsers;
 use craft\gql\handlers\Site;
 use craft\gql\handlers\SiteId;
-use craft\helpers\StringHelper;
+use craft\helpers\Db;
 use yii\base\InvalidConfigException;
 
 /**
@@ -125,19 +125,13 @@ class ArgumentManager extends Component
     public function prepareArguments(array $arguments): array
     {
         $orderBy = $arguments['orderBy'] ?? null;
-        if ($orderBy) {
-            foreach (StringHelper::split($orderBy) as $chunk) {
-                // Special case for rand()/random()
-                if (in_array(strtolower($chunk), ['rand()', 'random()'], true)) {
-                    continue;
-                }
-                if (
-                    StringHelper::containsAny($orderBy, ['(', ')']) ||
-                    !preg_match('/^\w+(\.\w+)?( (asc|desc))?$/i', $chunk)
-                ) {
-                    throw new GqlException('Illegal value for `orderBy` argument: `' . $orderBy . '`');
-                }
-            }
+        if (
+            $orderBy &&
+            // Special case for rand()/random()
+            !in_array(strtolower(trim($orderBy)), ['rand()', 'random()'], true) &&
+            !Db::isSafeOrderBy($orderBy)
+        ) {
+            throw new GqlException('Illegal value for `orderBy` argument: `' . $orderBy . '`');
         }
 
         $this->createHandlers();

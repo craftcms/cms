@@ -56,7 +56,6 @@ use craft\web\View;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
-use Webauthn\Exception\InvalidUserHandleException;
 use Webauthn\PublicKeyCredentialRequestOptions;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -1455,20 +1454,14 @@ class User extends Element implements IdentityInterface
         // Validate the security key
         try {
             $keyValid = $authService->verifyPasskey($this, $requestOptions, $response);
-        } catch (InvalidUserHandleException $e) {
-            $keyValid = $authService->verifyPasskey($this, $requestOptions, $response, true);
         } catch (InvalidArgumentException) {
             $keyValid = false;
         }
-
-        $updatedCredentialRecord = Session::remove($authService->passkeyCredSourceParam);
 
         if (!$keyValid) {
             $this->handleInvalidLoginParam();
             return false;
         }
-
-        $authService->webauthnServer()->getCredentialRepository()->saveCredentialSource($updatedCredentialRecord);
 
         $this->authError = $this->_getAuthError();
         return !isset($this->authError);
@@ -2385,9 +2378,9 @@ JS, [
                 /** @var Address[] $elements */
                 $this->_addresses = ElementCollection::make($elements);
                 break;
+            default:
+                parent::setEagerLoadedElements($handle, $elements, $plan);
         }
-
-        parent::setEagerLoadedElements($handle, $elements, $plan);
     }
 
     /**
@@ -2694,11 +2687,7 @@ JS, [
 
         if (!$isNew && $changePassword) {
             // Destroy all other sessions for this user
-            $condition = ['userId' => $this->id];
-            if ($this->getIsCurrent() && $token = Craft::$app->getUser()->getToken()) {
-                $condition = ['and', $condition, ['not', ['token' => $token]]];
-            }
-            Db::delete(Table::SESSIONS, $condition);
+            Craft::$app->getUsers()->destroyOtherSessions($this);
         }
 
         if ($this->sendVerificationEmailAfterRequest && isset($this->unverifiedEmail)) {

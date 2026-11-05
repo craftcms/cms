@@ -13,7 +13,9 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\interfaces\Structure;
 use craft\gql\types\DateTime;
+use craft\gql\types\EntryType as EntryTypeGqlType;
 use craft\gql\types\generators\EntryType;
+use craft\gql\types\Section as SectionGqlType;
 use craft\helpers\Gql;
 use craft\models\Section;
 use craft\services\Gql as GqlService;
@@ -239,7 +241,23 @@ class Entry extends Structure
     private static function getConditionalFields(array $sectionFieldArguments): array
     {
         $fields = [];
-        if (Gql::canQueryUsers()) {
+        if (Gql::canSchema('settings.sections')) {
+            $fields['section'] = [
+                'name' => 'section',
+                'type' => SectionGqlType::getType(),
+                'description' => 'The section that contains the entry.',
+            ];
+        }
+
+        if (Gql::canSchema('settings.entrytypes')) {
+            $fields['type'] = [
+                'name' => 'type',
+                'type' => Type::nonNull(EntryTypeGqlType::getType()),
+                'description' => 'The entry’s entry type.',
+            ];
+        }
+
+        if (Gql::canQueryAllUsers()) {
             $fields = array_merge($fields, [
                 'authorId' => [
                     'name' => 'authorId',
@@ -267,13 +285,13 @@ class Entry extends Structure
         }
 
         if (Gql::canQueryDrafts()) {
-            $fields = array_merge($fields, [
-                'draftCreator' => [
+            $fields = array_merge($fields, array_filter([
+                'draftCreator' => Gql::canQueryAllUsers() ? [
                     'name' => 'draftCreator',
                     'type' => User::getType(),
                     'description' => 'The creator of a given draft.',
                     'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
-                ],
+                ] : null,
                 'drafts' => [
                     'name' => 'drafts',
                     'args' => $sectionFieldArguments,
@@ -281,17 +299,17 @@ class Entry extends Structure
                     'description' => 'The drafts for the entry.',
                     'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
                 ],
-            ]);
+            ]));
         }
 
         if (Gql::canQueryRevisions()) {
-            $fields = array_merge($fields, [
-                'revisionCreator' => [
+            $fields = array_merge($fields, array_filter([
+                'revisionCreator' => Gql::canQueryAllUsers() ? [
                     'name' => 'revisionCreator',
                     'type' => User::getType(),
                     'description' => 'The creator of a given revision.',
                     'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
-                ],
+                ] : null,
                 'currentRevision' => [
                     'name' => 'currentRevision',
                     'type' => EntryInterface::getType(),
@@ -305,7 +323,7 @@ class Entry extends Structure
                     'description' => 'The revisions for the entry.',
                     'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
                 ],
-            ]);
+            ]));
         }
         return $fields;
     }

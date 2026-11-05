@@ -4,7 +4,8 @@ on:
   push:
     branches:
       - 5.x
-      - 5.x-internal
+      - '5.12'
+      - '*-internal'
   pull_request:
 permissions:
   contents: read

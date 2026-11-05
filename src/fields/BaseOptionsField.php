@@ -12,6 +12,7 @@ use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\DefaultableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\base\InputSchemaFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\db\QueryParam;
@@ -42,7 +43,8 @@ abstract class BaseOptionsField extends Field implements
     PreviewableFieldInterface,
     MergeableFieldInterface,
     CrossSiteCopyableFieldInterface,
-    DefaultableFieldInterface
+    DefaultableFieldInterface,
+    InputSchemaFieldInterface
 {
     /**
      * @event DefineInputOptionsEvent Event triggered when defining the options for the field's input.
@@ -826,5 +828,26 @@ abstract class BaseOptionsField extends Field implements
         }
 
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 5.12.0
+     */
+    public function getInputSchema(): array
+    {
+        $values = array_values(array_map(
+            static fn(array $option): string => (string) $option['value'],
+            array_filter($this->options, static fn(array $option): bool => isset($option['value'])),
+        ));
+        $itemSchema = ['type' => 'string'];
+
+        if (!$this->customOptions && $values !== []) {
+            $itemSchema['enum'] = $values;
+        }
+
+        return $this->getIsMultiOptionsField()
+            ? ['type' => 'array', 'items' => $itemSchema]
+            : $itemSchema;
     }
 }

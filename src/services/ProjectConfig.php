@@ -36,6 +36,7 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\caching\ExpressionDependency;
+use yii\db\Expression;
 use yii\web\ServerErrorHttpException;
 
 /**
@@ -326,6 +327,12 @@ class ProjectConfig extends Component
     private array $_appliedChanges = [];
 
     /**
+     * @var int The number of applied changes that have been saved so far
+     * @see saveModifiedConfigData()
+     */
+    private int $_savedChanges = 0;
+
+    /**
      * @var ReadOnlyProjectConfigData|null Config as defined in the external config.
      */
     private ?ReadOnlyProjectConfigData $_externalConfig = null;
@@ -437,6 +444,7 @@ class ProjectConfig extends Component
         $this->_configFileList = [];
         $this->_updateYaml = false;
         $this->_appliedChanges = [];
+        $this->_savedChanges = 0;
         $this->_applyingExternalChanges = false;
         $this->_timestampUpdated = false;
 
@@ -795,12 +803,16 @@ class ProjectConfig extends Component
      */
     public function saveModifiedConfigData(): void
     {
-        if (!empty($this->_appliedChanges)) {
+        // Only save changes that haven't been saved yet, so changes saved earlier in a long-running
+        // process (e.g. the stdio MCP server) don't overwrite newer values stored by other requests
+        $changeSets = array_slice($this->_appliedChanges, $this->_savedChanges);
+
+        if (!empty($changeSets)) {
             $deltaChanges = [];
             $db = Craft::$app->getDb();
 
-            $db->transaction(function() use ($db, &$deltaChanges) {
-                foreach ($this->_appliedChanges as $changeSet) {
+            $db->transaction(function() use ($db, $changeSets, &$deltaChanges) {
+                foreach ($changeSets as $changeSet) {
                     // Allow modification of the array being looped over.
                     $currentSet = $changeSet;
 
@@ -872,6 +884,8 @@ class ProjectConfig extends Component
                 $this->updateConfigVersion();
                 $this->_releaseLock();
             });
+
+            $this->_savedChanges += count($changeSets);
 
             if (!empty($deltaChanges)) {
                 $this->storeYamlHistory([
@@ -1872,7 +1886,9 @@ class ProjectConfig extends Component
         $data = Craft::$app->getCache()->getOrSet(self::STORED_CACHE_KEY, function() {
             $data = [];
             // Load the project config data
-            $rows = $this->_createProjectConfigQuery()->orderBy('path')->pairs();
+            // Paths only need parent-before-child ordering, not locale-aware sorting.
+            $orderBy = Craft::$app->getDb()->getIsPgsql() ? new Expression('[[path]] COLLATE "C"') : 'path';
+            $rows = $this->_createProjectConfigQuery()->orderBy($orderBy)->pairs();
             foreach ($rows as $path => $value) {
                 $current = &$data;
                 $segments = ProjectConfigHelper::pathSegments($path);

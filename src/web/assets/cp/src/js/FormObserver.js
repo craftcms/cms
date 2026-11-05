@@ -189,7 +189,8 @@ Craft.FormObserver = Garnish.Base.extend({
     if (this.$container[0].nodeName === 'FORM') {
       this._formData = this.$container.serialize();
     } else {
-      this._formData = $('<form/>').append(this.$container.clone()).serialize();
+      // serialize the live inputs rather than a clone, since cloning doesn't preserve <select> values
+      this._formData = this.$container.find(':input').serialize();
     }
     return this._formData;
   },

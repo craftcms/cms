@@ -91,6 +91,21 @@
     <hr>
 
     {{ forms.selectField({
+        label: 'Propagation Method'|t('app'),
+        instructions: 'Which sites should assets in this volume be saved to?'|t('app'),
+        id: 'propagationMethod',
+        name: 'propagationMethod',
+        options: [
+            { value: 'all', label: 'Save assets to all sites'|t('app') },
+            { value: 'custom', label: 'Let each asset choose which sites it should be saved to'|t('app') },
+        ],
+        value: volume.propagationMethod.value,
+        errors: volume.getErrors('propagationMethod'),
+        data: {'error-key': 'propagationMethod'},
+        disabled: readOnly,
+    }) }}
+
+    {{ forms.selectField({
         label: '{name} Translation Method'|t('app', {
             name: 'Title'|t('app'),
         }),

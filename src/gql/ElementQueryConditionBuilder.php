@@ -23,6 +23,7 @@ use craft\fields\Users as UserField;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\StringHelper;
+use craft\models\Site;
 use craft\services\Gql;
 use GraphQL\Language\AST\ArgumentNode;
 use GraphQL\Language\AST\FieldNode;
@@ -464,8 +465,9 @@ class ElementQueryConditionBuilder extends Component
                         } else {
                             // Loop through what schema allows for this content type
                             foreach ($additionalArguments as $argumentName => $argumentValue) {
-                                // If they also want to filter by field that is enforced by schema
-                                if (isset($arguments[$argumentName])) {
+                                // If they also want to filter by field that is enforced by schema.
+                                // (Non-array values, such as `editable`, are always enforced as-is.)
+                                if (isset($arguments[$argumentName]) && is_array($argumentValue)) {
                                     if (!is_array($arguments[$argumentName])) {
                                         $arguments[$argumentName] = [$arguments[$argumentName]];
                                     }
@@ -609,6 +611,12 @@ class ElementQueryConditionBuilder extends Component
                     ]);
                 }
             }
+        }
+
+        // Ensure each eager-loading plan is limited to fetching elements enabled by the current schema
+        $allowedSiteIds = array_map(fn(Site $site) => $site->id, GqlHelper::getAllowedSites());
+        foreach ($plans as $plan) {
+            $plan->siteIds = is_array($plan->siteIds) ? array_intersect($plan->siteIds, $allowedSiteIds) : $allowedSiteIds;
         }
 
         return $plans;

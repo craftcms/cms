@@ -236,23 +236,31 @@ export default Drag.extend(
       // Store midpoints in a Map for O(1) lookup
       this._allMidpoints = new Map();
 
-      // Store current scroll position for coordinate adjustment
-      const scrollX = window.pageXOffset;
-      const scrollY = window.pageYOffset;
-
       // Batch ALL DOM reads together (no writes interleaved)
       this.$items.each((i, item) => {
-        const rect = item.getBoundingClientRect();
-        // Convert viewport coords to document coords by adding scroll offset
-        this._allMidpoints.set(item, {
-          x: rect.left + scrollX + rect.width / 2,
-          y: rect.top + scrollY + rect.height / 2,
-          width: rect.width,
-          height: rect.height,
-          top: rect.top + scrollY,
-          bottom: rect.bottom + scrollY,
-        });
+        this._allMidpoints.set(item, this._measureMidpoint(item));
       });
+    },
+
+    /**
+     * Measures an item’s midpoint.
+     *
+     * Coordinates are document-relative, as of when the scroll container was
+     * at its mousedown scroll position, so they remain valid as it’s scrolled.
+     */
+    _measureMidpoint: function (item) {
+      const rect = item.getBoundingClientRect();
+      const offsetX = window.pageXOffset + this.scrollDeltaX;
+      const offsetY = window.pageYOffset + this.scrollDeltaY;
+
+      return {
+        x: rect.left + offsetX + rect.width / 2,
+        y: rect.top + offsetY + rect.height / 2,
+        width: rect.width,
+        height: rect.height,
+        top: rect.top + offsetY,
+        bottom: rect.bottom + offsetY,
+      };
     },
 
     /**
@@ -260,8 +268,8 @@ export default Drag.extend(
      * Returns array of items to check for closest match.
      */
     _getVisibleItems: function () {
-      // Get viewport bounds
-      const viewportTop = window.pageYOffset;
+      // Get viewport bounds (in the same coordinate space as the midpoints)
+      const viewportTop = window.pageYOffset + this.scrollDeltaY;
       const viewportBottom = viewportTop + window.innerHeight;
       const buffer = 300; // Check items 300px outside viewport
 
@@ -543,9 +551,11 @@ export default Drag.extend(
         $.data(item, 'midpoint', {
           x:
             this._getItemMidpoint._offset.left +
+            this.scrollDeltaX +
             this._getItemMidpoint._$item.outerWidth() / 2,
           y:
             this._getItemMidpoint._offset.top +
+            this.scrollDeltaY +
             this._getItemMidpoint._$item.outerHeight() / 2,
         });
 
@@ -571,11 +581,14 @@ export default Drag.extend(
 
     _testForClosestItem: function (item) {
       this._testForClosestItem._midpoint = this._getItemMidpoint(item);
+      // (midpoints are relative to the scroll container's mousedown scroll position)
       this._testForClosestItem._mouseDistX = Math.abs(
-        this._testForClosestItem._midpoint.x - this.draggeeVirtualMidpointX
+        this._testForClosestItem._midpoint.x -
+          (this.draggeeVirtualMidpointX + this.scrollDeltaX)
       );
       this._testForClosestItem._mouseDistY = Math.abs(
-        this._testForClosestItem._midpoint.y - this.draggeeVirtualMidpointY
+        this._testForClosestItem._midpoint.y -
+          (this.draggeeVirtualMidpointY + this.scrollDeltaY)
       );
 
       switch (this.settings.axis) {
@@ -626,20 +639,8 @@ export default Drag.extend(
         if ($next && $next.length) itemsToUpdate.push($next[0]);
 
         // Update only these items
-        const scrollX = window.pageXOffset;
-        const scrollY = window.pageYOffset;
-
         itemsToUpdate.forEach((item) => {
-          const rect = item.getBoundingClientRect();
-          // Convert viewport coords to document coords
-          this._allMidpoints.set(item, {
-            x: rect.left + scrollX + rect.width / 2,
-            y: rect.top + scrollY + rect.height / 2,
-            width: rect.width,
-            height: rect.height,
-            top: rect.top + scrollY,
-            bottom: rect.bottom + scrollY,
-          });
+          this._allMidpoints.set(item, this._measureMidpoint(item));
         });
       } else {
         // Fallback: invalidate all midpoints (original behavior)

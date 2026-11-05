@@ -135,6 +135,14 @@ class AppHelperTest extends TestCase
         self::assertNull(App::parseEnv('$TEST_MISSING'));
         self::assertNull(App::parseEnv(null));
 
+        // https://github.com/craftcms/cms/issues/19522
+        self::assertSame('$58 million', App::parseEnv('$58 million'));
+        self::assertSame('the $58 million', App::parseEnv('the $58 million'));
+        self::assertSame('the $58', App::parseEnv('the $58'));
+        self::assertSame('/test', App::parseEnv('$58/test'));
+        self::assertSame('test//test', App::parseEnv('test/$58/test'));
+        self::assertSame('test/', App::parseEnv('test/$58'));
+
         foreach (array_keys($variables) as $name) {
             putenv($name);
         }
@@ -387,6 +395,46 @@ class AppHelperTest extends TestCase
     public function testLicenseKey(): void
     {
         self::assertSame(250, strlen(App::licenseKey()));
+    }
+
+    public function testLicensingIssuesEncodesLicensedDomain(): void
+    {
+        $cache = Craft::$app->getCache();
+        $updatesCacheKey = Craft::$app->getUpdates()->cacheKey;
+        $hadUpdatesCache = $cache->exists($updatesCacheKey);
+        $payload = 'poison.test"><img src=x onerror=alert(document.domain)>';
+
+        // Simulate a poisoned cache that predates validation of the header
+        $cache->set(App::CACHE_KEY_LICENSE_INFO, [
+            'craft' => ['id' => '1', 'edition' => 'pro', 'status' => 'mismatched', 'timestamp' => time()],
+        ]);
+        $request = Craft::$app->getRequest();
+        $originalHostInfo = $request->getHostInfo();
+        $originalIsConsoleRequest = $request->getIsConsoleRequest();
+        $request->setIsConsoleRequest(false);
+        $request->setHostInfo('https://craft.test');
+        $cache->set(App::CACHE_KEY_LICENSE_INFO_HOST, 'craft.test');
+        $cache->set('licensedDomain', $payload);
+        if (!$hadUpdatesCache) {
+            $cache->set($updatesCacheKey, []);
+        }
+
+        try {
+            $issues = App::licensingIssues(['mismatched']);
+            self::assertCount(1, $issues);
+            $message = $issues[0][1];
+            self::assertStringNotContainsString('<img', $message);
+            self::assertStringContainsString('&lt;img src=x onerror=alert(document.domain)&gt;', $message);
+        } finally {
+            $request->setIsConsoleRequest($originalIsConsoleRequest);
+            $request->setHostInfo($originalHostInfo);
+            $cache->delete(App::CACHE_KEY_LICENSE_INFO);
+            $cache->delete(App::CACHE_KEY_LICENSE_INFO_HOST);
+            $cache->delete('licensedDomain');
+            if (!$hadUpdatesCache) {
+                $cache->delete($updatesCacheKey);
+            }
+        }
     }
 
     /**

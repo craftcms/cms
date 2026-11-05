@@ -13,6 +13,7 @@ use craft\base\DefaultableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\InputSchemaFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\elements\Entry;
@@ -39,7 +40,8 @@ class Number extends Field implements
     SortableFieldInterface,
     MergeableFieldInterface,
     CrossSiteCopyableFieldInterface,
-    DefaultableFieldInterface
+    DefaultableFieldInterface,
+    InputSchemaFieldInterface
 {
     /**
      * @since 3.5.11
@@ -461,5 +463,14 @@ JS;
             'type' => NumberType::getType(),
             'description' => $this->instructions,
         ];
+    }
+
+    /**
+     * @inheritdoc
+     * @since 5.12.0
+     */
+    public function getInputSchema(): array
+    {
+        return ['type' => 'number'];
     }
 }
