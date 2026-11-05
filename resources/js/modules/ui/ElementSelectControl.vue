@@ -533,6 +533,8 @@
           :actions="bulkActions"
           :total="ids.length"
           :limit="limit"
+          :element-display-name="control.props.elementDisplayName"
+          :element-plural-display-name="control.props.elementPluralDisplayName"
         />
         <div class="elements-stage">
           <ElementList

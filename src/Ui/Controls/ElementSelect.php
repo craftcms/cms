@@ -314,6 +314,7 @@ class ElementSelect extends Control
             'customElement' => self::customElement($this->elementType),
             'elements' => array_map(fn (ElementInterface $element): array => self::presentation($element, $this->viewMode, $thumbSize), $elements),
             'elementDisplayName' => $this->elementType::lowerDisplayName(),
+            'elementPluralDisplayName' => $this->elementType::pluralLowerDisplayName(),
             'sources' => $this->sources,
             'criteria' => $this->criteria,
             'context' => $this->context,

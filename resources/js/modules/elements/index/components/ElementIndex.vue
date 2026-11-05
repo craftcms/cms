@@ -244,8 +244,10 @@
   });
   watch(selectAll.count, (count) => {
     liveMessage.value = count
-      ? t('{num, plural, =1{# item selected} other{# items selected}}', {
+      ? t('{num, number} {num, plural, =1{{item}} other{{items}}} selected', {
           num: count,
+          item: elementIndex.elementLowerDisplayName,
+          items: elementIndex.elementPluralLowerDisplayName,
         })
       : t('Selection cleared');
   });
