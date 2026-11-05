@@ -559,6 +559,7 @@
 - Added `CraftCms\Cms\Ui\Nodes\Group::outlet()`, which renders a group in a named outlet elsewhere in the form when the form is rendered by Vue, such as the field layout designer’s Appearance tab (`field-layout-designer.appearance`). ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Added the `labelSrOnly` config option to `CraftCms\Cms\Cp\FormFields::fieldHtml()`. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Added `CraftCms\Cms\Ui\Controls\Textarea::singleLine()`. ([#20074](https://github.com/craftcms/cms/pull/20074))
+- Added `CraftCms\Cms\Ui\Controls\Text::selectOnFocus()`, which selects a text or number control’s value whenever it’s focused. ([#20373](https://github.com/craftcms/cms/pull/20373))
 - Added `CraftCms\Cms\Cp\Components\Textarea::maxRows()`. `null` lets the textarea grow without limit. ([#20324](https://github.com/craftcms/cms/pull/20324))
 - `Garnish.uiLayerManager.registerShortcut()` now accepts `description` and `group` keys on its shortcut definition, which list the shortcut in the command palette’s “Keyboard shortcuts” view. ([#20263](https://github.com/craftcms/cms/pull/20263))
 - `<craft-action-menu>` now spaces `<hr>` elements in its slotted content as it does the dividers it renders from its `actions`. ([#20109](https://github.com/craftcms/cms/pull/20109))
@@ -1171,6 +1172,7 @@
 - Fixed a bug where configuration changes made through the stdio MCP server (`craft:mcp:serve`) weren’t saved until the server stopped, so the control panel didn’t see them, and they were lost if the server was killed.
 - Fixed a bug where some settings fields, such as section and Matrix fields’ “Entry Types” and field layout designers, jumped in height once their contents loaded, and stayed empty if they couldn’t be loaded. They now hold their space while loading, and show an error with a “Retry” button if loading fails. ([#20326](https://github.com/craftcms/cms/pull/20326))
 - Fixed a bug where the Settings nav item had no icon when `allowAdminChanges` was disabled. ([#20338](https://github.com/craftcms/cms/issues/20338))
+- Fixed a bug where text and number controls with `autofocus()` weren’t focused when they were shown after the page loaded, such as in modals and slideouts. They also no longer autofocus on mobile browsers, or for users who have disabled autofocus. ([#20373](https://github.com/craftcms/cms/pull/20373))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 
