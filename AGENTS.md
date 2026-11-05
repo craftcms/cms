@@ -2,6 +2,16 @@
 
 Follow [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidance.
 
+## Translations
+
+- Whenever translatable strings in the `app` category are added, modified, or
+  removed, always update the English source translations in
+  `src/translations/en/app.php` accordingly.
+- English source translations for the `commerce` category belong in Commerce's
+  `src/translations/en/commerce.php`. Commerce may use existing `app`-category
+  translations from Craft CMS, but must not modify those translations or their
+  catalog.
+
 ## Migrations
 
 - Only add new migrations when working on a new major or minor release (such
