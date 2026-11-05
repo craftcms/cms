@@ -49,8 +49,9 @@ class McpController extends Controller
             throw new NotFoundHttpException();
         }
 
-        // The public server and discovery only live on the front end, as with their routes in Settings::requestRoute()
-        if ($action->id !== 'authenticated' && $this->request->getIsCpRequest()) {
+        // The public server and discovery only live on the front end, as with their routes in Settings::requestRoute(),
+        // and not on the control panel’s own host
+        if ($action->id !== 'authenticated' && ($this->request->getIsCpRequest() || $settings->isCpHostRequest())) {
             throw new NotFoundHttpException();
         }
 

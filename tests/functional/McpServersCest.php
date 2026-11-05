@@ -171,9 +171,15 @@ class McpServersCest
         $original = ['baseCpUrl' => $general->baseCpUrl, 'cpTrigger' => $general->cpTrigger, 'omitScriptNameInUrls' => $general->omitScriptNameInUrls, 'usePathInfo' => $general->usePathInfo];
         $general->baseCpUrl = 'https://cp.example.com/backoffice';
         $general->cpTrigger = null;
-        $this->settings(['enabled' => true, 'route' => '/backoffice/mcp', 'authorizationRoute' => '/backoffice/mcp/auth']);
+        $this->settings(['enabled' => true, 'route' => '/backoffice/mcp', 'authorizationRoute' => '/backoffice/mcp/auth', 'publicEnabled' => true, 'publicRoute' => '/backoffice/ai']);
 
         try {
+            // The site's host serves the public server's discovery
+            $I->amOnPage('/.well-known/ai-catalog.json');
+            $I->seeResponseCodeIs(200);
+            $I->amOnPage('/backoffice/ai/server-card');
+            $I->seeResponseCodeIs(200);
+
             $I->haveServerParameter('HTTP_HOST', 'cp.example.com');
             $I->haveServerParameter('HTTPS', 'on');
             $I->sendAjaxPostRequest('/backoffice/mcp/auth');
@@ -183,6 +189,12 @@ class McpServersCest
             // Discovery requests outside the base URL's path are site requests, but stay on the control panel's host
             $I->amOnPage('/.well-known/oauth-protected-resource/backoffice/mcp/auth');
             $I->assertSame('https://cp.example.com/backoffice/mcp/auth', json_decode($I->grabPageSource(), true)['resource']);
+
+            // The control panel's host doesn't, even for site requests outside the base URL's path
+            $I->amOnPage('/.well-known/ai-catalog.json');
+            $I->seeResponseCodeIs(404);
+            $I->amOnPage('/backoffice/ai/server-card');
+            $I->seeResponseCodeIs(404);
 
             // URLs with the script name start at the web root
             $general->omitScriptNameInUrls = false;

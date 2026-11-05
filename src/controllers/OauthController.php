@@ -201,15 +201,19 @@ class OauthController extends Controller
                 $userSession->loginUrl = UrlHelper::siteUrl($loginPath);
 
                 // When the control panel has its own domain, the front-end login can’t return to this request, so
-                // continue the authorization on the front end before logging in.
+                // continue the authorization on the site’s domain before logging in.
+                $host = (string)$this->request->getHostName();
                 if (
                     $this->request->getIsCpRequest() &&
                     ($userSession->getIsGuest() || in_array('login', $prompts, true)) &&
                     !in_array('none', $prompts, true) &&
-                    strcasecmp((string)parse_url($userSession->loginUrl, PHP_URL_HOST), $this->request->getHostName()) !== 0
+                    strcasecmp((string)parse_url($userSession->loginUrl, PHP_URL_HOST), $host) !== 0 &&
+                    strcasecmp((string)parse_url(UrlHelper::siteHost(), PHP_URL_HOST), $host) !== 0
                 ) {
+                    // URLs with the script name are built on the current request’s host
                     $params = ['resource' => $resource] + $this->request->getQueryParamsWithoutPath();
-                    return $this->redirect(UrlHelper::siteUrl("$general->actionTrigger/oauth/authorize", $params));
+                    $url = UrlHelper::siteUrl("$general->actionTrigger/oauth/authorize", $params);
+                    return $this->redirect(UrlHelper::siteHost() . substr($url, strlen(UrlHelper::hostInfo($url))));
                 }
             }
             $promptedLoginKey = 'oauthPromptedLogin:' . $resource;

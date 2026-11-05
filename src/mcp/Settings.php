@@ -179,6 +179,25 @@ class Settings extends Model
     }
 
     /**
+     * Whether the current request is on the control panel’s own host, separate from the site’s, without a control
+     * panel trigger. Requests outside the base URL’s path are site requests, but still on that host.
+     */
+    public function isCpHostRequest(): bool
+    {
+        $general = Craft::$app->getConfig()->getGeneral();
+        $request = Craft::$app->getRequest();
+        $cpHost = parse_url((string)$general->baseCpUrl, PHP_URL_HOST);
+
+        return (
+            !$general->cpTrigger &&
+            $cpHost &&
+            !$request->getIsConsoleRequest() &&
+            strcasecmp($cpHost, (string)$request->getHostName()) === 0 &&
+            strcasecmp($cpHost, (string)parse_url(UrlHelper::siteHost(), PHP_URL_HOST)) !== 0
+        );
+    }
+
+    /**
      * Returns a route’s path within the control panel’s base URL, when the current request is on the control panel’s
      * own host and there’s no control panel trigger.
      *
@@ -187,20 +206,12 @@ class Settings extends Model
      */
     private function cpHostPath(string $path): ?string
     {
-        $general = Craft::$app->getConfig()->getGeneral();
-        $request = Craft::$app->getRequest();
-        $cpHost = parse_url((string)$general->baseCpUrl, PHP_URL_HOST);
-
-        if (
-            $general->cpTrigger ||
-            !$cpHost ||
-            $request->getIsConsoleRequest() ||
-            strcasecmp($cpHost, (string)$request->getHostName()) !== 0 ||
-            strcasecmp($cpHost, (string)parse_url(UrlHelper::siteUrl(), PHP_URL_HOST)) === 0
-        ) {
+        if (!$this->isCpHostRequest()) {
             return null;
         }
 
+        $general = Craft::$app->getConfig()->getGeneral();
+        $request = Craft::$app->getRequest();
         $basePath = trim((string)parse_url($general->baseCpUrl, PHP_URL_PATH), '/');
         $requestBasePath = trim($request->getBaseUrl(), '/');
         if ($requestBasePath !== '' && str_starts_with("$basePath/", "$requestBasePath/")) {

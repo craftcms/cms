@@ -64,7 +64,7 @@ class OAuthConsentCest
     public function testControlPanelDomainLoginContinuesOnFrontEnd(FunctionalTester $I): void
     {
         $general = Craft::$app->getConfig()->getGeneral();
-        $original = ['baseCpUrl' => $general->baseCpUrl, 'cpTrigger' => $general->cpTrigger];
+        $original = ['baseCpUrl' => $general->baseCpUrl, 'cpTrigger' => $general->cpTrigger, 'omitScriptNameInUrls' => $general->omitScriptNameInUrls, 'loginPath' => $general->loginPath];
         $loginUrl = UrlHelper::siteUrl($general->getLoginPath() ?: "$general->actionTrigger/users/login");
         $params = $this->authorizeParams();
         $I->stopFollowingRedirects();
@@ -88,6 +88,16 @@ class OAuthConsentCest
             $I->assertStringStartsWith(UrlHelper::siteUrl("$general->actionTrigger/oauth/authorize"), $location);
             parse_str(parse_url($location, PHP_URL_QUERY), $query);
             $I->assertSame(['resource' => 'mcp'] + $params, $query);
+
+            // URLs with the script name are built on the request's host, but the continuation stays on the site's
+            $general->omitScriptNameInUrls = false;
+            $general->loginPath = $loginUrl;
+            $I->amOnPage('/oauth/mcp/authorize?' . http_build_query($params));
+            $I->seeResponseCodeIsRedirection();
+            $location = Craft::$app->getResponse()->getHeaders()->get('Location');
+            $I->assertSame(parse_url($loginUrl, PHP_URL_HOST), parse_url($location, PHP_URL_HOST));
+            $I->assertStringContainsString("$general->actionTrigger/oauth/authorize", $location);
+            $general->omitScriptNameInUrls = $original['omitScriptNameInUrls'];
 
             // Signed-in users stay on the control panel's domain
             $I->amLoggedInAs(User::find()->admin()->one());
