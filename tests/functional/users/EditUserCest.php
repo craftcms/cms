@@ -72,4 +72,32 @@ class EditUserCest
             $user->fullName
         );
     }
+
+    public function testTokensPageExplainsMissingOAuthKeys(FunctionalTester $I): void
+    {
+        $config = Craft::$app->getConfig()->getOAuth();
+        $config->privateKey = '@storage/missing-oauth-private.key';
+        $config->publicKey = '@storage/missing-oauth-public.key';
+
+        $I->amOnPage('/' . $this->cpTrigger . '/myaccount/tokens');
+        $I->seeResponseCodeIs(200);
+        $I->see('Tokens can’t be created until Craft has OAuth signing keys.');
+        $I->dontSeeElement('#new-token-btn');
+
+        $config->privateKey = $config->publicKey = null;
+    }
+
+    public function testTokensPageWithOAuthKeys(FunctionalTester $I): void
+    {
+        $config = Craft::$app->getConfig()->getOAuth();
+        $key = openssl_pkey_new(['private_key_bits' => 2048]);
+        openssl_pkey_export($key, $config->privateKey);
+        $config->publicKey = openssl_pkey_get_details($key)['key'];
+
+        $I->amOnPage('/' . $this->cpTrigger . '/myaccount/tokens');
+        $I->dontSee('Tokens can’t be created until Craft has OAuth signing keys.');
+        $I->seeElement('#new-token-btn');
+
+        $config->privateKey = $config->publicKey = null;
+    }
 }

@@ -344,6 +344,23 @@ class OAuth extends Component
         chmod($public, 0600);
     }
 
+    /**
+     * Returns whether valid signing keys are available, so tokens can be issued and verified.
+     *
+     * @since 5.12.1
+     */
+    public function hasKeys(): bool
+    {
+        try {
+            $this->key('private');
+            $this->key('public');
+        } catch (InvalidConfigException) {
+            return false;
+        }
+
+        return true;
+    }
+
     public function resource(string $resource): string
     {
         return $this->getResource($resource)->getResourceUrl();

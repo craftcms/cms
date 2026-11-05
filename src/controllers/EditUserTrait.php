@@ -114,8 +114,13 @@ trait EditUserTrait
         }
 
         // Users who can't create tokens still see the apps they've authorized.
+        // Without OAuth keys, only admins see the screen, so they can find out how to set them up.
         $tokens = Craft::$app->getPersonalAccessTokens();
-        if ($user->getIsCurrent() && ($tokens->scopeGroupsFor($user) || $tokens->grants($user))) {
+        if (
+            $user->getIsCurrent() &&
+            ($tokens->scopeGroupsFor($user) || $tokens->grants($user)) &&
+            ($user->admin || Craft::$app->getOAuth()->hasKeys())
+        ) {
             $screens[self::SCREEN_TOKENS] = ['label' => Craft::t('app', 'Tokens')];
         }
 

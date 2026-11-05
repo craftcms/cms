@@ -1568,6 +1568,11 @@ JS);
          */
         $response = $this->asEditUserScreen($user, self::SCREEN_TOKENS);
 
+        if (!Craft::$app->getOAuth()->hasKeys()) {
+            $response->contentTemplate('users/_tokens-setup');
+            return $response;
+        }
+
         $tokens = Craft::$app->getPersonalAccessTokens();
 
         $this->getView()->registerJsWithVars(fn($action) => <<<JS
