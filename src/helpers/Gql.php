@@ -159,7 +159,8 @@ class Gql
      * Returns whether a custom field should be included in an authenticated schema’s types, based on whether the
      * current user meets its (and its tab’s) user conditions.
      *
-     * Element conditions are evaluated at resolve time instead, via [[guardContentFieldDefinition()]].
+     * Element conditions and `showInForm` event handlers are evaluated at resolve time instead, via
+     * [[guardContentFieldDefinition()]], since handlers may expect an element.
      *
      * @param FieldInterface $field
      * @return bool
@@ -167,16 +168,34 @@ class Gql
      */
     public static function isFieldVisibleToUser(FieldInterface $field): bool
     {
-        if (!isset($field->layoutElement)) {
+        if (!isset($field->layoutElement->uid)) {
             return true;
         }
 
         $tab = self::_layoutElementTab($field->layoutElement);
-        if ($tab && !$tab->showInForm()) {
+        if ($tab && !self::_meetsUserCondition($tab)) {
             return false;
         }
 
-        return !isset($field->layoutElement->uid) || $field->layoutElement->showInForm();
+        return self::_meetsUserCondition($field->layoutElement);
+    }
+
+    /**
+     * Returns whether the current user meets a field layout component’s user condition, like
+     * [[FieldLayoutComponent::showInForm()]] checks.
+     *
+     * @param FieldLayoutComponent $component
+     * @return bool
+     */
+    private static function _meetsUserCondition(FieldLayoutComponent $component): bool
+    {
+        $userCondition = $component->getUserCondition();
+        if (!$userCondition) {
+            return true;
+        }
+
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        return !$currentUser || $userCondition->matchElement($currentUser);
     }
 
     /**

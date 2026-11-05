@@ -188,9 +188,16 @@ class Asset extends ElementMutationResolver
         }
 
         /** @var AssetElement $element */
+        // Handle the upload before populating the rest of the asset, so field layout conditions that depend on the
+        // file (such as its filename) can be evaluated. Make sure the user can save the asset first, though.
+        if ($element->id) {
+            $this->requireUserAuthorization($element, 'save');
+        }
+        $uploaded = !empty($fileInformation) && $this->handleUpload($element, $fileInformation);
+
         $element = parent::populateElementWithData($element, $arguments, $resolveInfo);
 
-        if (!empty($fileInformation) && $this->handleUpload($element, $fileInformation)) {
+        if ($uploaded) {
             if ($element->id) {
                 $element->setScenario(AssetElement::SCENARIO_REPLACE);
             } else {

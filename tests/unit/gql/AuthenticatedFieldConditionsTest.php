@@ -9,6 +9,8 @@ namespace crafttests\unit\gql;
 
 use Craft;
 use craft\base\FieldLayoutComponent;
+use craft\elements\Asset;
+use craft\elements\conditions\assets\FilenameConditionRule;
 use craft\elements\conditions\entries\TypeConditionRule;
 use craft\elements\conditions\TitleConditionRule;
 use craft\elements\conditions\users\AdminConditionRule;
@@ -17,11 +19,16 @@ use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\events\DefineShowFieldLayoutComponentInFormEvent;
 use craft\fieldlayoutelements\CustomField;
+use craft\gql\base\ElementMutationResolver;
+use craft\gql\resolvers\mutations\Asset as AssetMutationResolver;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
 use craft\test\TestCase;
 use crafttests\fixtures\EntryFixture;
+use crafttests\fixtures\VolumesFixture;
 use GraphQL\Type\Definition\ObjectType;
+use GraphQL\Type\Definition\Type;
+use ReflectionMethod;
 
 /**
  * Tests that schemas for GraphQL requests authenticated as a user respect field layout conditions.
@@ -48,6 +55,9 @@ class AuthenticatedFieldConditionsTest extends TestCase
         return [
             'entries' => [
                 'class' => EntryFixture::class,
+            ],
+            'volumes' => [
+                'class' => VolumesFixture::class,
             ],
         ];
     }
@@ -96,6 +106,7 @@ class AuthenticatedFieldConditionsTest extends TestCase
         }
 
         Craft::$app->getUser()->setIdentity(null);
+        Craft::$app->getGql()->setActiveSchema(null);
         Craft::$app->getConfig()->getGeneral()->lazyGqlTypes = $this->lazyGqlTypes;
         Craft::$app->getGql()->flushCaches();
     }
@@ -158,7 +169,8 @@ class AuthenticatedFieldConditionsTest extends TestCase
         $this->layoutElement('plainTextField2')->on(
             FieldLayoutComponent::EVENT_DEFINE_SHOW_IN_FORM,
             function(DefineShowFieldLayoutComponentInFormEvent $event) {
-                $event->showInForm = $event->element?->title !== 'With URL 2';
+                // Handlers may assume there's an element
+                $event->showInForm = $event->element?->title === 'With URL 1';
             },
         );
 
@@ -167,6 +179,17 @@ class AuthenticatedFieldConditionsTest extends TestCase
             ['title' => 'With URL 1', 'plainTextField2' => 'Secret: With URL 1'],
             ['title' => 'With URL 2', 'plainTextField2' => null],
         ], $result['data']['entries']);
+
+        // The field can still be set where the handler allows it, and is rejected elsewhere
+        $mutation = 'mutation { save_withUri1_withUrls_Entry(id: %s, plainTextField2: "Changed") { id } }';
+        $allowed = Entry::find()->section('withUri1')->title('With URL 1')->one();
+        $result = $this->execute($this->userSchema(), sprintf($mutation, $allowed->id));
+        self::assertArrayNotHasKey('errors', $result);
+        self::assertSame('Changed', $this->fieldValue($allowed->id));
+
+        $hidden = Entry::find()->section('withUri1')->title('With URL 2')->one();
+        $result = $this->execute($this->userSchema(), sprintf($mutation, $hidden->id));
+        self::assertSame('You don’t have permission to edit the following fields: plainTextField2', $result['errors'][0]['message']);
     }
 
     public function testFieldsLockedByEditConditionsAreExcludedFromMutations(): void
@@ -237,6 +260,34 @@ class AuthenticatedFieldConditionsTest extends TestCase
         $entry = Entry::find()->id($entryId)->one();
         self::assertInstanceOf(Entry::class, $entry);
         return $entry->getFieldValue('plainTextField2');
+    }
+
+    public function testAssetFieldConditionsCanDependOnTheUploadedFile(): void
+    {
+        // Filename conditions can only be evaluated once the uploaded file has been handled
+        $condition = Asset::createCondition();
+        $condition->addConditionRule(new FilenameConditionRule(['operator' => '=', 'value' => 'upload.txt']));
+        $layoutElement = Craft::$app->getVolumes()->getVolumeById(1000)
+            ->getFieldLayout()
+            ->getFieldByHandle('imageDescription')
+            ->layoutElement;
+        $layoutElement->setElementEditCondition($condition);
+        $this->conditionalLayoutElements[] = $layoutElement;
+
+        Craft::$app->getGql()->setActiveSchema($this->userSchema());
+        $resolver = Craft::createObject(AssetMutationResolver::class);
+        $resolver->setResolutionData('volume', Craft::$app->getVolumes()->getVolumeById(1000));
+        $resolver->setResolutionData(ElementMutationResolver::CONTENT_FIELD_KEY, ['imageDescription' => Type::string()]);
+
+        $asset = new Asset(['volumeId' => 1000]);
+        $populate = new ReflectionMethod($resolver, 'populateElementWithData');
+        $populate->invoke($resolver, $asset, [
+            '_file' => ['fileData' => 'data:text/plain;base64,' . base64_encode('Hello'), 'filename' => 'upload.txt'],
+            'imageDescription' => 'Described',
+        ]);
+
+        self::assertSame('upload.txt', $asset->getFilename());
+        self::assertSame('Described', $asset->getFieldValue('imageDescription'));
     }
 
     private function userSchema(): GqlSchema
