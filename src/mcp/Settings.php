@@ -153,35 +153,65 @@ class Settings extends Model
     /**
      * Returns the absolute URL for a route.
      *
-     * Without a control panel trigger, the control panel’s own domain serves the authenticated routes too, so
-     * control panel requests get URLs on that domain.
+     * Without a control panel trigger, the control panel can have its own host, which also serves the routes within
+     * its base URL’s path. Requests on that host get URLs on it for those routes, including discovery requests
+     * outside the base URL’s path.
      */
     public function url(string $route): string
     {
         $path = trim($route, '/');
         $general = Craft::$app->getConfig()->getGeneral();
-        $request = Craft::$app->getRequest();
 
         if ($this->isCpRoute($path)) {
             $path = ltrim(substr($path, strlen($general->cpTrigger)), '/');
             return UrlHelper::removeParam(UrlHelper::cpUrl($path), 'site');
         }
 
-        if (!$general->cpTrigger && $request->getIsCpRequest()) {
-            // Routes include the control panel base URL’s path, like control panel requests’ full paths, so remove it
-            // the way craft\web\Request::init() does.
-            $basePath = trim((string)parse_url((string)$general->baseCpUrl, PHP_URL_PATH), '/');
-            $requestBasePath = trim($request->getBaseUrl(), '/');
-            if ($requestBasePath !== '' && str_starts_with("$basePath/", "$requestBasePath/")) {
-                $basePath = ltrim(substr($basePath, strlen($requestBasePath)), '/');
-            }
-            if ($basePath !== '' && str_starts_with("$path/", "$basePath/")) {
-                $path = ltrim(substr($path, strlen($basePath)), '/');
-            }
-            return UrlHelper::removeParam(UrlHelper::cpUrl($path), 'site');
+        $cpPath = $this->cpHostPath($path);
+        if ($cpPath !== null) {
+            // URLs with the script name are built from the web root on the current request’s host, which can be the
+            // site’s, while others start at the control panel’s base URL.
+            $url = UrlHelper::removeParam(UrlHelper::cpUrl($general->omitScriptNameInUrls ? $cpPath : $path), 'site');
+            return UrlHelper::hostInfo($general->baseCpUrl) . substr($url, strlen(UrlHelper::hostInfo($url)));
         }
 
         return UrlHelper::siteUrl($path);
+    }
+
+    /**
+     * Returns a route’s path within the control panel’s base URL, when the current request is on the control panel’s
+     * own host and there’s no control panel trigger.
+     *
+     * Routes are relative to the web root, like control panel requests’ full paths, so the base URL’s path is removed
+     * the way craft\web\Request::init() does.
+     */
+    private function cpHostPath(string $path): ?string
+    {
+        $general = Craft::$app->getConfig()->getGeneral();
+        $request = Craft::$app->getRequest();
+        $cpHost = parse_url((string)$general->baseCpUrl, PHP_URL_HOST);
+
+        if (
+            $general->cpTrigger ||
+            !$cpHost ||
+            $request->getIsConsoleRequest() ||
+            strcasecmp($cpHost, (string)$request->getHostName()) !== 0 ||
+            strcasecmp($cpHost, (string)parse_url(UrlHelper::siteUrl(), PHP_URL_HOST)) === 0
+        ) {
+            return null;
+        }
+
+        $basePath = trim((string)parse_url($general->baseCpUrl, PHP_URL_PATH), '/');
+        $requestBasePath = trim($request->getBaseUrl(), '/');
+        if ($requestBasePath !== '' && str_starts_with("$basePath/", "$requestBasePath/")) {
+            $basePath = ltrim(substr($basePath, strlen($requestBasePath)), '/');
+        }
+
+        if ($basePath === '') {
+            return $path;
+        }
+
+        return str_starts_with("$path/", "$basePath/") ? ltrim(substr($path, strlen($basePath)), '/') : null;
     }
 
     public function validateRoute(string $attribute): void

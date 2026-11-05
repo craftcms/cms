@@ -146,7 +146,7 @@ class McpServersCest
     {
         // The control panel lives at /backoffice on the site's own host
         $general = Craft::$app->getConfig()->getGeneral();
-        $original = ['baseCpUrl' => $general->baseCpUrl, 'cpTrigger' => $general->cpTrigger];
+        $original = ['baseCpUrl' => $general->baseCpUrl, 'cpTrigger' => $general->cpTrigger, 'omitScriptNameInUrls' => $general->omitScriptNameInUrls];
         $general->baseCpUrl = UrlHelper::siteUrl('backoffice');
         $general->cpTrigger = null;
         $this->settings(['enabled' => true, 'route' => '/backoffice/mcp', 'authorizationRoute' => '/backoffice/mcp/auth']);
@@ -156,6 +156,40 @@ class McpServersCest
             $I->sendAjaxPostRequest('/backoffice/mcp/auth');
             $I->seeResponseCodeIs(401);
             $I->assertStringContainsString('"' . UrlHelper::siteUrl('.well-known/oauth-protected-resource/backoffice/mcp/auth') . '"', Craft::$app->getResponse()->getHeaders()->get('WWW-Authenticate'));
+
+            // URLs with the script name keep the base URL's path too
+            $general->omitScriptNameInUrls = false;
+            $I->assertSame(UrlHelper::siteUrl('backoffice/mcp/auth'), Craft::$app->getOAuth()->resource('mcp'));
+        } finally {
+            Craft::configure($general, $original);
+        }
+    }
+
+    public function testControlPanelDomainBasePathWithoutTrigger(FunctionalTester $I): void
+    {
+        $general = Craft::$app->getConfig()->getGeneral();
+        $original = ['baseCpUrl' => $general->baseCpUrl, 'cpTrigger' => $general->cpTrigger, 'omitScriptNameInUrls' => $general->omitScriptNameInUrls, 'usePathInfo' => $general->usePathInfo];
+        $general->baseCpUrl = 'https://cp.example.com/backoffice';
+        $general->cpTrigger = null;
+        $this->settings(['enabled' => true, 'route' => '/backoffice/mcp', 'authorizationRoute' => '/backoffice/mcp/auth']);
+
+        try {
+            $I->haveServerParameter('HTTP_HOST', 'cp.example.com');
+            $I->haveServerParameter('HTTPS', 'on');
+            $I->sendAjaxPostRequest('/backoffice/mcp/auth');
+            $I->seeResponseCodeIs(401);
+            $I->assertStringContainsString('"https://cp.example.com/.well-known/oauth-protected-resource/backoffice/mcp/auth"', Craft::$app->getResponse()->getHeaders()->get('WWW-Authenticate'));
+
+            // Discovery requests outside the base URL's path are site requests, but stay on the control panel's host
+            $I->amOnPage('/.well-known/oauth-protected-resource/backoffice/mcp/auth');
+            $I->assertSame('https://cp.example.com/backoffice/mcp/auth', json_decode($I->grabPageSource(), true)['resource']);
+
+            // URLs with the script name start at the web root
+            $general->omitScriptNameInUrls = false;
+            $general->usePathInfo = true;
+            $I->assertSame('https://cp.example.com/index.php/backoffice/mcp/auth', Craft::$app->getOAuth()->resource('mcp'));
+            $general->usePathInfo = false;
+            $I->assertSame('https://cp.example.com/index.php?p=backoffice/mcp/auth', Craft::$app->getOAuth()->resource('mcp'));
         } finally {
             Craft::configure($general, $original);
         }
