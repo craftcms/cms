@@ -3677,7 +3677,7 @@ return [
     '{num, number} {num, plural, =1{hour} other{hours}}' => '{num, number} {num, plural, one {} =1{ora} other{ore}}',
     '{num, number} {num, plural, =1{issue} other{issues}}' => '{num, number} {num, plural, =1{problema} other{problemi}}',
     '{num, number} {num, plural, =1{item} other{items}}' => '{num, number} {num, plural, =1{elemento} other{elementi}}',
-    '{num, number} {num, plural, =1{item} other{items}} selected' => '{num, number} {num, plural, =1{elemento selezionato} other{elementi selezionati}}',
+    '{num, number} {num, plural, =1{{item}} other{{items}}} selected' => '{num, number} {num, plural, =1{{item}} other{{items}}} selected',
     '{num, number} {num, plural, =1{minute} other{minutes}}' => '{num, number} {num, plural, one {} =1{minuto} other{minuti}}',
     '{num, number} {num, plural, =1{month} other{months}}' => '{num, number} {num, plural, one {} =1{mese} other{mesi}}',
     '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number} {num, plural, one {} =1{notifica} other{notifiche}}',
