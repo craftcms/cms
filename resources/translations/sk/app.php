@@ -1313,6 +1313,7 @@ return [
     'Compatibility' => 'Kompatibilita',
     'Compiled classes' => 'Kompilované triedy',
     'Compiled templates' => 'Kompilované šablóny',
+    'Compiled views' => 'Compiled views',
     'Complete the Update' => 'Dokončiť aktualizáciu',
     'Completed job' => 'Dokončená úloha',
     'Completed' => 'Dokončené',
