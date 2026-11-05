@@ -11,6 +11,8 @@ use Craft;
 use craft\base\FieldLayoutComponent;
 use craft\elements\Asset;
 use craft\elements\conditions\assets\FilenameConditionRule;
+use craft\elements\conditions\assets\FileTypeConditionRule;
+use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\conditions\entries\TypeConditionRule;
 use craft\elements\conditions\TitleConditionRule;
 use craft\elements\conditions\users\AdminConditionRule;
@@ -41,6 +43,12 @@ class AuthenticatedFieldConditionsTest extends TestCase
     private const SECTION = 'section-1003---------------------uid';
     private const ENTRY_TYPE_ID = 1003;
     private const NESTED_ENTRY_TYPE_ID = 1008;
+    private const VOLUME = 'volume-1000----------------------uid';
+
+    /**
+     * A 1×1 PNG
+     */
+    private const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
 
     private User $user;
     private bool $lazyGqlTypes;
@@ -83,6 +91,8 @@ class AuthenticatedFieldConditionsTest extends TestCase
             'viewPeerEntries:' . self::SECTION,
             'saveEntries:' . self::SECTION,
             'savePeerEntries:' . self::SECTION,
+            'viewAssets:' . self::VOLUME,
+            'saveAssets:' . self::VOLUME,
         ]);
         $this->user = Craft::$app->getUsers()->getUserById($user->id);
 
@@ -265,29 +275,74 @@ class AuthenticatedFieldConditionsTest extends TestCase
     public function testAssetFieldConditionsCanDependOnTheUploadedFile(): void
     {
         // Filename conditions can only be evaluated once the uploaded file has been handled
+        $this->setAssetEditCondition(new FilenameConditionRule(['operator' => '=', 'value' => 'upload.txt']));
+
+        $asset = new Asset(['volumeId' => 1000]);
+        $this->populateAsset($asset, 'data:text/plain;base64,' . base64_encode('Hello'), 'upload.txt');
+
+        self::assertSame('upload.txt', $asset->getFilename());
+        self::assertSame('Described', $asset->getFieldValue('imageDescription'));
+    }
+
+    public function testAssetFieldConditionsUseTheUploadedFilesInfo(): void
+    {
+        $this->setAssetEditCondition(new FileTypeConditionRule(['values' => [Asset::KIND_IMAGE]]));
+
+        $asset = new Asset(['volumeId' => 1000]);
+        $this->populateAsset($asset, self::PNG, 'upload.png');
+
+        self::assertSame(Asset::KIND_IMAGE, $asset->kind);
+        self::assertSame(1, $asset->getWidth());
+        self::assertSame(1, $asset->getHeight());
+        self::assertGreaterThan(0, $asset->size);
+        self::assertSame('Described', $asset->getFieldValue('imageDescription'));
+    }
+
+    public function testAssetFieldConditionsUseTheReplacementFilesInfo(): void
+    {
+        $this->setAssetEditCondition(new FileTypeConditionRule(['values' => [Asset::KIND_IMAGE]]));
+
+        // An existing text file being replaced with an image
+        $asset = new Asset([
+            'id' => 999999,
+            'volumeId' => 1000,
+            'uploaderId' => $this->user->id,
+            'filename' => 'old.txt',
+            'kind' => Asset::KIND_TEXT,
+            'size' => 5,
+        ]);
+        $this->populateAsset($asset, self::PNG, 'upload.png');
+
+        self::assertSame('old.txt', $asset->getFilename());
+        self::assertSame('upload.png', $asset->newFilename);
+        self::assertSame(Asset::KIND_IMAGE, $asset->kind);
+        self::assertSame('Described', $asset->getFieldValue('imageDescription'));
+    }
+
+    private function setAssetEditCondition(ElementConditionRuleInterface $rule): void
+    {
         $condition = Asset::createCondition();
-        $condition->addConditionRule(new FilenameConditionRule(['operator' => '=', 'value' => 'upload.txt']));
+        $condition->addConditionRule($rule);
         $layoutElement = Craft::$app->getVolumes()->getVolumeById(1000)
             ->getFieldLayout()
             ->getFieldByHandle('imageDescription')
             ->layoutElement;
         $layoutElement->setElementEditCondition($condition);
         $this->conditionalLayoutElements[] = $layoutElement;
+    }
 
+    private function populateAsset(Asset $asset, string $fileData, string $filename): void
+    {
         Craft::$app->getGql()->setActiveSchema($this->userSchema());
         $resolver = Craft::createObject(AssetMutationResolver::class);
         $resolver->setResolutionData('volume', Craft::$app->getVolumes()->getVolumeById(1000));
         $resolver->setResolutionData(ElementMutationResolver::CONTENT_FIELD_KEY, ['imageDescription' => Type::string()]);
 
-        $asset = new Asset(['volumeId' => 1000]);
         $populate = new ReflectionMethod($resolver, 'populateElementWithData');
         $populate->invoke($resolver, $asset, [
-            '_file' => ['fileData' => 'data:text/plain;base64,' . base64_encode('Hello'), 'filename' => 'upload.txt'],
+            '_file' => ['fileData' => $fileData, 'filename' => $filename],
             'imageDescription' => 'Described',
         ]);
-
-        self::assertSame('upload.txt', $asset->getFilename());
-        self::assertSame('Described', $asset->getFieldValue('imageDescription'));
     }
 
     private function userSchema(): GqlSchema

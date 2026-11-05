@@ -17,11 +17,13 @@ use craft\gql\base\ElementMutationResolver;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\Image;
 use craft\helpers\UrlHelper;
 use craft\models\Volume;
 use craft\services\Assets;
 use CraftCms\UrlValidator\UrlValidationException;
 use CraftCms\UrlValidator\UrlValidator;
+use DateTime;
 use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -306,6 +308,21 @@ class Asset extends ElementMutationResolver
         }
         $asset->setMimeType(FileHelper::getMimeType($tempPath, checkExtension: false));
         $asset->avoidFilenameConflicts = true;
+
+        // Set the file info the asset will have once saved, so field layout conditions are evaluated against the
+        // uploaded file. (The asset recalculates these from the temp file when it’s saved.)
+        $asset->kind = AssetsHelper::getFileKindByExtension($filename);
+        if ($asset->kind === AssetElement::KIND_IMAGE) {
+            [$width, $height] = Image::imageSize($tempPath);
+            $asset->setWidth($width ?: null);
+            $asset->setHeight($height ?: null);
+        } else {
+            $asset->setWidth(null);
+            $asset->setHeight(null);
+        }
+        $asset->size = filesize($tempPath) ?: null;
+        $mtime = filemtime($tempPath);
+        $asset->dateModified = $mtime ? new DateTime('@' . $mtime) : null;
 
         return true;
     }
