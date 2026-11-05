@@ -1908,14 +1908,15 @@ JS,
             }
 
             if (isset($entryData['fields'])) {
-                foreach ($entryData['fields'] as $fieldHandle => $fieldValue) {
-                    try {
-                        if ($fromRequest) {
-                            $entry->setFieldValueFromRequest($fieldHandle, $fieldValue);
-                        } else {
+                if ($fromRequest) {
+                    // Respect field layout conditions
+                    ElementHelper::setNestedFieldValuesFromRequest($entry, $entryData['fields']);
+                } else {
+                    foreach ($entryData['fields'] as $fieldHandle => $fieldValue) {
+                        try {
                             $entry->setFieldValue($fieldHandle, $fieldValue);
+                        } catch (InvalidFieldException) {
                         }
-                    } catch (InvalidFieldException) {
                     }
                 }
             }

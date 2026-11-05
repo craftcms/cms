@@ -79,6 +79,7 @@ use craft\models\FieldLayout;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
 use craft\models\Section;
+use craft\models\UserGroup;
 use craft\oauth\Resource as OAuthResource;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\records\GqlToken as GqlTokenRecord;
@@ -583,6 +584,12 @@ class Gql extends Component
                 $schemaDef = $this->getSchemaDef($schema, $prebuildSchema);
                 $elementsService = Craft::$app->getElements();
                 $elementsService->startCollectingCacheInfo();
+
+                // Field layout user conditions may be based on the user’s own content, so invalidate cached results
+                // when the user is saved
+                if ($schema->user) {
+                    $elementsService->collectCacheTags(["element::{$schema->user->id}"]);
+                }
 
                 $result = GraphQL::executeQuery(
                     $schemaDef,
@@ -1631,6 +1638,11 @@ class Gql extends Component
             // user’s current permissions as well
             if ($schema->user) {
                 $cacheKey .= '::' . $this->_userPermissionsHash($schema->user);
+
+                // Field layout user conditions are commonly based on the user’s groups as well
+                $groupIds = array_map(fn(UserGroup $group) => $group->id, $schema->user->getGroups());
+                sort($groupIds);
+                $cacheKey .= '::' . implode(',', $groupIds);
             }
         } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
