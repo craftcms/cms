@@ -130,6 +130,7 @@ it('serializes choice presentations', function () {
 it('serializes text input behavior', function () {
     expect(Text::make('name')
         ->autofocus()
+        ->selectOnFocus()
         ->autocomplete(false)
         ->autocorrect(false)
         ->autocapitalize(false)
@@ -137,6 +138,7 @@ it('serializes text input behavior', function () {
         ->dir('rtl')
         ->props())->toMatchArray([
             'autofocus' => true,
+            'selectOnFocus' => true,
             'autocomplete' => false,
             'autocorrect' => false,
             'autocapitalize' => false,

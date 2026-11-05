@@ -33,6 +33,8 @@ class Text extends Control
 
     private bool $autofocus = false;
 
+    private bool $selectOnFocus = false;
+
     private bool|string|null $autocomplete = null;
 
     private bool $autocorrect = true;
@@ -142,6 +144,16 @@ class Text extends Control
         return $this;
     }
 
+    /**
+     * Select the control's value whenever it's focused, so it can be typed over.
+     */
+    public function selectOnFocus(bool $selectOnFocus = true): static
+    {
+        $this->selectOnFocus = $selectOnFocus;
+
+        return $this;
+    }
+
     public function autocomplete(bool|string $autocomplete): static
     {
         $this->autocomplete = $autocomplete;
@@ -218,6 +230,7 @@ class Text extends Control
             'placeholder' => $this->placeholder,
             'inputMode' => $this->inputMode,
             'autofocus' => $this->autofocus ?: null,
+            'selectOnFocus' => $this->selectOnFocus ?: null,
             'autocomplete' => $this->autocomplete,
             'autocorrect' => $this->autocorrect ? null : false,
             'autocapitalize' => $this->autocapitalize ? null : false,
