@@ -60,6 +60,33 @@ describe('ElementCards', () => {
     return {root: container, selection};
   }
 
+  it.each([
+    ['nothing', {}, null],
+    [
+      'a disabled stand-in that assistive tech skips',
+      {placeholderSelectAll: true},
+      true,
+    ],
+  ])(
+    'heads cards that can’t be selected with %s',
+    async (_, props, disabled) => {
+      const {root} = mount({selectable: false, ...props});
+      await nextTick();
+
+      const header = root.querySelector('.card-grid-header');
+      const checkbox = header?.querySelector('craft-checkbox') as
+        | (HTMLElement & {disabled?: boolean})
+        | null
+        | undefined;
+
+      expect(checkbox?.disabled ?? null).toBe(disabled);
+      if (disabled) {
+        expect(header!.getAttribute('aria-hidden')).toBe('true');
+        expect(header!.hasAttribute('inert')).toBe(true);
+      }
+    }
+  );
+
   it("labels each card's checkbox with that card's own title", async () => {
     const {root} = mount();
     await nextTick();
