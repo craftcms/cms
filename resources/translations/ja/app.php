@@ -1313,6 +1313,7 @@ return [
     'Compatibility' => '互換性',
     'Compiled classes' => 'コンパイル済みのクラス',
     'Compiled templates' => 'コンパイル済のテンプレート',
+    'Compiled views' => 'Compiled views',
     'Complete the Update' => 'アップデートを完了',
     'Completed job' => '完了したジョブ',
     'Completed' => '完了',
