@@ -257,6 +257,42 @@
       }))
   );
   const customOptionInputs = new Map<number, HTMLInputElement>();
+
+  // A value written from outside, such as one copied from another version,
+  // can hold different custom options than the rows show. The rows' own edits
+  // always match the value, so only an outside change rebuilds them.
+  watch(
+    () => props.value,
+    () => {
+      const choiceValues = new Set(
+        choiceOptions.value.map((option) => inputValue(option.value))
+      );
+
+      if (customCheckboxes.value) {
+        const custom = currentValues().filter(
+          (value) => !choiceValues.has(value)
+        );
+        const shown = customOptions.value
+          .filter((option) => option.checked && option.text !== '')
+          .map((option) => option.text);
+
+        if (custom.join('\0') !== shown.join('\0')) {
+          customOptions.value = custom.map((text) => ({
+            key: customOptionKey++,
+            text,
+            checked: true,
+          }));
+        }
+      } else if (customRadio.value && typeof props.value === 'string') {
+        if (choiceValues.has(props.value)) {
+          customRadioSelected.value = false;
+        } else if (props.value !== '') {
+          customRadioText.value = props.value;
+          customRadioSelected.value = true;
+        }
+      }
+    }
+  );
   const addOptionButton = ref<HTMLElement | null>(null);
 
   function customOptionId(option: CustomOption): string {
