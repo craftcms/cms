@@ -3248,6 +3248,7 @@ return [
     'Upload failed for “{filename}”.' => 'Opplastingen for “{filename}” mislyktes.',
     'Upload failed.' => 'Opplasting mislyktes.',
     'Upload files' => 'Last opp filer',
+    'Upload progress' => 'Opplastingsfremdrift',
     'Uploaded By' => 'Lastet opp av',
     'Uploaded by' => 'Lastet opp av',
     'Use the AI assistant' => 'Bruk AI-assistenten',
