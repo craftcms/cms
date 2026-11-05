@@ -198,9 +198,9 @@ it('holds groups bound for the Appearance tab until it renders', async () => {
   await flush();
 
   expect(
-    container
-      .querySelector('[data-ui-outlet="field-layout-designer.appearance"]')
-      ?.querySelector('[data-ui-node="display-settings"]')
+    container.querySelector(
+      '[data-ui-outlet="field-layout-designer.appearance"] [data-ui-node="display-settings"]'
+    )
   ).not.toBeNull();
 });
 
