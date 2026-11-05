@@ -527,14 +527,19 @@ class Addresses extends Field implements
             }
 
             if (isset($addressData['fields'])) {
-                foreach ($addressData['fields'] as $fieldHandle => $fieldValue) {
-                    try {
-                        if ($fromRequest) {
-                            $address->setFieldValueFromRequest($fieldHandle, $fieldValue);
-                        } else {
-                            $address->setFieldValue($fieldHandle, $fieldValue);
+                if ($fromRequest && Gql::authenticatedUser()) {
+                    // Respect field layout conditions for GraphQL requests authenticated as a user
+                    Gql::populateFieldValues($address, $addressData['fields']);
+                } else {
+                    foreach ($addressData['fields'] as $fieldHandle => $fieldValue) {
+                        try {
+                            if ($fromRequest) {
+                                $address->setFieldValueFromRequest($fieldHandle, $fieldValue);
+                            } else {
+                                $address->setFieldValue($fieldHandle, $fieldValue);
+                            }
+                        } catch (InvalidFieldException) {
                         }
-                    } catch (InvalidFieldException) {
                     }
                 }
             }

@@ -1908,14 +1908,19 @@ JS,
             }
 
             if (isset($entryData['fields'])) {
-                foreach ($entryData['fields'] as $fieldHandle => $fieldValue) {
-                    try {
-                        if ($fromRequest) {
-                            $entry->setFieldValueFromRequest($fieldHandle, $fieldValue);
-                        } else {
-                            $entry->setFieldValue($fieldHandle, $fieldValue);
+                if ($fromRequest && Gql::authenticatedUser()) {
+                    // Respect field layout conditions for GraphQL requests authenticated as a user
+                    Gql::populateFieldValues($entry, $entryData['fields']);
+                } else {
+                    foreach ($entryData['fields'] as $fieldHandle => $fieldValue) {
+                        try {
+                            if ($fromRequest) {
+                                $entry->setFieldValueFromRequest($fieldHandle, $fieldValue);
+                            } else {
+                                $entry->setFieldValue($fieldHandle, $fieldValue);
+                            }
+                        } catch (InvalidFieldException) {
                         }
-                    } catch (InvalidFieldException) {
                     }
                 }
             }

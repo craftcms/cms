@@ -938,14 +938,19 @@ JS, [
         }
 
         if (isset($value['fields'])) {
-            foreach ($value['fields'] as $fieldHandle => $fieldValue) {
-                try {
-                    if ($fromRequest) {
-                        $contentBlock->setFieldValueFromRequest($fieldHandle, $fieldValue);
-                    } else {
-                        $contentBlock->setFieldValue($fieldHandle, $fieldValue);
+            if ($fromRequest && Gql::authenticatedUser()) {
+                // Respect field layout conditions for GraphQL requests authenticated as a user
+                Gql::populateFieldValues($contentBlock, $value['fields']);
+            } else {
+                foreach ($value['fields'] as $fieldHandle => $fieldValue) {
+                    try {
+                        if ($fromRequest) {
+                            $contentBlock->setFieldValueFromRequest($fieldHandle, $fieldValue);
+                        } else {
+                            $contentBlock->setFieldValue($fieldHandle, $fieldValue);
+                        }
+                    } catch (InvalidFieldException) {
                     }
-                } catch (InvalidFieldException) {
                 }
             }
         }
