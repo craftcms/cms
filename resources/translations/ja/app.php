@@ -3248,6 +3248,7 @@ return [
     'Upload failed for “{filename}”.' => '“{filename}” のアップロードに失敗しました.',
     'Upload failed.' => 'アップロードに失敗しました。',
     'Upload files' => 'アップロード',
+    'Upload progress' => 'アップロードの進行状況',
     'Uploaded By' => 'アップロード者',
     'Uploaded by' => 'アップロード者',
     'Use the AI assistant' => 'AIアシスタントを使用する',
