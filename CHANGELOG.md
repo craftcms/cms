@@ -3,6 +3,8 @@
 ## Unreleased
 
 - Renamed Craft’s MCP tools to use snake_case names, such as `elements_list` instead of `elements.list` and `craft_query` instead of `craft-query`, because VS Code, claude.ai, and other MCP clients reject or rename tools with dots in their names. Public MCP server approvals are updated automatically. Plugins should name their MCP tools the same way, such as `my_plugin_orders_list`. ([#20351](https://github.com/craftcms/cms/issues/20351))
+- The `assets_create` and `assets_replace` MCP tools now accept base64-encoded file data, local file paths (stdio server only), and files sent to single-use upload URLs from the new `assets_upload_url` MCP tool, in addition to download URLs. Download URLs no longer require a `file_id`, follow up to 3 redirects, and are validated against SSRF via craftcms/url-validator.
+- The `assets_create` MCP tool can now upload files to an Assets field’s default upload location, via its new `fieldId` and `elementId` arguments.
 - The **My Account** → **Tokens** screen is now only shown to admins when OAuth signing keys haven’t been set up yet, and explains how to set them up, rather than failing with a server error when a token is created. ([#20357](https://github.com/craftcms/cms/issues/20357))
 - Fixed a bug where the MCP server required date-time values for Time fields within nested entries, which those fields couldn’t parse. ([#20319](https://github.com/craftcms/cms/issues/20319))
 - Fixed a bug where field layout conditions within Content Block fields and nested entries didn’t update based on dropdown values, such as a Link field’s selected link type. ([#20332](https://github.com/craftcms/cms/issues/20332))
