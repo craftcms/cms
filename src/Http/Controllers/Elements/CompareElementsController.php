@@ -134,23 +134,24 @@ readonly class CompareElementsController
         $siteId = $request->integer('fromSiteId') ?: $to->siteId;
 
         if (! is_string($version) && $siteId === $to->siteId) {
-            return $this->comparisons->baseOf($to) ?? $to;
+            $from = $this->comparisons->baseOf($to) ?? $to;
+        } else {
+            abort_unless(in_array($siteId, $this->sites->getEditableSiteIds()->all(), true), 403, 'User not authorized to edit content for this site.');
+
+            [$type, $id] = array_pad(explode('-', is_string($version) ? $version : 'current', 2), 2, null);
+            $query = $canonical::find()->siteId($siteId)->status(null);
+
+            $from = match ($type) {
+                'draft' => $query->draftId((int) $id)->one(),
+                'revision' => $query->revisionId((int) $id)->trashed(null)->one(),
+                'current' => $query->id($canonical->id)->one(),
+                'edits' => $this->edits($request, $canonical, $siteId),
+                default => abort(400, "Invalid version: $version"),
+            };
+
+            abort_if($from === null || $from->getCanonicalId() !== $canonical->id, 404, 'The version to compare with doesn’t exist.');
         }
 
-        abort_unless(in_array($siteId, $this->sites->getEditableSiteIds()->all(), true), 403, 'User not authorized to edit content for this site.');
-
-        [$type, $id] = array_pad(explode('-', is_string($version) ? $version : 'current', 2), 2, null);
-        $query = $canonical::find()->siteId($siteId)->status(null);
-
-        $from = match ($type) {
-            'draft' => $query->draftId((int) $id)->one(),
-            'revision' => $query->revisionId((int) $id)->trashed(null)->one(),
-            'current' => $query->id($canonical->id)->one(),
-            'edits' => $this->edits($request, $canonical, $siteId),
-            default => abort(400, "Invalid version: $version"),
-        };
-
-        abort_if($from === null || $from->getCanonicalId() !== $canonical->id, 404, 'The version to compare with doesn’t exist.');
         abort_unless($request->craftUser()->can('view', $from), 403, 'User not authorized to view this element.');
 
         return $from;

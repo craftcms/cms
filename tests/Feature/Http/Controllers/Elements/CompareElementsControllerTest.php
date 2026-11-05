@@ -24,6 +24,7 @@ use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Uri;
 use Inertia\Testing\AssertableInertia;
@@ -561,4 +562,20 @@ it('returns 404 when the version to compare with belongs to another entry', func
     $otherDraft = app(Drafts::class)->createDraft($other, auth()->id());
 
     get(compareScreenUrl($entry, ['from' => "draft-$otherDraft->draftId"]))->assertNotFound();
+});
+
+it('forbids comparing a draft with a current entry the user can’t view', function () {
+    $entry = comparedEntry(['summary' => 'Someone else’s']);
+    $user = UserModel::factory()
+        ->withPermissions([
+            'accessCp',
+            sprintf('editSite:%s', Site::query()->where('primary', true)->value('uid')),
+            "viewEntries:{$this->section->uid}",
+        ])
+        ->createElement(['admin' => false]);
+    $draft = app(Drafts::class)->createDraft($entry, $user->id);
+
+    actingAs($user);
+
+    get(compareScreenUrl($entry, ['draftId' => $draft->draftId]))->assertForbidden();
 });
