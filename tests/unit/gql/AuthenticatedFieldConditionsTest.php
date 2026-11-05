@@ -8,12 +8,14 @@
 namespace crafttests\unit\gql;
 
 use Craft;
+use craft\base\FieldLayoutComponent;
 use craft\elements\conditions\entries\TypeConditionRule;
 use craft\elements\conditions\TitleConditionRule;
 use craft\elements\conditions\users\AdminConditionRule;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\enums\CmsEdition;
+use craft\events\DefineShowFieldLayoutComponentInFormEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
@@ -90,6 +92,7 @@ class AuthenticatedFieldConditionsTest extends TestCase
             $layoutElement->setElementCondition(null);
             $layoutElement->setEditCondition(null);
             $layoutElement->setElementEditCondition(null);
+            $layoutElement->off(FieldLayoutComponent::EVENT_DEFINE_SHOW_IN_FORM);
         }
 
         Craft::$app->getUser()->setIdentity(null);
@@ -129,6 +132,35 @@ class AuthenticatedFieldConditionsTest extends TestCase
     public function testFieldsHiddenByElementConditionsResolveToNull(): void
     {
         $this->layoutElement('plainTextField2')->setElementCondition($this->titleCondition('With URL 1'));
+
+        $result = $this->execute($this->userSchema(), '{ entries(section: "withUri1", title: ["With URL 1", "With URL 2"], orderBy: "title") { title ... on withUrls_Entry { plainTextField2 } } }');
+        self::assertSame([
+            ['title' => 'With URL 1', 'plainTextField2' => 'Secret: With URL 1'],
+            ['title' => 'With URL 2', 'plainTextField2' => null],
+        ], $result['data']['entries']);
+    }
+
+    public function testHiddenNonNullFieldsResolveToNull(): void
+    {
+        // Matrix fields have a non-null output type
+        $this->layoutElement('matrixSecond')->setElementCondition($this->titleCondition('With URL 1'));
+
+        $result = $this->execute($this->userSchema(), '{ entries(section: "withUri1", title: ["With URL 1", "With URL 2"], orderBy: "title") { title ... on withUrls_Entry { matrixSecond { id } } } }');
+        self::assertArrayNotHasKey('errors', $result);
+        self::assertSame('With URL 1', $result['data']['entries'][0]['title']);
+        self::assertIsArray($result['data']['entries'][0]['matrixSecond']);
+        self::assertSame(['title' => 'With URL 2', 'matrixSecond' => null], $result['data']['entries'][1]);
+    }
+
+    public function testVisibilityEventHandlersOnLayoutElementsAreRespected(): void
+    {
+        // Instance-level handlers aren't found by class-level handler checks
+        $this->layoutElement('plainTextField2')->on(
+            FieldLayoutComponent::EVENT_DEFINE_SHOW_IN_FORM,
+            function(DefineShowFieldLayoutComponentInFormEvent $event) {
+                $event->showInForm = $event->element?->title !== 'With URL 2';
+            },
+        );
 
         $result = $this->execute($this->userSchema(), '{ entries(section: "withUri1", title: ["With URL 1", "With URL 2"], orderBy: "title") { title ... on withUrls_Entry { plainTextField2 } } }');
         self::assertSame([

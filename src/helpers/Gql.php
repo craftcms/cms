@@ -37,7 +37,6 @@ use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\UnionType;
 use GraphQL\Utils\AST;
 use WeakMap;
-use yii\base\Event;
 
 /**
  * Class Gql
@@ -251,6 +250,11 @@ class Gql
             return $definition;
         }
 
+        // The field may resolve to null for some elements, so it can't be non-null
+        if (($definition['type'] ?? null) instanceof NonNull) {
+            $definition['type'] = $definition['type']->getWrappedType();
+        }
+
         $handle = $field->handle;
         $resolve = $definition['resolve'] ?? null;
 
@@ -327,16 +331,19 @@ class Gql
             return false;
         }
 
-        if (Event::hasHandlers(FieldLayoutComponent::class, FieldLayoutComponent::EVENT_DEFINE_SHOW_IN_FORM)) {
-            return true;
-        }
-
-        if ($field->layoutElement->getElementCondition()) {
+        // Check for handlers the same way showInForm() does, so subclass- and instance-level handlers are caught too
+        if (
+            $field->layoutElement->hasEventHandlers(FieldLayoutComponent::EVENT_DEFINE_SHOW_IN_FORM) ||
+            $field->layoutElement->getElementCondition()
+        ) {
             return true;
         }
 
         $tab = self::_layoutElementTab($field->layoutElement);
-        return $tab && $tab->getElementCondition();
+        return $tab && (
+            $tab->hasEventHandlers(FieldLayoutComponent::EVENT_DEFINE_SHOW_IN_FORM) ||
+            $tab->getElementCondition()
+        );
     }
 
     /**
