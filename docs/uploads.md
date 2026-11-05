@@ -139,10 +139,12 @@ The contract has five methods:
 - `complete()` verifies the stored bytes and returns an `UploadedFile` on the temporary disk. It must tolerate retries after storage completion.
 - `abort()` removes incomplete transfers and completed temporary objects. It must tolerate retries.
 
-Register the matching frontend transport in your plugin’s JavaScript, after the uploads entry has loaded. A plugin with a fixed endpoint only needs setup:
+Register the matching frontend transport in your plugin’s JavaScript. In the control panel, import `Uploads` from `@craftcms/cp`. A plugin with a fixed endpoint only needs setup:
 
 ```js
-Craft.Uploads.registerTransport('cloud', (uppy) => {
+import {Uploads} from '@craftcms/cp';
+
+Uploads.registerTransport('cloud', (uppy) => {
   uppy.use(CloudUploadPlugin, {endpoint: '/cloud/upload'});
 });
 ```
@@ -150,7 +152,7 @@ Craft.Uploads.registerTransport('cloud', (uppy) => {
 If configuration varies per file, return a preparation callback:
 
 ```js
-Craft.Uploads.registerTransport('cloud', (uppy) => {
+Uploads.registerTransport('cloud', (uppy) => {
   uppy.use(CloudUploadPlugin);
 
   return (fileId, {session}) => {
@@ -179,7 +181,7 @@ The registration callback configures one shared Uppy instance per transport. It 
 
 The request helper handles cancellation and normalizes backend errors; it only accepts same-origin URLs. Call `beginCompletion()` before an irreversible storage commit. Custom plugins advertise pause/resume support through Uppy’s `capabilities.resumableUploads` state and handle its per-file pause/resume events. Use the Uppy plugin lifecycle for transfer progress, failure, retry, and cancellation; Craft retains session creation and finalization. Uppy owns concurrency; queued files remain in the uploading state. Store session settings per file, since files with different destinations and headers share the instance.
 
-`registerTransport` is also exported from `resources/js/uploads.ts`. The control panel exposes `Craft.Uploads` automatically; standalone pages must load the uploads entry. An existing registration can be replaced before its first use. Attempting to replace it after its Uppy instance has been created throws an error. An unregistered name fails explicitly.
+Pages outside the control panel don’t have `@craftcms/cp`. They load the `resources/js/uploads.ts` entry and use `Craft.Uploads.registerTransport()` instead. An existing registration can be replaced before its first use. Attempting to replace it after its Uppy instance has been created throws an error. An unregistered name fails explicitly.
 
 The shared transfer endpoint loads and locks the session, verifies ownership and expiry, and reauthorizes the destination before calling `handleRequest()`. It persists the uploader’s session changes afterward. DELETE requests are reserved for cleanup: ownership is still checked, but expiry and destination authorization are skipped. Uploaders must reject non-cleanup operations sent with DELETE. The S3 transport uses DELETE to request an abort signature and POST for other signatures. Frontend request helpers should pass `{signal: null}` for cleanup after cancellation.
 
@@ -189,7 +191,7 @@ Uploaders are cached by name. Keep upload-specific state on the session and reso
 
 Craft handles session ownership and expiry; Uppy handles transfer retries and progress. The built-in tus endpoint supports HEAD, PATCH, termination, and expiration. Craft creates sessions through its JSON endpoints, so the tus creation extension is not exposed. The selected handler authorizes the destination and processes the completed file. The control panel exposes its native picker through `Craft.Uploaders.Uploader`. Core modules import `Uploader` from `resources/js/modules/uploader/uploader.ts`. Its constructor receives an `HTMLElement` and plain `UploaderSettings`; file inputs, drop zones, and paste zones accept native elements or arrays of elements. Completion and progress use the `on` callbacks.
 
-Legacy uploader subclasses, filesystem-specific picker overrides, and jQuery upload events are no longer supported. Integrations customize file transfers through the backend uploader contract and `Craft.Uploads.registerTransport()`.
+Legacy uploader subclasses, filesystem-specific picker overrides, and jQuery upload events are no longer supported. Integrations customize file transfers through the backend uploader contract and `Uploads.registerTransport()`.
 
 ## Migrating existing integrations
 

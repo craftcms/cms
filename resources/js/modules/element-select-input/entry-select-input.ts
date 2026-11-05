@@ -1,4 +1,6 @@
 import {BaseElementSelectInput} from './base-element-select-input';
+import {getActionUrl} from '@/common/craft/url';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 
 declare const Craft: any;
 
@@ -18,8 +20,11 @@ export class EntrySelectInput extends BaseElementSelectInput {
 
   get section(): any {
     if (!this.settings.sectionId) return null;
+    const siteId = this.settings.criteria.siteId;
     return Craft.publishableSections.find(
-      (s: any) => s.id === this.settings.sectionId
+      (s: any) =>
+        s.id === this.settings.sectionId &&
+        (!siteId || s.sites.includes(siteId))
     );
   }
 
@@ -28,13 +33,11 @@ export class EntrySelectInput extends BaseElementSelectInput {
   }
 
   override async createElement(title: string): Promise<number | null> {
-    const response = await Craft.sendActionRequest('POST', 'entries/create', {
-      data: {
-        siteId: this.settings.criteria.siteId,
-        section: this.section.handle,
-        authorId: Craft.userId,
-        title,
-      },
+    const response = await actionClient.post('entries/create', {
+      siteId: this.settings.criteria.siteId,
+      section: this.section.handle,
+      authorId: Craft.userId,
+      title,
     });
 
     const entry = response.data.entry;
@@ -54,7 +57,7 @@ export class EntrySelectInput extends BaseElementSelectInput {
       let saved = false;
 
       void Craft.openSlideout(
-        Craft.getActionUrl('elements/edit', {
+        getActionUrl('elements/edit', {
           elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
           siteId: this.settings.criteria.siteId,
           elementId: entry.id,

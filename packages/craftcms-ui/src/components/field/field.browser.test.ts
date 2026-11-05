@@ -9,6 +9,7 @@ import '../input/input.js';
 import '../select/select.js';
 import '../combobox/combobox.js';
 import '../../styles/cp.css';
+import {contrast} from '../../../test/contrast';
 
 beforeEach(() => {
   document.body.innerHTML = '';
@@ -214,3 +215,28 @@ it('keeps a maxlength wider than the column within the column', async () => {
     field.querySelector('craft-input')!.getBoundingClientRect().width
   ).toBeLessThanOrEqual(400);
 });
+
+it.each(['light', 'dark'])(
+  'draws the read-only badge as a quiet chip with 4.5:1 text in the %s theme',
+  async (theme) => {
+    document.body.innerHTML = `
+      <div data-theme="${theme}" style="background-color: var(--c-surface-default)">
+        <craft-field label="Title" readonly></craft-field>
+      </div>`;
+    const field = document.querySelector<CraftField>('craft-field')!;
+    await field.updateComplete;
+    const surface = getComputedStyle(
+      document.querySelector('[data-theme]')!
+    ).backgroundColor;
+    const badge = getComputedStyle(
+      field.shadowRoot!.querySelector('.read-only-badge')!
+    );
+
+    expect(contrast(badge.color, badge.backgroundColor)).toBeGreaterThanOrEqual(
+      4.5
+    );
+    expect(contrast(badge.backgroundColor, surface)).toBeLessThan(
+      contrast(badge.color, surface)
+    );
+  }
+);

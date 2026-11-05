@@ -183,6 +183,29 @@ test('config repository definitions are registered when the application boots', 
         ->toBe('<p>Named</p>');
 });
 
+test('configs can be returned for array definitions and the default sanitizer', function (?string $name, array|Closure|null $definition, string $expected) {
+    if ($definition !== null) {
+        $this->sanitizers->extend($name ?? 'default', $definition);
+    }
+
+    $sanitizer = new HtmlSanitizer($this->sanitizers->config($name));
+
+    expect($sanitizer->sanitize('<p>P</p><strong>S</strong><div data-oembed-url="/v"></div>'))->toBe($expected);
+})->with([
+    'array' => ['custom', ['allow_elements' => ['p' => []]], '<p>P</p>'],
+    'closure returning an array' => ['custom', fn () => ['allow_elements' => ['p' => []]], '<p>P</p>'],
+    'default' => [null, null, '<p>P</p><strong>S</strong><div data-oembed-url="/v"></div>'],
+    'default replaced with an array' => [null, ['allow_elements' => ['strong' => []]], '<strong>S</strong>'],
+]);
+
+test('configs are not returned for sanitizer instances or unknown sanitizers', function () {
+    $this->sanitizers->extend('custom', new HtmlSanitizer(new HtmlSanitizerConfig));
+
+    expect($this->sanitizers->config('custom'))->toBeNull()
+        ->and(fn () => $this->sanitizers->config('missing'))
+        ->toThrow(InvalidArgumentException::class, 'HTML sanitizer [missing] not supported.');
+});
+
 test('unknown sanitizers use the Laravel manager exception', function () {
     $this->sanitizers->sanitizer('missing');
 })->throws(InvalidArgumentException::class, 'Driver [missing] not supported.');

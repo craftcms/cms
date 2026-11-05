@@ -19,6 +19,7 @@ use Override;
  * @method static \Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface sanitizer(string|null $name = null)
  * @method static \Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface driver(string|null $driver = null)
  * @method static \Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig defaultConfig()
+ * @method static \Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig|null config(string|null $name = null)
  * @method static array getDrivers()
  * @method static \Illuminate\Contracts\Container\Container getContainer()
  * @method static \CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager setContainer(\Illuminate\Contracts\Container\Container $container)

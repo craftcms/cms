@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Components;
 
+use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\MenuHtml;
+use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Shared\Enums\Color;
@@ -42,10 +44,8 @@ use function CraftCms\Cms\t;
  *   This is how items express behavior that isn't a form post, e.g.
  *   `['type' => 'event', 'name' => 'craft:edit-field', 'detail' => [...]]`.
  *
- * `requireElevatedSession` has no client-side equivalent in
- * `craft-action-item`/`runAction()` — there's no re-auth prompt hook — so it's
- * intentionally dropped. An item that needs it is still rejected server-side;
- * it just won't get the elevated-session modal first.
+ * A string `action` with `requireElevatedSession` asks the user to confirm
+ * their password before the request is sent.
  *
  * This component does **not** namespace the IDs it renders. Callers whose
  * items register JS against those IDs must wrap both item collection and
@@ -274,9 +274,9 @@ class ActionMenu extends ViewComponent
      * Field mapping from the legacy `disclosureMenu()`/`menuitem.twig`
      * contract: `destructive` → `variant: 'danger'`, `color` → `iconColor`,
      * `url` → `href`, `action`/`params`/`confirm`/`redirect` → `action`.
-     * `label`/`html`, `description` and `handle` are kept as-is and become
-     * slotted content (HTML) or pass through to `craft-action-item` (client).
-     * Groups are flattened — `craft-action-item` has no group concept.
+     * `selected` → `current`. `label`/`html`, `description`, `handle`,
+     * `status` and `info` are kept as-is and become slotted content (HTML) or
+     * pass through to `craft-action-item` (client). Groups keep their heading.
      *
      * @param  list<array<string, mixed>>  $items
      * @return list<array<string, mixed>>
@@ -298,10 +298,15 @@ class ActionMenu extends ViewComponent
             }
 
             if ($type === MenuItemType::Group->value) {
-                $clientItems = [...$clientItems, ...$this->toClientItems(
-                    $menuHtml->normalizeMenuItems($item['items'] ?? []),
-                    $menuHtml,
-                )];
+                $clientItems[] = Arr::whereNotNull([
+                    'type' => MenuItemType::Group->value,
+                    'heading' => isset($item['heading']) ? (string) $item['heading'] : null,
+                    'hidden' => ($item['hidden'] ?? false) ?: null,
+                    'items' => $this->toClientItems(
+                        $menuHtml->normalizeMenuItems($item['items'] ?? []),
+                        $menuHtml,
+                    ),
+                ]);
 
                 continue;
             }
@@ -324,6 +329,9 @@ class ActionMenu extends ViewComponent
                 'target' => $type === MenuItemType::Link->value ? ($item['target'] ?? null) : null,
                 'disabled' => ($item['disabled'] ?? false) ?: null,
                 'hidden' => ($item['hidden'] ?? false) ?: null,
+                'current' => ($item['selected'] ?? false) ?: null,
+                'status' => isset($item['status']) ? (string) $item['status'] : null,
+                'info' => ! empty($item['info']) ? (string) $item['info'] : null,
                 'variant' => ($item['destructive'] ?? false) ? 'danger' : null,
                 'action' => $this->itemAction($item),
                 'attributes' => $item['attributes'] ?? null,
@@ -381,6 +389,7 @@ class ActionMenu extends ViewComponent
             'url' => Url::actionUrl((string) $action),
             'body' => $body ?: null,
             'confirm' => $item['confirm'] ?? null,
+            'requireElevatedSession' => ($item['requireElevatedSession'] ?? false) ?: null,
         ], fn ($value) => $value !== null);
     }
 
@@ -392,9 +401,14 @@ class ActionMenu extends ViewComponent
      */
     protected function itemHtml(array $item): string
     {
+        if (($item['type'] ?? null) === MenuItemType::Group->value) {
+            return $this->groupHtml($item);
+        }
+
         if (($item['type'] ?? null) === MenuItemType::HR->value) {
             return Html::tag('hr', '', [
                 'class' => 'action-menu__separator',
+                'hidden' => $item['hidden'] ?? false,
                 // `craft-action-menu`'s `::slotted()` styles can't reach a
                 // light-DOM `<hr>`, so style it inline (mirrors
                 // `action-menu.ts`'s `_renderItem()`).
@@ -415,6 +429,7 @@ class ActionMenu extends ViewComponent
             'href' => $item['href'] ?? false,
             'disabled' => $item['disabled'] ?? false,
             'hidden' => $item['hidden'] ?? false,
+            'current' => $item['current'] ?? false,
             'variant' => $item['variant'] ?? false,
             'data-keywords' => $item['keywords'] ?? false,
             'action' => $action ? Json::encode($action, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : false,
@@ -424,8 +439,44 @@ class ActionMenu extends ViewComponent
     }
 
     /**
+     * Renders a group as its heading followed by its members, as siblings of
+     * the other items, the way `craft-action-menu` renders a `group` item.
+     *
+     * @param  array<string, mixed>  $group
+     */
+    protected function groupHtml(array $group): string
+    {
+        $html = '';
+
+        if (isset($group['heading'])) {
+            $html .= Html::tag('div', Html::encode($group['heading']), [
+                'class' => 'action-menu__heading',
+                'role' => 'presentation',
+                'hidden' => $group['hidden'] ?? false,
+                // Matches the styling `action-menu.ts` gives the headings it renders
+                'style' => [
+                    'padding-block' => 'var(--c-spacing-xs)',
+                    'padding-inline' => 'calc(var(--c-spacing-sm) * 2 + 1px) var(--c-spacing-md)',
+                    'font-size' => 'var(--c-text-sm)',
+                    'font-weight' => 'bold',
+                ],
+            ]);
+        }
+
+        foreach ($group['items'] ?? [] as $item) {
+            // A hidden group hides everything in it
+            if ($group['hidden'] ?? false) {
+                $item['hidden'] = true;
+            }
+            $html .= $this->itemHtml($item);
+        }
+
+        return $html;
+    }
+
+    /**
      * Renders a menu item's slotted content: its label (or raw `html`), plus
-     * optional secondary lines for its `handle` and `description` — the same
+     * optional secondary lines for its `handle`, `description` and `info` — the same
      * `menu-item-description` markup `_includes/menuitem.twig` uses.
      *
      * @param  array<string, mixed>  $item
@@ -435,6 +486,12 @@ class ActionMenu extends ViewComponent
         $labelHtml = isset($item['label'])
             ? Html::encode($item['label'])
             : (string) ($item['html'] ?? '');
+
+        if (isset($item['status'])) {
+            $labelHtml = Html::tag('span', app(StatusHtml::class)->statusIndicatorHtml($item['status']).$labelHtml, [
+                'class' => ['inline-flex', 'items-center', 'gap-xs'],
+            ]);
+        }
 
         $secondaryHtml = '';
 
@@ -446,6 +503,15 @@ class ActionMenu extends ViewComponent
 
         if (isset($item['description'])) {
             $secondaryHtml .= Html::tag('span', Html::encode($item['description']), [
+                'class' => ['menu-item-description', 'mt-2xs', 'text-xs', 'text-quiet'],
+            ]);
+        }
+
+        if (isset($item['info'])) {
+            // Plain text, since the item is a button: an info icon or a link
+            // in it would nest one control inside another
+            $infoText = trim(strip_tags(app(ContentHtml::class)->parseMarkdown(Html::encode($item['info']))));
+            $secondaryHtml .= Html::tag('span', $infoText, [
                 'class' => ['menu-item-description', 'mt-2xs', 'text-xs', 'text-quiet'],
             ]);
         }

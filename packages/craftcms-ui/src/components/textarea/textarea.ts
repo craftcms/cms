@@ -33,6 +33,32 @@ export default class CraftTextarea extends HasLabel(LionTextarea) {
   @property({type: Boolean, reflect: true})
   monospace: boolean = false;
 
+  /**
+   * The number of lines the textarea can auto-grow to. Set `max-rows="none"`
+   * (or `null`/`Infinity`) to let it grow without limit.
+   */
+  @property({
+    attribute: 'max-rows',
+    converter: {
+      fromAttribute: (value: string | null) =>
+        value === 'none' ? Infinity : value === null ? 30 : Number(value),
+    },
+  })
+  override maxRows: number = 30;
+
+  /**
+   * Caps the textarea's height at `maxRows`, or removes the cap when it's
+   * unlimited.
+   */
+  override setTextareaMaxHeight() {
+    if (!Number.isFinite(this.maxRows)) {
+      this._inputNode?.style.removeProperty('max-height');
+      return;
+    }
+
+    super.setTextareaMaxHeight();
+  }
+
   #resizeObserver?: ResizeObserver;
   #styleObserver?: MutationObserver;
   #lastAutosizeHeight: string | null = null;

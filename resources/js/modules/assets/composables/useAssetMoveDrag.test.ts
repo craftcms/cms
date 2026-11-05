@@ -18,7 +18,9 @@ vi.mock('@/modules/assets/assetMover', () => ({
 let app: ReturnType<typeof createApp> | null = null;
 let container: HTMLElement | null = null;
 
-const displayNotification = vi.fn();
+const messages = vi.hoisted(() => ({showNotice: vi.fn(), showError: vi.fn()}));
+vi.mock('@/modules/messages/messages', () => messages);
+
 const close = vi.fn();
 const confirm = vi.fn();
 
@@ -46,11 +48,12 @@ beforeEach(() => {
       })),
       movedFolderUrls: [],
     }));
-  displayNotification.mockReset().mockReturnValue({close});
+  messages.showNotice.mockReset().mockReturnValue({close});
+  messages.showError.mockReset();
   close.mockReset();
   confirm.mockReset();
   vi.stubGlobal('confirm', confirm);
-  vi.stubGlobal('Craft', {cp: {displayNotification, displayError: vi.fn()}});
+  vi.stubGlobal('Craft', {cp: {}});
 });
 
 afterEach(() => {
@@ -93,7 +96,7 @@ function mountMoveDrag() {
 }
 
 function undoButton(): HTMLElement | undefined {
-  return displayNotification.mock.calls.at(-1)?.[2]?.details;
+  return messages.showNotice.mock.calls.at(-1)?.[1]?.details;
 }
 
 it('keeps asset links clickable without disabling row dragging', () => {
@@ -149,7 +152,7 @@ it('offers to undo a move', async () => {
 
   await performMove(30, [5], []);
 
-  expect(displayNotification).toHaveBeenCalledWith('notice', 'Item moved.', {
+  expect(messages.showNotice).toHaveBeenCalledWith('Item moved.', {
     details: expect.any(HTMLElement),
   });
   expect(undoButton()?.textContent).toBe('Undo');
@@ -179,10 +182,7 @@ it('moves each item back to the folder it came from', async () => {
 
   undoButton()!.click();
   await vi.waitFor(() =>
-    expect(displayNotification).toHaveBeenLastCalledWith(
-      'notice',
-      'Move reverted.'
-    )
+    expect(messages.showNotice).toHaveBeenLastCalledWith('Move reverted.')
   );
 
   expect(
@@ -208,7 +208,7 @@ it('doesn’t offer to undo a move that resolved a conflict', async () => {
 
   await performMove(30, [5], []);
 
-  expect(displayNotification).toHaveBeenCalledWith('notice', 'Item moved.');
+  expect(messages.showNotice).toHaveBeenCalledWith('Item moved.');
 });
 
 it('confirms a large move first, and doesn’t offer to undo it', async () => {
@@ -225,7 +225,7 @@ it('confirms a large move first, and doesn’t offer to undo it', async () => {
   confirm.mockReturnValue(true);
   await performMove(30, [5], []);
   expect(moveAssets).toHaveBeenCalledOnce();
-  expect(displayNotification).toHaveBeenCalledWith('notice', 'Item moved.');
+  expect(messages.showNotice).toHaveBeenCalledWith('Item moved.');
 });
 
 it('shows why a move failed when the server says', async () => {
@@ -237,7 +237,7 @@ it('shows why a move failed when the server says', async () => {
 
   await expect(performMove(30, [], [9])).rejects.toBeTruthy();
 
-  expect(Craft.cp?.displayError).toHaveBeenCalledWith(
+  expect(messages.showError).toHaveBeenCalledWith(
     'A folder can’t be moved into itself.'
   );
 });

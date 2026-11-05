@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
+  import {pageParam} from '@/common/craft/url';
   import {computed, type ComponentPublicInstance, useTemplateRef} from 'vue';
   import {useElementIndexPage} from '@/modules/elements/index/composables/useElementIndexPage';
   import ElementIndexPage from '@/modules/elements/index/components/ElementIndexPage.vue';
@@ -49,7 +50,7 @@
       (event.target as {checked?: boolean} | null)?.checked
     );
     const url = new URL(window.location.href);
-    url.searchParams.delete(Craft.pageTrigger ?? 'page');
+    url.searchParams.delete(pageParam());
     if (includeSubfolders) {
       url.searchParams.set('includeSubfolders', '1');
     } else {

@@ -26,7 +26,7 @@ beforeEach(() => {
   }
   vi.stubGlobal('Craft', {
     csrfTokenValue: 'token',
-    cp: {displayError: vi.fn()},
+    cp: {},
   });
   const input = document.createElement('input');
   input.type = 'file';

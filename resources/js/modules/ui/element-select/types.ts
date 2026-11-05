@@ -84,8 +84,11 @@ export type ElementSelectProps = {
   branchLimit?: number | null;
   /** Lower-cased, for "Edit entry" / "Copy entry". */
   elementDisplayName: string;
+  /** Lower-cased, for "2 entries selected". */
+  elementPluralDisplayName: string;
   /** `AssetSelect` only; absent for every other element type. */
   canUpload?: boolean;
-  uploadFolderId?: number | null;
+  /** What uploads are sent with: a `folderId`, or a `fieldId` with an `elementId` and `siteId`. */
+  uploadParams?: Record<string, number> | null;
   showFolders?: boolean;
 };

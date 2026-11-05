@@ -12,8 +12,6 @@ use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Plugin\PluginSettingsUi;
 use CraftCms\Cms\Support\Url;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
-use CraftCms\Cms\View\LegacyAssets\PluginsAsset;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -37,8 +35,6 @@ readonly class PluginsController
 
     public function index(): CpScreenResponse
     {
-        app(InternalAssetRegistry::class)->register(PluginsAsset::class);
-
         $info = $this->plugins
             ->getAllPluginInfo()
             ->sortBy([

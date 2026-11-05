@@ -1,4 +1,4 @@
-import {router, usePage} from '@inertiajs/vue3';
+import {router} from '@inertiajs/vue3';
 import {runAction} from '@craftcms/ui/actions.mjs';
 import {onMounted, onScopeDispose} from 'vue';
 import exportIndex from '@/actions/CraftCms/Cms/Http/Controllers/Elements/ElementIndex/ExportElementIndexController';
@@ -28,7 +28,6 @@ export function useElementIndexPage(
   options: UseElementIndexPageOptions
 ): ElementIndexModel {
   const elementIndex = useContentIndexData();
-  const page = usePage<{readOnly: boolean}>();
   const {loading} = useElementIndexLoading();
   const visitor = createIndexVisitor(options.route);
 
@@ -105,7 +104,6 @@ export function useElementIndexPage(
     elementIndex,
     visitor,
     loading,
-    readOnly: () => page.props.readOnly ?? false,
     pinnedColumn: options.pinnedColumn,
     filterParams: options.filterParams,
     structure: true,

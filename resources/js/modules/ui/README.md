@@ -31,9 +31,9 @@ while keeping the legacy call-site contract:
   `submit` → `variant="accent"`, `secondary` → `appearance="outline"`,
   `small`/`big` → `size`. The classes stay on the element (some double as
   selectors); sync is one-way, class list → properties.
-- `Craft.ui` may be assigned before or after this module runs (Vite entry vs.
-  fragment-injected legacy bundle); a property setter on `Craft.ui` patches
-  the object whenever the legacy `UI.js` assigns it.
+- Only the Yii2 adapter loads `compat.ts`, along with its `ui.js`, which
+  assigns `Craft.ui`. A property setter on `Craft.ui` patches the object
+  whenever `ui.js` assigns it.
 
 ## Not (yet) covered
 

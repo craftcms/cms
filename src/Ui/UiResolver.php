@@ -196,6 +196,7 @@ class UiResolver
         $nestedContext = new UiContext(
             values: array_replace_recursive($context->values, $this->values),
             mode: $context->mode,
+            preview: $context->preview,
         );
 
         $uis = array_map(function (array $definition) use ($nestedContext, $path, $deltaGroup, $mode, $type, $component, $identity): NestedUiPayload {

@@ -29,7 +29,6 @@ beforeEach(() => {
   PreviewFileModal.mockReset();
   window.history.replaceState({}, '', '/cp/assets/photos?viewMode=cards');
   window.Craft = Object.assign(Object.create(null), {
-    pageTrigger: 'page',
     PreviewFileModal: Object.assign(PreviewFileModal, {openInstance: null}),
   });
 });

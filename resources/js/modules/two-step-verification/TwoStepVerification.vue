@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {h, ref} from 'vue';
   import {router, useHttp} from '@inertiajs/vue3';
-  import {t} from '@craftcms/ui';
+  import {actionClient, appendBodyHtml, appendHeadHtml, t} from '@craftcms/ui';
   import {useCraftTable} from '@/common/table/craftTable';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
@@ -11,6 +11,9 @@
   import type {ActionItems} from '@/common/types';
   import type {AuthMethod, AuthMethodAction} from './types';
   import '@/modules/auth-method-setup/recovery-codes-setup';
+  import {showError} from '@/modules/messages/messages';
+  import {runAction as runUiAction} from '@craftcms/ui/actions.mjs';
+  import {AuthMethodSetupSlideout} from '@/modules/auth-method-setup/auth-method-setup-slideout';
 
   const props = defineProps<{
     methods: AuthMethod[];
@@ -75,23 +78,20 @@
   }
 
   function runAction(action: AuthMethodAction) {
-    if (!action.action) {
+    const url = action.action;
+    if (!url) {
       return;
     }
 
     const run = () => {
       if (action.download) {
-        return craft
-          .downloadFromUrl('post', craft.getActionUrl(action.action), {
-            [craft.csrfTokenName]: craft.csrfTokenValue,
-          })
-          .catch((e: any) =>
-            craft.cp?.displayError?.(e?.response?.data?.message)
-          );
+        return runUiAction({type: 'download', method: 'POST', url}).catch(
+          (e: any) => showError(e?.response?.data?.message)
+        );
       }
 
       // Generic POST action (plugin-provided).
-      return craft.sendActionRequest('post', action.action).then(refresh);
+      return actionClient.post(url).then(refresh);
     };
 
     if (action.requireElevatedSession) {
@@ -107,18 +107,16 @@
   async function openSetup(method: AuthMethod) {
     craft.authMethodSetup = {refresh};
 
-    const {data} = await craft.sendActionRequest(
-      'post',
-      'auth/method-setup-html',
-      {data: {method: method.type}}
-    );
+    const {data} = await actionClient.post('auth/method-setup-html', {
+      method: method.type,
+    });
 
-    const slideout = new craft.AuthMethodSetup.Slideout(data);
-    await craft.appendHeadHtml(data.headHtml);
-    await craft.appendBodyHtml(data.bodyHtml);
-    slideout.$container
-      .find('.auth-method-close-btn')
-      .on('click', () => slideout.close());
+    const slideout = new AuthMethodSetupSlideout(data);
+    await appendHeadHtml(data.headHtml);
+    await appendBodyHtml(data.bodyHtml);
+    slideout
+      .container!.querySelector('.auth-method-close-btn')
+      ?.addEventListener('click', () => slideout.close());
   }
 
   const columnHelper = createCraftColumnHelper<AuthMethod>();

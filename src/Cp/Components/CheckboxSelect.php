@@ -117,7 +117,6 @@ class CheckboxSelect extends ChoiceGroup
 
         return [
             'id' => $this->getId(),
-            'class' => 'cp-checkbox-select',
             'name' => $name,
             'label' => $this->label,
             'sortable' => $this->sortable,

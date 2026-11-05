@@ -2,6 +2,7 @@ import {actionClient, t, type BaseAction} from '@craftcms/ui';
 import {MESSAGE_EVENT} from '@/modules/messages';
 import {pageKey} from './recents';
 import type {CommandPaletteItem, CommandPaletteViewResult} from './types';
+import {showError, showNotice} from '@/modules/messages/messages';
 
 export type HttpAction = Extract<BaseAction, {type: 'http'}>;
 
@@ -18,7 +19,7 @@ function showMessages(data: Record<string, unknown>): void {
   }
 
   if (!messages.length && typeof data.message === 'string') {
-    Craft.cp?.displayNotice?.(data.message);
+    showNotice(data.message);
   }
 }
 
@@ -46,9 +47,7 @@ export async function runHttpAction(
       redirect: typeof body.redirect === 'string' ? body.redirect : undefined,
     };
   } catch (error: any) {
-    Craft.cp?.displayError?.(
-      error?.response?.data?.message ?? t('A server error occurred.')
-    );
+    showError(error?.response?.data?.message ?? t('A server error occurred.'));
 
     throw error;
   }

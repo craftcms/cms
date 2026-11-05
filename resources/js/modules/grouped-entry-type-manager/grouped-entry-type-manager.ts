@@ -5,6 +5,8 @@ import {
   nearestSibling,
   type GarnishBaseSettings,
 } from '@craftcms/garnish';
+import {create} from '@craftcms/ui/utilities/create';
+import {isRtl} from '@/common/craft/direction';
 import {toHtmlElement} from '@craftcms/garnish/compat';
 import type {ReorderDirection} from '@craftcms/ui';
 import {html, render, type TemplateResult} from 'lit';
@@ -15,10 +17,12 @@ import type {
 } from '@/modules/component-select';
 import {editEntryTypeOverrides} from './entry-type-override-settings';
 import {groupedEntryTypeManagerData} from './support';
+import {namespaceId, namespaceInputName} from '@/common/craft/namespace';
+import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {hasMousePointerEvents} from '@/common/craft/pointer';
 
 declare const Craft: any;
-declare const $: any;
-
 /** `$defaultColumnsContainer` is accepted as a jQuery alias. */
 export interface GroupedEntryTypeManagerSettings extends GarnishBaseSettings {
   /** Applied to cloned select ids and the default-columns inputs. */
@@ -104,17 +108,17 @@ function handleDefineChipActions(
     chip.querySelector('[data-edit-action]')?.setAttribute('hidden', '');
     actions.push({
       icon: 'gear',
-      label: Craft.t('app', 'Settings'),
+      label: t('Settings'),
       onActivate: () => void editEntryTypeOverrides(chip),
     });
   }
 
-  const ltr = Craft.orientation !== 'rtl';
+  const ltr = !isRtl();
 
   actions.push(
     {
       icon: ltr ? 'arrow-left' : 'arrow-right',
-      label: Craft.t('app', 'Move to previous group'),
+      label: t('Move to previous group'),
       onActivate: () => managerFor(chip)?.moveChipToGroup(chip, 'previous'),
       attributes: {
         'data-move-to-previous-group': true,
@@ -123,7 +127,7 @@ function handleDefineChipActions(
     },
     {
       icon: ltr ? 'arrow-right' : 'arrow-left',
-      label: Craft.t('app', 'Move to next group'),
+      label: t('Move to next group'),
       onActivate: () => managerFor(chip)?.moveChipToGroup(chip, 'next'),
       attributes: {
         'data-move-to-next-group': true,
@@ -266,7 +270,7 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
           icon="plus"
           variant="dashed"
           --command="add-group"
-          >${Craft.t('app', 'Add Group')}</craft-button
+          >${t('Add Group')}</craft-button
         >
       `).querySelector<HTMLElement>('craft-button')!;
       this.container.append(btn);
@@ -287,7 +291,7 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
 
   /** On touch there's no sorter; the reorder button's menu handles moves. */
   initGroupSort(): void {
-    if (this.groupSort || !Craft.hasMousePointerEvents()) {
+    if (this.groupSort || !hasMousePointerEvents()) {
       return;
     }
 
@@ -305,7 +309,7 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
 
   /** No axis lock: groups flow horizontally while chips stack vertically. */
   initChipSort(): void {
-    if (this.chipSort || !Craft.hasMousePointerEvents()) {
+    if (this.chipSort || !hasMousePointerEvents()) {
       return;
     }
 
@@ -327,15 +331,15 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
       return;
     }
 
-    const name = prompt(Craft.t('app', 'Group Name'));
+    const name = prompt(t('Group Name'));
     if (name === null || name === '') {
       return;
     }
 
     // Each cloned select needs its own id in place of TEMP_ID.
     const namespace = this.settings.namespace ?? null;
-    const tempId = Craft.namespaceId('TEMP_ID', namespace);
-    const id = Craft.namespaceId(
+    const tempId = namespaceId('TEMP_ID', namespace);
+    const id = namespaceId(
       `entry-type-select-${Math.floor(Math.random() * 1000000)}`,
       namespace
     );
@@ -494,30 +498,36 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
     ).map((input) => input.value);
 
     try {
-      const {data} = await Craft.sendActionRequest(
-        'POST',
-        'matrix/default-table-column-options',
-        {
-          data: {
-            entryTypeIds: this.selects().flatMap(
-              (select) => select.selectedIds
-            ),
-          },
-        }
-      );
+      const {data} = await actionClient.post<{
+        options: {value: string; label: string}[];
+      }>('matrix/default-table-column-options', {
+        entryTypeIds: this.selects().flatMap((select) => select.selectedIds),
+      });
+      // Checked columns first, in their current order
+      const position = (value: string) => {
+        const index = values.indexOf(value);
+        return index === -1 ? values.length : index;
+      };
+      const options = data.options
+        .map(({value, label}) => ({
+          value: String(value),
+          label,
+          checked: values.includes(String(value)),
+        }))
+        .sort((a, b) => position(a.value) - position(b.value));
 
-      $(container)
-        .empty()
-        .append(
-          Craft.ui.createSortableCheckboxSelect({
-            name: Craft.namespaceInputName(
-              'defaultTableColumns',
-              this.settings.namespace ?? null
-            ),
-            options: data.options,
-            values,
-          })
-        );
+      container.replaceChildren(
+        create('craft-checkbox-select', {
+          name: namespaceInputName(
+            'defaultTableColumns',
+            this.settings.namespace ?? null
+          ),
+          sortable: true,
+          presentation: 'add-menu',
+          options,
+          attrs: {class: 'cp-checkbox-select'},
+        })
+      );
     } catch {
       // The next membership change retries.
     }
@@ -617,7 +627,7 @@ export class Group extends Base {
         .actions=${[
           {
             icon: 'pencil',
-            label: Craft.t('app', 'Rename'),
+            label: t('Rename'),
             onClick: (ev: Event) => {
               close(ev);
               groupData.get(container)?.rename();
@@ -626,7 +636,7 @@ export class Group extends Base {
           {type: 'hr'},
           {
             icon: 'trash',
-            label: Craft.t('app', 'Remove'),
+            label: t('Remove'),
             variant: 'danger',
             onClick: (ev: Event) => {
               close(ev);
@@ -652,7 +662,7 @@ export class Group extends Base {
   }
 
   rename(): void {
-    const name = prompt(Craft.t('app', 'Group Name'), this.name);
+    const name = prompt(t('Group Name'), this.name);
     if (name === null || name === '') {
       return;
     }

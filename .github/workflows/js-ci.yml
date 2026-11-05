@@ -21,6 +21,9 @@ permissions:
 jobs:
   setup:
     name: 'Build + Check'
+    # Installing frontend dependencies needs the Font Awesome token, which
+    # GitHub doesn't pass to PRs from forks.
+    if: ${{ !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -65,6 +68,15 @@ jobs:
             resources/js/generated
           key: ${{ steps.cache-key.outputs.value }}
 
+      # pnpm won't expand env vars in credentials coming from the project
+      # .npmrc, so the Font Awesome token goes in the user-level one. It's
+      # written whether or not the install cache hit: later `vp` commands
+      # re-check the lockfile against the registry, and that needs auth too.
+      - name: Authenticate with the Font Awesome registry
+        run: echo "//npm.fontawesome.com/:_authToken=${CRAFT_FONTAWESOME_TOKEN}" >> ~/.npmrc
+        env:
+          CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
+
       - parallel:
           - name: Install Composer dependencies
             if: steps.cache.outputs.cache-hit != 'true'
@@ -72,13 +84,7 @@ jobs:
 
           - name: Install frontend dependencies
             if: steps.cache.outputs.cache-hit != 'true'
-            # pnpm won't expand env vars in credentials coming from the project
-            # .npmrc, so the Font Awesome token goes in the user-level one.
-            run: |
-              echo "//npm.fontawesome.com/:_authToken=${CRAFT_FONTAWESOME_TOKEN}" >> ~/.npmrc
-              vp install --frozen-lockfile
-            env:
-              CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
+            run: vp install --frozen-lockfile
 
       - name: Copy icons
         if: steps.cache.outputs.cache-hit != 'true'

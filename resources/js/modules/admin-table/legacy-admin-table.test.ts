@@ -47,7 +47,7 @@ async function install() {
 
 beforeEach(() => {
   document.body.innerHTML = '<div id="table"></div>';
-  (window as any).Craft = {sendActionRequest: vi.fn(), cp: {}};
+  (window as any).Craft = {cp: {}};
 });
 
 afterEach(() => {

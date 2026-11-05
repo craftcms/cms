@@ -1,7 +1,7 @@
 /* -------------------------------------------------------------------------
    Field layout designer styles.
 
-   Ported from packages/craftcms-legacy/cp/src/css/_fld.scss — SCSS mixins +
+   Ported from the legacy CP stylesheet: SCSS mixins and
    color math compiled to literals, legacy CSS variables mapped to the new
    --c-* tokens (per tokens.css). Anything left as an old var has a TODO
    comment — no confident token equivalent yet.

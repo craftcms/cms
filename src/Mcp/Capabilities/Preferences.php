@@ -28,7 +28,7 @@ readonly class Preferences
 
     /** @return array{language: string|null, locale: string|null} */
     #[McpTool(
-        name: 'preferences.get',
+        name: 'preferences_get',
         description: 'Returns the authenticated user’s preferred control panel language and formatting locale. A null locale means dates and numbers are formatted for the language.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -49,7 +49,7 @@ readonly class Preferences
      * @return array{language: string|null, locale: string|null}
      */
     #[McpTool(
-        name: 'preferences.update',
+        name: 'preferences_update',
         description: 'Changes the authenticated user’s preferred control panel language or formatting locale, as their Preferences page does. Omitted values are left as they are.',
         annotations: new ToolAnnotations(destructiveHint: false, idempotentHint: true),
     )]

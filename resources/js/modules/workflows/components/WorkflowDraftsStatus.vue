@@ -18,20 +18,25 @@
 
 <template>
   <craft-popover
-    placement="bottom-end"
+    placement="bottom-start"
     .opened="opened"
     @opened-changed="opened = $event.detail.opened"
   >
-    <button
+    <craft-button
       slot="invoker"
       type="button"
-      class="workflow-drafts-status"
-      :aria-expanded="opened"
+      variant="plain"
+      size="small"
+      icon="chevron-down"
+      icon-position="suffix"
     >
-      <craft-status status="pending" :label="label"></craft-status>
-      <span>{{ label }}</span>
-      <craft-icon name="chevron-down" aria-hidden="true"></craft-icon>
-    </button>
+      <craft-status
+        slot="prefix"
+        status="pending"
+        aria-hidden="true"
+      ></craft-status>
+      {{ label }}
+    </craft-button>
 
     <div
       slot="content-body"
@@ -46,39 +51,6 @@
 </template>
 
 <style scoped>
-  .workflow-drafts-status {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--c-spacing-xs);
-    min-block-size: 2rem;
-    padding: var(--c-spacing-xs);
-    border: 0;
-    border-radius: var(--c-radius-md);
-    background: transparent;
-    color: var(--c-text-quiet);
-    cursor: pointer;
-    font: inherit;
-    white-space: nowrap;
-  }
-
-  .workflow-drafts-status:hover {
-    background: var(--c-color-neutral-fill-quiet);
-    color: var(--c-text);
-  }
-
-  .workflow-drafts-status:focus-visible {
-    outline: 2px solid var(--c-color-focus-ring);
-    outline-offset: 2px;
-  }
-
-  .workflow-drafts-status > craft-icon {
-    transition: transform 100ms ease;
-  }
-
-  .workflow-drafts-status[aria-expanded='true'] > craft-icon {
-    transform: rotate(180deg);
-  }
-
   .workflow-drafts-popover {
     display: grid;
     gap: var(--c-spacing-sm);
@@ -90,7 +62,7 @@
   }
 
   craft-popover::part(popup) {
-    width: min(24rem, calc(100vw - 2rem));
+    width: min(18rem, calc(100vw - 2rem));
     max-width: none;
   }
 </style>

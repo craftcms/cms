@@ -16,7 +16,11 @@ import {
   renderBlocks,
 } from '@/actions/CraftCms/Cms/Http/Controllers/MatrixController';
 import {NestedOwnerEditorKey} from '@/modules/elements/nested-owner';
-import {craft, type CopiedElementInfo} from '@/modules/matrix/clipboard';
+import {
+  copyElements,
+  pasteElements,
+  type CopiedElementInfo,
+} from '@/modules/elements/clipboard';
 import {useCopiedElements} from '@/modules/matrix/copied-elements';
 import {useMessages} from '@/modules/messages/useMessages';
 import {isRecord, valueAt} from '../runtime';
@@ -120,7 +124,7 @@ export function useBlockCreation(options: BlockCreationOptions) {
    * The clipboard, when all of it could land in this field — Craft 5's
    * `canPaste()`. Empty otherwise, which is what hides every paste target.
    *
-   * `entryTypeId` arrives with the chip `Craft.cp` renders for each copied
+   * `entryTypeId` arrives with the chip the clipboard renders for each copied
    * element, so the check waits for that rather than offering a paste the server
    * would then refuse.
    */
@@ -363,7 +367,7 @@ export function useBlockCreation(options: BlockCreationOptions) {
 
   /**
    * Hands the blocks to the CP's element clipboard, which is shared with the
-   * legacy stack and with other tabs. `Craft.cp` owns the confirmation toast.
+   * legacy stack and with other tabs.
    */
   function copyBlocks(uid: string): void {
     const elementType = options.control().props.elementType;
@@ -396,14 +400,14 @@ export function useBlockCreation(options: BlockCreationOptions) {
       .filter((element) => element !== null);
 
     if (elements.length) {
-      craft().cp.copyElements(elements);
+      copyElements(elements);
     }
   }
 
   /**
    * Pastes the clipboard in above `beforeUid`, or at the end.
    *
-   * `Craft.cp` duplicates the copied elements onto this field and owner and hands
+   * The clipboard duplicates the copied elements onto this field and owner and hands
    * back the new ones; `matrix/render-blocks` then returns their ui nodes, the
    * same shape a newly minted block comes back in.
    */
@@ -419,7 +423,7 @@ export function useBlockCreation(options: BlockCreationOptions) {
 
     try {
       const ownerId = await prepareOwner();
-      const pasted = await craft().cp.pasteElements({
+      const pasted = await pasteElements({
         primaryOwnerId: ownerId,
         ownerId,
         fieldId: create.fieldId,

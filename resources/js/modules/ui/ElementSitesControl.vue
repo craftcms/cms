@@ -12,6 +12,7 @@
   import {useSlideout} from '@/common/slideouts/useSlideout';
   import type {UiControlPayload} from './types';
   import {ignoreModelValueInitialization, inputName} from './runtime';
+  import {showError} from '@/modules/messages/messages';
 
   type Site = {
     id: number;
@@ -191,7 +192,7 @@
       });
     } catch (error: any) {
       deleting.value = null;
-      window.Craft?.cp?.displayError(
+      showError(
         error?.response?.data?.message ?? t('A server error occurred.')
       );
       return;

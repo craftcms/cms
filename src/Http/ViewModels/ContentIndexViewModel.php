@@ -489,7 +489,7 @@ abstract class ContentIndexViewModel extends ViewModel
      *
      * When every source is site-specific the list narrows to the sites those
      * sources between them cover, so the menu never offers a site the index
-     * would come up empty on. Mirrors {@see ElementIndexHtml}.
+     * would come up empty on.
      *
      * @return Collection<int, Site>
      */
@@ -675,6 +675,16 @@ abstract class ContentIndexViewModel extends ViewModel
     public function elementPluralDisplayName(): string
     {
         return $this->elementType::pluralDisplayName();
+    }
+
+    public function elementLowerDisplayName(): string
+    {
+        return $this->elementType::lowerDisplayName();
+    }
+
+    public function elementPluralLowerDisplayName(): string
+    {
+        return $this->elementType::pluralLowerDisplayName();
     }
 
     public function canHaveDrafts(): bool

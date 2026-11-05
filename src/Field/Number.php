@@ -312,10 +312,26 @@ class Number extends Field implements CrossSiteCopyableFieldInterface, Defaultab
         $namespacedId = InputNamespace::namespaceId($id);
 
         $js = <<<JS
-(function() {
-    const input = \$('#$namespacedId');
-    input.on('input', () => {
-        Craft.filterNumberInputVal(input);
+(() => {
+    const input = document.getElementById('$namespacedId');
+    // Reduce the value to numeric characters, keeping the caret in place
+    input?.addEventListener('input', () => {
+        const value = input.value;
+        let caret = input.selectionStart;
+        let filtered = '';
+        for (let i = 0; i < value.length; i++) {
+            if (/[0-9.,-]/.test(value[i])) {
+                filtered += value[i];
+            } else if (caret !== null && i < caret) {
+                caret--;
+            }
+        }
+        if (filtered !== value) {
+            input.value = filtered;
+            if (caret !== null) {
+                input.setSelectionRange(caret, caret);
+            }
+        }
     });
 })();
 JS;

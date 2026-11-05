@@ -409,7 +409,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
             ->ui(app(FieldLayoutCompiler::class)->ui(
                 $context->value->getFieldLayout(),
                 $context->value,
-                new UiContext,
+                new UiContext(preview: $context->ui->preview),
             ))
             ->value([]);
     }

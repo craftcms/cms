@@ -45,7 +45,7 @@ const folderData = {
 
 function createModal(settings: Record<string, unknown> = {}) {
   return new VolumeFolderSelectorModal({
-    loadIndexBody: async () => ({html: '', props: folderData}),
+    loadIndexBody: async () => ({props: folderData}),
     ...settings,
   } as any);
 }
@@ -66,7 +66,6 @@ async function settle(modal: VolumeFolderSelectorModal): Promise<void> {
 beforeEach(() => {
   vi.stubGlobal('Craft', {
     systemUid: 'test',
-    pageTrigger: 'p',
     t: (_category: string, message: string) => message,
   });
 });

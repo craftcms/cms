@@ -63,7 +63,7 @@ it('applies a scheduled release member early and unschedules the emptied release
     expect(Elements::saveElement($this->draft))->toBeTrue();
     $this->releases->schedule($this->release, now()->addDay(), $this->actor);
 
-    ($this->callRelease)('drafts.apply', ['type' => 'entries', 'id' => $this->draft->id])
+    ($this->callRelease)('drafts_apply', ['type' => 'entries', 'id' => $this->draft->id])
         ->assertJsonPath('result.isError', false);
 
     expect(Entry::find()->id($this->entry->id)->status(null)->one()->title)->toBe('Prepared release title')
@@ -74,22 +74,22 @@ it('applies a scheduled release member early and unschedules the emptied release
 
 it('edits the explicitly selected draft and applies it ahead of its mutable release', function (): void {
     expect($this->draft->id)->not->toBe($this->draft->draftId);
-    ($this->callRelease)('drafts.field-schema', ['draftId' => $this->draft->draftId])
+    ($this->callRelease)('drafts_field_schema', ['draftId' => $this->draft->draftId])
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.schema.properties.summary.type', fn (string|array $type): bool => in_array('string', is_array($type) ? $type : [$type], true));
-    ($this->callRelease)('drafts.update', [
+    ($this->callRelease)('drafts_update', [
         'draftId' => $this->draft->draftId, 'attributes' => ['title' => 'Release title'], 'fields' => ['summary' => 'Release summary'],
     ])->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.draft.id', $this->draft->id)
         ->assertJsonPath('result.structuredContent.draft.draftId', $this->draft->draftId);
-    ($this->callRelease)('drafts.get', ['draftId' => $this->draft->draftId])
+    ($this->callRelease)('drafts_get', ['draftId' => $this->draft->draftId])
         ->assertJsonPath('result.structuredContent.draft.title', 'Release title')
         ->assertJsonPath('result.structuredContent.draft.summary', 'Release summary');
 
     $canonical = Entry::find()->id($this->entry->id)->status(null)->one();
     expect($canonical->getFieldValue('summary'))->toBe('Live summary');
 
-    ($this->callRelease)('drafts.apply', ['draftId' => $this->draft->draftId])
+    ($this->callRelease)('drafts_apply', ['draftId' => $this->draft->draftId])
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.element.id', $this->entry->id)
         ->assertJsonPath('result.structuredContent.element.summary', 'Release summary');
@@ -102,30 +102,30 @@ it('edits the explicitly selected draft and applies it ahead of its mutable rele
 
 it('preserves omitted metadata, clears nullable metadata, and pages release names', function (): void {
     $this->releases->create('Excluded campaign', null, $this->actor);
-    $other = ($this->callRelease)('releases.create', ['name' => 'Other launch'])
+    $other = ($this->callRelease)('releases_create', ['name' => 'Other launch'])
         ->assertJsonPath('result.isError', false)->json('result.structuredContent.release');
-    ($this->callRelease)('releases.publish', ['id' => $other['id']])->assertJsonPath('result.isError', true);
-    ($this->callRelease)('releases.get', ['id' => $other['id']])
+    ($this->callRelease)('releases_publish', ['id' => $other['id']])->assertJsonPath('result.isError', true);
+    ($this->callRelease)('releases_get', ['id' => $other['id']])
         ->assertJsonPath('result.structuredContent.release.status', 'failed')
         ->assertJsonPath('result.structuredContent.release.lastError', 'The release has no drafts.');
-    ($this->callRelease)('releases.update', ['id' => $this->release->id, 'changes' => ['description' => null]])
+    ($this->callRelease)('releases_update', ['id' => $this->release->id, 'changes' => ['description' => null]])
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.release.name', 'Launch')
         ->assertJsonPath('result.structuredContent.release.description', null)
         ->assertJsonPath('result.structuredContent.release.targetDate', $this->release->targetDate->toIso8601String());
-    ($this->callRelease)('releases.update', ['id' => $this->release->id, 'changes' => ['targetDate' => null, 'name' => 'Renamed launch']])
+    ($this->callRelease)('releases_update', ['id' => $this->release->id, 'changes' => ['targetDate' => null, 'name' => 'Renamed launch']])
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.release.targetDate', null)
         ->assertJsonPath('result.structuredContent.release.name', 'Renamed launch');
-    $first = ($this->callRelease)('releases.list', ['criteria' => ['search' => '  launch  ', 'orderBy' => 'name asc', 'limit' => 1]])
+    $first = ($this->callRelease)('releases_list', ['criteria' => ['search' => '  launch  ', 'orderBy' => 'name asc', 'limit' => 1]])
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.releases.0.id', $other['id'])
         ->assertJsonPath('result.structuredContent.releases.0.itemCount', 0)
         ->json('result.structuredContent');
-    ($this->callRelease)('releases.list', ['criteria' => ['search' => 'launch', 'orderBy' => 'name asc', 'limit' => 1, 'offset' => $first['nextOffset']]])
+    ($this->callRelease)('releases_list', ['criteria' => ['search' => 'launch', 'orderBy' => 'name asc', 'limit' => 1, 'offset' => $first['nextOffset']]])
         ->assertJsonPath('result.structuredContent.releases.0.id', $this->release->id)
         ->assertJsonPath('result.structuredContent.nextOffset', null);
-    ($this->callRelease)('releases.delete', ['id' => $this->release->id])->assertJsonPath('result.structuredContent.deleted', true);
+    ($this->callRelease)('releases_delete', ['id' => $this->release->id])->assertJsonPath('result.structuredContent.deleted', true);
 
     expect(Release::find($this->release->id))->toBeNull()
         ->and(Draft::find($this->draft->draftId))->not->toBeNull();
@@ -136,23 +136,23 @@ it('allows a release publisher to inspect basic metadata and publish without con
     app(UserPermissions::class)->saveUserPermissions($publisher->id, ['accessCp', 'manageReleases', 'publishReleases']);
     Passport::actingAs($publisher, ['mcp:admin'], 'craft-mcp');
 
-    ($this->callRelease)('releases.get', ['id' => $this->release->id])
+    ($this->callRelease)('releases_get', ['id' => $this->release->id])
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.release.itemCount', 1)
         ->assertJsonPath('result.structuredContent.release.items.0.elements.0.title', $this->draft->title)
         ->assertJsonPath('result.structuredContent.release.items.0.elements.0.canView', false)
         ->assertJsonPath('result.structuredContent.release.items.0.elements.0.cpEditUrl', null)
         ->assertDontSee('Live summary', escape: false);
-    ($this->callRelease)('drafts.get', ['draftId' => $this->draft->draftId])->assertJsonPath('result.isError', true);
-    ($this->callRelease)('releases.detach', ['id' => $this->release->id, 'draftId' => $this->draft->draftId])
+    ($this->callRelease)('drafts_get', ['draftId' => $this->draft->draftId])->assertJsonPath('result.isError', true);
+    ($this->callRelease)('releases_detach', ['id' => $this->release->id, 'draftId' => $this->draft->draftId])
         ->assertJsonPath('result.isError', true);
-    ($this->callRelease)('releases.check-readiness', ['id' => $this->release->id])
+    ($this->callRelease)('releases_check_readiness', ['id' => $this->release->id])
         ->assertJsonPath('result.structuredContent.readiness.ready', true);
-    ($this->callRelease)('releases.schedule', ['id' => $this->release->id, 'publishAt' => now()->addDay()->toIso8601String()])
+    ($this->callRelease)('releases_schedule', ['id' => $this->release->id, 'publishAt' => now()->addDay()->toIso8601String()])
         ->assertJsonPath('result.structuredContent.release.status', 'scheduled');
-    ($this->callRelease)('releases.unschedule', ['id' => $this->release->id])
+    ($this->callRelease)('releases_unschedule', ['id' => $this->release->id])
         ->assertJsonPath('result.structuredContent.release.status', 'draft');
-    ($this->callRelease)('releases.publish', ['id' => $this->release->id])
+    ($this->callRelease)('releases_publish', ['id' => $this->release->id])
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.release.status', 'published')
         ->assertJsonPath('result.structuredContent.release.items.0.draftId', null)
@@ -162,11 +162,11 @@ it('allows a release publisher to inspect basic metadata and publish without con
 });
 
 it('attaches and detaches drafts through MCP and removes membership on explicit draft deletion', function (): void {
-    ($this->callRelease)('releases.detach', ['id' => $this->release->id, 'draftId' => $this->draft->draftId])
+    ($this->callRelease)('releases_detach', ['id' => $this->release->id, 'draftId' => $this->draft->draftId])
         ->assertJsonPath('result.structuredContent.release.itemCount', 0);
-    ($this->callRelease)('releases.attach', ['id' => $this->release->id, 'draftId' => $this->draft->draftId])
+    ($this->callRelease)('releases_attach', ['id' => $this->release->id, 'draftId' => $this->draft->draftId])
         ->assertJsonPath('result.structuredContent.release.items.0.draftId', $this->draft->draftId);
-    ($this->callRelease)('drafts.delete', ['draftId' => $this->draft->draftId])
+    ($this->callRelease)('drafts_delete', ['draftId' => $this->draft->draftId])
         ->assertJsonPath('result.structuredContent.deleted', true)
         ->assertJsonPath('result.structuredContent.release.itemCount', 0);
     expect(Draft::find($this->draft->draftId))->toBeNull()
@@ -188,10 +188,10 @@ it('rejects conflicting draft selectors without applying or deleting content', f
     expect(Draft::find($this->draft->draftId))->not->toBeNull()
         ->and($this->release->items()->pluck('draftId')->all())->toBe([$this->draft->draftId]);
 })->with([
-    'apply with two selectors' => ['drafts.apply', 'id'],
-    'delete with two selectors' => ['drafts.delete', 'id'],
-    'apply with a different type' => ['drafts.apply', 'type'],
-    'delete with a different type' => ['drafts.delete', 'type'],
+    'apply with two selectors' => ['drafts_apply', 'id'],
+    'delete with two selectors' => ['drafts_delete', 'id'],
+    'apply with a different type' => ['drafts_apply', 'type'],
+    'delete with a different type' => ['drafts_delete', 'type'],
 ]);
 
 it('targets a draft locale explicitly and preserves the other locale and canonical content', function (): void {
@@ -206,12 +206,12 @@ it('targets a draft locale explicitly and preserves the other locale and canonic
     expect(Elements::saveElement($canonical))->toBeTrue();
     $draft = app(DraftService::class)->createDraft($canonical, $this->actor->id);
 
-    ($this->callRelease)('drafts.update', ['draftId' => $draft->draftId, 'siteId' => $site->id, 'attributes' => ['title' => 'Translated draft']])
+    ($this->callRelease)('drafts_update', ['draftId' => $draft->draftId, 'siteId' => $site->id, 'attributes' => ['title' => 'Translated draft']])
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.draft.siteId', $site->id);
-    ($this->callRelease)('drafts.get', ['draftId' => $draft->draftId, 'siteId' => $site->id])
+    ($this->callRelease)('drafts_get', ['draftId' => $draft->draftId, 'siteId' => $site->id])
         ->assertJsonPath('result.structuredContent.draft.title', 'Translated draft');
-    ($this->callRelease)('drafts.get', ['draftId' => $draft->draftId])
+    ($this->callRelease)('drafts_get', ['draftId' => $draft->draftId])
         ->assertJsonPath('result.structuredContent.draft.title', 'Original localized entry')
         ->assertJsonPath('result.structuredContent.draft.siteId', $canonical->siteId);
 

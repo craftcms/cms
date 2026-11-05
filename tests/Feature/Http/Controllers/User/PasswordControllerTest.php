@@ -1,9 +1,12 @@
 <?php
 
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
+use CraftCms\Cms\Auth\Methods\RecoveryCodes;
+use CraftCms\Cms\Auth\Models\Authenticator;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Users\PasswordController;
+use CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\User\Elements\User;
@@ -13,6 +16,7 @@ use Illuminate\Notifications\Channels\MailChannel;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Session;
+use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
@@ -338,4 +342,26 @@ describe('verifyPassword', function () {
         postJson(action([PasswordController::class, 'verifyPassword']), [])->assertBadRequest()
             ->assertJsonFragment(['message' => t('Invalid password.')]);
     });
+});
+
+it('lists the recovery code download for users with active recovery codes', function () {
+    // Recovery codes are only offered alongside another active method.
+    Authenticator::create([
+        'userId' => UserModel::first()->id,
+        'auth2faSecret' => 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP',
+        'oldTimestamp' => 0,
+    ]);
+    postJson(action([RecoveryCodesController::class, 'generate']))->assertOk();
+
+    get(action([PasswordController::class, 'index']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('authMethods', fn ($methods) => collect($methods)
+                ->firstWhere('type', RecoveryCodes::class)['actions'] === [[
+                    'label' => t('Download codes'),
+                    'icon' => 'download',
+                    'action' => 'auth/download-recovery-codes',
+                    'requireElevatedSession' => true,
+                    'download' => true,
+                ]]));
 });

@@ -4,8 +4,10 @@ import {Base} from '@craftcms/garnish';
 import {cvdData} from './support';
 import type {FieldLayoutDesigner} from './field-layout-designer';
 import type {Element as FldElement} from './element';
-
-declare const Craft: any;
+import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {showError} from '@/modules/messages/messages';
+import {announce} from '@/common/announcer';
 
 /**
  * The card view designer (preview + thumbnail/attribute management). Native DOM
@@ -360,7 +362,7 @@ export class CardViewDesigner extends Base {
 
   async updatePreview(): Promise<void> {
     this.$previewContainer.classList.add('loading');
-    Craft.cp.announce(Craft.t('app', 'Loading'));
+    announce(t('Loading'));
 
     if (this.abortController) {
       this.abortController.abort();
@@ -370,35 +372,32 @@ export class CardViewDesigner extends Base {
 
     let response;
     try {
-      response = await Craft.sendActionRequest(
-        'POST',
+      response = await actionClient.post(
         'fields/render-card-preview',
         {
-          signal: this.abortController.signal,
-          data: {
-            fieldLayoutConfig: {
-              ...this.designer.config,
-              // Not part of `this.designer.config` (that lives at
-              // `designer.settings.elementType` instead), but `CardDesigner::previewHtml()`
-              // needs a `type` on the layout config to instantiate a sample element.
-              type: this.designer.settings!.elementType,
-              generatedFields:
-                document
-                  .querySelector('craft-generated-fields-table')
-                  ?.serialize() ?? [],
-            },
+          fieldLayoutConfig: {
+            ...this.designer.config,
+            // Not part of `this.designer.config` (that lives at
+            // `designer.settings.elementType` instead), but `CardDesigner::previewHtml()`
+            // needs a `type` on the layout config to instantiate a sample element.
+            type: this.designer.settings!.elementType,
+            generatedFields:
+              document
+                .querySelector('craft-generated-fields-table')
+                ?.serialize() ?? [],
           },
-        }
+        },
+        {signal: this.abortController.signal}
       );
     } catch (e: any) {
       if (!isCancel(e)) {
-        Craft.cp.displayError(e?.response?.data?.message);
+        showError(e?.response?.data?.message);
         throw e;
       }
       // otherwise the request was canceled by a newer preview — ignore.
     } finally {
       this.$previewContainer.classList.remove('loading');
-      Craft.cp.announce(Craft.t('app', 'Loading complete'));
+      announce(t('Loading complete'));
       this.abortController = null;
     }
 
