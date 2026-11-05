@@ -3675,7 +3675,7 @@ return [
     '{num, number} {num, plural, =1{hour} other{hours}}' => '{num, number} {num, plural, =1{ώρα} other{ώρες}}',
     '{num, number} {num, plural, =1{issue} other{issues}}' => '{num, number} {num, plural, =1{ζήτημα} other{ζητήματα}}',
     '{num, number} {num, plural, =1{item} other{items}}' => '{num, number} {num, plural, =1{στοιχείο} other{στοιχεία}}',
-    '{num, number} {num, plural, =1{item} other{items}} selected' => '{num, number} {num, plural, =1{στοιχείο επιλεγμένο} other{στοιχεία επιλεγμένα}}',
+    '{num, number} {num, plural, =1{{item}} other{{items}}} selected' => 'Επιλογή: {num, number} {num, plural, =1{{item}} other{{items}}}',
     '{num, number} {num, plural, =1{minute} other{minutes}}' => '{num, number} {num, plural, =1{λεπτό} other{λεπτά}}',
     '{num, number} {num, plural, =1{month} other{months}}' => '{num, number} {num, plural, =1{μήνας} other{μήνες}}',
     '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number} {num, plural, =1{ειδοποίηση} other{ειδοποιήσεις}}',

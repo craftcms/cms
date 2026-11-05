@@ -3675,7 +3675,7 @@ return [
     '{num, number} {num, plural, =1{hour} other{hours}}' => '{num, number} {num, plural, one {} =1{ساعت} other{ساعت‌}}',
     '{num, number} {num, plural, =1{issue} other{issues}}' => '{num, number} {num, plural, =1{مشکل} other{مشکل}}',
     '{num, number} {num, plural, =1{item} other{items}}' => '{num, number} {num, plural, =1{مورد} other{مورد}}',
-    '{num, number} {num, plural, =1{item} other{items}} selected' => '{num, number} {num, plural, =1{مورد انتخاب شد} other{مورد انتخاب شد}}',
+    '{num, number} {num, plural, =1{{item}} other{{items}}} selected' => '{num, number} {num, plural, =1{{item}} other{{items}}} انتخاب شد',
     '{num, number} {num, plural, =1{minute} other{minutes}}' => '{num, number} {num, plural, one {} =1{دقیقه} other{دقیقه}}',
     '{num, number} {num, plural, =1{month} other{months}}' => '{num, number} {num, plural, one {} =1{ماه} other{ماه}}',
     '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number} {num, plural, one {} =1{اعلان} other{اعلان}}',

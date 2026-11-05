@@ -3675,7 +3675,7 @@ return [
     '{num, number} {num, plural, =1{hour} other{hours}}' => '{num, number} {num, plural, =1{uur} other{uur}}',
     '{num, number} {num, plural, =1{issue} other{issues}}' => '{num, number} {num, plural, =1{probleem} other{problemen}}',
     '{num, number} {num, plural, =1{item} other{items}}' => '{num, number} {num, plural, =1{item} other{items}}',
-    '{num, number} {num, plural, =1{item} other{items}} selected' => '{num, number} {num, plural, =1{item} other{items}} geselecteerd',
+    '{num, number} {num, plural, =1{{item}} other{{items}}} selected' => '{num, number} {num, plural, =1{{item}} other{{items}}} geselecteerd',
     '{num, number} {num, plural, =1{minute} other{minutes}}' => '{num, number} {num, plural, =1{minuut} other{minuten}}',
     '{num, number} {num, plural, =1{month} other{months}}' => '{num, number} {num, plural, =1{maand} other{maanden}}',
     '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number} {num, plural, one {} =1{melding} other{meldingen}}',

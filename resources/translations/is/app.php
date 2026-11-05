@@ -3675,7 +3675,7 @@ return [
     '{num, number} {num, plural, =1{hour} other{hours}}' => '{num, number} {num, plural, =1{klukkustund} other{klukkustundir}}',
     '{num, number} {num, plural, =1{issue} other{issues}}' => '{num, number} {num, plural, =1{vandamál} other{vandamál}}',
     '{num, number} {num, plural, =1{item} other{items}}' => '{num, number} {num, plural, =1{atriði} other{atriði}}',
-    '{num, number} {num, plural, =1{item} other{items}} selected' => '{num, number} {num, plural, =1{atriði valið} other{atriði valin}}',
+    '{num, number} {num, plural, =1{{item}} other{{items}}} selected' => 'Val: {num, number} {num, plural, =1{{item}} other{{items}}}',
     '{num, number} {num, plural, =1{minute} other{minutes}}' => '{num, number} {num, plural, =1{mínúta} other{mínútur}}',
     '{num, number} {num, plural, =1{month} other{months}}' => '{num, number} {num, plural, =1{mánuður} other{mánuðir}}',
     '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number} {num, plural, =1{tilkynning} other{tilkynningar}}',

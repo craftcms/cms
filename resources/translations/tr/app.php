@@ -3675,7 +3675,7 @@ return [
     '{num, number} {num, plural, =1{hour} other{hours}}' => '{num, number} {num, plural, one {} =1{saat} other{saat}}',
     '{num, number} {num, plural, =1{issue} other{issues}}' => '{num, number} {num, plural, =1{sorun} other{sorun}}',
     '{num, number} {num, plural, =1{item} other{items}}' => '{num, number} {num, plural, =1{öğe} other{öğe}}',
-    '{num, number} {num, plural, =1{item} other{items}} selected' => '{num, number} {num, plural, =1{öğe} other{öğe}} seçildi',
+    '{num, number} {num, plural, =1{{item}} other{{items}}} selected' => '{num, number} {num, plural, =1{{item}} other{{item}}} seçildi',
     '{num, number} {num, plural, =1{minute} other{minutes}}' => '{num, number} {num, plural, one {} =1{dakika} other{dakika}}',
     '{num, number} {num, plural, =1{month} other{months}}' => '{num, number} {num, plural, one {} =1{ay} other{ay}}',
     '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number} {num, plural, one {} =1{bildirim} other{bildirim}}',
