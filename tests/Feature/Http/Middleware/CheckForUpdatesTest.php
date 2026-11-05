@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\CheckForUpdates;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\Request;
@@ -73,18 +74,22 @@ it('passes through for action request when no updates pending', function () {
     expect($result)->toBe('passed');
 });
 
-it('cleans compiled templates when craft version changed', function () {
+it('cleans compiled templates and views when craft version changed', function () {
     $this->updates->shouldReceive('isCraftUpdatePending')->andReturn(false);
     $this->updates->shouldReceive('hasCraftVersionChanged')->andReturn(true);
     $this->updates->shouldReceive('updateCraftVersionInfo')->once();
     $this->updates->shouldReceive('isPluginUpdatePending')->andReturn(false);
+    File::ensureDirectoryExists(config('view.compiled'));
+    $staleView = config('view.compiled').'/stale-compiled-view.php';
+    File::put($staleView, '<?php echo $headHtml->toHtml(); ?>');
 
     $middleware = app(CheckForUpdates::class);
     $request = Request::create('/site-page');
 
     $result = $middleware->handle($request, fn () => 'passed');
 
-    expect($result)->toBe('passed');
+    expect($result)->toBe('passed')
+        ->and(File::exists($staleView))->toBeFalse();
 });
 
 it('renders db update page for cp request when craft update pending', function () {
@@ -92,6 +97,9 @@ it('renders db update page for cp request when craft update pending', function (
     $this->updates->shouldReceive('wasCraftBreakpointSkipped')->andReturn(false);
     $this->updates->shouldReceive('isUpdateInfoCached')->andReturn(false);
     $this->updates->shouldReceive('areMigrationsPending')->andReturn(false);
+    File::ensureDirectoryExists(config('view.compiled'));
+    $staleView = config('view.compiled').'/stale-compiled-view.php';
+    File::put($staleView, '<?php echo $headHtml->toHtml(); ?>');
 
     $middleware = app(CheckForUpdates::class);
     $request = Request::create(Cms::config()->cpTrigger);
@@ -101,7 +109,8 @@ it('renders db update page for cp request when craft update pending', function (
     expect($response->getContent())
         ->toContain('Complete the Update')
         ->toContain(sprintf('action="%s"', cp_url('updates')))
-        ->not->toContain('name="action"');
+        ->not->toContain('name="action"')
+        ->and(File::exists($staleView))->toBeFalse();
 });
 
 it('renders db update page for cp request when plugin update pending', function () {
