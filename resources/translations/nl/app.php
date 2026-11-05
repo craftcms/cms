@@ -3248,6 +3248,7 @@ return [
     'Upload failed for “{filename}”.' => 'Upload mislukt voor “{filename}”.',
     'Upload failed.' => 'Uploaden mislukt.',
     'Upload files' => 'Bestanden uploaden',
+    'Upload progress' => 'Uploadvoortgang',
     'Uploaded By' => 'Geüpload door',
     'Uploaded by' => 'Geüpload door',
     'Use the AI assistant' => 'De AI-assistent gebruiken',
