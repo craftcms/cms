@@ -269,58 +269,67 @@
               {{ t('Reverse comparison') }}
             </craft-tooltip>
           </template>
-          <h2 :id="`compare-${key}-title`" class="compare__title">
-            <span class="sr-only">{{
-              key === 'from' ? t('Compared with:') : t('Showing:')
-            }}</span>
-            <ActionMenu
-              :key="`${key}-${side.label}`"
-              :label="side.label"
-              :actions="side.versionMenu"
-            >
-              <template #invoker>
-                <craft-button
-                  slot="invoker"
-                  type="button"
-                  variant="plain"
-                  flush="inline-start"
-                  class="compare__version"
-                >
-                  {{ side.label }}
-                  <span class="sr-only">{{ t('Choose a version') }}</span>
-                  <craft-icon slot="suffix" name="chevron-down"></craft-icon>
-                </craft-button>
-              </template>
-            </ActionMenu>
-            <craft-badge
-              v-if="key === 'to' && edited"
-              fill="violet"
-              class="compare__edited"
-            >
-              <craft-icon name="pen-circle" slot="prefix"></craft-icon>
-              {{ t('Edited') }}
-            </craft-badge>
-          </h2>
-          <ActionMenu
-            v-if="side.siteMenu.length && side.siteName"
-            :key="`${key}-site-${side.siteName}`"
-            :label="side.siteName"
-            :actions="side.siteMenu"
-          >
-            <template #invoker>
-              <craft-button
-                slot="invoker"
-                type="button"
-                variant="plain"
-                size="small"
-                icon="globe"
+          <div class="compare__versions">
+            <template v-if="side.siteMenu.length && side.siteName">
+              <ActionMenu
+                :key="`${key}-site-${side.siteName}`"
+                :label="side.siteName"
+                :actions="side.siteMenu"
               >
-                {{ side.siteName }}
-                <span class="sr-only">{{ t('Choose a site') }}</span>
-                <craft-icon slot="suffix" name="chevron-down"></craft-icon>
-              </craft-button>
+                <template #invoker>
+                  <craft-button
+                    slot="invoker"
+                    type="button"
+                    variant="plain"
+                    size="small"
+                    icon="world"
+                    flush="inline-start"
+                  >
+                    {{ side.siteName }}
+                    <span class="sr-only">{{ t('Choose a site') }}</span>
+                    <craft-icon slot="suffix" name="chevron-down"></craft-icon>
+                  </craft-button>
+                </template>
+              </ActionMenu>
+              <span class="compare__separator" aria-hidden="true">/</span>
             </template>
-          </ActionMenu>
+            <h2 :id="`compare-${key}-title`" class="compare__title">
+              <span class="sr-only">{{
+                key === 'from' ? t('Compared with:') : t('Showing:')
+              }}</span>
+              <ActionMenu
+                :key="`${key}-${side.label}`"
+                :label="side.label"
+                :actions="side.versionMenu"
+              >
+                <template #invoker>
+                  <craft-button
+                    slot="invoker"
+                    type="button"
+                    variant="plain"
+                    size="small"
+                    :flush="
+                      side.siteMenu.length && side.siteName
+                        ? null
+                        : 'inline-start'
+                    "
+                  >
+                    {{ side.label }}
+                    <span class="sr-only">{{ t('Choose a version') }}</span>
+                    <craft-icon slot="suffix" name="chevron-down"></craft-icon>
+                  </craft-button>
+                </template>
+              </ActionMenu>
+              <craft-badge
+                v-if="key === 'to' && edited"
+                fill="violet"
+                class="compare__edited"
+              >
+                <craft-icon name="pen-circle" slot="prefix"></craft-icon>
+                {{ t('Edited') }}
+              </craft-badge>
+            </h2>
+          </div>
         </div>
 
         <div class="compare__body" :class="hasTabStrip(ui) ? 'pb-lg' : 'py-lg'">
@@ -390,9 +399,31 @@
       position: static;
       translate: none;
     }
+  }
 
-    .compare__reverse + .compare__title {
-      margin-inline-end: auto;
+  @container compare-panes (width >= 48rem) {
+    .compare__pane {
+      --compare-gutter: calc(var(--c-size-control-sm) / 2);
+    }
+
+    .compare__pane:first-child .compare__body {
+      padding-inline-end: var(--compare-gutter);
+    }
+
+    .compare__pane:first-child .compare__header {
+      padding-inline-end: calc(
+        var(--cp-container-padding, var(--c-spacing-lg)) + var(--compare-gutter)
+      );
+    }
+
+    .compare__pane + .compare__pane .compare__body {
+      padding-inline-start: var(--compare-gutter);
+    }
+
+    .compare__pane + .compare__pane .compare__header {
+      padding-inline-start: calc(
+        var(--cp-container-padding, var(--c-spacing-lg)) + var(--compare-gutter)
+      );
     }
   }
 
@@ -405,15 +436,28 @@
     flex-wrap: wrap;
     gap: var(--c-spacing-sm);
     align-items: center;
-    justify-content: space-between;
     padding-block: var(--c-spacing-sm);
     padding-inline: var(--cp-container-padding, var(--c-spacing-lg));
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
   }
 
+  .compare__versions {
+    display: flex;
+    flex: 1;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--c-spacing-xs);
+    min-width: 0;
+  }
+
+  .compare__separator {
+    color: var(--c-text-quiet);
+  }
+
   .compare__title {
     margin: 0;
-    font-size: var(--c-text-lg);
+    font-size: inherit;
+    font-weight: inherit;
     min-width: 0;
     display: flex;
     flex-wrap: wrap;
@@ -425,9 +469,28 @@
     font-size: var(--c-text-sm);
     font-weight: normal;
   }
+</style>
 
-  .compare__version {
-    font-size: inherit;
-    font-weight: inherit;
+<style>
+  /* The footer is the page shell's, so it's reached from here. */
+  .cp-content__main:has(.compare__panes) {
+    container: compare-page / inline-size;
+  }
+
+  @container compare-page (width >= 48rem) {
+    .cp-content__main:has(.compare__panes) > .sticky::before {
+      content: '';
+      position: absolute;
+      inset-block: calc(var(--c-spacing-lg) * -1) 0;
+      inset-inline-start: 50%;
+      border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
+      pointer-events: none;
+    }
+
+    .cp-content__main:has(.compare__panes) .cp-content__footer {
+      padding-inline-start: calc(
+        50% + 1px + var(--cp-container-padding) + var(--c-size-control-sm) / 2
+      );
+    }
   }
 </style>

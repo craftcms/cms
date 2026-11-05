@@ -37,6 +37,8 @@
     label?: string;
     /** Whether the word diff collapses long unchanged stretches. */
     collapse?: boolean;
+    /** Whether side-by-side previews have the Compare screen's gutter, for a hairline down the center and a header row the host draws, which shows the labels in place of these. */
+    ruled?: boolean;
   }>();
 
   // Previews’ values are their own, not the page’s.
@@ -85,10 +87,13 @@
     <dl
       ref="sides"
       class="change-comparison__sides"
-      :class="{'change-comparison__sides--previews': hasPreviews}"
+      :class="{
+        'change-comparison__sides--previews': hasPreviews,
+        'change-comparison__sides--ruled': hasPreviews && ruled,
+      }"
     >
       <div v-for="{key, side, label: sideLabel} in sides" :key="key">
-        <dt>
+        <dt :class="{'sr-only': hasPreviews && ruled}">
           {{ sideLabel }}
           <span v-if="label && hasPreviews" class="sr-only">{{ label }}</span>
         </dt>
@@ -126,8 +131,16 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .change-comparison__sides--previews:has(.nested-entry-links g) {
+    .change-comparison__sides--previews:not(
+        .change-comparison__sides--ruled
+      ):has(.nested-entry-links g) {
       column-gap: var(--c-spacing-2xl, 3rem);
+    }
+
+    .change-comparison__sides--ruled.change-comparison__sides--previews {
+      column-gap: calc(
+        (var(--cp-container-padding) + var(--c-size-control-sm) / 2) * 2 + 1px
+      );
     }
   }
 
