@@ -3677,7 +3677,7 @@ return [
     '{num, number} {num, plural, =1{hour} other{hours}}' => '{num, number}{num, plural, =1{時間} other{時間}}',
     '{num, number} {num, plural, =1{issue} other{issues}}' => '{num, number}件の{num, plural, =1{問題} other{問題}}',
     '{num, number} {num, plural, =1{item} other{items}}' => '{num, number}{num, plural, =1{件} other{件}}',
-    '{num, number} {num, plural, =1{item} other{items}} selected' => '{num, number}件の{num, plural, =1{アイテム} other{アイテム}}を選択中',
+    '{num, number} {num, plural, =1{{item}} other{{items}}} selected' => '{num, number} {num, plural, =1{{item}} other{{items}}} selected',
     '{num, number} {num, plural, =1{minute} other{minutes}}' => '{num, number}{num, plural, =1{分} other{分}}',
     '{num, number} {num, plural, =1{month} other{months}}' => '{num, number}{num, plural, =1{カ月} other{カ月}}',
     '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number} {num, plural, =1{件の通知} other{件の通知}}',
