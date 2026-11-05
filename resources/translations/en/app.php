@@ -1603,6 +1603,7 @@ return [
     'Delete {type} for site' => 'Delete {type} for site',
     'Delete {type} for this site' => 'Delete {type} for this site',
     'Delete {type}' => 'Delete {type}',
+    'Delete step' => 'Delete step',
     'Delete' => 'Delete',
     'Delete…' => 'Delete…',
     'Deleted:' => 'Deleted:',

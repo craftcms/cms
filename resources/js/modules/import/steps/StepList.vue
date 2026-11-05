@@ -11,7 +11,9 @@
   import '@craftcms/ui/components/reorder-button/reorder-button';
   import {computed, ref} from 'vue';
   import {t} from '@craftcms/ui';
+  import ActionMenu from '@/common/components/ActionMenu.vue';
   import {useReorderableItems} from '@/common/composables/useReorderableItems';
+  import type {ActionItems} from '@/common/types';
   import type {ImportStep} from '@/modules/import/mapping/types';
   import {openStepSlideout} from './step-slideout';
 
@@ -142,6 +144,23 @@
     steps.value = steps.value.filter((existing) => existing.uid !== step.uid);
   }
 
+  function stepActions(step: ImportStep): ActionItems {
+    return [
+      {
+        label: step.enabled ? t('Disable step') : t('Enable step'),
+        icon: step.enabled ? 'circle-dashed' : 'circle',
+        disabled: !canToggle(step),
+        onClick: () => toggleEnabled(step),
+      },
+      {
+        label: t('Delete step'),
+        icon: 'trash',
+        variant: 'danger',
+        onClick: () => remove(step),
+      },
+    ];
+  }
+
   /**
    * Opening a step's slideout asks the server to build its form, so it can fail. Report it
    * rather than letting the rejection go unhandled, which reads as the button doing nothing.
@@ -202,106 +221,92 @@
 </script>
 
 <template>
-  <craft-pane appearance="raised">
-    <h2>{{ t('Steps') }}</h2>
-    <p>
-      {{
-        t(
-          'Each step imports one kind of data. Steps run in the order listed here.'
-        )
-      }}
-    </p>
+  <h2>{{ t('Steps') }}</h2>
+  <p>
+    {{
+      t(
+        'Each step imports one kind of data. Steps run in the order listed here.'
+      )
+    }}
+  </p>
 
-    <craft-empty v-if="!steps.length" :label="t('No steps yet.')"></craft-empty>
+  <craft-empty v-if="!steps.length" :label="t('No steps yet.')"></craft-empty>
 
-    <ol v-else class="m-0 p-0 list-none space-y-2" role="list">
-      <li
-        v-for="(step, index) in steps"
-        :key="step.uid"
-        :ref="(el) => setItemRef(el, step.uid)"
-        class="flex flex-wrap items-center gap-3 rounded p-2"
-        :class="{'bg-gray-100': getDropState(step.uid).type === 'is-over'}"
-      >
-        <craft-reorder-button
-          :ref="
-            (el: Parameters<typeof setHandleRef>[0]) =>
-              setHandleRef(el, step.uid)
-          "
-          .disabled="!editable || steps.length < 2"
-          :position="getRowPosition(index)"
-          @craft-reorder="
-            reorder(index, index + ($event.detail.direction === 'up' ? -1 : 1))
-          "
-        ></craft-reorder-button>
-
-        <span class="flex-1">
-          <span :id="`step-label-${step.uid}`" class="font-bold">{{
-            stepLabel(step, index)
-          }}</span>
-          <span v-if="!step.enabled" class="ms-2">({{ t('Disabled') }})</span>
-          <span
-            v-if="errorsByStep[step.uid]"
-            :id="`step-error-${step.uid}`"
-            class="error block"
-          >
-            {{
-              t('The step “{step}” is invalid. Edit it to fix the problem.', {
-                step: summary(step),
-              })
-            }}
-          </span>
-        </span>
-
-        <craft-button
-          :ref="(el: HTMLElement | null) => (itemButtons[step.uid] = el)"
-          type="button"
-          .loading="openingStep === step.uid"
-          :aria-describedby="
-            errorsByStep[step.uid] ? `step-error-${step.uid}` : undefined
-          "
-          :aria-label="
-            t(editable ? 'Edit {type}' : 'View {type}', {
-              type: stepLabel(step, index),
-            })
-          "
-          @click="edit(step)"
-        >
-          {{ editable ? t('Edit') : t('View') }}
-        </craft-button>
-
-        <craft-button
-          :id="`step-toggle-${step.uid}`"
-          type="button"
-          :aria-labelledby="`step-toggle-${step.uid} step-label-${step.uid}`"
-          .disabled="!canToggle(step)"
-          @click="toggleEnabled(step)"
-        >
-          {{ step.enabled ? t('Disable step') : t('Enable step') }}
-        </craft-button>
-
-        <craft-button
-          type="button"
-          icon="trash"
-          :aria-label="t('Delete {type}', {type: stepLabel(step, index)})"
-          .disabled="!editable"
-          @click="remove(step)"
-        ></craft-button>
-      </li>
-    </ol>
-
-    <ul v-if="listErrors.length" class="error-list" role="alert">
-      <li v-for="error in listErrors" :key="error">{{ error }}</li>
-    </ul>
-
-    <craft-button
-      v-if="editable"
-      ref="addButton"
-      type="button"
-      icon="plus"
-      .loading="openingStep === 'new'"
-      @click="add"
+  <ol v-else class="m-0 p-0 list-none space-y-2" role="list">
+    <li
+      v-for="(step, index) in steps"
+      :key="step.uid"
+      :ref="(el) => setItemRef(el, step.uid)"
+      class="flex flex-wrap items-center gap-3 rounded p-2"
+      :class="{'bg-gray-100': getDropState(step.uid).type === 'is-over'}"
     >
-      {{ t('Add a step') }}
-    </craft-button>
-  </craft-pane>
+      <craft-reorder-button
+        :ref="
+          (el: Parameters<typeof setHandleRef>[0]) => setHandleRef(el, step.uid)
+        "
+        .disabled="!editable || steps.length < 2"
+        :position="getRowPosition(index)"
+        @craft-reorder="
+          reorder(index, index + ($event.detail.direction === 'up' ? -1 : 1))
+        "
+      ></craft-reorder-button>
+
+      <span class="flex-1">
+        <span :id="`step-label-${step.uid}`" class="font-bold">{{
+          stepLabel(step, index)
+        }}</span>
+        <span v-if="!step.enabled" class="ms-2">({{ t('Disabled') }})</span>
+        <span
+          v-if="errorsByStep[step.uid]"
+          :id="`step-error-${step.uid}`"
+          class="error block"
+        >
+          {{
+            t('The step “{step}” is invalid. Edit it to fix the problem.', {
+              step: summary(step),
+            })
+          }}
+        </span>
+      </span>
+
+      <craft-button
+        :ref="(el: HTMLElement | null) => (itemButtons[step.uid] = el)"
+        type="button"
+        .loading="openingStep === step.uid"
+        :aria-describedby="
+          errorsByStep[step.uid] ? `step-error-${step.uid}` : undefined
+        "
+        :aria-label="
+          t(editable ? 'Edit {type}' : 'View {type}', {
+            type: stepLabel(step, index),
+          })
+        "
+        @click="edit(step)"
+        :icon="editable ? 'pencil' : 'eye'"
+      >
+        {{ editable ? t('Edit') : t('View') }}
+      </craft-button>
+
+      <ActionMenu
+        v-if="editable"
+        :label="t('Actions for {item}', {item: stepLabel(step, index)})"
+        :actions="stepActions(step)"
+      />
+    </li>
+  </ol>
+
+  <ul v-if="listErrors.length" class="error-list" role="alert">
+    <li v-for="error in listErrors" :key="error">{{ error }}</li>
+  </ul>
+
+  <craft-button
+    v-if="editable"
+    ref="addButton"
+    type="button"
+    icon="plus"
+    .loading="openingStep === 'new'"
+    @click="add"
+  >
+    {{ t('Add a step') }}
+  </craft-button>
 </template>

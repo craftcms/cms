@@ -1,7 +1,8 @@
-import {createApp, nextTick, reactive, ref} from 'vue';
+import {createApp, h, nextTick, reactive, ref} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {cloneStep, cloneSteps} from '@/modules/import/mapping/paths';
 import type {ImportStep} from '@/modules/import/mapping/types';
+import type {ActionItemButton} from '@/common/types';
 import StepList from './StepList.vue';
 
 const state = vi.hoisted(() => ({
@@ -10,6 +11,20 @@ const state = vi.hoisted(() => ({
 
 vi.mock('./step-slideout', () => ({
   openStepSlideout: state.openStepSlideout,
+}));
+
+/** Renders a menu's label and hands its actions to the test through the element. */
+vi.mock('@/common/components/ActionMenu.vue', () => ({
+  default: {
+    props: {label: String, actions: Array},
+    setup(props: {label: string; actions: ActionItemButton[]}) {
+      return () =>
+        h('step-menu', {
+          'aria-label': props.label,
+          '.actions': props.actions,
+        });
+    },
+  },
 }));
 
 const importerTypes = [
@@ -61,16 +76,25 @@ function rowButtons(index = 0): HTMLElement[] {
   return [...row.querySelectorAll<HTMLElement>('craft-button')];
 }
 
+function rowActions(index = 0): ActionItemButton[] {
+  const row = [...container.querySelectorAll('li')][index]!;
+  const menu = row.querySelector<HTMLElement & {actions: ActionItemButton[]}>(
+    'step-menu'
+  );
+
+  return menu?.actions ?? [];
+}
+
+function action(label: string, index = 0): ActionItemButton {
+  return rowActions(index).find((item) => item.label === label)!;
+}
+
 function addButton(): HTMLElement {
   return [...container.querySelectorAll<HTMLElement>('craft-button')].at(-1)!;
 }
 
 function isLoading(button: HTMLElement): boolean {
   return (button as HTMLElement & {loading: boolean}).loading;
-}
-
-function isDisabled(button: HTMLElement): boolean {
-  return (button as HTMLElement & {disabled: boolean}).disabled;
 }
 
 function deferred<T>() {
@@ -126,37 +150,29 @@ it('summarizes a step by its importer type and source', () => {
   );
 });
 
-it('names each row’s buttons after its step', () => {
+it('names each row’s edit button and action menu after its step', () => {
   mount([step(), step({uid: 'step-2', source: 'people.csv'})]);
 
-  const [edit, , remove] = rowButtons(1);
+  const row = [...container.querySelectorAll('li')][1]!;
 
-  expect(
-    [edit, remove].map((button) => button!.getAttribute('aria-label'))
-  ).toEqual(['Edit 2. Entries — people.csv', 'Delete 2. Entries — people.csv']);
-});
-
-it('names a row’s toggle button after its label and its step', () => {
-  mount([step(), step({uid: 'step-2'})]);
-
-  const ids = rowButtons(1)[1]!.getAttribute('aria-labelledby')!.split(' ');
-
-  expect(
-    ids.map((id) => document.getElementById(id)!.textContent!.trim())
-  ).toEqual(['Disable step', '2. Entries — people.csv']);
+  expect(rowButtons(1)[0]!.getAttribute('aria-label')).toBe(
+    'Edit 2. Entries — people.csv'
+  );
+  expect(row.querySelector('step-menu')!.getAttribute('aria-label')).toBe(
+    'Actions for 2. Entries — people.csv'
+  );
 });
 
 it('disables a step and enables it again', async () => {
   mount([step(), step({uid: 'step-2'})]);
 
-  rowButtons(0)[1]!.dispatchEvent(new Event('click'));
+  action('Disable step').onClick!(new Event('click'));
   await nextTick();
 
   expect(steps.value!.map((s) => s.enabled)).toEqual([false, true]);
   expect(container.querySelector('li')!.textContent).toContain('(Disabled)');
-  expect(rowButtons(0)[1]!.textContent!.trim()).toBe('Enable step');
 
-  rowButtons(0)[1]!.dispatchEvent(new Event('click'));
+  action('Enable step').onClick!(new Event('click'));
   await nextTick();
 
   expect(steps.value!.map((s) => s.enabled)).toEqual([true, true]);
@@ -165,8 +181,14 @@ it('disables a step and enables it again', async () => {
 it('only lets a step be disabled while another stays enabled', () => {
   mount([step(), step({uid: 'step-2', enabled: false})]);
 
-  expect(isDisabled(rowButtons(0)[1]!)).toBe(true);
-  expect(isDisabled(rowButtons(1)[1]!)).toBe(false);
+  expect(action('Disable step', 0).disabled).toBe(true);
+  expect(action('Enable step', 1).disabled).toBe(false);
+});
+
+it('leaves the action menu off a read-only step', () => {
+  mount([step()], {editable: false});
+
+  expect(container.querySelector('step-menu')).toBeNull();
 });
 
 it('names a read-only row’s button for viewing', () => {
@@ -210,7 +232,7 @@ it('replaces the edited step in place, keeping its uid', async () => {
 it('removes a step once the deletion is confirmed', async () => {
   mount([step(), step({uid: 'step-2'})]);
 
-  rowButtons(0)[2]!.dispatchEvent(new Event('click'));
+  action('Delete step').onClick!(new Event('click'));
   await nextTick();
 
   expect(steps.value!.map((s) => s.uid)).toEqual(['step-2']);
@@ -220,7 +242,7 @@ it('keeps a step the user declines to delete', async () => {
   vi.stubGlobal('confirm', vi.fn().mockReturnValue(false));
   mount([step(), step({uid: 'step-2'})]);
 
-  rowButtons(0)[2]!.dispatchEvent(new Event('click'));
+  action('Delete step').onClick!(new Event('click'));
   await nextTick();
 
   expect(steps.value!.map((s) => s.uid)).toEqual(['step-1', 'step-2']);
