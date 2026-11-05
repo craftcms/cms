@@ -3248,6 +3248,7 @@ return [
     'Upload failed for “{filename}”.' => '“{filename}” 업로드 실패.',
     'Upload failed.' => '업로드에 실패했습니다.',
     'Upload files' => '파일 업로드하기',
+    'Upload progress' => '업로드 진행률',
     'Uploaded By' => '업로드한 사람:',
     'Uploaded by' => '업로드한 사람:',
     'Use the AI assistant' => 'AI 어시스턴트 사용',
