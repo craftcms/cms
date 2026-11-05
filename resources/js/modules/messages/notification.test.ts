@@ -66,6 +66,20 @@ describe('Notification', () => {
     expect(notification.element!.isConnected).toBe(false);
   });
 
+  it('stays off screen when it’s closed while still opening', async () => {
+    const notification = new Notification('notice', 'Moved.', {animate: false});
+    const closed = vi.fn();
+    notification.on('close', closed);
+
+    // `close()` lands while `show()` is still awaiting its icon.
+    const showing = notification.show();
+    const closing = notification.close();
+    await Promise.all([showing, closing]);
+
+    expect(document.querySelector('cp-messages .notification')).toBeNull();
+    expect(closed).toHaveBeenCalled();
+  });
+
   it.each([
     ['an element', (button: HTMLElement) => button],
     ['a jQuery-style collection', (button: HTMLElement) => [button]],

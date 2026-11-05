@@ -170,6 +170,14 @@ export class Notification {
 
     initLegacyUi(inner);
 
+    // `close()` can land while the icon is still loading. It can't take this
+    // one off screen yet, so stop before putting it there.
+    if (this.closing) {
+      this.#emit('close');
+
+      return;
+    }
+
     element.dataset.shownAt = String(Date.now());
     element.classList.toggle('notification--entering', this.#animate());
     messages.addNotification(this);
@@ -183,6 +191,10 @@ export class Notification {
       await new Promise((resolve) => requestAnimationFrame(resolve));
       element.classList.remove('notification--entering');
       await this.#waitForTransition();
+    }
+
+    if (this.closing) {
+      return;
     }
 
     if (this.#details) {
