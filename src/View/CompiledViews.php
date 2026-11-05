@@ -7,6 +7,7 @@ namespace CraftCms\Cms\View;
 use CraftCms\Cms\Support\File;
 use Illuminate\Support\Facades\View;
 use Illuminate\View\Engines\CompilerEngine;
+use RuntimeException;
 
 /**
  * Clears Laravel’s compiled Blade views, as `view:clear` does.
@@ -31,7 +32,9 @@ class CompiledViews
     /**
      * Deletes the compiled views and resets the current process’s record of which views are compiled.
      *
-     * Does nothing when no compiled views directory is configured.
+     * Does nothing when no compiled views directory is configured or it doesn’t exist yet.
+     *
+     * @throws RuntimeException if any compiled views couldn’t be deleted
      */
     public static function clear(): void
     {
@@ -47,13 +50,9 @@ class CompiledViews
             $engine->forgetCompiledOrNotExpired();
         }
 
-        // Like view:clear, leave dotfiles such as .gitignore in place
-        foreach (File::glob("$path/*") as $view) {
-            if (File::isDirectory($view)) {
-                File::deleteDirectory($view);
-            } else {
-                File::delete($view);
-            }
+        // Like view:clear, leave dotfiles such as .gitignore in place. Symlinks are unlinked rather than followed.
+        if (File::isDirectory($path) && ! File::cleanDirectory($path, ['.*'])) {
+            throw new RuntimeException("Couldn’t delete all compiled views in $path.");
         }
     }
 }

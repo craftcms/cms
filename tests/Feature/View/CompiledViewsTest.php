@@ -38,6 +38,25 @@ it('leaves dotfiles in the compiled views directory, like view:clear', function 
     File::delete($gitignore);
 });
 
+it('unlinks directory symlinks without deleting their targets', function () {
+    $target = sys_get_temp_dir().'/compiled-views-symlink-target-'.uniqid();
+    File::ensureDirectoryExists($target);
+    File::put("$target/keep.txt", 'keep');
+    $link = config('view.compiled').'/linked-dir';
+    File::ensureDirectoryExists(config('view.compiled'));
+    symlink($target, $link);
+
+    try {
+        CompiledViews::clear();
+
+        expect(is_link($link))->toBeFalse()
+            ->and(File::exists("$target/keep.txt"))->toBeTrue();
+    } finally {
+        @unlink($link);
+        File::deleteDirectory($target);
+    }
+});
+
 it('does nothing when no compiled views directory is configured', function (mixed $path) {
     config(['view.compiled' => $path]);
 
