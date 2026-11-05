@@ -3248,6 +3248,7 @@ return [
     'Upload failed for “{filename}”.' => 'Le téléversement de « {filename} » a échoué.',
     'Upload failed.' => 'Échec du téléversement.',
     'Upload files' => 'Téléverser des fichiers',
+    'Upload progress' => 'Progression du téléversement',
     'Uploaded By' => 'Téléversé par',
     'Uploaded by' => 'Téléversé par',
     'Use the AI assistant' => 'Utiliser l\'assistant IA',
