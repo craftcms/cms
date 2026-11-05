@@ -316,7 +316,6 @@ export default defineConfig(async ({mode}) => {
         '!yii2-adapter/resources',
         'yii2-adapter/resources/*',
         '!yii2-adapter/resources/js',
-        'tests-playwright/.authentication.json',
         // Written by `boost:install`
         '.mcp.json',
         'boost.json',
