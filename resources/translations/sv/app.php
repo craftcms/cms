@@ -3248,6 +3248,7 @@ return [
     'Upload failed for “{filename}”.' => 'Överföringen misslyckades för "{filename}”.',
     'Upload failed.' => 'Överföringen misslyckades.',
     'Upload files' => 'Ladda upp filer',
+    'Upload progress' => 'Uppladdningsförlopp',
     'Uploaded By' => 'Uppladdad av',
     'Uploaded by' => 'Uppladdad av',
     'Use the AI assistant' => 'Använda AI-assistenten',
