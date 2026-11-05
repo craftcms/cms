@@ -43,7 +43,7 @@ class Address extends Mutation
                 'description' => 'Save an address in a user’s address book. New addresses belong to the authenticated user unless `ownerId` is set.',
                 'args' => array_merge(
                     MutationArguments::getArguments(),
-                    static::attributeArguments(array_map(fn($field) => $field->handle, $customFields)),
+                    self::attributeArguments(array_map(fn($field) => $field->handle, $customFields)),
                     $resolver->getResolutionData(ElementMutationResolver::CONTENT_FIELD_KEY),
                 ),
                 'resolve' => [$resolver, 'saveAddress'],
