@@ -37,6 +37,7 @@
     cloneRaw,
     disabledNodes,
     isWithin,
+    readOnlyNodes,
     withControl,
     withNestedUi,
     withUis,
@@ -48,6 +49,11 @@
   const props = defineProps<{
     payload: UiPayload;
     disabled?: boolean;
+    /**
+     * Shows every editable control read-only, and takes no changes: for a
+     * form that can be edited, but not yet.
+     */
+    readOnly?: boolean;
     refresh?: (
       values: UiPayload['values'],
       scope?: string[]
@@ -72,8 +78,14 @@
   const slots = useSlots();
   const payload = shallowRef(props.payload);
   const nodes = computed(() =>
-    props.disabled ? disabledNodes(payload.value.nodes) : payload.value.nodes
+    props.disabled
+      ? disabledNodes(payload.value.nodes)
+      : props.readOnly
+        ? readOnlyNodes(payload.value.nodes)
+        : payload.value.nodes
   );
+  /** Whether the form takes no changes for now. */
+  const locked = computed(() => Boolean(props.disabled || props.readOnly));
 
   const root = ref<HTMLElement>();
   let uiValueSource: UiValueSource | undefined;
@@ -90,7 +102,7 @@
   const unregisterValueSource = useUiValueGroup()?.register(values);
   const refresher = useUiRefresh({
     refresh: () => props.refresh,
-    disabled: () => Boolean(props.disabled),
+    disabled: () => locked.value,
     snapshot: (scope) => valueState.snapshot(scope),
     fingerprint: valueState.groupCanonical,
     apply: reconcile,
@@ -116,7 +128,7 @@
     overrides: slots,
     pending: computed(() =>
       Boolean(
-        props.disabled ||
+        locked.value ||
         nativeSubmitting.value ||
         submitting.value ||
         refresher.refreshingFields.size
@@ -154,10 +166,7 @@
     {flush: 'sync'}
   );
 
-  watch(
-    () => props.disabled,
-    () => emitMutation()
-  );
+  watch(locked, () => emitMutation());
   onMounted(() => {
     uiValueSource = {
       root: root.value!,
@@ -190,7 +199,7 @@
     const scope = change.scope ?? payload.value.scope;
 
     if (
-      props.disabled ||
+      locked.value ||
       valueState.controlAt(change.path)?.mode !== 'editable' ||
       !uiValueSource
     ) {

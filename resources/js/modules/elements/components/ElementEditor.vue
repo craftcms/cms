@@ -206,9 +206,9 @@
   );
 
   /**
-   * Disables the fields. A read-only payload (such as a revision) isn't
-   * included: its controls already arrive read-only, which keeps them legible
-   * and focusable.
+   * Shows the fields read-only until the draft can be edited, as a read-only
+   * payload's (such as a revision's) already are, so they stay legible and
+   * focusable. That payload isn't included, as its controls arrive that way.
    */
   const fieldsLocked = computed(
     () => workflowReviewLocked.value || releaseDraftLocked.value
@@ -948,7 +948,7 @@
               :errors="errors"
               :refresh="uiPayload.refreshable ? refreshLayout : undefined"
               :modified="autosave.modified.value"
-              :disabled="fieldsLocked"
+              :read-only="fieldsLocked"
               :sidebar-tab-outlets="sidebarTabOutlets"
               @update:mutation="onMutation"
             />
@@ -1051,7 +1051,7 @@
                   :payload="sidebarPayload"
                   :errors="sidebarErrors"
                   :modified="autosave.modified.value"
-                  :disabled="fieldsLocked"
+                  :read-only="fieldsLocked"
                   @update:mutation="onSidebarMutation"
                 />
               </craft-field-group>
