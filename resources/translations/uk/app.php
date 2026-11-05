@@ -3677,7 +3677,7 @@ return [
     '{num, number} {num, plural, =1{hour} other{hours}}' => '{num, number} {num, plural, one {година} few {години} many {годин} =1{година} other{години}}',
     '{num, number} {num, plural, =1{issue} other{issues}}' => '{num, number} {num, plural, =1{проблема} one{проблема} few{проблеми} many{проблем} other{проблеми}}',
     '{num, number} {num, plural, =1{item} other{items}}' => '{num, number} {num, plural, =1{елемент} one{елемент} few{елементи} many{елементів} other{елемента}}',
-    '{num, number} {num, plural, =1{item} other{items}} selected' => 'Вибрано: {num, number} {num, plural, =1{елемент} one{елемент} few{елементи} many{елементів} other{елемента}}',
+    '{num, number} {num, plural, =1{{item}} other{{items}}} selected' => '{num, number} {num, plural, =1{{item}} other{{items}}} selected',
     '{num, number} {num, plural, =1{minute} other{minutes}}' => '{num, number} {num, plural, one {хвилина} few {хвилини} many {хвилин} =1{хвилина} other{хвилини}}',
     '{num, number} {num, plural, =1{month} other{months}}' => '{num, number} {num, plural, one {місяць} few {місяця} many {місяців} =1{місяць} other{місяці}}',
     '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number} {num, plural, one {сповіщення} few {сповіщення} many {сповіщень} other{сповіщення}}',
