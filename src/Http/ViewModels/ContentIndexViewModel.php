@@ -677,6 +677,16 @@ abstract class ContentIndexViewModel extends ViewModel
         return $this->elementType::pluralDisplayName();
     }
 
+    public function elementLowerDisplayName(): string
+    {
+        return $this->elementType::lowerDisplayName();
+    }
+
+    public function elementPluralLowerDisplayName(): string
+    {
+        return $this->elementType::pluralLowerDisplayName();
+    }
+
     public function canHaveDrafts(): bool
     {
         return $this->elementType::hasDrafts();
