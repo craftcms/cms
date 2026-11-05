@@ -213,6 +213,7 @@ return [
     'Couldn’t generate alt text: {error}' => 'Alternatif metin oluşturulamadı: {error}',
     'Couldn’t load activity.' => 'Etkinlik yüklenemedi.',
     'Couldn’t load table data.' => 'Tablo verileri yüklenemedi.',
+    'Couldn’t load this field.' => 'Couldn’t load this field.',
     'Couldn’t mark notifications as read.' => 'Bildirimler okundu olarak işaretlenemedi.',
     'Couldn’t move the selected items.' => 'Seçilen öğeler taşınamadı.',
     'Couldn’t open the settings.' => 'Ayarlar açılamadı.',

@@ -213,6 +213,7 @@ return [
     'Couldn’t generate alt text: {error}' => '代替テキストを生成できませんでした：{error}',
     'Couldn’t load activity.' => 'アクティビティを読み込めませんでした。',
     'Couldn’t load table data.' => 'テーブルのデータを読み込めませんでした。',
+    'Couldn’t load this field.' => 'Couldn’t load this field.',
     'Couldn’t mark notifications as read.' => '通知を既読にできませんでした。',
     'Couldn’t move the selected items.' => '選択したアイテムを移動できませんでした。',
     'Couldn’t open the settings.' => '設定を開けませんでした。',

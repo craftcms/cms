@@ -213,6 +213,7 @@ return [
     'Couldn’t generate alt text: {error}' => 'No se pudo generar el texto alternativo: {error}',
     'Couldn’t load activity.' => 'No se pudo cargar la actividad.',
     'Couldn’t load table data.' => 'No se pudieron cargar los datos de la tabla.',
+    'Couldn’t load this field.' => 'Couldn’t load this field.',
     'Couldn’t mark notifications as read.' => 'No se pudieron marcar las notificaciones como leídas.',
     'Couldn’t move the selected items.' => 'No se pudieron mover los elementos seleccionados.',
     'Couldn’t open the settings.' => 'No se pudieron abrir los ajustes.',

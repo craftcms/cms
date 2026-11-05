@@ -213,6 +213,7 @@ return [
     'Couldn’t generate alt text: {error}' => 'לא ניתן ליצור טקסט חלופי: {error}',
     'Couldn’t load activity.' => 'לא ניתן לטעון את הפעילות.',
     'Couldn’t load table data.' => 'לא ניתן לטעון את נתוני הטבלה.',
+    'Couldn’t load this field.' => 'Couldn’t load this field.',
     'Couldn’t mark notifications as read.' => 'לא ניתן לסמן את ההתראות כנקראו.',
     'Couldn’t move the selected items.' => 'לא ניתן להעביר את הפריטים שנבחרו.',
     'Couldn’t open the settings.' => 'לא ניתן לפתוח את ההגדרות.',

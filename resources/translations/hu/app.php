@@ -213,6 +213,7 @@ return [
     'Couldn’t generate alt text: {error}' => 'Nem sikerült alternatív szöveget generálni: {error}',
     'Couldn’t load activity.' => 'Nem sikerült betölteni a tevékenységeket.',
     'Couldn’t load table data.' => 'Nem sikerült betölteni a táblázat adatait.',
+    'Couldn’t load this field.' => 'Couldn’t load this field.',
     'Couldn’t mark notifications as read.' => 'Nem sikerült olvasottnak jelölni az értesítéseket.',
     'Couldn’t move the selected items.' => 'Nem sikerült áthelyezni a kijelölt elemeket.',
     'Couldn’t open the settings.' => 'Nem sikerült megnyitni a beállításokat.',

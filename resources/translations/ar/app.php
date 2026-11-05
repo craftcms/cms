@@ -213,6 +213,7 @@ return [
     'Couldn’t generate alt text: {error}' => 'تعذر إنشاء النص البديل: {error}',
     'Couldn’t load activity.' => 'تعذر تحميل النشاط.',
     'Couldn’t load table data.' => 'تعذر تحميل بيانات الجدول.',
+    'Couldn’t load this field.' => 'Couldn’t load this field.',
     'Couldn’t mark notifications as read.' => 'تعذر وضع علامة مقروءة على الإشعارات.',
     'Couldn’t move the selected items.' => 'تعذر نقل العناصر المحددة.',
     'Couldn’t open the settings.' => 'تعذر فتح الإعدادات.',

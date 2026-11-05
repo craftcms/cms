@@ -213,6 +213,7 @@ return [
     'Couldn’t generate alt text: {error}' => 'Не вдалося згенерувати альтернативний текст: {error}',
     'Couldn’t load activity.' => 'Не вдалося завантажити активність.',
     'Couldn’t load table data.' => 'Не вдалося завантажити дані таблиці.',
+    'Couldn’t load this field.' => 'Couldn’t load this field.',
     'Couldn’t mark notifications as read.' => 'Не вдалося позначити сповіщення як прочитані.',
     'Couldn’t move the selected items.' => 'Не вдалося перемістити вибрані елементи.',
     'Couldn’t open the settings.' => 'Не вдалося відкрити налаштування.',

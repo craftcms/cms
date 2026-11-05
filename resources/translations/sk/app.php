@@ -213,6 +213,7 @@ return [
     'Couldn’t generate alt text: {error}' => 'Alternatívny text sa nepodarilo vygenerovať: {error}',
     'Couldn’t load activity.' => 'Aktivitu sa nepodarilo načítať.',
     'Couldn’t load table data.' => 'Údaje tabuľky sa nepodarilo načítať.',
+    'Couldn’t load this field.' => 'Couldn’t load this field.',
     'Couldn’t mark notifications as read.' => 'Upozornenia sa nepodarilo označiť ako prečítané.',
     'Couldn’t move the selected items.' => 'Vybrané položky sa nepodarilo presunúť.',
     'Couldn’t open the settings.' => 'Nastavenia sa nepodarilo otvoriť.',
