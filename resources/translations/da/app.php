@@ -3677,7 +3677,7 @@ return [
     '{num, number} {num, plural, =1{hour} other{hours}}' => '{num, number} {num, plural, one {} =1{time} other{timer}}',
     '{num, number} {num, plural, =1{issue} other{issues}}' => '{num, number} {num, plural, =1{problem} other{problemer}}',
     '{num, number} {num, plural, =1{item} other{items}}' => '{num, number} {num, plural, =1{element} other{elementer}}',
-    '{num, number} {num, plural, =1{item} other{items}} selected' => '{num, number} {num, plural, =1{element} other{elementer}} valgt',
+    '{num, number} {num, plural, =1{{item}} other{{items}}} selected' => '{num, number} {num, plural, =1{{item}} other{{items}}} selected',
     '{num, number} {num, plural, =1{minute} other{minutes}}' => '{num, number} {num, plural, one {} =1{minut} other{minutter}}',
     '{num, number} {num, plural, =1{month} other{months}}' => '{num, number} {num, plural, one {} =1{måned} other{måneder}}',
     '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number} {num, plural, one {} =1{notifikation} other{notifikationer}}',
