@@ -37,6 +37,12 @@ const meta = {
             id: 'listitem',
             enabled: false,
           },
+          {
+            // These rules replace the preview's, so repeat its exemption for
+            // the `<dialog role="none">` Lion wraps the flyout in.
+            id: 'aria-allowed-role',
+            selector: '*:not(dialog[data-overlay-outer-wrapper])',
+          },
         ],
       },
     },
