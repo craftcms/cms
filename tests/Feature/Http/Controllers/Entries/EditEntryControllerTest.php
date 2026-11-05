@@ -712,8 +712,11 @@ it('links reviewers from the canonical entry to drafts awaiting their review', f
     Sections::refreshSections();
     $draft = app(Drafts::class)->createDraft($this->entry, $author->id, name: 'Homepage refresh');
     app(Drafts::class)->createDraft($this->entry, $author->id, name: 'Not submitted');
+    $withdrawn = app(Drafts::class)->createDraft($this->entry, $author->id, name: 'Withdrawn');
     actingAs($author);
     app(Workflows::class)->submitForReview($draft);
+    $withdrawnRun = app(Workflows::class)->submitForReview($withdrawn);
+    app(Workflows::class)->prepareForEditing($withdrawn, $withdrawnRun->id);
     actingAs($reviewer);
 
     get($this->entry->getCpEditUrl())
