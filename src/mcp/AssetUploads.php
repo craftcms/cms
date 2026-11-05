@@ -304,10 +304,20 @@ class AssetUploads
             throw new ToolCallException('The file exceeds the maximum upload size.');
         }
 
-        // Copy, since saving an asset moves its temp file
-        if (!copy($real, $path)) {
-            throw new ToolCallException('The file could not be read.');
+        // Copy with a bound, since saving an asset moves its temp file and the source may grow or misreport its size
+        $in = fopen($real, 'rb');
+        $out = fopen($path, 'wb');
+
+        try {
+            if ($in === false || $out === false || stream_copy_to_stream($in, $out, $maxSize + 1) === false) {
+                throw new ToolCallException('The file could not be read.');
+            }
+        } finally {
+            is_resource($in) && fclose($in);
+            is_resource($out) && fclose($out);
         }
+
+        $this->assertSize($path, $maxSize);
     }
 
     private function claimUpload(string $id, string $path, int $maxSize): void

@@ -62,7 +62,7 @@ readonly class Assets
             'download_url' => ['type' => 'string', 'format' => 'uri', 'description' => 'Public HTTPS URL to download. Up to 3 redirects are followed.'],
             'data' => ['type' => 'string', 'description' => 'Base64-encoded file contents, or a base64 data URL. Best for small files; use upload_id for larger ones.'],
             'path' => ['type' => 'string', 'description' => 'Absolute path to a file on the machine running the server. Only supported by the stdio server (craft mcp/serve).'],
-            'upload_id' => ['type' => 'string', 'description' => 'ID from assets_upload_url, after sending the file to its upload_url.'],
+            'upload_id' => ['type' => 'string', 'description' => 'ID from assets_upload_url, after sending the file to its upload_url. Requires file_name or filename.'],
             'file_id' => ['type' => 'string', 'minLength' => 1],
             'mime_type' => ['type' => 'string'],
             'file_name' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 255],
@@ -191,9 +191,21 @@ readonly class Assets
         $asset->setFieldValues((new CustomFieldSchema())->prepareValues($asset, $fields));
         $this->assetAdapter->authorizeAssetSave($actor, $asset);
 
-        return $this->mcpAssetUploads->consumeFile($file, $filename, function(string $path, string $filename) use ($asset, $selectionCondition): array {
+        return $this->mcpAssetUploads->consumeFile($file, $filename, function(string $path, string $filename) use ($actor, $asset, $folder, $selectionCondition): array {
+            $filename = \craft\helpers\Assets::prepareAssetName($filename);
+            $tempFolder = $selectionCondition ? $this->assets->getUserTemporaryUploadFolder($actor) : null;
+            $staged = $tempFolder && $tempFolder->id !== $folder->id;
+
+            // Like the control panel, stage files for fields with selection conditions in the user’s temporary
+            // folder, so rejected files never reach the destination volume
+            if ($staged) {
+                $asset->newFolderId = $tempFolder->id;
+                $asset->setVolumeId($tempFolder->volumeId);
+                $asset->title ??= \craft\helpers\Assets::filename2Title(pathinfo($filename, PATHINFO_FILENAME));
+            }
+
             $asset->tempFilePath = $path;
-            $asset->setFilename(\craft\helpers\Assets::prepareAssetName($filename));
+            $asset->setFilename($staged ? uniqid('asset', true) . '.' . pathinfo($filename, PATHINFO_EXTENSION) : $filename);
             $asset->setMimeType(\craft\helpers\FileHelper::getMimeType($path, checkExtension: false));
             $asset->avoidFilenameConflicts = true;
             $asset->sanitizeOnUpload = true;
@@ -205,7 +217,19 @@ readonly class Assets
 
             if ($selectionCondition && !$selectionCondition->matchElement($asset)) {
                 $this->elements->deleteElement($asset, true);
-                throw new ToolCallException("{$asset->getFilename()} isn’t selectable for this field.");
+                throw new ToolCallException("$filename isn’t selectable for this field.");
+            }
+
+            if ($staged) {
+                $asset->newFilename = $filename;
+                $asset->newFolderId = $folder->id;
+                $asset->setScenario(Asset::SCENARIO_MOVE);
+
+                if (!$this->elements->saveElement($asset)) {
+                    $errors = implode("\n", $asset->getErrorSummary(true));
+                    $this->elements->deleteElement($asset, true);
+                    throw new ToolCallException($errors ?: 'Asset could not be moved to its upload location.');
+                }
             }
 
             return ['asset' => $this->elementSerializer->serialize($asset)];
@@ -255,7 +279,7 @@ readonly class Assets
      */
     #[McpTool(
         name: 'assets_upload_url',
-        description: 'Gets a single-use URL for uploading a local or large file. Send the raw file bytes as the body of a PUT request to upload_url before expires_at (for example, curl -T ./photo.jpg "<upload_url>"), then pass {"upload_id": "..."} as the file for assets_create or assets_replace.',
+        description: 'Gets a single-use URL for uploading a local or large file. Send the raw file bytes as the body of a PUT request to upload_url before expires_at (for example, curl -T ./photo.jpg "<upload_url>"), then pass {"upload_id": "...", "file_name": "photo.jpg"} as the file for assets_create or assets_replace. The file name is required, since it can’t be derived from the upload.',
     )]
     #[RequiresHttp]
     public function uploadUrl(): array
