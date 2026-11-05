@@ -1313,6 +1313,7 @@ return [
     'Compatibility' => 'Сумісність',
     'Compiled classes' => 'Скомпільовані класи',
     'Compiled templates' => 'Скомпільовані шаблони',
+    'Compiled views' => 'Compiled views',
     'Complete the Update' => 'Завершити оновлення',
     'Completed job' => 'Завершене завдання',
     'Completed' => 'Завершено',
