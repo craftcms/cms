@@ -3677,7 +3677,7 @@ return [
     '{num, number} {num, plural, =1{hour} other{hours}}' => '{num, number} {num, plural, =1{hodina} other{hodín}}',
     '{num, number} {num, plural, =1{issue} other{issues}}' => '{num, number} {num, plural, =1{problém} few{problémy} many{problému} other{problémov}}',
     '{num, number} {num, plural, =1{item} other{items}}' => '{num, number} {num, plural, =1{položka} few{položky} many{položky} other{položiek}}',
-    '{num, number} {num, plural, =1{item} other{items}} selected' => '{num, number} {num, plural, =1{položka vybraná} few{položky vybrané} many{položky vybranej} other{položiek vybraných}}',
+    '{num, number} {num, plural, =1{{item}} other{{items}}} selected' => '{num, number} {num, plural, =1{{item}} other{{items}}} selected',
     '{num, number} {num, plural, =1{minute} other{minutes}}' => '{num, number} {num, plural, =1{minúta} other{minút}}',
     '{num, number} {num, plural, =1{month} other{months}}' => '{num, number} {num, plural, =1{mesiac} other{mesiacov}}',
     '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number} {num, plural, =1{oznámenie} =2{oznámenia} =3{oznámenia} =4{oznámenia} 0{oznámení} other{oznámení}}',
