@@ -99,4 +99,28 @@ describe('nestedEntryLinks', () => {
     ]);
     expect(links[0]!.path).toBe('M 520 10 H 500 C 300 10, 300 50, 100 50');
   });
+
+  it('compares each relation field nested in the field on its own', () => {
+    const chips = (...ids: number[]) =>
+      ids
+        .map(
+          (id) =>
+            `<li class="element-chips__item"><craft-chip data-id="${id}"></craft-chip></li>`
+        )
+        .join('');
+    const block = (a: number[], b: number[]) => `
+      <div data-layout-element="block">
+        <div data-layout-element="relation-a"><ul>${chips(...a)}</ul></div>
+        <div data-layout-element="relation-b"><ul>${chips(...b)}</ul></div>
+      </div>
+    `;
+
+    const {links, changes} = linksBetween(
+      side(block([1, 2], [1])),
+      side(block([2], [1]))
+    );
+
+    expect(links).toEqual([]);
+    expect(changes).toEqual({moved: 0, added: 0, removed: 1});
+  });
 });
