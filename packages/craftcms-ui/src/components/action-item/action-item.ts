@@ -116,7 +116,10 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
   /** Anchor `rel`. Defaults to `noopener` when targeting a new context. */
   @property() rel: string | null = null;
 
-  /** Prevents the item from being activated, and dims it. */
+  /**
+   * Prevents the item from being activated, and dims it. A disabled item stays
+   * focusable, and is announced as unavailable.
+   */
   @property({type: Boolean}) disabled: boolean = false;
 
   /**
@@ -169,14 +172,29 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
 
   override connectedCallback() {
     super.connectedCallback();
+    this.addEventListener('click', this._blockDisabledClick, {capture: true});
     this.addEventListener('click', this);
   }
 
   override disconnectedCallback() {
     super.disconnectedCallback();
+    this.removeEventListener('click', this._blockDisabledClick, {
+      capture: true,
+    });
     this.removeEventListener('click', this);
     this._clearResetStateTimeout();
   }
+
+  /**
+   * Stops a disabled item's clicks before anything listening to it hears them.
+   * Its button or link is only `aria-disabled`, which doesn't stop them.
+   */
+  private _blockDisabledClick = (event: Event) => {
+    if (this.disabled) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  };
 
   private _clearResetStateTimeout() {
     if (this._resetStateTimeout !== null) {
@@ -366,6 +384,7 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
             })}"
             href="${this.href}"
             aria-current="${this.current ? 'true' : nothing}"
+            aria-disabled="${this.disabled ? 'true' : nothing}"
             aria-keyshortcuts="${this.shortcutAriaKeys ?? nothing}"
             target="${ifDefined(target ?? undefined)}"
             rel="${ifDefined(
@@ -387,7 +406,7 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
             })}"
             aria-current="${this.current ? 'true' : nothing}"
             aria-keyshortcuts="${this.shortcutAriaKeys ?? nothing}"
-            ?disabled="${this.disabled}"
+            aria-disabled="${this.disabled ? 'true' : nothing}"
           >
             ${this.renderBody()}
           </button>

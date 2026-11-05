@@ -904,8 +904,9 @@ export default class CraftActionMenu extends CraftPopover {
 
   /**
    * The keyboard-navigable items: `craft-action-item` elements that are not
-   * consumer-hidden (`hidden`), not filtered out (`data-search-hidden`), and
-   * not disabled. Recomputed on every keystroke, since the search filter
+   * consumer-hidden (`hidden`) or filtered out (`data-search-hidden`).
+   * Disabled ones are included, so they're announced as unavailable rather
+   * than passed over. Recomputed on every keystroke, since the search filter
    * changes the set.
    */
   private _getNavigableItems(): CraftActionItem[] {
@@ -917,9 +918,7 @@ export default class CraftActionMenu extends CraftPopover {
       content.querySelectorAll<CraftActionItem>('craft-action-item')
     ).filter(
       (item) =>
-        !item.hasAttribute('hidden') &&
-        !item.hasAttribute('data-search-hidden') &&
-        !(item.disabled || item.hasAttribute('disabled'))
+        !item.hasAttribute('hidden') && !item.hasAttribute('data-search-hidden')
     );
   }
 

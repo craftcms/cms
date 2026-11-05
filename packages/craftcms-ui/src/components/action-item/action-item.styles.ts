@@ -27,7 +27,7 @@ export default css`
   }
 
   @media (hover: hover) {
-    :host(:hover:not([active])) .action-item:not(:disabled) {
+    :host(:hover:not([active])) .action-item:not([aria-disabled='true']) {
       background-color: var(
         --c-color-fill-quiet,
         var(--c-color-neutral-fill-quiet)
@@ -43,11 +43,11 @@ export default css`
     color: var(--c-color-accent-on-quiet);
   }
 
-  .action-item:disabled {
+  .action-item[aria-disabled='true'] {
     opacity: 0.5;
   }
 
-  .action-item:not(:disabled) {
+  .action-item:not([aria-disabled='true']) {
     cursor: pointer;
   }
 
@@ -91,7 +91,8 @@ export default css`
   }
 
   @media (hover: hover) {
-    :host(:hover[variant='danger']:not([active])) .action-item:not(:disabled) {
+    :host(:hover[variant='danger']:not([active]))
+      .action-item:not([aria-disabled='true']) {
       background-color: var(--c-color-fill-quiet);
       color: var(--c-color-on-quiet);
     }
