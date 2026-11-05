@@ -128,6 +128,42 @@ class AddressMutationsTest extends TestCase
         self::assertEquals(1, Address::find()->primaryOwnerId($this->user->id)->count());
     }
 
+    public function testCountriesCantBeBlankedOnUpdate(): void
+    {
+        $address = $this->createAddress($this->user);
+
+        foreach (['null', '""'] as $value) {
+            $result = $this->execute($this->schema(), "mutation { save_Address(id: $address->id, countryCode: $value) { id } }");
+            self::assertSame('A country code is required.', $result['errors'][0]['message'], "countryCode: $value");
+        }
+
+        self::assertSame('US', Address::find()->id($address->id)->one()->countryCode);
+
+        // But updates can leave it out
+        $result = $this->execute($this->schema(), "mutation { save_Address(id: $address->id, addressLine1: \"4 Quiet St\") { countryCode } }");
+        self::assertSame('US', $result['data']['save_Address']['countryCode']);
+    }
+
+    public function testNamesStayConsistentWhenUpdatingOneOfThem(): void
+    {
+        $address = $this->createAddress($this->user, ['fullName' => 'Pat Doe']);
+        $fields = 'fullName firstName lastName';
+
+        // Changing a first or last name replaces the full name
+        $result = $this->execute($this->schema(), "mutation { save_Address(id: $address->id, firstName: \"Sam\") { $fields } }");
+        self::assertArrayNotHasKey('errors', $result, json_encode($result));
+        self::assertSame(['fullName' => 'Sam Doe', 'firstName' => 'Sam', 'lastName' => 'Doe'], $result['data']['save_Address']);
+
+        // And changing the full name replaces the first and last
+        $result = $this->execute($this->schema(), "mutation { save_Address(id: $address->id, fullName: \"Alex Roe\") { $fields } }");
+        self::assertArrayNotHasKey('errors', $result, json_encode($result));
+        self::assertSame(['fullName' => 'Alex Roe', 'firstName' => 'Alex', 'lastName' => 'Roe'], $result['data']['save_Address']);
+
+        // Leaving names out leaves them alone
+        $result = $this->execute($this->schema(), "mutation { save_Address(id: $address->id, addressLine1: \"5 Name St\") { $fields } }");
+        self::assertSame(['fullName' => 'Alex Roe', 'firstName' => 'Alex', 'lastName' => 'Roe'], $result['data']['save_Address']);
+    }
+
     public function testAddressesNeedACountry(): void
     {
         $result = $this->execute($this->schema(), 'mutation { save_Address(addressLine1: "1 Main St") { id } }');
@@ -266,9 +302,9 @@ class AddressMutationsTest extends TestCase
         return Craft::$app->getUsers()->getUserById($user->id);
     }
 
-    private function createAddress(User $owner): Address
+    private function createAddress(User $owner, array $attributes = []): Address
     {
-        $address = new Address([
+        $address = new Address($attributes + [
             'countryCode' => 'US',
             'addressLine1' => '9 Elm St',
             'locality' => 'Springfield',

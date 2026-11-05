@@ -77,6 +77,19 @@ class Address extends ElementMutationResolver
             }
         }
 
+        // Updates can leave the country alone, but not blank it (it can't be null)
+        if (array_key_exists('countryCode', $arguments) && empty($arguments['countryCode'])) {
+            throw new UserError('A country code is required.');
+        }
+
+        // The base population method sets properties one at a time, which skips the name handling in
+        // Address::setAttributes(). Reset the names that are derived from the ones being set, or the old ones stick around
+        if (array_key_exists('firstName', $arguments) || array_key_exists('lastName', $arguments)) {
+            $address->fullName = null;
+        } elseif (array_key_exists('fullName', $arguments)) {
+            $address->firstName = $address->lastName = null;
+        }
+
         $address = $this->populateElementWithData($address, $arguments, $resolveInfo);
         $address = $this->saveElement($address);
 
