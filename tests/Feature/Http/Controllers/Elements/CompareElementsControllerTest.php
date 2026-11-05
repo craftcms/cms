@@ -9,6 +9,7 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Field\Table;
 use CraftCms\Cms\FieldLayout\Enums\TabType;
 use CraftCms\Cms\FieldLayout\FieldLayout as FieldLayoutConfig;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
@@ -31,7 +32,7 @@ use function Pest\Laravel\travel;
 beforeEach(function () {
     actingAs(User::findOne());
 
-    $this->secondarySite = Site::factory()->create(['handle' => 'secondary', 'name' => 'Secondary']);
+    $this->secondarySite = Site::factory()->create(['handle' => 'secondary', 'name' => 'Secondary', 'language' => 'fr-FR']);
 
     $makeField = fn (string $name, string $handle, string $translationMethod) => Field::factory()->create([
         'name' => $name,
@@ -42,14 +43,24 @@ beforeEach(function () {
     $summaryField = $this->summaryField = $makeField('Summary', 'summary', 'site');
     $taglineField = $this->taglineField = $makeField('Tagline', 'tagline', 'site');
     $venueField = $this->venueField = $makeField('Venue', 'venue', 'none');
+    $programmeField = Field::factory()->create([
+        'name' => 'Programme',
+        'handle' => 'programme',
+        'type' => Table::class,
+        'settings' => ['columns' => [
+            'col1' => ['heading' => 'Date', 'handle' => 'date', 'type' => 'date'],
+            'col2' => ['heading' => 'Link', 'handle' => 'link', 'type' => 'link', 'types' => ['url'], 'showLabelField' => true],
+        ]],
+    ]);
     Fields::refreshFields();
 
     $this->entryType = EntryType::factory()
-        ->withFieldLayout(FieldLayout::factory()->state(function (array $attributes) use ($summaryField, $taglineField, $venueField) {
+        ->withFieldLayout(FieldLayout::factory()->state(function (array $attributes) use ($summaryField, $taglineField, $venueField, $programmeField) {
             $layout = FieldLayoutConfig::make($attributes['type']);
             $layout->tab('Content', fn (FieldLayoutTab $tab) => $tab->add(
                 new CustomField(config: ['fieldUid' => $summaryField->uid]),
                 new CustomField(config: ['fieldUid' => $taglineField->uid]),
+                new CustomField(config: ['fieldUid' => $programmeField->uid]),
             ));
             $layout->tab('Visit', function (FieldLayoutTab $tab) use ($venueField) {
                 $tab->type = TabType::Sidebar;
@@ -151,6 +162,28 @@ it('opens from a draft’s editor and compares the draft with the current entry'
         });
 });
 
+it('doesn’t flag a table with date and link columns that both versions hold the same rows in', function () {
+    $entry = comparedEntry(['summary' => 'Shown in the East Gallery']);
+    $entry->setFieldValue('programme', [
+        ['col1' => '2026-10-24', 'col2' => ['type' => 'url', 'value' => 'https://example.com/tickets', 'label' => 'Book tickets']],
+    ]);
+    expect(Elements::saveElement($entry))->toBeTrue();
+    $draft = app(Drafts::class)->createDraft($entry, auth()->id(), 'Extended run');
+    $draft->setFieldValue('summary', 'Shown in the North Wing');
+    expect(Elements::saveElement($draft))->toBeTrue();
+
+    get(compareScreenUrl($entry, ['draftId' => $draft->draftId]))
+        ->assertOk()
+        ->assertInertia(function (AssertableInertia $page) {
+            foreach (['from', 'to'] as $side) {
+                expect(paneStatuses($page, $side))->toMatchArray([
+                    'Summary' => 'modified',
+                    'Programme' => null,
+                ]);
+            }
+        });
+});
+
 it('keeps each field in its tab, along with sidebar tabs, which have no sidebar to go in', function () {
     $entry = comparedEntry(['summary' => 'Shown in the East Gallery', 'venue' => 'East Gallery']);
     $draft = app(Drafts::class)->createDraft($entry, auth()->id(), 'Extended run');
@@ -166,7 +199,7 @@ it('keeps each field in its tab, along with sidebar tabs, which have no sidebar 
                 ]);
 
                 expect($tabs->all())->toBe([
-                    ['Content', false, ['Summary', 'Tagline']],
+                    ['Content', false, ['Summary', 'Tagline', 'Programme']],
                     ['Visit', true, ['Venue']],
                 ]);
             }

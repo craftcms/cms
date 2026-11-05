@@ -16,6 +16,7 @@ use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\FieldLayout\FieldPreviews;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Controls\NestedElements;
 use CraftCms\Cms\Ui\Enums\ControlMode;
@@ -391,10 +392,19 @@ readonly class FieldChangeComparisons
             $fromNode === null || $toNode === null => false,
             $from->id === $to->id && $from->siteId === $to->siteId => true,
             $this->loadsOwnValues($toNode) || $this->loadsOwnValues($fromNode) => $from ? $this->sameNestedElements($layoutElement, $from, $to) : null,
-            default => $fromValue === $toValue,
+            default => $this->sameValue($fromValue, $toValue),
         };
 
         return [$unchanged, $diff];
+    }
+
+    /**
+     * Returns whether two versions’ control values are the same as the browser gets them. A value can hold objects,
+     * such as a table’s date and link cells, which are separate instances on each version even when they’re equal.
+     */
+    private function sameValue(mixed $fromValue, mixed $toValue): bool
+    {
+        return $fromValue === $toValue || Json::encode($fromValue) === Json::encode($toValue);
     }
 
     /**
