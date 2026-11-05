@@ -4,7 +4,7 @@
   import {onBeforeUnmount, watch} from 'vue';
   import type {UiControlPayload, UiPayload, UiValue, UiValues} from './types';
   import {inputName} from './runtime';
-  import {registerOutlets} from './outlets';
+  import {expectOutlets, registerOutlets} from './outlets';
   import {useServerRenderedControl} from './useServerRenderedControl';
   import ServerRenderedControlFrame from './ServerRenderedControlFrame.vue';
 
@@ -24,13 +24,19 @@
   const emit = defineEmits<{
     (event: 'update:value', value: UiValues, kind: 'discrete'): void;
   }>();
+  // The card view designer holds the Appearance tab's outlet. Groups bound
+  // for it wait for the first render rather than render in place and jump.
+  const releasePendingOutlets = expectOutlets(
+    props.control.props.withCardViewDesigner
+      ? ['field-layout-designer.appearance']
+      : []
+  );
   const {host, html, status, retry} = useServerRenderedControl({
     value: () => props.value,
     dependencies: [() => props.control.props, () => props.editable],
     async render() {
-      const response = await actionClient.post<{html: string}>(
-        'fields/render-field-layout-designer',
-        {
+      const response = await actionClient
+        .post<{html: string}>('fields/render-field-layout-designer', {
           value: props.value,
           elementType: props.control.props.elementType,
           name: inputName(props.control.path),
@@ -38,8 +44,11 @@
           customizableTabs: props.control.props.customizableTabs,
           withGeneratedFields: props.control.props.withGeneratedFields,
           withCardViewDesigner: props.control.props.withCardViewDesigner,
-        }
-      );
+        })
+        .catch((error: unknown) => {
+          releasePendingOutlets();
+          throw error;
+        });
 
       return response.data.html;
     },
@@ -66,10 +75,14 @@
       // The Appearance tab's outlet, for the owner's own display settings.
       releaseOutlets?.();
       releaseOutlets = registerOutlets(root);
+      releasePendingOutlets();
     },
   });
   let releaseOutlets: (() => void) | undefined;
-  onBeforeUnmount(() => releaseOutlets?.());
+  onBeforeUnmount(() => {
+    releasePendingOutlets();
+    releaseOutlets?.();
+  });
 
   /**
    * The top-level settings an error falls under for each of the designer's

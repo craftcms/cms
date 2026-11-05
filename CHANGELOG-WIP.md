@@ -12,7 +12,7 @@
 - Added a “Theme” user preference, with “Light”, “Dark”, and “System” options. “System” is the default. Pages shown to logged-out users, such as the login page, always follow the system’s light or dark setting. ([#19966](https://github.com/craftcms/cms/pull/19966))
 - Added a control panel notification center.
 - Added flyout menus to the global control panel nav, for accessing sub-pages of non-selected sections. ([#19648](https://github.com/craftcms/cms/pull/19648))
-- Added Settings → System → CP Navigation, where administrators can customize the control panel’s navigation: reorder items and move them between sections, rename them, change their icons, hide them, and add sections and links, such as links straight to a single’s entry, which can be limited to users who match a condition. Customizing the navigation requires Craft Team or later. ([#20247](https://github.com/craftcms/cms/pull/20247))
+- Added Settings → System → CP Navigation, where administrators can customize the control panel’s navigation: reorder items and move them between sections, rename them, change their icons, hide them, and add sections and links, such as links straight to a single’s entry, which can be limited to users who match a condition. ([#20247](https://github.com/craftcms/cms/pull/20247))
 - User groups can now have their own control panel navigations, which build on the default navigation and save only what they change, so changes to the default carry through to them. People in more than one group get the first of their groups’ navigations, in the order administrators put them in. (Craft Pro and Enterprise only.) ([#20247](https://github.com/craftcms/cms/pull/20247))
 - Control panel success, notice, and error messages now stack, newest first, and can be swiped away. Errors and messages with actions stay until dismissed.
 - Admin table links and create actions can now open in a slideout with a custom width, via the `slideoutWidth` link option and new `slideout` and `slideoutWidth` arguments on `CraftCms\Cms\Ui\Nodes\Table::createAction()`.
@@ -418,6 +418,7 @@
 - Added `CraftCms\Cms\Support\Str`.
 - Added `CraftCms\Cms\Support\URL`.
 - Added `CraftCms\Cms\action_url()`, `CraftCms\Cms\cp_url()`, and `CraftCms\Cms\site_url()` helper functions.
+- Added `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager::config()`, which returns the `Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig` for a sanitizer defined as an array, so it can be extended. ([#20328](https://github.com/craftcms/cms/pull/20328))
 - `craft\services\Elements::stopCollectingCacheInfo()` no longer sets the returned duration to the `cacheDuration` config setting if a duration wasn’t explicitly declared. ([#16796](https://github.com/craftcms/cms/pull/16796))
 - Deprecated `craft\helpers\ArrayHelper`. `CraftCms\Cms\Support\Arr` should be used instead.
 - Deprecated `craft\helpers\ConfigHelper`. `CraftCms\Cms\Support\Config` should be used instead.
@@ -868,7 +869,6 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - Control panel elements with a `data-icon` attribute, such as those in plugins’ templates and scripts, now show the matching SVG icon via `<craft-icon>` when `craftcms/yii2-adapter` is installed, since the legacy icon font is no longer loaded. Core control panel markup uses `<craft-icon>` instead. ([#20179](https://github.com/craftcms/cms/pull/20179))
 - Added `CraftCms\Cms\Cp\CustomNavigations`, `CraftCms\Cms\Cp\NavCustomizer`, and `CraftCms\Cms\Cp\Data\NavNode`, for reading and applying control panel navigation customizations. ([#20247](https://github.com/craftcms/cms/pull/20247))
 - Added `CraftCms\Cms\Cp\Navigation::getBaseTree()` and `getBaseTreeForGroup()`, which return the control panel navigation before any customization. ([#20247](https://github.com/craftcms/cms/pull/20247))
-- Added `CraftCms\Cms\Edition::supportsCustomNavigations()`. ([#20247](https://github.com/craftcms/cms/pull/20247))
 - Added the `aligned` admin table appearance (`CraftCms\Cms\Cp\Enums\TableAppearance::Aligned`), which keeps a table’s outer cells’ content flush with its edges. ([#20247](https://github.com/craftcms/cms/pull/20247))
 - Admin table rows can now set `_reorderable` to `false` to stay in place without a drag handle. ([#20247](https://github.com/craftcms/cms/pull/20247))
 - Settings nav items now show a custom icon’s solid version (`custom-icons/<name>`) when a setting’s `iconName` is its light version (`custom-icons/<name>-light`). ([#20247](https://github.com/craftcms/cms/pull/20247))

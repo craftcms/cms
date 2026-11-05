@@ -42,6 +42,8 @@ describe('useNestedElementsQuery', () => {
       elementType: 'Entry',
       elementDisplayName: 'Entry',
       elementPluralDisplayName: 'Entries',
+      elementLowerDisplayName: 'entry',
+      elementPluralLowerDisplayName: 'entries',
       canHaveDrafts: true,
       title: 'Entries',
       page: null,

@@ -274,6 +274,10 @@ class TestCase extends Orchestra
             File::ensureDirectoryExists($app->storagePath('framework'));
             File::ensureDirectoryExists($app->storagePath('framework/testing'));
 
+            $compiledViewsPath = $app->storagePath('framework/views');
+            File::ensureDirectoryExists($compiledViewsPath);
+            $app->make(ConfigRepository::class)->set('view.compiled', $compiledViewsPath);
+
             $app->afterResolving(ProjectConfig::class, function (ProjectConfig $projectConfig) use ($projectConfigFolder) {
                 $projectConfig->folderName = $projectConfigFolder;
                 $projectConfig->writeYamlAutomatically = false;

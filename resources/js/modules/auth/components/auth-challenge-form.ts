@@ -2,7 +2,7 @@ import {css, html, LitElement} from 'lit';
 import {property, query, state} from 'lit/decorators.js';
 import {actionClient, t} from '@craftcms/ui';
 
-/** @internal Module-private registry of PHP METHOD handle → element class. */
+/** @internal Module-private registry of PHP auth method class → element class. */
 const _registry = new Map<string, typeof CraftAuthChallengeForm>();
 
 /**
@@ -10,7 +10,8 @@ const _registry = new Map<string, typeof CraftAuthChallengeForm>();
  *
  * ## Extending this class (plugin authors)
  *
- * 1. Declare a static `METHOD` property matching your PHP auth method handle.
+ * 1. Declare a static `METHOD` property set to your PHP auth method’s fully
+ *    qualified class name.
  * 2. Implement the abstract `endpoint` getter returning the Craft action path to POST to.
  * 3. Override `renderInput()` to return your `<craft-input>` markup.
  * 4. Call `CraftAuthChallengeForm.register('your-tag-name', YourClass)` instead
@@ -23,7 +24,7 @@ const _registry = new Map<string, typeof CraftAuthChallengeForm>();
  * import {AuthChallengeForm} from '@craftcms/cp';
  *
  * class MyPluginForm extends AuthChallengeForm {
- *   static METHOD = 'my-method';
+ *   static METHOD = 'myplugin\\auth\\MyMethod';
  *
  *   protected override get endpoint() {
  *     return 'my-plugin/auth/verify';
@@ -85,10 +86,10 @@ export abstract class CraftAuthChallengeForm extends LitElement {
   ];
 
   /**
-   * The PHP auth method handle for this form.
-   * Must match the value returned by your PHP method's `handle()`.
+   * The fully qualified class name of the PHP auth method for this form.
+   * Must match the `authMethod` value of the two-factor challenge response.
    *
-   * @example `'totp'`
+   * @example `'CraftCms\\Cms\\Auth\\Methods\\TOTP'`
    */
   static METHOD: string;
 
@@ -247,7 +248,7 @@ export abstract class CraftAuthChallengeForm extends LitElement {
   }
 
   /**
-   * Return `true` if the given PHP method handle has a native web component
+   * Return `true` if the given PHP auth method class has a native web component
    * registered via `CraftAuthChallengeForm.register()`.
    *
    * Used by `login-challenge` to decide between native rendering and the legacy

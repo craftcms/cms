@@ -216,9 +216,12 @@ class File extends \Illuminate\Support\Facades\File
                 continue;
             }
 
-            $deleted = $item->isDir() && ! $item->isLink()
-                ? app(Filesystem::class)->deleteDirectory($item->getPathname())
-                : app(Filesystem::class)->delete($item->getPathname());
+            $deleted = match (true) {
+                $item->isDir() && ! $item->isLink() => app(Filesystem::class)->deleteDirectory($item->getPathname()),
+                // Windows can only remove directory symlinks and junctions with rmdir()
+                $item->isDir() && PHP_OS_FAMILY === 'Windows' => @rmdir($item->getPathname()),
+                default => app(Filesystem::class)->delete($item->getPathname()),
+            };
 
             if (! $deleted) {
                 return false;

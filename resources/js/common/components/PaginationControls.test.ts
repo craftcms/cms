@@ -89,3 +89,31 @@ it('restores the current page when the typed one doesn’t exist', async () => {
   expect(pageChange).not.toHaveBeenCalled();
   expect(input.value).toBe('2');
 });
+
+it('names the items with the given labels', async () => {
+  await mount({
+    from: 1,
+    to: 50,
+    total: 150,
+    itemLabel: 'entry',
+    itemsLabel: 'entries',
+    pageSizeLabel: 'Entries per Page',
+    enableAdjustPageSize: true,
+  });
+
+  expect(container.textContent).toContain('1 – 50 of 150 entries');
+  expect(container.textContent).toContain('Entries per Page');
+  expect(container.textContent).not.toContain('items');
+});
+
+it('names a single item with the singular label', async () => {
+  await mount({
+    from: 1,
+    to: 1,
+    total: 1,
+    itemLabel: 'entry',
+    itemsLabel: 'entries',
+  });
+
+  expect(container.textContent).toContain('1 – 1 of 1 entry');
+});

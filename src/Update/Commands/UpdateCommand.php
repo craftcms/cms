@@ -21,6 +21,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Update\Data\Update;
 use CraftCms\Cms\Update\Enums\UpdateStatus;
 use CraftCms\Cms\Update\Updates;
+use CraftCms\Cms\View\CompiledViews;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Support\Facades\Cache;
@@ -108,6 +109,16 @@ class UpdateCommand extends Command
             }
 
             return self::FAILURE;
+        }
+
+        // Composer installs files with their commit's mtime, so compiled views can be newer than their updated sources
+        if (CompiledViews::path() !== null) {
+            try {
+                $this->components->task('Clearing compiled views', CompiledViews::clear(...));
+            } catch (Throwable $e) {
+                report($e);
+                $this->components->warn('Could not clear compiled views: '.$e->getMessage().' Run `php artisan view:clear` manually.');
+            }
         }
 
         $refreshed = false;
