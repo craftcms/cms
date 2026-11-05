@@ -3248,6 +3248,7 @@ return [
     'Upload failed for “{filename}”.' => 'Сбой загрузки для «{filename}».',
     'Upload failed.' => 'Сбой загрузки.',
     'Upload files' => 'Загрузить файлы',
+    'Upload progress' => 'Ход загрузки',
     'Uploaded By' => 'Загружено (кем)',
     'Uploaded by' => 'Загружено (кем)',
     'Use the AI assistant' => 'Использовать ИИ-ассистента',
