@@ -3248,6 +3248,7 @@ return [
     'Upload failed for “{filename}”.' => 'Upphleðsla mistókst fyrir „{filename}“.',
     'Upload failed.' => 'Upphleðsla mistókst.',
     'Upload files' => 'Hladdu upp skrám',
+    'Upload progress' => 'Framvinda upphleðslu',
     'Uploaded By' => 'Hlaðið upp af',
     'Uploaded by' => 'Hlaðið upp af',
     'Use the AI assistant' => 'Nota gervigreindaraðstoðina',
