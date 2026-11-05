@@ -219,6 +219,86 @@ jobs:
           packagist-username: ${{ secrets.packagist_username }}
           packagist-token: ${{ secrets.packagist_token }}
 
+  # The Pest browser tests drive the control panel in Chromium, so they need
+  # the built CP assets (cms-assets is gitignored) and Playwright's browser.
+  # The asset build needs the Font Awesome token, which fork PRs don't get.
+  browser-tests:
+    needs: [pint, phpstan, rector]
+    if: ${{ !github.event.pull_request.head.repo.fork }}
+    name: 'Tests / Browser'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo, ffi, sodium
+          tools: composer:v2
+          ini-values: memory_limit=4G
+          coverage: none
+          github-token: ''
+        env:
+          COMPOSER_AUTH_JSON: |
+            {
+              "http-basic": {
+                "repo.packagist.com": {
+                  "username": "${{ secrets.packagist_username }}",
+                  "password": "${{ secrets.packagist_token }}"
+                }
+              }
+            }
+
+      - name: Set version
+        run: composer config version "6.x-dev"
+
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v3
+
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: '24'
+          cache: true
+          run-install: false
+
+      # pnpm won't expand env vars in credentials coming from the project
+      # .npmrc, so the Font Awesome token goes in the user-level one.
+      - name: Install frontend dependencies
+        run: |
+          echo "//npm.fontawesome.com/:_authToken=${CRAFT_FONTAWESOME_TOKEN}" >> ~/.npmrc
+          vp install --frozen-lockfile
+        env:
+          CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
+
+      - name: Build CP assets
+        run: |
+          composer copy-icons
+          vp run build:all
+
+      - name: Install Chromium
+        run: vp exec playwright install --with-deps chromium
+
+      - name: Copy tests .env
+        run: |
+          cp ./tests/.env.example.sqlite ./tests/.env
+          touch database/craft_tests.sqlite
+
+      - name: Run browser tests
+        run: ./vendor/bin/pest tests/Browser --ci --compact
+
+      - name: Upload failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-test-screenshots
+          path: tests/Browser/Screenshots
+          if-no-files-found: ignore
+
   yii2-adapter-tests:
     needs: [pint, phpstan, rector]
     name: 'Tests / Yii2 Adapter'
