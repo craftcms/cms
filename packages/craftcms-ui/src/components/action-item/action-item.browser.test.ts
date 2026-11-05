@@ -48,3 +48,17 @@ it.each(['light', 'dark'])(
     expect(failures).toEqual([]);
   }
 );
+
+it('sets the icon in the color a custom property holds, when given one', async () => {
+  await import('../../styles/cp.css');
+  document.body.innerHTML = `
+    <div style="--c-test-icon-color: rgb(1, 2, 3)">
+      <craft-action-item icon="star" icon-color="--c-test-icon-color">Compare</craft-action-item>
+    </div>`;
+  const item = document.querySelector<CraftActionItem>('craft-action-item')!;
+  await item.updateComplete;
+
+  expect(
+    getComputedStyle(item.shadowRoot!.querySelector('craft-icon')!).color
+  ).toBe('rgb(1, 2, 3)');
+});

@@ -801,10 +801,10 @@ describe('ElementSelectControl', () => {
     expect(chips(root).every(isSelectable)).toBe(true);
   });
 
-  it('leaves the chips unselectable on a read-only field', async () => {
+  it('lets the chips of a read-only field be selected, to copy them', async () => {
     const root = await mount({props: {limit: 3}, value: [5], editable: false});
 
-    expect(chips(root).some(isSelectable)).toBe(false);
+    expect(chips(root).every(isSelectable)).toBe(true);
   });
 
   it('ignores a body click on a single-relation field', async () => {
@@ -1301,14 +1301,14 @@ describe('ElementSelectControl', () => {
       ).toBeNull();
     });
 
-    it('has no toolbar on a read-only field', async () => {
+    it('has a toolbar on a read-only field too', async () => {
       const root = await mount({
         props: {limit: 3},
         value: [5, 6],
         editable: false,
       });
 
-      expect(root.querySelector('.element-selections-header')).toBeNull();
+      expect(root.querySelector('.element-selections-header')).not.toBeNull();
     });
 
     it('shows no count, clear button or actions until something is selected', async () => {
@@ -1428,10 +1428,14 @@ describe('ElementSelectControl', () => {
       return actionLabels(bulkMenu(root));
     }
 
-    async function mountSelected(props: Record<string, unknown> = {}) {
+    async function mountSelected(
+      props: Record<string, unknown> = {},
+      editable = true
+    ) {
       const root = await mount({
         props: {limit: 5, elements: copyable, ...props},
         value: [5, 6, 7],
+        editable,
       });
 
       const box = selectAllBox(root)!;
@@ -1503,20 +1507,11 @@ describe('ElementSelectControl', () => {
       expect(labels(root)).toEqual(['Remove selected']);
     });
 
-    /**
-     * Selection needs an editable field, so a read-only one has no toolbar and
-     * therefore no bulk menu — the per-chip actions are still how you copy from
-     * one. `bulkActions` guards Remove on `editable` regardless, so the list
-     * stays correct if the toolbar's own gate ever changes.
-     */
-    it('offers no bulk menu on a read-only field', async () => {
-      const root = await mount({
-        props: {limit: 5, elements: copyable},
-        value: [5, 6, 7],
-        editable: false,
-      });
+    /** What's related can be copied from a read-only field, but not removed from it. */
+    it('offers only Copy for a selection on a read-only field', async () => {
+      const root = await mountSelected({}, false);
 
-      expect(bulkMenu(root)).toBeNull();
+      expect(labels(root)).toEqual(['Copy selected']);
     });
   });
   describe('element actions', () => {
