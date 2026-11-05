@@ -4957,6 +4957,31 @@ describe('UiRenderer', () => {
       expect(input.placeholder).toBe('Before');
     });
 
+    it('refreshes the layout after writing a reactive control’s value, as an edit does', async () => {
+      const refresh = vi.fn(
+        async (values: UiPayload['values']): Promise<UiPayload> => ({
+          ...choiceFieldsPayload(),
+          refreshable: true,
+          values: {settings: values},
+        })
+      );
+      const payload = {...choiceFieldsPayload(), refreshable: true};
+      Object.assign(payload.nodes[1]!.control!, {
+        writable: true,
+        reactive: true,
+      });
+      app.unmount();
+      await mount(payload, {refresh});
+
+      expect(renderer.writeValue(['settings', 'moved'], {value: 'notIn'})).toBe(
+        true
+      );
+      await nextTick();
+
+      expect(refresh).toHaveBeenCalledOnce();
+      expect(refresh.mock.calls[0]![0]).toMatchObject({moved: 'notIn'});
+    });
+
     it('neither reads nor writes a control that doesn’t say it can', async () => {
       await mountTitle();
 
