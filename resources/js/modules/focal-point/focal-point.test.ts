@@ -1,6 +1,11 @@
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
-import {FocalPoint} from './focal-point';
+import {
+  bootFocalPoint,
+  destroyFocalPoint,
+  FocalPoint,
+  renderFocalPoint,
+} from './focal-point';
 
 vi.mock('@/modules/elements/live-preview/previews', () => ({
   refreshPreviews: () => {},
@@ -61,4 +66,18 @@ it('stops following the pointer once destroyed', () => {
   drag(marker, 20, 10);
 
   expect(marker.style.left).toBe('50px');
+});
+
+it('repositions a booted preview marker when its image is resized', () => {
+  document.body.innerHTML =
+    '<div data-focal-point="view"><img data-focal="0.25;0.5" data-uid="abc"></div>';
+  bootFocalPoint(document.body);
+  const marker = document.querySelector<HTMLElement>('.preview-focal-point')!;
+  expect(marker.style.left).toBe('50px');
+
+  vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(400);
+  renderFocalPoint();
+
+  expect(marker.style.left).toBe('100px');
+  destroyFocalPoint();
 });

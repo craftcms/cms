@@ -6,7 +6,11 @@ import {announce} from '@/common/announcer';
 import {hasAttr} from '@craftcms/garnish';
 import {submitNativeForm} from '@/common/utils/forms';
 import {highlightCodeBlocks} from '@/common/utils/highlight-code';
-import {bootFocalPoint} from '@/modules/focal-point/focal-point';
+import {
+  bootFocalPoint,
+  destroyFocalPoint,
+  renderFocalPoint,
+} from '@/modules/focal-point/focal-point';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {
@@ -241,9 +245,7 @@ export class PreviewFileModal {
 
     if (PreviewFileModal.openInstance === this) {
       PreviewFileModal.openInstance = null;
-      // SAFETY: The focal point bundle owns the optional imageFocalPoint global.
-      (window as any).imageFocalPoint?.destruct();
-      delete (window as any).imageFocalPoint;
+      destroyFocalPoint();
     }
   }
 
@@ -505,8 +507,7 @@ export class PreviewFileModal {
     img.style.height = `${height}px`;
     instance._resizeContainer(width, height);
 
-    // SAFETY: The focal point bundle owns the optional imageFocalPoint global.
-    (window as any).imageFocalPoint?.renderFocal();
+    renderFocalPoint();
   }
 
   /** Previews the asset `element` is, or contains. Takes jQuery collections too. */

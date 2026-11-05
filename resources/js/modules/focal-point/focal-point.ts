@@ -195,7 +195,7 @@ export class FocalPoint {
     }
   }
 
-  protected renderFocal() {
+  renderFocal() {
     this.focal.style.display = this.visible ? '' : 'none';
     if (this.visible) {
       this.positionFocal();
@@ -233,4 +233,15 @@ export function bootFocalPoint(root: Element): void {
       : null,
     container.dataset.focalPoint === 'edit'
   );
+}
+
+/** Repositions the current editor's marker, after its image is resized. */
+export function renderFocalPoint(): void {
+  current?.renderFocal();
+}
+
+/** Tears down the current editor, when its preview closes. */
+export function destroyFocalPoint(): void {
+  current?.destruct();
+  current = null;
 }
