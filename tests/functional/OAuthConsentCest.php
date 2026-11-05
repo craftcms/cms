@@ -89,14 +89,17 @@ class OAuthConsentCest
             parse_str(parse_url($location, PHP_URL_QUERY), $query);
             $I->assertSame(['resource' => 'mcp'] + $params, $query);
 
-            // URLs with the script name are built on the request's host, but the continuation stays on the site's
+            // URLs with the script name are built on the request's host, but the login and continuation stay on the
+            // site's, whether the login path is relative or absolute
             $general->omitScriptNameInUrls = false;
-            $general->loginPath = $loginUrl;
-            $I->amOnPage('/oauth/mcp/authorize?' . http_build_query($params));
-            $I->seeResponseCodeIsRedirection();
-            $location = Craft::$app->getResponse()->getHeaders()->get('Location');
-            $I->assertSame(parse_url($loginUrl, PHP_URL_HOST), parse_url($location, PHP_URL_HOST));
-            $I->assertStringContainsString("$general->actionTrigger/oauth/authorize", $location);
+            foreach ([$original['loginPath'], $loginUrl] as $loginPath) {
+                $general->loginPath = $loginPath;
+                $I->amOnPage('/oauth/mcp/authorize?' . http_build_query($params));
+                $I->seeResponseCodeIsRedirection();
+                $location = Craft::$app->getResponse()->getHeaders()->get('Location');
+                $I->assertSame(parse_url($loginUrl, PHP_URL_HOST), parse_url($location, PHP_URL_HOST));
+                $I->assertStringContainsString("$general->actionTrigger/oauth/authorize", $location);
+            }
             $general->omitScriptNameInUrls = $original['omitScriptNameInUrls'];
 
             // Signed-in users stay on the control panel's domain
