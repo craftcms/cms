@@ -6,12 +6,13 @@
    * down to line up with the same field on the other side. When the newer
    * version can be edited, its pane is its editor.
    */
-  import {t} from '@craftcms/ui';
+  import {ButtonVariant, t} from '@craftcms/ui';
   import {useResizeObserver} from '@vueuse/core';
   import {computed, nextTick, shallowRef, useTemplateRef, watch} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import CpContainer from '@/common/components/CpContainer.vue';
-  import CpLink from '@/common/components/CpLink.vue';
+  import CpButtonLink from '@/common/components/CpButtonLink.vue';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import type {ActionItems} from '@/common/types';
   import CompareEditor from '@/modules/elements/components/CompareEditor.vue';
   import type {ElementEditPayload} from '@/modules/elements/composables/useElementEditor';
@@ -20,7 +21,7 @@
   import UiRenderer from '@/modules/ui/UiRenderer.vue';
   import {provideUiPreview} from '@/modules/ui/uiPreview';
   import {provideUiValueGroup} from '@/modules/ui/uiValueGroup';
-  import type {UiPayload, UiValues} from '@/modules/ui/types';
+  import type {UiNodePayload, UiPayload, UiValues} from '@/modules/ui/types';
 
   interface Side {
     label: string;
@@ -32,6 +33,8 @@
     /** The edit screen's payload, when this side can be edited. */
     editor?: (ElementEditPayload & {saveParams: UiValues}) | null;
   }
+
+  type TabStrip = HTMLElement & {selectedIndex: number};
 
   interface Row {
     fromUid: string | null;
@@ -45,64 +48,32 @@
     to: Side;
     rows: Row[];
     editUrl: string | null;
+    /** The same comparison with the two sides swapped. */
+    reverseUrl: string | null;
+    title: string;
   }>();
 
   // Each pane’s values are its own, not the page’s.
   provideUiValueGroup();
   provideUiPreview();
 
-  const hideUnchanged = shallowRef(false);
-
   /** Whether the editable side has unsaved edits, as the editor's “Edited” badge shows. */
   const edited = shallowRef(false);
 
-  const visibleRows = computed(() =>
-    hideUnchanged.value
-      ? props.rows.filter((row) => row.changed !== false)
-      : props.rows
-  );
+  /** Whether a form starts with a tab strip, which sits flush with its top, as in the editor. */
+  const hasTabStrip = (ui: UiPayload) =>
+    ui.nodes.filter((node) => node.component === 'craft:tab').length > 1;
 
-  const hiddenCount = computed(
-    () => props.rows.length - visibleRows.value.length
-  );
-
-  /** Announced when fields are hidden or shown, as well as on load. */
-  const summary = computed(() =>
-    [
-      t(
-        '{count, plural, =0{No fields changed.} =1{# field changed.} other{# fields changed.}}',
-        {count: props.rows.filter((row) => row.changed).length}
-      ),
-      hiddenCount.value
-        ? t(
-            '{count, plural, =1{# unchanged field is hidden.} other{# unchanged fields are hidden.}}',
-            {count: hiddenCount.value}
-          )
-        : '',
-    ]
-      .filter(Boolean)
-      .join(' ')
-  );
-
-  /** A side’s form, with only the fields that are showing. */
-  function paneUi(side: Side, key: 'fromUid' | 'toUid'): UiPayload {
-    const uids = new Set(visibleRows.value.map((row) => row[key]));
-
-    return {
-      ...side.ui,
-      nodes: side.ui.nodes.filter((node) =>
-        uids.has(String(node.props.layoutUid ?? node.uid))
-      ),
-    };
-  }
+  const hasUntabbedFields = (ui: UiPayload) =>
+    ui.nodes.some((node) => node.component !== 'craft:tab');
 
   const panes = computed(() => [
-    {key: 'from' as const, side: props.from, ui: paneUi(props.from, 'fromUid')},
-    {key: 'to' as const, side: props.to, ui: paneUi(props.to, 'toUid')},
+    {key: 'from' as const, side: props.from, ui: props.from.ui},
+    {key: 'to' as const, side: props.to, ui: props.to.ui},
   ]);
 
   const editorUids = computed(() =>
-    visibleRows.value.flatMap((row) => (row.toUid ? [row.toUid] : []))
+    props.rows.flatMap((row) => (row.toUid ? [row.toUid] : []))
   );
 
   const changedByUid = computed(() =>
@@ -119,11 +90,74 @@
    * that are stacked rather than side by side are left alone.
    */
   function field(pane: HTMLElement, uid: string | null): HTMLElement | null {
-    return uid
+    const element = uid
       ? pane.querySelector<HTMLElement>(
           `[data-layout-element="${CSS.escape(uid)}"]`
         )
       : null;
+
+    // A field in a tab that isn't selected has nothing to line up or connect.
+    return element?.getClientRects().length ? element : null;
+  }
+
+  /** A pane's own tab strip, not one in a nested entry's form. */
+  function tabStrip(pane: HTMLElement): TabStrip | null {
+    return (
+      [...pane.querySelectorAll<TabStrip>('craft-tabs')].find(
+        (strip) => !strip.parentElement?.closest('[data-layout-element]')
+      ) ?? null
+    );
+  }
+
+  /** Identifies a tab across versions: its layout tab's UID, or failing that, its label. */
+  function tabKeys(tab: Element): string[] {
+    const panel = document.getElementById(tab.getAttribute('controls') ?? '');
+    const uid = (
+      panel?.closest<HTMLElement>('[data-layout-tab]') ??
+      panel?.querySelector<HTMLElement>('[data-layout-tab]')
+    )?.dataset.layoutTab;
+
+    return [uid ? `uid:${uid}` : '', `label:${tab.textContent?.trim()}`];
+  }
+
+  /**
+   * Selects the same tab on the other side as the one just selected, so both
+   * sides show the same fields, side by side.
+   */
+  function syncTabs(event: Event): void {
+    const source = event.target as TabStrip;
+    const panes = paneElements.value ?? [];
+    const sourcePane = panes.find((pane) => tabStrip(pane) === source);
+    const selected = sourcePane
+      ? [...source.querySelectorAll(':scope > craft-tab')][source.selectedIndex]
+      : undefined;
+
+    if (!selected) {
+      return;
+    }
+
+    const [uid, label] = tabKeys(selected);
+
+    for (const pane of panes) {
+      const strip = pane === sourcePane ? null : tabStrip(pane);
+      const tabs = strip
+        ? [...strip.querySelectorAll(':scope > craft-tab')].map(tabKeys)
+        : [];
+      const index = [uid, label].reduce(
+        (found, key) =>
+          found >= 0 || !key
+            ? found
+            : tabs.findIndex((keys) => keys.includes(key)),
+        -1
+      );
+
+      if (strip && index >= 0 && strip.selectedIndex !== index) {
+        strip.selectedIndex = index;
+      }
+    }
+
+    // After both panes have rendered the tab they switched to.
+    requestAnimationFrame(alignFields);
   }
 
   /** Each field on both sides, for connecting their nested entries. */
@@ -131,7 +165,7 @@
     const [from, to] = paneElements.value ?? [];
 
     return from && to
-      ? visibleRows.value.map((row) => [
+      ? props.rows.map((row) => [
           field(from, row.fromUid),
           field(to, row.toUid),
         ])
@@ -156,7 +190,7 @@
       return;
     }
 
-    for (const row of visibleRows.value) {
+    for (const row of props.rows) {
       const a = field(from, row.fromUid);
       const b = field(to, row.toUid);
 
@@ -183,24 +217,32 @@
     () => alignFields()
   );
 
-  watch(visibleRows, () => nextTick(alignFields), {flush: 'post'});
+  watch(
+    () => props.rows,
+    () => nextTick(alignFields),
+    {flush: 'post'}
+  );
 </script>
 
 <template>
   <div class="compare">
-    <div class="compare__toolbar">
-      <p class="compare__summary" role="status">{{ summary }}</p>
-      <craft-switch
-        :label="t('Hide unchanged fields')"
-        .checked="hideUnchanged"
-        @change="hideUnchanged = ($event.target as HTMLInputElement).checked"
-      ></craft-switch>
-      <CpLink v-if="editUrl" :href="editUrl">
-        {{ t('Exit comparison') }}
-      </CpLink>
-    </div>
+    <LayoutSlot name="title">
+      <div class="flex gap-lg items-center min-w-0">
+        <CpButtonLink
+          v-if="editUrl"
+          :href="editUrl"
+          size="small"
+          icon="arrow-left"
+          flush="inline-start"
+          :variant="ButtonVariant.Plain"
+        >
+          {{ t('Back') }}
+        </CpButtonLink>
+        <h1 class="text-xl">{{ title }}</h1>
+      </div>
+    </LayoutSlot>
 
-    <div class="compare__panes">
+    <div class="compare__panes" @craft-tab-show.capture="syncTabs">
       <section
         v-for="{key, side, ui} in panes"
         :key="key"
@@ -209,6 +251,24 @@
         :aria-labelledby="`compare-${key}-title`"
       >
         <div class="compare__header">
+          <template v-if="key === 'to' && reverseUrl">
+            <CpButtonLink
+              id="compare-reverse"
+              :href="reverseUrl"
+              icon=""
+              size="small"
+              :variant="ButtonVariant.Outline"
+              class="compare__reverse"
+            >
+              <craft-icon
+                name="arrow-right-arrow-left"
+                :label="t('Reverse comparison')"
+              ></craft-icon>
+            </CpButtonLink>
+            <craft-tooltip for="compare-reverse">
+              {{ t('Reverse comparison') }}
+            </craft-tooltip>
+          </template>
           <h2 :id="`compare-${key}-title`" class="compare__title">
             <span class="sr-only">{{
               key === 'from' ? t('Compared with:') : t('Showing:')
@@ -263,7 +323,7 @@
           </ActionMenu>
         </div>
 
-        <div class="py-lg">
+        <div class="compare__body" :class="hasTabStrip(ui) ? 'pb-lg' : 'py-lg'">
           <CpContainer>
             <CompareEditor
               v-if="key === 'to' && side.editor"
@@ -271,15 +331,13 @@
               :uids="editorUids"
               :changed="changedByUid"
               @edited="edited = $event"
+            />
+            <component
+              :is="hasUntabbedFields(ui) ? 'craft-field-group' : 'div'"
+              v-else-if="ui.nodes.length"
             >
-              <template #empty>
-                <p class="compare__empty">{{ t('No fields changed.') }}</p>
-              </template>
-            </CompareEditor>
-            <craft-field-group v-else-if="ui.nodes.length">
               <UiRenderer :payload="ui" />
-            </craft-field-group>
-            <p v-else class="compare__empty">{{ t('No fields changed.') }}</p>
+            </component>
           </CpContainer>
         </div>
       </section>
@@ -294,33 +352,51 @@
     flex-direction: column;
   }
 
-  .compare__toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--c-spacing-sm) var(--c-spacing-lg);
-    align-items: center;
-    padding-block: var(--c-spacing-md);
-    padding-inline: var(--cp-container-padding, var(--c-spacing-lg));
-    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
-  }
-
-  .compare__summary {
-    margin: 0;
-    margin-inline-end: auto;
-    color: var(--c-text-quiet);
-  }
-
   .compare__panes {
+    container: compare-panes / inline-size;
     position: relative;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
   }
 
   .compare__pane {
+    display: flex;
+    flex-direction: column;
     min-width: 0;
   }
 
-  .compare__pane + .compare__pane {
+  .compare__body {
+    flex: 1;
+  }
+
+  .compare__pane + .compare__pane .compare__header {
+    position: relative;
+  }
+
+  .compare__reverse {
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block-start: 50%;
+    translate: -50% -50%;
+    z-index: 2;
+  }
+
+  :dir(rtl) .compare__reverse {
+    translate: 50% -50%;
+  }
+
+  @container compare-panes (width < 48rem) {
+    .compare__reverse {
+      position: static;
+      translate: none;
+    }
+
+    .compare__reverse + .compare__title {
+      margin-inline-end: auto;
+    }
+  }
+
+  .compare__pane + .compare__pane .compare__body {
     border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
   }
 
@@ -353,10 +429,5 @@
   .compare__version {
     font-size: inherit;
     font-weight: inherit;
-  }
-
-  .compare__empty {
-    margin: 0;
-    color: var(--c-text-quiet);
   }
 </style>

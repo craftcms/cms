@@ -114,8 +114,6 @@ export interface NestedEntryLink {
   ends: [x: number, y: number][];
   /** The nested element on each side, which highlight the link while they’re hovered or focused. */
   items: [HTMLElement, HTMLElement];
-  /** Whether the entry is in another position among the entries both versions have. */
-  moved: boolean;
 }
 
 export interface NestedEntryChanges {
@@ -125,8 +123,10 @@ export interface NestedEntryChanges {
 }
 
 /**
- * Connects each nested element on one side to the same one on the other.
- * Sides that aren’t next to each other, such as stacked panes, get no links.
+ * Connects each nested element that moved to the same one on the other side.
+ * Elements that kept their order among the ones both sides have, such as
+ * those after an added one, aren’t connected. Sides that aren’t next to each
+ * other, such as stacked panes, get no links.
  */
 export function nestedEntryLinks(
   origin: DOMRect,
@@ -152,8 +152,11 @@ export function nestedEntryLinks(
     changes.removed += fromItems.size - shared.length;
 
     shared.forEach((key) => {
-      const moved = !kept.has(key);
-      changes.moved += moved ? 1 : 0;
+      if (kept.has(key)) {
+        return;
+      }
+
+      changes.moved++;
 
       if (!sideBySide) {
         return;
@@ -180,7 +183,6 @@ export function nestedEntryLinks(
           [x2, y2],
         ],
         items: [fromItem, toItem],
-        moved,
       });
     });
   }

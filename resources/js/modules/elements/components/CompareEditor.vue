@@ -32,7 +32,5 @@
     :uids="uids"
     :changed="changed"
     @edited="emit('edited', $event)"
-  >
-    <template #empty><slot name="empty" /></template>
-  </CompareEditorForm>
+  />
 </template>

@@ -2,7 +2,8 @@
   /**
    * The editable side of the Compare screen: the version's own editor, with
    * its autosave, drafts and Save button, showing just the fields the
-   * comparison lists, in its order and outside of tabs. `CompareEditor`
+   * comparison lists, in its order and within their tabs, with sidebar tabs
+   * shown as ordinary ones. `CompareEditor`
    * provides the editor's payload as the screen's props.
    */
   import {t} from '@craftcms/ui';
@@ -79,27 +80,45 @@
     const nodes = new Map(
       fieldNodes(ui.nodes).map((node) => [layoutUid(node), node])
     );
+    const tabs = new Map(
+      ui.nodes.flatMap((node) =>
+        node.component === 'craft:tab'
+          ? fieldNodes(node.children ?? []).map(
+              (field) => [layoutUid(field), node] as const
+            )
+          : []
+      )
+    );
+    const groups = new Map<string, [UiNodePayload | null, UiNodePayload[]]>();
+
+    for (const uid of props.uids) {
+      const node = nodes.get(uid);
+
+      if (!node) {
+        continue;
+      }
+
+      const tab = tabs.get(uid) ?? null;
+      const key = tab ? `tab:${tab.uid}` : `field:${uid}`;
+      const group = groups.get(key) ?? [tab, []];
+      groups.set(key, group);
+      group[1].push({
+        ...node,
+        props: {
+          ...node.props,
+          width: null,
+          status: props.changed[uid] ? 'modified' : null,
+          statusLabel: props.changed[uid] ? t('Changed') : null,
+        },
+      });
+    }
 
     return {
       ...ui,
       refreshable: false,
-      nodes: props.uids.flatMap((uid) => {
-        const node = nodes.get(uid);
-
-        return node
-          ? [
-              {
-                ...node,
-                props: {
-                  ...node.props,
-                  width: null,
-                  status: props.changed[uid] ? 'modified' : null,
-                  statusLabel: props.changed[uid] ? t('Changed') : null,
-                },
-              },
-            ]
-          : [];
-      }),
+      nodes: [...groups.values()].flatMap(([tab, fields]) =>
+        tab ? [{...tab, children: fields}] : fields
+      ),
     };
   });
 
@@ -134,7 +153,14 @@
   </LayoutSlot>
 
   <div ref="content">
-    <craft-field-group v-if="pane?.nodes.length">
+    <component
+      :is="
+        pane.nodes.some((node) => node.component !== 'craft:tab')
+          ? 'craft-field-group'
+          : 'div'
+      "
+      v-if="pane?.nodes.length"
+    >
       <UiRenderer
         ref="renderer"
         :payload="pane"
@@ -143,7 +169,6 @@
         :disabled="workflowReviewLocked || releaseDraftLocked"
         @update:mutation="onMutation"
       />
-    </craft-field-group>
-    <slot v-else name="empty" />
+    </component>
   </div>
 </template>

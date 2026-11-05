@@ -270,16 +270,49 @@ readonly class FieldChangeComparisons
     }
 
     /**
-     * Returns a version’s form with just the given field nodes, outside of tabs.
+     * Returns a version’s form with just the given field nodes, in the given order, within the tabs they’re in. Sidebar
+     * tabs are kept with the rest, which a form without a sidebar shows as ordinary tabs.
      *
      * @param  list<NodePayload>  $nodes
      */
     private function pane(?UiPayload $payload, array $nodes): UiPayload
     {
+        $tabsByField = [];
+
+        foreach ($payload->nodes ?? [] as $node) {
+            if ($node->component === 'craft:tab') {
+                foreach ($this->previews->fieldNodes($node->children ?? []) as $field) {
+                    $tabsByField[$this->nodeUid($field)] = $node;
+                }
+            }
+        }
+
+        /** @var array<string, array{0: NodePayload|null, 1: list<NodePayload>}> $groups */
+        $groups = [];
+
+        foreach ($nodes as $node) {
+            $tab = $tabsByField[$this->nodeUid($node)] ?? null;
+            $key = $tab ? "tab:$tab->uid" : 'field:'.$this->nodeUid($node);
+            $groups[$key] ??= [$tab, []];
+            $groups[$key][1][] = $node;
+        }
+
+        $paneNodes = [];
+
+        foreach ($groups as [$tab, $fields]) {
+            $paneNodes = [...$paneNodes, ...($tab ? [new NodePayload(
+                type: $tab->type,
+                component: $tab->component,
+                props: $tab->props,
+                uid: $tab->uid,
+                children: $fields,
+            )] : $fields)];
+        }
+
         return new UiPayload(
             scope: $payload->scope ?? [],
             refreshable: false,
-            nodes: $nodes,
+            nodes: $paneNodes,
             values: $payload->values ?? [],
             errors: [],
             globalErrors: [],

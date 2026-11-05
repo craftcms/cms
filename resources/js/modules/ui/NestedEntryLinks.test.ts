@@ -18,30 +18,39 @@ function linksBetween(from: HTMLElement, to: HTMLElement) {
   return nestedEntryLinks(new DOMRect(), [[from, to]]);
 }
 
+/** The IDs the links connect, by the item on the “to” side. */
+const linkedIds = (links: ReturnType<typeof linksBetween>['links']) =>
+  links.map((link) => link.items[1].dataset.id);
+
 describe('nestedEntryLinks', () => {
   afterEach(() => {
     document.body.innerHTML = '';
   });
 
-  it('marks only the entry that moved when one moves to the top', () => {
+  it('connects only the entry that moved when one moves to the top', () => {
     const {links, changes} = linksBetween(
       side(cards(1, 2, 3, 4)),
       side(cards(4, 1, 2, 3))
     );
 
-    expect(links.map((link) => link.moved)).toEqual([
-      true,
-      false,
-      false,
-      false,
-    ]);
+    expect(linkedIds(links)).toEqual(['4']);
     expect(changes).toEqual({moved: 1, added: 0, removed: 0});
   });
 
-  it('keeps the entry that stayed put when the order is reversed', () => {
+  it('leaves out the entry that stayed put when the order is reversed', () => {
     const {links} = linksBetween(side(cards(1, 2, 3)), side(cards(3, 2, 1)));
 
-    expect(links.map((link) => link.moved)).toEqual([true, false, true]);
+    expect(linkedIds(links)).toEqual(['3', '1']);
+  });
+
+  it('connects nothing when entries only shift around an added one', () => {
+    const {links, changes} = linksBetween(
+      side(cards(1, 2, 3)),
+      side(cards(9, 1, 2, 3))
+    );
+
+    expect(links).toEqual([]);
+    expect(changes).toEqual({moved: 0, added: 1, removed: 0});
   });
 
   it('matches a draft’s copy of an entry by its canonical ID, and leaves out entries nested in entries', () => {
@@ -52,13 +61,14 @@ describe('nestedEntryLinks', () => {
       ${cards(11, 12)}
     `);
     const to = side(`
+      ${cards(11)}
       <li class="element" data-id="20"><div data-canonical-id="10"></div></li>
-      ${cards(11, 13)}
+      ${cards(13)}
     `);
 
     const {links, changes} = linksBetween(from, to);
 
-    expect(links).toHaveLength(2);
-    expect(changes).toEqual({moved: 0, added: 1, removed: 1});
+    expect(links).toHaveLength(1);
+    expect(changes).toEqual({moved: 1, added: 1, removed: 1});
   });
 });

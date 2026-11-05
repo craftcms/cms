@@ -9,6 +9,9 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\Enums\TabType;
+use CraftCms\Cms\FieldLayout\FieldLayout as FieldLayoutConfig;
+use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Section\Models\Section;
@@ -36,17 +39,25 @@ beforeEach(function () {
         'type' => PlainText::class,
         'translationMethod' => $translationMethod,
     ]);
-    $this->summaryField = $makeField('Summary', 'summary', 'site');
-    $this->taglineField = $makeField('Tagline', 'tagline', 'site');
-    $this->venueField = $makeField('Venue', 'venue', 'none');
+    $summaryField = $this->summaryField = $makeField('Summary', 'summary', 'site');
+    $taglineField = $this->taglineField = $makeField('Tagline', 'tagline', 'site');
+    $venueField = $this->venueField = $makeField('Venue', 'venue', 'none');
     Fields::refreshFields();
 
     $this->entryType = EntryType::factory()
-        ->withFieldLayout(FieldLayout::factory()->withContentTab([
-            new CustomField(config: ['fieldUid' => $this->summaryField->uid]),
-            new CustomField(config: ['fieldUid' => $this->taglineField->uid]),
-            new CustomField(config: ['fieldUid' => $this->venueField->uid]),
-        ]))
+        ->withFieldLayout(FieldLayout::factory()->state(function (array $attributes) use ($summaryField, $taglineField, $venueField) {
+            $layout = FieldLayoutConfig::make($attributes['type']);
+            $layout->tab('Content', fn (FieldLayoutTab $tab) => $tab->add(
+                new CustomField(config: ['fieldUid' => $summaryField->uid]),
+                new CustomField(config: ['fieldUid' => $taglineField->uid]),
+            ));
+            $layout->tab('Visit', function (FieldLayoutTab $tab) use ($venueField) {
+                $tab->type = TabType::Sidebar;
+                $tab->add(new CustomField(config: ['fieldUid' => $venueField->uid]));
+            });
+
+            return ['config' => $layout->getConfig()];
+        }))
         ->create(['hasTitleField' => true]);
     EntryTypes::refreshEntryTypes();
 
@@ -85,6 +96,7 @@ function compareScreenUrl(Entry $entry, array $params): string
 function paneStatuses(AssertableInertia $page, string $side): array
 {
     return collect($page->toArray()['props'][$side]['ui']['nodes'])
+        ->flatMap(fn (array $node) => $node['component'] === 'craft:tab' ? $node['children'] : [$node])
         ->mapWithKeys(fn (array $node) => [$node['props']['label'] => $node['props']['status'] ?? null])
         ->all();
 }
@@ -134,6 +146,28 @@ it('opens from a draft’s editor and compares the draft with the current entry'
                     'Summary' => 'modified',
                     'Tagline' => null,
                     'Venue' => null,
+                ]);
+            }
+        });
+});
+
+it('keeps each field in its tab, along with sidebar tabs, which have no sidebar to go in', function () {
+    $entry = comparedEntry(['summary' => 'Shown in the East Gallery', 'venue' => 'East Gallery']);
+    $draft = app(Drafts::class)->createDraft($entry, auth()->id(), 'Extended run');
+
+    get(compareScreenUrl($entry, ['draftId' => $draft->draftId]))
+        ->assertOk()
+        ->assertInertia(function (AssertableInertia $page) {
+            foreach (['from', 'to'] as $side) {
+                $tabs = collect($page->toArray()['props'][$side]['ui']['nodes'])->map(fn (array $node) => [
+                    $node['props']['label'],
+                    $node['props']['sidebar'] ?? false,
+                    collect($node['children'])->pluck('props.label')->all(),
+                ]);
+
+                expect($tabs->all())->toBe([
+                    ['Content', false, ['Summary', 'Tagline']],
+                    ['Visit', true, ['Venue']],
                 ]);
             }
         });
