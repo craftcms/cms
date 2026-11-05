@@ -316,6 +316,7 @@
 - `CraftCms\Cms\Field\Contracts\TableCellInterface::serializeValue()` can now return arrays. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Removed `CraftCms\Cms\Field\BaseRelationField::$inputTemplate` and `$settingsTemplate`. Relation fields that extend the Yii adapter’s base relation field classes can still set them; other relation fields that set `$inputTemplate` now throw an exception, and should override `CraftCms\Cms\Field\BaseRelationField::elementSelectHtml()` instead. ([#20275](https://github.com/craftcms/cms/pull/20275))
 
+- Relational fields’ elements are no longer shown on white tiles, unless the element has a color of its own, so they take the colors around them.
 ### Color Fields
 - Color fields now support translucent colors. Authors can choose translucent palette colors, and set custom colors’ opacity when the field allows it, via the color picker in browsers that support it or by entering an 8-digit hex value. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - Color fields’ palette colors can now have an alpha channel, by entering an 8-digit hex value or via the color picker in browsers that support it. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))

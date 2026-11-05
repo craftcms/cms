@@ -24,6 +24,8 @@
     labelLinkAttributes?: Record<string, unknown>;
     thumbHtml?: string;
     label: string;
+    /** A Craft color name, such as an entry's type color. */
+    color?: string | null;
   }
 
   const props = withDefaults(
@@ -57,8 +59,14 @@
        * they load. Takes the place of the loading spinner.
        */
       placeholders?: number;
+      /**
+       * The tiles' color, for an element with none of its own. Null leaves them
+       * uncolored, taking the colors around them.
+       */
+      fallbackColor?: string | null;
     }>(),
     {
+      fallbackColor: 'white',
       data: () => [],
       selectable: false,
       selectAll: true,
@@ -222,7 +230,7 @@
         <craft-chip
           prefix-placement="block-start"
           appearance="outline-fill"
-          data-color="white"
+          :data-color="fallbackColor ?? undefined"
           full-width
           show-thumb
           :thumb-size="thumbSize"
@@ -279,7 +287,7 @@
         <craft-chip
           prefix-placement="block-start"
           appearance="outline-fill"
-          data-color="white"
+          :data-color="element.color ?? fallbackColor ?? undefined"
           full-width
           show-thumb
           :thumb-size="thumbSize"
