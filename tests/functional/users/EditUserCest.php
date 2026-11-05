@@ -10,6 +10,7 @@ namespace crafttests\functional\users;
 use Craft;
 use craft\elements\User;
 use craft\enums\CmsEdition;
+use craft\helpers\StringHelper;
 use FunctionalTester;
 
 /**
@@ -76,7 +77,7 @@ class EditUserCest
     public function testTokensPageExplainsMissingOAuthKeys(FunctionalTester $I): void
     {
         $config = Craft::$app->getConfig()->getOAuth();
-        $config->privateKey = '@storage/missing-oauth-private.key';
+        $config->privateKey = '@undefined/oauth-private.key';
         $config->publicKey = '@storage/missing-oauth-public.key';
 
         $I->amOnPage('/' . $this->cpTrigger . '/myaccount/tokens');
@@ -100,6 +101,31 @@ class EditUserCest
 
         $config->privateKey = $config->publicKey = null;
         unlink($path);
+    }
+
+    public function testTokensPageIsHiddenFromNonAdminsWithoutOAuthKeys(FunctionalTester $I): void
+    {
+        $config = Craft::$app->getConfig()->getOAuth();
+        $config->privateKey = $config->publicKey = '@storage/missing-oauth.key';
+
+        $user = new User([
+            'username' => 'tokens-' . StringHelper::randomString(6),
+            'email' => 'tokens-' . StringHelper::randomString(6) . '@example.com',
+            'active' => true,
+        ]);
+        Craft::$app->getElements()->saveElement($user, false);
+        Craft::$app->getUserPermissions()->saveUserPermissions($user->id, ['accessCp']);
+        $I->amLoggedInAs($user);
+
+        $I->amOnPage('/' . $this->cpTrigger . '/myaccount');
+        $I->seeResponseCodeIs(200);
+        $I->dontSeeElement('a[href$="/myaccount/tokens"]');
+
+        $I->amOnPage('/' . $this->cpTrigger . '/myaccount/tokens');
+        $I->seeResponseCodeIs(403);
+
+        $config->privateKey = $config->publicKey = null;
+        Craft::$app->getElements()->deleteElement($user, true);
     }
 
     public function testTokensPageWithOAuthKeys(FunctionalTester $I): void

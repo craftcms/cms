@@ -446,10 +446,12 @@ class OAuth extends Component
                 throw new InvalidConfigException("The OAuth `{$type}Key` config setting isn’t a valid PEM-encoded key.");
             }
         } else {
-            $value = Craft::getAlias($value);
-            if (!is_readable(preg_replace('~^file://~', '', $value))) {
-                throw new InvalidConfigException("The OAuth $type key file “{$value}” doesn’t exist or isn’t readable. Run `php craft oauth/generate-keys`, or set the `{$type}Key` OAuth config setting.");
+            $path = Craft::getAlias($value, false);
+            if ($path === false || !is_readable(preg_replace('~^file://~', '', $path))) {
+                $path = $path ?: $value;
+                throw new InvalidConfigException("The OAuth $type key file “{$path}” doesn’t exist or isn’t readable. Run `php craft oauth/generate-keys`, or set the `{$type}Key` OAuth config setting.");
             }
+            $value = $path;
         }
 
         try {
