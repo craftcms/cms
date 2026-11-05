@@ -1313,6 +1313,7 @@ return [
     'Compatibility' => 'Compatibilité',
     'Compiled classes' => 'Classes compilées',
     'Compiled templates' => 'Modèles compilés',
+    'Compiled views' => 'Compiled views',
     'Complete the Update' => 'Effectuer la mise à jour',
     'Completed job' => 'Tâche terminée',
     'Completed' => 'Terminé',
