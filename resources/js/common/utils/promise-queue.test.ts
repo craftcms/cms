@@ -89,3 +89,21 @@ it('waits for the tab to become visible before running jobs', async () => {
 
   expect(log).toEqual(['ran']);
 });
+
+it('keeps running after a job throws synchronously', async () => {
+  const queue = new PromiseQueue();
+  const log: string[] = [];
+
+  const thrown = queue.push(() => {
+    throw new Error('sync boom');
+  });
+  const next = queue.push(async () => {
+    log.push('next');
+  });
+
+  await expect(thrown).rejects.toThrow('sync boom');
+  await next;
+
+  expect(log).toEqual(['next']);
+  expect(queue.running).toBe(false);
+});

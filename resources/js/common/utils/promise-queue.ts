@@ -72,8 +72,17 @@ export class PromiseQueue extends Base {
   #add<T>(job: Job<T>, method: 'push' | 'unshift'): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       // The queue only needs to know when the job settles; the caller gets
-      // its outcome through the returned promise.
-      this.jobs[method](() => job().then(resolve, reject));
+      // its outcome through the returned promise. A job that throws
+      // synchronously has to settle the same way, or it escapes `#exec()` and
+      // leaves the queue running with nothing left to drive it.
+      this.jobs[method](() => {
+        try {
+          return Promise.resolve(job()).then(resolve, reject);
+        } catch (error) {
+          reject(error);
+          return Promise.resolve();
+        }
+      });
 
       if (!this.running) {
         this.trigger('beforeRun');
