@@ -1313,6 +1313,7 @@ return [
     'Compatibility' => 'Compatibiliteit',
     'Compiled classes' => 'Gecompileerde klassen',
     'Compiled templates' => 'Verzamelde sjablonen',
+    'Compiled views' => 'Compiled views',
     'Complete the Update' => 'Update voltooien',
     'Completed job' => 'Taak voltooid',
     'Completed' => 'Voltooid',
