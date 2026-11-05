@@ -8,11 +8,11 @@
     {% embed '_includes/forms/field.twig' with {
       label: 'New token'|t('app'),
       instructions: 'Copy this token now. You won’t be able to see it again.'|t('app'),
-      id: 'new-token',
+      id: 'access-token',
     } %}
       {% block input %}
         {% include '_includes/forms/copytext.twig' with {
-          id: 'new-token',
+          id: 'access-token',
           value: newToken,
           class: ['code', 'fullwidth'],
         } %}
