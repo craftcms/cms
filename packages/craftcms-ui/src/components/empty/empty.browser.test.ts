@@ -25,3 +25,24 @@ it('draws a quiet border around an outlined empty state, and none otherwise', as
   );
   expect(borderColor(plain)).toBe('rgba(0, 0, 0, 0)');
 });
+
+it('draws a dashed form-control border around a dashed empty state', async () => {
+  await import('../../styles/shared/color-palette.css');
+  await import('../../styles/shared/colorable.css');
+  await import('../../styles/shared/variables.css');
+  await import('../../styles/shared/tokens.css');
+
+  document.body.innerHTML = `
+    <span id="control" style="color: var(--c-form-control-border-color)"></span>
+    <craft-empty id="dashed" label="Nothing yet." appearance="dashed"></craft-empty>`;
+  const dashed = document.querySelector<CraftEmpty>('#dashed')!;
+  await dashed.updateComplete;
+  const style = getComputedStyle(
+    dashed.shadowRoot!.querySelector('.cp-empty')!
+  );
+
+  expect(style.borderTopStyle).toBe('dashed');
+  expect(style.borderTopColor).toBe(
+    getComputedStyle(document.getElementById('control')!).color
+  );
+});
