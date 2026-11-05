@@ -35,6 +35,7 @@
   import {useSlideout} from '@/common/slideouts/useSlideout';
   import UiRenderer from '@/modules/ui/UiRenderer.vue';
   import {useElementEditor} from '@/modules/elements/composables/useElementEditor';
+  import {UiTableRefresh} from '@/modules/ui/runtime';
   import type {UiValues} from '@/modules/ui/types';
   import {isSidebarTab, type SidebarTabOutlets} from '@/modules/ui/sidebarTabs';
   import ElementDetailsPanels from '@/modules/elements/components/ElementDetailsPanels.vue';
@@ -124,6 +125,7 @@
     workflowReviewLocked,
   } = editor;
 
+  provide(UiTableRefresh, () => void refreshUi());
   provide(NestedOwnerEditorKey, editor.nestedOwnerEditor);
 
   // The AI assistant reads the form's values, and applies the changes it
