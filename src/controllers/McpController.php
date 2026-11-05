@@ -6,15 +6,18 @@ use Craft;
 use craft\filters\IpRateLimitIdentity;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use craft\mcp\AssetUploads;
 use craft\mcp\HttpTransportMiddleware;
 use craft\mcp\ServerFactory;
 use craft\web\Controller;
 use craft\web\View;
 use GuzzleHttp\Psr7\ServerRequest;
 use League\OAuth2\Server\Exception\OAuthServerException;
+use Mcp\Exception\ToolCallException;
 use Mcp\Server;
 use Mcp\Server\Transport\StreamableHttpTransport;
 use yii\filters\RateLimiter;
+use yii\web\BadRequestHttpException;
 use yii\web\MethodNotAllowedHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -80,10 +83,16 @@ class McpController extends Controller
             // Authenticated users go through the same checks as any other signed-in request, including control
             // panel access for control panel requests.
             $this->allowAnonymous = self::ALLOW_ANONYMOUS_NEVER;
-        } elseif ($action->id === 'public') {
+        } elseif ($action->id === 'public' || $action->id === 'upload') {
             Craft::$app->getUser()->enableSession = false;
             Craft::$app->getUser()->enableAutoLogin = false;
             Craft::$app->getUser()->setIdentity(null);
+
+            // The single-use token authorizes uploads, which the user requested via the authenticated server,
+            // so they work while the system is offline too
+            if ($action->id === 'upload') {
+                $this->allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
+            }
         }
 
         return parent::beforeAction($action);
@@ -111,6 +120,31 @@ class McpController extends Controller
 
         $servers = Craft::$app->get('mcp')->getCapabilityContainer()->get(ServerFactory::class);
         return $this->handle($this->request->getIsOptions() ? $servers->preflight() : $servers->public());
+    }
+
+    /**
+     * Receives a file for an upload URL created by the `assets_upload_url` tool. The single-use token in the URL
+     * authorizes the request.
+     */
+    public function actionUpload(string $uploadId): Response
+    {
+        $this->requireToken();
+
+        if (!$this->request->getIsPut() && !$this->request->getIsPost()) {
+            throw new MethodNotAllowedHttpException('Send the file as the body of a PUT request.');
+        }
+
+        $stream = fopen('php://input', 'rb');
+
+        try {
+            $size = Craft::$app->get('mcp')->getCapabilityContainer()->get(AssetUploads::class)->receiveUpload($uploadId, $stream);
+        } catch (ToolCallException $exception) {
+            throw new BadRequestHttpException($exception->getMessage(), previous: $exception);
+        } finally {
+            fclose($stream);
+        }
+
+        return $this->asJson(['upload_id' => $uploadId, 'size' => $size]);
     }
 
     /** Lists the discoverable servers in an AI Catalog, for `/.well-known/ai-catalog.json`, per SEP-2127. */

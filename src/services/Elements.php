@@ -1411,6 +1411,7 @@ class Elements extends Component
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws Exception if the $element doesn’t have any supported sites
      * @throws Throwable if reasons
+     * @phpstan-impure
      */
     public function saveElement(
         ElementInterface $element,

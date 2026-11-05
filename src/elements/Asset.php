@@ -1508,6 +1508,11 @@ class Asset extends Element
             return $user->can("savePeerAssets:$volume->uid");
         }
 
+        // Users can save their own temporary uploads
+        if (Assets::isTempUploadFs($volume->getFs())) {
+            return true;
+        }
+
         return $user->can("saveAssets:$volume->uid");
     }
 
