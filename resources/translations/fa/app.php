@@ -3248,6 +3248,7 @@ return [
     'Upload failed for “{filename}”.' => 'آپلود “{filename}” با شکست مواجه گردید.',
     'Upload failed.' => 'آپلود ناموفق بود.',
     'Upload files' => 'آپلود فایل ها',
+    'Upload progress' => 'پیشرفت آپلود',
     'Uploaded By' => 'بارگذاری شده توسط',
     'Uploaded by' => 'بارگذاری‌شده به وسیله',
     'Use the AI assistant' => 'استفاده از دستیار هوش مصنوعی',
