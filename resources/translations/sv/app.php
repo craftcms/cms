@@ -1313,6 +1313,7 @@ return [
     'Compatibility' => 'Kompatibilitet',
     'Compiled classes' => 'Sammanställda klasser',
     'Compiled templates' => 'Sammanställda mallar',
+    'Compiled views' => 'Compiled views',
     'Complete the Update' => 'Slutför uppdateringen',
     'Completed job' => 'Slutfört jobb',
     'Completed' => 'Slutfört',
