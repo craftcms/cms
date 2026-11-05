@@ -2,6 +2,7 @@ import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {page, userEvent} from 'vite-plus/test/browser';
 import type CraftButton from '../button/button.js';
 import type CraftDialog from './dialog.js';
+import type CraftPopover from '../popover/popover.js';
 import '../../styles/cp.css';
 import '../button/button.js';
 import './dialog.js';
@@ -341,10 +342,7 @@ it('returns focus to a popover’s button once a dialog opened from inside it cl
     </craft-popover>
     <craft-dialog label="Columns"><button type="button">Done</button></craft-dialog>
   `;
-  const popover = document.querySelector('craft-popover') as HTMLElement & {
-    opened: boolean;
-    updateComplete: Promise<unknown>;
-  };
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
   const dialog = document.querySelector('craft-dialog') as CraftDialog;
   popover
     .querySelector('[slot="content"] button')!
@@ -377,10 +375,7 @@ it('returns focus to a popover’s button linked with for once a dialog opened f
     </craft-popover>
     <craft-dialog label="Columns"><button type="button">Done</button></craft-dialog>
   `;
-  const popover = document.querySelector('craft-popover') as HTMLElement & {
-    opened: boolean;
-    updateComplete: Promise<unknown>;
-  };
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
   const dialog = document.querySelector('craft-dialog') as CraftDialog;
   popover
     .querySelector('[slot="content"] button')!

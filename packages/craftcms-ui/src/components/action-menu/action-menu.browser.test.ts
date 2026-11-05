@@ -249,7 +249,7 @@ it('keeps the search icon as the visible label while text is entered', async () 
   await expect.element(search).toHaveValue('Fi');
   await expect
     .element(
-      menu.querySelector(
+      menu.querySelector<HTMLElement>(
         'craft-input-search > craft-icon[slot="prefix"][name="search"]'
       )!
     )
