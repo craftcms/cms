@@ -9,6 +9,7 @@ use CraftCms\Cms\Support\HtmlSanitizer\AttributeSanitizers\VideoEmbedUrlSanitize
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Manager;
+use InvalidArgumentException;
 use Override;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerAction;
@@ -128,6 +129,26 @@ class HtmlSanitizerManager extends Manager
         }
 
         return $config;
+    }
+
+    /**
+     * Returns the config for a sanitizer, or `null` if it was registered as a sanitizer instance.
+     */
+    public function config(?string $name = null): ?HtmlSanitizerConfig
+    {
+        $name ??= $this->getDefaultDriver();
+
+        if (isset($this->customCreators[$name])) {
+            $definition = $this->callCustomCreator($name);
+
+            return is_array($definition) ? $this->configFromArray($definition) : null;
+        }
+
+        if ($name === $this->getDefaultDriver()) {
+            return $this->defaultConfig();
+        }
+
+        throw new InvalidArgumentException("HTML sanitizer [$name] not supported.");
     }
 
     #[Override]
