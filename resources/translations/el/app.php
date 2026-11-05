@@ -1313,6 +1313,7 @@ return [
     'Compatibility' => 'Συμβατότητα',
     'Compiled classes' => 'Μεταγλωττισμένες κλάσεις',
     'Compiled templates' => 'Μεταγλωττισμένα πρότυπα',
+    'Compiled views' => 'Compiled views',
     'Complete the Update' => 'Ολοκλήρωση ενημέρωσης',
     'Completed job' => 'Ολοκληρωμένη εργασία',
     'Completed' => 'Ολοκληρώθηκε',
