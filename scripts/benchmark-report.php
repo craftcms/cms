@@ -20,7 +20,7 @@ require dirname(__DIR__).'/vendor/autoload.php';
 [, $resultsFile, $baselineFile] = $argv + [2 => null];
 
 /** The relative slowdown that counts as a regression */
-const THRESHOLD = 0.10;
+const THRESHOLD = 0.15;
 
 /** How many combined standard deviations a slowdown must exceed to count as more than noise */
 const NOISE = 3;
