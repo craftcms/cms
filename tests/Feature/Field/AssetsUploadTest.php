@@ -78,3 +78,42 @@ it('holds uploads from the field control to the field’s selection condition', 
         ->and(AssetElement::find()->volumeId($volume->id)->filename('notes.txt')->exists())->toBeFalse()
         ->and($params)->toBe(['fieldId' => $field->id, 'elementId' => $entry->id, 'siteId' => $entry->siteId]);
 });
+
+it('rejects files uploaded with the element without saving them as assets', function (array $settings, string $filename, string $error) {
+    actingAs(User::findOne());
+    config()->set('filesystems.disks.temp-assets', ['driver' => 'local', 'root' => storage_path('framework/testing/temp-assets')]);
+    config()->set('filesystems.disks.upload-destination', ['driver' => 'local', 'root' => storage_path('framework/testing/upload-destination')]);
+    Storage::fake('temp-assets');
+    Storage::fake('upload-destination');
+    Cms::config()->tempAssetUploadDisk = 'temp-assets';
+    Cms::config()->maxUploadFileSize = 10;
+
+    $volume = Volume::factory()->create(['fs' => 'upload-destination']);
+    VolumeFolder::factory()->create(['volumeId' => $volume->id, 'path' => '']);
+    $entry = Entry::factory()
+        ->withField('images', Assets::class, settings: ['defaultUploadLocationSource' => "volume:$volume->uid", ...$settings])
+        ->createElementWithFields()->element;
+
+    $path = tempnam(sys_get_temp_dir(), 'upload');
+    file_put_contents($path, $filename === 'large.txt' ? 'more than ten bytes' : 'small');
+    Event::listen(AssetsUploadedFilesLocating::class, function (AssetsUploadedFilesLocating $event) use ($path, $filename) {
+        $event->files[] = ['filename' => $filename, 'mimeType' => 'text/plain', 'path' => $path, 'type' => 'file'];
+    });
+
+    $entry->setFieldValue('images', []);
+
+    expect(Elements::saveElement($entry))->toBeFalse()
+        ->and($entry->errors()->get('images'))->toBe([$error])
+        ->and(AssetElement::find()->volumeId($volume->id)->exists())->toBeFalse();
+})->with([
+    'not an allowed file type' => [
+        ['selectionCondition' => [
+            'class' => AssetCondition::class,
+            'elementType' => AssetElement::class,
+            'conditionRules' => [['class' => FileTypeConditionRule::class, 'operator' => 'in', 'values' => ['image']]],
+        ]],
+        'notes.txt',
+        '“notes.txt” is not allowed in this field.',
+    ],
+    'too large' => [[], 'large.txt', '“large.txt” is too large.'],
+]);

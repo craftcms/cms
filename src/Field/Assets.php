@@ -13,7 +13,6 @@ use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Auth\SessionAuth;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
@@ -423,7 +422,7 @@ class Assets extends BaseRelationField
 
         // Now make sure that they all check out
         foreach ($filenames as $filename) {
-            if (! in_array(mb_strtolower(pathinfo((string) $filename, PATHINFO_EXTENSION)), $allowedExtensions, true)) {
+            if (! $this->isAllowedFilename((string) $filename, $allowedExtensions)) {
                 $validator->errors()->add($attribute, t('“{filename}” is not allowed in this field.', [
                     'filename' => $filename,
                 ]));
@@ -436,33 +435,46 @@ class Assets extends BaseRelationField
      */
     public function validateFileSize(ElementInterface $element, string $attribute, Validator $validator): void
     {
-        $maxSize = Cms::config()->maxUploadFileSize;
-
-        $filenames = [];
-
-        // Get any uploaded filenames
-        $uploadedFiles = $this->_getUploadedFiles($element);
-        foreach ($uploadedFiles as $file) {
-            switch ($file['type']) {
-                case 'data':
-                    if (strlen((string) $file['data']) > $maxSize) {
-                        $filenames[] = $file['filename'];
-                    }
-                    break;
-                case 'file':
-                case 'upload':
-                    if (file_exists($file['path']) && (filesize($file['path']) > $maxSize)) {
-                        $filenames[] = $file['filename'];
-                    }
-                    break;
+        foreach ($this->_getUploadedFiles($element) as $file) {
+            if ($this->isTooLarge($file)) {
+                $validator->errors()->add($attribute, t('“{filename}” is too large.', [
+                    'filename' => $file['filename'],
+                ]));
             }
         }
+    }
 
-        foreach ($filenames as $filename) {
-            $validator->errors()->add($attribute, t('“{filename}” is too large.', [
-                'filename' => $filename,
-            ]));
-        }
+    /**
+     * Returns whether any uploaded files would fail {@see validateFileType()} or {@see validateFileSize()}.
+     *
+     * Uploaded files are saved as assets before the element is validated, so they’re checked first, and left in place
+     * for validation to report, rather than leaving assets behind for an element that won’t save.
+     *
+     * @param  list<UploadedFileData>  $files
+     */
+    private function hasInvalidUploadedFiles(array $files): bool
+    {
+        $allowedExtensions = $this->_getAllowedExtensions();
+
+        return array_any($files, fn ($file) => $this->isTooLarge($file) ||
+        (! empty($allowedExtensions) && ! $this->isAllowedFilename($file['filename'], $allowedExtensions)));
+    }
+
+    /** @param  list<string>  $allowedExtensions */
+    private function isAllowedFilename(string $filename, array $allowedExtensions): bool
+    {
+        return in_array(mb_strtolower(pathinfo($filename, PATHINFO_EXTENSION)), $allowedExtensions, true);
+    }
+
+    /** @param  UploadedFileData  $file */
+    private function isTooLarge(array $file): bool
+    {
+        $size = match ($file['type']) {
+            'data' => strlen($file['data']),
+            default => file_exists($file['path']) ? filesize($file['path']) : 0,
+        };
+
+        return $size > AssetsHelper::getMaxAssetUploadSize();
     }
 
     #[Override]
@@ -586,7 +598,7 @@ class Assets extends BaseRelationField
                 // Were there any uploaded files?
                 $uploadedFiles = $this->_getUploadedFiles($element);
 
-                if (! empty($uploadedFiles)) {
+                if (! empty($uploadedFiles) && ! $this->hasInvalidUploadedFiles($uploadedFiles)) {
                     $uploadFolderId = $getUploadFolderId();
 
                     // Convert them to assets
