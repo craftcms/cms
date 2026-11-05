@@ -3249,6 +3249,7 @@ return [
     'Upload failed for “{filename}”.' => 'ไม่สามารถอัปโหลด “{filename}” ได้',
     'Upload failed.' => 'ไม่สามารถอัปโหลดได้',
     'Upload files' => 'อัปโหลดไฟล์',
+    'Upload progress' => 'ความคืบหน้าการอัปโหลด',
     'Uploaded By' => 'อัปโหลดโดย',
     'Uploaded by' => 'อัปโหลดโดย',
     'Use the AI assistant' => 'ใช้ผู้ช่วย AI',
