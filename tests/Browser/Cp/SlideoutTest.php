@@ -19,19 +19,23 @@ function openSlideout(?string $transition = null): AwaitableWebpage
 
     $page->script(sprintf(<<<'JS'
         (() => {
-            const $button = window.jQuery('<button id="underlying-button" type="button">Underlying button</button>').appendTo(document.body);
+            const button = document.createElement('button');
+            button.id = 'underlying-button';
+            button.type = 'button';
+            button.textContent = 'Underlying button';
+            document.body.append(button);
             window.underlyingClicks = 0;
-            $button.on('click', () => window.underlyingClicks++);
+            button.addEventListener('click', () => window.underlyingClicks++);
 
             window.slideoutCloseEvents = 0;
-            window.testSlideout = new window.Craft.Slideout('<button type="button">Slideout button</button>', {triggerElement: $button});
+            window.testSlideout = new window.Craft.Slideout('<button type="button">Slideout button</button>', {triggerElement: button});
             window.testSlideout.on('close', () => window.slideoutCloseEvents++);
-            window.testShade = window.testSlideout.$shade[0];
+            window.testShade = window.testSlideout.shade;
 
             const transition = %s;
             if (transition) {
                 window.testShade.style.transition = transition;
-                window.testSlideout.$container.css('transition', transition);
+                window.testSlideout.container.style.transition = transition;
             }
         })()
         JS, json_encode($transition)));
@@ -43,7 +47,7 @@ const SLIDEOUT_STATE = <<<'JS'
     ({
         closeEvents: window.slideoutCloseEvents,
         isOpen: window.testSlideout.isOpen,
-        panelVisible: window.testSlideout.$container[0].checkVisibility({opacityProperty: true, visibilityProperty: true}),
+        panelVisible: window.testSlideout.container.checkVisibility({opacityProperty: true, visibilityProperty: true}),
         shadeVisible: window.testShade.checkVisibility({opacityProperty: true, visibilityProperty: true}),
     })
     JS;
