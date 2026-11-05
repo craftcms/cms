@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Mcp\Elements\Adapters;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\UserInitiatedElementSave;
+use CraftCms\Cms\Mcp\EditionFeatures;
 use CraftCms\Cms\Mcp\ElementLifecycle;
-use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\Elements\BaseElementAdapter;
 use CraftCms\Cms\Mcp\Serializers\ElementSerializer;
 use CraftCms\Cms\Support\DateTimeHelper;
@@ -40,6 +40,7 @@ class UserAdapter extends BaseElementAdapter
         UserInitiatedElementSave $userInitiatedElementSave,
         ElementLifecycle $lifecycle,
         private readonly Users $users,
+        private readonly EditionFeatures $editionFeatures,
     ) {
         parent::__construct($elementSerializer, $userInitiatedElementSave, $lifecycle);
     }
@@ -54,23 +55,11 @@ class UserAdapter extends BaseElementAdapter
         return User::class;
     }
 
-    protected function criteriaProperties(): array
-    {
-        return ElementQueryCriteria::UserSchemaProperties;
-    }
-
     protected function createAttributesSchema(): array
     {
         return [
             'type' => 'object',
-            'properties' => [
-                ...$this->sharedAttributeProperties(),
-                'active' => ['type' => 'boolean', 'description' => 'Whether the user is active.'],
-                'pending' => ['type' => 'boolean', 'description' => 'Whether the user is pending activation.'],
-                'affiliatedSiteId' => ['type' => ['integer', 'null'], 'description' => 'Affiliated site ID.'],
-                'photoId' => ['type' => ['integer', 'null'], 'description' => 'Photo asset ID.'],
-                'hasDashboard' => ['type' => 'boolean', 'description' => 'Whether the user has a dashboard.'],
-            ],
+            'properties' => $this->attributeSchemas('create'),
             'additionalProperties' => false,
         ];
     }
@@ -79,10 +68,7 @@ class UserAdapter extends BaseElementAdapter
     {
         return [
             'type' => 'object',
-            'properties' => [
-                ...$this->sharedAttributeProperties(),
-                'enabled' => ['type' => 'boolean', 'description' => 'Whether the user is enabled.'],
-            ],
+            'properties' => $this->attributeSchemas('update', ['enabled']),
             'additionalProperties' => false,
         ];
     }
@@ -151,6 +137,10 @@ class UserAdapter extends BaseElementAdapter
     {
         $this->requirePermission($actor, 'registerUsers', 'register users');
 
+        if (($reason = $this->editionFeatures->userLimitReason()) !== null) {
+            throw new ToolCallException($reason);
+        }
+
         $user = new User;
 
         $this->authorizeSave($actor, $user);
@@ -176,22 +166,6 @@ class UserAdapter extends BaseElementAdapter
         $this->authorizeAttributes($actor, $attributes);
         $this->populate($element, $attributes, $fields, $actor);
         $this->authorizeSave($actor, $element);
-    }
-
-    /**
-     * @return array<string, array<string, mixed>>
-     */
-    private function sharedAttributeProperties(): array
-    {
-        return [
-            'email' => ['type' => 'string', 'format' => 'email', 'description' => 'User email address.'],
-            'username' => ['type' => 'string', 'description' => 'Username.'],
-            'firstName' => ['type' => 'string', 'description' => 'First name.'],
-            'lastName' => ['type' => 'string', 'description' => 'Last name.'],
-            'fullName' => ['type' => 'string', 'description' => 'Full name.'],
-            'newPassword' => ['type' => 'string', 'description' => 'New password.'],
-            'admin' => ['type' => 'boolean', 'description' => 'Whether the user is an admin.'],
-        ];
     }
 
     private function requirePermission(CraftUser $actor, string $permission, string $action): void

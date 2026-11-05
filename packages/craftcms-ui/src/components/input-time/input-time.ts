@@ -62,11 +62,15 @@ export default class CraftInputTime extends CraftInput {
     super.disconnectedCallback();
   }
 
-  override updated(changedProperties: PropertyValues) {
+  override willUpdate(changedProperties: PropertyValues) {
+    super.willUpdate(changedProperties);
+
     if (changedProperties.has('minuteIncrement')) {
       this.step = this.minuteIncrement * 60;
     }
+  }
 
+  override updated(changedProperties: PropertyValues) {
     super.updated(changedProperties);
     this.#validate();
   }

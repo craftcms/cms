@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry\Import;
 
-use Closure;
 use CraftCms\Cms\Element\Concerns\Structurable;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Import\ElementImporter;
@@ -12,8 +11,10 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\Validation\Rules\EntryTypeRule;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Section\Validation\Rules\SectionRule;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
@@ -21,7 +22,6 @@ use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Nodes\Group;
 use Illuminate\Contracts\Database\Query\Builder;
-use Illuminate\Validation\Validator;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -43,14 +43,6 @@ class EntryImporter extends ElementImporter
         return Entry::class;
     }
 
-    /**
-     * Convenience factory returning a new instance.
-     */
-    public static function create(): self
-    {
-        return new self;
-    }
-
     #[Override]
     public static function displayName(): string
     {
@@ -70,19 +62,19 @@ class EntryImporter extends ElementImporter
             ...parent::settingsUi(),
             UiField::make(t('Section'), Choice::make(['section'])
                 ->value($this->section)
-                ->placeholder(t('Please select'))
                 ->options($this->availableSections())
                 ->reactive())
-                ->instructions(t('The section to import into.')),
+                ->instructions(t('The section to import into.'))
+                ->required(),
             Group::make('entry-type-group', [
                 // reactive: choosing an entry type is what resolves the field layout,
                 // which the step's mapping is gated on
                 UiField::make(t('Entry Type'), Choice::make('entryType')
                     ->value($this->entryType)
-                    ->placeholder(t('Please select'))
                     ->options($this->availableEntryTypes())
                     ->reactive())
-                    ->instructions(t('The entry type to import into.')),
+                    ->instructions(t('The entry type to import into.'))
+                    ->required(),
             ])
                 ->dependsOn('settings.section')
                 ->visible($this->section !== null),
@@ -102,32 +94,12 @@ class EntryImporter extends ElementImporter
         }
     }
 
-    #[Override]
-    public function storeSettings(array $settings): void
-    {
-        parent::storeSettings($settings);
-
-        $this->section($settings['section'] ?? null);
-        $this->entryType($settings['entryType'] ?? null);
-    }
-
-    #[Override]
-    public function getSettings(): array
-    {
-        $settings = parent::getSettings();
-
-        $settings['section'] = $this->section;
-        $settings['entryType'] = $this->entryType;
-
-        return $settings;
-    }
-
     /**
      * Sets the target section by uid.
      */
     public function section(string|int|Section|null $value): self
     {
-        $result = self::normalizeSection($value);
+        $result = Sections::resolveSection($value);
         $this->section = $result?->uid;
 
         return $this;
@@ -138,7 +110,7 @@ class EntryImporter extends ElementImporter
      */
     public function entryType(string|int|EntryType|null $value): self
     {
-        $result = self::normalizeEntryType($value);
+        $result = EntryTypes::resolveEntryType($value);
         if (! $result) {
             $this->entryType = null;
             $this->fieldLayout(null);
@@ -151,17 +123,26 @@ class EntryImporter extends ElementImporter
     }
 
     #[Override]
+    protected static function settingNames(): array
+    {
+        return [...parent::settingNames(), 'section', 'entryType'];
+    }
+
+    #[Override]
     public static function getSettingsRules(): array
     {
         return array_merge(parent::getSettingsRules(), [
-            'settings.section' => [
-                'required',
-                fn ($attribute, $value, Closure $fail, Validator $validator) => static::validateSection($value, $attribute, $fail, $validator),
-            ],
-            'settings.entryType' => [
-                'required',
-                fn ($attribute, $value, Closure $fail, Validator $validator) => static::validateEntryType($value, $attribute, $fail, $validator),
-            ],
+            'settings.section' => ['required', new SectionRule],
+            'settings.entryType' => ['required', new EntryTypeRule],
+        ]);
+    }
+
+    #[Override]
+    public static function getSettingsMessages(): array
+    {
+        return array_merge(parent::getSettingsMessages(), [
+            'settings.section.required' => t('Section must be provided.'),
+            'settings.entryType.required' => t('Entry Type must be provided.'),
         ]);
     }
 
@@ -173,66 +154,6 @@ class EntryImporter extends ElementImporter
         $data['settings']['entryType'] = $this->entryType ?? null;
 
         return $data;
-    }
-
-    public static function validateSection(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
-    {
-        // can't be empty
-        if (empty($value)) {
-            $fail($attribute, t('Section must be provided.'));
-
-            return false;
-        }
-
-        if (self::normalizeSection($value) === null) {
-            $fail($attribute, t('No Section found for “{section}”.', [
-                'section' => $value,
-            ]));
-
-            return false;
-        }
-
-        return true;
-    }
-
-    public static function validateEntryType(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
-    {
-        // can't be empty
-        if (empty($value)) {
-            $fail($attribute, t('Entry Type must be provided.'));
-
-            return false;
-        }
-
-        if (self::normalizeEntryType($value) === null) {
-            $fail($attribute, t('No Entry Type found for “{entryType}”.', [
-                'entryType' => $value,
-            ]));
-
-            return false;
-        }
-
-        return true;
-    }
-
-    private static function normalizeSection(string|int|Section|null $value): ?Section
-    {
-        return match (true) {
-            $value instanceof Section => $value,
-            $value === null => null,
-            is_numeric($value) => Sections::getSectionById((int) $value),
-            default => Sections::getSectionByUid($value) ?? Sections::getSectionByHandle($value),
-        };
-    }
-
-    private static function normalizeEntryType(string|int|EntryType|null $value): ?EntryType
-    {
-        return match (true) {
-            $value instanceof EntryType => $value,
-            $value === null => null,
-            is_numeric($value) => EntryTypes::getEntryTypeById((int) $value),
-            default => EntryTypes::getEntryTypeByUid($value) ?? EntryTypes::getEntryTypeByHandle($value),
-        };
     }
 
     private static function normalizeParent(string|int|Entry|null $value, int $sectionId, int $siteId): ?Entry
@@ -260,19 +181,19 @@ class EntryImporter extends ElementImporter
             $section = null;
             $entryType = null;
 
-            // if it's UI-driven element import where the fieldLayout was chosen in the editable config,
+            // if it's an element import where the fieldLayout was chosen in the config,
             // we need to ensure the sectionId and typeId are both set
             if ($this->section) {
                 $section = Sections::getSectionByUid($this->section);
                 $data['sectionId'] = $section->id;
             } elseif (isset($data['sectionId'])) {
-                $section = self::normalizeSection($data['sectionId']);
+                $section = Sections::resolveSection($data['sectionId']);
             }
             if ($this->entryType) {
                 $entryType = EntryTypes::getEntryTypeByUid($this->entryType);
                 $data['typeId'] = $entryType->id;
             } elseif (isset($data['typeId'])) {
-                $entryType = self::normalizeEntryType($data['typeId']);
+                $entryType = EntryTypes::resolveEntryType($data['typeId']);
             }
 
             $element = new ($this::targetClass());
@@ -337,7 +258,7 @@ class EntryImporter extends ElementImporter
     {
         // structure props only apply when importing into a structure section
         if ($prop['trait'] === Structurable::class) {
-            $section = self::normalizeSection($this->section);
+            $section = Sections::resolveSection($this->section);
 
             return $section && $section->type === SectionType::Structure;
         }
@@ -355,6 +276,9 @@ class EntryImporter extends ElementImporter
         return Sections::getAllSections()->map(fn ($section) => [
             'label' => $section->name,
             'value' => $section->uid,
+        ])->prepend([
+            'label' => t('Please select'),
+            'value' => null,
         ])->all();
     }
 
@@ -374,6 +298,9 @@ class EntryImporter extends ElementImporter
         return collect($section?->getEntryTypes())->map(fn ($entryType) => [
             'label' => $entryType->name,
             'value' => $entryType->uid,
+        ])->prepend([
+            'label' => t('Please select'),
+            'value' => null,
         ])->all();
     }
 }

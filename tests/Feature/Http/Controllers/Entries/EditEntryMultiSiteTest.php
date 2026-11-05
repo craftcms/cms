@@ -96,24 +96,21 @@ it('points each site switcher link at the same element on that site', function (
         );
 });
 
-it('renders a global status switch alongside per-site switches', function () {
+it('renders a Sites pane with a status switch for each site', function () {
     get($this->entry->getCpEditUrl())
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('sidebarUi.nodes', function (Collection $nodes) {
-                $paths = $nodes
-                    ->map(fn (array $node) => implode('.', $node['control']['path'] ?? []))
-                    ->all();
+            ->where('sidebarUi', function (Collection $sidebarUi) {
+                $control = collect($sidebarUi['nodes'])
+                    ->first(fn (array $node) => ($node['control']['component'] ?? null) === 'craft:element-sites')['control'] ?? null;
 
-                $group = $nodes->first(fn (array $node) => ($node['uid'] ?? null) === 'site-statuses');
-
-                $sitePaths = collect($group['children'] ?? [])
-                    ->map(fn (array $child) => implode('.', $child['control']['path'] ?? []))
-                    ->all();
-
-                return in_array('enabled', $paths, true)
-                    && in_array("enabledForSite.{$this->entry->siteId}", $sitePaths, true)
-                    && in_array("enabledForSite.{$this->secondSite->id}", $sitePaths, true);
+                return $control !== null
+                    && $control['path'] === ['enabledForSite']
+                    && $control['props']['withStatuses'] === true
+                    && collect($control['props']['sites'])->pluck('id')->all() === [$this->entry->siteId, $this->secondSite->id]
+                    && $control['props']['sites'][0]['current'] === true
+                    && str_contains((string) $control['props']['sites'][1]['url'], "site={$this->secondSite->handle}")
+                    && array_keys($sidebarUi['values']['enabledForSite']) === [$this->entry->siteId, $this->secondSite->id];
             })
             ->etc()
         );
@@ -135,13 +132,14 @@ it('omits the site switcher and per-site switches when the section is single-sit
                 fn (array $crumb) => ($crumb['icon'] ?? null) === 'earth',
             ))
             ->where('sidebarUi.nodes', fn (Collection $nodes) => $nodes->doesntContain(
-                fn (array $node) => ($node['uid'] ?? null) === 'site-statuses',
+                fn (array $node) => ($node['uid'] ?? null) === 'site-statuses'
+                    || ($node['control']['component'] ?? null) === 'craft:element-sites',
             ))
             ->etc()
         );
 });
 
-it('offers a switch for every site the section is enabled for', function () {
+it('lists every site the section is enabled for in the Sites pane', function () {
     $extraSite = Site::factory()->create();
     Sites::refreshSites();
     SectionSiteSettings::factory()->create([
@@ -157,11 +155,9 @@ it('offers a switch for every site the section is enabled for', function () {
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('sidebarUi.nodes', function (Collection $nodes) use ($extraSite) {
-                $group = $nodes->first(fn (array $node) => ($node['uid'] ?? null) === 'site-statuses');
+                $control = $nodes->first(fn (array $node) => ($node['control']['component'] ?? null) === 'craft:element-sites')['control'] ?? null;
 
-                return collect($group['children'] ?? [])
-                    ->map(fn (array $child) => implode('.', $child['control']['path'] ?? []))
-                    ->contains("enabledForSite.{$extraSite->id}");
+                return collect($control['props']['sites'] ?? [])->pluck('id')->contains($extraSite->id);
             })
             ->etc()
         );

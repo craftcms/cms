@@ -15,14 +15,49 @@
 .cvd-container {
   display: grid;
   position: relative;
-  overflow: hidden;
-  box-shadow: none;
-  gap: var(--c-spacing-xl);
+  /* A hairline along the bottom, under the settings and the preview alike,
+     like the one under the field layout designer's panes. */
+  box-shadow: inset 0 -1px 0 var(--fld-hairline);
+  /* The library and the preview are as far apart as content is from a
+     container's edge. */
+  gap: var(--cp-container-padding);
 }
 
+/* The settings are just wide enough for the Thumb Style radios, which don't
+   wrap, and the preview gets the rest. */
 @container cvd (width > 37.5rem) {
   .cvd-container {
-    grid-template-columns: 1fr 2fr;
+    grid-template-columns: min-content 1fr;
+  }
+}
+
+/* The library sits beside the (often taller) preview; keep its fields packed
+   at the top instead of spreading the spare height between them. It also
+   drops the wider --gap inherited from the surrounding field layout field
+   group, so its fields are spaced like any other adjacent fields. */
+.cvd-library {
+  --gap: initial;
+  align-content: start;
+  /* A grid cell of space below the Content/Appearance tabs (which it sits right
+     under) and above its bottom edge, like the preview's padding. */
+  padding-block: var(--c-spacing-lg);
+}
+
+/* Beside the preview, the settings scroll rather than stretching the
+   designer taller than the preview needs. */
+@container cvd (width > 37.5rem) {
+  .cvd-library {
+    /* Its fields all span the full width, so it doesn't need the field
+       group's 12 columns or size containment, which would keep them from
+       setting its width. */
+    container-type: normal;
+    grid-template-columns: auto;
+    max-block-size: calc(500rem / 16);
+    overflow-y: auto;
+    /* Reaches across the gap to the preview's hairline, so it scrolls right
+       up to it, with its content kept where it was. */
+    margin-inline-end: calc(-1 * var(--cp-container-padding));
+    padding-inline-end: var(--cp-container-padding);
   }
 }
 
@@ -34,6 +69,194 @@
   display: grid;
   height: 100%;
   align-items: center;
+  position: relative;
+  overflow: clip;
+  isolation: isolate;
+}
+
+/* Like the field layout designer's panes: no surface or border of its own,
+   just a hairline dividing it from the settings beside (or above) it. (The
+   container draws the one along the bottom.) The grid is drawn by the
+   preview, below, so it can line up with it. */
+.cvd-preview-container.cp-workspace {
+  border: 0;
+  border-block-start: 1px solid var(--fld-hairline);
+  border-radius: 0;
+  box-shadow: none;
+  background-color: transparent;
+  background-image: none;
+  /* Stacked under the settings, no inline padding, like the field layout
+     designer's stacked panes: it reaches a pixel past the inline-start edge,
+     and the preview pads back in (below), so the chip and card line up with
+     the settings and the first column of dots with their outer rings. */
+  margin-inline-start: -1px;
+  padding-inline: 0;
+}
+
+@container cvd (width > 37.5rem) {
+  .cvd-preview-container.cp-workspace {
+    margin-inline-start: 0;
+    padding-inline-start: var(--c-spacing-lg);
+    border-block-start: 0;
+    border-inline-start: 1px solid var(--fld-hairline);
+  }
+}
+
+/* Bands of the tabs' ring color inside the top and bottom edges, keeping the
+   grid's dots clear of them, as in the field layout designer's panes. Drawn
+   over the grid (which the container's own shadow would sit under), but under
+   the chip and card. */
+.cvd-preview-container::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  box-shadow:
+    inset 0 -1px 0 var(--fld-hairline),
+    inset 0 -3px 0 var(--fld-halo),
+    inset 0 2px 0 var(--fld-halo);
+  pointer-events: none;
+}
+
+/* Beside the settings, a band runs along the dividing hairline too. */
+@container cvd (width > 37.5rem) {
+  .cvd-preview-container::after {
+    box-shadow:
+      inset 0 -1px 0 var(--fld-hairline),
+      inset 0 -3px 0 var(--fld-halo),
+      inset 0 2px 0 var(--fld-halo),
+      inset 2px 0 0 var(--fld-halo);
+  }
+
+  .cvd-preview-container:dir(rtl)::after {
+    box-shadow:
+      inset 0 -1px 0 var(--fld-hairline),
+      inset 0 -3px 0 var(--fld-halo),
+      inset 0 2px 0 var(--fld-halo),
+      inset -2px 0 0 var(--fld-halo);
+  }
+}
+
+/* The workspace grid, anchored to the preview's top-left corner (the chip's),
+   wherever centering puts it: an oversized layer whose offset is a whole number
+   of cells, clipped by the container. */
+.cvd-preview {
+  position: relative;
+  padding-inline-start: 1px;
+}
+
+/* Beside the settings, the pane's padding is one cell, so without this a
+   column of dots would run right along its left edge. Shifted, that column
+   falls outside and is clipped, while the chip and card keep theirs. */
+@container cvd (width > 37.5rem) {
+  .cvd-preview {
+    margin-inline-start: -1px;
+    padding-inline-start: 0;
+  }
+}
+
+.cvd-preview::before {
+  content: '';
+  position: absolute;
+  inset: calc(var(--c-spacing-lg) * -100);
+  z-index: -1;
+  background-image: var(--fld-dots);
+  background-size: var(--workspace-bg-size);
+  pointer-events: none;
+}
+
+/* In RTL the chip sits at the top-right, so the grid is anchored there. */
+.cvd-preview:dir(rtl)::before {
+  background-position: right top;
+}
+
+/* The thumb fields are spaced like the library's other fields. */
+.thumb-management {
+  display: contents;
+}
+
+.thumb-management > * {
+  grid-column: 1 / -1;
+}
+
+.thumb-management
+  craft-field[data-attribute='thumb-source']
+  :is(.cp-select, select) {
+  inline-size: 100%;
+}
+
+/* The sample chip sits above the card, at its own width. (Set on the grid:
+   chips' hosts are `display: contents`, so their box is the grid item.) */
+.cvd-preview {
+  display: grid;
+  justify-items: start;
+  /* Two cells, less the pixel the chip gains (below), so the card's top edge
+     stays on a grid line. */
+  gap: calc(var(--c-spacing-lg) * 2 - 1px);
+}
+
+/* A pixel taller than a medium button, so the chip's outer edges both land
+   on the grid. (Its thumbnail is sized from this too.) */
+.cvd-preview > craft-chip {
+  --c-chip-shadow: var(--c-shadow-xs), 0 0 0 2px var(--fld-halo);
+  --c-size-control-md: calc(32rem / 16 + 1px);
+}
+
+/* A pixel taller header, so its bottom border lands on the grid, as the
+   chip's edges do. */
+.cvd-preview > craft-card {
+  --c-size-header: calc(
+    var(--c-size-control-sm) + var(--c-spacing-sm) * 2 + 1px
+  );
+  justify-self: stretch;
+}
+
+/* Its height is snapped to the grid (see CardViewDesigner::snapPreviewCard()).
+   Set on the card's base, as the host's percentage height wouldn't pass a
+   minimum on to it. */
+.cvd-preview > craft-card::part(base) {
+  min-block-size: var(--cvd-card-min-block-size, auto);
+}
+
+/* Sized like a cover card in an element index, not the whole pane. */
+.cvd-preview > craft-card[cover-src] {
+  justify-self: start;
+  inline-size: min(100%, calc(360rem / 16));
+}
+
+.cvd-chip-thumbnail {
+  inline-size: 100%;
+  block-size: 100%;
+  border-radius: var(--c-radius-sm);
+  overflow: clip;
+}
+
+/* Both previews get a ring just darker than the page outside their outlines
+   (beneath their shadows), like the field layout designer's tabs, to keep the grid's
+   dots clear of them. */
+.cvd-preview craft-card {
+  --c-card-shadow: var(--c-shadow-sm), 0 0 0 2px var(--fld-halo);
+  border-radius: var(--c-card-radius, var(--c-radius-md));
+}
+
+/* A colored card's body is translucent, so give it the surface it normally
+   sits on, rather than the workspace grid. A card without a color has no
+   surface of its own, so it shows the grid. */
+.cvd-preview craft-card[data-color] {
+  background-color: var(--c-surface-raised);
+}
+
+/* A colored chip's fill and outline are translucent too, so it gets the same
+   surface underneath (its own fill, as craft-chip mixes it, layered back on
+   top), and its outline matches the card's. */
+.cvd-preview
+  > craft-chip[data-color]:not(
+    [data-color='white'],
+    [data-color='black']
+  )::part(chip) {
+  --_fill: color-mix(var(--c-color-fill-quiet), transparent 70%);
+  background-color: var(--c-surface-raised);
+  background-image: linear-gradient(var(--_fill), var(--_fill));
 }
 
 .cvd-preview:not(.loading) .spinner {
@@ -43,13 +266,27 @@
 .cvd-thumbnail {
   width: 100%;
   aspect-ratio: 4/3;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  border: 1px solid var(--c-color-border-quiet);
-  background-color: var(--c-color-fill-quiet);
   border-radius: var(--c-radius-md);
+  overflow: clip;
+}
+
+/* The owner's icon, shown when it's the first thumb source, fills its
+   thumbnail box as the SVG in an element's icon thumbnail does. */
+.cvd-preview .icon-thumb {
+  container-type: size;
+}
+
+.cvd-preview .icon-thumb > craft-icon {
+  --c-icon-size: 100cqmin;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+:is(.cvd-thumbnail, .cvd-chip-thumbnail) > img {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
 }
 
 .card-placeholder {
@@ -63,13 +300,4 @@
 .field.cvd-field {
   margin-block-start: 0.2em;
   margin-inline-start: 0.5em;
-}
-
-/* Thumbnail management */
-.thumb-management {
-  margin-block: var(--c-spacing-xl);
-}
-
-.thumb-management .field:first-child {
-  margin-inline-end: var(--c-spacing-xl);
 }

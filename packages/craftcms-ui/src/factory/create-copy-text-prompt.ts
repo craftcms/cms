@@ -1,5 +1,7 @@
 import type CraftDialog from '../components/dialog/dialog.js';
-import {createTextInput} from './create-text-input.js';
+import type CraftInputCopy from '../components/input-copy/input-copy.js';
+import type CraftTextarea from '../components/textarea/textarea.js';
+import type CraftCopyButton from '../components/copy-button/copy-button.js';
 
 export interface CopyTextPromptConfig {
   /** Shown as the dialog's header/accessible name (e.g. "Full URL"). */
@@ -7,12 +9,14 @@ export interface CopyTextPromptConfig {
   /** The value to display and copy. */
   value: string;
   id?: string;
-  /** Render a multi-line `<textarea>` instead of a single-line input. */
+  /** Render a multi-line textarea, with the copy button in the footer, instead of a single-line input. */
   textarea?: boolean;
   /** Rows for the textarea variant. */
   rows?: number;
   size?: number;
   class?: string | string[];
+  /** Where focus goes once the dialog closes. See `CraftDialog.returnFocus`. */
+  returnFocus?: CraftDialog['returnFocus'];
 }
 
 /**
@@ -21,10 +25,12 @@ export interface CopyTextPromptConfig {
  * `Craft.ui.createCopyTextPrompt`.
  *
  * Built entirely on `@craftcms/ui` components: `<craft-dialog>` (the modal) and
- * `<craft-copy-button>` (which copies via `navigator.clipboard` and shows its
- * own feedback, replacing the legacy `execCommand('copy')` + `displayNotice`).
+ * `<craft-input-copy>`, or a `<craft-textarea>` with a `<craft-copy-button>` in
+ * the footer (which copies via `navigator.clipboard` and shows its own
+ * feedback, replacing the legacy `execCommand('copy')` + `displayNotice`).
  * The dialog is appended to `<body>` and shown immediately; it closes once the
- * value is copied. Returns the dialog element (callers use it fire-and-forget).
+ * value is copied, and removes itself from the document once it has closed.
+ * Returns the dialog element (callers use it fire-and-forget).
  */
 export function createCopyTextPrompt(
   config: CopyTextPromptConfig
@@ -33,20 +39,27 @@ export function createCopyTextPrompt(
   if (config.label) {
     dialog.setAttribute('label', config.label);
   }
+  if (config.returnFocus) {
+    dialog.returnFocus = config.returnFocus;
+  }
 
-  const copytext = document.createElement('div');
-  copytext.className = 'copytext';
-  copytext.append(buildField(config));
-
-  const copyButton = document.createElement('craft-copy-button');
-  copyButton.setAttribute('value', config.value);
-  copytext.append(copyButton);
-
-  dialog.append(copytext);
+  dialog.append(
+    ...(config.textarea
+      ? buildTextareaField(config)
+      : [buildInputField(config)])
+  );
 
   // Legacy hid the modal once the value was copied.
   dialog.addEventListener('craft-copy', () => {
     dialog.opened = false;
+  });
+
+  // Nothing reopens it, so it goes once it has closed. The target check skips
+  // the same event bubbling up from an overlay inside it.
+  dialog.addEventListener('craft-after-hide', (event) => {
+    if (event.target === dialog) {
+      dialog.remove();
+    }
   });
 
   dialog.setAttribute('open', '');
@@ -55,34 +68,47 @@ export function createCopyTextPrompt(
   return dialog;
 }
 
-function buildField(config: CopyTextPromptConfig): HTMLElement {
-  if (config.textarea) {
-    const textarea = document.createElement('textarea');
-    const classes = ['text'];
-    if (Array.isArray(config.class)) {
-      classes.push(...config.class);
-    } else if (config.class) {
-      classes.push(config.class);
-    }
-    if (config.size === undefined) {
-      classes.push('fullwidth');
-    }
-    textarea.className = classes.join(' ');
-    textarea.readOnly = true;
-    textarea.rows = config.rows ?? 2;
-    if (config.id) {
-      textarea.id = config.id;
-    }
-    textarea.value = config.value;
-    return textarea;
+function buildInputField(config: CopyTextPromptConfig): HTMLElement {
+  const field = document.createElement('craft-input-copy') as CraftInputCopy;
+  field.label = config.label ?? '';
+  field.labelSrOnly = true;
+  field.modelValue = config.value;
+  // Legacy sizing: fit the value, clamped to [25, 50].
+  field.inputSize =
+    config.size ?? Math.max(Math.min(config.value.length, 50), 25);
+  if (config.id) {
+    field.id = config.id;
   }
+  field.classList.add(...classes(config));
 
-  return createTextInput({
-    id: config.id,
-    value: config.value,
-    readonly: true,
-    // Legacy sizing: fit the value, clamped to [25, 50].
-    size: config.size ?? Math.max(Math.min(config.value.length, 50), 25),
-    class: config.class,
-  });
+  return field;
+}
+
+function buildTextareaField(config: CopyTextPromptConfig): HTMLElement[] {
+  const field = document.createElement('craft-textarea') as CraftTextarea;
+  field.label = config.label ?? '';
+  field.labelSrOnly = true;
+  field.modelValue = config.value;
+  field.readOnly = true;
+  field.rows = config.rows ?? 2;
+  if (config.id) {
+    field.id = config.id;
+  }
+  field.classList.add(...classes(config));
+  // The legacy prompt's `code` class set the value in a monospace font.
+  field.monospace = field.classList.contains('code');
+
+  const copyButton = document.createElement(
+    'craft-copy-button'
+  ) as CraftCopyButton;
+  copyButton.slot = 'footer';
+  copyButton.value = config.value;
+
+  return [field, copyButton];
+}
+
+function classes(config: CopyTextPromptConfig): string[] {
+  return (
+    Array.isArray(config.class) ? config.class : [config.class ?? '']
+  ).filter(Boolean);
 }

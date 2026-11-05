@@ -8,7 +8,9 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\RouteToken\Model\RouteToken;
+use CraftCms\Cms\Support\Config as ConfigHelper;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use DateTimeInterface;
 use Illuminate\Container\Attributes\Scoped;
@@ -33,6 +35,14 @@ class RouteTokens
      * @see getRemainingTokenUsages()
      */
     private array $remainingTokenUsages = [];
+
+    /**
+     * Routes resolved during this request, so a token with a usage limit is
+     * only used once however many times it's looked up.
+     *
+     * @var array<string,array<mixed>|false>
+     */
+    private array $resolvedTokenRoutes = [];
 
     /**
      * Creates a new token and returns it.
@@ -97,11 +107,17 @@ class RouteTokens
      */
     public function createPreviewToken(mixed $route, ?int $usageLimit = null, ?string $token = null): string|false
     {
-        $config = Cms::config();
-        $duration = $config->previewTokenDuration ?? $config->defaultTokenDuration;
-        $expiryDate = now()->addSeconds($duration);
+        return $this->createToken($route, $usageLimit, now()->addSeconds($this->previewTokenDuration()), $token);
+    }
 
-        return $this->createToken($route, $usageLimit, $expiryDate, $token);
+    /**
+     * How long preview tokens last, in seconds.
+     */
+    public function previewTokenDuration(): int
+    {
+        $config = Cms::config();
+
+        return ConfigHelper::durationInSeconds($config->previewTokenDuration ?? $config->defaultTokenDuration);
     }
 
     /**
@@ -111,6 +127,18 @@ class RouteTokens
      * @return array<mixed>|false
      */
     public function getTokenRoute(string $token): array|false
+    {
+        if (array_key_exists($token, $this->resolvedTokenRoutes)) {
+            return $this->resolvedTokenRoutes[$token];
+        }
+
+        return $this->resolvedTokenRoutes[$token] = $this->resolveTokenRoute($token);
+    }
+
+    /**
+     * @return array<mixed>|false
+     */
+    private function resolveTokenRoute(string $token): array|false
     {
         // Take the opportunity to delete any expired tokens
         $this->deleteExpiredTokens();
@@ -198,7 +226,7 @@ class RouteTokens
         }
 
         $affectedRows = DB::table(Table::ROUTETOKENS)
-            ->where('expiryDate', '<=', now())
+            ->where('expiryDate', '<=', Query::prepareDateForDb(now()))
             ->delete();
 
         $this->deletedExpiredTokens = true;

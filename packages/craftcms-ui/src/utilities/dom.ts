@@ -25,7 +25,7 @@ export async function appendElementHtml(
   rejectOnError = false,
   before: Node | null = null
 ): Promise<AppendHtmlDisposer> {
-  const appended: Node[] = [];
+  const appended: ChildNode[] = [];
   const releases: Array<() => void> = [];
 
   const dispose: AppendHtmlDisposer = () => {
@@ -87,7 +87,8 @@ export async function appendElementHtml(
         ownedAssets.set(asset.key, ownedAsset);
         releases.push(() => releaseAsset(asset.key, ownedAsset));
       } else {
-        appended.push(node);
+        // Just inserted into `parent`, so it's a child node.
+        appended.push(node as ChildNode);
       }
 
       if (loaded) {
@@ -312,7 +313,9 @@ function collectFormInputs(
   >('input[name], select[name], textarea[name]');
 
   for (const control of controls) {
-    if (control.disabled || exclude?.contains(control)) {
+    // Like native form submission, skip controls with an empty name — e.g.
+    // the native input of a Lion field (`craft-input`) without a name.
+    if (control.disabled || !control.name || exclude?.contains(control)) {
       continue;
     }
 

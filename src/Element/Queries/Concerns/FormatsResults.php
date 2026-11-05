@@ -7,11 +7,14 @@ namespace CraftCms\Cms\Element\Queries\Concerns;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Collection;
+use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 use Tpetry\QueryExpressions\Language\CaseGroup;
 use Tpetry\QueryExpressions\Language\CaseRule;
 use Tpetry\QueryExpressions\Operator\Comparison\Equal;
@@ -91,6 +94,7 @@ trait FormatsResults
      *
      * @param  bool  $value  The property value
      */
+    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Causes the query results to be returned in reverse order.')]
     public function inReverse(bool $value = true): static
     {
         $this->inReverse = $value;
@@ -153,6 +157,7 @@ trait FormatsResults
      *
      * @param  bool  $value  The property value (defaults to true)
      */
+    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Causes the query results to be returned in the order specified by the `id` argument.')]
     public function fixedOrder(bool $value = true): static
     {
         $this->fixedOrder = $value;
@@ -232,6 +237,14 @@ trait FormatsResults
             return;
         }
 
+        $placeholderDefault = null;
+
+        foreach ($orders as $order) {
+            if (($order['column'] ?? null) instanceof OrderByPlaceholderExpression && $order['column']->default !== null) {
+                $placeholderDefault = $order['column']->default;
+            }
+        }
+
         $elementQuery->query->orders = array_filter(
             array: $orders,
             callback: fn ($order) => ! isset($order['column']) || ! $order['column'] instanceof OrderByPlaceholderExpression,
@@ -239,6 +252,12 @@ trait FormatsResults
 
         // Order by was set
         if (count($elementQuery->query->orders) > 0) {
+            return;
+        }
+
+        if ($placeholderDefault !== null) {
+            $elementQuery->orderBy($placeholderDefault);
+
             return;
         }
 
@@ -298,7 +317,12 @@ trait FormatsResults
                 return $order;
             }
 
-            $order['column'] = $elementQuery->columnMap[$order['column']] ?? $order['column'];
+            if ($elementQuery->hasColumnMapping($order['column'])) {
+                $column = $elementQuery->resolveColumnMapping($order['column']);
+                $order['column'] = is_array($column)
+                    ? (count($column) === 1 ? reset($column) : new Coalesce($column))
+                    : $column;
+            }
 
             return $order;
         }, $orders);

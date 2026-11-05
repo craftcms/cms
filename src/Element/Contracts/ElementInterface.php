@@ -9,11 +9,13 @@ use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Component\Contracts\CpEditable;
+use CraftCms\Cms\Component\Contracts\Renderable;
 use CraftCms\Cms\Component\Contracts\Statusable;
 use CraftCms\Cms\Component\Contracts\Thumbable;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
+use CraftCms\Cms\Element\Data\Thumb;
 use CraftCms\Cms\Element\DeletionBlockers\Contracts\DeletionBlockerInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
@@ -34,7 +36,6 @@ use CraftCms\Cms\View\Contracts\ProvidesObjectTemplateSuggestions;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\HtmlString;
 use IteratorAggregate;
-use RuntimeException;
 use Stringable;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -51,7 +52,7 @@ use Symfony\Component\HttpFoundation\Response;
  * @extends ArrayAccess<array-key,mixed>
  * @extends IteratorAggregate<array-key,mixed>
  */
-interface ElementInterface extends Actionable, ArrayAccess, Chippable, ComponentInterface, CpEditable, IteratorAggregate, ProvidesObjectTemplateSuggestions, Statusable, Thumbable, Validatable
+interface ElementInterface extends Actionable, ArrayAccess, Chippable, ComponentInterface, CpEditable, IteratorAggregate, ProvidesObjectTemplateSuggestions, Renderable, Statusable, Thumbable, Validatable
 {
     /**
      * Returns the lowercase version of [[displayName()]].
@@ -81,6 +82,21 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     public static function hasDrafts(): bool;
 
     /**
+     * Returns whether elements of this type can have revisions.
+     *
+     * Whether a given element gets revisions when it’s saved is up to {@see hasRevisions()}. Element types that return
+     * `false` don’t get revision params and properties, such as `revisionId`, in external APIs.
+     */
+    public static function supportsRevisions(): bool;
+
+    /**
+     * Returns whether elements of this type can be placed in structures.
+     *
+     * Element types that return `false` don’t get structure params and properties, such as `level`, in external APIs.
+     */
+    public static function hasStructures(): bool;
+
+    /**
      * Returns whether Craft should keep track of attribute and custom field changes made to this element type,
      * including when the last time they were changed, and who was logged-in at the time.
      *
@@ -102,6 +118,12 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns whether element indexes should include a thumbnail view by default.
      */
     public static function hasThumbs(): bool;
+
+    /**
+     * Returns the element’s thumbnail, if it has one: the first one provided by its field layout’s thumb sources, or
+     * else its own.
+     */
+    public function getThumb(): ?Thumb;
 
     /**
      * Returns whether elements of this type can have their own slugs and URIs.
@@ -273,6 +295,10 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *   `orange`, `red`, `yellow`, `pink`, `purple`, `blue`, `turquoise`, `light`, `grey`, `black`, and `white`. (Optional)
      * - **`badgeCount`** – The badge count that should be displayed alongside the label. (Optional)
      * - **`badgeLabel`** – The badge count label that should be provided for screen readers. (Optional)
+     * - **`defaultBadgeCount`** – Whether the source should show a count of its elements in the nav until an admin
+     *   chooses otherwise. Only applies when [[supportsSourceBadgeCounts()]] returns `true`, and only to element types
+     *   whose sources the main nav doesn't list: entries, assets and users only show a count once an admin turns it
+     *   on, so their nav doesn't have to build every source on every request to find a default. (Optional)
      * - **`sites`** – An array of site IDs or UUIDs that the source should be shown for, on multi-site element indexes.
      *   (Optional; by default the source will be shown for all sites.)
      * - **`criteria`** – An array of element criteria parameters that the source should use when the source is selected.
@@ -335,6 +361,28 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * @return SourceConfig
      */
     public static function modifyCustomSource(array $config): array;
+
+    /**
+     * Returns whether this element type’s sources can show a count of their elements in the control panel nav.
+     *
+     * Each source’s count is still opt-in, from the “Customize sources” modal.
+     */
+    public static function supportsSourceBadgeCounts(): bool;
+
+    /**
+     * Returns whether a given source can show a count of its elements.
+     *
+     * @param  SourceConfig  $source
+     */
+    public static function sourceSupportsBadgeCount(array $source): bool;
+
+    /**
+     * Returns the total number of elements in a source, for its badge.
+     *
+     * @param  SourceConfig  $source
+     * @param  int|null  $siteId  The site to count elements for, or `null` for the current site
+     */
+    public static function sourceBadgeCount(array $source, ?int $siteId): int;
 
     /**
      * Returns the available [bulk element actions](https://craftcms.com/docs/5.x/extend/element-actions.html)
@@ -952,11 +1000,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns the element’s revisions index URL in the control panel.
      */
     public function getCpRevisionsUrl(): ?string;
-
-    /**
-     * Returns additional buttons that should be shown at the top of the element’s edit page.
-     */
-    public function getAdditionalButtons(): string|Stringable;
 
     /**
      * Returns alternative form actions for the element.
@@ -1643,6 +1686,14 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     public function getMetadata(): array;
 
     /**
+     * Returns the groups of metadata that should be shown within the editor sidebar, which are separated from each
+     * other, such as {@see getMetadata()} and then what was found in an image.
+     *
+     * @return list<array<string,mixed>> The groups, each like {@see getMetadata()}’s
+     */
+    public function getMetadataGroups(): array;
+
+    /**
      * Returns the GraphQL type name for this element type.
      */
     public function getGqlTypeName(): string;
@@ -1736,15 +1787,4 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns the string representation of the element.
      */
     public function __toString(): string;
-
-    /**
-     * Renders the element using its partial template.
-     *
-     * If no partial template exists for the element, its string representation will be output instead.
-     *
-     * @param  array<string,mixed>  $variables
-     *
-     * @throws RuntimeException
-     */
-    public function render(array $variables = []): HtmlString;
 }

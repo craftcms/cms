@@ -14,7 +14,9 @@ use Illuminate\Support\Collection;
  * ElementQueryInterface defines the common interface to be implemented by element query classes.
  * The default implementation of this interface is provided by [[ElementQuery]].
  *
- * @mixin ElementQuery<ElementInterface>
+ * @template TElement of ElementInterface = ElementInterface
+ *
+ * @mixin ElementQuery<TElement>
  *
  * @phpstan-require-extends ElementQuery
  */
@@ -150,6 +152,32 @@ interface ElementQueryInterface extends Builder
      * @return static self reference
      */
     public function draftId(?int $value = null): static;
+
+    /**
+     * Narrows the query results to drafts attached to a release.
+     *
+     * The value is a release ID from the `releases` table.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch drafts attached to a release #}
+     * {% set {elements-var} = {twig-method}
+     *   .releaseId(10)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch drafts attached to a release
+     * ${elements-var} = {php-method}
+     *     ->releaseId(10)
+     *     ->all();
+     * ```
+     *
+     * @param  int|null  $value  The release ID
+     * @return static self reference
+     */
+    public function releaseId(?int $value = null): static;
 
     /**
      * Narrows the query results to only drafts of a given {element}.
@@ -1648,8 +1676,8 @@ interface ElementQueryInterface extends Builder
     /**
      * Performs any post-population processing on elements.
      *
-     * @param  Collection<array-key, ElementInterface>  $items  the populated elements
-     * @return Collection<array-key, ElementInterface>
+     * @param  Collection<array-key, TElement>  $items  the populated elements
+     * @return Collection<array-key, TElement>
      */
     public function afterHydrate(Collection $items): Collection;
 }

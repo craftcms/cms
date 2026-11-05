@@ -20,6 +20,17 @@ export interface ScreenProps {
   debug?: any;
   /** Hides save controls without hiding non-save element actions. */
   saveDisabled?: boolean;
+  /**
+   * The page shows its own read-only notices and hides its save controls with
+   * `saveDisabled`, so the shell ignores the `readOnly` page prop: no settings
+   * notice, and the footer keeps the page's other actions.
+   */
+  handlesReadOnly?: boolean;
+  /**
+   * Hides the content footer altogether, for a page that puts its save
+   * controls elsewhere and has nothing else to show there.
+   */
+  hideFooter?: boolean;
   form?: InertiaForm<any> | null;
   defaultFormActions?: Array<DefaultFormAction>;
   formActions?: Array<ActionItem>;
@@ -68,6 +79,11 @@ export interface ScreenProps {
    * slideout is narrow already.
    */
   contentMaxWidth?: boolean | string;
+  /**
+   * Ends the content header with a rule, for a screen whose content starts
+   * right under its title row, such as a listing sorted from that row.
+   */
+  headerRule?: boolean;
   /**
    * Fits the shell to the viewport instead of letting the document scroll,
    * so `page-main` gets a definite height to fill (e.g. a full-bleed editor).
@@ -136,7 +152,7 @@ export interface ScreenSlots {
    * `actionButton`.
    */
   'content-actions'?: () => any;
-  /** Extra buttons before the form save UI, in the content footer. Craft 5: `additionalButtons`. */
+  /** Buttons at the end of the content footer, apart from the save controls. Craft 5: `additionalButtons`. */
   'additional-buttons'?: () => any;
   /**
    * Replaces the Save button while keeping its action menu. Defaults to the
@@ -157,8 +173,12 @@ export interface ScreenSlots {
   'subnav-actions'?: () => any;
   /** Bottom of the content column (pagination, meta info, …), beside the form save UI. Craft 5: `footer` (content pane). */
   'content-footer'?: () => any;
+  /** Status beside the content footer's save controls, e.g. an element editor's autosave state. */
+  'footer-meta'?: () => any;
   /** Right details column beside the content. Craft 5: `details`. */
   'content-details'?: () => any;
+  /** Atop the panel, spanning the secondary nav and the content. */
+  'page-header'?: () => any;
   /** Global page footer. */
   'page-footer'?: () => any;
 }

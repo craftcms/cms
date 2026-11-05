@@ -14,7 +14,6 @@
     type PaginationData,
     type TableAppearanceValue,
   } from '@/common/types';
-  import {openSlideout} from '@/common/slideouts';
   import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
   import type {CraftTableFeatures} from '@/common/table/craftTable';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
@@ -30,10 +29,11 @@
     BulkAction,
     BulkActionItem,
   } from '@/modules/elements/types/actions';
-  import AdminTableDeleteModal from './AdminTableDeleteModal.vue';
+  import {AdminTableCreateSlideout} from '@/modules/admin-table/create-slideout';
+  import {useElementQuickEdit} from '@/modules/elements/composables/useElementQuickEdit';
   import UiModal from './UiModal.vue';
   import {useInertiaTable} from './useInertiaTable';
-  import {UiTableFlush} from './runtime';
+  import {UiTableFlush, UiTableRefresh} from './runtime';
   import type {UiValues} from './types';
 
   import type {
@@ -55,9 +55,27 @@
     node: TableNodePayload;
     /** Overrides the node's own appearance. */
     appearance?: TableAppearanceValue;
+    /**
+     * Replaces the default refresh after the table's rows change, for a
+     * table that isn't part of the page's own `ui` (such as one in a slideout).
+     */
+    onRefresh?: () => void;
   }>();
   const pageTableFlush = inject(UiTableFlush, ref(false));
+  const onRefresh = props.onRefresh ?? inject(UiTableRefresh, undefined);
   provide(UiTableFlush, ref(false));
+  const quickEdit = useElementQuickEdit({refreshResults: refreshTable});
+  provide(
+    AdminTableCreateSlideout,
+    computed(() =>
+      props.node.props.createSlideout
+        ? {
+            width: props.node.props.createSlideoutWidth ?? undefined,
+            onSaved: quickEdit.onSaved,
+          }
+        : null
+    )
+  );
 
   /**
    * The prop, then the node's own appearance, then `flush` when the table is
@@ -203,26 +221,53 @@
       CpLink,
       {
         href: url,
-        // A modified click still follows the link, to open the screen in a tab.
-        onClick: link.slideout
-          ? (event: MouseEvent) => {
-              if (
-                event.altKey ||
-                event.ctrlKey ||
-                event.metaKey ||
-                event.shiftKey ||
-                event.button !== 0
-              ) {
-                return;
-              }
-
-              event.preventDefault();
-              void openSlideout(url, {onSaved: refreshTable});
+        inertia: !link.slideout,
+        ...(link.slideout
+          ? {
+              'data-cp-url': url,
+              'data-editable': '',
+              'data-slideout-width': link.slideoutWidth ?? undefined,
+              onClick: (event: MouseEvent) =>
+                onLinkClick({...link, url}, event),
             }
-          : undefined,
+          : {}),
       },
       () => link.label
     );
+  }
+
+  function onLinkClick(
+    link: TableLink & {url: string},
+    event: MouseEvent
+  ): void {
+    // A modified click still follows the link, to open the screen in a tab.
+    if (
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      event.button !== 0
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    const target = event.currentTarget as HTMLElement;
+    openLinkSlideout(
+      link,
+      target
+        .closest('craft-action-menu')
+        ?.querySelector<HTMLElement>('[slot="invoker"]') ?? target
+    );
+  }
+
+  function openLinkSlideout(
+    link: TableLink & {url: string},
+    opener: HTMLElement | null
+  ): void {
+    quickEdit.openEditor(link.url, opener, {
+      width: link.slideoutWidth ?? undefined,
+    });
   }
 
   function renderIcon(icon: TableIcon) {
@@ -264,6 +309,14 @@
                 type: 'link',
                 href: item.url ?? '#',
                 label: item.label,
+                onClick:
+                  item.slideout && item.url
+                    ? (event: Event) =>
+                        onLinkClick(
+                          {...item, url: item.url!},
+                          event as MouseEvent
+                        )
+                    : undefined,
               }
         ),
       },
@@ -308,7 +361,9 @@
           enableSorting: !!column.sortable,
           meta: {
             trackSize: column.width,
+            columnClass: column.thin ? 'thin' : undefined,
             headerSrOnly: column.headerSrOnly,
+            wrap: column.wrap,
           },
           cell: ({getValue, row}) => {
             const value = getValue();
@@ -360,6 +415,7 @@
             ) {
               actions.push(
                 h(DeleteButton, {
+                  label: row.original._deleteLabel,
                   disabled: deletePending.value,
                   disabledReason: row.original._deleteDisabledReason,
                   onClick: () => deleteRow(row.original),
@@ -369,7 +425,7 @@
 
             return actions;
           },
-          {meta: {trackSize: '60px'}}
+          {meta: {trackSize: '60px', columnClass: 'thin'}}
         )
       );
     }
@@ -453,13 +509,6 @@
     }
   }
 
-  function onModalDeleted(): void {
-    const row = deletingRow.value;
-    deletingRow.value = null;
-    if (row?.id !== undefined) adminTable.value?.removeRows([row.id]);
-    refreshTable();
-  }
-
   async function deleteRow(row: TableRow): Promise<void> {
     const url = deleteUrl(row);
     if (
@@ -470,7 +519,7 @@
     )
       return;
 
-    if (props.node.props.deleteModalUrl || slots['delete-modal']) {
+    if (slots['delete-modal']) {
       deletingRow.value = row;
       return;
     }
@@ -560,10 +609,22 @@
   }
 
   function refreshUi(): void {
+    if (onRefresh) {
+      onRefresh();
+
+      return;
+    }
+
     router.reload({only: ['ui']});
   }
 
   function refreshTable(): void {
+    if (onRefresh) {
+      onRefresh();
+
+      return;
+    }
+
     if (!props.node.props.pagination) refreshUi();
 
     void adminTable.value?.refresh();
@@ -571,7 +632,7 @@
 </script>
 
 <template>
-  <div :data-ui-node="node.uid">
+  <div :data-ui-node="node.uid" @dblclick="quickEdit.onDblClick">
     <LayoutSlot
       v-if="hasCreateAction && node.props.createActionInPageHeader"
       name="content-actions"
@@ -612,6 +673,7 @@
         (row) => row._deletable !== false && !row._deleteDisabledReason
       "
       :reorderable="!!node.props.reorderUrl"
+      :can-reorder-row="(row) => row._reorderable !== false"
       :reorder-rows="node.props.reorderUrl ? reorderRows : undefined"
       :move-to-page="node.props.moveToPageUrl ? moveToPage : undefined"
       :selectable="hasBulkFooter"
@@ -657,16 +719,7 @@
       :row="deletingRow"
       :label="cellText(deletingRow[node.props.columns[0]?.key ?? ''] ?? null)"
       :close="() => (deletingRow = null)"
-    >
-      <AdminTableDeleteModal
-        v-if="node.props.deleteModalUrl"
-        :modal-url="node.props.deleteModalUrl"
-        :delete-url="deleteUrl(deletingRow)!"
-        :row-id="deletingRow.id!"
-        @close="deletingRow = null"
-        @deleted="onModalDeleted"
-      />
-    </slot>
+    />
     <UiModal
       v-if="menuModal"
       :modal-url="menuModal.modalUrl"

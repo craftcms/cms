@@ -824,7 +824,7 @@ describe('craft-nav-item as a button', () => {
 
     button.click();
     expect(clicks).toHaveLength(1);
-    expect(clicks[0].defaultPrevented).toBe(false);
+    expect(clicks[0]!.defaultPrevented).toBe(false);
   });
 
   it('is a named button with a tooltip when collapsed', async () => {
@@ -868,5 +868,67 @@ describe('craft-nav-item focus', () => {
     expect(item.shadowRoot!.activeElement).toBe(
       item.shadowRoot!.querySelector('a.nav-item__action-item')
     );
+  });
+});
+
+describe('craft-nav-item links that open in a new tab', () => {
+  async function createLink(
+    href: string,
+    {external = false, iconOnly = false} = {}
+  ): Promise<CraftNavItem> {
+    const item = document.createElement('craft-nav-item') as CraftNavItem;
+    item.href = href;
+    item.external = external;
+    item.iconOnly = iconOnly;
+    item.icon = 'earth-americas';
+    item.textContent = 'craftcms.com';
+    document.body.append(item);
+    await item.updateComplete;
+    return item;
+  }
+
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  it.each([
+    ['marked external', '/admin/plugin-store', true],
+    ['to another host', 'https://craftcms.com/', false],
+  ])(
+    'opens a link %s in a new tab, with an icon, and says so',
+    async (_case, href, external) => {
+      const item = await createLink(href, {external});
+      const link = item.shadowRoot!.querySelector('a')!;
+
+      expect(link.getAttribute('target')).toBe('_blank');
+      expect(link.getAttribute('rel')).toBe('noopener');
+      expect(link.textContent).toContain('Opens in a new window');
+      expect(
+        item.shadowRoot!.querySelector(
+          '.nav-item__suffix craft-icon[name="arrow-up-right-from-square"]'
+        )
+      ).not.toBeNull();
+    }
+  );
+
+  it('names a collapsed link as opening in a new tab', async () => {
+    const item = await createLink('https://craftcms.com/', {iconOnly: true});
+    const link = item.shadowRoot!.querySelector('a')!;
+
+    expect(link.getAttribute('target')).toBe('_blank');
+    expect(link.getAttribute('aria-label')).toBe(
+      'craftcms.com, Opens in a new window'
+    );
+  });
+
+  it('opens a link to this host in the same tab', async () => {
+    const item = await createLink('/admin/entries');
+    const link = item.shadowRoot!.querySelector('a')!;
+
+    expect(link.hasAttribute('target')).toBe(false);
+    expect(link.textContent).not.toContain('Opens in a new window');
+    expect(
+      item.shadowRoot!.querySelector('.nav-item__suffix craft-icon')
+    ).toBeNull();
   });
 });

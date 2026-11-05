@@ -48,6 +48,13 @@ describe('attributes', function () {
             ->and(Button::make()->toHtml())->not->toContain('toggle');
     });
 
+    it('renders a shortcut as a key, or as JSON naming its modifiers', function () {
+        expect(Button::make()->shortcut('K')->toHtml())->toContain('shortcut="K"')
+            ->and(Button::make()->shortcut(['key' => 'S', 'shift' => true])->toHtml())
+            ->toContain('shortcut="{&quot;key&quot;:&quot;S&quot;,&quot;shift&quot;:true}"')
+            ->and(Button::make()->toHtml())->not->toContain('shortcut');
+    });
+
     it('renders as a link with href, dropping the type', function () {
         $html = Button::make()
             ->type('submit')
@@ -95,4 +102,24 @@ describe('slots', function () {
         expect($html)->toContain('<craft-icon name="plus" slot="prefix">')
             ->and($html)->toContain('<craft-icon name="chevron-down" slot="suffix">');
     });
+});
+
+test('an aria-label passed as an attribute names an icon-only button', function () {
+    $html = Button::make()
+        ->icon('custom-icons/slideout-left')
+        ->attributes(['aria' => ['label' => 'Left']])
+        ->toHtml();
+
+    expect($html)->toContain('aria-label="Left"');
+});
+
+test('the accessible name wins over an aria-label attribute', function () {
+    $html = Button::make()
+        ->icon('xmark')
+        ->accessibleName('Close')
+        ->attributes(['aria' => ['label' => 'Ignored']])
+        ->toHtml();
+
+    expect($html)->toContain('aria-label="Close"')
+        ->not->toContain('aria-label="Ignored"');
 });

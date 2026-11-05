@@ -7,6 +7,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Elements;
@@ -55,7 +56,7 @@ beforeEach(function (): void {
     )['element'];
 
     $this->callLifecycle = function (string $tool, array $arguments, ?User $actor = null): TestResponse {
-        Passport::actingAs($actor ?? $this->actor, ['mcp:use'], 'craft-mcp');
+        Passport::actingAs($actor ?? $this->actor, ['mcp:admin'], 'craft-mcp');
 
         return McpRequest::send($this, 'tools/call', ['name' => $tool, 'arguments' => $arguments]);
     };
@@ -100,7 +101,7 @@ it('returns live validation errors for proposed changes without persisting them'
 
 it('allows viewers to validate saved state but requires update permissions for proposals and restore', function (): void {
     $viewer = User::factory()->withPermissions([
-        'accessCp', 'useCraftMcp',
+        'accessCp',
         "viewEntries:{$this->section->uid}", "viewPeerEntries:{$this->section->uid}",
     ])->create(['admin' => false]);
 
@@ -127,7 +128,11 @@ it('restores discoverable deleted elements and leaves active elements unchanged 
         ])['element']['id'])->one(),
     };
     if ($element instanceof Asset) {
-        $element->keepFileOnDelete = true;
+        config()->set('filesystems.disks.lifecycle-trashed-assets', [
+            'driver' => 'local', 'root' => storage_path('framework/testing/lifecycle-trashed-assets'),
+        ]);
+        Storage::fake('lifecycle-trashed-assets');
+        Cms::config()->trashedAssetDisk('lifecycle-trashed-assets');
     }
 
     app(Elements::class)->deleteElement($element);
@@ -184,7 +189,7 @@ it('duplicates canonical entries and saved drafts as independent content in the 
 
 it('lets creators duplicate as unpublished content without granting canonical duplication', function (): void {
     $creator = User::factory()->withPermissions([
-        'accessCp', 'useCraftMcp',
+        'accessCp',
         "viewEntries:{$this->section->uid}", "viewPeerEntries:{$this->section->uid}",
         "createEntries:{$this->section->uid}",
     ])->create(['admin' => false]);
@@ -203,7 +208,7 @@ it('validates saved drafts without exposing peer drafts to unauthorized viewers'
     $canonical = app(Elements::class)->getElementById($this->entry['id'], Entry::class);
     $draft = app(Drafts::class)->createDraft($canonical, $this->actor->id);
     $viewer = User::factory()->withPermissions([
-        'accessCp', 'useCraftMcp',
+        'accessCp',
         "viewEntries:{$this->section->uid}", "viewPeerEntries:{$this->section->uid}",
         "createEntries:{$this->section->uid}",
     ])->create(['admin' => false]);
@@ -249,7 +254,7 @@ it('duplicates addresses without changing ownership and validates owner changes 
         ->assertJsonStructure(['result' => ['structuredContent' => ['errors' => ['countryCode']]]]);
     expect(Address::find()->id($address['id'])->one()->countryCode)->toBe('BE');
 
-    $editor = User::factory()->withPermissions(['accessCp', 'useCraftMcp', 'viewUsers'])->create(['admin' => false]);
+    $editor = User::factory()->withPermissions(['accessCp', 'viewUsers'])->create(['admin' => false]);
     $ownAddress = app(ElementCapabilities::class)->create('addresses', [
         'ownerId' => $editor->id, 'countryCode' => 'BE', 'title' => 'Work',
         'locality' => 'Brussels', 'postalCode' => '1000', 'addressLine1' => 'Example Street 2',
@@ -272,7 +277,7 @@ it('preserves user identity during uniqueness validation and enforces restricted
         ->assertJsonPath('result.structuredContent.valid', false)
         ->assertJsonStructure(['result' => ['structuredContent' => ['errors' => ['email']]]]);
 
-    $editor = User::factory()->withPermissions(['accessCp', 'useCraftMcp', 'viewUsers', 'editUsers'])
+    $editor = User::factory()->withPermissions(['accessCp', 'viewUsers', 'editUsers'])
         ->create(['admin' => false]);
     ($this->callLifecycle)('elements.validate', ['type' => 'users',
         'id' => $other->id, 'attributes' => ['admin' => true],
@@ -298,7 +303,7 @@ it('validates proposed asset attributes without moving files and still requires 
 
     $volume = $asset->getVolume();
     $editor = User::factory()->withPermissions([
-        'accessCp', 'useCraftMcp', "viewAssets:$volume->uid", "viewPeerAssets:$volume->uid",
+        'accessCp', "viewAssets:$volume->uid", "viewPeerAssets:$volume->uid",
         "saveAssets:$volume->uid", "savePeerAssets:$volume->uid",
     ])->create(['admin' => false]);
     ($this->callLifecycle)('elements.validate', ['type' => 'assets',

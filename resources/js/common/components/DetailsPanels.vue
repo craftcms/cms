@@ -1,9 +1,9 @@
 <script setup lang="ts">
   /**
-   * The details column: a rail of icon buttons, each disclosing one panel. At
-   * most one panel is open, and closing it folds the column to the rail. Panels
-   * render either a named slot or a component, so a page can mix its own markup
-   * with registered panels.
+   * A screen's details column: a rail of icon buttons, each disclosing one
+   * panel. At most one panel is open, and closing it folds the column to the
+   * rail. Each screen renders one, for the panels in its registry, which
+   * pages and the shell fill with `ScreenPanel`.
    *
    * On a full page the rail is teleported away from the panels, so opening a
    * panel from it moves focus to the panel's heading, and Escape or the
@@ -11,43 +11,35 @@
    */
   import '@craftcms/ui/components/disclosure/disclosure';
   import {t} from '@craftcms/ui';
-  import {useEventListener} from '@vueuse/core';
-  import {computed, nextTick, shallowRef, watch} from 'vue';
-  import type {Component} from 'vue';
+  import {useEventListener, useLocalStorage} from '@vueuse/core';
+  import '@craftcms/ui/components/dialog/dialog';
   import {
+    computed,
+    nextTick,
+    onBeforeUnmount,
+    onMounted,
+    useTemplateRef,
+    watch,
+  } from 'vue';
+  import type {ComponentPublicInstance} from 'vue';
+  import {
+    useIsSlideout,
     useScreenDetailsOverlay,
     useScreenDetailsRail,
   } from '@/common/composables/screen';
-  import DetailsPanelContent from './DetailsPanelContent.vue';
+  import type {
+    PreferredPanel,
+    ScreenPanels,
+  } from '@/common/composables/screenPanels';
+  import {initialOf} from '@/common/utils/initialIcon';
+  import type {DetailsPanel} from './detailsPanels';
 
-  export interface DetailsPanel {
-    id: string;
-    label: string;
-    icon: string;
-    order?: number;
-    /** A slot to render as the panel. */
-    slot?: string;
-    /** A component to render as the panel, when there's no slot. */
-    component?: Component;
-    /** Optional controls rendered at the end of the panel header. */
-    headerActionsComponent?: Component;
-    /** A status shown in the panel header. */
-    statusData?: DetailsPanelStatus | null;
-  }
-
-  export interface DetailsPanelStatus {
-    label: string;
-    indicator: string;
-  }
+  export type {DetailsPanel, DetailsPanelStatus} from './detailsPanels';
 
   const props = withDefaults(
     defineProps<{
-      panels: DetailsPanel[];
-      /** Props for a component panel, given the panel and the open panel's ID. */
-      componentProps?: (
-        panel: DetailsPanel,
-        activePanelId: string | null
-      ) => Record<string, unknown>;
+      /** The screen's panels. */
+      registry: ScreenPanels;
       idPrefix?: string;
       /** Whether the open panel is mirrored in the URL hash. */
       syncLocationHash?: boolean;
@@ -55,12 +47,8 @@
     {idPrefix: 'details-panel', syncLocationHash: false}
   );
 
-  const visiblePanels = computed<DetailsPanel[]>(() =>
-    [...props.panels].sort(
-      (firstPanel, secondPanel) =>
-        (firstPanel.order ?? 0) - (secondPanel.order ?? 0)
-    )
-  );
+  const visiblePanels = props.registry.panels;
+  const openPanelId = props.registry.openPanelId;
 
   /** Where the rail goes when the shell keeps it apart from the panels. */
   const rail = useScreenDetailsRail();
@@ -73,60 +61,142 @@
     return `${triggerId(panelId)}-panel`;
   }
 
-  function headingId(panelId: string): string {
-    return `${panelElementId(panelId)}-heading`;
+  function findPanel(panelId: string | null): DetailsPanel | undefined {
+    return visiblePanels.value.find((panel) => panel.id === panelId);
   }
 
   function isVisible(panelId: string): boolean {
-    return visiblePanels.value.some((panel) => panel.id === panelId);
+    return findPanel(panelId) !== undefined;
   }
 
-  const initialHash =
-    props.syncLocationHash && window.location.hash
-      ? window.location.hash.slice(1)
-      : null;
-  const openPanelId = shallowRef<string | null>(
-    initialHash && isVisible(initialHash)
-      ? initialHash
-      : (visiblePanels.value[0]?.id ?? null)
-  );
+  /**
+   * Slideouts don't mirror the open panel in the URL hash, so they remember
+   * the panel the person last left open, or that they folded the column,
+   * and open the next slideout the same way. A remembered panel this element
+   * doesn't have falls back to the first.
+   */
+  const isSlideout = useIsSlideout();
+  const slideoutPanelId = isSlideout
+    ? useLocalStorage<string | null>('Slideout.detailsPanel', null)
+    : null;
 
-  // An open panel that goes away falls back to the first.
-  watch(visiblePanels, (panels) => {
-    if (
-      openPanelId.value &&
-      !panels.some((panel) => panel.id === openPanelId.value)
-    ) {
-      openPanelId.value = panels[0]?.id ?? null;
+  /** The panel this column would rather open on, for the registry's policy. */
+  function preferredPanelId(): PreferredPanel {
+    if (slideoutPanelId) {
+      return slideoutPanelId.value;
     }
+
+    return props.syncLocationHash && window.location.hash
+      ? window.location.hash.slice(1)
+      : undefined;
+  }
+
+  props.registry.start(preferredPanelId());
+
+  // Each page's panels open as they would on a fresh page.
+  watch(props.registry.pageGeneration, () => {
+    props.registry.startPage(preferredPanelId(), overlaid?.value ?? false);
   });
+
+  watch(visiblePanels, () => props.registry.reconcile(preferredPanelId()));
 
   /**
    * The column folds to its rail once the shell overlays it. The width that
    * happens at is the shell's call, so this follows the flag rather than
-   * measuring, and only reopens a panel the shell closed itself.
+   * measuring.
+   *
+   * A panel the shell closed for lack of room comes back once there's room
+   * again; one the person closed stays closed. The registry remembers which
+   * panel the shell closed, and forgets it as soon as the person opens or
+   * closes a panel themselves.
    */
   const overlaid = useScreenDetailsOverlay();
-  let closedByShell = false;
+
+  /**
+   * With the rail kept apart from the panels, as on a page, a panel that
+   * overlays the content is modal: the panels move into a `craft-dialog`,
+   * which makes the rest of the page inert, stops it scrolling, and closes on
+   * Escape or a click outside. Panels beside their rail, as in a slideout or
+   * a preview's editor, stay as they are.
+   */
+  const isModal = computed(() => rail !== null && (overlaid?.value ?? false));
+  const dialogBody = useTemplateRef<HTMLElement>('dialogBody');
+
+  const openPanel = computed(() => findPanel(openPanelId.value));
+
+  /** A panel to move focus into once the dialog has opened, and taken focus itself. */
+  let focusOnDialogShow: string | null = null;
+
+  // Menus and popovers in a panel fire `craft-show` and `craft-hide` too, and
+  // theirs bubble up through the dialog, so only the dialog's own count.
+  function onDialogShow(event: Event): void {
+    if (event.target !== event.currentTarget) {
+      return;
+    }
+
+    const panelId = focusOnDialogShow;
+    focusOnDialogShow = null;
+
+    if (panelId !== null) {
+      focusPanelNow(panelId);
+    }
+  }
+
+  /**
+   * The dialog closed itself, on Escape or a click outside. It hands focus
+   * back to where it was when it opened.
+   */
+  function onDialogHide(event: Event): void {
+    if (event.target !== event.currentTarget) {
+      return;
+    }
+
+    if (openPanelId.value !== null) {
+      close(openPanelId.value, false);
+    }
+  }
+
+  /** The panel last opened, whose trigger takes focus when nothing else can. */
+  let lastOpenPanelId: string | null = null;
+
+  watch(openPanelId, (panelId) => {
+    if (panelId !== null) {
+      lastOpenPanelId = panelId;
+    }
+  });
+
+  /**
+   * Where focus goes as the dialog closes: back to what opened it, or, when
+   * that wasn't something focusable, such as a tap that doesn't focus on iOS,
+   * to the panel's trigger.
+   */
+  function dialogReturnFocus(opener: HTMLElement | null): HTMLElement | null {
+    if (opener && opener !== document.body && opener.isConnected) {
+      return opener;
+    }
+
+    return lastOpenPanelId
+      ? document.getElementById(triggerId(lastOpenPanelId))
+      : null;
+  }
+
+  // Leaving the dialog for the column, as the page widens, keeps focus in the
+  // open panel.
+  watch(isModal, async (modal, wasModal) => {
+    if (modal || !wasModal || openPanelId.value === null) {
+      return;
+    }
+
+    await nextTick();
+
+    if (!document.activeElement || document.activeElement === document.body) {
+      focusPanelNow(openPanelId.value);
+    }
+  });
 
   watch(
     () => overlaid?.value ?? false,
-    (isOverlaid) => {
-      if (isOverlaid) {
-        if (openPanelId.value !== null) {
-          openPanelId.value = null;
-          closedByShell = true;
-        }
-
-        return;
-      }
-
-      if (closedByShell && openPanelId.value === null) {
-        openPanelId.value = visiblePanels.value[0]?.id ?? null;
-      }
-
-      closedByShell = false;
-    },
+    (isOverlaid) => props.registry.setOverlaid(isOverlaid),
     {immediate: true}
   );
 
@@ -135,22 +205,47 @@
     void nextTick(() => document.getElementById(id)?.focus());
   }
 
+  function focusPanelNow(panelId: string): void {
+    const panel = findPanel(panelId);
+
+    (
+      panel?.initialFocus?.() ??
+      (panel && document.getElementById(panel.headingId))
+    )?.focus();
+  }
+
+  function focusPanel(panelId: string): void {
+    // The dialog moves focus into itself as it opens, so this waits for that.
+    if (isModal.value) {
+      focusOnDialogShow = panelId;
+
+      return;
+    }
+
+    void nextTick(() => focusPanelNow(panelId));
+  }
+
   function open(panelId: string, withFocus: boolean): void {
-    openPanelId.value = panelId;
-    closedByShell = false;
+    props.registry.select(panelId);
     updateLocationHash();
 
+    if (slideoutPanelId) {
+      slideoutPanelId.value = panelId;
+    }
+
     if (withFocus) {
-      focusAfterRender(headingId(panelId));
+      focusPanel(panelId);
     }
   }
 
   function close(panelId: string, returnFocus: boolean): void {
-    if (openPanelId.value !== panelId) {
+    if (!props.registry.deselect(panelId)) {
       return;
     }
 
-    openPanelId.value = null;
+    if (slideoutPanelId) {
+      slideoutPanelId.value = null;
+    }
 
     if (returnFocus) {
       focusAfterRender(triggerId(panelId));
@@ -168,12 +263,39 @@
     clickedPanelId = panelId;
   }
 
+  /**
+   * Set once the column starts going away. Every disclosure then disconnects
+   * at once.
+   */
+  let unmounting = false;
+
+  onMounted(() =>
+    props.registry.attach({
+      open: (panelId, withFocus) => {
+        if (isVisible(panelId)) {
+          open(panelId, withFocus);
+        }
+      },
+      close,
+    })
+  );
+
+  onBeforeUnmount(() => {
+    unmounting = true;
+    props.registry.attach(null);
+  });
+
   function onShow(panelId: string): void {
     const withFocus = clickedPanelId === panelId;
     clickedPanelId = null;
 
     // `craft-disclosure` reopens its target as it disconnects, so a removed
-    // panel announces itself one last time.
+    // panel announces itself one last time. When all of them disconnect, the
+    // last one would otherwise win the URL hash the next page opens.
+    if (unmounting) {
+      return;
+    }
+
     if (openPanelId.value !== panelId && isVisible(panelId)) {
       open(panelId, withFocus);
     }
@@ -186,12 +308,6 @@
 
     event.stopPropagation();
     close(panelId, true);
-  }
-
-  function select(panelId: string): void {
-    if (isVisible(panelId)) {
-      open(panelId, true);
-    }
   }
 
   function updateLocationHash(): void {
@@ -213,38 +329,74 @@
     }
   });
 
-  defineExpose({select});
+  /**
+   * Keeps the element a panel goes in. One function per panel, so re-rendering
+   * doesn't swap the ref, which would let go of the element and move the
+   * panel out and back.
+   */
+  type SectionRef = (element: Element | ComponentPublicInstance | null) => void;
+
+  const sectionRefs = new Map<string, SectionRef>();
+
+  function sectionRef(panelId: string): SectionRef {
+    let ref = sectionRefs.get(panelId);
+
+    if (!ref) {
+      ref = (element) =>
+        props.registry.setSection(
+          panelId,
+          element instanceof HTMLElement ? element : null
+        );
+      sectionRefs.set(panelId, ref);
+    }
+
+    return ref;
+  }
 </script>
 
 <template>
   <div class="details-panels">
-    <!-- Panels come first: each trigger finds its panel by id when it connects. -->
-    <div class="details-panels__content" :hidden="openPanelId === null">
-      <section
-        v-for="panel in visiblePanels"
-        :id="panelElementId(panel.id)"
-        :key="panel.id"
-        :aria-labelledby="headingId(panel.id)"
-        :hidden="openPanelId !== panel.id"
-        @keydown="onPanelKeydown($event, panel.id)"
+    <!-- Panels come first: each trigger finds its panel by id when it connects.
+         While modal, they're moved into the dialog rather than re-rendered, so
+         the content each `ScreenPanel` moved into them stays put. -->
+    <Teleport :to="dialogBody ?? 'body'" :disabled="!isModal || !dialogBody">
+      <div
+        class="details-panels__content"
+        :hidden="openPanelId === null || undefined"
       >
-        <DetailsPanelContent
-          :panel="panel"
-          :heading-id="headingId(panel.id)"
-          :component-props="componentProps?.(panel, openPanelId) ?? {}"
-          @close="close(panel.id, true)"
-        >
-          <slot v-if="panel.slot" :name="panel.slot" />
-        </DetailsPanelContent>
-      </section>
-    </div>
+        <section
+          v-for="panel in visiblePanels"
+          :id="panelElementId(panel.id)"
+          :key="panel.id"
+          :ref="sectionRef(panel.id)"
+          :aria-labelledby="panel.headingId"
+          :hidden="openPanelId !== panel.id"
+          @keydown="onPanelKeydown($event, panel.id)"
+        ></section>
+      </div>
+    </Teleport>
+    <craft-dialog
+      v-if="isModal"
+      class="details-panels__dialog"
+      :label="openPanel?.label ?? ''"
+      no-header
+      close-on-outside-click
+      .opened="openPanelId !== null"
+      .returnFocus="dialogReturnFocus"
+      @craft-show="onDialogShow"
+      @craft-hide="onDialogHide"
+    >
+      <div ref="dialogBody" class="details-panels__dialog-body"></div>
+    </craft-dialog>
+    <!-- Open, the column folds out for the panel; in the dialog, it stays
+         folded. -->
     <Teleport defer :to="rail ?? 'body'" :disabled="!rail">
       <div
         class="details-panels__rail"
         :class="{'details-panels__rail--detached': rail}"
         role="group"
         :aria-label="t('Details')"
-        :data-open="String(openPanelId !== null)"
+        :data-open="String(openPanelId !== null && !isModal)"
       >
         <craft-disclosure
           v-for="panel in visiblePanels"
@@ -259,8 +411,15 @@
             type="button"
             class="details-panels__trigger"
             :aria-controls="panelElementId(panel.id)"
+            :data-unlisted-in-palette="panel.unlistedInPalette || undefined"
           >
-            <craft-icon :name="panel.icon" :label="panel.label" />
+            <template v-if="panel.initialIcon">
+              <span class="initial-icon" aria-hidden="true">{{
+                initialOf(panel.label)
+              }}</span>
+              <span class="sr-only">{{ panel.label }}</span>
+            </template>
+            <craft-icon v-else :name="panel.icon" :label="panel.label" />
           </button>
         </craft-disclosure>
       </div>
@@ -286,14 +445,58 @@
   .details-panels__content {
     flex: 1;
     min-inline-size: 0;
-    block-size: 100%;
-    overflow-y: auto;
 
     > section {
       display: flex;
       flex-direction: column;
       block-size: 100%;
     }
+  }
+
+  /* A sheet along the inline end, as tall as what's on screen, set in from
+     the edges it sits against. */
+  .details-panels__dialog {
+    --_inset: var(--c-spacing-md);
+    --c-dialog-inline-size: min(calc(90vw - var(--_inset)), calc(400rem / 16));
+    --c-dialog-min-inline-size: 0;
+    --c-dialog-max-inline-size: calc(90vw - var(--_inset));
+    --c-dialog-block-size: calc(
+      var(--cp-visible-viewport-height, 100dvh) -
+        var(--cp-debug-bar-height, 0px) - 2 * var(--_inset)
+    );
+    --c-dialog-max-block-size: var(--c-dialog-block-size);
+  }
+
+  /*
+    With the keyboard open, iOS pans the screen behind the dialog with any
+    drag, however the page is locked, and too early for a script to stop it.
+    No touch on the dialog or its backdrop pans; scroll areas inside are scroll
+    containers of their own, so dragging in them still scrolls them.
+  */
+  .details-panels__dialog::part(dialog) {
+    touch-action: none;
+    margin-block: calc(var(--cp-visible-viewport-top, 0px) + var(--_inset)) auto;
+    margin-inline: auto var(--_inset);
+  }
+
+  /*
+    The page dims itself instead: with the keyboard open, iOS shows the page
+    past where a backdrop reaches, through its translucent toolbar.
+  */
+  .details-panels__dialog::part(dialog)::backdrop {
+    background-color: transparent;
+  }
+
+  .details-panels__dialog::part(body) {
+    display: flex;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .details-panels__dialog-body {
+    display: flex;
+    flex: 1;
+    min-inline-size: 0;
   }
 
   .details-panels__content[hidden],
@@ -308,6 +511,7 @@
     box-sizing: border-box;
     inline-size: var(--cp-rail-width);
     padding: var(--c-spacing-md);
+    padding-block-start: calc(var(--c-spacing-md) + 2px);
     border-inline-start: 1px solid var(--c-color-border-quiet);
     background-color: var(--c-surface-sunken);
   }

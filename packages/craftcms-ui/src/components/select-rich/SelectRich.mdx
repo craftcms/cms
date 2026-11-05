@@ -25,9 +25,13 @@ The invoker sizes itself to its content rather than to a fixed width, so a contr
 
 ## Accessibility
 
-Lion supplies the listbox semantics, roving focus, and the wiring between label, invoker, and options.
+Lion supplies the listbox semantics, the wiring between label, invoker, and options, and the keyboard model. Opening the list moves focus to the listbox, which tracks the highlighted option with `aria-activedescendant`.
 
-The thing to watch is what an option _announces_. Rich markup is read out too, so an option carrying an icon, a label, and a hint is announced as all three. Keep the visible label first and the decoration after it, and mark purely decorative artwork as such — otherwise every option in the list starts with the same noise.
+Give it a visible label that names what is being chosen. The invoker is announced with the label and the selected option together.
+
+The thing to watch is what an option _announces_. Rich markup is read out too, so an option carrying an icon, a label, and a hint is announced as all three. Keep the visible label first and the decoration after it, and mark purely decorative artwork as such — otherwise every option in the list starts with the same noise. A `craft-icon` without a `label` is already hidden. Artwork that carries meaning needs a text alternative.
+
+A status dot or colored icon can't be the only thing that tells options apart. Put the status in the option's text, as the `RichOptions` story does.
 
 ## Properties
 

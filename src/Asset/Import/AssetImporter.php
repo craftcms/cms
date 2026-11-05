@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Import;
 
-use Closure;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Exceptions\FileException;
+use CraftCms\Cms\Asset\Validation\Rules\VolumeRule;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Import\ElementImporter;
@@ -25,7 +25,6 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use Exception;
-use Illuminate\Validation\Validator;
 use Override;
 use Throwable;
 
@@ -44,14 +43,6 @@ class AssetImporter extends ElementImporter
     public static function targetClass(): string
     {
         return Asset::class;
-    }
-
-    /**
-     * Convenience factory returning a new instance.
-     */
-    public static function create(): self
-    {
-        return new self;
     }
 
     #[Override]
@@ -73,10 +64,10 @@ class AssetImporter extends ElementImporter
             ...parent::settingsUi(),
             UiField::make(t('Volume'), Choice::make(['volume'])
                 ->value($this->volume)
-                ->placeholder(t('Please select'))
                 ->options($this->availableVolumes())
                 ->reactive())
-                ->instructions(t('The volume to import into.')),
+                ->instructions(t('The volume to import into.'))
+                ->required(),
         ];
     }
 
@@ -90,30 +81,12 @@ class AssetImporter extends ElementImporter
         }
     }
 
-    #[Override]
-    public function storeSettings(array $settings): void
-    {
-        parent::storeSettings($settings);
-
-        $this->volume($settings['volume'] ?? null);
-    }
-
-    #[Override]
-    public function getSettings(): array
-    {
-        $settings = parent::getSettings();
-
-        $settings['volume'] = $this->volume;
-
-        return $settings;
-    }
-
     /**
      * Sets the target volume by uid.
      */
     public function volume(string|int|Volume|null $value): self
     {
-        $result = self::normalizeVolume($value);
+        $result = Volumes::resolveVolume($value);
         if (! $result) {
             $this->volume = null;
             $this->fieldLayout(null);
@@ -126,13 +99,24 @@ class AssetImporter extends ElementImporter
     }
 
     #[Override]
+    protected static function settingNames(): array
+    {
+        return [...parent::settingNames(), 'volume'];
+    }
+
+    #[Override]
     public static function getSettingsRules(): array
     {
         return array_merge(parent::getSettingsRules(), [
-            'settings.volume' => [
-                'required',
-                fn ($attribute, $value, Closure $fail, Validator $validator) => static::validateVolume($value, $attribute, $fail, $validator),
-            ],
+            'settings.volume' => ['required', new VolumeRule],
+        ]);
+    }
+
+    #[Override]
+    public static function getSettingsMessages(): array
+    {
+        return array_merge(parent::getSettingsMessages(), [
+            'settings.volume.required' => t('Volume must be provided.'),
         ]);
     }
 
@@ -143,36 +127,6 @@ class AssetImporter extends ElementImporter
         $data['settings']['volume'] = $this->volume ?? null;
 
         return $data;
-    }
-
-    public static function validateVolume(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
-    {
-        // can't be empty
-        if (empty($value)) {
-            $fail($attribute, t('Volume must be provided.'));
-
-            return false;
-        }
-
-        if (self::normalizeVolume($value) === null) {
-            $fail($attribute, t('No Volume found for “{volume}”.', [
-                'volume' => $value,
-            ]));
-
-            return false;
-        }
-
-        return true;
-    }
-
-    private static function normalizeVolume(string|int|Volume|null $value): ?Volume
-    {
-        return match (true) {
-            $value instanceof Volume => $value,
-            $value === null => null,
-            is_numeric($value) => Volumes::getVolumeById((int) $value),
-            default => Volumes::getVolumeByUid($value) ?? Volumes::getVolumeByHandle($value),
-        };
     }
 
     #[Override]
@@ -311,6 +265,9 @@ class AssetImporter extends ElementImporter
         return Volumes::getAllVolumes()->map(fn ($volume) => [
             'label' => $volume->name,
             'value' => $volume->uid,
+        ])->prepend([
+            'label' => t('Please select'),
+            'value' => null,
         ])->all();
     }
 }

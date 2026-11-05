@@ -44,7 +44,8 @@ it('renders system messages through the configured site template and preserves t
         ['template' => 'mail/custom-system-message.twig'],
     ));
 
-    $user = UserModel::factory()->createElement();
+    // A name the template has to escape.
+    $user = UserModel::factory()->createElement(['firstName' => "D'angelo", 'fullName' => "D'angelo Smith"]);
     $user = User::find()->id($user->id)->one();
 
     $mailable = app(SystemMessages::class)
@@ -54,13 +55,14 @@ it('renders system messages through the configured site template and preserves t
     $html = $mailable->render();
     $plainText = view($mailable->build()->textView, $mailable->buildViewData())->render();
 
+    // The template escapes everything but the HTML body.
     expect($html)->toContain('custom-system-message')
-        ->and($html)->toContain($renderedMessage->subject)
-        ->and($html)->toContain($renderedMessage->textBody)
+        ->and($html)->toContain(e($renderedMessage->subject))
+        ->and($html)->toContain(e($renderedMessage->textBody))
         ->and($html)->toContain($renderedMessage->htmlBody)
         ->and($html)->toContain($renderedMessage->key)
         ->and($html)->toContain($renderedMessage->language)
-        ->and($html)->toContain($user->email)
+        ->and($html)->toContain(e($user->email))
         ->and($html)->not->toContain('<table class="wrapper"')
         ->and(trim($plainText))->toBe($renderedMessage->textBody);
 });
@@ -130,10 +132,10 @@ it('falls back to the global template when no site-specific override is set', fu
         ->and($html)->not->toContain('<table class="wrapper"');
 });
 
-it('uses the default markdown template when no template is configured', function () {
+it('uses the default markdown template when no template is configured', function (?string $template) {
     ProjectConfig::set('email', array_merge(
         ProjectConfig::get('email') ?? [],
-        ['template' => null],
+        ['template' => $template],
     ));
 
     $user = UserModel::factory()->createElement();
@@ -148,4 +150,8 @@ it('uses the default markdown template when no template is configured', function
     expect($html)->toContain('<table class="wrapper"')
         ->and($html)->not->toContain('custom-system-message')
         ->and($html)->not->toContain('site-specific-message');
-});
+})->with([
+    'null' => [null],
+    // Craft 5 stored an empty string when no template was set
+    'empty string' => [''],
+]);

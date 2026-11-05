@@ -20,6 +20,7 @@ use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Http\Controllers\Elements\DeleteElementsController;
+use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\User\Elements\User;
@@ -156,15 +157,16 @@ describe('destroy', function () {
             ->all();
 
         app()->bind(ElementsService::class, function () use (&$deletedIds) {
-            return new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), $deletedIds) extends ElementsService
+            return new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), app(Releases::class), $deletedIds) extends ElementsService
             {
                 public function __construct(
                     ElementPlaceholders $placeholders,
                     ElementTypes $elementTypes,
                     ElementCaches $elementCaches,
+                    Releases $releases,
                     private array &$deletedIds,
                 ) {
-                    parent::__construct($placeholders, $elementTypes, $elementCaches);
+                    parent::__construct($placeholders, $elementTypes, $elementCaches, $releases);
                 }
 
                 public function deleteElement(ElementInterface $element, bool $hard = false): bool

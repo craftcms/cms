@@ -22,7 +22,7 @@
       <div class="session">
         <div class="session__label">
           <div class="mb-1">
-            <strong>{{ t('Volumes being indexed') }}</strong>
+            <strong>{{ t('Volumes Being Indexed') }}</strong>
           </div>
           <SessionVolumes :value="session.indexedVolumes" />
         </div>
@@ -48,7 +48,7 @@
           <div class="mb-1">
             <strong>{{ t('Last update') }}</strong>
           </div>
-          <Date :value="session.dateUpdated.date" />
+          <Date :value="session.dateUpdated" />
         </div>
 
         <div class="session__progress">

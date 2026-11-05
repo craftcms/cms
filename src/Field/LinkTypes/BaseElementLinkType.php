@@ -170,15 +170,14 @@ abstract class BaseElementLinkType extends BaseLinkType
   const container = $('#' + $id);
   const field = container.closest('[data-link-field]').parent().data('linkField');
   const input = container.next('input');
-  const elementSelect = container.data('elementSelect');
   const refHandle = $refHandle;
-  elementSelect.on('selectElements', (ev) => {
-    const element = ev.elements[0];
+  container[0].addEventListener('selectElements', (ev) => {
+    const element = ev.detail.elements[0];
     input.val(`{\${refHandle}:\${element.id}@\${element.siteId}:url}`);
     field.updateLabel(element.label);
     field.updateFilename(element.\$element.data('filename'));
   });
-  elementSelect.on('removeElements', () => {
+  container[0].addEventListener('removeElements', () => {
     input.val('');
     field.updateLabel('');
     field.updateFilename('');
@@ -194,7 +193,6 @@ JS, [
                 'id' => $id,
                 'elements' => array_filter([$this->element($value)]),
                 'showSiteMenu' => true,
-                // The Twig template resolves the condition’s config itself, so give it the object
                 'condition' => $this->getSelectionCondition(),
                 'modalSettings' => [
                     'matchSiteBeforeDisablingElement' => true,
@@ -411,6 +409,46 @@ JS, [
      */
     public function elementQuery(?string $value): ?ElementQueryInterface
     {
+        $reference = static::parseReference($value);
+
+        if (! $reference) {
+            return null;
+        }
+
+        return static::referencedElementsQuery([$reference['id']], $reference['siteId']);
+    }
+
+    /**
+     * Fetches the elements linked by the given values with one query per site, so later element() calls are cached.
+     *
+     * @param  list<string>  $values
+     */
+    public static function preloadElements(array $values): void
+    {
+        $idsBySite = [];
+        foreach (array_unique($values) as $value) {
+            $reference = static::parseReference($value);
+
+            if ($reference && ! isset(self::$fetchedElements[$value])) {
+                $idsBySite[$reference['siteId'] ?? 0][$value] = $reference['id'];
+            }
+        }
+
+        foreach ($idsBySite as $siteId => $ids) {
+            $elements = collect(static::referencedElementsQuery(array_values($ids), $siteId ?: null)->all())
+                ->keyBy('id');
+
+            foreach ($ids as $value => $id) {
+                self::$fetchedElements[$value] = $elements->get($id) ?? false;
+            }
+        }
+    }
+
+    /**
+     * @return array{id: int, siteId: int|null}|null
+     */
+    protected static function parseReference(?string $value): ?array
+    {
         if (
             ! $value ||
             ! preg_match(sprintf('/^\{%s:(\d+)(?:@(\d+))?:url\}$/', static::elementType()::refHandle()), $value, $match)
@@ -418,17 +456,25 @@ JS, [
             return null;
         }
 
-        $id = $match[1];
-        $siteId = $match[2] ?? null;
+        return [
+            'id' => (int) $match[1],
+            'siteId' => isset($match[2]) ? (int) $match[2] : null,
+        ];
+    }
 
+    /**
+     * @param  list<int>  $ids
+     */
+    protected static function referencedElementsQuery(array $ids, ?int $siteId): ElementQueryInterface
+    {
         $query = static::elementType()::find()
-            ->id((int) $id)
+            ->id($ids)
             ->status(null)
             ->drafts(null)
             ->revisions(null);
 
         if ($siteId) {
-            $query->siteId((int) $siteId);
+            $query->siteId($siteId);
         } else {
             $query
                 ->site('*')

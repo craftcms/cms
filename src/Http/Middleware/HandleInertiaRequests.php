@@ -6,9 +6,11 @@ namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Cp;
+use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Cp\RequestedSite;
@@ -22,7 +24,11 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Updates;
+use CraftCms\Cms\User\EditUserScreens;
+use CraftCms\Cms\Utility\Utilities;
+use CraftCms\Cms\Utility\Utilities\AiGuidance;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\LegacyAssets\CpAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
@@ -189,10 +195,13 @@ class HandleInertiaRequests extends Middleware
             'isMultiSite' => fn () => Sites::isMultiSite(),
             'readOnly' => fn () => ! $generalConfig->allowAdminChanges,
             'locale' => fn () => app()->getLocale(),
+            ...($currentUser !== null && $nav->hasSourceBadges() ? [
+                'navSourceBadges' => Inertia::defer(fn (): object => (object) $nav->getSourceBadgeCounts()),
+            ] : []),
             'craft' => fn () => [
                 'csrfTokenValue' => csrf_token(),
                 'csrfTokenName' => '_token',
-                'general' => Cp::config()->toArray(),
+                'general' => Cp::inertiaConfig(),
                 'system' => [
                     'name' => Cms::systemName(),
                     'icon' => $systemIcon,
@@ -212,11 +221,24 @@ class HandleInertiaRequests extends Middleware
                     'email' => $currentUser->email,
                     'name' => $currentUser->name,
                     'thumbHtml' => $currentUser->getThumbHtml(30),
+                    // The colors of the user’s default photo, which their own messages and comments are tinted with.
+                    'photoColors' => $currentUser->photoColors(),
                     'admin' => $currentUser->admin,
                     'underlineLinks' => (bool) ($currentUser->getPreference('underlineLinks')
                         ?? $generalConfig->accessibilityDefaults['underlineLinks']
                         ?? false),
+                    'aiAssistant' => Assistant::isAvailable(),
+                    'showTokens' => app(EditUserScreens::class)->showTokensScreen($currentUser),
+                    // Where the AI assistant’s guidance and skills are edited, for its chat to link to.
+                    'personalGuidanceUrl' => Assistant::isAvailable() ? Url::cpUrl('myaccount/'.EditUserScreens::AI_ASSISTANT) : null,
+                    ...app(Utilities::class)->checkAuthorization(AiGuidance::class) ? [
+                        'aiGuidanceUrl' => Url::cpUrl('utilities/'.AiGuidance::id()),
+                        'aiSkillsUrl' => AiGuidance::skillsUrl(),
+                    ] : ['aiGuidanceUrl' => null, 'aiSkillsUrl' => null],
                 ] : null,
+                // Outside `currentUser`, so logged-out pages (login, the
+                // updater) follow the system theme too.
+                'theme' => Theme::forUser($currentUser)->value,
                 'readOnly' => ! $generalConfig->allowAdminChanges,
                 'maintenanceMode' => app()->isDownForMaintenance(),
                 'devMode' => app()->hasDebugModeEnabled(),

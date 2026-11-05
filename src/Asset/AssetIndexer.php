@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset;
 
 use Closure;
+use CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis;
+use CraftCms\Cms\Asset\Analysis\ImageAnalyzer;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -45,7 +47,6 @@ use League\Flysystem\StorageAttributes;
 use RuntimeException;
 use Throwable;
 use Tpetry\QueryExpressions\Function\String\Concat;
-use Tpetry\QueryExpressions\Language\Alias;
 use Tpetry\QueryExpressions\Value\Value;
 
 /**
@@ -63,6 +64,7 @@ class AssetIndexer
         private readonly Elements $elements,
         private readonly Folders $folders,
         private readonly Volumes $volumes,
+        private readonly ImageAnalyzer $imageAnalyzer,
     ) {}
 
     /** @return Generator<int, FsListing> */
@@ -142,6 +144,7 @@ class AssetIndexer
         array $volumes,
         bool $cacheRemoteImages = true,
         bool $listEmptyFolders = false,
+        bool $analyzeImages = false,
     ): AssetIndexingSession {
         $volumeList = [];
 
@@ -151,7 +154,7 @@ class AssetIndexer
             }
         }
 
-        $session = $this->createIndexingSession($volumeList, $cacheRemoteImages, listEmptyFolders: $listEmptyFolders);
+        $session = $this->createIndexingSession($volumeList, $cacheRemoteImages, listEmptyFolders: $listEmptyFolders, analyzeImages: $analyzeImages);
         $total = 0;
 
         /** @var Volume $volume */
@@ -181,6 +184,7 @@ class AssetIndexer
         bool $cacheRemoteImages = true,
         bool $isCli = false,
         bool $listEmptyFolders = false,
+        bool $analyzeImages = false,
     ): AssetIndexingSession {
         $indexedVolumes = [];
 
@@ -194,6 +198,7 @@ class AssetIndexer
             'processedEntries' => 0,
             'cacheRemoteImages' => $cacheRemoteImages,
             'listEmptyFolders' => $listEmptyFolders,
+            'analyzeImages' => $analyzeImages,
             'actionRequired' => false,
             'isCli' => $isCli,
             'processIfRootEmpty' => false,
@@ -213,7 +218,7 @@ class AssetIndexer
         return DB::transaction(function () use ($indexList, $sessionId, $volume): int {
             $values = [];
             $inserted = 0;
-            $now = now();
+            $now = Query::prepareDateForDb(now());
 
             /** @var FsListing $volumeListing */
             foreach ($indexList as $volumeListing) {
@@ -221,7 +226,7 @@ class AssetIndexer
                     $timestamp = null;
                 } else {
                     $dateModified = $volumeListing->getDateModified();
-                    $timestamp = $dateModified !== null ? Date::createFromTimestampUTC($dateModified) : $now;
+                    $timestamp = $dateModified !== null ? Query::prepareDateForDb(Date::createFromTimestampUTC($dateModified)) : $now;
                 }
 
                 $values[] = [
@@ -285,7 +290,7 @@ class AssetIndexer
                 if ($indexEntry->isDir) {
                     $recordId = $this->indexFolderByEntry($indexEntry)->id;
                 } else {
-                    $recordId = $this->indexFileByEntry($indexEntry, $indexingSession->cacheRemoteImages)->id;
+                    $recordId = $this->indexFileByEntry($indexEntry, $indexingSession->cacheRemoteImages, analyzeImages: $indexingSession->analyzeImages)->id;
                 }
 
                 $indexEntry->transitionTo(AssetIndexStatus::Indexed, $recordId);
@@ -353,7 +358,7 @@ class AssetIndexer
             'files' => [],
         ];
 
-        $cutoff = $session->dateCreated;
+        $cutoff = Query::prepareDateForDb($session->dateCreated);
 
         $volumeList = Json::decodeIfJson($session->indexedVolumes);
         if (! $volumeList || ! is_array($volumeList)) {
@@ -373,7 +378,7 @@ class AssetIndexer
                 $session->listEmptyFolders,
                 fn (Builder $query) => $query->selectSub($this->folderAssetCountQuery($session, true), 'missingAssetCount'),
             )
-            ->leftJoin(new Alias(Table::VOLUMES, 'volumes'), 'volumes.id', 'folders.volumeId')
+            ->leftJoin(Table::VOLUMES.' as volumes', 'volumes.id', 'folders.volumeId')
             ->where('folders.dateCreated', '<', $cutoff)
             ->whereIn('folders.volumeId', $volumeList)
             ->whereNotNull('folders.parentId')
@@ -384,7 +389,7 @@ class AssetIndexer
             ->unless(
                 $session->listEmptyFolders,
                 fn (Builder $query) => $query
-                    ->leftJoin(new Alias(Table::ASSETINDEXDATA, 'indexData'), function (JoinClause $join) {
+                    ->leftJoin(Table::ASSETINDEXDATA.' as indexData', function (JoinClause $join) {
                         $join->whereColumn('folders.id', 'indexData.recordId')
                             ->where('indexData.isDir', true);
                     })
@@ -400,10 +405,10 @@ class AssetIndexer
                 'assets.filename as filename',
                 'assets.id as assetId',
             ])
-            ->leftJoin(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', 'assets.id')
-            ->leftJoin(new Alias(Table::VOLUMEFOLDERS, 'folders'), 'folders.id', 'assets.folderId')
-            ->leftJoin(new Alias(Table::VOLUMES, 'volumes'), 'volumes.id', 'assets.volumeId')
-            ->leftJoin(new Alias(Table::ASSETINDEXDATA, 'indexData'), function (JoinClause $join) {
+            ->leftJoin(Table::ELEMENTS.' as elements', 'elements.id', 'assets.id')
+            ->leftJoin(Table::VOLUMEFOLDERS.' as folders', 'folders.id', 'assets.folderId')
+            ->leftJoin(Table::VOLUMES.' as volumes', 'volumes.id', 'assets.volumeId')
+            ->leftJoin(Table::ASSETINDEXDATA.' as indexData', function (JoinClause $join) {
                 $join->whereColumn('assets.id', 'indexData.recordId')
                     ->where('indexData.isDir', false);
             })
@@ -437,22 +442,20 @@ class AssetIndexer
     {
         $query = DB::table(Table::ASSETS, 'countedAssets')
             ->selectRaw('count(*)')
-            ->join(new Alias(Table::VOLUMEFOLDERS, 'countedFolders'), 'countedFolders.id', 'countedAssets.folderId')
-            ->leftJoin(new Alias(Table::ELEMENTS, 'countedElements'), 'countedElements.id', 'countedAssets.id')
+            ->join(Table::VOLUMEFOLDERS.' as countedFolders', 'countedFolders.id', 'countedAssets.folderId')
+            ->leftJoin(Table::ELEMENTS.' as countedElements', 'countedElements.id', 'countedAssets.id')
             ->whereColumn('countedAssets.volumeId', 'folders.volumeId')
             ->where('countedFolders.path', 'like', new Concat(['folders.path', new Value('%')]));
 
         if (! $missing) {
-            return $query->where(fn (Builder $query) => $query
-                ->whereNull('countedElements.dateDeleted')
-                ->orWhere('countedAssets.keptFile', 1));
+            return $query->whereNull('countedElements.dateDeleted');
         }
 
         return $query
-            ->leftJoin(new Alias(Table::ASSETINDEXDATA, 'countedIndexData'), fn (JoinClause $join) => $join
+            ->leftJoin(Table::ASSETINDEXDATA.' as countedIndexData', fn (JoinClause $join) => $join
                 ->whereColumn('countedAssets.id', 'countedIndexData.recordId')
                 ->where('countedIndexData.isDir', false))
-            ->where('countedAssets.dateCreated', '<', $session->dateCreated)
+            ->where('countedAssets.dateCreated', '<', Query::prepareDateForDb($session->dateCreated))
             ->whereNull('countedElements.dateDeleted')
             ->whereNull('countedIndexData.id');
     }
@@ -491,6 +494,7 @@ class AssetIndexer
         int $sessionId,
         bool $cacheImages = false,
         bool $createIfMissing = true,
+        bool $analyzeImages = false,
     ): Asset {
         $dirname = dirname($path);
         if (in_array($dirname, ['.', '/', '\\'])) {
@@ -505,7 +509,7 @@ class AssetIndexer
             'fileSize' => $volume->sourceDisk()->size($path),
         ]);
 
-        return $this->indexFileByListing($volume, $listing, $sessionId, $cacheImages, $createIfMissing);
+        return $this->indexFileByListing($volume, $listing, $sessionId, $cacheImages, $createIfMissing, $analyzeImages);
     }
 
     /**
@@ -520,6 +524,7 @@ class AssetIndexer
         int $sessionId,
         bool $cacheImages = false,
         bool $createIfMissing = true,
+        bool $analyzeImages = false,
     ): Asset {
         $indexEntry = new AssetIndexData([
             'volumeId' => $volume->id,
@@ -532,7 +537,7 @@ class AssetIndexer
 
         return $this->indexByListing(
             $indexEntry,
-            fn () => $this->indexFileByEntry($indexEntry, $cacheImages, $createIfMissing),
+            fn () => $this->indexFileByEntry($indexEntry, $cacheImages, $createIfMissing, $analyzeImages),
         );
     }
 
@@ -604,6 +609,7 @@ class AssetIndexer
         AssetIndexData $indexEntry,
         bool $cacheImages = false,
         bool $createIfMissing = true,
+        bool $analyzeImages = false,
     ): Asset {
         $uriPath = $indexEntry->uri;
         $dirname = dirname((string) $uriPath);
@@ -650,7 +656,7 @@ class AssetIndexer
         $isLocalFs = $volume->sourceDisk() instanceof LocalFilesystemAdapter;
 
         /** @var Asset|null $asset */
-        $asset = Asset::find()
+        $asset = app(Assets::class)->findAcrossSites()
             ->filename(Query::escapeParam($filename))
             ->folderId($folder->id)
             ->one();
@@ -674,7 +680,13 @@ class AssetIndexer
         $fileChanged = $asset->dateModified !== null
             && $timeModified !== null
             && $asset->dateModified->getTimestamp() !== $timeModified->getTimestamp();
-        $needsColors = $asset->colors === null || $fileChanged;
+        $isNew = ! $asset->id;
+        // New and changed files are always sampled. Unchanged ones that are missing colors or metadata, or were sampled
+        // before palettes, luminance, weights, or hashes were (but not inconclusively), are only sampled when asked to
+        // analyze images, since a remote file has to be downloaded to sample it.
+        $needsSampling = $isNew
+            || $fileChanged
+            || ($analyzeImages && $this->imageAnalyzer->needsSampling($asset));
 
         $asset->ruleset->useScenario(AssetRules::SCENARIO_INDEX);
         $tempPath = null;
@@ -708,8 +720,8 @@ class AssetIndexer
                     }
 
                     // A remote image is downloaded when its dimensions couldn't be read from a stream, or
-                    // its colors need sampling
-                    if (! is_array($dimensions) || $needsColors) {
+                    // it needs sampling
+                    if (! is_array($dimensions) || $needsSampling) {
                         $tempPath = AssetsHelper::tempFilePath(pathinfo($filename, PATHINFO_EXTENSION));
                         AssetsHelper::downloadFile($volume->sourceDisk(), $indexEntry->uri, $tempPath);
                         $dimensions = ImageHelper::imageSize($tempPath);
@@ -723,14 +735,25 @@ class AssetIndexer
                 $asset->setWidth($w);
                 $asset->setHeight($h);
 
-                // Colors that have been sampled already, even inconclusively, aren't sampled again unless the
+                // Images that have been sampled already, even inconclusively, aren't sampled again unless the
                 // file has changed
-                if ($localPath !== null && $needsColors) {
-                    $asset->colors = Images::colors($localPath);
+                if ($localPath !== null && $needsSampling) {
+                    $sample = Images::sample($localPath);
+                    $metadata = Images::metadata($localPath);
+                    // What was found in a file that's changed doesn't describe it anymore
+                    $asset->analysis = $fileChanged || $asset->analysis === null
+                        ? ImageAnalysis::fromSample($sample, $metadata)
+                        : $asset->analysis->withSample($sample)->withMetadata($metadata);
                 }
                 $asset->dateModified = $timeModified;
 
                 $this->elements->saveElement($asset);
+
+                // New and changed images are analyzed, such as for alt text, by any AI tasks that are set up, and
+                // unchanged ones are too when asked. Images that aren't missing anything aren't queued.
+                if ($isNew || $fileChanged || $analyzeImages) {
+                    $this->imageAnalyzer->queue($asset);
+                }
 
                 $shouldCache = ! $isLocalFs && $cacheImages && Cms::config()->maxCachedCloudImageSize > 0;
 
@@ -740,6 +763,24 @@ class AssetIndexer
                     File::delete($tempPath);
                 }
             } else {
+                // Like colors, preview text that's been read already, even with nothing to show, isn't read again
+                // unless the file has changed
+                if (
+                    FileKind::tryFrom($asset->kind ?? '')?->isText() &&
+                    ($fileChanged || ! $asset->id || ! DB::table(Table::ASSETS)
+                        ->where('id', $asset->id)
+                        ->whereNotNull('previewText')
+                        ->exists())
+                ) {
+                    $stream = $asset->getStream();
+
+                    try {
+                        $asset->previewText = AssetsHelper::previewText((string) fread($stream, AssetsHelper::PREVIEW_TEXT_SOURCE_LENGTH));
+                    } finally {
+                        fclose($stream);
+                    }
+                }
+
                 $asset->dateModified = $timeModified;
                 $this->elements->saveElement($asset);
             }

@@ -86,3 +86,17 @@ it('sends its appearance, leaving it to the page when unset', function (Closure 
 it('rejects an unknown appearance', function () {
     Table::make('workflows')->appearance('bordered');
 })->throws(ValueError::class);
+
+it('sends whether its create action opens in a slideout, and how wide', function () {
+    $props = Table::make('rules')->createAction('New rule', '/rules/new', slideout: true, slideoutWidth: '85vw')->props();
+
+    expect($props['createSlideout'])->toBeTrue()
+        ->and($props['createSlideoutWidth'])->toBe('85vw');
+
+    $props = Table::make('rules')->createAction('New rule', '/rules/new', slideout: true)
+        ->createActionMenu('New', [['label' => 'Rule', 'url' => '/rules/new']])
+        ->props();
+
+    expect($props['createSlideout'])->toBeFalse()
+        ->and($props['createSlideoutWidth'])->toBeNull();
+});

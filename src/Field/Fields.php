@@ -57,6 +57,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use PDO;
@@ -69,6 +70,8 @@ use function CraftCms\Cms\t;
  *     name:string|null,
  *     handle:string|null,
  *     instructions:string|null,
+ *     tip?:string|null,
+ *     warning?:string|null,
  *     searchable?:bool,
  *     translationMethod:string,
  *     translationKeyFormat:string|null,
@@ -153,15 +156,26 @@ class Fields
             return $this->_allFieldHandles;
         }
 
+        // Read from the stored rows rather than the fields and layouts they configure: building every one of those
+        // costs far more than any page that checks whether a property is a field handle.
         $handles = [];
+        $fieldUids = [];
 
-        foreach ($this->getAllFields(false) as $field) {
-            $handles[$field->handle] = true;
+        foreach ($this->_fields(false)->raw() as $row) {
+            $handles[$row->handle] = true;
+            $fieldUids[$row->uid] = true;
         }
 
-        foreach ($this->getAllLayouts() as $layout) {
-            foreach ($layout->getCustomFields() as $field) {
-                $handles[$field->handle] = true;
+        foreach ($this->_layoutConfigs() as $config) {
+            foreach ($config['tabs'] ?? [] as $tab) {
+                foreach ($tab['elements'] ?? [] as $element) {
+                    if (
+                        isset($element['handle'], $fieldUids[$element['fieldUid'] ?? '']) &&
+                        is_a($element['type'] ?? '', CustomField::class, true)
+                    ) {
+                        $handles[$element['handle']] = true;
+                    }
+                }
             }
         }
 
@@ -181,8 +195,8 @@ class Fields
 
         $handles = [];
 
-        foreach ($this->getAllLayouts() as $layout) {
-            foreach ($layout->getGeneratedFields() as $generatedField) {
+        foreach ($this->_layoutConfigs() as $config) {
+            foreach ($config['generatedFields'] ?? [] as $generatedField) {
                 if (! empty($generatedField['handle'])) {
                     $handles[$generatedField['handle']] = true;
                 }
@@ -452,8 +466,16 @@ class Fields
      */
     public function getFieldsWithoutContent(mixed $context = null): Collection
     {
-        return $this->getAllFields($context)
-            ->filter(fn (FieldInterface $field) => $field::dbType() === null);
+        $fields = $this->_fields($context);
+
+        // Check the stored types rather than the fields, so only the fields that match get built.
+        // Types that no longer exist become missing fields, which don't store content either.
+        $types = array_filter(
+            array_unique(array_column($fields->raw(), 'type')),
+            fn (string $type) => ! is_subclass_of($type, FieldInterface::class) || $type::dbType() === null,
+        );
+
+        return $fields->whereIn('type', array_values($types), true)->collect();
     }
 
     /**
@@ -560,6 +582,8 @@ class Fields
             'name' => $field->name,
             'handle' => $field->handle,
             'instructions' => $field->instructions,
+            'tip' => $field->tip,
+            'warning' => $field->warning,
             'searchable' => $field->searchable,
             'translationMethod' => $field->translationMethod,
             'translationKeyFormat' => $field->translationKeyFormat,
@@ -793,7 +817,16 @@ class Fields
             return new Collection;
         }
 
-        return $this->getAllLayouts()->filter(fn (FieldLayout $layout) => ComponentHelper::validateComponentClass($layout->type, ElementInterface::class) &&
+        // Only build the layouts whose stored config mentions the field
+        $layoutIds = [];
+        foreach ($this->_layouts()->raw() as $row) {
+            $config = $row->config ?? null;
+            if (str_contains(is_string($config) ? $config : JsonHelper::encode($config), $field->uid)) {
+                $layoutIds[] = $row->id;
+            }
+        }
+
+        return $this->_layouts()->whereIn('id', $layoutIds, true)->collect()->filter(fn (FieldLayout $layout) => ComponentHelper::validateComponentClass($layout->type, ElementInterface::class) &&
             $layout->isFieldIncluded(fn (BaseField $layoutField) => (
                 $layoutField instanceof CustomField &&
                 $layoutField->getFieldUid() === $field->uid
@@ -822,6 +855,8 @@ class Fields
                     $layoutElement->label = $this->layoutElementOverride($persistingField->name, $outgoingField->name, $layoutElement->label);
                     $layoutElement->handle = $this->layoutElementOverride($persistingField->handle, $outgoingField->handle, $layoutElement->handle);
                     $layoutElement->instructions = $this->layoutElementOverride($persistingField->instructions, $outgoingField->instructions, $layoutElement->instructions);
+                    $layoutElement->tip = $this->layoutElementOverride($persistingField->tip, $outgoingField->tip, $layoutElement->tip);
+                    $layoutElement->warning = $this->layoutElementOverride($persistingField->warning, $outgoingField->warning, $layoutElement->warning);
 
                     // Lets saveLayout() update any condition rules that reference the outgoing field
                     $layoutElement->oldFieldUid ??= $outgoingField->uid;
@@ -952,6 +987,20 @@ class Fields
         );
 
         return $this->_layouts = $layouts;
+    }
+
+    /**
+     * Returns the saved field layouts' configs, without building the layouts.
+     *
+     * @return iterable<array<string, mixed>>
+     */
+    private function _layoutConfigs(): iterable
+    {
+        foreach ($this->_layouts()->raw() as $row) {
+            $config = $row->config ?? null;
+
+            yield is_string($config) ? JsonHelper::decode($config) : (array) $config;
+        }
     }
 
     /** @param array<string, mixed> $config */
@@ -1400,6 +1449,10 @@ class Fields
             $fieldRecord->handle = $data['handle'];
             $fieldRecord->context = $context;
             $fieldRecord->instructions = $data['instructions'];
+            if ($this->hasTipAndWarningColumns()) {
+                $fieldRecord->tip = $data['tip'] ?? null;
+                $fieldRecord->warning = $data['warning'] ?? null;
+            }
             $fieldRecord->searchable = (bool) $searchable;
             $fieldRecord->translationMethod = $data['translationMethod'];
             $fieldRecord->translationKeyFormat = $data['translationKeyFormat'];
@@ -1593,7 +1646,22 @@ class Fields
             ])
             ->orderBy('fields.name')
             ->orderBy('fields.handle')
-            ->whereNull('fields.dateDeleted');
+            ->whereNull('fields.dateDeleted')
+            // Until the migration that adds them has run, Craft has to boot without them.
+            ->when($this->hasTipAndWarningColumns(), fn (Builder $query) => $query->addSelect([
+                'fields.tip',
+                'fields.warning',
+            ]));
+    }
+
+    /**
+     * Returns whether the `fields` table has its `tip` and `warning` columns yet.
+     *
+     * @todo Remove after the next breakpoint.
+     */
+    private function hasTipAndWarningColumns(): bool
+    {
+        return Schema::hasColumn(Table::FIELDS, 'tip');
     }
 
     private function _createLayoutQuery(bool $withTrashed = false): Builder

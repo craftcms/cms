@@ -5,6 +5,7 @@
   import {computed, provide, shallowRef, toRaw} from 'vue';
   import type {
     ActionItem,
+    ActionItemButton,
     FormAction,
     FormSubmissionAction,
   } from '@/common/types';
@@ -26,20 +27,38 @@
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import CpContainer from '@/common/components/CpContainer.vue';
 
-  const props = defineProps<{
-    ui: UiPayload;
-    /** Omit for node-only screens with no form submission. */
-    submit?: UrlMethodPair;
-    elevatedFields?: string[] | '*';
-    refreshUrl?: string;
-    formActions?: FormAction[];
-    defaultFormActions?: UseAppLayoutOptions['defaultFormActions'];
-    /** Server-rendered markup for the details column. */
-    metadataHtml?: string;
-    /** Controls for the details column, submitted alongside `ui`. */
-    sidebarUi?: UiPayload;
-    contentMaxWidth?: boolean;
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      ui: UiPayload;
+      /** Omit for node-only screens with no form submission. */
+      submit?: UrlMethodPair;
+      elevatedFields?: string[] | '*';
+      refreshUrl?: string;
+      formActions?: FormAction[];
+      defaultFormActions?: UseAppLayoutOptions['defaultFormActions'];
+      /** Server-rendered markup for the details column. */
+      metadataHtml?: string;
+      /** Controls for the details column, submitted alongside `ui`. */
+      sidebarUi?: UiPayload;
+      /**
+       * Caps and centers the content column. Unset, a page is centered unless
+       * it's a lone admin table, which spans the pane. See
+       * `ScreenProps.contentMaxWidth`.
+       */
+      contentMaxWidth?: boolean;
+      formAdditionalButtons?: ActionItemButton[];
+      /**
+       * Leaves the form actions out of the footer, for a page that renders its
+       * own Save button in the `sidebar-actions` slot, which receives them.
+       */
+      formActionsInSidebar?: boolean;
+      /** See `ScreenProps.hideFooter`. */
+      hideFooter?: boolean;
+    }>(),
+    // Without a default, Vue casts an absent boolean prop to `false`, which
+    // would read as the page opting out.
+    {contentMaxWidth: undefined}
+  );
   const emit = defineEmits<{
     (event: 'change', change: UiChange, values: UiPayload['values']): void;
   }>();
@@ -55,7 +74,6 @@
     renderer: sidebarRenderer,
   } = useInertiaUiRenderer(inertiaForm, () => props.sidebarUi ?? null);
   const elevatedBaseline = shallowRef(structuredClone(currentValues()));
-  const elevatedFields = props.elevatedFields;
 
   const save = props.submit
     ? useSettingsSave(inertiaForm, () => props.submit!, {
@@ -74,34 +92,43 @@
             save?.({redirect: false});
           }
         },
+        hasShiftSaveShortcut: () =>
+          submissionActions.value.some(
+            (item) =>
+              item.shortcut && item.shift && !item.hidden && !item.disabled
+          ),
         transform: currentValues,
         onSuccess: () => {
           elevatedBaseline.value = structuredClone(currentValues());
           advanceBaseline();
           advanceSidebarBaseline();
         },
-        passwordConfirmation: elevatedFields
-          ? {
-              required: () => {
-                const values = currentValues();
-                const fields =
-                  elevatedFields === '*'
-                    ? [
-                        ...new Set([
-                          ...Object.keys(elevatedBaseline.value),
-                          ...Object.keys(values),
-                        ]),
-                      ]
-                    : elevatedFields;
+        passwordConfirmation: {
+          required: () => {
+            const elevatedFields = props.elevatedFields;
 
-                return fields.some(
-                  (field) =>
-                    normalize(values[field]) !==
-                    normalize(elevatedBaseline.value[field])
-                );
-              },
+            if (!elevatedFields) {
+              return false;
             }
-          : undefined,
+
+            const values = currentValues();
+            const fields =
+              elevatedFields === '*'
+                ? [
+                    ...new Set([
+                      ...Object.keys(elevatedBaseline.value),
+                      ...Object.keys(values),
+                    ]),
+                  ]
+                : elevatedFields;
+
+            return fields.some(
+              (field) =>
+                normalize(values[field]) !==
+                normalize(elevatedBaseline.value[field])
+            );
+          },
+        },
       }).save
     : undefined;
 
@@ -187,16 +214,20 @@
 
   useAppLayout(() => ({
     form: props.submit ? inertiaForm : null,
-    defaultFormActions: submissionActions.value.some(
-      (action) =>
-        !action.hidden &&
-        ((action.shortcut && !action.shift) ||
-          action.label === t('Save and continue editing'))
-    )
+    defaultFormActions: props.formActionsInSidebar
       ? []
-      : props.defaultFormActions,
-    formActions: translatedFormActions.value,
-    contentMaxWidth: props.contentMaxWidth ?? true,
+      : submissionActions.value.some(
+            (action) =>
+              !action.hidden &&
+              ((action.shortcut && !action.shift) ||
+                action.label === t('Save and continue editing'))
+          )
+        ? []
+        : props.defaultFormActions,
+    formActions: props.formActionsInSidebar ? [] : translatedFormActions.value,
+    formAdditionalButtons: props.formAdditionalButtons,
+    hideFooter: props.hideFooter,
+    contentMaxWidth: props.contentMaxWidth ?? !isBareTable.value,
     onSave: save,
   }));
 
@@ -280,6 +311,19 @@
             @update:mutation="onSidebarMutation"
           />
         </craft-field-group>
+        <slot
+          name="sidebar-actions"
+          :form="inertiaForm"
+          :form-action-items="translatedFormActions"
+        />
+      </template>
+      <!-- Without sidebar controls, the actions follow the metadata instead. -->
+      <template v-else-if="$slots['sidebar-actions']" #actions>
+        <slot
+          name="sidebar-actions"
+          :form="inertiaForm"
+          :form-action-items="translatedFormActions"
+        />
       </template>
     </MetadataDetails>
   </component>

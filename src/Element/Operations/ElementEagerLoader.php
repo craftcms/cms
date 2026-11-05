@@ -19,8 +19,10 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @internal
@@ -261,11 +263,41 @@ readonly class ElementEagerLoader
                             $otherCriteria,
                         );
 
+                        // Allow custom ordering, as long as it can't contain raw SQL, and the mapping criteria
+                        // doesn't define its own (see https://github.com/craftcms/cms/issues/19992)
+                        $planOrderBy = null;
+                        if (! empty($plan->criteria['orderBy']) && ! isset($otherCriteria['orderBy'])) {
+                            $planOrderBy = $this->safeOrderBy($plan->criteria['orderBy']);
+
+                            if ($planOrderBy === null) {
+                                Log::warning("Ignoring unsafe `orderBy` criteria for the eager-loaded `$plan->handle` elements.");
+                            } else {
+                                // Assign the elements in the order the query returns them, below
+                                $criteria['orderBy'] = $plan->criteria['orderBy'];
+                            }
+                        }
+
                         // Save the offset & limit params for later
                         $offset = Arr::pull($criteria, 'offset', 0);
                         $limit = Arr::pull($criteria, 'limit');
 
-                        Typecast::configure($query, $criteria);
+                        Typecast::configure(
+                            $query,
+                            $planOrderBy !== null ? Arr::except($criteria, 'orderBy') : $criteria,
+                        );
+
+                        foreach ($planOrderBy ?? [] as [$column, $direction]) {
+                            if ($direction === null) {
+                                /** @var Expression $column */
+                                $query->getQuery()->orderByRaw($column->getValue($query->getQuery()->getGrammar()));
+                            } else {
+                                $query->orderBy($column, $direction);
+                            }
+                        }
+
+                        // inReverse is applied to each source's target elements below, so make sure the query doesn't
+                        // reverse them as well
+                        $query->inReverse(false);
 
                         if (! $query->siteId) {
                             $query->siteId = $siteId;
@@ -515,5 +547,76 @@ readonly class ElementEagerLoader
         }
 
         return array_values($maps);
+    }
+
+    /**
+     * Normalizes an `orderBy` value into column/direction pairs, as long as it can't contain raw SQL.
+     *
+     * The value is considered safe if it's:
+     *
+     * - an {@see Expression} object, which is applied as raw `ORDER BY` SQL
+     * - a string of comma-separated column names (optionally prefixed with a table name), each optionally followed
+     *   by `asc` or `desc`
+     * - an array of column names (optionally prefixed with a table name) set to `SORT_ASC`, `SORT_DESC`, `asc`, or
+     *   `desc`, and/or {@see Expression} objects (applied as raw `ORDER BY` SQL)
+     * - a list of `[column, direction]` pairs, like the GraphQL API's parsed `orderBy` argument
+     *
+     * @return list<array{0: string|Expression, 1: 'asc'|'desc'|null}>|null The pairs, or `null` if the value isn't
+     *                                                                      safe. A `null` direction means the expression is raw `ORDER BY` SQL.
+     */
+    private function safeOrderBy(mixed $orderBy): ?array
+    {
+        if ($orderBy instanceof Expression) {
+            return [[$orderBy, null]];
+        }
+
+        if (is_string($orderBy)) {
+            $pairs = [];
+
+            foreach (explode(',', $orderBy) as $chunk) {
+                if (! preg_match('/^(\w+(?:\.\w+)?)(?:\s+(asc|desc))?$/i', trim($chunk), $matches)) {
+                    return null;
+                }
+
+                $pairs[] = [$matches[1], strtolower($matches[2] ?? 'asc')];
+            }
+
+            return $pairs;
+        }
+
+        if (! is_array($orderBy) || $orderBy === []) {
+            return null;
+        }
+
+        $pairs = [];
+
+        foreach ($orderBy as $key => $value) {
+            if (is_int($key) && is_array($value) && array_is_list($value) && count($value) === 2) {
+                [$column, $direction] = $value;
+            } elseif ($value instanceof Expression) {
+                $pairs[] = [$value, null];
+
+                continue;
+            } else {
+                [$column, $direction] = [$key, $value];
+            }
+
+            $direction = match ($direction) {
+                SORT_ASC => 'asc',
+                SORT_DESC => 'desc',
+                default => is_string($direction) ? strtolower($direction) : null,
+            };
+
+            if (
+                ! in_array($direction, ['asc', 'desc'], true) ||
+                (! $column instanceof Expression && (! is_string($column) || ! preg_match('/^\w+(\.\w+)?$/', $column)))
+            ) {
+                return null;
+            }
+
+            $pairs[] = [$column, $direction];
+        }
+
+        return $pairs;
     }
 }

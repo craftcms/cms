@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\DateFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
+use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Gql\Directives\FormatDateTime;
@@ -38,14 +40,13 @@ use Illuminate\Support\Facades\Date as DateFacade;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Date represents a Date/Time field.
  *
  * @since 6.0.0
  */
-class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
+class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -281,15 +282,15 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         ];
 
         if ($this->showDate) {
-            $components[] = template('_includes/forms/date', $variables);
+            $components[] = FormFields::dateHtml($variables);
         }
 
         if ($this->showTime) {
-            $components[] = template('_includes/forms/time', $variables);
+            $components[] = FormFields::timeHtml($variables);
         }
 
         if ($this->showTimeZone) {
-            $components[] = template('_includes/forms/timeZone', [
+            $components[] = FormFields::timeZoneHtml([
                 'describedBy' => $this->describedBy,
                 'name' => "$this->handle[timezone]",
                 'value' => $timezone,
@@ -465,6 +466,16 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
             'name' => $this->handle,
             'type' => $type,
             'description' => $this->instructions,
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    public function getInputSchema(): array
+    {
+        // Any date the field can parse, rather than a strict format, which models and clients easily miss.
+        return [
+            'type' => 'string',
+            'description' => 'A date, or a date and time, such as 2026-11-22 or 2026-11-22T10:00:00+01:00. Include the UTC offset, or the time is read as UTC.',
         ];
     }
 }

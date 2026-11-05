@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Requests;
 
+use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Validation\Rules\TimezoneRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -36,6 +37,7 @@ class UserPreferencesRequest extends FormRequest
             'preferredLocale' => ['sometimes', 'nullable', 'string', Rule::in(['__blank__', ...I18N::getAllLocaleIds()->all()])],
             'weekStartDay' => ['sometimes', 'integer', 'between:0,6'],
             'timeZone' => ['sometimes', 'nullable', 'string', Rule::when($this->input('timeZone') !== '__blank__', [new TimezoneRule])],
+            'theme' => ['sometimes', 'string', Rule::enum(Theme::class)],
             'useShapes' => ['sometimes', 'boolean'],
             'underlineLinks' => ['sometimes', 'boolean'],
             'disableAutofocus' => ['sometimes', 'boolean'],
@@ -84,6 +86,7 @@ class UserPreferencesRequest extends FormRequest
             'preferredLocale' => 'locale',
             'weekStartDay' => 'weekStartDay',
             'timeZone' => 'timeZone',
+            'theme' => 'theme',
             'useShapes' => 'useShapes',
             'underlineLinks' => 'underlineLinks',
             'disableAutofocus' => 'disableAutofocus',

@@ -1,8 +1,10 @@
 import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
-import {userEvent} from 'vite-plus/test/browser';
+import {page, userEvent} from 'vite-plus/test/browser';
 import {computeAccessibleName} from 'dom-accessibility-api';
 import type CraftField from './field.js';
+import {LionField} from '@lion/ui/form-core.js';
 import './field.js';
+import '../textarea/textarea.js';
 import '../input/input.js';
 import '../select/select.js';
 import '../combobox/combobox.js';
@@ -23,6 +25,37 @@ it('labels nested native controls', async () => {
   expect(computeAccessibleName(document.querySelector('select')!)).toBe(
     'Operator'
   );
+});
+
+class TestSlider extends LionField {
+  override get slots() {
+    return {
+      ...super.slots,
+      input: () => {
+        const slider = document.createElement('div');
+        slider.setAttribute('role', 'slider');
+        slider.setAttribute('aria-valuenow', '1');
+        slider.tabIndex = 0;
+        return slider;
+      },
+    };
+  }
+}
+customElements.define('test-slider', TestSlider);
+
+it('hands its label and descriptions to a custom control built on LionField', async () => {
+  document.body.innerHTML =
+    '<craft-field label="Card width" help-text="How many columns the card spans."><test-slider slot="input"></test-slider><ul slot="feedback"><li>Card width must be at least 2 columns.</li></ul></craft-field>';
+  const field = document.querySelector('craft-field')!;
+  const control = page.getByRole('slider');
+
+  await expect.element(control).toHaveAccessibleName('Card width');
+  await expect
+    .element(control)
+    .toHaveAccessibleDescription(
+      'How many columns the card spans. Card width must be at least 2 columns.'
+    );
+  expect(field.getAttribute('role')).toBeNull();
 });
 
 it.each([false, true])(
@@ -117,4 +150,67 @@ it('exposes translation help on keyboard focus and dismisses it with Escape', as
 
   await userEvent.tab();
   expect(document.activeElement).toBe(field.querySelector('input'));
+});
+
+it.each([
+  ['a textarea', '<textarea slot="input" maxlength="100"></textarea>'],
+  [
+    'a craft-textarea',
+    '<craft-textarea slot="input" maxlength="100"><textarea slot="input" maxlength="100"></textarea></craft-textarea>',
+  ],
+])('keeps %s with a maxlength spanning the column', async (_case, control) => {
+  document.body.innerHTML = `<div style="width: 400px"><craft-field label="Notes">${control}</craft-field></div>`;
+  const field = document.querySelector<CraftField>('craft-field')!;
+  await field.updateComplete;
+
+  expect(
+    field
+      .shadowRoot!.querySelector('.input-group__container')!
+      .getBoundingClientRect().width
+  ).toBe(400);
+});
+
+it.each([
+  ['width="auto"', '<craft-field label="Date" width="auto">'],
+  ['a maxlength', '<craft-field label="Code">'],
+])(
+  'shrinks only the input of a field with %s, keeping its heading spanning the column',
+  async (_case, open) => {
+    const input = open.includes('auto')
+      ? '<input slot="input" size="8">'
+      : '<input slot="input" size="8" maxlength="8">';
+    document.body.innerHTML = `<div style="width: 400px">${open}${input}<button slot="actions">Actions</button></craft-field></div>`;
+    const field = document.querySelector<CraftField>('craft-field')!;
+    await field.updateComplete;
+    const width = (element: Element) => element.getBoundingClientRect().width;
+    const container = field.shadowRoot!.querySelector(
+      '.input-group__container'
+    )!;
+
+    expect(width(field)).toBe(400);
+    expect(width(field.shadowRoot!.querySelector('.form-field__label')!)).toBe(
+      400
+    );
+    expect(width(container)).toBeLessThan(400);
+  }
+);
+
+it('keeps a maxlength wider than the column within the column', async () => {
+  // A Title's 255-character maxlength sizes its input far wider than a form.
+  document.body.innerHTML =
+    '<div style="width: 400px"><craft-field label="Title"><craft-input slot="input" maxlength="255"><input slot="input" maxlength="255" size="255"></craft-input></craft-field></div>';
+  const field = document.querySelector<CraftField>('craft-field')!;
+  await field.updateComplete;
+  await vi.waitFor(() =>
+    expect(field.hasAttribute('has-maxlength')).toBe(true)
+  );
+
+  expect(
+    field
+      .shadowRoot!.querySelector('.input-group__input')!
+      .getBoundingClientRect().width
+  ).toBeLessThanOrEqual(400);
+  expect(
+    field.querySelector('craft-input')!.getBoundingClientRect().width
+  ).toBeLessThanOrEqual(400);
 });

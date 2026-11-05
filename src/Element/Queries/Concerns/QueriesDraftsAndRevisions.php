@@ -6,13 +6,17 @@ namespace CraftCms\Cms\Element\Queries\Concerns;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Enums\ElementCapability;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Gql\Attributes\Gql;
+use CraftCms\Cms\Release\Enums\ReleaseStatus;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUser;
 
@@ -43,6 +47,11 @@ trait QueriesDraftsAndRevisions
      * @var int|null The ID of the draft to return (from the `drafts` table)
      */
     public ?int $draftId = null;
+
+    /**
+     * @var int|null The ID of the release whose drafts should be returned.
+     */
+    public ?int $releaseId = null;
 
     /**
      * @var mixed The source element ID that drafts should be returned for.
@@ -105,6 +114,10 @@ trait QueriesDraftsAndRevisions
     /** @param ElementQuery<*> $elementQuery */
     private function applyDraftParams(ElementQuery $elementQuery): void
     {
+        if ($elementQuery->releaseId !== null) {
+            $elementQuery->drafts = true;
+        }
+
         if ($elementQuery->drafts === false) {
             $elementQuery->where($this->placeholderCondition(fn (Builder $q) => $q->whereNull('elements.draftId')));
 
@@ -112,7 +125,7 @@ trait QueriesDraftsAndRevisions
         }
 
         $joinType = $elementQuery->drafts === true ? 'inner' : 'left';
-        $elementQuery->query->join(new Alias(Table::DRAFTS, 'drafts'), 'drafts.id', 'elements.draftId', type: $joinType);
+        $elementQuery->query->join(Table::DRAFTS.' as drafts', 'drafts.id', 'elements.draftId', type: $joinType);
 
         $elementQuery->query->addSelect([
             'elements.draftId as draftId',
@@ -124,6 +137,28 @@ trait QueriesDraftsAndRevisions
 
         if ($elementQuery->draftId) {
             $elementQuery->where('elements.draftId', $elementQuery->draftId);
+        }
+
+        if ($elementQuery->releaseId !== null) {
+            $elementQuery->whereBool('drafts.provisional', false);
+            $elementQuery->whereExists(function (Builder $query) use ($elementQuery) {
+                $query
+                    ->selectRaw('1')
+                    ->from(Table::RELEASE_ITEMS, 'release_items')
+                    ->join(
+                        Table::RELEASES.' as releases',
+                        'releases.id',
+                        'release_items.releaseId',
+                    )
+                    ->whereColumn('release_items.draftId', 'elements.draftId')
+                    ->where('release_items.releaseId', $elementQuery->releaseId)
+                    ->whereIn('releases.status', [
+                        ReleaseStatus::Draft,
+                        ReleaseStatus::Scheduled,
+                        ReleaseStatus::Publishing,
+                        ReleaseStatus::Failed,
+                    ]);
+            });
         }
 
         if ($elementQuery->draftOf === '*') {
@@ -178,7 +213,7 @@ trait QueriesDraftsAndRevisions
         }
 
         $joinType = $elementQuery->revisions === true ? 'inner' : 'left';
-        $elementQuery->query->join(new Alias(Table::REVISIONS, 'revisions'), 'revisions.id', 'elements.revisionId', type: $joinType);
+        $elementQuery->query->join(Table::REVISIONS.' as revisions', 'revisions.id', 'elements.revisionId', type: $joinType);
 
         $elementQuery->query->addSelect([
             'elements.revisionId as revisionId',
@@ -221,6 +256,8 @@ trait QueriesDraftsAndRevisions
      *     ->one();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether draft {elements} should be returned.', requires: ElementCapability::Drafts)]
+    #[Gql(Gql::CanQueryDrafts)]
     public function drafts(?bool $value = true): static
     {
         $this->drafts = $value;
@@ -232,6 +269,8 @@ trait QueriesDraftsAndRevisions
      * Causes the query to return provisional drafts for the matching elements,
      * when they exist for the current user.
      */
+    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Whether canonical {elements} should be replaced with provisional drafts if those exist.', requires: ElementCapability::Drafts)]
+    #[Gql(Gql::CanQueryDrafts)]
     public function withProvisionalDrafts(bool $value = true): static
     {
         $this->withProvisionalDrafts = $value;
@@ -264,9 +303,45 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'The ID of the draft to return (from the `drafts` table)', requires: ElementCapability::Drafts)]
+    #[Gql(Gql::CanQueryDrafts)]
     public function draftId(?int $value = null): static
     {
         $this->draftId = $value;
+
+        if ($value !== null && $this->drafts === false) {
+            $this->drafts = true;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Narrows the query results to drafts attached to a release.
+     *
+     * The value is a release ID from the `releases` table.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch drafts attached to a release #}
+     * {% set {elements-var} = {twig-method}
+     *   .releaseId(10)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch drafts attached to a release
+     * ${elements-var} = {php-method}
+     *     ->releaseId(10)
+     *     ->all();
+     * ```
+     */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'Narrows the query results to drafts attached to the release with this ID.', requires: ElementCapability::Drafts)]
+    #[Gql(Gql::CanQueryDrafts)]
+    public function releaseId(?int $value = null): static
+    {
+        $this->releaseId = $value;
 
         if ($value !== null && $this->drafts === false) {
             $this->drafts = true;
@@ -305,6 +380,8 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Scalar, 'Narrows the query results to only drafts of a given {element}. Set to `false` to fetch unpublished drafts.', requires: ElementCapability::Drafts)]
+    #[Gql(Gql::CanQueryDrafts)]
     public function draftOf(mixed $value): static
     {
         if ($value instanceof ElementInterface) {
@@ -375,6 +452,8 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'The drafts’ creator ID', requires: ElementCapability::Drafts)]
+    #[Gql(Gql::CanQueryDrafts)]
     public function draftCreator(mixed $value): static
     {
         $this->draftCreator = match (true) {
@@ -411,6 +490,8 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether provisional drafts should be returned.', requires: ElementCapability::Drafts)]
+    #[Gql(Gql::CanQueryDrafts)]
     public function provisionalDrafts(?bool $value = true): static
     {
         $this->provisionalDrafts = $value;
@@ -486,6 +567,8 @@ trait QueriesDraftsAndRevisions
      *     ->one();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether revision {elements} should be returned.', requires: ElementCapability::Revisions)]
+    #[Gql(Gql::CanQueryRevisions)]
     public function revisions(?bool $value = true): static
     {
         $this->revisions = $value;
@@ -518,6 +601,8 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'The ID of the revision to return (from the `revisions` table)', requires: ElementCapability::Revisions)]
+    #[Gql(Gql::CanQueryRevisions)]
     public function revisionId(?int $value = null): static
     {
         $this->revisionId = $value;
@@ -555,6 +640,8 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Scalar, 'The source {element} ID that revisions should be returned for.', requires: ElementCapability::Revisions)]
+    #[Gql(Gql::CanQueryRevisions)]
     public function revisionOf(mixed $value): static
     {
         $this->revisionOf = match (true) {
@@ -596,6 +683,8 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'The revisions’ creator ID', requires: ElementCapability::Revisions)]
+    #[Gql(Gql::CanQueryRevisions)]
     public function revisionCreator(mixed $value): static
     {
         $this->revisionCreator = match (true) {

@@ -101,6 +101,13 @@ beforeEach(() => {
 });
 
 describe('chrome', () => {
+  it('is resizable by default', async () => {
+    const modal = await createModal();
+
+    expect(modal.resizable).toBe(true);
+    expect(shadow(modal, 'craft-resize-grips')).not.toBeNull();
+  });
+
   it('renders a heading, a body slot and a footer', async () => {
     const modal = await createModal((m) => {
       m.label = 'Choose';

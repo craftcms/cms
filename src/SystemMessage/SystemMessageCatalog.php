@@ -37,8 +37,27 @@ class SystemMessageCatalog
                 'heading' => t("{$key}_heading"),
                 'subject' => t("{$key}_subject"),
                 'body' => t("{$key}_body"),
+                'variables' => self::defaultVariables($key),
             ]));
         }
+    }
+
+    /** @return array<string, string> */
+    private static function defaultVariables(string $key): array
+    {
+        return match ($key) {
+            'account_activation' => ['link' => t('Activation link')],
+            'comment_mention' => [
+                'author' => t('Comment author'),
+                'subject' => t('Commented item'),
+                'comment' => t('Comment'),
+                'link' => t('Comment link'),
+            ],
+            'verify_new_email' => ['link' => t('Verification link')],
+            'forgot_password' => ['link' => t('Password reset link')],
+            'test_email' => ['settings' => t('Email settings')],
+            default => [],
+        };
     }
 
     /** @param Closure $resolve A container-invoked factory that returns a system message. */

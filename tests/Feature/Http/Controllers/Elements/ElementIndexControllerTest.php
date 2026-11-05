@@ -7,7 +7,6 @@ use CraftCms\Cms\Address\Models\Address as AddressModel;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Actions\Copy;
 use CraftCms\Cms\Element\Actions\Delete;
 use CraftCms\Cms\Element\Actions\Duplicate;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
@@ -42,6 +41,7 @@ use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -167,6 +167,23 @@ it('returns element HTML and action metadata for get-elements', function (string
 })->with([
     'standalone index' => ['index'],
     'legacy embedded index' => ['embedded-index'],
+]);
+
+it('validates the returnUrl param for get-elements', function (Closure $returnUrl, int $status) {
+    EntryModel::factory()->create();
+
+    ($this->postIndexAction)('get-elements', [
+        'source' => '*',
+        'returnUrl' => $returnUrl(),
+    ])->assertStatus($status);
+})->with([
+    'plain URL' => [fn () => 'https://example.com/admin/entries?site=default', 200],
+    'encrypted Twig' => [fn () => Crypt::encrypt('{url}'), 200],
+    // An edit page can carry its own encrypted return URL, and the index sends
+    // the page URL as its own (https://github.com/craftcms/cms/issues/19983).
+    'nested encrypted returnUrl' => [fn () => 'https://example.com/admin/entries/1?returnUrl='.Crypt::encrypt('{url}').'{url}', 200],
+    'unencrypted Twig' => [fn () => 'https://example.com/admin/{url}', 400],
+    'unencrypted Twig beside a nested returnUrl' => [fn () => 'https://example.com/admin/{url}?returnUrl={url}', 400],
 ]);
 
 it('renders element table rows with strict Twig variables', function () {
@@ -444,8 +461,8 @@ it('uses posted Matrix index presentation settings while retaining the owner sco
         ->and($response->json('defaultTableColumns'))->toBe(['dateUpdated'])
         ->and(array_column($response->json('tableColumns'), 'value'))->toContain("field:{$fixture['columnField']->uid}")
         ->and(array_column($response->json('viewModes'), 'mode'))->toBe(['table'])
-        ->and($actions->keys()->all())->toContain(Copy::class, Duplicate::class, Delete::class)
-        ->and($actions[Copy::class]['selectionAttribute'])->toBe('copyable')
+        ->and($actions->keys()->all())->toContain('copy', Duplicate::class, Delete::class)
+        ->and($actions['copy']['selectionAttribute'])->toBe('copyable')
         ->and($actions[Duplicate::class]['selectionAttribute'])->toBe('duplicatable')
         ->and($actions[Delete::class]['selectionAttribute'])->toBe('deletable');
 });
@@ -533,6 +550,7 @@ it('disables embedded reordering when the view is filtered or re-sorted', functi
 })->with([
     'search' => fn () => ['search' => 'First'],
     'status' => fn () => ['status' => 'disabled'],
+    'trashed' => fn () => ['status' => 'trashed'],
     'condition rules' => fn () => ['condition' => [
         'class' => EntryCondition::class,
         'conditionRules' => [[
@@ -542,6 +560,32 @@ it('disables embedded reordering when the view is filtered or re-sorted', functi
     ]],
     'different primary sort' => fn () => ['sort' => [['field' => 'dateCreated', 'direction' => 'asc']]],
 ]);
+
+it('lists trashed nested entries in an embedded index, unlinked and without action menus, with Restore on offer', function () {
+    $fixture = embeddedMatrixIndexFixture(['pageSize' => null]);
+    $trashed = $fixture['owner']->getFieldValue('matrixField')->status(null)->one();
+    Elements::deleteElement($trashed);
+    $props = $fixture['field']->uiControl(new FieldContext(
+        path: 'matrixField',
+        element: $fixture['owner'],
+    ))->props();
+
+    $response = postJson(action([ElementIndexController::class, 'getElements']), [
+        ...$props['manager'],
+        'elementType' => Entry::class,
+        'context' => ElementSources::CONTEXT_EMBEDDED_INDEX,
+        'source' => '__IMP__',
+        'status' => 'trashed',
+        'viewMode' => 'table',
+    ])->assertOk();
+
+    expect(array_slice($response->json('statusOptions.*.value'), -2))->toBe(['drafts', 'trashed'])
+        ->and($response->json('data.*.id'))->toBe([$trashed->id])
+        ->and($response->json('data.0.cpEditUrl'))->toBeNull()
+        ->and($response->json('data.0.editUrl'))->toBeNull()
+        ->and($response->json('data.0.actionMenuItems'))->toBe([])
+        ->and($response->json('actions.0.label'))->toBe('Restore');
+});
 
 it('scopes a read-only embedded Matrix index without granting mutation access', function (bool $revision) {
     $fixture = embeddedMatrixIndexFixture(titles: ['Included'], otherMatrixTitles: ['Wrong field']);

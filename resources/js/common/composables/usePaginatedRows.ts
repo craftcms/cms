@@ -22,14 +22,21 @@ export function usePaginatedRows<TData, TRequest>(
 
   onScopeDispose(() => request.value?.abort());
 
-  async function load(params: TRequest): Promise<boolean> {
+  /**
+   * Loads a page of rows. A `quiet` load leaves `loading` alone, for
+   * refreshing the rows in the background.
+   */
+  async function load(
+    params: TRequest,
+    {quiet = false}: {quiet?: boolean} = {}
+  ): Promise<boolean> {
     const loader = getLoader();
     if (!loader) return true;
 
     request.value?.abort();
     const controller = new AbortController();
     request.value = controller;
-    loading.value = true;
+    loading.value = !quiet;
 
     try {
       const result = await loader(params, controller.signal);

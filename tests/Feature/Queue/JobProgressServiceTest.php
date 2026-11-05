@@ -8,6 +8,7 @@ use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Queue\Models\JobProgress as JobProgressModel;
+use CraftCms\Cms\Support\DateTimeHelper;
 use Illuminate\Contracts\Queue\ClearableQueue;
 use Illuminate\Contracts\Queue\Queue as QueueContract;
 use Illuminate\Http\Request;
@@ -367,6 +368,16 @@ it('setProgress sets status to reserved', function () {
     expect($progress)
         ->status->toBe(JobStatus::Reserved)
         ->progress->toBe(50);
+});
+
+it('formats job dates for display, with the time zone’s abbreviation', function () {
+    freezeTime();
+    $this->service->failed('failed-1', 'Failed Job', 'Error');
+
+    $job = $this->service->getProgress('failed-1')->toArray();
+
+    expect($job['dateCreated'])->toEndWith(' '.DateTimeHelper::timeZoneAbbreviation(Cms::timezone(), now()))
+        ->and($job['dateFailed'])->toBe($job['dateCreated']);
 });
 
 it('clearCompleted only removes done status jobs', function () {

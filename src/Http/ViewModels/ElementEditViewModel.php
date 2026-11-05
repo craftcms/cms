@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Ai\Assistant\Data\ElementParams;
+use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Element;
@@ -16,16 +20,24 @@ use CraftCms\Cms\Element\ElementEditorActions;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\EditsElement;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\ElementCrumbs;
+use CraftCms\Cms\Http\ElementPreview;
 use CraftCms\Cms\Http\Requests\ElementRequest;
+use CraftCms\Cms\Release\Data\AttachedReleaseData;
+use CraftCms\Cms\Release\Data\ReleaseSummaryData;
+use CraftCms\Cms\Release\Enums\ReleaseStatus;
+use CraftCms\Cms\Release\Models\Release;
+use CraftCms\Cms\Release\Models\ReleaseItem;
+use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Ai;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Workflows;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Ui\Enums\ControlMode;
@@ -35,8 +47,13 @@ use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\Workflow\Contracts\WorkflowableInterface;
 use CraftCms\Cms\Workflow\Data\WorkflowDraftReviewData;
 use CraftCms\Cms\Workflow\Data\WorkflowReviewData;
+use CraftCms\Cms\Workflow\Enums\WorkflowStatus;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
+use Override;
+use Tpetry\QueryExpressions\Operator\Comparison\IsNull;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
@@ -79,11 +96,20 @@ class ElementEditViewModel extends ViewModel
 
     private ?UiPayload $ui = null;
 
+    /** @var list<string>|null The tabs {@see deferHiddenTabs()} leaves out of {@see ui()} */
+    private ?array $deferredTabs = null;
+
+    private ?ElementPreview $elementPreview = null;
+
     private bool $uiResolved = false;
 
     private ?UiPayload $sidebarUi = null;
 
     private bool $sidebarUiResolved = false;
+
+    private ?Release $attachedRelease = null;
+
+    private bool $attachedReleaseResolved = false;
 
     public function __construct(
         protected readonly ElementInterface $element,
@@ -151,7 +177,7 @@ class ElementEditViewModel extends ViewModel
             && ! $this->element->getIsUnpublishedDraft()
             && ! $this->element->isProvisionalDraft;
 
-        return Crypt::encrypt($isNamedDraft ? '{cpEditUrl}' : $this->postEditRedirectUrl($this->element));
+        return Crypt::encrypt($isNamedDraft ? '{cpEditUrl}' : ElementHelper::postEditRedirectUrl($this->element));
     }
 
     /** Where the edit form posts when there are no provisional changes to apply. */
@@ -236,13 +262,45 @@ class ElementEditViewModel extends ViewModel
      */
     public function editorActions(): array
     {
-        return app(ElementEditorActions::class)->for(
+        $actions = app(ElementEditorActions::class)->for(
             element: $this->element,
             canSave: $this->canSave,
             review: $this->workflowReview(),
             primaryLabel: $this->primaryActionLabel(),
             isNew: $this->request->boolean('fresh'),
         );
+
+        $release = $this->attachedRelease();
+        if ($release !== null) {
+            $actions['primary']['label'] = t('Save draft');
+            $actions['primary']['actionUrl'] = $this->autosaveUrl();
+            $actions['primary']['panelId'] = null;
+
+            if (! $release->status->isEditable()) {
+                $actions['buttons'] = array_map(
+                    fn (array $action): array => $action['actionUrl'] === $this->applyDraftUrl()
+                        ? [
+                            ...$action,
+                            'disabled' => true,
+                            'disabledReason' => t('This draft’s release is being published.'),
+                        ]
+                        : $action,
+                    $actions['buttons'],
+                );
+            }
+        }
+
+        return $actions;
+    }
+
+    /**
+     * Buttons the element type and plugins add to the footer, apart from the save controls.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function additionalButtons(): array
+    {
+        return $this->element->additionalButtonDescriptors();
     }
 
     protected function primaryActionLabel(): ?string
@@ -259,6 +317,125 @@ class ElementEditViewModel extends ViewModel
             'current' => $this->workflowReview(),
             'draftReviews' => [],
         ];
+    }
+
+    public function release(): ?AttachedReleaseData
+    {
+        if (! $this->element->getIsDraft() || $this->element->isProvisionalDraft) {
+            return null;
+        }
+
+        $release = $this->attachedRelease();
+        $actor = currentUser();
+
+        if ($release === null || $actor === null) {
+            return null;
+        }
+
+        return new AttachedReleaseData(
+            id: $release->id,
+            name: $release->name,
+            status: $release->status,
+            targetDate: $release->targetDate,
+            canManage: $actor->can('manage', $release),
+            draftId: (int) $this->element->draftId,
+            siteId: $this->element->siteId,
+            blockers: app(Releases::class)->draftBlockers($release, $this->element),
+        );
+    }
+
+    /** @return list<ReleaseSummaryData> */
+    public function releaseOptions(): array
+    {
+        if (! $this->canAddToRelease()) {
+            return [];
+        }
+
+        $actor = currentUser();
+        if ($actor === null) {
+            return [];
+        }
+
+        $canonicalId = $this->element->getCanonicalId();
+        $releaseIdsWithCanonical = is_int($canonicalId) && $canonicalId > 0
+            ? ReleaseItem::query()->where('canonicalId', $canonicalId)->pluck('releaseId')->all()
+            : [];
+
+        return Release::query()
+            ->whereIn('status', [ReleaseStatus::Draft, ReleaseStatus::Scheduled, ReleaseStatus::Failed])
+            ->orderBy(new IsNull('targetDate'))
+            ->orderBy('targetDate')
+            ->orderBy('name')
+            ->get()
+            ->filter(fn (Release $release): bool => ! in_array($release->id, $releaseIdsWithCanonical, true)
+                && $actor->can('attach', [$release, $this->element]))
+            ->map(fn (Release $release): ReleaseSummaryData => new ReleaseSummaryData(
+                id: $release->id,
+                name: $release->name,
+                status: $release->status,
+                targetDate: $release->targetDate,
+                publishedAt: $release->publishedAt,
+                itemCount: null,
+            ))
+            ->values()
+            ->all();
+    }
+
+    public function canCreateRelease(): bool
+    {
+        return (currentUser()?->can('manageReleases') ?? false)
+            && $this->canAddToRelease();
+    }
+
+    public function canAddToRelease(): bool
+    {
+        $actor = currentUser();
+        if (
+            ! Edition::get()->supportsReleases()
+            || ! $this->canSave
+            || ! $this->element::hasDrafts()
+            || ! $this->element->getIsDraft()
+            || $this->attachedRelease() !== null
+            || $actor === null
+            || ! $this->releaseApprovalReady()
+        ) {
+            return false;
+        }
+
+        $prospectiveRelease = new Release;
+        $prospectiveRelease->status = ReleaseStatus::Draft;
+
+        return $actor->can('attach', [$prospectiveRelease, $this->element]);
+    }
+
+    private function releaseApprovalReady(): bool
+    {
+        if (! Workflows::requiresApproval($this->element)) {
+            return true;
+        }
+
+        if ($this->element->isProvisionalDraft) {
+            return false;
+        }
+
+        return Workflows::latestRun($this->element)?->status === WorkflowStatus::Approved
+            && ! ElementHelper::isOutdated($this->element);
+    }
+
+    public function releaseTimeZone(): string
+    {
+        return Cms::timezone();
+    }
+
+    public function draftIsSaved(): bool
+    {
+        if (! $this->element->getIsDraft() || $this->element->isProvisionalDraft || ! $this->element->draftId) {
+            return false;
+        }
+
+        return (bool) DB::table(Table::DRAFTS)
+            ->where('id', $this->element->draftId)
+            ->value('saved');
     }
 
     protected function workflowReview(): ?WorkflowReviewData
@@ -293,8 +470,21 @@ class ElementEditViewModel extends ViewModel
     public function activityUrl(): ?string
     {
         return $this->element->id && ! $this->element->getIsRevision()
-            ? Url::actionUrl('elements/recent-activity', ['dontExtendSession' => 1])
+            ? Url::actionUrl('elements/recent-activity')
             : null;
+    }
+
+    /**
+     * The request parameters that identify the element to the AI assistant, which the user can add it to the context
+     * of, or `null` when they can’t use the assistant, or the element hasn’t been saved.
+     */
+    public function aiAssistant(): ?ElementParams
+    {
+        return $this->element->id
+            && ! $this->element->getIsRevision()
+            && Assistant::isAvailable()
+                ? ElementParams::for($this->element)
+                : null;
     }
 
     /** Where this editor's activity timeline is loaded on demand. */
@@ -327,74 +517,34 @@ class ElementEditViewModel extends ViewModel
     /**
      * The element's preview targets as ready-to-open links.
      *
-     * A live element links straight at its URL. Anything not publicly visible
-     * yet — a draft, a disabled entry, a future post date — links at
-     * `preview/create-token`, which mints a preview token and redirects to the
-     * tokenized URL. The legacy editor does that dance in JavaScript; every
-     * input is known here, so the link arrives ready to follow.
-     *
      * @return list<array{label: string, url: string}>
      */
     public function previewTargets(): array
     {
-        $element = $this->element;
+        return $this->elementPreview()->links();
+    }
 
-        if (! $element->id) {
-            return [];
+    /**
+     * What Live Preview needs to load the element's targets in an iframe, or
+     * `null` when it has none.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function preview(): ?array
+    {
+        if ($this->elementPreview()->targets() === []) {
+            return null;
         }
 
-        $targets = $element->getPreviewTargets();
+        return $this->elementPreview()->payload();
+    }
 
-        if ($targets === []) {
-            return [];
-        }
-
-        $isLive = (
-            ($element->getIsCanonical() || $element->isProvisionalDraft) &&
-            ! $element->getIsDraft() &&
-            $element->enabled &&
-            $element->getEnabledForSite() &&
-            $element->getRoute() !== null
-        );
-
-        $previewToken = Str::random(32, extendedChars: true);
-        $siteToken = (app()->isDownForMaintenance() || ! $element->getSite()->getEnabled())
-            ? Crypt::encrypt((string) $element->siteId)
-            : null;
-
-        $tokenParams = array_filter([
-            'elementType' => $element::class,
-            'canonicalId' => $element->getCanonicalId(),
-            'siteId' => $element->siteId,
-            'revisionId' => $element->revisionId,
-            'draftId' => $element->isProvisionalDraft ? null : $element->draftId,
-            'previewToken' => Crypt::encrypt($previewToken),
-        ], fn (mixed $value): bool => $value !== null);
-
-        return array_values(array_map(function (array $target) use ($isLive, $previewToken, $siteToken, $tokenParams): array {
-            $params = array_filter([
-                // Randomized so CDNs don't serve a cached page.
-                'x-craft-preview' => $isLive ? null : Crypt::encrypt(Str::random(10)),
-                Cms::config()->siteToken => $siteToken,
-            ], fn (mixed $value): bool => $value !== null);
-
-            if ($isLive) {
-                return [
-                    'label' => (string) $target['label'],
-                    'url' => Url::url($target['url'], $params),
-                ];
-            }
-
-            $params[Cms::config()->tokenParam] = $previewToken;
-
-            return [
-                'label' => (string) $target['label'],
-                'url' => Url::actionUrl('preview/create-token', [
-                    ...$tokenParams,
-                    'redirect' => Url::url($target['url'], $params),
-                ]),
-            ];
-        }, $targets));
+    /**
+     * Shared by the View links and Live Preview, so they use one token.
+     */
+    private function elementPreview(): ElementPreview
+    {
+        return $this->elementPreview ??= new ElementPreview($this->element);
     }
 
     /**
@@ -412,7 +562,7 @@ class ElementEditViewModel extends ViewModel
             return [];
         }
 
-        $hidesView = $this->element->getPreviewTargets() !== [];
+        $hidesView = $this->elementPreview()->targets() !== [];
 
         return array_values(array_filter(
             $this->element->actionMenuDescriptors(ElementActionContext::Editor),
@@ -657,6 +807,18 @@ class ElementEditViewModel extends ViewModel
         return $this->element::class;
     }
 
+    /** The element type's reference handle, which its reference tags start with. */
+    public function refHandle(): ?string
+    {
+        return $this->element::refHandle();
+    }
+
+    /** The element's front-end URL — the canonical element's, for a draft or revision. */
+    public function elementUrl(): ?string
+    {
+        return $this->element->getCanonical(true)->getUrl();
+    }
+
     public function siteId(): ?int
     {
         return $this->element->siteId;
@@ -732,7 +894,9 @@ class ElementEditViewModel extends ViewModel
                 $label = $item['label'];
             }
 
-            $link = Arr::only($item, ['type', 'label', 'href', 'selected']);
+            // The description (“Saved … by …”) rides along for the command
+            // palette, which offers these as actions and shows it as a hint.
+            $link = Arr::only($item, ['type', 'label', 'description', 'href', 'selected']);
 
             if ($groupIndex === null) {
                 $items[] = $link;
@@ -742,6 +906,7 @@ class ElementEditViewModel extends ViewModel
         }
 
         return [
+            'id' => 'revision-crumb',
             'label' => $label,
             'items' => $items,
         ];
@@ -790,10 +955,17 @@ class ElementEditViewModel extends ViewModel
                 continue;
             }
 
+            $siteParams = $params;
+
+            if (isset($siteParams['returnUrl']) && is_string($siteParams['returnUrl'])) {
+                // return to the index for the site being switched to
+                $siteParams['returnUrl'] = ElementHelper::returnUrlForSite($siteParams['returnUrl'], $site);
+            }
+
             $items[] = [
                 'type' => 'link',
                 'label' => t($site->getName(), category: 'site'),
-                'href' => Url::cpUrl($path, ['site' => $site->handle] + $params),
+                'href' => Url::cpUrl($path, ['site' => $site->handle] + $siteParams),
                 'selected' => $site->id === $currentSite->id,
             ];
         }
@@ -813,6 +985,18 @@ class ElementEditViewModel extends ViewModel
         return ! $this->canSave;
     }
 
+    private function attachedRelease(): ?Release
+    {
+        if (! $this->attachedReleaseResolved) {
+            $this->attachedReleaseResolved = true;
+            $this->attachedRelease = $this->element->getIsDraft() && ! $this->element->isProvisionalDraft
+                ? app(Releases::class)->releaseForDraft($this->element)
+                : null;
+        }
+
+        return $this->attachedRelease;
+    }
+
     /**
      * The compiled field layout. `null` when the element has no field layout —
      * the page then renders its sidebar islands alone.
@@ -824,15 +1008,67 @@ class ElementEditViewModel extends ViewModel
         }
 
         $this->uiResolved = true;
+
+        if ($this->deferredTabs === null) {
+            return $this->ui = $this->compileUi();
+        }
+
+        $eagerTabs = collect($this->element->getFieldLayout()?->getTabs() ?? [])
+            ->pluck('uid')
+            ->filter()
+            ->diff($this->deferredTabs)
+            ->values()
+            ->all();
+
+        return $this->ui = $this->compileUi($eagerTabs, deferOthers: true);
+    }
+
+    /**
+     * Sends the field layout tabs that don't show as the page loads in a deferred `deferredTabs` prop, which the page
+     * requests once it's loaded, so it has only the first tab's fields to compile and render before it's usable.
+     *
+     * Layouts with errors are sent whole, so every tab can show its errors as the page loads. Takes an argument, so
+     * {@see ViewModel} leaves it out of the payload.
+     */
+    public function deferHiddenTabs(bool $defer = true): static
+    {
+        $this->deferredTabs = null;
+        $fieldLayout = $this->element->getFieldLayout();
+
+        if ($defer && ! $this->uiResolved && $fieldLayout !== null && $this->element->uiErrors() === []) {
+            $this->deferredTabs = app(FieldLayoutCompiler::class)->deferrableTabs($fieldLayout, $this->element) ?: null;
+        }
+
+        return $this;
+    }
+
+    #[Override]
+    protected function arrayMethodClosures(): array
+    {
+        $closures = parent::arrayMethodClosures();
+
+        if ($this->deferredTabs !== null) {
+            $tabs = $this->deferredTabs;
+            $closures['deferredTabs'] = fn () => Inertia::defer(fn (): ?UiPayload => $this->compileUi($tabs));
+        }
+
+        return $closures;
+    }
+
+    /**
+     * @param  list<string>|null  $tabs
+     */
+    private function compileUi(?array $tabs = null, bool $deferOthers = false): ?UiPayload
+    {
         $fieldLayout = $this->element->getFieldLayout();
 
         if ($fieldLayout === null) {
-            return $this->ui = null;
+            return null;
         }
 
         // Delta tracking stays active so the compiled payload carries the same
         // initial values the autosave path compares against later in the stack.
-        return $this->ui = DeltaRegistry::withActive(true, fn () => app(FieldLayoutCompiler::class)->compile(
+        return DeltaRegistry::withActive(true, fn () => app(FieldLayoutCompiler::class)->compile(
             $fieldLayout,
             $this->element,
             new UiContext(
@@ -841,6 +1077,8 @@ class ElementEditViewModel extends ViewModel
                 mode: $this->canSave ? ControlMode::Editable : ControlMode::ReadOnly,
                 refreshable: true,
             ),
+            $tabs,
+            $deferOthers,
         ));
     }
 
@@ -890,7 +1128,7 @@ class ElementEditViewModel extends ViewModel
     public function metadataHtml(): ?string
     {
         return $this->element->id
-            ? app(ContentHtml::class)->metadataHtml($this->element->getMetadata())
+            ? app(ContentHtml::class)->metadataHtml(...$this->element->getMetadataGroups())
             : null;
     }
 }

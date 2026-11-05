@@ -785,10 +785,16 @@ class NestedElementManager extends Component
         $resetValue = false;
 
         if ($owner->duplicateOf !== null) {
+            // If this is a draft of a canonical element, its nested element ownership will be duplicated by Drafts::createDraft()
             if ($owner->getIsRevision()) {
                 $this->createRevisions($owner->duplicateOf, $owner);
-                // getIsUnpublishedDraft is needed for "save as new" duplication
-            } elseif (! $owner->getIsDraft() || $owner->getIsUnpublishedDraft()) {
+                // getIsUnpublishedDraft is needed for "save as new" duplication,
+                // and duplicateOf->getIsDraft() for "save as a new draft" duplication of an existing draft
+            } elseif (
+                ! $owner->getIsDraft() ||
+                $owner->getIsUnpublishedDraft() ||
+                $owner->duplicateOf->getIsDraft()
+            ) {
                 $this->duplicateNestedElements($owner->duplicateOf, $owner, true, ! $isNew);
             }
             $resetValue = true;
@@ -1087,7 +1093,7 @@ class NestedElementManager extends Component
         $query = $this->nestedElementQuery($owner)
             ->drafts(null)
             ->canonicalsOnly()
-            ->savedDraftsOnly(false)
+            ->savedDraftsOnly()
             ->status(null)
             ->siteId($owner->siteId);
 
@@ -1142,10 +1148,49 @@ class NestedElementManager extends Component
             // https://app.frontapp.com/open/msg_ukaoki1?key=U6zkE_S6_ApMXn3ntPMwUxSLe0sUPsmY for more info
             $setCanonicalId = $target->getIsDerivative() && $target->getCanonical()->id !== $target->id;
 
+            // Are we duplicating one draft into another draft of the same canonical element?
+            $draftToDraft = (
+                ! $force &&
+                $source->id !== $target->id &&
+                $source->getIsDraft() &&
+                $target->getIsDraft() &&
+                ! $target->getIsUnpublishedDraft() &&
+                $source->getCanonicalId() === $target->getCanonicalId()
+            );
+
             /** @var NestedElementInterface[] $elements */
             foreach ($elements as $element) {
+                if ($draftToDraft && $element->getPrimaryOwnerId() !== $source->id) {
+                    // The nested element is shared with the canonical owner, so just share it with the target draft too
+                    DB::table(Table::ELEMENTS_OWNERS)
+                        ->upsert(
+                            values: [
+                                'elementId' => $element->id,
+                                'ownerId' => $target->id,
+                                'sortOrder' => $element->getSortOrder(),
+                            ],
+                            uniqueBy: ['elementId', 'ownerId'],
+                            update: [
+                                'sortOrder' => $element->getSortOrder(),
+                            ],
+                        );
+                    $newElementIds[$element->id] = $element->id;
+
+                    continue;
+                }
+
+                if ($draftToDraft) {
+                    // The nested element belongs to the source draft. Its duplicate should be derived from the same
+                    // canonical nested element, if any, rather than the source draft’s copy.
+                    $canonicalId = $element->getIsDerivative() ? $element->getCanonicalId() : null;
+                } elseif ($setCanonicalId) {
+                    $canonicalId = $element->getCanonical()->getCanonicalId() ?? $element->id;
+                } else {
+                    $canonicalId = null;
+                }
+
                 $newAttributes = [
-                    'canonicalId' => $setCanonicalId ? ($element->getCanonical()->getCanonicalId() ?? $element->id) : null,
+                    'canonicalId' => $canonicalId,
                     'primaryOwner' => $target,
                     'owner' => $target,
                     'propagating' => false,
@@ -1213,7 +1258,12 @@ class NestedElementManager extends Component
 
                     $newElementId = $element->id;
                 } else {
-                    $newElementId = Elements::duplicateElement($element, $newAttributes)->id;
+                    $newElementId = Elements::duplicateElement(
+                        $element,
+                        $newAttributes,
+                        // if the duplicate derives from the same canonical element, it should keep track of the same changes
+                        copyModifiedFields: $canonicalId !== null && $element->getIsDerivative(),
+                    )->id;
                 }
 
                 $newElementIds[$element->id] = $newElementId;
@@ -1447,7 +1497,12 @@ class NestedElementManager extends Component
 
                     if ($canonicalElement->trashed) {
                         if ($derivativeElement->dateUpdated == $derivativeElement->dateCreated) {
-                            Elements::deleteElement($derivativeElement);
+                            $derivativeElement->mergingCanonicalChanges = true;
+                            try {
+                                Elements::deleteElement($derivativeElement);
+                            } finally {
+                                $derivativeElement->mergingCanonicalChanges = false;
+                            }
                         }
                     } elseif (
                         ! $derivativeElement->trashed &&
@@ -1480,8 +1535,30 @@ class NestedElementManager extends Component
 
     public function deleteNestedElements(ElementInterface $owner, bool $hardDelete = false): void
     {
-        foreach (Sites::getAllSiteIds() as $siteId) {
-            $query = $this->nestedElementQuery($owner)
+        $allSiteIds = Sites::getAllSiteIds();
+        $siteOwners = [];
+
+        if (count($allSiteIds) > 1) {
+            $siteOwners = $owner::find()
+                ->id($owner->id)
+                ->siteId(['not', $owner->siteId])
+                ->drafts(null)
+                ->provisionalDrafts(null)
+                ->revisions(null)
+                ->trashed(null)
+                ->status(null)
+                ->indexBy('siteId')
+                ->all();
+        }
+
+        foreach ($allSiteIds as $siteId) {
+            // The query factory may scope the query to the owner's site, so load the owner in this site
+            $siteOwner = $siteId === $owner->siteId ? $owner : ($siteOwners[$siteId] ?? null);
+            if (! $siteOwner) {
+                continue;
+            }
+
+            $query = $this->nestedElementQuery($siteOwner)
                 ->status(null)
                 ->siteId($siteId);
             if ($hardDelete) {
@@ -1510,7 +1587,14 @@ class NestedElementManager extends Component
                 }
 
                 $element->deletedWithOwner = true;
-                Elements::deleteElement($element, $hardDelete);
+                $mergingCanonicalChanges = $element->mergingCanonicalChanges;
+                $element->mergingCanonicalChanges = $owner->mergingCanonicalChanges;
+
+                try {
+                    Elements::deleteElement($element, $hardDelete);
+                } finally {
+                    $element->mergingCanonicalChanges = $mergingCanonicalChanges;
+                }
             }
         }
     }

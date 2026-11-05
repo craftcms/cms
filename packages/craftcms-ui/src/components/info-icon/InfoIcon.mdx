@@ -40,6 +40,10 @@ Give it a more specific name when the page has several, so they are distinguisha
 
 The `id` ties the tooltip to its button, and is generated when you do not supply one — so a page can hold many info icons without collisions.
 
+Keep the content to plain text. The tooltip can't take focus, so a link or button inside it can't be reached from the keyboard. Use a [Popover](?path=/docs/components-popover--docs) for anything interactive.
+
+The tooltip describes the button, so screen readers read its text when focus lands on the button, not when it opens. Don't rely on it for anything someone needs to complete a task.
+
 ## Properties
 
 <ArgTypes of={InfoIconStories} />

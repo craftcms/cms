@@ -5,30 +5,21 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Mcp\Schema;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Field\BaseOptionsField;
+use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
-use CraftCms\Cms\Field\Email;
+use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
+use CraftCms\Cms\Field\Date;
 use CraftCms\Cms\Field\Json;
-use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
-use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
-use CraftCms\Cms\Gql\Types\DateTime as DateTimeType;
-use CraftCms\Cms\Gql\Types\Money as MoneyType;
-use CraftCms\Cms\Gql\Types\Number as NumberType;
-use CraftCms\Cms\Mcp\Contracts\ProvidesInputSchema;
+use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\Field\Time;
+use CraftCms\Cms\Gql\GqlInputSchema;
 use CraftCms\Cms\Support\Arr;
 use GraphQL\Error\UserError;
-use GraphQL\Type\Definition\BooleanType;
-use GraphQL\Type\Definition\EnumType;
-use GraphQL\Type\Definition\FloatType;
-use GraphQL\Type\Definition\IDType;
 use GraphQL\Type\Definition\InputObjectType;
-use GraphQL\Type\Definition\IntType;
 use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\NonNull;
-use GraphQL\Type\Definition\ScalarType;
-use GraphQL\Type\Definition\StringType;
 use GraphQL\Type\Definition\Type;
-use GraphQL\Type\Definition\WrappingType;
 use Mcp\Capability\Discovery\SchemaValidator;
 use Mcp\Exception\ToolCallException;
 use stdClass;
@@ -54,16 +45,8 @@ readonly class CustomFieldSchema
 
         $properties = [];
         $required = [];
-        $layoutFields = $layout->getFields(
-            fn (BaseField $layoutField): bool => $layoutField instanceof CustomField
-                && $layoutField->editable($element),
-        );
-
-        foreach ($layoutFields as $layoutField) {
-            if (! $layoutField instanceof CustomField) {
-                continue;
-            }
-
+        // The fields the user can see and edit in the element’s form, as its layout’s conditions allow.
+        foreach ($layout->getEditableCustomFieldElements($element) as $layoutField) {
             $field = $layoutField->getField();
             $handle = $field->handle;
 
@@ -109,14 +92,39 @@ readonly class CustomFieldSchema
         foreach ($values as $handle => $value) {
             $field = $layout->getFieldByHandle((string) $handle);
 
-            if (! $field || ! $this->usesInferredSchema($field)) {
+            if (! $field) {
                 continue;
             }
 
+            if (! $this->usesInferredSchema($field)) {
+                // Date and time schemas accept any string, so a value those fields can’t parse is rejected rather than
+                // clearing the field. Other fields can read a value as empty on purpose, such as a blank option.
+                if (($field instanceof Date || $field instanceof Time) && $value !== null && $value !== '' && $field->normalizeValue($value, $element) === null) {
+                    throw new ToolCallException(sprintf('%s: The value couldn’t be parsed.', $handle));
+                }
+
+                continue;
+            }
+
+            // The GraphQL API rejects new Matrix entries when `sortOrder` is omitted, but MCP adds them after the
+            // existing ones, so the normalizer gets an empty `sortOrder` until sortNewEntries() fills it in.
+            $omitsSortOrder = $field instanceof Matrix && is_array($value) && ! isset($value['sortOrder']);
+
             try {
-                $values[$handle] = $this->normalizeGqlValue($field->getContentGqlMutationArgumentType(), $value);
+                $values[$handle] = $this->normalizeGqlValue(
+                    $field->getContentGqlMutationArgumentType(),
+                    $omitsSortOrder ? [...$value, 'sortOrder' => []] : $value,
+                );
             } catch (UserError $exception) {
                 throw new ToolCallException(sprintf('%s: %s', $handle, $exception->getMessage()), previous: $exception);
+            }
+
+            if ($field instanceof Matrix) {
+                if ($omitsSortOrder) {
+                    unset($values[$handle]['sortOrder']);
+                }
+
+                $values[$handle] = $this->sortNewEntries($element, $field, $values[$handle]);
             }
         }
 
@@ -174,6 +182,49 @@ readonly class CustomFieldSchema
     }
 
     /**
+     * Ensures a normalized Matrix value lists its new entries in `sortOrder`.
+     *
+     * Matrix fields keep only the entries `sortOrder` lists, and default it to the existing entries, so new entries
+     * missing from it would be dropped without an error. When `sortOrder` is omitted, new entries are added after the
+     * existing ones, in the order they appear in `entries`. When it is given, new entries missing from it are rejected.
+     */
+    private function sortNewEntries(ElementInterface $element, Matrix $field, mixed $value): mixed
+    {
+        if (! is_array($value) || ! is_array($value['entries'] ?? null)) {
+            return $value;
+        }
+
+        // Entries keyed by UUID are matched to existing entries by UUID, which the field resolves on its own.
+        if (ElementHelper::nestedElementDelta($value)['uids']) {
+            return $value;
+        }
+
+        $ids = array_map(strval(...), array_keys($value['entries']));
+        $existingIds = $element->id
+            ? array_map(strval(...), Entry::find()->fieldId($field->id)->owner($element)->drafts(null)->status(null)->ids())
+            : [];
+        $newIds = array_values(array_diff($ids, $existingIds));
+
+        if (! isset($value['sortOrder'])) {
+            $value['sortOrder'] = [...$existingIds, ...$newIds];
+
+            return $value;
+        }
+
+        $unlisted = array_diff($newIds, array_map(strval(...), (array) $value['sortOrder']));
+
+        if ($unlisted !== []) {
+            throw new ToolCallException(sprintf(
+                '%s: Add %s to `sortOrder`, which lists the entries to keep in order, or omit `sortOrder` to add new entries after the existing ones.',
+                $field->handle,
+                implode(', ', $unlisted),
+            ));
+        }
+
+        return $value;
+    }
+
+    /**
      * @param  array<string, array<string, mixed>>  $properties
      * @param  list<string>  $required
      * @return array<string, mixed>
@@ -192,19 +243,30 @@ readonly class CustomFieldSchema
     /** @return array<string, mixed> */
     private function fieldSchema(FieldInterface $field, bool $required): array
     {
-        $schema = match (true) {
-            $field instanceof ProvidesInputSchema => $field->getMcpInputSchema(),
-            $field instanceof Json => [],
-            $field instanceof BaseOptionsField => $this->optionsSchema($field),
-            $field instanceof Email => ['type' => 'string', 'format' => 'email'],
-            default => $this->inferredSchema($field),
-        };
+        // A field whose schema can’t be built accepts anything, rather than breaking the element’s schema.
+        try {
+            $schema = match (true) {
+                $field instanceof InputSchemaFieldInterface => $field->getInputSchema(),
+                $field instanceof Json => [],
+                default => GqlInputSchema::fromType($field->getContentGqlMutationArgumentType()),
+            };
+        } catch (Throwable) {
+            $schema = [];
+        }
 
-        $schema = $required ? $this->withoutNull($schema) : $this->withNull($schema);
+        // Unlike the GraphQL API, MCP adds new entries when sortOrder is omitted. {@see sortNewEntries()}
+        if ($field instanceof Matrix && isset($schema['properties']['sortOrder'])) {
+            $schema['properties']['sortOrder']['description'] = 'The entries the field should contain, in order: IDs of existing entries, and the IDs of new entries, or `new:1`, `new:2`, etc. for new entries without an ID, numbered in the order they appear in `entries`. Entries it omits are removed. If omitted, existing entries are kept in their order, and new entries are added after them, in the order they appear in `entries`.';
+        }
+
+        $schema = $required ? GqlInputSchema::withoutNull($schema) : GqlInputSchema::withNull($schema);
         $schema['title'] = $field->name;
 
+        // The instructions are added to the schema’s own description, which can say what format a value takes.
         if ($field->instructions !== null && $field->instructions !== '') {
-            $schema['description'] = $field->instructions;
+            $schema['description'] = isset($schema['description']) && $schema['description'] !== ''
+                ? "{$schema['description']}\n\n{$field->instructions}"
+                : $field->instructions;
         }
 
         return array_filter($schema, static fn (mixed $value): bool => $value !== null && $value !== '');
@@ -212,58 +274,11 @@ readonly class CustomFieldSchema
 
     private function usesInferredSchema(FieldInterface $field): bool
     {
-        return ! $field instanceof ProvidesInputSchema
-            && ! $field instanceof Json
-            && ! $field instanceof BaseOptionsField
-            && ! $field instanceof Email;
-    }
-
-    /** @return array<string, mixed> */
-    private function optionsSchema(BaseOptionsField $field): array
-    {
-        $values = array_values(array_map(
-            static fn (array $option): string => (string) $option['value'],
-            array_filter($field->options, static fn (array $option): bool => isset($option['value'])),
-        ));
-        $itemSchema = ['type' => 'string'];
-
-        if (! $field->customOptions && $values !== []) {
-            $itemSchema['enum'] = $values;
-        }
-
-        return $field->getIsMultiOptionsField()
-            ? ['type' => 'array', 'items' => $itemSchema]
-            : $itemSchema;
-    }
-
-    /** @return array<string, mixed> */
-    private function inferredSchema(FieldInterface $field): array
-    {
-        try {
-            return $this->gqlSchema($field->getContentGqlMutationArgumentType());
-        } catch (Throwable) {
-            return [];
-        }
+        return ! $field instanceof InputSchemaFieldInterface && ! $field instanceof Json;
     }
 
     /**
-     * @param  Type|array<string, mixed>  $definition
-     * @return array<string, mixed>
-     */
-    private function gqlSchema(Type|array $definition): array
-    {
-        $type = is_array($definition) ? $definition['type'] : $definition;
-        $schema = $this->typeSchema($type);
-
-        if (is_array($definition) && isset($definition['description'])) {
-            $schema['description'] = $definition['description'];
-        }
-
-        return $schema;
-    }
-
-    /**
-     * Applies the `normalizeValue` callbacks of a GraphQL input type and the input types nested within it.
+     * Applies the `normalizeValue` callbacks of a GraphQL input type and the input types and fields nested within it.
      *
      * @param  Type|array<string, mixed>  $definition
      */
@@ -279,7 +294,9 @@ readonly class CustomFieldSchema
         } elseif ($type instanceof InputObjectType && is_array($value)) {
             foreach ($value as $name => $fieldValue) {
                 if ($type->hasField((string) $name)) {
-                    $value[$name] = $this->normalizeGqlValue($type->getField((string) $name)->getType(), $fieldValue);
+                    $field = $type->getField((string) $name);
+                    // Field definitions can have their own `normalizeValue` callbacks, such as Time fields'.
+                    $value[$name] = $this->normalizeGqlValue(['type' => $field->getType()] + $field->config, $fieldValue);
                 }
             }
 
@@ -287,111 +304,5 @@ readonly class CustomFieldSchema
         }
 
         return is_callable($normalizer) ? $normalizer($value) : $value;
-    }
-
-    /**
-     * @param  list<string>  $visited
-     * @return array<string, mixed>
-     */
-    private function typeSchema(Type $type, array $visited = []): array
-    {
-        if ($type instanceof NonNull) {
-            return $this->withoutNull($this->typeSchema($type->getWrappedType(), $visited));
-        }
-
-        if ($type instanceof ListOfType) {
-            return $this->withNull([
-                'type' => 'array',
-                'items' => $this->typeSchema($type->getWrappedType(), $visited) ?: new stdClass,
-            ]);
-        }
-
-        if ($type instanceof InputObjectType) {
-            if (in_array($type->name, $visited, true)) {
-                return ['type' => ['object', 'null'], 'additionalProperties' => true];
-            }
-
-            $properties = [];
-            $required = [];
-
-            foreach ($type->getFields() as $field) {
-                $fieldSchema = $this->typeSchema($field->getType(), [...$visited, $type->name]);
-                $properties[$field->name] = array_filter([
-                    ...$fieldSchema,
-                    'description' => $field->description ?? $fieldSchema['description'] ?? null,
-                ], static fn (mixed $value): bool => $value !== null && $value !== '') ?: new stdClass;
-
-                if ($field->isRequired()) {
-                    $required[] = $field->name;
-                }
-            }
-
-            return $this->withNull(array_filter([
-                'type' => 'object',
-                'description' => $type->description,
-                'properties' => $properties ?: null,
-                'required' => $required ?: null,
-                'minProperties' => $type->isOneOf() ? 1 : null,
-                'maxProperties' => $type->isOneOf() ? 1 : null,
-                'additionalProperties' => false,
-            ], static fn (mixed $value): bool => $value !== null && $value !== ''));
-        }
-
-        if ($type instanceof EnumType) {
-            return $this->withNull([
-                'type' => 'string',
-                'enum' => array_map(static fn ($value): string => $value->name, $type->getValues()),
-            ]);
-        }
-
-        return $this->withNull($this->scalarSchema($type));
-    }
-
-    /** @return array<string, mixed> */
-    private function scalarSchema(Type $type): array
-    {
-        return match (true) {
-            $type instanceof BooleanType => ['type' => 'boolean'],
-            $type instanceof IntType => ['type' => 'integer'],
-            $type instanceof FloatType, $type instanceof NumberType, $type instanceof MoneyType => ['type' => 'number'],
-            $type instanceof IDType => ['type' => ['string', 'integer']],
-            $type instanceof StringType => ['type' => 'string'],
-            $type instanceof DateTimeType => ['type' => 'string', 'format' => 'date-time'],
-            $type instanceof ScalarType => [],
-            $type instanceof WrappingType => $this->typeSchema($type->getWrappedType()),
-            default => [],
-        };
-    }
-
-    /**
-     * @param  array<string, mixed>  $schema
-     * @return array<string, mixed>
-     */
-    private function withNull(array $schema): array
-    {
-        if (! isset($schema['type'])) {
-            return $schema;
-        }
-
-        $types = (array) $schema['type'];
-        $schema['type'] = array_values(array_unique([...$types, 'null']));
-
-        return $schema;
-    }
-
-    /**
-     * @param  array<string, mixed>  $schema
-     * @return array<string, mixed>
-     */
-    private function withoutNull(array $schema): array
-    {
-        if (! isset($schema['type'])) {
-            return $schema;
-        }
-
-        $types = array_values(array_diff((array) $schema['type'], ['null']));
-        $schema['type'] = count($types) === 1 ? $types[0] : $types;
-
-        return $schema;
     }
 }

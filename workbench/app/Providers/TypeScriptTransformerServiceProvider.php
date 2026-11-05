@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace Workbench\App\Providers;
 
+use CraftCms\Cms\Ai\Assistant\Data\ElementParams;
+use CraftCms\Cms\Ai\Assistant\Data\Proposal;
 use CraftCms\Cms\Asset\Data\UploadResult;
 use CraftCms\Cms\Condition\ConditionBuilderPayload;
 use CraftCms\Cms\Condition\ConditionRulePayload;
 use CraftCms\Cms\Condition\Enums\GroupOperator;
+use CraftCms\Cms\Cp\CommandPalette\CommandPaletteItem;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Data\NavItem;
+use CraftCms\Cms\Cp\Data\NavNode;
 use CraftCms\Cms\Cp\Data\NotificationButtonData;
 use CraftCms\Cms\Cp\Data\NotificationData;
 use CraftCms\Cms\Dashboard\Data\WidgetData;
@@ -25,12 +29,14 @@ use CraftCms\Cms\Http\ViewModels\ContentIndexViewModel;
 use CraftCms\Cms\Http\ViewModels\EntryIndexViewModel;
 use CraftCms\Cms\Http\ViewModels\FieldEditViewModel;
 use CraftCms\Cms\Http\ViewModels\ImportPlanEditViewModel;
+use CraftCms\Cms\Http\ViewModels\ReleaseViewModel;
 use CraftCms\Cms\Http\ViewModels\UserAddressesViewModel;
 use CraftCms\Cms\Http\ViewModels\UserIndexViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPasskeysViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPermissionsViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPreferencesViewModel;
 use CraftCms\Cms\Http\ViewModels\UserSignInProvidersViewModel;
+use CraftCms\Cms\Http\ViewModels\UserTokensViewModel;
 use CraftCms\Cms\Http\ViewModels\WorkflowEditViewModel;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Import\Data\CompoundMappingColumn;
@@ -44,6 +50,12 @@ use CraftCms\Cms\Import\Data\NestedMappingPayload;
 use CraftCms\Cms\Import\Data\SourceColumn;
 use CraftCms\Cms\Import\Data\StepMappingPayload;
 use CraftCms\Cms\Import\Data\StepUiPayload;
+use CraftCms\Cms\Release\Data\AttachedReleaseData;
+use CraftCms\Cms\Release\Data\ReleaseDetailData;
+use CraftCms\Cms\Release\Data\ReleaseItemData;
+use CraftCms\Cms\Release\Data\ReleaseReadiness;
+use CraftCms\Cms\Release\Data\ReleaseSummaryData;
+use CraftCms\Cms\Release\Enums\ReleaseStatus;
 use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\Enums\ChoicePresentation;
@@ -79,6 +91,8 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
             ->replaceType(DateTimeInterface::class, 'string')
             ->provider(new ClassListTransformedProvider(
                 [
+                    ElementParams::class,
+                    Proposal::class,
                     UploadResult::class,
                     UploadSessionData::class,
                     GqlSchema::class,
@@ -103,6 +117,12 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     ControlPayload::class,
                     ConditionBuilderPayload::class,
                     ConditionRulePayload::class,
+                    AttachedReleaseData::class,
+                    ReleaseDetailData::class,
+                    ReleaseItemData::class,
+                    ReleaseReadiness::class,
+                    ReleaseSummaryData::class,
+                    ReleaseStatus::class,
                     GroupOperator::class,
                     UiPayload::class,
                     WidgetData::class,
@@ -110,6 +130,8 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     NodePayload::class,
                     ActionItem::class,
                     NavItem::class,
+                    NavNode::class,
+                    CommandPaletteItem::class,
                     NotificationButtonData::class,
                     NotificationData::class,
                     Permission::class,
@@ -120,6 +142,7 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     HtmlFragment::class,
                     AssetIndexViewModel::class,
                     ContentIndexViewModel::class,
+                    ReleaseViewModel::class,
                     EntryIndexViewModel::class,
                     FieldEditViewModel::class,
                     ImportPlanEditViewModel::class,
@@ -130,6 +153,7 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     UserPreferencesViewModel::class,
                     UserSettings::class,
                     UserSignInProvidersViewModel::class,
+                    UserTokensViewModel::class,
                     WorkflowEditViewModel::class,
                     WorkflowDraftReviewData::class,
                     WorkflowReviewData::class,

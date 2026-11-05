@@ -2,6 +2,11 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Ai\Http\Controllers\AccountController as AiAccountController;
+use CraftCms\Cms\Ai\Http\Controllers\GuidanceController as AiGuidanceController;
+use CraftCms\Cms\Ai\Http\Controllers\SettingsController as AiSettingsController;
+use CraftCms\Cms\Ai\Http\Controllers\SkillsController as AiSkillsController;
+use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Edition;
@@ -12,6 +17,7 @@ use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
+use CraftCms\Cms\Http\Controllers\CommandPaletteController;
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Http\Controllers\ContentIndexController;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
@@ -34,8 +40,10 @@ use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Http\Controllers\QueueController;
+use CraftCms\Cms\Http\Controllers\ReleasesController;
 use CraftCms\Cms\Http\Controllers\Settings\AddressSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\AssetTransformersController;
+use CraftCms\Cms\Http\Controllers\Settings\CpNavigationController;
 use CraftCms\Cms\Http\Controllers\Settings\EmailSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
@@ -56,6 +64,7 @@ use CraftCms\Cms\Http\Controllers\Users\IndexController as UsersIndexController;
 use CraftCms\Cms\Http\Controllers\Users\PasskeysController;
 use CraftCms\Cms\Http\Controllers\Users\PasswordController;
 use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
+use CraftCms\Cms\Http\Controllers\Users\PersonalAccessTokensController;
 use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
 use CraftCms\Cms\Http\Controllers\Users\SignInProvidersController;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
@@ -108,7 +117,7 @@ Route::allowDuringMaintenance()->prefix('updates')->name('updates.')->group(func
 
 Route::allowDuringMaintenance()->middleware(RunQueue::class)->group(function () {
     Route::get(CpAuthPath::Login->value, [LoginController::class, 'showLogin']);
-    Route::post(CpAuthPath::Login->value, [LoginController::class, 'attemptLogin'])->middleware('throttle:'.LoginRateLimiter::NAME);
+    Route::post(CpAuthPath::Login->value, [LoginController::class, 'attemptLogin'])->middleware('throttle:'.LoginRateLimiter::NAME)->name('login.attempt');
     Route::match(['get', 'post'], CpAuthPath::Logout->value, [LoginController::class, 'logout'])->name('logout');
     Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm'])->middleware(EnsureTwoFactorChallengeIsRecent::class);
     Route::get(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'show']);
@@ -126,10 +135,35 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
 
     Route::post('notifications/mark-read', [NotificationsController::class, 'markRead']);
 
+    Route::prefix('command-palette')->name('command-palette.')->group(function () {
+        Route::get('/', [CommandPaletteController::class, 'index'])->name('index');
+        Route::get('search/{provider}', [CommandPaletteController::class, 'search'])->name('search');
+        Route::get('docs', [CommandPaletteController::class, 'docs'])->name('docs');
+    });
+
+    Route::middleware(RequireEdition::class.':'.Edition::Pro->value)->group(function () {
+        Route::resource('releases', ReleasesController::class)
+            ->except('edit')
+            ->whereNumber('release');
+
+        Route::prefix('releases/{release}')->name('releases.')->whereNumber('release')->group(function () {
+            Route::get('preview', [ReleasesController::class, 'preview'])->name('preview');
+            Route::post('validate', [ReleasesController::class, 'validateRelease'])->name('validate');
+            Route::get('schedule', [ReleasesController::class, 'scheduleModal'])->name('scheduleModal');
+            Route::post('schedule', [ReleasesController::class, 'schedule'])->name('schedule');
+            Route::post('unschedule', [ReleasesController::class, 'unschedule'])->name('unschedule');
+            Route::get('publish', [ReleasesController::class, 'publishModal'])->name('publishModal');
+            Route::post('publish', [ReleasesController::class, 'publish'])->name('publish');
+            Route::post('drafts', [ReleasesController::class, 'attach'])->name('attach');
+            Route::delete('drafts/{draft}', [ReleasesController::class, 'detach'])->whereNumber('draft')->name('detach');
+        });
+    });
+
     Route::prefix('workflows')->middleware(RequireEdition::class.':'.Edition::Pro->value)->group(function () {
         Route::post('submit', [WorkflowTransitionsController::class, 'submit']);
         Route::post('{workflowRun}/override', [WorkflowTransitionsController::class, 'override']);
         Route::post('{workflowRun}/restart', [WorkflowTransitionsController::class, 'restart']);
+        Route::post('{workflowRun}/prepare-for-editing', [WorkflowTransitionsController::class, 'prepareForEditing']);
         Route::prefix('{workflowRun}/stages/{stage}')->group(function () {
             Route::post('comment', [WorkflowTransitionsController::class, 'comment']);
             Route::post('user-review/approve', [UserReviewController::class, 'approve']);
@@ -159,6 +193,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     });
 
     Route::prefix('utilities/queue-manager')->group(function () {
+        Route::post('jobs', [QueueController::class, 'jobs']);
         Route::post('release-all', [QueueController::class, 'cancelAll']);
         Route::post('retry-all', [QueueController::class, 'retryAll']);
         Route::post('{id}/release', [QueueController::class, 'cancel']);
@@ -173,6 +208,15 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     // SystemMessages
     Route::get('system-messages/{key}', [SystemMessagesController::class, 'show']);
     Route::post('system-messages', [SystemMessagesController::class, 'store']);
+
+    // AI Guidance
+    Route::post('ai-guidance', [AiGuidanceController::class, 'store']);
+    Route::get('ai-skills', [AiSkillsController::class, 'index']);
+    Route::get('ai-skills/new', [AiSkillsController::class, 'create']);
+    Route::get('ai-skills/{skillId}', [AiSkillsController::class, 'edit'])->whereNumber('skillId');
+    Route::post('ai-skills', [AiSkillsController::class, 'store']);
+    Route::patch('ai-skills/{skillId}', [AiSkillsController::class, 'update'])->whereNumber('skillId');
+    Route::delete('ai-skills/{skillId}', [AiSkillsController::class, 'destroy'])->whereNumber('skillId');
 
     Route::middleware(RequireAdminChanges::class)->group(function () {
         Route::get('settings/addresses', [AddressSettingsController::class, 'index']);
@@ -196,7 +240,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         'slug' => '(?:-[^\/]*)',
     ];
 
-    Route::get('preview/{id}{slug}', PreviewElementController::class)->where($idSlugParams);
+    Route::get('preview/{id}{slug?}', PreviewElementController::class)->where($idSlugParams);
     Route::get('edit/{id}{slug?}', ElementRedirectController::class)->where($idSlugParams);
     Route::get('edit/{uid}', ElementRedirectController::class);
     Route::get('revisions/{id}{slug}', [ElementRevisionsController::class, 'index'])->where($idSlugParams);
@@ -251,6 +295,11 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('myaccount/password', [PasswordController::class, 'index']);
     Route::get('myaccount/preferences', [PreferencesController::class, 'index']);
     Route::patch('myaccount/preferences', [PreferencesController::class, 'update']);
+    Route::get('myaccount/tokens', [PersonalAccessTokensController::class, 'index']);
+    Route::middleware('can:'.Assistant::PERMISSION)->group(function () {
+        Route::get('myaccount/ai-assistant', [AiAccountController::class, 'index']);
+        Route::patch('myaccount/ai-assistant', [AiAccountController::class, 'update']);
+    });
     Route::get('myaccount/sign-in-providers', [SignInProvidersController::class, 'index']);
     Route::post('myaccount/sign-in-providers/{provider}/connect', [SignInProvidersController::class, 'connect']);
     Route::delete('myaccount/sign-in-providers/{provider}', [SignInProvidersController::class, 'destroy']);
@@ -299,11 +348,23 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::get('settings', SettingsIndexController::class)
             ->name('settings.index');
 
+        Route::get('settings/ai', [AiSettingsController::class, 'index'])
+            ->name('settings.ai.index');
+        Route::post('settings/ai', [AiSettingsController::class, 'store'])
+            ->middleware(RequireAdminChanges::class)
+            ->name('settings.ai.store');
+        Route::post('settings/ai/render-ui', [AiSettingsController::class, 'renderUi'])
+            ->middleware(RequireAdminChanges::class)
+            ->name('settings.ai.render-ui');
+
         Route::get('settings/mcp', [McpSettingsController::class, 'index'])
             ->name('settings.mcp.index');
         Route::post('settings/mcp', [McpSettingsController::class, 'store'])
             ->middleware(RequireAdminChanges::class)
             ->name('settings.mcp.store');
+        Route::post('settings/mcp/render-ui', [McpSettingsController::class, 'renderUi'])
+            ->middleware(RequireAdminChanges::class)
+            ->name('settings.mcp.render-ui');
 
         // Entry types
         Route::prefix('settings/entry-types')->name('settings.entry-types.')->group(function () {
@@ -332,6 +393,29 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             Route::get('{workflow}', [WorkflowsController::class, 'edit'])->name('edit');
         });
 
+        // Control panel navigations
+        Route::prefix('settings/cp-nav')->name('settings.cp-nav.')->middleware(RequireEdition::class.':'.Edition::Team->value)->group(function () {
+            Route::get('/', [CpNavigationController::class, 'index'])->name('index');
+            Route::get('default', [CpNavigationController::class, 'editDefault'])->name('default');
+            Route::post('item-settings', [CpNavigationController::class, 'itemSettings'])->name('item-settings');
+            Route::post('item-settings/apply', [CpNavigationController::class, 'applyItemSettings'])
+                ->middleware(RequireAdminChanges::class)
+                ->name('apply-item-settings');
+            Route::put('default', [CpNavigationController::class, 'updateDefault'])
+                ->middleware(RequireAdminChanges::class)
+                ->name('update-default');
+
+            Route::middleware(RequireEdition::class.':'.Edition::Pro->value)->group(function () {
+                Route::middleware(RequireAdminChanges::class)->group(function () {
+                    Route::post('reorder', [CpNavigationController::class, 'reorder'])->name('reorder');
+                    Route::put('{groupUid}', [CpNavigationController::class, 'update'])->name('update');
+                    Route::delete('{groupUid}', [CpNavigationController::class, 'destroy'])->name('destroy');
+                });
+
+                Route::get('{groupUid}', [CpNavigationController::class, 'edit'])->name('edit');
+            });
+        });
+
         // Fields
         Route::prefix('settings/fields')->name('settings.fields.')->group(function () {
             Route::get('/', [FieldsController::class, 'index'])->name('index');
@@ -352,6 +436,9 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::allowDuringMaintenance()
             ->post('settings/general', [GeneralSettingsController::class, 'store'])
             ->name('settings.general.store');
+        Route::allowDuringMaintenance()
+            ->post('settings/general/maintenance-mode', [GeneralSettingsController::class, 'maintenanceMode'])
+            ->name('settings.general.maintenance-mode');
 
         // Email
         Route::get('settings/email', [EmailSettingsController::class, 'index'])
@@ -400,6 +487,9 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             Route::get('/', [PluginsController::class, 'index']);
 
             Route::middleware(RequireAdminChanges::class)->group(function () {
+                // Registered before `{handle}`, which would otherwise take them for plugin handles.
+                Route::post('enable-all', [PluginsController::class, 'enableAll'])->name('settings.plugins.enable-all');
+                Route::post('disable-all', [PluginsController::class, 'disableAll'])->name('settings.plugins.disable-all');
                 Route::post('{handle}/install', [PluginsController::class, 'install']);
                 Route::post('{handle}/uninstall', [PluginsController::class, 'uninstall']);
                 Route::post('{handle}/enable', [PluginsController::class, 'enable']);
@@ -411,7 +501,18 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
 
             Route::get('{handle}', [PluginsController::class, 'editSettings']);
         });
-        Route::get('plugin-store{any?}', [PluginStoreController::class, 'index'])->where('any', '.*');
+        Route::prefix('plugin-store')->group(function () {
+            Route::get('/', [PluginStoreController::class, 'index']);
+            Route::get('categories/{id}', [PluginStoreController::class, 'category'])->whereNumber('id');
+            Route::get('featured/{handle}', [PluginStoreController::class, 'featured']);
+            Route::get('developer/{id}', [PluginStoreController::class, 'developer'])->whereNumber('id');
+            Route::get('search', [PluginStoreController::class, 'search']);
+            Route::get('buy-all-trials', [PluginStoreController::class, 'buyAllTrials']);
+            Route::get('buy/{handle}/{edition?}', [PluginStoreController::class, 'buy']);
+            Route::get('upgrade-craft', [PluginStoreController::class, 'upgradeCraft']);
+            Route::get('{handle}/{tab?}', [PluginStoreController::class, 'plugin'])
+                ->where('tab', 'reviews|editions|changelog');
+        });
 
         // Rebrand
         // @TODO: Remove when rebrand assets are refactored

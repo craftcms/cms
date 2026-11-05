@@ -82,6 +82,43 @@ describe('craft-field label association', () => {
     expect(labelNode(element)!.hasAttribute('for')).toBe(false);
   });
 
+  it('enhances a native input swapped in after the field connects', async () => {
+    const element = await createField({label: 'My field'});
+    const replacement = document.createElement('input');
+    replacement.slot = 'input';
+    input(element)!.replaceWith(replacement);
+    await Promise.resolve();
+    await element.updateComplete;
+
+    expect(replacement.classList.contains('form-control')).toBe(true);
+    expect(replacement.id).toBeTruthy();
+    expect(labelNode(element)!.getAttribute('for')).toBe(replacement.id);
+    expect(replacement.getAttribute('aria-labelledby')?.split(/\s+/)).toContain(
+      labelNode(element)!.id
+    );
+  });
+
+  it('labels a nested form control swapped in after the field connects', async () => {
+    const element = await createField(
+      {label: 'My field'},
+      '<input slot="input" type="hidden">'
+    );
+    const nestedControl = document.createElement('craft-input');
+    nestedControl.slot = 'input';
+    input(element)!.replaceWith(nestedControl);
+    await Promise.resolve();
+    await element.updateComplete;
+    await nestedControl.updateComplete;
+
+    expect(nestedControl.classList.contains('form-control')).toBe(true);
+    expect(
+      nestedControl
+        .querySelector('input')!
+        .getAttribute('aria-labelledby')
+        ?.split(/\s+/)
+    ).toContain(labelNode(element)!.id);
+  });
+
   it('uses group semantics for a composite control wrapper', async () => {
     const element = await createField(
       {label: 'My group'},
@@ -536,6 +573,26 @@ describe('craft-field empty label and instructions', () => {
     await element.updateComplete;
 
     expect(heading(element)).not.toBeNull();
+  });
+});
+
+describe('craft-field instructions-sr-only', () => {
+  it('visually hides the instructions but keeps them in the description', async () => {
+    const element = await createField(
+      {label: 'My field', 'instructions-sr-only': ''},
+      '<input slot="input" type="text"><div slot="help-text">Type { to insert a value.</div>'
+    );
+    await element.updateComplete;
+
+    const input = element.querySelector('input')!;
+    const helpText = element.querySelector('[slot="help-text"]')!;
+
+    expect(
+      element.shadowRoot!.querySelector(
+        '.cp-visually-hidden slot[name="help-text"]'
+      )
+    ).not.toBeNull();
+    expect(input.getAttribute('aria-describedby')).toContain(helpText.id);
   });
 });
 

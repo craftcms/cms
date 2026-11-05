@@ -15,7 +15,6 @@
     onBeforeUnmount,
     onMounted,
     ref,
-    provide,
     useTemplateRef,
     watch,
   } from 'vue';
@@ -26,44 +25,42 @@
     setFocusWithin,
     trapFocusWithin,
   } from '@craftcms/garnish';
-  import AppLayout from '@/common/layouts/AppLayout.vue';
-  import SlideoutScreen from '@/common/layouts/screens/SlideoutScreen.vue';
+  import {t} from '@craftcms/ui/utilities/translate';
+  import {useResizeObserver, useWindowSize} from '@vueuse/core';
   import {
-    createScreenPropsStore,
-    provideScreenContext,
-    ScreenPagePropsKey,
-    ScreenPropsStoreKey,
-    ScreenShellKey,
-  } from '@/common/composables/screen';
+    getActivePreview,
+    previewEditorOffset,
+  } from '@/modules/elements/live-preview/previews';
+  import AppLayout from '@/common/layouts/AppLayout.vue';
+  import ResizeHandle from '@/common/components/ResizeHandle.vue';
+  import {useResizable} from '@/common/composables/useResizable';
+  import {provideSlideoutScreen} from './screenContext';
   import {
     registerPanel,
+    shadeElement,
     uiLayerManager,
     unregisterPanel,
     type StackedPanel,
   } from './panel-stack';
   import {closeSlideout, notifySlideoutSaved, reloadSlideout} from './store';
-  import {SlideoutControllerKey, type SlideoutInstance} from './types';
+  import type {SlideoutInstance} from './types';
 
   const props = defineProps<{
     instance: SlideoutInstance;
   }>();
 
-  provide(ScreenShellKey, SlideoutScreen);
-  provide(ScreenPropsStoreKey, createScreenPropsStore());
-  provideScreenContext('slideout');
+  const SLIDEOUT_MIN_WIDTH = 400;
+  /** Room kept beside a slideout. Mirrored by the panel's stylesheet cap. */
+  const SLIDEOUT_MIN_GAP = 80;
 
-  // Without this the shell would read its chrome off `usePage()` — the page
-  // *behind* the slideout — and show that screen's title and edit URL.
-  provide(ScreenPagePropsKey, () => props.instance.props);
-
-  provide(SlideoutControllerKey, {
-    get instance() {
-      return props.instance;
-    },
+  provideSlideoutScreen(() => props.instance, {
     close: (options?: {force?: boolean}) =>
       closeSlideout(props.instance.id, options),
     reload: () => reloadSlideout(props.instance.id),
     saved: (result) => notifySlideoutSaved(props.instance.id, result),
+    get coversPreviewEditor() {
+      return previewEditor !== null;
+    },
   });
 
   /**
@@ -80,6 +77,50 @@
   );
 
   const panelEl = useTemplateRef<HTMLElement>('panel');
+
+  /**
+   * Live Preview's editor pane, when this opened during a preview. The panel
+   * then covers only that pane, as a sheet sliding up from the bottom, and
+   * the shade stops at its edge, leaving the preview visible beside it.
+   */
+  const activePreview = getActivePreview();
+  const previewEditor = activePreview?.editor.value ?? null;
+  const previewEditorWidth = ref(previewEditor?.offsetWidth ?? 0);
+  const previewEditorStart = ref(
+    previewEditor ? previewEditorOffset(previewEditor) : 0
+  );
+
+  if (previewEditor) {
+    useResizeObserver(previewEditor, () => {
+      previewEditorWidth.value = previewEditor.offsetWidth;
+      previewEditorStart.value = previewEditorOffset(previewEditor);
+    });
+  }
+
+  /**
+   * Drag-to-resize from the panel's inner edge, as the details column does.
+   *
+   * The width lands on `--slideout-width`, which the stack offset reads too, so
+   * stacked panels keep peeking out correctly. It's shared by every slideout,
+   * except one opened with a width of its own, which keeps it to itself.
+   */
+  const {width: viewportWidth} = useWindowSize();
+  const resizer = useResizable({
+    target: panelEl,
+    edge: () =>
+      positionProp.value === 'inset-inline-start'
+        ? 'inline-start'
+        : 'inline-end',
+    minWidth: () => Math.min(SLIDEOUT_MIN_WIDTH, slideoutMaxWidth()),
+    maxWidth: slideoutMaxWidth,
+    cssVariable: '--slideout-width',
+    storageKey: props.instance.width ? undefined : 'Slideout.width',
+  });
+
+  function slideoutMaxWidth(): number {
+    // Leave room beside the panel, so the page behind can still be clicked to close it.
+    return Math.max(0, viewportWidth.value - SLIDEOUT_MIN_GAP);
+  }
 
   /**
    * Where this panel sits, driven by the shared stack rather than by this
@@ -102,15 +143,30 @@
    * Spreading the stack across the leftover space rather than stepping by a
    * constant means it never runs off the edge however deep it goes; each
    * panel just peeks out a little less.
+   *
+   * Each step is capped at half the panel's width, though. A panel resized
+   * narrow leaves so much space beside it that an even spread would open gaps
+   * between the panels, rather than keeping them stacked.
    */
   const stackPanel: StackedPanel = {
     get element() {
       return panelEl.value!;
     },
     position(index: number, total: number) {
-      offset.value = `calc((100vw - var(--slideout-panel-width)) * ${
-        (index + 1) / total
-      })`;
+      if (previewEditor) {
+        // There's no room beside the pane to stagger panels into, so each
+        // covers the one before it.
+        offset.value = 'var(--slideout-preview-start)';
+        return;
+      }
+
+      const depth = total - 1 - index;
+      const step = `min((100vw - var(--slideout-panel-width)) / ${total}, var(--slideout-panel-width) / 2)`;
+
+      offset.value =
+        depth === 0
+          ? 'calc(100vw - var(--slideout-panel-width))'
+          : `calc(100vw - var(--slideout-panel-width) - ${depth} * ${step})`;
     },
     handleShadeClick() {
       closeSlideout(props.instance.id);
@@ -118,6 +174,10 @@
   };
 
   onMounted(() => {
+    if (previewEditor) {
+      activePreview!.editorCovers.value++;
+    }
+
     const el = panelEl.value!;
 
     addModalAttributes(el);
@@ -143,6 +203,7 @@
     // After `addLayer`, which the stack relies on to work out which container
     // to leave visible to assistive technology.
     registerPanel(stackPanel);
+    fitShadeToPreviewEditor();
 
     // A locally-built panel (see `openSlideoutWith`) arrives with its component
     // already set, so the watcher below never fires for it.
@@ -151,7 +212,37 @@
     }
   });
 
+  function fitShadeToPreviewEditor(): void {
+    if (previewEditor) {
+      const shade = shadeElement();
+      shade.style.insetInlineStart = `${previewEditorStart.value}px`;
+      shade.style.width = `${previewEditorWidth.value}px`;
+    }
+  }
+
+  watch([previewEditorWidth, previewEditorStart], fitShadeToPreviewEditor);
+
+  const panelStyle = computed(() =>
+    previewEditor
+      ? {
+          '--slideout-preview-width': `${previewEditorWidth.value}px`,
+          '--slideout-preview-start': `${previewEditorStart.value}px`,
+          insetInlineStart: offset.value,
+        }
+      : {
+          ...(props.instance.width
+            ? {'--slideout-width': props.instance.width}
+            : {}),
+          ...resizer.style.value,
+          [positionProp.value]: offset.value,
+        }
+  );
+
   onBeforeUnmount(() => {
+    if (previewEditor) {
+      activePreview!.editorCovers.value--;
+    }
+
     const el = panelEl.value!;
 
     // By element, not the bare pop: with two slideout stacks interleaving,
@@ -176,17 +267,32 @@
 
 <template>
   <!-- `data-slideout-id` is how the store works out which panel something was
-    opened from, so it can nest below it rather than replace it. -->
+    opened from, so it can nest below it rather than replace it.
+    `data-focus-scope` keeps a re-rendered menu's focus lookup inside it. -->
   <div
     ref="panel"
     class="slideout-panel"
+    :class="{
+      'slideout-panel--resizing': resizer.isResizing.value,
+      'slideout-panel--in-preview': previewEditor,
+    }"
     tabindex="-1"
     :data-slideout-id="instance.id"
-    :style="{
-      ...(instance.width ? {'--slideout-width': instance.width} : {}),
-      [positionProp]: offset,
-    }"
+    :data-focus-scope="instance.id"
+    :style="panelStyle"
   >
+    <!-- `prevent-autofocus`: it comes first in the panel, and opening the panel
+      shouldn't land focus on it instead of the screen's first field. -->
+    <ResizeHandle
+      v-if="!previewEditor"
+      class="slideout-panel__resize-handle prevent-autofocus"
+      :class="{
+        'slideout-panel__resize-handle--end':
+          positionProp === 'inset-inline-end',
+      }"
+      :resizer="resizer"
+      :label="t('Resize slideout')"
+    />
     <div v-if="instance.loading" class="slideout-panel__status">
       <craft-spinner></craft-spinner>
     </div>
@@ -209,7 +315,13 @@
        length, not a percentage — the stack offset subtracts it from `100vw`.
        Resolved into a local so the fallback lives in exactly one place; the
        offset `calc()` reads this too. */
-    --slideout-panel-width: var(--slideout-width, 55vw);
+    /* Capped at the viewport less the gap `SLIDEOUT_MIN_GAP` keeps beside it,
+       so a width chosen in a wider window still fits after it shrinks. The
+       chosen width itself is kept, and comes back once there's room again. */
+    --slideout-panel-width: min(
+      var(--slideout-width, 55vw),
+      calc(100vw - 80px)
+    );
 
     position: fixed;
     inset-block: 0;
@@ -222,7 +334,7 @@
     display: flex;
     flex-direction: column;
     background: var(--c-surface-default, #fff);
-    box-shadow: 0 0 16px rgb(0 0 0 / 15%);
+    box-shadow: var(--c-slideout-shadow);
     overflow: hidden;
     /* Same as the legacy `.slideout-container`. */
     z-index: var(--c-layer-overlay);
@@ -240,8 +352,22 @@
     }
   }
 
+  /* Over Live Preview's editor pane, covering it exactly, as a nested view
+     sliding in from the end. Stacked panels sit on top of each other. */
+  .slideout-panel--in-preview {
+    width: var(--slideout-preview-width);
+    /* Over the editor's own border, so it carries one of its own. */
+    border-inline-start: 1px solid var(--c-color-border-quiet);
+    border-radius: 0;
+    box-shadow: none;
+
+    @media screen and (prefers-reduced-motion: no-preference) {
+      transition: inset-inline-start linear 250ms;
+    }
+  }
+
   @media (width < var(--breakpoint-sm)) {
-    .slideout-panel {
+    .slideout-panel:not(.slideout-panel--in-preview) {
       /* Full-width sheet on small screens, matching the legacy slideout —
          there isn't room to peek, so stacked panels sit on top of each other.
          `!important` because the inline offset is set per-panel. */
@@ -252,6 +378,41 @@
       border-end-start-radius: 0;
       container-name: slideout;
       container-type: inline-size;
+    }
+  }
+
+  /* Inside the panel, which clips anything past its edge, with the grip on
+     the edge itself and the panel's own rounded corners. */
+  /* Focus is only parked on the panel while its screen loads (or when the
+     screen has nothing to focus), so there's nothing here to ring. */
+  .slideout-panel:focus-visible {
+    outline: none;
+  }
+
+  .slideout-panel .slideout-panel__resize-handle {
+    inset-inline-start: 0;
+    transform: none;
+    justify-content: flex-start;
+    border-radius: 0;
+    border-start-start-radius: var(--c-radius-lg, 0.5rem);
+    border-end-start-radius: var(--c-radius-lg, 0.5rem);
+  }
+
+  .slideout-panel .slideout-panel__resize-handle--end {
+    inset-inline: auto 0;
+    justify-content: flex-end;
+    border-radius: 0;
+  }
+
+  /* The offset follows the width, so let it keep up with the pointer. */
+  .slideout-panel--resizing {
+    transition: none;
+  }
+
+  @media (width < var(--breakpoint-sm)) {
+    /* A full-width sheet has no width to resize. */
+    .slideout-panel {
+      --resize-handle-display: none;
     }
   }
 

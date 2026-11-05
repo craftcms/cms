@@ -27,11 +27,19 @@ import {HasLabel} from '@src/mixins/HasLabel';
  * @slot feedback - Validation messages. Lion fills this from the control's
  *   validators.
  * @slot prefix - Content inside the control, before the input.
- * @slot suffix - Content inside the control, after the input.
+ * @slot suffix - Content inside the control, after the input, in its own
+ *   segment. See `inline-suffix`.
  * @slot before - Content outside the control, before it.
  * @slot after - Content outside the control, after it.
  */
 export default class CraftInput extends HasLabel(LionInput) {
+  /**
+   * Visually hides the label, keeping it available to screen readers.
+   * `FormControlMixin` declares this property (`label-sr-only`), but its
+   * types leave it out.
+   */
+  declare labelSrOnly: boolean;
+
   static override get styles() {
     return [...super.styles, inputStyles, styles];
   }
@@ -86,6 +94,15 @@ export default class CraftInput extends HasLabel(LionInput) {
   @property({reflect: true, type: Boolean}) monospace = false;
 
   /**
+   * Draws `suffix` content inside the input's border, with no divider before
+   * it, and leaves a button there at its own size instead of filling the
+   * segment. Suits a button that acts on the value, such as one that
+   * regenerates it.
+   */
+  @property({reflect: true, type: Boolean, attribute: 'inline-suffix'})
+  inlineSuffix = false;
+
+  /**
    * Visually hides the control while keeping it in the DOM and form-bound, so
    * its value still submits. Useful for fields that are populated/managed
    * programmatically but must round-trip with the form.
@@ -95,11 +112,6 @@ export default class CraftInput extends HasLabel(LionInput) {
 
   override connectedCallback() {
     super.connectedCallback();
-
-    if (this._inputNode && this.maxlength && this.maxlength > 0) {
-      this._inputNode.maxLength = this.maxlength;
-    }
-
     this.syncNativeAttributes();
     this.syncAriaInvalid();
   }
@@ -146,6 +158,8 @@ export default class CraftInput extends HasLabel(LionInput) {
   private syncNativeAttributes() {
     const attributes = {
       size: this.inputSize ?? this.maxlengthSize,
+      maxlength:
+        this.maxlength && this.maxlength > 0 ? this.maxlength : undefined,
       min: this.min,
       max: this.max,
       step: this.step,

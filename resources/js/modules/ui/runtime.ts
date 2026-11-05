@@ -1,21 +1,14 @@
 import {Validator} from '@lion/ui/form-core.js';
-import {type InjectionKey, type Ref, type Slots} from 'vue';
+import {type InjectionKey, type Ref} from 'vue';
 import type {
   CanonicalUiValue,
   UiChange,
   UiControlPayload,
   UiNodePayload,
-  NestedUiPayload,
   UiValue,
   UiValues,
 } from './types';
 import type {ActionItems} from '@/common/types';
-
-export const UiFailure: InjectionKey<(message: string) => void> =
-  Symbol('UiFailure');
-
-export const UiPending: InjectionKey<Readonly<Ref<boolean>>> =
-  Symbol('UiPending');
 
 /**
  * Whether the page's table defaults to the `flush` appearance, spanning the
@@ -24,36 +17,9 @@ export const UiPending: InjectionKey<Readonly<Ref<boolean>>> =
 export const UiTableFlush: InjectionKey<Readonly<Ref<boolean>>> =
   Symbol('UiTableFlush');
 
-export const UiErrors: InjectionKey<{
-  clearChildren(path: string[]): void;
-  childrenCleared(path: string[]): boolean;
-}> = Symbol('UiErrors');
-
 export type UiControlBehavior = {
   comparisonValue: (value: UiValue) => UiValue;
 };
-
-export const UiControlBehaviors: InjectionKey<
-  (path: string[], behavior: UiControlBehavior) => () => void
-> = Symbol('UiControlBehaviors');
-
-export const UiControlStructure: InjectionKey<
-  (control: Pick<UiControlPayload, 'path'>, uis: NestedUiPayload[]) => void
-> = Symbol('UiControlStructure');
-
-export const UiControlOverrides: InjectionKey<Readonly<Slots>> =
-  Symbol('UiControlOverrides');
-
-/** Modified delta groups as dotted paths, provided to every field beneath. */
-export const UiModifiedGroups: InjectionKey<Readonly<Ref<Set<string>>>> =
-  Symbol('UiModifiedGroups');
-
-/**
- * Dotted paths of every control changed since the UI was last reset. A field
- * holding nested UIs badges when one lands at or below it — see FieldNode.
- */
-export const UiChangedPaths: InjectionKey<Readonly<Ref<Set<string>>>> =
-  Symbol('UiChangedPaths');
 
 /**
  * Lets a field's control rewrite the field's "⋮" menu with state only the
@@ -72,9 +38,12 @@ export const FieldActionItems: InjectionKey<
 export const FieldLabelSrOnly: InjectionKey<Readonly<Ref<boolean>>> =
   Symbol('FieldLabelSrOnly');
 
-/** Control paths whose changes have an active UI refresh. */
-export const UiRefreshingFields: InjectionKey<Readonly<Ref<Set<string>>>> =
-  Symbol('UiRefreshingFields');
+/**
+ * Reloads the UI an admin table belongs to after the table changes, when that
+ * UI isn't the page's own — such as a form fetched for a modal.
+ */
+export const UiTableRefresh: InjectionKey<() => void> =
+  Symbol('UiTableRefresh');
 
 class ServerError extends Validator {
   static override validatorName = 'ServerError';
@@ -285,9 +254,23 @@ export function setValue(
   value: UiValue
 ): void {
   let target: UiValues | UiValue[] = source;
+  let parent: UiValues | UiValue[] | null = null;
+  let parentKey: string | number = '';
 
   for (let index = 0; index < path.length; index++) {
     const segment = path[index]!;
+
+    // PHP serializes an empty keyed map as `[]`, so key into it as a map.
+    if (
+      Array.isArray(target) &&
+      target.length === 0 &&
+      parent &&
+      !/^(0|[1-9][0-9]*)$/.test(segment)
+    ) {
+      const map: UiValues = {};
+      (parent as Record<string | number, UiValue>)[parentKey] = map;
+      target = map;
+    }
 
     if (Array.isArray(target)) {
       if (!/^(0|[1-9][0-9]*)$/.test(segment)) {
@@ -301,6 +284,8 @@ export function setValue(
       }
 
       const child: UiValue = target[rowIndex];
+      parent = target;
+      parentKey = rowIndex;
       if (Array.isArray(child) || isRecord(child)) {
         target = child;
       } else {
@@ -316,6 +301,8 @@ export function setValue(
     }
 
     const child: UiValue = target[segment];
+    parent = target;
+    parentKey = segment;
     if (Array.isArray(child) || isRecord(child)) {
       target = child;
     } else {

@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Providers;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
@@ -17,6 +18,7 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Flash;
+use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Data\Update as UpdateData;
 use CraftCms\Cms\Update\Data\UpdateRelease;
@@ -26,6 +28,7 @@ use GuzzleHttp\Utils;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Foundation\Events\LocaleUpdated;
@@ -70,10 +73,21 @@ class AppServiceProvider extends ServiceProvider
         $this->registerMacros();
         $this->registerSerializableClasses();
         $this->registerThrottleExceptionHandler();
+
+        // Inertia DevTools records every request in local environments unless told otherwise, which adds hundreds of
+        // milliseconds to control panel requests, so it's opt-in. Set before providers boot, when DevTools checks it.
+        $this->app->booting(function () {
+            if (config('inertia.devtools.enabled') === null) {
+                config()->set('inertia.devtools.enabled', false);
+            }
+        });
     }
 
     public function boot(): void
     {
+        // The control panel sets this one from JavaScript, so it can't be encrypted.
+        EncryptCookies::except(Theme::COOKIE);
+
         AuthenticationException::redirectUsing(function () {
             $loginPath = Cms::config()->getLoginPath();
 
@@ -139,6 +153,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Register Collection::one() as an alias of first()
         Collection::macro('one', fn () => $this->first(...func_get_args()));
+
+        // Register Collection::render() for rendering collections of Renderable objects
+        Collection::macro('render', fn (array $variables = []) => Template::render($this, $variables));
 
         Collection::macro(
             'sentence',

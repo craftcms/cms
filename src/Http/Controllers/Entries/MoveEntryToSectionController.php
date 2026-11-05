@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Entries;
 
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
-use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Entries;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Sections;
-use CraftCms\Cms\Support\Html;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -20,7 +19,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\t;
 
@@ -54,7 +52,7 @@ readonly class MoveEntryToSectionController
         // get entry types by entry IDs
         $entryTypes = DB::table(Table::ENTRYTYPES, 'et')
             ->distinct()
-            ->leftJoin(new Alias(Table::ENTRIES, 'e'), 'e.typeId', 'et.id')
+            ->leftJoin(Table::ENTRIES.' as e', 'e.typeId', 'et.id')
             ->whereIn('e.id', $entryIds)
             ->pluck('et.id')
             ->all();
@@ -66,23 +64,12 @@ readonly class MoveEntryToSectionController
             currentSectionUid: $currentSectionUid,
         );
 
-        if (empty($compatibleSections)) {
-            $listHtml = Html::tag(
-                name: 'p',
-                content: t('Couldn’t find any sections that all selected elements could be moved to.'),
-                attributes: ['class' => 'zilch']
-            );
-        } else {
-            $listHtml = '';
-            foreach ($compatibleSections as $section) {
-                $listHtml .= app(ElementHtml::class)->chipHtml($section, [
-                    'selectable' => true,
-                    'class' => 'fullwidth',
-                ]);
-            }
-        }
-
-        return new JsonResponse(['listHtml' => $listHtml]);
+        return new JsonResponse([
+            'sections' => array_values(array_map(fn (Section $section) => [
+                'id' => $section->id,
+                'label' => $section->getUiLabel(),
+            ], $compatibleSections)),
+        ]);
     }
 
     public function move(): Response

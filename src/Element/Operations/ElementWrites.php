@@ -25,12 +25,14 @@ use CraftCms\Cms\Element\Events\ElementsResaved;
 use CraftCms\Cms\Element\Events\ElementsResaving;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
+use CraftCms\Cms\Element\Models\Draft;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Element\Models\ElementSiteSettings;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Search\Search;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
@@ -43,7 +45,6 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
-use CraftCms\Cms\Workflow\Workflows;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
@@ -75,7 +76,6 @@ readonly class ElementWrites
         private ElementCaches $elementCaches,
         private Search $search,
         private Sites $sites,
-        private Workflows $workflows,
     ) {
         $this->propagationSites = new WeakMap;
     }
@@ -394,6 +394,52 @@ readonly class ElementWrites
         ?ElementSiteSettings &$siteSettingsRecord = null,
         ?bool $inheritedUpdateSearchIndex = null,
     ): bool {
+        return $this->elements->ensureSaveScope(function () use (
+            $element,
+            $runValidation,
+            $propagate,
+            $updateSearchIndex,
+            $supportedSites,
+            $forceTouch,
+            $crossSiteValidate,
+            $saveContent,
+            &$siteSettingsRecord,
+            $inheritedUpdateSearchIndex,
+        ) {
+            return $this->saveInScope(
+                $element,
+                $runValidation,
+                $propagate,
+                $updateSearchIndex,
+                $supportedSites,
+                $forceTouch,
+                $crossSiteValidate,
+                $saveContent,
+                $siteSettingsRecord,
+                $inheritedUpdateSearchIndex,
+            );
+        });
+    }
+
+    /**
+     * Saves an element, within an element save scope.
+     *
+     * @param  array<int, array{siteId:int, siteUid:string, propagate:bool, enabledByDefault:bool}>|null  $supportedSites
+     *
+     * @see saveInternal()
+     */
+    private function saveInScope(
+        ElementInterface $element,
+        bool $runValidation,
+        bool $propagate,
+        ?bool $updateSearchIndex,
+        ?array $supportedSites,
+        bool $forceTouch,
+        bool $crossSiteValidate,
+        bool $saveContent,
+        ?ElementSiteSettings &$siteSettingsRecord,
+        ?bool $inheritedUpdateSearchIndex,
+    ): bool {
         $originalScenario = $element->ruleset->getScenario();
         try {
             $isNewElement = ! $element->id;
@@ -516,8 +562,7 @@ readonly class ElementWrites
                 DB::beginTransaction();
 
                 try {
-                    $this->workflows->lockDraftIds($draftIdsToLock);
-
+                    Draft::lockIds(...$draftIdsToLock);
                     $this->updateModel($element, $isNewElement, $forceTouch, $fieldLayout, $trackChanges, $dirtyAttributes);
 
                     if ($siteSettingsRecord === null) {
@@ -562,7 +607,7 @@ readonly class ElementWrites
                             foreach ($fieldLayout->getCustomFields() as $field) {
                                 $validUids[$field->layoutElement->uid] = true;
 
-                                if (($saveContent || in_array($field->handle, $dirtyFields)) && $field::dbType() !== null) {
+                                if (($saveContent || in_array($field->handle, $dirtyFields)) && ($field::dbType() !== null || $field instanceof MissingField)) {
                                     $value = $element->getFieldValue($field->handle);
                                     if ($element->isNewForSite && $field->isValueEmpty($value, $element)) {
                                         continue;
@@ -733,7 +778,7 @@ readonly class ElementWrites
 
                 if ($trackChanges) {
                     $userId = currentUser()?->getCraftUserId();
-                    $timestamp = now();
+                    $timestamp = Query::prepareDateForDb(now());
 
                     foreach ($dirtyAttributes as $attributeName) {
                         DB::table(Table::CHANGEDATTRIBUTES)
@@ -972,10 +1017,9 @@ readonly class ElementWrites
                 'target' => '_blank',
             ]).
             $message.
-            Html::tag('span', '', [
-                'data-icon' => 'external',
-                'aria-label' => t('Open in a new tab'),
-                'role' => 'img',
+            Html::tag('craft-icon', '', [
+                'name' => 'external',
+                'label' => t('Open in a new tab'),
             ]).
             Html::endTag('a');
         }

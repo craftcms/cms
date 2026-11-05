@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Html;
 
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Colorable;
@@ -17,11 +18,13 @@ use CraftCms\Cms\Component\Contracts\Thumbable;
 use CraftCms\Cms\Cp\Components\ActionMenu;
 use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Components\Icon;
+use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\Enums\ButtonVariant;
+use CraftCms\Cms\Cp\Enums\ChipThumbSize;
 use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
 use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
 use CraftCms\Cms\Cp\Icons;
-use CraftCms\Cms\Element\Actions\Copy;
+use CraftCms\Cms\Element\Actions\ClientAction;
 use CraftCms\Cms\Element\Actions\Delete;
 use CraftCms\Cms\Element\Actions\Duplicate;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -32,6 +35,7 @@ use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\NestedElementManager;
+use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Shared\Enums\Color;
@@ -56,7 +60,12 @@ readonly class ElementHtml
 {
     public const string CHIP_SIZE_SMALL = 'small';
 
+    public const string CHIP_SIZE_MEDIUM = 'medium';
+
     public const string CHIP_SIZE_LARGE = 'large';
+
+    /** The thumbnail size for small chips, other than plain ones. */
+    public const int CHIP_THUMB_SIZE = 26;
 
     public function __construct(
         private StatusHtml $statusHtml,
@@ -85,9 +94,16 @@ readonly class ElementHtml
             'showLabel' => true,
             'showStatus' => true,
             'showThumb' => true,
-            'size' => self::CHIP_SIZE_SMALL,
+            'size' => null,
             'sortable' => false,
+            'thumbSize' => null,
         ];
+
+        // Without a size of its own, a chip takes the one its thumbnail suits.
+        $thumbSize = $config['thumbSize'] instanceof ChipThumbSize
+            ? $config['thumbSize']
+            : ChipThumbSize::tryFrom((string) $config['thumbSize']);
+        $config['size'] ??= $thumbSize?->chipSize() ?? self::CHIP_SIZE_SMALL;
 
         $config['showActionMenu'] = $config['showActionMenu'] && $component instanceof Actionable;
         $config['showHandle'] = $config['showHandle'] && $component instanceof Grippable;
@@ -97,14 +113,15 @@ readonly class ElementHtml
         $config['showDescription'] = $config['showDescription'] && $component instanceof Describable;
 
         $color = $component instanceof Colorable ? $component->getColor() : null;
-        $thumbHtml = $config['showThumb'] ? $this->chipThumbHtml($component, $config['size']) : null;
+        $thumbHtml = $config['showThumb'] ? $this->chipThumbHtml($component, $config['size'], $thumbSize, $config['appearance'] ?? null) : null;
         $icon = $config['showThumb'] ? $this->chipIcon($component) : null;
 
         $attributes = Arr::merge([
             'id' => $config['id'],
             'size' => $config['size'],
+            'thumb-size' => $thumbSize?->value,
             'class' => [
-                'cp-color-'.($color->value ?? 'white'),
+                ...($color ? ["cp-color-$color->value"] : []),
                 $config['size'],
                 ...Html::explodeClass($config['class']),
             ],
@@ -120,7 +137,7 @@ readonly class ElementHtml
                 'label' => $component->getUiLabel(),
                 'description' => $component instanceof Describable ? $component->getDescription() : null,
                 'handle' => $component instanceof Grippable ? $component->getHandle() : null,
-                'color' => $color->value ?? 'white',
+                'color' => $color?->value,
                 'settings' => $config['autoReload'] ? [
                     'selectable' => $config['selectable'],
                     'id' => InputNamespace::namespaceId($config['id']),
@@ -132,6 +149,7 @@ readonly class ElementHtml
                     'showDescription' => $config['showDescription'],
                     'overrides' => $config['overrides'],
                     'size' => $config['size'],
+                    'thumbSize' => $thumbSize?->value,
                     'ui' => 'chip',
                 ] : false,
             ]),
@@ -233,15 +251,21 @@ readonly class ElementHtml
     /**
      * Returns a chip’s thumbnail HTML, or `null` if the component doesn’t have one.
      */
-    private function chipThumbHtml(Chippable $component, string $size): ?string
+    private function chipThumbHtml(Chippable $component, string $size, ?ChipThumbSize $thumbSize, ?string $appearance = null): ?string
     {
         if (! $component instanceof Thumbable) {
             return null;
         }
 
-        $thumbSize = $size === self::CHIP_SIZE_SMALL ? 30 : 120;
+        // A small chip's thumbnail fits within its 32px height, inside its
+        // border and padding, unless the chip is plain, without either.
+        $pixels = $thumbSize?->pixels() ?? match (true) {
+            $size !== self::CHIP_SIZE_SMALL => 120,
+            $appearance === Appearance::Plain->value => 30,
+            default => self::CHIP_THUMB_SIZE,
+        };
 
-        return $component->getThumbHtml($thumbSize, ImageTransformMode::Fit) ?: null;
+        return $component->getThumbHtml($pixels, ImageTransformMode::Fit) ?: null;
     }
 
     /**
@@ -289,8 +313,9 @@ readonly class ElementHtml
      * - `showProvisionalDraftLabel` – Whether an “Edited” badge should be added to the label if the element is a provisional draft
      * - `showStatus` – Whether the element’s status should be shown
      * - `showThumb` – Whether the element’s thumbnail should be shown
-     * - `size` – The size of the chip (`small` or `large`)
+     * - `size` – The size of the chip (`small`, `medium`, or `large`). Defaults to the size that suits `thumbSize`, or `small`.
      * - `sortable` – Whether the chip should include a drag handle
+     * - `thumbSize` – The size of the thumbnail (`sm`, `md`, `lg`, `xl`, or `2xl`, or a {@see ChipThumbSize}), if not the one `size` gives it
      */
     /** @param array<string, mixed> $config */
     public function elementChipHtml(ElementInterface $element, array $config = []): string
@@ -309,7 +334,7 @@ readonly class ElementHtml
             'showProvisionalDraftLabel' => null,
             'showStatus' => true,
             'showThumb' => true,
-            'size' => self::CHIP_SIZE_SMALL,
+            'size' => null,
             'sortable' => false,
         ];
 
@@ -427,7 +452,7 @@ readonly class ElementHtml
 
         foreach ($items as &$item) {
             if ($config['nestedActionEvents'] && str_starts_with($item['id'] ?? '', 'action-copy-')) {
-                $item['action'] = $this->nestedElementAction($element, Copy::class);
+                $item['action'] = $this->nestedElementAction($element, ClientAction::copy());
             }
         }
         unset($item);
@@ -550,7 +575,7 @@ readonly class ElementHtml
             'class' => ['flex', 'flex-nowrap', 'gap-1', 'grow-1', 'items-center'],
         ]).
             ($icon ? Html::tag('craft-icon', '', ['name' => $icon]) : '').
-            ($title ? Html::tag('div', Html::encode($title), ['class' => 'card-titlebar-label']) : '').
+            ($title ? Html::tag('div', Html::encode($title), ['class' => 'card-titlebar-label', 'data-card-label' => true]) : '').
             Html::endTag('div'). // .flex
             $this->cardModifiedStatusHtml($element);
     }
@@ -689,7 +714,7 @@ readonly class ElementHtml
      */
     public function elementCardThumbHtml(ElementInterface $element): string
     {
-        return $element->getThumbHtml(120, ImageTransformMode::Crop) ?? '';
+        return $element->getThumbHtml(120, ImageTransformMode::Fit) ?? '';
     }
 
     /**
@@ -901,17 +926,17 @@ readonly class ElementHtml
     }
 
     /**
-     * @param  class-string<Copy|Duplicate|Delete>  $actionClass
+     * @param  ClientAction|class-string<Duplicate|Delete>  $action
      * @return array{type: string, name: string, detail: array{action: string, elementId: int|null, item: array<string, mixed>}}
      */
-    private function nestedElementAction(ElementInterface $element, string $actionClass): array
+    private function nestedElementAction(ElementInterface $element, ClientAction|string $action): array
     {
         $elementActions = app(ElementActions::class);
         $item = $elementActions->serializeActionItems([
-            $elementActions->createAction($actionClass, $element::class),
+            $action instanceof ClientAction ? $action : $elementActions->createAction($action, $element::class),
         ])[0];
 
-        if ($actionClass === Copy::class) {
+        if ($action instanceof ClientAction && $action->key === 'copy') {
             $item['action']['detail']['elements'] = [[
                 'type' => $element::class,
                 'id' => $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id,
@@ -950,7 +975,16 @@ readonly class ElementHtml
             $classes[] = 'error';
         }
 
-        $thumb = $element->getThumbHtml(120, ImageTransformMode::Crop);
+        $elementThumb = $element->getThumb();
+        $coverAsset = match ($this->cardThumbStyle($element)) {
+            'cover' => $elementThumb?->getAsset(),
+            'auto' => $elementThumb?->supportsCover() ? $elementThumb->getAsset() : null,
+            default => null,
+        };
+        $coverUrl = $coverAsset?->getCardCoverUrl();
+        $luminance = $coverUrl !== null ? $coverAsset->analysis?->colors?->luminance : null;
+
+        $thumb = $elementThumb?->getHtml(120, ImageTransformMode::Fit);
         $thumbAlignment = $element->getFieldLayout()?->getCardThumbAlignment() ?? 'end';
 
         if ($thumb) {
@@ -963,6 +997,8 @@ readonly class ElementHtml
             $this->baseElementAttributes($element, $config),
             [
                 'class' => $classes,
+                'cover-src' => $coverUrl,
+                'luminance' => $luminance ?: null,
                 'style' => array_filter([
                     '--custom-border-color' => $color?->cssVar(200),
                     '--custom-titlebar-bg-color' => $color?->cssVar(100),
@@ -972,7 +1008,7 @@ readonly class ElementHtml
                     '--custom-sel-bg-color' => $color?->cssVar(800),
                 ]),
                 'data' => array_filter([
-                    'color' => $color->value ?? 'white',
+                    'color' => $color?->value,
                     'settings' => $config['autoReload'] ? [
                         'hyperlink' => $config['hyperlink'],
                         'returnUrl' => $config['returnUrl'],
@@ -988,44 +1024,134 @@ readonly class ElementHtml
     }
 
     /**
-     * Renders the “modified” status badge for a nested element that will replace
-     * its canonical counterpart when the owner is saved, or an empty string.
+     * Returns the thumb style of an element's card: its field layout's, or else `auto` for assets.
+     */
+    private function cardThumbStyle(ElementInterface $element): string
+    {
+        return $element->getFieldLayout()?->getCardThumbStyle() ?? ($element instanceof Asset ? 'auto' : 'normal');
+    }
+
+    /**
+     * Renders the “modified” status badge for a nested element that was added
+     * or edited in its owner draft or revision, or an empty string.
      */
     private function cardModifiedStatusHtml(ElementInterface $element): string
     {
-        if (
-            ! (
-                $element instanceof NestedElementInterface &&
-                $element->getOwnerId() !== null &&
-                $element->getOwnerId() === $element->getPrimaryOwnerId() &&
-                ! $element->getIsDraft() &&
-                ! $element->getIsRevision() &&
-                $element->getOwner()->getIsDerivative()
-            )
-        ) {
+        $isNew = $this->nestedElementIsNew($element);
+
+        if ($isNew === null) {
             return '';
         }
 
-        if ($element->getIsCanonical()) {
-            // this element was created for the owner
-            $statusLabel = t('This is a new {type}.', [
-                'type' => $element::lowerDisplayName(),
-            ]);
-        } else {
-            // this element is a derivative of another element owned by the canonical owner
-            $statusLabel = t('This {type} has been edited.', [
-                'type' => $element::lowerDisplayName(),
-            ]);
-        }
+        $statusLabel = $isNew
+            ? t('This is a new {type}.', ['type' => $element::lowerDisplayName()])
+            : t('This {type} has been edited.', ['type' => $element::lowerDisplayName()]);
 
         return Html::beginTag('div', [
             'class' => ['status-badge', AttributeStatus::Modified->value],
             'title' => $statusLabel,
         ]).
             Html::tag('span', $statusLabel, [
-                'class' => 'visually-hidden',
+                'class' => 'sr-only',
             ]).
             Html::endTag('div');
+    }
+
+    /**
+     * Returns whether a nested element was added (`true`) or edited (`false`)
+     * in its owner draft or revision, or `null` when it's unchanged there.
+     *
+     * In a draft, a nested element is changed when the draft is its primary
+     * owner: it was created for the draft, or duplicated from the canonical
+     * owner's to be edited.
+     *
+     * An owner revision reuses a nested element's last revision when the
+     * element hasn't changed since, so a nested revision is changed when the
+     * owner's previous revision doesn't have it too, and new when that revision
+     * has no revision of the element at all. (Its primary owner doesn't tell:
+     * with versioning on, a nested element saves its own revision, owned by the
+     * canonical owner, before the owner revision reuses it.) Nothing is changed
+     * in an owner's first revision.
+     */
+    private function nestedElementIsNew(ElementInterface $element): ?bool
+    {
+        if (
+            ! $element instanceof NestedElementInterface ||
+            $element->getOwnerId() === null ||
+            $element->getIsDraft()
+        ) {
+            return null;
+        }
+
+        $owner = $element->getOwner();
+
+        if (! $element->getIsRevision()) {
+            return $element->getOwnerId() === $element->getPrimaryOwnerId() && $owner?->getIsDerivative()
+                ? $element->getIsCanonical()
+                : null;
+        }
+
+        if (! $owner?->getIsRevision()) {
+            return null;
+        }
+
+        $previousCanonicalIds = $this->previousOwnerRevisionCanonicalIds(
+            $owner::class,
+            $owner->getCanonicalId(),
+            $owner->revisionNum,
+            $element::class,
+            $element->siteId,
+        );
+
+        if ($previousCanonicalIds === null || isset($previousCanonicalIds[$element->id])) {
+            return null;
+        }
+
+        return ! in_array($element->getCanonicalId(), $previousCanonicalIds, true);
+    }
+
+    /**
+     * Returns the canonical IDs of the nested revisions owned by an owner's
+     * revision before the given one, indexed by their IDs, or `null` when
+     * that's the owner's first revision. Memoized, so a revision's cards
+     * share one lookup.
+     *
+     * @param  class-string<ElementInterface>  $ownerType
+     * @param  class-string<ElementInterface>  $elementType
+     * @return array<int, int>|null
+     */
+    private function previousOwnerRevisionCanonicalIds(
+        string $ownerType,
+        int $ownerCanonicalId,
+        int $revisionNum,
+        string $elementType,
+        int $siteId,
+    ): ?array {
+        return once(function () use ($ownerType, $ownerCanonicalId, $revisionNum, $elementType, $siteId): ?array {
+            $previousOwnerRevisionId = $ownerType::find()
+                ->revisionOf($ownerCanonicalId)
+                ->siteId($siteId)
+                ->status(null)
+                ->where('revisions.num', '<', $revisionNum)
+                ->orderByDesc('num')
+                ->limit(1)
+                ->ids()[0] ?? null;
+
+            $query = $elementType::find();
+
+            if ($previousOwnerRevisionId === null || ! $query instanceof NestedElementQueryInterface) {
+                return null;
+            }
+
+            return $query
+                ->revisions()
+                ->ownerId($previousOwnerRevisionId)
+                ->siteId($siteId)
+                ->status(null)
+                ->pluck('canonicalId', 'id')
+                ->map(fn (mixed $canonicalId) => (int) $canonicalId)
+                ->all();
+        });
     }
 
     /**
@@ -1146,13 +1272,18 @@ readonly class ElementHtml
             $uiLabel();
 
         // show the draft name?
-        if (($config['showDraftName'] ?? true) && $element->getIsDraft() && ! $element->isProvisionalDraft && ! $element->getIsUnpublishedDraft()) {
-            /** @var ElementInterface $element */
-            $content .= Html::tag(
+        $draftLabel = ($config['showDraftName'] ?? true) && $element->getIsDraft() && ! $element->isProvisionalDraft && ! $element->getIsUnpublishedDraft()
+            ? Html::tag(
                 'span',
                 $element->draftName ? Html::encode($element->draftName) : t('Draft'),
                 ['class' => 'context-label'],
-            );
+            )
+            : null;
+
+        // With a draft label, the title truncates on its own, so the label can
+        // wrap below it rather than being cut off.
+        if ($draftLabel !== null) {
+            $content = ($content !== '' ? Html::tag('craft-truncate', $content) : '').$draftLabel;
         }
 
         // the inner span is needed for `text-overflow: ellipsis` (e.g. within breadcrumbs)
@@ -1197,7 +1328,7 @@ readonly class ElementHtml
             return '';
         }
 
-        return Html::tag('craft-truncate', $content, [
+        return Html::tag($draftLabel !== null ? 'span' : 'craft-truncate', $content, [
             'id' => sprintf('%s-label', $config['id']),
             'class' => 'label',
         ]);

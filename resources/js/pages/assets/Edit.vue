@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {ref, watch} from 'vue';
+  import {ref, shallowRef, watch} from 'vue';
   import {router} from '@inertiajs/vue3';
   import ElementEditor from '@/modules/elements/components/ElementEditor.vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
@@ -22,6 +22,8 @@
   }>();
 
   const imageEditorOpen = ref(props.editingImage);
+  /** Remounts the image editor so it reads the refetched image settings. */
+  const imageEditorKey = shallowRef(0);
 
   /**
    * Mirrors the editor's open state in `?editing`, so it can be linked to and
@@ -58,6 +60,9 @@
       replace: true,
       preserveScroll: true,
       preserveState: true,
+      onSuccess: () => {
+        imageEditorKey.value++;
+      },
     });
   }
 
@@ -81,6 +86,7 @@
 
   <ImageEditorDialog
     v-if="imageEditor"
+    :key="imageEditorKey"
     v-bind="imageEditor"
     v-model:open="imageEditorOpen"
     @saved="onImageSaved"
@@ -95,6 +101,10 @@
    * server-scaled) image's natural size instead, matching how the plain
    * <img> this preview used before craft-thumbnail was sized.
    */
+  .asset-preview :deep(.preview-thumb craft-thumbnail) {
+    --c-thumbnail-size: 190px;
+  }
+
   .asset-preview :deep(.preview-thumb craft-thumbnail::part(thumbnail)) {
     width: fit-content;
     height: auto;

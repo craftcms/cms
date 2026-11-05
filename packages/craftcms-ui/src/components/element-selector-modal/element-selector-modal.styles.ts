@@ -28,10 +28,24 @@ export default css`
       var(--_dialog-min-block-size),
       var(--_dialog-max-block-size)
     );
+    border-radius: var(--c-modal-radius, var(--c-radius-lg));
+    box-shadow:
+      var(--c-modal-ring, 0 0 0 1px rgb(0 0 0 / 18%)), var(--c-shadow-2xl);
+  }
+
+  .header {
+    box-sizing: border-box;
+    min-block-size: var(--c-modal-header-height, calc(57rem / 16));
+    padding-block: var(--c-spacing-sm);
   }
 
   :host([fullscreen]) {
     --_dialog-min-block-size: var(--c-dialog-min-block-size, 100dvh);
+  }
+
+  /* Held at the height it opened at (see #queueSizeLock), within the max. */
+  :host([size-locked]:not([fullscreen])) .surface {
+    block-size: min(var(--_locked-block-size), var(--_dialog-max-block-size));
   }
 
   /* The index supplies its own padding, and its sidebar runs edge to edge. */
@@ -73,6 +87,13 @@ export default css`
     buttons flush right. It works the same when the secondary group is empty,
     which is the common case.
   */
+  .footer {
+    box-sizing: border-box;
+    min-block-size: var(--c-modal-footer-height, calc(54rem / 16));
+    padding-block: var(--c-spacing-sm);
+    padding-inline: var(--cp-container-padding, var(--c-spacing-lg));
+  }
+
   .footer__group {
     display: flex;
     align-items: center;

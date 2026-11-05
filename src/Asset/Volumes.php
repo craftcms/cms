@@ -16,14 +16,19 @@ use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementCaches;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Shared\Enums\ModelIdentifier;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
@@ -104,11 +109,31 @@ class Volumes
         return $this->volumes()->firstWhere('handle', $handle);
     }
 
+    /**
+     * Returns a volume by its ID, UID or handle.
+     *
+     * @param  ModelIdentifier[]|null  $by
+     */
+    public function resolveVolume(mixed $volume, ?array $by = null): ?Volume
+    {
+        if ($volume instanceof Volume) {
+            return $volume;
+        }
+
+        return match (ModelIdentifier::detect($volume, $by)) {
+            ModelIdentifier::Id => $this->getVolumeById((int) $volume),
+            ModelIdentifier::Uid => $this->getVolumeByUid($volume),
+            ModelIdentifier::Handle => $this->getVolumeByHandle($volume),
+            null => null,
+        };
+    }
+
     public function getTemporaryVolume(): Volume
     {
         $volume = new Volume([
             'name' => t('Temporary Uploads'),
             'fs' => Cms::config()->getTempAssetUploadDisk(),
+            'propagationMethod' => PropagationMethod::All,
         ]);
         $volume->markAsTemporary();
 
@@ -177,7 +202,23 @@ class Volumes
             $volumeModel->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
             $volumeModel->altTranslationMethod = $data['altTranslationMethod'] ?? TranslationMethod::None->value;
             $volumeModel->altTranslationKeyFormat = $data['altTranslationKeyFormat'] ?? null;
+            if (isset($data['propagationMethod'])) {
+                $volumeModel->propagationMethod = $data['propagationMethod'];
+            } elseif ($isNewVolume) {
+                // The config was saved before the setting existed, so follow the add_propagation_method_to_volumes
+                // migration: keep saving assets to all sites on multi-site installs
+                $isMultiSite = DB::table(Table::SITES)->whereNull('dateDeleted')->count() > 1;
+                $volumeModel->propagationMethod = ($isMultiSite ? PropagationMethod::All : PropagationMethod::Custom)->value;
+            }
+            // Otherwise keep the existing volume's value, which the add_propagation_method_to_volumes migration set
             $volumeModel->uid = $volumeUid;
+
+            // If assets are now saved to all sites, existing assets will need to be propagated to any sites they're missing from
+            $propagateAssets = (
+                ! $isNewVolume &&
+                $volumeModel->propagationMethod === PropagationMethod::All->value &&
+                $volumeModel->isDirty('propagationMethod')
+            );
 
             if (! empty($data['fieldLayouts'])) {
                 $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
@@ -228,11 +269,30 @@ class Volumes
             /** @var Asset[] $assets */
             $assets = Asset::find()
                 ->volumeId($volumeModel->id)
+                ->site('*')
+                ->unique()
                 ->trashed()
                 ->where('assets.deletedWithVolume', true)
                 ->all();
 
             Elements::restoreElements($assets);
+        }
+
+        if ($propagateAssets) {
+            dispatch(new ResaveElements(
+                elementType: Asset::class,
+                criteria: [
+                    'volumeId' => $volumeModel->id,
+                    'site' => '*',
+                    'unique' => true,
+                    'preferSites' => [Sites::getPrimarySite()->id],
+                    'status' => null,
+                ],
+                updateSearchIndex: true,
+                description: I18N::prep('Resaving {name} assets', [
+                    'name' => $volumeModel->name,
+                ]),
+            ));
         }
 
         event(new VolumeSaved(
@@ -303,6 +363,8 @@ class Volumes
             /** @var Asset[] $assets */
             $assets = Asset::find()
                 ->volumeId($volumeModel->id)
+                ->site('*')
+                ->unique()
                 ->status(null)
                 ->all();
 
@@ -341,9 +403,11 @@ class Volumes
             ->whereNull('dateDeleted')
             ->orderBy('sortOrder')
             ->get()
-            ->map(fn ($result) => new Volume(
-                Arr::except((array) $result, ['dateCreated', 'dateUpdated', 'dateDeleted'])
-            ))
+            ->map(fn ($result) => new Volume([
+                // Volumes propagated to all sites before the propagationMethod column existed
+                'propagationMethod' => PropagationMethod::All->value,
+                ...Arr::except((array) $result, ['dateCreated', 'dateUpdated', 'dateDeleted']),
+            ]))
             ->values();
     }
 

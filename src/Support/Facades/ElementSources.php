@@ -18,6 +18,9 @@ use Override;
  * @method static string|null getFirstPage(string $elementType, string $context = 'index', bool $withDisabled = false)
  * @method static bool pageExists(string $elementType, string $page, string $context = 'index', bool $withDisabled = false)
  * @method static string pageNameId(string $page)
+ * @method static string pageSlug(string $page)
+ * @method static bool showsBadgeCount(string $elementType, mixed $source)
+ * @method static bool hasBadgeCountsEnabled(array $elementTypes)
  * @method static void saveSources(string $elementType, mixed[] $sources)
  * @method static \Illuminate\Support\Collection getAvailableTableAttributes(string $elementType)
  * @method static \Illuminate\Support\Collection getTableAttributes(string $elementType, string $sourceKey, string[]|null $customAttributes = null, \CraftCms\Cms\FieldLayout\FieldLayout[]|null $fieldLayouts = null)
@@ -50,6 +53,8 @@ class ElementSources extends Facade
     public const string CONTEXT_RESTRICTED_MODAL = \CraftCms\Cms\Element\ElementSources::CONTEXT_RESTRICTED_MODAL;
 
     public const string CONTEXT_SETTINGS = \CraftCms\Cms\Element\ElementSources::CONTEXT_SETTINGS;
+
+    public const string CONTEXT_EMBEDDED_INDEX = \CraftCms\Cms\Element\ElementSources::CONTEXT_EMBEDDED_INDEX;
 
     #[Override]
     protected static function getFacadeAccessor(): string

@@ -5,13 +5,20 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import\Transformers;
 
 use CraftCms\Cms\Import\Importers\BaseImporter;
-use League\Fractal\TransformerAbstract;
 
 /**
  * @since 6.0.0
  */
-abstract class BaseTransformer extends TransformerAbstract
+abstract class BaseTransformer
 {
+    /**
+     * Converts a raw item from the incoming data into an array that can be imported.
+     *
+     * @param  array<string, mixed>  $item
+     * @return array<string, mixed>
+     */
+    abstract public function transform(array $item, BaseImporter $importer, mixed $element): array;
+
     /**
      * No-op base hook for subclasses to supply extra match criteria to complement/override
      * the ones coming from the UI/config file and the data.

@@ -46,11 +46,15 @@ trait HasFieldPresentation
 
     private string $instructionsPosition = 'before';
 
+    private bool $instructionsSrOnly = false;
+
     private ?string $tip = null;
 
     private ?string $warning = null;
 
     private ?string $layoutUid = null;
+
+    private ?string $icon = null;
 
     /** Strings are plain text; Htmlable and Twig markup render as trusted HTML. */
     public function label(string|Htmlable|Stringable|null $label): static
@@ -169,6 +173,17 @@ trait HasFieldPresentation
         return $this;
     }
 
+    /**
+     * Visually hides the instructions, keeping them in the control’s accessible description, such as when the
+     * control’s placeholder repeats them.
+     */
+    public function instructionsSrOnly(bool $instructionsSrOnly = true): static
+    {
+        $this->instructionsSrOnly = $instructionsSrOnly;
+
+        return $this;
+    }
+
     public function tip(?string $tip): static
     {
         $this->tip = $tip;
@@ -191,6 +206,17 @@ trait HasFieldPresentation
     }
 
     /**
+     * A system icon's name for the field, such as its field type's, for
+     * places that list fields by name — the command palette, say.
+     */
+    public function icon(?string $icon): static
+    {
+        $this->icon = $icon;
+
+        return $this;
+    }
+
+    /**
      * @return array{
      *     labelSrOnly: true|null,
      *     showStatus: false|null,
@@ -202,12 +228,14 @@ trait HasFieldPresentation
      *     orientation: string|null,
      *     inputWidth: string|null,
      *     instructionsPosition: string|null,
+     *     instructionsSrOnly: true|null,
      *     instructionsHtml: string|null,
      *     tip: string|null,
      *     tipHtml: string|null,
      *     warning: string|null,
      *     warningHtml: string|null,
      *     layoutUid: string|null,
+     *     icon: string|null,
      *     status: string|null,
      *     statusLabel: string|null,
      * }
@@ -225,12 +253,14 @@ trait HasFieldPresentation
             'orientation' => $this->orientation,
             'inputWidth' => $this->inputWidth,
             'instructionsPosition' => $this->instructionsPosition !== 'before' ? $this->instructionsPosition : null,
+            'instructionsSrOnly' => $this->instructionsSrOnly ?: null,
             'instructionsHtml' => $this->noticeHtml($this->instructions),
             'tip' => $this->tip,
             'tipHtml' => $this->noticeHtml($this->tip),
             'warning' => $this->warning,
             'warningHtml' => $this->noticeHtml($this->warning),
             'layoutUid' => $this->layoutUid,
+            'icon' => $this->icon,
             'status' => $this->showStatus ? $this->status : null,
             'statusLabel' => $this->showStatus && $this->status !== null ? $this->statusLabel : null,
         ];
@@ -251,6 +281,7 @@ trait HasFieldPresentation
             ->width($props['inputWidth'] ?? null)
             ->instructions($props['instructions'] ?? null)
             ->instructionsPosition((string) ($props['instructionsPosition'] ?? 'before'))
+            ->instructionsSrOnly((bool) ($props['instructionsSrOnly'] ?? false))
             ->tip($props['tip'] ?? null)
             ->warning($props['warning'] ?? null)
             ->required((bool) ($props['required'] ?? false))

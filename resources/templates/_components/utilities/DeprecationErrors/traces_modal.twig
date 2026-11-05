@@ -1,22 +1,19 @@
-<div class="border-b border-b-border-subtle pb-2 mb-3">
-  <p class="text-lg">Steps leading up to the deprecation error:</p>
-</div>
+<p class="mb-md">Steps leading up to the deprecation error:</p>
 
-<table class="cp-table cp-table--auto">
+<table class="cp-table cp-table--auto cp-table--aligned">
   <tbody>
     {% for trace in log.traces %}
       <tr>
-        <th class="light topalign">{{ loop.revindex }}</th>
-        <td>
+        <th class="thin align-top text-quiet">{{ loop.revindex }}</th>
+        <td class="whitespace-normal wrap-break-word">
           {% if loop.first %}
-            <strong>Deprecation error:</strong> {{ log.message|md(inlineOnly=true)|raw }}
+            <strong>Deprecation error:</strong> {{ log.message|md(inlineOnly=true, encode=true)|raw }}
           {% else %}
-            <code>{{ trace.objectClass or trace.class ? ((trace.objectClass ?: trace.class)|e|replace('\\', '\\<wbr>')~'::<wbr>')|raw }}{{ trace.method }}
-              ({{ trace.args }})</code>
+            <code>{{ trace.objectClass or trace.class ? ((trace.objectClass ?: trace.class)|e|replace('\\', '\\<wbr>')~'::<wbr>')|raw }}{{ trace.method }}({{ trace.args }})</code>
           {% endif %}
 
           {% if trace.file %}
-            <br><span>Called from <code>{{ trace.file|e|replace('/', '/<wbr>')|raw }}:{{ trace.line }}</code></span>
+            <br><span class="text-quiet">Called from <code>{{ trace.file|e|replace('/', '/<wbr>')|raw }}:{{ trace.line }}</code></span>
           {% endif %}
         </td>
       </tr>

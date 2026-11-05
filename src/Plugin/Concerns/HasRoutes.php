@@ -48,7 +48,7 @@ trait HasRoutes
         $craftRoutes = $this->app->get(Routes::class);
 
         $this->app['router']
-            ->middleware(['web', 'craft', 'craft.cp'])
+            ->middleware(['web', 'craft', 'craft.cp', 'auth', 'can:accessCp'])
             ->prefix($craftRoutes->cpTriggerRoutePrefix())
             ->group($routes);
     }
@@ -67,7 +67,7 @@ trait HasRoutes
         ]);
 
         $this->app['router']
-            ->middleware(['web', 'craft', 'craft.cp'])
+            ->middleware(['web', 'craft', 'craft.cp', 'auth', 'can:accessCp'])
             ->prefix($cpActionPrefix)
             ->group($routes);
 

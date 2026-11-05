@@ -13,7 +13,8 @@ import type CraftTooltip from '../tooltip/tooltip';
  * the thing it explains.
  *
  * Only one info icon is open at a time — opening one closes any other, so the
- * page never accumulates tooltips.
+ * page never accumulates tooltips. A click outside the icon and its tooltip
+ * closes it too.
  *
  * The tooltip opens on click rather than hover, so the text is reachable
  * without a pointer and stays put long enough to read.
@@ -38,15 +39,14 @@ export default class CraftInfoIcon extends LitElement {
   /** Prevents the tooltip from being opened. */
   @property({type: Boolean, reflect: true}) disabled = false;
 
-  /**
-   * Id of the host, used to tie the tooltip to its button. Generated when not
-   * supplied, so a page can hold many info icons without collisions.
-   */
-  @property() override id: string;
-
   @query('craft-tooltip') protected tooltip!: HTMLElement;
 
   #eventController = new AbortController();
+
+  /** Listens for a click outside while the tooltip is open. */
+  #outsideController: AbortController | null = null;
+
+  #buttonId = `info-icon-${Math.random().toString(36).slice(2, 8)}`;
 
   override connectedCallback() {
     super.connectedCallback();
@@ -54,10 +54,6 @@ export default class CraftInfoIcon extends LitElement {
     // Recreate event controller if it was aborted
     if (this.#eventController.signal.aborted) {
       this.#eventController = new AbortController();
-    }
-
-    if (!this.id) {
-      this.id = `info-icon-${Math.random().toString(36).slice(2, 8)}`;
     }
 
     const {signal} = this.#eventController;
@@ -76,6 +72,7 @@ export default class CraftInfoIcon extends LitElement {
           otherTooltip?.hide();
         }
         CraftInfoIcon.#openInstance = this;
+        this.#watchOutside();
       },
       {signal}
     );
@@ -86,8 +83,28 @@ export default class CraftInfoIcon extends LitElement {
         if (CraftInfoIcon.#openInstance === this) {
           CraftInfoIcon.#openInstance = null;
         }
+        this.#outsideController?.abort();
+        this.#outsideController = null;
       },
       {signal}
+    );
+  }
+
+  /** Hides the tooltip when the pointer goes down anywhere but on the icon or in its tooltip. */
+  #watchOutside(): void {
+    this.#outsideController?.abort();
+    this.#outsideController = new AbortController();
+
+    document.addEventListener(
+      'pointerdown',
+      (event) => {
+        if (!event.composedPath().includes(this)) {
+          void this.renderRoot
+            .querySelector<CraftTooltip>('craft-tooltip')
+            ?.hide();
+        }
+      },
+      {capture: true, signal: this.#outsideController.signal}
     );
   }
 
@@ -95,6 +112,8 @@ export default class CraftInfoIcon extends LitElement {
     if (CraftInfoIcon.#openInstance === this) {
       CraftInfoIcon.#openInstance = null;
     }
+    this.#outsideController?.abort();
+    this.#outsideController = null;
     this.#eventController.abort();
     super.disconnectedCallback();
   }
@@ -107,12 +126,12 @@ export default class CraftInfoIcon extends LitElement {
           icon
           size="zero"
           variant="plain"
-          id="${this.id}"
+          id="${this.#buttonId}"
         >
           <craft-icon name="${this.icon}" label="${this.label}"></craft-icon>
         </craft-button>
 
-        <craft-tooltip trigger="click" for="${this.id}"
+        <craft-tooltip trigger="click" for="${this.#buttonId}"
           ><slot></slot
         ></craft-tooltip>
       </div>

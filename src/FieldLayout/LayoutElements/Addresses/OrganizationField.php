@@ -57,4 +57,10 @@ class OrganizationField extends TextField implements ImportableFieldLayoutElemen
     {
         return t('Organization');
     }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'building';
+    }
 }

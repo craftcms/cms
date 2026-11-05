@@ -49,6 +49,7 @@ use CraftCms\Cms\Gql\Resolvers\Elements\Entry as EntryResolver;
 use CraftCms\Cms\Gql\Types\Generators\EntryType as EntryTypeGenerator;
 use CraftCms\Cms\Gql\Types\Input\Matrix as MatrixInputType;
 use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Route\ElementRoute;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
@@ -57,7 +58,7 @@ use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\ImportHelper;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Ui\Contracts\Control;
@@ -161,8 +162,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         $ns = $field->handle.'_'.Str::random(5);
 
         $exists = DB::table(Table::ENTRIES, "entries_$ns")
-            ->join(new Alias(Table::ELEMENTS, "elements_$ns"), "elements_$ns.id", '=', "entries_$ns.id")
-            ->join(new Alias(Table::ELEMENTS_OWNERS, "elements_owners_$ns"), "elements_owners_$ns.elementId", '=', "elements_$ns.id")
+            ->join(Table::ELEMENTS." as elements_$ns", "elements_$ns.id", '=', "entries_$ns.id")
+            ->join(Table::ELEMENTS_OWNERS." as elements_owners_$ns", "elements_owners_$ns.elementId", '=', "elements_$ns.id")
             ->where("entries_$ns.fieldId", $field->id)
             ->where("elements_$ns.enabled", true)
             ->whereNull("elements_$ns.dateDeleted")
@@ -288,6 +289,15 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
      * @see entryManager()
      */
     private NestedElementManager $_entryManager;
+
+    /**
+     * Owners' entry counts while {@see nestedEntriesControl()} renders, keyed by field, owner, and site IDs.
+     *
+     * Static, as nested entries' permission checks get their own instances of the field.
+     *
+     * @var array<string, int>|null
+     */
+    private static ?array $renderingTotalEntries = null;
 
     public function __construct($config = [])
     {
@@ -447,8 +457,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 ...(Cms::config()->headlessMode ? Arr::only($settings, ['uriFormat']) : $settings),
             ];
         }
+        // The URI and Route columns share the remaining width equally
+        $uriWidth = Cms::config()->headlessMode ? [] : ['width' => 50];
         $siteColumns = [
-            'heading' => ['heading' => t('Site'), 'type' => 'heading'],
+            'heading' => ['heading' => t('Site'), 'type' => 'heading', 'class' => 'thin'],
             'uriFormat' => [
                 'heading' => t('Entry URI Format'),
                 'type' => 'singleline',
@@ -456,10 +468,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 'code' => true,
                 'info' => $objectTemplateTip,
                 'textExpanderTriggers' => $entryTemplateTriggers,
+                ...$uriWidth,
             ],
         ];
         if (! Cms::config()->headlessMode) {
-            $siteColumns['destination'] = ElementSiteSettings::destinationColumn(Entry::class);
+            $siteColumns['destination'] = [
+                ...ElementSiteSettings::destinationColumn(Entry::class),
+                'width' => 50,
+            ];
         }
 
         $indexViewModes = array_values(array_map(fn (array $viewMode): array => [
@@ -633,9 +649,27 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             ->create($this->createConfig($context->element, $creationTypes))
             ->uis($uis)
             ->siteName($this->localizedSiteName($context->element))
+            ->siteId($context->element?->siteId)
             ->minEntries($this->minEntries)
             ->maxEntries($this->maxEntries)
             ->value(['entries' => $values, 'sortOrder' => $sortOrder]);
+    }
+
+    /**
+     * Returns the entries the field shows inline with their own fields, indexed by the identity their blocks have in
+     * the UI, or `null` if the field shows its entries as cards or in an element index.
+     *
+     * @return array<string, Entry>|null
+     */
+    public function inlineEntries(ElementInterface $element): ?array
+    {
+        if (in_array($this->viewMode, [self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID, self::VIEW_MODE_INDEX])) {
+            return null;
+        }
+
+        $entries = $this->entriesForUi($element->getFieldValue($this->handle));
+
+        return array_combine(ElementHelper::nestedElementIdentities($entries), $entries);
     }
 
     /** @return list<Entry> */
@@ -1066,14 +1100,26 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         /** @var EntryQuery<Entry>|ElementCollection<int,Entry> $value */
         $value = $owner->getFieldValue($this->handle);
 
-        if ($value instanceof EntryQuery) {
-            return (clone $value)
-                ->status(null)
-                ->siteId($owner->siteId)
-                ->getCountForPagination();
+        if (! $value instanceof EntryQuery) {
+            return $value->count();
         }
 
-        return $value->count();
+        $key = "$this->id:$owner->id:$owner->siteId";
+
+        if (isset(self::$renderingTotalEntries[$key])) {
+            return self::$renderingTotalEntries[$key];
+        }
+
+        $total = (clone $value)
+            ->status(null)
+            ->siteId($owner->siteId)
+            ->getCountForPagination();
+
+        if (self::$renderingTotalEntries !== null && $this->id && $owner->id) {
+            self::$renderingTotalEntries[$key] = $total;
+        }
+
+        return $total;
     }
 
     #[Override]
@@ -1410,12 +1456,21 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             && $context->ui->mode === ControlMode::Editable
             && ! ($owner?->getIsRevision() ?? false);
 
-        return $this->entryManager()->uiControl(
-            $context->path,
-            $owner,
-            $this->viewMode,
-            $this->nestedElementManagerConfig($context->value, $owner, ! $editable),
-        );
+        // Every nested entry's permission checks ask whether the owner has reached Max Entries, and nothing adds entries
+        // while they render, so the owner's entries are counted once.
+        $totalEntries = self::$renderingTotalEntries;
+        self::$renderingTotalEntries ??= [];
+
+        try {
+            return $this->entryManager()->uiControl(
+                $context->path,
+                $owner,
+                $this->viewMode,
+                $this->nestedElementManagerConfig($context->value, $owner, ! $editable),
+            );
+        } finally {
+            self::$renderingTotalEntries = $totalEntries;
+        }
     }
 
     /**
@@ -1713,7 +1768,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             ->where('fieldId', $outgoingField->id)
             ->update([
                 'fieldId' => $this->id,
-                'dateUpdated' => now(),
+                'dateUpdated' => Query::prepareDateForDb(now()),
             ]);
 
         parent::afterMergeFrom($outgoingField);
@@ -2254,7 +2309,44 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             return $newPrefix;
         }
 
-        return $newPrefix."[$provider->handle]";
+        // use the entry type’s uid, because its handle can be overridden in each Matrix field
+        return $newPrefix."[$provider->uid]";
+    }
+
+    /**
+     * In a Matrix field’s mapping, each entry type is keyed by its uid. This replaces each uid with the
+     * entry type’s handle in this field, then does the same for the custom fields in that entry type.
+     *
+     * @param  array<mixed>  $tree
+     * @return array<mixed>
+     */
+    #[Override]
+    public function resolveMappingKeys(array $tree): array
+    {
+        $entryTypes = [];
+        foreach ($this->getEntryTypes() as $entryType) {
+            $entryTypes[$entryType->uid] = $entryType;
+        }
+
+        $resolved = [];
+
+        foreach ($tree as $key => $value) {
+            $entryType = $entryTypes[$key] ?? null;
+
+            if (! $entryType || ! is_array($value)) {
+                $resolved[$key] = $value;
+
+                continue;
+            }
+
+            if (is_array($value['fields'] ?? null)) {
+                $value['fields'] = ImportHelper::resolveMappingKeys($value['fields'], $entryType->getFieldLayout());
+            }
+
+            $resolved[$entryType->handle] = $value;
+        }
+
+        return $resolved;
     }
 
     #[Override]
@@ -2268,11 +2360,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         // validate that the provider types are allowed
         $providers = $field->getFieldLayoutProviders();
-        $providerHandles = array_map(fn ($provider) => $provider->getHandle(), $providers);
+        $providerUids = array_map(fn ($provider) => $provider->uid, $providers);
 
         $typesFromMap = array_unique(array_keys($value));
 
-        if (array_diff($typesFromMap, $providerHandles)) {
+        if (array_diff($typesFromMap, $providerUids)) {
             $fail($attribute, t('The map contains mapping for entry types that aren’t allowed for this field.'));
 
             return false;

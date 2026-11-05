@@ -6,10 +6,10 @@ namespace CraftCms\Cms\GarbageCollection\Actions;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Eloquent\EloquentElement;
 use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * Hard-deletes eligible elements.
@@ -51,6 +51,23 @@ class HardDeleteElements extends GarbageCollectionAction
      */
     private function deleteTrashedElements(array $normalElementTypes, array $nestedElementTypes): void
     {
+        // Eloquent elements take their models with them, and stay in the trash if a model refuses to go
+        [$eloquentElementTypes, $normalElementTypes] = collect($normalElementTypes)
+            ->partition(fn (string $elementType) => is_subclass_of($elementType, EloquentElement::class))
+            ->map->values()
+            ->map->all()
+            ->all();
+
+        foreach ($eloquentElementTypes as $elementType) {
+            $this->hardDeleteQuery(DB::table(Table::ELEMENTS))
+                ->where('type', $elementType)
+                ->pluck('id')
+                ->chunk($this->garbageCollection::CHUNK_SIZE)
+                ->each(fn ($idsChunk) => DB::table(Table::ELEMENTS)
+                    ->whereIn('id', $elementType::deleteModels($idsChunk->values()->all()))
+                    ->delete());
+        }
+
         if ($normalElementTypes) {
             $this->hardDeleteQuery(DB::table(Table::ELEMENTS))
                 ->whereIn('type', $normalElementTypes)
@@ -63,8 +80,8 @@ class HardDeleteElements extends GarbageCollectionAction
 
         // first get nested elements which are not nested (owned) and that don't have any revisions
         $ids1 = $this->hardDeleteQuery(DB::table(Table::ELEMENTS, 'e'), 'e')
-            ->leftJoin(new Alias(Table::REVISIONS, 'r'), 'r.canonicalId', 'e.id')
-            ->leftJoin(new Alias(Table::ELEMENTS_OWNERS, 'eo'), 'eo.elementId', '=', new Coalesce(['e.canonicalId', 'e.id']))
+            ->leftJoin(Table::REVISIONS.' as r', 'r.canonicalId', 'e.id')
+            ->leftJoin(Table::ELEMENTS_OWNERS.' as eo', 'eo.elementId', '=', new Coalesce(['e.canonicalId', 'e.id']))
             ->whereIn('e.type', $nestedElementTypes)
             ->whereNull('r.id')
             ->whereNull('eo.elementId')
@@ -72,7 +89,7 @@ class HardDeleteElements extends GarbageCollectionAction
 
         // then get any nested elements that don't have any revisions, including nested ones
         $ids2 = $this->hardDeleteQuery(DB::table(Table::ELEMENTS, 'e'), 'e')
-            ->leftJoin(new Alias(Table::REVISIONS, 'r'), 'r.canonicalId', '=', new Coalesce(['e.canonicalId', 'e.id']))
+            ->leftJoin(Table::REVISIONS.' as r', 'r.canonicalId', '=', new Coalesce(['e.canonicalId', 'e.id']))
             ->whereIn('type', $nestedElementTypes)
             ->whereNull('r.id')
             ->pluck('e.id');

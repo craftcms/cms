@@ -17,6 +17,7 @@ use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Facades\Drafts;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
@@ -56,14 +57,63 @@ it('requires all elements to have the same type and site id', function () {
     expect($primarySite->id)->not()->toBe($secondSite->id);
 });
 
-it('hard deletes single-site elements', function () {
+it('soft deletes single-site elements', function () {
     $entry = EntryModel::factory()->createElement(['title' => 'Single-site entry']);
 
     $this->deletions->deleteElementsForSite([$entry]);
 
     expect(Entry::find()->status(null)->siteId($entry->siteId)->id($entry->id)->exists())->toBeFalse()
-        ->and(DB::table(Table::ELEMENTS)->where('id', $entry->id)->exists())->toBeFalse()
-        ->and(DB::table(Table::ELEMENTS_SITES)->where('elementId', $entry->id)->where('siteId', $entry->siteId)->exists())->toBeFalse();
+        ->and(DB::table(Table::ELEMENTS)->where('id', $entry->id)->value('dateDeleted'))->not->toBeNull()
+        ->and(DB::table(Table::ELEMENTS_SITES)->where('elementId', $entry->id)->where('siteId', $entry->siteId)->exists())->toBeTrue()
+        ->and(Entry::find()->trashed()->status(null)->id($entry->id)->exists())->toBeTrue();
+});
+
+it('soft deletes elements that only exist in the requested site on multi-site installs', function () {
+    [$entry, $secondarySite] = createMultiSiteEntry();
+
+    $siteEntry = entryQuery()
+        ->id($entry->id)
+        ->siteId($secondarySite->id)
+        ->status(null)
+        ->one();
+    $this->deletions->deleteElementsForSite([$siteEntry]);
+
+    $primaryEntry = entryQuery()
+        ->id($entry->id)
+        ->siteId($entry->siteId)
+        ->status(null)
+        ->one();
+    $this->deletions->deleteElementsForSite([$primaryEntry]);
+
+    expect(DB::table(Table::ELEMENTS)->where('id', $entry->id)->value('dateDeleted'))->not->toBeNull()
+        ->and(DB::table(Table::ELEMENTS_SITES)->where('elementId', $entry->id)->where('siteId', $entry->siteId)->exists())->toBeTrue();
+});
+
+it('hard deletes single-site drafts', function () {
+    $entry = EntryModel::factory()->createElement(['title' => 'Entry with a draft']);
+    $draft = Drafts::createDraft($entry, User::findOne()->id);
+
+    $this->deletions->deleteElementsForSite([$draft]);
+
+    expect(DB::table(Table::ELEMENTS)->where('id', $draft->id)->exists())->toBeFalse()
+        ->and(DB::table(Table::ELEMENTS)->where('id', $entry->id)->value('dateDeleted'))->toBeNull();
+});
+
+it('deletes provisional drafts for a site', function () {
+    [$entry, $secondarySite] = createMultiSiteEntry();
+
+    $siteEntry = entryQuery()
+        ->id($entry->id)
+        ->siteId($secondarySite->id)
+        ->status(null)
+        ->one();
+    $draft = Drafts::createDraft($siteEntry, User::findOne()->id, provisional: true);
+
+    $this->deletions->deleteElementsForSite([$draft]);
+
+    expect(DB::table(Table::ELEMENTS)->where('id', $draft->id)->value('dateDeleted'))->toBeNull()
+        ->and(DB::table(Table::ELEMENTS_SITES)->where('elementId', $draft->id)->where('siteId', $secondarySite->id)->exists())->toBeFalse()
+        ->and(DB::table(Table::ELEMENTS_SITES)->where('elementId', $draft->id)->where('siteId', $entry->siteId)->exists())->toBeTrue();
 });
 
 it('deletes only the requested site for multi-site elements and dispatches events', function () {

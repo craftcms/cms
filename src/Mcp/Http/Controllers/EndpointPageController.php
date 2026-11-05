@@ -1,0 +1,57 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Mcp\Http\Controllers;
+
+use CraftCms\Cms\Auth\AuthenticationViews;
+use CraftCms\Cms\Mcp\Settings;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\Request;
+use Inertia\Response as InertiaResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+
+/**
+ * Explains an MCP endpoint to people who open it in a browser.
+ *
+ * MCP clients that send a GET for an event stream still get the 405 the stateless transport requires.
+ *
+ * @since 6.0.0
+ */
+readonly class EndpointPageController
+{
+    public function __construct(
+        private AuthenticationViews $views,
+    ) {}
+
+    /** Shows the authorization endpoint's URL, which MCP clients that sign in with OAuth should use. */
+    public function authenticated(Request $request, Settings $settings): View|InertiaResponse|Response
+    {
+        return $this->render($request, $settings->url($settings->authorizationRoute), $settings->serverName(false), false);
+    }
+
+    public function public(Request $request, Settings $settings): View|InertiaResponse|Response
+    {
+        return $this->render($request, $request->url(), $settings->serverName(true), true);
+    }
+
+    private function render(Request $request, string $url, string $serverName, bool $isPublic): View|InertiaResponse|Response
+    {
+        if ($request->prefers(['text/html', 'text/event-stream', 'application/json']) !== 'text/html') {
+            throw new MethodNotAllowedHttpException(['POST', 'OPTIONS']);
+        }
+
+        $viewData = [
+            'url' => $url,
+            'serverName' => $serverName,
+            'isPublic' => $isPublic,
+        ];
+
+        return $this->views->render(
+            request: $request,
+            inertiaComponent: 'auth/McpEndpoint',
+            templateData: $viewData,
+        );
+    }
+}

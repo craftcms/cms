@@ -14,6 +14,7 @@ use Inertia\Testing\AssertableInertia;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 use function Pest\Laravel\post;
+use function Pest\Laravel\postJson;
 
 beforeEach(function () {
     actingAs(User::find()->one());
@@ -311,3 +312,29 @@ it('restricts maintenance mode changes to administrators', function (bool $initi
     'enable' => [false],
     'disable' => [true],
 ]);
+
+it('turns maintenance mode on and off on its own', function () {
+    ProjectConfig::set('system.retryDuration', 30);
+
+    postJson(action([GeneralSettingsController::class, 'maintenanceMode']), ['enabled' => true])
+        ->assertOk()
+        ->assertJsonPath('message', 'Maintenance mode enabled.');
+
+    expect(app()->maintenanceMode()->active())->toBeTrue()
+        ->and(app()->maintenanceMode()->data())->toMatchArray(['retry' => 30]);
+
+    postJson(action([GeneralSettingsController::class, 'maintenanceMode']), ['enabled' => false])
+        ->assertOk()
+        ->assertJsonPath('message', 'Maintenance mode disabled.');
+
+    expect(app()->maintenanceMode()->active())->toBeFalse();
+});
+
+it('requires an admin to toggle maintenance mode', function () {
+    actingAs(UserModel::factory()->withPermissions(['accessCp'])->createElement(['admin' => false]));
+
+    postJson(action([GeneralSettingsController::class, 'maintenanceMode']), ['enabled' => true])
+        ->assertForbidden();
+
+    expect(app()->maintenanceMode()->active())->toBeFalse();
+});

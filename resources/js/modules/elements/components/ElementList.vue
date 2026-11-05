@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import {computed} from 'vue';
+  import type {ChipThumbSizeValue} from '@craftcms/ui';
   import ElementCards from '@/modules/elements/components/ElementCards.vue';
   import ElementChips from '@/modules/elements/components/ElementChips.vue';
   import ElementThumbs from '@/modules/elements/components/ElementThumbs.vue';
@@ -28,6 +29,8 @@
     cardContentHtml?: string;
     cardFooterHtml?: string;
     thumbHtml?: string;
+    /** Nests list chips by structure level; see `ElementChips`. */
+    level?: number | null;
   }
 
   const props = withDefaults(
@@ -35,6 +38,8 @@
       /** The elements to draw, in display order. */
       data?: Array<ListElement>;
       viewMode: ElementListViewMode;
+      /** The chips' or thumbnail tiles' thumbnail size; each body has its own default. */
+      thumbSize?: ChipThumbSizeValue;
       /** Selection, usually from `useElementList`. */
       selection: Selectable<any>;
       selectable?: boolean;
@@ -59,10 +64,19 @@
     props.data.map(({url: _url, ...element}) => element)
   );
 
-  defineEmits<{
+  const emit = defineEmits<{
     (event: 'edit', element: ListElement): void;
     (event: 'reorder', startIndex: number, finishIndex: number): void;
   }>();
+
+  /** Cards and thumbs report their own element shape; edit the one we were given. */
+  function edit(id: string | number): void {
+    const element = props.data.find((candidate) => candidate.id === id);
+
+    if (element) {
+      emit('edit', element);
+    }
+  }
 </script>
 
 <template>
@@ -76,6 +90,7 @@
     :loading="loading"
     :single-column="viewMode === 'cards'"
     :sortable="sortable"
+    @edit="(element) => edit(element.id)"
     @reorder="
       (startIndex, finishIndex) => $emit('reorder', startIndex, finishIndex)
     "
@@ -95,6 +110,8 @@
     :read-only="readOnly"
     :loading="loading"
     :sortable="sortable"
+    :thumb-size="thumbSize"
+    @edit="(element) => edit(element.id)"
     @reorder="
       (startIndex, finishIndex) => $emit('reorder', startIndex, finishIndex)
     "
@@ -112,6 +129,7 @@
     :selectable="selectable"
     :read-only="readOnly"
     :inline="viewMode === 'list-inline'"
+    :thumb-size="thumbSize"
     :sortable="sortable"
     @edit="$emit('edit', $event)"
     @reorder="

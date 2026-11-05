@@ -12,6 +12,7 @@ use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Models\Site;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Date;
 use Override;
 
 class SectionFactory extends Factory
@@ -28,8 +29,8 @@ class SectionFactory extends Factory
             'handle' => $this->faker->slug(),
             'type' => SectionType::Channel,
             'enableVersioning' => $this->faker->boolean(),
-            'dateCreated' => $this->faker->dateTime(),
-            'dateUpdated' => $this->faker->dateTime(),
+            'dateCreated' => $this->faker->dateTime(Date::now()),
+            'dateUpdated' => $this->faker->dateTime(Date::now()),
         ];
     }
 

@@ -5,6 +5,7 @@ import {
   nextTick,
   reactive,
   ref,
+  shallowReactive,
   shallowRef,
   type Ref,
 } from 'vue';
@@ -37,8 +38,10 @@ import {
 } from '@/bootstrap/components';
 import {actionClient} from '@craftcms/ui';
 import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
+import Cp from '@/bootstrap/cp';
 import UiRenderer from './UiRenderer.vue';
 import {registerUiComponents} from './register';
+import type {UiValueChangeDetail} from './ui-values';
 import type {
   UiChange,
   UiControlPayload,
@@ -398,15 +401,20 @@ describe('UiRenderer', () => {
   let app: ReturnType<typeof createApp>;
   let container: HTMLElement;
   let form: HTMLFormElement;
+  let eventController: AbortController;
   let currentPayload: Ref<UiPayload>;
   let renderer: {
     advanceBaseline: () => void;
     currentValues: () => UiPayload['values'];
     resetValues: (payload?: UiPayload) => void;
     setValue: (path: string[], value: UiValue, kind?: UiChange['kind']) => void;
+    setValues: (
+      changes: {path: string[]; value: UiValue; refreshable?: boolean}[]
+    ) => void;
   };
 
   beforeEach(async () => {
+    eventController = new AbortController();
     Object.defineProperty(HTMLElement.prototype, 'attachInternals', {
       configurable: true,
       value: () => ({setFormValue: vi.fn()}),
@@ -420,6 +428,7 @@ describe('UiRenderer', () => {
   });
 
   afterEach(() => {
+    eventController.abort();
     vi.unstubAllGlobals();
     app.unmount();
     form.remove();
@@ -432,6 +441,75 @@ describe('UiRenderer', () => {
     } else {
       Reflect.deleteProperty(HTMLElement.prototype, 'attachInternals');
     }
+  });
+
+  function observeUiChanges(): UiValueChangeDetail[] {
+    const changes: UiValueChangeDetail[] = [];
+    document.addEventListener(
+      'craft:ui-value-change',
+      (event) => changes.push(event.detail),
+      {signal: eventController.signal}
+    );
+
+    return changes;
+  }
+
+  it('exposes mounted values and publishes only changed editable values', async () => {
+    const changes = observeUiChanges();
+    const ui = required(
+      Cp.$ui.active().find(({root}) => container.contains(root)),
+      'Expected the mounted UI.'
+    );
+    const path = ['settings', 'placeholder'];
+    const original = ui.getValue(path);
+
+    expect(ui.root.isConnected).toBe(true);
+    expect(changes).toEqual([]);
+
+    renderer.setValue(path, original);
+    expect(changes).toEqual([]);
+
+    const snapshots: UiValue[] = [];
+    document.addEventListener(
+      'craft:ui-value-change',
+      ({detail}) => snapshots.push(detail.ui.getValue(['settings', 'uiMode'])),
+      {signal: eventController.signal}
+    );
+    renderer.setValues([
+      {path, value: 'New placeholder'},
+      {path: ['settings', 'uiMode'], value: 'other'},
+    ]);
+
+    expect(
+      changes.map(({path, scope, value, kind}) => ({
+        path,
+        scope,
+        value,
+        kind,
+      }))
+    ).toEqual([
+      {path, scope: ['settings'], value: 'New placeholder', kind: 'discrete'},
+      {
+        path: ['settings', 'uiMode'],
+        scope: ['settings'],
+        value: 'other',
+        kind: 'discrete',
+      },
+    ]);
+    expect(snapshots).toEqual(['other', 'other']);
+    expect(changes.every(({ui: source}) => source === ui)).toBe(true);
+
+    const previous = changes.length;
+    renderer.resetValues();
+    expect(changes).toHaveLength(previous);
+    expect(ui.getValue(path)).toEqual(original);
+
+    currentPayload.value = clonePayload();
+    await nextTick();
+    expect(changes).toHaveLength(previous);
+
+    app.unmount();
+    expect(Cp.$ui.active()).not.toContain(ui);
   });
 
   it('renders custom help beside a field label', async () => {
@@ -732,6 +810,11 @@ describe('UiRenderer', () => {
 
     app.unmount();
     await mount(nested);
+    const changes = observeUiChanges();
+    const ui = required(
+      Cp.$ui.active().find(({root}) => container.contains(root)),
+      'Expected the mounted UI.'
+    );
 
     const fieldFor = (name: string) =>
       container
@@ -753,6 +836,15 @@ describe('UiRenderer', () => {
 
     expect(matrix().getAttribute('status')).toBe('modified');
     expect(heading().getAttribute('status')).toBeNull();
+    expect(changes).toHaveLength(1);
+    expect(changes[0]).toMatchObject({
+      path: [...blockScope, 'heading'],
+      scope: blockScope,
+      value: 'Changed',
+      kind: 'typing',
+    });
+    expect(changes[0]!.ui).toBe(ui);
+    expect(ui.getValue([...blockScope, 'heading'])).toBe('Changed');
 
     renderer.advanceBaseline();
     await nextTick();
@@ -1174,6 +1266,13 @@ describe('UiRenderer', () => {
       onChange,
       onMutation: (current) => (mutation = current),
     });
+    const observed = observeUiChanges();
+    const ui = required(
+      Cp.$ui.active().find(({root}) => container.contains(root)),
+      'Expected the mounted UI.'
+    );
+    expect(ui.getValue(['name'])).toBe('');
+    expect(observed).toEqual([]);
 
     const name = required(
       container.querySelector<HTMLElement & {updateComplete: Promise<void>}>(
@@ -1211,6 +1310,24 @@ describe('UiRenderer', () => {
       name: 'My Site',
       summary: 'Derived from My Site',
     });
+    expect(
+      observed.map(({path, scope, value, kind}) => ({
+        path,
+        scope,
+        value,
+        kind,
+      }))
+    ).toEqual([
+      {path: ['name'], scope: [], value: 'My Site', kind: 'typing'},
+      {
+        path: ['summary'],
+        scope: [],
+        value: 'Derived from My Site',
+        kind: 'typing',
+      },
+    ]);
+    expect(observed.every(({ui: source}) => source === ui)).toBe(true);
+    expect(ui.getValue(['summary'])).toBe('Derived from My Site');
   });
 
   it('uses a path slot to override a control without replacing UI behavior', async () => {
@@ -1469,7 +1586,185 @@ describe('UiRenderer', () => {
     );
   });
 
+  function sidebarTabsPayload(): UiPayload {
+    const tab = (
+      uid: string,
+      label: string,
+      path: string,
+      sidebar = false
+    ) => ({
+      type: 'CraftCms\\Cms\\Ui\\Nodes\\Tab',
+      component: 'craft:tab',
+      props: sidebar ? {label, sidebar: true} : {label},
+      uid,
+      children: [
+        {
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+          component: 'craft:field',
+          props: {label, width: 50},
+          control: {
+            type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
+            component: 'craft:text',
+            props: {},
+            path: [path],
+            mode: 'editable',
+            deltaGroup: [path],
+          },
+        },
+        {
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+          component: 'craft:field',
+          props: {label: `${label} Date`},
+          control: {
+            type: 'CraftCms\\Cms\\Ui\\Controls\\DateTime',
+            component: 'craft:date-time',
+            props: {
+              showDate: true,
+              showTime: false,
+              showTimeZone: false,
+              locale: 'en-US',
+              minuteIncrement: 30,
+            },
+            path: [`${path}Date`],
+            mode: 'editable',
+            deltaGroup: [`${path}Date`],
+          },
+        },
+      ],
+    });
+
+    return {
+      scope: [],
+      refreshable: false,
+      nodes: [
+        tab('tab-content', 'Content', 'title'),
+        tab('tab-meta', 'Meta', 'slug', true),
+      ],
+      values: {
+        title: 'Hello',
+        slug: 'hello',
+        titleDate: {date: '2026-01-01'},
+        slugDate: {date: '2026-01-01'},
+      },
+      errors: [],
+      globalErrors: [],
+    } as unknown as UiPayload;
+  }
+
+  it('moves sidebar tabs into their outlets', async () => {
+    app.unmount();
+    const outlets = shallowReactive(new Map<string, HTMLElement>());
+    const outlet = document.createElement('div');
+    document.body.append(outlet);
+    await mount(sidebarTabsPayload(), {sidebarTabOutlets: outlets});
+
+    // With one content tab left, there's no tab strip.
+    expect(container.querySelector('craft-tab')).toBeNull();
+    expect(
+      container.querySelector('[data-ui-tab="tab-meta"]')?.closest('[hidden]')
+    ).not.toBeNull();
+
+    outlets.set('tab-meta', outlet);
+    await nextTick();
+
+    expect(container.querySelector('[data-ui-tab="tab-meta"]')).toBeNull();
+    expect(
+      outlet.querySelector('[data-ui-tab="tab-meta"]')?.closest('[hidden]')
+    ).toBeNull();
+    // Fields span the sidebar, whatever their configured widths, and date
+    // inputs fill it.
+    expect(outlet.querySelector('.width-50')).toBeNull();
+    expect(container.querySelector('.width-50')).not.toBeNull();
+    expect(
+      outlet.querySelector('craft-input-date-time')?.getAttribute('width')
+    ).toBe('full');
+    expect(
+      container.querySelector('craft-input-date-time')?.getAttribute('width')
+    ).toBe('auto');
+    outlet.remove();
+  });
+
+  it('shows sidebar tabs as ordinary tabs without outlets', async () => {
+    app.unmount();
+    await mount(sidebarTabsPayload());
+
+    expect(
+      [...container.querySelectorAll('craft-tab')].map((tab) =>
+        tab.textContent?.trim()
+      )
+    ).toEqual(['Content', 'Meta']);
+
+    container.querySelectorAll<HTMLElement>('craft-tab')[1]!.click();
+    await selectionSettled();
+
+    expect(container.querySelectorAll('.width-50')).toHaveLength(2);
+  });
+
+  it('renders a tab’s fields once it’s first selected, and keeps them', async () => {
+    vi.stubGlobal('requestIdleCallback', vi.fn());
+    history.replaceState(null, '', location.pathname);
+    app.unmount();
+    await mount(sidebarTabsPayload());
+
+    const panel = (uid: string) =>
+      container.querySelector(`section[data-ui-tab="${uid}"]`);
+    const tabButtons = container.querySelectorAll<HTMLElement>('craft-tab');
+
+    expect(panel('tab-content')?.querySelector('craft-field')).not.toBeNull();
+    expect(panel('tab-meta')).not.toBeNull();
+    expect(panel('tab-meta')?.querySelector('craft-field')).toBeNull();
+
+    tabButtons[1]!.click();
+    await selectionSettled();
+
+    expect(panel('tab-meta')?.querySelector('craft-field')).not.toBeNull();
+
+    const metaInput = panel('tab-meta')?.querySelector('craft-input');
+    tabButtons[0]!.click();
+    await selectionSettled();
+
+    expect(panel('tab-meta')?.classList).toContain('hidden');
+    expect(panel('tab-meta')?.querySelector('craft-input')).toBe(metaInput);
+  });
+
+  it('renders the other tabs’ fields when the browser is idle', async () => {
+    const idle: Array<() => void> = [];
+    vi.stubGlobal(
+      'requestIdleCallback',
+      vi.fn((callback: () => void) => idle.push(callback))
+    );
+    history.replaceState(null, '', location.pathname);
+    app.unmount();
+    await mount(sidebarTabsPayload());
+
+    const meta = container.querySelector('section[data-ui-tab="tab-meta"]');
+    expect(meta?.querySelector('craft-field')).toBeNull();
+
+    idle.splice(0).forEach((callback) => callback());
+    await nextTick();
+
+    expect(meta?.querySelector('craft-field')).not.toBeNull();
+    expect(meta?.classList).toContain('hidden');
+  });
+
+  it('renders its tab strip in a tabs outlet', async () => {
+    app.unmount();
+    const outlet = document.createElement('div');
+    document.body.append(outlet);
+    await mount(sidebarTabsPayload(), {tabsOutlet: outlet});
+
+    expect(container.querySelector('craft-tabs')).toBeNull();
+    expect(
+      [...outlet.querySelectorAll('craft-tab')].map((tab) =>
+        tab.textContent?.trim()
+      )
+    ).toEqual(['Content', 'Meta']);
+    expect(container.querySelector('[data-ui-tab="tab-meta"]')).not.toBeNull();
+    outlet.remove();
+  });
+
   it('renders FieldLayout tabs and semantic content', async () => {
+    vi.stubGlobal('requestIdleCallback', vi.fn());
     app.unmount();
     await mount({
       scope: [],
@@ -1478,7 +1773,7 @@ describe('UiRenderer', () => {
         {
           type: 'CraftCms\\Cms\\Ui\\Nodes\\Tab',
           component: 'craft:tab',
-          props: {label: 'Content'},
+          props: {label: 'Content', icon: 'newspaper'},
           uid: 'tab-content',
           children: [
             {
@@ -1637,6 +1932,13 @@ describe('UiRenderer', () => {
     expect(tabButtons[0]?.getAttribute('aria-selected')).toBe('true');
     expect(tabButtons[1]?.getAttribute('aria-selected')).toBe('false');
     expect(tabButtons[1]?.querySelector('craft-icon')).not.toBeNull();
+    // A tab's icon comes before its label; tabs without one get none.
+    expect(
+      tabButtons[0]
+        ?.querySelector('craft-icon[slot="prefix"]')
+        ?.getAttribute('name')
+    ).toBe('newspaper');
+    expect(tabButtons[1]?.querySelector('[slot="prefix"]')).toBeNull();
     expect(tab?.getAttribute('aria-label')).toBe('Content');
     // `craft-tabs` pairs the two in external-panel mode: the tab points at the
     // panel id this component assigned, and the panel back at the tab's own id
@@ -1648,6 +1950,7 @@ describe('UiRenderer', () => {
     expect(tabButtons[0]?.id).toBeTruthy();
     expect(tab?.classList).not.toContain('hidden');
     expect(seoTab?.classList).toContain('hidden');
+    expect(seoTab?.querySelector('craft-field')).not.toBeNull();
 
     tabButtons[1]!.click();
     await nextTick();
@@ -1865,6 +2168,7 @@ describe('UiRenderer', () => {
     await mount(pluginPayload, {
       registerComponents: registerTestPluginUiComponents,
     });
+    const observed = observeUiChanges();
 
     const input = required(
       container.querySelector<HTMLInputElement>('[data-test-plugin-control]'),
@@ -1882,6 +2186,15 @@ describe('UiRenderer', () => {
     expect(Object.fromEntries(new FormData(form))).toMatchObject({
       'settings[placeholder]': 'plugin-submitted',
     });
+    expect(
+      observed.map(({path, value, kind}) => ({path, value, kind}))
+    ).toEqual([
+      {
+        path: ['settings', 'placeholder'],
+        value: 'plugin-submitted',
+        kind: 'typing',
+      },
+    ]);
   });
 
   it.each([
@@ -1998,6 +2311,26 @@ describe('UiRenderer', () => {
     await vi.advanceTimersByTimeAsync(1000);
     expect(refresh).toHaveBeenCalledOnce();
     vi.useRealTimers();
+  });
+
+  it('refreshes once after setting several refreshable values', async () => {
+    const refresh = vi.fn(() => new Promise<UiPayload>(() => {}));
+    app.unmount();
+    const refreshable = clonePayload();
+    Object.assign(refreshable, {refreshable: true});
+    await mount(refreshable, {refresh});
+
+    renderer.setValues([
+      {path: ['settings', 'placeholder'], value: 'First', refreshable: true},
+      {path: ['settings', 'summary'], value: 'Second', refreshable: true},
+    ]);
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(refresh).toHaveBeenCalledTimes(1);
+    expect(refresh).toHaveBeenCalledWith(
+      expect.objectContaining({placeholder: 'First', summary: 'Second'}),
+      expect.anything()
+    );
   });
 
   it('refreshes immediately when a reactive combobox option is selected', async () => {
@@ -2604,6 +2937,47 @@ describe('UiRenderer', () => {
     ).not.toBe('true');
   });
 
+  it('renders an updated control definition without changing the host’s payload', async () => {
+    const probe = defineComponent({
+      props: {
+        control: {type: Object, required: true},
+        value: {type: null, default: undefined},
+      },
+      emits: ['update:value'],
+      setup(props, {emit}) {
+        return () =>
+          h(
+            'button',
+            {
+              type: 'button',
+              'data-probe': '',
+              onClick: () =>
+                emit('update:value', props.value, 'discrete', {
+                  ...props.control,
+                  props: {label: 'Redefined'},
+                }),
+            },
+            props.control.props.label
+          );
+      },
+    });
+    const probePayload = clonePayload();
+    Object.assign(
+      required(probePayload.nodes[1]?.control, 'Expected a field control.'),
+      {component: 'test:probe', props: {label: 'Original'}}
+    );
+    app.unmount();
+    await mount(probePayload, {components: {'test:probe': probe}});
+
+    container.querySelector<HTMLElement>('[data-probe]')!.click();
+    await nextTick();
+
+    expect(container.querySelector('[data-probe]')?.textContent).toBe(
+      'Redefined'
+    );
+    expect(probePayload.nodes[1]?.control?.props).toEqual({label: 'Original'});
+  });
+
   it('drops unsaved values inside nested UI definitions when the host resets', async () => {
     let mutation: UiPayload['values'] = {};
     const nested = clonePayload();
@@ -2871,6 +3245,7 @@ describe('UiRenderer', () => {
     await mount(relational, {
       onMutation: (value) => (mutation = value),
     });
+    const observed = observeUiChanges();
 
     // The chip's own text nodes only — its `[slot="suffix"]` action menu
     // contributes the items' labels to `textContent`.
@@ -2893,6 +3268,7 @@ describe('UiRenderer', () => {
       expect.objectContaining({disabledElementIds: [2, 1]})
     );
     expect(mutation).toEqual({settings: {related: [2, 1, 3]}});
+    expect(observed.map(({value}) => value)).toEqual([[2, 1, 3]]);
 
     // Removal goes through the chip's own action menu now, rather than the
     // legacy controller.
@@ -2917,6 +3293,10 @@ describe('UiRenderer', () => {
     expect([...new FormData(form).getAll('settings[related][]')]).toEqual([
       '1',
       '3',
+    ]);
+    expect(observed.map(({value}) => value)).toEqual([
+      [2, 1, 3],
+      [1, 3],
     ]);
   });
 
@@ -4177,6 +4557,7 @@ describe('UiRenderer', () => {
     ];
     app.unmount();
     await mount(emptyText, {onMutation: (value) => (mutation = value)});
+    const changes = observeUiChanges();
 
     // Report an empty string where the server sent nothing. Driving the value
     // directly rather than through the DOM is deliberate: a text input already
@@ -4188,11 +4569,15 @@ describe('UiRenderer', () => {
     // The same value said two ways, not an edit — so no control has to know how
     // the server happens to spell "empty".
     expect(mutation ?? {}).toEqual({});
+    expect(changes).toEqual([]);
 
     renderer.setValue(['settings', 'summary'], 'real');
     await nextTick();
 
     expect(mutation).toEqual({settings: {summary: 'real'}});
+    expect(changes.map(({path, value}) => ({path, value}))).toEqual([
+      {path: ['settings', 'summary'], value: 'real'},
+    ]);
   });
 
   it('renders and updates permission trees', async () => {
@@ -4312,6 +4697,7 @@ describe('UiRenderer', () => {
     const disabled = ref(false);
     app.unmount();
     await mount(clonePayload(), {disabled});
+    const changes = observeUiChanges();
     renderer.setValue(['settings', 'placeholder'], 'Unsaved edit');
     const input = container.querySelector<HTMLInputElement>(
       'input[name="settings[placeholder]"]'
@@ -4321,12 +4707,15 @@ describe('UiRenderer', () => {
     await nextTick();
     expect(input.disabled).toBe(true);
     expect(Array.from(new FormData(form))).toEqual([]);
+    const notified = changes.length;
+    renderer.setValue(['settings', 'placeholder'], 'Disabled edit');
+    expect(changes).toHaveLength(notified);
 
     disabled.value = false;
     await nextTick();
     expect(input.disabled).toBe(false);
     expect(new FormData(form).get('settings[placeholder]')).toBe(
-      'Unsaved edit'
+      'Disabled edit'
     );
   });
 
@@ -4339,11 +4728,14 @@ describe('UiRenderer', () => {
       );
       app.unmount();
       await mount(nonEditable);
+      const changes = observeUiChanges();
 
       expect(container.querySelector<HTMLInputElement>('input')?.value).toBe(
         'Submitted placeholder'
       );
       expect(Array.from(new FormData(form))).toEqual([]);
+      renderer.setValue(['settings', 'placeholder'], 'Changed without editing');
+      expect(changes).toEqual([]);
     }
   );
 
@@ -4391,6 +4783,15 @@ describe('UiRenderer', () => {
     expect(container.querySelector('craft-input-date-time')).not.toBeNull();
   });
 
+  async function selectionSettled(): Promise<void> {
+    await (
+      container.querySelector('craft-tabs') as unknown as {
+        updateComplete: Promise<unknown>;
+      }
+    ).updateComplete;
+    await nextTick();
+  }
+
   async function mount(
     uiPayload: UiPayload,
     options: {
@@ -4413,6 +4814,8 @@ describe('UiRenderer', () => {
         string,
         (props: UiControlOverrideProps) => ReturnType<typeof h>
       >;
+      sidebarTabOutlets?: Map<string, HTMLElement>;
+      tabsOutlet?: HTMLElement;
     } = {}
   ): Promise<void> {
     currentPayload = shallowRef(uiPayload);
@@ -4429,6 +4832,8 @@ describe('UiRenderer', () => {
             refresh: options.refresh,
             'onUpdate:mutation': options.onMutation,
             onChange: options.onChange,
+            sidebarTabOutlets: options.sidebarTabOutlets,
+            tabsOutlet: options.tabsOutlet,
           },
           options.slots
         ),

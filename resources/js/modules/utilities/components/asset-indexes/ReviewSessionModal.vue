@@ -2,7 +2,7 @@
   import ModalForm from '@/common/components/ModalForm.vue';
   import {t} from '@craftcms/ui/utilities/translate';
   import {useAssetIndexer} from '@/modules/utilities/composables/useAssetIndexer';
-  import {computed, reactive} from 'vue';
+  import {computed, reactive, shallowRef} from 'vue';
   import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
   import CheckboxGroup from '@/common/form/CheckboxGroup.vue';
   import type {FinishIndexingParams} from '@craftcms/ui/services/AssetIndexer';
@@ -10,13 +10,6 @@
   import {show} from '@routes/cp/utilities';
 
   type TranslationParams = NonNullable<Parameters<typeof t>[1]>;
-
-  withDefaults(
-    defineProps<{
-      isActive?: boolean;
-    }>(),
-    {isActive: false}
-  );
 
   const {finishSession, closeReview, reviewSession} = useAssetIndexer();
 
@@ -41,7 +34,8 @@
     missingFolders.value
       ? Object.keys(missingFolders.value).map((id: string) => {
           return {
-            label: escapeHtml(missingFolders.value[id]!),
+            label: missingFolders.value[id]!,
+            labelHtml: `<code>${escapeHtml(missingFolders.value[id]!)}</code>`,
             value: id,
           };
         })
@@ -52,7 +46,8 @@
     missingFiles.value
       ? Object.keys(missingFiles.value).map((id: string) => {
           return {
-            label: escapeHtml(missingFiles.value[id]!),
+            label: missingFiles.value[id]!,
+            labelHtml: `<code>${escapeHtml(missingFiles.value[id]!)}</code>`,
             value: id,
           };
         })
@@ -92,8 +87,15 @@
     );
   }
 
+  const isFinishing = shallowRef(false);
+
   async function handleSubmit() {
-    finishSession({
+    if (isFinishing.value) {
+      return;
+    }
+
+    isFinishing.value = true;
+    await finishSession({
       sessionId: reviewSession.value!.id,
       deleteFolder: formData.deleteFolder?.filter(Boolean),
       deleteAsset: formData.deleteAsset?.filter(Boolean),
@@ -108,6 +110,7 @@
   <ModalForm
     v-if="reviewSession"
     :is-active="true"
+    :loading="isFinishing"
     @close="closeReview"
     :reset-label="hasMissingItems ? t('Keep them') : undefined"
     :submit-label="hasMissingItems ? t('Delete them') : t('OK')"
@@ -116,7 +119,7 @@
     <div class="grid gap-3">
       <template v-if="reviewSession.skippedEntries">
         <div>
-          <h2 class="mb-2">{{ t('Skipped files') }}</h2>
+          <h2 class="mb-2">{{ t('Skipped Files') }}</h2>
           <p>{{ t('The following items were not indexed.') }}</p>
           <ul class="my-2">
             <li v-for="entry in reviewSession.skippedEntries" :key="entry">
@@ -135,12 +138,10 @@
               class="my-2"
               :label="t('Delete folders')"
               :model-value="formData.deleteFolder?.map(String) ?? []"
+              @update:model-value="(value) => (formData.deleteFolder = value)"
               :options="deleteFolderOptions"
               :allow-select-all="true"
             >
-              <template #label="{option}">
-                <code>{{ option.label }}</code>
-              </template>
             </CheckboxGroup>
           </template>
           <template v-if="hasMissingFiles">
@@ -150,12 +151,10 @@
               class="my-2"
               :label="t('Delete assets')"
               :model-value="formData.deleteAsset?.map(String) ?? []"
+              @update:model-value="(value) => (formData.deleteAsset = value)"
               :options="deleteAssetOptions"
               :allow-select-all="true"
             >
-              <template #label="{option}">
-                <code>{{ option.label }}</code>
-              </template>
             </CheckboxGroup>
           </template>
         </div>

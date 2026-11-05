@@ -8,6 +8,7 @@ use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Date;
 use Override;
 
 class EntryTypeFactory extends Factory
@@ -22,8 +23,8 @@ class EntryTypeFactory extends Factory
             'uid' => $this->faker->uuid(),
             'name' => $this->faker->words(asText: true),
             'handle' => $this->faker->slug(),
-            'dateCreated' => $this->faker->dateTime(),
-            'dateUpdated' => $this->faker->dateTime(),
+            'dateCreated' => $this->faker->dateTime(Date::now()),
+            'dateUpdated' => $this->faker->dateTime(Date::now()),
         ];
     }
 

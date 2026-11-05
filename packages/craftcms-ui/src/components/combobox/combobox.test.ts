@@ -2,6 +2,7 @@ import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type CraftCombobox from './combobox.js';
 import type {ComboboxItem} from './combobox.js';
 import './combobox.js';
+import type CraftOptionGroup from '../option/option-group.js';
 
 function makeOptions(count: number): ComboboxItem[] {
   return Array.from({length: count}, (_, i) => ({
@@ -109,7 +110,7 @@ describe('craft-combobox', () => {
     expect(labels).toEqual(['United States']);
   });
 
-  it('renders optgroup headers for grouped options', async () => {
+  it('groups grouped options under their labels', async () => {
     const combobox = await createFixture((c) => {
       c.options = [
         {
@@ -122,11 +123,11 @@ describe('craft-combobox', () => {
         },
       ];
     });
-    const node = combobox.querySelector('[role=listbox]')!;
-    expect(node.querySelector('.combobox__optgroup')?.textContent?.trim()).toBe(
-      'North America'
-    );
-    expect(optionEls(combobox)).toHaveLength(2);
+    const group = combobox.querySelector<CraftOptionGroup>(
+      '[role=listbox] craft-option-group'
+    )!;
+    expect(group.label).toBe('North America');
+    expect(group.querySelectorAll('craft-option')).toHaveLength(2);
   });
 
   it('sets modelValue to the option value (not its label) when chosen', async () => {
@@ -188,6 +189,40 @@ describe('craft-combobox', () => {
       expect(emitted).toBe(true);
     }
   );
+
+  it('lists exact matches first, so only one option looks selected', async () => {
+    const combobox = await createFixture((c) => {
+      c.requireOptionMatch = false;
+      c.options = [
+        {
+          type: 'optgroup',
+          label: 'Routes',
+          options: [
+            {
+              label: 'App\\Http\\Controllers\\SitePageController@exhibitions',
+              value: 'App\\Http\\Controllers\\SitePageController@exhibitions',
+            },
+            {label: 'exhibit', value: 'exhibit'},
+          ],
+        },
+      ];
+    });
+
+    combobox.querySelector('input')!.focus();
+    await typeQuery(combobox, 'exhibit');
+
+    const options = optionEls(combobox);
+    expect(
+      String((options[0] as HTMLElement & {choiceValue: unknown}).choiceValue)
+    ).toBe('exhibit');
+    expect(combobox.activeIndex).toBe(0);
+    expect(
+      options.filter(
+        (option) =>
+          option.hasAttribute('active') || option.hasAttribute('checked')
+      )
+    ).toHaveLength(1);
+  });
 
   it('shows the selected option’s icon in the textbox', async () => {
     const combobox = await createFixture((c) => {
@@ -490,7 +525,7 @@ describe('craft-combobox', () => {
       optionEls(combobox).map((option) => option.textContent?.trim())
     ).toEqual(['Local']);
 
-    optionEls(combobox)[0].click();
+    optionEls(combobox)[0]!.click();
     await vi.waitFor(() => expect(combobox.opened).toBe(false));
     await combobox.updateComplete;
 
@@ -507,8 +542,10 @@ describe('craft-combobox', () => {
       c.limit = 10;
       c.options = makeOptions(50);
     });
-    const node = combobox.querySelector('[role=listbox]')!;
-    expect(node.querySelector('.combobox__footer')).not.toBeNull();
+    await combobox.updateComplete;
+    expect(
+      combobox.shadowRoot!.querySelector('.combobox__footer')
+    ).not.toBeNull();
   });
 });
 

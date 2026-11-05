@@ -7,6 +7,7 @@ import {
   darkTheme,
   staticTheme,
 } from '../src/styles/color-definitions.js';
+import {BLACK_CONTENTS_SELECTOR} from './utils.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -53,7 +54,11 @@ function printStyles() {
   lines.push(`  /* Static colors */\n`);
   lines.push(staticColors);
   lines.push('}\n');
-  lines.push("[data-theme='dark'] {");
+  lines.push(
+    "/* What's in a black card, (filled) chip, or badge is themed dark, so it holds\n" +
+      '   up against the dark fill. (The element itself keeps its own colors.) */'
+  );
+  lines.push(`[data-theme='dark'],\n${BLACK_CONTENTS_SELECTOR} {`);
   lines.push(darkColors);
   lines.push('}\n');
 

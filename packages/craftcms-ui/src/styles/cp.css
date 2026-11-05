@@ -5,6 +5,7 @@
 @import './shared/tokens.css' layer(theme);
 @import './shared/colorable.css' layer(theme);
 @import './shared/base.css' layer(base);
+@import './shared/choice-inputs.css' layer(base);
 
 .resizable-container {
   border: 2px solid;
@@ -79,6 +80,22 @@
   border-width: 0;
 }
 
+a[data-external-link]:not(.btn, :has(craft-icon, svg, img, .cp-icon))::after {
+  content: '';
+  display: inline-block;
+  inline-size: 0.75em;
+  block-size: 0.75em;
+  margin-inline-start: 0.3em;
+  background-color: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M320 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l82.7 0L201.4 265.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L448 109.3l0 82.7c0 17.7 14.3 32 32 32s32-14.3 32-32l0-160c0-17.7-14.3-32-32-32L320 0zM80 32C35.8 32 0 67.8 0 112L0 432c0 44.2 35.8 80 80 80l320 0c44.2 0 80-35.8 80-80l0-112c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 112c0 8.8-7.2 16-16 16L80 448c-8.8 0-16-7.2-16-16l0-320c0-8.8 7.2-16 16-16l112 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L80 32z'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+
+  @media (forced-colors: active) {
+    forced-color-adjust: none;
+    background-color: LinkText;
+  }
+}
+
 .c-icon {
   display: inline-flex;
   width: 1.25em;
@@ -88,4 +105,154 @@
     height: 1em;
     overflow: visible;
   }
+}
+
+craft-button.paste-btn {
+  border-color: transparent;
+  color: var(--c-color-neutral-on-quiet);
+  background-image: linear-gradient(
+    135deg,
+    color-mix(var(--c-color-fuchsia-fill-quiet), transparent 70%),
+    color-mix(var(--c-color-violet-fill-quiet), transparent 70%),
+    color-mix(var(--c-color-indigo-fill-quiet), transparent 70%)
+  );
+
+  /* ::before is the button's minimum click target, so the gradient border is drawn with ::after. */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: calc(var(--c-button-border-width, 1px) * -1);
+    border: var(--c-button-border-width, 1px) solid transparent;
+    border-radius: inherit;
+    background: linear-gradient(
+        135deg,
+        var(--color-fuchsia-400),
+        var(--color-violet-400),
+        var(--color-indigo-400)
+      )
+      border-box;
+    mask:
+      linear-gradient(#000 0 0) padding-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  &::part(prefix) {
+    color: var(--c-color-fuchsia-fill-loud);
+  }
+
+  &:hover:not([disabled]) {
+    background-color: transparent;
+    background-image: linear-gradient(
+      135deg,
+      color-mix(var(--c-color-fuchsia-fill-normal), transparent 50%),
+      color-mix(var(--c-color-violet-fill-normal), transparent 50%),
+      color-mix(var(--c-color-indigo-fill-normal), transparent 50%)
+    );
+  }
+
+  &:active:not([disabled]) {
+    background-image: linear-gradient(
+      135deg,
+      color-mix(var(--c-color-fuchsia-fill-normal), transparent 20%),
+      color-mix(var(--c-color-violet-fill-normal), transparent 20%),
+      color-mix(var(--c-color-indigo-fill-normal), transparent 20%)
+    );
+  }
+
+  @media (forced-colors: active) {
+    border-color: ButtonBorder;
+    background-image: none;
+
+    &::part(prefix) {
+      color: inherit;
+    }
+
+    &::after {
+      display: none;
+    }
+  }
+}
+
+craft-card > [data-cover] {
+  --c-text-default: var(--_cover-ink);
+  --c-text-quiet: var(--_cover-ink);
+  --c-text-link: currentColor;
+  --c-link-decoration: underline;
+  --c-link-decoration-hover: none;
+  --c-color-on-quiet: var(--_cover-ink);
+  --c-checkbox-border-color: var(--_cover-ink);
+  --c-checkbox-checked-fill: var(--_cover-ink);
+  --c-checkbox-checked-mark: var(--_cover-solid);
+  --c-input-fill: var(--_cover-backing, transparent);
+  color: var(--_cover-ink);
+  background-color: transparent;
+
+  craft-button:is([variant~='plain'], [variant~='danger-plain']) {
+    --c-color-on-quiet: var(--_cover-ink);
+  }
+}
+
+craft-card > [data-cover]:not([data-cover='body']) {
+  craft-button {
+    margin: 0;
+  }
+
+  :is(craft-checkbox, craft-checkbox-indeterminate) > input[type='checkbox'] {
+    box-shadow: 0 0 0 1px var(--_cover-backing, transparent);
+  }
+}
+
+/* Blurred like a label bar, which a backed header doesn't have, so a busy
+   image doesn't show through the backing. */
+craft-card > [data-cover='backed'] {
+  :is(craft-checkbox, craft-checkbox-indeterminate) > input[type='checkbox'],
+  craft-button[variant~='plain'] {
+    backdrop-filter: blur(var(--blur-md, 12px));
+  }
+}
+
+craft-card > [data-cover='backed'] craft-button[variant~='plain'] {
+  background-color: var(--_cover-backing);
+
+  &:is(:hover, :active):not([disabled]) {
+    color: var(--_cover-ink);
+    background-color: var(--_cover-backing-hover);
+  }
+}
+
+/* Repeated attributes outrank the checkbox's backing shadow above. */
+craft-card
+  > [data-cover][data-cover]
+  :is(*, input[type='checkbox']):focus-visible,
+craft-card > [data-cover][data-cover]:focus-visible {
+  outline: var(--c-focus-outline-width) solid var(--_cover-ink-solid);
+  outline-offset: var(--c-focus-outline-width);
+  box-shadow: 0 0 0 var(--c-focus-outline-width) var(--_cover-solid);
+}
+
+:is(
+  craft-callout[appearance~='fill'][variant='neutral']
+    + craft-callout[appearance~='fill'][variant='neutral'],
+  craft-callout[appearance~='fill'][variant='success']
+    + craft-callout[appearance~='fill'][variant='success'],
+  craft-callout[appearance~='fill'][variant='warning']
+    + craft-callout[appearance~='fill'][variant='warning'],
+  craft-callout[appearance~='fill'][variant='danger']
+    + craft-callout[appearance~='fill'][variant='danger'],
+  craft-callout[appearance~='fill'][variant='info']
+    + craft-callout[appearance~='fill'][variant='info'],
+  craft-callout[appearance~='solid'][variant='neutral']
+    + craft-callout[appearance~='solid'][variant='neutral'],
+  craft-callout[appearance~='solid'][variant='success']
+    + craft-callout[appearance~='solid'][variant='success'],
+  craft-callout[appearance~='solid'][variant='warning']
+    + craft-callout[appearance~='solid'][variant='warning'],
+  craft-callout[appearance~='solid'][variant='danger']
+    + craft-callout[appearance~='solid'][variant='danger'],
+  craft-callout[appearance~='solid'][variant='info']
+    + craft-callout[appearance~='solid'][variant='info']
+)::part(base) {
+  border-block-start-color: var(--c-color-border-quiet);
 }

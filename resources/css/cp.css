@@ -3,7 +3,18 @@ CP Styles
  */
 @layer theme, base, components, cp, utilities;
 @import 'tailwindcss/theme.css' layer(theme);
-@import 'tailwindcss/utilities.css' layer(utilities);
+/* Only scan the code that renders the CP. Scanning the whole repo also picks
+   up class names from docs, tests, agent skills, and the Tailwind lint
+   script's list of banned classes, and the scan is a large part of the
+   build. */
+@import 'tailwindcss/utilities.css' layer(utilities) source(none);
+@source '..';
+@source '../../src';
+@source '../../workbench';
+@source '../../yii2-adapter/src';
+@source '../../yii2-adapter/legacy';
+@source '../../yii2-adapter/resources';
+@source '../../packages/craftcms-ui/src';
 @import '@craftcms/ui/styles/cp.css' layer(cp);
 @import '@craftcms/ui/tailwind.css' layer(theme);
 
@@ -11,8 +22,11 @@ CP Styles
 @import './cvd.css';
 @import './global-sidebar.css';
 @import './matrix.css';
+@import './content-block.css';
 @import './messages.css';
 @import './slideout.css';
+@import './modal.css' layer(cp);
+@import './menu.css' layer(cp);
 
 :root {
   --cp-sidebar-width: calc(226rem / 16);
@@ -22,7 +36,7 @@ CP Styles
   --cp-rail-width: calc(var(--c-size-touch-target) + var(--c-spacing-md) * 2);
   --cp-sidebar-collapsed-width: var(--cp-rail-width);
   --cp-content-width: calc(1440rem / 16);
-  --cp-footer-height: calc(54rem / 16);
+  --cp-footer-height: var(--c-size-footer);
   --cp-header-height: calc(42rem / 16);
   --cp-sidebar-z-index: var(--c-layer-sidebar);
   --cp-body-inset: var(--c-spacing-md);
@@ -38,21 +52,19 @@ CP Styles
   --cp-content-max-width: calc(960rem / 16);
 
   /* Workspace */
-  --workspace-bg-color: var(--c-color-neutral-fill-quiet);
-  --workspace-bg-size: calc(24rem / 16) calc(24rem / 16);
+  --workspace-bg-color: var(--c-surface-sunken);
+  --workspace-bg-size: var(--c-spacing-lg) var(--c-spacing-lg);
   --workspace-bg-image:
     linear-gradient(
       to right,
-      color-mix(var(--c-color-neutral-border-normal), transparent 85%) 1px,
-      transparent 0
+      color-mix(var(--c-color-neutral-border-normal), transparent 92%) 1px,
+      transparent 1px
     ),
     linear-gradient(
       to bottom,
-      color-mix(var(--c-color-neutral-border-normal), transparent 85%) 1px,
+      color-mix(var(--c-color-neutral-border-normal), transparent 92%) 1px,
       transparent 1px
     );
-  --workspace-bg: var(--workspace-bg-color) var(--workspace-bg-size)
-    var(--workspace-bg-image);
 }
 
 /* Laravel Debugbar pins its header row to the bottom of the viewport. This is
@@ -64,6 +76,16 @@ CP Styles
 /* Above all persistent page chrome; see the layer tokens. */
 .skip-link--global {
   z-index: var(--c-layer-skip-link);
+}
+
+/* A label's first letter standing in for an icon. Its box is trimmed to the
+   letter's cap height, so whatever centers it centers the letter itself
+   rather than a line box with room for descenders. */
+.initial-icon {
+  display: inline-block;
+  font-weight: var(--font-weight-semibold, 600);
+  line-height: 1;
+  text-box: trim-both cap alphabetic;
 }
 
 .visually-hidden {
@@ -83,6 +105,20 @@ body {
   height: 100%;
 }
 
+/* The page scrollbar overlays the layout rather than narrowing it, so it can't
+   shift anything; the shell keeps clear of it with --cp-scrollbar-width. */
+body {
+  width: 100vw;
+}
+
+.cp-inner-scroller {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--c-color-neutral-border-normal) transparent;
+}
+
 /* Held by overlays — modals and slideouts — while any of them is open. The
    legacy stylesheet and panel-stack.css each define this too; repeated here so
    the lock still works on a CP page that loads neither. */
@@ -94,7 +130,7 @@ body.no-scroll {
 Temporary holding for cp-pane styles until craft-pane is a thing
  */
 .cp-workspace {
-  padding: var(--c-spacing-xl);
+  padding: var(--c-spacing-lg);
   border-radius: var(--c-radius-sm);
   background-color: var(--workspace-bg-color);
   background-image: var(--workspace-bg-image);
@@ -162,7 +198,7 @@ Sidebar metadata
   align-items: baseline;
 }
 
-.cp-metadata-list__item:has(> dd > craft-chip:only-child) {
+.cp-metadata-list__item:has(> dd > :is(craft-chip, .cp-color-bar):only-child) {
   align-items: center;
 }
 
@@ -178,6 +214,96 @@ Sidebar metadata
     gap: unset;
     grid-template-columns: subgrid;
   }
+}
+
+/**
+A bar of colors tiled together, such as an image's main colors, each as wide as its share. It's named for assistive
+technology, so the colors aren't the only cue.
+ */
+.cp-color-bar {
+  display: flex;
+  inline-size: 8rem;
+  max-inline-size: 100%;
+  block-size: 1rem;
+  overflow: hidden;
+  border: 1px solid var(--c-color-neutral-border-normal);
+  border-radius: var(--c-radius-sm);
+
+  & > * {
+    flex-basis: 0;
+    min-inline-size: 2px;
+  }
+}
+
+@media (forced-colors: active) {
+  .cp-color-bar {
+    /* The colors are what's being shown */
+    forced-color-adjust: none;
+    border-color: CanvasText;
+  }
+}
+
+/**
+Where an image was taken: a map across the full width of the metadata list, below the item's label and link
+ */
+.cp-metadata-list__item > dd:has(> .cp-photo-location) {
+  grid-column: 1 / -1;
+  min-inline-size: 0;
+  margin-block-start: var(--c-spacing-md);
+}
+
+.cp-photo-location__map {
+  position: relative;
+  overflow: hidden;
+  block-size: 6.25rem;
+  border: 1px solid var(--c-color-neutral-border-normal);
+  border-radius: var(--c-radius-md);
+  background-color: var(--c-color-neutral-fill-quiet);
+  /* Map tiles are laid out physically, so the map isn't mirrored in right-to-left languages */
+  direction: ltr;
+}
+
+.cp-photo-location__tiles {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  display: grid;
+  grid-template-columns: repeat(3, 256px);
+  grid-auto-rows: 256px;
+
+  & > * {
+    display: block;
+    inline-size: 256px;
+    block-size: 256px;
+    max-inline-size: none;
+  }
+}
+
+/* OpenStreetMap only has a light style, so its tiles are inverted for the dark theme, keeping their hues */
+[data-theme='dark'] .cp-photo-location__tiles {
+  filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9);
+}
+
+.cp-photo-location__marker {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  translate: -50% -100%;
+  color: var(--c-color-red-fill-loud);
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 50%));
+
+  & svg {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    fill: currentColor;
+  }
+}
+
+.cp-photo-location__caption {
+  margin-block-start: var(--c-spacing-xs);
 }
 
 /**
@@ -210,35 +336,58 @@ ul.path > li:not(:last-child)::after {
   padding-inline: var(--c-spacing-md);
   font-size: calc(11rem / 16);
   font-weight: normal;
-  line-height: 1.5;
+  line-height: 1.3;
+  vertical-align: text-top;
   text-decoration: none;
   border: 1px solid color-mix(in srgb, currentColor 40%, transparent);
   border-radius: var(--c-radius-full);
+
+  /* Centered on its capitals, as `craft-badge` is, rather than on a line box
+     whose descender room depends on the font's metrics. */
+  @supports (text-box: trim-both cap alphabetic) {
+    text-box: trim-both cap alphabetic;
+    padding-block: calc((1lh - 1cap) / 2);
+  }
+}
+
+.label:has(.context-label),
+.label-link:has(.context-label) {
+  display: inline-flex;
+  min-width: 0;
+  max-width: 100%;
+}
+
+:is(.label-link, .label-link > span):has(> .context-label) {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px var(--c-spacing-sm);
+  min-width: 0;
+  max-width: 100%;
+
+  & > .context-label {
+    display: block;
+    max-width: 100%;
+    margin-inline-start: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 /**
-CP Checkbox Select (minimal legacy styling)
+CP Checkbox Select items with a bare checkbox and label, as legacy code renders
  */
-.cp-checkbox-select {
-  display: grid;
-  gap: var(--c-spacing-sm);
-}
-
 .cp-checkbox-select__item {
   display: flex;
   align-items: center;
   gap: var(--c-spacing-md);
 }
 
-/**
-Bring the reorder button to the top to prevent weird click issues between
-the drag handler and the hidden checkbox with legacy markup.
-
-Remove once we have a stable way to create a `<craft-checkbox/>` via twig
- */
-.cp-checkbox-select__item craft-reorder-button {
-  position: relative;
-  z-index: 1;
+/* An outlet nothing has rendered into, as in server-rendered forms, takes no
+   room (or gap) in its container. */
+[data-ui-outlet]:empty {
+  display: none;
 }
 
 /**
@@ -267,9 +416,10 @@ Form controls
   font: inherit;
   color: var(--c-input-text, var(--c-text-default));
   position: relative;
-  min-height: calc(
-    var(--c-input-height, var(--c-size-control-md)) - 2 * var(--_border-width)
-  );
+  /* Border-box, so selects (which the UA already sizes that way) come out as
+     tall as inputs. */
+  box-sizing: border-box;
+  min-height: var(--c-input-height, var(--c-size-control-md));
   border-width: var(--_border-width);
   border-style: var(--c-input-border-style, var(--c-form-control-border-style));
   border-color: var(--c-input-border-color, var(--c-form-control-border-color));
@@ -280,6 +430,39 @@ Form controls
   background-color: var(--c-input-fill, var(--c-form-control-fill));
   box-shadow: var(--c-input-shadow);
   overflow: clip;
+}
+
+/* Native selects draw the same chevron as craft-select, rather than the
+   browser's own, which sits flush against the border. */
+.cp-select:has(> .cp-form-control--select:not([multiple])) {
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-end: var(--c-input-spacing-inline);
+    inline-size: 0.8em;
+    block-size: 0.8em;
+    translate: 0 -50%;
+    background-color: currentColor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+    pointer-events: none;
+  }
+
+  @media (forced-colors: active) {
+    &::after {
+      forced-color-adjust: none;
+      background-color: CanvasText;
+    }
+  }
+}
+
+.cp-form-control--select:not([multiple]) {
+  appearance: none;
+  padding-inline: var(--c-input-spacing-inline)
+    calc(var(--c-input-spacing-inline) * 2 + 0.8em);
 }
 
 .selectize-dropdown.cp-form-control {
@@ -316,21 +499,6 @@ doesn't leave a trail of selected text behind it.
 }
 
 /*
- * Choice option illustrations (View Mode and friends). The label is `for`-bound
- * to its radio, so clicking the illustration selects the option — what Craft 5
- * got from wrapping the image and the input in a single label.
- */
-.radio-thumbnail {
-  display: block;
-  margin-block-end: var(--c-spacing-xs);
-  cursor: pointer;
-}
-
-.radio-thumbnail img {
-  display: block;
-}
-
-/*
  * The field a deep link points at — see `useFieldHighlight`. Styled on the host
  * element rather than inside `craft-field`'s shadow root, so the ring can sit
  * outside the field's own box without the component knowing about it.
@@ -362,4 +530,74 @@ craft-field[data-highlighted] {
 
 .cp-container > * {
   grid-column: 2;
+}
+
+/* Non-image card thumbnails (user avatars, folder and file-kind icons) render
+   at a fixed small size. Center them in a box as big as the largest image
+   thumbnail, at the size they get in the thumbnail view. Unlayered, so it
+   beats the 24px utility classes thumbnails render with. */
+.card-thumb:has(> .thumb) {
+  display: grid;
+  place-items: center;
+  width: 120px;
+  height: 120px;
+}
+
+.card-thumb > .thumb {
+  width: 72px;
+  height: 72px;
+}
+
+.card-thumb > .thumb svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* A nested element's "modified" status: a bar down the card's inline-start
+   edge, as a modified field has. The status badge in the card's header holds
+   its sr-only label. The bar is drawn on the card itself, as the header can be
+   a containing block of its own, such as a cover card's blurred header bar.
+   It's drawn on the layer a cover card draws its border on. */
+craft-card .status-badge {
+  display: contents;
+}
+
+craft-card:has(
+  > [slot='header'] .status-badge.modified,
+  > .card-titlebar > .status-badge.modified
+)::part(base) {
+  /* Lets the bar cover the card's border, so it's flush with the outer edge */
+  overflow-clip-margin: border-box;
+}
+
+craft-card:has(
+  > [slot='header'] .status-badge.modified,
+  > .card-titlebar > .status-badge.modified
+)::part(base)::after {
+  content: '';
+  position: absolute;
+  inset: calc(var(--c-card-border-width, 1px) * -1);
+  z-index: 1;
+  border-radius: inherit;
+  border-inline-start: 2px solid var(--c-field-modified-indicator);
+  pointer-events: none;
+}
+
+/* A cover card's border is drawn inside its edge, so the bar already sits on it */
+craft-card:has(> [data-cover]):has(
+  > [slot='header'] .status-badge.modified,
+  > .card-titlebar > .status-badge.modified
+)::part(base)::after {
+  inset: 0;
+}
+
+@media (forced-colors: active) {
+  craft-card:has(
+    > [slot='header'] .status-badge.modified,
+    > .card-titlebar > .status-badge.modified
+  )::part(base)::after {
+    /* The bar is the only visual sign of the status */
+    forced-color-adjust: none;
+    border-inline-start-color: Highlight;
+  }
 }

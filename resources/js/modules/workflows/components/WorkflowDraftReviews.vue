@@ -12,7 +12,9 @@
     <li v-for="draft in drafts" :key="draft.url" class="workflow-draft">
       <div class="workflow-draft__details">
         <div class="workflow-draft__heading">
-          <strong>{{ draft.name }}</strong>
+          <strong>
+            <CpLink :href="draft.url">{{ draft.name }}</CpLink>
+          </strong>
           <span class="workflow-draft__status">
             <craft-status
               :status="draft.statusIndicator"
@@ -30,9 +32,6 @@
           }}
         </p>
       </div>
-      <CpLink as="craft-button" :href="draft.url" size="small">
-        {{ t('View draft') }}
-      </CpLink>
     </li>
   </ul>
 </template>

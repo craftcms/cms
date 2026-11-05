@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import {type InertiaLinkProps, Link} from '@inertiajs/vue3';
   import {type Component, computed, defineComponent, h, useAttrs} from 'vue';
+  import {isExternalUrl} from '@craftcms/ui/utilities/external-links';
 
   defineOptions({inheritAttrs: false});
 
@@ -114,6 +115,11 @@
     return props.href instanceof Object ? props.href.url : props.href;
   });
 
+  // A link to another host leaves the app, in a new tab.
+  const useInertia = computed(
+    () => props.inertia && !isExternalUrl(hrefString.value)
+  );
+
   const customElement = computed(() =>
     typeof props.as === 'string' && props.as.includes('-')
       ? props.as
@@ -135,7 +141,7 @@
 </script>
 
 <template>
-  <template v-if="inertia">
+  <template v-if="useInertia">
     <Link
       v-bind="{
         prefetch: defaultPrefetch,
@@ -155,8 +161,10 @@
     </Link>
   </template>
   <template v-else>
+    <!-- Marked, so the control panel's handling of plain links leaves it to the browser too. -->
     <component
       v-bind="{...$attrs, ...customElementAttributes}"
+      data-inertia="false"
       :is="as || 'a'"
       :href="hrefString"
       :class="customElement ? undefined : classes"

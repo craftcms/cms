@@ -9,6 +9,7 @@ use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Query;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Prunable;
 use Override;
@@ -61,8 +62,9 @@ class JobProgress extends BaseModel
 
         $formatter = I18N::getFormatter();
 
-        $attributes['dateCreated'] = $this->dateCreated ? $formatter->asDateTime($this->dateCreated, withTimeZone: true) : null;
-        $attributes['dateUpdated'] = $this->dateUpdated ? $formatter->asDateTime($this->dateUpdated, withTimeZone: true) : null;
+        foreach (['dateCreated', 'dateUpdated', 'dateCompleted', 'dateFailed'] as $attribute) {
+            $attributes[$attribute] = $this->$attribute ? $formatter->asDateTime($this->$attribute, withTimeZone: true) : null;
+        }
 
         return $attributes;
     }
@@ -75,6 +77,6 @@ class JobProgress extends BaseModel
         return static::query()
             // Cancelled jobs may still be delayed or reserved on an external queue.
             ->where('status', '!=', JobStatus::Cancelled->value)
-            ->where('dateCreated', '<', now()->subDays(7));
+            ->where('dateCreated', '<', Query::prepareDateForDb(now()->subDays(7)));
     }
 }

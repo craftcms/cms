@@ -62,10 +62,8 @@ class ReplaceRelations extends BaseBatchedElementJob
         $query = $this->sourceElementType::find()
             ->id($this->sourceIds)
             ->siteId('*')
-            ->orderBy([
-                'elements.id' => SORT_ASC,
-                'elements_sites.siteId' => SORT_ASC,
-            ]);
+            ->orderBy('elements.id')
+            ->orderBy('elements_sites.siteId');
 
         return new QueryBatcher($query);
     }
@@ -97,7 +95,7 @@ class ReplaceRelations extends BaseBatchedElementJob
         }
 
         if ($saveElement) {
-            $item->setScenario(Element::SCENARIO_ESSENTIALS);
+            $item->ruleset->useScenario(Element::SCENARIO_ESSENTIALS);
             $item->resaving = true;
 
             try {

@@ -18,6 +18,39 @@ afterEach(() => {
   document.body.replaceChildren();
 });
 
+// As attributes, `false` would still read as present, so a Markdown Control
+// that turned the stats or toolbar off would show them anyway.
+it('turns off stats and the toolbar from the Vue Markdown Control', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false}));
+  const container = document.createElement('div');
+  document.body.append(container);
+  createApp(MarkdownControl, {
+    control: {
+      type: 'Markdown',
+      component: 'craft:markdown',
+      props: {showStats: false, showToolbar: false},
+      path: ['description'],
+      mode: 'editable',
+      deltaGroup: ['description'],
+    },
+    value: '',
+    editable: true,
+    invalid: false,
+    required: false,
+  }).mount(container);
+  await nextTick();
+
+  const field = container.querySelector(
+    'craft-markdown-field'
+  ) as HTMLElement & {
+    showStats: boolean;
+    showToolbar: boolean;
+  };
+
+  expect(field.showStats).toBe(false);
+  expect(field.showToolbar).toBe(false);
+});
+
 it('applies properties from the Vue Markdown Control', async () => {
   const frames: FrameRequestCallback[] = [];
   let laidOut = false;
@@ -74,6 +107,11 @@ it('applies properties from the Vue Markdown Control', async () => {
     dataset: {uiControlPath: '["body"]'},
   });
   expect(container.querySelector('.overtype-toolbar')).not.toBeNull();
+  expect(
+    container
+      .querySelector('craft-markdown-field')!
+      .hasAttribute('show-toolbar')
+  ).toBe(true);
   expect(textExpander.for).toBe(textarea.id);
   expect(textExpander.slot).toBe('input');
 
@@ -97,6 +135,44 @@ it('applies properties from the Vue Markdown Control', async () => {
   expect(
     container.querySelector<HTMLElement>('.overtype-wrapper')?.style.height
   ).toBe('120px');
+});
+
+it('keeps a read-only value reachable by keyboard, without letting it change', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false}));
+  const container = document.createElement('div');
+  document.body.append(container);
+  createApp(MarkdownControl, {
+    control: {
+      type: 'Markdown',
+      component: 'craft:markdown',
+      props: {toolbarButtons: ['bold'], showToolbar: true},
+      path: ['body'],
+      mode: 'readOnly',
+      deltaGroup: ['body'],
+    },
+    value: 'Write plainly.',
+    editable: false,
+    invalid: false,
+    required: false,
+  }).mount(container);
+  await nextTick();
+
+  const textarea = container.querySelector('textarea')!;
+  const paste = new Event('paste', {bubbles: true, cancelable: true});
+  Object.assign(paste, {
+    clipboardData: {getData: () => 'https://craftcms.com'},
+  });
+  textarea.setSelectionRange(0, 5);
+  textarea.dispatchEvent(paste);
+
+  expect(textarea.readOnly).toBe(true);
+  expect(textarea.disabled).toBe(false);
+  expect(textarea.value).toBe('Write plainly.');
+  expect(
+    container
+      .querySelector('.overtype-toolbar')
+      ?.classList.contains('overtype-toolbar-hidden')
+  ).toBe(true);
 });
 
 it('scopes its styling to the element, which every render path has', () => {

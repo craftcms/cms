@@ -8,9 +8,12 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Events\ImportStarted;
 use CraftCms\Cms\Import\Events\ImportStepFinished;
+use CraftCms\Cms\Import\Import as ImportService;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\I18N;
 use Illuminate\Bus\Batch;
+use Illuminate\Bus\PendingBatch;
+use Illuminate\Foundation\Bus\PendingChain;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
@@ -44,6 +47,8 @@ class ImportPipeline extends Job
     public function handle(): void
     {
         if (empty($this->steps)) {
+            ImportService::releaseRunLock($this->importPlan, $this->runId);
+
             return;
         }
 
@@ -80,13 +85,28 @@ class ImportPipeline extends Job
                     if ($step !== null) {
                         event(new ImportStepFinished($importPlan, $step, $runId, $batch->hasFailures() || $itemsFailed));
                     }
-                });
+
+                    // FinishImport won't run, so it can't mark the import plan as no longer running
+                    if ($batch->cancelled()) {
+                        ImportService::releaseRunLock($importPlan, $runId);
+                    }
+                })
+                ->when($this->connection !== null, fn (PendingBatch $batch) => $batch->onConnection($this->connection));
         }
 
         // runs only after the last step's batch has finished, and never if a batch was canceled
         Bus::chain([...$steps, new FinishImport($importPlan, $runId)])
             ->onQueue(Cms::config()->queueName)
+            ->when($this->connection !== null, fn (PendingChain $chain) => $chain->onConnection($this->connection))
             ->dispatch();
+    }
+
+    /**
+     * Marks the import plan as no longer running if the pipeline couldn't queue its steps.
+     */
+    public function failed(): void
+    {
+        ImportService::releaseRunLock($this->importPlan, $this->runId);
     }
 
     #[Override]

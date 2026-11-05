@@ -1,0 +1,42 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as LinkStories from './link.stories';
+
+<Meta of={LinkStories} name="Docs" />
+
+# Link
+
+`<craft-link>` shows a link on one line, after a link icon button that opens its details: the full address, a button that opens it and a button that copies it.
+
+<Canvas of={LinkStories.Default} sourceState="shown" />
+
+Put a plain `<a>` inside it. The link works before the component loads, and keeps its own behavior once it has.
+
+## When to Reach for It
+
+Where a link's address is shown in a tight space and people may need all of it, such as a URL in a card or a table cell.
+
+A link longer than its container is cut off with an ellipsis. The details always show the whole address. Resting the pointer on the link or its icon also opens them. The first waits out a short warm-up; after that, other links open straight away until the pointer has been off them for a moment:
+
+<Canvas of={LinkStories.Truncated} sourceState="shown" />
+
+`mailto:` and `tel:` links show and copy the bare address:
+
+<Canvas of={LinkStories.EmailAndPhone} sourceState="shown" />
+
+The open button always opens the address in a new tab. The link itself, and the address in the details, keep the link's own `target` and `rel`.
+
+For links in running text, use a plain `<a>`. A button after each one gets in the way of reading.
+
+## Width
+
+The link fills its container, up to `--c-link-max-width`. Table cells cap it at `200px`, since a column otherwise grows to fit its longest link. Set `--c-link-max-width: 100%` on the cell, or on the link, to let it fill the cell instead.
+
+## Accessibility
+
+Give the `<a>` text that says where it goes, or the address itself. The details button's name is built from that text, so it's only as clear as the link is.
+
+`label` replaces "Link details" in the button's name. The link's text is still added after it.
+
+## Properties
+
+<ArgTypes of={LinkStories} />

@@ -21,6 +21,8 @@ use CraftCms\Cms\Asset\PreviewHandlers\Text;
 use CraftCms\Cms\Asset\PreviewHandlers\Video;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Enums\Theme;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Queries\AssetQuery;
@@ -29,6 +31,7 @@ use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
@@ -42,7 +45,6 @@ use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 use RuntimeException;
 use Throwable;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
@@ -64,9 +66,36 @@ class Assets
         private readonly CraftAssetTransformDriver $craftAssetTransformDriver,
     ) {}
 
+    /**
+     * Returns an asset by its ID.
+     *
+     * If no site ID is passed, the asset will be returned in the requested site if it exists there,
+     * or in another site it exists in otherwise (e.g. for volumes with custom propagation).
+     */
     public function getAssetById(int $assetId, ?int $siteId = null): ?Asset
     {
-        return $this->elements->getElementById($assetId, Asset::class, $siteId);
+        if ($siteId !== null) {
+            return $this->elements->getElementById($assetId, Asset::class, $siteId);
+        }
+
+        /** @var Asset|null */
+        return $this->findAcrossSites()->id($assetId)->one();
+    }
+
+    /**
+     * Returns an asset query that isn't limited to a single site.
+     *
+     * Each asset will be returned once, in the requested site if it exists there, or in another site
+     * it exists in otherwise (e.g. for volumes with custom propagation).
+     */
+    public function findAcrossSites(): AssetQuery
+    {
+        $preferredSite = app(RequestedSite::class)->get() ?? Sites::getCurrentSite();
+
+        return Asset::find()
+            ->site('*')
+            ->preferSites([$preferredSite->id])
+            ->unique();
     }
 
     public function getTotalAssets(mixed $criteria = null): int
@@ -132,10 +161,12 @@ class Assets
     }
 
     /**
+     * Loads the transform indexes for assets' thumbnails up front, so they aren't looked up one at a time.
+     *
      * @param  list<Asset>  $assets
-     * @param  list<int>  $sizes
+     * @param  list<int|array{int, int}>  $sizes  The sizes of square thumbnails, or their widths and heights
      */
-    public function preloadThumbs(array $assets, array $sizes): void
+    public function preloadThumbs(array $assets, array $sizes, ImageTransformMode $mode = ImageTransformMode::Fit): void
     {
         if (Event::hasListeners(ThumbUrlResolving::class)) {
             return;
@@ -143,10 +174,14 @@ class Assets
 
         $assets = array_values(array_filter($assets, fn (Asset $asset): bool => $asset::class === Asset::class
             && ! $asset->isFolder
-            && ! $asset->getFieldLayout()?->thumbFieldKey));
+            && empty($asset->getFieldLayout()->thumbSources)));
 
         $this->assetTransformers->preload($assets, fn (Asset $asset): array => array_map(
-            fn (int $size): array => ['width' => $size, 'height' => $size, 'mode' => ImageTransformMode::Fit->value],
+            fn (int|array $size): array => [
+                'width' => is_array($size) ? $size[0] : $size,
+                'height' => is_array($size) ? $size[1] : $size,
+                'mode' => $mode->value,
+            ],
             $sizes,
         ));
     }
@@ -185,12 +220,22 @@ class Assets
                 'mode' => $mode->value,
             ])->url;
         } catch (NotSupportedException|FilesystemException) {
-            return $iconFallback ? Url::actionUrl('assets/icon', [
-                'extension' => $extension,
-            ]) : null;
+            return $iconFallback ? self::iconUrl($extension) : null;
         }
 
         return AssetsHelper::revUrl($url, $asset, fsOnly: true);
+    }
+
+    /**
+     * Returns the URL of a file icon, in the variant for the control panel
+     * theme that's showing, since icon responses are cached by URL.
+     */
+    private static function iconUrl(string $extension): string
+    {
+        return Url::actionUrl('assets/icon', array_filter([
+            'extension' => $extension,
+            'theme' => Theme::resolveFor(currentUserElement()) === Theme::Dark ? Theme::Dark->value : null,
+        ]));
     }
 
     /**
@@ -225,9 +270,7 @@ class Assets
                 )
                 : $asset->getUrl();
         } catch (NotSupportedException) {
-            return Url::actionUrl('assets/icon', [
-                'extension' => $asset->getExtension(),
-            ]);
+            return self::iconUrl($asset->getExtension());
         }
 
         if (! $url) {
@@ -266,8 +309,8 @@ class Assets
 
         $baseFileName = $buildFilename(pathinfo($originalFilename, PATHINFO_FILENAME));
 
-        $dbFileList = DB::table(new Alias(Table::ASSETS, 'assets'))
-            ->join(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', 'assets.id')
+        $dbFileList = DB::table(Table::ASSETS, 'assets')
+            ->join(Table::ELEMENTS.' as elements', 'elements.id', 'assets.id')
             ->where('assets.folderId', $folderId)
             ->whereNull('elements.dateDeleted')
             ->whereLike('assets.filename', $baseFileName.'%.'.$extension)
@@ -329,7 +372,7 @@ class Assets
             FileKind::Image->value => new ImagePreview($asset),
             FileKind::Pdf->value => new Pdf($asset),
             FileKind::Video->value => new Video($asset),
-            FileKind::Html->value, FileKind::Javascript->value, FileKind::Json->value, FileKind::Php->value, FileKind::Text->value, FileKind::Xml->value => new Text($asset),
+            FileKind::Html->value, FileKind::Javascript->value, FileKind::Json->value, FileKind::Markdown->value, FileKind::Php->value, FileKind::Text->value, FileKind::Xml->value => new Text($asset),
             default => null,
         };
     }

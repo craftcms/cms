@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use CraftCms\Cms\Cp\Data\ActionItem;
+use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\Updates;
@@ -28,10 +29,15 @@ readonly class UtilitiesController
         private Utilities $utilitiesService,
     ) {}
 
-    public function badgeCount(): JsonResponse
+    /**
+     * The nav's badge counts, keyed by nav item id, so the control panel can
+     * refresh them without a visit — each utility's as well as the Utilities
+     * item's.
+     */
+    public function badgeCount(Navigation $navigation): JsonResponse
     {
         return new JsonResponse([
-            'badgeCount' => $this->utilitiesService->getUtilitiesBadgeCount(),
+            'badgeCounts' => (object) $navigation->getBadgeCounts(),
         ]);
     }
 
@@ -72,13 +78,17 @@ readonly class UtilitiesController
         $toolbar = $htmlStack->capture(fn (): string => $class::toolbarHtml());
         $footer = $htmlStack->capture(fn (): string => $class::footerHtml());
 
+        $subpageTitle = $class::subpageTitle();
+
         return Inertia::render('utilities/Show', [
-            'crumbs' => [
+            'crumbs' => array_filter([
                 new ActionItem()->label(t('Utilities'))->href(Url::cpUrl('utilities')),
-                new ActionItem()->label($class::displayName()),
-            ],
+                new ActionItem()->label($class::displayName())
+                    ->href($subpageTitle !== null ? Url::cpUrl("utilities/$id") : null),
+                $subpageTitle !== null ? new ActionItem()->label($subpageTitle) : null,
+            ]),
             'id' => $id,
-            'title' => $class::displayName(),
+            'title' => $subpageTitle ?? $class::displayName(),
             // The HTML itself still renders through `DynamicHtmlRenderer`,
             // which compiles it as a Vue template — utility content can
             // reference Vue components (e.g. `<ProjectConfig>`).

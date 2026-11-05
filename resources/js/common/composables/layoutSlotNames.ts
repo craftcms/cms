@@ -17,8 +17,10 @@ export const layoutSlotNames = [
   'content-notices',
   'content-details',
   'content-footer',
+  'footer-meta',
   'additional-buttons',
   'primary-action',
+  'page-header',
   'page-footer',
 ] as const;
 

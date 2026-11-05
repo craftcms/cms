@@ -31,6 +31,7 @@ use CraftCms\Cms\Section\Events\SectionSaving;
 use CraftCms\Cms\Section\Exceptions\SectionNotFoundException;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Section\Models\SectionSiteSettings as SectionSiteSettingsModel;
+use CraftCms\Cms\Shared\Enums\ModelIdentifier;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Structure\Data\Structure;
@@ -59,7 +60,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use RuntimeException;
 use Throwable;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
@@ -214,7 +214,7 @@ class Sections
                 'sections.uid',
                 'structures.maxLevels',
             ])
-            ->leftJoin(new Alias(Table::STRUCTURES, 'structures'), function (JoinClause $join) {
+            ->leftJoin(Table::STRUCTURES.' as structures', function (JoinClause $join) {
                 $join->whereColumn('structures.id', 'sections.structureId')
                     ->whereNull('structures.dateDeleted');
             })
@@ -464,6 +464,25 @@ class Sections
     }
 
     /**
+     * Returns a section by its ID, UID or handle.
+     *
+     * @param  ModelIdentifier[]|null  $by
+     */
+    public function resolveSection(mixed $section, ?array $by = null): ?Section
+    {
+        if ($section instanceof Section) {
+            return $section;
+        }
+
+        return match (ModelIdentifier::detect($section, $by)) {
+            ModelIdentifier::Id => $this->getSectionById((int) $section),
+            ModelIdentifier::Uid => $this->getSectionByUid($section),
+            ModelIdentifier::Handle => $this->getSectionByHandle($section),
+            null => null,
+        };
+    }
+
+    /**
      * Returns a section’s site-specific settings.
      *
      *
@@ -493,7 +512,7 @@ class Sections
                 'sections_sites.template',
                 'sections_sites.route',
             ])
-            ->join(new Alias(Table::SITES, 'sites'), function (JoinClause $join) {
+            ->join(Table::SITES.' as sites', function (JoinClause $join) {
                 $join->whereColumn('sections_sites.siteId', 'sites.id')
                     ->whereNull('sites.dateDeleted');
             })
@@ -830,8 +849,8 @@ class Sections
             throw $e;
         }
 
-        // Clear caches
-        $this->refreshSections();
+        // Clear caches, including the section's entry type assignments
+        EntryTypes::refreshEntryTypes();
 
         if ($wasTrashed) {
             /** @var ElementCollection<int, Entry> $entries */
@@ -1170,8 +1189,8 @@ class Sections
             throw $e;
         }
 
-        // Clear caches
-        $this->refreshSections();
+        // Clear caches, including the section's entry type assignments
+        EntryTypes::refreshEntryTypes();
 
         event(new SectionDeleted($section));
 

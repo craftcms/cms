@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Queue;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\Models\JobProgress as JobProgressModel;
+use CraftCms\Cms\Support\Query;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Contracts\Queue\ClearableQueue;
@@ -119,8 +120,10 @@ readonly class JobProgress
             ->orderByRaw('CASE WHEN status = ? THEN 1 ELSE 0 END DESC', [JobStatus::Pending->value])
             // Then by now or dateCreated + delay, with furthest delayed jobs first
             ->orderByRaw("$delay DESC", [now()->getTimestamp()])
-            // Lastly by dateCreated
-            ->orderBy('dateCreated');
+            // Then by dateCreated
+            ->orderBy('dateCreated')
+            // Lastly by uid, so jobs created in the same second keep their order from page to page
+            ->orderBy('uid');
     }
 
     /**
@@ -262,7 +265,7 @@ readonly class JobProgress
             ->where('status', '!=', JobStatus::Cancelled->value)
             ->update([
                 'status' => $status->value,
-                'dateUpdated' => now(),
+                'dateUpdated' => Query::prepareDateForDb(now()),
             ]);
     }
 

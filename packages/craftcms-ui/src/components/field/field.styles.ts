@@ -7,18 +7,23 @@ export default css`
   }
 
   /* A slotted control with a maxlength (reflected as has-maxlength) shrinks
-     the field to the control's width instead of spanning the column.
-     width="full" spans despite a maxlength; width="auto" shrinks without
-     one. */
-  :host([has-maxlength]:not([width='full'])),
-  :host([width='auto']) {
+     to its own width instead of spanning the column. width="full" spans
+     despite a maxlength; width="auto" shrinks without one. Only the input
+     shrinks: the heading (and its actions) and feedback still span the
+     column, in line with other fields'. */
+  :host([has-maxlength]:not([width='full'])) .input-group__container,
+  :host([width='auto']) .input-group__container {
     width: fit-content;
+    max-width: 100%;
   }
 
-  /* Stop the input chrome from flexing back out to the available space. */
+  /* Stop the input chrome from flexing back out to the available space, while
+     still letting it shrink to the column: a long maxlength, such as a
+     Title's 255 characters, sizes the input far wider than the column. */
   :host([has-maxlength]:not([width='full'])) .input-group__input,
   :host([width='auto']) .input-group__input {
-    flex: 0 0 auto;
+    flex: 0 1 auto;
+    min-width: 0;
   }
 
   :host([hidden]) {
@@ -37,13 +42,23 @@ export default css`
   }
 
   .form-field--modified .form-field__status-indicator {
-    background-color: var(--blue-600, #2563eb);
-    box-shadow: 0 0 5px hsl(221deg 83% 53% / 15%);
+    background-color: var(--c-field-modified-indicator, #7c3cf4);
+    box-shadow: 0 0 5px
+      color-mix(
+        in srgb,
+        var(--c-field-modified-indicator, #7c3cf4) 15%,
+        transparent
+      );
   }
 
   .form-field--outdated .form-field__status-indicator {
-    background-color: var(--bg-pending, #c96a11);
-    box-shadow: 0 0 5px hsl(27deg 96% 61% / 15%);
+    background-color: var(--bg-pending, var(--c-status-pending-fill));
+    box-shadow: 0 0 5px
+      color-mix(
+        in srgb,
+        var(--bg-pending, var(--c-status-pending-fill)) 15%,
+        transparent
+      );
   }
 
   /* Heading row (the CP's .field > .heading) */
@@ -53,15 +68,9 @@ export default css`
     flex-wrap: wrap;
     gap: 5px;
     align-items: center;
-    font-weight: bold;
-    margin-block-end: var(
-      --c-field-label-margin-block-end,
-      var(--c-spacing-sm)
-    );
-
-    &:has(+ .form-field__help-text) {
-      margin-block-end: 0;
-    }
+    font-size: var(--c-field-label-font-size, inherit);
+    font-weight: var(--c-field-label-font-weight, bold);
+    color: var(--c-field-label-color, inherit);
   }
 
   /* Pushes slotted label extras to the far end of the heading row. */
@@ -85,6 +94,7 @@ export default css`
     flex-wrap: wrap;
     gap: var(--c-spacing-xs);
     align-items: center;
+    line-height: var(--c-field-label-line-height, inherit);
   }
 
   .read-only-badge {
@@ -97,16 +107,6 @@ export default css`
     color: var(--gray-700, #3f4d5a);
     border: 1px solid var(--border-hairline, hsl(211deg 20% 44% / 25%));
     border-radius: var(--c-radius-sm, 3px);
-  }
-
-  /* Instructions (.field > .instructions in the CP) */
-  .form-field__help-text {
-    display: block;
-    margin-block-end: var(--c-spacing-sm);
-  }
-
-  .form-field__group-two .form-field__help-text {
-    margin-block: var(--c-spacing-xs, 0.3125rem) 0;
   }
 
   /* Input container (.field > .input in the CP) */
@@ -149,12 +149,6 @@ export default css`
     min-width: 0;
     margin: 0;
     font-size: 100%;
-  }
-
-  /* Tip/warning notices (field-notice.blade.php renders these with p-0 mt-1) */
-  .field-notice {
-    padding: 0;
-    margin-block-start: var(--c-spacing-xs, 0.25rem);
   }
 
   /* Error styling hook, mirroring .field.has-errors / .input.errors */

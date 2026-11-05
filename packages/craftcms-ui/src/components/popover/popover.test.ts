@@ -2,6 +2,11 @@ import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import type CraftPopover from './popover.js';
 import './popover.js';
 
+/** Lion keeps the overlay controller protected; its config is what's under test. */
+const overlayZIndex = (popover: CraftPopover) =>
+  (popover as unknown as {_overlayCtrl: {config: {zIndex?: number}}})
+    ._overlayCtrl.config.zIndex;
+
 async function createFixture(
   configure: (popover: CraftPopover, button: HTMLButtonElement) => void = (
     popover
@@ -36,12 +41,26 @@ describe('craft-popover', () => {
     expect(content!.textContent).toContain('Popover content');
   });
 
+  it('leaves comments out of the default-slot content it wraps', async () => {
+    const popover = document.createElement('craft-popover') as CraftPopover;
+    const content = document.createElement('div');
+    content.slot = 'content';
+    content.textContent = 'Slotted content';
+    popover.append(document.createComment('A note about the content'), content);
+    document.body.append(popover);
+    await popover.updateComplete;
+
+    expect([...popover.querySelectorAll('[slot="content"]')]).toStrictEqual([
+      content,
+    ]);
+  });
+
   it('stacks at the popover layer token', async () => {
     document.documentElement.style.setProperty('--c-layer-popover', '4321');
 
     try {
       const {popover} = await createFixture();
-      expect(popover._overlayCtrl.config.zIndex).toBe(4321);
+      expect(overlayZIndex(popover)).toBe(4321);
     } finally {
       document.documentElement.style.removeProperty('--c-layer-popover');
     }
@@ -49,7 +68,7 @@ describe('craft-popover', () => {
 
   it("falls back to Lion's layer without the token", async () => {
     const {popover} = await createFixture();
-    expect(popover._overlayCtrl.config.zIndex).toBe(9999);
+    expect(overlayZIndex(popover)).toBe(9999);
   });
 
   it('resolves the invoker from the for attribute', async () => {

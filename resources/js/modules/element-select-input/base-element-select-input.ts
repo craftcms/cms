@@ -660,7 +660,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
         }
       }
 
-      // Route the Edit actions through createElementEditor(), so the slideout knows about this input
+      // Route the Edit actions through createElementEditor()
       $element
         .find('[id*="action-edit"]')
         .each((_: number, btn: HTMLElement) => {
@@ -863,19 +863,28 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
     }
   }
 
-  createElementEditor($element: any, settings?: any): any {
-    settings = Object.assign(
-      {
-        elementSelectInput: this,
-        prevalidate: this.settings.prevalidate,
+  /** Opens an element's editor slideout. */
+  createElementEditor($element: any, settings?: Record<string, unknown>): void {
+    const params = Object.fromEntries(
+      Object.entries({
+        elementType: this.settings.elementType,
+        elementId: $element.data('id'),
+        draftId: $element.data('draft-id'),
+        siteId: $element.data('site-id'),
+        prevalidate: this.settings.prevalidate ? 1 : null,
+        ...settings,
+      }).filter(([, value]) => value !== null && value !== undefined)
+    );
+
+    void Craft.openSlideout(Craft.getActionUrl('elements/edit', params), {
+      opener: $element[0],
+      onSaved: ({data}: {data?: Record<string, any>}) => {
+        // An image saved as a new asset takes the edited asset's place.
+        if (data?.replacedAssetId && data.newAssetId) {
+          void this.replaceElement(data.replacedAssetId, data.newAssetId);
+        }
       },
-      settings
-    );
-    return Craft.createElementEditor(
-      this.settings.elementType,
-      $element,
-      settings
-    );
+    });
   }
 
   replaceElement(elementId: number, replacementId: number): Promise<void> {
@@ -1683,7 +1692,10 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
         })}: ${val}`;
         $li.attr('aria-label', optionLabel);
 
-        $('<div class="menu-item" data-icon="plus"/>').appendTo($li).text(val);
+        $('<div class="menu-item"/>')
+          .appendTo($li)
+          .text(val)
+          .prepend('<craft-icon name="plus"></craft-icon>');
       }
 
       $ul.find('.menu-item:not(.disabled):first').addClass('hover');

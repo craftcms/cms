@@ -6,17 +6,24 @@ namespace CraftCms\Cms\Mcp;
 
 use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Mcp\Attributes\PublicMcp;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
+use CraftCms\Cms\Mcp\Attributes\RequiresEdition;
 use CraftCms\Cms\Mcp\Attributes\RequiresHttp;
 use CraftCms\Cms\Mcp\Attributes\RequiresPermission;
+use CraftCms\Cms\Mcp\Enums\McpScope;
+use CraftCms\Cms\Mcp\Events\DiscoveringCapability;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
+use Laravel\Passport\Contracts\ScopeAuthorizable;
 use LogicException;
 use Mcp\Capability\Discovery\Discoverer;
 use Mcp\Capability\Discovery\DiscovererInterface;
 use Mcp\Capability\Discovery\DiscoveryState;
 use Mcp\Capability\Registry\ElementReference;
+use Mcp\Capability\Registry\ToolReference;
 use ReflectionFunction;
 use ReflectionMethod;
 
@@ -46,7 +53,10 @@ readonly class CapabilityDiscovery implements DiscovererInterface
 
         return $this->filter(
             $discovered,
-            fn (ElementReference $reference): bool => ! $this->isPublic($reference) && $this->allows($reference),
+            fn (ElementReference $reference): bool => ! $this->isPublic($reference)
+                && $this->allows($reference)
+                && $this->tokenAllows($reference)
+                && $this->pluginsAllow($reference),
         );
     }
 
@@ -70,19 +80,27 @@ readonly class CapabilityDiscovery implements DiscovererInterface
     }
 
     /**
+     * Discovers the capabilities the current user can use without an access token, for the stdio server and the AI
+     * assistant. Capabilities that only work over HTTP are left out.
+     *
      * @param  list<string>  $directories
      * @param  list<string>  $excludeDirs
      * @param  list<string>  $namePatterns
      */
-    public function discoverStdio(
+    public function discoverWithoutToken(
         string $basePath,
         array $directories,
         array $excludeDirs = [],
         array $namePatterns = self::DEFAULT_NAME_PATERNS,
     ): DiscoveryState {
+        $discovered = $this->discoverAll($basePath, $directories, $excludeDirs, $namePatterns);
+
         return $this->filter(
-            $this->discover($basePath, $directories, $excludeDirs, $namePatterns),
-            fn (ElementReference $reference): bool => ($this->reflection($reference->handler)?->getAttributes(RequiresHttp::class) ?? []) === [],
+            $discovered,
+            fn (ElementReference $reference): bool => ! $this->isPublic($reference)
+                && $this->allows($reference)
+                && ($this->reflection($reference->handler)?->getAttributes(RequiresHttp::class) ?? []) === []
+                && $this->pluginsAllow($reference),
         );
     }
 
@@ -142,6 +160,11 @@ readonly class CapabilityDiscovery implements DiscovererInterface
     private function allows(ElementReference $reference): bool
     {
         $method = $this->reflection($reference->handler);
+
+        if (! $this->editionAllows($method)) {
+            return false;
+        }
+
         $requiresAdminChanges = ($method?->getAttributes(RequiresAdminChanges::class) ?? []) !== [];
         $requiresAdmin = $requiresAdminChanges || ($method?->getAttributes(RequiresAdmin::class) ?? []) !== [];
         $requiredPermissions = $method?->getAttributes(RequiresPermission::class) ?? [];
@@ -165,6 +188,62 @@ readonly class CapabilityDiscovery implements DiscovererInterface
         }
 
         return array_all($requiredPermissions, fn ($attribute) => $user->can($attribute->newInstance()->permission));
+    }
+
+    /** Whether plugins allow the capability, via {@see DiscoveringCapability}. */
+    private function pluginsAllow(ElementReference $reference): bool
+    {
+        if (! Event::hasListeners(DiscoveringCapability::class)) {
+            return true;
+        }
+
+        $event = new DiscoveringCapability($reference, $this->request->craftUser());
+        event($event);
+
+        return $event->allowed;
+    }
+
+    /** Whether the request's access token has the scope the capability requires. */
+    private function tokenAllows(ElementReference $reference): bool
+    {
+        $user = $this->request->user('craft-mcp');
+        $token = is_object($user) && method_exists($user, 'currentAccessToken') ? $user->currentAccessToken() : null;
+
+        if (! $token instanceof ScopeAuthorizable) {
+            return false;
+        }
+
+        return $this->requiredScope($reference)->isGrantedTo($token);
+    }
+
+    private function requiredScope(ElementReference $reference): McpScope
+    {
+        $method = $this->reflection($reference->handler);
+
+        if (($method?->getAttributes(RequiresAdmin::class) ?? []) !== [] || ($method?->getAttributes(RequiresAdminChanges::class) ?? []) !== []) {
+            return McpScope::Admin;
+        }
+
+        if ($reference instanceof ToolReference && $reference->tool->annotations?->readOnlyHint !== true) {
+            return McpScope::Write;
+        }
+
+        return McpScope::Read;
+    }
+
+    /** Whether the edition meets any `RequiresEdition` on the tool or its capability class. */
+    private function editionAllows(?ReflectionMethod $method): bool
+    {
+        if ($method === null) {
+            return true;
+        }
+
+        $attributes = [
+            ...$method->getDeclaringClass()->getAttributes(RequiresEdition::class),
+            ...$method->getAttributes(RequiresEdition::class),
+        ];
+
+        return array_all($attributes, fn ($attribute) => Edition::isAtLeast($attribute->newInstance()->edition));
     }
 
     /**

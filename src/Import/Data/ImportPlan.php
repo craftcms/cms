@@ -9,7 +9,7 @@ use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\Facades\Import as ImportFacade;
-use CraftCms\Cms\Support\Facades\ImportPlan as ImportPlanFacade;
+use CraftCms\Cms\Support\Facades\ImportPlans as ImportPlanFacade;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
@@ -47,7 +47,7 @@ class ImportPlan extends Component implements CpEditable, Validatable
 
     /**
      * Whether this import plan is stored in the database, and so editable via the control panel.
-     * Import plans registered in code, via `ImportPlan::register()`, are not.
+     * Import plans registered in code, via `ImportPlans::register()`, are not.
      */
     public bool $editable = false;
 
@@ -164,6 +164,16 @@ class ImportPlan extends Component implements CpEditable, Validatable
     }
 
     /**
+     * Returns the import plan's enabled steps, in order.
+     *
+     * @return list<BaseImporter>
+     */
+    public function enabledSteps(): array
+    {
+        return array_values(array_filter($this->steps ?? [], fn (BaseImporter $step): bool => $step->enabled));
+    }
+
+    /**
      * Serializes the import plan's steps into an array of arrays.
      *
      * @return array<int, array<string, mixed>>|null
@@ -232,6 +242,10 @@ class ImportPlan extends Component implements CpEditable, Validatable
             return;
         }
 
+        if (! empty($this->steps) && empty($this->enabledSteps())) {
+            $validator->errors()->add('steps', t('An import plan needs at least one enabled step.'));
+        }
+
         foreach ($this->steps ?? [] as $i => $step) {
             $key = $step->uid ?? $i;
 
@@ -268,7 +282,7 @@ class ImportPlan extends Component implements CpEditable, Validatable
             return ['type' => $typeValidator->errors()->get('type')];
         }
 
-        $stepValidator = ValidatorFacade::make($stepArray, $type::getRules($resolveHost));
+        $stepValidator = ValidatorFacade::make($stepArray, $type::getRules($resolveHost), $type::getSettingsMessages());
 
         return $stepValidator->fails() ? $stepValidator->errors()->messages() : [];
     }

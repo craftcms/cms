@@ -11,10 +11,10 @@ use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\UserInitiatedElementSave;
 use CraftCms\Cms\Mcp\ElementLifecycle;
-use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\Elements\BaseElementAdapter;
 use CraftCms\Cms\Mcp\Serializers\ElementSerializer;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use Illuminate\Support\Facades\Gate;
@@ -45,33 +45,16 @@ class AssetAdapter extends BaseElementAdapter
         return Asset::class;
     }
 
-    protected function criteriaProperties(): array
-    {
-        return ElementQueryCriteria::AssetSchemaProperties;
-    }
-
     protected function updateAttributesSchema(): array
     {
+        $properties = $this->attributeSchemas('update', ['title', 'slug', 'enabled']);
+
+        // setFocalPoint() quietly clears out-of-range values, so reject them up front.
+        $properties['focalPoint']['pattern'] = '^(0(\.\d+)?|1(\.0+)?);(0(\.\d+)?|1(\.0+)?)$';
+
         return [
             'type' => 'object',
-            'properties' => [
-                'title' => ['type' => ['string', 'null'], 'description' => 'Asset title.'],
-                'slug' => ['type' => ['string', 'null'], 'description' => 'Asset slug.'],
-                'alt' => ['type' => ['string', 'null'], 'description' => 'Alternative text.'],
-                'enabled' => ['type' => 'boolean', 'description' => 'Whether the asset is enabled.'],
-                'filename' => ['type' => 'string', 'description' => 'Asset filename. Changing it renames the file.'],
-                'folderId' => ['type' => 'integer', 'description' => 'Asset folder ID. Changing it moves the file.'],
-                'focalPoint' => [
-                    'type' => ['object', 'null'],
-                    'description' => 'Image or video focal point, as fractions of the width (x) and height (y) from the top-left corner. Image transforms crop around it. Null clears it.',
-                    'properties' => [
-                        'x' => ['type' => 'number', 'minimum' => 0, 'maximum' => 1],
-                        'y' => ['type' => 'number', 'minimum' => 0, 'maximum' => 1],
-                    ],
-                    'required' => ['x', 'y'],
-                    'additionalProperties' => false,
-                ],
-            ],
+            'properties' => $properties,
             'additionalProperties' => false,
         ];
     }
@@ -93,7 +76,7 @@ class AssetAdapter extends BaseElementAdapter
     {
         return [
             'Create assets with assets.create and replace their files with assets.replace; both accept the file to upload.',
-            'Restoring an asset only succeeds if its file was kept when it was deleted.',
+            'Restoring an asset only succeeds if its file was moved to the trashed asset disk when it was deleted.',
             'Validation does not move or rename files.',
         ];
     }
@@ -153,6 +136,7 @@ class AssetAdapter extends BaseElementAdapter
     {
         $this->authorizeSave($actor, $element);
         $relocation = $this->relocation($element, $attributes, $actor);
+        $this->authorizeUploaderChange($element, $attributes, $actor);
 
         Typecast::configure($element, Arr::except($attributes, ['filename', 'folderId']));
         $this->setFieldValues($element, $fields);
@@ -174,6 +158,7 @@ class AssetAdapter extends BaseElementAdapter
     {
         $this->authorizeSave($actor, $element);
         $this->relocation($element, $attributes, $actor);
+        $this->authorizeUploaderChange($element, $attributes, $actor);
         Typecast::configure($element, $attributes);
         $this->setFieldValues($element, $fields);
         $this->authorizeSave($actor, $element);
@@ -199,6 +184,31 @@ class AssetAdapter extends BaseElementAdapter
     public function authorizeAssetSave(CraftUser $actor, Asset $asset): void
     {
         $this->authorizeSave($actor, $asset);
+    }
+
+    /**
+     * Checks a requested `uploaderId` change.
+     *
+     * Asset permissions distinguish a user's own uploads from their peers', so
+     * reassigning an upload requires permission to save peers' assets.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    private function authorizeUploaderChange(Asset $asset, array $attributes, CraftUser $actor): void
+    {
+        if (! array_key_exists('uploaderId', $attributes) || $attributes['uploaderId'] === $asset->uploaderId) {
+            return;
+        }
+
+        $uploaderId = $attributes['uploaderId'];
+
+        if ($uploaderId !== null && (! is_int($uploaderId) || ! Users::getUserById($uploaderId))) {
+            throw new ToolCallException('uploaderId must be the ID of an existing user.');
+        }
+
+        if (! $actor->can("savePeerAssets:{$asset->getVolume()->uid}")) {
+            throw new ToolCallException('You are not authorized to change this asset’s uploader.');
+        }
     }
 
     /**

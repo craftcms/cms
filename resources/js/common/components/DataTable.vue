@@ -17,6 +17,7 @@
     nextTick,
     ref,
     useId,
+    useSlots,
     useTemplateRef,
     watch,
   } from 'vue';
@@ -31,6 +32,7 @@
   } from '@/common/types';
   import ColumnHeaderTitle from '@/common/components/ColumnHeaderTitle.vue';
   import DropIndicator from '@/common/components/DropIndicator.vue';
+  import PlaceholderShape from '@/common/components/PlaceholderShape.vue';
   const props = withDefaults(
     defineProps<{
       table: Table<CraftTableFeatures, TData>;
@@ -38,10 +40,16 @@
       getRowLabel?: (row: TData) => string;
       rowBehavior?: {
         onClick?: (row: TData, event: MouseEvent) => boolean;
+        onDblClick?: (row: TData, event: MouseEvent) => boolean;
         onKeydown?: (row: TData, event: KeyboardEvent) => boolean;
       };
       title?: string;
       reorderable?: boolean;
+      /**
+       * Whether a row can be moved. Rows that can't keep their place, with no
+       * handle; keep them at the start or end of the table.
+       */
+      canReorderRow?: (row: TData) => boolean;
       /**
        * Disables selection, sorting and reordering while a request runs,
        * keeping the controls in place so the layout doesn't shift.
@@ -61,6 +69,19 @@
        * up to whatever contains the table; see `AdminTable`.)
        */
       appearance?: Exclude<TableAppearanceValue, 'raised'>;
+      /**
+       * Whether to render a row when there are no rows to show. Turn it off
+       * when the empty state is shown outside the table instead, so the empty
+       * row doesn't add height above it.
+       */
+      emptyRow?: boolean;
+      /**
+       * How many placeholder rows to draw in place of the rows, under the real
+       * headers, such as while they load. Takes the place of the loading
+       * spinner. Their cells come from the `placeholder-cell` slot, or else a
+       * line of text.
+       */
+      placeholderRows?: number;
     }>(),
 
     {
@@ -72,6 +93,8 @@
       layout: 'auto',
       withBottomBorder: true,
       appearance: TableAppearance.Plain,
+      emptyRow: true,
+      placeholderRows: 0,
     }
   );
 
@@ -108,6 +131,16 @@
     );
   }
 
+  /**
+   * Whether any listed row is selected. Rows kept selected on other pages
+   * don't make this page's select-all checkbox partly checked.
+   */
+  function someListedRowsSelected(): boolean {
+    return props.table
+      .getFilteredRowModel()
+      .flatRows.some((row) => row.getIsSelected());
+  }
+
   function toggleAllSelected(event: Event): void {
     if (selectionDisabled.value) return;
     props.selection?.onToggleAllSelected(
@@ -140,14 +173,25 @@
     props.selection?.selectRowFromEvent(row, event);
   }
 
+  function onRowDblClick(
+    row: Row<CraftTableFeatures, TData>,
+    event: MouseEvent
+  ): void {
+    if (props.rowBehavior?.onDblClick?.(row.original, event)) {
+      event.preventDefault();
+    }
+  }
+
   const rootRef = useTemplateRef<HTMLElement>('root-ref');
   const loadingRef = useTemplateRef<CraftSpinner>('loading-ref');
 
   const {setRowRef, setHandleRef, getDragState, getDropState} =
     useReorderableRows({
-      getRowIds: () => props.table.getRowModel().rows.map((row: any) => row.id),
+      getRowIds: () => reorderableRows().map((row) => row.id),
+      // Indexes among the reorderable rows, which `reorder` counts among all.
       onReorder: (startIndex, finishIndex) => {
-        emit('reorder', startIndex, finishIndex);
+        const indexes = reorderableRows().map((row) => row.index);
+        emit('reorder', indexes[startIndex]!, indexes[finishIndex]!);
       },
       enabled: () =>
         !readOnly.value && props.reorderable && !props.interactionsDisabled,
@@ -242,34 +286,12 @@
     return columnCount + leadingColumnTracks.value.length;
   });
 
-  const tableStyles = computed(() => {
-    const columns = props.table.getAllColumns();
-    const visibleColumns = columns.filter(
-      (column: Column<CraftTableFeatures, TData>) => column.getIsVisible()
-    );
+  const showPlaceholders = computed(() => props.placeholderRows > 0);
 
-    const columnCount = visibleColumnCount.value;
-
-    const gridDef = visibleColumns.reduce(
-      (acc: Array<string>, column: Column<CraftTableFeatures, TData>) => {
-        acc.push(column.columnDef.meta?.trackSize ?? `minmax(0, 1fr)`);
-        return acc;
-      },
-      []
-    );
-
-    if (props.reorderable) {
-      gridDef.unshift('44px');
-    }
-
-    return {
-      '--table-column-count': columnCount,
-      '--table-template-columns': [
-        ...leadingColumnTracks.value,
-        ...gridDef,
-      ].join(' '),
-    };
-  });
+  /** Varies the placeholder lines' lengths, the same way on every render. */
+  function placeholderWidth(rowIdx: number, cellIdx: number): string {
+    return `${50 + ((rowIdx * 7 + cellIdx * 13) % 5) * 10}%`;
+  }
 
   function hideBottomBorder(rowIdx: number) {
     return (
@@ -278,12 +300,46 @@
     );
   }
 
+  function isRowReorderable(row: Row<CraftTableFeatures, TData>): boolean {
+    return props.canReorderRow?.(row.original) ?? true;
+  }
+
+  function reorderableRows(): Row<CraftTableFeatures, TData>[] {
+    return props.table
+      .getRowModel()
+      .rows.filter((row) => isRowReorderable(row));
+  }
+
+  /**
+   * Lines the drag handles up with the table's edge, when the table is
+   * aligned with its container and they're the first cell in each row.
+   */
+  const slots = useSlots();
+  const reorderHandleFlush = computed(() =>
+    props.appearance === TableAppearance.Aligned &&
+    !selectable.value &&
+    !slots['leading-cells']
+      ? 'inline-start'
+      : undefined
+  );
+
+  /** The first and last indexes rows can move between. */
+  const reorderBounds = computed(() => {
+    const indexes = reorderableRows().map((row) => row.index);
+
+    return {first: Math.min(...indexes), last: Math.max(...indexes)};
+  });
+
   function getRowPosition(index: number) {
-    if (index === 0) {
+    if (reorderBounds.value.first === reorderBounds.value.last) {
+      return 'only';
+    }
+
+    if (index === reorderBounds.value.first) {
       return 'first';
     }
 
-    if (index === props.table.getRowModel().rows.length - 1) {
+    if (index === reorderBounds.value.last) {
       return 'last';
     }
 
@@ -344,21 +400,26 @@
 </script>
 
 <template>
-  <div ref="root-ref">
-    <div v-if="loading" class="grid place-items-center min-h-20">
+  <div
+    ref="root-ref"
+    :class="{'flex flex-1 flex-col': loading && !showPlaceholders}"
+  >
+    <div
+      v-if="loading && !showPlaceholders"
+      class="grid flex-1 place-items-center min-h-20"
+    >
       <craft-spinner ref="loading-ref">{{ loadingLabel }}</craft-spinner>
     </div>
     <table
       v-else
       :class="{
         'cp-table': true,
-        'cp-table--grid': false,
         'cp-table--compact': spacing === TableSpacing.Compact,
         'cp-table--spacious': spacing === TableSpacing.Spacious,
         'cp-table--auto': layout === 'auto',
         'cp-table--flush': appearance === TableAppearance.Flush,
+        'cp-table--aligned': appearance === TableAppearance.Aligned,
       }"
-      :style="tableStyles"
     >
       <caption class="sr-only">
         {{
@@ -384,7 +445,7 @@
               label-sr-only
               .checked="table.getIsAllRowsSelected()"
               .indeterminate="
-                table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
+                someListedRowsSelected() && !table.getIsAllRowsSelected()
               "
               .disabled="selectionDisabled"
               @model-value-changed="toggleAllSelected"
@@ -451,9 +512,48 @@
             </div>
           </th>
         </tr>
+        <tr v-if="$slots['header-after']" class="cp-table-header-after">
+          <td :colspan="visibleColumnCount" class="cp-table-cell">
+            <slot name="header-after" />
+          </td>
+        </tr>
       </thead>
       <tbody>
-        <template v-if="table.getRowModel().rows.length > 0">
+        <template v-if="showPlaceholders">
+          <tr
+            v-for="rowIdx in placeholderRows"
+            :key="`placeholder-${rowIdx}`"
+            class="cp-table-row"
+            aria-hidden="true"
+          >
+            <td v-if="selectable" class="cp-table-cell cp-table-cell--select">
+              <PlaceholderShape class="cp-table-placeholder-checkbox" />
+            </td>
+            <td v-if="reorderable && !readOnly"></td>
+            <td
+              v-for="(column, cellIdx) in table.getVisibleLeafColumns()"
+              :key="column.id"
+              :class="[
+                'cp-table-cell',
+                `cp-table-cell--${column.id}`,
+                resolveMetaClasses(column.columnDef.meta?.columnClass),
+                resolveMetaClasses(column.columnDef.meta?.cellClass),
+              ]"
+            >
+              <slot
+                name="placeholder-cell"
+                :column="column"
+                :index="cellIdx"
+                :width="placeholderWidth(rowIdx, cellIdx)"
+              >
+                <PlaceholderShape
+                  :style="{maxInlineSize: placeholderWidth(rowIdx, cellIdx)}"
+                />
+              </slot>
+            </td>
+          </tr>
+        </template>
+        <template v-else-if="table.getRowModel().rows.length > 0">
           <tr
             v-for="(row, rowIdx) in table.getRowModel().rows"
             :key="row.id"
@@ -475,6 +575,7 @@
             :tabindex="selectable ? 0 : undefined"
             v-bind="rowAttributes?.(row)"
             @click="onRowClick(row, $event)"
+            @dblclick="onRowDblClick(row, $event)"
             @keydown="onRowKeydown(row, rowIdx, $event)"
           >
             <slot
@@ -500,7 +601,7 @@
             </td>
             <template v-if="reorderable && !readOnly">
               <td :class="{'border-b-0': hideBottomBorder(rowIdx)}">
-                <div>
+                <div v-if="isRowReorderable(row)">
                   <craft-reorder-button
                     .disabled="interactionsDisabled"
                     @craft-reorder="
@@ -514,6 +615,7 @@
                         )
                     "
                     :position="getRowPosition(row.index)"
+                    :flush="reorderHandleFlush"
                     :ref="(el: any) => setHandleRef(el, row.id)"
                   ></craft-reorder-button>
                 </div>
@@ -543,14 +645,8 @@
             </component>
           </tr>
         </template>
-        <template v-else>
-          <tr
-            style="
-              --table-template-columns: 1fr;
-              --_cell-spacing-inline: 0;
-              --_cell-spacing-block: 0;
-            "
-          >
+        <template v-else-if="emptyRow">
+          <tr style="--_cell-spacing-inline: 0; --_cell-spacing-block: 0">
             <td :colspan="visibleColumnCount">
               <slot name="empty-row">
                 <craft-empty
@@ -577,20 +673,34 @@
       color: var(--c-color-on-loud);
     }
   }
-  :deep(.cell--wrap) {
+  :deep(.cp-table-cell--wrap) {
     white-space: normal;
   }
   :deep(.cp-table-cell) {
     width: min-content;
   }
-  // Selection column hugs its checkbox rather than claiming a data-column share.
-  // Doubled class so it outranks wrappers that restate the `min-content` width.
-  :deep(.cp-table-cell.cp-table-cell--select) {
+  // Selection and thin columns hug their content rather than claiming a
+  // data-column share. Doubled class so it outranks wrappers that restate the
+  // `min-content` width.
+  :deep(.cp-table-cell.cp-table-cell--select),
+  :deep(.cp-table-cell.thin) {
     width: 1px;
     white-space: nowrap;
   }
+  .cp-table-header-after > .cp-table-cell {
+    width: auto;
+    height: auto;
+    padding-block: var(--c-spacing-sm);
+    white-space: normal;
+    background-color: var(--c-surface-sunken);
+  }
   :deep(.row--dragging) {
     opacity: 0.4;
+  }
+
+  .cp-table-placeholder-checkbox {
+    inline-size: 1rem;
+    block-size: 1rem;
   }
 
   // A click anywhere on the row selects it, so its text shouldn't offer a text

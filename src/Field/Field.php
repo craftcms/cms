@@ -104,6 +104,12 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     /** @var string|null The field’s instructions */
     public ?string $instructions = null;
 
+    /** @var string|null The field’s default tip text */
+    public ?string $tip = null;
+
+    /** @var string|null The field’s default warning text */
+    public ?string $warning = null;
+
     /** @var bool Whether the field's values should be registered as search keywords on the elements. */
     public bool $searchable = false;
 
@@ -399,7 +405,20 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             return reset($valuesSql);
         }
 
-        return new Coalesce($valuesSql);
+        $sql = new Coalesce($valuesSql);
+
+        // COALESCE doesn't preserve its arguments' type affinity on SQLite.
+        if (DB::getDriverName() === 'sqlite') {
+            $dbType = $instances[0]->dbTypeForValueSql();
+            if (is_array($dbType)) {
+                $dbType = $dbType[$key ?? array_key_first($dbType)];
+            }
+            if ($dbType !== null && (Query::isNumericColumnType($dbType) || $dbType === Query::TYPE_BOOLEAN)) {
+                return new Cast($sql, 'NUMERIC');
+            }
+        }
+
+        return $sql;
     }
 
     /**
@@ -567,6 +586,37 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     public function getTranslationKey(ElementInterface $element): string
     {
         return $this->_translationMethod->elementKey($element, $this->translationKeyFormat);
+    }
+
+    /**
+     * Returns whether the element’s value is being copied from another site that the field translates separately,
+     * so site-specific references in the value should be pointed at the element’s site.
+     */
+    protected function isPropagatingAcrossTranslations(?ElementInterface $element): bool
+    {
+        if (! $element) {
+            return false;
+        }
+
+        // if this was set due to propagateAll for a fresh element (as opposed to the translation method)
+        if (
+            $element->propagating &&
+            ($element->propagateAll || ($element->isNewForSite && ! isset($element->duplicateOf))) &&
+            isset($element->propagatingFrom)
+        ) {
+            return $this->getTranslationKey($element) !== $this->getTranslationKey($element->propagatingFrom);
+        }
+
+        // as above but specifically for nested entries when the field uses the "none" propagation method
+        if (
+            ! $element->propagating &&
+            isset($element->duplicateOf) &&
+            ($element->propagateAll || $element->isNewForSite)
+        ) {
+            return $this->getTranslationKey($element) !== $this->getTranslationKey($element->duplicateOf);
+        }
+
+        return false;
     }
 
     public function showStatus(): bool
@@ -806,7 +856,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
                 ->where('fieldId', $outgoingField->id)
                 ->update([
                     'fieldId' => $this->id,
-                    'dateUpdated' => now(),
+                    'dateUpdated' => Query::prepareDateForDb(now()),
                 ]);
         }
 
@@ -896,7 +946,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             $sql = new Coalesce([
                 new JsonExtract(
                     'elements_sites.content',
-                    "$.\"{$this->layoutElement->uid}\".\"{$key}\"",
+                    [$this->layoutElement->uid, $key],
                 ),
                 $sql,
             ]);
@@ -926,14 +976,24 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             };
         }
 
-        // for pgsql, we have to make sure decimals column type is cast to decimal, otherwise they won't be sorted correctly
+        // PostgreSQL extracts JSON values as text, so numeric field types need explicit casts.
         // see https://github.com/craftcms/cms/issues/15828, https://github.com/craftcms/cms/issues/15973
         if (DB::getDriverName() === 'pgsql') {
             $castType = match (Query::parseColumnType($dbType)) {
                 Query::TYPE_DECIMAL => 'DECIMAL',
+                Query::TYPE_TINYINT,
+                Query::TYPE_SMALLINT => 'SMALLINT',
                 Query::TYPE_INTEGER => 'INTEGER',
+                Query::TYPE_BIGINT => 'BIGINT',
+                Query::TYPE_FLOAT => 'REAL',
+                Query::TYPE_DOUBLE => 'DOUBLE PRECISION',
                 default => null,
             };
+        }
+
+        // JSON extraction has no type affinity on SQLite, even for numeric values.
+        if (DB::getDriverName() === 'sqlite' && (Query::isNumericColumnType($dbType) || $dbType === Query::TYPE_BOOLEAN)) {
+            $castType = 'NUMERIC';
         }
 
         if ($castType !== null) {

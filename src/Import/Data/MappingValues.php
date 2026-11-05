@@ -22,6 +22,7 @@ readonly class MappingValues implements JsonSerializable
      * @param  array<array-key, mixed>  $clearableItems
      * @param  array<array-key, mixed>  $keepMissingNestedElements
      * @param  array<array-key, mixed>  $fieldSettings
+     * @param  array<array-key, mixed>  $templates
      */
     public function __construct(
         #[LiteralTypeScriptType('Record<string, unknown>')]
@@ -34,6 +35,8 @@ readonly class MappingValues implements JsonSerializable
         public array $keepMissingNestedElements = [],
         #[LiteralTypeScriptType('Record<string, unknown>')]
         public array $fieldSettings = [],
+        #[LiteralTypeScriptType('Record<string, unknown>')]
+        public array $templates = [],
     ) {}
 
     /**
@@ -47,6 +50,7 @@ readonly class MappingValues implements JsonSerializable
             clearableItems: $importer->clearableItems ?? [],
             keepMissingNestedElements: $importer instanceof ElementImporter ? $importer->keepMissingNestedElements ?? [] : [],
             fieldSettings: $importer instanceof ElementImporter ? $importer->fieldSettings ?? [] : [],
+            templates: $importer->templates ?? [],
         );
     }
 
@@ -59,6 +63,7 @@ readonly class MappingValues implements JsonSerializable
             'clearableItems' => $this->clearableItems,
             'keepMissingNestedElements' => $this->keepMissingNestedElements,
             'fieldSettings' => $this->fieldSettings,
+            'templates' => $this->templates,
         ];
     }
 }

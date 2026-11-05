@@ -24,7 +24,7 @@ export interface ElementAutosaveOptions {
    */
   isProvisional: boolean;
   /** Autosave is skipped entirely when this is false (revisions, read-only). */
-  enabled: boolean;
+  enabled: boolean | (() => boolean);
   /**
    * Extra params sent with every save, such as a nested element's owner, which
    * the server needs to resolve it through the owner it's being edited in.
@@ -59,8 +59,9 @@ export interface ElementAutosaveDependencies {
  *
  * The first save creates the draft; `draftId` then identifies it for every
  * later save and is exposed so the host can submit it alongside the form. The
- * canonical `elementId` is always sent, matching the hidden input the legacy
- * editor posts.
+ * `elementId` of the element the draft is made from is always sent, matching
+ * the hidden input the legacy editor posts — the canonical for a draft, the
+ * element itself otherwise.
  *
  * Saves are debounced and serialized — a save in flight defers the next one
  * rather than racing it, so a burst of typing collapses into one trailing
@@ -76,6 +77,10 @@ export function useElementAutosave<T extends object>(
   const savedAt = ref<string | null>(null);
   const error = ref<string | null>(null);
   const httpStatus = ref<number | null>(null);
+  /** Bumped by every save that lands, for whoever reacts to one. */
+  const saves = ref(0);
+  /** What the last successful save responded with. */
+  const lastResponse = shallowRef<unknown>(null);
 
   // The three pieces of what a save returned are held in one ref rather than
   // separately, so they can only ever be read as a matched set. The host
@@ -103,6 +108,12 @@ export function useElementAutosave<T extends object>(
   let pending = false;
   let controller: AbortController | null = null;
   let canceled = false;
+
+  function enabled(): boolean {
+    return typeof options.enabled === 'function'
+      ? options.enabled()
+      : options.enabled;
+  }
 
   async function send(): Promise<void> {
     const savingGeneration = changeGeneration.value;
@@ -152,6 +163,8 @@ export function useElementAutosave<T extends object>(
         modified: data.modifiedAttributes ?? [],
       };
       status.value = 'saved';
+      lastResponse.value = data;
+      saves.value++;
       acknowledgedGeneration.value = Math.max(
         acknowledgedGeneration.value,
         savingGeneration
@@ -183,7 +196,7 @@ export function useElementAutosave<T extends object>(
   async function save(): Promise<void> {
     // A real submission is authoritative — don't race a draft write against it,
     // and don't autosave the values it just wrote back.
-    if (!options.enabled || form.processing) {
+    if (!enabled() || form.processing) {
       return;
     }
 
@@ -284,6 +297,18 @@ export function useElementAutosave<T extends object>(
     saved.value = {ui: null, screen: null, modified: []};
   }
 
+  /**
+   * Forgets how the last draft save went, so its status stops showing. For
+   * when what it reported no longer describes the screen: a submission has
+   * taken over, or the draft has been discarded.
+   */
+  function resetStatus(): void {
+    status.value = 'idle';
+    savedAt.value = null;
+    error.value = null;
+    httpStatus.value = null;
+  }
+
   function acknowledgeChanges(): void {
     acknowledgedGeneration.value = changeGeneration.value;
   }
@@ -311,6 +336,8 @@ export function useElementAutosave<T extends object>(
     savedAt: readonly(savedAt),
     error: readonly(error),
     httpStatus: readonly(httpStatus),
+    saves: readonly(saves),
+    lastResponse,
     modified,
     hasPendingChanges,
     ui: uiPayload,
@@ -321,6 +348,7 @@ export function useElementAutosave<T extends object>(
     suspend,
     setDraftId,
     clearSaved,
+    resetStatus,
     acknowledgeChanges,
   };
 }

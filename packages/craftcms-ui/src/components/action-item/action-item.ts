@@ -6,10 +6,13 @@ import hostStyles from '@src/styles/host.styles';
 import variantsStyles from '@src/styles/variants.styles';
 import {LightDomController} from '@src/controllers/LightDomController';
 import a11yErrorStyles from '@src/styles/a11y-error.styles.js';
+import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
+import {linkTarget, newTabCue} from '@src/utilities/external-links';
 import {classMap} from 'lit/directives/class-map.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 
 import '../shortcut/shortcut.js';
+import {HasShortcut} from '@src/mixins/HasShortcut';
 import '../icon/icon.js';
 import '../spinner/spinner.js';
 import {
@@ -51,15 +54,22 @@ const INTERACTIVE = [
  *   Defaults to a check icon while `checked` is set.
  * @slot suffix - Trailing content, shown before the shortcut.
  *
+ * @attr shortcut - A keyboard shortcut shown at the end of the item: a key
+ *   (`"S"`), or JSON naming its modifiers (`'{"key": "S", "shift": true}'`).
+ *   Display only. Supplied by the `HasShortcut` mixin.
+ *
+ * @csspart control - The item's `<button>`, or `<a>` when `href` is set.
+ *
  * @fires {CustomEvent} craft-state-change - Emitted whenever the item's
  *   action moves between idle, loading, success, and error. `detail` carries
  *   the new `state`, the action's `actionType`, and any feedback data.
  */
-export default class CraftActionItem extends LitElement {
+export default class CraftActionItem extends HasShortcut(LitElement) {
   static override styles = [
     hostStyles,
     variantsStyles,
     a11yErrorStyles,
+    visuallyHiddenStyles,
     styles,
   ];
 
@@ -77,16 +87,30 @@ export default class CraftActionItem extends LitElement {
   @property() icon: string | null = null;
 
   /**
-   * Optional Craft color name used to tint the item's icon. The icon renders
-   * with `currentColor`, so we set the icon element's `color` to a matching
-   * `--c-color-*` token.
+   * Optional Craft color name used to tint the item's icon, in the color's
+   * loud tone. Black and white icons take the default text color, so they
+   * stay visible in both themes.
    */
   @property({attribute: 'icon-color'}) iconColor: string | null = null;
+
+  /**
+   * The icon's color: the color's loud tone, which stays vibrant in both
+   * themes. Black and white are the same in both themes, so one of them would
+   * vanish against the surface; they take the default text color instead.
+   */
+  #iconColorValue(color: string): string {
+    return color === 'black' || color === 'white'
+      ? 'var(--c-text-default)'
+      : `var(--c-color-${color}-fill-loud, currentColor)`;
+  }
 
   /** Renders the item as a link to this URL instead of as a button. */
   @property() href: string | null = null;
 
-  /** Anchor target, for `href` items that should open elsewhere. */
+  /**
+   * Anchor target, for `href` items that should open elsewhere. Unset, a link
+   * to another host opens in a new tab.
+   */
   @property() target: string | null = null;
 
   /** Anchor `rel`. Defaults to `noopener` when targeting a new context. */
@@ -142,54 +166,6 @@ export default class CraftActionItem extends LitElement {
   @state() private feedbackMessage: string | null = null;
 
   private _resetStateTimeout: ReturnType<typeof setTimeout> | null = null;
-
-  /**
-   * A keyboard shortcut shown at the end of the item. Either a plain string
-   * (`"S"`, `"ctrl+k"`) or an object naming the modifiers. Display only — the
-   * item does not bind the key.
-   */
-  @property({
-    converter: {
-      fromAttribute(value: string | null) {
-        if (value === null) return null;
-
-        // Try to parse as JSON object first
-        try {
-          const parsed = JSON.parse(value);
-          if (typeof parsed === 'object' && parsed !== null) {
-            return parsed;
-          }
-        } catch {
-          // Not JSON — treat as plain string shortcut
-        }
-
-        return value; // plain string like "k" or "ctrl+k"
-      },
-      toAttribute(value) {
-        if (value === null) return null;
-        if (typeof value === 'string') return value;
-        return JSON.stringify(value);
-      },
-    },
-  })
-  shortcut: string | {alt?: boolean; shift?: boolean; key: string} | null =
-    null;
-
-  protected renderShortcut() {
-    if (typeof this.shortcut === 'string') {
-      return html`<craft-shortcut>${this.shortcut}</craft-shortcut>`;
-    }
-
-    if (this.shortcut !== null) {
-      return html`<craft-shortcut
-        ?alt="${this.shortcut.alt ?? false}"
-        ?shift="${this.shortcut.shift ?? false}"
-        >${this.shortcut.key}</craft-shortcut
-      >`;
-    }
-
-    return nothing;
-  }
 
   override connectedCallback() {
     super.connectedCallback();
@@ -302,7 +278,7 @@ export default class CraftActionItem extends LitElement {
               ? html`<craft-icon
                   name="${this.icon}"
                   style="${this.iconColor
-                    ? `color: var(--c-color-${this.iconColor}-on-normal, currentColor)`
+                    ? `color: ${this.#iconColorValue(this.iconColor)}`
                     : nothing}"
                 ></craft-icon>`
               : nothing}
@@ -366,39 +342,51 @@ export default class CraftActionItem extends LitElement {
         })}"
       >
         <slot name="suffix"></slot>
-        ${this.shortcut ? this.renderShortcut() : nothing}
+        ${this.shortcutKeys
+          ? html`<craft-shortcut
+              ?alt="${this.shortcutKeys.alt}"
+              ?shift="${this.shortcutKeys.shift}"
+              >${this.shortcutKeys.key}</craft-shortcut
+            >`
+          : nothing}
       </span>
     `;
   }
 
   override render() {
+    const target = linkTarget(this.href, this.target);
+
     return this.href
       ? html`
           <a
+            part="control"
             class="${classMap({
               'action-item': true,
               'action-item--checkbox': this.type === 'checkbox',
             })}"
             href="${this.href}"
             aria-current="${this.current ? 'true' : nothing}"
-            target="${ifDefined(this.target ?? undefined)}"
+            aria-keyshortcuts="${this.shortcutAriaKeys ?? nothing}"
+            target="${ifDefined(target ?? undefined)}"
             rel="${ifDefined(
-              this.rel ??
-                (this.target === '_blank' ? 'noopener' : null) ??
-                undefined
+              this.rel ?? (target === '_blank' ? 'noopener' : null) ?? undefined
             )}"
           >
-            ${this.renderBody()}
+            ${this.renderBody()}${!this.target && target
+              ? html`<span class="cp-visually-hidden">${newTabCue()}</span>`
+              : nothing}
           </a>
         `
       : html`
           <button
             type="button"
+            part="control"
             class="${classMap({
               'action-item': true,
               'action-item--checkbox': this.type === 'checkbox',
             })}"
             aria-current="${this.current ? 'true' : nothing}"
+            aria-keyshortcuts="${this.shortcutAriaKeys ?? nothing}"
             ?disabled="${this.disabled}"
           >
             ${this.renderBody()}

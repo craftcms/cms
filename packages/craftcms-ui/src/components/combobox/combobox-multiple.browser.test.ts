@@ -178,7 +178,9 @@ it('submits read-only values without allowing edits', async () => {
     })
   );
   expect(control.modelValue).toEqual(['a']);
-  expect(control.shadowRoot!.querySelector('button')).toBeNull();
+  const token = control.querySelector('craft-combobox-token')!;
+  expect(token).toHaveTextContent('a');
+  expect(token.shadowRoot!.querySelector('button')).toBeNull();
 });
 
 it('preserves selected options beyond the limit while filtering and selecting another option', async () => {
@@ -229,11 +231,11 @@ it('reads saved values from server-rendered attributes', async () => {
   await control.updateComplete;
   await new Promise((resolve) => setTimeout(resolve));
   expect(control.modelValue).toEqual(['a', 'b']);
-  expect(control.shadowRoot!.textContent).toContain('Alpha');
+  expect(control.querySelector('ul')).toHaveTextContent('Alpha');
 });
 
 it('commits free text on Tab without adding duplicates', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
+  const {userEvent} = await import('vite-plus/test/browser');
   const {control, input} = await fixture();
   const next = document.createElement('button');
   next.textContent = 'Next';
@@ -249,16 +251,13 @@ it('commits free text on Tab without adding duplicates', async () => {
 });
 
 it('removes tokens and clears all values through buttons', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
+  const {userEvent} = await import('vite-plus/test/browser');
   const {control} = await fixture((c) => {
     c.clearable = true;
     c.modelValue = ['a', 'b'];
   });
-  await userEvent.click(
-    control.shadowRoot!.querySelector<HTMLButtonElement>(
-      '[aria-label="Remove a"]'
-    )!
-  );
+  const {page} = await import('vite-plus/test/browser');
+  await userEvent.click(page.getByRole('button', {name: 'a', exact: true}));
   expect(control.modelValue).toEqual(['b']);
   await userEvent.click(
     control.shadowRoot!.querySelector<HTMLElement>('[aria-label="Clear"]')!
@@ -268,7 +267,7 @@ it('removes tokens and clears all values through buttons', async () => {
 });
 
 it('skips selected options when continuing keyboard selection', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
+  const {userEvent} = await import('vite-plus/test/browser');
   const {control, input} = await fixture((c) => {
     c.requireOptionMatch = true;
     c.showAllOnEmpty = true;
@@ -308,4 +307,35 @@ it('announces token removal once as a user change with updated submission values
   await new Promise((resolve) => setTimeout(resolve));
   expect(models).toEqual([true]);
   expect(submissions).toEqual([[['values', '']]]);
+});
+
+it('shows each selected option’s icon or dot on its token, hidden from assistive technology', async () => {
+  const {control} = await fixture((c) => {
+    c.options = [
+      {label: 'Starred', value: 'star', data: {icon: 'star', color: 'red'}},
+      {label: 'Green', value: 'green', data: {indicator: {fill: 'green'}}},
+    ];
+    c.modelValue = ['star', 'green', 'custom'];
+  });
+  const tokens = [...control.querySelectorAll('craft-combobox-token')];
+
+  expect(tokens).toHaveLength(3);
+  await vi.waitFor(() =>
+    expect(tokens[0]!.querySelector('craft-icon')).toHaveAttribute(
+      'aria-hidden',
+      'true'
+    )
+  );
+  expect(tokens[0]!.querySelector('craft-icon')).toHaveAttribute(
+    'name',
+    'star'
+  );
+  expect(tokens[1]!.querySelector('craft-indicator')).toHaveAttribute(
+    'fill',
+    'green'
+  );
+  expect(tokens[1]!.querySelector('craft-indicator')).not.toHaveAttribute(
+    'label'
+  );
+  expect(tokens[2]!.querySelector('craft-icon, craft-indicator')).toBeNull();
 });

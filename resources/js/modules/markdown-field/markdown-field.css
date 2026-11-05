@@ -15,6 +15,7 @@ craft-markdown-field {
      cover the nav flyouts and dialogs. */
   isolation: isolate;
 
+  --markdown-field-font-family: var(--c-font-mono);
   --markdown-field-bg: var(
     --c-input-fill,
     var(--c-form-control-fill, var(--c-surface-form))
@@ -59,8 +60,8 @@ craft-markdown-field:not(:defined) {
   background-clip: padding-box !important;
   box-shadow: var(--markdown-field-shadow) !important;
   color: var(--markdown-field-text) !important;
-  font-family: var(--c-font-mono) !important;
-  font-size: var(--c-text-base) !important;
+  font-family: var(--markdown-field-font-family) !important;
+  font-size: var(--markdown-field-font-size, var(--c-text-base)) !important;
   line-height: 1.5 !important;
   white-space: pre-wrap;
 }
@@ -201,7 +202,13 @@ craft-markdown-field:defined .overtype-input,
 craft-markdown-field:defined .overtype-preview,
 craft-markdown-field:defined .overtype-placeholder {
   padding-block: var(--c-spacing-xs) !important;
-  font-family: var(--c-font-mono) !important;
+  font-family: var(--markdown-field-font-family) !important;
+}
+
+craft-markdown-field:defined:not([show-toolbar]) .overtype-input,
+craft-markdown-field:defined:not([show-toolbar]) .overtype-preview,
+craft-markdown-field:defined:not([show-toolbar]) .overtype-placeholder {
+  padding-block: var(--c-spacing-md) !important;
 }
 
 craft-markdown-field:defined .overtype-preview {
@@ -211,6 +218,27 @@ craft-markdown-field:defined .overtype-preview {
 craft-markdown-field:defined .overtype-wrapper .overtype-preview :where(*) {
   color: var(--markdown-field-text) !important;
   text-decoration-color: var(--markdown-field-text) !important;
+}
+
+craft-markdown-field[proportional] {
+  --markdown-field-font-family: var(--c-font-body);
+}
+
+/* The text has to stay as wide as the textarea's under it, so bold is drawn
+   with a stroke rather than a wider weight, and italics stay upright. */
+craft-markdown-field[proportional]:defined
+  .overtype-wrapper
+  .overtype-preview
+  :is(strong, h1, h2, h3, h4, h5, h6, .header) {
+  font-weight: normal !important;
+  -webkit-text-stroke: 0.04em currentcolor;
+}
+
+craft-markdown-field[proportional]:defined
+  .overtype-wrapper
+  .overtype-preview
+  em {
+  font-style: normal !important;
 }
 
 craft-markdown-field:defined
@@ -273,16 +301,4 @@ craft-markdown-field:defined
 
 .markdown-field-preview > :last-child {
   margin-block-end: 0;
-}
-
-.markdown-link-popover {
-  --max-width: min(360px, calc(100vw - var(--c-spacing-xl)));
-}
-
-.markdown-link-popover::part(dialog) {
-  z-index: 10001;
-}
-
-.markdown-link-popover::part(body) {
-  width: min(360px, calc(100vw - var(--c-spacing-xl)));
 }

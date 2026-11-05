@@ -62,6 +62,26 @@ export {
   type IndexQueryParams,
 } from './modules/elements/index/composables/useElementIndexVisits';
 
+/**
+ * Live Preview: the page's previews, their events, and refreshing them after
+ * changes made outside their editor.
+ */
+export {
+  getActivePreview,
+  getPreviews,
+  onPreviewEvent,
+  refreshPreviews,
+  watchPreviews,
+  type LivePreviewEventName,
+  type LivePreviewEvents,
+  type LivePreviewListener,
+} from './modules/elements/live-preview/previews';
+
+export type {
+  LivePreviewController,
+  LivePreviewTarget,
+} from './modules/elements/live-preview/useLivePreview';
+
 export {
   useCraftTable,
   craftTableFeatures,

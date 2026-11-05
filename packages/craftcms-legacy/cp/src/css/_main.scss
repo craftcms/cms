@@ -55,6 +55,15 @@ body:has(.menu.visible) {
   overflow: hidden;
 }
 
+html.noscroll,
+html.noscroll body {
+  height: 100%;
+}
+
+#cropping-canvas {
+  --focus-ring: none;
+}
+
 body {
   width: 100vw;
   overflow-x: hidden;
@@ -794,34 +803,6 @@ td.right {
 
 .token:focus {
   @include mixins.active-token-styles;
-}
-
-// Override .token for Prism
-.highlight {
-  .token {
-    display: inline;
-    border: none;
-    border-radius: 0;
-    padding: 0;
-    font-size: inherit;
-    line-height: inherit;
-    text-shadow: none;
-    background: transparent;
-    box-shadow: none;
-  }
-}
-
-.pane.highlight {
-  pre[class*='language-'] {
-    overflow: visible;
-
-    & > code.diff-highlight .token:not(.prefix) {
-      margin-block: 0;
-      margin-inline: -24px;
-      padding-block: 0;
-      padding-inline: 24px;
-    }
-  }
 }
 
 .success {
@@ -3153,8 +3134,6 @@ table:not(.cp-table) {
   }
 }
 
-// Adjust the columns when in live preview
-.lp-editor-container .card-grid,
 .width-50 .card-grid,
 .width-25 .card-grid {
   grid-template-columns: minmax(0, 1fr);
@@ -3981,6 +3960,11 @@ table.editable {
     }
   }
 
+  // With no body rows, the table's own border closes off the header
+  thead:not(:has(~ :is(tbody, tfoot) > tr)) tr:last-child th {
+    border-block-end: 0;
+  }
+
   thead {
     tr {
       th {
@@ -4041,18 +4025,6 @@ table.editable {
 
         &.textual {
           padding: 0;
-
-          .editable-table-preview {
-            text-align: start;
-            white-space: pre-wrap;
-
-            & + textarea {
-              opacity: 0;
-              height: 0;
-              min-height: 0;
-              padding-block: 0;
-            }
-          }
 
           textarea {
             resize: none;
@@ -4130,8 +4102,7 @@ table.editable {
     textarea,
     textarea.text,
     input.text,
-    pre,
-    .editable-table-preview {
+    pre {
       display: block;
       width: 100%;
       border: none;
@@ -4779,8 +4750,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
 
   .pane &,
   .slideout &,
-  #content &,
-  .lp-content & {
+  #content & {
     border: 1px solid var(--border-hairline);
     background: var(--secondary-pane-bg);
     box-shadow: none;
@@ -5169,6 +5139,12 @@ table.data tbody tr:not(.disabled).active-drop-target {
     margin-inline: 0;
   }
 
+  // Line pane headings up with the labels within the panes
+  & > fieldset > legend,
+  & > .field > .heading > label.h6 {
+    margin-inline-start: calc(var(--m) - var(--padding));
+  }
+
   & > .field > .heading > label,
   & > fieldset > legend {
     font-weight: normal;
@@ -5226,6 +5202,9 @@ $min2ColWidth: 400px;
 
   --heading-width: 150px;
 
+  // Space between the checkmark/plus icons and the site names in the element editor’s Sites pane
+  --site-checkmark-gap: var(--s);
+
   #details & {
     --heading-width: 132px;
   }
@@ -5270,6 +5249,28 @@ $min2ColWidth: 400px;
         .input {
           width: 100%;
         }
+
+        // Line the “Add a site” select up with the site names in the element editor’s Sites pane,
+        // with the plus icon in the same column as the current site’s checkmark
+        &.add-site-field {
+          padding-inline-start: calc(
+            var(--m) + 14rem / 16 + var(--site-checkmark-gap) - var(--s)
+          );
+
+          &::before {
+            inset-inline-start: var(--m);
+            width: calc(14rem / 16);
+            text-align: start;
+          }
+
+          @media screen and (width < $min2ColWidth) {
+            padding-inline-start: calc(14rem / 16 + var(--site-checkmark-gap));
+
+            &::before {
+              inset-inline-start: 10px;
+            }
+          }
+        }
       }
 
       & > .heading {
@@ -5281,9 +5282,48 @@ $min2ColWidth: 400px;
         }
       }
 
+      // Sites in the element editor’s Sites pane, with a checkmark beside the current site
+      // (like the site menu in the breadcrumbs)
+      &.element-site-field {
+        padding-inline-start: 0;
+
+        @media screen and (min-width: $min2ColWidth) {
+          & > .heading {
+            padding-inline-start: var(--m);
+          }
+        }
+
+        & > .heading > label {
+          position: relative;
+          padding-inline-start: calc(14rem / 16 + var(--site-checkmark-gap));
+        }
+      }
+
+      &.element-site-field.sel > .heading > label::before {
+        @include mixins.icon;
+        position: absolute;
+        inset-block-start: 50%;
+        inset-inline-start: 0;
+        transform: translateY(-50%);
+        font-size: calc(14rem / 16);
+        content: 'check' / '';
+      }
+
+      // Undo buttons for newly-added sites in the element editor’s Sites pane
+      & > .heading:has(> .remove-site-btn) {
+        display: flex;
+        align-items: center;
+        gap: var(--s);
+
+        & > .remove-site-btn {
+          margin-inline-start: auto;
+        }
+      }
+
       #details &,
       .so-sidebar.details & {
-        &.lightswitch-field > .heading {
+        &.lightswitch-field > .heading,
+        &.element-site-field > .heading {
           flex: 1;
           border-inline-end: none;
         }
@@ -5505,6 +5545,63 @@ $min2ColWidth: 400px;
   }
 }
 
+// The element editor’s Sites pane lists its sites without hairlines or padding between them
+// (the “Add a site” field keeps its hairline)
+.meta.element-sites-pane > .element-site-field {
+  min-height: auto;
+  border-block-start: none;
+
+  & > .heading {
+    padding-block: var(--xs);
+  }
+
+  &:first-child > .heading {
+    padding-block-start: 12px;
+  }
+
+  &:not(:has(+ .element-site-field:not(.hidden))) > .heading {
+    padding-block-end: 12px;
+  }
+
+  // Status toggles
+  & > .input {
+    padding-block: var(--xs);
+  }
+
+  &:first-child > .input {
+    padding-block-start: 12px;
+  }
+
+  &:not(:has(+ .element-site-field:not(.hidden))) > .input {
+    padding-block-end: 12px;
+  }
+
+  // Keep undo buttons close to the status toggles beside them
+  &.lightswitch-field:has(> .heading > .remove-site-btn) {
+    & > .heading {
+      padding-inline-end: 0;
+    }
+
+    & > .input {
+      padding-inline-start: var(--xs);
+    }
+  }
+
+  // Disclosure toggle for elements that are saved to multiple sites
+  // (with the chevron in the same column as the current site’s checkmark)
+  & > .heading > .element-sites-toggle {
+    position: relative;
+    padding-inline-start: calc(14rem / 16 + var(--site-checkmark-gap));
+    cursor: pointer;
+
+    &::before {
+      position: absolute;
+      inset-block-start: calc(50% - 5px);
+      inset-inline-start: 3px;
+    }
+  }
+}
+
 .meta > .field > .input > .select {
   display: block;
   margin-block: calc(var(--s) * -1);
@@ -5624,13 +5721,6 @@ $min2ColWidth: 400px;
       max-height: 190px;
     }
   }
-}
-
-.button-fade .buttons {
-  /* The rest is in the template's utility classes, but legacy `.buttons` is
-     unlayered, so it would otherwise win over them. */
-  position: absolute;
-  margin: 0;
 }
 
 /* element selector modals */
@@ -5776,48 +5866,6 @@ $min2ColWidth: 400px;
       position: absolute;
       inset-block-start: 0;
       inset-inline-end: -24px;
-    }
-  }
-}
-
-/* recent activity container */
-.activity-container {
-  margin-inline: var(--s);
-
-  ul {
-    display: flex;
-    flex-flow: row wrap;
-    gap: var(--xs);
-
-    li {
-      .activity-btn {
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        display: block;
-
-        .elementthumb {
-          position: relative;
-          width: 100%;
-          height: 100%;
-          border-radius: 50px;
-          background: var(--gray-050);
-          overflow: hidden;
-          border: 2px solid var(--white);
-          box-shadow: 0 1px 2px 1px color.adjust(mixins.$grey900, $alpha: -0.9);
-
-          img,
-          svg {
-            display: block;
-            width: 100%;
-            height: 100%;
-          }
-        }
-      }
-
-      &:not(:last-child) {
-        margin-inline-end: -10px;
-      }
     }
   }
 }
@@ -5987,45 +6035,6 @@ $min2ColWidth: 400px;
   margin-inline-end: 0.5rem;
 }
 
-/* logout warning/login/elevated session modals */
-.logoutwarningmodalshade,
-.login-modal-shade,
-#logoutwarningmodal,
-.login-modal,
-#elevatedsessionmodal,
-.prompt {
-  z-index: 1001;
-}
-
-#logoutwarningmodal,
-#elevatedsessionmodal,
-.prompt {
-  width: 500px;
-}
-
-.prompt {
-  height: auto;
-  min-height: auto;
-}
-
-.cpmodal {
-  & > .cpmodal-body {
-    padding: var(--padding);
-  }
-
-  & > .cpmodal-footer {
-    position: relative;
-    display: flex;
-    gap: 8px;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    @include mixins.pane;
-    padding-block: var(--s);
-    padding-inline: var(--padding);
-    background-color: var(--gray-050);
-  }
-}
-
 /* element deletion modal */
 .element-deletion-modal {
   width: 500px;
@@ -6107,16 +6116,6 @@ $min2ColWidth: 400px;
   .body {
     max-height: 100%;
     overflow-y: auto;
-  }
-}
-
-.previewmodal {
-  &.zilch {
-    padding-block: 100px;
-    padding-inline: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 }
 
@@ -6430,8 +6429,13 @@ table.editable {
   z-index: 1;
 
   &.modified {
-    background-color: var(--blue-600);
-    box-shadow: 0 0 5px hsl(221deg 83% 53% / 15%);
+    background-color: var(--c-field-modified-indicator, var(--violet-600));
+    box-shadow: 0 0 5px
+      color-mix(
+        in srgb,
+        var(--c-field-modified-indicator, var(--violet-600)) 15%,
+        transparent
+      );
   }
 
   &.outdated {
@@ -6598,10 +6602,6 @@ table.editable {
   p {
     margin-block: 0.25em;
   }
-}
-
-.cross-site-copy-modal {
-  max-width: 380px;
 }
 
 .expand-status-btn {

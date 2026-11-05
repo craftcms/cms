@@ -47,6 +47,18 @@ class ExportElementIndexController
             $nestedSource = $nestedElementScope->indexSource($elementType);
             $baseCriteria = $nestedSource->criteria;
             $criteria = $nestedElementScope->filterCriteria($request->criteria());
+
+            // The scope keeps request criteria out, so the status menu's
+            // Drafts and Trashed come from its value alone. They join the
+            // scope's own criteria, which are applied again last.
+            if (array_key_exists('status', $criteria)) {
+                $statusSelection = $this->elementIndexes->statusSelection($elementType, $criteria['status']);
+                $criteria['status'] = $statusSelection['status'] ?: null;
+                $baseCriteria = [
+                    ...$baseCriteria,
+                    ...$this->elementIndexes->statusSelectionCriteria($statusSelection),
+                ];
+            }
             [$sourceKey, $source] = [$nestedSource::NESTED_KEY, $nestedSource->source];
         } else {
             $baseCriteria = $request->baseCriteria();

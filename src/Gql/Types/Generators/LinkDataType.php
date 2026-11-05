@@ -38,7 +38,7 @@ class LinkDataType implements GeneratorInterface, SingleGeneratorInterface
 
         return GqlEntityRegistry::getOrCreate($typeName, fn () => new LinkData([
             'name' => $typeName,
-            'fields' => function () use ($context, $typeName) {
+            'fields' => function () use ($typeName) {
                 $fields = [
                     'type' => Type::string(),
                     'value' => Type::string(),
@@ -61,34 +61,32 @@ class LinkDataType implements GeneratorInterface, SingleGeneratorInterface
                     'elementTitle' => Type::string(),
                 ];
 
-                if ($context instanceof Link) {
-                    $hasElementType = false;
+                $hasElementType = false;
 
-                    // Loop through all types available in the system
-                    foreach (Link::types() as $linkType) {
-                        if (is_subclass_of($linkType, BaseElementLinkType::class)) {
-                            $hasElementType = true;
-                            $fields[$linkType::id()] = [
-                                'name' => $linkType::id(),
-                                'type' => $linkType::elementGqlType(),
-                                'resolve' => function (LinkFieldData $value) use ($linkType) {
-                                    if ($value->getType() === $linkType::id()) {
-                                        return $value->getElement();
-                                    }
+                // Loop through all types available in the system
+                foreach (Link::types() as $linkType) {
+                    if (is_subclass_of($linkType, BaseElementLinkType::class)) {
+                        $hasElementType = true;
+                        $fields[$linkType::id()] = [
+                            'name' => $linkType::id(),
+                            'type' => $linkType::elementGqlType(),
+                            'resolve' => function (mixed $value) use ($linkType) {
+                                if ($value instanceof LinkFieldData && $value->getType() === $linkType::id()) {
+                                    return $value->getElement();
+                                }
 
-                                    return null;
-                                },
-                            ];
-                        }
-                    }
-
-                    if ($hasElementType) {
-                        $fields['element'] = [
-                            'name' => 'element',
-                            'type' => Element::getType(),
-                            'resolve' => fn (LinkFieldData $value) => $value->getElement(),
+                                return null;
+                            },
                         ];
                     }
+                }
+
+                if ($hasElementType) {
+                    $fields['element'] = [
+                        'name' => 'element',
+                        'type' => Element::getType(),
+                        'resolve' => fn (mixed $value) => $value instanceof LinkFieldData ? $value->getElement() : null,
+                    ];
                 }
 
                 return Gql::prepareFieldDefinitions($fields, $typeName);

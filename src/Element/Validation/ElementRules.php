@@ -10,11 +10,12 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Validation\Rules\ElementUriRule;
+use CraftCms\Cms\Shared\Enums\ModelIdentifier;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
+use CraftCms\Cms\Site\Validation\Rules\SiteRule;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Rules\DisallowMb4;
-use CraftCms\Cms\Validation\Rules\SiteIdRule;
 use CraftCms\Cms\Validation\Ruleset;
 use Illuminate\Validation\Rule;
 use Override;
@@ -85,7 +86,7 @@ class ElementRules extends Ruleset
                 $this->inScenarios(self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS),
                 [
                     'nullable',
-                    new SiteIdRule(allowDisabled: true),
+                    new SiteRule([ModelIdentifier::Id], allowDisabled: true, message: fn (string $site) => t('Your system isn’t set up to save content for the site “{site}”.', ['site' => $site])),
                 ],
             ),
             'dateCreated' => ['nullable', 'date'],

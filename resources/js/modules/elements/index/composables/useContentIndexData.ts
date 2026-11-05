@@ -6,6 +6,7 @@ import type {BulkActionItem} from '@/modules/elements/types/actions';
 import type {ElementCapabilities} from '@/modules/elements/types/actions';
 import type {Source, SourceItem} from '@/modules/elements/types/sources';
 import type {IndexSite} from '@/modules/elements/types/sites';
+import {indexQueryCriteria} from '@/modules/elements/index/index-criteria';
 import type {InlineEditableRow} from '@/modules/elements/index/composables/useInlineEditing';
 import type {
   SortOption,
@@ -50,12 +51,14 @@ export type ContentIndexData = Omit<
   | 'actions'
   | 'exporters'
   | 'pagination'
+  | 'cardThumbs'
 > & {
   source: SourceItem | null;
   sources: Source[];
   sites: IndexSite[];
   currentCondition: ConditionConfig | null;
-  viewState: Partial<ViewState>;
+  /** `mode` is the view mode the payload's rows were rendered for. */
+  viewState: Partial<ViewState> & {mode?: ViewMode['mode']};
   viewModes: ViewMode[];
   sortOptions: SortOption[];
   sort: SortItem[];
@@ -63,6 +66,11 @@ export type ContentIndexData = Omit<
   actions: BulkActionItem[] | null;
   exporters: Array<{type: string; name: string; formattable: boolean}>;
   pagination: PaginationData;
+  /**
+   * How the source's cards show their thumbnails, for the placeholders, or
+   * null when its elements have none.
+   */
+  cardThumbs?: {style: string; alignment: 'start' | 'end'} | null;
 };
 
 /**
@@ -86,9 +94,7 @@ export type ContentIndexData = Omit<
  */
 export function useContentIndexData<
   Extra extends object = Record<never, never>,
-  Source extends Omit<ContentIndexData, 'data'> & {
-    data: Array<ElementIndexRow>;
-  } = ContentIndexData,
+  Source extends ContentIndexData = ContentIndexData,
 >(extra?: Extra, source?: MaybeRefOrGetter<Source>) {
   // Indexes that aren't an Inertia page — the element selector modal, which
   // fetches the same payload over XHR — pass their own source. `usePage()` is
@@ -125,6 +131,7 @@ export function useContentIndexData<
 
     // Filtering
     status: computed(() => props().status),
+    statusMenuValue: computed(() => props().statusMenuValue),
     statusOptions: computed(() => props().statusOptions),
     search: computed(() => props().search),
     currentCondition: computed(() => props().currentCondition),
@@ -137,6 +144,7 @@ export function useContentIndexData<
     tableColumns: computed(() => props().tableColumns),
     defaultTableColumns: computed(() => props().defaultTableColumns),
     sort: computed(() => props().sort),
+    defaultSort: computed(() => props().defaultSort),
     sortOptions: computed(() => props().sortOptions),
 
     // Results
@@ -144,6 +152,7 @@ export function useContentIndexData<
     actions: computed(() => props().actions),
     exporters: computed(() => props().exporters),
     pagination: computed(() => props().pagination),
+    cardThumbs: computed(() => props().cardThumbs),
 
     // Merged into the literal rather than `Object.assign`ed onto the result:
     // every key above is a `computed()` ref, and assigning over one after
@@ -153,4 +162,26 @@ export function useContentIndexData<
   });
 
   return data;
+}
+
+/**
+ * The params that rebuild the index's query on the server, for requests that
+ * act on everything it lists, such as exports.
+ */
+export function elementIndexQueryParams(
+  elementIndex: Readonly<ReturnType<typeof useContentIndexData>>
+) {
+  const {baseCriteria, criteria} = indexQueryCriteria(elementIndex);
+
+  return {
+    elementType: elementIndex.elementType,
+    context: elementIndex.context,
+    source: elementIndex.source?.key,
+    baseCriteria,
+    criteria: {
+      search: elementIndex.search ?? '',
+      ...criteria,
+    },
+    condition: elementIndex.currentCondition,
+  };
 }

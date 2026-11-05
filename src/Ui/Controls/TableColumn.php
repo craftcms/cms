@@ -30,7 +30,8 @@ class TableColumn
 
         $type = $config['type'] ?? 'singleline';
         $control = match ($type) {
-            'singleline', 'email', 'url' => Text::make([$key])->inputType($type === 'singleline' ? 'text' : $type),
+            'singleline' => Textarea::make([$key])->rows(1)->singleLine()->monospace($config['code'] ?? false),
+            'email', 'url' => Text::make([$key])->inputType($type),
             'heading' => Text::make([$key])->mode(ControlMode::ReadOnly),
             'multiline' => Textarea::make([$key])->rows($config['rows'] ?? 1)->monospace($config['code'] ?? false),
             'number' => Number::make([$key])->min($config['min'] ?? null)->max($config['max'] ?? null)->step($config['step'] ?? null),
@@ -40,12 +41,12 @@ class TableColumn
                 ->showCurrency($config['showCurrency'] ?? true),
             'date' => Date::make([$key]),
             'time' => Time::make([$key]),
-            'color' => Color::make([$key]),
+            'color' => Color::make([$key])->alpha($config['alpha'] ?? false),
             'checkbox' => Checkbox::make([$key])->label($config['label'] ?? null),
             'lightswitch' => Lightswitch::make([$key])->size('small'),
             'select' => Choice::make([$key])->options(self::options($config['options'] ?? []))->withoutPlaceholder(),
             'radio' => Choice::make([$key])->options(self::options($config['options'] ?? []))->presentation(ChoicePresentation::Radios),
-            'icon' => IconPicker::make([$key]),
+            'icon' => IconPicker::make([$key])->sets('*'),
             'autosuggest', 'template' => isset($config['textExpanderTriggers'])
                 ? Text::make([$key])
                 : Combobox::make([$key])->options(self::comboboxOptions($config['options'] ?? self::options($config['suggestions'] ?? [])))->showAllOnEmpty(),

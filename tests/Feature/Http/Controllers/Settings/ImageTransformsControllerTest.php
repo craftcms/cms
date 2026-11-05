@@ -202,7 +202,7 @@ it('renders a functional create form', function () {
                 ->contains(['mode'])));
 });
 
-it('renders declared parameters under their Asset Transformer UUID', function () {
+it('renders declared parameters under their asset transformer UUID', function () {
     $transformer = registerControllerAssetTransformer();
 
     get(action([ImageTransformsController::class, 'create']))
@@ -331,7 +331,7 @@ it('updates an existing transform', function () {
         ->and($updated->height)->toBe(120);
 });
 
-it('saves custom parameters under the Asset Transformer UUID', function () {
+it('saves custom parameters under the asset transformer UUID', function () {
     $transformer = registerControllerAssetTransformer();
     $payload = validTransformData([
         'parameters' => [$transformer->uid => [

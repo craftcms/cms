@@ -15,8 +15,8 @@ use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\Import\Data\CompoundMappingColumn;
 use CraftCms\Cms\Import\Data\MappingColumn;
+use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Controls\Address as AddressControl;
 use InvalidArgumentException;
@@ -149,5 +149,11 @@ class AddressField extends BaseField implements ImportableFieldLayoutElementInte
                 canBeCleared: true,
             ), $parts),
         );
+    }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'map-location';
     }
 }

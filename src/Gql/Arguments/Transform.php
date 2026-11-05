@@ -39,7 +39,7 @@ class Transform extends Arguments
             'transformer' => [
                 'name' => 'transformer',
                 'type' => Type::string(),
-                'description' => 'The Asset Transformer handle to use.',
+                'description' => 'The asset transformer handle to use.',
             ],
         ];
 
@@ -51,7 +51,7 @@ class Transform extends Arguments
                     'integer' => Type::int(),
                     'numeric' => Type::float(),
                     'string' => Type::string(),
-                    default => throw new InvalidAssetTransformException('Invalid Asset Transform parameter type.'),
+                    default => throw new InvalidAssetTransformException('Invalid asset transform parameter type.'),
                 },
                 'description' => $descriptions[$handle] ?? ucfirst($handle).' for the generated transform.',
             ];

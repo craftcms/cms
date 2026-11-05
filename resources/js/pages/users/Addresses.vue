@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import {computed} from 'vue';
   import {router, usePage} from '@inertiajs/vue3';
-  import {t} from '@craftcms/ui';
   import {savedNestedOwner} from '@/modules/elements/nested-owner';
   import NestedElements from '@/modules/ui/nested-elements/NestedElements.vue';
   import type {NestedElementsProps} from '@/modules/ui/nested-elements/nested-elements';
@@ -39,17 +38,11 @@
 
 <template>
   <UserScreen>
-    <div class="grid gap-3">
-      <h2 v-if="!props.showIndex" class="text-lg m-0!">
-        {{ t('Addresses') }}
-      </h2>
-
-      <NestedElements
-        :path="['addresses']"
-        :nested="addresses"
-        :editable="props.editable"
-        :owner="owner"
-      />
-    </div>
+    <NestedElements
+      :path="['addresses']"
+      :nested="addresses"
+      :editable="props.editable"
+      :owner="owner"
+    />
   </UserScreen>
 </template>

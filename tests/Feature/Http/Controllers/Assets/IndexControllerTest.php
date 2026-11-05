@@ -2,11 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Asset\Actions\CopyReferenceTag;
-use CraftCms\Cms\Asset\Actions\EditImage;
-use CraftCms\Cms\Asset\Actions\MoveAssets;
-use CraftCms\Cms\Asset\Actions\RenameFile;
-use CraftCms\Cms\Asset\Actions\ShowInFolder;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
 use CraftCms\Cms\Asset\Models\Asset;
@@ -133,7 +128,7 @@ it('preloads existing thumbnail indexes for the displayed assets', function (int
         }
     });
 
-    $response = get(route('craft.cp.assets.index', ['defaultSource' => $volume->handle, 'per_page' => 2]), ['X-Inertia' => 'true'])
+    $response = get(route('craft.cp.assets.index', ['defaultSource' => $volume->handle, 'per_page' => 2, 'viewMode' => 'table']), ['X-Inertia' => 'true'])
         ->assertOk()
         ->assertJsonPath('component', 'assets/Index')
         ->assertJsonCount(2, 'props.data');
@@ -174,7 +169,7 @@ it('preserves custom thumbnail URLs without resolving the configured transformer
         $event->url = 'https://example.test/custom-thumb.jpg';
     });
 
-    get(route('craft.cp.assets.index', ['defaultSource' => $volume->handle]), ['X-Inertia' => 'true'])
+    get(route('craft.cp.assets.index', ['defaultSource' => $volume->handle, 'viewMode' => 'table']), ['X-Inertia' => 'true'])
         ->assertOk()
         ->assertJsonPath('props.data.0.title', fn (string $html): bool => str_contains($html, 'https://example.test/custom-thumb.jpg'));
 
@@ -198,7 +193,7 @@ it('preserves thumbnail overrides on asset subclasses', function () {
         }
     });
 
-    get(route('craft.cp.assets.index', ['defaultSource' => $volume->handle]), ['X-Inertia' => 'true'])
+    get(route('craft.cp.assets.index', ['defaultSource' => $volume->handle, 'viewMode' => 'table']), ['X-Inertia' => 'true'])
         ->assertOk()
         ->assertJsonCount(1, 'props.data')
         ->assertJsonPath('props.data.0.title', fn (string $html): bool => str_contains($html, 'https://example.test/subclass-thumbnail.jpg'));
@@ -226,7 +221,7 @@ it('reports thumbnail jobs created while rendering the requested page data', fun
         ];
     }
 
-    $response = get(route('craft.cp.assets.index', ['defaultSource' => $volume->handle]), $headers)->assertOk();
+    $response = get(route('craft.cp.assets.index', ['defaultSource' => $volume->handle, ...($queueOnly ? [] : ['viewMode' => 'table'])]), $headers)->assertOk();
 
     if (! $inertia) {
         $response->assertInertia(fn (AssertableInertia $page) => $page
@@ -270,7 +265,7 @@ it('includes a volume’s subfolders in the index results', function () {
 
     $cpTrigger = Cms::config()->cpTrigger;
 
-    get("/{$cpTrigger}/assets/{$volumeModel->handle}")
+    get("/{$cpTrigger}/assets/{$volumeModel->handle}?viewMode=table")
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('assets/Index')
@@ -278,6 +273,7 @@ it('includes a volume’s subfolders in the index results', function () {
             ->has('data', 1)
             // The folder row is flagged and carries the URL to navigate into it.
             ->where('data.0.isFolder', true)
+            ->where('data.0.parentFolderId', Folders::getRootFolderByVolumeId($volumeModel->id)->id)
             ->where('data.0.folderUrl', fn (string $url) => str_contains($url, "assets/{$volumeModel->handle}/a-subfolder"))
             // Only the chip's label is the link, not the whole chip.
             ->where('data.0.title', fn (string $html) => str_starts_with($html, '<craft-chip')
@@ -318,13 +314,15 @@ it('scopes the results to the subfolder named in the path', function () {
     $volume = Volumes::getVolumeById($volumeModel->id);
     // parent/ holds child/, so browsing parent/ should list child/ — not the
     // volume root's folders.
+    $parent = Folders::ensureFolderByFullPathAndVolume('parent', $volume);
     Folders::ensureFolderByFullPathAndVolume('parent/child', $volume);
 
     $cpTrigger = Cms::config()->cpTrigger;
 
-    get("/{$cpTrigger}/assets/{$volumeModel->handle}/parent")
+    get("/{$cpTrigger}/assets/{$volumeModel->handle}/parent?viewMode=table")
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('source.data.folder-id', $parent->id)
             ->where('pagination.total', 1)
             ->has('data', 1)
             ->where('data.0.isFolder', true)
@@ -418,6 +416,7 @@ it('optionally searches the current folder’s descendants', function () {
     $url = route('craft.cp.assets.index', [
         'defaultSource' => 'testvolume/parent',
         'search' => 'nested-needle',
+        'viewMode' => 'table',
     ]);
 
     get($url, ['X-Inertia' => 'true'])
@@ -502,13 +501,13 @@ it('hands asset file actions to the page as client events', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('actions', function ($actions) use ($root): bool {
                 $actions = $actions->keyBy('key');
-                $move = $actions->get(MoveAssets::class);
+                $move = $actions->get('move-assets');
 
-                return $actions->get(RenameFile::class)['action'] === ['type' => 'event', 'name' => 'assets:rename-file']
-                    && $actions->get(RenameFile::class)['selectionAttribute'] === 'movable'
-                    && $actions->get(CopyReferenceTag::class)['action'] === ['type' => 'event', 'name' => 'assets:copy-reference-tag']
-                    && $actions->get(EditImage::class)['selectionAttribute'] === 'imageEditable'
-                    && array_key_exists('imageEditorRatios', $actions->get(EditImage::class)['action']['detail'])
+                return $actions->get('rename-file')['action'] === ['type' => 'event', 'name' => 'assets:rename-file']
+                    && $actions->get('rename-file')['selectionAttribute'] === 'movable'
+                    && $actions->get('copy-reference-tag')['action'] === ['type' => 'event', 'name' => 'assets:copy-reference-tag']
+                    && $actions->get('edit-image')['selectionAttribute'] === 'imageEditable'
+                    && array_key_exists('imageEditorRatios', $actions->get('edit-image')['action']['detail'])
                     && $move['action']['name'] === 'assets:move-assets'
                     && $move['action']['detail']['sources'] !== []
                     && $move['action']['detail']['disabledFolderIds'] === [$root->id];
@@ -525,7 +524,7 @@ it('offers Show in folder only when searching subfolders', function (array $quer
     get(route('craft.cp.assets.index', ['defaultSource' => 'testvolume', ...$query]))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('actions', fn ($actions): bool => $actions->contains('key', ShowInFolder::class) === $offered)
+            ->where('actions', fn ($actions): bool => $actions->contains('key', 'show-in-folder') === $offered)
         );
 })->with([
     'browsing' => [[], false],
@@ -539,19 +538,21 @@ it('gives asset rows what their file actions need', function () {
         'fs' => 'test-disk',
         'handle' => 'testvolume',
     ]);
+    $rootFolderId = Folders::getRootFolderByVolumeId($volumeModel->id)->id;
     Asset::factory()->createElement([
         'volumeId' => $volumeModel->id,
-        'folderId' => Folders::getRootFolderByVolumeId($volumeModel->id)->id,
+        'folderId' => $rootFolderId,
         'filename' => 'photo.jpg',
         'kind' => 'image',
         'width' => 400,
         'height' => 300,
     ]);
 
-    get(route('craft.cp.assets.index', ['defaultSource' => 'testvolume']))
+    get(route('craft.cp.assets.index', ['defaultSource' => 'testvolume', 'viewMode' => 'table']))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('data.0.assetFilename', 'photo.jpg')
+            ->where('data.0.folderId', $rootFolderId)
             ->where('data.0.imageWidth', 400)
             ->where('data.0.imageHeight', 300)
             ->where('data.0.capabilities.movable', true)

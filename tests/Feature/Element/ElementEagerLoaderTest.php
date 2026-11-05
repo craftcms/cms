@@ -2,12 +2,10 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Activity\DraftActivity;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\ElementCaches;
-use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Events\ElementsEagerLoading;
 use CraftCms\Cms\Element\Operations\ElementEagerLoader;
 use CraftCms\Cms\Element\Queries\ElementQuery;
@@ -21,7 +19,6 @@ use CraftCms\Cms\Tests\TestClasses\Element\ElementEagerLoader\TestElementEagerLo
 use CraftCms\Cms\Tests\TestClasses\Element\ElementEagerLoader\TestElementEagerLoaderResolvedTargetElement;
 use CraftCms\Cms\Tests\TestClasses\Element\ElementEagerLoader\TestElementEagerLoaderSourceElement;
 use CraftCms\Cms\Tests\TestClasses\Element\ElementEagerLoader\TestElementEagerLoaderTargetElement;
-use CraftCms\Cms\Workflow\Workflows;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
@@ -169,9 +166,9 @@ it('eager loads nested elements per site and collects cache expiry data', functi
     });
 
     TestElementEagerLoaderQuery::setRows(TestElementEagerLoaderExpirableTargetElement::class, [
-        ['id' => 201, 'siteId' => 1, 'title' => 'Alpha', 'expiryDate' => new DateTime('+10 minutes')],
-        ['id' => 202, 'siteId' => 1, 'title' => 'Beta', 'expiryDate' => new DateTime('+5 minutes')],
-        ['id' => 301, 'siteId' => 2, 'title' => 'Gamma', 'expiryDate' => new DateTime('+15 minutes')],
+        ['id' => 201, 'siteId' => 1, 'title' => 'Alpha', 'expiryDate' => now()->addMinutes(10)],
+        ['id' => 202, 'siteId' => 1, 'title' => 'Beta', 'expiryDate' => now()->addMinutes(5)],
+        ['id' => 301, 'siteId' => 2, 'title' => 'Gamma', 'expiryDate' => now()->addMinutes(15)],
     ]);
 
     TestElementEagerLoaderQuery::setRows(TestElementEagerLoaderNestedTargetElement::class, [
@@ -370,11 +367,7 @@ it('lets non-site mapping criteria take precedence', function () {
 });
 
 it('uses custom element factories and provisional drafts when requested', function () {
-    $loader = app(ElementEagerLoader::class, ['drafts' => new TestElementEagerLoaderDrafts(
-        app(Elements::class),
-        app(DraftActivity::class),
-        app(Workflows::class),
-    )]);
+    $loader = app(ElementEagerLoader::class, ['drafts' => app(TestElementEagerLoaderDrafts::class)]);
     $source = new TestElementEagerLoaderSourceElement(['id' => 1]);
 
     TestElementEagerLoaderSourceElement::setTestEagerLoadingMap('drafty', [

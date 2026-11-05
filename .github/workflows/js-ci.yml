@@ -21,6 +21,9 @@ permissions:
 jobs:
   setup:
     name: 'Build + Check'
+    # Installing frontend dependencies needs the Font Awesome token, which
+    # GitHub doesn't pass to PRs from forks.
+    if: ${{ !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -140,6 +143,9 @@ jobs:
 
           - name: Run TypeScript type check
             run: vp run typecheck
+
+          - name: Run @craftcms/ui type check
+            run: vp run @craftcms/ui#check:types
 
           - name: Run @craftcms/ui tests
             run: vp run test:ui

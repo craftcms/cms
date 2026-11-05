@@ -14,6 +14,8 @@ import type {
 } from './action-menu.types.js';
 
 import '../action-item/action-item.js';
+import '../input-search/input-search.js';
+import type CraftInputSearch from '../input-search/input-search.js';
 
 export type ActionMenuSelectDetail =
   | {item: ActionMenuItemButton | ActionMenuItemLink}
@@ -29,6 +31,20 @@ export type {
   ActionMenuItemsProvider,
   ActionShortcut,
 } from './action-menu.types.js';
+
+/**
+ * Styles a separator between groups of items. It's in the light DOM, inside
+ * the slotted content, where the menu's shadow styles can't reach it. With the
+ * content's gap, the space around it matches the menu's padding.
+ */
+function styleSeparator(hr: HTMLElement): void {
+  Object.assign(hr.style, {
+    marginBlock: 'calc(var(--c-spacing-sm) - var(--c-spacing-xs))',
+    marginInline: '0',
+    border: '0',
+    borderBlockStart: '1px solid var(--c-color-neutral-border-quiet)',
+  });
+}
 
 /**
  * An action menu built on craft-popover.
@@ -67,20 +83,20 @@ export type {
  *   mode it is the clicked `craft-action-item` element.
  */
 export default class CraftActionMenu extends CraftPopover {
+  /** Lion's cache of the resolved overlay content node; its types leave it out. */
+  declare _cachedOverlayContentNode?: HTMLElement;
+
   static override styles = [
     ...CraftPopover.styles,
     css`
       ::slotted([slot='content']) {
         display: grid;
+        /* Keep items within the popover, however wide their content. */
+        grid-template-columns: minmax(0, 1fr);
         gap: var(--c-spacing-xs);
         padding: var(--c-spacing-sm);
         font-size: var(--c-text-base);
         font-weight: 400;
-      }
-
-      ::slotted([slot='content']) hr {
-        margin-block: calc(var(--c-spacing-sm) - var(--c-spacing-xs));
-        margin-inline: 0;
       }
 
       :host([disabled]) ::slotted([slot='invoker']) {
@@ -152,11 +168,8 @@ export default class CraftActionMenu extends CraftPopover {
   /** The search input inside {@link _searchContainer}. */
   private _searchInput: HTMLInputElement | null = null;
 
-  /**
-   * Whether the next Escape keyup should be swallowed because the matching
-   * keydown cleared the search filter (see {@link _onSearchKeydown}).
-   */
-  private _swallowNextEscUp = false;
+  /** The search field wrapping {@link _searchInput}. */
+  private _searchField: CraftInputSearch | null = null;
 
   /**
    * Closes the menu when one of its items is clicked.
@@ -194,21 +207,24 @@ export default class CraftActionMenu extends CraftPopover {
     const content = this.contentNodes[0];
     if (!content) return;
 
-    content
-      .querySelectorAll<CraftActionItem>('craft-action-item')
-      .forEach((item) => item.addEventListener('click', this._onItemClick));
-
+    this._bindContent(content);
     this._observeContent(content);
   }
 
   private _observeContent(content: HTMLElement): void {
     this._contentObserver?.disconnect();
-    this._contentObserver = new MutationObserver(() => {
-      content
-        .querySelectorAll<CraftActionItem>('craft-action-item')
-        .forEach((item) => item.addEventListener('click', this._onItemClick));
-    });
+    this._contentObserver = new MutationObserver(() =>
+      this._bindContent(content)
+    );
     this._contentObserver.observe(content, {childList: true, subtree: true});
+  }
+
+  /** Listens for clicks on the content's items, and styles its separators. */
+  private _bindContent(content: HTMLElement): void {
+    content
+      .querySelectorAll<CraftActionItem>('craft-action-item')
+      .forEach((item) => item.addEventListener('click', this._onItemClick));
+    content.querySelectorAll<HTMLElement>('hr').forEach(styleSeparator);
   }
 
   private _dispatchChange(
@@ -549,16 +565,7 @@ export default class CraftActionMenu extends CraftPopover {
     if (action.type === 'hr') {
       const hr = document.createElement('hr');
       hr.className = 'action-menu__separator';
-      // The separator lives in light DOM (inside the slotted content
-      // container), so the shadow `::slotted()` selector can't reach it —
-      // style it directly here.
-      // With the content's gap, the space around it matches the menu's padding.
-      Object.assign(hr.style, {
-        marginBlock: 'calc(var(--c-spacing-sm) - var(--c-spacing-xs))',
-        marginInline: '0',
-        border: '0',
-        borderBlockStart: '1px solid var(--c-color-neutral-border-quiet)',
-      });
+      styleSeparator(hr);
       return hr;
     }
 
@@ -759,36 +766,29 @@ export default class CraftActionMenu extends CraftPopover {
       craft-action-menu .action-menu__search {
         padding: var(--c-spacing-sm);
       }
-      craft-action-menu .action-menu__search input {
-        box-sizing: border-box;
-        width: 100%;
-        padding-block: var(--c-spacing-xs);
-        padding-inline: var(--c-spacing-sm);
-        border: var(--c-input-border-width) var(--c-input-border-style)
-          var(--c-input-border-color);
-        border-radius: var(--c-input-radius);
-        background-color: var(--c-input-fill);
-        box-shadow: var(--c-input-shadow);
-        color: var(--c-input-text);
-        font: inherit;
+      craft-action-menu .action-menu__search input::placeholder {
+        color: var(--c-form-control-placeholder);
+        opacity: 1;
       }
     `;
     container.appendChild(style);
 
     const input = document.createElement('input');
-    input.type = 'text';
-    input.setAttribute('inputmode', 'search');
-    input.autocomplete = 'off';
-    input.placeholder = t('Search');
     input.setAttribute('aria-label', t('Search'));
     input.addEventListener('input', () => {
       this._applySearchFilter(input.value);
     });
     input.addEventListener('keydown', this._onSearchKeydown);
-    input.addEventListener('keyup', this._onSearchKeyup);
-    container.appendChild(input);
+
+    // craft-input-search uses the provided input rather than creating its own.
+    const field = document.createElement('craft-input-search');
+    field.setAttribute('size', 'small');
+    input.slot = 'input';
+    field.append(input);
+    container.appendChild(field);
 
     this._searchInput = input;
+    this._searchField = field;
     return container;
   }
 
@@ -808,24 +808,11 @@ export default class CraftActionMenu extends CraftPopover {
       return;
     }
 
-    if (event.key === 'Escape' && this._searchInput?.value) {
-      // Clear the filter instead of closing the menu (parity with the legacy
-      // disclosure menu). Lion's hides-on-esc handler listens on the content
-      // node, so stop both the keydown and the trailing keyup.
-      event.stopPropagation();
-      this._swallowNextEscUp = true;
-      this._searchInput.value = '';
-      this._applySearchFilter('');
-    } else if (event.key === 'Enter') {
+    // Escape in a search with a value is left to craft-input-search, which
+    // clears the field and keeps the key from closing the menu.
+    if (event.key === 'Enter') {
       // Don't submit a surrounding form from the search input.
       event.preventDefault();
-    }
-  };
-
-  private _onSearchKeyup = (event: KeyboardEvent): void => {
-    if (event.key === 'Escape' && this._swallowNextEscUp) {
-      event.stopPropagation();
-      this._swallowNextEscUp = false;
     }
   };
 
@@ -889,8 +876,8 @@ export default class CraftActionMenu extends CraftPopover {
 
   /** Clear the search input and un-hide all items (runs when the menu closes). */
   private _resetSearchFilter(): void {
-    if (this._searchInput) {
-      this._searchInput.value = '';
+    if (this._searchField) {
+      this._searchField.modelValue = '';
     }
     const content = this._getContentNode();
     if (content) {

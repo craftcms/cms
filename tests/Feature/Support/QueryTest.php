@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Support\Query;
 use Illuminate\Support\Facades\DB;
 
@@ -77,6 +81,28 @@ test('whereParam includes null JSON values for none-of conditions', function () 
         ->and($stringMatches)->toBe(['included-field-three']);
 });
 
+test('null query params distinguish SQL expressions from JSON column selectors', function () {
+    $ids = [];
+    foreach ([null, '{}', '{"value":""}', '{"value":"null"}', '{"value":"present"}'] as $content) {
+        $entry = EntryModel::factory()->createElement();
+        DB::table(Table::ELEMENTS_SITES)->where('elementId', $entry->id)->update(['content' => $content]);
+        $ids[] = $entry->id;
+    }
+
+    $query = fn () => DB::table(Table::ELEMENTS_SITES)->whereIn('elementId', $ids)->orderBy('elementId');
+    $column = new JsonExtract('content', 'value');
+
+    foreach ([$column, 'content->value'] as $column) {
+        expect($query()->whereParam($column, ':empty:', columnType: Query::TYPE_STRING)->pluck('elementId')->all())
+            ->toBe(array_slice($ids, 0, 3))
+            ->and($query()->whereParam($column, ':notempty:', columnType: Query::TYPE_STRING)->pluck('elementId')->all())
+            ->toBe(array_slice($ids, 3));
+    }
+
+    expect($query()->whereBooleanParam(new JsonExtract('content', 'value'), null)->pluck('elementId')->all())
+        ->toBe(array_slice($ids, 0, 2));
+});
+
 test('whereNumericParam throws if not numeric', function () {
     $this->expectException(InvalidArgumentException::class);
     $this->expectExceptionMessage('Invalid numeric value: foo');
@@ -112,17 +138,22 @@ test('whereBooleanParam', function () {
 test('whereDateParam', function (string $param, array $expected) {
     Volume::factory()->create([
         'name' => 'test-today',
-        'dateCreated' => today(),
+        'dateCreated' => Query::prepareDateForDb(today()),
     ]);
 
     Volume::factory()->create([
         'name' => 'test-yesterday',
-        'dateCreated' => now()->subDay()->startOfDay(),
+        'dateCreated' => Query::prepareDateForDb(today()->subDay()),
+    ]);
+
+    Volume::factory()->create([
+        'name' => 'test-yesterday-late',
+        'dateCreated' => Query::prepareDateForDb(today()->subHour()),
     ]);
 
     Volume::factory()->create([
         'name' => 'test-tomorrow',
-        'dateCreated' => now()->addDay()->startOfDay(),
+        'dateCreated' => Query::prepareDateForDb(today()->addDay()),
     ]);
 
     $query = DB::table(Table::VOLUMES)->whereDateParam('dateCreated', $param);
@@ -133,8 +164,20 @@ test('whereDateParam', function (string $param, array $expected) {
     ['tomorrow', ['test-tomorrow']],
     ['> today', ['test-tomorrow']],
     ['>= today', ['test-today', 'test-tomorrow']],
-    ['< today, > today', ['test-yesterday', 'test-tomorrow']],
+    ['< today', ['test-yesterday', 'test-yesterday-late']],
+    ['< today, > today', ['test-yesterday', 'test-yesterday-late', 'test-tomorrow']],
 ]);
+
+test('whereDateParam compares DateTime values in UTC', function () {
+    Volume::factory()->create([
+        'name' => 'test-today',
+        'dateCreated' => Query::prepareDateForDb(today()),
+    ]);
+
+    $query = DB::table(Table::VOLUMES)->whereDateParam('dateCreated', today()->setTimezone('Asia/Tokyo'));
+
+    expect($query->pluck('name')->all())->toEqual(['test-today']);
+});
 
 test('escapeParam', function (string $param, string $expected) {
     expect(Query::escapeParam($param))->toBe($expected);

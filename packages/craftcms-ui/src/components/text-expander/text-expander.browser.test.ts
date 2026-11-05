@@ -44,3 +44,79 @@ it('keeps caret measurements from obscuring a slotted textarea while expanding a
   expect(textarea.value).toBe('{email}x');
   expect(document.activeElement).toBe(textarea);
 });
+
+it('keeps its popup’s events inside the expander, and reports its own selection', async () => {
+  document.body.innerHTML = `
+    <input id="field" type="text" aria-label="Template">
+    <craft-text-expander for="field"></craft-text-expander>`;
+  const input = document.querySelector('input')!;
+  const expander = document.querySelector('craft-text-expander')!;
+  expander.triggers = [
+    {
+      trigger: '{',
+      boundary: 'anywhere',
+      options: [{label: 'Email', value: '{email}'}],
+    },
+  ];
+  await expander.updateComplete;
+
+  const reached: string[] = [];
+  const events = [
+    'craft-show',
+    'craft-hide',
+    'craft-after-show',
+    'craft-after-hide',
+    'craft-select',
+  ];
+  const record = (event: Event) =>
+    reached.push(`${event.type} from ${(event.target as Element).localName}`);
+  events.forEach((type) => document.addEventListener(type, record));
+
+  try {
+    await userEvent.fill(input, '{');
+    await vi.waitFor(() =>
+      expect(expander.querySelector('craft-option')).not.toBeNull()
+    );
+    await userEvent.keyboard('{Enter}');
+    await vi.waitFor(() => expect(input.value).toBe('{email}'));
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(reached).toEqual(['craft-select from craft-text-expander']);
+  } finally {
+    events.forEach((type) => document.removeEventListener(type, record));
+  }
+});
+
+it('highlights the suggestion that Enter will insert, and moves the highlight with the arrow keys', async () => {
+  document.body.innerHTML = `
+    <input id="field" type="text" aria-label="Template">
+    <craft-text-expander for="field"></craft-text-expander>`;
+  const input = document.querySelector('input')!;
+  const expander = document.querySelector('craft-text-expander')!;
+  expander.triggers = [
+    {
+      trigger: '{',
+      boundary: 'anywhere',
+      options: [
+        {label: 'Email', value: '{email}'},
+        {label: 'Name', value: '{name}'},
+      ],
+    },
+  ];
+  await expander.updateComplete;
+  await userEvent.fill(input, '{');
+  await vi.waitFor(() =>
+    expect(expander.querySelectorAll('craft-option')).toHaveLength(2)
+  );
+  const options = expander.querySelectorAll('craft-option');
+  const email = options[0]!;
+  const name = options[1]!;
+  const fill = (option: Element) => getComputedStyle(option).backgroundColor;
+
+  await vi.waitFor(() => expect(fill(email)).not.toBe(fill(name)));
+  const highlighted = fill(email);
+
+  await userEvent.keyboard('{ArrowDown}');
+  await vi.waitFor(() => expect(fill(name)).toBe(highlighted));
+  expect(fill(email)).not.toBe(highlighted);
+});

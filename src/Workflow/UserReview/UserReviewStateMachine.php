@@ -65,6 +65,10 @@ readonly class UserReviewStateMachine
             );
         }
 
+        if ($this->state->requiredApprovalIds->isNotEmpty()) {
+            return new WorkflowStageResult(WorkflowStageStatus::Pending, t('Awaiting approval'), $this->context->payload);
+        }
+
         if ($this->stage->approvalMode === UserReviewApprovalMode::PerGroup) {
             return $this->perGroupResult();
         }

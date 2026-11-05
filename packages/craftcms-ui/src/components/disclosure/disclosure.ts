@@ -36,8 +36,10 @@ const CHEVRONS = [
  * legacy `CraftDisclosure` element and `_includes/disclosure-toggle.twig`.
  * The mode is chosen automatically when such a button is present.
  *
- * @fires craft-show - The content was expanded.
- * @fires craft-hide - The content was collapsed.
+ * @fires craft-show - The content was expanded, in either mode. Doesn't
+ *   bubble, so listen on the disclosure itself.
+ * @fires craft-hide - The content was collapsed, in either mode. Doesn't
+ *   bubble, so listen on the disclosure itself.
  */
 export default class CraftDisclosure extends LionCollapsible {
   static override get styles() {
@@ -81,6 +83,17 @@ export default class CraftDisclosure extends LionCollapsible {
 
   private __externalExpanded = false;
 
+  /**
+   * The slotted-mode state last seen, so the first render, which only reports
+   * the initial state, isn't announced as a change. `null` until then.
+   */
+  private __announcedOpened: boolean | null = null;
+
+  constructor() {
+    super();
+    this.addEventListener('opened-changed', this.__announceOpenedChange);
+  }
+
   /** The external element named by the trigger's `aria-controls`. */
   private get __externalTarget(): HTMLElement | null {
     const targetSelector =
@@ -89,7 +102,7 @@ export default class CraftDisclosure extends LionCollapsible {
     return targetSelector ? document.getElementById(targetSelector) : null;
   }
 
-  protected override render() {
+  override render() {
     return html`
       <slot name="invoker"></slot>
       <slot name="content"></slot>
@@ -152,6 +165,21 @@ export default class CraftDisclosure extends LionCollapsible {
       }
     }
   }
+
+  /** Lion's `opened-changed`, reported as the public events in slotted mode. */
+  private __announceOpenedChange = () => {
+    if (this.__externalTrigger) {
+      return;
+    }
+
+    const opened = Boolean(this.opened);
+    const previous = this.__announcedOpened;
+    this.__announcedOpened = opened;
+
+    if (previous !== null && previous !== opened) {
+      this.dispatchEvent(new CustomEvent(opened ? 'craft-show' : 'craft-hide'));
+    }
+  };
 
   private __ensureDefaultInvoker() {
     if (this._invokerNode) {

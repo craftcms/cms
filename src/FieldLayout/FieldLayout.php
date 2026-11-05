@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout;
 
 use Closure;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Data\Thumb;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
@@ -14,6 +18,7 @@ use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\Concerns\LegacyConstants;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
+use CraftCms\Cms\FieldLayout\Enums\TabType;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutCustomFieldsResolving;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutUIElementsResolving;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
@@ -23,6 +28,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\Heading;
 use CraftCms\Cms\FieldLayout\LayoutElements\HorizontalRule;
 use CraftCms\Cms\FieldLayout\LayoutElements\LineBreak;
 use CraftCms\Cms\FieldLayout\LayoutElements\Markdown;
+use CraftCms\Cms\FieldLayout\LayoutElements\Template;
 use CraftCms\Cms\FieldLayout\LayoutElements\Tip;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Support\Arr;
@@ -51,6 +57,11 @@ class FieldLayout extends Component
 {
     use LegacyConstants;
 
+    /**
+     * The thumb source key for an entry’s entry type icon.
+     */
+    public const string ENTRY_TYPE_ICON_THUMB_SOURCE = 'entryTypeIcon';
+
     public ?int $id = null;
 
     public string $uid;
@@ -68,9 +79,26 @@ class FieldLayout extends Component
     public ?array $reservedFieldHandles = null;
 
     /**
-     * @var string|null The element key that provides thumbnails for this layout
+     * @var list<string> The keys of the layout elements that can provide thumbnails for this layout, in order. The
+     *                   first one with a thumbnail for an element provides it.
      */
-    public ?string $thumbFieldKey = null;
+    public array $thumbSources = [] {
+        set(array $value) {
+            $this->thumbSources = array_values(array_unique(array_filter($value, fn (mixed $key) => is_string($key) && $key !== '')));
+        }
+    }
+
+    /**
+     * @var string|null The first of the layout’s [[thumbSources]]. Setting it replaces all of them.
+     *
+     * @deprecated in 6.0.0. [[thumbSources]] should be used instead.
+     */
+    public ?string $thumbFieldKey {
+        get => $this->thumbSources[0] ?? null;
+        set {
+            $this->thumbSources = $value !== null ? [$value] : [];
+        }
+    }
 
     /**
      * @var BaseField[][]
@@ -136,6 +164,12 @@ class FieldLayout extends Component
      * @see setCardThumbAlignment()
      */
     private string $_cardThumbAlignment;
+
+    /**
+     * @see getCardThumbStyle()
+     * @see setCardThumbStyle()
+     */
+    private ?string $_cardThumbStyle = null;
 
     /** @param array<string, mixed> $config */
     public function __construct(
@@ -449,8 +483,6 @@ class FieldLayout extends Component
     {
         $this->_tabs = [];
 
-        $index = 0;
-
         foreach ($tabs as $tab) {
             if (is_array($tab)) {
                 // Set the layout before anything else
@@ -460,8 +492,14 @@ class FieldLayout extends Component
                 $tab->setLayout($this);
             }
 
-            $tab->sortOrder = ++$index;
             $this->_tabs[] = $tab;
+        }
+
+        // Sidebar tabs always come after content tabs
+        usort($this->_tabs, fn (FieldLayoutTab $a, FieldLayoutTab $b) => ($a->type === TabType::Sidebar) <=> ($b->type === TabType::Sidebar));
+
+        foreach ($this->_tabs as $index => $tab) {
+            $tab->sortOrder = $index + 1;
         }
 
         // Make sure that we aren't missing any mandatory fields
@@ -562,9 +600,20 @@ class FieldLayout extends Component
         return $this;
     }
 
+    /** @param list<string> $keys */
+    public function thumbSources(array $keys): static
+    {
+        $this->thumbSources = $keys;
+
+        return $this;
+    }
+
+    /**
+     * @deprecated in 6.0.0. [[thumbSources()]] should be used instead.
+     */
     public function thumbFieldKey(?string $key): static
     {
-        $this->thumbFieldKey = $key;
+        $this->thumbSources = $key !== null ? [$key] : [];
 
         return $this;
     }
@@ -606,6 +655,41 @@ class FieldLayout extends Component
         }
 
         $this->setCardThumbAlignment($alignment);
+
+        return $this;
+    }
+
+    /**
+     * Returns how element cards show their thumbnail: `normal`, in a column beside the card's content; `cover`,
+     * covering the whole card with the content laid over it, when the thumbnail is an asset's image; or `auto`, covering
+     * the card only when the image is a good fit for it (see {@see Asset::canCoverCard()}).
+     *
+     * Asset volumes' layouts default to `auto`, and all others to `normal`.
+     *
+     * @return string `normal`, `cover`, or `auto`
+     */
+    public function getCardThumbStyle(): string
+    {
+        return $this->_cardThumbStyle ?? ($this->type === Asset::class ? 'auto' : 'normal');
+    }
+
+    /**
+     * Sets how element cards show their thumbnail.
+     *
+     * @param  string|null  $style  `normal`, `cover`, or `auto`, or `null` for the element type's default
+     */
+    public function setCardThumbStyle(?string $style = null): void
+    {
+        $this->_cardThumbStyle = in_array($style, ['normal', 'cover', 'auto'], true) ? $style : null;
+    }
+
+    public function cardThumbStyle(?string $style = null): static
+    {
+        if ($style !== null && ! in_array($style, ['normal', 'cover', 'auto'], true)) {
+            throw new InvalidArgumentException("Invalid card thumbnail style: $style");
+        }
+
+        $this->setCardThumbStyle($style);
 
         return $this;
     }
@@ -678,6 +762,7 @@ class FieldLayout extends Component
             new Tip(['style' => Tip::STYLE_TIP]),
             new Tip(['style' => Tip::STYLE_WARNING]),
             new Markdown,
+            new Template,
         ];
 
         event($event = new FieldLayoutUIElementsResolving($this, $elements));
@@ -772,7 +857,7 @@ class FieldLayout extends Component
      * Returns the field layout’s config.
      */
     /**
-     * @return array{tabs: list<array<string, mixed>>, generatedFields: list<GeneratedField>, cardView: list<string>, thumbFieldKey: string|null, cardThumbAlignment: string}|null
+     * @return array{tabs: list<array<string, mixed>>, generatedFields: list<GeneratedField>, cardView: list<string>, thumbSources: list<string>, cardThumbAlignment: string, cardThumbStyle: string}|null
      */
     public function getConfig(): ?array
     {
@@ -794,8 +879,9 @@ class FieldLayout extends Component
             'tabs' => $tabConfigs,
             'generatedFields' => $generatedFields,
             'cardView' => $cardViewConfig,
-            'thumbFieldKey' => $this->thumbFieldKey,
+            'thumbSources' => $this->thumbSources,
             'cardThumbAlignment' => $cardThumbAlignment,
+            'cardThumbStyle' => $this->getCardThumbStyle(),
         ];
     }
 
@@ -1064,58 +1150,103 @@ class FieldLayout extends Component
         );
     }
 
+    /**
+     * Returns whether any of the layout’s [[thumbSources]] is a field that can provide thumbnails, or the entry type icon.
+     */
     public function hasThumbField(): bool
     {
-        if (! isset($this->thumbFieldKey)) {
-            return false;
+        foreach ($this->thumbSources as $key) {
+            if ($key === self::ENTRY_TYPE_ICON_THUMB_SOURCE) {
+                return true;
+            }
+
+            $field = $this->getElementByKey($key);
+
+            if ($field instanceof BaseField && $field->thumbable()) {
+                return true;
+            }
         }
 
-        $field = $this->getElementByKey($this->thumbFieldKey);
-
-        return $field instanceof BaseField && $field->thumbable();
+        return false;
     }
 
     /**
-     * Returns the card body HTML for a given card element key.
+     * Returns the thumbnail HTML that a thumb source shows for an element.
      *
+     * @param  string  $key  The thumb source’s key, such as `layoutElement:X` or `contentBlock:X.layoutElement:Y`.
      * @param  int  $size  The maximum width and height the thumbnail should have.
      */
     public function getThumbHtmlForElement(string $key, ElementInterface $element, int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
-        return match (true) {
-            str_starts_with($key, 'layoutElement:') => $this->thumbHtmlForLayoutElement($key, $element, $size, $mode),
-            str_starts_with($key, 'contentBlock:') => $this->thumbHtmlForContentBlock($key, $element, $size, $mode),
-            default => null,
-        };
+        if ($key === self::ENTRY_TYPE_ICON_THUMB_SOURCE) {
+            return $this->entryTypeIconThumb($element)?->getHtml($size, $mode);
+        }
+
+        $source = $this->thumbSource($key, $element);
+
+        return $source ? $source[0]->thumbHtml($source[1], $size, $mode) : null;
     }
 
-    private function thumbHtmlForLayoutElement(string $key, ElementInterface $element, int $size, ImageTransformMode $mode): ?string
+    /**
+     * Returns the thumbnail a thumb source provides for an element, if it has one.
+     *
+     * @param  string  $key  The thumb source’s key, such as `layoutElement:X` or `contentBlock:X.layoutElement:Y`.
+     */
+    public function getThumbForElement(string $key, ElementInterface $element): ?Thumb
     {
-        $layoutElement = $this->getElementByKey($key);
+        if ($key === self::ENTRY_TYPE_ICON_THUMB_SOURCE) {
+            return $this->entryTypeIconThumb($element);
+        }
 
-        if (! $layoutElement instanceof BaseField) {
+        $source = $this->thumbSource($key, $element);
+
+        return $source ? $source[0]->thumb($source[1]) : null;
+    }
+
+    /**
+     * Returns a thumbnail showing an entry’s entry type icon, faintly, in the entry type’s color, if it has an icon.
+     */
+    private function entryTypeIconThumb(ElementInterface $element): ?Thumb
+    {
+        if (! $element instanceof Entry) {
             return null;
         }
 
-        return $layoutElement->thumbHtml($element, $size, $mode);
-    }
+        $entryType = $element->getType();
 
-    private function thumbHtmlForContentBlock(string $key, ElementInterface $element, int $size, ImageTransformMode $mode): ?string
-    {
-        // the key will be in the format `contentBlock:X::[...]::layoutElement:X`
-        $keyParts = explode('.', $key);
-        $key = array_shift($keyParts);
-
-        // get the Content Block field
-        $uid = Str::after($key, 'contentBlock:');
-        $layoutElement = $this->getElementByUid($uid);
-
-        if (! $layoutElement instanceof CustomField) {
+        if (in_array($entryType->icon, [null, ''], true)) {
             return null;
         }
+
+        return new Thumb(fn (): string => Html::tag('div', Icons::svg($entryType->icon), [
+            'class' => ['thumb', 'icon-thumb', 'w-[var(--c-thumb-icon-size,24px)] h-[var(--c-thumb-icon-size,24px)]'],
+            'data-color' => $entryType->color?->value,
+        ]));
+    }
+
+    /**
+     * Returns the layout element a thumb source key points to, following it into any Content Blocks, along with the
+     * element that holds its value: the element itself, or a Content Block’s value.
+     *
+     * @return array{BaseField, ElementInterface}|null
+     */
+    private function thumbSource(string $key, ElementInterface $element): ?array
+    {
+        if (str_starts_with($key, 'layoutElement:')) {
+            $layoutElement = $this->getElementByKey($key);
+
+            return $layoutElement instanceof BaseField ? [$layoutElement, $element] : null;
+        }
+
+        if (! str_starts_with($key, 'contentBlock:')) {
+            return null;
+        }
+
+        [$blockKey, $key] = explode('.', $key, 2) + [1 => ''];
+        $layoutElement = $this->getElementByUid(Str::after($blockKey, 'contentBlock:'));
 
         try {
-            $field = $layoutElement->getField();
+            $field = $layoutElement instanceof CustomField ? $layoutElement->getField() : null;
         } catch (FieldNotFoundException) {
             return null;
         }
@@ -1124,12 +1255,9 @@ class FieldLayout extends Component
             return null;
         }
 
-        return $field->getFieldLayout()->getThumbHtmlForElement(
-            implode('.', $keyParts),
-            $element->getFieldValue($field->handle),
-            $size,
-            $mode,
-        );
+        $block = $element->getFieldValue($field->handle);
+
+        return $block instanceof ElementInterface ? $field->getFieldLayout()->thumbSource($key, $block) : null;
     }
 
     /**

@@ -176,6 +176,13 @@ it('validates configurable toolbar buttons', function () {
         ->and(Arr::pluck($toolbarOptions, 'icon'))->not()->toContain(null);
 
     expect(MarkdownField::DEFAULT_TOOLBAR_BUTTONS)->not()->toContain(
+        MarkdownField::TOOLBAR_STRIKETHROUGH,
+        MarkdownField::TOOLBAR_CHECK_LIST,
+        MarkdownField::TOOLBAR_QUOTE,
+        MarkdownField::TOOLBAR_GUIDE,
+        MarkdownField::TOOLBAR_HEADING_1,
+        MarkdownField::TOOLBAR_HEADING_2,
+        MarkdownField::TOOLBAR_HEADING_3,
         MarkdownField::TOOLBAR_HEADING_4,
         MarkdownField::TOOLBAR_HEADING_5,
         MarkdownField::TOOLBAR_HEADING_6,

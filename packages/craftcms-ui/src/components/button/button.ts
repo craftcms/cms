@@ -2,11 +2,14 @@ import {LionButtonSubmit} from '@lion/ui/button.js';
 import {html, nothing} from 'lit';
 import {property, state, query} from 'lit/decorators.js';
 import {t} from '@src/utilities/translate';
+import {linkRel, linkTarget, newTabCue} from '@src/utilities/external-links';
 import styles from './button.styles.js';
 import a11yErrorStyles from '@src/styles/a11y-error.styles.js';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import '../spinner/spinner.js';
 import '../icon/icon.js';
+import '../shortcut/shortcut.js';
+import {HasShortcut} from '@src/mixins/HasShortcut';
 import {computeAccessibleName} from 'dom-accessibility-api';
 import {classMap} from 'lit/directives/class-map.js';
 import {Actionable} from '@src/mixins/Actionable';
@@ -32,10 +35,16 @@ export type ButtonVariant = (typeof ButtonVariant)[keyof typeof ButtonVariant];
  * @since 1.0
  *
  * @dependency craft-spinner
+ * @dependency craft-shortcut
  *
  * @slot - The button's label.
  * @slot prefix - Content to display before the label (typically an icon).
  * @slot suffix - Content to display after the label (typically an icon).
+ *
+ * @attr shortcut - A keyboard shortcut shown at the end of the button: a key
+ *   (`"K"`), or JSON naming its modifiers (`'{"key": "S", "shift": true}'`).
+ *   Display only, and hidden from screen readers. Supplied by the
+ *   `HasShortcut` mixin.
  *
  * @csspart content - The button's content wrapper.
  * @csspart prefix - The button's prefix slot.
@@ -48,7 +57,9 @@ export type ButtonVariant = (typeof ButtonVariant)[keyof typeof ButtonVariant];
  *   is the state being asked for. Cancelable — `active` is owned by whoever set
  *   it, and the button never changes it itself.
  */
-export default class CraftButton extends Actionable(LionButtonSubmit) {
+export default class CraftButton extends HasShortcut(
+  Actionable(LionButtonSubmit)
+) {
   static override get styles() {
     return [...super.styles, visuallyHiddenStyles, a11yErrorStyles, styles];
   }
@@ -69,7 +80,19 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
     // sets this to "submit"; we override it after super().)
     this.type = 'button';
     this.addEventListener('mousedown', this.#releaseOnDragEnd);
+    this.addEventListener('click', this.#blockDisabledClick, {capture: true});
   }
+
+  /**
+   * A disabled button that stays reachable by the pointer still receives
+   * clicks, so they stop here, before any of the page's own listeners.
+   */
+  #blockDisabledClick = (event: Event) => {
+    if (this.disabled) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  };
 
   override connectedCallback() {
     // Set link-appropriate host state *before* Lion runs, so it skips its
@@ -87,13 +110,20 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
     this.addEventListener('click', this.#handleToggleClick);
 
     this.#syncContent();
-    this.#contentObserver = new MutationObserver(() => this.#syncContent());
+    // A name can arrive after the first render, as when a tooltip labels its
+    // invoker once its overlay sets up, so content and naming changes recheck it.
+    this.#contentObserver = new MutationObserver(() => {
+      this.#syncContent();
+      if (this.hasUpdated) {
+        this.#checkAccessibleName();
+      }
+    });
     this.#contentObserver.observe(this, {
       childList: true,
       characterData: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ['slot'],
+      attributeFilter: ['slot', 'aria-label', 'aria-labelledby', 'title'],
     });
 
     // Moved while it was still waiting to be shown: disconnecting dropped the
@@ -109,11 +139,6 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
     this.#contentObserver?.disconnect();
     this.#contentObserver = null;
     this.#stopAwaitingRender();
-
-    if (this.announcementTimer) {
-      clearTimeout(this.announcementTimer);
-      this.announcementTimer = null;
-    }
   }
 
   /**
@@ -159,6 +184,22 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
     );
   };
 
+  override willUpdate(changedProperties: Map<string, unknown>) {
+    super.willUpdate(changedProperties);
+
+    // The spinner is this button's rendering of the mixin's state. `loading`
+    // stays public and settable on its own, for a caller showing one without
+    // a declarative action behind it — so this follows transitions only.
+    // On the first update `actionState` is "changed" from nothing to idle,
+    // and mirroring that would switch off a spinner the caller had asked for.
+    if (
+      changedProperties.has('actionState') &&
+      changedProperties.get('actionState') !== undefined
+    ) {
+      this.loading = this.actionState === AsyncStates.Loading;
+    }
+  }
+
   override updated(changedProperties: Map<string, unknown>) {
     super.updated(changedProperties);
     if (changedProperties.has('href') || changedProperties.has('disabled')) {
@@ -176,16 +217,20 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
       }
     }
 
-    // The spinner is this button's rendering of the mixin's state. `loading`
-    // stays public and settable on its own, for a caller showing one without
-    // a declarative action behind it — so this follows transitions only.
-    // On the first update `actionState` is "changed" from nothing to idle,
-    // and mirroring that would switch off a spinner the caller had asked for.
-    if (
-      changedProperties.has('actionState') &&
-      changedProperties.get('actionState') !== undefined
-    ) {
-      this.loading = this.actionState === AsyncStates.Loading;
+    // A shortcut shown on the button is announced on it too, unless the
+    // author already set their own.
+    if (changedProperties.has('shortcut')) {
+      const current = this.getAttribute('aria-keyshortcuts');
+      const next = this.shortcutAriaKeys;
+
+      if (current === null || current === this.#shortcutAriaKeys) {
+        if (next) {
+          this.setAttribute('aria-keyshortcuts', next);
+        } else {
+          this.removeAttribute('aria-keyshortcuts');
+        }
+        this.#shortcutAriaKeys = next;
+      }
     }
 
     // Only while `toggle` is set: a plain button may carry an `aria-pressed`
@@ -201,20 +246,22 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
     if (changedProperties.has('loading')) {
       if (this.loading) {
         this.announceLoading();
+      } else if (changedProperties.get('loading')) {
+        this.clearLoadingAnnouncement();
       }
     }
   }
 
+  /**
+   * "Loading" stays in the live region until loading ends, since the region
+   * sits inside the button and some screen readers read it as button content.
+   */
   private announceLoading() {
     this.liveRegion.textContent = t('Loading');
+  }
 
-    if (this.announcementTimer) {
-      clearTimeout(this.announcementTimer);
-    }
-
-    this.announcementTimer = setTimeout(() => {
-      this.liveRegion.textContent = '';
-    }, 5000);
+  private clearLoadingAnnouncement() {
+    this.liveRegion.textContent = '';
   }
 
   private syncLinkHostState() {
@@ -405,14 +452,21 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
   /** Show a spinner instead of the label */
   @property({reflect: true, type: Boolean}) loading: boolean = false;
 
-  /** Keep the button in the tab order when disabled. */
-  @property({attribute: 'focusable-when-disabled', type: Boolean})
+  /**
+   * Keep the button in the tab order when disabled, and reachable by the
+   * pointer, so a tooltip can say why it's disabled.
+   */
+  @property({
+    attribute: 'focusable-when-disabled',
+    type: Boolean,
+    reflect: true,
+  })
   focusableWhenDisabled: boolean = false;
 
   /**
    * Pulls the button out by the space around its content, so its label or
    * icon lines up with the text beside it. Meant for buttons with no
-   * background, like `plain`. Present with no value, it applies on every
+   * background, like `plain` and `danger-plain`. Present with no value, it applies on every
    * side. Otherwise a space-separated list of `inline`, `block`,
    * `inline-start`, `inline-end`, `block-start` and `block-end`.
    */
@@ -427,7 +481,10 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
   /** When set, the button renders as a link to this URL. */
   @property({reflect: true}) href: string | null = null;
 
-  /** Anchor target (e.g. "_blank"). Forwarded to the rendered <a>. */
+  /**
+   * Anchor target (e.g. "_blank"). Forwarded to the rendered <a>. Unset, a
+   * link to another host opens in a new tab.
+   */
   @property() target: string | null = null;
 
   /** Anchor rel. Forwarded to the <a>; "noopener" is added for target="_blank". */
@@ -467,6 +524,9 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
     suffix: false,
   };
 
+  /** The `aria-keyshortcuts` this button set from its shortcut, if any. */
+  #shortcutAriaKeys: string | null = null;
+
   #contentObserver: MutationObserver | null = null;
 
   /** Waits for a hidden button to be shown before judging its name. */
@@ -477,19 +537,12 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
   /** The caller's `type` before link mode forced it to "button". */
   private originalType: string | null = null;
 
-  private announcementTimer: ReturnType<typeof setTimeout> | null = null;
-
   private get isLink(): boolean {
     return !!this.href && !this.disabled;
   }
 
-  private get computedRel(): string | null {
-    if (this.target === '_blank') {
-      const tokens = new Set((this.rel ?? '').split(/\s+/).filter(Boolean));
-      tokens.add('noopener');
-      return Array.from(tokens).join(' ');
-    }
-    return this.rel;
+  private get computedTarget(): string | null {
+    return linkTarget(this.href, this.target);
   }
 
   override render() {
@@ -527,6 +580,15 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
             ? html`<craft-icon name="${this.icon}"></craft-icon>`
             : nothing}
         </slot>
+        ${this.shortcutKeys
+          ? html`<craft-shortcut
+              class="shortcut"
+              aria-hidden="true"
+              ?alt="${this.shortcutKeys.alt}"
+              ?shift="${this.shortcutKeys.shift}"
+              >${this.shortcutKeys.key}</craft-shortcut
+            >`
+          : nothing}
       </div>
       ${this.loading
         ? html`<craft-spinner part="spinner"></craft-spinner>`
@@ -535,15 +597,19 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
     `;
 
     if (this.isLink) {
+      const target = this.computedTarget;
+
       return html`
         <a
           class="link"
           part="link"
           href="${this.href}"
-          target="${this.target ?? nothing}"
-          rel="${this.computedRel ?? nothing}"
+          target="${target ?? nothing}"
+          rel="${linkRel(target, this.rel) ?? nothing}"
           download="${this.download ?? nothing}"
-          >${content}</a
+          >${content}${!this.target && target
+            ? html`<span class="cp-visually-hidden">${newTabCue()}</span>`
+            : nothing}</a
         >
       `;
     }

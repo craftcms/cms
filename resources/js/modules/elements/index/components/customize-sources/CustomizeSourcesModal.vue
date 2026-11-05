@@ -7,8 +7,8 @@
    * `ElementSourcesController::show()` and namespaced at `sources.<key>`, so a
    * UiRenderer per source produces exactly the shape `store()` reads back.
    */
-  import {computed, nextTick, ref, watch} from 'vue';
-  import {actionClient, t, type ReorderMove} from '@craftcms/ui';
+  import {computed, nextTick, ref, shallowRef, watch} from 'vue';
+  import {actionClient, t} from '@craftcms/ui';
   import ElementSourcesController from '@actions/Elements/ElementSourcesController';
   import ModalForm from '@/common/components/ModalForm.vue';
   import UiRenderer from '@/modules/ui/UiRenderer.vue';
@@ -17,6 +17,13 @@
   import {useAnnouncer} from '@/common/composables/useAnnouncer';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
+  import {useSourceOrdering} from '@/modules/elements/index/composables/useSourceOrdering';
+  import {useSourcePages} from '@/modules/elements/index/composables/useSourcePages';
+  import {
+    FOCUSABLE,
+    focusElement,
+    useSourceScreens,
+  } from '@/modules/elements/index/composables/useSourceScreens';
   import CustomizeSourcesColumn from './CustomizeSourcesColumn.vue';
   import CustomSourceList from './CustomSourceList.vue';
   import PageSettingsModal from './PageSettingsModal.vue';
@@ -67,7 +74,6 @@
   const saving = ref(false);
   const multiPage = ref(false);
   const sources = ref<SourceRow[]>([]);
-  const pages = ref<PageRow[]>([]);
   const selectedKey = ref<string | null>(null);
   const selectedPage = ref<string | null>(null);
   /**
@@ -77,19 +83,50 @@
    */
   const lastEdited = ref<string | null>(null);
   const errors = ref<Record<string, UiPayload['errors']>>({});
+  /** The source whose settings failed to load, so its spinner stops. */
+  const failedUiKey = shallowRef<string | null>(null);
   const renderers = new Map<string, Renderer>();
 
-  /**
-   * The pane shown when the modal is too narrow for all three side by side:
-   * pages lead to their sources, and a source to its settings.
-   */
-  type Screen = 'pages' | 'sources' | 'settings';
-
-  const screen = ref<Screen>('sources');
   const body = ref<HTMLElement | null>(null);
+  const settingsPane = ref<HTMLElement | null>(null);
+
+  const {screen, rowElement, focusRow, showScreen} = useSourceScreens(body);
+
+  const {
+    visibleSources,
+    sourceSpan,
+    reorderSources,
+    moveRows,
+    moveToPage: moveSourcesToPage,
+  } = useSourceOrdering({sources, multiPage, selectedPage});
+
+  const {
+    pages,
+    editingPage,
+    pageModalActive,
+    resetPages,
+    openPageSettings,
+    savePage,
+    validatePageName,
+    pageActions,
+    sourceMoves,
+    reorderPages,
+  } = useSourcePages({
+    sources,
+    selectedPage,
+    moveRows,
+    onRemoved: (page, neighbor) => void onPageRemoved(page, neighbor),
+  });
 
   const selected = computed(() =>
     sources.value.find((source) => source.key === selectedKey.value)
+  );
+
+  const settingsLoading = computed(
+    () =>
+      !!selected.value &&
+      !selected.value.ui &&
+      selected.value.key !== failedUiKey.value
   );
 
   watch(
@@ -133,7 +170,7 @@
         ui: source.ui,
         mounted: false,
       }));
-      pages.value = pageRows(data);
+      resetPages(data);
       selectedPage.value = initialPage();
       loaded.value = true;
       void select(initialSource());
@@ -148,20 +185,6 @@
       await nextTick();
       focusRow('sources', selectedKey.value);
     }
-  }
-
-  function pageRows(data: SourcesResponse): PageRow[] {
-    if (!data.multiPage) return [];
-
-    const names: string[] = [];
-    for (const source of data.sources) {
-      if (source.page && !names.includes(source.page)) names.push(source.page);
-    }
-
-    return names.map((name) => ({
-      name,
-      icon: data.pageSettings?.[name]?.icon ?? null,
-    }));
   }
 
   function initialPage(): string | null {
@@ -193,7 +216,16 @@
     if (source.type !== 'heading') lastEdited.value = source.key;
 
     if (!source.ui) {
-      const ui = await fetchUi(source.key, source.type);
+      failedUiKey.value = null;
+
+      let ui: UiPayload;
+      try {
+        ui = await fetchUi(source.key, source.type);
+      } catch (error: any) {
+        failedUiKey.value = source.key;
+        Craft.cp?.displayError?.(error?.response?.data?.message);
+        return;
+      }
 
       // A heading keyed on load isn't in project config yet, so the server
       // builds it blank; the text it already had comes from the list.
@@ -335,34 +367,6 @@
       ?.focus();
   }
 
-  const FOCUSABLE =
-    'button, [href], input, select, textarea, craft-button, [tabindex]:not([tabindex="-1"])';
-
-  /** Focuses `el`, or the control inside it when it's a component host. */
-  function focusElement(el: Element | null | undefined): void {
-    const target =
-      el?.shadowRoot?.querySelector<HTMLElement>(FOCUSABLE) ??
-      (el as HTMLElement | null);
-    target?.focus();
-  }
-
-  function rowElement(screen: Screen, id: string | null): HTMLElement | null {
-    return id === null
-      ? null
-      : (body.value?.querySelector<HTMLElement>(
-          `[data-screen="${screen}"] [data-row-id="${CSS.escape(id)}"]`
-        ) ?? null);
-  }
-
-  /** Focuses a row's select button, or the list's first when it isn't there. */
-  function focusRow(screen: Screen, id: string | null): void {
-    const row =
-      rowElement(screen, id) ??
-      body.value?.querySelector(`[data-screen="${screen}"] [data-row-id]`);
-
-    focusElement(row?.querySelector('craft-action-item'));
-  }
-
   /** Removes a source, moving selection to its nearest neighbor as Craft 5 did. */
   async function remove(key: string): Promise<void> {
     const source = sources.value.find((row) => row.key === key);
@@ -383,74 +387,9 @@
     }
   }
 
-  /** The sources on the page being viewed — all of them, on a single page. */
-  const visibleSources = computed(() =>
-    sources.value.filter(
-      (source) => !multiPage.value || source.page === selectedPage.value
-    )
-  );
-
   /** A source with no key can't be addressed; fall back to its position. */
   function sourceId(source: SourceRow, index: number): string {
     return source.key ?? `unkeyed-${index}`;
-  }
-
-  /**
-   * The sources that move with `source`: a heading brings every source beneath
-   * it, up to the next heading; anything else moves alone.
-   */
-  function blockOf(source: SourceRow): SourceRow[] {
-    const onPage = sources.value.filter(
-      (row) => !multiPage.value || row.page === source.page
-    );
-    const start = onPage.indexOf(source);
-    if (start === -1) return [];
-    if (source.type !== 'heading') return [source];
-
-    const next = onPage.findIndex(
-      (row, index) => index > start && row.type === 'heading'
-    );
-
-    return onPage.slice(start, next === -1 ? undefined : next);
-  }
-
-  /** How many visible rows move with the one at `index`. */
-  function sourceSpan(index: number): number {
-    const source = visibleSources.value[index];
-
-    return source ? blockOf(source).length : 1;
-  }
-
-  /**
-   * Moves the visible rows starting at `from` (a heading carries its sources) so
-   * the first of them lands at `to`. Only the visible sources are listed, but
-   * order is kept in the full list, so the reordered page is written back into
-   * the slots its sources already occupy there.
-   */
-  function reorderSources(from: number, to: number): void {
-    const visible = [...visibleSources.value];
-    const block = visible.splice(from, sourceSpan(from));
-    visible.splice(to, 0, ...block);
-
-    let next = 0;
-    sources.value = sources.value.map((source) =>
-      !multiPage.value || source.page === selectedPage.value
-        ? visible[next++]!
-        : source
-    );
-  }
-
-  /** The other pages a source can move to, offered in its reorder menu. */
-  function sourceMoves(source: SourceRow): ReorderMove[] {
-    if (!source.key) return [];
-
-    return pages.value
-      .filter((page) => page.name !== source.page)
-      .map((page) => ({
-        value: page.name,
-        label: t('Move to {page}', {page: page.name}),
-        icon: page.icon,
-      }));
   }
 
   function sourceActions(source: SourceRow): ActionItem[] {
@@ -480,134 +419,20 @@
    * another page.
    */
   function moveToPage(key: string, page: string): void {
-    const source = sources.value.find((row) => row.key === key);
-    if (!source || source.page === page) return;
-
-    const block = blockOf(source);
-    const rest = sources.value.filter((row) => !block.includes(row));
-    let last = -1;
-    rest.forEach((row, index) => {
-      if (row.page === page) last = index;
-    });
-
-    for (const row of block) row.page = page;
-    rest.splice(last === -1 ? rest.length : last + 1, 0, ...block);
-    sources.value = rest;
+    const moved = moveSourcesToPage(key, page);
 
     // They're no longer on the page being viewed, so nothing is selected.
-    if (block.some((row) => row.key === selectedKey.value)) void select(null);
-  }
-
-  /** The page being edited in the settings modal, or null when adding one. */
-  const editingPage = ref<PageRow | null>(null);
-  const pageModalActive = ref(false);
-
-  function openPageSettings(page: PageRow | null): void {
-    editingPage.value = page;
-    pageModalActive.value = true;
-  }
-
-  function savePage(name: string, icon: string | null): void {
-    if (editingPage.value) {
-      updatePage(editingPage.value, name, icon);
-    } else {
-      addPage(name, icon);
-    }
-
-    pageModalActive.value = false;
-  }
-
-  function validatePageName(name: string, page: PageRow | null): string | null {
-    const id = pageNameId(name);
-
-    if (id === '') {
-      return t('{attribute} cannot be blank.', {attribute: t('Page Name')});
-    }
-
-    const clash = pages.value.some(
-      (p) => p !== page && pageNameId(p.name) === id
-    );
-
-    return clash ? t('Another page already has that name.') : null;
-  }
-
-  function pageActions(page: PageRow): ActionItem[] {
-    return [
-      {label: t('Page settings'), onClick: () => openPageSettings(page)},
-      // Removing the last page would leave its sources homeless.
-      ...(pages.value.length > 1
-        ? [
-            {
-              label: t('Remove page'),
-              variant: 'danger',
-              onClick: () => void removePage(page),
-            } satisfies ActionItem,
-          ]
-        : []),
-    ];
-  }
-
-  function reorderPages(from: number, to: number): void {
-    const [moved] = pages.value.splice(from, 1);
-    if (moved) pages.value.splice(to, 0, moved);
-  }
-
-  /** Adds a page, leaving the one being viewed selected, as Craft 5 did. */
-  function addPage(name: string, icon: string | null): void {
-    pages.value.push({name, icon});
-    announce(t('Success'));
-  }
-
-  function updatePage(page: PageRow, name: string, icon: string | null): void {
-    const previous = page.name;
-    page.icon = icon;
-    page.name = name;
-
-    // A page's name is its identity, so every source on it has to follow.
-    for (const source of sources.value) {
-      if (source.page === previous) source.page = name;
-    }
-
-    if (selectedPage.value === previous) selectedPage.value = name;
+    if (moved.some((row) => row.key === selectedKey.value)) void select(null);
   }
 
   /**
-   * Removes a page once confirmed. Its sources go to the end of the page before
-   * it (or after, for the first), which takes over the selection if the removed
-   * page had it — Craft 5's behavior.
+   * A removed page's sources went to `neighbor`, which takes over the selection
+   * if the removed page had it — Craft 5's behavior.
    */
-  async function removePage(page: PageRow): Promise<void> {
-    if (
-      !window.confirm(
-        t('Are you sure you want to remove the page “{name}”?', {
-          name: page.name,
-        })
-      )
-    ) {
-      return;
-    }
-
-    const index = pages.value.indexOf(page);
-    if (index === -1) return;
-
-    const neighbor = pages.value[index - 1] ?? pages.value[index + 1];
-    pages.value.splice(index, 1);
-
-    if (neighbor) {
-      const moving = sources.value.filter(
-        (source) => source.page === page.name
-      );
-      const rest = sources.value.filter((source) => source.page !== page.name);
-      let last = -1;
-      rest.forEach((source, i) => {
-        if (source.page === neighbor.name) last = i;
-      });
-
-      for (const source of moving) source.page = neighbor.name;
-      rest.splice(last === -1 ? rest.length : last + 1, 0, ...moving);
-      sources.value = rest;
-    }
-
+  async function onPageRemoved(
+    page: PageRow,
+    neighbor: PageRow | undefined
+  ): Promise<void> {
     if (selectedPage.value === page.name) {
       selectPage(neighbor?.name ?? null);
     }
@@ -627,27 +452,6 @@
 
     selectedPage.value = name;
     void select(null);
-  }
-
-  /**
-   * Shows `next`, and — when that hid the pane focus was in — moves focus into
-   * it. Side by side, nothing is hidden, so focus stays put.
-   */
-  async function showScreen(next: Screen): Promise<void> {
-    const previous = body.value?.querySelector<HTMLElement>(
-      `[data-screen="${screen.value}"]`
-    );
-    screen.value = next;
-    await nextTick();
-
-    if (previous && !previous.checkVisibility()) {
-      body.value
-        ?.querySelector<HTMLElement>(`[data-screen="${next}"]`)
-        ?.querySelector<HTMLElement>(
-          'button, [href], input, select, textarea, craft-button, craft-action-item, [tabindex]:not([tabindex="-1"])'
-        )
-        ?.focus();
-    }
   }
 
   function openPage(name: string): void {
@@ -806,8 +610,6 @@
       void showScreen('settings');
     }
   }
-
-  const settingsPane = ref<HTMLElement | null>(null);
 </script>
 
 <template>
@@ -823,119 +625,121 @@
     @close="emit('close')"
     @submit="save"
   >
-    <craft-spinner v-if="loading" />
+    <div ref="body" class="cs-body">
+      <craft-spinner v-if="loading" class="cs-spinner" />
 
-    <div v-else ref="body" class="cs-body">
-      <CustomizeSourcesColumn
-        v-if="multiPage"
-        data-screen="pages"
-        nav
-        :heading="t('Pages')"
-        :selected="screen === 'pages'"
-      >
-        <CustomSourceList
-          :items="pages"
-          :item-id="(page) => page.name"
-          :label="(page) => page.name"
-          :icon="(page) => page.icon"
-          :selected="selectedPage"
-          :actions="pageActions"
-          accepts="source"
-          :can-drop-into="(page) => page.name !== selectedPage"
-          @select="openPage"
-          @reorder="reorderPages"
-          @drop-into="(page, key) => moveToPage(key, page)"
-        />
+      <template v-else>
+        <CustomizeSourcesColumn
+          v-if="multiPage"
+          data-screen="pages"
+          nav
+          :heading="t('Pages')"
+          :selected="screen === 'pages'"
+        >
+          <CustomSourceList
+            :items="pages"
+            :item-id="(page) => page.name"
+            :label="(page) => page.name"
+            :icon="(page) => page.icon"
+            :selected="selectedPage"
+            :actions="pageActions"
+            accepts="source"
+            :can-drop-into="(page) => page.name !== selectedPage"
+            @select="openPage"
+            @reorder="reorderPages"
+            @drop-into="(page, key) => moveToPage(key, page)"
+          />
 
-        <template #footer>
-          <craft-button
-            type="button"
-            icon="plus"
-            variant="dashed"
-            @click="openPageSettings(null)"
-          >
-            {{ t('New page') }}
-          </craft-button>
-        </template>
-      </CustomizeSourcesColumn>
-
-      <CustomizeSourcesColumn
-        data-screen="sources"
-        nav
-        :heading="t('Sources')"
-        :selected="screen === 'sources'"
-        :back="multiPage ? t('Back to pages') : undefined"
-        @back="showScreen('pages')"
-      >
-        <CustomSourceList
-          :items="visibleSources"
-          :item-id="sourceId"
-          :label="(source) => source.label"
-          :sublabel="(source) => source.handle"
-          :item-type="(source) => source.type"
-          :selected="selectedKey"
-          :disabled="(source) => !source.key"
-          :actions="sourceActions"
-          :moves="sourceMoves"
-          :span="sourceSpan"
-          drag-type="source"
-          @select="openSource"
-          @reorder="reorderSources"
-          @move-to="(key, page) => moveToPage(key, page)"
-        />
-
-        <template #footer>
-          <ActionMenu
-            :label="t('Source actions')"
-            :actions="[
-              {label: t('New heading'), onClick: () => add('heading')},
-              {label: t('New custom source'), onClick: () => add('custom')},
-            ]"
-          >
-            <template #invoker>
-              <craft-button
-                slot="invoker"
-                type="button"
-                icon="plus"
-                variant="dashed"
-                :aria-label="t('Source actions')"
-              ></craft-button>
-            </template>
-          </ActionMenu>
-        </template>
-      </CustomizeSourcesColumn>
-
-      <CustomizeSourcesColumn
-        fill
-        data-screen="settings"
-        :heading="selected?.ui ? selected.label : undefined"
-        :selected="screen === 'settings'"
-        :back="t('Back to sources')"
-        @back="showScreen('sources')"
-      >
-        <div ref="settingsPane">
-          <template v-for="source in sources" :key="source.key">
-            <craft-field-group
-              v-if="source.mounted && source.ui && source.key"
-              v-show="source.key === selectedKey"
+          <template #footer>
+            <craft-button
+              type="button"
+              icon="plus"
+              variant="dashed"
+              @click="openPageSettings(null)"
             >
-              <UiRenderer
-                :ref="(el) => setRenderer(source.key!, el)"
-                :payload="source.ui"
-                :errors="errors[source.key!] ?? []"
-                :refresh="
-                  source.ui.refreshable
-                    ? (values, scope) => refresh(source, values, scope)
-                    : undefined
-                "
-                @change="(change, values) => onChange(source, change, values)"
-              />
-            </craft-field-group>
+              {{ t('New page') }}
+            </craft-button>
           </template>
+        </CustomizeSourcesColumn>
 
-          <craft-spinner v-if="selected && !selected.ui" />
-        </div>
-      </CustomizeSourcesColumn>
+        <CustomizeSourcesColumn
+          data-screen="sources"
+          nav
+          :heading="t('Sources')"
+          :selected="screen === 'sources'"
+          :back="multiPage ? t('Back to pages') : undefined"
+          @back="showScreen('pages')"
+        >
+          <CustomSourceList
+            :items="visibleSources"
+            :item-id="sourceId"
+            :label="(source) => source.label"
+            :sublabel="(source) => source.handle"
+            :item-type="(source) => source.type"
+            :selected="selectedKey"
+            :disabled="(source) => !source.key"
+            :actions="sourceActions"
+            :moves="sourceMoves"
+            :span="sourceSpan"
+            drag-type="source"
+            @select="openSource"
+            @reorder="reorderSources"
+            @move-to="(key, page) => moveToPage(key, page)"
+          />
+
+          <template #footer>
+            <ActionMenu
+              :label="t('Source actions')"
+              :actions="[
+                {label: t('New heading'), onClick: () => add('heading')},
+                {label: t('New custom source'), onClick: () => add('custom')},
+              ]"
+            >
+              <template #invoker>
+                <craft-button
+                  slot="invoker"
+                  type="button"
+                  icon="plus"
+                  variant="dashed"
+                  :aria-label="t('Source actions')"
+                ></craft-button>
+              </template>
+            </ActionMenu>
+          </template>
+        </CustomizeSourcesColumn>
+
+        <CustomizeSourcesColumn
+          fill
+          data-screen="settings"
+          :heading="selected?.ui ? selected.label : undefined"
+          :selected="screen === 'settings'"
+          :back="t('Back to sources')"
+          @back="showScreen('sources')"
+        >
+          <div ref="settingsPane">
+            <template v-for="source in sources" :key="source.key">
+              <craft-field-group
+                v-if="source.mounted && source.ui && source.key"
+                v-show="source.key === selectedKey"
+              >
+                <UiRenderer
+                  :ref="(el) => setRenderer(source.key!, el)"
+                  :payload="source.ui"
+                  :errors="errors[source.key!] ?? []"
+                  :refresh="
+                    source.ui.refreshable
+                      ? (values, scope) => refresh(source, values, scope)
+                      : undefined
+                  "
+                  @change="(change, values) => onChange(source, change, values)"
+                />
+              </craft-field-group>
+            </template>
+
+            <craft-spinner v-if="settingsLoading" />
+          </div>
+        </CustomizeSourcesColumn>
+      </template>
     </div>
 
     <PageSettingsModal
@@ -959,15 +763,30 @@
     align-items: stretch;
     container-type: inline-size;
     flex: 1 1 0;
-    min-height: calc(400rem / 16);
+    min-height: 0;
   }
 
-  // The pane's body grows to the modal's height, but as a block, so it has to
-  // become a flex column for the body above to fill it. Global, because the pane
-  // is ModalForm's, not this component's; scoped to the pane holding this body
-  // so no other modal changes.
+  .cs-spinner {
+    margin: auto;
+  }
+
+  // Global, since these are Modal's and ModalForm's; `:has()` keeps them to this modal.
+  :global(.content:has(> form > craft-pane > div.cs-body)) {
+    overflow-y: hidden;
+  }
+
+  :global(form:has(> craft-pane > div.cs-body)),
+  :global(craft-pane:has(> div.cs-body)),
+  :global(craft-pane:has(> div.cs-body)::part(base)) {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+
   :global(craft-pane:has(> div.cs-body)::part(body)) {
     display: flex;
     flex-direction: column;
+    flex: 1 1 0;
+    min-height: 0;
+    padding: 0;
   }
 </style>

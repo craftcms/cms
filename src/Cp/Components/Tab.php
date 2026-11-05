@@ -48,6 +48,14 @@ class Tab extends ViewComponent
         return $this;
     }
 
+    /** An icon shown before the label. */
+    public function icon(?string $icon): static
+    {
+        $this->slots['prefix'] = $icon !== null && $icon !== '' ? Icon::make()->name($icon) : null;
+
+        return $this;
+    }
+
     /**
      * The content this tab reveals. Rendered by {@see Tabs} as a sibling of
      * the tab, not as a child of it.

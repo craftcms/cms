@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {computed} from 'vue';
-  import {t} from '@craftcms/ui';
+  import {t, type ChipThumbSizeValue} from '@craftcms/ui';
   import '@craftcms/ui/components/chip/chip';
   import DragShadow from '@/common/components/DragShadow.vue';
   import {
@@ -9,12 +9,13 @@
   } from '@/common/composables/useReorderableItems';
   import type {Selectable} from '@/common/composables/useSelectable';
   import {isInteractiveClick} from '@/common/utils/dom';
+  import CpLink from '@/common/components/CpLink.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
 
   /**
    * The element data a chip draws. Everything past `id` and `label` is optional.
    */
-  interface ChipElement {
+  export interface ChipElement {
     id: number;
     label: string;
     siteId?: number | string | null;
@@ -24,6 +25,16 @@
      */
     status?: {fill: string; label: string; draft: boolean} | null;
     thumbHtml?: string;
+    /** A Craft color name, such as an entry's type color. */
+    color?: string | null;
+    /** Where the element is edited, which a `linked` chip's label goes to. */
+    cpEditUrl?: string | null;
+    /**
+     * The element's structure level. Elements deeper than the one before them
+     * are nested under it, as a relation field that maintains hierarchy shows
+     * them.
+     */
+    level?: number | null;
   }
 
   const props = withDefaults(
@@ -37,6 +48,15 @@
       inline?: boolean;
       /** Offer drag-and-drop and the reorder button. */
       sortable?: boolean;
+      /** Link each chip's label to its element's edit page. */
+      linked?: boolean;
+      /** The chips are nested under another, and draw a branch line to it. */
+      nested?: boolean;
+      /**
+       * The chips' thumbnail size. The chips take a size to suit it; left
+       * unset, they're small.
+       */
+      thumbSize?: ChipThumbSizeValue;
     }>(),
     {
       data: () => [],
@@ -44,6 +64,8 @@
       readOnly: false,
       inline: false,
       sortable: false,
+      linked: false,
+      nested: false,
     }
   );
 
@@ -53,7 +75,45 @@
     (event: 'reorder', startIndex: number, finishIndex: number): void;
   }>();
 
+  type SlotProps = {element: ChipElement; index: number};
+
+  defineSlots<{
+    prefix?(props: SlotProps): unknown;
+    append?(props: SlotProps): unknown;
+    suffix?(props: SlotProps): unknown;
+  }>();
+
   const ids = computed(() => props.data.map((element) => element.id));
+
+  /**
+   * The top-level chips, each with the elements nested under it. Elements
+   * without a level are all top-level.
+   */
+  const branches = computed(() => {
+    const rootLevel = props.data[0]?.level;
+    const result: Array<{
+      element: ChipElement;
+      index: number;
+      descendants: ChipElement[];
+    }> = [];
+
+    props.data.forEach((element, index) => {
+      const parent = result[result.length - 1];
+
+      if (
+        parent &&
+        rootLevel != null &&
+        element.level != null &&
+        element.level > rootLevel
+      ) {
+        parent.descendants.push(element);
+      } else {
+        result.push({element, index, descendants: []});
+      }
+    });
+
+    return result;
+  });
 
   function labelFor(element: ChipElement): string {
     return element.label;
@@ -139,7 +199,7 @@
 <template>
   <ul :class="inline ? 'element-chips element-chips--inline' : 'element-chips'">
     <li
-      v-for="(element, index) in data"
+      v-for="{element, index, descendants} in branches"
       :key="element.id"
       :ref="(el) => setItemRef(el as HTMLElement, element.id)"
       class="element-chips__item"
@@ -155,15 +215,23 @@
         :height="overDropState(element.id)?.draggingRect?.height"
       />
 
+      <span
+        v-if="nested"
+        class="element-chips__branch"
+        aria-hidden="true"
+      ></span>
+
       <craft-chip
-        size="small"
+        :size="thumbSize ? undefined : 'small'"
+        :thumb-size="thumbSize"
         :data-id="String(element.id)"
         :data-site-id="element.siteId ?? undefined"
-        :selectable="canSelect || undefined"
-        :selected="selection.isSelected(element.id) || undefined"
+        :data-color="element.color ?? undefined"
+        .selectable="canSelect"
+        .selected="selection.isSelected(element.id)"
         :select-label="t('Select {label}', {label: labelFor(element)})"
-        :show-status="!!element.status || undefined"
-        :show-thumb="!!element.thumbHtml || undefined"
+        .showStatus="!!element.status"
+        .showThumb="!!element.thumbHtml"
         @craft-selection-change="
           (event: CustomEvent<{selected: boolean; shiftKey: boolean}>) =>
             onSelectedChange(element, event.detail)
@@ -202,7 +270,13 @@
           ></craft-indicator>
         </div>
 
-        {{ labelFor(element) }}
+        <CpLink
+          v-if="linked && element.cpEditUrl"
+          :href="element.cpEditUrl"
+          bare
+          >{{ labelFor(element) }}</CpLink
+        >
+        <template v-else>{{ labelFor(element) }}</template>
         <slot name="append" :element="element" :index="index"></slot>
 
         <div slot="suffix" class="element-chips__suffix flex items-center">
@@ -229,6 +303,29 @@
         v-if="overDropState(element.id)?.closestEdge === 'bottom'"
         :height="overDropState(element.id)?.draggingRect?.height"
       />
+
+      <ElementChips
+        v-if="descendants.length"
+        class="element-chips__children"
+        nested
+        :data="descendants"
+        :selection="selection"
+        :selectable="selectable"
+        :read-only="readOnly"
+        :linked="linked"
+        :thumb-size="thumbSize"
+        @edit="emit('edit', $event)"
+      >
+        <template v-if="$slots.prefix" #prefix="slotProps">
+          <slot name="prefix" v-bind="slotProps"></slot>
+        </template>
+        <template v-if="$slots.append" #append="slotProps">
+          <slot name="append" v-bind="slotProps"></slot>
+        </template>
+        <template v-if="$slots.suffix" #suffix="slotProps">
+          <slot name="suffix" v-bind="slotProps"></slot>
+        </template>
+      </ElementChips>
     </li>
   </ul>
 </template>
@@ -260,6 +357,58 @@
   .element-chips__suffix
     :deep(craft-action-menu > craft-button[slot='invoker']) {
     padding-inline: 0;
+  }
+
+  .element-chips__children {
+    margin-block-start: var(--c-spacing-sm);
+    margin-inline-start: var(--c-spacing-md);
+
+    > .element-chips__item {
+      position: relative;
+      display: grid;
+      grid-template-columns: var(--c-spacing-lg) minmax(0, 1fr);
+      justify-items: start;
+
+      > :not(.element-chips__branch) {
+        grid-column: 2;
+      }
+
+      > .element-chips__children {
+        justify-self: stretch;
+      }
+
+      &:not(:last-child) {
+        &::after {
+          content: '';
+          position: absolute;
+          inset-inline-start: 0;
+          inset-block: calc(var(--c-spacing-sm) * -1) 0;
+          border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
+        }
+
+        > .element-chips__branch::before {
+          inset-inline-start: 1px;
+          border-inline-start: none;
+          border-end-start-radius: 0;
+        }
+      }
+    }
+  }
+
+  .element-chips__branch {
+    position: relative;
+    justify-self: stretch;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset-inline: 0 var(--c-spacing-xs);
+      inset-block-start: calc(var(--c-spacing-sm) * -1);
+      block-size: calc(50% + var(--c-spacing-sm));
+      border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
+      border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+      border-end-start-radius: var(--c-spacing-xs);
+    }
   }
 
   // Dragging, but still over itself — dim rather than remove, so the list

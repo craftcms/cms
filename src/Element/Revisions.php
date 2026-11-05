@@ -15,15 +15,14 @@ use CraftCms\Cms\Element\Events\RevisionCreating;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Jobs\PruneRevisions;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Activities;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Throwable;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
@@ -76,7 +75,7 @@ readonly class Revisions
                 $lastRevisionInfo = DB::useWriteConnectionWhenReading()
                     ->table(Table::ELEMENTS, 'e')
                     ->select(['e.id', 'r.num', 'e.dateCreated'])
-                    ->join(new Alias(Table::REVISIONS, 'r'), 'r.id', 'e.revisionId')
+                    ->join(Table::REVISIONS.' as r', 'r.id', 'e.revisionId')
                     ->where('r.canonicalId', $canonical->id)
                     ->orderByDesc('r.num')
                     ->first();
@@ -84,7 +83,7 @@ readonly class Revisions
                 if (
                     ! $force &&
                     $lastRevisionInfo &&
-                    Date::parse($lastRevisionInfo->dateCreated)->getTimestamp() === $canonical->dateUpdated->getTimestamp() &&
+                    DateTimeHelper::toDateTime($lastRevisionInfo->dateCreated)->getTimestamp() === $canonical->dateUpdated->getTimestamp() &&
                     // Make sure all its data is in-tact
                     $canonical::find()->id($lastRevisionInfo->id)->revisions()->status(null)->siteId($canonical->siteId)->exists()
                 ) {

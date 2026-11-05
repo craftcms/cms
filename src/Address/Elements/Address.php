@@ -15,18 +15,19 @@ use CraftCms\Cms\Address\Models\Address as AddressModel;
 use CraftCms\Cms\Address\Validation\AddressRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Actions\Copy;
+use CraftCms\Cms\Element\Actions\ClientAction;
+use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Concerns\NestedElement;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Shared\Concerns\HasNames;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
@@ -57,78 +58,93 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      * @see https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s ISO 3166-1 alpha-2 country code.', readable: true, nonNull: true)]
     public string $countryCode;
 
     /**
      * @var string|null Administrative area
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s state, province, region, or administrative area.', nullable: true, readable: true)]
     public ?string $administrativeArea = null;
 
     /**
      * @var string|null Locality
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s city, town, or locality.', nullable: true, readable: true)]
     public ?string $locality = null;
 
     /**
      * @var string|null Dependent locality
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s district, neighborhood, or suburb.', nullable: true, readable: true)]
     public ?string $dependentLocality = null;
 
     /**
      * @var string|null Postal code
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s postal or ZIP code.', nullable: true, readable: true)]
     public ?string $postalCode = null;
 
     /**
      * @var string|null Sorting code
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s sorting code.', nullable: true, readable: true)]
     public ?string $sortingCode = null;
 
     /**
      * @var string|null First line of the address
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s first street address line.', nullable: true, readable: true)]
     public ?string $addressLine1 = null;
 
     /**
      * @var string|null Second line of the address
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s second street address line.', nullable: true, readable: true)]
     public ?string $addressLine2 = null;
 
     /**
      * @var string|null Third line of the address
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s third street address line.', nullable: true, readable: true)]
     public ?string $addressLine3 = null;
 
     /**
      * @var string|null Organization name
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s organization or company name.', nullable: true, readable: true)]
     public ?string $organization = null;
 
     /**
      * @var string|null Organization tax ID
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s organization tax or VAT ID.', nullable: true, readable: true)]
     public ?string $organizationTaxId = null;
 
     /**
      * @var string|null Latitude
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Float, 'The address’s latitude coordinate.', nullable: true, readable: true)]
+    #[Gql(exclude: true)]
     public ?string $latitude = null;
 
     /**
      * @var string|null Longitude
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Float, 'The address’s longitude coordinate.', nullable: true, readable: true)]
+    #[Gql(exclude: true)]
     public ?string $longitude = null;
 
     /** @param array<string, mixed>|object $config */
@@ -200,6 +216,12 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     #[Override]
+    public static function hasDrafts(): bool
+    {
+        return true;
+    }
+
+    #[Override]
     public static function hasStatuses(): bool
     {
         return false;
@@ -211,12 +233,12 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         return new AddressCondition(self::class);
     }
 
-    /** @return list<class-string<Copy>> */
+    /** @return list<ClientAction> */
     #[Override]
     protected static function defineActions(string $source): array
     {
         return [
-            Copy::class,
+            ClientAction::copy(),
         ];
     }
 
@@ -394,24 +416,15 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         ) {
             $items[] = ['type' => MenuItemType::HR];
 
-            // Field settings
-            $fieldEditId = sprintf('edit-field-%s', mt_rand());
             $items[] = [
-                'id' => $fieldEditId,
                 'icon' => 'gear',
                 'label' => t('Field settings'),
+                'action' => [
+                    'type' => 'event',
+                    'name' => 'craft:edit-field',
+                    'detail' => ['fieldId' => $this->fieldId],
+                ],
             ];
-
-            HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
-    (() => {
-      $('#' + $id).on('activate', function() {
-        new Craft.CpScreenSlideout(Craft.getCpUrl('settings/fields/edit'), {params: $params})
-      });
-    })();
-    JS, [
-                InputNamespace::namespaceId($fieldEditId),
-                ['fieldId' => $this->fieldId],
-            ]);
         }
 
         return $items;

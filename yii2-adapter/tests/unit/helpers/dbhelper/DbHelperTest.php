@@ -20,6 +20,7 @@ use DateTimeZone;
 use stdClass;
 use UnitTester;
 use yii\db\Exception;
+use yii\db\Expression;
 use yii\db\Schema;
 
 /**
@@ -100,6 +101,16 @@ class DbHelperTest extends TestCase
     public function testEscapeParam(string $expected, string $value): void
     {
         self::assertSame($expected, Db::escapeParam($value));
+    }
+
+    /**
+     * @dataProvider isSafeOrderByDataProvider
+     * @param bool $expected
+     * @param mixed $orderBy
+     */
+    public function testIsSafeOrderBy(bool $expected, mixed $orderBy): void
+    {
+        self::assertSame($expected, Db::isSafeOrderBy($orderBy));
     }
 
     /**
@@ -531,6 +542,34 @@ class DbHelperTest extends TestCase
                 false,
                 Schema::TYPE_BOOLEAN,
             ],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function isSafeOrderByDataProvider(): array
+    {
+        return [
+            [true, 'id'],
+            [true, 'id desc'],
+            [true, 'elements.id DESC'],
+            [true, 'postDate desc, title asc'],
+            [true, ' postDate  desc ,title '],
+            [true, ['postDate' => SORT_DESC, 'elements.id' => SORT_ASC]],
+            [true, new Expression('field([[elements.id]], 3, 1, 2)')],
+            [true, [new Expression('field([[elements.id]], 3, 1, 2)'), 'title' => SORT_ASC]],
+            [false, 'rand()'],
+            [false, 'field(id, 3, 1, 2)'],
+            [false, 'id desc, (select 1)'],
+            [false, 'id desc limit 1'],
+            [false, 'id; drop table users'],
+            [false, 'elements.id.foo'],
+            [false, ['(select 1)' => SORT_ASC]],
+            [false, ['id' => 'desc']],
+            [false, ['id desc']],
+            [false, 1],
+            [false, null],
         ];
     }
 

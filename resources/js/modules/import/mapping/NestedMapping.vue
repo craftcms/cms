@@ -28,6 +28,7 @@
     values: context.values,
     suggestedMap: context.suggestedMap,
     sourceDataCols: context.sourceDataCols,
+    templateTextExpanderTriggers: context.templateTextExpanderTriggers,
     editable: context.editable,
     step: context.step,
     apply: context.apply,

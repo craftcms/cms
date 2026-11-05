@@ -24,11 +24,10 @@ use CraftCms\Cms\Import\Data\StepMappingPayload;
 use CraftCms\Cms\Import\Data\StepUiPayload;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\BaseImporter;
-use CraftCms\Cms\Import\ImportPlan;
+use CraftCms\Cms\Import\ImportHelper;
+use CraftCms\Cms\Import\ImportPlans;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ImportLog;
-use CraftCms\Cms\Support\ImportHelper;
-use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Ui\UiResolver;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -53,7 +52,7 @@ class ImportPlansController
     public function __construct(
         private Request $request,
         private readonly Import $importService,
-        private readonly ImportPlan $importsService,
+        private readonly ImportPlans $importsService,
         private readonly Fields $fieldsService,
     ) {}
 
@@ -250,7 +249,8 @@ class ImportPlansController
             destinationCols: $destinationCols,
             sourceDataCols: $sourceDataCols,
             values: MappingValues::fromImporter($importer),
-            suggestions: ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, $importer->map),
+            suggestions: ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, $importer->map, $importer),
+            templateTextExpanderTriggers: ImportHelper::templateTextExpanderTriggers($sourceDataCols),
         )->jsonSerialize());
     }
 
@@ -327,6 +327,7 @@ class ImportPlansController
             array_merge($importer->getDestinationCols(), $allDestinationCols),
             $sourceDataCols,
             $importer->map,
+            $importer,
         );
         $rootPath = implode('.', Arr::bracketsToArray((string) $fieldHandle));
 
@@ -336,6 +337,7 @@ class ImportPlansController
             groups: $groups,
             sourceDataCols: $sourceDataCols,
             suggestions: self::subtree($suggestions, $rootPath),
+            templateTextExpanderTriggers: ImportHelper::templateTextExpanderTriggers($sourceDataCols),
         )->jsonSerialize());
     }
 
@@ -391,7 +393,7 @@ class ImportPlansController
 
         $step['settings'] = ImportHelper::decodeRecursive($step['settings'] ?? []);
 
-        return ImportPlan::createImporter($step);
+        return ImportPlans::createImporter($step);
     }
 
     /**
@@ -486,7 +488,11 @@ class ImportPlansController
             ? $this->importsService->getImportPlanByUid($uid)
             : $this->importsService->getImportPlanByHandle($handle);
 
-        abort_if(is_null($importPlan), 400, 'Import plan not found.');
+        abort_if(is_null($importPlan), 404, 'Import plan not found.');
+
+        if ($this->importService->isRunning($importPlan)) {
+            return $this->asFailure(t('This import plan is already running.'));
+        }
 
         try {
             $dispatched = $this->importService->dispatchImport($importPlan);
@@ -555,7 +561,7 @@ class ImportPlansController
                                 'url' => action([self::class, 'run']),
                                 'body' => [
                                     'uid' => $importPlan->uid,
-                                    'redirect' => Crypt::encrypt(action([self::class, 'index'])),
+                                    'redirect' => Crypt::encrypt(route('craft.cp.import.edit', ['handle' => $importPlan->handle])),
                                 ],
                                 'confirm' => t('Are you sure you want to run “{name}”?', [
                                     'name' => $importPlan->name,

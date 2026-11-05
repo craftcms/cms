@@ -52,7 +52,7 @@
 </script>
 
 <template>
-  <craft-card>
+  <craft-card data-color="gray">
     <slot name="header" />
     <div class="body">
       <p v-if="widget.data?.message">{{ widget.data.message }}</p>
@@ -61,8 +61,8 @@
         type="button"
         icon="plus"
         class="w-full"
-        :loading="creating"
-        :disabled="creating"
+        .loading="creating"
+        .disabled="creating"
         @click="create"
         >{{ t('Create entry') }}</craft-button
       >

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User;
 
 use Closure;
+use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -22,9 +23,11 @@ use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\Volumes;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
+use CraftCms\Cms\User\Data\UserGroup as UserGroupData;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\UserGroupPermissionsSaved;
 use CraftCms\Cms\User\Events\UserPermissionsSaved;
@@ -37,9 +40,8 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use RuntimeException;
-use Tpetry\QueryExpressions\Language\Alias;
 
+use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
@@ -62,6 +64,9 @@ use function CraftCms\Cms\t;
 #[Scoped]
 class UserPermissions
 {
+    /** The ID {@see actingAsGroup()} gives its stand-in, which no saved user can have. */
+    private const int GROUP_STAND_IN_ID = -1;
+
     /**
      * @var Collection<int, Collection<int, string>>
      */
@@ -71,6 +76,11 @@ class UserPermissions
      * @var Collection<int, Collection<int, string>>
      */
     private Collection $permissionsByUserId;
+
+    /**
+     * @var array<int, array<string, true>> Users’ permissions, indexed by user ID and lowercase permission name
+     */
+    private array $permissionMapsByUserId = [];
 
     public function __construct(
         private readonly PermissionGroupCatalog $permissionGroupCatalog,
@@ -114,9 +124,11 @@ class UserPermissions
         $this->userPermissions($permissions);
         $this->sitePermissions($permissions);
         $this->entryPermissions($permissions);
+        $this->releasePermissions($permissions);
         $this->volumePermissions($permissions);
         $this->utilityPermissions($permissions);
         $this->importPermissions($permissions);
+        $this->aiPermissions($permissions);
 
         return $this->permissionGroupCatalog->apply($permissions);
     }
@@ -160,7 +172,7 @@ class UserPermissions
         return $this->permissionsByGroupId->getOrPut(
             $groupId,
             fn () => $this->createUserPermissionsQuery()
-                ->join(new Alias(Table::USERPERMISSIONS_USERGROUPS, 'p_g'), 'p_g.permissionId', 'p.id')
+                ->join(Table::USERPERMISSIONS_USERGROUPS.' as p_g', 'p_g.permissionId', 'p.id')
                 ->where('p_g.groupId', $groupId)
                 ->pluck('p.name')
                 ->pipe(fn (Collection $permissions) => collect($this->canonicalPermissionNames($permissions->all()))),
@@ -180,12 +192,69 @@ class UserPermissions
             return $this->getPermissionsByGroupId($group->id);
         }
 
-        return $this->createUserPermissionsQuery()
-            ->join(new Alias(Table::USERPERMISSIONS_USERGROUPS, 'p_g'), 'p_g.permissionId', 'p.id')
-            ->join(new Alias(Table::USERGROUPS_USERS, 'g_u'), 'g_u.groupId', 'p_g.groupId')
-            ->where('g_u.userId', $userId)
-            ->pluck('p.name')
-            ->pipe(fn (Collection $permissions) => collect($this->canonicalPermissionNames($permissions->all())));
+        return collect($this->canonicalPermissionNames($this->storedGroupPermissionsByUserId($userId)));
+    }
+
+    /**
+     * The names of the group permissions a given user has, as they're stored.
+     *
+     * @return string[]
+     */
+    private function storedGroupPermissionsByUserId(int $userId): array
+    {
+        $query = $this->createUserPermissionsQuery()
+            ->join(Table::USERPERMISSIONS_USERGROUPS.' as p_g', 'p_g.permissionId', 'p.id');
+
+        if (Edition::get() === Edition::Team) {
+            $query->where('p_g.groupId', UserGroups::getTeamGroup()->id);
+        } else {
+            $query
+                ->join(Table::USERGROUPS_USERS.' as g_u', 'g_u.groupId', 'p_g.groupId')
+                ->where('g_u.userId', $userId);
+        }
+
+        return $query->pluck('p.name')->all();
+    }
+
+    /**
+     * Runs a callback as a stand-in user who has exactly a group's permissions,
+     * isn't an admin, and is in no other group, such as to see what a group's
+     * members get. The signed-in user is put back afterward.
+     *
+     * Nothing is saved: the stand-in's permissions are only remembered for as
+     * long as the callback runs.
+     *
+     * @template T
+     *
+     * @param  Closure(): T  $callback
+     * @return T
+     */
+    public function actingAsGroup(UserGroupData $group, Closure $callback): mixed
+    {
+        $standIn = new User;
+        $standIn->id = self::GROUP_STAND_IN_ID;
+        $standIn->admin = false;
+        $standIn->setGroups([$group]);
+
+        $guard = craftAuth();
+        $user = $guard->user();
+
+        $this->permissionsByUserId ??= collect();
+        $this->permissionsByUserId[$standIn->id] = $this->getPermissionsByGroupId((int) $group->id);
+
+        try {
+            $guard->setUser($standIn);
+
+            return $callback();
+        } finally {
+            unset($this->permissionsByUserId[$standIn->id], $this->permissionMapsByUserId[$standIn->id]);
+
+            if ($user !== null) {
+                $guard->setUser($user);
+            } else {
+                $guard->forgetUser();
+            }
+        }
     }
 
     /**
@@ -193,7 +262,8 @@ class UserPermissions
      */
     public function doesGroupHavePermission(int $groupId, string $checkPermission): bool
     {
-        return $this->getPermissionsByGroupId($groupId)->containsStrict($this->canonicalPermissionName($checkPermission));
+        return $this->getPermissionsByGroupId($groupId)
+            ->contains(fn (string $permission) => strcasecmp($permission, $checkPermission) === 0);
     }
 
     /**
@@ -237,11 +307,8 @@ class UserPermissions
 
         return $this->permissionsByUserId->getOrPut(
             $userId,
-            function () use ($userId) {
-                $groupPermissions = $this->getGroupPermissionsByUserId($userId);
-
-                return $groupPermissions->merge($this->getDirectPermissionsByUserId($userId))->unique()->values();
-            },
+            // Canonicalized together, so the list of all permissions is only built once
+            fn () => collect($this->canonicalPermissionNames($this->storedPermissionsByUserId($userId))),
         );
     }
 
@@ -256,11 +323,25 @@ class UserPermissions
             return collect();
         }
 
+        return collect($this->canonicalPermissionNames($this->storedDirectPermissionsByUserId($userId)));
+    }
+
+    /**
+     * The names of the permissions assigned directly to a given user, as they're stored.
+     *
+     * @return string[]
+     */
+    private function storedDirectPermissionsByUserId(int $userId): array
+    {
+        if (Edition::get()->value < Edition::Pro->value) {
+            return [];
+        }
+
         return $this->createUserPermissionsQuery()
-            ->join(new Alias(Table::USERPERMISSIONS_USERS, 'p_u'), 'p_u.permissionId', 'p.id')
+            ->join(Table::USERPERMISSIONS_USERS.' as p_u', 'p_u.permissionId', 'p.id')
             ->where('p_u.userId', $userId)
             ->pluck('p.name')
-            ->pipe(fn (Collection $permissions) => collect($this->canonicalPermissionNames($permissions->all())));
+            ->all();
     }
 
     public function validatePermission(string $permission): bool
@@ -294,7 +375,52 @@ class UserPermissions
             return true;
         }
 
-        return $this->getPermissionsByUserId($userId)->containsStrict($this->canonicalPermissionName($checkPermission));
+        return isset($this->permissionMap($userId)[Str::lower($checkPermission)]);
+    }
+
+    /**
+     * Returns a hash of a user’s permissions, which changes along with them.
+     *
+     * @internal
+     */
+    public function permissionsHash(int $userId): string
+    {
+        $permissions = array_keys($this->permissionMap($userId));
+        sort($permissions);
+
+        return md5(implode(',', $permissions));
+    }
+
+    /**
+     * Returns a user’s permissions, keyed by lowercase name.
+     *
+     * A permission’s stored name and its canonical name are the same once lowercased, so this doesn’t need the list
+     * of all permissions that canonicalizing them takes. Permissions that have already been loaded, or that
+     * {@see self::actingAsGroup()} stands in, are used instead.
+     *
+     * @return array<string, true>
+     */
+    private function permissionMap(int $userId): array
+    {
+        return $this->permissionMapsByUserId[$userId] ??= array_fill_keys(
+            array_map(Str::lower(...), isset($this->permissionsByUserId[$userId])
+                ? $this->permissionsByUserId[$userId]->all()
+                : $this->storedPermissionsByUserId($userId)),
+            true,
+        );
+    }
+
+    /**
+     * The names of a user’s group and direct permissions, as they’re stored.
+     *
+     * @return string[]
+     */
+    private function storedPermissionsByUserId(int $userId): array
+    {
+        return [
+            ...$this->storedGroupPermissionsByUserId($userId),
+            ...$this->storedDirectPermissionsByUserId($userId),
+        ];
     }
 
     /**
@@ -324,7 +450,7 @@ class UserPermissions
                 $userPermissionVals[] = [
                     'permissionId' => $permissionModel->id,
                     'userId' => $userId,
-                    'dateCreated' => $now = now(),
+                    'dateCreated' => $now = Query::prepareDateForDb(now()),
                     'dateUpdated' => $now,
                     'uid' => Str::uuid(),
                 ];
@@ -338,6 +464,7 @@ class UserPermissions
         $this->permissionsByUserId ??= collect();
         $userPermissions = $groupPermissions->merge($permissions)->unique();
         $this->permissionsByUserId[$userId] = $userPermissions;
+        unset($this->permissionMapsByUserId[$userId]);
 
         event(new UserPermissionsSaved($userId, $permissions));
 
@@ -371,7 +498,7 @@ class UserPermissions
 
         if ($permissions) {
             $permissions = $this->canonicalPermissionNames($permissions);
-            $now = now();
+            $now = Query::prepareDateForDb(now());
 
             foreach ($permissions as $permissionName) {
                 $permissionModel = $this->getPermissionModelByName($permissionName);
@@ -392,6 +519,7 @@ class UserPermissions
         $this->permissionsByGroupId ??= collect();
         $this->permissionsByGroupId->put($userGroup->id, collect($permissions));
         unset($this->permissionsByUserId);
+        $this->permissionMapsByUserId = [];
     }
 
     /** @param Collection<int, PermissionGroup> $permissions */
@@ -533,15 +661,20 @@ class UserPermissions
             return;
         }
 
-        $entryPermissions = $sections->map(function (Section $section) {
+        // Each kind of section's permissions are only labeled once, since the labels don't vary by section
+        $templates = [];
+
+        $entryPermissions = $sections->map(function (Section $section) use (&$templates) {
             if ($section->type === SectionType::Single) {
-                return [
-                    $section,
-                    $this->singleSectionPermission($section),
-                ];
+                $templates['single'] ??= $this->singleSectionPermission();
+
+                return [$section, $this->sectionPermission($templates['single'], $section->uid)];
             }
 
-            return [$section, $this->multiSectionPermission($section)];
+            $hasCustomPropagation = $section->propagationMethod === PropagationMethod::Custom && Sites::isMultiSite();
+            $template = $templates[$hasCustomPropagation ? 'customPropagation' : 'multi'] ??= $this->multiSectionPermission($hasCustomPropagation);
+
+            return [$section, $this->sectionPermission($template, $section->uid)];
         })->map(function (array $result) {
             /** @var array{Section, Permission} $result */
             [$section, $sectionPermission] = $result;
@@ -558,36 +691,58 @@ class UserPermissions
         $permissions->push(...$entryPermissions);
     }
 
-    private function singleSectionPermission(Section $section): Permission
+    /** @param Collection<int, PermissionGroup> $permissions */
+    private function releasePermissions(Collection $permissions): void
     {
-        if ($section->type !== SectionType::Single) {
-            throw new RuntimeException('Section must be of type Single');
+        if (! Edition::get()->supportsReleases()) {
+            return;
         }
 
+        $permissions->add(new PermissionGroup(
+            handle: 'releases',
+            heading: t('Releases'),
+            permissions: collect([
+                new Permission(
+                    key: 'manageReleases',
+                    label: t('Manage releases'),
+                    nested: collect([
+                        new Permission(
+                            key: 'publishReleases',
+                            label: t('Publish releases'),
+                            info: t('Allows scheduling and publishing every draft in a release, regardless of content permissions.'),
+                        ),
+                    ]),
+                ),
+            ]),
+        ));
+    }
+
+    private function singleSectionPermission(): Permission
+    {
         $type = Entry::lowerDisplayName();
 
         return new Permission(
-            key: "viewEntries:$section->uid",
+            key: 'viewEntries:{uid}',
             label: mb_ucfirst(t('View {type}', ['type' => $type])),
             nested: collect([
                 new Permission(
-                    key: "saveEntries:$section->uid",
+                    key: 'saveEntries:{uid}',
                     label: mb_ucfirst(t('Save {type}', ['type' => $type])),
                 ),
                 new Permission(
-                    key: "viewPeerEntryDrafts:$section->uid",
+                    key: 'viewPeerEntryDrafts:{uid}',
                     label: mb_ucfirst(t('View other users’ {type}', [
                         'type' => t('drafts'),
                     ])),
                     nested: collect([
                         new Permission(
-                            key: "savePeerEntryDrafts:$section->uid",
+                            key: 'savePeerEntryDrafts:{uid}',
                             label: mb_ucfirst(t('Save other users’ {type}', [
                                 'type' => t('drafts'),
                             ])),
                         ),
                         new Permission(
-                            key: "deletePeerEntryDrafts:$section->uid",
+                            key: 'deletePeerEntryDrafts:{uid}',
                             label: t('Delete other users’ {type}', [
                                 'type' => t('drafts'),
                             ]),
@@ -598,94 +753,85 @@ class UserPermissions
         );
     }
 
-    private function multiSectionPermission(Section $section): Permission
+    private function multiSectionPermission(bool $hasCustomPropagation): Permission
     {
-        if ($section->type === SectionType::Single) {
-            throw new RuntimeException('Section must not be of type Single');
-        }
-
         $pluralType = Entry::pluralLowerDisplayName();
 
-        $hasCustomPropagation = (
-            $section->propagationMethod === PropagationMethod::Custom &&
-            Sites::isMultiSite()
-        );
-
         return new Permission(
-            key: "viewEntries:$section->uid",
+            key: 'viewEntries:{uid}',
             label: mb_ucfirst(t('View {type}', ['type' => $pluralType])),
             info: t('Allows viewing existing {type} and creating drafts for them.', [
                 'type' => $pluralType,
             ]),
             nested: collect([
                 new Permission(
-                    key: "createEntries:$section->uid",
+                    key: 'createEntries:{uid}',
                     label: mb_ucfirst(t('Create {type}', ['type' => $pluralType])),
                     info: t('Allows creating drafts of new {type}.', ['type' => $pluralType]),
                 ),
                 new Permission(
-                    key: "saveEntries:$section->uid",
+                    key: 'saveEntries:{uid}',
                     label: mb_ucfirst(t('Save {type}', ['type' => $pluralType])),
                     info: t('Allows fully saving canonical {type} (directly or by applying drafts).', [
                         'type' => $pluralType,
                     ]),
                 ),
                 $hasCustomPropagation ? new Permission(
-                    key: "deleteEntriesForSite:$section->uid",
+                    key: 'deleteEntriesForSite:{uid}',
                     label: mb_ucfirst(t('Delete {type} for site', ['type' => $pluralType])),
                     info: t('Allows deleting {type} for individual sites, provided the user has access to them.', [
                         'type' => $pluralType,
                     ]),
                 ) : null,
                 new Permission(
-                    key: "deleteEntries:$section->uid",
+                    key: 'deleteEntries:{uid}',
                     label: mb_ucfirst(t('Delete {type}', ['type' => $pluralType])),
                     info: t('Allows deleting {type} for all sites.', [
                         'type' => $pluralType,
                     ]),
                 ),
                 new Permission(
-                    key: "viewPeerEntries:$section->uid",
+                    key: 'viewPeerEntries:{uid}',
                     label: mb_ucfirst(t('View other users’ {type}', ['type' => $pluralType])),
                     nested: collect([
                         new Permission(
-                            key: "savePeerEntries:$section->uid",
+                            key: 'savePeerEntries:{uid}',
                             label: mb_ucfirst(t('Save other users’ {type}', ['type' => $pluralType])),
                             nested: collect([
                                 new Permission(
-                                    key: "changeAuthorForPeerEntries:$section->uid",
+                                    key: 'changeAuthorForPeerEntries:{uid}',
                                     label: t('Change the author of other users’ entries'),
                                 ),
                             ]),
                         ),
                         $hasCustomPropagation ? new Permission(
-                            key: "deletePeerEntriesForSite:$section->uid",
+                            key: 'deletePeerEntriesForSite:{uid}',
                             label: t('Delete other users’ {type} for site', ['type' => $pluralType]),
                             info: t('Allows deleting other users’ {type} for individual sites, provided the user has access to them.', [
                                 'type' => $pluralType,
                             ]),
                         ) : null,
                         new Permission(
-                            key: "deletePeerEntries:$section->uid",
+                            key: 'deletePeerEntries:{uid}',
                             label: t('Delete other users’ {type}', ['type' => $pluralType]),
                             info: t('Allows deleting other users’ {type} for all sites.', ['type' => $pluralType]),
                         ),
                     ])->filter(),
                 ),
                 new Permission(
-                    key: "viewPeerEntryDrafts:$section->uid",
+                    key: 'viewPeerEntryDrafts:{uid}',
                     label: mb_ucfirst(t('View other users’ {type}', [
                         'type' => t('drafts'),
                     ])),
                     nested: collect([
                         new Permission(
-                            key: "savePeerEntryDrafts:$section->uid",
+                            key: 'savePeerEntryDrafts:{uid}',
                             label: mb_ucfirst(t('Save other users’ {type}', [
                                 'type' => t('drafts'),
                             ])),
                         ),
                         new Permission(
-                            key: "deletePeerEntryDrafts:$section->uid",
+                            key: 'deletePeerEntryDrafts:{uid}',
                             label: t('Delete other users’ {type}', [
                                 'type' => t('drafts'),
                             ])
@@ -693,6 +839,20 @@ class UserPermissions
                     ]),
                 ),
             ])->filter(),
+        );
+    }
+
+    /**
+     * Fills in a section permission template’s `{uid}` placeholders.
+     */
+    private function sectionPermission(Permission $template, string $uid): Permission
+    {
+        return new Permission(
+            key: str_replace('{uid}', $uid, $template->key),
+            label: $template->label,
+            info: $template->info,
+            warning: $template->warning,
+            nested: $template->nested->map(fn (Permission $permission) => $this->sectionPermission($permission, $uid)),
         );
     }
 
@@ -797,6 +957,18 @@ class UserPermissions
                         ),
                     ])->filter(),
                 ),
+            ]),
+        ));
+    }
+
+    /** @param Collection<int, PermissionGroup> $permissions */
+    private function aiPermissions(Collection $permissions): void
+    {
+        $permissions->add(new PermissionGroup(
+            handle: 'ai',
+            heading: t('AI'),
+            permissions: collect([
+                new Permission(key: Assistant::PERMISSION, label: t('Use the AI assistant')),
             ]),
         ));
     }
@@ -932,11 +1104,6 @@ class UserPermissions
             ->mapWithKeys(fn (string $permission) => [Str::lower($permission) => $permission]);
     }
 
-    private function canonicalPermissionName(string $permission): string
-    {
-        return $this->permissionNamesByLowercase()->get(Str::lower($permission), $permission);
-    }
-
     /**
      * @param  string[]  $permissions
      * @return string[]
@@ -965,5 +1132,6 @@ class UserPermissions
             $this->permissionsByGroupId,
             $this->permissionsByUserId,
         );
+        $this->permissionMapsByUserId = [];
     }
 }

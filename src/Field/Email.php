@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
+use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
@@ -22,14 +24,13 @@ use Override;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Email represents an Email field.
  *
  * @since 6.0.0
  */
-class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
+class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -102,7 +103,7 @@ class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        return template('_includes/forms/text', [
+        return FormFields::textHtml([
             'type' => 'email',
             'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
@@ -145,7 +146,7 @@ class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
         }
         $value = Html::encode($value);
 
-        return "<a href=\"mailto:$value\">$value</a>";
+        return Html::tag('craft-link', "<a href=\"mailto:$value\">$value</a>");
     }
 
     #[Override]
@@ -156,5 +157,11 @@ class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
         }
 
         return $this->getPreviewHtml($value, $element ?? new Entry);
+    }
+
+    /** @return array<string, mixed> */
+    public function getInputSchema(): array
+    {
+        return ['type' => 'string', 'format' => 'email'];
     }
 }

@@ -9,6 +9,7 @@
   import {ref, shallowRef} from 'vue';
   import {useForm} from '@inertiajs/vue3';
   import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui';
+  import CpContainer from '@/common/components/CpContainer.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useSlideout} from '@/common/slideouts';
   import UiRenderer from '@/modules/ui/UiRenderer.vue';
@@ -118,11 +119,15 @@
 </script>
 
 <template>
-  <UiRenderer
-    ref="renderer"
-    :payload="payload"
-    :errors="errors"
-    :refresh="payload.refreshable ? refresh : undefined"
-    @change="onChange"
-  />
+  <CpContainer>
+    <craft-field-group class="py-lg">
+      <UiRenderer
+        ref="renderer"
+        :payload="payload"
+        :errors="errors"
+        :refresh="payload.refreshable ? refresh : undefined"
+        @change="onChange"
+      />
+    </craft-field-group>
+  </CpContainer>
 </template>

@@ -3,16 +3,16 @@
   import {computed, shallowRef, useId} from 'vue';
   import controller from '@/actions/CraftCms/Cms/Http/Controllers/Workflows/WorkflowTransitionsController';
   import type {ElementEditorActions} from '@/modules/elements/composables/useElementEditor';
-  import {commentToolbarButtons} from '@/modules/markdown-field/commentToolbarButtons';
+  import CommentField from '@/common/components/CommentField.vue';
   import {
     useWorkflowTransition,
+    type WorkflowReleaseState,
     type WorkflowIdentity,
   } from '../composables/useWorkflowTransition';
   import {
     COMMENT_MAX_LENGTH,
     useCharacterLimit,
   } from '@/common/composables/useCharacterLimit';
-  import '../../markdown-field/markdown-field';
 
   type WorkflowReviewData = CraftCms.Cms.Workflow.Data.WorkflowReviewData;
 
@@ -28,13 +28,13 @@
     reviewUpdated: [
       review: WorkflowReviewData,
       editorActions: ElementEditorActions,
+      release: WorkflowReleaseState | null | undefined,
     ];
   }>();
 
   const note = shallowRef('');
   const id = useId();
   const noteId = `workflow-review-note-${id}`;
-  const commentId = `workflow-review-comment-${id}`;
   const noteIsEmpty = computed(() => !note.value.trim());
   const {overage, overageMessage} = useCharacterLimit(note, COMMENT_MAX_LENGTH);
   const canShowActions = computed(
@@ -52,8 +52,8 @@
 
   const {error, processing, transition} = useWorkflowTransition(
     identity,
-    (review, actions) => {
-      emit('reviewUpdated', review, actions);
+    (review, actions, release) => {
+      emit('reviewUpdated', review, actions, release);
       note.value = '';
     }
   );
@@ -67,25 +67,18 @@
   }
 
   /**
-   * Ctrl/Command + Enter posts the comment that's been written. With nothing
-   * written, it submits for review instead, where the note is optional.
+   * Return posts the comment that's been written. With nothing written,
+   * Ctrl/Command + Return submits for review instead, where the note is
+   * optional.
    */
-  function onNoteKeydown(event: KeyboardEvent): void {
-    if (
-      event.key !== 'Enter' ||
-      (!event.metaKey && !event.ctrlKey) ||
-      event.isComposing ||
-      processing.value ||
-      overage.value > 0
-    ) {
+  function onNoteSubmit(event: KeyboardEvent | MouseEvent): void {
+    if (processing.value || overage.value > 0) {
       return;
     }
 
     if (props.review.canComment && !noteIsEmpty.value) {
-      event.preventDefault();
       void addComment();
-    } else if (props.review.canSubmit) {
-      event.preventDefault();
+    } else if (props.review.canSubmit && (event.metaKey || event.ctrlKey)) {
       void submitForReview();
     }
   }
@@ -117,62 +110,23 @@
 
 <template>
   <section v-if="canShowActions" class="workflow-default-actions">
-    <label class="visually-hidden" :for="noteId">
-      {{ t('Leave a comment') }}
-    </label>
-    <div
-      class="workflow-default-actions__field"
-      :class="{
-        'workflow-default-actions__field--footer':
-          review.canComment || overageMessage,
-      }"
-    >
-      <craft-markdown-field
-        :id="noteId"
-        class="markdown-field"
-        :max-height="200"
-        :rows="1"
-        :placeholder="t('Leave a comment')"
-        sanitize-html
-        show-toolbar
-        .toolbarButtons="commentToolbarButtons"
-        .value="note"
-        :disabled="processing"
-        @input="note = ($event.target as HTMLTextAreaElement).value"
-        @keydown="onNoteKeydown"
-      />
-
-      <div class="workflow-default-actions__field-footer">
-        <span class="workflow-default-actions__overage" aria-live="polite">
-          {{ overageMessage }}
-        </span>
-        <span
-          v-if="review.canComment"
-          class="workflow-default-actions__comment"
-        >
-          <craft-button
-            :id="commentId"
-            type="button"
-            size="small"
-            :variant="ButtonVariant.Solid"
-            :disabled="processing || noteIsEmpty || overage > 0"
-            focusable-when-disabled
-            @click="addComment"
-          >
-            {{ t('Comment') }}
-          </craft-button>
-        </span>
-      </div>
-      <craft-tooltip v-if="review.canComment && noteIsEmpty" :for="commentId">
-        {{ t('Enter a comment before submitting.') }}
-      </craft-tooltip>
-    </div>
+    <CommentField
+      :id="noteId"
+      v-model="note"
+      :label="t('Leave a comment')"
+      :disabled="processing"
+      :overage-message="overageMessage"
+      :submit-button="review.canComment"
+      :submit-label="t('Comment')"
+      :submit-disabled="overage > 0"
+      @submit="onNoteSubmit"
+    />
 
     <div v-if="review.canSubmit" class="workflow-default-actions__buttons">
       <craft-button
         type="button"
         :variant="ButtonVariant.Primary"
-        :disabled="processing || overage > 0"
+        .disabled="processing || overage > 0"
         @click="submitForReview"
       >
         {{ review.submitLabel }}
@@ -199,44 +153,6 @@
   .workflow-default-actions__buttons {
     display: flex;
     align-items: center;
-  }
-
-  .workflow-default-actions__field {
-    position: relative;
-  }
-
-  .workflow-default-actions__field--footer craft-markdown-field {
-    --markdown-field-footer-height: calc(
-      var(--c-size-control-sm) + var(--c-spacing-md) * 2
-    );
-  }
-
-  .workflow-default-actions__field-footer {
-    position: absolute;
-    inset-block-end: var(--c-spacing-md);
-    inset-inline-end: var(--c-spacing-md);
-    display: flex;
-    align-items: center;
-    gap: var(--c-spacing-md);
-  }
-
-  .workflow-default-actions__overage {
-    color: var(--c-color-danger-on-quiet);
-    font-size: var(--c-text-sm);
-  }
-
-  .workflow-default-actions__comment {
-    display: flex;
-  }
-
-  .workflow-default-actions craft-markdown-field {
-    contain: inline-size;
-    display: block;
-    width: 100%;
-  }
-
-  .workflow-default-actions :deep(.overtype-toolbar) {
-    flex-wrap: wrap;
   }
 
   .workflow-default-actions__buttons {

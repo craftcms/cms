@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp;
 
+use CraftCms\Cms\Ai\Ai;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Events\CpAlertsResolving;
 use CraftCms\Cms\Edition;
@@ -39,6 +40,7 @@ readonly class Alerts
         private Plugins $plugins,
         private ProjectConfig $projectConfig,
         private Updates $updates,
+        private Ai $ai,
     ) {}
 
     /** @return array<int, string|array{content: string, showIcon: bool}> */
@@ -124,6 +126,15 @@ readonly class Alerts
             $alerts[] = t('Your {folder} folder isn’t writable.', [
                 'folder' => "config/{$this->projectConfig->folderName}/",
             ]);
+        }
+
+        if (
+            $path !== 'settings/ai' &&
+            $user->isAdmin() &&
+            ($aiProblems = count($this->ai->problems())) > 0
+        ) {
+            $alerts[] = t('{count, plural, =1{An AI task can’t run} other{# AI tasks can’t run}} yet.', ['count' => $aiProblems]).
+                ' <a class="go" href="'.route('craft.cp.settings.ai.index').'">'.t('Review').'</a>';
         }
 
         event($event = new CpAlertsResolving);

@@ -53,9 +53,9 @@ class Markdown extends Control
             'sanitize-html' => true,
             'disabled' => $attributes['name'] === null,
             'required' => $attributes['required'],
+            'described-by' => $attributes['aria']['describedby'] ?? null,
             'aria' => [
                 'invalid' => $attributes['aria']['invalid'] ?? null,
-                'describedby' => $attributes['aria']['describedby'] ?? null,
             ],
         ]);
 
@@ -108,6 +108,12 @@ class Markdown extends Control
         $this->showStats = $showStats;
 
         return $this;
+    }
+
+    #[\Override]
+    public function inputSchema(): array
+    {
+        return Arr::whereNotNull(['type' => 'string', 'description' => 'Markdown.', 'maxLength' => $this->maxLength]);
     }
 
     #[\Override]

@@ -155,7 +155,7 @@ it('serializes switch configuration', function () {
     ]);
 });
 
-it('assigns descendant errors to the longest matching control path', function () {
+it('assigns descendant errors to the longest matching control path, keeping the path they were raised at', function () {
     $ui = Ui::make([
         Field::make()->control(Text::make('address')->value([])),
         Field::make()->control(Text::make('address.street')),
@@ -168,6 +168,7 @@ it('assigns descendant errors to the longest matching control path', function ()
     expect($payload->errors)->toBe([[
         'path' => ['settings', 'address', 'street'],
         'messages' => ['Street is invalid.'],
+        'source' => ['settings', 'address', 'street', 'line1'],
     ]]);
 });
 

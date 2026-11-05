@@ -255,6 +255,23 @@ export function nestedElementReorderOffset(
     : pageOffset + targetIndex + (to > from ? 1 : 0);
 }
 
+/**
+ * The element IDs in the order a reorder saves: `ids` moved, in that order, to
+ * `index` among the rest. `index` is relative to `elements`, so it's a
+ * reorder's offset less the page's.
+ */
+export function nestedElementReorderedIds(
+  elements: NestedElement[],
+  ids: number[],
+  index: number
+): number[] {
+  const remaining = elements
+    .map((element) => element.id)
+    .filter((id) => !ids.includes(id));
+
+  return [...remaining.slice(0, index), ...ids, ...remaining.slice(index)];
+}
+
 export function markInvalidElements<Entry extends NestedElement>(
   elements: Entry[],
   invalidIds: number[]

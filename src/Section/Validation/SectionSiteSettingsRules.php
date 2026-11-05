@@ -7,12 +7,15 @@ namespace CraftCms\Cms\Section\Validation;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Validation\Rules\SingleSectionUriRule;
+use CraftCms\Cms\Shared\Enums\ModelIdentifier;
+use CraftCms\Cms\Site\Validation\Rules\SiteRule;
 use CraftCms\Cms\Validation\Rules\ElementRouteRule;
-use CraftCms\Cms\Validation\Rules\SiteIdRule;
 use CraftCms\Cms\Validation\Rules\UriFormatRule;
 use CraftCms\Cms\Validation\Ruleset;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Throwable;
+
+use function CraftCms\Cms\t;
 
 /**
  * @extends Ruleset<SectionSiteSettings>
@@ -32,7 +35,7 @@ class SectionSiteSettingsRules extends Ruleset
 
         return [
             'id' => ['nullable', 'integer'],
-            'siteId' => ['nullable', 'integer', new SiteIdRule],
+            'siteId' => ['nullable', 'integer', new SiteRule([ModelIdentifier::Id], message: fn (string $site) => t('Your system isn’t set up to save content for the site “{site}”.', ['site' => $site]))],
             'template' => ['nullable', 'string', 'max:500', 'prohibits:route'],
             'route' => ['nullable', 'string', 'max:500', new ElementRouteRule],
             'uriFormat' => array_merge(

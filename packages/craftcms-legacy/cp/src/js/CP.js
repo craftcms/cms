@@ -10,7 +10,6 @@ Craft.CP = Garnish.Base.extend(
   {
     _elementThumbLoader: null,
     animationBlocker: null,
-    authManager: null,
     announcerTimeout: null,
     modalLayers: [],
 
@@ -97,11 +96,6 @@ Craft.CP = Garnish.Base.extend(
     },
 
     init: function () {
-      // Is this session going to expire?
-      if (Craft.remainingSessionTime !== 0) {
-        this.authManager = new Craft.AuthManager();
-      }
-
       // Find all the key elements
       this.$nav = $('#nav');
       this.$navToggle = $('#primary-nav-toggle');
@@ -211,6 +205,8 @@ Craft.CP = Garnish.Base.extend(
             {
               keyCode: Garnish.S_KEY,
               ctrl: true,
+              description: Craft.t('app', 'Save'),
+              group: Craft.t('app', 'Forms'),
             },
             {
               redirect: this.$primaryForm.data('saveshortcut-redirect'),
@@ -231,6 +227,8 @@ Craft.CP = Garnish.Base.extend(
                 keyCode: Garnish.S_KEY,
                 ctrl: true,
                 shift: !!action.shift,
+                description: action.label || Craft.t('app', 'Save'),
+                group: Craft.t('app', 'Forms'),
               },
               {
                 action: action.action,
@@ -417,24 +415,17 @@ Craft.CP = Garnish.Base.extend(
 
       this.addListener(Garnish.$win, 'beforeunload', function (ev) {
         let confirmUnload = false;
-        if (
-          typeof Craft.livePreview !== 'undefined' &&
-          Craft.livePreview.inPreviewMode
-        ) {
-          confirmUnload = true;
-        } else {
-          for (let i = 0; i < this.$confirmUnloadForms.length; i++) {
-            const $form = this.$confirmUnloadForms.eq(i);
-            let serialized;
-            if (typeof $form.data('serializer') === 'function') {
-              serialized = $form.data('serializer')();
-            } else {
-              serialized = $form.serialize();
-            }
-            if ($form.data('initialSerializedValue') !== serialized) {
-              confirmUnload = true;
-              break;
-            }
+        for (let i = 0; i < this.$confirmUnloadForms.length; i++) {
+          const $form = this.$confirmUnloadForms.eq(i);
+          let serialized;
+          if (typeof $form.data('serializer') === 'function') {
+            serialized = $form.data('serializer')();
+          } else {
+            serialized = $form.serialize();
+          }
+          if ($form.data('initialSerializedValue') !== serialized) {
+            confirmUnload = true;
+            break;
           }
         }
 
@@ -1697,6 +1688,20 @@ Craft.CP = Garnish.Base.extend(
       }
     },
 
+    hideSiteCrumbMenuItem: function (siteId) {
+      const menuItem = document.querySelector(
+        `#site-crumb-menu a[data-site-id="${siteId}"]`
+      );
+      if (menuItem) {
+        const li = menuItem.closest('li');
+        li.classList.add('hidden');
+        const group = li.closest('.menu-group');
+        if (group && !group.querySelector('li:not(.hidden)')) {
+          group.classList.add('hidden');
+        }
+      }
+    },
+
     setSiteCrumbMenuItemStatus: function (siteId, status) {
       const menuItem = document.querySelector(
         `#site-crumb-menu a[data-site-id="${siteId}"]`
@@ -1873,50 +1878,31 @@ Craft.CP = Garnish.Base.extend(
       });
     },
 
+    /**
+     * Refreshes the nav's badge counts: the Utilities item's, and each
+     * utility's. The Inertia nav takes them from a `craft:nav-badges` event;
+     * the legacy sidebar, where it's drawn, has its indicators set here.
+     */
     updateUtilitiesBadge: function () {
-      var $utilitiesLink = $('#nav-utilities').find('> a:not(.sel)');
-
-      // Ignore if there is no (non-selected) Utilities nav item
-      if (!$utilitiesLink.length) {
-        return;
-      }
-
       Craft.queue.push(
         () =>
           new Promise((resolve, reject) => {
             Craft.sendActionRequest('POST', 'app/get-utilities-badge-count')
               .then(({data}) => {
-                // Get the existing utility nav badge and screen reader text, if any
-                let $badge = $utilitiesLink.children('.sidebar-action__badge');
+                const badgeCounts = data.badgeCounts ?? {};
 
-                if (data.badgeCount && !$badge.length) {
-                  $badge = $(
-                    '<span class="sidebar-action__badge">' +
-                      '<span class="badge" aria-hidden="true"></span>' +
-                      '<span class="visually-hidden" data-notification></span>' +
-                      '</span>'
-                  ).appendTo($utilitiesLink);
-                }
-
-                const $badgeLabel = $badge.children('.badge');
-                const $screenReaderText = $badge.children(
-                  '[data-notification]'
-                );
-
-                if (data.badgeCount) {
-                  $badgeLabel.text(data.badgeCount);
-                  $screenReaderText.text(
-                    Craft.t(
-                      'app',
-                      '{num, number} {num, plural, =1{notification} other{notifications}}',
-                      {
-                        num: data.badgeCount,
-                      }
-                    )
+                for (const link of document.querySelectorAll(
+                  '#global-sidebar craft-nav-item[id^="nav-utilities"][id$="-link"]'
+                )) {
+                  link.toggleAttribute(
+                    'indicator',
+                    (badgeCounts[link.id.slice(0, -'-link'.length)] ?? 0) > 0
                   );
-                } else if ($badge.length) {
-                  $badge.remove();
                 }
+
+                window.dispatchEvent(
+                  new CustomEvent('craft:nav-badges', {detail: badgeCounts})
+                );
 
                 resolve();
               })

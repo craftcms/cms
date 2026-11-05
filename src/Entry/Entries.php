@@ -23,6 +23,7 @@ use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
+use CraftCms\Cms\Support\Query;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Exception;
 use Illuminate\Container\Attributes\Scoped;
@@ -30,7 +31,6 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Throwable;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * @since 6.0.0
@@ -68,7 +68,7 @@ class Entries
 
         // Get the structure ID
         $criteria['structureId'] ??= DB::table(Table::ENTRIES, 'entries')
-            ->join(new Alias(Table::SECTIONS, 'sections'), 'sections.id', 'entries.sectionId')
+            ->join(Table::SECTIONS.' as sections', 'sections.id', 'entries.sectionId')
             ->where('entries.id', $entryId)
             ->value('sections.structureId');
 
@@ -273,7 +273,7 @@ class Entries
                         ->whereIn('id', $ids)
                         ->update([
                             'sectionId' => $section->id,
-                            'dateUpdated' => now(),
+                            'dateUpdated' => Query::prepareDateForDb(now()),
                         ]);
                 }
 

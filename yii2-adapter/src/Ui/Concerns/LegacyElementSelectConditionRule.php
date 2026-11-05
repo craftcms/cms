@@ -34,8 +34,8 @@ trait LegacyElementSelectConditionRule
                 'name' => 'elementIds',
                 'value' => $value,
                 'tip' => $this->allowMultiple()
-                    ? t('Type `$` to choose an environment variable, or enter a Twig template that outputs comma-separated IDs.')
-                    : t('Type `$` to choose an environment variable, or enter a Twig template that outputs an ID.'),
+                    ? t('Type <kbd>$</kbd> to choose an environment variable, or enter a Twig template that outputs comma-separated IDs.')
+                    : t('Type <kbd>$</kbd> to choose an environment variable, or enter a Twig template that outputs an ID.'),
                 'placeholder' => $this->allowMultiple()
                     ? t('{type} ID(s)', ['type' => $type])
                     : t('{type} ID', ['type' => $type]),

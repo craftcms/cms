@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Import\Jobs;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Events\ImportFinished;
+use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\I18N;
 use Illuminate\Support\Facades\Cache;
@@ -44,6 +45,8 @@ class FinishImport extends Job
         Storage::disk(Cms::config()->getImportDisk())->deleteDirectory(self::spoolPath($this->runId));
 
         $hasFailures = (bool) Cache::pull(self::hasFailuresCacheKey($this->runId));
+
+        Import::releaseRunLock($this->importPlan, $this->runId);
 
         event(new ImportFinished($this->importPlan, $this->importPlan->steps ?? [], $this->runId, $hasFailures));
     }

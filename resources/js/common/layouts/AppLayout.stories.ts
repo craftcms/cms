@@ -591,7 +591,7 @@ export const ContextMenuAndToolbar: Story = {
 
 /**
  * Equivalent of overriding `block submitButton` in Craft 5, plus
- * `additionalButtons` before it.
+ * `additionalButtons`.
  */
 export const CustomPrimaryAction: Story = {
   render: (args) => ({

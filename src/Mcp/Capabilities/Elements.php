@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Mcp\Capabilities;
 
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Elements as ElementService;
+use CraftCms\Cms\Mcp\Attributes\RequiresPermission;
 use CraftCms\Cms\Mcp\ElementLifecycle;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\ElementResourceLinks;
@@ -80,6 +82,7 @@ readonly class Elements
         description: 'Describes an element type for the elements.* tools: the criteria, create and update attributes, field-schema context, and duplication modes it accepts. Also available as the craft://element-types/{type} resource.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
+    #[RequiresPermission('accessCp')]
     public function schema(
         #[Schema(definition: self::TypeSchema)]
         string $type,
@@ -132,7 +135,7 @@ readonly class Elements
      */
     #[McpTool(
         name: 'elements.get',
-        description: 'Gets an element by ID or UID.',
+        description: 'Gets an element by ID or UID. For entries, a saved draft’s own ID or UID loads that draft.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     public function get(
@@ -166,7 +169,7 @@ readonly class Elements
      */
     #[McpTool(
         name: 'elements.field-schema',
-        description: 'Gets the writable custom-field JSON Schema for an existing element, or for a new element described by context.',
+        description: 'Gets the writable custom-field JSON Schema for an existing element or entry draft, or for a new element described by context.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     public function fieldSchema(
@@ -203,11 +206,14 @@ readonly class Elements
     /**
      * @param  array<string, mixed>  $attributes
      * @param  array<string, mixed>  $fields
+     * @param  bool  $asUnpublishedDraft  Whether to save the new element as an unpublished draft instead of live content. Supported for entries.
+     * @param  string|null  $draftName  Name of the unpublished draft. Requires asUnpublishedDraft.
+     * @param  string|null  $draftNotes  Notes for the unpublished draft. Requires asUnpublishedDraft.
      * @return array<string, mixed>
      */
     #[McpTool(
         name: 'elements.create',
-        description: 'Creates an element. Call elements.field-schema to discover custom fields. For assets, use assets.create instead.',
+        description: 'Creates an element. Call elements.field-schema to discover custom fields. For entries, set asUnpublishedDraft to create an unpublished draft that is not live until it is applied with drafts.apply. For assets, use assets.create instead.',
     )]
     public function create(
         #[Schema(definition: self::TypeSchema)]
@@ -216,6 +222,9 @@ readonly class Elements
         array $attributes = [],
         #[Schema(definition: self::FieldValuesSchema)]
         array $fields = [],
+        bool $asUnpublishedDraft = false,
+        ?string $draftName = null,
+        ?string $draftNotes = null,
     ): array {
         $actor = $this->actor->user();
         $adapter = $this->adapter($type);
@@ -223,6 +232,14 @@ readonly class Elements
 
         if ($attributesSchema !== null) {
             $this->assertValid($attributes, $attributesSchema, 'attributes', $type);
+        }
+
+        if ($asUnpublishedDraft) {
+            return $adapter->createUnpublishedDraft($attributes, $fields, $actor, $draftName, $draftNotes);
+        }
+
+        if ($draftName !== null || $draftNotes !== null) {
+            throw new ToolCallException('draftName and draftNotes require asUnpublishedDraft.');
         }
 
         return $adapter->create($attributes, $fields, $actor);
@@ -236,7 +253,7 @@ readonly class Elements
      */
     #[McpTool(
         name: 'elements.update',
-        description: 'Updates an element. Call elements.field-schema to discover custom fields.',
+        description: 'Updates an element. Call elements.field-schema to discover custom fields. For entries, a saved draft’s own ID or UID updates only that draft and leaves its canonical entry unchanged.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     public function update(
@@ -283,6 +300,10 @@ readonly class Elements
 
         if (! $element || ! $adapter->canDelete($this->actor->user(), $element)) {
             throw $this->notFound($adapter);
+        }
+
+        if ($element->getIsDraft()) {
+            throw new ToolCallException('Use drafts.delete to delete a draft.');
         }
 
         if (! $this->elements->deleteElement($element, $hardDelete)) {
@@ -339,15 +360,29 @@ readonly class Elements
         array $fields = [],
     ): array {
         $adapter = $this->adapter($type);
-        $this->assertValid($attributes, $adapter->schema()['updateAttributes'], 'attributes', $type);
-
         $element = $this->lifecycle->find($adapter::elementType(), $id, $uid, $siteId);
+        $this->populate($type, $element, $attributes, $fields);
+
+        return $this->lifecycle->validate($element);
+    }
+
+    /**
+     * Sets the values that `elements.update` takes on an element, without saving it, after checking them as
+     * `elements.update` does.
+     *
+     * @param  array<string, mixed>  $attributes
+     * @param  array<string, mixed>  $fields
+     *
+     * @throws ToolCallException if the values aren’t valid, or the user can’t save the element.
+     */
+    public function populate(string $type, ElementInterface $element, array $attributes, array $fields): void
+    {
+        $adapter = $this->adapter($type);
+        $this->assertValid($attributes, $adapter->schema()['updateAttributes'], 'attributes', $type);
 
         if ($attributes !== [] || $fields !== []) {
             $adapter->prepareValidation($element, $attributes, $fields, $this->actor->user());
         }
-
-        return $this->lifecycle->validate($element);
     }
 
     /**
@@ -382,6 +417,7 @@ readonly class Elements
         description: 'A JSON list of the element types the elements.* tools support.',
         mimeType: 'application/json',
     )]
+    #[RequiresPermission('accessCp')]
     public function typesResource(): array
     {
         $types = array_map(function (string $handle): array {
@@ -406,6 +442,7 @@ readonly class Elements
         description: 'A JSON description of the criteria, attributes, field-schema context, and duplication modes an element type accepts in the elements.* tools.',
         mimeType: 'application/json',
     )]
+    #[RequiresPermission('accessCp')]
     public function typeResource(string $type): array
     {
         $adapter = $this->adapters->find($type);

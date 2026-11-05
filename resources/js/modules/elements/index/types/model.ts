@@ -9,7 +9,11 @@ import type {
 } from '../composables/useContentIndexData';
 import type {TableRowSelection} from '@/common/composables/useTableRowSelection';
 import type {StructureMove} from '../composables/useElementIndexStructure';
-import type {ViewMode} from '@/modules/elements/types/view-state';
+import type {
+  CardThumbSettings,
+  ThumbSize,
+  ViewMode,
+} from '@/modules/elements/types/view-state';
 import type {InlineEditingSaveResult} from '../composables/useInlineEditing';
 import type {ElementIndexExportFormat} from './exporters';
 import type {ElementIndexContext} from '../index-context';
@@ -30,23 +34,54 @@ export type ExportElementIndex = (
   limit?: number
 ) => void | Promise<void>;
 
+/**
+ * Selecting every element the index lists, on every page, rather than only the
+ * rows that have been selected one by one.
+ */
+export interface ElementIndexSelectAll {
+  /** Whether every listed element is selected, other than `exceptIds`. */
+  active: Readonly<Ref<boolean>>;
+  /** Elements deselected since every listed element was selected. */
+  exceptIds: ComputedRef<string[]>;
+  /** How many elements are selected, counting those on pages not loaded. */
+  count: ComputedRef<number>;
+  /** Selects every element the index lists. */
+  selectAll(this: void): void;
+  /** Narrows the selection to the rows on the page on screen. */
+  selectPage(this: void): void;
+}
+
 export interface ElementIndexView {
   elementIndex: Readonly<ReturnType<typeof useContentIndexData>>;
   table: Table<CraftTableFeatures, ElementIndexRow>;
   data: ComputedRef<ElementIndexRow[]>;
   selection: TableRowSelection<ElementIndexRow>;
+  selectAll: ElementIndexSelectAll;
   search: Ref<string>;
   status: Ref<string>;
   conditions: Ref<ConditionConfig | null>;
   mode: Ref<ViewMode['mode']>;
+  thumbSize: Ref<ThumbSize>;
+  /** The thumbnail sizes the current view mode offers; empty for cards. */
+  thumbSizeOptions: ComputedRef<ThumbSize[]>;
+  /** How cards show a thumbnail, or null when the index has no thumbnails. */
+  cardThumbs: ComputedRef<CardThumbSettings | null>;
   inlineEditing?: ElementIndexInlineEditing;
   sortField: Ref<string>;
   sortDirection: Ref<'asc' | 'desc'>;
+  /** Whether any of the View menu's settings differ from the source's defaults. */
+  viewCustomized: ComputedRef<boolean>;
+  /** Returns the View menu's settings to the source's defaults. */
+  resetView(this: void): void;
   tableColumns: Ref<string[]>;
   columnOptions: ComputedRef<CheckboxOption[]>;
   visibleViewModes: ComputedRef<ViewMode[]>;
   loading: Ref<boolean>;
+  /** Whether the rows are still to come, drawn as placeholders until then. */
+  pending: ComputedRef<boolean>;
   processing: ComputedRef<boolean>;
+  /** Drops a page load in flight, such as while a new page number is typed. */
+  cancelPageLoad(this: void): void;
   filterContext: ComputedRef<ElementIndexContext | null>;
   exportElements?: ExportElementIndex;
   submit(this: void): void;

@@ -16,6 +16,39 @@ states. You own the table instance and its data, and `AdminTable` draws it.
 Plugins get the same component, and the helpers Craft's own pages build their
 tables with, from the `@craftcms/cp` module.
 
+## In PHP
+
+Most admin tables don't need any Vue.
+In a Craft control panel screen, `CraftCms\Cms\Ui\Nodes\Table` describes the table, and the control panel renders it with `AdminTable`:
+
+```php
+use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Ui\Nodes\Table;
+use CraftCms\Cms\Ui\Ui;
+
+$table = Table::make('exhibits')
+    ->columns([
+        ['key' => 'name', 'label' => 'Name', 'sortable' => true],
+        ['key' => 'handle', 'label' => 'Handle'],
+    ])
+    ->rows([
+        ['id' => 1, 'name' => 'Van Gogh', 'handle' => 'vanGogh'],
+        ['id' => 2, 'name' => 'Wassily Kandinsky', 'handle' => 'wassilyKandinsky'],
+    ])
+    ->searchable()
+    ->emptyMessage('No exhibits exist yet.')
+    ->createAction('New exhibit', 'exhibits/new')
+    ->deletable('exhibits/delete');
+
+return new CpScreenResponse()
+    ->title('Exhibits')
+    ->ui(Ui::make([$table]));
+```
+
+`pagination()` and `dataUrl()` page and sort on the server.
+`reorderable()`, `bulkActions()`, `statusFilter()`, and `toggleableColumns()` turn on the features of the same names.
+Reach for the Vue component directly when a page needs something the PHP definition can't describe.
+
 ## Using it from a plugin
 
 The control panel publishes `@craftcms/cp` through its import map, alongside

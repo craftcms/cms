@@ -54,6 +54,11 @@ export function registerLinkPasteBehavior(
   }
 
   function handlePaste(event: ClipboardEvent): void {
+    // `setRangeText()` would change a read-only field.
+    if (editor.textarea.readOnly) {
+      return;
+    }
+
     if (pasteAsPlainText) {
       clearPasteAsPlainText();
 

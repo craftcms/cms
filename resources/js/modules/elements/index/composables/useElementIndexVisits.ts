@@ -1,5 +1,6 @@
 import {ref} from 'vue';
 import {router} from '@inertiajs/vue3';
+import type {CancelToken} from '@inertiajs/core';
 
 import type {
   QueryParams as IndexQueryParams,
@@ -47,6 +48,24 @@ export function appendIndexQuery(url: string, query: IndexQueryParams): string {
   return serialized ? `${url}?${serialized}` : url;
 }
 
+/**
+ * Adds the index's current URL to a link into an element's editor as its
+ * `returnUrl`, so saving returns to the source being viewed rather than the
+ * index's first one. The `?` is swapped for the `:QS:` placeholder the server
+ * swaps back.
+ */
+export function withIndexReturnUrl(url: string, indexUrl: string): string {
+  const origin = window.location.origin;
+  const target = new URL(url, origin);
+
+  target.searchParams.set(
+    'returnUrl',
+    new URL(indexUrl, origin).href.replace('?', ':QS:')
+  );
+
+  return target.href;
+}
+
 export interface IndexVisitOptions {
   /** Restrict the partial reload to these props. */
   only?: Array<string>;
@@ -80,12 +99,15 @@ export interface IndexVisitor {
   currentQuery(replacing?: Array<string>): IndexQueryParams;
   visit(query: IndexQueryParams, options?: IndexVisitOptions): void;
   merge(params: IndexQueryParams, options?: IndexVisitOptions): void;
+  /** Drops the visit in flight, if any, so its response is never applied. */
+  cancel?(): void;
 }
 
 /** Shared query replacement and page reset for every index transport. */
 export function createElementIndexVisitor(
   readQuery: () => IndexQueryParams,
-  visit: IndexVisitor['visit']
+  visit: IndexVisitor['visit'],
+  cancel: () => void = () => {}
 ): IndexVisitor {
   function currentQuery(replacing: Array<string> = []): IndexQueryParams {
     return Object.fromEntries(
@@ -117,15 +139,18 @@ export function createElementIndexVisitor(
     visit(query, options);
   }
 
-  return {currentQuery, visit, merge};
+  return {currentQuery, visit, merge, cancel};
 }
 
 /** State- and scroll-preserving Inertia visits for a page index. */
 export function createIndexVisitor(route: ElementIndexRoute): IndexVisitor {
+  let inFlight: CancelToken | null = null;
+
   return createElementIndexVisitor(
     () => Object.fromEntries(new URLSearchParams(window.location.search)),
     (query, options = {}) => {
       let succeeded = false;
+      let token: CancelToken | null = null;
 
       router.visit(route.url(query), {
         only: options.only ?? [],
@@ -133,11 +158,23 @@ export function createIndexVisitor(route: ElementIndexRoute): IndexVisitor {
         preserveScroll: true,
         replace: options.replace ?? false,
         showProgress: !options.silent,
+        onCancelToken: (cancelToken) => {
+          token = inFlight = cancelToken;
+        },
         onSuccess: () => {
           succeeded = true;
         },
-        onFinish: () => options.onFinish?.({completed: succeeded}),
+        onFinish: () => {
+          if (inFlight === token) {
+            inFlight = null;
+          }
+          options.onFinish?.({completed: succeeded});
+        },
       });
+    },
+    () => {
+      inFlight?.cancel();
+      inFlight = null;
     }
   );
 }
@@ -155,7 +192,11 @@ export function createIndexVisitor(route: ElementIndexRoute): IndexVisitor {
  * composables drive a modal index without knowing they are.
  */
 export function createDetachedIndexVisitor(
-  load: (query: IndexQueryParams, isCurrent: () => boolean) => Promise<boolean>,
+  load: (
+    query: IndexQueryParams,
+    isCurrent: () => boolean,
+    silent: boolean
+  ) => Promise<boolean>,
   initialQuery: IndexQueryParams = {}
 ) {
   const query = ref<IndexQueryParams>({...initialQuery});
@@ -182,7 +223,8 @@ export function createDetachedIndexVisitor(
     try {
       const applied = await load(
         attemptedQuery,
-        () => requestId === latestRequest
+        () => requestId === latestRequest,
+        options.silent ?? false
       );
 
       if (applied) {
@@ -200,5 +242,16 @@ export function createDetachedIndexVisitor(
     }
   }
 
-  return {...createElementIndexVisitor(() => query.value, visit), visit, query};
+  // Supersedes the request in flight: its response is dropped, as if a newer
+  // visit had started, and the query goes back to the last one applied.
+  function cancel(): void {
+    latestRequest++;
+    query.value = confirmedQuery;
+  }
+
+  return {
+    ...createElementIndexVisitor(() => query.value, visit, cancel),
+    visit,
+    query,
+  };
 }

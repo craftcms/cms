@@ -11,6 +11,7 @@ import {defineLayoutComponentSettingsUiHost} from './modules/ui/layout-component
 import './modules/navigation/components/cp-global-sidebar.js';
 import './modules/navigation/components/cp-queue-indicator.js';
 import './modules/notifications/components/cp-notification-center.js';
+import './modules/command-palette';
 
 /**
  * Legacy ports, assigns window.Craft.* so PHP-emitted code still works
@@ -29,10 +30,12 @@ import './modules/field-toggle';
 import './modules/grouped-entry-type-manager';
 import './modules/queue';
 import './modules/slideout';
+import './modules/slideout-actions';
 import './modules/fields';
 import './modules/auth-method-setup';
 import './modules/proxy-scrollbar';
 import './modules/customize-sources';
+import './modules/image-editor';
 import './modules/element-label';
 import './modules/form-observer';
 import './modules/interval-manager';
@@ -42,6 +45,7 @@ import './modules/link-field';
 import './modules/cp-modal';
 import './modules/tabs';
 import './modules/grid';
+import './modules/highlight';
 import './modules/chart';
 import './modules/data-table-sorter';
 import './modules/element-action-trigger';

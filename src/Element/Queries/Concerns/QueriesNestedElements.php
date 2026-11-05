@@ -6,7 +6,9 @@ namespace CraftCms\Cms\Element\Queries\Concerns;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
 use CraftCms\Cms\Element\Queries\AddressQuery;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\ContentBlockQuery;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\EntryQuery;
@@ -20,7 +22,6 @@ use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Tpetry\QueryExpressions\Language\Alias;
 
 trait QueriesNestedElements
 {
@@ -141,7 +142,7 @@ trait QueriesNestedElements
 
             if (! $allowOwnerDrafts || ! $allowOwnerRevisions) {
                 $elementQuery->join(
-                    new Alias(Table::ELEMENTS, 'owners'),
+                    Table::ELEMENTS.' as owners',
                     fn (JoinClause $join) => $join->when(
                         $elementQuery->ownerId,
                         fn (JoinClause $join) => $join->on('owners.id', '=', 'elements_owners.ownerId'),
@@ -217,6 +218,7 @@ trait QueriesNestedElements
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the field the {elements} are contained by.')]
     public function field(mixed $value): static
     {
         if (Query::normalizeParam($value, function ($item) {
@@ -262,6 +264,7 @@ trait QueriesNestedElements
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::IntOrInts, 'Narrows the query results based on the field the {elements} are contained by, per the fields’ IDs.')]
     public function fieldId(mixed $value): static
     {
         $this->fieldId = $value;
@@ -295,6 +298,7 @@ trait QueriesNestedElements
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::IntOrInts, 'Narrows the query results based on the primary owner element of the {elements}, per the owners’ IDs.')]
     public function primaryOwnerId(mixed $value): static
     {
         $this->primaryOwnerId = $value;
@@ -355,6 +359,7 @@ trait QueriesNestedElements
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::IntOrInts, 'Narrows the query results based on the owner element of the {elements}, per the owners’ IDs.')]
     public function ownerId(mixed $value): static
     {
         $this->ownerId = $value;
@@ -475,7 +480,7 @@ trait QueriesNestedElements
     /** @param AddressQuery|ContentBlockQuery|EntryQuery<Entry> $elementQuery */
     private static function prepForNestedElementParams(ElementQuery $elementQuery): void
     {
-        $joinTable = new Alias(Table::ELEMENTS_OWNERS, 'elements_owners');
+        $joinTable = Table::ELEMENTS_OWNERS.' as elements_owners';
 
         if ($elementQuery->query->joinsTable($joinTable)) {
             return;

@@ -11,6 +11,9 @@ import '@shoelace-style/shoelace/dist/components/visually-hidden/visually-hidden
  * It attaches to whatever it sits beside — a nav item, a tab, a button — and
  * says only "there is something here". What that something is has to come from
  * the text around it or from `alt-text`.
+ *
+ * A host without an `id` is given one when it connects, so the element it
+ * marks can reference it.
  */
 
 export default class CraftBadgeIndicator extends LitElement {
@@ -26,44 +29,40 @@ export default class CraftBadgeIndicator extends LitElement {
   @property({attribute: 'badge-count-suffix'}) badgeCountSuffix: string | null =
     null;
 
+  /**
+   * The largest count shown in full. Anything above it shows as `{max}+`, as
+   * an unread count past 99 stops being useful and would not fit. Set it to
+   * `Infinity` for a count that's a tally rather than a nudge, such as how many
+   * elements a source has, so the badge grows to fit the whole number.
+   */
+  @property({type: Number}) max: number = 99;
+
   /** Theme variant of the badge indicator. Defaults to "primary" */
   @property() variant: 'primary' | 'secondary' | 'inverse' = 'primary';
 
-  /**
-   * Id of the badge, so the element it marks can reference it. Generated when
-   * not supplied.
-   */
-  @property()
-  override id: string;
+  #labelId = `badge-label-${Math.floor(Math.random() * 1000000000).toString()}`;
 
-  constructor() {
-    super();
-    this.id =
-      this.id || `badge-${Math.floor(Math.random() * 1000000000).toString()}`;
+  override connectedCallback() {
+    super.connectedCallback();
+    this.id ||= `badge-${Math.floor(Math.random() * 1000000000).toString()}`;
   }
 
   private showCount() {
     return this.badgeCount !== null && this.badgeCount > 0;
   }
 
-  private truncatedNumber() {
-    if (!this.showCount) return;
+  private truncatedNumber(): string {
+    const count = this.badgeCount ?? 0;
+    const format = (value: number) =>
+      new Intl.NumberFormat(document.documentElement.lang || undefined).format(
+        value
+      );
 
-    // @ts-expect-error we're already checking that badgeCount is not null in showCount
-    if (this.badgeCount > 99) {
-      return '99+';
-    } else {
-      // @ts-expect-error we're already checking that badgeCount is not null in showCount
-      return this.badgeCount.toString();
-    }
+    return count > this.max ? `${format(this.max)}+` : format(count);
   }
 
   private getBadgeRole() {
     return this.altText ? 'img' : nothing;
-  }
-
-  private getLabelId() {
-    return `${this.id}-label`;
   }
 
   private renderBadgeContents() {
@@ -76,7 +75,7 @@ export default class CraftBadgeIndicator extends LitElement {
         : nothing}
       ${this.altText
         ? html`
-            <sl-visually-hidden id=${this.getLabelId()}
+            <sl-visually-hidden id=${this.#labelId}
               >${this.altText}</sl-visually-hidden
             >
           `
@@ -88,7 +87,6 @@ export default class CraftBadgeIndicator extends LitElement {
     return html`
       <div
         part="badge"
-        id=${this.id}
         class="${classMap({
           'badge-indicator': true,
           'badge-indicator--with-number': this.showCount(),
@@ -96,7 +94,7 @@ export default class CraftBadgeIndicator extends LitElement {
           'badge-indicator--inverse': this.variant === 'inverse',
         })}"
         role="${this.getBadgeRole()}"
-        aria-labelledby="${this.altText ? this.getLabelId() : nothing}"
+        aria-labelledby="${this.altText ? this.#labelId : nothing}"
       >
         ${this.renderBadgeContents()}
       </div>

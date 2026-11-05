@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Ui\Controls;
 use CraftCms\Cms\Condition\BaseCondition;
 use CraftCms\Cms\Condition\ConditionBuilderRenderer;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Condition\Enums\GroupOperator;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Json;
@@ -87,6 +89,12 @@ class ConditionBuilder extends Control
         return $this;
     }
 
+    /** @return class-string<ConditionInterface>|null */
+    public function getConditionClass(): ?string
+    {
+        return $this->conditionClass;
+    }
+
     /** @param list<string> $queryParams */
     public function queryParams(array $queryParams): static
     {
@@ -127,6 +135,47 @@ class ConditionBuilder extends Control
     public function emptyValue(): mixed
     {
         return [];
+    }
+
+    #[\Override]
+    public function inputSchema(): array
+    {
+        if ($this->conditionClass === null) {
+            return [];
+        }
+
+        $condition = self::condition([], $this->conditionClass, $this->queryParams, $this->forProjectConfig, $this->fieldLayouts, null);
+        $base = array_filter(
+            Arr::except($condition->getConfig(), ['conditionRules']),
+            is_scalar(...),
+        );
+
+        return [
+            'type' => ['object', 'null'],
+            'properties' => [
+                ...array_map(static fn (mixed $value): array => ['const' => $value], $base),
+                'conditionRules' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'operator' => ['enum' => array_map(static fn (GroupOperator $operator): string => $operator->value, GroupOperator::cases()), 'default' => GroupOperator::And->value],
+                        'rules' => [
+                            'type' => 'array',
+                            'description' => 'Rules, each with its class, a uid, and its own settings. A rule can also be a nested group with its own operator and rules.',
+                            'items' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'class' => ['type' => 'string'],
+                                    'uid' => ['type' => 'string', 'format' => 'uuid'],
+                                ],
+                                'additionalProperties' => true,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'required' => ['class'],
+            'additionalProperties' => true,
+        ];
     }
 
     #[\Override]

@@ -30,11 +30,28 @@ Options widen their layout once they have room, measured against the option itse
 
 That means the same list reads sensibly in a narrow slideout and on a wide page without the parent configuring anything. The threshold is `--c-option-wide-threshold`, defaulting to 640 pixels.
 
+## Groups
+
+Wrap related options in `<craft-option-group>` to list them under a heading. The `label` is shown above the options and names the group, so a screen reader announces it as someone moves into the group.
+
+```html
+<craft-option-group label="Pome">
+  <craft-option .choiceValue="${'apple'}">Apple</craft-option>
+  <craft-option .choiceValue="${'pear'}">Pear</craft-option>
+</craft-option-group>
+```
+
+`craft-combobox` builds these from options with `type: 'optgroup'`.
+
 ## Accessibility
 
 Lion supplies the option semantics and selection state.
 
-Remember that everything inside the option is announced. A decorative icon should be hidden, or every entry in the list will be read with the same prefix before the part that distinguishes it.
+Remember that everything inside the option is announced. A decorative icon should be hidden, or every entry in the list will be read with the same prefix before the part that distinguishes it. A `craft-icon` without a `label` is hidden already. Give an `<img>` an empty `alt`, and an inline `<svg>` `aria-hidden="true"`. Artwork that carries meaning needs a text alternative instead.
+
+Put the visible label first and the `hint` and decoration after it, so the option's name starts with the words a person sees and can say.
+
+A status dot or colored icon only reinforces the option's text. Say the status in words too, such as "Offline".
 
 ## Properties
 

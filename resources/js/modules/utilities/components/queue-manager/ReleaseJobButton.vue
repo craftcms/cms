@@ -9,6 +9,11 @@
     job: JobInfo;
   }>();
 
+  const emit = defineEmits<{
+    /** The job was released or retried. */
+    done: [];
+  }>();
+
   const messages = useMessages();
   const form = useForm({});
 
@@ -28,6 +33,7 @@
       preserveScroll: true,
       onSuccess: () => {
         messages.success(t('Job released.'));
+        emit('done');
       },
       onError: () => {
         messages.error(t('Failed to release job.'));
@@ -41,7 +47,7 @@
     type="button"
     @click="releaseJob"
     size="small"
-    :loading="form.processing"
+    .loading="form.processing"
     v-bind="$attrs"
   >
     <craft-icon name="remove" slot="prefix"></craft-icon>

@@ -12,6 +12,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Conditions\CountryFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
+use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Ui\Contracts\Control;
@@ -25,7 +26,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class Country extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
+class Country extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -128,5 +129,11 @@ class Country extends Field implements CrossSiteCopyableFieldInterface, InlineEd
         }
 
         return $value;
+    }
+
+    /** @return array<string, mixed> */
+    public function getInputSchema(): array
+    {
+        return ['type' => 'string'];
     }
 }

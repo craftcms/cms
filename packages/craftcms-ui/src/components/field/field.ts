@@ -12,11 +12,10 @@ import {FormControlMixin} from '@lion/ui/form-core.js';
 // Named explicitly so the emitted .d.ts can reference Lion's mixin
 // constructor by package specifier instead of a pnpm store path (TS2883).
 import type {} from '@open-wc/dedupe-mixin';
-// Registers <craft-callout> globally for the tip/warning notices.
-import '../callout/callout.js';
 import '../tooltip/tooltip.js';
 import '../button/button.js';
 import {baseFieldStyles} from '@src/styles/form.styles';
+import {FieldNotices} from '@src/mixins/FieldNotices';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import styles from './field.styles.js';
 import {HasSlotController} from '@src/utilities/slot';
@@ -55,7 +54,9 @@ type FormControlTarget = HTMLElement & {
  * @slot actions - Field-level actions (hide-label toggles, copy-value buttons,
  *   field settings menus), rendered as a group at the end of the heading.
  */
-export default class CraftField extends FormControlMixin(LitElement) {
+export default class CraftField extends FieldNotices(
+  FormControlMixin(LitElement)
+) {
   static override get styles() {
     return [visuallyHiddenStyles, baseFieldStyles, styles];
   }
@@ -102,11 +103,20 @@ export default class CraftField extends FormControlMixin(LitElement) {
   instructionsPosition: 'before' | 'after' = 'before';
 
   /**
+   * Visually hides the instructions, keeping them in the input's accessible
+   * description, such as when a placeholder repeats them.
+   */
+  @property({type: Boolean, reflect: true, attribute: 'instructions-sr-only'})
+  instructionsSrOnly = false;
+
+  /**
    * Overrides the inferred width behavior. By default, the field spans its
-   * column, unless the slotted control declares a `maxlength` (reflected
-   * onto the host as `has-maxlength`) — which shrinks the field to the
-   * control's width. `full` spans the column despite a `maxlength`; `auto`
-   * shrinks without one.
+   * column, unless the slotted single-line control declares a `maxlength`
+   * (reflected onto the host as `has-maxlength`) — which shrinks the input
+   * to the control's width, while the heading and feedback still span the
+   * column.
+   * `full` spans the column despite a `maxlength`; `auto` shrinks without
+   * one.
    */
   @property({type: String, reflect: true}) width?: 'full' | 'auto';
 
@@ -122,17 +132,19 @@ export default class CraftField extends FormControlMixin(LitElement) {
     'heading-prefix',
     'label-extra',
     'actions',
-    'heading-suffix',
-    'tip',
-    'warning'
+    'heading-suffix'
   );
 
   private __lightDomObserver = new MutationObserver(() =>
     this.__onLightDomChanged()
   );
 
+  /** The slotted control the field last wired up. */
+  private __enhancedInput: HTMLElement | null = null;
+
   override connectedCallback(): void {
     super.connectedCallback();
+    this.__enhancedInput = this._inputNode ?? null;
     this.__lightDomObserver.observe(this, {childList: true});
     this.__syncHasErrors();
     this.__syncHasMaxlength();
@@ -147,14 +159,17 @@ export default class CraftField extends FormControlMixin(LitElement) {
   /**
    * Reflects whether the slotted control declares a `maxlength` onto the
    * host, where the stylesheet can react to it — a shadow stylesheet can't
-   * observe light-DOM children via `:host(:has(…))`.
+   * observe light-DOM children via `:host(:has(…))`. Multi-line controls
+   * are left out: a character limit says nothing about how wide they are.
    */
   private __syncHasMaxlength(): void {
+    const control = this.querySelector(':scope > [slot="input"]');
     this.toggleAttribute(
       'has-maxlength',
-      this.querySelector(':scope > [slot="input"]')?.hasAttribute(
-        'maxlength'
-      ) ?? false
+      Boolean(
+        control?.hasAttribute('maxlength') &&
+        !control.matches('textarea, craft-textarea')
+      )
     );
   }
 
@@ -332,7 +347,6 @@ export default class CraftField extends FormControlMixin(LitElement) {
       ${this.instructionsPosition === 'after'
         ? this._helpTextTemplate()
         : nothing}
-      ${this._noticeTemplate('tip')} ${this._noticeTemplate('warning')}
       ${this._feedbackTemplate()}
     `;
   }
@@ -408,7 +422,13 @@ export default class CraftField extends FormControlMixin(LitElement) {
 
   /** The instructions, skipped entirely when there are none. */
   protected override _helpTextTemplate() {
-    return this.__hasHelpText ? super._helpTextTemplate() : html``;
+    if (!this.__hasHelpText) {
+      return html``;
+    }
+
+    return this.instructionsSrOnly
+      ? html`<div class="cp-visually-hidden">${super._helpTextTemplate()}</div>`
+      : super._helpTextTemplate();
   }
 
   /**
@@ -452,33 +472,6 @@ export default class CraftField extends FormControlMixin(LitElement) {
   }
 
   /**
-   * Tip/warning notices, mirroring `forms/field-notice.blade.php`: an info
-   * callout with a lightbulb icon for tips, a warning callout (default icon)
-   * for warnings, each with a visually hidden prefix.
-   */
-  protected _noticeTemplate(kind: 'tip' | 'warning') {
-    if (!this.__hasSlot.test(kind)) {
-      return nothing;
-    }
-
-    const isTip = kind === 'tip';
-
-    return html`
-      <craft-callout
-        class="field-notice"
-        variant=${isTip ? 'info' : 'warning'}
-        appearance="plain"
-        padding="none"
-      >
-        <craft-visually-hidden>
-          ${isTip ? t('Tip:') : t('Warning:')}
-        </craft-visually-hidden>
-        <slot name=${kind}></slot>
-      </craft-callout>
-    `;
-  }
-
-  /**
    * Whether there's a label to show. Lion's `SlotMixin` always generates a
    * light-DOM label node (empty when there's no `label`), so the node's
    * presence says nothing — its text does. `label` reads that text back when
@@ -500,25 +493,56 @@ export default class CraftField extends FormControlMixin(LitElement) {
   }
 
   private __onLightDomChanged(): void {
+    this.__enhanceSwappedInput();
     this.__wireDescribedBy();
     this.__syncFieldsetSemantics();
     this.__syncHasErrors();
     this.__syncLabelDecorations();
     this.__syncHasMaxlength();
     this.__syncControlWidth();
-    // Conditional templates (label, instructions, tip/warning callouts,
+    // Conditional templates (label, instructions,
     // heading spacer, action group) depend on light DOM children.
     this.requestUpdate();
   }
 
   private __wireDescribedBy(): void {
-    for (const slotName of ['help-text', 'feedback', 'tip', 'warning']) {
+    for (const slotName of ['help-text', 'feedback']) {
       const node = this.__lightChild(slotName);
       if (node) {
         // Already-registered nodes are ignored by addToAriaDescribedBy.
         this.addToAriaDescribedBy(node, {idPrefix: slotName});
       }
     }
+  }
+
+  /**
+   * FormControlMixin wires up the slotted control once, when the field
+   * connects. A control swapped in afterward, as when a server-driven UI
+   * refresh replaces a hidden input with a textarea, gets the same treatment
+   * here: the `form-control` class that sizes it, an id for the label, and the
+   * label and descriptions it would otherwise go without.
+   */
+  private __enhanceSwappedInput(): void {
+    const input = this._inputNode;
+    if (!input || input === this.__enhancedInput) {
+      return;
+    }
+
+    this.__enhancedInput = input;
+    this._enhanceLightDomClasses();
+    input.id ||= this._inputId;
+
+    if (this.__formControlTarget()) {
+      if (this._labelNode) {
+        this.addToAriaLabelledBy(this._labelNode);
+      }
+      return;
+    }
+
+    // Lion only reflects these lists when they change, so reassign them to
+    // write them onto the new input.
+    this._ariaLabelledNodes = [...this._ariaLabelledNodes];
+    this._ariaDescribedNodes = [...this._ariaDescribedNodes];
   }
 
   private __formControlTarget(): FormControlTarget | undefined {

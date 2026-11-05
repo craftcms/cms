@@ -1,9 +1,13 @@
-import {execFileSync} from 'child_process';
-import {writeFileSync, readFileSync} from 'fs';
-import {createRequire} from 'module';
+import {readFileSync} from 'fs';
 import {dirname, resolve} from 'path';
-import {fileURLToPath} from 'url';
+import {fileURLToPath, pathToFileURL} from 'url';
 import {transformSync} from 'esbuild';
+import {format} from 'vite-plus/fmt';
+import {
+  BLACK_CONTENTS_SELECTOR,
+  NEUTRAL_CARD_SELECTOR,
+  writeFileIfChanged,
+} from './utils.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -95,24 +99,58 @@ function colorScale(color) {
   }
 }
 
+/** White and black, whose colors are static rather than taken from the theme's palette. */
+const staticColors = ['white', 'black'];
+
 function buildColorableTokens(paletteColors) {
   return paletteColors
-    .map((color) => {
-      const s = colorScale(color);
-      return [
-        `  /* ${color} */`,
-        `  --c-color-${color}-fill-quiet: ${s.fillQuiet};`,
-        `  --c-color-${color}-fill-normal: ${s.fillNormal};`,
-        `  --c-color-${color}-fill-loud: ${s.fillLoud};`,
-        `  --c-color-${color}-border-quiet: ${s.borderQuiet};`,
-        `  --c-color-${color}-border-normal: ${s.borderNormal};`,
-        `  --c-color-${color}-border-loud: ${s.borderLoud};`,
-        `  --c-color-${color}-on-quiet: ${s.onQuiet};`,
-        `  --c-color-${color}-on-normal: ${s.onNormal};`,
-        `  --c-color-${color}-on-loud: ${s.onLoud};`,
-      ].join('\n');
-    })
+    .map((color) => colorTokens(color, colorScale(color)))
     .join('\n\n');
+}
+
+/**
+ * White in the dark theme: filled like a white card, with gray's other colors.
+ * `--c-surface-white` is set in `shared/tokens.css`.
+ */
+function darkWhiteScale() {
+  const gray = (part) => `var(--c-color-gray-${part})`;
+
+  return {
+    fillQuiet: 'var(--c-surface-white)',
+    fillNormal: 'var(--c-surface-white)',
+    fillLoud: gray('fill-loud'),
+    borderQuiet: gray('border-quiet'),
+    borderNormal: gray('border-normal'),
+    borderLoud: gray('border-loud'),
+    onQuiet: gray('on-quiet'),
+    onNormal: gray('on-normal'),
+    onLoud: gray('on-loud'),
+  };
+}
+
+/** Black, a shade darker, so it stands off the dark theme's surfaces. */
+function darkerBlackScale() {
+  return {
+    ...colorScale('black'),
+    fillQuiet: 'var(--color-static-gray-950)',
+    fillNormal: 'var(--color-static-gray-950)',
+    fillLoud: 'var(--color-static-gray-950)',
+  };
+}
+
+function colorTokens(color, s) {
+  return [
+    `  /* ${color} */`,
+    `  --c-color-${color}-fill-quiet: ${s.fillQuiet};`,
+    `  --c-color-${color}-fill-normal: ${s.fillNormal};`,
+    `  --c-color-${color}-fill-loud: ${s.fillLoud};`,
+    `  --c-color-${color}-border-quiet: ${s.borderQuiet};`,
+    `  --c-color-${color}-border-normal: ${s.borderNormal};`,
+    `  --c-color-${color}-border-loud: ${s.borderLoud};`,
+    `  --c-color-${color}-on-quiet: ${s.onQuiet};`,
+    `  --c-color-${color}-on-normal: ${s.onNormal};`,
+    `  --c-color-${color}-on-loud: ${s.onLoud};`,
+  ].join('\n');
 }
 
 function buildSemanticTokens(semanticColors) {
@@ -159,16 +197,53 @@ function generateStyles(paletteColors, semanticColors) {
 /*
   Also on [data-theme]: these tokens are built from the palette with var(),
   which is substituted where it's declared, so a themed subtree re-resolves them.
+  Likewise what's in a black card, chip, or badge, and a neutral card, so it
+  doesn't take a tinted card's colors (see utils.js).
 */
 :root,
-[data-theme] {
+[data-theme],
+${BLACK_CONTENTS_SELECTOR},
+${NEUTRAL_CARD_SELECTOR} {
 ${buildColorableTokens(paletteColors)}
 ${buildSemanticTokens(semanticColors)}
+}
+
+/*
+  In the dark theme, white is a lighter surface than the page rather than
+  glaring white, with gray's other colors. Black stays black, a shade darker.
+*/
+[data-theme='dark'],
+${BLACK_CONTENTS_SELECTOR} {
+${colorTokens('white', darkWhiteScale())}
+
+${colorTokens('black', darkerBlackScale())}
 }
 
 ${[...paletteColors, ...Object.keys(semanticColors)]
   .map((c) => buildStyleBlock(c))
   .join('\n')}
+
+/*
+  A transparent button's text sits on the page rather than on its color's
+  fill. White's and black's colors don't follow the page's palette, so their
+  text can match the page; those buttons take the neutral colors instead.
+*/
+craft-button:is(${staticColors.map((c) => `[data-color='${c}']`).join(', ')}):is(
+    [variant~='outline'],
+    [variant~='dashed'],
+    [variant~='plain'],
+    [variant~='link']
+  ) {
+  --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
+  --c-color-border-quiet: var(--c-color-neutral-border-quiet);
+  --c-color-on-quiet: var(--c-color-neutral-on-quiet);
+  --c-color-fill-normal: var(--c-color-neutral-fill-normal);
+  --c-color-border-normal: var(--c-color-neutral-border-normal);
+  --c-color-on-normal: var(--c-color-neutral-on-normal);
+  --c-color-fill-loud: var(--c-color-neutral-fill-loud);
+  --c-color-border-loud: var(--c-color-neutral-border-loud);
+  --c-color-on-loud: var(--c-color-neutral-on-loud);
+}
 `;
 }
 
@@ -248,26 +323,65 @@ ${variants}
 
 export default async function main() {
   const {paletteColors, semanticColors} = await loadColorData();
-  const css = generateStyles(paletteColors, semanticColors);
-  writeFileSync(OUT_FILE, css);
-  console.log(`Generated ${OUT_FILE}`);
 
-  writeFileSync(OUT_LIT_FILE, generateLitStyles(paletteColors, semanticColors));
-  console.log(`Generated ${OUT_LIT_FILE}`);
+  const [css, lit] = await Promise.all([
+    formatOutput(OUT_FILE, generateStyles(paletteColors, semanticColors)),
+    formatOutput(
+      OUT_LIT_FILE,
+      generateLitStyles(paletteColors, semanticColors)
+    ),
+  ]);
 
-  formatOutput([OUT_FILE, OUT_LIT_FILE]);
+  // Only write files whose contents changed, so a running Vite dev server
+  // doesn't hot-update every component that imports them
+  if (writeFileIfChanged(OUT_FILE, css)) {
+    console.log(`Generated ${OUT_FILE}`);
+  }
+
+  if (writeFileIfChanged(OUT_LIT_FILE, lit)) {
+    console.log(`Generated ${OUT_LIT_FILE}`);
+  }
 }
 
 /*
-Both outputs are committed, so run them through the repo formatter. Otherwise
-every build rewrites them unformatted and `vp fmt` flips them back again.
+Both outputs are committed, so run them through the repo formatter, with the
+`fmt` settings from the root Vite config that `vp fmt` uses. Otherwise every
+build rewrites them unformatted and `vp fmt` flips them back again.
  */
-function formatOutput(files) {
-  const vpBin = resolve(
-    dirname(createRequire(import.meta.url).resolve('vite-plus/package.json')),
-    'bin/vp'
+let fmtOptions;
+
+async function formatOutput(file, content) {
+  fmtOptions ??= loadFmtOptions();
+
+  const {code, errors} = await format(file, content, await fmtOptions);
+  if (errors.length) {
+    throw new Error(`Couldn't format ${file}: ${errors[0].message}`);
+  }
+
+  return code;
+}
+
+async function loadFmtOptions() {
+  const {default: config} = await import(
+    pathToFileURL(resolve(ROOT, '../../vite.config.js')).href
   );
-  execFileSync(process.execPath, [vpBin, 'fmt', ...files], {stdio: 'ignore'});
+
+  // As `vp fmt` does, skip the plugins while the config evaluates. This runs
+  // inside build.js, so put the variable back for the bundler afterwards.
+  const previous = process.env.VP_RESOLVING_CONFIG_METADATA;
+  process.env.VP_RESOLVING_CONFIG_METADATA = '1';
+
+  try {
+    const {fmt} = await config({mode: 'production', command: 'build'});
+
+    return fmt;
+  } finally {
+    if (previous === undefined) {
+      delete process.env.VP_RESOLVING_CONFIG_METADATA;
+    } else {
+      process.env.VP_RESOLVING_CONFIG_METADATA = previous;
+    }
+  }
 }
 
 // Run when invoked directly (node scripts/generate-colors.js), but not when

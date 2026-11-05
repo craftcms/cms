@@ -61,6 +61,31 @@ function click(target: Element, init: MouseEventInit = {}) {
   return event;
 }
 
+/** Double-clicks `target` inside `item`, returning what `onDblClick` said. */
+function dblClick(
+  index: ReturnType<typeof mountIndex>,
+  row: (typeof index.view.elementIndex.data)[number],
+  target?: HTMLElement
+) {
+  const item = document.createElement('li');
+  item.append(target ?? document.createElement('span'));
+  let handled: boolean | undefined;
+  let prevented = false;
+  item.addEventListener(
+    'dblclick',
+    (event) => {
+      handled = index.itemBehavior.onDblClick?.(row, event as MouseEvent);
+      prevented = event.defaultPrevented;
+    },
+    {once: true}
+  );
+  item.firstElementChild!.dispatchEvent(
+    new MouseEvent('dblclick', {bubbles: true, cancelable: true})
+  );
+
+  return {handled, prevented};
+}
+
 beforeEach(() => {
   vi.stubGlobal('Craft', {systemUid: 'test', pageTrigger: 'p'});
   post.mockResolvedValue({data: {props: assetsData()}});
@@ -169,6 +194,111 @@ describe('opening a folder', () => {
   });
 });
 
+describe('double-clicking', () => {
+  it('selects an asset and lets the double-click through, to choose it', () => {
+    const index = mountIndex();
+
+    expect(dblClick(index, index.view.elementIndex.data[1]!)).toEqual({
+      handled: false,
+      prevented: false,
+    });
+    expect(index.view.selection.selectedIds.value).toEqual([12]);
+  });
+
+  it('keeps an asset its clicks already selected', () => {
+    const index = mountIndex();
+    index.view.table.getRowModel().rows[1]!.toggleSelected(true);
+
+    dblClick(index, index.view.elementIndex.data[1]!);
+
+    expect(index.view.selection.selectedIds.value).toEqual([12]);
+  });
+
+  it('opens a folder instead of choosing it', () => {
+    const index = mountIndex();
+
+    expect(dblClick(index, folderRow(index))).toEqual({
+      handled: true,
+      prevented: true,
+    });
+    expect(lastQuery()).toMatchObject({folderId: 7});
+  });
+
+  it('chooses nothing from a disabled asset', () => {
+    scope = effectScope();
+    const index = scope.run(() =>
+      useModalElementIndex({
+        action: 'element-selector-modals/body',
+        initial: assetsData(),
+        params: {elementType: 'Asset'},
+        disabledElementIds: () => [12],
+      })
+    )!;
+
+    expect(dblClick(index, index.view.elementIndex.data[1]!).handled).toBe(
+      true
+    );
+    expect(index.view.selection.selectedIds.value).toEqual([]);
+  });
+
+  it('chooses nothing from a control inside an asset', () => {
+    const index = mountIndex();
+
+    expect(
+      dblClick(
+        index,
+        index.view.elementIndex.data[1]!,
+        document.createElement('button')
+      ).handled
+    ).toBe(true);
+    expect(index.view.selection.selectedIds.value).toEqual([]);
+  });
+});
+
+describe('switching sources', () => {
+  it('pages the new source by its own total', async () => {
+    const pagination = (total: number) => ({
+      total,
+      per_page: 50,
+      current_page: 1,
+      last_page: Math.ceil(total / 50),
+      next_page_url: null,
+      prev_page_url: null,
+      from: 1,
+      to: Math.min(total, 50),
+    });
+    const index = mountIndex(
+      assetsData({pagination: pagination(58)} as Partial<ContentIndexData>)
+    );
+    expect(index.view.table.getPageCount()).toBe(2);
+
+    post.mockResolvedValue({
+      data: {
+        props: assetsData({
+          source: otherVolume,
+          pagination: pagination(6),
+        } as Partial<ContentIndexData>),
+      },
+    });
+    index.changeSource(otherVolume.key);
+    await vi.waitFor(() =>
+      expect(index.view.elementIndex.source?.key).toBe(otherVolume.key)
+    );
+
+    expect(index.view.table.getPageCount()).toBe(1);
+  });
+
+  it('marks the chosen source active before its listing loads', async () => {
+    const index = mountIndex();
+    post.mockReturnValue(new Promise(() => {}));
+
+    index.changeSource(otherVolume.key);
+
+    expect(index.activeSourceKey.value).toBe(otherVolume.key);
+    expect(index.view.elementIndex.source?.key).toBe(volume.key);
+  });
+});
+
 describe('leaving a folder', () => {
   async function openPhotos(index: ReturnType<typeof mountIndex>) {
     index.openFolder(7);
@@ -264,5 +394,37 @@ describe('picking folders', () => {
       true
     );
     expect(lastQuery()).toMatchObject({folderId: 7});
+  });
+});
+
+describe('searching subfolders', () => {
+  const searching = {
+    search: 'cat',
+    canSearchSubfolders: true,
+  } as Partial<ContentIndexData>;
+
+  it('is only offered while searching a folder that has subfolders', () => {
+    expect(mountIndex().canSearchSubfolders.value).toBe(false);
+    scope.stop();
+    expect(
+      mountIndex(assetsData({search: 'cat'})).canSearchSubfolders.value
+    ).toBe(false);
+    scope.stop();
+    expect(mountIndex(assetsData(searching)).canSearchSubfolders.value).toBe(
+      true
+    );
+  });
+
+  it('asks for subfolders’ assets, and stops asking once it’s turned off', async () => {
+    const index = mountIndex(assetsData(searching));
+
+    index.setIncludeSubfolders(true);
+    await vi.waitFor(() =>
+      expect(lastQuery()).toMatchObject({search: 'cat', includeSubfolders: 1})
+    );
+
+    index.setIncludeSubfolders(false);
+    await vi.waitFor(() => expect(post).toHaveBeenCalledTimes(2));
+    expect(lastQuery()).not.toHaveProperty('includeSubfolders');
   });
 });

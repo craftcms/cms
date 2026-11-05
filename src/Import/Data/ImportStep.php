@@ -23,6 +23,7 @@ readonly class ImportStep implements JsonSerializable
         public ?string $source,
         public ?string $transformer,
         public ?int $batchSize,
+        public bool $enabled,
         #[LiteralTypeScriptType('Record<string, unknown>')]
         public array $settings,
     ) {}
@@ -36,6 +37,7 @@ readonly class ImportStep implements JsonSerializable
             'source' => $this->source,
             'transformer' => $this->transformer,
             'batchSize' => $this->batchSize,
+            'enabled' => $this->enabled,
             'settings' => $this->settings,
         ];
     }

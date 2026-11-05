@@ -5,7 +5,7 @@ import {customElement, property} from 'lit/decorators.js';
 import type {UploadState} from '@/upload-client';
 
 /**
- * @fires craft-upload-retry - Retry the upload or resolve its filename conflict.
+ * @fires craft-upload-retry - Retry the failed upload.
  * @fires craft-upload-cancel - Cancel the upload.
  * @fires craft-upload-pause - Pause the active transfer.
  * @fires craft-upload-resume - Resume the paused transfer.
@@ -23,7 +23,7 @@ export class FileUploadNotificationElement extends LitElement {
   speed = 0;
 
   @property()
-  state: UploadState | 'conflict' = 'ready';
+  state: UploadState = 'ready';
 
   @property()
   message = '';
@@ -42,7 +42,7 @@ export class FileUploadNotificationElement extends LitElement {
   }
 
   protected override render() {
-    const needsAction = this.state === 'failed' || this.state === 'conflict';
+    const failed = this.state === 'failed';
     const paused = this.state === 'paused';
     const message = paused
       ? t('Upload paused.')
@@ -59,9 +59,9 @@ export class FileUploadNotificationElement extends LitElement {
           .max=${this.total}
           .value=${this.loaded}
           aria-label=${t('Upload progress')}
-          ?hidden=${needsAction}
+          ?hidden=${failed}
         ></progress>
-        <span class="wrap-anywhere" ?hidden=${needsAction}>
+        <span class="wrap-anywhere" ?hidden=${failed}>
           ${t('{loaded} of {total}', {
             loaded: formatBytes(this.loaded),
             total: formatBytes(this.total),
@@ -82,11 +82,9 @@ export class FileUploadNotificationElement extends LitElement {
             >${paused ? t('Resume') : t('Pause')}</craft-button
           >
           <craft-button
-            ?hidden=${!needsAction}
+            ?hidden=${!failed}
             @click=${() => this.requestAction('retry')}
-            >${this.state === 'conflict'
-              ? t('Action required')
-              : t('Retry')}</craft-button
+            >${t('Retry')}</craft-button
           >
           <craft-button
             ?disabled=${this.state === 'completing'}

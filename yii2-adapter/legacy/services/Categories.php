@@ -37,7 +37,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
-use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -512,7 +511,7 @@ class Categories extends Component
             $categories = Category::find()
                 ->groupId($groupRecord->id)
                 ->trashed()
-                ->andWhere(['categories.deletedWithGroup' => true])
+                ->where('categories.deletedWithGroup', true)
                 ->all();
 
             Elements::restoreElements($categories);
@@ -634,13 +633,13 @@ class Categories extends Component
                 ->whereColumn('categories.id', 'elements.id')
                 ->whereNull(['elements.canonicalId', 'elements.revisionId', 'elements.dateDeleted']);
 
-            DB::table(new Alias($categoriesTable, 'categories'))
-                ->join(new Alias($elementsTable, 'elements'), 'elements.id', 'categories.id')
+            DB::table($categoriesTable)
+                ->join($elementsTable, 'elements.id', 'categories.id')
                 ->where($condition)
                 ->update(['deletedWithGroup' => true]);
 
-            DB::table(new Alias($elementsTable, 'elements'))
-                ->join(new Alias($categoriesTable, 'categories'), 'elements.id', 'categories.id')
+            DB::table($elementsTable)
+                ->join($categoriesTable, 'elements.id', 'categories.id')
                 ->where($condition)
                 ->update(['dateDeleted' => $now]);
 
@@ -723,9 +722,8 @@ class Categories extends Component
 
         // Get the structure ID
         if (!isset($criteria['structureId'])) {
-            $criteria['structureId'] = DB::table(new Alias('categories',
-                'categories'))
-                ->join(new Alias('categorygroups', 'categorygroups'), 'categorygroups.id',
+            $criteria['structureId'] = DB::table('categories')
+                ->join('categorygroups', 'categorygroups.id',
                     'categories.groupId')
                 ->where('categories.id', $categoryId)
                 ->value('categorygroups.structureId');
@@ -751,7 +749,7 @@ class Categories extends Component
      */
     public function fillGapsInCategories(array &$categories): void
     {
-        Structures::fillGapsInElements($categories);
+        app(\CraftCms\Cms\Structure\Structures::class)->fillGapsInElements($categories);
     }
 
     /**
@@ -764,7 +762,7 @@ class Categories extends Component
      */
     public function applyBranchLimitToCategories(array &$categories, int $branchLimit): void
     {
-        Structures::applyBranchLimitToElements($categories, $branchLimit);
+        app(\CraftCms\Cms\Structure\Structures::class)->applyBranchLimitToElements($categories, $branchLimit);
     }
 
     /**

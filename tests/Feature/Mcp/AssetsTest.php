@@ -2,8 +2,11 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Ai\Settings;
+use CraftCms\Cms\Asset\Analysis\Jobs\AnalyzeImage;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Events\AssetReplacing;
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Cms;
@@ -22,6 +25,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Passport\Passport;
 use Mcp\Exception\ToolCallException;
@@ -64,7 +68,7 @@ it('creates an asset from a completed upload session once', function () {
 
     $key = openssl_pkey_new(['private_key_bits' => 2048]);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
-    Passport::actingAs(User::query()->firstOrFail(), ['mcp:use'], 'craft-mcp');
+    Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     $created = McpRequest::send($this, 'tools/call', [
         'name' => 'assets.create',
         'arguments' => ['uploadId' => $upload['id'], 'attributes' => ['title' => 'Uploaded document']],
@@ -80,7 +84,7 @@ it('creates an asset from a completed upload session once', function () {
 it('accepts client file references through MCP and stores the downloaded bytes', function (array $reference, ?string $filename): void {
     $key = openssl_pkey_new(['private_key_bits' => 2048]);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
-    Passport::actingAs(User::query()->firstOrFail(), ['mcp:use'], 'craft-mcp');
+    Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     Http::fake(['https://files.example.test/*' => Http::response('Downloaded content')]);
     $temporaryFiles = File::files(Path::temp());
 
@@ -150,23 +154,64 @@ it('sets and clears an image’s focal point through elements.update', function 
         volumeId: $this->folder->volumeId,
     )['asset']['id'];
     config()->set('passport.public_key', openssl_pkey_get_details(openssl_pkey_new(['private_key_bits' => 2048]))['key']);
-    Passport::actingAs(User::query()->firstOrFail(), ['mcp:use'], 'craft-mcp');
+    Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     $update = fn (mixed $focalPoint) => McpRequest::send($this, 'tools/call', [
         'name' => 'elements.update',
         'arguments' => ['type' => 'assets', 'id' => $id, 'attributes' => ['focalPoint' => $focalPoint]],
     ])->assertOk();
 
-    $update(['x' => 0.25, 'y' => 0.8])
+    $update('0.25;0.8')
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.element.hasFocalPoint', true);
 
     expect(Asset::findOne($id)->getFocalPoint())->toEqual(['x' => 0.25, 'y' => 0.8]);
 
-    $update(['x' => 1.5, 'y' => 0.5])->assertJsonPath('result.isError', true);
+    $update('1.5;0.5')->assertJsonPath('result.isError', true);
     $update(null)->assertJsonPath('result.isError', false);
 
     expect(Asset::findOne($id)->getHasFocalPoint())->toBeFalse();
 });
+
+it('sets an asset’s uploader through elements.update', function (bool $peer, bool $allowed): void {
+    Http::fake(['https://files.example.test/*' => Http::response('abc')]);
+    $user = User::factory()->create(['admin' => false]);
+    $volume = Volume::findOrFail($this->folder->volumeId);
+    app(UserPermissions::class)->saveUserPermissions($user->id, [
+        'accessCp',
+        ...array_map(
+            static fn (string $permission): string => "$permission:$volume->uid",
+            ['viewAssets', 'saveAssets', ...($peer ? ['viewPeerAssets', 'savePeerAssets'] : [])],
+        ),
+    ]);
+    actingAs($user);
+    app(Request::class)->setUserResolver(static fn (): User => $user);
+    $id = app(Assets::class)->create(
+        file: ['download_url' => 'https://files.example.test/download', 'file_id' => 'file_text', 'file_name' => 'file.txt'],
+        volumeId: $this->folder->volumeId,
+    )['asset']['id'];
+    $other = User::factory()->create();
+    config()->set('passport.public_key', openssl_pkey_get_details(openssl_pkey_new(['private_key_bits' => 2048]))['key']);
+    Passport::actingAs($user, ['mcp:admin'], 'craft-mcp');
+    $update = fn (mixed $uploaderId) => McpRequest::send($this, 'tools/call', [
+        'name' => 'elements.update',
+        'arguments' => ['type' => 'assets', 'id' => $id, 'attributes' => ['uploaderId' => $uploaderId]],
+    ])->assertOk();
+
+    $update($other->id)->assertJsonPath('result.isError', ! $allowed);
+
+    expect(Asset::findOne($id)->uploaderId)->toBe($allowed ? $other->id : $user->id);
+
+    if ($allowed) {
+        // Within the integer column's range: PostgreSQL rejects larger IDs outright.
+        $update(User::query()->max('id') + 1)->assertJsonPath('result.isError', true);
+        $update(null)->assertJsonPath('result.isError', false);
+
+        expect(Asset::findOne($id)->uploaderId)->toBeNull();
+    }
+})->with([
+    'reassigning requires peer permissions' => [false, false],
+    'peer permissions allow reassigning' => [true, true],
+]);
 
 it('releases the downloaded file when asset validation fails', function (): void {
     Http::fake(['https://files.example.test/*' => Http::response('Downloaded content')]);
@@ -205,7 +250,7 @@ it('checks destination permissions before downloading a file reference', functio
     $user = User::query()->firstOrFail();
     $user->admin = false;
     $user->save();
-    app(UserPermissions::class)->saveUserPermissions($user->id, ['accessCp', 'useCraftMcp']);
+    app(UserPermissions::class)->saveUserPermissions($user->id, ['accessCp']);
     actingAs($user);
     app(Request::class)->setUserResolver(static fn (): User => $user);
     Http::fake();
@@ -286,7 +331,7 @@ describe('file replacement', function (): void {
     it('replaces the stored bytes through MCP while preserving the asset identity, metadata and entry references', function (string $source): void {
         $key = openssl_pkey_new(['private_key_bits' => 2048]);
         config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
-        Passport::actingAs(User::query()->firstOrFail(), ['mcp:use'], 'craft-mcp');
+        Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
         $originalId = $this->asset->id;
         $originalUid = $this->asset->uid;
         $originalPath = $this->asset->getPath();
@@ -467,5 +512,37 @@ describe('file replacement', function (): void {
 
         expect(File::files(Path::temp()))->toEqual($temporaryFiles)
             ->and(Storage::disk('upload-destination')->get($this->asset->getPath()))->toBe('Original content');
+    });
+});
+
+describe('assets.analyze', function () {
+    beforeEach(function () {
+        Queue::fake();
+        $this->image = AssetModel::factory()->createElement(['volumeId' => $this->folder->volumeId, 'folderId' => $this->folder->id, 'kind' => 'image', 'filename' => 'photo.png']);
+        $this->document = AssetModel::factory()->createElement(['volumeId' => $this->folder->volumeId, 'folderId' => $this->folder->id, 'kind' => 'pdf', 'filename' => 'doc.pdf']);
+    });
+
+    $setUpAi = function (): void {
+        config(['ai.providers' => ['openai' => ['driver' => 'openai', 'key' => 'sk-test']]]);
+        app()->instance(Settings::class, new Settings(['defaults' => ['text' => ['provider' => 'openai']]]));
+    };
+
+    it('queues the images that have something for the tasks to fill in', function () use ($setUpAi): void {
+        $setUpAi();
+
+        expect(app(Assets::class)->analyze([$this->image->id, $this->document->id], ['craft:altText']))
+            ->toBe(['queued' => [$this->image->id], 'skipped' => [$this->document->id]]);
+        Queue::assertPushed(AnalyzeImage::class, fn (AnalyzeImage $job): bool => $job->assetId === $this->image->id && $job->tasks === ['craft:altText']);
+    });
+
+    it('says when no image analysis tasks are set up, or a task isn’t one', function () use ($setUpAi): void {
+        expect(fn () => app(Assets::class)->analyze([$this->image->id]))
+            ->toThrow(ToolCallException::class, 'No image analysis AI tasks are set up.');
+
+        $setUpAi();
+
+        expect(fn () => app(Assets::class)->analyze([$this->image->id], ['seo:metaDescription']))
+            ->toThrow(ToolCallException::class, 'Unknown image analysis tasks: seo:metaDescription.');
+        Queue::assertNothingPushed();
     });
 });

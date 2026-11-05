@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Collection;
+
 return [
     'allowedTags' => [
         'apply',
@@ -7,6 +9,7 @@ return [
         'for',
         'if',
         'macro',
+        'render',
         'set',
         'switch',
         'verbatim',
@@ -130,7 +133,9 @@ return [
         'url',
         'uuid',
     ],
-    'allowedMethods' => [],
+    'allowedMethods' => [
+        Collection::class => ['render'],
+    ],
     'allowedProperties' => [],
     'allowedClasses' => [],
 ];

@@ -5,6 +5,7 @@ import {
   type ElementIndexRow,
 } from '@/modules/elements/index/composables/useContentIndexData';
 import {useDetachedElementIndex} from '@/modules/elements/index/composables/useDetachedElementIndex';
+import {isInteractiveClick} from '@/common/utils/dom';
 import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
 
 type Row = ElementIndexRow;
@@ -16,7 +17,12 @@ export interface FolderCrumb {
   url: string | null;
 }
 
-type ModalIndexData = ContentIndexData & {folderBreadcrumbs?: FolderCrumb[]};
+/** The extras `ModalIndexViewModel` adds to the shared index payload. */
+type ModalIndexData = ContentIndexData & {
+  folderBreadcrumbs?: FolderCrumb[];
+  canSearchSubfolders?: boolean;
+  includeSubfolders?: boolean;
+};
 
 /** The row keys folder handling reads; `ElementIndex` hands behaviors bare items. */
 interface IndexItem {
@@ -114,11 +120,31 @@ export function useModalElementIndex(options: Options) {
   );
 
   /**
+   * Whether a search is on screen that could reach into the subfolders of the
+   * folder being listed, as the assets index offers.
+   */
+  const canSearchSubfolders = computed(() => {
+    const payload = index.payload.value as ModalIndexData;
+
+    return Boolean(payload.search) && Boolean(payload.canSearchSubfolders);
+  });
+
+  const includeSubfolders = computed(() =>
+    Boolean((index.payload.value as ModalIndexData).includeSubfolders)
+  );
+
+  function setIncludeSubfolders(include: boolean): void {
+    index.visitor.merge(
+      {includeSubfolders: include ? 1 : undefined},
+      {resetPage: true}
+    );
+  }
+
+  /**
    * Lists a folder's contents in place of the current listing.
    *
-   * The selection is cleared first: it can only hand back rows that are on
-   * screen, so one made in the old listing would linger in the table's state
-   * without being selectable or submitted.
+   * The selection is cleared first, like on a source switch: it belongs to the
+   * listing it was made in.
    */
   function openFolder(folderId: number): void {
     index.clearSelection();
@@ -171,6 +197,36 @@ export function useModalElementIndex(options: Options) {
 
       return !selectFolders;
     },
+    /**
+     * Double-clicking a folder opens it. Double-clicking anything selectable
+     * makes sure it's selected — its two clicks toggled it on and back off —
+     * then lets the event through, so the picker chooses it. Anything else,
+     * including a double-click on a control inside an item, is consumed.
+     */
+    onDblClick(row, event) {
+      if (isInteractiveClick(event, event.currentTarget)) {
+        return true;
+      }
+
+      if (row.isFolder && typeof row.folderId === 'number') {
+        event.preventDefault();
+        openFolder(row.folderId);
+
+        return true;
+      }
+
+      const tableRow = table
+        .getRowModel()
+        .rows.find(({original}) => original.id === row.id);
+
+      if (!tableRow?.getCanSelect()) {
+        return true;
+      }
+
+      index.view.selection.selectRow(tableRow, {checked: true});
+
+      return false;
+    },
     onKeydown(row, event) {
       if (!row.isFolder || typeof row.folderId !== 'number') {
         return false;
@@ -196,7 +252,7 @@ export function useModalElementIndex(options: Options) {
    * because `onModalSelect` and `app/render-elements` both consume it.
    */
   const selectedElements = computed<SelectedElement[]>(() =>
-    table.getSelectedRowModel().rows.map(({original}) => {
+    index.view.selection.selectedRows.value.map((original) => {
       const info = elementInfo(original);
 
       return {
@@ -220,13 +276,28 @@ export function useModalElementIndex(options: Options) {
 
   const hasSelection = computed(() => selectedElements.value.length > 0);
 
+  /**
+   * The source being switched to, as soon as it's chosen, rather than once its
+   * listing has loaded, so the sidebar responds to the click right away. A
+   * failed load puts the query back, and this with it.
+   */
+  const activeSourceKey = computed(() => {
+    const key = index.visitor.query.value.source;
+
+    return typeof key === 'string' ? key : index.view.elementIndex.source?.key;
+  });
+
   return {
     ...index,
     changeSource,
+    canSearchSubfolders,
+    includeSubfolders,
+    setIncludeSubfolders,
     folderBreadcrumbs,
     openFolder,
     itemBehavior,
     selectedElements,
     hasSelection,
+    activeSourceKey,
   };
 }

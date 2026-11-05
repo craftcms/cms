@@ -48,7 +48,7 @@ export function useAssetFileActions(
     targetFolderId: number,
     assetIds: number[],
     folderIds: number[]
-  ) => Promise<void>
+  ) => Promise<unknown>
 ) {
   function onActionPerformed(): void {
     index.clearSelection();

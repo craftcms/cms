@@ -16,6 +16,8 @@ export interface BaseOption {
   value: string;
 }
 export interface CheckboxOption extends BaseOption {
+  /** Trusted HTML shown in place of `label`. */
+  labelHtml?: string;
   info?: string;
   checked?: boolean;
   disabled?: boolean;
@@ -67,7 +69,8 @@ export interface ChipIndicator {
 export interface BreadcrumbItem {
   /**
    * Identifies a crumb the screen owns. `site-crumb` marks a screen's own site
-   * switcher, which the shared one defers to.
+   * switcher, which the shared one defers to; `revision-crumb` marks an element
+   * editor's switcher between its current state, drafts and revisions.
    */
   id?: string | null;
   href?: string | null;
@@ -113,6 +116,10 @@ export interface ActionItemButton {
   attributes?: ServerAttributes;
   /** A dot beside the label, for a nav entry with a badge count. */
   indicator?: boolean;
+  /** A number after the label, for a nav entry that counts what it lists. */
+  count?: number;
+  /** What the count is, for screen readers. Defaults to a count of items. */
+  countLabel?: string;
   /**
    * Extra attributes for the rendered element — drag-and-drop drop-target
    * hooks, say. Undefined values are dropped rather than rendered empty.
@@ -175,6 +182,10 @@ export interface ActionItemLink {
   status?: string;
   /** A dot beside the label, for a nav entry with a badge count. */
   indicator?: boolean;
+  /** A number after the label, for a nav entry that counts what it lists. */
+  count?: number;
+  /** What the count is, for screen readers. Defaults to a count of items. */
+  countLabel?: string;
   /**
    * Extra attributes for the rendered element — drag-and-drop drop-target
    * hooks, say. Undefined values are dropped rather than rendered empty.
@@ -186,6 +197,8 @@ export interface ActionItemLink {
    * CP, and for the handful of places still handing off to the legacy stack.
    */
   external?: boolean;
+  /** Where the link opens, such as `_blank` for a new tab. Implies `external`. */
+  target?: string;
   /**
    * Marks this as the one currently in effect, for a list that's a choice
    * rather than a set of commands — a source switcher, say. When any item in a
@@ -363,6 +376,11 @@ export const TableAppearance = {
    * `--cp-container-padding` to match.
    */
   Flush: 'flush',
+  /**
+   * Sits inside the container's padding, with its outer cells' content flush
+   * with its edges.
+   */
+  Aligned: 'aligned',
   /** Sits in a raised pane. */
   Raised: 'raised',
 } as const;

@@ -92,7 +92,11 @@ class ProjectConfig
 
     public const string PATH_ADDRESS_FIELD_LAYOUTS = self::PATH_ADDRESSES.'.'.'fieldLayouts';
 
+    public const string PATH_AI = 'ai';
+
     public const string PATH_ASSET_TRANSFORMERS = 'assetTransformers';
+
+    public const string PATH_CP_NAV = 'cpNav';
 
     public const string PATH_DATE_MODIFIED = 'dateModified';
 
@@ -735,6 +739,19 @@ class ProjectConfig
             }
         } finally {
             $this->releaseLock();
+        }
+    }
+
+    /**
+     * Saves what changed during a request or command: the modified project
+     * config state, updated YAML files, and the config files' parsed times.
+     */
+    public function flushChanges(): void
+    {
+        $this->flush();
+
+        if ($this->waitingToUpdateParsedConfigTimes) {
+            $this->updateParsedConfigTimes();
         }
     }
 

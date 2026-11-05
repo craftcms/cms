@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import '@craftcms/ui/components/timeline-item/timeline-item';
-  import {computed} from 'vue';
+  import {computed, useSlots} from 'vue';
   import type {ActivityEvent} from '@/modules/activity/composables/useActivityTimeline';
   import ActivityTimelineActor from './ActivityTimelineActor.vue';
   import ActivityTimelineChanges from './ActivityTimelineChanges.vue';
@@ -14,8 +14,19 @@
     last: boolean;
   }>();
 
+  defineSlots<{
+    /** More of the event, below its changes, such as a comment’s text. */
+    default?(): unknown;
+    /** Beside the event’s time, before it, such as an actions menu. */
+    'meta-start'?(): unknown;
+  }>();
+
+  const slots = useSlots();
   const hasBody = computed(
-    () => props.event.source.label !== 'Craft' || props.event.changes.length > 0
+    () =>
+      props.event.source.label !== 'Craft' ||
+      props.event.changes.length > 0 ||
+      Boolean(slots.default)
   );
 
   function sentenceFragment(text: string | null): string {
@@ -27,7 +38,7 @@
 
 <template>
   <article :data-activity-event="event.id" class="activity-timeline__event">
-    <craft-timeline-item :last="last">
+    <craft-timeline-item .last="last">
       <craft-icon slot="marker" :name="event.icon ?? 'wave-pulse'" />
 
       <div slot="heading" class="activity-timeline__summary">
@@ -59,9 +70,12 @@
           v-if="event.changes.length"
           :changes="event.changes"
         />
+
+        <slot />
       </div>
 
-      <div slot="meta">
+      <div slot="meta" class="activity-timeline__meta">
+        <slot name="meta-start" />
         <time
           :datetime="event.occurredAt"
           :title="event.formattedOccurredAt.full"
@@ -80,6 +94,12 @@
 
   .activity-timeline__description {
     margin-inline-start: 0.25em;
+  }
+
+  .activity-timeline__meta {
+    display: flex;
+    align-items: center;
+    gap: var(--c-spacing-sm);
   }
 
   .activity-timeline__body {

@@ -7,12 +7,16 @@ namespace CraftCms\Cms\Mcp;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
-use CraftCms\Cms\Mcp\Validation\PublicEndpointRule;
+use CraftCms\Cms\Mcp\Validation\EndpointRule;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\Volumes;
+use CraftCms\Cms\Support\Str;
+use Illuminate\Http\Request;
 use Illuminate\Validation\Validator;
 
 /**
@@ -20,6 +24,15 @@ use Illuminate\Validation\Validator;
  */
 class Settings extends Component
 {
+    /** Whether the authenticated MCP server is enabled. */
+    public bool $enabled = false;
+
+    /** The authenticated MCP server's app-relative path. */
+    public string $route = '/mcp';
+
+    /** The app-relative path that always requires authentication, so OAuth clients can discover it. */
+    public string $authorizationRoute = '/mcp/auth';
+
     public bool $publicEnabled = false;
 
     public string $publicRoute = '/mcp';
@@ -64,8 +77,11 @@ class Settings extends Component
     public function getRules(): array
     {
         return [
+            'enabled' => ['boolean'],
+            'route' => ['required', 'string', 'max:255', new EndpointRule],
+            'authorizationRoute' => ['required', 'string', 'max:255', new EndpointRule],
             'publicEnabled' => ['boolean'],
-            'publicRoute' => ['required', 'string', 'max:255', new PublicEndpointRule],
+            'publicRoute' => ['required', 'string', 'max:255', new EndpointRule(public: true)],
             'publicSiteHandles' => ['array'],
             'publicSiteHandles.*' => ['string', 'max:512'],
             'publicSectionHandles' => ['array'],
@@ -110,6 +126,8 @@ class Settings extends Component
     public function attributeLabels(): array
     {
         return [
+            'route' => 'MCP endpoint',
+            'authorizationRoute' => 'MCP authorization endpoint',
             'publicRoute' => 'Public MCP endpoint',
             'publicSiteHandles' => 'Public site handles',
             'publicSectionHandles' => 'Public section handles',
@@ -118,6 +136,83 @@ class Settings extends Component
             'publicUserGroupHandles' => 'Public user group handles',
             'publicElementTypes' => 'Public element types',
         ];
+    }
+
+    /** Whether a route begins with the control panel trigger. */
+    public function isCpRoute(string $route): bool
+    {
+        $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+
+        return $cpTrigger !== '' && str_starts_with(trim($route, '/').'/', $cpTrigger.'/');
+    }
+
+    /**
+     * Returns the servers that `/.well-known/ai-catalog.json` advertises, as app-relative paths mapped to whether
+     * each is the public server.
+     *
+     * Servers on control panel URLs are never advertised, and the authenticated server is only advertised when
+     * people can register for an account on the front end.
+     *
+     * @return array<string, bool>
+     */
+    public function discoverableServers(): array
+    {
+        $servers = [];
+
+        if ($this->publicEnabled && $this->isDiscoverable($this->publicRoute)) {
+            $servers[trim($this->publicRoute, '/')] = true;
+        }
+
+        if (
+            $this->enabled &&
+            app(ProjectConfig::class)->get('users.allowPublicRegistration') &&
+            $this->isDiscoverable($this->authorizationRoute)
+        ) {
+            $servers[trim($this->authorizationRoute, '/')] ??= false;
+        }
+
+        return $servers;
+    }
+
+    /** Returns the name MCP clients should give a server. */
+    public function serverName(bool $isPublic): string
+    {
+        return (Str::slug(Cms::systemName()) ?: 'craft').($isPublic ? '' : '-admin');
+    }
+
+    /** Whether both servers are enabled and share an endpoint. */
+    public function sharesEndpoint(): bool
+    {
+        return $this->enabled && $this->publicEnabled && trim($this->route, '/') === trim($this->publicRoute, '/');
+    }
+
+    /**
+     * Returns the absolute URL for a route.
+     *
+     * Clients discover OAuth endpoints from these URLs, so they come from the configured base URLs rather than the
+     * request's host.
+     */
+    public function url(string $route): string
+    {
+        return rtrim($this->baseUrl($route), '/').'/'.trim($route, '/');
+    }
+
+    /** Returns the configured base URL for a route, without its control panel trigger. */
+    public function baseUrl(string $route): string
+    {
+        $baseUrl = $this->isCpRoute($route) ? Env::parse(Cms::config()->baseCpUrl) : null;
+
+        return (string) ($baseUrl ?? config('app.url'));
+    }
+
+    /** Whether a route has an endpoint and a request to its URL wouldn't be a control panel request. */
+    private function isDiscoverable(string $route): bool
+    {
+        $path = trim($route, '/');
+
+        return $path !== ''
+            && app(EndpointConflicts::class)->find($path) === null
+            && ! Request::create($this->url($route))->isCpRequest();
     }
 
     private function nestedEntryFieldByHandle(string $handle): mixed

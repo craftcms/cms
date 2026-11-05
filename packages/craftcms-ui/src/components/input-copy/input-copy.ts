@@ -2,7 +2,6 @@ import CraftInput from '../input/input.js';
 import {html} from 'lit';
 import {property} from 'lit/decorators.js';
 import {t} from '@src/utilities/translate';
-import styles from './input-copy.styles.js';
 import '../copy-button/copy-button.js';
 import type CraftCopyButton from '../copy-button/copy-button.js';
 
@@ -19,16 +18,15 @@ import type CraftCopyButton from '../copy-button/copy-button.js';
  * @slot feedback - Validation feedback.
  */
 export default class CraftInputCopy extends CraftInput {
-  static override get styles() {
-    return [...super.styles, styles];
-  }
-
   /**
    * Value sent to the clipboard when the copy button is clicked. When omitted,
    * the input's displayed value is used instead.
    */
   @property({type: String, attribute: 'copy-value'})
   copyValue?: string;
+
+  /** The copy button sits inside the input's border, like a slug's regenerate button. */
+  override inlineSuffix = true;
 
   protected _renderSuffix() {
     return html`<craft-copy-button

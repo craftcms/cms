@@ -74,6 +74,22 @@ it('reads a file with a registered data type for its extension', function () {
         ->toBe([['line' => 'not import data']]);
 });
 
+it('leaves the reserved keys out of the source headings, wherever they’re nested', function () {
+    $headings = $this->import->getDataHeadings(($this->fixturePath)('entries-reserved-keys.json'));
+
+    expect(array_column($headings, 'value'))
+        ->toContain('title', 'myMatchCriteria', 'blocks', 'blocks.heading')
+        ->not->toContain(
+            'matchCriteria',
+            'matchCriteria.title',
+            'clearableItems',
+            'keepMissingNestedElements',
+            'keepMissingNestedElements.blocks',
+            'blocks.matchCriteria',
+            'blocks.matchCriteria.heading',
+        );
+});
+
 it('returns the source headings with a "Please select" option prepended', function () {
     $headings = $this->import->getDataHeadings(($this->fixturePath)('entries-plain-text.json'));
 

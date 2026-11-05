@@ -1,8 +1,9 @@
 <script setup lang="ts">
-  import {computed, onMounted, provide, ref, useTemplateRef, watch} from 'vue';
+  import {computed, h, provide, ref, useTemplateRef, watch} from 'vue';
   import {onLongPress} from '@vueuse/core';
   import {ButtonVariant, t} from '@craftcms/ui';
   import PaginationControls from '@/common/components/PaginationControls.vue';
+  import PlaceholderShape from '@/common/components/PlaceholderShape.vue';
   import {
     TableAppearance,
     TableSpacing,
@@ -12,16 +13,21 @@
   import ElementCards from '@/modules/elements/components/ElementCards.vue';
   import ElementThumbs from '@/modules/elements/components/ElementThumbs.vue';
   import ElementIndexToolbar from '@/modules/elements/index/components/ElementIndexToolbar.vue';
+  import SelectAllBanner from '@/modules/elements/index/components/SelectAllBanner.vue';
   import type {ElementIndexView} from '@/modules/elements/index/types/model';
   import type {StructureMove} from '@/modules/elements/index/composables/useElementIndexStructure';
   import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
   import ElementIndexExportMenu from '@/modules/elements/index/components/ElementIndexExportMenu.vue';
   import {useInlineEditing} from '@/modules/elements/index/composables/useInlineEditing';
+  import {commandShortcut} from '@/common/utils/keyShortcuts';
+  import {resizeThumbs} from '@/modules/elements/index/composables/useElementIndexThumbSize';
+  import type {ThumbSize} from '@/modules/elements/types/view-state';
   import {elementIndexContextKey} from '@/modules/elements/index/index-context';
 
   interface ElementIndexQuickEdit {
     longPress?: boolean;
     onDblClick(event: MouseEvent): void;
+    openEditor?(url: string, opener?: HTMLElement | null): void;
     deferChipClick?(event: MouseEvent): boolean;
     onPrimaryLink?(event: MouseEvent): void;
     suppressPrimaryLinkVisit?(event: MouseEvent): void;
@@ -32,6 +38,11 @@
       view: ElementIndexView;
       contained?: boolean;
       footerActive?: boolean;
+      /**
+       * Whether selecting the whole page offers to select every result the
+       * index lists, on every page.
+       */
+      offersSelectAll?: boolean;
       itemBehavior?: ElementIndexItemBehavior;
       showSites?: boolean;
       enableAdjustPageSize?: boolean;
@@ -48,6 +59,7 @@
     {
       contained: false,
       footerActive: false,
+      offersSelectAll: false,
       enableAdjustPageSize: false,
       withBottomBorder: true,
       tableAppearance: TableAppearance.Flush,
@@ -66,12 +78,18 @@
     status,
     conditions,
     mode,
+    thumbSize,
+    thumbSizeOptions,
+    cardThumbs,
     sortField,
     sortDirection,
+    viewCustomized,
+    resetView,
     tableColumns,
     columnOptions,
     visibleViewModes,
     loading,
+    pending,
     processing,
     filterContext,
     submit,
@@ -79,6 +97,7 @@
     structureView,
     toggleStructure,
     selection,
+    selectAll,
   } = props.view;
   const structure = props.view.structure;
   const rowReorder = props.view.rowReorder;
@@ -92,6 +111,14 @@
   provide(elementIndexContextKey, filterContext);
 
   const body = useTemplateRef<HTMLElement>('body');
+
+  async function onThumbSizeChange(size: ThumbSize): Promise<void> {
+    if (body.value) {
+      await resizeThumbs(body.value, size);
+    }
+
+    thumbSize.value = size;
+  }
   const editableRows = computed(() =>
     data.value.filter((row) => row.inlineEditable)
   );
@@ -103,6 +130,15 @@
     load: () => inlineEditing?.load() ?? Promise.resolve(),
     save: (request) => inlineEditing?.save(request) ?? Promise.resolve(false),
   });
+  /**
+   * How many placeholders stand in for the rows while they load: as many as
+   * are on screen, so the page holds its height, or else a screenful.
+   */
+  function placeholderCount(screenful: number): number {
+    return pending.value || loading.value ? data.value.length || screenful : 0;
+  }
+  /** Whether the rows have thumbnails, for the placeholders drawn before them. */
+  const hasThumbs = computed(() => cardThumbs.value !== null);
   const isInlineEditing = computed(
     () =>
       Boolean(inlineEditing?.active.value) ||
@@ -120,18 +156,57 @@
   const multiSelect = computed(
     () => props.view.table.options.enableMultiRowSelection !== false
   );
+  const paginationProps = computed(() => ({
+    pageIndex: table.atoms.pagination.get().pageIndex,
+    pageSize: table.atoms.pagination.get().pageSize,
+    pageCount: table.getPageCount(),
+    paginated: Boolean(
+      table.options.manualPagination ||
+      'paginatedRowModel' in table.options.features
+    ),
+    disabled: processing.value,
+    onPageChange: table.setPageIndex,
+    onPageInput: () => props.view.cancelPageLoad(),
+  }));
+  /**
+   * The page controls alone, handed to the active footer so a selection can
+   * keep moving between pages.
+   */
+  const FooterPageControls = () =>
+    h(PaginationControls, {...paginationProps.value, controlsOnly: true});
   const showFooter = computed(
     () =>
       props.footerActive ||
       isInlineEditing.value ||
       props.enableAdjustPageSize ||
-      elementIndex.pagination.total > 0 ||
+      pending.value ||
+      (elementIndex.pagination?.total ?? 0) > 0 ||
       table.getPageCount() > 1
   );
+  /**
+   * What the banner over the results offers: every result, once the whole
+   * page is selected, or just the page, once every result is.
+   */
+  const selectAllOffer = computed<'all' | 'page' | null>(() => {
+    if (
+      !props.offersSelectAll ||
+      !multiSelect.value ||
+      isInlineEditing.value ||
+      table.getPageCount() <= 1
+    ) {
+      return null;
+    }
+
+    if (selectAll.active.value) {
+      return selectAll.exceptIds.value.length === 0 ? 'page' : null;
+    }
+
+    return selection.selection.allSelected.value ? 'all' : null;
+  });
   const itemBehavior = computed<ElementIndexItemBehavior>(() => ({
     ...props.itemBehavior,
     ...(isInlineEditing.value
-      ? {onClick: undefined, onKeydown: undefined}
+      ? {onClick: undefined, onDblClick: undefined, onKeydown: undefined}
       : {}),
     attrs: (row) => ({
       ...props.itemBehavior?.attrs?.(row),
@@ -142,12 +217,6 @@
   watch(inlineEditor.editingIds, (ids) => {
     if (inlineEditing) {
       inlineEditing.active.value = ids.length > 0;
-    }
-  });
-
-  onMounted(() => {
-    if (inlineEditing?.active.value && canEditInline.value) {
-      void startInlineEditing();
     }
   });
 
@@ -165,13 +234,13 @@
     if (isLoading) liveMessage.value = t('Loading…');
     else if (wasLoading)
       liveMessage.value = t('{total, plural, =1{# item} other{# items}}', {
-        total: elementIndex.pagination.total,
+        total: elementIndex.pagination?.total ?? 0,
       });
   });
-  watch(selection.selectedIds, (ids) => {
-    liveMessage.value = ids.length
+  watch(selectAll.count, (count) => {
+    liveMessage.value = count
       ? t('{num, plural, =1{# item selected} other{# items selected}}', {
-          num: ids.length,
+          num: count,
         })
       : t('Selection cleared');
   });
@@ -213,7 +282,8 @@
   }
 
   function onBodyDblClick(event: MouseEvent): void {
-    if (isInlineEditing.value) {
+    // Handled already, by an item behavior such as opening an asset folder.
+    if (isInlineEditing.value || event.defaultPrevented) {
       return;
     }
 
@@ -222,6 +292,35 @@
     } else {
       emit('dblclick', event);
     }
+  }
+
+  /**
+   * Thumbs carry none of the chip metadata quick edit reads off a row or card,
+   * so they report the double-clicked element themselves, and it's opened from
+   * the row's own edit URL.
+   */
+  function onThumbEdit(element: {id: string | number}): void {
+    if (
+      isInlineEditing.value ||
+      !props.quickEdit?.openEditor ||
+      elementIndex.trashed
+    ) {
+      return;
+    }
+
+    const row = data.value.find((candidate) => candidate.id === element.id);
+
+    if (!row?.cpEditUrl) {
+      return;
+    }
+
+    window.getSelection()?.removeAllRanges();
+    props.quickEdit.openEditor(
+      row.cpEditUrl,
+      body.value?.querySelector<HTMLElement>(
+        `[data-index-id="${CSS.escape(String(row.id))}"]`
+      ) ?? null
+    );
   }
 
   function onBodyKeydown(event: KeyboardEvent): void {
@@ -241,16 +340,21 @@
         v-model:sort-field="sortField"
         v-model:sort-direction="sortDirection"
         v-model:table-columns="tableColumns"
+        :thumb-size="thumbSize"
+        @update:thumb-size="onThumbSizeChange"
         :processing="processing"
         :as-form="toolbarAsForm"
         :status-options="elementIndex.statusOptions"
         :view-modes="visibleViewModes"
         :column-options="columnOptions"
+        :thumb-size-options="thumbSizeOptions"
         :sort-options="elementIndex.sortOptions"
+        :view-customized="viewCustomized"
         :sites="showSites ? elementIndex.sites : undefined"
         :site-handle="showSites ? activeSiteHandle : undefined"
         @submit="submit"
         @reorder="reorder"
+        @use-default-view="resetView"
         @site-change="emit('site-change', $event)"
       >
         <template
@@ -275,14 +379,18 @@
             <ElementIndexExportMenu
               v-if="exportElements"
               :exporters="elementIndex.exporters ?? []"
-              :max-limit="elementIndex.pagination.total"
+              :max-limit="elementIndex.pagination?.total"
               :disabled="processing"
               @export="
                 (format, type, limit) =>
                   exportElements?.(
                     format,
                     type,
-                    selection.selectedIds.value,
+                    selectAll.active.value
+                      ? selectAll.exceptIds.value.length
+                        ? ['not', ...selectAll.exceptIds.value]
+                        : []
+                      : selection.selectedIds.value,
                     limit
                   )
               "
@@ -308,7 +416,7 @@
             mode !== 'thumbs',
         },
       ]"
-      :aria-busy="loading ? 'true' : undefined"
+      :aria-busy="loading || pending ? 'true' : undefined"
     >
       <div
         ref="body"
@@ -333,12 +441,23 @@
           :selectable="selectable"
           :select-all="multiSelect"
           :loading="loading"
+          :placeholders="placeholderCount(8)"
+          :placeholder-thumb="cardThumbs"
           :item-behavior="itemBehavior"
           :sortable="rowReorder?.enabled.value ?? false"
           :interactions-disabled="processing"
           :render-server-actions="!$slots['card-actions']"
           @reorder="(from, to) => rowReorder?.move(from, to)"
         >
+          <template v-if="selectAllOffer" #header-after>
+            <SelectAllBanner
+              :offer="selectAllOffer"
+              :page-count="data.length"
+              :total="elementIndex.pagination.total"
+              @select-all="selectAll.selectAll()"
+              @select-page="selectAll.selectPage()"
+            />
+          </template>
           <template v-if="$slots['card-actions']" #actions="{element}">
             <slot name="card-actions" :element="element" />
           </template>
@@ -353,19 +472,37 @@
           :loading="loading"
           :item-behavior="itemBehavior"
           :interactions-disabled="processing"
-        />
+          :thumb-size="thumbSize"
+          :placeholders="placeholderCount(8)"
+          @edit="onThumbEdit"
+        >
+          <template v-if="selectAllOffer" #header-after>
+            <SelectAllBanner
+              :offer="selectAllOffer"
+              :page-count="data.length"
+              :total="elementIndex.pagination.total"
+              @select-all="selectAll.selectAll()"
+              @select-page="selectAll.selectPage()"
+            />
+          </template>
+        </ElementThumbs>
         <ElementTable
           v-else
           :table="table"
           :selection="selection"
           :selectable="selectable"
           :loading="loading"
+          :placeholder-rows="placeholderCount(5)"
           :spacing="TableSpacing.Spacious"
           :item-behavior="itemBehavior"
           :with-bottom-border="withBottomBorder"
           :appearance="tableAppearance"
           :structure="
-            !isInlineEditing && structure !== undefined && mode === 'structure'
+            !isInlineEditing &&
+            !pending &&
+            !loading &&
+            structure !== undefined &&
+            mode === 'structure'
           "
           :is-row-collapsed="structureView.isCollapsed"
           :is-row-pending="structureView.isPending"
@@ -382,7 +519,35 @@
           @toggle-structure="toggleStructure"
           @move-structure-row="moveRow"
           @reorder="(from, to) => rowReorder?.move(from, to)"
-        />
+        >
+          <template v-if="selectAllOffer" #header-after>
+            <SelectAllBanner
+              :offer="selectAllOffer"
+              :page-count="data.length"
+              :total="elementIndex.pagination.total"
+              @select-all="selectAll.selectAll()"
+              @select-page="selectAll.selectPage()"
+            />
+          </template>
+          <template #placeholder-cell="{index, width}">
+            <craft-chip
+              v-if="index === 0 && hasThumbs"
+              appearance="plain"
+              show-thumb
+              :thumb-size="thumbSize"
+            >
+              <PlaceholderShape
+                slot="thumbnail"
+                class="element-index__thumb-placeholder"
+              />
+              <PlaceholderShape
+                class="element-index__label-placeholder"
+                :style="{inlineSize: width}"
+              />
+            </craft-chip>
+            <PlaceholderShape v-else :style="{maxInlineSize: width}" />
+          </template>
+        </ElementTable>
       </div>
     </div>
     <div class="element-index__footer" v-if="showFooter">
@@ -391,6 +556,7 @@
           type="button"
           :variant="ButtonVariant.Primary"
           .disabled="processing"
+          :aria-keyshortcuts="commandShortcut('S')"
           @click="inlineEditor.save"
           >{{ t('Save') }}</craft-button
         >
@@ -402,24 +568,22 @@
           >{{ t('Cancel') }}</craft-button
         >
       </div>
-      <slot v-else-if="footerActive" name="footer" />
+      <slot
+        v-else-if="footerActive"
+        name="footer"
+        :pagination="FooterPageControls"
+      />
+      <PlaceholderShape
+        v-else-if="pending"
+        class="element-index__count-placeholder"
+      />
       <PaginationControls
         v-else
-        :page-index="table.atoms.pagination.get().pageIndex"
-        :page-size="table.atoms.pagination.get().pageSize"
-        :page-count="table.getPageCount()"
-        :paginated="
-          Boolean(
-            table.options.manualPagination ||
-            'paginatedRowModel' in table.options.features
-          )
-        "
+        v-bind="paginationProps"
         :from="elementIndex.pagination.from"
         :to="elementIndex.pagination.to"
         :total="elementIndex.pagination.total"
         :enable-adjust-page-size="enableAdjustPageSize"
-        :disabled="processing"
-        @page-change="table.setPageIndex"
         @page-size-change="table.setPageSize"
       />
     </div>
@@ -480,11 +644,24 @@
 
     // Like a flush table, the select-all header spans the container's padding
     // and pads its content back in by the same amount.
-    > :deep(:is(.card-grid-header, .thumbsview-header)) {
+    > :deep(
+      :is(
+        .card-grid-header,
+        .thumbsview-header,
+        .card-grid-header-after,
+        .thumbsview-header-after
+      )
+    ) {
       margin-inline: calc(var(--cp-container-padding) * -1);
       margin-block-end: 0;
       padding-block-start: var(--c-spacing-sm);
       padding-inline: var(--cp-container-padding);
+    }
+
+    > :deep(:is(.card-grid-header-after, .thumbsview-header-after)) {
+      padding-block: var(--c-spacing-sm);
+      border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+      background-color: var(--c-surface-sunken);
     }
   }
 
@@ -501,5 +678,18 @@
     border-block-start: 1px solid var(--c-color-neutral-border-quiet);
     min-height: var(--cp-footer-height);
     background-color: var(--c-surface-default);
+  }
+
+  .element-index__thumb-placeholder {
+    inline-size: var(--c-thumbnail-size);
+    block-size: var(--c-thumbnail-size);
+  }
+
+  .element-index__label-placeholder {
+    min-inline-size: 8rem;
+  }
+
+  .element-index__count-placeholder {
+    inline-size: 8rem;
   }
 </style>

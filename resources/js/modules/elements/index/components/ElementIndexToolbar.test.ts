@@ -16,12 +16,12 @@ vi.mock('@craftcms/ui', () => ({
   ButtonVariant: {Fill: 'fill'},
 }));
 
-vi.mock('@craftcms/ui/vue/CraftInput.vue', () => ({
+vi.mock('@craftcms/ui/vue/CraftInputSearch.vue', () => ({
   default: {
-    name: 'CraftInput',
+    name: 'CraftInputSearch',
     inheritAttrs: false,
     setup(_props: unknown, {attrs, slots}: SetupContext) {
-      return () => h('craft-input', attrs, slots.default?.());
+      return () => h('craft-input-search', attrs, slots.default?.());
     },
   },
 }));
@@ -279,6 +279,30 @@ it('puts the site menu and the status menu in one cell', () => {
   expect(cell.querySelectorAll('select-rich')).toHaveLength(2);
 });
 
+it('offers Drafts and Trashed after the statuses', () => {
+  mount({
+    statusOptions: [
+      {label: 'All', value: ''},
+      {label: 'Live', value: 'live'},
+      {label: 'Drafts', value: 'drafts', icon: 'draft'},
+      {label: 'Trashed', value: 'trashed', icon: 'trash'},
+    ],
+  });
+
+  const options = [
+    ...container!.querySelectorAll<HTMLOptionElement>(
+      '.element-toolbar__status option'
+    ),
+  ];
+
+  expect(options.map((option) => option.value)).toEqual([
+    '',
+    'live',
+    'drafts',
+    'trashed',
+  ]);
+});
+
 it('keeps score available until clearing search restores the sort, and locks its direction', async () => {
   const {toolbarProps} = mount({
     search: 'needle',
@@ -323,6 +347,18 @@ it('removes score without a search and locks custom ordering', () => {
   expect(descending.disabled).toBe(true);
 });
 
+it.each([
+  ['table', true],
+  ['structure', true],
+  ['thumbs', false],
+  ['cards', false],
+])('shows table columns in the %s view: %s', async (mode, shown) => {
+  mount({mode});
+  await nextTick();
+
+  expect(container!.querySelector('checkbox-group-stub') !== null).toBe(shown);
+});
+
 it('names the view mode and sort direction button groups', () => {
   mount({
     viewModes: [
@@ -341,7 +377,7 @@ it('names the view mode and sort direction button groups', () => {
 
   expect(viewModes.getAttribute('aria-label')).toBe('View Mode');
   expect(sortDirection.getAttribute('role')).toBe('group');
-  expect(sortDirection.getAttribute('aria-label')).toBe('Sort direction');
+  expect(sortDirection.getAttribute('aria-label')).toBe('Sort Direction');
 });
 
 it('changes sort direction when its actual direction button is clicked', async () => {
@@ -371,28 +407,12 @@ it('changes sort direction when its actual direction button is clicked', async (
   expect(descending.getAttribute('aria-pressed')).toBe('true');
 });
 
-it('returns focus to the search input when the search is cleared', () => {
-  const {onSearchUpdate} = mount({search: 'needle'});
-  const input = container!.querySelector<HTMLElement>(
-    'craft-input[name="search"]'
-  )!;
-  const focus = vi.spyOn(input, 'focus');
-
-  container!
-    .querySelector('craft-icon[label="Clear search"]')!
-    .closest<HTMLElement>('craft-button')!
-    .click();
-
-  expect(onSearchUpdate).toHaveBeenCalledWith('');
-  expect(focus).toHaveBeenCalled();
-});
-
 it('keeps the search input enabled while results load', () => {
   mount({processing: true});
 
   expect(
     container!
-      .querySelector('craft-input[name="search"]')!
+      .querySelector('craft-input-search[name="search"]')!
       .hasAttribute('disabled')
   ).toBe(false);
 });

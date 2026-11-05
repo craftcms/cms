@@ -32,9 +32,11 @@ readonly class Cms
 
     public const string VERSION = '6.0.0-alpha.20';
 
-    public const string SCHEMA_VERSION = '6.0.0.24';
+    public const string SCHEMA_VERSION = '6.0.0.33';
 
     public const string MIN_VERSION_REQUIRED = '5.9.0';
+
+    private const string TIMEZONE_ATTRIBUTE = 'craft.timezone';
 
     public static function name(): string
     {
@@ -61,7 +63,35 @@ readonly class Cms
         return self::MIN_VERSION_REQUIRED;
     }
 
+    /**
+     * Returns the time zone dates are shown in: the logged-in user’s preferred time zone, or the system time zone.
+     *
+     * It’s resolved once per request, and again after the user logs in or out, saves their preferences,
+     * or the `timezone` config setting changes.
+     */
     public static function timezone(): string
+    {
+        $attributes = request()->attributes;
+        $configTimezone = self::config()->timezone;
+        $resolved = $attributes->get(self::TIMEZONE_ATTRIBUTE);
+
+        if ($resolved === null || $resolved['config'] !== $configTimezone) {
+            $resolved = ['config' => $configTimezone, 'timezone' => self::resolveTimezone()];
+            $attributes->set(self::TIMEZONE_ATTRIBUTE, $resolved);
+        }
+
+        return $resolved['timezone'];
+    }
+
+    /**
+     * Makes the next {@see timezone()} call resolve the time zone again.
+     */
+    public static function forgetTimezone(): void
+    {
+        request()->attributes->remove(self::TIMEZONE_ATTRIBUTE);
+    }
+
+    private static function resolveTimezone(): string
     {
         $timezone = null;
 
@@ -90,6 +120,7 @@ readonly class Cms
         $timezone = Cms::config()->timezone ?? $timezone ?? ProjectConfig::get('system.timeZone') ?? config('app.timezone', 'UTC');
 
         date_default_timezone_set(self::validatedTimezone($timezone));
+        self::forgetTimezone();
     }
 
     private static function validatedTimezone(?string $timezone): string

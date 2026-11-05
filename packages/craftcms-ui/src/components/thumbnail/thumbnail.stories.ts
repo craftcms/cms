@@ -327,14 +327,14 @@ export const Presentations: Story = {
             </craft-chip>
             <craft-card style="width: 280px;" thumb-alignment="end">
               <span slot="label">Separate card thumbnail</span>
-              <div slot="thumbnail">${thumbnail('crop', 120)}</div>
+              <div slot="thumbnail">${thumbnail('fit', 120)}</div>
               Card content
             </craft-card>
             <craft-card style="width: 280px;">
               <span slot="label">Inline card thumbnail</span>
               <div class="card-main">
                 <div class="card-content">Card content</div>
-                ${thumbnail('crop', 120)}
+                ${thumbnail('fit', 120)}
               </div>
             </craft-card>
             <div style="width: 180px; text-align: center;">
@@ -367,9 +367,15 @@ export const Presentations: Story = {
       const box = image.getBoundingClientRect();
       const crop = thumbnail.mode === 'crop';
       const scale = fixture.name === 'Small source' ? 1 : size / 120;
+      // A card's own thumbnail is only as tall as its fitted image.
+      const inCardSlot = Boolean(
+        thumbnail.closest('craft-card > [slot="thumbnail"]')
+      );
 
       await expect(wrapper.width).toBe(size);
-      await expect(wrapper.height).toBe(size);
+      await expect(wrapper.height).toBe(
+        inCardSlot ? fixture.fittedHeight * scale : size
+      );
       await expect(box.width).toBe(crop ? size : fixture.fittedWidth * scale);
       await expect(box.height).toBe(crop ? size : fixture.fittedHeight * scale);
       await expect(getComputedStyle(image).objectFit).toBe(
@@ -377,4 +383,36 @@ export const Presentations: Story = {
       );
     }
   },
+};
+
+/**
+ * Inside a chip, the chip sizes the thumbnail's box: its `thumb-size` sets
+ * `--c-thumbnail-size`, and a `fit` image fills it along its longer side.
+ */
+export const InChipThumbSizes: Story = {
+  render: () => html`
+    <div
+      style="display: flex; flex-wrap: wrap; gap: var(--c-spacing-md); align-items: start;"
+    >
+      ${(['sm', 'md', 'lg', 'xl', '2xl'] as const).map(
+        (thumbSize) => html`
+          <craft-chip
+            thumb-size=${thumbSize}
+            prefix-placement="block-start"
+            show-thumb
+          >
+            <craft-thumbnail
+              slot="thumbnail"
+              src=${imageFixture(800, 1200)}
+              width="800"
+              height="1200"
+              alt=""
+              loading="eager"
+            ></craft-thumbnail>
+            ${thumbSize}
+          </craft-chip>
+        `
+      )}
+    </div>
+  `,
 };

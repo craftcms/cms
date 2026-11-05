@@ -4,7 +4,6 @@ export default css`
   :host {
     --c-avatar-color-start: red;
     --c-avatar-color-end: blue;
-    --c-avatar-color-text: inherit;
 
     --size: calc(30rem / 16);
     display: contents;
@@ -14,7 +13,8 @@ export default css`
     display: inline-flex;
     width: var(--size);
     aspect-ratio: 1;
-    background-color: white;
+    color: var(--c-avatar-color-text, var(--c-text-default));
+    background-color: var(--c-surface-raised);
     border-radius: var(--c-radius-full);
   }
 

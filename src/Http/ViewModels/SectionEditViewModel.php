@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Data\ElementSiteSettings;
@@ -23,6 +24,7 @@ use CraftCms\Cms\Ui\Controls\Lightswitch;
 use CraftCms\Cms\Ui\Controls\Number;
 use CraftCms\Cms\Ui\Controls\Table;
 use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\Group;
@@ -67,10 +69,16 @@ class SectionEditViewModel extends ViewModel
 
         $typeField = Field::make(
             t('Section Type'),
-            Choice::make('type')->options(SectionType::asOptions())->reactive(),
+            Choice::make('type')
+                ->options(array_map(fn (array $option): array => [
+                    ...$option,
+                    'thumbnail' => Cp::illustration("images/section-types/{$option['value']}.svg"),
+                ], SectionType::asOptions()))
+                ->presentation(ChoicePresentation::Radios)
+                ->reactive(),
         )->instructions(t('What type of section is this?'));
 
-        if ($this->section->id && $type !== SectionType::Single) {
+        if ($this->section->id && $this->section->type !== SectionType::Single) {
             $typeField->warning(t('Changing this may result in data loss.'));
         }
 
@@ -103,7 +111,7 @@ class SectionEditViewModel extends ViewModel
                     ->allowOverrides()
                     ->create(! $this->readOnly)),
             Separator::make('site-settings-separator'),
-            Field::make(t('Site settings'))
+            Field::make(t('Site Settings'))
                 ->instructions(t('Choose which sites this section should be available in, and configure the site-specific settings.'))
                 ->control($this->siteSettingsControl($type)),
         ]);
@@ -148,7 +156,7 @@ class SectionEditViewModel extends ViewModel
                         'urlFormat' => [
                             'heading' => t('URL Format'),
                             'type' => 'singleline',
-                            'info' => t('Type `$` for an environment variable, `@` for an alias, or `{` for an object template variable.'),
+                            'info' => t('Type <kbd>$</kbd> to choose an environment variable, <kbd>@</kbd> to choose an alias, or <kbd>{</kbd> to choose an object template variable.'),
                             'textExpanderTriggers' => [
                                 ...SelectOptions::getEnvTextExpanderTriggers(true),
                                 ...$objectTemplateTriggers,

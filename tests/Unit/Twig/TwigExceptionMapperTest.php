@@ -31,7 +31,7 @@ it('keeps string template filenames reportable', function () {
         expect($files)
             ->not->toBeEmpty()
             ->each->toBeString()
-            ->and(collect($files)->contains(fn (string $file) => str_starts_with($file, '__string_template__')))->toBeTrue();
+            ->and(collect($files)->contains(fn (string $file) => str_contains($file, '(string template ')))->toBeTrue();
 
         return;
     }

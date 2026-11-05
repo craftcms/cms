@@ -2,13 +2,18 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\EnforceLicenses;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\User\Contracts\CraftUser;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+
+use function Pest\Laravel\actingAs;
+use function Pest\Laravel\get;
 
 beforeEach(function () {
     $this->middleware = app(EnforceLicenses::class);
@@ -74,6 +79,22 @@ it('shows licensing screen when license issues exist', function () {
     expect($result)->toBeInstanceOf(Response::class);
     expect($result->getStatusCode())->toBe(402);
     expect($result->headers->has('Cache-Control'))->toBeTrue();
+
+    putenv('CRAFT_NO_TRIALS');
+});
+
+it('lets action requests through, so the licensing screen’s own requests work', function () {
+    putenv('CRAFT_NO_TRIALS=true');
+
+    $mockLicense = Mockery::mock(License::class)->makePartial();
+    $mockLicense->shouldReceive('issues')->andReturn([['Issue 1', 'Description 1', 'sku1']]);
+    app()->instance(License::class, $mockLicense);
+    actingAs(User::findOne());
+    $cpTrigger = Cms::config()->cpTrigger;
+    $actionTrigger = Cms::config()->actionTrigger;
+
+    get("/{$cpTrigger}/dashboard")->assertPaymentRequired();
+    get("/{$cpTrigger}/{$actionTrigger}/app/api-headers")->assertOk();
 
     putenv('CRAFT_NO_TRIALS');
 });

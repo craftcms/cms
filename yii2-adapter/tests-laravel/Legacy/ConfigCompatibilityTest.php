@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use craft\config\GeneralConfig;
+use craft\services\Config as LegacyConfig;
 use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Yii2Adapter\Config\GeneralConfigCompatibility;
@@ -64,7 +65,7 @@ it('supports moved deprecated config settings', function(): void {
     expect($config->defaultCookieDomain)->toBe('.example.test')
         ->and($config->generateTransformsBeforePageLoad)->toBeFalse()
         ->and(Context::getHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT))->toBeFalse()
-        ->and($deprecation?->message)->toBe('generateTransformsBeforePageLoad is deprecated. Configure immediate generation on the Craft Asset Transformer instead.')
+        ->and($deprecation?->message)->toBe('generateTransformsBeforePageLoad is deprecated. Configure immediate generation on the Craft asset transformer instead.')
         ->and($config->rememberedUserSessionDuration)->toBe(7200)
         ->and($config->verificationCodeDuration)->toBe(1800);
 });
@@ -121,4 +122,15 @@ it('converts callable general config and application type overlays', function():
 
     expect($config)->toBeInstanceOf(GeneralConfig::class)
         ->and($config->cpTrigger)->toBe('console');
+});
+
+it('loads a legacy general config without logging deprecations for settings it leaves alone', function(): void {
+    Config::set('craft.general', GeneralConfig::create()->cpTrigger('control'));
+
+    $config = new LegacyConfig()->getConfigSettings(LegacyConfig::CATEGORY_GENERAL);
+
+    expect($config)->toBeInstanceOf(GeneralConfig::class)
+        ->and($config->cpTrigger)->toBe('control')
+        ->and(collect(Deprecator::getRequestLogs())->pluck('key'))
+        ->not->toContain('generalConfig.isSystemLive', 'generalConfig.generateTransformsBeforePageLoad');
 });

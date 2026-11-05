@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -12,6 +13,7 @@ use CraftCms\Cms\Field\Conditions\LightswitchFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
+use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Shared\Enums\Color as ColorEnum;
@@ -29,14 +31,13 @@ use Illuminate\Database\Query\Builder;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Lightswitch represents a Lightswitch field.
  *
  * @since 6.0.0
  */
-class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
+class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -160,7 +161,7 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
     {
         $id = $this->getInputId();
 
-        return template('_includes/forms/lightswitch', [
+        return FormFields::lightswitchFromConfig([
             'id' => $id,
             'labelId' => $this->getLabelId(),
             'describedBy' => $this->describedBy,
@@ -169,7 +170,7 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
             'onLabel' => t($this->onLabel, category: 'site'),
             'offLabel' => t($this->offLabel, category: 'site'),
             'disabled' => $static,
-        ]);
+        ])->toHtml();
     }
 
     #[Override]
@@ -265,5 +266,11 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
         }
 
         return $this->getPreviewHtml($value, $element ?? new Entry(['viewMode' => 'cards']));
+    }
+
+    /** @return array<string, mixed> */
+    public function getInputSchema(): array
+    {
+        return ['type' => 'boolean'];
     }
 }

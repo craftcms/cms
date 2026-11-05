@@ -12,7 +12,7 @@
    * The document scrolls, not the main column, so `CpSidebar` is a sticky,
    * viewport-tall flex child of `.cp__main`.
    */
-  import {computed, provide, useTemplateRef} from 'vue';
+  import {computed, defineAsyncComponent, provide, useTemplateRef} from 'vue';
   import {Head, usePage} from '@inertiajs/vue3';
   import {
     useElementBounding,
@@ -46,10 +46,17 @@
   import useCraftData from '@/common/composables/useCraftData';
   import type {FormSaveOptions} from '@/common/types';
   import PassthroughScreen from './PassthroughScreen.vue';
-  import ContentDetails from './page/ContentDetails.vue';
+  import ContentDetailsAside from './page/ContentDetailsAside.vue';
   import ContentFooter from './page/ContentFooter.vue';
+  import ContentHeader from './page/ContentHeader.vue';
+  import ContentToolbar from './page/ContentToolbar.vue';
   import ScreenOverlays from './page/ScreenOverlays.vue';
   import ScreenSkipLinks from './page/ScreenSkipLinks.vue';
+  import {
+    ScreenPanelsKey,
+    screenPanels,
+  } from '@/common/composables/screenPanels';
+  import {useVisibleViewport} from '@/common/composables/useVisibleViewport';
   import {useDetailsResizer} from './page/useDetailsResizer';
   import type {ScreenProps, ScreenSlots} from './types';
   import {useScreenRegions} from './useScreenRegions';
@@ -57,6 +64,13 @@
   import CpContainer from '@/common/components/CpContainer.vue';
   import {navItemActions} from '@/common/composables/navActions';
   import SecondaryNav from '@/common/components/SecondaryNav.vue';
+
+  // Loaded on its own: the palette reaches the slideouts (through element
+  // action menus), which reach this screen, so a static import would make a
+  // cycle — one that deadlocks a test mocking the slideouts module.
+  const CommandPalette = defineAsyncComponent(
+    () => import('@/modules/command-palette/components/CommandPalette.vue')
+  );
 
   const emit = defineEmits<{
     (e: 'save', options?: FormSaveOptions): void;
@@ -67,33 +81,17 @@
     defaultFormActions: () => DEFAULT_FORM_ACTIONS,
     formAdditionalButtons: () => [],
     contentMaxWidth: false,
+    headerRule: false,
     fillViewport: false,
   });
 
   const slots = defineSlots<ScreenSlots>();
 
-  // The slots each region renders, forwarded only when the page filled them
-  // so the regions' own fallbacks still apply.
-  const HEADER_SLOTS = ['title'] as const;
-  const FOOTER_SLOTS = [
-    'content-footer',
-    'additional-buttons',
-    'primary-action',
-  ] as const;
-  const SIDEBAR_SLOTS = ['content-sidebar', 'subnav-actions'] as const;
-
-  const headerSlots = computed(() =>
-    HEADER_SLOTS.filter((name) => slots[name])
-  );
-  const footerSlots = computed(() =>
-    FOOTER_SLOTS.filter((name) => slots[name])
-  );
-  const sidebarSlots = computed(() =>
-    SIDEBAR_SLOTS.filter((name) => slots[name])
-  );
-
+  // Slot presence isn't reactive, so the region checks here are functions the
+  // template calls on each render rather than computeds, which would keep the
+  // first answer.
   const registry = provideLayoutSlotRegistry();
-  const regions = useScreenRegions(slots, registry);
+  const regions = useScreenRegions(slots, registry, screenPanels);
   provideScreenContext('page');
 
   // Deep links like `#form-maintenanceMode` point at a field on a long form.
@@ -106,6 +104,7 @@
   const page = usePage<{
     title: string;
     readOnly?: boolean;
+    showReadOnlyNotice?: boolean;
     primaryAction?: string | null;
     crumbs?: Array<BreadcrumbItem> | null;
     subnav?: Array<CraftCms.Cms.Cp.Data.NavItem>;
@@ -121,7 +120,18 @@
   // with or without the nav on screen, and each level brings its switcher. The
   // server's own switchers take their menus from the main nav, so a source's
   // switcher is the same on its index and on the pages beneath it.
-  const {nav, siteCrumb} = useCraftData();
+  const {nav, siteCrumb, currentUser} = useCraftData();
+
+  // Loaded once it's shown, so the chat's modules, which open slideouts, aren't
+  // imported by every screen, slideouts included.
+  const AssistantPanel = defineAsyncComponent(
+    () => import('@/modules/ai/assistant/AssistantPanel.vue')
+  );
+
+  /** Whether the user can use the AI assistant. */
+  const assistantEnabled = computed(
+    () => currentUser.value?.aiAssistant ?? false
+  );
   const crumbs = computed<Array<BreadcrumbItem> | null>(() => {
     const merged = withSubnavCrumbs(
       withNavCrumbMenus(page.props.crumbs ?? [], nav.value ?? [], page.url),
@@ -141,43 +151,48 @@
 
     return trail.length > 0 ? trail : null;
   });
-  const readOnly = computed(() => Boolean(page.props.readOnly));
+  const readOnly = computed(
+    () => !props.handlesReadOnly && Boolean(page.props.readOnly)
+  );
 
-  const hasContextMenu = computed(() => regions.has('context-menu'));
-  const hasNotices = computed(() => regions.has('content-notices'));
+  const hasContextMenu = () => regions.has('context-menu');
+  const hasNotices = () => regions.has('content-notices');
   // Hidden rather than removed while empty, so its outlets stay in the DOM for
   // page content to teleport into.
-  const hasToolbar = computed(
-    () =>
-      regions.has('content-toolbar') ||
-      regions.has('content-toolbar-meta') ||
-      regions.has('content-toolbar-actions')
-  );
-  const hasDetails = computed(() => regions.has('content-details'));
-  const hasTabs = computed(() => regions.has('content-tabs'));
+  const hasToolbar = () =>
+    regions.has('content-toolbar') ||
+    regions.has('content-toolbar-meta') ||
+    regions.has('content-toolbar-actions');
+  // Hidden while it has nothing to show, such as an untitled nested entry's
+  // edit page, so its padding doesn't leave a gap above the content.
+  const hasHeader = () =>
+    Boolean(pageTitle.value) ||
+    regions.has('title') ||
+    regions.has('content-actions');
+  provide(ScreenPanelsKey, screenPanels);
+  const hasTabs = () => regions.has('content-tabs');
+  const hasPageHeader = () => regions.has('page-header');
   // Decided here rather than inside `ContentFooter`, so the sticky wrapper
   // around it and the notices can be hidden together rather than left
   // standing empty.
-  const hasFooter = computed(
-    () =>
-      Boolean(props.form) ||
+  const hasFooter = () =>
+    !props.hideFooter &&
+    (Boolean(props.form) ||
       Boolean(props.fullPageForm) ||
       regions.has('content-footer') ||
-      regions.has('additional-buttons')
-  );
+      regions.has('footer-meta') ||
+      regions.has('additional-buttons'));
   const contentConstrained = computed(() => Boolean(props.contentMaxWidth));
   const contentMainStyle = computed(() =>
     typeof props.contentMaxWidth === 'string'
       ? {'--cp-content-max-width': props.contentMaxWidth}
       : undefined
   );
-  const hasSidebar = computed(
-    () =>
-      regions.has('content-sidebar') ||
-      regions.has('subnav-actions') ||
-      (props.subnavActions?.length ?? 0) > 0 ||
-      subnav.value.length > 0
-  );
+  const hasSidebar = () =>
+    regions.has('content-sidebar') ||
+    regions.has('subnav-actions') ||
+    (props.subnavActions?.length ?? 0) > 0 ||
+    subnav.value.length > 0;
 
   // The top bar scrolls away with the page, so the sidebar and the details
   // pane are only as tall as the viewport below whatever's still showing of it.
@@ -186,20 +201,25 @@
   // The details pane and the sidebar both stop short of Laravel Debugbar.
   const debugBarHeight = useDebugBarHeight();
   const contentLayout = useTemplateRef<HTMLElement>('contentLayout');
-  const detailsColumn = useTemplateRef<{$el: HTMLElement}>('detailsColumn');
   const {width: contentLayoutWidth} = useElementSize(contentLayout);
   // Where the details column sits in the viewport: how far down it starts until
   // the pane sticks, and how much room its end leaves at the bottom once the
   // page is scrolled to it. The pane is sized to fit between the two.
   // The `aside`, which spans the row, rather than the pane's own contents,
   // whose height follows from this.
-  const detailsAside = useTemplateRef<HTMLElement>('detailsAside');
+  const detailsAside =
+    useTemplateRef<InstanceType<typeof ContentDetailsAside>>('detailsAside');
   const {top: detailsColumnTop, bottom: detailsColumnBottom} =
-    useElementBounding(detailsAside);
+    useElementBounding(() => detailsAside.value?.$el);
   const {height: windowHeight} = useWindowSize();
+  // What's on screen of the viewport, which an on-screen keyboard shrinks, so
+  // a panel's dialog fits above it rather than running underneath.
+  const visibleViewport = useVisibleViewport();
 
   const pageScreenStyle = computed(() => ({
     '--cp-top-bar-visible-height': `${topBarVisibleHeight.value}px`,
+    '--cp-visible-viewport-top': `${visibleViewport.top.value}px`,
+    '--cp-visible-viewport-height': `${visibleViewport.height.value}px`,
     '--cp-details-offset': `${Math.max(0, detailsColumnTop.value)}px`,
     '--cp-details-end-gap': `${Math.max(
       0,
@@ -220,11 +240,20 @@
     contentLayoutWidth
   );
   provide(ScreenDetailsOverlayKey, detailsOverlaid);
+  // A panel overlaying the page opens in a dialog, and the page behind it is
+  // dimmed rather than covered by the dialog's backdrop: with the keyboard
+  // open, iOS shows the page past the backdrop's reach.
+  const detailsDimmed = computed(
+    () =>
+      regions.hasPanels() &&
+      detailsOverlaid.value &&
+      screenPanels.openPanelId.value !== null
+  );
   // The details rail renders beside the panel.
   provide(ScreenDetailsRailKey, '#cp-details-rail');
 
   const detailsResizer = useDetailsResizer({
-    column: () => detailsColumn.value?.$el,
+    column: () => detailsAside.value?.column(),
     layoutWidth: contentLayoutWidth,
     hasSidebar,
     overlaid: detailsOverlaid,
@@ -256,17 +285,21 @@
 <template>
   <Head :title="pageTitle" />
   <ScreenSkipLinks
-    :has-sidebar="hasSidebar"
+    :has-sidebar="hasSidebar()"
     :additional-skip-links="additionalSkipLinks"
   />
   <div
-    :class="{'page-screen': true, 'page-screen--fill-viewport': fillViewport}"
+    :class="{
+      'page-screen': true,
+      'page-screen--fill-viewport': fillViewport,
+      'page-screen--details-dimmed': detailsDimmed,
+    }"
     :style="pageScreenStyle"
   >
     <CpTopBar
       ref="topBar"
       :crumbs="crumbs"
-      :has-context-menu="hasContextMenu"
+      :has-context-menu="hasContextMenu()"
     />
     <div class="cp">
       <div class="cp__sidebar">
@@ -281,8 +314,8 @@
             <div
               class="cp-body"
               :class="{
-                'cp-body--sidebar': hasSidebar,
-                'cp-body--details': hasDetails,
+                'cp-body--sidebar': hasSidebar(),
+                'cp-body--details': regions.hasDetails(),
               }"
             >
               <!-- Wraps the `page-main` slot, so a page that takes it over still
@@ -303,13 +336,22 @@
                         :id="legacyIds ? 'page-container' : undefined"
                         class="cp-content"
                         :class="{
-                          'cp-content--sidebar': hasSidebar,
-                          'cp-content--details': hasDetails,
+                          'cp-content--sidebar': hasSidebar(),
+                          'cp-content--details': regions.hasDetails(),
                         }"
                         :style="detailsResizer.style.value"
                       >
+                        <!-- Spans the secondary nav and the content, above both. -->
                         <div
-                          v-show="hasSidebar"
+                          v-show="hasPageHeader()"
+                          class="cp-content__header"
+                        >
+                          <LayoutSlotOutlet name="page-header">
+                            <slot name="page-header"></slot>
+                          </LayoutSlotOutlet>
+                        </div>
+                        <div
+                          v-show="hasSidebar()"
                           id="content-sidebar"
                           tabindex="-1"
                           class="cp-content__sidebar"
@@ -319,10 +361,13 @@
                               <!-- The subnav-actions outlet lives inside this fallback, so a page can
                               teleport `content-sidebar` or `subnav-actions`, never both. -->
                               <SecondaryNav
-                                :items="navItemActions(subnav)"
+                                :items="navItemActions(subnav, true)"
                                 :actions="subnavActions"
                               >
-                                <template #actions>
+                                <template
+                                  v-if="regions.has('subnav-actions')"
+                                  #actions
+                                >
                                   <LayoutSlotOutlet name="subnav-actions">
                                     <slot name="subnav-actions"></slot>
                                   </LayoutSlotOutlet>
@@ -345,7 +390,12 @@
                               />
                             </slot>
                           </LayoutSlotOutlet>
-                          <CalloutReadOnly v-if="readOnly" />
+                          <CalloutReadOnly
+                            v-if="
+                              readOnly &&
+                              page.props.showReadOnlyNotice !== false
+                            "
+                          />
                           <div
                             :class="{
                               'cp-content-view': true,
@@ -354,61 +404,36 @@
                             }"
                           >
                             <slot name="content-toolbar">
-                              <CpContainer v-show="hasToolbar">
-                                <div
-                                  class="border-b border-b-quiet py-1 divide flex justify-between items-center min-h-(--cp-header-height)"
-                                >
-                                  <LayoutSlotOutlet name="content-toolbar">
-                                    <div
-                                      :id="legacyIds ? 'toolbar' : undefined"
-                                      class="flex gap-2 items-center"
-                                    >
-                                      <LayoutSlotOutlet
-                                        name="content-toolbar-meta"
-                                      >
-                                        <slot
-                                          name="content-toolbar-meta"
-                                        ></slot>
-                                      </LayoutSlotOutlet>
-                                    </div>
-
-                                    <div class="flex gap-2 items-center">
-                                      <LayoutSlotOutlet
-                                        name="content-toolbar-actions"
-                                      >
-                                        <slot
-                                          name="content-toolbar-actions"
-                                        ></slot>
-                                      </LayoutSlotOutlet>
-                                    </div>
-                                  </LayoutSlotOutlet>
-                                </div>
-                              </CpContainer>
+                              <ContentToolbar
+                                v-show="hasToolbar()"
+                                :legacy-ids="legacyIds"
+                              >
+                                <template #meta>
+                                  <slot name="content-toolbar-meta"></slot>
+                                </template>
+                                <template #actions>
+                                  <slot name="content-toolbar-actions"></slot>
+                                </template>
+                              </ContentToolbar>
                             </slot>
 
                             <slot name="content-header">
-                              <div id="cp-content-header" class="pt-lg pb-md">
-                                <CpContainer>
-                                  <div
-                                    class="flex flex-wrap gap-md items-center justify-between"
-                                  >
-                                    <LayoutSlotOutlet name="title">
-                                      <slot name="title">
-                                        <h1 class="text-xl">{{ pageTitle }}</h1>
-                                      </slot>
-                                    </LayoutSlotOutlet>
-
-                                    <div class="flex gap-2 items-center">
-                                      <LayoutSlotOutlet name="content-actions">
-                                        <slot name="content-actions"></slot>
-                                      </LayoutSlotOutlet>
-                                    </div>
-                                  </div>
-                                </CpContainer>
-                              </div>
+                              <ContentHeader
+                                v-show="hasHeader()"
+                                :ruled="headerRule"
+                              >
+                                <template #title>
+                                  <slot name="title">
+                                    <h1 class="text-xl">{{ pageTitle }}</h1>
+                                  </slot>
+                                </template>
+                                <template #actions>
+                                  <slot name="content-actions"></slot>
+                                </template>
+                              </ContentHeader>
                             </slot>
 
-                            <CpContainer v-show="hasTabs">
+                            <CpContainer v-show="hasTabs()">
                               <div>
                                 <LayoutSlotOutlet name="content-tabs">
                                   <slot name="content-tabs"></slot>
@@ -429,13 +454,13 @@
                           the view is constrained; the row itself keeps to the content's
                           column through `contained`. -->
                           <div
-                            v-show="hasNotices || hasFooter"
+                            v-show="hasNotices() || hasFooter()"
                             class="sticky bottom-0 z-sticky bg-default/70 backdrop-blur-md mt-lg"
                           >
                             <!-- `#content-notice` is where legacy `Craft.cp.$noticeContainer`
                             puts its notices, the legacy element editor's included. -->
                             <div
-                              v-show="hasNotices"
+                              v-show="hasNotices()"
                               id="content-notice"
                               class="cp-content__notices"
                               role="status"
@@ -446,7 +471,7 @@
                             </div>
                             <div class="cp-content__footer">
                               <ContentFooter
-                                v-show="hasFooter"
+                                v-show="hasFooter()"
                                 :read-only="readOnly"
                                 :form="form"
                                 :default-form-actions="defaultFormActions"
@@ -461,7 +486,7 @@
                                 @save="save"
                               >
                                 <template
-                                  v-for="name in footerSlots"
+                                  v-for="name in regions.footerSlots()"
                                   :key="name"
                                   #[name]
                                 >
@@ -472,36 +497,27 @@
                           </div>
                         </div>
                         <!-- Paired ids for the legacy editor's `$('#details .details')`. -->
-                        <aside
+                        <ContentDetailsAside
                           ref="detailsAside"
-                          v-show="hasDetails"
-                          :id="legacyIds ? 'details' : undefined"
-                          class="cp-content__details"
+                          v-show="regions.hasDetails()"
+                          :panels="screenPanels"
+                          :resizer="detailsResizer"
+                          :details-content-is-panel="
+                            regions.detailsContentIsPanel()
+                          "
+                          :legacy-ids="legacyIds"
                         >
-                          <div
-                            class="cp-content__details-pane"
-                            :class="{details: legacyIds}"
-                          >
-                            <ContentDetails
-                              ref="detailsColumn"
-                              :resizer="detailsResizer"
-                            >
-                              <template
-                                v-if="slots['content-details']"
-                                #content-details
-                              >
-                                <slot name="content-details"></slot>
-                              </template>
-                            </ContentDetails>
-                          </div>
-                        </aside>
+                          <template #details>
+                            <slot name="content-details"></slot>
+                          </template>
+                        </ContentDetailsAside>
                       </div>
                     </form>
                   </main>
                 </slot>
               </div>
               <div
-                v-show="hasDetails"
+                v-show="regions.hasDetails()"
                 id="cp-details-rail"
                 class="cp-details-rail"
               ></div>
@@ -517,10 +533,12 @@
           </footer>
         </div>
       </div>
+      <AssistantPanel v-if="assistantEnabled" />
     </div>
   </div>
 
   <ScreenOverlays :debug="debug" />
+  <CommandPalette />
 </template>
 
 <style scoped lang="postcss">
@@ -538,6 +556,7 @@ Shell
   .cp {
     flex: 1;
     display: grid;
+    padding-inline-end: var(--cp-scrollbar-width, 0px);
     /* The floating sidebar's row stays empty, so the main row takes the room. */
     grid-template-rows: auto 1fr;
     background-color: var(--c-surface-sunken);
@@ -597,7 +616,7 @@ Body: the inset panel holding `page-main`, and the details rail beside it
     border: var(--cp-body-border-width) solid
       var(--c-color-neutral-border-quiet);
     border-radius: var(--c-radius-xl);
-    box-shadow: var(--shadow-xs), var(--shadow-lg);
+    box-shadow: var(--c-shadow-xs), var(--c-shadow-lg);
     overflow: clip;
   }
 
@@ -632,9 +651,13 @@ Content: the secondary nav, content, and details panes
     display: grid;
     /* Three columns at every width; the nav spans them while it's stacked above
        the content, and an area nothing occupies collapses to nothing. */
-    grid-template-areas: 'sidebar sidebar sidebar' '. main details';
-    /* The nav's row, empty or not, keeps to its content; the rest goes below. */
-    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'header header header'
+      'sidebar sidebar sidebar'
+      '. main details';
+    /* The header's and nav's rows, empty or not, keep to their content; the
+       rest goes below. */
+    grid-template-rows: auto auto 1fr;
     grid-template-columns:
       auto
       minmax(var(--cp-content-main-min), 1fr)
@@ -653,8 +676,10 @@ Content: the secondary nav, content, and details panes
     --cp-content-main-min: 0px;
 
     @media (width >= var(--breakpoint-lg)) {
-      grid-template-areas: 'sidebar main details';
-      grid-template-rows: none;
+      grid-template-areas:
+        'header header header'
+        'sidebar main details';
+      grid-template-rows: auto 1fr;
     }
   }
 
@@ -689,6 +714,13 @@ Content: the secondary nav, content, and details panes
     }
   }
 
+  .cp-content__header {
+    grid-area: header;
+    padding-block: var(--c-spacing-md);
+    padding-inline: var(--cp-container-padding);
+    border-block-end: 1px solid var(--c-color-border-quiet);
+  }
+
   .cp-content__sidebar {
     grid-area: sidebar;
 
@@ -700,8 +732,11 @@ Content: the secondary nav, content, and details panes
   }
 
   .cp-content--sidebar .cp-content__sidebar {
-    min-width: calc(250rem / 16);
     padding: var(--c-spacing-md);
+
+    @media (width >= var(--breakpoint-lg)) {
+      inline-size: calc(var(--cp-sidebar-width) + 1px);
+    }
 
     /* Only stacked above the content; beside it, the panel's own border
        already closes it off. */
@@ -722,21 +757,19 @@ Content: the secondary nav, content, and details panes
     background-color: var(--c-surface-default);
     /* A dragged width outlives the layout it was dragged in, so cap it here. */
     max-inline-size: var(--cp-content-details-max, 90cqi);
-    container: content-details / inline-size;
+    /* Contained in both axes, so the row sets its height rather than the pane:
+       the pane is sized from where this ends, and taking its height from the
+       pane would let a stale gap hold the page a few pixels too tall. */
+    container: content-details / size;
     /* No width of its own while it has a column: stretching to the track is what
        lets the track's range shrink it, and it survives the containment above. */
     justify-self: stretch;
   }
 
-  /* Runs from wherever the pane starts to the viewport's bottom, stopping
-     short only once the page's end brings the panel's own bottom into view. */
-  .cp-content__details-pane {
-    position: sticky;
-    inset-block-start: 0;
-    height: calc(
-      100dvh - var(--cp-debug-bar-height, 0px) - var(--cp-details-offset, 0px) -
-        var(--cp-details-end-gap, 0px)
-    );
+  /* Behind a panel's dialog, matching the shade other dialogs put behind
+     them, a quarter black. */
+  .page-screen--details-dimmed {
+    filter: brightness(0.75);
   }
 
   .cp-content__footer {
@@ -781,6 +814,12 @@ Folds
  * wider fold below.
  */
   @container cp-shell (width < 932px) {
+    /* Published with or without a column, so a panel opened on a narrow page
+       starts out overlaying rather than being folded as the column appears. */
+    .cp-content {
+      --cp-details-overlay: 1;
+    }
+
     .cp-content--details {
       --cp-details-overlay: 1;
       /* Nothing else shares the row, so the content keeps no floor of its own. */
@@ -826,6 +865,10 @@ Folds
     /* The same fold 250px sooner, for the one case where a third column shares
        the row: a secondary nav beside the content, counted from its minimum. */
     @container cp-shell (width < 1182px) {
+      .cp-content--sidebar {
+        --cp-details-overlay: 1;
+      }
+
       .cp-content--sidebar.cp-content--details {
         --cp-details-overlay: 1;
         --cp-content-main-min: 0px;

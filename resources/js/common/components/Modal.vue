@@ -13,8 +13,10 @@
   import {computed, onBeforeUnmount, shallowRef, watch} from 'vue';
   import {t} from '@craftcms/ui';
   import CraftDialog from '@craftcms/ui/components/dialog/dialog';
-  import CornerResizeHandle from '@/common/components/CornerResizeHandle.vue';
+  import '@craftcms/ui/components/resize-grips/resize-grips';
+  import type {ResizeGripsSize} from '@craftcms/ui';
   import {useResizableBox} from '@/common/composables/useResizableBox';
+  import {useAnimatedBoxSize} from '@/common/composables/useAnimatedBoxSize';
 
   export interface ModalProps {
     isActive?: boolean;
@@ -24,18 +26,31 @@
     width?: string;
     height?: string;
     maxHeight?: string;
-    /** Adds a corner handle for dragging the modal to a new size. */
+    /** Adds grips along its right and bottom edges, and in their corner, for resizing it. */
     resizable?: boolean;
     /**
      * Whether Escape and a click on the overlay close it. Off for a modal
      * holding work that closing would throw away — only its own buttons do.
      */
     dismissible?: boolean;
+    /**
+     * Whether closing it puts focus back where it was before it opened. Off
+     * when whatever closed it moves focus somewhere on purpose.
+     */
+    restoreFocus?: boolean;
+    /**
+     * Opens without the enter transition, for a modal opened from the
+     * keyboard whose first keystrokes have to reach it. Closing still fades.
+     */
+    instant?: boolean;
   }
 
   const emit = defineEmits<{
-    (e: 'close'): void;
+    /** Dismissal was asked for — `event` is the Escape press or the dialog's own request. */
+    (e: 'close', event: Event): void;
     (e: 'opened', el: Element): void;
+    /** Once it has finished closing, transition and all. */
+    (e: 'closed'): void;
   }>();
 
   const props = withDefaults(defineProps<ModalProps>(), {
@@ -45,24 +60,33 @@
     label: () => t('Dialog'),
     resizable: false,
     dismissible: true,
+    restoreFocus: true,
+    instant: false,
   });
 
   const stackId = Symbol('modal');
   const dialog = shallowRef<CraftDialog | null>(null);
   const reducedMotion = usePreferredReducedMotion();
-  const transitionDuration = computed(() =>
-    reducedMotion.value === 'reduce' ? 0 : 250
-  );
+  const transitionDuration = computed(() => {
+    const duration = reducedMotion.value === 'reduce' ? 0 : 250;
+
+    return {enter: props.instant ? 0 : duration, leave: duration};
+  });
   let invoker: HTMLElement | null = null;
 
-  function closeDialog(element = dialog.value): void {
+  /** Resolves once the dialog has closed and handed focus back. */
+  async function closeDialog(element = dialog.value): Promise<void> {
     if (!element) return;
 
     const returnTo = invoker;
     invoker = null;
     element.opened = false;
-    void element.updateComplete.then(() => {
-      if ((!props.isActive || !element.isConnected) && returnTo?.isConnected) {
+    await element.updateComplete.then(() => {
+      if (
+        props.restoreFocus &&
+        (!props.isActive || !element.isConnected) &&
+        returnTo?.isConnected
+      ) {
         returnTo.focus();
       }
     });
@@ -94,7 +118,7 @@
   );
   onBeforeUnmount(() => {
     leaveStack();
-    closeDialog();
+    void closeDialog();
   });
 
   /** Whether this is the innermost open modal — the one Escape is for. */
@@ -116,7 +140,8 @@
 
     event.preventDefault();
     event.stopPropagation();
-    if (props.isActive && props.dismissible && isTop.value) emit('close');
+    if (props.isActive && props.dismissible && isTop.value)
+      emit('close', event);
   }
 
   function opened(): void {
@@ -125,9 +150,14 @@
     }
   }
 
-  function closed(element: Element): void {
+  /**
+   * `closed` waits for the dialog to hand focus back, so a listener that moves
+   * focus itself isn't overridden by it.
+   */
+  async function closed(element: Element): Promise<void> {
     leaveStack();
-    if (element instanceof CraftDialog) closeDialog(element);
+    if (element instanceof CraftDialog) await closeDialog(element);
+    emit('closed');
   }
 
   const content = shallowRef<HTMLElement | null>(null);
@@ -136,6 +166,16 @@
     active: () => props.isActive,
     fixedHeight: () => Boolean(props.height),
   });
+  const sizeAnimation = useAnimatedBoxSize({
+    target: content,
+    enabled: () => reducedMotion.value !== 'reduce',
+  });
+
+  /** A size the user picked takes effect at once, not eased into. */
+  function resize(size: ResizeGripsSize): void {
+    sizeAnimation.settle();
+    resizer.applySize(size);
+  }
 
   const widthClass = computed(() => {
     return `w-${props.width}`;
@@ -164,6 +204,8 @@
   <Transition
     name="body"
     :duration="transitionDuration"
+    :enter-from-class="instant ? '' : 'body-enter-from'"
+    :enter-active-class="instant ? '' : 'body-enter-active'"
     @after-enter="opened"
     @after-leave="closed"
   >
@@ -172,7 +214,7 @@
       ref="dialog"
       :label="label"
       .opened="true"
-      no-close
+      no-header
       .closeOnOutsideClick="dismissible"
       :class="{'without-overlay': !overlay || isNested}"
       @craft-before-hide="requestClose"
@@ -186,7 +228,14 @@
         >
           <slot></slot>
         </div>
-        <CornerResizeHandle v-if="resizable" :resizer="resizer" />
+        <div v-if="resizable" class="resize-frame">
+          <craft-resize-grips
+            .target="content"
+            @craft-resize="
+              (event: CustomEvent<ResizeGripsSize>) => resize(event.detail)
+            "
+          ></craft-resize-grips>
+        </div>
       </div>
     </craft-dialog>
   </Transition>
@@ -201,12 +250,10 @@
     max-width: calc(100vw - (var(--c-spacing-lg) * 2));
     max-height: calc(100vh - (var(--c-spacing-lg) * 2));
     background-color: var(--c-modal-fill);
-    box-shadow: var(--c-modal-shadow);
+    box-shadow: var(--c-modal-ring), var(--c-shadow-2xl);
+    outline: 1px solid transparent;
     -webkit-overflow-scrolling: touch;
     border-radius: var(--c-modal-radius);
-    border-width: var(--c-modal-border-width);
-    border-style: var(--c-modal-border-style);
-    border-color: var(--c-modal-border-color);
     position: relative;
     overflow-y: scroll;
     /* Keeps the slotted content's own z-indexes — a sticky pane footer, say —
@@ -215,8 +262,32 @@
     isolation: isolate;
   }
 
-  craft-dialog::part(header) {
-    display: none;
+  .content > :slotted(craft-pane),
+  .content > :slotted(form > craft-pane) {
+    --c-pane-border-width: 0;
+  }
+
+  .content > :slotted(craft-pane)::part(base),
+  .content > :slotted(form > craft-pane)::part(base) {
+    box-shadow: none;
+  }
+
+  .content > :slotted(craft-pane)::part(header),
+  .content > :slotted(form > craft-pane)::part(header) {
+    min-block-size: var(--c-modal-header-height);
+    padding-block: var(--c-spacing-sm);
+  }
+
+  .content > :slotted(craft-pane)::part(footer),
+  .content > :slotted(form > craft-pane)::part(footer) {
+    box-sizing: border-box;
+    min-block-size: var(--c-modal-footer-height);
+    padding-inline: var(--cp-container-padding);
+  }
+
+  .content > :slotted(craft-pane)::part(footer-actions),
+  .content > :slotted(form > craft-pane)::part(footer-actions) {
+    align-self: center;
   }
 
   craft-dialog::part(surface) {
@@ -225,6 +296,7 @@
     max-inline-size: none;
     max-block-size: none;
     background: none;
+    border: 0;
     box-shadow: none;
     overflow: visible;
   }
@@ -245,20 +317,20 @@
     align-items: center;
   }
 
-  /* Overlaid on the content's own grid cell so the handle can sit in its corner
+  /* Overlaid on the content's own grid cell so the grips can sit on its edges
    without joining the scrolling box. */
   .cp-modal > * {
     grid-area: 1 / 1;
   }
 
-  /* Where the handle sits is this modal's business; how it looks is its own. */
-  .corner-resize-handle {
-    align-self: end;
-    justify-self: end;
-    /* Positioned so the z-index reliably lifts it above `.content`, which is
-     itself positioned and would otherwise paint over the corner. */
+  /* Positioned so the z-index reliably lifts the grips above `.content`, which
+   is itself positioned and would otherwise paint over them. */
+  .resize-frame {
+    --c-resize-grips-radius: var(--c-modal-radius);
+    place-self: stretch;
     position: relative;
     z-index: 1;
+    pointer-events: none;
   }
 
   @media (prefers-reduced-motion: no-preference) {

@@ -48,6 +48,10 @@ export default class CraftIndicator extends LitElement {
         border-color: rgba(0, 0, 0, 0.5);
       }
 
+      .indicator--outline-fill.indicator--white {
+        border-color: var(--c-indicator-white-ring);
+      }
+
       /* A dark outline would vanish against a black dot. */
       .indicator--outline-fill.indicator--black {
         border-color: var(--color-white);
@@ -148,6 +152,7 @@ export default class CraftIndicator extends LitElement {
       class="${classMap({
         indicator: true,
         [`indicator--${this.effectiveAppearance}`]: true,
+        'indicator--white': this.fill === Color.White,
         'indicator--black': this.fill === Color.Black,
       })}"
     ></span>`;

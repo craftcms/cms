@@ -197,7 +197,7 @@ class CpScreenResponse implements Responsable
 
     /**
      * @var string|null The URL the form should redirect to after posting, if submitted via the
-     *                  <kbd>Ctrl</kbd><kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut.
+     *                  <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>S</kbd> keyboard shortcut.
      *
      * This will only be used by full-page screens.
      *
@@ -561,7 +561,7 @@ class CpScreenResponse implements Responsable
 
     /**
      * Sets URL the form should redirect to after posting, if submitted via the
-     * <kbd>Ctrl</kbd><kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut.
+     * <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>S</kbd> keyboard shortcut.
      *
      * This will only be used by full-page screens.
      */
@@ -1094,17 +1094,11 @@ class CpScreenResponse implements Responsable
         $page = $this->inertiaPage ?? self::FRAGMENT_PAGE;
 
         /**
-         * A bridged screen is server-rendered legacy markup, and legacy JS
-         * expects the environment a normal document build gives it: the
-         * libraries (jQuery, Garnish, `cp.js` — all `Position::BodyEnd`)
-         * loaded in source order, before anything that uses them. A
-         * client-side visit can't offer that, so it becomes a hard visit.
-         *
-         * The rule is deliberately total: bridged screen + Inertia visit →
-         * hard visit, with no partial case to get wrong. Screens with a
-         * real Vue page keep client-side navigation.
+         * A bridged screen is server-rendered legacy markup, which only a
+         * hard visit can set up for. Screens with a real Vue page keep
+         * client-side navigation.
          */
-        if ($page === self::FRAGMENT_PAGE && $request->inertia()) {
+        if ($page === self::FRAGMENT_PAGE && BridgedScreen::needsHardVisit($request)) {
             return Inertia::location($request->fullUrl());
         }
 

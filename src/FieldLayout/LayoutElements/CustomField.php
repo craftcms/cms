@@ -8,6 +8,7 @@ use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Data\Thumb;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
@@ -24,11 +25,11 @@ use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Import\Data\CompoundMappingColumn;
 use CraftCms\Cms\Import\Data\MappingColumn;
+use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Import;
-use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Controls\FieldSelect;
@@ -103,6 +104,10 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
     private ?string $_originalHandle = null;
 
     private ?string $_originalInstructions = null;
+
+    private ?string $_originalTip = null;
+
+    private ?string $_originalWarning = null;
 
     /**
      * @var UserCondition|class-string<UserCondition>|array|null
@@ -393,6 +398,32 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
     }
 
     #[Override]
+    public function thumb(ElementInterface $element): ?Thumb
+    {
+        try {
+            $field = $this->getField();
+        } catch (FieldNotFoundException) {
+            return null;
+        }
+
+        if (! $field instanceof ThumbableFieldInterface) {
+            return null;
+        }
+
+        $value = $element->getFieldValue($field->handle);
+
+        if ($field instanceof BaseRelationField) {
+            return $field->getThumb($value);
+        }
+
+        if ($field->isValueEmpty($value, $element)) {
+            return null;
+        }
+
+        return new Thumb(fn (int $size, ImageTransformMode $mode) => $field->getThumbHtml($value, $element, $size, $mode));
+    }
+
+    #[Override]
     public function previewHtml(ElementInterface $element): string
     {
         try {
@@ -479,11 +510,15 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
         $this->_originalName = $this->_field->name;
         $this->_originalHandle = $this->_field->handle;
         $this->_originalInstructions = $this->_field->instructions;
+        $this->_originalTip = $this->_field->tip;
+        $this->_originalWarning = $this->_field->warning;
 
         // Set the instance overrides
         $this->_field->name = $this->label ?? $this->_field->name;
         $this->_field->handle = $this->handle ?? $this->_field->handle;
         $this->_field->instructions = $this->instructions ?? $this->_field->instructions;
+        $this->_field->tip = $this->tip ?? $this->_field->tip;
+        $this->_field->warning = $this->warning ?? $this->_field->warning;
 
         $this->getLayout()?->reset();
     }
@@ -812,6 +847,18 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
     }
 
     #[Override]
+    protected function defaultTip(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        return $this->_originalTip ? t($this->_originalTip, category: 'site') : null;
+    }
+
+    #[Override]
+    protected function defaultWarning(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        return $this->_originalWarning ? t($this->_originalWarning, category: 'site') : null;
+    }
+
+    #[Override]
     protected function conditionalSettingsNodes(UiContext $context): array
     {
         $elementType = $this->elementType ?? $this->getLayout()?->type;
@@ -1025,10 +1072,12 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
         $attribute = $this->attribute();
         $isContainer = $field instanceof ImportableElementContainerFieldInterface;
 
+        // key the mapping by the layout element’s uid, because its handle can be overridden at any time
+        // (see ImportHelper::resolveMappingKeys())
         return MappingColumn::make(
             handle: $attribute,
             label: (string) $this->label(),
-            prefixedHandle: ImportHelper::prefixedHandleForMapping($attribute, $ownerField, $field, $fieldLayout, $provider, $prefix),
+            prefixedHandle: ImportHelper::prefixedHandleForMapping($this->uid ?? $attribute, $ownerField, $field, $fieldLayout, $provider, $prefix),
             isContainer: $isContainer,
             canBeMatchCriteria: $this->canBeMatchCriteria(),
             canBeCleared: $this->canBeCleared(),

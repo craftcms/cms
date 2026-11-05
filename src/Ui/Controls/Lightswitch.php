@@ -102,6 +102,12 @@ class Lightswitch extends Control
     }
 
     #[\Override]
+    public function inputSchema(): array
+    {
+        return ['type' => 'boolean'];
+    }
+
+    #[\Override]
     public function props(mixed $value = null): array
     {
         return Arr::whereNotNull([

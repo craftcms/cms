@@ -1,5 +1,9 @@
 import type {VariantKey} from '@src/constants/variants';
 import {actionClient} from '@src/utilities/api/actionClient';
+import {
+  focusReturnFor,
+  type FocusReturnResolver,
+} from '@src/utilities/focus-return';
 
 export type BaseAction =
   | {type: 'clipboard'; value: string}
@@ -74,7 +78,10 @@ export interface RunActionOptions {
    * The element that invoked the action (e.g. the clicked button). For
    * `event` actions it's merged into the dispatched event's `detail` as
    * `trigger`, so listeners can manage focus or read contextual `data-*`
-   * attributes from the invoker's ancestors.
+   * attributes from the invoker's ancestors. The detail also gets
+   * `returnFocus`, a `focusReturnFor()` resolver for it: pass it to a dialog
+   * or slideout the listener opens, so focus can come back even after the
+   * menu holding the trigger has closed or re-rendered.
    */
   trigger?: Element;
   /**
@@ -104,6 +111,32 @@ export function normalizeAction(
   } catch {
     return null;
   }
+}
+
+/**
+ * The detail for an `event` action. `returnFocus` is worked out on first read,
+ * while the listener is still handling the event, so dispatching doesn't walk
+ * the trigger's menus for listeners that never use it.
+ */
+function eventDetail(
+  detail: Record<string, unknown> | undefined,
+  {trigger, sourceEvent}: RunActionOptions
+): Record<string, unknown> {
+  const result: Record<string, unknown> = {
+    ...(detail ?? {}),
+    ...(sourceEvent ? {sourceEvent} : {}),
+  };
+
+  if (trigger) {
+    result.trigger = trigger;
+    let returnFocus: FocusReturnResolver | undefined;
+    Object.defineProperty(result, 'returnFocus', {
+      enumerable: true,
+      get: () => (returnFocus ??= focusReturnFor(trigger)),
+    });
+  }
+
+  return result;
 }
 
 export async function runAction(
@@ -164,11 +197,7 @@ export async function runAction(
 
       window.dispatchEvent(
         new CustomEvent(action.name, {
-          detail: {
-            ...(action.detail ?? {}),
-            ...(options.trigger ? {trigger: options.trigger} : {}),
-            ...(options.sourceEvent ? {sourceEvent: options.sourceEvent} : {}),
-          },
+          detail: eventDetail(action.detail, options),
         })
       );
       break;

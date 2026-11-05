@@ -13,7 +13,10 @@ use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Url;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Crypt;
 
 use function CraftCms\Cms\t;
 
@@ -151,12 +154,37 @@ class ElementIndexRequest extends FormRequest
     /**
      * Returns the posted return URL, with `?` replaced by the `:QS:` token
      * (see https://github.com/craftcms/cms/issues/18923).
+     *
+     * Element links encrypt the URL they pass along when it contains Twig code,
+     * so a URL that does must already be encrypted, or it's rejected.
      */
     public function returnUrl(): ?string
     {
         $returnUrl = $this->input('returnUrl');
 
-        return $returnUrl ? str_replace('?', ':QS:', $returnUrl) : null;
+        if (! $returnUrl) {
+            return null;
+        }
+
+        if (! is_string($returnUrl)) {
+            abort(400, 'Invalid returnUrl param');
+        }
+
+        try {
+            $returnUrl = Crypt::decrypt($returnUrl);
+        } catch (DecryptException) {
+            if (str_contains($returnUrl, '{')) {
+                // The URL may contain its own (encrypted) returnUrl param
+                // (see https://github.com/craftcms/cms/issues/19983)
+                $returnUrl = Url::removeParam($returnUrl, 'returnUrl');
+
+                if (str_contains($returnUrl, '{')) {
+                    abort(400, "Invalid returnUrl param: $returnUrl");
+                }
+            }
+        }
+
+        return str_replace('?', ':QS:', $returnUrl);
     }
 
     /** @return array<string, mixed> */

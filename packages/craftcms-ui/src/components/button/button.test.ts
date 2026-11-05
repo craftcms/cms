@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type CraftButton from './button.js';
 import './button.js';
 
@@ -26,6 +26,12 @@ function content(element: CraftButton): HTMLElement | null {
 }
 
 beforeEach(() => {
+  document.body.innerHTML = '';
+});
+
+// Disconnects the last test's buttons, which cancels their pending feedback
+// resets before the environment is torn down.
+afterEach(() => {
   document.body.innerHTML = '';
 });
 
@@ -71,6 +77,24 @@ describe('craft-button link mode', () => {
     expect(rel).toContain('noopener');
   });
 
+  it('opens a link to another host in a new tab and says so', async () => {
+    const element = await createButton({href: 'https://craftcms.com/'});
+    const a = anchor(element)!;
+    expect(a.getAttribute('target')).toBe('_blank');
+    expect(a.getAttribute('rel')).toBe('noopener');
+    expect(a.textContent).toContain('Opens in a new window');
+  });
+
+  it('keeps its own target for a link to another host', async () => {
+    const element = await createButton({
+      href: 'https://craftcms.com/',
+      target: '_self',
+    });
+    const a = anchor(element)!;
+    expect(a.getAttribute('target')).toBe('_self');
+    expect(a.textContent).not.toContain('Opens in a new window');
+  });
+
   it('does not set rel when target is not _blank and no rel given', async () => {
     const element = await createButton({href: '/x'});
     expect(anchor(element)!.hasAttribute('rel')).toBe(false);
@@ -89,6 +113,64 @@ describe('craft-button link mode', () => {
     await element.updateComplete;
     await new Promise((resolve) => setTimeout(resolve));
     expect(content(element)!.classList.contains('a11y-error')).toBe(true);
+  });
+});
+
+describe('craft-button shortcut', () => {
+  function shortcut(element: CraftButton) {
+    return element.shadowRoot?.querySelector('craft-shortcut') ?? null;
+  }
+
+  it('renders no shortcut without the attribute', async () => {
+    const element = await createButton();
+    expect(shortcut(element)).toBeNull();
+  });
+
+  it('shows a plain key, hidden from screen readers', async () => {
+    const element = await createButton({shortcut: 'K'}, 'Search');
+    expect(shortcut(element)?.textContent).toBe('K');
+    expect(shortcut(element)?.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('reads modifiers from a JSON shortcut', async () => {
+    const element = await createButton(
+      {shortcut: '{"key": "S", "alt": true, "shift": true}'},
+      'Save'
+    );
+    expect(shortcut(element)?.textContent).toBe('S');
+    expect(shortcut(element)?.alt).toBe(true);
+    expect(shortcut(element)?.shift).toBe(true);
+  });
+
+  it('announces its shortcut with aria-keyshortcuts', async () => {
+    vi.spyOn(navigator, 'platform', 'get').mockReturnValue('MacIntel');
+    const element = await createButton(
+      {shortcut: '{"key": "s", "shift": true}'},
+      'Save'
+    );
+    expect(element.getAttribute('aria-keyshortcuts')).toBe('Meta+Shift+S');
+
+    element.shortcut = null;
+    await element.updateComplete;
+    expect(element.hasAttribute('aria-keyshortcuts')).toBe(false);
+    vi.restoreAllMocks();
+  });
+
+  it('keeps an aria-keyshortcuts its author set', async () => {
+    const element = await createButton(
+      {shortcut: 'S', 'aria-keyshortcuts': 'Control+Enter'},
+      'Save'
+    );
+    expect(element.getAttribute('aria-keyshortcuts')).toBe('Control+Enter');
+  });
+
+  /** Vue's in-DOM compiler sets attribute values as string properties. */
+  it('reads modifiers from JSON set as a property', async () => {
+    const element = await createButton({}, 'Save');
+    element.shortcut = '{"key": "S", "alt": true}';
+    await element.updateComplete;
+    expect(shortcut(element)?.textContent).toBe('S');
+    expect(shortcut(element)?.alt).toBe(true);
   });
 });
 
@@ -309,6 +391,77 @@ describe('craft-button actions', () => {
   });
 });
 
+describe('craft-button action feedback', () => {
+  it('cancels its pending reset to idle once it is removed', async () => {
+    vi.useFakeTimers();
+
+    try {
+      const element = await createButton({
+        action: '{"type":"event","name":"craft:test-feedback"}',
+      });
+      const states: string[] = [];
+      element.addEventListener('craft-state-change', (event) => {
+        states.push((event as CustomEvent<{state: string}>).detail.state);
+      });
+
+      await element.triggerAction();
+      element.remove();
+      vi.advanceTimersByTime(element.feedbackDuration * 2);
+
+      expect(states).toEqual(['success']);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('returns to idle without scheduling a reset when its action settles after removal', async () => {
+    vi.useFakeTimers();
+
+    try {
+      const element = await createButton({
+        action: '{"type":"event","name":"craft:test-feedback"}',
+      });
+      const states: string[] = [];
+      element.addEventListener('craft-state-change', (event) => {
+        states.push((event as CustomEvent<{state: string}>).detail.state);
+      });
+
+      const run = element.triggerAction();
+      element.remove();
+      await run;
+      vi.advanceTimersByTime(element.feedbackDuration * 2);
+
+      expect(states).toEqual(['success']);
+      expect(element.actionState).toBe('idle');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('keeps a new run’s feedback for its full duration', async () => {
+    vi.useFakeTimers();
+
+    try {
+      const element = await createButton({
+        action: '{"type":"event","name":"craft:test-feedback"}',
+      });
+
+      await element.triggerAction();
+      vi.advanceTimersByTime(element.feedbackDuration - 1);
+      await element.triggerAction();
+      vi.advanceTimersByTime(element.feedbackDuration - 1);
+
+      expect(element.actionState).toBe('success');
+
+      vi.advanceTimersByTime(1);
+
+      expect(element.actionState).toBe('idle');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
 describe('craft-button toggle', () => {
   it('derives aria-pressed from active', async () => {
     const button = document.createElement('craft-button');
@@ -371,6 +524,44 @@ describe('craft-button toggle', () => {
     button.click();
 
     expect(fired).toBe(false);
+  });
+});
+
+describe('craft-button loading', () => {
+  function liveRegion(element: CraftButton): string {
+    return (
+      element.shadowRoot?.querySelector('[data-live-region]')?.textContent ?? ''
+    );
+  }
+
+  it('clears the loading announcement when loading ends', async () => {
+    const button = await createButton({}, 'Reset password');
+
+    button.loading = true;
+    await button.updateComplete;
+
+    expect(liveRegion(button)).toBe('Loading');
+
+    button.loading = false;
+    await button.updateComplete;
+
+    expect(liveRegion(button)).toBe('');
+  });
+
+  it('keeps the loading announcement for as long as loading lasts', async () => {
+    vi.useFakeTimers();
+
+    try {
+      const button = await createButton({}, 'Reset password');
+
+      button.loading = true;
+      await button.updateComplete;
+      vi.advanceTimersByTime(10000);
+
+      expect(liveRegion(button)).toBe('Loading');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

@@ -49,6 +49,15 @@ describe('craft-tab', () => {
    * The strip reads these off the host, and the stylesheet keys off them, so
    * all three have to reflect rather than stay properties.
    */
+  it('only shows a pointer when it can be selected', async () => {
+    const element = await createTab();
+
+    expect(getComputedStyle(element).cursor).toBe('pointer');
+
+    element.setAttribute('selected', '');
+    expect(getComputedStyle(element).cursor).toBe('default');
+  });
+
   it('reflects disabled', async () => {
     const element = await createTab({disabled: ''});
 
@@ -74,5 +83,49 @@ describe('craft-tab', () => {
     await element.updateComplete;
 
     expect(element.getAttribute('controls')).toBe('panel-content');
+  });
+});
+
+describe('craft-tab suffix', () => {
+  it('slots suffix content after the label', async () => {
+    document.body.innerHTML = `
+      <craft-tab>Content<craft-icon slot="suffix" name="circle-exclamation" label="Errors"></craft-icon></craft-tab>`;
+    const tab = document.querySelector<CraftTab>('craft-tab')!;
+    await tab.updateComplete;
+
+    const suffix = tab.shadowRoot!.querySelector<HTMLSlotElement>(
+      'slot[name="suffix"]'
+    )!;
+
+    expect(suffix.assignedElements()).toEqual([
+      tab.querySelector('craft-icon'),
+    ]);
+    expect(
+      suffix.compareDocumentPosition(
+        tab.shadowRoot!.querySelector('.tab__label')!
+      ) & Node.DOCUMENT_POSITION_PRECEDING
+    ).toBeTruthy();
+  });
+});
+
+describe('craft-tab prefix', () => {
+  it('slots prefix content before the label', async () => {
+    document.body.innerHTML = `
+      <craft-tab><craft-icon slot="prefix" name="newspaper"></craft-icon>Content</craft-tab>`;
+    const tab = document.querySelector<CraftTab>('craft-tab')!;
+    await tab.updateComplete;
+
+    const prefix = tab.shadowRoot!.querySelector<HTMLSlotElement>(
+      'slot[name="prefix"]'
+    )!;
+
+    expect(prefix.assignedElements()).toEqual([
+      tab.querySelector('craft-icon'),
+    ]);
+    expect(
+      prefix.compareDocumentPosition(
+        tab.shadowRoot!.querySelector('.tab__label')!
+      ) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
   });
 });

@@ -36,12 +36,4 @@ class SystemMessageImporter extends ModelImporter
     {
         return t('System Messages');
     }
-
-    /**
-     * Convenience factory returning a new instance.
-     */
-    public static function create(): self
-    {
-        return new self;
-    }
 }

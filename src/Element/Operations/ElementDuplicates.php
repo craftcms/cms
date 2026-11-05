@@ -17,6 +17,7 @@ use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Structure\Structures;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\BulkOps;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use Exception;
@@ -208,8 +209,6 @@ readonly class ElementDuplicates
 
                         $siteClone = clone $siteElement;
                         $siteClone->duplicateOf = $siteElement;
-                        $siteClone->propagating = true;
-                        $siteClone->propagatingFrom = $mainClone;
                         $siteClone->id = $mainClone->id;
                         $siteClone->uid = $mainClone->uid;
                         $siteClone->structureId = $mainClone->structureId;
@@ -229,6 +228,10 @@ readonly class ElementDuplicates
                             $siteAttributes[$siteElement->siteId] ?? [],
                         ));
                         $siteClone->siteId = $siteElement->siteId;
+                        // Set these after $newAttributes, which may have set `propagating` to `false` for $mainClone
+                        // (see https://github.com/craftcms/cms/issues/20151)
+                        $siteClone->propagating = true;
+                        $siteClone->propagatingFrom = $mainClone;
 
                         $dirtyFields = $siteClone->getDirtyFields();
                         foreach ($siteClone->getFieldValues() as $handle => $value) {
@@ -355,7 +358,7 @@ readonly class ElementDuplicates
                     'elementId' => $to->id,
                     'siteId' => $to->siteId,
                     'attribute' => $attribute,
-                    'dateUpdated' => $to->dateUpdated,
+                    'dateUpdated' => Query::prepareDateForDb($to->dateUpdated),
                     'propagated' => false,
                     'userId' => $userId,
                 ];
@@ -376,7 +379,7 @@ readonly class ElementDuplicates
                         'siteId' => $to->siteId,
                         'fieldId' => $field->id,
                         'layoutElementUid' => $field->layoutElement->uid,
-                        'dateUpdated' => $to->dateUpdated,
+                        'dateUpdated' => Query::prepareDateForDb($to->dateUpdated),
                         'propagated' => false,
                         'userId' => $userId,
                     ];

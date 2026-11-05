@@ -75,6 +75,8 @@ readonly class DuplicateElementController
                 $element,
                 $newAttributes,
                 asUnpublishedDraft: $asUnpublishedDraft,
+                // keep track of what the source draft changed, so the new draft can be applied correctly
+                copyModifiedFields: $isExplicitDraft && ! $asUnpublishedDraft,
             );
         } catch (InvalidElementException $e) {
             return new ElementResponse()->failure($e->element, t('Couldn’t duplicate {type}.', [

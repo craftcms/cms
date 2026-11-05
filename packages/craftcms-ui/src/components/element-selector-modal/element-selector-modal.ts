@@ -31,6 +31,7 @@ const NARROW_THRESHOLD = 550;
  * declaratively in Storybook or by a consumer that only wants the chrome.
  *
  * @slot - The element index.
+ * @slot loading - Shown in place of the spinner while the index first loads.
  * @slot secondary-actions - Footer content pinned left.
  * @slot primary-actions - Footer buttons placed before Cancel and Select.
  * @csspart footer - The footer row.
@@ -98,8 +99,30 @@ export default class CraftElementSelectorModal extends CraftDialog {
 
   #resizeObserver: ResizeObserver | null = null;
 
+  #sizeLockFrame?: number;
+
+  #windowResizeTimer?: ReturnType<typeof setTimeout>;
+
+  /**
+   * The surface keeps the height it opened at, so switching sources or pages
+   * doesn't shrink and grow it while the index reloads. A window resize lets it
+   * settle to a new size, then holds that one.
+   */
+  #onWindowResize = () => {
+    this.#unlockSize();
+    clearTimeout(this.#windowResizeTimer);
+    this.#windowResizeTimer = setTimeout(() => this.#queueSizeLock(), 200);
+  };
+
+  constructor() {
+    super();
+    // An index needs room, and how much depends on its columns and the screen.
+    this.resizable = true;
+  }
+
   override connectedCallback(): void {
     super.connectedCallback();
+    window.addEventListener('resize', this.#onWindowResize);
 
     if (typeof ResizeObserver !== 'undefined') {
       this.#resizeObserver = new ResizeObserver(([entry]) => {
@@ -107,12 +130,71 @@ export default class CraftElementSelectorModal extends CraftDialog {
           this.narrow = entry.contentRect.width < NARROW_THRESHOLD;
         }
       });
+
+      // A modal moved in the DOM reconnects without another first render.
+      if (this.hasUpdated) {
+        this.#observeSurface();
+      }
     }
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
     this.#resizeObserver?.disconnect();
+    window.removeEventListener('resize', this.#onWindowResize);
+    clearTimeout(this.#windowResizeTimer);
+    this.#unlockSize();
+  }
+
+  protected override updated(changed: PropertyValues): void {
+    super.updated(changed);
+
+    if (!this.opened || !this.hasIndex) {
+      this.#unlockSize();
+    } else if (
+      (changed.has('hasIndex') || changed.has('opened')) &&
+      !this.hasAttribute('size-locked')
+    ) {
+      this.#queueSizeLock();
+    }
+  }
+
+  /**
+   * Waits for the slotted index to lay out (it renders a frame after it
+   * arrives), then holds the surface at the height it settled at.
+   */
+  #queueSizeLock(): void {
+    if (this.#sizeLockFrame !== undefined) {
+      cancelAnimationFrame(this.#sizeLockFrame);
+    }
+
+    this.#sizeLockFrame = requestAnimationFrame(() => {
+      this.#sizeLockFrame = requestAnimationFrame(() => {
+        this.#sizeLockFrame = undefined;
+        const surface = this.shadowRoot?.querySelector<HTMLElement>('.surface');
+
+        if (!this.opened || !this.hasIndex || !surface) {
+          return;
+        }
+
+        const height = surface.getBoundingClientRect().height;
+
+        if (height > 0) {
+          this.style.setProperty('--_locked-block-size', `${height}px`);
+          this.setAttribute('size-locked', '');
+        }
+      });
+    });
+  }
+
+  #unlockSize(): void {
+    if (this.#sizeLockFrame !== undefined) {
+      cancelAnimationFrame(this.#sizeLockFrame);
+      this.#sizeLockFrame = undefined;
+    }
+
+    this.removeAttribute('size-locked');
+    this.style.removeProperty('--_locked-block-size');
   }
 
   protected override willUpdate(changed: PropertyValues): void {
@@ -141,7 +223,10 @@ export default class CraftElementSelectorModal extends CraftDialog {
 
   protected override firstUpdated(changed: PropertyValues): void {
     super.firstUpdated(changed);
+    this.#observeSurface();
+  }
 
+  #observeSurface(): void {
     const surface = this.shadowRoot?.querySelector('.surface');
 
     if (surface) {
@@ -179,7 +264,9 @@ export default class CraftElementSelectorModal extends CraftDialog {
     return html`
       <div class="body" part="body" ?inert=${this.busy}>
         ${this.loading && !this.hasIndex
-          ? html`<div class="loading"><craft-spinner></craft-spinner></div>`
+          ? html`<slot name="loading"
+              ><div class="loading"><craft-spinner></craft-spinner></div
+            ></slot>`
           : nothing}
         <slot></slot>
       </div>

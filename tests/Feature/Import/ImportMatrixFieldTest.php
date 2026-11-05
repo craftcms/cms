@@ -9,8 +9,8 @@ use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Import\Import;
+use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\Support\ImportFixtures;
 
@@ -50,7 +50,7 @@ beforeEach(function () {
     $this->section = $seed->section;
     $this->entryType = $seed->entryType;
 
-    $this->importer = EntryImporter::create()
+    $this->importer = new EntryImporter()
         ->site(Sites::getPrimarySite()->handle)
         ->transformer(null);
 
@@ -574,6 +574,30 @@ it('orders keyed entries by the given sortOrder', function () {
         fn ($block) => $block->title->toBe('block b'),
         fn ($block) => $block->title->toBe('block a'),
     );
+});
+
+it('imports a block per incoming row when only one of the block’s fields is mapped', function () {
+    $map = [
+        'title' => 'title',
+        'sectionId' => 'sectionId',
+        'typeId' => 'typeId',
+        'myMatrix' => ['firstEt' => ['title' => 'content.heading']],
+    ];
+
+    $this->import->importItem($this->importer, ImportHelper::remapData($map, [
+        'title' => 'imported entry',
+        'sectionId' => $this->section->handle,
+        'typeId' => $this->entryType->handle,
+        'content' => [
+            ['type' => 'firstEt', 'heading' => 'block 1'],
+            ['type' => 'firstEt', 'heading' => 'block 2'],
+        ],
+    ]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+
+    expect(array_map(fn (EntryElement $block) => $block->title, $entry->getFieldValue('myMatrix')->status(null)->all()))
+        ->toBe(['block 1', 'block 2']);
 });
 
 describe('raw grouped/flat data through the full pipeline', function () {

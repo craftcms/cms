@@ -9,6 +9,7 @@ import {
 } from 'vite-plus/test';
 import {router} from '@inertiajs/vue3';
 import {index, install} from '@actions/PluginsController';
+import RemoveController from '@actions/PluginStore/RemoveController';
 import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import {createPlugin} from '../fixtures/plugins';
 import PluginsList from './PluginsList.vue';
@@ -39,6 +40,7 @@ async function mount() {
       createPlugin({
         handle,
         name: handle,
+        packageName: `craftcms/${handle}`,
         isInstalled: false,
         isEnabled: false,
       }),
@@ -184,4 +186,24 @@ it('does not steal focus on failure', async () => {
   invoker.focus();
   await state('alpha', 'error', 'Details');
   expect(document.activeElement).toBe(invoker);
+});
+
+it('posts one removal for the chosen plugin and stops listening once unmounted', async () => {
+  const post = vi.spyOn(router, 'post').mockImplementation(() => {});
+  await mount();
+  window.dispatchEvent(
+    new CustomEvent('action:remove-plugin', {
+      detail: {packageName: 'craftcms/beta'},
+    })
+  );
+  expect(post).toHaveBeenCalledExactlyOnceWith(RemoveController.index(), {
+    packageName: 'craftcms/beta',
+  });
+  app.unmount();
+  window.dispatchEvent(
+    new CustomEvent('action:remove-plugin', {
+      detail: {packageName: 'craftcms/beta'},
+    })
+  );
+  expect(post).toHaveBeenCalledOnce();
 });

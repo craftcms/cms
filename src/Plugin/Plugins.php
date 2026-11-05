@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Plugin;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -31,8 +32,10 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Cache\Repository;
 use Illuminate\Container\Attributes\Singleton;
@@ -42,7 +45,6 @@ use Illuminate\Foundation\PackageManifest;
 use Illuminate\Foundation\Vite;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
@@ -114,12 +116,14 @@ class Plugins
     /** @var array<string, string[]> */
     private array $scripts = [];
 
+    /** @param array<string, array<string, mixed>>|null $composerPlugins */
     public function __construct(
         private readonly Repository $cache,
         private readonly Application $app,
         Filesystem $files,
         GeneralConfig $generalConfig,
         private readonly PackageManifest $packageManifest,
+        ?array $composerPlugins = null,
     ) {
         $forceDisabledPlugins = $generalConfig->safeMode ? '*' : $generalConfig->disabledPlugins;
         $this->forceDisabledPlugins = array_fill_keys(is_string($forceDisabledPlugins) ? str($forceDisabledPlugins)->explode(',')->all() : ($forceDisabledPlugins ?? []), true);
@@ -128,11 +132,11 @@ class Plugins
 
         $path = $app->basePath('vendor/craftcms/plugins.php');
 
-        if (! $files->exists($path)) {
+        if ($composerPlugins === null && ! $files->exists($path)) {
             return;
         }
 
-        $plugins = require $path;
+        $plugins = $composerPlugins ?? require $path;
 
         if (! is_array($plugins)) {
             throw new UnexpectedValueException("Plugin manifest [$path] must return an array.");
@@ -194,7 +198,7 @@ class Plugins
                 $row['settings'] = $configData['settings'] ?? [];
                 $row['licenseKey'] = $configData['licenseKey'] ?? null;
                 $row['enabled'] = ! empty($configData['enabled']);
-                $row['installDate'] = Date::parse($row['installDate']);
+                $row['installDate'] = DateTimeHelper::toDateTime($row['installDate']);
 
                 return $row;
             })
@@ -247,7 +251,7 @@ class Plugins
                     ->where('id', $row['id'])
                     ->update([
                         'version' => $plugin->version,
-                        'dateUpdated' => now(),
+                        'dateUpdated' => Query::prepareDateForDb(now()),
                     ]);
 
                 $anyVersionsChanged = true;
@@ -516,7 +520,7 @@ class Plugins
                     'handle' => $handle,
                     'version' => $plugin->version,
                     'schemaVersion' => $plugin->schemaVersion,
-                    'installDate' => $now = now(),
+                    'installDate' => $now = Query::prepareDateForDb(now()),
                     'dateCreated' => $now,
                     'dateUpdated' => $now,
                     'uid' => Str::uuid(),
@@ -844,7 +848,7 @@ class Plugins
             ->update([
                 'version' => $plugin->version,
                 'schemaVersion' => $plugin->schemaVersion,
-                'dateUpdated' => now(),
+                'dateUpdated' => Query::prepareDateForDb(now()),
             ]);
 
         // Update our cache of the versions
@@ -1131,6 +1135,24 @@ class Plugins
      */
     public function getPluginIconSvg(string $handle): string
     {
+        return file_get_contents($this->pluginIconPath($handle) ?? Icons::resolveIconPath('default-plugin'));
+    }
+
+    /**
+     * Returns whether a plugin has its own SVG icon, rather than the default one {@see getPluginIconSvg()} falls back to.
+     *
+     * @param  string  $handle  The plugin’s handle
+     */
+    public function hasPluginIcon(string $handle): bool
+    {
+        return $this->pluginIconPath($handle) !== null;
+    }
+
+    /**
+     * Returns the path to a plugin’s own `icon.svg`, if it has one.
+     */
+    private function pluginIconPath(string $handle): ?string
+    {
         $basePaths = [];
 
         // If it's installed, let the plugin say where it lives
@@ -1145,18 +1167,12 @@ class Plugins
             $basePaths[] = dirname($basePath).'/resources';
         }
 
-        $iconPath = Arr::first(
+        $basePath = Arr::first(
             array_unique($basePaths),
             fn (string $basePath) => is_file($basePath.'/icon.svg') && File::isSvg($basePath.'/icon.svg'),
         );
 
-        if ($iconPath === null) {
-            $iconPath = Icons::resolveIconPath('default-plugin');
-        } else {
-            $iconPath .= '/icon.svg';
-        }
-
-        return file_get_contents($iconPath);
+        return $basePath === null ? null : $basePath.'/icon.svg';
     }
 
     /**
@@ -1311,11 +1327,9 @@ class Plugins
         $html = '';
 
         foreach ($this->viteConfigs as $vite) {
-            $html .= (clone app(Vite::class))
+            $html .= Cp::viteTags(array_values($vite['input']), (clone app(Vite::class))
                 ->useHotFile($vite['hotFile'])
-                ->useBuildDirectory(Str::chopEnd($vite['buildDirectory'], '/'))
-                ->withEntryPoints($vite['input'])
-                ->toHtml();
+                ->useBuildDirectory(Str::chopEnd($vite['buildDirectory'], '/')));
         }
 
         foreach ($this->styles as $styles) {

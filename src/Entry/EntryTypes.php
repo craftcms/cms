@@ -29,6 +29,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Shared\Enums\ModelIdentifier;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -76,6 +77,13 @@ class EntryTypes
      */
     private ?MemoizableArray $entryTypes = null;
 
+    /**
+     * @var array<int, list<array<string, mixed>>>|null Each section's entry type assignments, in order, by section ID
+     *
+     * @see getEntryTypesBySectionId()
+     */
+    private ?array $sectionEntryTypes = null;
+
     public function __construct(
         private readonly ProjectConfig $projectConfig,
         private readonly ElementCaches $elementCaches,
@@ -95,12 +103,19 @@ class EntryTypes
      */
     public function getEntryTypesBySectionId(int $sectionId): Collection
     {
-        return DB::table(Table::SECTIONS_ENTRYTYPES)
-            ->select([new Alias('typeId', 'id'), 'name', 'description', 'handle'])
-            ->where('sectionId', $sectionId)
+        // Every section's assignments are fetched at once, as pages list many sections' entry types.
+        $this->sectionEntryTypes ??= DB::table(Table::SECTIONS_ENTRYTYPES)
+            ->select(['sectionId', new Alias('typeId', 'id'), 'name', 'description', 'handle'])
             ->orderBy('sortOrder')
             ->get()
-            ->map(fn (object $entryType) => $this->getEntryType((array) $entryType))
+            ->groupBy('sectionId')
+            ->map(fn (Collection $assignments) => $assignments
+                ->map(fn (object $assignment) => Arr::except((array) $assignment, 'sectionId'))
+                ->all())
+            ->all();
+
+        return collect($this->sectionEntryTypes[$sectionId] ?? [])
+            ->map(fn (array $entryType) => $this->getEntryType($entryType))
             ->filter()
             ->values();
     }
@@ -120,8 +135,6 @@ class EntryTypes
         $entryTypes = new MemoizableArray(
             $this->_createEntryTypeQuery()->get()->all(),
             function (object $result) {
-                $result->titleTranslationMethod = TranslationMethod::from($result->titleTranslationMethod);
-                $result->slugTranslationMethod = TranslationMethod::from($result->slugTranslationMethod);
                 $result->color = $result->color ? Color::from($result->color) : null;
 
                 return new EntryType($result);
@@ -242,6 +255,25 @@ class EntryTypes
     }
 
     /**
+     * Returns an entry type by its ID, UID or handle.
+     *
+     * @param  ModelIdentifier[]|null  $by
+     */
+    public function resolveEntryType(mixed $entryType, ?array $by = null): ?EntryType
+    {
+        if ($entryType instanceof EntryType) {
+            return $entryType;
+        }
+
+        return match (ModelIdentifier::detect($entryType, $by)) {
+            ModelIdentifier::Id => $this->getEntryTypeById((int) $entryType),
+            ModelIdentifier::Uid => $this->getEntryTypeByUid($entryType),
+            ModelIdentifier::Handle => $this->getEntryTypeByHandle($entryType),
+            null => null,
+        };
+    }
+
+    /**
      * Returns an entry type by its usage config.
      *
      * @param  EntryType|int|string|array{id?:int,uid?:string,name?:string,handle?:string}  $entryType
@@ -355,13 +387,13 @@ class EntryTypes
             $entryTypeModel->icon = $data['icon'] ?? null;
             $entryTypeModel->color = $data['color'] ?? null;
             $entryTypeModel->hasTitleField = $data['hasTitleField'];
-            $entryTypeModel->titleTranslationMethod = $data['titleTranslationMethod'] ?? '';
+            $entryTypeModel->titleTranslationMethod = TranslationMethod::fromStored($data['titleTranslationMethod'] ?? null, $data['titleTranslationKeyFormat'] ?? null)->value;
             $entryTypeModel->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
             $entryTypeModel->titleFormat = $data['titleFormat'];
             $entryTypeModel->allowLineBreaksInTitles = $data['allowLineBreaksInTitles'] ?? false;
             $entryTypeModel->uiLabelFormat = ($data['uiLabelFormat'] ?? null) ?: '{title}';
             $entryTypeModel->showSlugField = $data['showSlugField'] ?? true;
-            $entryTypeModel->slugTranslationMethod = $data['slugTranslationMethod'] ?? TranslationMethod::Site->value;
+            $entryTypeModel->slugTranslationMethod = TranslationMethod::fromStored($data['slugTranslationMethod'] ?? null, $data['slugTranslationKeyFormat'] ?? null)->value;
             $entryTypeModel->slugTranslationKeyFormat = $data['slugTranslationKeyFormat'] ?? null;
             $entryTypeModel->showStatusField = $data['showStatusField'] ?? true;
             $entryTypeModel->showPostDateField = $data['showPostDateField'] ?? true;
@@ -585,6 +617,7 @@ class EntryTypes
     public function refreshEntryTypes(): void
     {
         $this->entryTypes = null;
+        $this->sectionEntryTypes = null;
 
         // Sections cache entry types internally, so ensure those get refreshed as well.
         Sections::refreshSections();

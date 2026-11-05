@@ -6,6 +6,8 @@ use CraftCms\Cms\Cp\Components\Field;
 use Illuminate\Support\HtmlString;
 use Twig\Markup;
 
+use function CraftCms\Cms\ui;
+
 describe('attributes', function () {
     it('renders the tag with label and boolean attributes', function () {
         $html = Field::make()
@@ -46,6 +48,14 @@ describe('attributes', function () {
 
         expect(Field::make()->label('My Label')->labelSrOnly()->toHtml())
             ->toContain(' label-sr-only');
+    });
+
+    it('only renders instructions-sr-only when set', function () {
+        expect(Field::make()->instructions('Type { to insert a value.')->toHtml())
+            ->not->toContain('instructions-sr-only');
+
+        expect(Field::make()->instructions('Type { to insert a value.')->instructionsSrOnly()->toHtml())
+            ->toContain(' instructions-sr-only');
     });
 
     it('only renders width when set', function () {
@@ -156,4 +166,59 @@ it('casts to string and Htmlable', function () {
 
     expect((string) $field)->toBe($field->toHtml())
         ->and($field->toHtml())->toContain('label="Cast"');
+});
+
+describe('component inputs', function () {
+    it('names the input after the field and moves the shell to {id}-field', function () {
+        $html = ui('field', [
+            'id' => 'handle',
+            'label' => 'Handle',
+            'input' => ui('input', ['name' => 'handle']),
+        ])->toHtml();
+
+        expect($html)
+            ->toContainTag('craft-field', ['id' => 'handle-field', 'data-attribute' => 'handle', 'data-error-key' => 'handle'])
+            ->toContainTag('input', ['id' => 'handle', 'name' => 'handle', 'slot' => 'input']);
+    });
+
+    it('takes the shell id from an input that already has one', function () {
+        $html = ui('field', ['input' => ui('textarea', ['id' => 'notes'])])->toHtml();
+
+        expect($html)
+            ->toContainTag('craft-field', ['id' => 'notes-field', 'data-attribute' => 'notes'])
+            ->toContainTag('textarea', ['id' => 'notes']);
+    });
+
+    it('lets an explicit attribute, error key and data win', function () {
+        $html = ui('field', [
+            'id' => 'name',
+            'attribute' => 'title',
+            'errorKey' => 'entry.title',
+            'attributes' => ['data' => ['foo' => 'bar']],
+            'input' => ui('input', []),
+        ])->toHtml();
+
+        expect($html)->toContainTag('craft-field', [
+            'data-attribute' => 'title',
+            'data-error-key' => 'entry.title',
+            'data-foo' => 'bar',
+        ]);
+    });
+
+    it('disables the input along with the field', function () {
+        expect(ui('field', ['id' => 'x', 'disabled' => true, 'input' => ui('input', [])])->toHtml())
+            ->toContainTag('input', ['id' => 'x', 'disabled' => true]);
+    });
+
+    it('renders the same markup twice', function () {
+        $field = ui('field', ['id' => 'x', 'input' => ui('input', [])]);
+
+        expect($field->toHtml())->toBe($field->toHtml());
+    });
+
+    it('leaves string inputs alone', function () {
+        expect(Field::make()->id('x')->input('<input id="y">')->toHtml())
+            ->toContainTag('craft-field', ['id' => 'x', 'data-attribute' => false])
+            ->toContainTag('input', ['id' => 'y']);
+    });
 });

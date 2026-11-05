@@ -184,9 +184,23 @@ enum Edition: int implements Arrayable
         return $this->value >= self::Team->value;
     }
 
+    public function supportsReleases(): bool
+    {
+        return $this->value >= self::Pro->value;
+    }
+
     public function supportsPublicRegistration(): bool
     {
         return $this->value >= self::Pro->value;
+    }
+
+    /**
+     * Whether admins can lay out the control panel navigation for everyone.
+     * Navigations for individual user groups also need Pro, where user groups are.
+     */
+    public function supportsCustomNavigations(): bool
+    {
+        return $this->value >= self::Team->value;
     }
 
     public function toArray(): array

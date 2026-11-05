@@ -8,6 +8,10 @@ import {Paddable} from '@src/mixins/Paddable.js';
 import variantsStyles from '@src/styles/variants.styles.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {styleMap} from 'lit/directives/style-map.js';
+import {
+  hasSlotted,
+  LightDomController,
+} from '@src/controllers/LightDomController';
 
 /**
  * @summary A boxed message: an optional icon, an optional title, body content,
@@ -55,6 +59,11 @@ import {styleMap} from 'lit/directives/style-map.js';
  *   box when `padding` is absent. Defaults to `--c-spacing-sm`.
  * @cssproperty --c-callout-padding-inline - Inline-axis padding of the callout
  *   box when `padding` is absent. Defaults to `--c-spacing-md`.
+ * @cssproperty --c-callout-icon-padding-inline - Inline-axis padding around
+ *   the icon. Defaults to `--c-spacing-sm`.
+ * @cssproperty --c-callout-text-padding-inline - Inline-axis padding around
+ *   the title and description. Defaults to `--c-spacing-sm`.
+ * @csspart base - The callout's box, which carries its fill and border.
  */
 export default class CraftCallout extends Paddable(LitElement, {
   customProperty: ['--_callout-padding-block', '--_callout-padding-inline'],
@@ -121,6 +130,14 @@ export default class CraftCallout extends Paddable(LitElement, {
    */
   @state() private resolvedIcon: string | null = null;
 
+  /**
+   * The icon and title regions only render when they have something in them,
+   * so their slots can't report their own changes. The controller re-renders
+   * the callout whenever its light DOM moves, so content slotted in later
+   * shows up.
+   */
+  private _lightDom = new LightDomController(this);
+
   protected override willUpdate(): void {
     this.resolvedIcon = this.icon ?? this.getDefaultIcon();
   }
@@ -141,42 +158,45 @@ export default class CraftCallout extends Paddable(LitElement, {
   }
 
   protected override render(): unknown {
-    const hasTitle = this.title || !!this.querySelector('[slot="title"]');
+    const hasTitle = this.title || hasSlotted(this, 'title');
     // A slotted icon counts even when there's no name to resolve — it's the
     // consumer bringing their own artwork.
     const hasIcon =
-      !this.hideIcon &&
-      (!!this.resolvedIcon || !!this.querySelector('[slot="icon"]'));
+      !this.hideIcon && (!!this.resolvedIcon || hasSlotted(this, 'icon'));
 
     return html`
       <div
+        part="base"
         data-variant="${this.variant}"
         style="${styleMap(this.paddingStyles)}"
         class="${classMap({
           callout: true,
           'callout--hide-icon': !hasIcon,
-          'callout--title': hasTitle,
           'callout--small': this.size === 'small',
         })}"
       >
-        ${hasIcon
-          ? html`<slot name="icon" class="callout__icon">
-              ${this.resolvedIcon
-                ? html`<craft-icon
-                    name="${this.resolvedIcon}"
-                    style="font-size: 0.9em"
-                  ></craft-icon>`
-                : nothing}
-            </slot>`
-          : nothing}
-        ${hasTitle
-          ? html`<div class="callout__title">
-              <slot name="title">${this.title}</slot>
-            </div>`
-          : nothing}
+        <div class="callout__body">
+          ${hasIcon
+            ? html`<slot name="icon" class="callout__icon">
+                ${this.resolvedIcon
+                  ? html`<craft-icon
+                      name="${this.resolvedIcon}"
+                      style="font-size: 0.9em"
+                    ></craft-icon>`
+                  : nothing}
+              </slot>`
+            : nothing}
+          <div class="callout__text">
+            ${hasTitle
+              ? html`<div class="callout__title">
+                  <slot name="title">${this.title}</slot>
+                </div>`
+              : nothing}
 
-        <div class="callout__description">
-          <slot></slot>
+            <div class="callout__description">
+              <slot></slot>
+            </div>
+          </div>
         </div>
 
         <div class="callout__action"><slot name="action"></slot></div>

@@ -4,17 +4,24 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\FieldLayoutDesigner;
 
+use CraftCms\Cms\Cp\Cp;
+use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Cp\Html\StatusHtml;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Container\Attributes\Singleton;
 use Throwable;
 
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
 /**
@@ -23,6 +30,24 @@ use function CraftCms\Cms\t;
 #[Singleton]
 class CardDesigner
 {
+    /**
+     * The luminance of the sample images cards are previewed with, Mt. Bachelor at sunset for the light theme
+     * (`images/thumb-styles/bachelor-light.jpg`) and under the stars for the dark theme (`bachelor-dark.jpg`), as
+     * {@see Images::sample()} measures it.
+     */
+    private const array PREVIEW_COVER_LUMINANCE = [
+        'light' => [
+            [[0.389, 0.676], [0.294, 0.592], [0.171, 0.454], [0.116, 0.378]],
+            [[0.038, 0.65], [0.025, 0.435], [0.021, 0.198], [0.021, 0.4]],
+            [[0.004, 0.04], [0.004, 0.028], [0.004, 0.023], [0.004, 0.024]],
+        ],
+        'dark' => [
+            [[0.01, 0.029], [0.009, 0.027], [0.009, 0.027], [0.009, 0.026]],
+            [[0.007, 0.065], [0.007, 0.111], [0.007, 0.095], [0.008, 0.07]],
+            [[0.002, 0.02], [0.002, 0.012], [0.002, 0.011], [0.003, 0.014]],
+        ],
+    ];
+
     /** @param array<string, mixed> $config */
     public function html(FieldLayout $fieldLayout, array $config = []): string
     {
@@ -82,10 +107,19 @@ class CardDesigner
     {
         $showThumb ??= $fieldLayout->type::hasThumbs() || $fieldLayout->hasThumbField();
         $thumbAlignment = $fieldLayout->getCardThumbAlignment();
+        $cover = $showThumb && $fieldLayout->getCardThumbStyle() !== 'normal';
+        $sampleElement = $this->sampleElement($fieldLayout);
+        $sampleUser = $sampleElement instanceof User ? $sampleElement : null;
+        $labelText = $sampleUser?->getName() ?? t('The Quick Brown Fox');
+
+        // A sample user shows their default avatar, unless a field supplies the thumbnail.
+        $avatarHtml = $showThumb && $sampleUser && ! $fieldLayout->hasThumbField()
+            ? $sampleUser->getThumbHtml(120)
+            : null;
 
         // get heading
         $headingHtml = Html::tag('craft-truncate',
-            Html::tag('a', Html::tag('span', t('Title')), [
+            Html::tag('a', Html::tag('span', Html::encode($labelText)), [
                 'class' => ['label-link'],
                 'href' => '#',
                 'aria-disabled' => 'true',
@@ -95,8 +129,8 @@ class CardDesigner
             ]
         );
 
-        // get status label placeholder
-        $labels = [$fieldLayout->type::hasStatuses() ? app(StatusHtml::class)->componentStatusLabelHtml(new ($fieldLayout->type)()) : null];
+        // User cards don't show a status badge elsewhere in the CP.
+        $labels = [$sampleElement && ! $sampleUser ? app(StatusHtml::class)->componentStatusLabelHtml($sampleElement) : null];
         $bodyHtml = Html::beginTag('div');
 
         // get body elements (fields and attributes)
@@ -117,10 +151,9 @@ class CardDesigner
 
         $bodyHtml .= Html::endTag('div');
 
-        // get thumb placeholder
-        $thumbnailHtml = $showThumb ? Html::tag('div',
-            Html::tag('craft-icon', '', ['name' => 'image']),
-        ) : '';
+        $theme = Theme::resolveFor(currentUserElement())->value;
+        $previewSrc = Cp::publicAssetUrl("images/thumb-styles/bachelor-$theme.jpg");
+        $thumbnailHtml = $showThumb ? Html::tag('img', '', ['src' => $previewSrc, 'alt' => '']) : '';
 
         return view('c::forms.fld.card-preview', [
             'cvd' => $this,
@@ -128,9 +161,46 @@ class CardDesigner
             'bodyHtml' => $bodyHtml,
             'showThumb' => $showThumb,
             'thumbAlignment' => $thumbAlignment,
+            'coverSrc' => $cover ? $previewSrc : null,
+            'coverLuminance' => self::PREVIEW_COVER_LUMINANCE[$theme],
             'thumbnailHtml' => $thumbnailHtml,
+            'avatarHtml' => $avatarHtml,
+            'labelText' => $labelText,
+            // Only entry cards have a label in their header (their entry type's), which the preview shows as it's set.
+            'showHeader' => $fieldLayout->type === Entry::class,
+            // The sample chip shows a status indicator, rather than a label.
+            'statusIndicatorHtml' => $sampleElement ? app(StatusHtml::class)->componentStatusIndicatorHtml($sampleElement) : null,
         ])->render();
 
+    }
+
+    /**
+     * Returns a sample element to preview cards and chips with, if the element type has statuses: a live entry,
+     * or an active user with a name (and so a default avatar).
+     */
+    private function sampleElement(FieldLayout $fieldLayout): ?ElementInterface
+    {
+        if (! $fieldLayout->type::hasStatuses()) {
+            return null;
+        }
+
+        $element = new ($fieldLayout->type)();
+
+        // Published, so it shows as live rather than pending.
+        if (property_exists($element, 'postDate')) {
+            $element->postDate = now();
+        }
+
+        if ($element instanceof User) {
+            $element->firstName = 'Olive';
+            $element->lastName = 'Craften';
+            $element->fullName = 'Olive Craften';
+            $element->active = true;
+            // Fixed, so the avatar's colors (picked from its first two bytes) stay the same: teal to violet.
+            $element->uid = '181d3c1a-0000-4000-8000-000000000000';
+        }
+
+        return $element;
     }
 
     /** @return array<string, array<string, string|null>> */
@@ -239,30 +309,34 @@ class CardDesigner
             'disabled' => false,
         ];
 
-        if ($fieldLayout->type::hasThumbs()) {
-            $options = [
-                ['label' => t('Default'), 'value' => '__default__'],
-            ];
-        } else {
-            $options = [
-                ['label' => t('None'), 'value' => '__none__'],
-            ];
-        }
+        $options = array_values($this->thumbOptions($fieldLayout));
 
-        $thumbOptions = array_values($this->thumbOptions($fieldLayout));
-        usort($thumbOptions, fn (array $a, array $b) => $a['label'] <=> $b['label']);
-        array_push($options, ...$thumbOptions);
+        // Entries can show their entry type’s icon. The card view designer only keeps the option while an icon is selected.
+        $iconOption = $fieldLayout->type === Entry::class
+            ? ['label' => t('Entry type icon'), 'value' => FieldLayout::ENTRY_TYPE_ICON_THUMB_SOURCE]
+            : null;
+        $options = array_filter([...$options, $iconOption]);
+        usort($options, fn (array $a, array $b) => $a['label'] <=> $b['label']);
 
         // radio button switch that lets you choose whether the thumb alignment should be start or end
         $orientation = I18N::getLocale()->getOrientation();
         $showThumb = $fieldLayout->type::hasThumbs() || $fieldLayout->hasThumbField();
+        // Icon thumbnails never cover the card, so they keep their alignment.
+        $cover = $fieldLayout->getCardThumbStyle() === 'cover'
+            && ! in_array(FieldLayout::ENTRY_TYPE_ICON_THUMB_SOURCE, $fieldLayout->thumbSources, true);
 
         return view('c::forms.fld.thumb-management', [
-            // dropdown field that contains all thumbable fields + the None/Default option
             'options' => $options,
-            'thumbFieldKey' => $fieldLayout->thumbFieldKey,
+            'iconOption' => $iconOption,
+            'thumbSources' => $fieldLayout->thumbSources,
             'thumbAlignment' => $fieldLayout->getCardThumbAlignment(),
-            'showThumb' => $showThumb,
+            'thumbStyle' => $fieldLayout->getCardThumbStyle(),
+            'showThumbAlignment' => $showThumb && ! $cover,
+            'styleOptions' => [
+                ['value' => 'normal', 'label' => t('Normal')],
+                ['value' => 'cover', 'label' => t('Cover')],
+                ['value' => 'auto', 'label' => t('Auto')],
+            ],
             'disabled' => $config['disabled'],
             'alignmentOptions' => [
                 [
@@ -270,20 +344,12 @@ class CardDesigner
                     // The family prefix is required for the client-side icon fetch;
                     // these live in custom-icons/, not the default solid/ folder.
                     'icon' => $orientation === 'ltr' ? 'custom-icons/slideout-left' : 'custom-icons/slideout-right',
-                    'attributes' => [
-                        'aria' => [
-                            'label' => $orientation == 'ltr' ? t('Left') : t('Right'),
-                        ],
-                    ],
+                    'label' => $orientation === 'ltr' ? t('Left') : t('Right'),
                 ],
                 [
                     'value' => 'end',
                     'icon' => $orientation === 'ltr' ? 'custom-icons/slideout-right' : 'custom-icons/slideout-left',
-                    'attributes' => [
-                        'aria' => [
-                            'label' => $orientation == 'ltr' ? t('Right') : t('Left'),
-                        ],
-                    ],
+                    'label' => $orientation === 'ltr' ? t('Right') : t('Left'),
                 ],
             ],
         ])->render();

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp;
 
+use Closure;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
+use CraftCms\Cms\Auth\SessionTimeout;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Events\CpDataResolving;
@@ -14,6 +16,7 @@ use CraftCms\Cms\Cp\Notifications\NotificationCenter;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Providers\AppServiceProvider;
 use CraftCms\Cms\Section\Resources\SectionResource;
 use CraftCms\Cms\Support\Api;
@@ -22,20 +25,25 @@ use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Images;
+use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\UserPermissions;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\QueueManager;
 use CraftCms\Cms\View\LegacyAssets\CpAsset;
 use Illuminate\Foundation\Vite;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
+use Inertia\Inertia;
 use stdClass;
 
 use function CraftCms\Cms\craftAsset;
@@ -62,17 +70,120 @@ readonly class Cp
     /** @return Collection<string, mixed> */
     public static function config(): Collection
     {
-        $generalConfig = Cms::config();
+        return collect(self::stableValues())->merge(self::requestData());
+    }
 
-        return collect(self::craftData())
-            ->merge([
+    /**
+     * The config for the shared `craft.general` Inertia prop.
+     *
+     * The values from {@see self::stableData()} are once props: later visits leave them out, and the client keeps the
+     * ones it has, until the project config, the user, their permissions or the locale change.
+     *
+     * @return array<string, mixed>
+     */
+    public static function inertiaConfig(): array
+    {
+        $fingerprint = self::stableDataFingerprint();
+
+        return collect(self::stableData())
+            ->map(fn (Closure $resolve, string $key) => Inertia::once(fn () => self::stableValues()[$key])
+                ->as("craft.general.$key.$fingerprint"))
+            ->merge(self::requestData())
+            ->all();
+    }
+
+    /**
+     * The config values that may change with each request.
+     *
+     * @return array<string, mixed>
+     */
+    private static function requestData(): array
+    {
+        // Built once per request: each page renders it for the Inertia props, the legacy `window.Craft` object and
+        // the app view.
+        return once(static function (): array {
+            $generalConfig = Cms::config();
+
+            return [
+                ...self::craftData(),
                 'cpLogoUrl' => $generalConfig->cpLogoUrl,
                 'cpTrigger' => $generalConfig->cpTrigger,
                 'baseCpUrl' => Url::cpUrl(),
                 'defaultCpLocale' => $generalConfig->defaultCpLocale,
                 'rememberedUserSessionDuration' => (int) config(sprintf('auth.guards.%s.remember', Cms::config()->getAuthGuard()), 20160) * 60,
                 'runQueueAutomatically' => $generalConfig->runQueueAutomatically,
-            ]);
+            ];
+        });
+    }
+
+    /**
+     * The config values that only change with the project config, the current user and their permissions, or the
+     * locale, as {@see self::stableDataFingerprint()} tracks.
+     *
+     * @return array<string, Closure(): mixed>
+     */
+    private static function stableData(): array
+    {
+        $data = [
+            'asciiCharMap' => fn () => Str::asciiCharMap(true, app()->getLocale()),
+            'datepickerOptions' => fn () => self::datepickerOptions(I18N::getFormattingLocale(), I18N::getLocale()),
+            'fileKinds' => AssetsHelper::getFileKinds(...),
+            'timepickerOptions' => fn () => self::timepickerOptions(I18N::getFormattingLocale(), I18N::getLocale()->getOrientation()),
+            'translations' => fn () => I18N::getAllTranslationsForLocale(app()->getLocale()) ?: new stdClass,
+        ];
+
+        if (! currentUserElement()) {
+            return $data;
+        }
+
+        $upToDate = Cms::isInstalled() && ! app(Updates::class)->areMigrationsPending();
+
+        return $data + [
+            'elementTypeNames' => self::elementTypeNames(...),
+            'fieldsWithoutContent' => fn () => app(Fields::class)->getFieldsWithoutContent(false)->pluck('handle')->all(),
+            // Serialized once here, rather than as a resource each time the config is encoded
+            'publishableSections' => fn () => $upToDate ? Json::decode(Json::encode(SectionResource::collection(Sections::getPublishableSections()))) : [],
+            'sites' => self::sites(...),
+        ];
+    }
+
+    /** @return array<class-string<ElementInterface>, string[]> */
+    private static function elementTypeNames(): array
+    {
+        $elementTypeNames = [];
+
+        foreach (Elements::getAllElementTypes() as $elementType) {
+            /** @var class-string<ElementInterface> $elementType */
+            $elementTypeNames[$elementType] = [
+                $elementType::displayName(),
+                $elementType::pluralDisplayName(),
+                $elementType::lowerDisplayName(),
+                $elementType::pluralLowerDisplayName(),
+            ];
+        }
+
+        return $elementTypeNames;
+    }
+
+    /** @return array<string, mixed> */
+    private static function stableValues(): array
+    {
+        return once(static fn (): array => array_map(fn (Closure $resolve) => $resolve(), self::stableData()));
+    }
+
+    private static function stableDataFingerprint(): string
+    {
+        $currentUser = currentUserElement();
+
+        return md5(Json::encode([
+            Cms::VERSION,
+            Cms::isInstalled() ? ProjectConfig::get(ProjectConfigService::PATH_DATE_MODIFIED) : null,
+            app()->getLocale(),
+            I18N::getFormattingLocale()->id,
+            $currentUser?->id,
+            // Admins have every permission, and hashing theirs would cost more than the once props save
+            $currentUser?->admin ?: ($currentUser ? app(UserPermissions::class)->permissionsHash($currentUser->id) : null),
+        ]));
     }
 
     public static function vite(): Vite
@@ -93,19 +204,27 @@ readonly class Cp
     /**
      * The illustration for a view mode option, for a Choice Control's `thumbnail`.
      *
-     * @return array{src: string, width: int, height: int, aspectRatio: string}
+     * @return array{svg: string, width: int, height: int, aspectRatio: string}
      */
     public static function viewModeThumbnail(string $viewMode): array
     {
         // The list illustration is narrower than the rest, as in Craft 5.
-        $width = $viewMode === 'list' ? 48 : 80;
+        return static::illustration("images/view-modes/$viewMode.svg", $viewMode === 'list' ? 48 : 80);
+    }
 
+    /**
+     * An illustration under `resources/public`, inlined for a radio's `thumbnail` so its `--c-illustration-*` colors
+     * follow the theme and the selected state.
+     *
+     * @return array{svg: string, width: int, height: int, aspectRatio: string}
+     */
+    public static function illustration(string $path, int $width = 80, int $height = 60): array
+    {
         return [
-            // Illustrations live in Vite's publicDir; see publicAssetUrl().
-            'src' => static::publicAssetUrl("images/view-modes/$viewMode.svg"),
+            'svg' => Html::svg("@resources/public/$path", namespace: true),
             'width' => $width,
-            'height' => 60,
-            'aspectRatio' => "$width / 60",
+            'height' => $height,
+            'aspectRatio' => "$width / $height",
         ];
     }
 
@@ -138,12 +257,40 @@ readonly class Cp
         ];
     }
 
-    public static function viteScripts(): Vite
+    /**
+     * Returns the tags that load the control panel's own scripts and styles.
+     */
+    public static function viteScripts(): string
     {
-        return static::vite()->withEntryPoints([
+        return static::viteTags([
             'resources/css/cp.css',
             'resources/js/cp.ts',
         ]);
+    }
+
+    /**
+     * Returns the tags that load the given entry points from a Vite build, with their imports preloaded.
+     *
+     * Laravel finds each imported stylesheet's chunk by scanning the whole manifest, which takes ~100ms for the
+     * control panel's entry points, so the tags are cached for each build. They aren't while the dev server is
+     * running, or with a CSP nonce, which changes with every request.
+     *
+     * @param  list<string>  $entryPoints
+     * @param  Vite|null  $vite  The build to load them from, if not the control panel's
+     */
+    public static function viteTags(array $entryPoints, ?Vite $vite = null): string
+    {
+        $vite ??= static::vite();
+        $manifestHash = $vite->manifestHash();
+
+        if ($manifestHash === null || $vite->cspNonce() !== null || $entryPoints === []) {
+            return $vite($entryPoints)->toHtml();
+        }
+
+        // The first entry point's URL tells builds apart, and covers the asset URL they're served from
+        $key = sprintf('craft:vite-tags:%s', md5(Json::encode([$manifestHash, $entryPoints, $vite->asset($entryPoints[0])])));
+
+        return Cache::remember($key, Cms::config()->cacheDuration ?: null, fn () => $vite($entryPoints)->toHtml());
     }
 
     /**
@@ -171,14 +318,13 @@ readonly class Cp
             'Enterprise' => Edition::Enterprise->value,
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => Url::actionUrl(),
-            'asciiCharMap' => Str::asciiCharMap(true, app()->getLocale()),
             'baseApiUrl' => Api::craftApiEndpoint(),
             'baseSiteUrl' => Url::siteUrl(),
             'baseUrl' => Url::url(),
             'clientOs' => request()->clientOs(),
-            'datepickerOptions' => self::datepickerOptions($formattingLocale, $locale),
             'defaultCookieOptions' => self::defaultCookieOptions(),
-            'fileKinds' => AssetsHelper::getFileKinds(),
+            'earthIcon' => Icons::earth(),
+            'formattingLocale' => $formattingLocale->getLanguageTag(),
             'iconBaseUrl' => craftAsset('icons'),
             'language' => app()->getLocale(),
             'left' => $orientation === 'ltr' ? 'left' : 'right',
@@ -193,10 +339,8 @@ readonly class Cp
             'right' => $orientation === 'ltr' ? 'right' : 'left',
             'systemName' => Cms::systemName(),
             'systemUid' => Cms::systemUid(),
-            'timepickerOptions' => self::timepickerOptions($formattingLocale, $orientation),
             'timezone' => Cms::timezone(),
             'tokenParam' => $generalConfig->tokenParam,
-            'translations' => I18N::getAllTranslationsForLocale(app()->getLocale()) ?: new stdClass,
             'useEmailAsUsername' => $generalConfig->useEmailAsUsername,
         ];
 
@@ -218,17 +362,6 @@ readonly class Cp
             return $data;
         }
 
-        $elementTypeNames = [];
-        foreach (Elements::getAllElementTypes() as $elementType) {
-            /** @var class-string<ElementInterface> $elementType */
-            $elementTypeNames[$elementType] = [
-                $elementType::displayName(),
-                $elementType::pluralDisplayName(),
-                $elementType::lowerDisplayName(),
-                $elementType::pluralLowerDisplayName(),
-            ];
-        }
-
         $data += [
             'allowAdminChanges' => $generalConfig->allowAdminChanges,
             'allowUpdates' => $generalConfig->allowUpdates,
@@ -247,9 +380,7 @@ readonly class Cp
                 ?? false
             ),
             'edition' => Edition::get()->value,
-            'elementTypeNames' => $elementTypeNames,
-            'elevatedSessionDuration' => $generalConfig->elevatedSessionDuration,
-            'fieldsWithoutContent' => app(Fields::class)->getFieldsWithoutContent(false)->pluck('handle')->all(),
+            'elevatedSessionDuration' => max(0, (int) config('auth.password_timeout', 300)),
             'handleCasing' => $generalConfig->handleCasing,
             'httpProxy' => self::httpProxy($generalConfig),
             'isImagick' => Images::getIsImagick(),
@@ -272,12 +403,11 @@ readonly class Cp
             'previewIframeResizerOptions' => self::previewIframeResizerOptions($generalConfig),
             'primarySiteId' => $primarySite ? (int) $primarySite->id : null,
             'primarySiteLanguage' => $primarySite?->getLanguage(),
-            'publishableSections' => $upToDate ? SectionResource::collection(Sections::getPublishableSections()) : [],
             'runQueueAutomatically' => $generalConfig->runQueueAutomatically,
             'siteId' => $upToDate ? (app(RequestedSite::class)->get()->id ?? Sites::getCurrentSite()->id) : null,
-            'sites' => self::sites(),
             'siteToken' => $generalConfig->siteToken,
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
+            'sessionExpiresAt' => app(SessionTimeout::class)->expiresAt(request())?->getTimestamp(),
             'userEmail' => $currentUser->email,
             'userHasPasskeys' => app(Passkeys::class)->hasPasskeys(app(Impersonation::class)->getImpersonator() ?? $currentUser),
             'userId' => $currentUser->id,

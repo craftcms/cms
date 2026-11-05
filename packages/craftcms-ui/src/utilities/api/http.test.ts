@@ -154,6 +154,37 @@ describe('responses', () => {
     expect(await (data as Blob).text()).toBe('file contents');
   });
 
+  it('streams the body when asked, which the signal can still abort', async () => {
+    respond('data: {}\n\n');
+    const controller = new AbortController();
+    const {data} = await createHttpClient().post(
+      '/x',
+      {},
+      {
+        responseType: 'stream',
+        signal: controller.signal,
+      }
+    );
+
+    expect(data).toBeInstanceOf(ReadableStream);
+    expect(await new Response(data as ReadableStream).text()).toBe(
+      'data: {}\n\n'
+    );
+
+    controller.abort();
+
+    expect(lastRequest().init.signal!.aborted).toBe(true);
+  });
+
+  it('reads a rejected stream’s body as usual', async () => {
+    respond('{"message":"Nope"}', {status: 422});
+    const error = await createHttpClient()
+      .post('/x', {}, {responseType: 'stream'})
+      .catch((e: unknown) => e);
+
+    expect((error as HttpError).response?.data).toEqual({message: 'Nope'});
+  });
+
   it('rejects non-2xx responses with the parsed response attached', async () => {
     respond('{"message":"Nope"}', {status: 422});
     const error = await createHttpClient()

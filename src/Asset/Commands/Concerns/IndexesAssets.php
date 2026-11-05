@@ -16,6 +16,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Facades\AssetIndexer;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Folders;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -32,6 +33,8 @@ trait IndexesAssets
 
     private bool $createMissingAssets;
 
+    private bool $analyzeImages;
+
     private function parseBooleanOption(string|int|bool $value): bool
     {
         return match (strtolower($value)) {
@@ -47,6 +50,7 @@ trait IndexesAssets
         $this->deleteEmptyFolders = $this->parseBooleanOption($this->option('deleteEmptyFolders'));
         $this->deleteMissingAssets = $this->parseBooleanOption($this->option('deleteMissingAssets'));
         $this->createMissingAssets = $this->parseBooleanOption($this->option('createMissingAssets'));
+        $this->analyzeImages = $this->hasOption('analyzeImages') && $this->parseBooleanOption($this->option('analyzeImages'));
 
         $this->newLine();
 
@@ -55,6 +59,7 @@ trait IndexesAssets
             cacheRemoteImages: $this->cacheRemoteImages,
             isCli: true,
             listEmptyFolders: $this->deleteEmptyFolders,
+            analyzeImages: $this->analyzeImages,
         );
 
         $missingRecordsByFilename = collect($volumes)
@@ -105,7 +110,7 @@ trait IndexesAssets
             $this->components->task(
                 'Deleting the'.($totalMissingFiles > 1 ? ' '.$totalMissingFiles : '').' missing asset record'.Str::plural('record', $totalMissingFiles),
                 function () use ($assetIds) {
-                    $assets = Asset::find()->id($assetIds)->get();
+                    $assets = Asset::find()->id($assetIds)->site('*')->unique()->get();
 
                     foreach ($assets as $asset) {
                         app(AssetTransformers::class)->invalidate($asset);
@@ -158,7 +163,7 @@ trait IndexesAssets
             try {
                 $item->getIsDir()
                     ? AssetIndexer::indexFolderByListing($volume, $item, $session->id, $this->createMissingAssets)
-                    : AssetIndexer::indexFileByListing($volume, $item, $session->id, $this->cacheRemoteImages, $this->createMissingAssets);
+                    : AssetIndexer::indexFileByListing($volume, $item, $session->id, $this->cacheRemoteImages, $this->createMissingAssets, $this->analyzeImages);
             } catch (MissingAssetException|MissingVolumeFolderException $e) {
                 $missingRecords->add($e);
 
@@ -279,10 +284,10 @@ trait IndexesAssets
                         ->update([
                             'volumeId' => $e->volume->id,
                             'folderId' => $e->folder->id,
-                            'dateUpdated' => now(),
+                            'dateUpdated' => Query::prepareDateForDb(now()),
                         ]);
 
-                    AssetIndexer::indexFileByEntry($e->indexEntry, $this->cacheRemoteImages, false);
+                    AssetIndexer::indexFileByEntry($e->indexEntry, $this->cacheRemoteImages, false, $this->analyzeImages);
                 }
             );
         }

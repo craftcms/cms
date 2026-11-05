@@ -17,6 +17,12 @@ use Illuminate\Support\HtmlString;
  */
 class Tab extends Container
 {
+    private ?string $icon = null;
+
+    private bool $sidebar = false;
+
+    private bool $deferred = false;
+
     /** @param list<Node> $children */
     private function __construct(
         string $uid,
@@ -50,6 +56,35 @@ class Tab extends Container
         return new self($uid, $label, $children);
     }
 
+    /** An icon shown before the tab's label. */
+    public function icon(?string $icon): static
+    {
+        $this->icon = $icon !== '' ? $icon : null;
+
+        return $this;
+    }
+
+    /**
+     * Whether the tab belongs in the edit form's sidebar. Renderers without a
+     * sidebar show it alongside the other tabs.
+     */
+    public function sidebar(bool $sidebar = true): static
+    {
+        $this->sidebar = $sidebar;
+
+        return $this;
+    }
+
+    /**
+     * Whether the tab is sent without its children, which the client fetches once the page has loaded.
+     */
+    public function deferred(bool $deferred = true): static
+    {
+        $this->deferred = $deferred;
+
+        return $this;
+    }
+
     public function component(): string
     {
         return 'craft:tab';
@@ -57,6 +92,11 @@ class Tab extends Container
 
     public function props(): array
     {
-        return ['label' => $this->label];
+        return array_filter([
+            'label' => $this->label,
+            'icon' => $this->icon,
+            'sidebar' => $this->sidebar ?: null,
+            'deferred' => $this->deferred ?: null,
+        ], fn (string|bool|null $value): bool => $value !== null);
     }
 }

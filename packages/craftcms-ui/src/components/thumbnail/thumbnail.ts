@@ -24,6 +24,8 @@ import styles from './thumbnail.styles.js';
  *   animated source's motion (see `animated`).
  *
  * @cssproperty [--c-thumbnail-size=calc(30rem / 16)] - Overall size of the thumbnail box.
+ * @cssproperty [--c-thumbnail-height=--c-thumbnail-size] - Height of the thumbnail box. Set
+ *   to `auto` to let a fit image set the height, up to the image's own.
  * @cssproperty [--c-thumbnail-image-radius=0] - Corner radius of the image when `rounded` isn't set.
  * @cssproperty [--c-thumbnail-radius=--c-radius-full] - Corner radius applied when `rounded` is set.
  * @cssproperty [--c-thumbnail-checker-size=8px] - Size of a single checker square.
@@ -111,10 +113,10 @@ export default class CraftThumbnail extends LitElement {
   private capturedFrame: HTMLImageElement | null = null;
 
   /**
-   * Watches the real `<img>` for its box becoming (or staying) a real,
-   * non-zero size — covers both "wasn't visible/laid out yet when it
-   * loaded" (e.g. inside a closed tab or accordion) and later layout
-   * changes, with one mechanism.
+   * Watches the real `<img>` until its box is a real, non-zero size, for
+   * images that weren't visible or laid out yet when they loaded (e.g.
+   * inside a closed tab or accordion). Disconnected once the cover is
+   * painted, since the hidden `<img>` no longer reflects the layout.
    */
   private resizeObserver: ResizeObserver | null = null;
 
@@ -185,12 +187,21 @@ export default class CraftThumbnail extends LitElement {
   override connectedCallback() {
     super.connectedCallback();
     this.updateSlottedSvgs();
+
+    // Disconnecting stopped the resize observer an unfrozen image waits on.
+    if (this.hasUpdated && !this.frozen) {
+      const image = this.shadowRoot?.querySelector('img');
+      if (image?.complete) {
+        this.attemptFreeze(image);
+      }
+    }
   }
 
   override disconnectedCallback() {
-    super.disconnectedCallback();
     this.restoreSlottedSvgs();
     this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
+    super.disconnectedCallback();
   }
 
   override render() {
@@ -272,7 +283,9 @@ export default class CraftThumbnail extends LitElement {
       return null;
     }
 
-    return this.width >= this.height ? 'landscape' : 'portrait';
+    // A framework setting them as properties can hand over strings, which
+    // would compare by character ("80" >= "120").
+    return Number(this.width) >= Number(this.height) ? 'landscape' : 'portrait';
   }
 
   private get showsPlaceholder(): boolean {
@@ -322,7 +335,7 @@ export default class CraftThumbnail extends LitElement {
     );
     const ctx = canvas?.getContext('2d');
 
-    if (!ctx) {
+    if (!canvas || !ctx) {
       return;
     }
 
@@ -371,6 +384,9 @@ export default class CraftThumbnail extends LitElement {
       ctx.drawImage(frame, 0, 0, width, height);
     }
 
+    // Freezing hides the <img> as a 1x1 box, which mustn't be measured again.
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
     this.frozen = true;
   }
 }

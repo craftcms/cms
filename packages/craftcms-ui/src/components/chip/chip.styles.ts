@@ -1,4 +1,5 @@
 import {css} from 'lit';
+import {tintedHost} from '@src/styles/tinted.styles';
 
 export default css`
   /*
@@ -12,6 +13,21 @@ export default css`
     display: contents;
     --c-truncate-link-decoration: var(--c-link-decoration);
     --c-truncate-link-hover-decoration: var(--c-link-decoration-hover);
+  }
+
+  /*
+   * On a colored chip a blue link would clash with the fill, so links take the
+   * chip's text color, and are underlined so they still stand apart from it.
+   * Neutral chips keep the default link styling (a black chip's contents take
+   * the dark theme's). A plain chip has no fill to clash with, so it keeps the
+   * default link styling too. Set on the host, so the truncate properties
+   * above resolve to them too.
+   */
+  :host([variant]:not([appearance~='plain'])),
+  ${tintedHost(":not([appearance~='plain'])")} {
+    --c-text-link: currentColor;
+    --c-link-decoration: underline;
+    --c-link-decoration-hover: none;
   }
 
   /* Base */
@@ -42,6 +58,11 @@ export default css`
     padding-block: 0;
     padding-inline: var(--_chip-gap) var(--_chip-spacing);
     display: inline-flex;
+    /* Centered on the line, rather than sitting on its baseline: an inline
+       flex box's baseline comes from its first item, which for a thumbnail
+       is the image's bottom edge, lifting the chip above the text's
+       descenders. */
+    vertical-align: middle;
     gap: var(--_chip-gap);
     border-radius: var(--_radius);
     align-items: center;
@@ -74,7 +95,18 @@ export default css`
      line up side by side. */
   .cp-chip--medium {
     --_chip-spacing: 0.5em;
-    --_thumb-size: calc(34rem / 16);
+    --_thumb-size: var(--c-size-control-md);
+    min-height: var(--c-size-control-md);
+  }
+
+  /* Outside the plain appearance, small chips are as tall as a medium
+     button, thumbnail included: it's inset by the border and the padding it
+     keeps from the chip's edges. */
+  .cp-chip--small:not(.cp-chip--plain) {
+    --_thumb-size: calc(
+      var(--c-size-control-md) - var(--_border-width) * 2 -
+        var(--_chip-block-padding) * 2
+    );
     min-height: var(--c-size-control-md);
   }
 
@@ -82,6 +114,31 @@ export default css`
     --_chip-spacing: 1em;
     --_thumb-size: calc(40rem / 16);
     min-height: var(--c-size-control-lg);
+  }
+
+  /* Thumbnail sizes, overriding the one the chip's size gives it: two
+     classes, so they win over the sizes' own. sm keeps the thumbnail a small
+     chip gives it. From lg, the corners grow along with the thumbnail. */
+  .cp-chip.cp-chip--thumb-md {
+    --_thumb-size: calc(60rem / 16);
+  }
+
+  .cp-chip.cp-chip--thumb-lg {
+    --_thumb-size: calc(120rem / 16);
+  }
+
+  .cp-chip.cp-chip--thumb-xl {
+    --_thumb-size: calc(180rem / 16);
+  }
+
+  .cp-chip.cp-chip--thumb-2xl {
+    --_thumb-size: calc(240rem / 16);
+  }
+
+  .cp-chip.cp-chip--thumb-lg,
+  .cp-chip.cp-chip--thumb-xl,
+  .cp-chip.cp-chip--thumb-2xl {
+    --_radius: var(--c-radius-lg);
   }
 
   /* Alignment */
@@ -131,10 +188,69 @@ export default css`
     gap: var(--_chip-gap);
   }
 
+  /* Clicking a selectable chip selects it, so its label doesn't get a text
+     cursor, as if it were text to select. Links within it keep theirs. */
+  .cp-chip--selectable {
+    cursor: default;
+  }
+
   /* The gap spaces the checkbox, so the browser's default margins would
      double up with it. */
   .cp-chip__select {
     margin: 0;
+  }
+
+  /* The checkbox lives in the shadow root, out of reach of the global
+     craft-checkbox styles, so it's drawn the same way here. On a colored chip
+     it takes the chip's text color, like the chip's other controls, and once
+     checked the mark is cut out of the fill, so the chip shows through. */
+  .cp-chip__select {
+    appearance: none;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    width: var(--c-chip-checkbox-size, calc(14rem / 16));
+    height: var(--c-chip-checkbox-size, calc(14rem / 16));
+    border: var(--c-form-control-border-width, 1px)
+      var(--c-form-control-border-style, solid) currentColor;
+    border-radius: var(--c-checkbox-radius, var(--c-radius-sm));
+    background-color: transparent;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .cp-chip__select:checked {
+    border-color: transparent;
+    background-color: currentColor;
+    mask:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' version='1.1' viewBox='0 0 255.8 234.9'%3E%3Cpath d='M245.9,4.6c-10.7-7.8-25.7-5.4-33.5,5.3l-119.4,164.2-52.1-52.1c-9.4-9.4-24.6-9.4-33.9,0-9.3,9.4-9.4,24.6,0,33.9l72,72c5,5,11.8,7.5,18.8,7s13.4-4.1,17.5-9.8L251.2,38.1c7.8-10.7,5.4-25.7-5.3-33.5Z'/%3E%3C/svg%3E")
+        center / 65% no-repeat exclude,
+      linear-gradient(#000 0 0);
+  }
+
+  .cp-chip__select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  :host(:is([data-color='white'], :not([data-color]))) .cp-chip__select {
+    border-color: var(--c-form-control-border-color);
+    background-color: var(--c-input-fill);
+  }
+
+  :host(:is([data-color='white'], :not([data-color])))
+    .cp-chip__select:checked {
+    border-color: transparent;
+    background-color: var(--c-color-accent-fill-loud);
+  }
+
+  @media (forced-colors: active) {
+    .cp-chip__select,
+    :host(:is([data-color='white'], :not([data-color]))) .cp-chip__select {
+      appearance: auto;
+      mask: none;
+      border: revert;
+      background: revert;
+    }
   }
 
   .cp-chip__status,
@@ -150,8 +266,20 @@ export default css`
     width: auto;
   }
 
+  /* As wide as a status dot (craft-indicator's \`md\` size plus its border),
+     so a wider status, like the draft icon, overflows evenly and lines up
+     with the dots. */
   ::slotted([slot='status']) {
     display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    inline-size: calc(0.6em + 2px);
+  }
+
+  /* A status, such as the draft icon, isn't the chip's own: only its icon
+     takes the chip's color. A solid fill keeps its contrasting text color. */
+  :host(:not([appearance~='solid'])) ::slotted([slot='status']) {
+    color: var(--c-text-default);
   }
 
   .cp-chip__thumbnail {
@@ -230,9 +358,84 @@ export default css`
   /* Suffix */
 
   .cp-chip__suffix {
+    margin-inline-start: calc(var(--c-spacing-xs) - var(--_chip-gap));
     padding-block: var(--_chip-block-padding);
     display: flex;
     flex-direction: column;
+  }
+
+  /*
+   * Stacked: the prefix sits above the label, both centered, for a tile in a
+   * grid. The checkbox and suffix share a row along the top, so reaching for
+   * one never lands on the thumbnail. Grid areas place each part, so a part
+   * that isn't rendered leaves its cell empty rather than shifting the rest.
+   */
+  .cp-chip--stacked {
+    display: inline-grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'prefix prefix prefix'
+      'main main main';
+    justify-items: center;
+    row-gap: var(--_chip-block-padding);
+    padding: var(--_chip-block-padding);
+  }
+
+  :host([full-width]) .cp-chip--stacked {
+    display: grid;
+  }
+
+  .cp-chip--stacked.cp-chip--has-header {
+    grid-template-areas:
+      'select . suffix'
+      'prefix prefix prefix'
+      'main main main';
+  }
+
+  .cp-chip--stacked .cp-chip__select {
+    grid-area: select;
+    justify-self: start;
+  }
+
+  /* With a checkbox, the header row is as tall as the checkbox, so it sits as
+     far from the top as from the side, and a taller suffix centers on it,
+     spilling evenly into the padding above and the gap below. */
+  .cp-chip--stacked.cp-chip--has-header.cp-chip--selectable {
+    grid-template-rows: var(--c-chip-checkbox-size, calc(14rem / 16)) auto auto;
+  }
+
+  /* The rows are spaced by the chip's padding and row gap alone, so the
+     parts drop the block padding that insets them in an inline chip. */
+  .cp-chip--stacked :is(.cp-chip__thumbnail, .cp-chip__body, .cp-chip__suffix) {
+    padding-block: 0;
+  }
+
+  .cp-chip--stacked .cp-chip__prefix {
+    grid-area: prefix;
+  }
+
+  /* Clear of the chip's edges, the thumbnail's corners aren't concentric
+     with the chip's, so they keep a radius of their own. */
+  .cp-chip--stacked .cp-chip__thumbnail {
+    --c-thumbnail-image-radius: var(--c-radius-md);
+  }
+
+  .cp-chip--stacked .cp-chip__main {
+    grid-area: main;
+    justify-self: stretch;
+    justify-content: center;
+    padding-inline-end: 0;
+  }
+
+  .cp-chip--stacked .cp-chip__body {
+    flex-grow: 0;
+  }
+
+  .cp-chip--stacked .cp-chip__suffix {
+    grid-area: suffix;
+    justify-self: end;
+    align-self: center;
+    margin-inline-start: 0;
   }
 
   /*
@@ -264,34 +467,56 @@ export default css`
     color: var(--c-color-on-quiet);
   }
 
+  /* A plain chip has no fill or border for its color to show on, so its
+     label takes the default text color. Only its icon takes the chip's color
+     (a status, such as the draft icon, isn't the chip's own; see above). */
   :host([appearance~='plain']) .cp-chip {
     background-color: transparent;
     border-color: transparent;
+    color: var(--c-chip-text, var(--c-text-default));
+  }
+
+  :host([appearance~='plain']) .cp-chip__icon {
     color: var(--c-color-on-quiet);
   }
 
   /*
-   * Without an author-chosen color the chip stamps data-color="white", whose
-   * fill, border, and text are all static colors — they stay light in dark
-   * mode. A default chip takes the theme-aware surface instead, paired with
-   * the same text and border tokens craft-pane uses on that surface, so the
-   * three move together. Scoped to the two filled tiers so outline and plain
-   * stay transparent, and to the stamped color so a variant still fills with
-   * its own.
+   * Without a color, a chip has no fill of its own: its border and text come
+   * from the colors around it, so in a colored card it takes the card's
+   * color, and elsewhere the neutral ones.
+   */
+  :host(:not([data-color]):not([selected])[appearance~='fill']) .cp-chip,
+  :host(:not([data-color]):not([selected])[appearance~='outline-fill'])
+    .cp-chip,
+  :host(:not([data-color]):not([selected])[appearance~='outline']) .cp-chip {
+    background-color: transparent;
+    border-color: var(--c-color-border-quiet);
+    color: var(--c-chip-text, var(--c-text-default));
+  }
+
+  /*
+   * White chips take the theme-aware raised surface, its border, and the
+   * default text color, rather than white's static colors, which stay light in
+   * dark mode. Scoped to the two filled tiers so outline and plain stay
+   * transparent.
+   *
+   * The palette is repointed too, for controls that inherit it, like the
+   * action menu's button, whose hover tints from --c-color-fill-quiet.
    */
   :host([data-color='white'][appearance~='fill']:not([selected])) .cp-chip,
   :host([data-color='white'][appearance~='outline-fill']:not([selected]))
     .cp-chip {
-    background-color: var(--c-chip-fill, var(--c-surface-raised));
-    border-color: var(
-      --c-chip-border-color,
-      var(--c-color-neutral-border-quiet)
-    );
+    --c-color-fill-quiet: var(--c-chip-fill, var(--c-surface-white));
+    --c-color-on-quiet: var(--c-chip-text, var(--c-text-default));
+    background-color: var(--c-chip-fill, var(--c-surface-white));
+    border-color: var(--c-chip-border-color, var(--c-border-raised));
     color: var(--c-chip-text, var(--c-text-default));
   }
 
   :host([data-color='white'][appearance~='outline']) .cp-chip,
   :host([data-color='white'][appearance~='plain']) .cp-chip {
+    --c-color-fill-quiet: transparent;
+    --c-color-on-quiet: var(--c-chip-text, var(--c-text-default));
     color: var(--c-chip-text, var(--c-text-default));
   }
 
@@ -305,6 +530,12 @@ export default css`
        Invisible, except in forced colors, where it gives the chip an edge. */
     outline: 1px solid transparent;
     outline-offset: -1px;
+  }
+
+  /* Over the inset a leading thumbnail would otherwise get, too. */
+  .cp-chip--plain.cp-chip--leads-with-thumbnail,
+  .cp-chip--plain.cp-chip--leads-with-prefix {
+    padding-inline-start: 0;
   }
 
   .cp-chip--plain .cp-chip__main:last-child {
@@ -331,6 +562,7 @@ export default css`
    * specificity: a selected chip stays legible as selected even when it is plain.
    */
   :host([selected]) .cp-chip {
+    --c-color-fill-quiet: var(--c-color-accent-fill-quiet);
     background-color: var(--c-color-accent-fill-quiet);
     border-color: var(--c-color-accent-border-normal);
   }
@@ -338,5 +570,61 @@ export default css`
   /* A plain chip has no border to color, so its outline takes the color. */
   :host([selected]) .cp-chip--plain {
     outline-color: var(--c-color-accent-border-normal);
+  }
+
+  /*
+   * A filled colored chip takes the subtler look of a card's body: a wash of
+   * its color's quiet fill, and its quiet border and text. Selected, it takes
+   * its color's normal fill, border, and text instead, rather than the accent
+   * color. Black, like white, is the same in both themes, so a wash
+   * of it would leave its light text unreadable; it keeps its own look.
+   */
+  :host(
+      [data-color]:not([data-color='white'], [data-color='black']):not(
+        [selected]
+      )[appearance~='fill']
+    )
+    .cp-chip,
+  :host(
+      [data-color]:not([data-color='white'], [data-color='black']):not(
+        [selected]
+      )[appearance~='outline-fill']
+    )
+    .cp-chip {
+    background-color: color-mix(var(--c-color-fill-quiet), transparent 70%);
+    color: var(--c-color-on-quiet);
+  }
+
+  :host(
+      [data-color]:not([data-color='white'], [data-color='black']):not(
+        [selected]
+      )[appearance~='outline-fill']
+    )
+    .cp-chip {
+    border-color: var(--c-color-border-quiet);
+  }
+
+  :host(
+      [data-color]:not(
+        [data-color='white'],
+        [data-color='black']
+      )[selected][appearance~='fill']
+    )
+    .cp-chip,
+  :host(
+      [data-color]:not(
+        [data-color='white']
+      )[selected][appearance~='outline-fill']
+    )
+    .cp-chip {
+    /* Controls that tint from these, like the move button, take the chip's
+       own color rather than the accent repointing above, with a stronger
+       hover and press so they stand out from the fill. */
+    --c-color-fill-quiet: var(--c-color-fill-normal);
+    --c-color-mix-hover: currentColor 20%;
+    --c-color-mix-active: currentColor 30%;
+    background-color: var(--c-color-fill-normal);
+    border-color: var(--c-color-border-normal);
+    color: var(--c-color-on-normal);
   }
 `;

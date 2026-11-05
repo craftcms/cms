@@ -4,7 +4,10 @@
   import {usePage} from '@inertiajs/vue3';
   import SelectableCardList from '@/common/components/SelectableCardList.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
+  import PlaceholderShape from '@/common/components/PlaceholderShape.vue';
+  import type {CardThumbSettings} from '@/modules/elements/types/view-state';
   import type {Selectable} from '@/common/composables/useSelectable';
+  import {isInteractiveClick} from '@/common/utils/dom';
   import {
     isInteractiveItemEvent,
     type ElementIndexItemBehavior,
@@ -35,6 +38,16 @@
       loading?: boolean;
       renderServerActions?: boolean;
       itemBehavior?: ElementIndexItemBehavior<CardElement>;
+      /**
+       * How many placeholder cards to draw in place of the cards, such as while
+       * they load. Takes the place of the loading spinner.
+       */
+      placeholders?: number;
+      /**
+       * How the placeholder cards show a thumbnail, as the cards' field layout
+       * has it, or null for none.
+       */
+      placeholderThumb?: CardThumbSettings | null;
     }>(),
     {
       data: () => [],
@@ -42,8 +55,11 @@
       selectAll: true,
       singleColumn: false,
       sortable: false,
+      readOnly: undefined,
       loading: false,
       renderServerActions: true,
+      placeholders: 0,
+      placeholderThumb: null,
     }
   );
 
@@ -56,6 +72,7 @@
 
   const emit = defineEmits<{
     (event: 'reorder', startIndex: number, finishIndex: number): void;
+    (event: 'edit', element: CardElement): void;
   }>();
 
   const ids = computed(() => props.data.map((element) => element.id));
@@ -71,7 +88,9 @@
   function itemAttrs(id: string | number): Record<string, unknown> | undefined {
     const element = props.data.find((candidate) => candidate.id === id);
 
-    return element ? props.itemBehavior?.attrs?.(element) : undefined;
+    return element
+      ? {'data-id': String(id), ...props.itemBehavior?.attrs?.(element)}
+      : undefined;
   }
 
   function cardAttrs(id: string | number): Record<string, unknown> | undefined {
@@ -107,6 +126,28 @@
     }
   }
 
+  /**
+   * A double-click opens the element, except on the card's own controls — the
+   * checkbox, an action menu, the reorder button, a link.
+   */
+  function onCardDblclick(id: string | number, event: MouseEvent) {
+    const element = props.data.find((candidate) => candidate.id === id);
+
+    if (!element) {
+      return;
+    }
+
+    if (props.itemBehavior?.onDblClick?.(element, event)) {
+      event.preventDefault();
+
+      return;
+    }
+
+    if (!isInteractiveClick(event, event.currentTarget)) {
+      emit('edit', element);
+    }
+  }
+
   function onCardKeydown(
     id: number | string,
     _index: number,
@@ -137,7 +178,40 @@
 </script>
 
 <template>
-  <div class="grid place-items-center min-h-50" v-if="loading">
+  <template v-if="placeholders > 0">
+    <div
+      class="card-grid-header"
+      v-if="selectable && selectAll"
+      aria-hidden="true"
+    >
+      <PlaceholderShape class="checkbox-placeholder" />
+    </div>
+    <ul
+      :class="{'card-grid': true, 'card-grid--single': singleColumn}"
+      aria-hidden="true"
+    >
+      <li v-for="index in placeholders" :key="index">
+        <PlaceholderShape
+          v-if="
+            placeholderThumb?.style === 'cover' ||
+            placeholderThumb?.style === 'auto'
+          "
+          class="card-cover-placeholder"
+        />
+        <craft-card v-else :thumb-alignment="placeholderThumb?.alignment">
+          <PlaceholderShape
+            v-if="placeholderThumb"
+            slot="thumbnail"
+            class="card-thumb-placeholder"
+          />
+          <PlaceholderShape slot="header" class="card-label-placeholder" />
+          <PlaceholderShape />
+          <PlaceholderShape class="card-text-placeholder" />
+        </craft-card>
+      </li>
+    </ul>
+  </template>
+  <div class="grid flex-1 place-items-center min-h-50" v-else-if="loading">
     <craft-spinner></craft-spinner>
   </div>
   <template v-else-if="data.length > 0">
@@ -151,6 +225,9 @@
       >
         <label slot="label">{{ t('Select all') }}</label>
       </craft-checkbox>
+    </div>
+    <div v-if="$slots['header-after']" class="card-grid-header-after">
+      <slot name="header-after" />
     </div>
 
     <SelectableCardList
@@ -170,6 +247,7 @@
       :aria-busy="loading ? 'true' : undefined"
       @reorder="(from, to) => emit('reorder', from, to)"
       @item-click="onCardClick"
+      @item-dblclick="onCardDblclick"
       @item-keydown="onCardKeydown"
     >
       <template #thumbnail="{index}">
@@ -214,11 +292,37 @@
 </template>
 
 <style scoped lang="scss">
+  .checkbox-placeholder {
+    inline-size: 1rem;
+    block-size: 1rem;
+  }
+
+  .card-thumb-placeholder {
+    inline-size: var(--c-thumbnail-size);
+    block-size: var(--c-thumbnail-size);
+  }
+
+  .card-cover-placeholder {
+    aspect-ratio: 4 / 3;
+    block-size: auto;
+    border-radius: var(--c-card-radius, var(--c-radius-md));
+  }
+
+  .card-label-placeholder {
+    inline-size: 50%;
+  }
+
+  .card-text-placeholder {
+    inline-size: 70%;
+    margin-block-start: var(--c-spacing-sm);
+  }
+
   .card-grid-header {
     margin-block-end: var(--c-spacing-md);
     display: flex;
     align-items: center;
-    min-height: calc(var(--c-size-control-sm) + var(--c-spacing-sm) + 1px);
+    // As tall as other header bars, such as a card's, plus its bottom border.
+    min-height: calc(var(--c-size-header) + 1px);
     padding-block: 0 var(--c-spacing-sm);
     padding-inline: 0;
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
@@ -253,33 +357,6 @@
   }
 
   .card-grid :deep(> li > craft-card) {
-    height: 100%;
-  }
-
-  // craft-thumbnail defaults its own size via :host, so the card thumbnail
-  // renders at the tiny default instead of filling its 120px column. Match the
-  // thumbnail view (and Craft 5's 120px card thumb column).
-  .card-grid :deep(craft-thumbnail) {
-    --c-thumbnail-size: 120px;
-  }
-
-  // Non-image thumbs (folder / file-kind SVGs) render at a fixed small size.
-  // Center them in the same 120px box an image thumbnail fills, at the size
-  // they get in the thumbnail view.
-  .card-thumb:has(> .thumb) {
-    display: grid;
-    place-items: center;
-    width: 120px;
-    height: 120px;
-  }
-
-  .card-thumb > :deep(.thumb) {
-    width: 72px;
-    height: 72px;
-  }
-
-  .card-thumb > :deep(.thumb svg) {
-    width: 100%;
     height: 100%;
   }
 </style>

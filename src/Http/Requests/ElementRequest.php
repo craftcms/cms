@@ -148,11 +148,14 @@ class ElementRequest extends FormRequest
     }
 
     /**
+     * The element type the request is for. A route that's pinned to one through an
+     * `elementType` default can't be pointed at another by the request's input.
+     *
      * @return class-string<ElementInterface>
      */
     public function elementType(): string
     {
-        $elementType = Arr::get($this->overrides, 'type', $this->input('elementType'));
+        $elementType = Arr::get($this->overrides, 'type') ?? $this->route('elementType') ?? $this->input('elementType');
         $elementId = Arr::get($this->overrides, 'id', $this->input('elementId'));
         $elementUid = Arr::get($this->overrides, 'uid', $this->input('elementUid'));
 
@@ -310,7 +313,7 @@ class ElementRequest extends FormRequest
                 ->status(null)
                 ->one();
 
-            if ($element && $this->canSave($element, $this->craftUser())) {
+            if ($element && self::canSave($element, $this->craftUser())) {
                 return $element;
             }
         }
@@ -377,7 +380,10 @@ class ElementRequest extends FormRequest
             ->one();
     }
 
-    private function canSave(ElementInterface $element, CraftUser $user): bool
+    /**
+     * Returns whether a user can save an element, or for a provisional draft, the element it’s a draft of.
+     */
+    public static function canSave(ElementInterface $element, CraftUser $user): bool
     {
         if ($element->getIsRevision()) {
             return false;

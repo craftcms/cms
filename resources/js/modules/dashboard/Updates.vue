@@ -37,7 +37,7 @@
 </script>
 
 <template>
-  <craft-card>
+  <craft-card data-color="gray">
     <slot name="header" />
     <div class="body text-center space-y-3" aria-live="polite">
       <craft-callout v-if="error" variant="danger" role="alert">{{
@@ -63,7 +63,7 @@
         <craft-button
           type="button"
           icon="arrows-rotate"
-          :disabled="checking"
+          .disabled="checking"
           @click="check()"
           >{{ t('Check again') }}</craft-button
         ></template

@@ -34,6 +34,14 @@ interface ImportableElementContainerFieldInterface extends ElementContainerField
     public function getMappingUiPrefix(FieldLayout $fieldLayout, mixed $provider = null, ?string $prefix = null): string;
 
     /**
+     * Replaces the uid keys in this field’s part of a mapping tree with the current handles.
+     *
+     * @param  array<mixed>  $tree
+     * @return array<mixed>
+     */
+    public function resolveMappingKeys(array $tree): array;
+
+    /**
      * Validates field's mapping.
      *
      * @param  array<string, mixed>  $params

@@ -16,8 +16,8 @@ const DIVIDER_END_ATTRIBUTE = 'data-button-group-divider-end';
  * A group that holds a selection is a group of toggle buttons: each button
  * keeps its role and its own tab stop, and reports its state with
  * `aria-pressed`. For a form setting that picks one value from a set of
- * options, use `craft-radio-group` with `buttons` instead, which looks the
- * same but is announced and operated as radios.
+ * options, use `craft-radio-group` with `appearance="button-group"` instead,
+ * which looks the same but is announced and operated as radios.
  *
  * @slot - The default slot.
  *
@@ -121,7 +121,6 @@ export default class CraftButtonGroup extends LitElement {
 
   override disconnectedCallback() {
     super.disconnectedCallback();
-    this.removeEventListener('click', this._handleClick);
     this._childObserver.disconnect();
     this._selectionObserver.disconnect();
   }
@@ -211,6 +210,69 @@ export default class CraftButtonGroup extends LitElement {
     this.removeEventListener('click', this._handleClick);
     this.addEventListener('click', this._handleClick);
     this._syncChildren();
+    this._defaultSelection ??= {
+      value: this.value,
+      active: this._selectedValues(),
+    };
+  }
+
+  /**
+   * The selection the group started with, which a form reset puts back. Taken
+   * when selection mode first starts, after a selection given in markup has
+   * been adopted.
+   */
+  private _defaultSelection?: {value: string | undefined; active: string[]};
+
+  /** The buttons a disabled fieldset disabled, so only they are re-enabled. */
+  private _formDisabledButtons = new Set<Element>();
+
+  private _formDisabled = false;
+
+  /** Restores the initial selection when the group's form is reset. */
+  formResetCallback() {
+    if (!this.name || !this._defaultSelection) {
+      return;
+    }
+
+    const {value, active} = this._defaultSelection;
+
+    this.querySelectorAll('craft-button').forEach((button) => {
+      button.toggleAttribute(
+        'active',
+        this.multiple && active.includes(button.getAttribute('value') ?? '')
+      );
+    });
+
+    if (!this.multiple) {
+      // `value` is declared without a default, so `undefined` is its unset state.
+      this.value = value as string;
+    }
+
+    this._syncChildren();
+  }
+
+  /**
+   * The buttons aren't form-associated themselves, so a disabled fieldset
+   * reaches them through the group.
+   */
+  formDisabledCallback(disabled: boolean) {
+    this._formDisabled = disabled;
+    this._applyFormDisabled();
+  }
+
+  private _applyFormDisabled() {
+    if (!this._formDisabled) {
+      this._formDisabledButtons.forEach((button) =>
+        button.removeAttribute('disabled')
+      );
+      this._formDisabledButtons.clear();
+      return;
+    }
+
+    this.querySelectorAll('craft-button:not([disabled])').forEach((button) => {
+      button.setAttribute('disabled', '');
+      this._formDisabledButtons.add(button);
+    });
   }
 
   private _teardownSelectionMode() {
@@ -272,6 +334,10 @@ export default class CraftButtonGroup extends LitElement {
     // the meantime.
     if (value != null) {
       this.value = value;
+
+      if (this._defaultSelection?.value === undefined) {
+        this._defaultSelection = {value, active: [value]};
+      }
     }
   }
 
@@ -320,6 +386,7 @@ export default class CraftButtonGroup extends LitElement {
     if (this.name) {
       this._syncChildren();
     }
+    this._applyFormDisabled();
     this._markEnds();
   }
 }

@@ -13,8 +13,8 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Import\Data\CompoundMappingColumn;
 use CraftCms\Cms\Import\Data\MappingColumn;
+use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Ui\Contracts\Node;
 use CraftCms\Cms\Ui\Controls\Text;
 use CraftCms\Cms\Ui\Enums\ControlMode;
@@ -136,5 +136,11 @@ class FullNameField extends TextField implements ImportableFieldLayoutElementInt
                 canBeCleared: $part['canBeCleared'],
             ), $parts),
         );
+    }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'id-card';
     }
 }

@@ -7,7 +7,6 @@ use CraftCms\Cms\Address\Models\Address as AddressModel;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Actions\Copy;
 use CraftCms\Cms\Element\Actions\Delete;
 use CraftCms\Cms\Element\Actions\Duplicate;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -18,6 +17,7 @@ use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Revisions;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -526,13 +526,13 @@ it('provides permitted card menu events for the hosting field', function (bool $
     }
 
     if ($static) {
-        expect($elementActions->keys()->all())->toBe([Copy::class])
+        expect($elementActions->keys()->all())->toBe(['copy'])
             ->and($nestedActions)->toBeEmpty();
 
         return;
     }
 
-    expect($elementActions->keys()->all())->toEqualCanonicalizing([Copy::class, Duplicate::class, Delete::class])
+    expect($elementActions->keys()->all())->toEqualCanonicalizing(['copy', Duplicate::class, Delete::class])
         ->and($nestedActions->keys()->all())->toEqualCanonicalizing(['move-forward', 'move-backward', 'paste']);
 
     foreach ($elementActions as $actionClass => $item) {
@@ -543,7 +543,7 @@ it('provides permitted card menu events for the hosting field', function (bool $
             ->and($item['action']['detail']['item']['key'])->toBe($actionClass);
     }
 
-    expect($elementActions[Copy::class]['action']['detail']['item']['action']['detail']['elements'])->toBe([[
+    expect($elementActions['copy']['action']['detail']['item']['action']['detail']['elements'])->toBe([[
         'type' => AddressElement::class,
         'id' => $address->id,
         'siteId' => $address->siteId,
@@ -936,6 +936,25 @@ it('keeps a deleted nested entry deleted after resaving the owner with no change
     expect(DB::table(Table::ELEMENTS)->where('id', $nested->id)->value('dateDeleted'))->not->toBeNull();
 });
 
+it('keeps a newly created unsaved nested draft when the owner is saved with an unchanged value', function () {
+    ['owner' => $owner, 'field' => $field, 'entryType' => $entryType] = createMatrixOwnerFixture();
+
+    $nested = new EntryElement([
+        'typeId' => $entryType->id,
+        'fieldId' => $field->id,
+        'siteId' => $owner->siteId,
+    ]);
+    $nested->setOwnerId($owner->id);
+    $nested->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+    expect(app(Drafts::class)->saveElementAsDraft($nested, markAsSaved: false))->toBeTrue();
+
+    $owner = EntryElement::find()->id($owner->id)->one();
+    $owner->setFieldValueFromRequest($field->handle, '*');
+
+    expect(app(Elements::class)->saveElement($owner))->toBeTrue()
+        ->and(DB::table(Table::ELEMENTS)->where('id', $nested->id)->exists())->toBeTrue();
+});
+
 it('keeps a new nested entry owned when added while the owner is resaving', function () {
     ['owner' => $owner, 'field' => $field, 'entryType' => $entryType, 'manager' => $manager] = createMatrixOwnerFixture();
 
@@ -1176,4 +1195,122 @@ it('restores a nested entry when reverting to an old revision without an integri
 
     expect($restoredNested)->toHaveCount(1)
         ->and($restoredNested[0]->title)->toBe('Revision 1 content');
+});
+
+it('keeps nested entries when saving a draft as a new draft', function () {
+    ['owner' => $owner, 'field' => $field, 'entryType' => $entryType] = createMatrixOwnerFixture();
+
+    $canonicalShared = createMatrixNestedEntry($owner, $field, $entryType, 1, 'Shared');
+    $canonicalEdited = createMatrixNestedEntry($owner, $field, $entryType, 2, 'Original');
+    $owner = EntryElement::find()->id($owner->id)->one();
+
+    /** @var EntryElement $draft */
+    $draft = app(Drafts::class)->createDraft($owner, auth()->id());
+    $draft->setFieldValue($field->handle, [
+        $canonicalShared->id => [],
+        $canonicalEdited->id => ['type' => $entryType->handle, 'title' => 'Edited'],
+        'new1' => ['type' => $entryType->handle, 'title' => 'Added'],
+    ]);
+    expect(app(Elements::class)->saveElement($draft))->toBeTrue();
+
+    $draft = EntryElement::find()->id($draft->id)->drafts()->status(null)->one();
+    $draftAdded = EntryElement::find()->fieldId($field->id)->ownerId($draft->id)->status(null)->all()[2];
+
+    // What the “Save as a new draft” action does
+    /** @var EntryElement $newDraft */
+    $newDraft = app(Elements::class)->duplicateElement($draft, [
+        'isProvisionalDraft' => false,
+        'draftId' => $draft->draftId,
+    ], copyModifiedFields: true);
+
+    // Discard the source draft so nothing it owns can leak into the new draft
+    app(Elements::class)->deleteElement($draft, true);
+
+    $newDraft = EntryElement::find()->id($newDraft->id)->drafts()->status(null)->one();
+    $newNested = EntryElement::find()->fieldId($field->id)->ownerId($newDraft->id)->status(null)->all();
+
+    expect($newDraft->getCanonicalId())->toBe($owner->id)
+        ->and(array_map(fn (EntryElement $entry) => $entry->title, $newNested))->toBe(['Shared', 'Edited', 'Added'])
+        // Unmodified nested entries stay shared with the canonical owner
+        ->and($newNested[0]->id)->toBe($canonicalShared->id)
+        // Modified ones belong to the new draft, still derived from the canonical nested entry
+        ->and($newNested[1]->getPrimaryOwnerId())->toBe($newDraft->id)
+        ->and($newNested[1]->getCanonicalId())->toBe($canonicalEdited->id)
+        // Entries added in the source draft must not point back at the source draft’s copies
+        ->and($newNested[2]->getPrimaryOwnerId())->toBe($newDraft->id)
+        ->and($newNested[2]->getCanonicalId())->not->toBe($draftAdded->id);
+
+    app(Drafts::class)->applyDraft($newDraft);
+
+    $finalNested = EntryElement::find()->fieldId($field->id)->ownerId($owner->id)->status(null)->all();
+
+    expect(array_map(fn (EntryElement $entry) => $entry->title, $finalNested))->toBe(['Shared', 'Edited', 'Added'])
+        ->and($finalNested[0]->id)->toBe($canonicalShared->id)
+        ->and($finalNested[1]->id)->toBe($canonicalEdited->id);
+});
+
+it('keeps doubly-nested edits when saving a draft as a new draft', function () {
+    $leafEntryType = createMatrixEntryType();
+    $innerFieldModel = Field::factory()->create([
+        'name' => 'Inner Matrix',
+        'handle' => 'innerMatrix',
+        'type' => Matrix::class,
+        'settings' => ['entryTypes' => [$leafEntryType->id]],
+    ]);
+    $middleEntryType = EntryTypeModel::factory()
+        ->withField($innerFieldModel)
+        ->create(['name' => 'BlockWithInner', 'handle' => 'blockWithInner', 'hasTitleField' => true]);
+    $ownerType = createMatrixEntryType();
+    $section = SectionModel::factory()->withEntryTypes($ownerType, $middleEntryType, $leafEntryType)->create();
+
+    $result = EntryModel::factory()
+        ->forSection($section)
+        ->forEntryType($ownerType)
+        ->withField('matrixField', Matrix::class, ['entryTypes' => [$middleEntryType->id]])
+        ->createElementWithFields();
+
+    Sections::refreshSections();
+    Fields::refreshFields();
+
+    /** @var Matrix $field */
+    $field = Fields::getFieldById($result->field('matrixField')->id);
+    /** @var Matrix $innerField */
+    $innerField = Fields::getFieldById($innerFieldModel->id);
+    $owner = EntryElement::find()->id($result->element->id)->one();
+
+    $blockA = createMatrixNestedEntry($owner, $field, $middleEntryType, 1, 'A', $section);
+    $originalInnerId = createMatrixNestedEntry($blockA, $innerField, $leafEntryType, 1, 'v1', $section)->id;
+
+    /** @var EntryElement $draft */
+    $draft = app(Drafts::class)->createDraft($owner, auth()->id());
+    $draftBlockA = EntryElement::find()->fieldId($field->id)->ownerId($draft->id)->status(null)->one();
+    $draft->setFieldValue($field->handle, [
+        $draftBlockA->id => [
+            'type' => $middleEntryType->handle,
+            'fields' => [
+                'innerMatrix' => [
+                    $originalInnerId => ['type' => $leafEntryType->handle, 'title' => 'v2'],
+                ],
+            ],
+        ],
+    ]);
+    expect(app(Elements::class)->saveElement($draft))->toBeTrue();
+    $draft = EntryElement::find()->id($draft->id)->drafts()->status(null)->one();
+
+    /** @var EntryElement $newDraft */
+    $newDraft = app(Elements::class)->duplicateElement($draft, [
+        'isProvisionalDraft' => false,
+        'draftId' => $draft->draftId,
+    ], copyModifiedFields: true);
+    app(Elements::class)->deleteElement($draft, true);
+
+    $newDraft = EntryElement::find()->id($newDraft->id)->drafts()->status(null)->one();
+    app(Drafts::class)->applyDraft($newDraft);
+
+    $finalBlockA = EntryElement::find()->fieldId($field->id)->ownerId($owner->id)->status(null)->one();
+    $finalInner = EntryElement::find()->fieldId($innerField->id)->ownerId($finalBlockA->id)->status(null)->all();
+
+    expect($finalInner)->toHaveCount(1)
+        ->and($finalInner[0]->title)->toBe('v2')
+        ->and($finalInner[0]->id)->toBe($originalInnerId);
 });

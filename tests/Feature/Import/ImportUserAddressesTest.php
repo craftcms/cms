@@ -11,7 +11,7 @@ use CraftCms\Cms\User\Import\UserImporter;
 beforeEach(function () {
     $this->import = app(Import::class);
 
-    $this->importer = UserImporter::create()
+    $this->importer = new UserImporter()
         ->site(Sites::getPrimarySite()->handle)
         ->transformer(null);
 

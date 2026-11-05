@@ -79,6 +79,10 @@ it('detects transparent and opaque images', function () {
 });
 
 it('preserves PNG channel count', function () {
+    if (! extension_loaded('imagick')) {
+        $this->markTestSkipped('Only Imagick preserves PNG channel counts; GD always writes RGBA.');
+    }
+
     $sourcePath = $this->sandboxPath.'/google.png';
     $targetPath = $this->sandboxPath.'/channels.png';
 

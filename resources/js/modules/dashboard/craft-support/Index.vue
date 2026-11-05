@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {computed, nextTick, ref} from 'vue';
+  import {computed, nextTick, ref, shallowRef} from 'vue';
   import {t} from '@craftcms/ui';
   import SupportSearch from './SupportSearch.vue';
   import SupportForm from './SupportForm.vue';
@@ -14,8 +14,7 @@
   const support = ref(false);
   const message = ref('');
   const home = ref<HTMLElement>();
-  const supportForm = ref<InstanceType<typeof SupportForm>>();
-  const sending = computed(() => supportForm.value?.sending ?? false);
+  const sending = shallowRef(false);
   const cardHeading = computed(() => {
     if (support.value) return t('Contact Developer Support');
 
@@ -73,7 +72,7 @@
         </span>
       </craft-button>
     </div>
-    <craft-card v-show="screen !== 'home'">
+    <craft-card data-color="gray" v-show="screen !== 'home'">
       <h2 slot="label" class="text-sm">{{ cardHeading }}</h2>
       <div v-show="screen !== 'home'" class="space-y-4">
         <SupportSearch
@@ -86,14 +85,14 @@
         />
         <SupportForm
           v-show="support"
-          ref="supportForm"
           v-model="message"
+          v-model:sending="sending"
           :active="screen !== 'home' && support"
           :id="id"
           :data="data"
           :screen="screen"
         />
-        <craft-button type="button" :disabled="sending" @click="cancel">{{
+        <craft-button type="button" .disabled="sending" @click="cancel">{{
           t('Cancel')
         }}</craft-button>
       </div>
@@ -107,19 +106,22 @@
     box-shadow: var(--c-card-shadow, var(--c-shadow-sm));
   }
   .support-tile {
-    --c-color-fill-normal: color-mix(
-      var(--c-color-neutral-fill-quiet) 30%,
-      var(--c-surface-default)
-    );
     display: flex;
     width: 100%;
     min-height: 150px;
     padding-block: 24px;
     padding-inline: 16px;
     border: var(--c-card-border-width, 1px) solid
-      var(--c-color-neutral-border-quiet);
+      var(--c-color-gray-border-quiet);
     border-radius: 0;
     white-space: normal;
+  }
+  /* At rest, tiles match the other widgets' bodies (a gray card's fill). */
+  .support-tile:not(:hover, :active) {
+    background-color: color-mix(
+      var(--c-color-gray-fill-quiet),
+      transparent 70%
+    );
   }
   .support-tile:first-child {
     border-start-start-radius: var(--c-card-radius, var(--c-radius-md));

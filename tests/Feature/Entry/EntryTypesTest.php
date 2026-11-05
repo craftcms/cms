@@ -25,11 +25,15 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\User\Models\User;
 use Illuminate\Foundation\Http\Events\RequestHandled;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+
+use function CraftCms\Cms\t;
+use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
     $this->entryTypes = app(EntryTypes::class);
@@ -46,6 +50,21 @@ it('can get entry types by section id', function () {
 
     expect($this->entryTypes->getEntryTypesBySectionId($section->id))->toHaveCount(1);
     expect($this->entryTypes->getEntryTypesBySectionId($section->id)->first()->id)->toBe($entryType->id);
+});
+
+it('lists its usages as plain, hyperlinked chips', function () {
+    actingAs(User::factory()->admin()->create());
+    $entryType = EntryType::factory()->create();
+    $section = Section::factory()->withEntryTypes($entryType)->create();
+    Sections::refreshSections();
+    $this->entryTypes->refreshEntryTypes();
+
+    $html = (string) $this->entryTypes->getEntryTypeById($entryType->id)->getMetadata()[t('Used by')]();
+
+    expect($html)
+        ->toContain('<craft-chip')
+        ->toContain('appearance="plain"')
+        ->toContain(sprintf('href="%s"', Sections::getSectionById($section->id)->getCpEditUrl()));
 });
 
 it('can get all entry types', function () {
@@ -118,6 +137,63 @@ it('normalizes empty ui label formats from project config to the title placehold
 
     expect($found)->toBeInstanceOf(EntryTypeData::class)
         ->and($found->uiLabelFormat)->toBe('{title}');
+});
+
+it('loads entry types with empty translation methods as translated for each site', function () {
+    $entryType = EntryType::factory()->create([
+        'hasTitleField' => false,
+        'titleTranslationMethod' => '',
+        'slugTranslationMethod' => '',
+    ]);
+    $entryType->delete();
+
+    $found = $this->entryTypes->getEntryTypeById($entryType->id, withTrashed: true);
+    expect($found->titleTranslationMethod)->toBe(TranslationMethod::Site);
+
+    $entryType->restore();
+    $this->entryTypes->refreshEntryTypes();
+    $found = $this->entryTypes->getEntryTypeById($entryType->id);
+
+    expect($found->titleTranslationMethod)->toBe(TranslationMethod::Site)
+        ->and($found->slugTranslationMethod)->toBe(TranslationMethod::Site);
+});
+
+it('loads entry types with empty translation methods and a key format as custom', function () {
+    $entryType = EntryType::factory()->create([
+        'titleTranslationMethod' => '',
+        'titleTranslationKeyFormat' => '{site.handle}',
+        'slugTranslationMethod' => '',
+        'slugTranslationKeyFormat' => '{site.language}',
+    ]);
+    $this->entryTypes->refreshEntryTypes();
+
+    $found = $this->entryTypes->getEntryTypeById($entryType->id);
+
+    expect($found->titleTranslationMethod)->toBe(TranslationMethod::Custom)
+        ->and($found->titleTranslationKeyFormat)->toBe('{site.handle}')
+        ->and($found->slugTranslationMethod)->toBe(TranslationMethod::Custom)
+        ->and($found->slugTranslationKeyFormat)->toBe('{site.language}');
+});
+
+it('stores empty translation methods from project config as translated for each site', function () {
+    $uid = fake()->uuid();
+
+    $this->entryTypes->handleChangedEntryType(new ItemUpdated(
+        path: "entryTypes.$uid",
+        newValue: [
+            'name' => 'Pages',
+            'handle' => 'pages',
+            'hasTitleField' => false,
+            'titleTranslationMethod' => '',
+            'titleFormat' => '{dateCreated}',
+            'slugTranslationMethod' => '',
+        ],
+        tokenMatches: [$uid],
+    ));
+
+    expect(DB::table(Table::ENTRYTYPES)->where('uid', $uid)->first(['titleTranslationMethod', 'slugTranslationMethod']))
+        ->titleTranslationMethod->toBe(TranslationMethod::Site->value)
+        ->slugTranslationMethod->toBe(TranslationMethod::Site->value);
 });
 
 it('can save an entry type', function () {

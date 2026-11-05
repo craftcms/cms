@@ -45,11 +45,13 @@ trait RedirectsToShownSource
             return null;
         }
 
-        $path = (string) parse_url($url, PHP_URL_PATH);
-        parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
+        // parse_url() mangles multibyte characters, such as a page name's in a non-Latin script.
+        $encodedUrl = (string) preg_replace_callback('/[^\x21-\x7e]+/', fn (array $match) => rawurlencode($match[0]), $url);
+        $path = rawurldecode((string) parse_url($encodedUrl, PHP_URL_PATH));
+        parse_str((string) parse_url($encodedUrl, PHP_URL_QUERY), $query);
 
         // Already there: the source's link is the index's own URL.
-        if (rtrim($path, '/') === rtrim('/'.ltrim($request->path(), '/'), '/') && ! isset($query['source'])) {
+        if (rtrim($path, '/') === rtrim('/'.ltrim($request->decodedPath(), '/'), '/') && ! isset($query['source'])) {
             return null;
         }
 

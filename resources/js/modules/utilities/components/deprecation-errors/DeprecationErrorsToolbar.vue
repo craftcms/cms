@@ -16,7 +16,7 @@
       :action="destroyAll()"
       method="delete"
     >
-      <craft-button :loading="processing" type="submit">
+      <craft-button .loading="processing" type="submit">
         {{ t('Clear All') }}
       </craft-button>
     </Form>

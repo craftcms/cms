@@ -12,18 +12,21 @@ use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites as SitesFacade;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\HtmlString;
+use Illuminate\Support\Uri;
 use RuntimeException;
+use Throwable;
 use Tpetry\QueryExpressions\Function\String\Lower;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\renderObjectTemplate;
@@ -657,24 +660,6 @@ class ElementHelper
     }
 
     /**
-     * Renders the given elements using their partial templates.
-     *
-     * If no partial template exists for an element, its string representation will be output instead.
-     *
-     * @param  ElementInterface[]  $elements
-     */
-    /**
-     * @param  ElementInterface[]  $elements
-     * @param  array<string,mixed>  $variables
-     */
-    public static function renderElements(array $elements, array $variables = []): HtmlString
-    {
-        $output = array_map(fn (ElementInterface $element) => (string) $element->render($variables), $elements);
-
-        return new HtmlString(implode("\n", $output));
-    }
-
-    /**
      * Returns an element action's JavaScript configuration.
      *
      * @return array<string, mixed>
@@ -748,6 +733,102 @@ class ElementHelper
     }
 
     /**
+     * Returns the URL that users should be redirected to after editing the given element: the
+     * current request's `returnUrl` param, such as the index the editor was opened from, or else
+     * {@see postEditUrl()}.
+     */
+    public static function postEditRedirectUrl(ElementInterface $element): string
+    {
+        $returnUrl = request()->query('returnUrl');
+
+        if (! is_string($returnUrl) || $returnUrl === '') {
+            return self::postEditUrl($element);
+        }
+
+        // only require the URL to be hashed if it contains Twig code
+        try {
+            $returnUrl = Crypt::decrypt($returnUrl);
+        } catch (DecryptException) {
+            if (str_contains($returnUrl, '{')) {
+                abort(400, "Invalid returnUrl param: $returnUrl");
+            }
+
+            if (! self::isCraftUrl(str_replace(':QS:', '?', $returnUrl))) {
+                return self::postEditUrl($element);
+            }
+        }
+
+        // swap the QS placeholder with a `?`
+        // (see https://github.com/craftcms/cms/issues/18923)
+        return str_replace(':QS:', '?', $returnUrl);
+    }
+
+    /**
+     * Returns the given `returnUrl` param value with its `site` param set to the given site, so
+     * switching sites in an editor returns to the index for that site. Encrypted values stay encrypted.
+     */
+    public static function returnUrlForSite(string $returnUrl, Site $site): string
+    {
+        try {
+            $url = Crypt::decrypt($returnUrl);
+            $encrypted = true;
+        } catch (DecryptException) {
+            $url = $returnUrl;
+            $encrypted = false;
+        }
+
+        // Object templates are rendered against the element later, so leave them alone
+        if (! is_string($url) || str_contains($url, '{')) {
+            return $returnUrl;
+        }
+
+        $url = Url::urlWithParams(str_replace(':QS:', '?', $url, $count), [
+            'site' => $site->handle,
+        ]);
+
+        if ($count !== 0) {
+            $url = str_replace('?', ':QS:', $url);
+        }
+
+        return $encrypted ? Crypt::encrypt($url) : $url;
+    }
+
+    /**
+     * Returns whether an unsigned URL leads to the control panel or one of the sites.
+     *
+     * The editor follows its post-edit URL from within the control panel's Inertia client, which
+     * would hand another origin's response (or a `javascript:` URL) control of the page.
+     */
+    private static function isCraftUrl(string $url): bool
+    {
+        // Browsers strip whitespace and control characters, and read `\` as `/`
+        if (preg_match('/[\x00-\x20\x7f\\\\]/', $url) || Url::isProtocolRelativeUrl($url)) {
+            return false;
+        }
+
+        if (! Url::isAbsoluteUrl($url)) {
+            return true;
+        }
+
+        try {
+            $uri = Uri::of($url);
+        } catch (Throwable) {
+            return false;
+        }
+
+        if (! in_array(strtolower((string) $uri->scheme()), ['http', 'https'], true)) {
+            return false;
+        }
+
+        return collect([Url::baseCpUrl(), ...SitesFacade::getAllSites(true)->map(fn (Site $site) => $site->getBaseUrl())])
+            ->filter()
+            ->map(fn (string $baseUrl) => strtolower((string) Uri::of($baseUrl)->authority()))
+            ->push(strtolower(request()->getHttpHost()))
+            ->filter()
+            ->contains(strtolower((string) $uri->authority()));
+    }
+
+    /**
      * Returns a generic URL for viewing an element's revisions.
      */
     public static function elementRevisionsUrl(ElementInterface $element): string
@@ -766,6 +847,11 @@ class ElementHelper
      */
     public static function isMultiSite(ElementInterface $element): bool
     {
+        // Spares element types from working out their supported sites, which can take a query
+        if (! SitesFacade::isMultiSite()) {
+            return false;
+        }
+
         $supportedSites = self::supportedSitesForElement($element, true);
 
         if (count($supportedSites) <= 1) {
@@ -856,7 +942,7 @@ class ElementHelper
     {
         $rows = DB::table(Table::ELEMENTS_SITES, 'elements_sites')
             ->select(['elements.id', 'elements.type'])
-            ->join(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', '=', 'elements_sites.elementId')
+            ->join(Table::ELEMENTS.' as elements', 'elements.id', '=', 'elements_sites.elementId')
             ->where('elements_sites.siteId', $element->siteId)
             ->whereNull(['elements.draftId', 'elements.revisionId', 'elements.dateDeleted'])
             ->when(

@@ -13,6 +13,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
+use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
@@ -81,6 +82,8 @@ it('renders the entry edit screen as an Inertia page', function () {
             ->where('elementId', $this->entry->id)
             ->where('canonicalId', $this->entry->id)
             ->where('elementType', Entry::class)
+            ->where('refHandle', 'entry')
+            ->where('elementUrl', $this->entry->getUrl())
             ->where('siteId', $this->entry->siteId)
             ->where('title', 'Current Title')
             ->where('sectionHandle', 'news')
@@ -145,12 +148,18 @@ it('compiles the meta fields into a sidebar UI', function () {
                     fn (array $node) => ($node['control']['path'] ?? null) === ['slug'],
                 );
 
+                $postDate = $nodes->first(
+                    fn (array $node) => ($node['control']['path'] ?? null) === ['postDate'],
+                );
+
                 return in_array('slug', $paths, true)
                     && in_array('postDate', $paths, true)
                     && in_array('expiryDate', $paths, true)
                     && in_array('enabled', $paths, true)
                     && in_array('notes', $paths, true)
-                    && ($slug['control']['props']['autoGenerate'] ?? null) === false;
+                    && ($slug['control']['props']['autoGenerate'] ?? null) === false
+                    && ($slug['props']['icon'] ?? null) === 'link'
+                    && ($postDate['props']['icon'] ?? null) === 'calendar';
             })
             ->where('metadataHtml', fn (?string $html) => is_string($html) && $html !== '')
             ->etc()
@@ -242,6 +251,7 @@ it('renders a named draft in the Inertia editor', function () {
             ->where('isProvisionalDraft', false)
             ->where('readOnly', false)
             ->where('editorActions.primary.label', 'Save draft')
+            ->where('editorActions.primary.actionUrl', Url::actionUrl('elements/save-draft'))
             ->where('editorActions.buttons', fn (Collection $actions) => $actions
                 ->pluck('label')->contains('Apply draft'))
             ->etc()
@@ -272,6 +282,28 @@ it('renders a revision read-only in the Inertia editor', function () {
                 ->pluck('label')->contains('Revert content from this revision'))
             ->etc()
         );
+});
+
+it('keeps the return URL when reverting to a revision', function () {
+    $revision = Elements::getElementById(
+        app(Revisions::class)->createRevision($this->entry, auth()->id(), 'Revision notes'),
+    );
+    $returnUrl = Crypt::encrypt(cp_url('content/entries/news', ['sort' => 'title']));
+
+    $revert = get(cp_url(sprintf('entries/news/%d-%s', $this->entry->id, $this->entry->slug), [
+        'revisionId' => $revision->revisionId,
+        'returnUrl' => $returnUrl,
+    ]))->inertiaProps('editorActions.buttons');
+    $revert = collect($revert)->firstWhere('label', 'Revert content from this revision');
+    app()->forgetScopedInstances();
+
+    $location = post($revert['actionUrl'], [...$revert['params'], 'redirect' => $revert['redirect']])
+        ->assertRedirect()
+        ->headers->get('Location');
+    parse_str((string) parse_url($location, PHP_URL_QUERY), $query);
+
+    expect($location)->toStartWith($this->entry->getCpEditUrl())
+        ->and($query['returnUrl'])->toBe($returnUrl);
 });
 
 it('lists drafts and revisions in the context menu', function () {
@@ -309,7 +341,8 @@ it('ends the breadcrumbs with a revision switcher instead of naming the draft in
                     && $revisionCrumb['label'] === 'Working Draft'
                     && $revisionCrumb['items'][0]['label'] === 'Current'
                     && $drafts['items'][0]['label'] === 'Working Draft'
-                    && $drafts['items'][0]['selected'] === true;
+                    && $drafts['items'][0]['selected'] === true
+                    && str_starts_with($drafts['items'][0]['description'], 'Saved ');
             })
             ->etc()
         );
@@ -318,7 +351,7 @@ it('ends the breadcrumbs with a revision switcher instead of naming the draft in
 it('caps the context menu at five revisions, listing every draft', function () {
     foreach (range(1, 7) as $i) {
         app(Drafts::class)->createDraft($this->entry, auth()->id(), name: "Draft $i");
-        app(Revisions::class)->createRevision($this->entry, auth()->id(), "Revision $i");
+        app(Revisions::class)->createRevision($this->entry, auth()->id(), "Revision $i", force: true);
     }
 
     get($this->entry->getCpEditUrl())
@@ -392,7 +425,36 @@ it('renders an unpublished draft as a create screen', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('elements/Edit')
             ->where('editorActions.primary.label', 'Create entry')
+            ->where('editorActions.primary.actionUrl', null)
             ->where('contextMenu', null)
+            ->etc()
+        );
+});
+
+it('saves an unpublished draft as a draft when the user cannot create the entry', function () {
+    $user = UserModel::factory()->withPermissions([
+        'accessCp',
+        "viewEntries:{$this->section->uid}",
+        "createEntries:{$this->section->uid}",
+    ])->createElement();
+    actingAs($user);
+
+    $draft = app(Entry::class);
+    $draft->siteId = $this->entry->siteId;
+    $draft->sectionId = $this->section->id;
+    $draft->typeId = $this->entryType->id;
+    $draft->title = 'Unpublished Draft';
+    $draft->slug = 'unpublished-draft';
+    $draft->setAuthorIds([$user->id]);
+
+    app(Drafts::class)->saveElementAsDraft($draft, $user->id, markAsSaved: false);
+
+    get($draft->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('elements/Edit')
+            ->where('editorActions.primary.label', 'Save draft')
+            ->where('editorActions.primary.actionUrl', Url::actionUrl('elements/save-draft'))
             ->etc()
         );
 });
@@ -541,6 +603,58 @@ it('offers review instead of canonical save actions for an unpublished workflow 
             })
             ->etc()
         );
+});
+
+it('saves a released draft that can be submitted for review instead of opening the workflow panel', function () {
+    $workflow = Workflow::query()->create([
+        'name' => 'Editorial workflow',
+        'uid' => Str::uuid7()->toString(),
+        'stages' => [[
+            'uid' => Str::uuid7()->toString(),
+            'name' => 'Automatic Approval',
+            'type' => AutomaticApprovalStage::class,
+            'settings' => [],
+        ]],
+    ]);
+    $this->section->update(['workflowId' => $workflow->id]);
+    Sections::refreshSections();
+    $draft = app(Entry::class);
+    $draft->siteId = $this->entry->siteId;
+    $draft->sectionId = $this->section->id;
+    $draft->typeId = $this->entryType->id;
+    $draft->title = 'Released draft';
+    $draft->slug = 'released-draft';
+    $draft->setAuthorIds([auth()->id()]);
+    app(Drafts::class)->saveElementAsDraft($draft, auth()->id());
+    $release = app(Releases::class)->create('Launch', null, auth()->user());
+    $release->items()->create(['draftId' => $draft->draftId, 'canonicalId' => $draft->getCanonicalId()]);
+
+    get($draft->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('release.id', $release->id)
+            ->where('release.blockers', ['The draft must complete its approval workflow before it can be added or published.'])
+            ->where('workflow.current.canSubmit', true)
+            ->where('editorActions.primary.label', 'Save draft')
+            ->where('editorActions.primary.panelId', null)
+            ->etc()
+        );
+});
+
+it('reports whether a released draft blocks its release', function () {
+    $draft = app(Drafts::class)->createDraft($this->entry, auth()->id(), name: 'Working Draft');
+    app(Releases::class)->attach(app(Releases::class)->create('Launch', null, auth()->user()), $draft, auth()->user());
+
+    get($draft->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('release.blockers', [])->etc());
+
+    $draft->title = '';
+    expect(Elements::saveElement($draft))->toBeTrue();
+
+    get($draft->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('release.blockers', ['The title field is required.'])->etc());
 });
 
 it('keeps draft actions visible and disables applying until workflow approval', function () {
@@ -732,13 +846,44 @@ it('links preview targets through a token when the element is not public', funct
         );
 });
 
+it('gives Live Preview untokenized targets and the token the View links share', function () {
+    get($this->entry->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('preview.targets.0.label', 'Primary entry page')
+            ->where('preview.targets.0.url', $this->entry->getUrl())
+            ->where('preview.targets.0.refresh', true)
+            ->where('preview.tokenParams.canonicalId', $this->entry->id)
+            ->where('preview.token', fn (string $token) => strlen($token) === 32)
+            ->where('preview.iframeResizerOptions', false)
+            ->etc()
+        );
+});
+
+it('gives revisions Live Preview', function () {
+    $revision = Elements::getElementById(
+        app(Revisions::class)->createRevision($this->entry, auth()->id()),
+    );
+
+    get(cp_url(sprintf(
+        'entries/news/%d-%s?revisionId=%d',
+        $this->entry->id,
+        $this->entry->slug,
+        $revision->revisionId,
+    )))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('preview.tokenParams.revisionId', $revision->revisionId)
+            ->etc()
+        );
+});
+
 it('polls for activity against the canonical element', function () {
     get($this->entry->getCpEditUrl())
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('activityUrl', fn (?string $url) => is_string($url)
-                && str_contains($url, 'elements/recent-activity')
-                && str_contains($url, 'dontExtendSession'))
+                && str_contains($url, 'elements/recent-activity'))
             ->where('updatedTimestamps', fn (Collection $stamps) => $stamps->has('element')
                 && $stamps->has('canonical'))
             ->where('elementDisplayName', 'entry')

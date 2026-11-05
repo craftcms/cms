@@ -102,7 +102,7 @@ final readonly class Backups
             ignoreTables: $event->ignoreTables ?? [],
         );
 
-        $this->executeCommandWithMysqlDefaults($connection, $command);
+        $this->executeCommandWithMysqlDefaults($connection, $command, 'mysqldump');
 
         event(new BackupCreated(
             connection: $connection,
@@ -126,7 +126,7 @@ final readonly class Backups
 
         $command = $this->resolveRestoreCommand($connection, $filePath, $restoreFormat);
 
-        $this->executeCommandWithMysqlDefaults($connection, $command);
+        $this->executeCommandWithMysqlDefaults($connection, $command, 'mysql');
 
         event(new BackupRestored(
             connection: $connection,
@@ -275,7 +275,12 @@ final readonly class Backups
         );
     }
 
-    private function createMysqlDefaultsFile(Connection $connection): string
+    /**
+     * Creates a temporary my.cnf file based on the connection config.
+     *
+     * @param  string  $program  The program the file will be used with (`mysqldump` or `mysql`)
+     */
+    private function createMysqlDefaultsFile(Connection $connection, string $program): string
     {
         $path = File::normalizePath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.uniqid('craft-db-', true).'.cnf';
         $config = $this->getConnectionConfig($connection);
@@ -293,6 +298,16 @@ final readonly class Backups
             $lines[] = 'host='.$config['host'];
             $lines[] = 'port='.$config['port'];
         }
+
+        $sslLines = $this->sslDirectivesFromConnection($connection);
+
+        if ($sslLines === []) {
+            // The connection wasn't explicitly configured with SSL options, but the normal my.cnf file chain
+            // (which --defaults-file causes mysqldump/mysql to ignore) might still specify them, so carry those over.
+            $sslLines = $this->sslDirectivesFromConfigFiles($program);
+        }
+
+        array_push($lines, ...$sslLines);
 
         file_put_contents($path, implode(PHP_EOL, $lines));
         chmod($path, 0600);
@@ -349,12 +364,113 @@ final readonly class Backups
         ];
     }
 
-    private function executeCommandWithMysqlDefaults(Connection $connection, string $command): void
+    /**
+     * Returns SSL/TLS my.cnf directives based on the connection's PDO options.
+     *
+     * @return list<string>
+     */
+    private function sslDirectivesFromConnection(Connection $connection): array
+    {
+        $options = (array) ($connection->getConfig('options') ?? []);
+        $directives = [];
+
+        foreach ([
+            'ssl_ca' => 'Pdo\\Mysql::ATTR_SSL_CA',
+            'ssl_capath' => 'Pdo\\Mysql::ATTR_SSL_CAPATH',
+            'ssl_cert' => 'Pdo\\Mysql::ATTR_SSL_CERT',
+            'ssl_key' => 'Pdo\\Mysql::ATTR_SSL_KEY',
+            'ssl_cipher' => 'Pdo\\Mysql::ATTR_SSL_CIPHER',
+        ] as $name => $constant) {
+            if (defined($constant) && isset($options[constant($constant)])) {
+                $directives[] = "$name=".$options[constant($constant)];
+            }
+        }
+
+        return $directives;
+    }
+
+    /**
+     * Returns SSL/TLS my.cnf directives based on whatever the normal MySQL config file chain (e.g. `/etc/my.cnf`,
+     * `~/.my.cnf`) would otherwise provide, since those files are ignored once `--defaults-file` is passed.
+     *
+     * @param  string  $program  The program whose defaults should be checked (`mysqldump` or `mysql`)
+     * @return list<string>
+     */
+    private function sslDirectivesFromConfigFiles(string $program): array
+    {
+        $process = new Process([$program, '--print-defaults']);
+        $process->run();
+
+        if (! $process->isSuccessful()) {
+            return [];
+        }
+
+        return $this->sslDirectivesFromPrintDefaults($process->getOutput());
+    }
+
+    /**
+     * Returns SSL/TLS my.cnf directives from the given `--print-defaults` output.
+     *
+     * @return list<string>
+     */
+    private function sslDirectivesFromPrintDefaults(string $output): array
+    {
+        // The output looks like:
+        //
+        //     mysqldump would have been started with the following arguments:
+        //     --ssl-ca=/path/to/ca.pem --ssl-verify-server-cert=0 --skip-ssl ...
+        //
+        // Values aren't quoted, so split on whitespace that is followed by `--` (rather than on all whitespace),
+        // so values containing spaces stay intact.
+        $pos = strpos($output, '--');
+        if ($pos === false) {
+            return [];
+        }
+
+        $tokens = preg_split('/\s+(?=--)/', trim(substr($output, $pos)), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $directives = [];
+
+        foreach ($tokens as $token) {
+            if (! preg_match('/^--([\w-]+)(?:=(.*))?$/s', trim($token), $match)) {
+                continue;
+            }
+
+            // Option names can use dashes or underscores, and can be prefixed with modifiers like `skip-` and `loose-`
+            $name = strtolower(str_replace('_', '-', $match[1]));
+            $baseName = (string) preg_replace('/^(?:loose-)?(?:skip-|disable-|enable-)?/', '', $name);
+            if (! preg_match('/^(ssl|tls)(-|$)/', $baseName)) {
+                continue;
+            }
+
+            if (! isset($match[2])) {
+                $directives[] = $name;
+
+                continue;
+            }
+
+            $value = trim($match[2], "\"'");
+
+            // Ignore redacted values
+            if (preg_match('/^\*+$/', $value)) {
+                continue;
+            }
+
+            // Backslashes are escape characters in option files (e.g. within Windows paths)
+            $directives[] = $name.'='.str_replace('\\', '\\\\', $value);
+        }
+
+        return $directives;
+    }
+
+    /**
+     * @param  string  $program  The program the command runs (`mysqldump` or `mysql`)
+     */
+    private function executeCommandWithMysqlDefaults(Connection $connection, string $command, string $program): void
     {
         $tempFile = null;
 
         if (($connection->isMysql() || $connection->isMaria()) && str_contains($command, '{defaultsFile}')) {
-            $tempFile = $this->createMysqlDefaultsFile($connection);
+            $tempFile = $this->createMysqlDefaultsFile($connection, $program);
             $command = str_replace('{defaultsFile}', escapeshellarg($tempFile), $command);
         }
 

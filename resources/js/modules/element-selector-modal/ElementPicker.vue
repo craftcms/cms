@@ -11,6 +11,7 @@
     type FolderCrumb,
     type SelectedElement,
   } from './useModalElementIndex';
+  import {writeModalIndexLook} from './modalIndexLook';
 
   const props = defineProps<{
     /** Bare action path; `actionClient` expands it against the CP trigger. */
@@ -60,25 +61,21 @@
     index.openFolder(folderId);
   }
 
-  // Folders can't be chosen, so a double-click on one isn't a choice — unless
-  // folders are what's being picked.
-  function onDblClick(event: MouseEvent) {
-    if (
-      !props.selectFolders &&
-      event.target instanceof Element &&
-      event.target.closest('[data-is-folder]')
-    ) {
-      return;
-    }
+  function onIncludeSubfoldersChange(event: Event) {
+    index.setIncludeSubfolders(
+      Boolean((event.target as {checked?: boolean} | null)?.checked)
+    );
+  }
 
+  // Reached only by a double-click the item behavior let through, after it
+  // selected the double-clicked item; folders open instead.
+  function onDblClick() {
     emit('choose', selectedElements.value);
   }
 
   // The modal's Select button and its enabled state live outside Vue, so the
   // selection is pushed out rather than read in.
-  watch(selectedElements, (elements) => emit('selection-change', elements), {
-    deep: true,
-  });
+  watch(selectedElements, (elements) => emit('selection-change', elements));
 
   // Published rather than read, for the same reason the selection is: what the
   // footer can offer depends on where the index is — uploading needs the folder
@@ -93,6 +90,17 @@
   watch(folderBreadcrumbs, (path) => emit('folder-path-change', path), {
     immediate: true,
   });
+
+  // Remembered for the placeholders the next modal draws before its payload.
+  watch(
+    () => ({
+      mode: index.view.mode.value,
+      thumbSize: index.view.thumbSize.value,
+      cardThumbs: index.view.cardThumbs.value,
+    }),
+    (look) => writeModalIndexLook(elementIndex.elementType, look),
+    {immediate: true}
+  );
 
   defineExpose({
     selectedElements,
@@ -120,7 +128,7 @@
     >
       <ElementSources
         :sources="elementIndex.sources"
-        :active-source="elementIndex.source?.key"
+        :active-source="index.activeSourceKey.value"
         @select="index.changeSource"
       />
     </nav>
@@ -134,6 +142,15 @@
         @site-change="index.changeSite"
         @dblclick="onDblClick"
       >
+        <template v-if="index.canSearchSubfolders.value" #search-options>
+          <craft-checkbox
+            class="modal-element-index__subfolders mt-sm"
+            .checked="index.includeSubfolders.value"
+            @model-value-changed="onIncludeSubfoldersChange"
+          >
+            <label slot="label">{{ t('Search in subfolders') }}</label>
+          </craft-checkbox>
+        </template>
         <template v-if="showFolderBreadcrumbs" #navbar>
           <div
             class="folder-breadcrumbs -mx-(--cp-container-padding) px-(--cp-container-padding) py-sm border-b border-b-(--c-color-neutral-border-quiet)"
@@ -163,7 +180,6 @@
 <style lang="scss" scoped>
   .modal-element-index {
     display: grid;
-    background-color: var(--c-color-neutral-fill-quiet);
     height: 100%;
   }
 
@@ -171,9 +187,13 @@
     grid-template-columns: clamp(12rem, 15%, 14rem) 1fr;
   }
 
+  // Only beside the sidebar: without one, the pane meets the modal's own edge.
+  .modal-element-index--sidebar .modal-element-index__main {
+    border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
+  }
+
   .modal-element-index__sidebar {
-    padding-block: var(--c-spacing-lg);
-    padding-inline: var(--c-spacing-sm);
+    padding: var(--c-spacing-md);
     // Long source lists scroll on their own rather than stretching the modal.
     min-height: 0;
     overflow-y: auto;
@@ -184,7 +204,6 @@
     // would on a page; without this, it falls back to its narrowest layout.
     container: cp-content-view / inline-size;
     background: var(--c-surface-overlay);
-    border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
 
     // Grid items don't shrink below their content by default, so a wide table
     // widens the column and a long one grows the row — pushing the pane out of
@@ -212,9 +231,26 @@
     width: 100%;
   }
 
-  // The modal has no header above the index, so the toolbar gets the same
-  // breathing room as the sidebar beside it.
+  // The modal has no header of its own, so the toolbar takes its place.
   .modal-element-index__main :deep(.element-index__header) {
-    padding-block-start: var(--c-spacing-lg);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+    min-block-size: var(--c-modal-header-height);
+    margin-block-end: 0;
+    padding-block: var(--c-spacing-sm);
+    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+  }
+
+  .modal-element-index__main
+    :deep(.element-index__header:has(.modal-element-index__subfolders)) {
+    padding-block: var(--c-spacing-md);
+  }
+
+  .modal-element-index__main :deep(.cp-table > thead th) {
+    height: auto;
+    padding-block: var(--c-spacing-md);
+    font-size: var(--c-text-sm);
   }
 </style>

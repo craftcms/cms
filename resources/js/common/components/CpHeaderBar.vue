@@ -15,6 +15,8 @@
   import SystemInfo from '@/common/components/SystemInfo.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import {cpBreakpoints} from '@/common/composables/useCpBreakpoints';
+  import AssistantToggle from '@/modules/ai/assistant/AssistantToggle.vue';
+  import CommandPaletteTrigger from '@/modules/command-palette/components/CommandPaletteTrigger.vue';
 
   // Passed in rather than read here: `crumbs` is a page prop, but whether there's
   // a context menu depends on the shell's own slots, which a child can't see.
@@ -51,6 +53,9 @@
   const maintenanceMode = computed(() => page.props.craft.maintenanceMode);
   const notifications = computed(() => page.props.craft.general.notifications);
   const devMode = computed(() => page.props.craft.devMode);
+  const hasAssistant = computed(
+    () => page.props.craft.currentUser?.aiAssistant ?? false
+  );
 
   /**
    * Which bridge drew this screen, for the badge below. Only the two bridged
@@ -111,28 +116,24 @@
         </template>
 
         <template v-if="maintenanceMode">
-          <CpLink :href="maintenanceModeUrl">
-            <craft-badge fill="warning">
-              <craft-icon name="person-digging" slot="prefix"></craft-icon>
-              {{ t('Maintenance mode') }}
-            </craft-badge>
-          </CpLink>
+          <craft-badge fill="warning">
+            <craft-icon name="person-digging" slot="prefix"></craft-icon>
+            <CpLink :href="maintenanceModeUrl">{{
+              t('Maintenance mode')
+            }}</CpLink>
+          </craft-badge>
         </template>
       </div>
 
       <div class="cp-header-bar__end" v-else-if="section === 'end'">
-        <div class="flex gap-md items-center">
-          <craft-button
-            icon
-            :variant="ButtonVariant.Plain"
-            type="button"
-            size="small"
-          >
-            <craft-icon name="search" :label="t('Search')"></craft-icon>
-          </craft-button>
-          <cp-notification-center
-            :notifications.prop="notifications"
-          ></cp-notification-center>
+        <div class="flex gap-lg items-center">
+          <div class="flex gap-sm items-center">
+            <CommandPaletteTrigger />
+            <AssistantToggle v-if="hasAssistant" />
+            <cp-notification-center
+              :notifications.prop="notifications"
+            ></cp-notification-center>
+          </div>
           <UserMenu />
         </div>
       </div>
@@ -151,7 +152,11 @@
               >/</span
             >
             <Breadcrumbs v-if="crumbs" :items="crumbs" class="gap-md" />
-            <div v-show="hasContextMenu" class="context-menu-container">
+            <div
+              v-show="hasContextMenu"
+              class="context-menu-container"
+              data-command-palette-actions
+            >
               <LayoutSlotOutlet name="context-menu">
                 <slot name="context-menu"></slot>
               </LayoutSlotOutlet>
@@ -164,14 +169,26 @@
 </template>
 
 <style scoped>
+  html:not([data-theme='dark']) .cp-header-bar {
+    --c-surface-sunken: color-mix(
+      in oklab,
+      var(--color-base-50),
+      var(--color-black) 10%
+    );
+  }
+
   .cp-header-bar {
     --badge-border-color: var(--c-surface-sunken);
+    background-color: var(--c-surface-sunken);
     padding-block-start: calc(var(--c-spacing-sm) - 1px);
     padding-block-end: var(--c-spacing-sm);
     padding-inline: var(--c-spacing-sm);
+    padding-inline-end: calc(
+      var(--c-spacing-sm) + var(--cp-scrollbar-width, 0px)
+    );
     min-height: calc(42rem / 16);
     display: grid;
-    gap: var(--spacing);
+    gap: var(--c-spacing-sm);
     grid-template-areas: 'start . indicators end' 'breadcrumbs breadcrumbs breadcrumbs breadcrumbs';
     grid-template-columns:
       var(--c-size-touch-target)
@@ -180,12 +197,15 @@
     align-items: center;
     border-block-start: 1px solid rgba(0 0 0 / 0.25);
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
-    box-shadow: var(--shadow-xs), var(--shadow-lg);
+    box-shadow: var(--c-shadow-xs), var(--c-shadow-lg);
     position: relative;
     z-index: var(--c-layer-header);
 
     @media (width >= var(--breakpoint-lg)) {
       padding-inline: var(--c-spacing-md);
+      padding-inline-end: calc(
+        var(--c-spacing-md) + var(--cp-scrollbar-width, 0px)
+      );
       gap: calc(var(--spacing) * 3);
       grid-template-areas: 'breadcrumbs indicators end';
       grid-template-rows: auto;
@@ -216,6 +236,9 @@
     --c-link-decoration-hover: underline;
     grid-area: breadcrumbs;
     overflow: auto;
+    /* Room inside the scroll area for focus rings, which it would clip. */
+    padding: var(--c-spacing-sm);
+    margin: calc(var(--c-spacing-sm) * -1);
   }
 
   .cp-header-bar__breadcrumbs

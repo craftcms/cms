@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Mcp\Elements;
 
+use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\UserInitiatedElementSave;
+use CraftCms\Cms\Mcp\Attributes\Mcp;
 use CraftCms\Cms\Mcp\ElementLifecycle;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\Schema\CustomFieldSchema;
+use CraftCms\Cms\Mcp\Schema\ElementSchemaTypes;
 use CraftCms\Cms\Mcp\Serializers\ElementSerializer;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
@@ -54,7 +59,61 @@ abstract class BaseElementAdapter implements ElementAdapter
     }
 
     /**
-     * Returns type-specific criteria properties, added to Craft's common element query criteria.
+     * Returns JSON Schema properties for the attributes `elements.create` or `elements.update` accepts.
+     *
+     * These are the given properties, followed by the writable properties that the element type declares with
+     * {@see ElementProperty} beyond those of the base {@see Element}, unless {@see Mcp} excludes them from the operation.
+     *
+     * @param  'create'|'update'  $operation
+     * @param  list<string>  $names  Writable properties to accept first, such as base element properties the type accepts.
+     * @param  array<string, string>  $hints  Guidance for MCP clients that only applies to this element type.
+     * @return array<string, array<string, mixed>>
+     */
+    protected function attributeSchemas(string $operation, array $names = [], array $hints = []): array
+    {
+        $elementType = static::elementType();
+        $properties = ElementProperty::writable($elementType, $names);
+
+        foreach (array_diff_key(ElementProperty::writable($elementType), ElementProperty::all(Element::class)) as $name => $property) {
+            if ($property->companion(Mcp::class)->$operation ?? true) {
+                $properties[$name] = $property;
+            }
+        }
+
+        $schemas = [];
+
+        foreach ($properties as $name => $property) {
+            $schemas[$name] = [
+                ...ElementSchemaTypes::property($property->type, $property->nullable),
+                'description' => implode(' ', array_filter([
+                    $property->descriptionFor($elementType),
+                    $property->companion(Mcp::class)?->hint,
+                    $hints[$name] ?? null,
+                ])),
+            ];
+        }
+
+        return $schemas;
+    }
+
+    /**
+     * Returns JSON Schema properties describing the element's readable properties, which element reads return.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    protected function readablePropertySchemas(): array
+    {
+        $elementType = static::elementType();
+
+        return array_map(fn (ElementProperty $property): array => [
+            ...ElementSchemaTypes::property($property->type, ! $property->nonNull),
+            'description' => $property->descriptionFor($elementType),
+        ], ElementProperty::readable($elementType));
+    }
+
+    /**
+     * Returns criteria properties for query params that the element query does not declare with
+     * {@see ElementQueryParam}.
      *
      * @return array<string, array<string, mixed>>
      */
@@ -101,10 +160,16 @@ abstract class BaseElementAdapter implements ElementAdapter
             'criteria' => [
                 'type' => 'object',
                 'properties' => [
+                    ...ElementQueryCriteria::properties($elementType),
                     ...ElementQueryCriteria::SchemaProperties,
                     ...$this->criteriaProperties(),
                 ],
                 'additionalProperties' => true,
+            ],
+            'attributes' => [
+                'type' => 'object',
+                'description' => 'Built-in attributes that element reads return, alongside id, uid, and custom fields.',
+                'properties' => $this->readablePropertySchemas(),
             ],
             'createAttributes' => $this->createAttributesSchema(),
             'updateAttributes' => $this->updateAttributesSchema(),
@@ -161,16 +226,12 @@ abstract class BaseElementAdapter implements ElementAdapter
 
     public function create(array $attributes, array $fields, CraftUser $actor): array
     {
-        if ($this->createAttributesSchema() === null) {
-            throw new ToolCallException(sprintf('Creating %s is not supported.', static::elementType()::pluralLowerDisplayName()));
-        }
+        return $this->save($this->prepareCreate($attributes, $fields, $actor), $actor);
+    }
 
-        $element = $this->newElement([], $actor);
-
-        $this->populate($element, $attributes, $fields, $actor);
-        $this->authorizeSave($actor, $element);
-
-        return $this->save($element, $actor);
+    public function createUnpublishedDraft(array $attributes, array $fields, CraftUser $actor, ?string $draftName = null, ?string $draftNotes = null): array
+    {
+        throw new ToolCallException(sprintf('Creating %s as unpublished drafts is not supported.', static::elementType()::pluralLowerDisplayName()));
     }
 
     public function update(ElementInterface $element, array $attributes, array $fields, CraftUser $actor): array
@@ -192,6 +253,26 @@ abstract class BaseElementAdapter implements ElementAdapter
     public function duplicate(ElementInterface $element, ?string $mode): ElementInterface
     {
         throw new ToolCallException(sprintf('Duplicating %s is not supported.', static::elementType()::pluralLowerDisplayName()));
+    }
+
+    /**
+     * Returns a new element populated with the given values, after authorizing the actor to save it.
+     *
+     * @param  array<string, mixed>  $attributes
+     * @param  array<string, mixed>  $fields
+     */
+    protected function prepareCreate(array $attributes, array $fields, CraftUser $actor): ElementInterface
+    {
+        if ($this->createAttributesSchema() === null) {
+            throw new ToolCallException(sprintf('Creating %s is not supported.', static::elementType()::pluralLowerDisplayName()));
+        }
+
+        $element = $this->newElement([], $actor);
+
+        $this->populate($element, $attributes, $fields, $actor);
+        $this->authorizeSave($actor, $element);
+
+        return $element;
     }
 
     /**
@@ -262,11 +343,16 @@ abstract class BaseElementAdapter implements ElementAdapter
         }
 
         if (! $result->successful) {
-            throw new ToolCallException(
-                implode("\n", $result->element->errors()->all()) ?: sprintf('%s could not be saved.', $element::displayName()),
-            );
+            throw $this->saveFailed($result->element);
         }
 
         return $result->element;
+    }
+
+    protected function saveFailed(ElementInterface $element): ToolCallException
+    {
+        return new ToolCallException(
+            implode("\n", $element->errors()->all()) ?: sprintf('%s could not be saved.', $element::displayName()),
+        );
     }
 }

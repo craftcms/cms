@@ -17,7 +17,16 @@
 
 export type HttpHeaders = Record<string, string | null | undefined>;
 export type HttpParams = Record<string, unknown> | URLSearchParams;
-export type HttpResponseType = 'json' | 'text' | 'blob' | 'arraybuffer';
+/**
+ * `stream` resolves with the response's body as a `ReadableStream`, which the
+ * request's `signal` can still abort. Rejected responses are read as usual.
+ */
+export type HttpResponseType =
+  | 'json'
+  | 'text'
+  | 'blob'
+  | 'arraybuffer'
+  | 'stream';
 
 export interface HttpRequestConfig<D = any> {
   url?: string;
@@ -378,6 +387,8 @@ async function dispatch<T, D>(
       ? undefined
       : buildBody(config.data, headers);
 
+  let streaming = false;
+
   try {
     let fetchResponse: Response;
     try {
@@ -406,9 +417,21 @@ async function dispatch<T, D>(
       );
     }
 
+    const validateStatus =
+      config.validateStatus === undefined
+        ? defaultValidateStatus
+        : config.validateStatus;
+    const valid = !validateStatus || validateStatus(fetchResponse.status);
+    streaming = config.responseType === 'stream' && valid;
+
     let data: unknown;
     try {
-      data = await readBody(fetchResponse, config.responseType);
+      data = streaming
+        ? fetchResponse.body
+        : await readBody(
+            fetchResponse,
+            config.responseType === 'stream' ? undefined : config.responseType
+          );
     } catch (e) {
       if (controller.signal.aborted && !timedOut) {
         throw new HttpCancelledError(config);
@@ -428,12 +451,7 @@ async function dispatch<T, D>(
       config,
     };
 
-    const validateStatus =
-      config.validateStatus === undefined
-        ? defaultValidateStatus
-        : config.validateStatus;
-
-    if (validateStatus && !validateStatus(response.status)) {
+    if (!valid) {
       throw new HttpError(
         `Request failed with status code ${response.status}`,
         response.status >= 500 ? 'ERR_BAD_RESPONSE' : 'ERR_BAD_REQUEST',
@@ -447,7 +465,10 @@ async function dispatch<T, D>(
     if (timer) {
       clearTimeout(timer);
     }
-    config.signal?.removeEventListener('abort', onAbort);
+    // A stream is still being read, so the signal can still abort it.
+    if (!streaming) {
+      config.signal?.removeEventListener('abort', onAbort);
+    }
   }
 }
 

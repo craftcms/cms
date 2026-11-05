@@ -8,6 +8,7 @@ use CraftCms\Cms\Asset\Enums\AssetIndexStatus;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
+use CraftCms\Cms\Support\Query;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use LogicException;
@@ -68,7 +69,7 @@ class AssetIndexData extends BaseModel implements Stringable
 
         $attributes = [
             'status' => $status,
-            'dateUpdated' => now(),
+            'dateUpdated' => Query::prepareDateForDb(now()),
         ];
 
         if ($status === AssetIndexStatus::Indexed) {

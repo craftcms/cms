@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Section\Data\Section;
@@ -88,6 +89,27 @@ class EntryIndexViewModel extends ContentIndexViewModel
         $section = Sections::getSectionByHandle($this->sectionHandle);
 
         return $section ? "section:$section->uid" : null;
+    }
+
+    /**
+     * Whether the user can move each entry to another section, for the Move to
+     * action's `selectionAttribute`.
+     *
+     * @return array<string, bool>
+     */
+    #[Override]
+    protected function extraCapabilities(ElementInterface $element): array
+    {
+        if (! $element instanceof Entry) {
+            return [];
+        }
+
+        $maxLevels = $element->getSection()?->maxLevels;
+
+        return [
+            'movable' => $element->canMove(),
+            'acceptsChildren' => ! $maxLevels || (int) $element->level < $maxLevels,
+        ];
     }
 
     /**

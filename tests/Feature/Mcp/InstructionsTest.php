@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\McpConfig;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Mcp\Events\CollectingAdminInstructions;
-use CraftCms\Cms\Mcp\PublicRouteRegistrar;
+use CraftCms\Cms\Mcp\Events\CollectingServerInstructions;
+use CraftCms\Cms\Mcp\RouteRegistrar;
 use CraftCms\Cms\Mcp\Settings;
 use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 use Laravel\Passport\Passport;
@@ -18,7 +21,7 @@ use Laravel\Passport\Passport;
 it('keeps startup instructions brief and delivers full guidance through the admin info tool only', function (Closure $config): void {
     $key = openssl_pkey_new(['private_key_bits' => 2048]);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
-    Passport::actingAs(User::query()->firstOrFail(), ['mcp:use'], 'craft-mcp');
+    Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     $siteInstructions = 'Preserve legal notices.'.str_repeat(' Keep required attribution.', 100);
     Cms::config()->mcp($config($siteInstructions));
 
@@ -44,7 +47,7 @@ it('keeps startup instructions brief and delivers full guidance through the admi
 
     $route = '/_test/public-instructions';
     app()->instance(Settings::class, new Settings(['publicEnabled' => true, 'publicRoute' => $route]));
-    app(PublicRouteRegistrar::class)->register();
+    app(RouteRegistrar::class)->register();
 
     $publicInstructions = $this->postJson($route, McpRequest::payload('server/discover'), McpRequest::headers('server/discover'))
         ->assertOk()
@@ -65,7 +68,7 @@ it('keeps startup instructions brief and delivers full guidance through the admi
 it('includes registered plugin element references in the admin info guidance', function (): void {
     $key = openssl_pkey_new(['private_key_bits' => 2048]);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
-    Passport::actingAs(User::query()->firstOrFail(), ['mcp:use'], 'craft-mcp');
+    Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
 
     $type = new class extends Entry
     {
@@ -80,3 +83,40 @@ it('includes registered plugin element references in the admin info guidance', f
 
     expect($instructions)->toContain('hardDelete', 'product: `'.$type::class.'`');
 });
+
+it('tells clients which features need a higher Craft edition', function (Edition $edition, bool $listed): void {
+    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
+    Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
+    Edition::set($edition);
+
+    $instructions = McpRequest::send($this, 'tools/call', ['name' => 'info.get'])->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent.instructions');
+
+    if ($listed) {
+        expect($instructions)->toContain('This site runs Craft Team.', '- Releases (Craft Pro): releases.*', '- Editorial workflows (Craft Pro)');
+    } else {
+        expect($instructions)->not->toContain('need a higher edition');
+    }
+})->with([
+    'Team' => [Edition::Team, true],
+    'Pro' => [Edition::Pro, false],
+]);
+
+it('adds plugin guidance to the startup instructions, and only points users with control panel access to info.get', function (bool $accessCp): void {
+    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
+    $user = User::query()->firstOrFail();
+    $user->admin = false;
+    $user->save();
+    app(UserPermissions::class)->saveUserPermissions($user->id, $accessCp ? ['accessCp'] : []);
+    Passport::actingAs($user, ['mcp:read'], 'craft-mcp');
+
+    Event::listen(CollectingServerInstructions::class, function (CollectingServerInstructions $event): void {
+        $event->instructions[] = 'Use reviews.list to find product reviews.';
+    });
+
+    $brief = McpRequest::send($this, 'server/discover')->assertOk()->json('result.instructions');
+
+    expect($brief)->toEndWith("\n\nUse reviews.list to find product reviews.");
+    $accessCp ? expect($brief)->toContain('info.get') : expect($brief)->not->toContain('info.get');
+})->with(['with control panel access' => true, 'without control panel access' => false]);

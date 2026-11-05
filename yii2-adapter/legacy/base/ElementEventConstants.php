@@ -292,7 +292,7 @@ trait ElementEventConstants
      *
      * @see getAdditionalButtons()
      * @since 4.0.0
-     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving} instead.
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementAdditionalButtonDescriptorsResolving} instead.
      */
     public const EVENT_DEFINE_ADDITIONAL_BUTTONS = 'defineAdditionalButtons';
 

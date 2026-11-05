@@ -8,7 +8,7 @@ describe('ActionMenuNode', () => {
   let app: ReturnType<typeof createApp> | undefined;
   let container: HTMLElement | undefined;
 
-  function mount(component: unknown, node: unknown) {
+  function mount(component: unknown, node: unknown, scope: string[] = []) {
     container = document.createElement('div');
     document.body.append(container);
     app = createApp({
@@ -20,7 +20,7 @@ describe('ActionMenuNode', () => {
           values: {},
           errors: [],
           touchedPaths: new Set<string>(),
-          scope: [],
+          scope,
           refreshable: false,
         }),
     });
@@ -32,6 +32,34 @@ describe('ActionMenuNode', () => {
   afterEach(() => {
     app?.unmount();
     container?.remove();
+  });
+
+  it('keys the menu by its scope as well as its uid', async () => {
+    const node = {
+      type: 'CraftCms\\Cms\\Ui\\Nodes\\ActionMenu',
+      component: 'craft:action-menu',
+      uid: 'field-actions:fields.title:menu',
+      props: {label: 'Field actions', items: []},
+    } as unknown as UiNodePayload;
+
+    const keyIn = async (scope: string[]) => {
+      const el = mount(ActionMenuNode, node, scope).querySelector(
+        'craft-action-menu'
+      )!;
+      await nextTick();
+      const key = el.getAttribute('data-focus-key');
+      app?.unmount();
+      container?.remove();
+
+      return key;
+    };
+
+    const first = await keyIn(['fields', 'blocks', 'entries', 'a']);
+    const second = await keyIn(['fields', 'blocks', 'entries', 'b']);
+
+    expect(first).not.toBeNull();
+    expect(first).not.toBe(second);
+    expect(await keyIn(['fields', 'blocks', 'entries', 'a'])).toBe(first);
   });
 
   it('passes the server descriptors through to craft-action-menu', async () => {

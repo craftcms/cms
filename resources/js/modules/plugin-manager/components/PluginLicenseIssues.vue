@@ -1,5 +1,6 @@
 <script setup lang="ts">
-  import {capitalize} from '@craftcms/ui';
+  import {capitalize, t} from '@craftcms/ui';
+  import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
   import type {PluginInfo} from '@/modules/plugin-manager/types/plugins';
   import {computed} from 'vue';
   import Text from '@/common/components/Text.vue';
@@ -11,9 +12,20 @@
   }>();
 
   const editionName = computed(() => capitalize(props.plugin.licensedEdition!));
-  const accountLink = computed(
-    () =>
-      `<a href="https://console.craftcms.com" rel="noopener" target="_blank">console.craftcms.com</a>`
+
+  /**
+   * Built here rather than through `<Text>`, which escapes its params: the
+   * account link is markup, and only the plugin's buy URL needs escaping.
+   */
+  const mismatchedHtml = computed(() =>
+    t(
+      'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.',
+      {
+        accountLink:
+          '<a href="https://console.craftcms.com" rel="noopener" target="_blank">console.craftcms.com</a>',
+        buyUrl: escapeHtml(props.plugin.buyUrl ?? ''),
+      }
+    )
   );
 </script>
 
@@ -36,7 +48,7 @@
         v-slot="{processing}"
       >
         <input type="hidden" name="edition" :value="plugin.licensedEdition" />
-        <craft-button type="submit" inherit :loading="processing"
+        <craft-button type="submit" inherit .loading="processing"
           >Switch</craft-button
         >
       </Form>
@@ -45,11 +57,7 @@
       v-else-if="issue === 'no_trials'"
       template="Plugin trials are not allowed on this domain."
     />
-    <Text
-      v-else-if="issue === 'mismatched'"
-      template='This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.'
-      :params="{accountLink: accountLink, buyUrl: plugin.buyUrl}"
-    />
+    <div v-else-if="issue === 'mismatched'" v-html="mismatchedHtml" />
     <Text
       v-else-if="issue === 'astray'"
       template="This license isn’t allowed to run version {version}."

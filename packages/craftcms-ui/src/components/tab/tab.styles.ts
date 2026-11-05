@@ -53,6 +53,7 @@ export default css`
   }
 
   :host([selected]) {
+    cursor: default;
     font-weight: var(--c-tab-font-weight-active, var(--font-weight-semibold));
   }
 
@@ -64,8 +65,23 @@ export default css`
     min-width: 0;
   }
 
+  ::slotted([slot='prefix']) {
+    align-self: center;
+    margin-inline-end: var(--c-spacing-sm);
+  }
+
+  ::slotted([slot='suffix']) {
+    align-self: center;
+    margin-inline-start: var(--c-spacing-sm);
+  }
+
+  /* Truncated only when <craft-tabs> asks, as it does for a selected tab that
+     doesn't fit; otherwise a label wraps. */
   .tab__text {
     display: block;
+    overflow: var(--_tab-text-overflow, visible);
+    text-overflow: ellipsis;
+    white-space: var(--_tab-text-wrap, normal);
     ${trimmedTextBoxStyles}
   }
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import\Data;
 
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Ui\Controls\Concerns\HasTextExpander;
 use JsonSerializable;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 use Spatie\TypeScriptTransformer\Attributes\Optional;
@@ -11,6 +13,8 @@ use Spatie\TypeScriptTransformer\Attributes\Optional;
 /**
  * The response to a request for a draft import step's mapping structure: either the columns to map,
  * or why the step can't be mapped yet (and which step attribute that's about, if any).
+ *
+ * @phpstan-import-type TextExpanderTrigger from HasTextExpander
  *
  * @since 6.0.0
  */
@@ -20,6 +24,7 @@ readonly class StepMappingPayload implements JsonSerializable
      * @param  list<MappingColumn|CompoundMappingColumn>|null  $destinationCols
      * @param  list<SourceColumn>|null  $sourceDataCols
      * @param  array<array-key, mixed>|null  $suggestions
+     * @param  list<TextExpanderTrigger>|null  $templateTextExpanderTriggers
      */
     public function __construct(
         public bool $available,
@@ -36,12 +41,15 @@ readonly class StepMappingPayload implements JsonSerializable
         #[Optional]
         #[LiteralTypeScriptType('Record<string, unknown>')]
         public ?array $suggestions = null,
+        #[Optional]
+        #[LiteralTypeScriptType('unknown[]')]
+        public ?array $templateTextExpanderTriggers = null,
     ) {}
 
     /** @return array<string, mixed> */
     public function jsonSerialize(): array
     {
-        return array_filter([
+        return Arr::whereNotNull([
             'available' => $this->available,
             'message' => $this->message,
             'attribute' => $this->attribute,
@@ -55,6 +63,7 @@ readonly class StepMappingPayload implements JsonSerializable
             ),
             'values' => $this->values?->jsonSerialize(),
             'suggestions' => $this->suggestions,
-        ], fn (mixed $value): bool => $value !== null);
+            'templateTextExpanderTriggers' => $this->templateTextExpanderTriggers,
+        ]);
     }
 }

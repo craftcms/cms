@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element as BaseElement;
 use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -18,7 +19,7 @@ use Laravel\Passport\Passport;
 beforeEach(function (): void {
     $key = openssl_pkey_new(['private_key_bits' => 2048]);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
-    Passport::actingAs(User::query()->firstOrFail(), ['mcp:use'], 'craft-mcp');
+    Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
 
     $this->call = fn (string $tool, array $arguments): TestResponse => McpRequest::send($this, 'tools/call', [
         'name' => $tool,
@@ -44,8 +45,26 @@ it('describes each element type through elements.schema and the element type res
     ($this->call)('elements.schema', ['type' => 'entries'])
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.createAttributes.required', ['sectionId'])
-        ->assertJsonPath('result.structuredContent.criteria.properties.sectionId.description', 'Section ID or IDs.')
+        ->assertJsonPath('result.structuredContent.createAttributes.properties.slug.description', 'The entry’s slug.')
+        ->assertJsonPath('result.structuredContent.createAttributes.properties.typeId.description', 'The ID of the entry type that contains the entry. New entries default to the section’s first entry type.')
+        ->assertJsonPath('result.structuredContent.updateAttributes.properties.postDate.type', ['string', 'null'])
+        ->assertJsonPath('result.structuredContent.attributes.properties.postDate.description', 'The entry’s post date.')
+        ->assertJsonPath('result.structuredContent.attributes.properties.typeId.type', 'integer')
+        ->assertJsonPath('result.structuredContent.criteria.properties.sectionId.description', 'Narrows the query results based on the sections the entries belong to, per the sections’ IDs.')
+        ->assertJsonPath('result.structuredContent.criteria.properties.field.description', 'Narrows the query results based on the field the entries are contained by.')
+        ->assertJsonPath('result.structuredContent.criteria.properties.status.anyOf.2.type', 'null')
+        ->assertJsonPath('result.structuredContent.criteria.properties.level.anyOf.0.type', 'integer')
+        ->assertJsonPath('result.structuredContent.attributes.properties.structureId.type', ['integer', 'null'])
+        ->assertJsonPath('result.structuredContent.criteria.properties.status.description', 'Narrows the query results based on the entries’ statuses. Pass null to include all statuses.')
+        ->assertJsonPath('result.structuredContent.criteria.properties.level.description', 'Narrows the query results based on the entries’ level within the structure.')
+        ->assertJsonPath('result.structuredContent.criteria.properties.ancestorOf.description', 'Narrows the query results to only entries that are ancestors of another entry in its structure, provided by its ID.')
         ->assertJsonPath('result.structuredContent.duplicateModes', ['unpublished', 'canonical']);
+
+    ($this->call)('elements.schema', ['type' => 'assets'])
+        ->assertJsonPath('result.isError', false)
+        ->assertJsonMissingPath('result.structuredContent.criteria.properties.level')
+        ->assertJsonMissingPath('result.structuredContent.criteria.properties.drafts')
+        ->assertJsonMissingPath('result.structuredContent.attributes.properties.structureId');
 });
 
 it('rejects element tool inputs that the type does not accept', function (string $tool, array $arguments, string $message): void {
@@ -79,6 +98,10 @@ it('manages element types that plugins register with an adapter', function (): v
     ($this->call)('elements.update', ['type' => 'widgets', 'id' => $created['id'], 'attributes' => ['slug' => 'cog']])
         ->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'Invalid attributes for widgets: Additional object properties are not allowed: ["slug"]. Call elements.schema for the accepted attributes.');
+    ($this->call)('elements.schema', ['type' => 'widgets'])
+        ->assertJsonPath('result.structuredContent.criteria.properties.level.anyOf.0.type', 'integer')
+        ->assertJsonPath('result.structuredContent.attributes.properties.structureId.type', ['integer', 'null'])
+        ->assertJsonMissingPath('result.structuredContent.criteria.properties.revisions');
     ($this->call)('elements.delete', ['type' => 'widgets', 'id' => $created['id']])
         ->assertJsonPath('result.structuredContent.deleted', true);
 
@@ -97,6 +120,12 @@ class TestMcpPluginElement extends BaseElement
     public static function pluralDisplayName(): string
     {
         return 'Widgets';
+    }
+
+    #[Override]
+    public static function hasStructures(): bool
+    {
+        return true;
     }
 
     #[Override]
@@ -150,3 +179,15 @@ class TestMcpPluginElementAdapter extends BaseElementAdapter
         ];
     }
 }
+
+it('explains when the edition’s user limit prevents creating users', function (): void {
+    Edition::set(Edition::Team);
+    User::factory()->count(5 - User::query()->count())->create();
+
+    ($this->call)('elements.create', ['type' => 'users', 'attributes' => ['email' => 'new@example.com', 'username' => 'new']])
+        ->assertJsonPath('result.isError', true)
+        ->assertJsonPath('result.content.0.text', 'This site has reached the Craft Team limit of 5 users. Upgrading to Craft Pro would allow more users.');
+
+    expect(McpRequest::send($this, 'tools/call', ['name' => 'info.get'])->json('result.structuredContent.instructions'))
+        ->toContain('- More than 5 users (Craft Pro): elements.create with type: users');
+});

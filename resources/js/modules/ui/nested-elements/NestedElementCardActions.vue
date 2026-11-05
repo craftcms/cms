@@ -74,6 +74,7 @@
     v-if="canOpenElement(element)"
     data-edit-element
     variant="plain"
+    inherit
     type="button"
     size="small"
     icon="edit"

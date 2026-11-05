@@ -12,6 +12,8 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\SessionInfoController;
+use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\TestClasses\OAuth\FakeOAuthProvider;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
@@ -19,6 +21,7 @@ use Illuminate\Auth\Events\Failed;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
@@ -135,6 +138,31 @@ test('attemptLogin limits full-page login failures', function () {
     ])->assertTooManyRequests();
 });
 
+test('attemptLogin limits each IP address across accounts to the default rate limit', function () {
+    foreach (range(1, 10) as $attempt) {
+        postJson(action([LoginController::class, 'attemptLogin']), [
+            'loginName' => "user$attempt@example.com",
+            'password' => 'wrongpassword',
+        ])->assertBadRequest();
+    }
+
+    postJson(action([LoginController::class, 'attemptLogin']), [
+        'loginName' => 'user11@example.com',
+        'password' => 'wrongpassword',
+    ])->assertTooManyRequests();
+});
+
+test('attemptLogin only limits attempts per account when defaultRateLimit is disabled', function () {
+    Cms::config()->defaultRateLimit = false;
+
+    foreach (range(1, 11) as $attempt) {
+        postJson(action([LoginController::class, 'attemptLogin']), [
+            'loginName' => "user$attempt@example.com",
+            'password' => 'wrongpassword',
+        ])->assertBadRequest();
+    }
+});
+
 test('attemptLogin clears failed attempts after valid credentials', function () {
     $user = User::findOne();
 
@@ -169,6 +197,41 @@ test('attemptLogin succeeds with valid credentials', function () {
     expect(Auth::check())->toBeTrue();
     expect(Auth::id())->toBe($user->id);
 });
+
+test('control panel logins post to the control panel and redirect to the post-CP-login redirect', function () {
+    // A front-end login path is another route to the same action, so URLs generated from the action could point there.
+    Route::post('logmein', [LoginController::class, 'attemptLogin']);
+    Route::getRoutes()->refreshActionLookups();
+    Cms::config()->postCpLoginRedirect = 'entries';
+
+    get(cp_url(CpAuthPath::Login->value))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('action', cp_url(CpAuthPath::Login->value)));
+
+    post(cp_url(CpAuthPath::Login->value), [
+        'loginName' => User::findOne()->email,
+        'password' => 'craftcms2018!!',
+    ])->assertRedirect(cp_url('entries'));
+});
+
+test('front-end logins posted from a subpath site redirect within that site', function (string $url, array $params, string $redirect, string $expected) {
+    // A configured post-login redirect must not override an explicitly posted redirect.
+    Cms::config()->postLoginRedirect = 'welcome';
+    Site::factory()->create(['baseUrl' => 'https://localhost/fr']);
+    Sites::refreshSites();
+
+    post($url, [
+        ...$params,
+        'redirect' => Crypt::encrypt($redirect),
+        'loginName' => User::findOne()->email,
+        'password' => 'craftcms2018!!',
+    ])->assertRedirect($expected);
+})->with([
+    'action param' => ['https://localhost/fr/login', ['action' => 'users/login']],
+    'action URL' => ['https://localhost/fr/actions/users/login', []],
+])->with([
+    'empty redirect' => ['', 'https://localhost/fr'],
+    'relative redirect' => ['account', 'https://localhost/fr/account'],
+]);
 
 test('modal login requires refreshing the token before resubmitting a form', function (bool $authenticated) {
     // Laravel skips CSRF verification in the testing environment.
@@ -265,28 +328,6 @@ test('logout clears itself as the post-login return URL', function (Closure $url
     'control panel' => fn (): string => cp_url(CpAuthPath::Logout->value),
     'site' => fn (): string => '/'.Cms::config()->getLogoutPath(),
 ]);
-
-test('showLoginModal requires email parameter', function () {
-    postJson(action([LoginController::class, 'showLoginModal']), [])
-        ->assertJsonValidationErrors(['email']);
-});
-
-test('showLoginModal returns html for the login modal', function () {
-    postJson(action([LoginController::class, 'showLoginModal']), [
-        'email' => 'test@example.com',
-    ])
-        ->assertOk()
-        ->assertJsonStructure(['html', 'headHtml', 'bodyHtml']);
-});
-
-test('showLoginModal requires email even with forElevatedSession when not impersonating', function () {
-    actingAs(User::findOne());
-
-    postJson(action([LoginController::class, 'showLoginModal']), [
-        'forElevatedSession' => true,
-    ])
-        ->assertJsonValidationErrors(['email']);
-});
 
 test('attemptLogin sets the remember cookie only when rememberMe is requested', function (bool $remember) {
     $user = User::findOne();

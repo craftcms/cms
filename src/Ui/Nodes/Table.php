@@ -26,7 +26,7 @@ class Table implements Node
 {
     use Conditionable;
 
-    /** @var list<array{key: string, label: string, sortable?: bool, width?: string, headerSrOnly?: bool}> */
+    /** @var list<array{key: string, label: string, sortable?: bool, width?: string, thin?: bool, headerSrOnly?: bool, wrap?: bool}> */
     private array $columns = [];
 
     /** @var list<array<string, mixed>> */
@@ -50,6 +50,10 @@ class Table implements Node
 
     private ?string $createUrl = null;
 
+    private bool $createSlideout = false;
+
+    private ?string $createSlideoutWidth = null;
+
     /** @var list<array{label: string, url: string}>|null */
     private ?array $createMenuItems = null;
 
@@ -67,8 +71,6 @@ class Table implements Node
 
     private ?string $deleteConfirmMessage = null;
 
-    private ?string $deleteModalUrl = null;
-
     private ?string $bulkDeleteUrl = null;
 
     private ?string $bulkDeleteConfirmMessage = null;
@@ -79,7 +81,7 @@ class Table implements Node
     /** @var list<array<string, mixed>> */
     private array $statusActions = [];
 
-    /** @var list<array{value: string, label: string}>|null */
+    /** @var list<array{value: string, label: string, fill?: string|null}>|null */
     private ?array $statusFilterOptions = null;
 
     private bool $columnsToggleable = false;
@@ -106,9 +108,11 @@ class Table implements Node
      * Columns with `sortable => true` get clickable headers that cycle ascending, descending,
      * then back to the rows' own order. See {@see rows()} for the `_sort` override.
      * `width` sets a fixed or relative column width (e.g. `34px` or `1.5fr`).
+     * `thin` makes the column as narrow as its content, which doesn't wrap.
      * `headerSrOnly` hides only the visible header text.
+     * `wrap` lets long cell content wrap instead of widening the column.
      *
-     * @param  list<array{key: string, label: string, sortable?: bool, width?: string, headerSrOnly?: bool}>  $columns
+     * @param  list<array{key: string, label: string, sortable?: bool, width?: string, thin?: bool, headerSrOnly?: bool, wrap?: bool}>  $columns
      */
     public function columns(array $columns): static
     {
@@ -126,7 +130,10 @@ class Table implements Node
      * {@see Html::encode()} before passing it.
      *
      * A link with `'slideout' => true` opens its URL's screen in a slideout, and reloads the
-     * table once that screen is saved.
+     * table once that screen is saved. `'slideoutWidth'` sets that slideout's width as a CSS
+     * length (e.g. `'85vw'`).
+     *
+     * Double-clicking a row opens its slideout link, if it has one, the way clicking it would.
      *
      * A menu item can be `['label' => string, 'modalUrl' => string, 'actionUrl' => string,
      * 'params' => ?array]` instead of a link, to open a modal UI. `modalUrl` is requested
@@ -136,8 +143,11 @@ class Table implements Node
      *
      * `_deleteUrl` overrides the shared deletion URL with a row's named resource route.
      * `_deleteConfirmMessage` overrides the shared deletion confirmation for one row.
+     * `_deleteLabel` customizes the delete button's accessible name.
      * `_deletable => false` suppresses deletion of one row. `_deleteDisabledReason`
      * shows a disabled delete button with an explanation instead of hiding it.
+     * `_reorderable => false` keeps a row in place, with no drag handle; keep such rows
+     * at the start or end. They're still included in the posted `ids`.
      * `_status` accepts a
      * boolean or status string and renders an indicator in the first column.
      * `_search` overrides client-side search text; otherwise columns' text is used.
@@ -263,10 +273,16 @@ class Table implements Node
         return $this;
     }
 
-    public function createAction(?string $label, ?string $url): static
+    /**
+     * With `$slideout`, the create screen opens in a slideout, optionally `$slideoutWidth` wide
+     * (a CSS length), and the table reloads once it's saved.
+     */
+    public function createAction(?string $label, ?string $url, bool $slideout = false, ?string $slideoutWidth = null): static
     {
         $this->createLabel = $label;
         $this->createUrl = $url;
+        $this->createSlideout = $slideout;
+        $this->createSlideoutWidth = $slideoutWidth;
         $this->createMenuItems = null;
 
         return $this;
@@ -281,6 +297,8 @@ class Table implements Node
     {
         $this->createLabel = $label;
         $this->createUrl = null;
+        $this->createSlideout = false;
+        $this->createSlideoutWidth = null;
         $this->createMenuItems = $items;
 
         return $this;
@@ -317,19 +335,12 @@ class Table implements Node
      * Individual rows can opt out via `_deletable => false` in {@see rows()}.
      * For resource routes, set `_deleteUrl` on each row using `route()`.
      * The shared `$url` can then be omitted.
-     *
-     * `$modalUrl` replaces the per-row confirmation with a modal UI, for deletions that need
-     * more input (where to move a deleted record's data, say). It's requested via GET with
-     * `{id: <row id>}` and must return JSON `{ui: UiPayload, title?: string,
-     * submitLabel?: string}`; submitting sends the UI's values plus `id` to the row's
-     * deletion URL via DELETE.
      */
-    public function deletable(?string $url = null, ?string $confirmMessage = null, ?string $modalUrl = null): static
+    public function deletable(?string $url = null, ?string $confirmMessage = null): static
     {
         $this->deletable = true;
         $this->deleteUrl = $url;
         $this->deleteConfirmMessage = $confirmMessage;
-        $this->deleteModalUrl = $modalUrl;
 
         return $this;
     }
@@ -383,9 +394,10 @@ class Table implements Node
     /**
      * Adds a status dropdown to the toolbar, defaulting to enabled/disabled. Filters
      * {@see rows()} locally on `_status`, or sends the chosen `status` to the {@see dataUrl()}
-     * endpoint and resets to page 1. "All" sends no `status`.
+     * endpoint or as a {@see pagination()} query parameter, and resets to page 1. "All"
+     * sends no `status`. An option's `fill` overrides the indicator color derived from its value.
      *
-     * @param  list<array{value: string, label: string}>|null  $options
+     * @param  list<array{value: string, label: string, fill?: string|null}>|null  $options
      */
     public function statusFilter(?array $options = null): static
     {
@@ -502,13 +514,17 @@ class Table implements Node
             };
 
             $head = Html::tag('tr', implode('', array_map(
-                fn (array $column) => Html::tag('th', Html::encode($column['label'])),
+                fn (array $column) => Html::tag('th', Html::encode($column['label']), [
+                    'class' => ($column['thin'] ?? false) ? ['thin'] : null,
+                ]),
                 $columns,
             )));
 
             $body = implode('', array_map(
                 fn (array $row) => Html::tag('tr', implode('', array_map(
-                    fn (array $column) => Html::tag('td', $renderCell($column, $row)),
+                    fn (array $column) => Html::tag('td', $renderCell($column, $row), [
+                        'class' => ($column['thin'] ?? false) ? ['thin'] : null,
+                    ]),
                     $columns,
                 ))),
                 $rows,
@@ -548,6 +564,8 @@ class Table implements Node
             'emptyMessage' => $this->emptyMessage,
             'createLabel' => $this->createLabel,
             'createUrl' => $this->createUrl,
+            'createSlideout' => $this->createSlideout,
+            'createSlideoutWidth' => $this->createSlideoutWidth,
             'createMenuItems' => $this->createMenuItems,
             'createActionInPageHeader' => $this->createActionInPageHeader,
             'reorderUrl' => $this->reorderUrl,
@@ -556,7 +574,6 @@ class Table implements Node
             'deleteUrl' => $this->deleteUrl,
             'deletable' => $this->deletable,
             'deleteConfirmMessage' => $this->deleteConfirmMessage,
-            'deleteModalUrl' => $this->deleteModalUrl,
             'bulkDeleteUrl' => $this->bulkDeleteUrl,
             'bulkDeleteConfirmMessage' => $this->bulkDeleteConfirmMessage,
             'bulkActions' => $this->bulkActions,
@@ -590,7 +607,7 @@ class Table implements Node
             ...array_map(fn (array $option) => [
                 'value' => $option['value'],
                 'label' => $option['label'],
-                'fill' => self::statusFill($option['value']),
+                'fill' => $option['fill'] ?? self::statusFill($option['value']),
             ], $this->statusFilterOptions),
         ];
     }

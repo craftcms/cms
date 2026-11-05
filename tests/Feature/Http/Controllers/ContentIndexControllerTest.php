@@ -27,10 +27,12 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections as SectionsFacade;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Tests\TestClasses\Field\ModeThumbnailField;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -131,11 +133,11 @@ it('renders page inline inputs only for explicitly editable table rows the user 
         );
 });
 
-it('selects fit for index tiles and crop for inline cards', function (string $viewMode, string $key, string $mode, int $size) {
+it('selects fit for index tiles and inline cards', function (string $viewMode, string $key, string $mode, int $size) {
     $entry = EntryModel::factory()->withField('thumbnail', ModeThumbnailField::class, value: $mode)
         ->createElementWithFields()->element;
     $layout = $entry->getFieldLayout();
-    $layout->thumbFieldKey = 'layoutElement:'.$layout->getCustomFieldElements()[0]->uid;
+    $layout->thumbSources = ['layoutElement:'.$layout->getCustomFieldElements()[0]->uid];
     expect(Fields::saveLayout($layout))->toBeTrue();
 
     get("/{$this->cpTrigger}/content/entries?viewMode={$viewMode}")
@@ -149,9 +151,28 @@ it('selects fit for index tiles and crop for inline cards', function (string $vi
             })
         );
 })->with([
-    'tiles' => ['thumbs', 'thumbHtml', 'fit', 200],
-    'inline cards' => ['cards', 'cardThumbHtml', 'crop', 120],
+    'tiles' => ['thumbs', 'thumbHtml', 'fit', 120],
+    'inline cards' => ['cards', 'cardThumbHtml', 'fit', 120],
 ]);
+
+it('tells the placeholders whether the source’s entries have thumbnails', function () {
+    $entry = EntryModel::factory()->withField('thumbnail', ModeThumbnailField::class, value: 'fit')
+        ->createElementWithFields()->element;
+    $url = "/{$this->cpTrigger}/content/entries?viewMode=table";
+
+    get($url)->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('cardThumbs', null));
+
+    $layout = $entry->getFieldLayout();
+    $layout->thumbSources = ['layoutElement:'.$layout->getCustomFieldElements()[0]->uid];
+    $layout->cardThumbAlignment = 'start';
+    expect(Fields::saveLayout($layout))->toBeTrue();
+
+    get($url)->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('cardThumbs', ['style' => 'normal', 'alignment' => 'start'])
+        );
+});
 
 it('includes public URLs and only authorized edit URLs in every index view mode', function (string $viewMode, bool $canView) {
     $section = Section::factory()->create();
@@ -176,7 +197,9 @@ it('includes public URLs and only authorized edit URLs in every index view mode'
     ]))->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('data.0.id', $entry->id)
-            ->where('data.0.cpEditUrl', $canView ? $entry->getCpEditUrl() : null)
+            ->where('data.0.cpEditUrl', fn (?string $url) => $canView
+                ? $url !== null && Url::removeParam($url, 'returnUrl') === $entry->getCpEditUrl()
+                : $url === null)
             ->where('data.0.viewUrl', 'https://localhost/'.$entry->uri)
         );
 })->with([
@@ -191,7 +214,7 @@ it('includes public URLs and only authorized edit URLs in every index view mode'
 it('returns an Inertia response with elements and pagination', function () {
     EntryModel::factory()->count(3)->create();
 
-    get("/{$this->cpTrigger}/content/entries")
+    get("/{$this->cpTrigger}/content/entries?viewMode=table")
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('content/Index')
@@ -200,6 +223,30 @@ it('returns an Inertia response with elements and pagination', function () {
             ->has('sort')
             ->has('sources')
         );
+});
+
+it('leaves the rows out of a page load that names no view mode until they are requested', function () {
+    EntryModel::factory()->count(2)->create();
+
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('content/Index')
+            ->has('sources')
+            ->where('cardThumbs', null)
+            ->missing('data')
+            ->missing('pagination')
+            ->missing('structure')
+        );
+
+    get("/{$this->cpTrigger}/content/entries", [
+        'X-Inertia' => 'true',
+        'X-Inertia-Partial-Component' => 'content/Index',
+        'X-Inertia-Partial-Data' => 'data,pagination',
+    ])
+        ->assertOk()
+        ->assertJsonCount(2, 'props.data')
+        ->assertJsonPath('props.pagination.total', 2);
 });
 
 it('includes the active source exporters in the page payload', function () {
@@ -215,17 +262,9 @@ it('includes the active source exporters in the page payload', function () {
 });
 
 it('includes saved unpublished drafts in entry indexes', function () {
-    $entry = EntryModel::factory()->createElement();
-    $draft = app(EntryElement::class);
-    $draft->siteId = $entry->siteId;
-    $draft->sectionId = $entry->sectionId;
-    $draft->typeId = $entry->typeId;
-    $draft->title = 'Awaiting Review';
-    $draft->slug = 'awaiting-review';
-    $draft->setAuthorIds([auth()->id()]);
-    app(Drafts::class)->saveElementAsDraft($draft, auth()->id());
+    $draft = saveUnpublishedEntryDraft(EntryModel::factory()->createElement());
 
-    get("/{$this->cpTrigger}/content/entries")
+    get("/{$this->cpTrigger}/content/entries?viewMode=table")
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('data', fn ($entries) => collect($entries)->contains('id', $draft->id))
@@ -235,7 +274,7 @@ it('includes saved unpublished drafts in entry indexes', function () {
 it('paginates elements via query params', function () {
     EntryModel::factory()->count(5)->create();
 
-    get("/{$this->cpTrigger}/content/entries?".http_build_query(['per_page' => 2, 'page' => 1]))
+    get("/{$this->cpTrigger}/content/entries?".http_build_query(['per_page' => 2, 'page' => 1, 'viewMode' => 'table']))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('content/Index')
@@ -326,10 +365,37 @@ it('defaults to the source’s defaultSort', function () {
         );
 });
 
+it('sorts by a custom field in the requested direction', function () {
+    $fixture = EntryModel::factory()
+        ->withField('director', PlainText::class, value: 'Bong')
+        ->createElementWithFields();
+    $ids = ['Bong' => $fixture->element->id];
+
+    foreach (['Altman', 'Coppola'] as $director) {
+        $entry = EntryModel::factory()
+            ->state(['sectionId' => $fixture->element->sectionId, 'typeId' => $fixture->element->typeId])
+            ->createElement();
+        $entry->setFieldValue('director', $director);
+        app(Elements::class)->saveElement($entry);
+        $ids[$director] = $entry->id;
+    }
+
+    $sortedIds = fn (string $direction) => collect(
+        get(route('craft.cp.content.index', [
+            'page' => 'entries',
+            'viewMode' => 'table',
+            'sort' => [['field' => 'field:'.$fixture->field('director')->uid, 'direction' => $direction]],
+        ]))->assertOk()->viewData('page')['props']['data'],
+    )->pluck('id')->all();
+
+    expect($sortedIds('asc'))->toBe([$ids['Altman'], $ids['Bong'], $ids['Coppola']])
+        ->and($sortedIds('desc'))->toBe([$ids['Coppola'], $ids['Bong'], $ids['Altman']]);
+});
+
 it('clamps per_page to minimum of 1', function () {
     EntryModel::factory()->create();
 
-    get("/{$this->cpTrigger}/content/entries?per_page=0")
+    get("/{$this->cpTrigger}/content/entries?per_page=0&viewMode=table")
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('pagination.per_page', 1)
@@ -384,6 +450,80 @@ it('sends a page that names no source to the source it shows', function () {
     // “All entries” shares the page's own URL, so there's nowhere to go.
     get("/{$this->cpTrigger}/content/first")->assertOk();
 });
+
+it('sends a page to the source it shows, whatever its name', function (string $name) {
+    $section = Section::factory()->create(['type' => SectionType::Channel]);
+
+    app(ProjectConfig::class)->set(ProjectConfig::PATH_ELEMENT_SOURCES.'.'.EntryElement::class, [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:$section->uid", 'page' => $name],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Other'],
+    ]);
+
+    $pageUrl = get("/{$this->cpTrigger}/content")->assertRedirect()->headers->get('Location');
+
+    get(encodeUrl($pageUrl))->assertRedirectContains("/{$section->handle}");
+})->with([
+    'non-Latin' => ['Αναρτήσεις'],
+    'accented' => ['Événements'],
+    'at sign' => ['Q @ A'],
+]);
+
+it('shows a non-Latin page whose first source shares its URL', function () {
+    app(ProjectConfig::class)->set(ProjectConfig::PATH_ELEMENT_SOURCES.'.'.EntryElement::class, [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Αναρτήσεις'],
+    ]);
+
+    get(encodeUrl("/{$this->cpTrigger}/content/αναρτήσεις"))->assertOk();
+});
+
+/**
+ * Percent-encodes a URL's non-ASCII characters, as browsers do before requesting it.
+ */
+function encodeUrl(string $url): string
+{
+    return (string) preg_replace_callback('/[^\x21-\x7e]+/', fn (array $match) => rawurlencode($match[0]), $url);
+}
+
+/**
+ * Decrypts the `returnUrl` param an index added to an element's edit URL.
+ */
+function editReturnUrl(string $editUrl): ?string
+{
+    parse_str((string) parse_url(html_entity_decode($editUrl), PHP_URL_QUERY), $query);
+
+    return isset($query['returnUrl']) ? Crypt::decrypt($query['returnUrl']) : null;
+}
+
+it('sends the editor back to the source it was opened from', function (Closure $source) {
+    $section = Section::factory()->create();
+    $entry = EntryModel::factory()->forSection($section)->createElement(['title' => 'Hello']);
+    [$path, $query] = $source($section);
+    $indexUrl = url("/{$this->cpTrigger}/{$path}").($query ? '?'.http_build_query($query) : '');
+
+    get($indexUrl)
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.id', $entry->id)
+            ->where('data.0.cpEditUrl', fn (string $url) => editReturnUrl($url) === $indexUrl)
+            ->where('data.0.title', fn (string $html) => preg_match('/<CpLink class="label-link" href="([^"]+)"/', $html, $match) === 1
+                && editReturnUrl($match[1]) === $indexUrl)
+        );
+})->with([
+    'section' => fn (Section $section) => ["content/entries/{$section->handle}", ['viewMode' => 'table']],
+    'custom source' => function () {
+        app(ElementSources::class)->saveSources(EntryElement::class, [
+            ['type' => ElementSources::TYPE_NATIVE, 'key' => '*'],
+            [
+                'type' => ElementSources::TYPE_CUSTOM,
+                'key' => 'custom:mine',
+                'label' => 'Mine',
+                'condition' => EntryElement::createCondition()->getConfig(),
+            ],
+        ]);
+
+        return ['content/entries', ['source' => 'custom:mine', 'viewMode' => 'table']];
+    },
+]);
 
 it('scopes the Singles source to single sections only', function () {
     $single = Section::factory()->create(['type' => SectionType::Single]);
@@ -479,12 +619,64 @@ it('emits a level and descendant flag per row in structure mode', function () {
 it('sends a plain-text label for every row in flat table mode', function () {
     $entry = EntryModel::factory()->createElement(['title' => 'Homepage']);
 
-    get("/{$this->cpTrigger}/content/entries")
+    get("/{$this->cpTrigger}/content/entries?viewMode=table")
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('data.0.label', $entry->getUiLabel())
         );
 });
+
+it('renders title chips at the requested thumbnail size, in a chip size to suit', function (?string $thumbSize, ?string $expectedThumbSize, string $expectedSize) {
+    EntryModel::factory()->createElement(['title' => 'Homepage']);
+
+    get(route('craft.cp.content.index', array_filter([
+        'page' => 'entries',
+        'viewMode' => 'table',
+        'thumbSize' => $thumbSize,
+    ])))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.title', function (string $html) use ($expectedThumbSize, $expectedSize) {
+                $chip = new Crawler($html)->filter('craft-chip');
+                expect([$chip->attr('thumb-size'), $chip->attr('size')])->toBe([$expectedThumbSize, $expectedSize]);
+
+                return true;
+            })
+        );
+})->with([
+    'default' => [null, 'sm', 'small'],
+    'md' => ['md', 'md', 'medium'],
+    'lg' => ['lg', 'lg', 'large'],
+    // Table rows stop at a card's thumbnail size.
+    'xl' => ['xl', 'sm', 'small'],
+    'unknown' => ['huge', 'sm', 'small'],
+]);
+
+it('renders tile thumbnails at the requested size', function (?string $thumbSize, int $size) {
+    $entry = EntryModel::factory()->withField('thumbnail', ModeThumbnailField::class, value: 'fit')
+        ->createElementWithFields()->element;
+    $layout = $entry->getFieldLayout();
+    $layout->thumbSources = ['layoutElement:'.$layout->getCustomFieldElements()[0]->uid];
+    expect(Fields::saveLayout($layout))->toBeTrue();
+
+    get(route('craft.cp.content.index', array_filter([
+        'page' => 'entries',
+        'viewMode' => 'thumbs',
+        'thumbSize' => $thumbSize,
+    ])))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.thumbHtml', function (string $html) use ($size) {
+                expect($html)->toContainTag('craft-thumbnail', ['sizes' => "calc({$size}rem/16)"]);
+
+                return true;
+            })
+        );
+})->with([
+    'default' => [null, 120],
+    'sm' => ['sm', 26],
+    '2xl' => ['2xl', 240],
+]);
 
 it('sends a plain-text label alongside the card HTML in cards view mode', function () {
     $entry = EntryModel::factory()->createElement(['title' => 'Homepage']);
@@ -500,7 +692,7 @@ it('sends the Untitled fallback text when an entry has no title', function () {
     $type = EntryType::factory()->create(['hasTitleField' => false]);
     $entry = EntryModel::factory()->forEntryType($type)->createElement(['title' => '']);
 
-    get("/{$this->cpTrigger}/content/entries")
+    get("/{$this->cpTrigger}/content/entries?viewMode=table")
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('data.0.label', $entry->getUiLabel())
@@ -695,6 +887,86 @@ it('narrows to a specific status when one is requested', function () {
         );
 });
 
+it('leaves unpublished drafts out of a specific status', function () {
+    $section = Section::factory()->create(['type' => SectionType::Channel]);
+    $entry = EntryModel::factory()->forSection($section)->createElement();
+    saveUnpublishedEntryDraft($entry);
+
+    get("/{$this->cpTrigger}/content/entries?".http_build_query([
+        'source' => "section:{$section->uid}",
+        'status' => 'enabled',
+        'viewMode' => 'table',
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('pagination.total', 1)
+            ->where('data.0.id', $entry->id)
+        );
+});
+
+it('lists trashed entries, unlinked, with only Restore and Delete permanently on offer', function () {
+    $section = Section::factory()->create(['type' => SectionType::Channel]);
+    EntryModel::factory()->forSection($section)->create();
+    $trashed = EntryModel::factory()->forSection($section)->createElement();
+    app(Elements::class)->deleteElement($trashed);
+
+    get("/{$this->cpTrigger}/content/entries?".http_build_query([
+        'source' => "section:{$section->uid}",
+        'status' => 'trashed',
+        'viewMode' => 'table',
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('statusOptions', fn ($options) => collect($options)->pluck('value')->take(-2)->values()->all() === ['drafts', 'trashed'])
+            ->where('statusMenuValue', 'trashed')
+            ->where('status', '')
+            ->where('trashed', true)
+            ->where('pagination.total', 1)
+            ->where('data.0.id', $trashed->id)
+            ->where('data.0.cpEditUrl', null)
+            ->where('actions', fn ($actions) => collect($actions)->pluck('label')->all() === ['Restore', 'Delete permanently'])
+        );
+});
+
+it('lists drafts of published entries when Drafts is selected', function () {
+    $section = Section::factory()->create(['type' => SectionType::Channel]);
+    $entry = EntryModel::factory()->forSection($section)->createElement();
+    $draft = app(Drafts::class)->createDraft($entry, auth()->id(), 'Rework');
+
+    get("/{$this->cpTrigger}/content/entries?".http_build_query([
+        'source' => "section:{$section->uid}",
+        'status' => 'drafts',
+        'viewMode' => 'table',
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('drafts', true)
+            ->where('pagination.total', 1)
+            ->where('data.0.id', $draft->id)
+        );
+});
+
+it('falls back from structure view while listing drafts or trashed entries', function () {
+    $structure = Structure::factory()->create();
+    $section = Section::factory()->create([
+        'type' => SectionType::Structure,
+        'structureId' => $structure->id,
+    ]);
+    $entry = EntryModel::factory()->forSection($section)->create();
+    Structures::appendToRoot($structure->id, EntryElement::find()->id($entry->id)->one());
+
+    get("/{$this->cpTrigger}/content/entries?".http_build_query([
+        'source' => "section:{$section->uid}",
+        'status' => 'drafts',
+        'viewMode' => 'structure',
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('viewState.mode', 'table')
+            ->where('viewModes', fn ($modes) => collect($modes)->doesntContain('mode', 'structure'))
+        );
+});
+
 it('shows a single that was auto-created on section save', function () {
     // Save a Single section through the service, which auto-creates its lone
     // entry via ensureSingleEntry() — the real path a single goes through.
@@ -727,6 +999,7 @@ it('narrows results with a search term', function () {
 
     get("/{$this->cpTrigger}/content/entries?".http_build_query([
         'search' => 'Needle',
+        'viewMode' => 'table',
     ]))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
@@ -741,6 +1014,7 @@ it('clamps out-of-range page numbers to the last page', function () {
     get("/{$this->cpTrigger}/content/entries?".http_build_query([
         'per_page' => 2,
         Cms::config()->getPageTriggerParam() => 99,
+        'viewMode' => 'table',
     ]))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
@@ -758,6 +1032,34 @@ it('serializes bulk action items for the active source', function () {
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->has('actions')
+        );
+});
+
+it('offers Move to as the section picker on a section source', function () {
+    $entryType = EntryType::factory()->create();
+    $section = Section::factory()->withEntryTypes($entryType)->create();
+    Section::factory()->withEntryTypes($entryType)->create();
+    EntryModel::factory()->forSection($section)->forEntryType($entryType)->createElement();
+
+    get(route('craft.cp.content.index', [
+        'page' => 'entries',
+        'sectionHandle' => $section->handle,
+        'viewMode' => 'table',
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.capabilities.movable', true)
+            ->where('actions', function ($actions) use ($section): bool {
+                $move = collect($actions)->firstWhere('key', 'move-to-section');
+
+                return $move !== null
+                    && ! isset($move['disabled'])
+                    && $move['selectionAttribute'] === 'movable'
+                    && $move['action']['type'] === 'event'
+                    && $move['action']['name'] === 'entries:move-to-section'
+                    && $move['action']['detail']['currentSectionUid'] === $section->uid
+                    && $move['action']['detail']['siteId'] === Sites::getPrimarySite()->id;
+            })
         );
 });
 
@@ -785,7 +1087,7 @@ it('renders only the default columns unless specific columns are requested', fun
     EntryModel::factory()->create();
 
     // `slug` is a valid column but not among the entry defaults.
-    get("/{$this->cpTrigger}/content/entries")
+    get("/{$this->cpTrigger}/content/entries?viewMode=table")
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->has('data.0.title')
             ->missing('data.0.slug')
@@ -793,6 +1095,7 @@ it('renders only the default columns unless specific columns are requested', fun
 
     get("/{$this->cpTrigger}/content/entries?".http_build_query([
         'columns' => ['slug'],
+        'viewMode' => 'table',
     ]))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->has('data.0.title')
@@ -805,6 +1108,7 @@ it('ignores unknown requested columns', function () {
 
     get("/{$this->cpTrigger}/content/entries?".http_build_query([
         'columns' => ['nope', 'slug'],
+        'viewMode' => 'table',
     ]))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
@@ -854,7 +1158,7 @@ it('renders title cells as element chips carrying the CP element metadata', func
     // silently breaks every element interaction on the index.
     EntryModel::factory()->createElement(['title' => 'Hello']);
 
-    get("/{$this->cpTrigger}/content/entries")
+    get("/{$this->cpTrigger}/content/entries?viewMode=table")
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('data', function ($rows) {
@@ -870,7 +1174,7 @@ it('renders title cells as element chips carrying the CP element metadata', func
 it('links only the title chip’s label, not the whole chip', function () {
     $entry = EntryModel::factory()->createElement(['title' => 'Hello']);
 
-    get("/{$this->cpTrigger}/content/entries")
+    get("/{$this->cpTrigger}/content/entries?viewMode=table")
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('data', function ($rows) use ($entry) {
@@ -878,7 +1182,7 @@ it('links only the title chip’s label, not the whole chip', function () {
 
                 return str_starts_with($title, '<craft-chip')
                     && preg_match('/<CpLink class="label-link" href="([^"]+)" bare>/', $title, $match) === 1
-                    && html_entity_decode($match[1]) === $entry->getCpEditUrl();
+                    && Url::removeParam(html_entity_decode($match[1]), 'returnUrl') === $entry->getCpEditUrl();
             })
         );
 });
@@ -1250,3 +1554,17 @@ it('carries a source’s status and badge count into its navigation entry', func
             return true;
         });
 });
+
+function saveUnpublishedEntryDraft(EntryElement $sibling): EntryElement
+{
+    $draft = app(EntryElement::class);
+    $draft->siteId = $sibling->siteId;
+    $draft->sectionId = $sibling->sectionId;
+    $draft->typeId = $sibling->typeId;
+    $draft->title = 'Awaiting Review';
+    $draft->slug = 'awaiting-review';
+    $draft->setAuthorIds([auth()->id()]);
+    app(Drafts::class)->saveElementAsDraft($draft, auth()->id());
+
+    return $draft;
+}

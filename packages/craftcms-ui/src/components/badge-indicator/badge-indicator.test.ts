@@ -67,6 +67,19 @@ describe('craft-badge-indicator', () => {
     );
   });
 
+  /** A tally, like a source's element count, is shown in full. */
+  it('shows the whole count, formatted, when uncapped', async () => {
+    const element = await createBadgeIndicator({'badge-count': '50000'});
+    element.max = Infinity;
+    await element.updateComplete;
+
+    expect(number(element)).toBe(
+      new Intl.NumberFormat(document.documentElement.lang || undefined).format(
+        50000
+      )
+    );
+  });
+
   it('carries a modifier class for each variant', async () => {
     for (const variant of ['secondary', 'inverse']) {
       const element = await createBadgeIndicator({variant});
@@ -91,11 +104,10 @@ describe('craft-badge-indicator', () => {
     const element = await createBadgeIndicator({'alt-text': 'Has updates'});
 
     expect(badge(element).getAttribute('role')).toBe('img');
-    expect(badge(element).getAttribute('aria-labelledby')).toBe(
-      `${element.id}-label`
-    );
     expect(
-      element.shadowRoot!.querySelector(`#${element.id}-label`)?.textContent
+      element.shadowRoot!.getElementById(
+        badge(element).getAttribute('aria-labelledby')!
+      )?.textContent
     ).toBe('Has updates');
   });
 
@@ -105,5 +117,13 @@ describe('craft-badge-indicator', () => {
 
     expect(first.id).not.toBe('');
     expect(first.id).not.toBe(second.id);
+    expect(document.getElementById(first.id)).toBe(first);
+  });
+
+  it('keeps an id set as a property on the host', async () => {
+    const element = await createBadgeIndicator();
+    element.id = 'marker';
+
+    expect(document.getElementById('marker')).toBe(element);
   });
 });

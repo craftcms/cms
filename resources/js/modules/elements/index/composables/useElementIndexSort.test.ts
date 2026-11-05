@@ -6,8 +6,6 @@ import {useElementIndexSort} from './useElementIndexSort';
 
 function viewState(sort?: Array<SortItem>) {
   return ref<ViewState>({
-    inlineEditing: false,
-    mode: 'table',
     showHeaderColumn: false,
     static: false,
     sources: sort ? {'*': {sort}} : {},
@@ -41,7 +39,7 @@ describe('useElementIndexSort', () => {
 
     sort.sortingConfig.onSortingChange([{id: 'author', desc: false}]);
 
-    expect(sort.sortingState.value).toEqual([{id: 'title', desc: false}]);
+    expect(sort.sortingState.value).toEqual([{id: 'author', desc: false}]);
     expect(querySort(visit)).toEqual({
       0: {field: 'author', direction: 'asc'},
       1: {field: 'title', direction: 'asc'},
@@ -69,6 +67,8 @@ describe('useElementIndexSort', () => {
     sort.sortField.value = 'author';
     sort.sortField.value = 'postDate';
 
+    expect(sort.sortField.value).toBe('postDate');
+    expect(sort.sortDirection.value).toBe('desc');
     expect(querySort(visit)).toEqual({
       0: {field: 'postDate', direction: 'desc'},
       1: {field: 'author', direction: 'asc'},

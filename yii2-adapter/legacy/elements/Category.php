@@ -12,7 +12,6 @@ use craft\db\Connection;
 use craft\db\FixedOrderExpression;
 use craft\elements\actions\Delete;
 use craft\elements\actions\Duplicate;
-use craft\elements\actions\NewChild;
 use craft\elements\actions\Restore;
 use craft\elements\conditions\categories\CategoryCondition;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
@@ -22,13 +21,13 @@ use craft\services\ElementSources;
 use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Element\Actions\ClientAction;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Structure\Enums\Mode;
-use CraftCms\Cms\Support\Facades\ElementActions;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
@@ -45,7 +44,6 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
@@ -107,6 +105,14 @@ class Category extends Element
      * @inheritdoc
      */
     public static function hasDrafts(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function hasStructures(): bool
     {
         return true;
     }
@@ -269,17 +275,19 @@ class Category extends Element
         if ($group) {
             // New Child
             if ($group->maxLevels != 1) {
-                $newChildUrl = 'categories/' . $group->handle . '/new';
-
-                if (Sites::isMultiSite()) {
-                    $newChildUrl .= '?site=' . $site->handle;
-                }
-
-                $actions[] = ElementActions::createAction([
-                    'type' => NewChild::class,
-                    'maxLevels' => $group->maxLevels,
-                    'newChildUrl' => $newChildUrl,
-                ], static::class);
+                $actions[] = new ClientAction(
+                    key: 'new-child',
+                    label: t('Create a new child {type}', ['type' => static::lowerDisplayName()]),
+                    event: 'craft:new-element',
+                    detail: [
+                        'url' => Url::cpUrl(
+                            'categories/' . $group->handle . '/new',
+                            Sites::isMultiSite() ? ['site' => $site->handle] : [],
+                        ),
+                        'param' => 'parentId',
+                    ],
+                    bulk: false,
+                );
             }
 
             // Duplicate
@@ -765,11 +773,10 @@ class Category extends Element
             if ($this->id) {
                 // Figure out how deep the ancestors go
                 $maxDepth = self::find()
-                    ->select('level')
                     ->descendantOf($this)
                     ->status(null)
                     ->leaves()
-                    ->scalar();
+                    ->value('level');
                 $depth = 1 + ($maxDepth ?: $this->level) - $this->level;
             } else {
                 $depth = 1;
@@ -922,11 +929,10 @@ class Category extends Element
         // If this is a provisional draft and its new parent matches the canonical entry’s, just drop it from the structure
         if ($this->isProvisionalDraft) {
             $canonicalParentId = self::find()
-                ->select(['elements.id'])
                 ->ancestorOf($this->getCanonicalId())
                 ->ancestorDist(1)
                 ->status(null)
-                ->scalar();
+                ->value('elements.id');
 
             if ($parentId == $canonicalParentId) {
                 Structures::remove($this->structureId, $this);
@@ -996,7 +1002,7 @@ class Category extends Element
         /** @var self|null $parent */
         $parent = self::find()
             ->structureId($structureId)
-            ->join(new Alias(DeprecatedTable::CATEGORIES, 'j'), 'j.parentId', 'elements.id')
+            ->join(DeprecatedTable::CATEGORIES . ' as j', 'j.parentId', 'elements.id')
             ->where('j.id', $this->id)
             ->one();
 

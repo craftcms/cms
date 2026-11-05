@@ -10,6 +10,7 @@ use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Policies\AssetPolicy;
 use CraftCms\Cms\Asset\Policies\VolumeFolderPolicy;
+use CraftCms\Cms\Auth\PersonalAccessTokens\PersonalAccessTokens;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Edition;
@@ -19,6 +20,9 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Policies\EntryPolicy;
 use CraftCms\Cms\Field\Elements\ContentBlock;
 use CraftCms\Cms\Field\Policies\ContentBlockPolicy;
+use CraftCms\Cms\Gql\Gql;
+use CraftCms\Cms\Release\Models\Release;
+use CraftCms\Cms\Release\Policies\ReleasePolicy;
 use CraftCms\Cms\Structure\Data\Structure;
 use CraftCms\Cms\Structure\Policies\StructurePolicy;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -44,6 +48,8 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Passport\Events\AccessTokenCreated;
+use Laravel\Passport\Passport;
 use Override;
 
 /**
@@ -73,6 +79,10 @@ class AuthServiceProvider extends ServiceProvider
             'driver' => 'passport',
             'provider' => 'craft',
         ], $config->get('auth.guards.craft-mcp', [])));
+        $config->set('auth.guards.'.Gql::AUTH_GUARD, array_replace([
+            'driver' => 'passport',
+            'provider' => 'craft',
+        ], $config->get('auth.guards.'.Gql::AUTH_GUARD, [])));
 
         $this->app->bind(SendQueuedNotifications::class, SendQueuedUserNotifications::class);
 
@@ -84,6 +94,8 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->bootRedirects();
         $this->registerElementPolicies();
+
+        $this->app->booted(fn () => $this->app->make(PersonalAccessTokens::class)->registerPassportScopes());
     }
 
     private function bootRedirects(): void
@@ -141,6 +153,14 @@ class AuthServiceProvider extends ServiceProvider
 
     private function registerEvents(): void
     {
+        // Clients registered through an OAuth resource have no `updated_at` value until they’re authorized, so garbage
+        // collection can delete the ones that never are.
+        Event::listen(fn (AccessTokenCreated $event) => Passport::client()->newQuery()
+            ->whereKey($event->clientId)
+            ->whereNull('updated_at')
+            ->toBase()
+            ->update(['updated_at' => Passport::client()->freshTimestampString()]));
+
         Event::listen(function (Authenticated $event) {
             if ($event->guard !== Cms::config()->getAuthGuard()) {
                 return;
@@ -148,6 +168,7 @@ class AuthServiceProvider extends ServiceProvider
 
             Sites::refreshSites();
             app(RequestedSite::class)->reset();
+            Cms::forgetTimezone();
         });
 
         Event::listen(Login::class, function (Login $event) {
@@ -188,6 +209,7 @@ class AuthServiceProvider extends ServiceProvider
             }
 
             app(Impersonation::class)->setImpersonatorId(null);
+            Cms::forgetTimezone();
         });
     }
 
@@ -200,6 +222,7 @@ class AuthServiceProvider extends ServiceProvider
         Gate::policy(ContentBlock::class, ContentBlockPolicy::class);
         Gate::policy(Entry::class, EntryPolicy::class);
         Gate::policy(Structure::class, StructurePolicy::class);
+        Gate::policy(Release::class, ReleasePolicy::class);
         Gate::policy(UserElement::class, UserPolicy::class);
     }
 }

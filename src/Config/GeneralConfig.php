@@ -315,7 +315,9 @@ class GeneralConfig extends BaseConfig
         'm2t',
         'm4a',
         'm4v',
+        'markdown',
         'mcc',
+        'md',
         'mid',
         'mov',
         'mp3',
@@ -747,7 +749,30 @@ class GeneralConfig extends BaseConfig
     public ?string $cpTrigger = 'admin';
 
     /**
-     * @var string The Asset Transformer to use when none is selected explicitly.
+     * @var string|null The path to a directory of SVG files that should be made available to icon pickers as a “Custom” icon set.
+     *
+     * This can be set to an aliased path such as `@config/icons`.
+     *
+     * Each file’s name (sans `.svg` extension) becomes its icon name, and icons selected from it will be stored as
+     * `custom:icon-name`.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->customIconPath('@config/icons')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_CUSTOM_ICON_PATH=@config/icons
+     * ```
+     * :::
+     *
+     * @group System
+     *
+     * @since 5.12.0
+     */
+    public ?string $customIconPath = null;
+
+    /**
+     * @var string The asset transformer to use when none is selected explicitly.
      *
      * ::: code
      * ```php Static Config
@@ -867,6 +892,62 @@ class GeneralConfig extends BaseConfig
      * @group Image Handling
      */
     public int $defaultImageQuality = 82;
+
+    /**
+     * @var int|false The number of requests Craft will allow from a single IP address within {@see},
+     *                for actions that are rate-limited by default, before responding with a 429 error.
+     *
+     * This applies to the following, each of which is tracked separately:
+     *
+     * - login attempts
+     * - two-factor authentication verifications
+     * - password reset requests
+     * - MCP discovery requests (`/.well-known/ai-catalog.json` and MCP Server Cards)
+     *
+     * Login attempts and two-factor authentication verifications are also limited per account, to five a minute.
+     *
+     * This can be set to `false` to disable the default rate limits.
+     *
+     * ::: tip
+     * If Craft is running behind a load balancer or reverse proxy, make sure Laravel’s
+     * [trusted proxies](https://laravel.com/docs/requests#configuring-trusted-proxies) are configured, so rate limits are
+     * applied to each visitor’s IP rather than the proxy’s.
+     * :::
+     *
+     * ::: code
+     * ```php Static Config
+     * ->defaultRateLimit(20)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_DEFAULT_RATE_LIMIT=20
+     * ```
+     * :::
+     *
+     * @group Security
+     */
+    public int|false $defaultRateLimit = 10;
+
+    /**
+     * @var mixed The amount of time that {@see} applies to.
+     *
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
+     *
+     * ::: code
+     * ```php Static Config
+     * // 5 minutes
+     * ->defaultRateLimitDuration(300)
+     * ```
+     * ```shell Environment Override
+     * # 5 minutes
+     * CRAFT_DEFAULT_RATE_LIMIT_DURATION=300
+     * ```
+     * :::
+     *
+     * @group Security
+     *
+     * @defaultAlt 1 minute
+     */
+    public mixed $defaultRateLimitDuration = 60;
 
     /**
      * @var array<string, bool|string> The default options that should be applied to each search term.
@@ -2919,6 +3000,29 @@ class GeneralConfig extends BaseConfig
     public ?string $tempAssetUploadDisk = null;
 
     /**
+     * @var string|null The Laravel filesystem disk that soft-deleted assets’ files should be moved to, so the assets
+     *                  can be restored.
+     *
+     *                  Files are stored at the root of the disk, named after their asset’s ID and extension, such as
+     *                  `123.jpg`. Each environment should have its own disk, or its own folder on a shared one,
+     *                  which a `scoped` disk can provide.
+     *
+     *                  If this isn’t set, soft-deleting an asset deletes its file, and the asset can’t be restored.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->trashedAssetDisk('$TRASHED_ASSET_DISK')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_TRASHED_ASSET_DISK=trashedAssets
+     * ```
+     * :::
+     *
+     * @group Assets
+     */
+    public ?string $trashedAssetDisk = null;
+
+    /**
      * @var string|null The Laravel filesystem disk that should stage upload sessions.
      *
      * @group Assets
@@ -3230,6 +3334,7 @@ class GeneralConfig extends BaseConfig
             ->activityRetentionDuration($this->activityRetentionDuration)
             ->cacheDuration($this->cacheDuration)
             ->cooldownDuration($this->cooldownDuration)
+            ->defaultRateLimitDuration($this->defaultRateLimitDuration)
             ->defaultTokenDuration($this->defaultTokenDuration)
             ->invalidLoginWindowDuration($this->invalidLoginWindowDuration)
             ->previewTokenDuration($this->previewTokenDuration)
@@ -3905,7 +4010,26 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The Asset Transformer to use when none is selected explicitly.
+     * The path to a directory of SVG files that should be made available to icon pickers as a “Custom” icon set.
+     *
+     * ```php
+     * ->customIconPath('@config/icons')
+     * ```
+     *
+     * @group System
+     *
+     * @see $customIconPath
+     * @since 5.12.0
+     */
+    public function customIconPath(?string $value): self
+    {
+        $this->customIconPath = $value;
+
+        return $this;
+    }
+
+    /**
+     * The asset transformer to use when none is selected explicitly.
      *
      * @group Assets
      *
@@ -4053,6 +4177,50 @@ class GeneralConfig extends BaseConfig
     public function defaultImageQuality(int $value): self
     {
         $this->defaultImageQuality = $value;
+
+        return $this;
+    }
+
+    /**
+     * The number of requests Craft will allow from a single IP address within {@see $defaultRateLimitDuration},
+     * for actions that are rate-limited by default, before responding with a 429 error.
+     *
+     * This can be set to `false` to disable the default rate limits.
+     *
+     * ```php
+     * ->defaultRateLimit(20)
+     * ```
+     *
+     * @group Security
+     *
+     * @see $defaultRateLimit
+     */
+    public function defaultRateLimit(int|false $value): self
+    {
+        $this->defaultRateLimit = $value;
+
+        return $this;
+    }
+
+    /**
+     * The amount of time that {@see $defaultRateLimit} applies to.
+     *
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
+     *
+     * ```php
+     * // 5 minutes
+     * ->defaultRateLimitDuration(300)
+     * ```
+     *
+     * @group Security
+     *
+     * @defaultAlt 1 minute
+     *
+     * @see $defaultRateLimitDuration
+     */
+    public function defaultRateLimitDuration(mixed $value): self
+    {
+        $this->defaultRateLimitDuration = ConfigHelper::durationInSeconds($value);
 
         return $this;
     }
@@ -6152,6 +6320,24 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
+     * The Laravel filesystem disk that soft-deleted assets’ files should be moved to, so the assets can be restored.
+     *
+     * ```php
+     * ->trashedAssetDisk('$TRASHED_ASSET_DISK')
+     * ```
+     *
+     * @group Assets
+     *
+     * @see $trashedAssetDisk
+     */
+    public function trashedAssetDisk(?string $value): self
+    {
+        $this->trashedAssetDisk = $value;
+
+        return $this;
+    }
+
+    /**
      * The Laravel filesystem disk that should stage upload sessions.
      *
      * @group Assets
@@ -6457,6 +6643,18 @@ class GeneralConfig extends BaseConfig
     public function getUploadSessionDisk(): string
     {
         return $this->storageDiskName($this->uploadSessionDisk, 'craft-tmp');
+    }
+
+    /**
+     * Returns the disk name that soft-deleted assets’ files should be moved to, if one is set.
+     *
+     * @see $trashedAssetDisk
+     */
+    public function getTrashedAssetDisk(): ?string
+    {
+        $disk = Env::parse($this->trashedAssetDisk);
+
+        return is_string($disk) && $disk !== '' ? $disk : null;
     }
 
     private function storageDiskName(?string $value, string $default): string

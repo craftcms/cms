@@ -45,8 +45,11 @@ class ElementDuplicated extends ActivityEventType
     public static function format(ActivityEvent $event): string
     {
         return t(
-            'Duplicated from {source}',
-            ['source' => $event->data['source']['label']],
+            'Duplicated this {type} from {source}',
+            [
+                'type' => self::subjectTypeName($event),
+                'source' => $event->data['source']['label'],
+            ],
         );
     }
 }

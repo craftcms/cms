@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Events\ElementFieldLayoutsResolving;
 use CraftCms\Cms\Element\Events\ElementSourcesResolving;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Typecast;
 
 /**
  * HasSources provides element source management functionality.
@@ -90,6 +95,57 @@ trait HasSources
     public static function modifyCustomSource(array $config): array
     {
         return $config;
+    }
+
+    public static function supportsSourceBadgeCounts(): bool
+    {
+        return false;
+    }
+
+    public static function sourceSupportsBadgeCount(array $source): bool
+    {
+        if (! static::supportsSourceBadgeCounts()) {
+            return false;
+        }
+
+        $isHeading = isset($source['type'])
+            ? $source['type'] === ElementSources::TYPE_HEADING
+            : isset($source['heading']);
+
+        if ($isHeading) {
+            return false;
+        }
+
+        return ($source['key'] ?? '') !== '';
+    }
+
+    /**
+     * Counts every element the source lists for the current user, whatever its
+     * status, leaving out drafts, revisions and trashed elements.
+     *
+     * Criteria and conditions that depend on who's looking change the query,
+     * and with it the cache key, so each permission set gets its own count.
+     */
+    public static function sourceBadgeCount(array $source, ?int $siteId): int
+    {
+        $query = static::find()->status(null);
+
+        if ($siteId !== null) {
+            $query->siteId($siteId);
+        }
+
+        if (($source['type'] ?? null) === ElementSources::TYPE_CUSTOM) {
+            if (! empty($source['condition'])) {
+                /** @var ElementConditionInterface $condition */
+                $condition = Conditions::createCondition($source['condition']);
+                $condition->forQuery = true;
+                $condition->modifyQuery($query);
+            }
+        } elseif (! empty($source['criteria'])) {
+            Typecast::configure($query, ElementHelper::cleanseQueryCriteria($source['criteria']));
+        }
+
+        return $query->cache()->count();
     }
 
     public static function fieldLayouts(?string $source): array

@@ -11,6 +11,7 @@ use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Str;
 use DateInterval;
 use DateTimeInterface;
+use DateTimeZone;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Facades\Date;
 use IntlDateFormatter;
@@ -131,16 +132,16 @@ class Formatter
 
         $format = $this->dateTimeFormats[$format]['datetime'] ?? $format;
 
-        if (isset($this->defaultDateFormats[$format])) {
-            return $this->dateFormatter(
+        $dateFormatter = isset($this->defaultDateFormats[$format])
+            ? $this->dateFormatter(
                 dateType: $this->defaultDateFormats[$format] ?? IntlDateFormatter::NONE,
                 timeType: $this->defaultDateFormats[$format] ?? IntlDateFormatter::NONE,
-            )->format($value->toDateTime());
-        }
+            )
+            : $this->dateFormatter(
+                pattern: $format,
+            );
 
-        return $this->dateFormatter(
-            pattern: $format,
-        )->format($value->toDateTime());
+        return $this->appendTimeZone($dateFormatter, $value, $withTimeZone);
     }
 
     /**
@@ -410,32 +411,63 @@ class Formatter
 
         $format = $this->dateTimeFormats[$format]['time'] ?? $format;
 
-        if (isset($this->defaultDateFormats[$format])) {
-            return $this->dateFormatter(
+        $dateFormatter = isset($this->defaultDateFormats[$format])
+            ? $this->dateFormatter(
                 dateType: IntlDateFormatter::NONE,
                 timeType: $this->defaultDateFormats[$format] ?? IntlDateFormatter::NONE,
-            )->format($value->toDateTime());
-        }
+            )
+            : $this->dateFormatter(
+                pattern: $format,
+            );
 
-        return $this->dateFormatter(
-            pattern: $format,
-        )->format($value->toDateTime());
+        return $this->appendTimeZone($dateFormatter, $value, $withTimeZone);
     }
 
+    /**
+     * Formats a value, appending the abbreviation of the time zone it's
+     * displayed in — the formatter's, as of that date — when requested and the
+     * format doesn't already show a time zone, as the long and full ones do.
+     */
+    private function appendTimeZone(IntlDateFormatter $dateFormatter, CarbonInterface $value, bool $withTimeZone): string
+    {
+        $formatted = (string) $dateFormatter->format($value->toDateTime());
+
+        if (! $withTimeZone || $formatted === '' || $this->patternShowsTimeZone($dateFormatter->getPattern())) {
+            return $formatted;
+        }
+
+        return $formatted.' '.DateTimeHelper::timeZoneAbbreviation($this->timeZone, $value);
+    }
+
+    /** Whether an ICU date pattern has a time zone field, ignoring quoted text. */
+    private function patternShowsTimeZone(string $pattern): bool
+    {
+        return (bool) preg_match('/[zZvVOXx]/', (string) preg_replace("/'[^']*'/", '', $pattern));
+    }
+
+    /**
+     * Returns a formatter for dates in the formatting locale's own calendar,
+     * such as the Persian calendar for `fa`, or the Buddhist calendar for
+     * `th`. A locale ID can pick a calendar explicitly, as with
+     * `ja-JP@calendar=japanese`.
+     */
     private function dateFormatter(
         int $dateType = IntlDateFormatter::FULL,
         int $timeType = IntlDateFormatter::FULL,
         ?string $pattern = null,
+        ?DateTimeZone $timeZone = null,
+        int $calendar = IntlDateFormatter::TRADITIONAL,
     ): IntlDateFormatter {
         $locale = $this->locale;
-        $timeZone = $this->timeZone;
-        $key = serialize([$locale, IntlLocale::getDefault(), $timeZone, $dateType, $timeType, $pattern]);
+        $timeZone ??= $this->timeZone;
+        $key = serialize([$locale, IntlLocale::getDefault(), $timeZone instanceof DateTimeZone ? $timeZone->getName() : $timeZone, $dateType, $timeType, $pattern, $calendar]);
 
         return $this->dateFormatters[$key] ??= new IntlDateFormatter(
             locale: $locale,
             dateType: $dateType,
             timeType: $timeType,
             timezone: $timeZone,
+            calendar: $calendar,
             pattern: $pattern,
         );
     }
@@ -469,7 +501,10 @@ class Formatter
                 : t('Yesterday', locale: $this->locale);
         }
 
-        if ($dateTime->clone()->addDays(7)->isNowOrFuture()) {
+        if (
+            $dateTime->clone()->addDays(7)->isNowOrFuture()
+            && $dateTime->isBefore(Date::now($this->timeZone)->addDays(6)->endOfDay())
+        ) {
             $day = (int) $dateTime->format('w');
             $dayName = new Locale($this->locale)->getWeekDayName($day);
 
@@ -633,7 +668,7 @@ class Formatter
     private function formatParsedDate(CarbonInterface $dateTime, string $format, bool $withTimeZone): CarbonInterface|string
     {
         $result = str_starts_with($format, 'php:')
-            ? $dateTime->format(Str::after($format, 'php:'))
+            ? $this->formatPhpDate($dateTime, Str::after($format, 'php:'))
             : $dateTime;
 
         if (is_string($result) && $withTimeZone && $result !== '') {
@@ -641,6 +676,51 @@ class Formatter
         }
 
         return $result;
+    }
+
+    /**
+     * Formats a date with a PHP `date()` format, with month and day names and
+     * AM/PM markers (`D`, `l`, `F`, `M`, `a`, `A`) in the formatting locale.
+     * They use the Gregorian calendar and the date's own time zone, to match
+     * the other PHP format characters.
+     */
+    private function formatPhpDate(CarbonInterface $dateTime, string $format): string
+    {
+        $format = preg_replace_callback('/\\\\.|[DlFMaA]/', function (array $match) use ($dateTime, $format): string {
+            $character = $match[0];
+
+            if (str_starts_with($character, '\\')) {
+                return $character;
+            }
+
+            // A lone month or day name is shown in its standalone form
+            $pattern = $format === $character
+                ? FormatConverter::convertDatePhpToIcu($character)
+                : match ($character) {
+                    'D' => 'eee',
+                    'l' => 'eeee',
+                    'F' => 'MMMM',
+                    'M' => 'MMM',
+                    default => 'a',
+                };
+
+            $localized = (string) $this->dateFormatter(
+                pattern: $pattern,
+                timeZone: $dateTime->getTimezone(),
+                calendar: IntlDateFormatter::GREGORIAN,
+            )->format($dateTime->toDateTime());
+
+            $localized = match ($character) {
+                'a' => mb_strtolower($localized),
+                'A' => mb_strtoupper($localized),
+                default => $localized,
+            };
+
+            // Escape the name so format() outputs it as-is
+            return (string) preg_replace('/./u', '\\\\$0', $localized);
+        }, $format);
+
+        return $dateTime->format((string) $format);
     }
 
     private function normalizeNumericValue(mixed $value): float|int

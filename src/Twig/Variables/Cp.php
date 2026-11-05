@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Twig\Variables;
 
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Cp\Alerts;
+use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Cp\Events\FormActionsResolving;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Navigation;
@@ -27,6 +28,7 @@ use Illuminate\Support\Uri;
 use InvalidArgumentException;
 use Stringable;
 
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
 /**
@@ -48,6 +50,14 @@ class Cp extends Component
     public function getRequestedSite(): ?Site
     {
         return app(RequestedSite::class)->get();
+    }
+
+    /**
+     * Returns the current user’s control panel theme: `light`, `dark` or `system`.
+     */
+    public function getTheme(): string
+    {
+        return Theme::forUser(currentUserElement())->value;
     }
 
     /**
@@ -425,16 +435,27 @@ class Cp extends Component
     /** @param array<string, mixed> $config */
     public function selectize(array $config = []): string
     {
-        /**
-         * A multi-select keeps the native `<select name="…[]" multiple>` the
-         * legacy template rendered, which is what posts an array. Only the
-         * single-select case becomes a combobox.
-         */
-        if ($config['multi'] ?? false) {
-            return FormFields::multiSelectHtml($config);
-        }
+        return FormFields::selectizeHtml($config);
+    }
 
-        return FormFields::selectizeFromConfig($config)->toHtml();
+    /**
+     * Renders a money input's HTML from the legacy money variables.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public function money(array $config = []): string
+    {
+        return FormFields::moneyInputHtml($config);
+    }
+
+    /**
+     * Renders a range slider and its paired number input from the legacy range variables.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public function range(array $config = []): string
+    {
+        return FormFields::rangeHtml($config);
     }
 
     /**

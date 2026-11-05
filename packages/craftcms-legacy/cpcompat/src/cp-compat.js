@@ -474,7 +474,7 @@
         );
       }
 
-      this.settings = $.extend({presets: []}, settings || {});
+      this.settings = $.extend({presets: [], alpha: false}, settings || {});
 
       var $container = $(container);
       this.$container = $container;
@@ -501,6 +501,9 @@
       }
       if (this.settings.presets && this.settings.presets.length) {
         $el.attr('presets', JSON.stringify(this.settings.presets));
+      }
+      if (this.settings.alpha) {
+        $el.attr('alpha', '');
       }
 
       $input.attr('slot', 'input').appendTo($el);
@@ -567,7 +570,7 @@
 
       var self = this;
       this.$container.on('change', function () {
-        self.setValue(self.$container[0].value);
+        self.setValue(self.$container[0].modelValue);
       });
     }
 
@@ -597,7 +600,7 @@
         el.removeAttribute('described-by');
       }
 
-      el.readonly = !!this.settings.readOnly;
+      el.readOnly = !!this.settings.readOnly;
 
       this.$buttons = this.$container.find('.slide-picker__segment');
 
@@ -616,7 +619,7 @@
         return;
       }
 
-      this.$container[0].value = this.value;
+      this.$container[0].modelValue = this.value;
       this.$buttons = this.$container.find('.slide-picker__segment');
 
       if (triggerEvent !== false) {

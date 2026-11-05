@@ -51,6 +51,17 @@ class ModalIndexViewModel extends ContentIndexViewModel
     }
 
     /**
+     * Leaves the rows out of the modal's first payload, as a page load does,
+     * so the modal opens straight away and draws placeholders until its index
+     * requests the rows for its saved view state (see `useModalElementIndex`).
+     */
+    #[\Override]
+    protected function arrayMethodClosures(): array
+    {
+        return $this->withoutDeferredRows(parent::arrayMethodClosures());
+    }
+
+    /**
      * The element metadata a relation field needs back from a selection.
      *
      * Index rows are otherwise column HTML keyed by attribute — enough to render
@@ -169,7 +180,29 @@ class ModalIndexViewModel extends ContentIndexViewModel
             $source['criteria']['folderId'] = $folder->id;
         }
 
+        if ($source !== null && $this->includeSubfolders()) {
+            $source['criteria']['includeSubfolders'] = true;
+        }
+
         return [$sourceKey, $source];
+    }
+
+    /**
+     * Whether a search reaches into the subfolders of the folder on screen, as
+     * on the assets index.
+     */
+    public function includeSubfolders(): bool
+    {
+        return $this->search() !== null
+            && $this->search() !== ''
+            && $this->request->boolean('includeSubfolders')
+            && $this->canSearchSubfolders();
+    }
+
+    /** Whether the folder on screen has subfolders for a search to reach. */
+    public function canSearchSubfolders(): bool
+    {
+        return ($this->folder() ?? $this->sourceRootFolder())?->getHasChildren() ?? false;
     }
 
     /**

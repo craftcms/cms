@@ -4,8 +4,20 @@ import {useServerPagination} from '@/common/table/useServerPagination';
 import type {PaginationData} from '@/common/types';
 
 interface ElementIndexPaginationContext {
-  pagination: PaginationData;
+  pagination?: PaginationData;
 }
+
+/** Stands in until a page load's deferred pagination arrives. */
+const pendingPagination: PaginationData = {
+  total: 0,
+  per_page: 50,
+  current_page: 1,
+  last_page: 1,
+  next_page_url: null,
+  prev_page_url: null,
+  from: null,
+  to: null,
+};
 
 /**
  * Server-driven pagination for an element index. Page/size changes push a
@@ -17,7 +29,7 @@ export function useElementIndexPagination(
   visitor: IndexVisitor
 ) {
   const {paginationState, paginationConfig} = useServerPagination({
-    initialState: props.pagination,
+    initialState: props.pagination ?? pendingPagination,
     // A non-page index keeps its query in the visitor, not in the URL.
     currentQuery: () => visitor.currentQuery(),
     onChange: ({query}) => {
@@ -30,6 +42,10 @@ export function useElementIndexPagination(
   watch(
     () => props.pagination,
     (pagination) => {
+      if (!pagination) {
+        return;
+      }
+
       paginationState.value = {
         pageIndex: pagination.current_page ? pagination.current_page - 1 : 0,
         pageSize: pagination.per_page,

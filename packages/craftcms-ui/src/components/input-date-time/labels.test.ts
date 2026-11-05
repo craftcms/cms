@@ -42,7 +42,7 @@ test('names the timezone input when it is shown', async () => {
     ></craft-input-date-time>`
   );
 
-  expect(labels(element).timezone).toBe('Time zone');
+  expect(labels(element).timezone).toBe('Time Zone');
 });
 
 test('a date-only field still names its one input', async () => {

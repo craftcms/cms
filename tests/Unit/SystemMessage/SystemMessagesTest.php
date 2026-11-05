@@ -68,6 +68,22 @@ it('rejects invalid factory results when resolving', function (string $key, Clos
     'mismatched key' => ['expected', fn () => systemMessage('actual')],
 ]);
 
+it('lists a message\'s own template variables before the common ones', function () {
+    $message = systemMessage('order_shipped');
+    $message->variables = [
+        'orderNumber' => 'Order number',
+        'siteName' => 'Store name',
+    ];
+
+    $variables = app(SystemMessages::class)->getTemplateVariables($message);
+
+    expect(array_slice($variables, 0, 2))->toBe([
+        'orderNumber' => 'Order number',
+        'siteName' => 'Store name',
+    ])
+        ->and($variables)->toHaveKeys(['user.friendlyName', 'systemName']);
+});
+
 function systemMessage(string $key, string $heading = 'Heading'): SystemMessage
 {
     return new SystemMessage([

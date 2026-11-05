@@ -62,7 +62,7 @@ vi.mock('@/modules/elements/index/components/FilterHud.vue', () => ({
 vi.mock('@/modules/elements/ElementStatus.vue', () => ({
   default: {render: () => null},
 }));
-vi.mock('@craftcms/ui/vue/CraftInput.vue', () => ({
+vi.mock('@craftcms/ui/vue/CraftInputSearch.vue', () => ({
   default: {
     props: ['modelValue'],
     emits: ['update:modelValue'],
@@ -177,7 +177,6 @@ it.each([
   ).toEqual({
     site: 'default',
     source: 'section:news',
-    viewMode: 'table',
     includeSubfolders: '1',
     search: 'needle',
     'condition[class]': 'EntryCondition',

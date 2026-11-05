@@ -9,6 +9,11 @@
     job: JobInfo;
   }>();
 
+  const emit = defineEmits<{
+    /** The job was released or retried. */
+    done: [];
+  }>();
+
   const messages = useMessages();
   const form = useForm({});
 
@@ -35,6 +40,7 @@
         } else {
           messages.success(t('Job retried.'));
         }
+        emit('done');
       },
       onError: () => {
         messages.error(t('Failed to retry job.'));
@@ -48,7 +54,7 @@
     type="button"
     @click="retryJob"
     size="small"
-    :loading="form.processing"
+    .loading="form.processing"
     v-bind="$attrs"
   >
     <craft-icon name="play" slot="prefix" style="font-size: 0.7em"></craft-icon>

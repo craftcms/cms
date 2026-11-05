@@ -220,6 +220,26 @@ export const DeprecatedLayout: Story = {
  * nothing else — the tabs are slotted, so they inherit it, and their padding is
  * `em`-based and follows. The panels keep the document's text size either way.
  */
+/** `fill` sets the tabs on a quiet track and raises the selected one. */
+export const Appearances: Story = {
+  render: () => html`
+    <div style="display: grid; gap: 2rem; max-inline-size: 20rem;">
+      <craft-tabs label="Edition">
+        <craft-tab slot="tab">Lite</craft-tab>
+        <div slot="panel"><p>$49</p></div>
+        <craft-tab slot="tab">Pro</craft-tab>
+        <div slot="panel"><p>$99</p></div>
+      </craft-tabs>
+      <craft-tabs label="Edition" appearance="fill" equal-width>
+        <craft-tab slot="tab">Lite</craft-tab>
+        <div slot="panel"><p>$49</p></div>
+        <craft-tab slot="tab">Pro</craft-tab>
+        <div slot="panel"><p>$99</p></div>
+      </craft-tabs>
+    </div>
+  `,
+};
+
 export const Sizes: Story = {
   render: () => html`
     ${(['block-start', 'inline-start'] as const).map(

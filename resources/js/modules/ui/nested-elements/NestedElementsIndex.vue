@@ -375,7 +375,9 @@
         <craft-button
           v-if="editable && operations.canPaste.value"
           type="button"
-          :variant="ButtonVariant.Fill"
+          variant="outline"
+          icon="custom-icons/duplicate"
+          class="paste-btn"
           .disabled="busy || loading"
           @click="operations.paste()"
           >{{ operations.pasteButtonLabel.value }}</craft-button
@@ -409,11 +411,14 @@
           :context="model.view.elementIndex.context"
           :params="
             manager
-              ? nestedIndexParams(
-                  manager,
-                  manager.ownerId,
-                  control.index?.initial
-                )
+              ? {
+                  ...nestedIndexParams(
+                    manager,
+                    manager.ownerId,
+                    control.index?.initial
+                  ),
+                  criteria: {status: model.view.status.value || null},
+                }
               : {}
           "
           :perform="actions.perform"

@@ -68,6 +68,19 @@ describe('craft-input', () => {
     expect(native(element).size).toBe(12);
   });
 
+  it('follows maxlength changes on the native input, dropping it once unset', async () => {
+    const element = await createInput({maxlength: '12'});
+    element.maxlength = 4;
+    await element.updateComplete;
+
+    expect(native(element).maxLength).toBe(4);
+
+    element.maxlength = undefined;
+    await element.updateComplete;
+
+    expect(native(element).hasAttribute('maxlength')).toBe(false);
+  });
+
   it('keeps an explicit input size over the maxlength', async () => {
     const element = await createInput({maxlength: '3'});
     element.inputSize = 8;

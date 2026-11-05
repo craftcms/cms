@@ -3,47 +3,104 @@
      * Thumbnail management markup for the card view designer.
      *
      * Split out of CardDesigner::thumbManagementHtml()'s Html::* chain. The PHP
-     * method still computes the data (thumb source options, alignment options,
-     * current alignment / field key); the select + button-group fields are still
-     * rendered here by the same FormFields helpers, so the markup stays exactly
-     * what the Craft.FieldLayoutDesigner / CardViewDesigner JS expects:
-     * `.thumb-management`, `select[id$="thumb-source"]` (with the `__none__` /
-     * `__default__` option values), `div.btngroup[id$="thumb-alignment"] .btn`
-     * (with `data-value`), and the `[data-attribute="thumb-alignment"]` field
-     * wrapper it shows/hides.
+     * method still computes the data (thumb sources, alignment, and style
+     * options, and the current values); the fields are rendered here by the
+     * same FormFields helpers, so the markup stays exactly what the
+     * Craft.FieldLayoutDesigner / CardViewDesigner JS expects:
+     * `.thumb-management`, the `craft-checkbox-select[id$="thumb-sources"]`, the `[id$="thumb-alignment"]` and
+     * `[id$="thumb-style"]` radio groups (whose radios' values are the
+     * alignments and styles), and the `[data-attribute="thumb-alignment"]` field wrapper
+     * it shows/hides.
      *
      * Declared in a PHP docblock (rather than a Blade comment) so PhpStorm types
      * these variables.
      *
      * @var array $options
-     * @var ?string $thumbFieldKey
+     * @var array{label: string, value: string}|null $iconOption The entry type icon option, which the JS keeps only while an icon is selected
+     * @var list<string> $thumbSources
      * @var string $thumbAlignment
-     * @var bool $showThumb
+     * @var string $thumbStyle
+     * @var bool $showThumbAlignment
      * @var bool $disabled
      * @var array $alignmentOptions
+     * @var array $styleOptions
      */
 @endphp
-<div class="thumb-management">
+<div class="thumb-management" @if ($iconOption) data-icon-option="{{ json_encode($iconOption) }}" @endif>
     <h2 class="sr-only">{{ \CraftCms\Cms\t('Manage element thumbnails') }}</h2>
 
-    <div class="flex flex-nowrap items-start">
-        {{-- dropdown field that contains all thumbable fields + the None/Default option --}}
-        {!! \CraftCms\Cms\Cp\FormFields::selectFieldHtml([
-            'label' => \CraftCms\Cms\t('Thumbnail Source'),
-            'id' => 'thumb-source',
-            'options' => $options,
-            'value' => $thumbFieldKey,
-            'disabled' => $disabled,
-        ]) !!}
+    {{-- All thumbable fields, in the order they're tried --}}
+    {!! \CraftCms\Cms\Cp\FormFields::checkboxSelectFieldHtml([
+        'label' => \CraftCms\Cms\t('Thumb Sources'),
+        'instructions' => \CraftCms\Cms\t('Choose the fields that chips and cards should source their thumbnails from. The first one with a thumbnail will be used.'),
+        'id' => 'thumb-sources',
+        'options' => $options,
+        'values' => $thumbSources,
+        'sortable' => true,
+        'disabled' => $disabled,
+    ]) !!}
 
-        {{-- button group that chooses whether the thumb alignment is start or end --}}
-        {!! \CraftCms\Cms\Cp\FormFields::buttonGroupFieldHtml([
-            'label' => \CraftCms\Cms\t('Thumbnail Alignment'),
+    {{-- Illustrated radios, like a Matrix field's View Mode setting --}}
+    {!! \CraftCms\Cms\Cp\FormFields::fieldHtml(
+        function () use ($styleOptions, $thumbStyle, $disabled): string {
+            return \CraftCms\Cms\Cp\Components\RadioGroup::make()
+                ->id('thumb-style')
+                ->options(array_map(
+                    fn (array $option) => \CraftCms\Cms\Cp\Components\Radio::make()
+                        ->id("thumb-style-{$option['value']}")
+                        ->name('thumb-style')
+                        ->value($option['value'])
+                        ->checked($option['value'] === $thumbStyle)
+                        ->disabled($disabled)
+                        ->label($option['label'])
+                        ->thumbnail(\CraftCms\Cms\Cp\Cp::illustration("images/thumb-styles/{$option['value']}.svg")),
+                    $styleOptions,
+                ))
+                ->toHtml();
+        },
+        [
+            'label' => \CraftCms\Cms\t('Thumb Style'),
+            'instructions' => \CraftCms\Cms\t('Choose whether image thumbnails should sit beside the card’s content, cover the whole card, or cover it only when the image is a good fit.'),
+            'id' => 'thumb-style',
+            'fieldset' => true,
+        ],
+    ) !!}
+    {{-- Radios shown as buttons, choosing whether the thumbnail is aligned to
+         the start or the end: one tab stop, with the arrow keys moving the
+         selection. The options are icon-only, so their names also show in
+         tooltips, which label the radios rather than describing them. --}}
+    {!! \CraftCms\Cms\Cp\FormFields::fieldHtml(
+        function () use ($alignmentOptions, $thumbAlignment, $disabled): string {
+            $radios = [];
+            $tooltips = '';
+
+            foreach ($alignmentOptions as $option) {
+                $radioId = "thumb-alignment-{$option['value']}";
+                $radios[] = \CraftCms\Cms\Cp\Components\Radio::make()
+                    ->id($radioId)
+                    ->name('thumb-alignment')
+                    ->value($option['value'])
+                    ->checked($option['value'] === $thumbAlignment)
+                    ->disabled($disabled)
+                    ->label(\CraftCms\Cms\Cp\Components\Icon::make()->name($option['icon'])->label($option['label']));
+                $tooltips .= \CraftCms\Cms\Support\Html::tag('craft-tooltip', \CraftCms\Cms\Support\Html::encode($option['label']), [
+                    'for' => $radioId,
+                    'invoker-relation' => 'label',
+                ]);
+            }
+
+            return \CraftCms\Cms\Cp\Components\RadioGroup::make()
+                ->id('thumb-alignment')
+                ->appearance('button-group')
+                ->options($radios)
+                ->toHtml().$tooltips;
+        },
+        [
+            'label' => \CraftCms\Cms\t('Thumb Alignment'),
             'id' => 'thumb-alignment',
-            'fieldClass' => $showThumb ? false : 'hidden',
-            'options' => $alignmentOptions,
-            'value' => $thumbAlignment,
-            'disabled' => $disabled,
-        ]) !!}
-    </div>
+            'fieldset' => true,
+            'fieldClass' => $showThumbAlignment ? false : 'hidden',
+        ],
+    ) !!}
+
 </div>

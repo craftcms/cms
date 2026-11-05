@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -10,6 +11,7 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalController;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Folders;
+use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Tests\TestClasses\Field\ModeThumbnailField;
 use CraftCms\Cms\User\Elements\User;
@@ -26,6 +28,7 @@ beforeEach(function () {
         array_merge([
             'context' => ElementSources::CONTEXT_MODAL,
             'elementType' => Entry::class,
+            'viewMode' => 'table',
         ], $payload),
         ['Accept' => 'application/json'],
     );
@@ -44,6 +47,16 @@ it('serves index props alongside the html the legacy index still boots from', fu
     expect($props['sources'])->toBeArray()->not->toBeEmpty();
 });
 
+it('leaves the rows out of a first payload that names no view mode', function () {
+    EntryModel::factory()->createElement();
+
+    $props = ($this->postBody)(['viewMode' => null])->assertOk()->json('props');
+
+    expect($props['sources'])->not->toBeEmpty()
+        ->and($props)->not->toHaveKeys(['data', 'pagination', 'structure']);
+    expect(($this->postBody)()->json('props.data'))->toHaveCount(1);
+});
+
 it('resolves sources in the modal context, not the index context', function () {
     $props = ($this->postBody)()->json('props');
 
@@ -54,7 +67,7 @@ it('uses fit for modal thumbnail presence and list rendering', function (string 
     $entry = EntryModel::factory()->withField('thumbnail', ModeThumbnailField::class, value: $supportedMode)
         ->createElementWithFields()->element;
     $layout = $entry->getFieldLayout();
-    $layout->thumbFieldKey = 'layoutElement:'.$layout->getCustomFieldElements()[0]->uid;
+    $layout->thumbSources = ['layoutElement:'.$layout->getCustomFieldElements()[0]->uid];
     expect(Fields::saveLayout($layout))->toBeTrue();
 
     $response = ($this->postBody)()->assertOk();
@@ -196,6 +209,29 @@ describe('asset folders', function () {
                 ['Test volume', Folders::getRootFolderByVolumeId($this->volume->id)->id],
                 ['parent', $parent->id],
             ]);
+    });
+
+    it('searches subfolders when asked to, as the assets index does', function () {
+        $child = Folders::ensureFolderByFullPathAndVolume('parent/child', $this->volume);
+        $parent = Folders::findFolder(['volumeId' => $this->volume->id, 'path' => 'parent/']);
+        $nestedAsset = AssetModel::factory()->createElement([
+            'volumeId' => $this->volume->id,
+            'folderId' => $child->id,
+            'filename' => 'nested-needle.txt',
+            'kind' => 'text',
+        ]);
+        Search::indexElementAttributes($nestedAsset);
+
+        $search = ['folderId' => $parent->id, 'search' => 'nested-needle', 'showFolders' => false];
+        $ids = fn (array $props) => collect($props['data'])->pluck('id')->all();
+
+        $props = ($this->postAssets)($search);
+        expect($props['canSearchSubfolders'])->toBeTrue()
+            ->and($ids($props))->not->toContain($nestedAsset->id);
+
+        $props = ($this->postAssets)([...$search, 'includeSubfolders' => 1]);
+        expect($props['includeSubfolders'])->toBeTrue()
+            ->and($ids($props))->toContain($nestedAsset->id);
     });
 
     it('ignores a requested folder outside the current volume', function () {

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Database\Table as DbTable;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
@@ -33,10 +34,10 @@ use CraftCms\Cms\Gql\Interfaces\Elements\Address as AddressGqlInterface;
 use CraftCms\Cms\Gql\Resolvers\Elements\Address as AddressResolver;
 use CraftCms\Cms\Gql\Types\Input\Addresses as AddressesInput;
 use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Ui\Contracts\Control;
@@ -56,7 +57,6 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Override;
 use RuntimeException;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
@@ -129,8 +129,8 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         $ns = $field->handle.'_'.Str::random(5);
 
         $exists = DB::table(DbTable::ADDRESSES, "addresses_$ns")
-            ->join(new Alias(DbTable::ELEMENTS, "elements_$ns"), "elements_$ns.id", '=', "addresses_$ns.id")
-            ->join(new Alias(DbTable::ELEMENTS_OWNERS, "elements_owners_$ns"), "elements_owners_$ns.elementId", '=', "elements_$ns.id")
+            ->join(DbTable::ELEMENTS." as elements_$ns", "elements_$ns.id", '=', "addresses_$ns.id")
+            ->join(DbTable::ELEMENTS_OWNERS." as elements_owners_$ns", "elements_owners_$ns.elementId", '=', "elements_$ns.id")
             ->where("addresses_$ns.fieldId", $field->id)
             ->where("elements_$ns.enabled", true)
             ->whereNull("elements_$ns.dateDeleted")
@@ -208,10 +208,13 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                 ->instructions(t('Choose how nested {type} should be presented to authors.', ['type' => t('addresses')]))
                 ->control(Choice::make('viewMode')
                     ->presentation(ChoicePresentation::Radios)
-                    ->options([
+                    ->options(array_map(fn (array $mode): array => [
+                        ...$mode,
+                        'thumbnail' => Cp::viewModeThumbnail($mode['value']),
+                    ], [
                         ['label' => t('Cards'), 'value' => self::VIEW_MODE_CARDS],
                         ['label' => t('Index'), 'value' => self::VIEW_MODE_INDEX],
-                    ])
+                    ]))
                     ->value($this->viewMode)),
         ]);
     }
@@ -284,14 +287,20 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
     public function canSaveElement(NestedElementInterface $element, User $user): bool
     {
-        if (! $user->can('save', $owner = $element->getOwner())) {
+        if (! $owner = $element->getOwner()) {
             return false;
         }
 
-        // addresses don't support drafts, so make sure they can edit the canonical owner too
-        $canonicalOwner = $owner->getCanonical(true);
-        if ($canonicalOwner !== $owner && ! $user->can('save', $canonicalOwner)) {
-            return false;
+        // The user may not be able to save this owner, but can save another one, such as a draft of it
+        if (! $user->can('save', $owner)) {
+            if ($owner->getIsRevision()) {
+                return false;
+            }
+            $authorized = array_any($element->getOwners(['revisions' => false]), fn ($otherOwner) => $otherOwner->id !== $owner->id && $user->can('save', $otherOwner));
+
+            if (! $authorized) {
+                return false;
+            }
         }
 
         // If this is a new address, make sure we aren't hitting the Max Addresses limit
@@ -785,9 +794,6 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         return $config + [
             'allowedViewModes' => [ElementIndexViewMode::Cards],
             'pageSize' => $this->pageSize ?? 50,
-            // addresses don't have drafts, but in this particular context we need to allow drafts,
-            // so that addresses show while adding them via slideout in the element index view mode
-            'canHaveDrafts' => true,
         ];
     }
 
@@ -909,7 +915,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                 'elements_owners.ownerId as source',
                 'addresses.id as target',
             ])
-            ->join(new Alias(DbTable::ELEMENTS_OWNERS, 'elements_owners'), function (JoinClause $join) use ($sourceElementIds) {
+            ->join(DbTable::ELEMENTS_OWNERS.' as elements_owners', function (JoinClause $join) use ($sourceElementIds) {
                 $join->whereColumn('elements_owners.elementId', 'addresses.id')
                     ->whereIn('elements_owners.ownerId', $sourceElementIds);
             })
@@ -1045,7 +1051,16 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         $fieldLayout = app(\CraftCms\Cms\Address\Addresses::class)->getFieldLayout();
         $i = 0;
 
-        foreach (ElementHelper::nestedElementDelta($value)['entries'] as $address) {
+        $delta = ElementHelper::nestedElementDelta($value);
+        // if there's only one address, and it's not wrapped in its own array, do that
+        // this will happen with csv or json where we have "addresses": {"title": ...}
+        if (isset($delta['entries']['countryCode'])) {
+            $addresses = [$delta['entries']];
+        } else {
+            $addresses = $delta['entries'];
+        }
+
+        foreach ($addresses as $address) {
             if (! is_array($address)) {
                 continue;
             }
@@ -1088,7 +1103,9 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
             Arr::forget($address, ['matchCriteria']);
 
-            $normalizedValue[$newKey] = $this->normalizeNestedEntryForImport($address, $importer, $fieldLayout, $addressElement, $importSettings['fields'] ?? []);
+            $data = $this->normalizeNestedEntryForImport($address, $importer, $fieldLayout, $addressElement, $importSettings['fields'] ?? []);
+            Typecast::properties(Address::class, $data);
+            $normalizedValue[$newKey] = $data;
         }
 
         return $normalizedValue;

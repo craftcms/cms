@@ -1,0 +1,24 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as ResizeGripsStories from './resize-grips.stories';
+
+<Meta of={ResizeGripsStories} name="Docs" />
+
+# Resize Grips
+
+`<craft-resize-grips>` lets a centered box, such as a modal, be resized from its right and bottom edges, or both at once from their corner.
+
+<Canvas of={ResizeGripsStories.Default} sourceState="shown" />
+
+Place it inside the box, which needs to be positioned. It fills the box and draws its grips along the edges, showing each only on hover or while dragging. The box is centered, so both of its edges move as a grip is dragged.
+
+The grips don't size the box. They report each new size with a `craft-resize` event, and the box's owner applies it. Both values are `null` once the size is reset. Sizes stay within the box's computed `max-width` and `max-height`, and `min-size`.
+
+`craft-dialog` uses it for its `resizable` option.
+
+## Accessibility
+
+Name the corner grip for what it resizes, such as "Resize dialog", with `label`. Its default name is "Resize".
+
+## Properties
+
+<ArgTypes of={ResizeGripsStories} />

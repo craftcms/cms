@@ -11,9 +11,14 @@
  */
 
 import {
+  elementEditorParams,
+  type ElementEditorParams,
+} from './element-editor-params';
+import {
   CpScreenSlideout,
   type CpScreenSlideoutSettings,
 } from './cp-screen-slideout';
+import {refreshPreviews} from '@/modules/elements/live-preview/previews';
 import type {UiValues} from '@/modules/ui/types';
 
 declare const Craft: any;
@@ -43,17 +48,6 @@ export interface ElementEditorSlideoutSettings extends CpScreenSlideoutSettings 
   expandData: unknown[];
   isStatic: boolean;
   onBeforeSubmit: () => Promise<void>;
-}
-
-interface ElementEditorParams extends UiValues {
-  elementType?: string;
-  elementId?: number;
-  draftId?: number | null;
-  revisionId?: number | null;
-  fieldId?: number | null;
-  ownerId?: number | null;
-  siteId?: number;
-  prevalidate?: 1;
 }
 
 /**
@@ -200,63 +194,57 @@ export class ElementEditorSlideout extends CpScreenSlideout {
         this.settings!.onSaveElement!(data);
       }
 
-      // Refresh Live Preview
-      Craft.Preview.refresh();
+      refreshPreviews();
     });
   }
 
   override getParams(): ElementEditorParams {
-    const params: ElementEditorParams = {};
-
-    if (this.settings!.elementType) {
-      params.elementType = this.settings!.elementType;
-    }
-
-    if (this.settings!.elementId) {
-      params.elementId = this.settings!.elementId;
-    } else if (this.$element?.data('id')) {
-      params.elementId = this.$element.data('id');
-    }
-
-    if (this.settings!.draftId !== null) {
-      params.draftId = this.settings!.draftId || null; // could be false
-    } else if (this.$element?.data('draft-id')) {
-      params.draftId = this.$element.data('draft-id');
-    } else if (this.settings!.revisionId !== null) {
-      params.revisionId = this.settings!.revisionId || null; // could be false
-    } else if (this.$element?.data('revision-id')) {
-      params.revisionId = this.$element.data('revision-id');
-    }
-
-    if (this.settings!.fieldId !== null) {
-      params.fieldId = this.settings!.fieldId || null; // could be false
-    } else if (this.$element?.data('field-id')) {
-      params.fieldId = this.$element.data('field-id');
-    }
-
-    if (this.settings!.ownerId !== null) {
-      params.ownerId = this.settings!.ownerId || null; // could be false
-    } else if (this.$element?.data('owner-id')) {
-      params.ownerId = this.$element.data('owner-id');
-    }
-
-    if (this.settings!.siteId) {
-      params.siteId = this.settings!.siteId;
-    } else if (this.$element?.data('site-id')) {
-      params.siteId = this.$element.data('site-id');
-    }
-
-    if (this.settings!.prevalidate) {
-      params.prevalidate = 1;
-    }
-
-    return params;
+    return elementEditorParams(this.$element, this.settings!);
   }
 
   override reload(): void {
     this.elementEditor?.destroy();
     this.elementEditor = null;
     super.reload();
+  }
+
+  /**
+   * Reloads the slideout for the element in a different site.
+   */
+  async switchSite(siteId: number): Promise<void> {
+    if (siteId == this.settings!.siteId) {
+      return;
+    }
+
+    if (this.elementEditor) {
+      if (
+        this.elementEditor.settings.canCreateDrafts &&
+        this.elementEditor.enableAutosave
+      ) {
+        // Make sure any pending changes have been saved to the draft
+        await this.elementEditor.checkForm();
+      } else if (
+        this.isDirty() &&
+        !confirm(
+          Craft.t(
+            'app',
+            'Are you sure you want to switch sites? Any changes will be lost.'
+          )
+        )
+      ) {
+        return;
+      }
+    }
+
+    // Keep the sidebar open, so the site change is visible
+    if (this.showingSidebar) {
+      this.once('load', () => {
+        this.showSidebar(false);
+      });
+    }
+
+    this.settings!.siteId = siteId;
+    this.reload();
   }
 
   override async handleSubmit(ev: any): Promise<void> {
@@ -291,7 +279,7 @@ export class ElementEditorSlideout extends CpScreenSlideout {
       const $cardsAndChips = this.$content
         .find('.element.card, craft-chip')
         .removeClass('error');
-      $cardsAndChips.find('span[data-icon="triangle-exclamation"]').remove();
+      $cardsAndChips.find('craft-icon[data-element-error]').remove();
       if (ids.length) {
         const $errorCardsAndChips = $cardsAndChips
           .filter(ids.map((id: number) => `[data-id=${id}]`).join(','))
@@ -299,10 +287,10 @@ export class ElementEditorSlideout extends CpScreenSlideout {
         for (let i = 0; i < $errorCardsAndChips.length; i++) {
           const $item = $errorCardsAndChips.eq(i);
           const $label = $item.find('craft-truncate');
-          $('<span/>', {
-            'data-icon': 'triangle-exclamation',
-            'aria-label': Craft.t('app', 'Error'),
-            role: 'img',
+          $('<craft-icon/>', {
+            name: 'triangle-exclamation',
+            label: Craft.t('app', 'Error'),
+            'data-element-error': '',
           }).appendTo($label.length ? $label : $item);
         }
       }

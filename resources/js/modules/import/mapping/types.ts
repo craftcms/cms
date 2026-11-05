@@ -1,4 +1,11 @@
-import type {InjectionKey} from 'vue';
+import type {InjectionKey, Ref} from 'vue';
+import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
+
+/**
+ * The `values.map` leaf that marks a column as filled from its template in
+ * `values.templates`. Mirrors `ImportHelper::TEMPLATE_RULE`.
+ */
+export const TEMPLATE_RULE = '__template__';
 
 /** One `sourceDataCols` entry — a heading in the imported file. */
 export type SourceColumn = CraftCms.Cms.Import.Data.SourceColumn;
@@ -51,6 +58,15 @@ export interface MappingContext {
    */
   suggestedMap: SuggestedMap;
   sourceDataCols: SourceColumn[];
+  /** Offers the source columns as variables in a column's template. */
+  templateTextExpanderTriggers: TextExpanderTriggers;
+  /**
+   * The server's errors for the templates, keyed by the column's path joined with
+   * dots. Set when the panel is applied.
+   */
+  templateErrors: Ref<Record<string, string[]>>;
+  /** Marks this panel's invalid template inputs, so Apply can focus the first one. */
+  panelId: string;
   editable: boolean;
   /** Opens a container column's own mapping in a nested panel. */
   openNested(col: MappingColumn, opener: HTMLElement | null): void;

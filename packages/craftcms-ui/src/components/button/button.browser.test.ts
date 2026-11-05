@@ -1,6 +1,20 @@
+/// <reference types="vite-plus/test/browser/providers/playwright" />
 import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {cdp} from 'vite-plus/test/browser';
 import type CraftButton from './button.js';
 import './button.js';
+import {contrast, loadTokens} from '../../../test/contrast';
+
+interface FrameTree {
+  frame: {id: string};
+  childFrames?: FrameTree[];
+}
+
+interface AXNode {
+  ignored: boolean;
+  role?: {value: string};
+  name?: {value: unknown};
+}
 
 beforeEach(() => {
   document.body.innerHTML = '';
@@ -78,6 +92,37 @@ it('flags an unnamed button that is visible from the start', async () => {
 
   await vi.waitFor(() => expect(isFlagged(button)).toBe(true));
 });
+
+it.each([
+  [
+    'aria-labelledby',
+    (button: CraftButton) => {
+      const label = document.createElement('span');
+      label.id = 'late-label';
+      label.textContent = 'Search';
+      document.body.append(label);
+      button.setAttribute('aria-labelledby', label.id);
+    },
+  ],
+  [
+    'aria-label',
+    (button: CraftButton) => button.setAttribute('aria-label', 'Search'),
+  ],
+])(
+  'clears the flag once %s names the button after it first renders',
+  async (_attribute, name) => {
+    const button = document.createElement('craft-button') as CraftButton;
+    button.setAttribute('icon', 'image-landscape');
+    document.body.append(button);
+    await button.updateComplete;
+    await vi.waitFor(() => expect(isFlagged(button)).toBe(true));
+
+    name(button);
+
+    await vi.waitFor(() => expect(isFlagged(button)).toBe(false));
+    expect(computedName(button)).toBe('Search');
+  }
+);
 
 describe('flush', () => {
   /**
@@ -174,6 +219,15 @@ describe('flush', () => {
     expect(style.marginInlineStart).toBe('-13px');
     expect(style.marginInlineEnd).toBe('-13px');
     expect(style.marginBlockStart).toBe('0px');
+  });
+
+  it('pulls a danger-plain button out too', async () => {
+    const {button} = await mountFlush({
+      flush: 'inline-end',
+      variant: 'danger-plain',
+    });
+
+    expect(getComputedStyle(button).marginInlineEnd).toBe('-13px');
   });
 
   it('follows the padding of a smaller button', async () => {
@@ -327,6 +381,35 @@ describe('outline and dashed borders', () => {
   );
 });
 
+// A transparent button's text sits on the page, not on its color's fill, and
+// white's and black's fills are never the page's color (they swap with it).
+describe.each(['light', 'dark'])('white and black on a %s page', (theme) => {
+  it.each(
+    ['outline', 'dashed', 'plain'].flatMap((variant) =>
+      ['white', 'black'].map((color) => [variant, color])
+    )
+  )(
+    'keeps the text of a %s button in %s readable against the page',
+    async (variant, color) => {
+      await import('../../styles/cp.css');
+      await loadTokens();
+      document.body.innerHTML = `
+        <div data-theme="${theme}" style="background-color: var(--c-surface-default)">
+          <craft-button variant="${variant}" data-color="${color}">Add</craft-button>
+        </div>`;
+      const button = document.querySelector('craft-button') as CraftButton;
+      await button.updateComplete;
+
+      expect(
+        contrast(
+          getComputedStyle(button).color,
+          getComputedStyle(button.parentElement!).backgroundColor
+        )
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+  );
+});
+
 describe('themed subtrees', () => {
   async function loadTokens(): Promise<void> {
     await import('../../styles/shared/color-palette.css');
@@ -432,6 +515,22 @@ describe('[disabled]', () => {
     return {enabled: enabled!, disabled: disabled!};
   }
 
+  it('keeps a focusable disabled button hoverable without letting clicks through', async () => {
+    const button = document.createElement('craft-button') as CraftButton;
+    button.setAttribute('disabled', '');
+    button.setAttribute('focusable-when-disabled', '');
+    button.textContent = 'Publish';
+    const clicked = vi.fn();
+    button.addEventListener('click', clicked);
+    document.body.append(button);
+    await button.updateComplete;
+
+    button.click();
+
+    expect(getComputedStyle(button).pointerEvents).toBe('auto');
+    expect(clicked).not.toHaveBeenCalled();
+  });
+
   it('mutes a disabled button', async () => {
     const {enabled, disabled} = await mountPair('fill');
 
@@ -446,6 +545,59 @@ describe('[disabled]', () => {
 
     expect(getComputedStyle(disabled).backgroundColor).toBe(
       getComputedStyle(enabled).backgroundColor
+    );
+  });
+});
+
+describe('[loading]', () => {
+  /**
+   * The text Chromium exposes in the accessibility tree, across every frame.
+   * Screen readers such as JAWS read a button's content from here, so text
+   * that's missing from it is unreadable even if the button keeps its name.
+   */
+  async function accessibleTexts(): Promise<string[]> {
+    const session = cdp();
+    const {frameTree} = (await session.send('Page.getFrameTree')) as {
+      frameTree: FrameTree;
+    };
+    const frameIds: string[] = [];
+    const collect = (tree: FrameTree) => {
+      frameIds.push(tree.frame.id);
+      tree.childFrames?.forEach(collect);
+    };
+    collect(frameTree);
+
+    const texts: string[] = [];
+    for (const frameId of frameIds) {
+      const {nodes} = (await session.send('Accessibility.getFullAXTree', {
+        frameId,
+      })) as {nodes: AXNode[]};
+      for (const node of nodes) {
+        if (!node.ignored && node.role?.value === 'StaticText') {
+          texts.push(String(node.name?.value ?? ''));
+        }
+      }
+    }
+
+    return texts;
+  }
+
+  it('keeps the label in the accessibility tree while loading', async () => {
+    const button = document.createElement('craft-button') as CraftButton;
+    button.textContent = 'Reset password';
+    document.body.append(button);
+    await button.updateComplete;
+
+    button.loading = true;
+    await button.updateComplete;
+
+    // Reading the whole tree is slow when the suite runs in parallel.
+    await vi.waitFor(
+      async () =>
+        expect(await accessibleTexts()).toEqual(
+          expect.arrayContaining(['Reset password', 'Loading'])
+        ),
+      {timeout: 5000}
     );
   });
 });
@@ -485,9 +637,39 @@ describe('craft-button link click area', () => {
   });
 });
 
+describe('craft-button link padding', () => {
+  async function linkPadding(markup: string): Promise<string> {
+    document.body.innerHTML = `<div style="--c-button-spacing-inline: 12px">${markup}</div>`;
+    const button = document.querySelector('craft-button')!;
+    await button.updateComplete;
+
+    return getComputedStyle(button.shadowRoot!.querySelector('.link')!)
+      .paddingInlineStart;
+  }
+
+  it('pads a link with an icon and a label like one without an icon', async () => {
+    const plain = await linkPadding('<craft-button href="/">Go</craft-button>');
+
+    expect(plain).toBe('12px');
+    expect(
+      await linkPadding(
+        '<craft-button href="/" icon="arrow-right" icon-position="suffix">Go</craft-button>'
+      )
+    ).toBe(plain);
+  });
+
+  it('leaves an icon-only link unpadded', async () => {
+    expect(
+      await linkPadding(
+        '<craft-button href="/" icon="arrow-right" aria-label="Go"></craft-button>'
+      )
+    ).toBe('0px');
+  });
+});
+
 describe('craft-button link keyboard focus', () => {
   it('is a single tab stop on its anchor', async () => {
-    const {userEvent} = await import('@vitest/browser/context');
+    const {userEvent} = await import('vite-plus/test/browser');
     document.body.innerHTML =
       '<button>Before</button><craft-button href="/">Go</craft-button><button>After</button>';
     const [before, after] = document.querySelectorAll('button');
@@ -502,6 +684,30 @@ describe('craft-button link keyboard focus', () => {
 
     await userEvent.tab();
     expect(document.activeElement).toBe(after);
+  });
+
+  it('draws the same ring as a button around the same box', async () => {
+    const {userEvent} = await import('vite-plus/test/browser');
+    await import('../../styles/cp.css');
+    document.body.innerHTML =
+      '<craft-button variant="link">Button</craft-button> <craft-button variant="link" href="/">Link</craft-button>';
+    const [button, link] = document.querySelectorAll('craft-button');
+    await Promise.all([button!.updateComplete, link!.updateComplete]);
+    const anchor = link!.shadowRoot!.querySelector<HTMLElement>('a.link')!;
+
+    await userEvent.tab();
+    const {outlineColor, outlineWidth} = getComputedStyle(button!);
+    await userEvent.tab();
+    const anchorRing = getComputedStyle(anchor);
+
+    expect(anchorRing.outlineStyle).toBe('solid');
+    expect(anchorRing.outlineColor).toBe(outlineColor);
+    expect(anchorRing.outlineWidth).toBe(outlineWidth);
+    expect(anchor.getBoundingClientRect().height).toBeCloseTo(
+      link!.getBoundingClientRect().height -
+        2 * parseFloat(getComputedStyle(link!).borderBlockStartWidth),
+      0
+    );
   });
 });
 
@@ -576,4 +782,50 @@ describe('small icon buttons', () => {
       getComputedStyle(labeled!).fontSize
     );
   });
+});
+
+describe('craft-button selected state', () => {
+  it.each(['outline', 'fill', 'plain'])(
+    'keeps a selected %s button’s look while hovered',
+    async (variant) => {
+      const {userEvent} = await import('vite-plus/test/browser');
+      await import('../../styles/cp.css');
+      document.body.innerHTML = `<craft-button variant="${variant}" active>Selected</craft-button>`;
+      const button = document.querySelector('craft-button')!;
+      await button.updateComplete;
+      const before = getComputedStyle(button).backgroundColor;
+
+      await userEvent.hover(button);
+
+      expect(button.matches(':hover')).toBe(true);
+      expect(getComputedStyle(button).backgroundColor).toBe(before);
+    }
+  );
+});
+
+it('shows an inset shadow while pressed', async () => {
+  await loadTokens();
+  document.body.innerHTML = `<craft-button class="is-active">Add</craft-button>`;
+  const button = document.querySelector('craft-button') as CraftButton;
+  await button.updateComplete;
+
+  expect(getComputedStyle(button).boxShadow).toContain('inset');
+});
+
+it('draws plain buttons’ focus rings just inside their edges, and others’ outside them', async () => {
+  await loadTokens();
+  const variants = ['plain', 'danger-plain', 'outline', 'primary'];
+  document.body.innerHTML = variants
+    .map((variant) => `<craft-button variant="${variant}">Label</craft-button>`)
+    .join('');
+  const buttons = [...document.querySelectorAll<CraftButton>('craft-button')];
+  await Promise.all(buttons.map((button) => button.updateComplete));
+
+  const offsets = buttons.map((button) => {
+    button.focus({focusVisible: true});
+
+    return getComputedStyle(button).outlineOffset;
+  });
+
+  expect(offsets).toEqual(['-2px', '-2px', '2px', '2px']);
 });

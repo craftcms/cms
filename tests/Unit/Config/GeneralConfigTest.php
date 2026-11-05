@@ -50,7 +50,7 @@ it('normalizes activity retention durations and rejects negative values', functi
         ->and(fn () => $config->activityRetentionDuration(-1))->toThrow(InvalidArgumentException::class);
 });
 
-it('requires a default Asset Transformer', function () {
+it('requires a default asset transformer', function () {
     $config = GeneralConfig::create();
 
     expect($config->defaultAssetTransformer)->toBe('craft')

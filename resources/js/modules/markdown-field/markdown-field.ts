@@ -37,6 +37,7 @@ interface TextareaAttributes {
   'aria-describedby'?: string;
   maxlength?: number;
   disabled?: string;
+  readonly?: string;
   required?: string;
   'aria-invalid'?: string;
 }
@@ -71,6 +72,13 @@ class MarkdownField extends LitElement {
 
   @property({type: Boolean})
   disabled = false;
+
+  /**
+   * Shows the value without letting it be changed, while it can still be
+   * focused, selected, and scrolled, unlike a disabled field.
+   */
+  @property({type: Boolean})
+  readonly = false;
 
   @property({type: Boolean})
   required = false;
@@ -127,8 +135,18 @@ class MarkdownField extends LitElement {
   @property({attribute: 'toolbar-buttons', type: Array})
   toolbarButtons: string[] = [];
 
+  /** Reflected, so the stylesheet can space the text without a toolbar above it. */
   @property({attribute: 'show-toolbar', type: Boolean})
   showToolbar = false;
+
+  /**
+   * Shows the text in the body font rather than monospace, without the
+   * Markdown badge, for short text such as comments. Bold text is drawn with
+   * a stroke and italic text stays upright, so the text keeps its width and
+   * the caret stays in line with it.
+   */
+  @property({type: Boolean})
+  proportional = false;
 
   @property({attribute: 'upload-folder-id', type: Number})
   uploadFolderId: number | null = null;
@@ -281,8 +299,9 @@ class MarkdownField extends LitElement {
   ): Options {
     const options: RenderOptions = {
       autoResize: true,
-      fontFamily: 'var(--c-font-mono)',
-      fontSize: 'var(--c-text-base)',
+      fontFamily: 'var(--markdown-field-font-family)',
+      // Set on the editor's layers, so `--markdown-field-font-size` on an ancestor can change it.
+      fontSize: 'var(--markdown-field-font-size, var(--c-text-base))',
       lineHeight: 'var(--c-leading-normal)',
       maxHeight: this.maxHeight ? `${this.maxHeight}px` : null,
       minHeight: undefined,
@@ -299,9 +318,10 @@ class MarkdownField extends LitElement {
       value: this.value,
     };
 
-    const uploadOptions = this.disabled
-      ? undefined
-      : fileUploadOptions(this.uploadFolderId, this.uploadSiteId);
+    const uploadOptions =
+      this.disabled || this.readonly
+        ? undefined
+        : fileUploadOptions(this.uploadFolderId, this.uploadSiteId);
 
     if (uploadOptions) {
       options.fileUpload = uploadOptions;
@@ -320,7 +340,7 @@ class MarkdownField extends LitElement {
   };
 
   private addTypeIndicator(editor: OverTypeInstance): void {
-    if (this.showToolbar) {
+    if (this.showToolbar || this.proportional) {
       return;
     }
 
@@ -407,6 +427,10 @@ class MarkdownField extends LitElement {
 
     if (this.disabled) {
       props.disabled = 'disabled';
+    }
+
+    if (this.readonly) {
+      props.readonly = 'readonly';
     }
 
     if (this.required) {
@@ -500,7 +524,15 @@ class MarkdownField extends LitElement {
     }
 
     this.editor.textarea.name = this.name ?? '';
+    this.editor.textarea.placeholder = this.placeholder ?? '';
+    const placeholder = this.editor.wrapper.querySelector(
+      '.overtype-placeholder'
+    );
+    if (placeholder) {
+      placeholder.textContent = this.placeholder ?? '';
+    }
     this.editor.textarea.disabled = this.disabled;
+    this.editor.textarea.readOnly = this.readonly;
     this.editor.textarea.required = this.required;
     if (this.invalid) {
       this.editor.textarea.setAttribute('aria-invalid', 'true');
@@ -509,9 +541,9 @@ class MarkdownField extends LitElement {
     }
     this.editor.wrapper
       .querySelectorAll<HTMLButtonElement>('button')
-      .forEach((button) => (button.disabled = this.disabled));
+      .forEach((button) => (button.disabled = this.disabled || this.readonly));
 
-    if (this.disabled || !this.showToolbar) {
+    if (this.disabled || this.readonly || !this.showToolbar) {
       this.editor.toolbar?.hide();
     } else {
       this.editor.toolbar?.show();
@@ -523,6 +555,8 @@ class MarkdownField extends LitElement {
   }
 
   protected override shouldUpdate(): boolean {
+    this.toggleAttribute('show-toolbar', this.showToolbar);
+    this.toggleAttribute('proportional', this.proportional);
     this.syncEditorState();
 
     return false;

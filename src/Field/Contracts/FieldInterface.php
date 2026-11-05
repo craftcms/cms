@@ -53,6 +53,12 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     /** @var string|null The field’s instructions */
     public ?string $instructions { get; set; }
 
+    /** @var string|null The field’s default tip text */
+    public ?string $tip { get; set; }
+
+    /** @var string|null The field’s default warning text */
+    public ?string $warning { get; set; }
+
     /** @var bool Whether the field's values should be registered as search keywords on the elements. */
     public bool $searchable { get; set; }
 

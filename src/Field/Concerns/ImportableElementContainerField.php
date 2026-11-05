@@ -10,7 +10,7 @@ use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Import\Importers\BaseImporter;
-use CraftCms\Cms\Support\ImportHelper;
+use CraftCms\Cms\Import\ImportHelper;
 use Illuminate\Validation\Validator;
 
 /**
@@ -82,6 +82,25 @@ trait ImportableElementContainerField
     public function getMappingUiPrefix(FieldLayout $fieldLayout, mixed $provider = null, ?string $prefix = null): string
     {
         return ! empty($prefix) ? $prefix : '';
+    }
+
+    /**
+     * By default, the field has one field layout provider, and its custom fields are under the `fields` key.
+     *
+     * @see ImportableElementContainerFieldInterface::resolveMappingKeys()
+     *
+     * @param  array<mixed>  $tree
+     * @return array<mixed>
+     */
+    public function resolveMappingKeys(array $tree): array
+    {
+        $provider = $this->getFieldLayoutProviders()[0] ?? null;
+
+        if ($provider && is_array($tree['fields'] ?? null)) {
+            $tree['fields'] = ImportHelper::resolveMappingKeys($tree['fields'], $provider->getFieldLayout());
+        }
+
+        return $tree;
     }
 
     /**

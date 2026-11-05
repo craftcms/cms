@@ -2,6 +2,8 @@
   import {t} from '@craftcms/ui';
   import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
+  import FieldTip from '@/common/components/FieldTip.vue';
+  import {envVarsDocsUrl} from '@/common/utils/docsUrls';
   import AdminTableNode from '@/modules/ui/AdminTableNode.vue';
   import type {TableNodePayload} from '@/modules/ui/table-types';
   import type {UiPayload} from '@/modules/ui/types';
@@ -100,7 +102,7 @@
           <craft-button type="button" icon size="small" slot="invoker">
             <craft-icon
               name="gear"
-              :label="t('Site group Actions')"
+              :label="t('Site group actions')"
             ></craft-icon>
           </craft-button>
 
@@ -133,10 +135,7 @@
           />
         </template>
         <template #empty-row>
-          <craft-empty
-            icon="light/earth-americas"
-            :label="t('No sites exist yet.')"
-          >
+          <craft-empty icon="light/world" :label="t('No sites exist yet.')">
             <CpButtonLink
               v-if="!readOnly"
               :href="create({}, {query: {groupId: group?.id}}).url"
@@ -169,20 +168,14 @@
               t('What this group will be called in the control panel.')
             "
           >
-            <div slot="after">
-              <craft-callout
-                variant="info"
-                appearance="plain"
-                class="p-0"
-                icon="lightbulb"
-              >
-                {{ t('Type `$` to choose an environment variable.') }}
-                <a
-                  href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
-                  >{{ t('Learn more') }}</a
-                >
-              </craft-callout>
-            </div>
+            <FieldTip
+              slot="tip"
+              :message="
+                t('Type <kbd>$</kbd> to choose an environment variable.')
+              "
+              html
+              :href="envVarsDocsUrl"
+            />
           </craft-input>
         </template>
         <CraftInput
@@ -195,19 +188,12 @@
           v-model="form.name"
           :error="form.errors?.name"
         >
-          <craft-callout
-            slot="after"
-            variant="info"
-            appearance="plain"
-            class="p-0"
-            icon="lightbulb"
-          >
-            {{ t('Type `$` to choose an environment variable.') }}
-            <a
-              href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
-              >{{ t('Learn more') }}</a
-            >
-          </craft-callout>
+          <FieldTip
+            slot="tip"
+            :message="t('Type <kbd>$</kbd> to choose an environment variable.')"
+            html
+            :href="envVarsDocsUrl"
+          />
         </CraftInput>
       </Deferred>
     </ModalForm>

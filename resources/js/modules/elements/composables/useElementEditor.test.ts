@@ -73,6 +73,7 @@ function payload(
     crumbs: undefined,
     readOnly: undefined,
     draftId: null,
+    draftIsSaved: true,
     isProvisionalDraft: false,
     canAutosave: false,
     ui: null,
@@ -109,6 +110,11 @@ function payload(
       current: null,
       draftReviews: [],
     },
+    release: null,
+    releaseOptions: [],
+    canCreateRelease: false,
+    canAddToRelease: false,
+    releaseTimeZone: 'UTC',
     ...overrides,
   };
 }
@@ -229,7 +235,7 @@ describe('useElementEditor', () => {
     return {editor, page};
   }
 
-  it.each(['metaKey', 'ctrlKey'] as const)(
+  it.each(['ctrlKey'] as const)(
     'only submits %s+S while the element is editable',
     async (modifier) => {
       const {page} = mount(payload({readOnly: true}));
@@ -243,7 +249,7 @@ describe('useElementEditor', () => {
           [modifier]: true,
           cancelable: true,
         });
-        window.dispatchEvent(event);
+        document.dispatchEvent(event);
         expect(event.defaultPrevented).toBe(true);
       };
 
@@ -678,10 +684,174 @@ describe('useElementEditor', () => {
 
       expect(editor.workflowReviewLocked.value).toBe(true);
 
-      editor.startEditingReviewedDraft();
+      editor.startEditingDraft();
       await nextTick();
 
       expect(editor.workflowReviewLocked.value).toBe(false);
+    }
+  );
+
+  it('stays unlocked when saving the edits reopens an approved draft', async () => {
+    postSpy.mockResolvedValue({
+      data: {
+        draftId: 7,
+        screen: {
+          draftId: 7,
+          workflow: {
+            current: {
+              status: 'pending',
+            } as CraftCms.Cms.Workflow.Data.WorkflowReviewData,
+            draftReviews: [],
+          },
+        },
+      },
+    });
+    const {editor} = mount(
+      payload({
+        canAutosave: true,
+        draftId: 7,
+        workflow: {
+          current: {
+            status: 'approved',
+          } as CraftCms.Cms.Workflow.Data.WorkflowReviewData,
+          draftReviews: [],
+        },
+      })
+    );
+
+    editor.startEditingDraft();
+    await editor.autosave.save();
+    await nextTick();
+
+    expect(editor.props.workflow.current?.status).toBe('pending');
+    expect(editor.workflowReviewLocked.value).toBe(false);
+  });
+
+  it.each([
+    ['draft', false],
+    ['scheduled', true],
+  ] as const)(
+    'autosaves a %s release draft (locked until Start editing: %s) without a visit',
+    async (status, locked) => {
+      vi.useFakeTimers();
+      onTestFinished(() => {
+        vi.useRealTimers();
+      });
+      const visit = vi.spyOn(router, 'visit').mockImplementation(() => {});
+      onTestFinished(() => visit.mockRestore());
+      const release = {
+        id: 4,
+        name: 'Campaign',
+        status,
+        targetDate: null,
+        canManage: true,
+        draftId: 7,
+        siteId: 1,
+        blockers: [],
+      };
+      const screen = payload({
+        draftId: 7,
+        canAutosave: true,
+        readOnly: false,
+        release,
+        ui: fieldLayout('Original'),
+      });
+      const {editor, page} = mount(screen);
+      expect(editor.releaseDraftLocked.value).toBe(locked);
+
+      if (locked) {
+        await typeTitle('Locked edit');
+        await vi.advanceTimersByTimeAsync(1000);
+        expect(postSpy).not.toHaveBeenCalled();
+
+        editor.startEditingDraft();
+        await nextTick();
+      }
+
+      await typeTitle('Updated release content');
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(postSpy).toHaveBeenCalledTimes(1);
+      expect(postSpy.mock.calls[0]![1]).toMatchObject({
+        draftId: 7,
+        title: 'Updated release content',
+      });
+      expect(editor.props.release?.id).toBe(release.id);
+
+      page.props = {...screen, release: {...release}};
+      await nextTick();
+      await typeTitle('Further release content');
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(postSpy).toHaveBeenCalledTimes(2);
+
+      page.props = {
+        ...screen,
+        draftId: 8,
+        release: {...release, id: 5, draftId: 8},
+      };
+      await nextTick();
+      expect(editor.releaseDraftLocked.value).toBe(locked);
+      await typeTitle('New release draft');
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(postSpy).toHaveBeenCalledTimes(locked ? 2 : 3);
+      expect(visit).not.toHaveBeenCalled();
+    }
+  );
+
+  it('leaves a draft already blocking its scheduled release unlocked, even once it stops blocking', async () => {
+    const release = {
+      id: 4,
+      name: 'Campaign',
+      status: 'scheduled',
+      targetDate: null,
+      canManage: true,
+      draftId: 7,
+      siteId: 1,
+      blockers: ['The title field is required.'],
+    } as const;
+    const screen = payload({
+      draftId: 7,
+      canAutosave: true,
+      readOnly: false,
+      release: {...release, blockers: [...release.blockers]},
+      ui: fieldLayout('Original'),
+    });
+    const {editor, page} = mount(screen);
+    expect(editor.releaseDraftLocked.value).toBe(false);
+
+    page.props = {...screen, release: {...release, blockers: []}};
+    await nextTick();
+    expect(editor.releaseDraftLocked.value).toBe(false);
+
+    page.props = {
+      ...screen,
+      draftId: 8,
+      release: {...release, id: 5, draftId: 8, blockers: []},
+    };
+    await nextTick();
+    expect(editor.releaseDraftLocked.value).toBe(true);
+  });
+
+  it.each([
+    ['pending', false, false],
+    ['pending', true, true],
+    ['approved', false, true],
+  ] as const)(
+    'locks a %s workflow review for a reviewer of its current stage (approved: %s): %s',
+    (status, hasApproved, locked) => {
+      const {editor} = mount(
+        payload({
+          workflow: {
+            current: {
+              status,
+              isReviewer: true,
+              hasApproved,
+            } as CraftCms.Cms.Workflow.Data.WorkflowReviewData,
+            draftReviews: [],
+          },
+        })
+      );
+
+      expect(editor.workflowReviewLocked.value).toBe(locked);
     }
   );
 
@@ -806,6 +976,17 @@ describe('useElementEditor', () => {
     await nextTick();
   }
 
+  /** Types into the Slug field the way a user would. */
+  async function typeSlug(value: string): Promise<void> {
+    await nextTick();
+    const slugInput =
+      container!.querySelector<HTMLInputElement>('input[name="slug"]')!;
+    slugInput.value = value;
+    slugInput.dispatchEvent(new Event('input', {bubbles: true}));
+    slugInput.dispatchEvent(new Event('change', {bubbles: true}));
+    await nextTick();
+  }
+
   it('does not write a pending draft after the editor is removed', async () => {
     vi.useFakeTimers();
     onTestFinished(() => {
@@ -917,6 +1098,88 @@ describe('useElementEditor', () => {
     vi.useRealTimers();
   });
 
+  it('autosaves a value edited back to what the page loaded with', async () => {
+    vi.useFakeTimers();
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+    let saved = {title: 'Van Gogh', slug: 'van-gogh'};
+    postSpy.mockImplementation(
+      async (_url: string, data: {title?: string; slug?: string}) => {
+        saved = {
+          title: data.title ?? saved.title,
+          slug: data.slug ?? saved.slug,
+        };
+
+        return {
+          data: {
+            draftId: 7,
+            ui: fieldLayout(saved.title),
+            screen: {sidebarUi: sidebarUi(saved.slug, false)},
+          },
+        };
+      }
+    );
+    mount(
+      payload({
+        canAutosave: true,
+        ui: fieldLayout('Van Gogh'),
+        sidebarUi: sidebarUi('van-gogh', false),
+      })
+    );
+    const lastSent = () => postSpy.mock.calls.at(-1)![1];
+
+    await typeSlug('van-gogh-test');
+    await vi.advanceTimersByTimeAsync(1000);
+    await typeSlug('van-gogh');
+    await vi.advanceTimersByTimeAsync(1000);
+
+    expect(postSpy).toHaveBeenCalledTimes(2);
+    expect(lastSent()).toMatchObject({slug: 'van-gogh'});
+
+    await typeTitle('Van Gogh!');
+    await vi.advanceTimersByTimeAsync(1000);
+    await typeTitle('Van Gogh');
+    await vi.advanceTimersByTimeAsync(1000);
+
+    expect(postSpy).toHaveBeenCalledTimes(4);
+    expect(lastSent()).toMatchObject({title: 'Van Gogh'});
+    expect(saved).toEqual({title: 'Van Gogh', slug: 'van-gogh'});
+  });
+
+  it('autosaves a nested entry duplicated for an owner’s draft as itself, not its canonical', async () => {
+    vi.useFakeTimers();
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+    postSpy.mockResolvedValue({data: {draftId: 7}});
+    mount(
+      payload({
+        elementId: 604,
+        canonicalId: 272,
+        canAutosave: true,
+        ui: fieldLayout('Nested'),
+      }),
+      null,
+      {
+        saveData: () => ({
+          elementType: 'craft\\elements\\Entry',
+          elementId: 604,
+          siteId: 1,
+        }),
+      }
+    );
+
+    await typeTitle('Nested!');
+    await vi.advanceTimersByTimeAsync(1000);
+
+    expect(postSpy).toHaveBeenCalledTimes(1);
+    const [url, sent] = postSpy.mock.calls[0]!;
+    expect(url).toBe('/actions/elements/save-draft');
+    expect(sent).toMatchObject({elementId: 604, provisional: 1});
+    expect(sent).not.toHaveProperty('draftId');
+  });
+
   it('refreshes the field layout without autosaving and preserves unsaved values', async () => {
     const {editor} = mount(
       payload({
@@ -987,6 +1250,44 @@ describe('useElementEditor', () => {
     await editor.activity.poll();
 
     expect(editor.activity.isStale.value).toBe(true);
+  });
+
+  it('doesn’t report a discarded draft as someone else’s edit', async () => {
+    // The provisional draft and the canonical element have different
+    // `dateUpdated`s, and polls report whichever one they're asked about.
+    postSpy.mockImplementation(async (_url: string, data: any) => ({
+      data: {
+        activity: [],
+        updatedTimestamp: data?.draftId ? 2 : 1,
+        canonicalUpdatedTimestamp: 1,
+      },
+    }));
+    const screen = payload({
+      activityUrl: '/actions/elements/recent-activity',
+      draftId: 9,
+      isProvisionalDraft: true,
+      updatedTimestamps: {element: 2, canonical: 1},
+    });
+    const {editor, page} = mount(screen);
+    // The reload lands on the canonical element.
+    const reload = vi
+      .spyOn(router, 'reload')
+      .mockImplementation((options?: any) => {
+        page.props = {
+          ...screen,
+          draftId: null,
+          isProvisionalDraft: false,
+          updatedTimestamps: {element: 1, canonical: 1},
+        };
+        options?.onFinish?.();
+      });
+    await editor.activity.poll();
+
+    await editor.discardDraft();
+    await editor.activity.poll();
+
+    expect(editor.activity.isStale.value).toBe(false);
+    reload.mockRestore();
   });
 
   it('omits presentation-only null controls when refreshing an untouched UI', async () => {
@@ -1525,8 +1826,305 @@ describe('useElementEditor', () => {
         options.onFinish?.({});
         await nextTick();
       },
+      /**
+       * A response that failed validation, landing in Inertia's order: the
+       * errors are set straight after the page, before Vue flushes.
+       */
+      async fail(
+        page: {props: Record<string, unknown>},
+        props: any,
+        errors: Record<string, string>
+      ) {
+        const {options} = this.last();
+        page.props = props;
+        await options.onError(errors);
+        await nextTick();
+        options.onFinish?.({});
+        await nextTick();
+      },
     };
   }
+
+  /**
+   * A provisional draft with a Title cleared and autosaved, then a Save the
+   * server rejects. It writes the draft anyway, moving its `dateUpdated`.
+   */
+  async function failSaveOfAutosavedDraft() {
+    vi.useFakeTimers();
+    postSpy.mockImplementation(async (url: string) =>
+      url.includes('recent-activity')
+        ? {
+            data: {
+              activity: [],
+              updatedTimestamp: 3,
+              canonicalUpdatedTimestamp: 1,
+            },
+          }
+        : {
+            data: {
+              draftId: 9,
+              timestamp: 'at 5:13 AM',
+              updatedTimestamp: 2,
+              canonicalUpdatedTimestamp: 1,
+            },
+          }
+    );
+    const screen = payload({
+      activityUrl: '/actions/elements/recent-activity',
+      canAutosave: true,
+      draftId: 9,
+      isProvisionalDraft: true,
+      updatedTimestamps: {element: 2, canonical: 1},
+      ui: fieldLayout('Title'),
+    });
+    const mounted = mount(screen);
+
+    await typeTitle('');
+    await vi.advanceTimersByTimeAsync(2000);
+    await nextTick();
+    expect(mounted.editor.autosave.status.value).toBe('saved');
+
+    const save = interceptSave();
+    mounted.editor.save();
+    await save.fail(
+      mounted.page,
+      {...screen, updatedTimestamps: {element: 3, canonical: 1}},
+      {title: 'Title cannot be blank.'}
+    );
+    save.restore();
+    vi.useRealTimers();
+
+    return mounted;
+  }
+
+  it('reports neither its own write nor the last autosave once a save fails', async () => {
+    const {editor} = await failSaveOfAutosavedDraft();
+
+    await editor.activity.poll();
+
+    expect(editor.form.errors).toEqual({title: 'Title cannot be blank.'});
+    expect(editor.activity.isStale.value).toBe(false);
+    expect(editor.autosave.status.value).toBe('idle');
+  });
+
+  it('clears a failed save’s errors when the draft is discarded', async () => {
+    const {editor, page} = await failSaveOfAutosavedDraft();
+    const reload = vi
+      .spyOn(router, 'reload')
+      .mockImplementation((options?: any) => {
+        page.props = payload({ui: fieldLayout('Title')});
+        options?.onFinish?.();
+      });
+
+    await editor.discardDraft();
+
+    expect(editor.form.hasErrors).toBe(false);
+    expect(editor.autosave.status.value).toBe('idle');
+    reload.mockRestore();
+  });
+
+  it('saves without error when the response redirects to another screen', async () => {
+    const {editor, page} = mount(
+      payload({activityUrl: '/actions/elements/recent-activity'})
+    );
+    const save = interceptSave();
+
+    editor.save();
+
+    // Save redirects to the entries index, whose props carry no edit payload.
+    await expect(
+      save.land(page, {title: 'Entries', elementType: 'craft\\elements\\Entry'})
+    ).resolves.toBeUndefined();
+    save.restore();
+  });
+
+  it('saves a newer mutation before attaching after an earlier autosave', async () => {
+    vi.useFakeTimers();
+    postSpy.mockResolvedValue({data: {draftId: 9}});
+
+    const {editor, page} = mount(
+      payload({
+        canAutosave: true,
+        draftId: 9,
+        ui: fieldLayout('Original title'),
+      })
+    );
+
+    await typeTitle('Autosaved title');
+    await vi.advanceTimersByTimeAsync(2000);
+    await nextTick();
+
+    expect(postSpy).toHaveBeenCalledTimes(1);
+    expect(editor.autosave.hasPendingChanges.value).toBe(false);
+
+    await typeTitle('Latest title');
+
+    const save = interceptSave();
+    const visit = vi.spyOn(router, 'visit').mockImplementation(() => {});
+
+    editor.addToRelease({
+      id: 4,
+      name: 'Launch',
+      status: 'draft',
+      targetDate: null,
+    });
+
+    expect(save.last().url).toBe('/actions/elements/save-draft');
+    expect(save.last().data).toMatchObject({
+      draftId: 9,
+      title: 'Latest title',
+    });
+    expect(visit).not.toHaveBeenCalled();
+
+    await save.land(
+      page,
+      payload({
+        canAutosave: true,
+        draftId: 9,
+        ui: fieldLayout('Latest title'),
+      })
+    );
+
+    expect(visit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/admin/releases/4/drafts',
+        method: 'post',
+      }),
+      expect.objectContaining({data: {draftId: 9, siteId: 1}})
+    );
+
+    visit.mockRestore();
+    save.restore();
+    vi.useRealTimers();
+  });
+
+  it('attaches a draft from a slideout without navigating the page behind it', async () => {
+    const slideout = slideoutController();
+    const {editor} = mount(
+      payload({
+        draftId: 9,
+        ui: fieldLayout('Approved title'),
+        workflow: {
+          current: {
+            status: 'approved',
+          } as CraftCms.Cms.Workflow.Data.WorkflowReviewData,
+          draftReviews: [],
+        },
+      }),
+      slideout
+    );
+    const visit = vi.spyOn(router, 'visit').mockImplementation(() => {});
+    onTestFinished(() => visit.mockRestore());
+    postSpy.mockResolvedValueOnce({
+      data: {
+        message: 'Draft added to “Launch”.',
+        redirect: '/admin/content/entries/news/12?draftId=9',
+      },
+    });
+
+    editor.addToRelease({
+      id: 4,
+      name: 'Launch',
+      status: 'draft',
+      targetDate: null,
+    });
+
+    await vi.waitFor(() => expect(slideout.reload).toHaveBeenCalledOnce());
+    expect(visit).not.toHaveBeenCalled();
+    expect(postSpy).toHaveBeenCalledWith('/admin/releases/4/drafts', {
+      draftId: 9,
+      siteId: 1,
+    });
+    expect((slideout.instance as {href?: string}).href).toBe(
+      '/admin/content/entries/news/12?draftId=9'
+    );
+  });
+
+  it('attaches a truly clean approved draft without saving it again', () => {
+    const {editor} = mount(
+      payload({
+        draftId: 9,
+        ui: fieldLayout('Approved title'),
+        workflow: {
+          current: {
+            status: 'approved',
+          } as CraftCms.Cms.Workflow.Data.WorkflowReviewData,
+          draftReviews: [],
+        },
+      })
+    );
+    const save = interceptSave();
+    const visit = vi.spyOn(router, 'visit').mockImplementation(() => {});
+
+    editor.addToRelease({
+      id: 4,
+      name: 'Launch',
+      status: 'draft',
+      targetDate: null,
+    });
+
+    expect(save.calls()).toBe(0);
+    expect(visit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/admin/releases/4/drafts',
+        method: 'post',
+      }),
+      expect.objectContaining({data: {draftId: 9, siteId: 1}})
+    );
+
+    visit.mockRestore();
+    save.restore();
+  });
+
+  it.each([
+    {draftId: 9, savedDraftId: 9, params: {draftId: 9}},
+    {draftId: null, savedDraftId: 10, params: {dropProvisional: 1}},
+  ])(
+    'persists an unsaved draft before attaching it (draft: $draftId)',
+    async ({draftId, savedDraftId, params}) => {
+      const {editor, page} = mount(
+        payload({
+          draftId,
+          draftIsSaved: false,
+          ui: fieldLayout('New draft'),
+        })
+      );
+      const save = interceptSave();
+      const visit = vi.spyOn(router, 'visit').mockImplementation(() => {});
+      onTestFinished(() => {
+        visit.mockRestore();
+        save.restore();
+      });
+
+      editor.addToRelease({
+        id: 4,
+        name: 'Launch',
+        status: 'draft',
+        targetDate: null,
+      });
+
+      expect(save.last().url).toBe('/actions/elements/save-draft');
+      expect(save.last().data).toMatchObject(params);
+      expect(visit).not.toHaveBeenCalled();
+
+      await save.land(
+        page,
+        payload({
+          draftId: savedDraftId,
+          draftIsSaved: true,
+          ui: fieldLayout('New draft'),
+        })
+      );
+
+      expect(visit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: '/admin/releases/4/drafts',
+          method: 'post',
+        }),
+        expect.objectContaining({data: {draftId: savedDraftId, siteId: 1}})
+      );
+    }
+  );
 
   /**
    * Applying the provisional draft consumes it, so the screen is a plain
@@ -1715,8 +2313,8 @@ describe('useElementEditor', () => {
     );
     const save = interceptSave();
 
-    window.dispatchEvent(
-      new KeyboardEvent('keydown', {key: 's', metaKey: true})
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 's', ctrlKey: true})
     );
 
     expect(save.last().url).toBe('/actions/elements/save-draft');
@@ -1727,6 +2325,57 @@ describe('useElementEditor', () => {
     });
 
     save.restore();
+  });
+
+  it('submits the Save menu’s Shift shortcut action with Cmd+Shift+S', async () => {
+    mount(
+      payload({
+        editorActions: {
+          primary: {
+            label: 'Save',
+            actionUrl: null,
+            params: {},
+            redirect: null,
+            panelId: null,
+          },
+          menu: [
+            {
+              label: 'Save and continue editing',
+              actionUrl: null,
+              params: {},
+              redirect: 'continue',
+              shortcut: true,
+            },
+            {
+              label: 'Save and add another',
+              actionUrl: null,
+              params: {addAnother: 1},
+              redirect: null,
+              shortcut: true,
+              shift: true,
+            },
+          ],
+          buttons: [],
+        },
+      })
+    );
+    const save = interceptSave();
+    onTestFinished(save.restore);
+
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 'S', ctrlKey: true, shiftKey: true})
+    );
+
+    expect(save.calls()).toBe(1);
+    expect(save.last().data).toMatchObject({addAnother: 1});
+
+    await nextTick();
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 's', ctrlKey: true})
+    );
+
+    expect(save.calls()).toBe(2);
+    expect(save.last().data).not.toHaveProperty('addAnother');
   });
 
   /** Same for "Save and continue editing", which stays on the screen. */

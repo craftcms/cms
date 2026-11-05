@@ -24,9 +24,9 @@ it('aligns group headings when a nested plugin has a slotted icon', async () => 
     </craft-nav-list>
   `;
 
-  const [system, plugins] = document.querySelectorAll<CraftNavItem>(
-    'craft-nav-item[group]'
-  );
+  const [system, plugins] = [
+    ...document.querySelectorAll<CraftNavItem>('craft-nav-item[group]'),
+  ] as [CraftNavItem, CraftNavItem];
   await Promise.all([system.updateComplete, plugins.updateComplete]);
 
   const labelX = (item: CraftNavItem) =>
@@ -224,7 +224,7 @@ async function lentActionFixture() {
 }
 
 it("keeps a lent control's pointer press from reaching the row", async () => {
-  const {userEvent} = await import('@vitest/browser/context');
+  const {userEvent} = await import('vite-plus/test/browser');
   const {gear, reachedRow, opened} = await lentActionFixture();
 
   await userEvent.click(gear);
@@ -235,7 +235,7 @@ it("keeps a lent control's pointer press from reaching the row", async () => {
 });
 
 it("keeps a lent control's keyboard activation from reaching the row", async () => {
-  const {userEvent} = await import('@vitest/browser/context');
+  const {userEvent} = await import('vite-plus/test/browser');
   const {gear, reachedRow, opened} = await lentActionFixture();
 
   gear.focus();
@@ -250,7 +250,7 @@ it("keeps a lent control's keyboard activation from reaching the row", async () 
 // CpLink puts Inertia's Link handlers on the host, which visit on Enter's
 // keyup — so the chevron has to keep its own presses from reaching them.
 it('opens the flyout from its chevron instead of following the link', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
+  const {userEvent} = await import('vite-plus/test/browser');
   const item = await railFixture();
   const toggle = item.shadowRoot!.querySelector<HTMLElement>(
     '.rail-toggle craft-button'
@@ -499,7 +499,7 @@ it('keeps a flyout open when the pointer reaches it from across another group', 
     graceDelay: 10_000,
   };
 
-  const {userEvent} = await import('@vitest/browser/context');
+  const {userEvent} = await import('vite-plus/test/browser');
   const trigger = await groupedFixture();
 
   // Real pointer moves, so the browser orders the enter and leave events.
@@ -539,4 +539,90 @@ it('keeps a flyout open when the pointer reaches it from across another group', 
   expect(trigger.flyoutOpen).toBe(true);
 
   flyoutHoverIntent.reset();
+});
+
+it('renders a subnav and an icon added after it first renders, and drops them once removed', async () => {
+  document.body.innerHTML = `
+    <craft-nav-list><craft-nav-item href="/admin/settings">Settings</craft-nav-item></craft-nav-list>`;
+  const item = document.querySelector<CraftNavItem>('craft-nav-item')!;
+  await item.updateComplete;
+
+  const subnav = document.createElement('craft-nav-list');
+  subnav.slot = 'subnav';
+  subnav.innerHTML = `<craft-nav-item href="/admin/settings/fields">Fields</craft-nav-item>`;
+  const icon = document.createElement('craft-icon');
+  icon.slot = 'icon';
+  item.append(subnav, icon);
+
+  await expect
+    .poll(() => item.shadowRoot!.querySelector('.subnav slot[name="subnav"]'))
+    .not.toBeNull();
+  expect(item.shadowRoot!.querySelector('.subnav-toggle')).not.toBeNull();
+  expect(item.shadowRoot!.querySelector('.nav-item__prefix')).not.toBeNull();
+
+  subnav.remove();
+  icon.remove();
+
+  await expect.poll(() => item.shadowRoot!.querySelector('.subnav')).toBeNull();
+  expect(item.shadowRoot!.querySelector('.subnav-toggle')).toBeNull();
+  expect(item.shadowRoot!.querySelector('.nav-item__prefix')).toBeNull();
+});
+
+it('renames a rail item whose label text is edited in place', async () => {
+  const item = await railFixture();
+  const row = () =>
+    item
+      .shadowRoot!.querySelector('#item-' + item.id)!
+      .getAttribute('aria-label');
+  expect(row()).toBe('GraphQL');
+
+  (item.firstChild as Text).data = 'GraphQL API';
+
+  await expect.poll(row).toBe('GraphQL API');
+});
+
+it('keeps its flyout’s and tooltip’s events inside the item', async () => {
+  const escaped: string[] = [];
+  const events = [
+    'craft-show',
+    'craft-hide',
+    'craft-after-show',
+    'craft-after-hide',
+  ];
+  const record = (event: Event) =>
+    escaped.push(`${event.type} from ${(event.target as Element).localName}`);
+  events.forEach((type) => document.addEventListener(type, record));
+
+  try {
+    const branch = await railFixture();
+    branch.flyoutOpen = true;
+    await expect
+      .poll(() => branch.shadowRoot!.querySelector('craft-popover')!.opened)
+      .toBe(true);
+    branch.flyoutOpen = false;
+    await expect
+      .poll(() => branch.shadowRoot!.querySelector('craft-popover')!.opened)
+      .toBe(false);
+
+    const leaf = document.createElement('craft-nav-item') as CraftNavItem;
+    leaf.setAttribute('icon-only', '');
+    leaf.textContent = 'Utilities';
+    document.querySelector('craft-nav-list')!.append(leaf);
+    await leaf.updateComplete;
+    const tooltip = leaf.shadowRoot!.querySelector('craft-tooltip')!;
+    await new Promise((resolve) => setTimeout(resolve));
+    await tooltip.show();
+    await tooltip.hide();
+    await new Promise((resolve) => setTimeout(resolve));
+
+    branch
+      .querySelector('[slot="subnav"]')!
+      .dispatchEvent(
+        new CustomEvent('craft-show', {bubbles: true, composed: true})
+      );
+
+    expect(escaped).toEqual(['craft-show from craft-nav-list']);
+  } finally {
+    events.forEach((type) => document.removeEventListener(type, record));
+  }
 });

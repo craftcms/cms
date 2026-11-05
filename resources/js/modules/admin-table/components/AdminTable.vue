@@ -8,7 +8,15 @@
   import {useTableRowSelection} from '@/common/composables/useTableRowSelection';
   import {usePage} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
-  import {computed, defineComponent, h, ref} from 'vue';
+  import {
+    computed,
+    defineComponent,
+    h,
+    ref,
+    useSlots,
+    useTemplateRef,
+  } from 'vue';
+  import {useMutationObserver, useResizeObserver} from '@vueuse/core';
   import {
     TableAppearance,
     TableSpacing,
@@ -59,6 +67,8 @@
       createMenuItems?: Array<{label: string; url: string}> | null;
       title?: string;
       reorderable?: boolean;
+      /** Whether a row can be moved; see `DataTable`'s `canReorderRow`. */
+      canReorderRow?: (row: TData) => boolean;
       selectable?: boolean;
       actions?: Array<BulkAction> | null;
       statuses?: Array<BulkAction> | null;
@@ -101,6 +111,7 @@
       actions: () => [],
       source: null,
       context: 'index',
+      readOnly: undefined,
       loading: false,
       layout: 'auto',
       spacing: TableSpacing.Spacious,
@@ -110,6 +121,21 @@
       appearance: TableAppearance.Plain,
     }
   );
+  const tableBody = useTemplateRef<HTMLElement>('table-body');
+  const scrollable = ref(false);
+
+  function updateScrollable(): void {
+    const body = tableBody.value;
+    scrollable.value = !!body && body.scrollWidth > body.clientWidth;
+  }
+
+  useResizeObserver(tableBody, updateScrollable);
+  useMutationObserver(tableBody, updateScrollable, {
+    childList: true,
+    subtree: true,
+    characterData: true,
+  });
+
   const page = usePage<{readOnly: boolean}>();
   const readOnly = computed(
     () => props.readOnly ?? page.props.readOnly ?? false
@@ -128,6 +154,12 @@
   const hasRows = computed(() => table.value.getRowModel().rows.length > 0);
   const loading = computed(
     () => props.loading || !!managed?.loading.value || moving.value
+  );
+  const slots = useSlots();
+  // Shown below the table rather than in its body, so it stays in view when
+  // the table scrolls sideways; the table's own empty row is left out then.
+  const showEmptyState = computed(
+    () => !!managed && !hasRows.value && !loading.value && !slots['empty-row']
   );
   const reorderable = computed(
     () =>
@@ -160,8 +192,8 @@
   function clearSelection(): void {
     table.value.resetRowSelection();
   }
-  function refresh(): Promise<boolean> {
-    return managed?.refresh() ?? Promise.resolve(true);
+  function refresh(options?: {quiet?: boolean}): Promise<boolean> {
+    return managed?.refresh(undefined, options) ?? Promise.resolve(true);
   }
   function removeRows(ids: Array<string | number>): void {
     managed?.removeRows(ids);
@@ -213,7 +245,10 @@
     managed?.paginated.value &&
     !managed.orderingDisabled.value &&
     table.value.getPageCount() > 1 &&
-    selectedIds.value.length === 1
+    selectedIds.value.length === 1 &&
+    table.value
+      .getSelectedRowModel()
+      .rows.every((row) => props.canReorderRow?.(row.original) ?? true)
       ? [{type: 'display' as const, is: MoveToPageDisplay}]
       : []),
   ]);
@@ -292,21 +327,27 @@
         />
       </slot>
     </div>
-    <div class="admin-table__body">
+    <div
+      ref="table-body"
+      class="admin-table__body"
+      :tabindex="scrollable ? 0 : undefined"
+    >
       <DataTable
         :table="table"
         :title="title"
         :reorderable="reorderable"
+        :can-reorder-row="canReorderRow"
         :read-only="readOnly"
         :loading="loading"
         :layout="layout"
         :spacing="spacing"
         :appearance="
-          appearance === TableAppearance.Flush
-            ? TableAppearance.Flush
-            : TableAppearance.Plain
+          appearance === TableAppearance.Raised
+            ? TableAppearance.Plain
+            : appearance
         "
         :with-bottom-border="!footerVisible"
+        :empty-row="!showEmptyState"
         :selection="selection"
         :get-row-label="getRowLabel"
         :interactions-disabled="interactionsDisabled || loading"
@@ -317,10 +358,7 @@
         </template>
       </DataTable>
     </div>
-    <craft-empty
-      v-if="managed && !hasRows && !loading && !$slots['empty-row']"
-      :label="emptyLabel"
-    >
+    <craft-empty v-if="showEmptyState" :label="emptyLabel">
       <slot name="empty-actions">
         <CreateActionButton
           v-if="!readOnly"

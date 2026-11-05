@@ -1,0 +1,25 @@
+{% set id = id ?? "volume#{random()}" %}
+
+{% set addOptionFn %}
+(createOption, selectize) => {
+    Craft.openSlideout(Craft.getCpUrl('settings/assets/volumes/new'), {
+        onSaved: ({data, draft}) => {
+            const volume = data?.volume;
+            if (!draft && volume) {
+                createOption({text: volume.name, value: volume.id});
+            }
+        },
+        onClosed: () => {
+            if (selectize.lastValidValue === '__add__') {
+                selectize.lastValidValue = '';
+            }
+            selectize.focus();
+        },
+    });
+}
+{% endset %}
+
+{% include '_includes/forms/selectize' with {
+    options: options ?? craft.cp.getVolumeOptions(),
+    addOptionLabel: 'Create a new volume…'|t('app'),
+} %}

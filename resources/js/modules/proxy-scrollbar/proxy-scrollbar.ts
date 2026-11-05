@@ -16,6 +16,7 @@ export class ProxyScrollbar extends HTMLElement {
 
   private ignoreScrollEvent = false;
   private animation: number | false = false;
+  private listener?: AbortController;
 
   scroller: HTMLElement | null = null;
   content: HTMLElement | null = null;
@@ -42,12 +43,19 @@ export class ProxyScrollbar extends HTMLElement {
 
     this.appendChild(this.proxy);
 
-    this.addEventListener('scroll', this.syncScroll(this.scroller, this));
+    this.listener?.abort();
+    this.listener = new AbortController();
+    const {signal} = this.listener;
+
+    this.addEventListener('scroll', this.syncScroll(this.scroller, this), {
+      signal,
+    });
     this.scroller.addEventListener(
       'scroll',
-      this.syncScroll(this, this.scroller)
+      this.syncScroll(this, this.scroller),
+      {signal}
     );
-    window.addEventListener('resize', this.handleResize.bind(this));
+    window.addEventListener('resize', this.handleResize.bind(this), {signal});
 
     Object.assign(this.style, {
       display: this.hasOverflow ? 'block' : 'none',
@@ -67,17 +75,7 @@ export class ProxyScrollbar extends HTMLElement {
 
   disconnectedCallback(): void {
     this.proxy?.remove();
-
-    this.scroller?.removeEventListener(
-      'scroll',
-      this.syncScroll(this.scroller, this)
-    );
-    this.scroller?.removeEventListener(
-      'scroll',
-      this.syncScroll(this, this.scroller)
-    );
-
-    window.removeEventListener('resize', this.handleResize.bind(this));
+    this.listener?.abort();
   }
 
   handleResize(): void {

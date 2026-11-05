@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Field\Time;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Mcp\Capabilities\Elements as ElementCapabilities;
@@ -18,6 +20,8 @@ use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\Support\McpRequest;
+use CraftCms\Cms\User\Conditions\AdminConditionRule;
+use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Http\Request;
 use Laravel\Passport\Passport;
@@ -90,7 +94,7 @@ it('reads custom fields on demand and expands only one level of nested content',
 
     $key = openssl_pkey_new(['private_key_bits' => 2048]);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
-    Passport::actingAs(User::query()->firstOrFail(), ['mcp:use'], 'craft-mcp');
+    Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     $selected = McpRequest::send($this, 'tools/call', [
         'name' => 'elements.list',
         'arguments' => ['type' => 'entries', 'criteria' => ['id' => $entry->id], 'fields' => ['blocks']],
@@ -115,6 +119,15 @@ it('reads custom fields on demand and expands only one level of nested content',
 
     expect($publicBlock['blockText'])->toBe('First level content')
         ->and($publicBlock)->not->toHaveKey('innerBlocks');
+});
+
+it('describes entries without their internal state', function (): void {
+    $entry = EntryModel::factory()->createElement(['title' => 'Lighthouses']);
+
+    $detail = app(ElementCapabilities::class)->get('entries', id: $entry->id)['element'];
+
+    expect($detail)->toHaveKeys(['title', 'slug', 'status', 'enabled'])
+        ->and($detail)->not->toHaveKeys(['forceSave', 'siteSettingsId', 'trackDraftChanges', 'ruleset']);
 });
 
 it('manages entries through MCP', function () {
@@ -218,9 +231,7 @@ it('accepts Matrix entries only in the format the field schema describes', funct
     $schema = $elements->fieldSchema('entries', context: ['sectionId' => $section->id])['schema']['properties']['contentBlocks'];
     $entries = [['richText' => ['richText' => '<p>Example body</p>']]];
 
-    expect($schema['properties']['entries']['items']['properties'])->toHaveKey('richText')
-        ->and(fn () => $elements->create('entries', ['sectionId' => $section->id, 'title' => 'News'], ['contentBlocks' => ['entries' => $entries]]))
-        ->toThrow(ToolCallException::class, 'contentBlocks: New entries must be listed in `sortOrder`');
+    expect($schema['properties']['entries']['items']['properties'])->toHaveKey('richText');
 
     $created = $elements->create('entries', ['sectionId' => $section->id, 'title' => 'News'], [
         'contentBlocks' => ['entries' => $entries, 'sortOrder' => ['new:1']],
@@ -233,4 +244,132 @@ it('accepts Matrix entries only in the format the field schema describes', funct
     expect(fn () => $elements->validate('entries', id: $created['id'], fields: [
         'contentBlocks' => ['entries' => [['body' => ['richText' => '<p>Example body</p>']]], 'sortOrder' => ['new:1']],
     ]))->toThrow(ToolCallException::class, 'Invalid fields: /contentBlocks/entries/0: Additional object properties are not allowed: ["body"]');
+});
+
+it('accepts times of day for Time fields in Matrix entries', function (): void {
+    $time = Field::factory()->create(['handle' => 'startsAt', 'type' => Time::class]);
+    $blockType = EntryType::factory()->withField($time)->create(['handle' => 'slot', 'hasTitleField' => false, 'titleFormat' => '{id}']);
+    $slots = Field::factory()->create([
+        'handle' => 'slots',
+        'type' => Matrix::class,
+        'settings' => ['entryTypes' => [$blockType->id]],
+    ]);
+    $section = Section::factory()->withEntryTypes(EntryType::factory()->withField($slots)->create())->create();
+    Fields::refreshFields();
+    EntryTypes::refreshEntryTypes();
+
+    $elements = app(ElementCapabilities::class);
+    $schema = $elements->fieldSchema('entries', context: ['sectionId' => $section->id])['schema']['properties']['slots'];
+
+    expect($schema['properties']['entries']['items']['properties']['slot']['properties']['startsAt'])->not->toHaveKey('format');
+
+    $id = $elements->create('entries', ['sectionId' => $section->id, 'title' => 'Owner'], [
+        'slots' => ['entries' => [['slot' => ['startsAt' => '16:30']]]],
+    ])['element']['id'];
+
+    expect(Entry::find()->id($id)->one()->getFieldValue('slots')->all()[0]->getFieldValue('startsAt')?->format('H:i'))->toBe('16:30')
+        ->and(fn () => $elements->update('entries', id: $id, fields: [
+            'slots' => ['entries' => [['slot' => ['startsAt' => 'not-a-time']]]],
+        ]))->toThrow(ToolCallException::class, 'startsAt: The value couldn’t be parsed.');
+});
+
+it('adds new Matrix entries after the existing ones when sortOrder is omitted', function (): void {
+    $text = Field::factory()->create(['handle' => 'text', 'type' => PlainText::class]);
+    $blockType = EntryType::factory()->withField($text)->create(['handle' => 'note', 'hasTitleField' => false, 'titleFormat' => '{id}']);
+    $notes = Field::factory()->create([
+        'handle' => 'notes',
+        'type' => Matrix::class,
+        'settings' => ['entryTypes' => [$blockType->id]],
+    ]);
+    $section = Section::factory()->withEntryTypes(EntryType::factory()->withField($notes)->create())->create();
+    Fields::refreshFields();
+    EntryTypes::refreshEntryTypes();
+
+    $elements = app(ElementCapabilities::class);
+    $texts = fn (int $id): array => array_map(
+        fn (Entry $entry): ?string => $entry->getFieldValue('text'),
+        Entry::find()->id($id)->one()->getFieldValue('notes')->all(),
+    );
+
+    // A caller-chosen key and an entry without an ID are both kept, in the order given.
+    $id = $elements->create('entries', ['sectionId' => $section->id, 'title' => 'Owner'], ['notes' => ['entries' => [
+        ['note' => ['id' => 'new1', 'text' => 'First']],
+        ['note' => ['text' => 'Second']],
+    ]]])['element']['id'];
+
+    expect($texts($id))->toBe(['First', 'Second']);
+
+    $elements->update('entries', id: $id, fields: ['notes' => ['entries' => [
+        ['note' => ['id' => 'new1', 'text' => 'Third']],
+    ]]]);
+
+    expect($texts($id))->toBe(['First', 'Second', 'Third'])
+        ->and(fn () => $elements->update('entries', id: $id, fields: ['notes' => [
+            'sortOrder' => ['new1'],
+            'entries' => [
+                ['note' => ['id' => 'new1', 'text' => 'Listed']],
+                ['note' => ['id' => 'new2', 'text' => 'Unlisted']],
+            ],
+        ]]))->toThrow(ToolCallException::class, 'notes: Add new2 to `sortOrder`');
+});
+
+it('updates one Matrix entry, leaving the other entries and its other values as they were', function (string $identity): void {
+    $text = Field::factory()->create(['handle' => 'text', 'type' => PlainText::class]);
+    $blockType = EntryType::factory()->withField($text)->create(['handle' => 'note', 'hasTitleField' => true]);
+    $notes = Field::factory()->create([
+        'handle' => 'notes',
+        'type' => Matrix::class,
+        'settings' => ['entryTypes' => [$blockType->id]],
+    ]);
+    $section = Section::factory()->withEntryTypes(EntryType::factory()->withField($notes)->create())->create();
+    Fields::refreshFields();
+    EntryTypes::refreshEntryTypes();
+
+    $elements = app(ElementCapabilities::class);
+    $owner = $elements->create('entries', ['sectionId' => $section->id, 'title' => 'Owner'], ['notes' => [
+        'entries' => [
+            ['note' => ['title' => 'First', 'text' => 'First text']],
+            ['note' => ['title' => 'Second', 'text' => 'Second text']],
+        ],
+        'sortOrder' => ['new:1', 'new:2'],
+    ]])['element'];
+    [$first, $second] = Entry::find()->id($owner['id'])->one()->getFieldValue('notes')->all();
+
+    $elements->update('entries', id: $owner['id'], fields: ['notes' => [
+        'entries' => [['note' => ['id' => $second->{$identity}, 'text' => 'New text']]],
+    ]]);
+
+    $entries = Entry::find()->id($owner['id'])->one()->getFieldValue('notes')->all();
+
+    expect(array_map(fn (Entry $entry): array => [$entry->title, $entry->getFieldValue('text')], $entries))->toBe([
+        ['First', 'First text'],
+        ['Second', 'New text'],
+    ])->and(array_map(fn (Entry $entry): int => $entry->id, $entries))->toBe([$first->id, $second->id]);
+})->with(['id', 'uid']);
+
+it('only shows and accepts the custom fields the user can see', function (): void {
+    $secret = Field::factory()->create(['handle' => 'secret', 'type' => PlainText::class]);
+    $teaser = Field::factory()->create(['handle' => 'teaser', 'type' => PlainText::class]);
+    // Only shown to users who aren’t admins.
+    $hidden = new CustomField(config: ['fieldUid' => $secret->uid])->userCondition([
+        'class' => UserCondition::class,
+        'conditionRules' => [['class' => AdminConditionRule::class, 'value' => false]],
+    ]);
+    $layout = FieldLayout::factory()->withContentTab([new CustomField(config: ['fieldUid' => $teaser->uid]), $hidden])->create();
+    $section = Section::factory()->withEntryTypes(EntryType::factory()->withFieldLayout($layout)->create())->create();
+    Fields::refreshFields();
+    EntryTypes::refreshEntryTypes();
+
+    $elements = app(ElementCapabilities::class);
+    $id = $elements->create('entries', ['sectionId' => $section->id, 'title' => 'Entry'], ['teaser' => 'Teaser'])['element']['id'];
+    $entry = Entry::find()->id($id)->one();
+    $entry->setFieldValue('secret', 'Hidden value');
+    app(Elements::class)->saveElement($entry);
+
+    expect($elements->get('entries', id: $entry->id)['element'])->toHaveKey('teaser')->not->toHaveKey('secret')
+        ->and($elements->fieldSchema('entries', id: $entry->id)['schema']['properties'])->toHaveKey('teaser')->not->toHaveKey('secret')
+        ->and(fn () => $elements->update('entries', id: $entry->id, fields: ['secret' => 'Changed']))
+        ->toThrow(ToolCallException::class);
+
+    expect(Entry::find()->id($entry->id)->one()->getFieldValue('secret'))->toBe('Hidden value');
 });

@@ -10,13 +10,16 @@ import '../visually-hidden/visually-hidden';
  * @summary An indeterminate loading indicator, for work whose progress cannot
  * be measured. Use `craft-progress` or `craft-progress-bar` when it can.
  *
- * The spinner is presentational on its own. Slot text to say what is loading,
- * which is announced but not shown.
+ * The spinner is presentational on its own. Set `label`, or slot text, to say
+ * what is loading, which is announced but not shown.
  *
- * @slot - A description of what is loading, visually hidden.
+ * @slot - A description of what is loading, visually hidden. Replaces the
+ *   `label`.
  *
- * @fires craft-show - Emitted when the spinner is shown via `show()`.
- * @fires craft-hide - Emitted when the spinner is hidden via `hide()`.
+ * @fires craft-show - Emitted when the spinner is shown via `show()`. Doesn't
+ *   bubble, so listen on the spinner itself.
+ * @fires craft-hide - Emitted when the spinner is hidden via `hide()`. Doesn't
+ *   bubble, so listen on the spinner itself.
  * @cssproperty [--size=24px] - The spinner's diameter. Shared with avatar,
  * status, and indicator, so one declaration sizes a row of them together.
  *
@@ -31,6 +34,12 @@ export default class CraftSpinner extends LitElement {
    */
   @property({reflect: true, type: Boolean})
   visible: boolean = true;
+
+  /**
+   * A description of what is loading, visually hidden. Slotted text replaces
+   * it.
+   */
+  @property() label: string = '';
 
   @query('.wrapper')
   protected wrapper!: HTMLElement | null;
@@ -77,7 +86,7 @@ export default class CraftSpinner extends LitElement {
         })}"
       >
         <div class="spinner"></div>
-        <span class="cp-visually-hidden"><slot /></span>
+        <span class="cp-visually-hidden"><slot>${this.label}</slot></span>
       </div>
     `;
   }

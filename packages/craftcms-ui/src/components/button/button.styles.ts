@@ -135,6 +135,11 @@ export default css`
     }
   }
 
+  :host([disabled][focusable-when-disabled]) {
+    pointer-events: auto;
+    cursor: default;
+  }
+
   :host(:focus:not([disabled])),
   :host(:focus-visible) {
     outline: var(--c-focus-outline-width) solid var(--_focus-outline-color);
@@ -145,11 +150,17 @@ export default css`
     --_focus-outline-color: var(--c-color-focus-outline);
   }
 
+  :host([variant~='plain']),
+  :host([variant~='danger-plain']) {
+    --c-focus-outline-offset: calc(var(--c-focus-outline-width) * -1);
+  }
+
   :host(:not(:disabled):not(.loading):active),
   :host(.is-active:not(:disabled):not(.loading)) {
     color: var(--_active-color);
     background-color: var(--_active-background-color);
-    box-shadow: inset 0 1px 3px var(--c-color-mix-active);
+    box-shadow: inset 0 1px 3px
+      color-mix(in oklab, var(--c-color-mix-active), transparent);
   }
 
   /* Selected state (e.g. inside a radio button-group): show the loud fill. */
@@ -192,27 +203,55 @@ export default css`
   /*
   Flush
    */
-  :host([variant~='plain'][flush='']),
-  :host([variant~='plain'][flush~='inline']),
-  :host([variant~='plain'][flush~='inline-start']) {
-    margin-inline-start: calc(var(--_flush-inline) * -1);
+  /*
+  A popover has no box of its own, so as its invoker, the button takes the
+  button group's overlap the popover would have had, on top of any flush
+  margin.
+  */
+  :host {
+    --_group-overlap: 0px;
+  }
+
+  :host([slot='invoker']) {
+    --_group-overlap: var(--c-button-group-overlap, 0px);
+    margin-inline-start: var(--_group-overlap);
   }
 
   :host([variant~='plain'][flush='']),
+  :host([variant~='danger-plain'][flush='']),
   :host([variant~='plain'][flush~='inline']),
-  :host([variant~='plain'][flush~='inline-end']) {
+  :host([variant~='danger-plain'][flush~='inline']),
+  :host([variant~='plain'][flush~='inline-start']),
+  :host([variant~='danger-plain'][flush~='inline-start']) {
+    margin-inline-start: calc(
+      var(--_flush-inline) * -1 + var(--_group-overlap)
+    );
+  }
+
+  :host([variant~='plain'][flush='']),
+  :host([variant~='danger-plain'][flush='']),
+  :host([variant~='plain'][flush~='inline']),
+  :host([variant~='danger-plain'][flush~='inline']),
+  :host([variant~='plain'][flush~='inline-end']),
+  :host([variant~='danger-plain'][flush~='inline-end']) {
     margin-inline-end: calc(var(--_flush-inline) * -1);
   }
 
   :host([variant~='plain'][flush='']),
+  :host([variant~='danger-plain'][flush='']),
   :host([variant~='plain'][flush~='block']),
-  :host([variant~='plain'][flush~='block-start']) {
+  :host([variant~='danger-plain'][flush~='block']),
+  :host([variant~='plain'][flush~='block-start']),
+  :host([variant~='danger-plain'][flush~='block-start']) {
     margin-block-start: calc(var(--_flush-block) * -1);
   }
 
   :host([variant~='plain'][flush='']),
+  :host([variant~='danger-plain'][flush='']),
   :host([variant~='plain'][flush~='block']),
-  :host([variant~='plain'][flush~='block-end']) {
+  :host([variant~='danger-plain'][flush~='block']),
+  :host([variant~='plain'][flush~='block-end']),
+  :host([variant~='danger-plain'][flush~='block-end']) {
     margin-block-end: calc(var(--_flush-block) * -1);
   }
 
@@ -220,10 +259,10 @@ export default css`
   :host([action-state='loading']) {
     position: relative;
 
-    .prefix,
-    .label,
-    .suffix {
-      visibility: hidden;
+    /* Hidden with opacity, not visibility, so the label stays in the button's
+       accessible name. The live region adds "Loading" to it. */
+    .button-content {
+      opacity: 0;
     }
 
     craft-spinner {
@@ -290,19 +329,19 @@ export default css`
     --_active-color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
   }
 
-  /* Fill (default) — neutral normal fill. */
+  /* Fill (default) — neutral quiet fill. */
   :host([variant~='fill']) {
     border-color: transparent;
     background-color: var(
-      --c-color-fill-normal,
-      var(--c-color-neutral-fill-normal)
+      --c-color-fill-quiet,
+      var(--c-color-neutral-fill-quiet)
     );
     color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
   }
 
   :host([variant~='fill']:hover) {
     background-color: hsl(
-      from var(--c-color-fill-normal, var(--c-color-neutral-fill-normal)) h s
+      from var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)) h s
         calc(l - 5)
     );
     color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
@@ -310,7 +349,7 @@ export default css`
 
   :host([variant~='fill']:active) {
     --_active-background-color: hsl(
-      from var(--c-color-fill-normal, var(--c-color-neutral-fill-normal)) h s
+      from var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)) h s
         calc(l - 10)
     );
     --_active-color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
@@ -489,6 +528,15 @@ export default css`
     color: inherit;
   }
 
+  /* A selected button keeps its selected look while hovered. After the
+     variants' hover rules, which would otherwise paint over it. */
+  :host([variant][active]:not(:disabled):not(.loading):hover),
+  :host([variant].is-active:not(:disabled):not(.loading):hover) {
+    background-color: var(--c-color-fill-loud);
+    color: var(--c-color-on-loud);
+    border-color: var(--c-color-border-loud);
+  }
+
   /* After the variants, whose colors would otherwise paint over Lion's own
      disabled rule and leave a disabled button looking enabled. */
   :host([disabled]) {
@@ -516,6 +564,12 @@ export default css`
 
   .button-content--spaced-suffix .suffix {
     margin-inline-start: var(--c-spacing-sm);
+  }
+
+  .shortcut {
+    --c-shortcut-shadow: none;
+    margin-inline-start: var(--c-spacing-md);
+    margin-inline-end: calc(var(--c-spacing) / -2);
   }
 
   .button-content--start {
@@ -561,6 +615,8 @@ export default css`
       --c-button-spacing-inline,
       var(--c-form-control-spacing-inline)
     );
+    border-radius: inherit;
+    outline: none;
 
     /* Same minimum click area as Lion's :host::before (WCAG 2.5.5), but as
        part of the anchor so clicks on it follow the link. */
@@ -582,6 +638,13 @@ export default css`
     }
   }
 
+  /* The anchor takes focus instead of the host, so it draws the host's ring.
+     The browser's own ring would also wrap the click-area overlay above. */
+  .link:focus-visible {
+    outline: var(--c-focus-outline-width) solid var(--c-color-focus-outline);
+    outline-offset: calc(var(--c-focus-outline-offset) + var(--_border-width));
+  }
+
   :host([href][size~='xsmall']:not([disabled])) .link {
     --_link-min-height: var(--c-size-touch-target-sm);
     --_link-min-width: var(--c-size-touch-target-sm);
@@ -596,8 +659,10 @@ export default css`
     padding-inline: var(--c-spacing-lg);
   }
 
+  /* Only an icon-only link sits flush in its square; one with a label keeps
+     its padding. */
   :host([href][size~='zero']:not([disabled])) .link,
-  :host([href][icon]:not([disabled])) .link {
+  :host([href][icon]:empty:not([disabled])) .link {
     padding-inline: 0;
   }
 
@@ -637,6 +702,6 @@ export default css`
   /* Ellipsis (action menu) icons read small at craft-icon's 0.8em */
   craft-icon[name='ellipsis'],
   ::slotted(craft-icon[name='ellipsis']) {
-    font-size: 1em;
+    --c-icon-size: 1em;
   }
 `;

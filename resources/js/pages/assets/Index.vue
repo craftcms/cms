@@ -10,6 +10,8 @@
   } from '@/common/components/Breadcrumbs.vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import {useAssetMoveDrag} from '@/modules/assets/composables/useAssetMoveDrag';
+  import type {ConflictResolution} from '@/modules/assets/assetMover';
+  import '@/modules/assets/asset-conflict-resolution.ce';
   import AssetUploadButton from './AssetUploadButton.vue';
   import {useAssetUploadRefresh} from '@/modules/uploader/useAssetUploadRefresh';
   import {useAssetFolderActions} from '@/modules/assets/composables/useAssetFolderActions';
@@ -129,7 +131,7 @@
     submitRename,
     conflictPrompt: folderConflictPrompt,
     resolveConflictChoice: resolveFolderConflictChoice,
-  } = useAssetFolderActions(elementIndex);
+  } = useAssetFolderActions(elementIndex, performMove);
 </script>
 
 <template>
@@ -139,9 +141,6 @@
       :index="elementIndex"
       :source-href="sourceHref"
       :item-behavior="itemBehavior"
-      :filter-params="{
-        includeSubfolders: page.props.includeSubfolders ? 1 : undefined,
-      }"
       customizable-sources
     >
       <template #search-options>
@@ -165,6 +164,7 @@
         <AssetUploadButton
           variant="primary"
           v-bind="uploadSource"
+          :site-id="page.props.siteId"
           :destination="uploadDestination"
           :drop-zone="dropZone"
         />
@@ -187,20 +187,15 @@
           )
         }}
       </p>
-      <div slot="footer" class="flex gap-md justify-end">
-        <craft-button @click="resolveConflictChoice('cancel')">
-          {{ t('Cancel') }}
-        </craft-button>
-        <craft-button @click="resolveConflictChoice('keepBoth')">
-          {{ t('Keep both') }}
-        </craft-button>
-        <craft-button
-          variant="danger"
-          @click="resolveConflictChoice('replace')"
-        >
-          {{ t('Replace') }}
-        </craft-button>
-      </div>
+      <craft-asset-conflict-resolution
+        slot="footer"
+        class="flex gap-md justify-end"
+        @craft-conflict-resolve="
+          resolveConflictChoice(
+            ($event as CustomEvent<ConflictResolution>).detail
+          )
+        "
+      />
     </craft-dialog>
 
     <craft-dialog
@@ -236,7 +231,7 @@
         <CraftInput
           ref="newFolderNameInput"
           v-model="newFolderName"
-          :label="t('Folder name')"
+          :label="t('Folder Name')"
           :error="newFolderError"
           :aria-invalid="newFolderError ? 'true' : 'false'"
           autofocus
@@ -264,7 +259,7 @@
       <form class="flex flex-col gap-lg" @submit.prevent="submitRename">
         <CraftInput
           v-model="renameName"
-          :label="t('Folder name')"
+          :label="t('Folder Name')"
           :error="renameError"
           :aria-invalid="renameError ? 'true' : 'false'"
           autofocus

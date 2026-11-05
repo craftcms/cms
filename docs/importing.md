@@ -17,8 +17,8 @@ An **import plan** is a named, handled, ordered list of **steps**
 (`src/Import/Data/ImportPlan.php`, service `src/Import/ImportPlan.php`). Each step is one
 importer instance with its own `uid`, `type` (the importer FQCN), `source`, `transformer`,
 `batchSize` and `settings` (importer-specific settings plus `map`, `matchCriteria`,
-`clearableItems` and, for elements, `site`, `fieldLayout`, `keepMissingNestedElements` and
-`fieldSettings`). Two flavours:
+`clearableItems`, `templates` and, for elements, `site`, `fieldLayout`, `keepMissingNestedElements`
+and `fieldSettings`). Two flavours:
 
 - **Editable** — created in the CP, stored in `import_plans`.
 - **Non-editable** — registered in code from a service provider's `boot()` via
@@ -27,9 +27,9 @@ importer instance with its own `uid`, `type` (the importer FQCN), `source`, `tra
 
 `ImportPlan::isEditable()` reads the `$editable` flag, which is set for plans loaded from the
 database. `ImportPlan::getAllImportPlans()` (`src/Import/ImportPlan.php:128`) lists DB plans
-first, in their saved `sortOrder` (then name, then handle), followed by registered plans sorted
-by name. The result is keyed by handle and memoized. Registered plans are created lazily, the
-first time the list is built, and re-created whenever it's rebuilt after a save, delete or
+first, in their saved `sortOrder` (then name, then handle), followed by registered plans in order
+they were registered in. The result is keyed by handle and memoized. Registered plans are created lazily,
+the first time the list is built, and re-created whenever it's rebuilt after a save, delete or
 reorder. An invalid registered plan is **skipped and logged** as a warning rather than blowing up
 the list.
 
@@ -47,7 +47,7 @@ public function boot(ImportPlan $importPlans): void
     $importPlans->register('entriesFromFile', fn () => new ImportPlanData()
         ->name('Entries from file')
         ->steps([
-            EntryImporter::create()
+            new EntryImporter()
                 ->source('resources/import/entry-with-plain-text.json')
                 ->site('default')
                 ->section('news')
@@ -62,7 +62,8 @@ none gets it, and one that sets a different handle is skipped and logged. Regist
 twice throws an `InvalidArgumentException`; `remove(...$handles)` unregisters plans (e.g. to
 replace one). Registered steps typically set no `->map()` and no field layout; the transformer
 (or the per-row `type`/`sectionId` data) does that work, which is why one step can span multiple
-sections and entry types.
+sections and entry types. A step that does set a map can fill a destination from a template (see
+§5): `->map(['title' => ImportHelper::TEMPLATE_RULE])->templates(['title' => '{first} {last}'])`.
 
 ### What's persisted for an editable plan
 
@@ -70,9 +71,9 @@ sections and entry types.
 each importer's `toImportStep()` (which uses `BaseImporter::toArrayData()`). On load,
 `ImportPlan::createImporter()` instantiates `$step['type']`, and `BaseImporter::__construct()`
 applies `uid`, `source`, `transformer` and `batchSize`, then replays each `settings` key through the
-importer's setter of the same name. Only settings declared in the importer's `getSettingsRules()`
-(`settings.<name>`) and backed by an existing setter are applied; any other key is ignored, since
-step config can come from a request. An element importer left without a field layout then gets
+importer's setter of the same name. Only settings listed in the importer's `settingNames()` and backed
+by an existing setter are applied; any other key is ignored, since step config can come from a
+request. An element importer left without a field layout then gets
 one from `resolveDefaultFieldLayout()`. Steps whose importer can't be created are left out. The target class is fixed by the importer
 subclass itself, so it isn't stored.
 
@@ -167,10 +168,9 @@ All of them carry `importPlan` and `runId`. Failures are tracked across jobs thr
 ## 4. Importers
 
 Every importer extends `BaseImporter`, whose abstract `targetClass()` names what it imports
-into. Each importer also owns its settings: `settingsUi()`, `refreshSettingsUi()`,
-`storeSettings()`, `getSettings()` and `getSettingsRules()` drive the step slideout in the CP
-and its validation. `settingsUi()` returns a list of [UI](ui.md) nodes, which the step's UI
-wraps in a `settings` `Scope`.
+into. Each importer also owns its settings: `settingsUi()`, `refreshSettingsUi()` and
+`getSettingsRules()` drive the step slideout in the CP and its validation. `settingsUi()` returns
+a list of [UI](ui.md) nodes, which the step's UI wraps in a `settings` `Scope`.
 
 - **`ElementImporter`** is abstract. Each importable element type is represented by its own
   concrete subclass: `EntryImporter`, `AssetImporter`, `UserImporter` are the built-ins (there's
@@ -211,7 +211,7 @@ with the `Import\ImporterTypes` registry from a service provider's `boot()`
 `Import::importItem()` (`src/Import/Import.php:174`):
 
 1. `ItemImporting` event (cancelable, can rewrite `$data`).
-2. Apply the map via `ImportHelper::remapData()` — only if a map is set.
+2. Apply the map (and render its templates) via `ImportHelper::remapData()` — only if a map is set.
 3. Collect `additionalMatchCriteria()` from the transformer.
 4. Resolve match criteria.
 5. Apply clearable items.
@@ -221,6 +221,33 @@ with the `Import\ImporterTypes` registry from a service provider's `boot()`
 8. `ItemImported` event, carrying the returned `importedItem`.
 
 Both item events also carry the `runId` (`null` outside a run).
+
+### Nested maps
+
+A nested map (a container's branch of `map`) reads from the common **parent** path of the columns
+mapped inside it (`ImportHelper::sharedSourcePath()`), so a single mapped column (`items.name`)
+finds the list `items` just as several do. Each item in that list becomes one row. Mixing a
+top-level column with nested ones leaves no common parent, so no list is found.
+
+### Mapping templates
+
+A `map` leaf set to `ImportHelper::TEMPLATE_RULE` (`'__template__'`) is filled from the matching
+leaf of the `templates` tree, which is keyed like `map`. `remapData()` swaps each marker for a
+`Data\MappingTemplate` before walking the map.
+
+- Rendered with `renderSandboxedObjectTemplate()` — sandboxed, since `saveImportPlans` isn't
+  admin-only — with no escaping. Plain text comes through as is.
+- Rendered against the incoming row; inside a nested list, against the row with that list swapped
+  for the item being mapped, so `{blocks.heading}` is the current block's heading. The reserved keys
+  (see §6) are stripped first.
+- Variables are `{path}` shorthand, or `{{ object.path['Not An Identifier'] }}` for column names
+  that aren't identifiers.
+- The paths a template reads (`MappingTemplate::$paths`, taken from those two forms only, not from
+  `{% %}` tags) count like mapped columns: they're consumed rather than passed through, and help a
+  nested map find its list.
+- `BaseImporter::validateTemplates()` requires a non-blank template that compiles in the sandbox
+  for every marked leaf, with errors keyed `settings.templates.<path>`. Errors that depend on the
+  data only show at import time.
 
 ### Match criteria
 
@@ -252,28 +279,58 @@ is accepted and expanded). Behavior:
    a new element instance (per-type subclasses like `EntryImporter`/`AssetImporter` resolve the
    entry type/volume here; `EntryImporter` also sets a Structure section's `structureId`, so
    `parentId` can be applied). If there are match criteria, it then queries with
-   `->drafts(null)->status(null)`, lets the importer adjust the query
+   `->drafts(null)->draftOf(false)->status(null)` (canonical elements and unpublished drafts only,
+   so a draft *of* an existing element is never matched; a canonical element is preferred when both
+   match), lets the importer adjust the query
    (`$this->prepareRootElementImportQuery($element, $query)`) — scoping it by type/volume, for
    example — typecasts criteria, and **forces the step's siteId** so it always wins over
    anything in the criteria. The match is returned as is, falling back to the new element
    (`$query->one() ?? $element`).
 2. `markAsImporting()` — for existing and new elements alike.
 3. Transformer runs *after* the element is resolved, so it can see the existing element
-   via Fractal meta.
+   via its `$element` argument. The `saveAsDraft` flag (see [Importing as drafts](#importing-as-drafts))
+   is pulled out of the result here, so it's never treated as a field.
 4. Split the result into native attributes, custom fields, and container properties. The
-   reserved keys (`matchCriteria`, `clearableItems`, `keepMissingNestedElements`) are never
-   treated as fields. Attributes are applied via
+   reserved keys (`ImportHelper::RESERVED_DATA_KEYS`: `matchCriteria`, `clearableItems`,
+   `keepMissingNestedElements`) are never treated as fields. They're also left out of the mapping
+   screen's incoming-data options (any path with one of them as a segment;
+   `ImportHelper::isReservedDataPath()`) and stripped from the data templates are rendered
+   against. Attributes are applied via
    `$this->setAttributesForImport($element, $attributes, $data)` on the importer (base implementation
    strips `id`/`uid` and applies the rest via `setAttributesFromRequest()`; `AssetImporter`
    overrides it to resolve filename/folder/temp-file handling and download).
 5. **Skip-unchanged optimization**: snapshots attribute values and serialized field
    values (only for handles in the field layout); if nothing changed, the element is never saved. Skipped for new elements or
-   when container data is present. A special case catches content blocks, whose
-   `serializeValue()` returns null while the block has no id.
-6. Validation scenario: `SCENARIO_LIVE` when `enabled && getEnabledForSite()`,
-   otherwise `SCENARIO_ESSENTIALS`.
-7. Enable keep-flags, save, restore flags in a `finally`.
-8. Return the element.
+   when container data is present, or when an unpublished draft is about to be published. A special
+   case catches content blocks, whose `serializeValue()` returns null while the block has no id.
+6. Validation scenario: `SCENARIO_ESSENTIALS` for an element that stays an unpublished draft;
+   otherwise `SCENARIO_LIVE` when `enabled && getEnabledForSite()`, else `SCENARIO_ESSENTIALS`.
+7. Enable keep-flags, save (`Drafts::saveElementAsDraft()` for a new draft, `Elements::saveElement()`
+   otherwise), restore flags in a `finally`.
+8. Publish the element with `Drafts::applyDraft()` if it's an unpublished draft being published.
+9. Return the element.
+
+### Importing as drafts
+
+For element types whose `hasDrafts()` is true (entries), `ElementImporter::getAvailableProperties()`
+adds a synthetic `saveAsDraft` property (`ElementImporter::SAVE_AS_DRAFT`), shown on the mapping
+screen as "Save as draft". It isn't an element attribute; it decides how the item is saved. Its value
+is read with `FILTER_VALIDATE_BOOL` (`1`, `true`, `yes` and `on` mean a draft; anything else, including
+blank, doesn't), so it can come from a source column or from a template, e.g.
+`{% if object.status == 'draft' %}1{% endif %}`.
+
+| `saveAsDraft` | Matched element | Result |
+| --- | --- | --- |
+| true | none | new unpublished draft |
+| true | unpublished draft | draft updated, stays a draft |
+| any | canonical element | updated in place (enabled or not) |
+| false | none | new element |
+| false | unpublished draft | draft updated, then published |
+| absent | unpublished draft | draft updated, stays a draft |
+
+The flag only takes effect when it's present in the item, so plans that don't map it never publish
+a draft they match. Publishing goes through `Drafts::applyDraft()`, so a section that requires
+workflow approval can refuse it, which fails the item. Drafts are created without a creator.
 
 Container *properties* (as opposed to fields) go through `ImportableContainerPropertiesInterface`:
 `getDestinationColsForProperty()` supplies the mapping panel's columns, and `importIntoContainerAttribute()`
@@ -418,7 +475,7 @@ When an incoming file's name matches an existing asset in that folder, the `file
 setting (`ImportFileConflict`) decides what happens: `useExisting` (default; the file isn't
 downloaded), `replace` (the existing asset is related straight away, but its file is only replaced
 via an `afterItemImported()` callback, so not at all if the row fails, and still when the row is
-otherwise unchanged), or `createNew` (a new asset with a suffixed filename). A URL without a file
+otherwise unchanged), or `keepBoth` (a new asset with a suffixed filename). A URL without a file
 extension is downloaded first and gets its extension from the response's content type; URL
 filenames are URL-decoded. If the upload location can't be resolved yet (e.g. a `{id}` subpath on a
 new entry), files go to the temp folder as new assets and the field moves them into place after the
@@ -432,7 +489,7 @@ the row still imports. New assets for a row that then fails to save are left in 
 ## 8. Nested data formats
 
 Matrix itself accepts the flat and the `sortOrder`/`entries` shapes. The grouped-by-type shape is
-converted into the flat one by `ImportHelper::remapData()` (`src/Support/ImportHelper.php`), so it
+converted into the flat one by `ImportHelper::remapData()` (`src/Import/ImportHelper.php`), so it
 only works when the step has a map with per-type submaps; without one (e.g. from the CLI) its rows
 carry no `type` and are dropped. Grouped rows come out in the map's type order.
 
@@ -518,12 +575,19 @@ Screens are Vue/Inertia under `resources/js/pages/import/`, backed by `ImportPla
   The file is only downloaded and parsed once the mapping is opened; a read error at that point
   is shown under the source field too, until the source changes.
 - The mapping table: **Destination / Incoming data / Match / Clear**. The incoming-data select
-  is a combobox that shows each column's first-row value as a hint, and the most likely
-  column is pre-selected (`ImportHelper::suggestMapValues()`). Attributes with
-  `canBeSet: false` are match-only. Container rows show a "Map field" button opening a nested
-  slideout instead of a select; the slideout has the "Keep existing nested elements missing
-  from the imported data" checkbox and one section per field-layout provider, and nests
-  arbitrarily deep. All four trees are held client-side and saved with the step.
+  is a combobox offering "Please select", "Use template", then the source columns (without the
+  reserved keys), each with its first-row value as a hint; the most likely column is
+  pre-selected (`ImportHelper::suggestMapValues()`). Attributes with `canBeSet: false` are
+  match-only. Container rows show a "Map field" button opening a nested slideout instead of a
+  select; the slideout has the "Keep existing nested elements missing from the imported data"
+  checkbox and one section per field-layout provider, and nests arbitrarily deep.
+- "Use template" shows a Template field under the select. It's a `craft-text-expander`: typing
+  `{` lists the source columns as variables (`ImportHelper::templateTextExpanderTriggers()`), as
+  an info icon by the label explains. A mapping panel that uses templates validates them
+  (`import/validate-step`) when applied, and stays open with any errors shown on their fields.
+- The six trees (`map`, `matchCriteria`, `clearableItems`, `keepMissingNestedElements`,
+  `fieldSettings`, `templates`; `Data\MappingValues`) are held client-side and saved with the
+  step.
 - The mapping endpoints (`ImportPlansController::mappingImporter()`) only build the posted draft
   step for users with `saveImportPlans`. Anyone else gets the saved step with the posted step's
   UID, so they can't make the server fetch a source of their choosing.

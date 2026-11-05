@@ -8,11 +8,11 @@
       <div
         class="order-flex detail-list"
         :class="{'detail-list-bg': index % 2}"
-        v-for="key in listKeys"
+        v-for="(key, index) in listKeys"
         :key="key"
       >
         <div class="detail-list-key">{{ key }}:</div>
-        <div class="detail-list-value">{{ list[key] }}</div>
+        <div class="detail-list-value">{{ flattenedList[key] }}</div>
       </div>
     </div>
   </div>
@@ -20,7 +20,7 @@
 
 <script>
   export default {
-    name: 'AdminTableDeleteButton',
+    name: 'AdminTableDetailRow',
 
     props: {
       rowData: {
@@ -54,28 +54,36 @@
         return a ? `${a}.${b}` : b;
       },
 
-      paths(obj = {}, head = '', depth = 0) {
+      /**
+       * Flattens nested objects into `result`, keyed by dot-delimited paths.
+       */
+      paths(obj = {}, head = '', result = {}) {
         if (!obj) {
-          return [];
+          return result;
         }
 
         Object.entries(obj).forEach(([key, value]) => {
           let fullPath = this.addDelimiter(head, key);
-          this.isObject(value)
-            ? this.paths(value, fullPath, depth + 1)
-            : (this.list[fullPath] = value);
+
+          if (this.isObject(value)) {
+            this.paths(value, fullPath, result);
+          } else {
+            result[fullPath] = value;
+          }
         });
+
+        return result;
       },
     },
 
     computed: {
-      listKeys() {
-        return Object.keys(this.list).sort();
+      flattenedList() {
+        return this.paths(this.rowData.detail.content, '', {...this.list});
       },
-    },
 
-    created() {
-      this.paths(this.rowData.detail.content);
+      listKeys() {
+        return Object.keys(this.flattenedList).sort();
+      },
     },
   };
 </script>

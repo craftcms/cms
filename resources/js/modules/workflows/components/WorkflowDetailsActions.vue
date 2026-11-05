@@ -9,6 +9,7 @@
   } from '@/modules/elements/composables/useElementEditor';
   import {
     useWorkflowTransition,
+    type WorkflowReleaseState,
     type WorkflowIdentity,
   } from '../composables/useWorkflowTransition';
 
@@ -32,7 +33,8 @@
 
   function updateReview(
     workflowReview: WorkflowReviewData,
-    editorActions: ElementEditPayload['editorActions']
+    editorActions: ElementEditPayload['editorActions'],
+    release: WorkflowReleaseState | null | undefined
   ): void {
     props.updatePayload((payload) => ({
       workflow: {
@@ -40,6 +42,7 @@
         current: workflowReview,
       },
       editorActions,
+      ...release,
     }));
   }
 
