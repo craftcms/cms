@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
-use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
@@ -79,13 +78,13 @@ class FullNameField extends TextField
         return Group::make($this->uid, [
             Field::make(t('First Name'), Text::make('firstName')
                 ->value($element->firstName ?? null)
-                ->autocomplete($this->nameBelongsToCurrentUser($element) ? 'given-name' : false))
+                ->autocomplete($this->belongsToCurrentUser($element) ? 'given-name' : false))
                 ->required(! $static && $this->required)
                 ->showStatus($this->showStatus())
                 ->status($status, $statusLabel),
             Field::make(t('Last Name'), Text::make('lastName')
                 ->value($element->lastName ?? null)
-                ->autocomplete($this->nameBelongsToCurrentUser($element) ? 'family-name' : false))
+                ->autocomplete($this->belongsToCurrentUser($element) ? 'family-name' : false))
                 ->required(! $static && $this->required)
                 ->showStatus($this->showStatus())
                 ->status($status, $statusLabel),
@@ -96,17 +95,7 @@ class FullNameField extends TextField
     #[Override]
     protected function inputAttributes(?ElementInterface $element = null, bool $static = false): array
     {
-        return [
-            'autocomplete' => $element && $this->nameBelongsToCurrentUser($element) ? 'name' : 'off',
-        ];
-    }
-
-    /**
-     * Returns whether the name is the current user’s own, so its inputs get `autocomplete` tokens.
-     */
-    protected function nameBelongsToCurrentUser(ElementInterface $element): bool
-    {
-        return $element instanceof Address && $element->getBelongsToCurrentUser();
+        return $this->belongsToCurrentUser($element) ? ['autocomplete' => 'name'] : [];
     }
 
     #[Override]

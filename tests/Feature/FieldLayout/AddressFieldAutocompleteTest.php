@@ -4,17 +4,13 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\Addresses\AddressField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Addresses\CountryCodeField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Addresses\OrganizationField;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\FullNameField;
 use CraftCms\Cms\Http\Controllers\AddressesController;
-use CraftCms\Cms\Ui\Ui;
-use CraftCms\Cms\Ui\UiContext;
-use CraftCms\Cms\Ui\UiHtmlRenderer;
-use CraftCms\Cms\Ui\UiResolver;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Symfony\Component\DomCrawler\Crawler;
@@ -22,44 +18,12 @@ use Symfony\Component\DomCrawler\Crawler;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
 
-/**
- * The `autocomplete` attribute of the address field's line 1 and postal code inputs.
- *
- * @return array{addressLine1: string|null, postalCode: string|null}
- */
-function renderedAddressAutocompletes(User $owner): array
+function addressOwnedBy(User $owner): Address
 {
     $address = new Address(['countryCode' => 'US']);
     $address->setOwnerId($owner->id);
-    $context = new UiContext;
-    $node = new AddressField()->uiNode(new FieldLayoutElementContext($address, $context));
-    $payload = app(UiResolver::class)->resolve(Ui::make([$node]), $context);
-    $html = new Crawler(app(UiHtmlRenderer::class)->render($payload));
 
-    return [
-        'addressLine1' => $html->filter('input[name$="[addressLine1]"]')->attr('autocomplete'),
-        'postalCode' => $html->filter('input[name$="[postalCode]"]')->attr('autocomplete'),
-    ];
-}
-
-/**
- * The `autocomplete` attribute of each input a field renders for an address, by input name.
- *
- * @return array<string, string|null>
- */
-function renderedAddressFieldAutocompletes(BaseField $field, User $owner): array
-{
-    $address = new Address(['countryCode' => 'US']);
-    $address->setOwnerId($owner->id);
-    $context = new UiContext;
-    $node = $field->uiNode(new FieldLayoutElementContext($address, $context));
-    $payload = app(UiResolver::class)->resolve(Ui::make([$node]), $context);
-    $inputs = new Crawler(app(UiHtmlRenderer::class)->render($payload))->filter('input:not([type="hidden"])');
-
-    return array_combine(
-        $inputs->each(fn (Crawler $input) => $input->attr('name')),
-        $inputs->each(fn (Crawler $input) => $input->attr('autocomplete')),
-    );
+    return $address;
 }
 
 beforeEach(function () {
@@ -68,51 +32,39 @@ beforeEach(function () {
     actingAs($this->admin);
 });
 
-it('gives the current user’s own address its autocomplete tokens', function () {
-    expect(renderedAddressAutocompletes($this->admin))
-        ->toBe(['addressLine1' => 'address-line1', 'postalCode' => 'postal-code']);
-});
+it('gives the current user’s own address its autocomplete tokens, and turns them off on another user’s', function (bool $own, array $expected) {
+    $owner = $own ? $this->admin : UserModel::factory()->createElement();
+    $autocompletes = renderedAutocompletes(new AddressField, addressOwnedBy($owner));
 
-it('turns autocomplete off on another user’s address', function () {
-    $other = UserModel::factory()->createElement();
-
-    expect(renderedAddressAutocompletes($other))
-        ->toBe(['addressLine1' => 'off', 'postalCode' => 'off']);
-});
+    expect(Arr::only($autocompletes, ['address[addressLine1]', 'address[postalCode]']))->toBe($expected);
+})->with([
+    'own address' => [true, ['address[addressLine1]' => 'address-line1', 'address[postalCode]' => 'postal-code']],
+    'someone else’s' => [false, ['address[addressLine1]' => 'off', 'address[postalCode]' => 'off']],
+]);
 
 it('keeps the current user’s autocomplete tokens when the address fields are refreshed', function (bool $own, string $expected) {
-    $definitions = postJson(action([AddressesController::class, 'fields']), [
+    $response = postJson(action([AddressesController::class, 'fields']), [
         'namespace' => 'address',
         'countryCode' => 'US',
         'belongsToCurrentUser' => $own,
-    ])->assertOk()->json('fieldDefinitions');
+    ])->assertOk();
+    $html = new Crawler($response->json('fieldsHtml'));
 
-    expect(collect($definitions)->firstWhere('name', 'addressLine1')['autocomplete'])->toBe($expected);
+    expect(collect($response->json('fieldDefinitions'))->firstWhere('name', 'addressLine1')['autocomplete'])->toBe($expected)
+        ->and($html->filter('input[name$="[addressLine1]"]')->attr('autocomplete'))->toBe($expected);
 })->with([
     'own address' => [true, 'address-line1'],
     'someone else’s' => [false, 'off'],
 ]);
 
-it('gives the current user’s own country field its autocomplete token, and turns it off on another user’s', function (bool $own, string $expected) {
-    $address = new Address(['countryCode' => 'CA']);
-    $address->setOwnerId(($own ? $this->admin : UserModel::factory()->createElement())->id);
-    $context = new UiContext;
-    $node = new CountryCodeField()->uiNode(new FieldLayoutElementContext($address, $context));
-    $payload = app(UiResolver::class)->resolve(Ui::make([$node]), $context);
-    $select = new Crawler(app(UiHtmlRenderer::class)->render($payload))->filter('select');
-
-    expect($select->attr('autocomplete'))->toBe($expected);
-})->with([
-    'own address' => [true, 'country'],
-    'someone else’s' => [false, 'off'],
-]);
-
-it('gives the current user’s own address its name and organization tokens, and turns them off on another user’s', function (bool $splitName, BaseField $field, bool $own, array $expected) {
+it('gives the current user’s own address its country, name, and organization tokens, and turns them off on another user’s', function (bool $splitName, BaseField $field, bool $own, array $expected) {
     app(GeneralConfig::class)->showFirstAndLastNameFields = $splitName;
     $owner = $own ? $this->admin : UserModel::factory()->createElement();
 
-    expect(renderedAddressFieldAutocompletes($field, $owner))->toBe($expected);
+    expect(renderedAutocompletes($field, addressOwnedBy($owner)))->toBe($expected);
 })->with([
+    'Country, own' => fn () => [false, new CountryCodeField, true, ['countryCode' => 'country']],
+    'Country, someone else’s' => fn () => [false, new CountryCodeField, false, ['countryCode' => 'off']],
     'Full Name, own' => fn () => [false, new FullNameField, true, ['fullName' => 'name']],
     'Full Name, someone else’s' => fn () => [false, new FullNameField, false, ['fullName' => 'off']],
     'First and Last Name, own' => fn () => [true, new FullNameField(['uid' => 'full-name']), true, ['firstName' => 'given-name', 'lastName' => 'family-name']],

@@ -5,39 +5,15 @@ declare(strict_types=1);
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Users\EmailField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Users\FullNameField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Users\UsernameField;
-use CraftCms\Cms\Ui\Ui;
-use CraftCms\Cms\Ui\UiContext;
-use CraftCms\Cms\Ui\UiHtmlRenderer;
-use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
-use Symfony\Component\DomCrawler\Crawler;
 
 use function Pest\Laravel\actingAs;
-
-/**
- * The `autocomplete` attribute of each input the field renders, by input name.
- *
- * @return array<string, string|null>
- */
-function renderedAutocompletes(BaseField $field, ?ElementInterface $element): array
-{
-    $context = new UiContext;
-    $node = $field->uiNode(new FieldLayoutElementContext($element, $context));
-    $payload = app(UiResolver::class)->resolve(Ui::make([$node]), $context);
-    $inputs = new Crawler(app(UiHtmlRenderer::class)->render($payload))->filter('input:not([type="hidden"])');
-
-    return array_combine(
-        $inputs->each(fn (Crawler $input) => $input->attr('name')),
-        $inputs->each(fn (Crawler $input) => $input->attr('autocomplete')),
-    );
-}
 
 /** The `autocomplete` attribute of the field's one rendered input. */
 function renderedAutocomplete(BaseField $field, ?ElementInterface $element): ?string

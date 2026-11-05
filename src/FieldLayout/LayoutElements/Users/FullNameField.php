@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements\Users;
 
-use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\FullNameField as BaseFullNameField;
-use CraftCms\Cms\User\Elements\User;
-use InvalidArgumentException;
 use Override;
 
 /**
@@ -17,23 +14,6 @@ class FullNameField extends BaseFullNameField
 {
     #[Override]
     public bool $mandatory = true;
-
-    /** @return array<string, string|array<string, string>> */
-    #[Override]
-    protected function inputAttributes(?ElementInterface $element = null, bool $static = false): array
-    {
-        if (! $element instanceof User) {
-            throw new InvalidArgumentException(sprintf('%s can only be used in user field layouts.', self::class));
-        }
-
-        return parent::inputAttributes($element, $static);
-    }
-
-    #[Override]
-    protected function nameBelongsToCurrentUser(ElementInterface $element): bool
-    {
-        return $element instanceof User && $element->getIsCurrent();
-    }
 
     #[Override]
     protected function uiIcon(): ?string

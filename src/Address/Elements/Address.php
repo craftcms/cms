@@ -670,6 +670,11 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * The address UI control posts its fields under `address`.
      *
+     * When the country changes, an administrative area that isn’t one of the new country’s is dropped. Autofill
+     * can post a new country along with an administrative area chosen from the previous country’s list, and
+     * keeping it would add it to the new country’s options, where autofill selects it again. An unrecognized
+     * administrative area is kept when the country doesn’t change, or when neither country lists it.
+     *
      * @param  array<string,mixed>  $values
      */
     #[Override]
@@ -680,14 +685,20 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             unset($values['address']);
         }
 
-        // Autofill can fill a new country and a province chosen from the old country's list together.
-        // Drop that province, so it isn't kept as an extra option that autofill selects again.
+        $previousCountryCode = $this->countryCode ?? null;
         if (
             isset($values['countryCode'], $values['administrativeArea']) &&
-            $values['countryCode'] !== ($this->countryCode ?? null)
+            $values['countryCode'] !== $previousCountryCode
         ) {
-            $provinces = app(Addresses::class)->getSubdivisionRepository()->getList([$values['countryCode']]);
-            if ($provinces !== [] && ! isset($provinces[$values['administrativeArea']])) {
+            $subdivisions = app(Addresses::class)->getSubdivisionRepository();
+            $administrativeAreas = $subdivisions->getList([$values['countryCode']]);
+            $previousAdministrativeAreas = $previousCountryCode ? $subdivisions->getList([$previousCountryCode]) : [];
+            $value = $values['administrativeArea'];
+
+            if (
+                ! isset($administrativeAreas[$value]) &&
+                ($administrativeAreas !== [] || isset($previousAdministrativeAreas[$value]))
+            ) {
                 $values['administrativeArea'] = null;
             }
         }

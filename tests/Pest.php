@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
+use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\Mcp\Public\Access;
 use CraftCms\Cms\Mcp\RouteRegistrar;
 use CraftCms\Cms\Mcp\Settings;
@@ -11,12 +14,17 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Tests\TestCase;
 use CraftCms\Cms\Tests\UnitTestCase;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Http\Request;
 use Illuminate\Routing\RouteCollection;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Assert;
+use Symfony\Component\DomCrawler\Crawler;
 
 uses(TestCase::class)->in('Feature');
 uses(UnitTestCase::class)->in('Unit');
@@ -183,6 +191,24 @@ function flattenUiNodes(array $nodes): array
     }
 
     return $flattened;
+}
+
+/**
+ * The `autocomplete` attribute of each input and select a field layout element renders, by name.
+ *
+ * @return array<string, string|null>
+ */
+function renderedAutocompletes(BaseField $field, ?ElementInterface $element): array
+{
+    $context = new UiContext;
+    $node = $field->uiNode(new FieldLayoutElementContext($element, $context));
+    $payload = app(UiResolver::class)->resolve(Ui::make([$node]), $context);
+    $inputs = new Crawler(app(UiHtmlRenderer::class)->render($payload))->filter('input:not([type="hidden"]), select');
+
+    return array_combine(
+        $inputs->each(fn (Crawler $input) => $input->attr('name')),
+        $inputs->each(fn (Crawler $input) => $input->attr('autocomplete')),
+    );
 }
 
 function buildExpectedUrl(string $url, string $scheme): string

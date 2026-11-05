@@ -20,6 +20,12 @@ readonly class AddressesController
 {
     public function __construct(private Addresses $addresses) {}
 
+    /**
+     * Returns the address fields for a country and its subdivisions.
+     *
+     * The address has no owner here, so the request says whether it’s the current user’s own,
+     * which gives its fields `autocomplete` tokens.
+     */
     public function fields(Request $request, HtmlStack $HtmlStack): Response
     {
         $request->validate([
@@ -36,14 +42,15 @@ readonly class AddressesController
             'locality' => $request->input('locality'),
         ]);
 
+        $belongsToCurrentUser = $request->boolean('belongsToCurrentUser');
         $html = InputNamespace::namespaceInputs(
-            fn () => FormFields::addressFieldsHtml($address), $request->input('namespace')
+            fn () => FormFields::addressFieldsHtml($address, belongsToCurrentUser: $belongsToCurrentUser),
+            $request->input('namespace')
         );
 
         return new JsonResponse([
             'fieldsHtml' => $html,
-            // The address has no owner here, so the control says whether it's the current user's own.
-            'fieldDefinitions' => $this->addresses->getFormFieldDefinitions($address, $request->boolean('belongsToCurrentUser')),
+            'fieldDefinitions' => $this->addresses->getFormFieldDefinitions($address, $belongsToCurrentUser),
             'headHtml' => $HtmlStack->headHtml(),
             'bodyHtml' => $HtmlStack->bodyHtml(),
         ]);

@@ -112,12 +112,16 @@ class TextField extends BaseNativeField
         return Arr::except(parent::fields(), ['value']);
     }
 
+    /**
+     * Subclasses set per-element `autocomplete` tokens, such as the current user’s `email`, through
+     * [[inputAttributes()]], and some of them require an element. Only its `autocomplete` value is passed on;
+     * the [[Text]] control has no API for other attributes, such as `data-lpignore`.
+     */
     #[Override]
     protected function uiControl(FieldLayoutElementContext $context): ?Control
     {
-        // Subclasses set per-element tokens, such as the current user's `email`, through inputAttributes(),
-        // and some of them require an element.
-        $autocomplete = ($context->element ? $this->inputAttributes($context->element)['autocomplete'] ?? null : null)
+        $static = $context->mode !== ControlMode::Editable || $context->ui->mode !== ControlMode::Editable;
+        $autocomplete = ($context->element ? $this->inputAttributes($context->element, $static)['autocomplete'] ?? null : null)
             ?? $this->autocomplete;
 
         return Text::make($this->name ?? $this->attribute())
