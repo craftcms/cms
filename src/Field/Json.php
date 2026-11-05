@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Data\JsonData;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -28,7 +27,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class Json extends Field implements CrossSiteCopyableFieldInterface, MergeableFieldInterface
+class Json extends Field implements MergeableFieldInterface
 {
     #[Override]
     public static function displayName(): string

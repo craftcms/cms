@@ -8,7 +8,6 @@ use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
-use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
@@ -30,11 +29,6 @@ use RuntimeException;
  */
 trait Localizable
 {
-    /**
-     * @see getIsCrossSiteCopyable()
-     */
-    private bool $isCrossSiteCopyable;
-
     /**
      * @var int|null The site ID the element is associated with
      */
@@ -130,28 +124,6 @@ trait Localizable
             ->drafts($this->getIsDraft())
             ->provisionalDrafts($this->isProvisionalDraft)
             ->revisions($this->getIsRevision());
-    }
-
-    public function getIsCrossSiteCopyable(): bool
-    {
-        if (isset($this->isCrossSiteCopyable)) {
-            return $this->isCrossSiteCopyable;
-        }
-
-        if (! Sites::isMultiSite()) {
-            return $this->isCrossSiteCopyable = false;
-        }
-
-        if (count(ElementHelper::editableSiteIdsForElement($this)) <= 1) {
-            return $this->isCrossSiteCopyable = false;
-        }
-
-        // Check if the element exists in other sites
-        $otherSiteStatuses = ElementHelper::siteStatusesForElement($this, true);
-        $otherSiteIds = array_keys($otherSiteStatuses);
-        $existsInOtherSites = ! empty(array_diff($otherSiteIds, [$this->siteId]));
-
-        return $this->isCrossSiteCopyable = $existsInOtherSites;
     }
 
     /**
