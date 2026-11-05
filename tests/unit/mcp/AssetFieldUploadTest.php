@@ -20,7 +20,7 @@ use crafttests\fixtures\AssetFixture;
 use Mcp\Exception\ToolCallException;
 use Mcp\Server\Transport\StdioTransport;
 
-/** Exercises local-path uploads and field uploads through the stdio MCP server. */
+/** Exercises MCP asset uploads: local paths, upload URLs, and field uploads through the stdio MCP server. */
 class AssetFieldUploadTest extends TestCase
 {
     private string $file;
@@ -105,6 +105,30 @@ class AssetFieldUploadTest extends TestCase
         self::assertSame('photo.png', $asset->getFilename());
         self::assertSame('field-upload-test/', $asset->getFolder()->path);
         self::assertSame('Hello', $asset->getFieldValue('caption'));
+    }
+
+    public function testUploadUrlsRequirePermissionToSaveAssets(): void
+    {
+        $user = new User(['username' => 'mcp-uploader', 'email' => 'mcp-uploader@example.com', 'active' => true]);
+        self::assertTrue(Craft::$app->getElements()->saveElement($user, false));
+        $uploads = new AssetUploads();
+
+        try {
+            $uploads->createUpload($user, 'https://example.test/mcp');
+            self::fail('Users without saveAssets permission must not get upload URLs.');
+        } catch (ToolCallException $exception) {
+            self::assertSame('You are not authorized to upload assets.', $exception->getMessage());
+        }
+
+        $volumeUid = Craft::$app->getVolumes()->getVolumeById(1000)->uid;
+        Craft::$app->getUserPermissions()->saveUserPermissions($user->id, ["viewassets:$volumeUid", "saveassets:$volumeUid"]);
+        $user = User::find()->id($user->id)->status(null)->one();
+
+        try {
+            self::assertArrayHasKey('upload_url', $uploads->createUpload($user, 'https://example.test/mcp'));
+        } finally {
+            Craft::$app->getElements()->deleteElement($user, true);
+        }
     }
 
     /** @dataProvider restrictedPaths */

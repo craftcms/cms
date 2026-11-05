@@ -102,6 +102,21 @@ class AssetUploads
      */
     public function createUpload(User $user, string $baseUrl): array
     {
+        // Only users who can upload to some volume may store files, so registered front-end users can't fill
+        // temporary storage
+        $canUpload = false;
+
+        foreach (Craft::$app->getVolumes()->getAllVolumes() as $volume) {
+            if ($user->can("saveAssets:$volume->uid")) {
+                $canUpload = true;
+                break;
+            }
+        }
+
+        if (!$canUpload) {
+            throw new ToolCallException('You are not authorized to upload assets.');
+        }
+
         $this->deleteStaleUploads();
 
         $id = StringHelper::UUID();
