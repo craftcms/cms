@@ -197,6 +197,13 @@ jobs:
           restore-keys: ${{ needs.build-assets.outputs.cache-prefix }}
           fail-on-cache-miss: true
 
+      # `vp run` re-checks the lockfile against the registry, which needs the
+      # Font Awesome token even though nothing is installed here.
+      - name: Authenticate with the Font Awesome registry
+        run: echo "//npm.fontawesome.com/:_authToken=${CRAFT_FONTAWESOME_TOKEN}" >> ~/.npmrc
+        env:
+          CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
+
       - name: Build Storybook
         run: vp run @craftcms/ui#build:storybook
 
@@ -247,6 +254,13 @@ jobs:
           key: ${{ needs.build-assets.outputs.cache-key }}
           restore-keys: ${{ needs.build-assets.outputs.cache-prefix }}
           fail-on-cache-miss: true
+
+      # `vp run` re-checks the lockfile against the registry, which needs the
+      # Font Awesome token even though nothing is installed here.
+      - name: Authenticate with the Font Awesome registry
+        run: echo "//npm.fontawesome.com/:_authToken=${CRAFT_FONTAWESOME_TOKEN}" >> ~/.npmrc
+        env:
+          CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
 
       - name: Build Storybook
         # build-assets already ran the transformer and Wayfinder, and their
