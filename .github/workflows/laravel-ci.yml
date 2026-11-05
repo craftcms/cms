@@ -215,6 +215,8 @@ jobs:
           tia: 'true'
           tia-environment: ${{ matrix.db }}
           coverage: pcov
+          # The browser-tests job runs the browser tests; these suites have none.
+          disable-browser-plugin: 'true'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           packagist-username: ${{ secrets.packagist_username }}
           packagist-token: ${{ secrets.packagist_token }}
