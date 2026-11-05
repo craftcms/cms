@@ -159,10 +159,25 @@ class Settings extends Model
     public function url(string $route): string
     {
         $path = trim($route, '/');
-        $cpTrigger = Craft::$app->getConfig()->getGeneral()->cpTrigger;
+        $general = Craft::$app->getConfig()->getGeneral();
+        $request = Craft::$app->getRequest();
 
-        if ($this->isCpRoute($path) || (!$cpTrigger && Craft::$app->getRequest()->getIsCpRequest())) {
-            $path = $cpTrigger ? ltrim(substr($path, strlen($cpTrigger)), '/') : $path;
+        if ($this->isCpRoute($path)) {
+            $path = ltrim(substr($path, strlen($general->cpTrigger)), '/');
+            return UrlHelper::removeParam(UrlHelper::cpUrl($path), 'site');
+        }
+
+        if (!$general->cpTrigger && $request->getIsCpRequest()) {
+            // Routes include the control panel base URL’s path, like control panel requests’ full paths, so remove it
+            // the way craft\web\Request::init() does.
+            $basePath = trim((string)parse_url((string)$general->baseCpUrl, PHP_URL_PATH), '/');
+            $requestBasePath = trim($request->getBaseUrl(), '/');
+            if ($requestBasePath !== '' && str_starts_with("$basePath/", "$requestBasePath/")) {
+                $basePath = ltrim(substr($basePath, strlen($requestBasePath)), '/');
+            }
+            if ($basePath !== '' && str_starts_with("$path/", "$basePath/")) {
+                $path = ltrim(substr($path, strlen($basePath)), '/');
+            }
             return UrlHelper::removeParam(UrlHelper::cpUrl($path), 'site');
         }
 

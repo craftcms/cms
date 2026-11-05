@@ -114,12 +114,14 @@ class McpServersCest
         $original = ['baseCpUrl' => $general->baseCpUrl, 'cpTrigger' => $general->cpTrigger];
         $general->baseCpUrl = 'https://cp.example.com';
         $general->cpTrigger = null;
-        $this->settings(['enabled' => true, 'route' => '/mcp', 'authorizationRoute' => '/mcp/auth']);
+        $this->settings(['enabled' => true, 'route' => '/mcp', 'authorizationRoute' => '/mcp/auth', 'publicEnabled' => true, 'publicRoute' => '/ai']);
 
         try {
             // The site's domain advertises the authorization endpoint on the site
             $I->amOnPage('/.well-known/oauth-protected-resource/mcp/auth');
             $I->assertSame(UrlHelper::siteUrl('mcp/auth'), json_decode($I->grabPageSource(), true)['resource']);
+            $I->amOnPage('/actions/mcp/catalog');
+            $I->seeResponseCodeIs(200);
 
             // The control panel's domain advertises it on that domain
             $I->haveServerParameter('HTTP_HOST', 'cp.example.com');
@@ -129,6 +131,31 @@ class McpServersCest
             $I->assertStringContainsString('"https://cp.example.com/.well-known/oauth-protected-resource/mcp/auth"', Craft::$app->getResponse()->getHeaders()->get('WWW-Authenticate'));
             $I->amOnPage('/.well-known/oauth-protected-resource/mcp/auth');
             $I->assertSame('https://cp.example.com/mcp/auth', json_decode($I->grabPageSource(), true)['resource']);
+
+            // The public server and discovery stay on the front end
+            $I->amOnPage('/actions/mcp/catalog');
+            $I->seeResponseCodeIs(404);
+            $I->sendAjaxPostRequest('/actions/mcp/public');
+            $I->seeResponseCodeIs(404);
+        } finally {
+            Craft::configure($general, $original);
+        }
+    }
+
+    public function testControlPanelBasePathWithoutTrigger(FunctionalTester $I): void
+    {
+        // The control panel lives at /backoffice on the site's own host
+        $general = Craft::$app->getConfig()->getGeneral();
+        $original = ['baseCpUrl' => $general->baseCpUrl, 'cpTrigger' => $general->cpTrigger];
+        $general->baseCpUrl = UrlHelper::siteUrl('backoffice');
+        $general->cpTrigger = null;
+        $this->settings(['enabled' => true, 'route' => '/backoffice/mcp', 'authorizationRoute' => '/backoffice/mcp/auth']);
+
+        try {
+            $I->haveServerParameter('HTTP_HOST', parse_url($general->baseCpUrl, PHP_URL_HOST));
+            $I->sendAjaxPostRequest('/backoffice/mcp/auth');
+            $I->seeResponseCodeIs(401);
+            $I->assertStringContainsString('"' . UrlHelper::siteUrl('.well-known/oauth-protected-resource/backoffice/mcp/auth') . '"', Craft::$app->getResponse()->getHeaders()->get('WWW-Authenticate'));
         } finally {
             Craft::configure($general, $original);
         }
