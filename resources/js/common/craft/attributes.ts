@@ -1,9 +1,9 @@
 import {isPlainObject} from './params';
 
-/** Escapes text for use in HTML. */
+/** Escapes text for use in HTML. `null` and `undefined` escape to nothing. */
 export function escapeHtml(str: unknown): string {
   const div = document.createElement('div');
-  div.textContent = String(str);
+  div.textContent = String(str ?? '');
 
   return div.innerHTML;
 }

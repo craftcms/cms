@@ -291,3 +291,27 @@ it('gives the card preview the owner’s name, color, and icon', async () => {
 
   document.body.innerHTML = '';
 });
+
+it('adds no tab when the name prompt is cancelled', () => {
+  const designer = Object.create(
+    FieldLayoutDesigner.prototype
+  ) as FieldLayoutDesigner;
+  const container = document.createElement('div');
+  const content = document.createElement('div');
+  content.className = 'fld-tabs__content';
+  container.append(content);
+  document.body.append(container);
+
+  Object.assign(designer, {
+    settings: {customizableTabs: true},
+    $tabContainer: container,
+    $contentTabContainer: content,
+  });
+
+  vi.stubGlobal('prompt', () => null);
+  designer.addTab('content');
+  vi.unstubAllGlobals();
+
+  expect(designer.tabElements()).toEqual([]);
+  container.remove();
+});

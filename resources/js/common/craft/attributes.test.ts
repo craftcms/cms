@@ -1,5 +1,5 @@
 import {afterEach, expect, it} from 'vite-plus/test';
-import {setElementAttributes} from './attributes';
+import {escapeHtml, setElementAttributes} from './attributes';
 
 afterEach(() => {
   document.body.replaceChildren();
@@ -46,4 +46,11 @@ it('applies to every element in a jQuery-style collection or selector', () => {
     expect(p.title).toBe('Hi');
     expect(p.lang).toBe('fr');
   }
+});
+
+it('escapes a missing value to nothing, as jQuery did', () => {
+  expect(escapeHtml(null)).toBe('');
+  expect(escapeHtml(undefined)).toBe('');
+  expect(escapeHtml('')).toBe('');
+  expect(escapeHtml('<b>&</b>')).toBe('&lt;b&gt;&amp;&lt;/b&gt;');
 });
