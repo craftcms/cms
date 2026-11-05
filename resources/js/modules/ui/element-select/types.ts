@@ -88,6 +88,7 @@ export type ElementSelectProps = {
   elementPluralDisplayName: string;
   /** `AssetSelect` only; absent for every other element type. */
   canUpload?: boolean;
-  uploadFolderId?: number | null;
+  /** What uploads are sent with: a `folderId`, or a `fieldId` with an `elementId` and `siteId`. */
+  uploadParams?: Record<string, number> | null;
   showFolders?: boolean;
 };

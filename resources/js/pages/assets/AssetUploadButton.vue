@@ -40,6 +40,12 @@
     defineProps<{
       canUpload: boolean;
       folderId?: number;
+      /**
+       * Destination parameters to upload with instead of `folderId` and
+       * `siteId`, such as a relation field's `fieldId`, `elementId`, and
+       * `siteId`, so the field's own restrictions apply.
+       */
+      params?: Record<string, number>;
       /** The site uploaded assets should be saved in, if not the primary site. */
       siteId?: number;
       allowedKinds?: string[];
@@ -71,7 +77,9 @@
   }>();
 
   const fileInput = ref<HTMLInputElement>();
-  const enabled = computed(() => props.canUpload && !!props.folderId);
+  const enabled = computed(
+    () => props.canUpload && (!!props.params || !!props.folderId)
+  );
   const promptHandler = new PromptHandler(
     () =>
       fileInput.value?.closest<HTMLElement>('craft-element-selector-modal') ??
@@ -203,10 +211,12 @@
       } satisfies UploaderCallbacks,
     }) as Uploader;
 
-    uploader.setParams({
-      folderId: props.folderId,
-      ...(props.siteId ? {siteId: props.siteId} : {}),
-    });
+    uploader.setParams(
+      props.params ?? {
+        folderId: props.folderId,
+        ...(props.siteId ? {siteId: props.siteId} : {}),
+      }
+    );
   }
 
   onMounted(createUploader);
@@ -218,6 +228,7 @@
     [
       () => props.canUpload,
       () => props.folderId,
+      () => props.params,
       () => props.siteId,
       () => props.allowedKinds,
       () => props.dropZone,

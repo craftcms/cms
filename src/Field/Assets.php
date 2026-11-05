@@ -824,10 +824,11 @@ class Assets extends BaseRelationField
      * The same three facts {@see inputTemplateVariables()} hands the legacy
      * Twig input, on the same terms: uploads have to be enabled on the field,
      * there has to be a volume to put them in, and the user needs permission
-     * to save assets there. The upload folder is resolved without creating
-     * dynamic folders — rendering a field should not have the side effect of
-     * creating one — so a field pointed at an as-yet-unmade dynamic subfolder
-     * reports no folder, and the button renders disabled rather than absent.
+     * to save assets there.
+     *
+     * Uploads name the field and element rather than a folder, as the legacy
+     * input's do, so the server resolves the folder itself and holds each file
+     * to the field's selection condition before it's attached.
      */
     #[Override]
     protected function selectControl(FieldContext $context): ElementSelect
@@ -846,7 +847,9 @@ class Assets extends BaseRelationField
         }
 
         try {
-            $uploadFolderId = $this->_uploadFolder($context->element, false)->id;
+            // Resolved without creating dynamic folders, since rendering a field
+            // shouldn't create one, only to find out whether there's a location
+            $this->_uploadFolder($context->element, false);
         } catch (InvalidFsException|InvalidSubpathException) {
             // A misconfigured location costs the field its upload affordance,
             // not its ability to relate what's already there. What went wrong
@@ -856,7 +859,11 @@ class Assets extends BaseRelationField
 
         return $control
             ->canUpload()
-            ->uploadFolderId($uploadFolderId);
+            ->uploadParams(array_filter([
+                'fieldId' => $this->id,
+                'elementId' => $context->element?->id,
+                'siteId' => $context->element?->siteId,
+            ]));
     }
 
     /**
