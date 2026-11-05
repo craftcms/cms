@@ -3676,7 +3676,7 @@ return [
     '{num, number} {num, plural, =1{hour} other{hours}}' => '{num, number}{num, plural, =1{시간} other{시간}}',
     '{num, number} {num, plural, =1{issue} other{issues}}' => '{num, number}개 {num, plural, =1{문제} other{문제}}',
     '{num, number} {num, plural, =1{item} other{items}}' => '{num, number}개 {num, plural, =1{항목} other{항목}}',
-    '{num, number} {num, plural, =1{item} other{items}} selected' => '{num, number}개 {num, plural, =1{항목} other{항목}} 선택됨',
+    '{num, number} {num, plural, =1{{item}} other{{items}}} selected' => '{num, number}개 {num, plural, =1{{item}} other{{items}}} 선택됨',
     '{num, number} {num, plural, =1{minute} other{minutes}}' => '{num, number}{num, plural, =1{분} other{분}}',
     '{num, number} {num, plural, =1{month} other{months}}' => '{num, number}{num, plural, =1{개월} other{개월}}',
     '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number}{num, plural, =1{개 알림} other{개 알림}}',

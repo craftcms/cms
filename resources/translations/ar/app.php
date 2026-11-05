@@ -3676,7 +3676,7 @@ return [
     '{num, number} {num, plural, =1{hour} other{hours}}' => '{num, number} {num, plural, zero {} one {ساعة} two {ساعة} few {ساعات} many {ساعة} =1{ساعة} other{ساعة}}',
     '{num, number} {num, plural, =1{issue} other{issues}}' => '{num, number} {num, plural, =1{مشكلة} few{مشكلات} many{مشكلة} other{مشكلة}}',
     '{num, number} {num, plural, =1{item} other{items}}' => '{num, number} {num, plural, =1{عنصر} few{عناصر} many{عنصرًا} other{عنصر}}',
-    '{num, number} {num, plural, =1{item} other{items}} selected' => '{num, number} {num, plural, =1{عنصر محدد} few{عناصر محددة} many{عنصرًا محددًا} other{عنصر محدد}}',
+    '{num, number} {num, plural, =1{{item}} other{{items}}} selected' => 'تم تحديد {num, number} ({num, plural, =1{{item}} other{{items}}})',
     '{num, number} {num, plural, =1{minute} other{minutes}}' => '{num, number} {num, plural, zero {} one {دقيقة} two {دقيقة} few {دقائق} many {دقيقة} =1{دقيقة} other{دقيقة}}',
     '{num, number} {num, plural, =1{month} other{months}}' => '{num, number} {num, plural, zero {} one {شهر} two {شهر} few {شهور} many {شهر} =1{شهر} other{شهر}}',
     '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number} {num, plural, zero {إشعار} one {إشعار} two {إشعاران} few {إشعارات} many {إشعارًا} =1{إشعار} other{إشعار}}',

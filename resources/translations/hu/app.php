@@ -3676,7 +3676,7 @@ return [
     '{num, number} {num, plural, =1{hour} other{hours}}' => '{num, number} {num, plural, =1{óra} other{óra}}',
     '{num, number} {num, plural, =1{issue} other{issues}}' => '{num, number} {num, plural, =1{probléma} other{probléma}}',
     '{num, number} {num, plural, =1{item} other{items}}' => '{num, number} {num, plural, =1{elem} other{elem}}',
-    '{num, number} {num, plural, =1{item} other{items}} selected' => '{num, number} {num, plural, =1{elem} other{elem}} kijelölve',
+    '{num, number} {num, plural, =1{{item}} other{{items}}} selected' => '{num, number} {num, plural, =1{{item}} other{{item}}} kijelölve',
     '{num, number} {num, plural, =1{minute} other{minutes}}' => '{num, number} {num, plural, =1{perc} other{perc}}',
     '{num, number} {num, plural, =1{month} other{months}}' => '{num, number} {num, plural, =1{hónap} other{hónap}}',
     '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number} {num, plural, =1{értesítés} other{értesítés}}',
