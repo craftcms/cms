@@ -47,6 +47,16 @@
   const error = shallowRef<string>();
   let request = 0;
 
+  /** Whether both versions are previewed side by side, split by a hairline. */
+  const ruled = computed(() =>
+    Boolean(
+      !error.value &&
+      comparison.value?.preview?.current &&
+      !comparison.value.diff &&
+      !comparison.value.unchanged
+    )
+  );
+
   const title = computed(() =>
     props.detail?.label
       ? t('Compare “{name}”', {name: props.detail.label})
@@ -116,7 +126,16 @@
     width="2xl"
     @close="emit('close')"
   >
-    <craft-pane :label="title">
+    <craft-pane :label="title" :class="{'field-changes--ruled': ruled}">
+      <CpLink
+        v-if="comparison?.compareUrl"
+        slot="header-actions"
+        :href="comparison.compareUrl"
+        class="field-changes__all"
+      >
+        {{ t('Compare all fields') }}
+        <craft-icon name="code-compare" />
+      </CpLink>
       <craft-button
         slot="header-actions"
         type="button"
@@ -137,7 +156,11 @@
           <craft-spinner visible :label="t('Loading')"></craft-spinner>
         </div>
         <template v-else>
-          <p v-if="comparison.hasBase" class="field-changes__versions">
+          <div v-if="ruled" class="field-changes__heads" aria-hidden="true">
+            <span>{{ comparison.fromLabel }}</span>
+            <span>{{ comparison.toLabel }}</span>
+          </div>
+          <p v-else-if="comparison.hasBase" class="field-changes__versions">
             <span class="field-changes__from" aria-hidden="true">{{
               comparison.fromLabel
             }}</span>
@@ -151,15 +174,7 @@
                 to: comparison.toLabel,
               })
             }}</span>
-            <CpLink
-              v-if="comparison.compareUrl"
-              :href="comparison.compareUrl"
-              class="field-changes__all"
-            >
-              {{ t('Compare all fields') }}
-            </CpLink>
           </p>
-
           <p v-if="comparison.unchanged" class="field-changes__message">
             {{
               t('{from} and {to} have the same value.', {
@@ -184,6 +199,7 @@
               :to-label="comparison.toLabel"
               :label="detail?.label ?? undefined"
               collapse
+              :ruled="ruled"
             />
           </template>
         </template>
@@ -222,15 +238,38 @@
     font-size: var(--c-text-sm);
   }
 
-  .field-changes__all {
-    margin-inline-start: auto;
-  }
-
   .field-changes__from {
     text-decoration: line-through;
   }
 
   .field-changes__to {
     text-decoration: underline;
+  }
+
+  .field-changes__all {
+    font-size: var(--c-text-sm);
+  }
+
+  .field-changes__heads {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: calc(
+      (var(--cp-container-padding) + var(--c-size-control-sm) / 2) * 2 + 1px
+    );
+    margin-block-start: calc(var(--c-spacing-lg) * -1);
+    margin-inline: calc(var(--c-spacing-lg) * -1);
+    padding-block: var(--c-spacing-sm);
+    padding-inline: var(--c-spacing-lg);
+    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+    background: var(--c-surface-raised);
+    font-weight: 600;
+  }
+
+  .field-changes--ruled::part(body) {
+    background: linear-gradient(
+        var(--c-color-neutral-border-quiet),
+        var(--c-color-neutral-border-quiet)
+      )
+      center / 1px 100% no-repeat;
   }
 </style>
