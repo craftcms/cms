@@ -7,8 +7,11 @@ import type {CpMessages} from './components/cp-messages';
 export interface NotificationSettings {
   icon?: string;
   iconLabel?: string | null;
-  /** Shown below the message: HTML, or an element. */
-  details?: string | HTMLElement | null;
+  /**
+   * Shown below the message: HTML, an element, or a collection of them, which
+   * is what Craft 5's jQuery-backed notifications took.
+   */
+  details?: string | Node | ArrayLike<Node> | null;
   /** Stays until it's dismissed. */
   persist?: boolean;
   class?: string | null;
@@ -146,8 +149,11 @@ export class Notification {
       this.#details.className = 'notification-details';
       if (typeof details === 'string') {
         this.#details.innerHTML = details;
-      } else {
+      } else if (details instanceof Node) {
         this.#details.append(details);
+      } else {
+        // A jQuery collection, which `.append()` used to unwrap for us.
+        this.#details.append(...Array.from<Node>(details));
       }
       main.append(this.#details);
 
@@ -208,7 +214,9 @@ export class Notification {
     }
   }
 
-  async getDetails(): Promise<string | HTMLElement | null | undefined> {
+  async getDetails(): Promise<
+    string | Node | ArrayLike<Node> | null | undefined
+  > {
     return this.settings.details;
   }
 

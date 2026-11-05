@@ -65,6 +65,25 @@ describe('Notification', () => {
 
     expect(notification.element!.isConnected).toBe(false);
   });
+
+  it.each([
+    ['an element', (button: HTMLElement) => button],
+    ['a jQuery-style collection', (button: HTMLElement) => [button]],
+  ])('takes details as %s', async (_label, wrap) => {
+    const button = document.createElement('craft-button');
+    button.textContent = 'Undo';
+
+    const notification = await shown('notice', 'Moved.', {
+      details: wrap(button),
+    });
+
+    const details = notification.element!.querySelector(
+      '.notification-details'
+    );
+
+    expect(details!.textContent).toBe('Undo');
+    expect(details!.firstElementChild).toBe(button);
+  });
 });
 
 describe('the <cp-messages> stack', () => {
