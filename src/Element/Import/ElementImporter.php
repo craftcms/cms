@@ -29,6 +29,7 @@ use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use Illuminate\Database\Query\Expression;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Validator;
 use InvalidArgumentException;
 use Override;
@@ -810,7 +811,10 @@ abstract class ElementImporter extends BaseImporter
                 ->drafts(null)
                 ->draftOf(false)
                 ->status(null)
-                ->orderBy(new Expression('CASE WHEN elements.draftId IS NULL THEN 0 ELSE 1 END'));
+                ->orderBy(new Expression(sprintf(
+                    'CASE WHEN %s IS NULL THEN 0 ELSE 1 END',
+                    DB::connection()->getQueryGrammar()->wrap('elements.draftId'),
+                )));
 
             // give element a chance to adjust the query
             $this->prepareRootElementImportQuery($element, $query);
