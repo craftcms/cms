@@ -18,7 +18,7 @@ use function CraftCms\Cms\t;
  * Code that runs on most control panel requests, measured without the noise of booting the application.
  *
  * These are memoized for the rest of a request, so each benchmark clears its memo and measures what the first call
- * in a request costs. Compared with a baseline (`--ref`), each fails once it's slower by more than its own threshold.
+ * in a request costs.
  */
 #[Bench\Revs(20)]
 #[Bench\Iterations(10)]
@@ -48,7 +48,6 @@ class HotPathBench extends BenchCase
     /**
      * The control panel's config, which every Inertia response shares.
      */
-    #[Bench\Assert('mode(variant.time.avg) <= mode(baseline.time.avg) +/- 3 milliseconds')]
     public function benchCpConfig(): void
     {
         Once::flush();
@@ -58,7 +57,6 @@ class HotPathBench extends BenchCase
     /**
      * A non-admin's permission checks across every section.
      */
-    #[Bench\Assert('mode(variant.time.avg) <= mode(baseline.time.avg) +/- 1 milliseconds')]
     public function benchPermissionChecks(): void
     {
         $userPermissions = app()->build(UserPermissions::class);
@@ -71,7 +69,6 @@ class HotPathBench extends BenchCase
     /**
      * Building every field layout, as the entries index and field settings do.
      */
-    #[Bench\Assert('mode(variant.time.avg) <= mode(baseline.time.avg) +/- 10 milliseconds')]
     public function benchFieldLayouts(): void
     {
         $fields = app(Fields::class);
@@ -82,7 +79,6 @@ class HotPathBench extends BenchCase
     /**
      * Translating messages with parameters, which skip the memo of translated strings.
      */
-    #[Bench\Assert('mode(variant.time.avg) <= mode(baseline.time.avg) +/- 1 milliseconds')]
     public function benchTranslate(): void
     {
         for ($i = 0; $i < 100; $i++) {

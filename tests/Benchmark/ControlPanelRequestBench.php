@@ -12,16 +12,12 @@ use PhpBench\Attributes as Bench;
  * rendering the response.
  *
  * `editor` isn't an admin, so their pages also measure permission checks across every section and volume.
- *
- * Compared with a baseline (`--ref`), a page fails once it's 75 ms slower, which is well beyond the noise of booting
- * the application on a shared CI runner.
  */
 #[Bench\Revs(1)]
 #[Bench\Iterations(15)]
 #[Bench\Groups(['request'])]
 #[Bench\OutputTimeUnit('milliseconds', precision: 1)]
 #[Bench\BeforeMethods('resolvePath')]
-#[Bench\Assert('mode(variant.time.avg) <= mode(baseline.time.avg) +/- 75 milliseconds')]
 class ControlPanelRequestBench extends BenchCase
 {
     private string $path;

@@ -7,17 +7,23 @@ declare(strict_types=1);
  *
  * Usage: php scripts/benchmark-report.php <results.xml> [<baseline.xml>]
  *
- * Both files come from `scripts/benchmark.sh --dump-file=<file>`. A benchmark is marked when it's slower than the
- * baseline by more than the limit in its `#[Bench\Assert]` attribute.
+ * Both files come from `scripts/benchmark.sh --dump-file=<file>`. A benchmark is flagged when it's more than
+ * {@see THRESHOLD} slower than the baseline and the change is larger than {@see NOISE} times their combined standard
+ * deviation, so a small benchmark's jitter doesn't count as a regression.
  */
 
-use PhpBench\Attributes\Assert;
 use PhpBench\Model\Variant;
 use PhpBench\Serializer\XmlDecoder;
 
 require dirname(__DIR__).'/vendor/autoload.php';
 
 [, $resultsFile, $baselineFile] = $argv + [2 => null];
+
+/** The relative slowdown that counts as a regression */
+const THRESHOLD = 0.10;
+
+/** How many combined standard deviations a slowdown must exceed to count as more than noise */
+const NOISE = 3;
 
 /**
  * @return array<string, Variant> Variants keyed by benchmark, subject and parameter set
@@ -46,24 +52,22 @@ function modeMs(?Variant $variant): ?float
 }
 
 /**
- * Returns the limit, in milliseconds, of a subject's `#[Bench\Assert]` attribute.
+ * Returns the standard deviation of a variant's times in milliseconds.
  */
-function limitMs(Variant $variant): ?float
+function stdevMs(Variant $variant): float
 {
-    $subject = $variant->getSubject();
-    $class = new ReflectionClass($subject->getBenchmark()->getClass());
-    $attributes = [
-        ...($class->hasMethod($subject->getName()) ? $class->getMethod($subject->getName())->getAttributes(Assert::class) : []),
-        ...$class->getAttributes(Assert::class),
-    ];
+    return $variant->getStats()->getStdev() / 1000;
+}
 
-    foreach ($attributes as $attribute) {
-        if (preg_match('/\+\/- ([\d.]+) milliseconds/', $attribute->newInstance()->expression, $match)) {
-            return (float) $match[1];
-        }
-    }
+/**
+ * Returns whether a variant is slower than its baseline by more than both the threshold and the noise.
+ */
+function isRegression(Variant $variant, Variant $baseline): bool
+{
+    $change = modeMs($variant) - modeMs($baseline);
 
-    return null;
+    return $change > modeMs($baseline) * THRESHOLD
+        && $change > NOISE * sqrt(stdevMs($variant) ** 2 + stdevMs($baseline) ** 2);
 }
 
 /**
@@ -110,9 +114,8 @@ $slower = 0;
 foreach ($results as $key => $variant) {
     $now = modeMs($variant);
     $before = modeMs($baseline[$key] ?? null);
-    $limit = limitMs($variant);
     $change = $now !== null && $before !== null ? $now - $before : null;
-    $flagged = $now === null || ($change !== null && $limit !== null && $change > $limit);
+    $flagged = $now === null || ($change !== null && isRegression($variant, $baseline[$key]));
     $slower += (int) $flagged;
 
     $rows[] = sprintf(
@@ -122,14 +125,17 @@ foreach ($results as $key => $variant) {
         isset($baseline[$key]) ? formatMs($before) : 'new',
         formatMs($now),
         $change === null ? '' : sprintf('%+.1f ms (%+.0f%%)', $change, $change / $before * 100),
-        $limit === null ? '' : sprintf('+%s ms', $limit),
+        $now === null ? '' : sprintf('±%.1f%%', $variant->getStats()->getRstdev()),
     );
 }
 
-echo $slower === 0
-    ? "No benchmark is slower than the base branch by more than its limit.\n\n"
-    : "⚠️ $slower ".($slower === 1 ? 'benchmark is' : 'benchmarks are').' slower than the base branch by more than '.($slower === 1 ? 'its' : 'their')." limit, or failed.\n\n";
+$threshold = THRESHOLD * 100;
+$noise = NOISE;
 
-echo "| Benchmark | Base | This PR | Change | Limit |\n|---|--:|--:|--:|--:|\n";
+echo $slower === 0
+    ? "No benchmark is more than {$threshold}% slower than the base branch.\n\n"
+    : "⚠️ $slower ".($slower === 1 ? 'benchmark is' : 'benchmarks are')." more than {$threshold}% slower than the base branch, or failed.\n\n";
+
+echo "| Benchmark | Base | This PR | Change | Spread |\n|---|--:|--:|--:|--:|\n";
 echo implode("\n", $rows)."\n\n";
-echo "<sub>The mode of each benchmark's runs, with the base and this pull request measured on the same runner. Page times can vary by about 15% between runs.</sub>\n";
+echo "<sub>The mode of each benchmark's runs, with the base and this pull request measured on the same runner. Spread is the relative standard deviation of this pull request's runs. A benchmark is flagged when it's more than {$threshold}% slower and the change is more than {$noise}× their combined standard deviation.</sub>\n";
