@@ -391,6 +391,36 @@ it('makes medium and large chips as tall as a button of the same size', async ()
   }
 });
 
+it('puts a stacked chip’s suffix and thumbnail in the same place with or without a checkbox', async () => {
+  const tile = (selectable: boolean) => `
+    <craft-chip prefix-placement="block-start" full-width show-thumb thumb-size="lg" ${selectable ? 'selectable' : ''} style="width: 200px">
+      <div slot="thumbnail"><craft-thumbnail src="${image}" alt="Thumbnail"></craft-thumbnail></div>
+      Label
+      <craft-button slot="suffix" size="small" icon="ellipsis" aria-label="Actions"></craft-button>
+    </craft-chip>`;
+  document.body.innerHTML = tile(true) + tile(false);
+  const chips = [...document.querySelectorAll('craft-chip')];
+  await Promise.all(chips.map((chip) => chip.updateComplete));
+
+  const offsets = chips.map((chip) => {
+    const top = chip
+      .shadowRoot!.querySelector('.cp-chip')!
+      .getBoundingClientRect().top;
+    const offset = (selector: string) =>
+      Math.round(
+        chip.shadowRoot!.querySelector(selector)!.getBoundingClientRect().top -
+          top
+      );
+
+    return {
+      suffix: offset('.cp-chip__suffix'),
+      thumbnail: offset('.cp-chip__prefix'),
+    };
+  });
+
+  expect(offsets[1]).toEqual(offsets[0]);
+});
+
 it('sizes to its content, or fills its parent when full-width', async () => {
   for (const parent of ['', 'display: flex;']) {
     document.body.innerHTML = `

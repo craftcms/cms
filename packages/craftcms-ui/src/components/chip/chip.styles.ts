@@ -397,10 +397,10 @@ export default css`
     justify-self: start;
   }
 
-  /* With a checkbox, the header row is as tall as the checkbox, so it sits as
-     far from the top as from the side, and a taller suffix centers on it,
-     spilling evenly into the padding above and the gap below. */
-  .cp-chip--stacked.cp-chip--has-header.cp-chip--selectable {
+  /* The header row is as tall as a checkbox, with or without one, so a
+     checkbox sits as far from the top as from the side, and a taller suffix
+     centers on it, spilling evenly into the padding above and the gap below. */
+  .cp-chip--stacked.cp-chip--has-header {
     grid-template-rows: var(--c-chip-checkbox-size, calc(14rem / 16)) auto auto;
   }
 
