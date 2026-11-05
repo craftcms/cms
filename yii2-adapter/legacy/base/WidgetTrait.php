@@ -43,7 +43,7 @@ trait WidgetTrait
 
     public function getBodyHtml(): ?string
     {
-        $url = craftAsset('legacy/cp/dist/images/prg.jpg');
+        $url = craftAsset('legacy/cpcompat/dist/images/prg.jpg');
 
         return <<<EOD
 <div style="margin: 0 -24px -24px;">

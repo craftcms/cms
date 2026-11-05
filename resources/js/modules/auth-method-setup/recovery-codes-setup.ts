@@ -8,6 +8,8 @@
 import {t} from '@craftcms/ui';
 import {html, LitElement, render} from 'lit';
 import {property} from 'lit/decorators.js';
+import {showError} from '@/modules/messages/messages';
+import {announce} from '@/common/announcer';
 
 declare const Craft: any;
 
@@ -43,7 +45,7 @@ export class RecoveryCodesSetup extends LitElement {
     e.preventDefault();
 
     this.submitButton?.setAttribute('loading', 'true');
-    Craft.cp.announce(t('Loading'));
+    announce(t('Loading'));
 
     if (!(e.target instanceof HTMLFormElement)) {
       throw new Error('Recovery code setup must be submitted by a form.');
@@ -63,17 +65,17 @@ export class RecoveryCodesSetup extends LitElement {
       const data = await response.json();
 
       if (!response.ok) {
-        Craft.cp.displayError(data?.message);
+        showError(data?.message);
         return;
       }
 
       this.handleSuccess(data);
     } catch (error) {
-      Craft.cp.displayError();
+      showError();
       console.error({error});
     } finally {
       this.submitButton?.removeAttribute('loading');
-      Craft.cp.announce(Craft.t('app', 'Loading complete'));
+      announce(t('Loading complete'));
     }
   };
 
@@ -179,7 +181,7 @@ export class RecoveryCodesSetup extends LitElement {
   //             params
   //           )
   //             .catch((error: any) => {
-  //               Craft.cp.displayError(error?.response?.data?.message);
+  //               showError(error?.response?.data?.message);
   //             })
   //             .finally(() => {
   //               $downloadBtn.removeClass('loading');

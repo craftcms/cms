@@ -6,6 +6,7 @@
    */
   import {actionClient, t} from '@craftcms/ui';
   import {usePage} from '@inertiajs/vue3';
+  import {showError} from '@/modules/messages';
   import {computed, shallowRef} from 'vue';
   import type {CraftData} from '@/common/composables/useCraftData';
   import ActionMenu from '@/common/components/ActionMenu.vue';
@@ -150,7 +151,7 @@
       await send(AssistantController.destroy.url());
       emit('deleted');
     } catch (exception) {
-      Craft.cp?.displayError?.(failure(exception));
+      showError(failure(exception));
     }
   }
 </script>

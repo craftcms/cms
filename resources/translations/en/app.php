@@ -3248,6 +3248,7 @@ return [
     'Upload failed for “{filename}”.' => 'Upload failed for “{filename}”.',
     'Upload failed.' => 'Upload failed.',
     'Upload files' => 'Upload files',
+    'Upload progress' => 'Upload progress',
     'Uploaded By' => 'Uploaded By',
     'Uploaded by' => 'Uploaded by',
     'Use the AI assistant' => 'Use the AI assistant',

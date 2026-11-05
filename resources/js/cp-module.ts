@@ -1,4 +1,13 @@
 import {defineAsyncComponent} from 'vue';
+import {ConfigService} from '@craftcms/ui/services/Config';
+import {FileUpload, UploadError, registerTransport} from './upload-client';
+import {
+  closeCommandPalette,
+  openCommandPalette,
+  registerActions,
+  registerProvider,
+  registerView,
+} from './modules/command-palette/registry';
 
 /**
  * The CP's element index and editor, its admin table, and the shared components
@@ -116,3 +125,106 @@ export type {
   Table,
   Updater,
 } from '@tanstack/vue-table';
+
+export {
+  showError,
+  showMessage,
+  showNotice,
+  showSuccess,
+  type CpMessage,
+  type CpNotification,
+  type MessageSettings,
+  type MessageType,
+} from './modules/messages/messages';
+export {useMessages} from './modules/messages/useMessages';
+export {announce} from './common/announcer';
+export type {AnnounceOptions} from './common/announcer';
+export {
+  clearCopiedElements,
+  copyElements,
+  getCopiedElements,
+  onCopiedElementsChange,
+  pasteElements,
+  pasteElementsLabel,
+} from './modules/elements/clipboard';
+export type {
+  CopiedElementInfo,
+  CopiedElementsListener,
+} from './modules/elements/clipboard';
+export {highlighter} from './common/utils/highlight-code';
+
+export {CraftAuthChallengeForm as AuthChallengeForm} from './modules/auth/components/auth-challenge-form';
+
+export {
+  AssetSelectorController,
+  ElementSelectorController,
+  registerElementSelectorController,
+} from '@craftcms/ui';
+
+export {
+  createElementSelectorModal,
+  type ElementSelectorModalHandle,
+  type ElementSelectorModalSettings,
+} from './modules/element-selector-modal/create-element-selector-modal';
+
+/** File uploads and the transport registry the control panel's uploader uses. */
+export const Uploads = {FileUpload, UploadError, registerTransport};
+
+export type {
+  PrepareUpload,
+  UploadOptions,
+  UploadState,
+  UploadTransport,
+  UploadTransportContext,
+} from './upload-client';
+
+/**
+ * Opens or closes the command palette, and adds client-side search providers,
+ * page actions and views to it. Server-side providers, pages and actions are
+ * registered in PHP.
+ */
+export const CommandPalette = {
+  open: openCommandPalette,
+  close: closeCommandPalette,
+  registerProvider,
+  registerActions,
+  registerView,
+};
+
+export type * from './modules/command-palette/types';
+export type {CommandPaletteRegistration} from './modules/command-palette/registry';
+
+/**
+ * The utilities a plugin's own bundle needs to behave like control panel code:
+ * translating, talking to controller actions, and appending markup the server
+ * returned. They're re-exported here, rather than left to be imported from
+ * `@craftcms/ui`, so a plugin bundle shares the control panel's instances
+ * instead of bundling second copies.
+ */
+export {t} from '@craftcms/ui/utilities/translate';
+export {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
+export {
+  appendBodyHtml,
+  appendElementHtml,
+  appendHeadHtml,
+  type AppendHtmlDisposer,
+} from '@craftcms/ui/utilities/dom';
+export {actionClient, http} from '@craftcms/ui';
+export {getActionUrl, getCpUrl, getUrl} from './common/craft/url';
+
+/**
+ * The control panel's own config — `siteId`, `sites`, `userIsAdmin`,
+ * `elementTypeNames`, `orientation` and the rest of the payload the control
+ * panel boots with.
+ */
+export function cpConfig(): ConfigService {
+  return ConfigService.getInstance();
+}
+
+/** Slideouts, element editors, chip actions and thumbnails. */
+export {openSlideout, createElementEditor} from './common/slideouts';
+export type {ElementEditorPanel} from './common/slideouts';
+export {addActionsToChip, type ChipAction} from './common/craft/chip-actions';
+export {loadElementThumbs} from './modules/element-thumb-loader';
+export {openAssetImageEditor} from './modules/image-editor/open-asset-image-editor';
+export {Uploader} from './modules/uploader/uploader';

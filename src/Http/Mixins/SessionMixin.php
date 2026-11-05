@@ -30,9 +30,7 @@ class SessionMixin
              * @phpstan-ignore-next-line
              */
             $this->flashJs(<<<JS
-if (Craft?.broadcaster) {
-    Craft.broadcaster.postMessage($message);
-}
+window.dispatchEvent(new CustomEvent('craft:broadcast', {detail: $message}));
 JS, Position::Ready);
         };
     }

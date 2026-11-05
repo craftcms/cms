@@ -1,4 +1,3 @@
-import {createElementEditor} from './create-element-editor';
 import {closeAllSlideouts, closeSlideout, openSlideout} from './store';
 
 export {default as SlideoutHost} from './SlideoutHost.vue';
@@ -19,9 +18,7 @@ export type {
 
 /**
  * Expose the opener on `window.Craft` so legacy bundles — and anyone poking at
- * the console — can open a Vue slideout without importing anything. This also
- * replaces the legacy bundle's `Craft.createElementEditor()`, so element
- * editors open in a Vue slideout too.
+ * the console — can open a Vue slideout without importing anything.
  */
 export function registerSlideoutGlobals(): void {
   const craft = window.Craft;
@@ -34,6 +31,5 @@ export function registerSlideoutGlobals(): void {
     openSlideout,
     closeSlideout,
     closeAllSlideouts,
-    createElementEditor,
   });
 }

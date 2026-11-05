@@ -7,18 +7,26 @@ import {
   prefersReducedMotion,
   type GarnishBaseSettings,
 } from '@craftcms/garnish';
+import {initLegacyUi} from '@/common/craft/legacy-ui';
 import type {CraftActionMenu, ReorderDirection} from '@craftcms/ui';
 import {openSlideout, type SlideoutSaveResult} from '@/common/slideouts';
 import {componentSelectData} from './support';
+import {getActionUrl} from '@/common/craft/url';
+import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
+import {addActionsToChip} from '@/common/craft/chip-actions';
+import {hasMousePointerEvents} from '@/common/craft/pointer';
+import {resolveElement} from '@/common/utils/dom';
+import {jq} from '@/common/utils/jquery';
+import {onLongPress} from '@vueuse/core';
 
 // `Craft` and `$` (jQuery) remain page globals. The Choose menu and the
 // *chip* action menus are both modern, self-booting `craft-action-menu`s
-// now, but the controller still pairs `@craftcms/garnish` `DragSort` with
-// still-jQuery Craft seams — `Craft.addActionsToChip` (which also carries a
-// jQuery `disclosureMenu()` fallback for old/plugin-rendered chip markup)
-// and `Craft.sendActionRequest` — so jQuery survives there.
+// now, but chips are still wired with jQuery events, and `addActionsToChip()`
+// keeps a jQuery `disclosureMenu()` fallback for old/plugin-rendered chip
+// markup.
 declare const Craft: any;
-declare const $: any;
 
 /** Removal fade duration, ms (legacy `Craft.ComponentSelectInput.REMOVE_FX_DURATION`). */
 const REMOVE_FX_DURATION = 200;
@@ -38,13 +46,13 @@ const wiredChips = new WeakSet<HTMLElement>();
  * Detail for the bubbling `define-chip-actions` `CustomEvent` dispatched while
  * a chip gets its one-time wiring. Listeners — `<craft-entry-type-manager>`
  * adds its "Move to previous/next group" items this way — may push
- * `Craft.addActionsToChip` action descriptors into `actions`; contributed
+ * `addActionsToChip()` action descriptors into `actions`; contributed
  * actions land before the built-in Replace/Remove items.
  */
 export interface DefineChipActionsEventDetail {
   /** The chip being wired. */
   chip: HTMLElement;
-  /** `Craft.addActionsToChip` action descriptors to add to the chip's menu. */
+  /** `addActionsToChip()` action descriptors to add to the chip's menu. */
   actions: any[];
 }
 
@@ -165,7 +173,6 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
   #replacing: HTMLElement | null = null;
 
   /** jQuery-wrapped Create button the activate handler is bound to. */
-  #$createBtn: any = null;
 
   #initialized = false;
 
@@ -252,8 +259,8 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
     );
 
     if (this.#createBtn && this.settings.createAction) {
-      this.#$createBtn = $(this.#createBtn);
-      this.#$createBtn.on('activate', this.#handleCreateActivate);
+      // A craft-button clicks on Enter and Space too
+      this.#createBtn.addEventListener('click', this.#handleCreateActivate);
     }
 
     this.#initialized = true;
@@ -282,8 +289,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
       this.#handleReplaceComponent
     );
 
-    this.#$createBtn?.off('activate', this.#handleCreateActivate);
-    this.#$createBtn = null;
+    this.#createBtn?.removeEventListener('click', this.#handleCreateActivate);
 
     this.#initialized = false;
     componentSelectData.delete(this.container);
@@ -429,21 +435,15 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
     addToMenu = false,
     replace: HTMLElement | null = null
   ): Promise<void> {
-    const {data} = await Craft.sendActionRequest(
-      'POST',
-      'app/render-components',
-      {
-        data: {
-          components: [
-            {
-              type,
-              id,
-              instances: [this.#renderSettings(id)],
-            },
-          ],
+    const {data} = await actionClient.post('app/render-components', {
+      components: [
+        {
+          type,
+          id,
+          instances: [this.#renderSettings(id)],
         },
-      }
-    );
+      ],
+    });
 
     const replacedLi = replace?.closest<HTMLElement>('li') ?? null;
 
@@ -472,12 +472,12 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
       this.#addMenuOption(type, id, li.querySelector('craft-chip'));
     }
 
-    await Craft.appendHeadHtml(data.headHtml);
-    await Craft.appendBodyHtml(data.bodyHtml);
+    await appendHeadHtml(data.headHtml);
+    await appendBodyHtml(data.bodyHtml);
 
     if (this.settings.showDescription) {
       // Descriptions render an info icon that needs a UI-elements boot.
-      Craft.initUiElements($(li));
+      initLegacyUi(li);
     }
 
     this.#onChange();
@@ -630,7 +630,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
     const action = this.settings.createAction ?? '';
     const url = /^((https?:)?\/\/|\/)/.test(action)
       ? action
-      : Craft.getActionUrl(action);
+      : getActionUrl(action);
 
     void openSlideout(url, {
       opener: this.#createBtn,
@@ -738,7 +738,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
   }
 
   /**
-   * Add the chip's action-menu items through the `Craft.addActionsToChip` seam
+   * Add the chip's action-menu items through the `addActionsToChip()` seam
    * (it finds — or creates — the self-booting `craft-action-menu` inside the
    * `craft-chip`'s `[slot="suffix"]`, building `craft-action-item`s from these
    * descriptors). A bubbling `define-chip-actions` event — dispatched natively
@@ -755,10 +755,6 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
    * at event time.
    */
   #addChipActions(chip: HTMLElement): void {
-    if (!Craft?.addActionsToChip) {
-      return;
-    }
-
     const owner = (): ComponentSelect =>
       closestRegistered(chip, componentSelectData) ?? this;
 
@@ -774,7 +770,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
     if (this.#menu) {
       actions.push({
         icon: 'arrows-rotate',
-        label: Craft.t('app', 'Replace'),
+        label: t('Replace'),
         callback: () => {
           // Announce rather than act: the owning select's container listener
           // opens the Choose menu as the default (picking an option puts the
@@ -796,39 +792,45 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
 
     actions.push({
       icon: 'remove',
-      label: Craft.t('app', 'Remove'),
+      label: t('Remove'),
       onActivate: () => owner().removeComponent(chip),
       destructive: true,
     });
 
-    Craft.addActionsToChip($(chip), actions);
+    addActionsToChip(chip, actions);
   }
 
   /**
-   * dblclick — and taphold, via the jQuery Touch Events plugin the CP loads —
-   * on a chip triggers its action menu's `[data-edit-action]` item, matching
-   * the legacy port. The listeners live on the chip itself, so they need no
-   * teardown; they go away with the chip.
+   * Double-clicking a chip, or long-pressing it on a touch screen, triggers
+   * its action menu's `[data-edit-action]` item. The listeners live on the
+   * chip itself, so they go away with it.
    */
   #initChipEditShortcut(chip: HTMLElement): void {
-    $(chip).on('dblclick taphold', (ev: any) => {
-      // Don't open the edit screen when tapholding a button — that's a drag.
-      if (ev.type === 'taphold' && ev.target.nodeName === 'BUTTON') {
-        return;
-      }
-
+    const edit = () => {
       const menu = this.#chipDisclosureMenu(chip);
-      if (menu) {
-        // `$container` is jQuery on the legacy DisclosureMenu and a native
-        // element on the modern port; `$()` normalizes both.
-        $(menu.$container).find('[data-edit-action]').trigger('click');
-      }
-    });
+      const container = resolveElement(menu?.$container);
+      container?.querySelector<HTMLElement>('[data-edit-action]')?.click();
+    };
+
+    chip.addEventListener('dblclick', edit);
+    onLongPress(
+      chip,
+      (ev) => {
+        // A long press on a button is a drag
+        if (
+          ev.pointerType === 'touch' &&
+          (ev.target as Element | null)?.nodeName !== 'BUTTON'
+        ) {
+          edit();
+        }
+      },
+      {delay: 750}
+    );
   }
 
   /**
    * The chip's own action menu (legacy `getDisclosureMenu`), in whichever
-   * shape it's in — mirroring `Craft.addActionsToChip`'s own resolution:
+   * shape it's in — mirroring `addActionsToChip()`'s own resolution:
    *
    * - Modern self-booting `craft-action-menu` (what
    *   `ElementHtml::componentActionMenu()` renders now): returns
@@ -849,15 +851,18 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
       return {$container: container};
     }
 
-    const $trigger = $(chip)
-      .find(
-        '[slot="suffix"] [data-disclosure-trigger], .chip-actions .action-btn'
-      )
-      .first();
+    const trigger = chip.querySelector(
+      '[slot="suffix"] [data-disclosure-trigger], .chip-actions .action-btn'
+    );
 
-    return $trigger.length
-      ? $trigger.disclosureMenu().data('disclosureMenu')
-      : null;
+    // The legacy menu plugin comes with the Yii2 adapter
+    const $ = jq();
+    if (!trigger || !$ || !('disclosureMenu' in $.fn)) {
+      return null;
+    }
+
+    // oxlint-disable-next-line typescript/no-explicit-any
+    return ($(trigger) as any).disclosureMenu().data('disclosureMenu');
   }
 
   /**
@@ -930,7 +935,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
       this.#dragSort ||
       this.#sortManagedExternally ||
       !this.settings.sortable ||
-      !Craft.hasMousePointerEvents()
+      !hasMousePointerEvents()
     ) {
       return;
     }

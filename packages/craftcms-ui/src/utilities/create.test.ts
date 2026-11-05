@@ -1,92 +1,47 @@
-import {beforeEach, describe, expect, it} from 'vite-plus/test';
-import {createButton, createPasteButton, createSubmitButton} from './create.js';
+import {expect, it} from 'vite-plus/test';
+import '../components/button/button.js';
+import {create} from './create.js';
 
-beforeEach(() => {
-  document.body.innerHTML = '';
+it('sets properties, attributes and children', async () => {
+  const button = create(
+    'craft-button',
+    {
+      variant: 'primary',
+      type: 'submit',
+      attrs: {'data-id': 5, 'aria-busy': true, hidden: false, title: null},
+    },
+    'Save'
+  );
+  document.body.append(button);
+  await button.updateComplete;
+
+  expect(button.variant).toBe('primary');
+  expect(button.type).toBe('submit');
+  expect(button.getAttribute('data-id')).toBe('5');
+  expect(button.getAttribute('aria-busy')).toBe('');
+  expect(button.hasAttribute('hidden')).toBe(false);
+  expect(button.hasAttribute('title')).toBe(false);
+  expect(button.textContent).toBe('Save');
+
+  button.remove();
 });
 
-describe('createButton', () => {
-  it('creates a craft-button with a slotted label span', () => {
-    const button = createButton({label: 'Save'});
+it('skips undefined properties', () => {
+  const value: string | undefined = undefined;
 
-    expect(button.tagName.toLowerCase()).toBe('craft-button');
-    expect(button.type).toBe('button');
-    const label = button.querySelector('.label');
-    expect(label).not.toBeNull();
-    expect(label!.textContent).toBe('Save');
-  });
-
-  it('applies the legacy config keys', () => {
-    const button = createButton({
-      id: 'my-btn',
-      class: 'foo bar',
-      ariaLabel: 'The button',
-      ariaDescribedBy: 'desc',
-      role: 'option',
-      toggle: true,
-      controls: 'menu-1',
-      data: {key: 'entry', count: 2},
-      icon: 'plus',
-      disabled: true,
-    });
-
-    expect(button.id).toBe('my-btn');
-    expect(button.classList.contains('foo')).toBe(true);
-    expect(button.classList.contains('bar')).toBe(true);
-    expect(button.getAttribute('aria-label')).toBe('The button');
-    expect(button.getAttribute('aria-describedby')).toBe('desc');
-    expect(button.getAttribute('role')).toBe('option');
-    expect(button.getAttribute('aria-expanded')).toBe('false');
-    expect(button.getAttribute('aria-controls')).toBe('menu-1');
-    expect(button.getAttribute('data-key')).toBe('entry');
-    expect(button.getAttribute('data-count')).toBe('2');
-    expect(button.icon).toBe('plus');
-    expect(button.disabled).toBe(true);
-  });
-
-  it('renders an html label when no plain label is given', () => {
-    const button = createButton({html: '<em>Fancy</em>'});
-
-    expect(button.querySelector('.label em')).not.toBeNull();
-  });
-
-  it('supports the modern options', () => {
-    const button = createButton({
-      variant: 'danger',
-      size: 'small',
-      loading: true,
-    });
-
-    expect(button.variant).toBe('danger');
-    expect(button.size).toBe('small');
-    expect(button.loading).toBe(true);
-  });
+  expect(create('input', {name: 'url', value}).value).toBe('');
 });
 
-describe('createSubmitButton', () => {
-  it('creates an accent submit button with the legacy class token', () => {
-    const button = createSubmitButton();
+it('rejects properties the element does not have', () => {
+  // Only type-checked; never called.
+  const check = () => {
+    // @ts-expect-error `varient` isn't a craft-button property
+    create('craft-button', {varient: 'primary'});
+    // @ts-expect-error methods can't be passed as properties
+    create('input', {focus: () => {}});
+    // @ts-expect-error read-only properties can't be set
+    create('input', {validity: {} as ValidityState});
+  };
 
-    expect(button.type).toBe('submit');
-    expect(button.variant).toBe('primary');
-    expect(button.classList.contains('submit')).toBe(true);
-    expect(button.querySelector('.label')!.textContent).toBe('Submit');
-  });
-
-  it('keeps a configured label and variant', () => {
-    const button = createSubmitButton({label: 'Apply', variant: 'fill'});
-
-    expect(button.querySelector('.label')!.textContent).toBe('Apply');
-    expect(button.variant).toBe('fill');
-  });
-});
-
-describe('createPasteButton', () => {
-  it('creates a paste button with icon, default label, and class token', () => {
-    const button = createPasteButton();
-
-    expect(button.icon).toBe('duplicate');
-    expect(button.classList.contains('paste-btn')).toBe(true);
-    expect(button.querySelector('.label')!.textContent).toBe('Paste elements');
-  });
+  expect(check).toBeTypeOf('function');
 });

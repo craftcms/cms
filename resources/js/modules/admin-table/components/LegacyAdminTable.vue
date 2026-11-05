@@ -10,6 +10,7 @@
    *
    * @see resources/js/legacy-admin-table.ts
    */
+  import {actionClient} from '@craftcms/ui';
   import {useCraftTable} from '@/common/table/craftTable';
   import {computed, h, ref, watch} from 'vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
@@ -19,6 +20,7 @@
     LegacyAdminTableColumn,
     LegacyAdminTableRow,
   } from '@/modules/admin-table/types/legacy';
+  import {showError, showNotice} from '@/modules/messages/messages';
 
   const props = defineProps<{
     columns: Array<LegacyAdminTableColumn>;
@@ -79,17 +81,15 @@
     }
 
     try {
-      await window.Craft.sendActionRequest('POST', props.deleteAction, {
-        data: {id: row.id},
-      });
+      await actionClient.post(props.deleteAction, {id: row.id});
 
       rows.value = rows.value.filter((candidate) => candidate !== row);
 
       if (props.deleteSuccessMessage) {
-        window.Craft.cp?.displayNotice?.(props.deleteSuccessMessage);
+        showNotice(props.deleteSuccessMessage);
       }
     } catch {
-      window.Craft.cp?.displayError?.(props.deleteFailMessage ?? undefined);
+      showError(props.deleteFailMessage ?? undefined);
     }
   }
 

@@ -20,6 +20,7 @@ class CpAsset extends AssetBundle
     {
         $registry = app(InternalAssetRegistry::class);
         $registry->register(\CraftCms\Cms\View\LegacyAssets\CpAsset::class);
+        $registry->register(\CraftCms\Yii2Adapter\View\LegacyAssets\CraftJsAsset::class);
         $registry->flush();
     }
 }

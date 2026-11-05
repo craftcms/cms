@@ -126,7 +126,7 @@ it('preserves animated GIF frames and timing', function () {
 
 it('accounts for rotation in text bounds', function () {
     $image = (new Raster)->loadImage($this->sandboxPath.'/google.png');
-    $image->setFontProperties(dirname(__DIR__, 3).'/packages/craftcms-legacy/cp/src/fonts/Craft.ttf', 20, '#000000');
+    $image->setFontProperties(dirname(__DIR__, 2).'/_data/fonts/Craft.ttf', 20, '#000000');
 
     $unrotated = $image->getTextBox('A');
     $rotated = $image->getTextBox('A', 90);

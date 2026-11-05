@@ -75,3 +75,16 @@ describe('a combobox toggle', () => {
     ).toBe(true);
   });
 });
+
+describe('a switch toggle', () => {
+  it('reads the checked property, which switches update before aria-checked', () => {
+    const toggle = document.createElement('craft-switch-button');
+    toggle.setAttribute('role', 'switch');
+    toggle.setAttribute('aria-checked', 'false');
+    toggle.setAttribute('data-target', '#pane');
+    Object.assign(toggle, {checked: true});
+    document.body.append(toggle);
+
+    expect(new FieldToggle(toggle).getToggleVal()).toBe(true);
+  });
+});

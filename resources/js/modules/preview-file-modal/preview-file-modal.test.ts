@@ -1,9 +1,29 @@
-import $ from 'jquery';
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+  type MockInstance,
+} from 'vite-plus/test';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {PreviewFileModal} from './preview-file-modal';
 
-const sendActionRequest = vi.fn();
-const cp = {announce: vi.fn(), displayError: vi.fn(), displayNotice: vi.fn()};
+const messages = vi.hoisted(() => ({
+  showError: vi.fn(),
+  showNotice: vi.fn(),
+  showSuccess: vi.fn(),
+}));
+vi.mock('@/modules/messages/messages', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  ...messages,
+}));
+beforeEach(() => {
+  Object.values(messages).forEach((fn) => fn.mockReset());
+});
+
+let post: MockInstance;
 
 function openDialogs(): HTMLElement[] {
   return [...document.body.querySelectorAll<HTMLElement>('craft-dialog')];
@@ -29,16 +49,15 @@ function stubOverflow(): void {
   vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(100);
 }
 
-/** A stand-in for the legacy `Garnish.Select` holding asset elements. */
+/** A stand-in for a `Select` holding asset elements. */
 function elementSelect(ids: number[]) {
-  const $items = $(
-    ids.map((id) => `<div class="element" data-id="${id}"></div>`).join('')
-  );
   return {
-    $items,
-    getItemIndex: ($item: any) => $items.index($item),
-    getPreviousItem: (index: number) => $items.eq(index - 1),
-    getNextItem: (index: number) => $items.eq(index + 1),
+    $items: ids.map((id) => {
+      const item = document.createElement('div');
+      item.className = 'element';
+      item.dataset.id = String(id);
+      return item;
+    }),
     deselectAll: vi.fn(),
     selectItem: vi.fn(),
     focusItem: vi.fn(),
@@ -47,23 +66,20 @@ function elementSelect(ids: number[]) {
 
 describe('PreviewFileModal', () => {
   beforeEach(() => {
-    vi.stubGlobal('$', $);
     vi.stubGlobal('Craft', {
       t: (_category: string, message: string) => message,
-      cp,
-      sendActionRequest,
       getActionUrl: (action: string) => `/actions/${action}`,
       appendHeadHtml: vi.fn(),
       appendBodyHtml: vi.fn(),
     });
-    sendActionRequest.mockImplementation(
-      async (_method: string, _action: string, {data}: any) => ({
+    post = vi
+      .spyOn(actionClient, 'post')
+      .mockImplementation(async (_action: string, data: any) => ({
         data: {
           requestId: data.requestId,
           previewHtml: `<p class="preview">${data.assetId}</p>`,
         },
-      })
-    );
+      }));
   });
 
   afterEach(() => {
@@ -103,7 +119,7 @@ describe('PreviewFileModal', () => {
   });
 
   it('highlights a text preview’s code, keeping markup in it as text', async () => {
-    sendActionRequest.mockResolvedValueOnce({
+    post.mockResolvedValueOnce({
       data: {
         requestId: 1,
         previewHtml:
@@ -124,7 +140,7 @@ describe('PreviewFileModal', () => {
     const writeText = vi
       .spyOn(navigator.clipboard, 'writeText')
       .mockResolvedValue(undefined);
-    sendActionRequest.mockResolvedValueOnce({
+    post.mockResolvedValueOnce({
       data: {
         requestId: 1,
         previewHtml:
@@ -145,7 +161,7 @@ describe('PreviewFileModal', () => {
     buttons[1]!.click();
     await settle();
     expect(writeText).toHaveBeenCalledWith('a <b> c');
-    expect(cp.displayNotice).toHaveBeenCalledWith('Copied to clipboard.');
+    expect(messages.showNotice).toHaveBeenCalledWith('Copied to clipboard.');
 
     buttons[2]!.click();
     expect(modal.visible).toBe(false);
@@ -155,7 +171,7 @@ describe('PreviewFileModal', () => {
     vi.spyOn(navigator.clipboard, 'writeText').mockRejectedValue(
       new Error('Denied')
     );
-    sendActionRequest.mockResolvedValueOnce({
+    post.mockResolvedValueOnce({
       data: {
         requestId: 1,
         previewHtml: '<pre><code data-language="text">abc</code></pre>',
@@ -167,14 +183,14 @@ describe('PreviewFileModal', () => {
     footerItems(openDialogs()[0]!)[1]!.click();
     await settle();
 
-    expect(cp.displayError).toHaveBeenCalledWith(
+    expect(messages.showError).toHaveBeenCalledWith(
       'Couldn’t copy to the clipboard.'
     );
   });
 
   it('moves a preview’s own footer controls into the footer, until the next asset loads', async () => {
     const select = elementSelect([1, 2, 3]);
-    sendActionRequest
+    post
       .mockResolvedValueOnce({
         data: {
           requestId: 1,
@@ -187,7 +203,7 @@ describe('PreviewFileModal', () => {
           previewHtml: '<pre><code data-language="text">abc</code></pre>',
         },
       });
-    PreviewFileModal.showForAsset(select.$items.eq(0), select);
+    PreviewFileModal.showForAsset(select.$items[0], select);
     await settle();
 
     const [dialog] = openDialogs();
@@ -218,7 +234,7 @@ describe('PreviewFileModal', () => {
         ).toBe('2');
       });
     const select = elementSelect([1, 2]);
-    PreviewFileModal.showForAsset(select.$items.eq(0), select);
+    PreviewFileModal.showForAsset(select.$items[0], select);
     await settle();
 
     const [dialog] = openDialogs();
@@ -233,7 +249,7 @@ describe('PreviewFileModal', () => {
 
   it('moves between the assets of its element select in the same dialog', async () => {
     const select = elementSelect([1, 2, 3]);
-    PreviewFileModal.showForAsset(select.$items.eq(1), select);
+    PreviewFileModal.showForAsset(select.$items[1], select);
     await settle();
 
     const [dialog] = openDialogs();
@@ -248,13 +264,13 @@ describe('PreviewFileModal', () => {
     expect(openDialogs()).toEqual([dialog]);
     expect(dialog!.querySelector('.preview')!.textContent).toBe('3');
     expect(select.selectItem).toHaveBeenCalledWith(
-      select.$items.eq(2),
+      select.$items[2],
       false,
       false
     );
 
     dialog!.dispatchEvent(new Event('craft-after-hide'));
-    expect(select.focusItem).toHaveBeenCalledWith(select.$items.eq(2));
+    expect(select.focusItem).toHaveBeenCalledWith(select.$items[2]);
   });
 
   it('focuses the loaded preview, and makes it a tab stop when it overflows', async () => {
@@ -281,7 +297,7 @@ describe('PreviewFileModal', () => {
   it('scrolls an overflowing preview with the up and down arrows, rather than moving between assets', async () => {
     stubOverflow();
     const select = elementSelect([1, 2, 3]);
-    PreviewFileModal.showForAsset(select.$items.eq(1), select);
+    PreviewFileModal.showForAsset(select.$items[1], select);
     await settle();
 
     const [dialog] = openDialogs();

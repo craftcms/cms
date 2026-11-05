@@ -1,0 +1,25 @@
+/* Covers the field while an upload runs, with the progress bar centered on it. */
+.elementselect.uploading {
+  position: relative;
+}
+
+.elementselect .progress-shade {
+  display: none;
+}
+
+.elementselect.uploading .progress-shade {
+  display: grid;
+  place-items: center;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background-color: color-mix(
+    in srgb,
+    var(--c-surface-default) 80%,
+    transparent
+  );
+}
+
+.elementselect .progress-shade craft-progress-bar {
+  inline-size: 60%;
+}

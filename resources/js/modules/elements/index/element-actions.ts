@@ -5,6 +5,7 @@ import {
   type RunActionOptions,
 } from '@craftcms/ui/actions.mjs';
 import type {BulkActionItem, BulkActionParams} from '../types/actions';
+import {showError, showNotice} from '@/modules/messages/messages';
 
 export function elementActionRequest(
   item: BulkActionItem,
@@ -26,9 +27,9 @@ export async function runElementAction(
 ): Promise<void> {
   try {
     await runAction(elementActionRequest(item, params), options);
-    window.Craft?.cp?.displayNotice?.(t('Done'));
+    showNotice(t('Done'));
   } catch (cause) {
-    window.Craft?.cp?.displayError?.(
+    showError(
       cause instanceof Error ? cause.message : t('A server error occurred.')
     );
 

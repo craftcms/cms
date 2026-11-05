@@ -19,6 +19,19 @@ import {
 } from '../registry';
 import CommandPalette from './CommandPalette.vue';
 
+const messages = vi.hoisted(() => ({
+  showError: vi.fn(),
+  showNotice: vi.fn(),
+  showSuccess: vi.fn(),
+}));
+vi.mock('@/modules/messages/messages', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  ...messages,
+}));
+beforeEach(() => {
+  Object.values(messages).forEach((fn) => fn.mockReset());
+});
+
 const state = vi.hoisted(() => ({
   page: null as any,
   visit: vi.fn(),
@@ -176,7 +189,7 @@ describe('CommandPalette', () => {
   beforeEach(() => {
     (window as any).Craft = {
       systemUid: 'test',
-      cp: {displayError: vi.fn(), displayNotice: vi.fn()},
+      cp: {},
     };
     localStorage.setItem(
       'Craft-test.commandPalette.recentPages',
@@ -1045,7 +1058,7 @@ describe('CommandPalette', () => {
     await flush();
 
     expect(isCommandPaletteOpen.value).toBe(true);
-    expect((window as any).Craft.cp.displayError).toHaveBeenCalledWith('Nope');
+    expect(messages.showError).toHaveBeenCalledWith('Nope');
   });
 
   it('finishes opening when the shortcut opened it before it was mounted', async () => {

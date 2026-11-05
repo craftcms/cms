@@ -7,6 +7,7 @@ import {
   appendIndexQuery,
   type ElementIndexRoute,
 } from '@/modules/elements/index/composables/useElementIndexVisits';
+import {openCustomizeSourcesModal} from '@/modules/customize-sources/open-customize-sources-modal';
 
 export interface CustomizeSourcesTarget {
   /** The element type whose sources are being edited. */
@@ -88,7 +89,7 @@ export function useCustomizeSources(
         onClick: () => {
           const {route, sourceHref} = target();
 
-          void window.Craft?.openCustomizeSourcesModal?.({
+          void openCustomizeSourcesModal({
             elementType,
             page,
             sourceKey,

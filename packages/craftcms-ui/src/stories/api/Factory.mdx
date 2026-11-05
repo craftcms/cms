@@ -4,53 +4,70 @@ import {Meta} from '@storybook/addon-docs/blocks';
 
 # Factory
 
-The factory builds a component in JavaScript and hands back the element, with no markup and no jQuery.
+`create()` builds an element in JavaScript and hands it back, with no markup and no jQuery.
 
 ```js
-import {createSwitch} from '@craftcms/ui/factory';
+import {create} from '@craftcms/ui';
 
-const toggle = createSwitch({
-  name: 'enabled',
-  label: 'Enabled',
-  on: true,
-  onChange: (on) => console.log(on),
-});
+const save = create(
+  'craft-button',
+  {variant: 'primary', type: 'submit'},
+  'Save'
+);
 
-container.append(toggle);
+container.append(save);
 ```
 
-Every builder takes a single config object and returns the element. Nothing is inserted for you — append the result where it belongs. The one exception is `createCopyTextPrompt`, which is a dialog: it appends itself to `<body>` and opens.
+It takes the tag, an object of properties, and any children (nodes or strings). Nothing is inserted for you — append the result where it belongs.
 
-Each function is the client-side twin of a PHP component in `src/Cp/Components/`, so a control built here and one rendered by Twig produce the same element.
+## Typed by tag
 
-## What is available
+The properties are checked against the element's class in `HTMLElementTagNameMap`, so every component gets typed properties without a factory of its own. A misspelled or unknown property is a compile error:
 
-| Function               | Returns                        | Config                 |
-| ---------------------- | ------------------------------ | ---------------------- |
-| `createSwitch`         | `<craft-switch>`               | `SwitchConfig`         |
-| `createTextInput`      | `<input class="text">`         | `TextInputConfig`      |
-| `createInputColor`     | `<craft-input-color>`          | `InputColorConfig`     |
-| `createInputPassword`  | `<craft-input-password>`       | `InputPasswordConfig`  |
-| `createSlidePicker`    | `<craft-slide-picker>`         | `SlidePickerConfig`    |
-| `createCopyTextPrompt` | `<craft-dialog>`, already open | `CopyTextPromptConfig` |
+```ts
+create('craft-button', {varient: 'primary'}); // error: 'varient' does not exist
+```
 
-Import them from `@craftcms/ui/factory`, or one at a time from `@craftcms/ui/factory/create-switch` and so on. Each config interface is exported alongside its function.
+Properties that are `undefined` are skipped, so optional config can pass straight through.
+
+## Attributes
+
+Set attributes with no matching property, such as `data-*` and `aria-*`, through `attrs`. `true` sets an empty attribute; `false`, `null` and `undefined` leave it off.
+
+```js
+const url = create('input', {
+  type: 'url',
+  name: 'url',
+  attrs: {'aria-label': 'URL'},
+});
+```
 
 ## Form values
 
-The controls that carry a value post it under their `name`:
+Controls that carry a value post it under their `name`:
 
 ```js
-const picker = createSlidePicker({name: 'columns', min: 1, max: 6, value: 3});
+const picker = create('craft-slide-picker', {
+  name: 'columns',
+  min: 1,
+  max: 6,
+  value: '3',
+});
 form.append(picker);
-
-new FormData(form).get('columns'); // "3"
 ```
 
-`form.reset()` puts back the value the control started with.
+## Copy prompts
 
-## Not the whole legacy surface
+`showCopyTextPrompt()` is the one builder that inserts itself. It opens a dialog showing a value with a copy button, appends it to `<body>`, and removes it once it closes.
 
-`createTextInput` returns a native `<input>` rather than a custom element, because that is what the rest of the CP's text inputs are built from. It renders markup only. The behavior the legacy `Craft.ui.createTextInput` layered on top — the placeholder animation and characters-left counter from `Garnish.NiceText`, the password wrapper, the mobile autofocus suppression — stays in the legacy shim that wraps this function's result.
+```js
+import {showCopyTextPrompt} from '@craftcms/ui';
 
-Reach for [Utilities](?path=/docs/javascript-api-utilities--docs) for the smaller pieces the factory itself is built from, including `createButton`.
+showCopyTextPrompt({label: 'Full URL', value: url});
+```
+
+## Legacy `Craft.ui` builders
+
+The legacy `Craft.ui.create*()` functions translate their old config keys onto `create()`. They live with the rest of the legacy shims, not in `@craftcms/ui`.
+
+Reach for [Utilities](?path=/docs/javascript-api-utilities--docs) for the smaller pieces.

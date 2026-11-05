@@ -1,4 +1,6 @@
-# field-toggle
+| `observe.ts` | Binds toggles as they join the page. |
+| `observe.ts` | Binds toggles as they join the page. |
+| `index.ts` | Assigns `window.Craft.FieldToggle`. |# field-toggle
 
 Ports `Craft.FieldToggle` out of the legacy jQuery bundle
 (`packages/craftcms-legacy/cp/src/js/FieldToggle.js`).
@@ -13,18 +15,19 @@ A **toggle** control shows/hides **target** fields based on its value:
 
 ## Shape
 
-Logic-class + global-shim port (no custom element — it's booted imperatively):
+Logic-class + global-shim port (no custom element; `observe.ts` binds it):
 
 | File | Role |
 | --- | --- |
 | `field-toggle.ts` | The engine on `@craftcms/garnish` `Base`. Setup is in `init()`, guarded by `new.target`. |
 | `support.ts` | A `WeakMap<Element, FieldToggle>` — the instance registry (the jQuery-free mirror of `.data('fieldtoggle')`). |
+| `observe.ts` | Binds toggles as they join the page. |
 | `index.ts` | Assigns `window.Craft.FieldToggle`. |
 
-Instantiation is unchanged: the still-legacy `$.fn.fieldtoggle` plugin and the
-`Craft.initUiElements` `.fieldtoggle` sweep (both in `cp/src/js/Craft.js`), plus
-`new Craft.FieldToggle(...)` in `UI.js` / `LinkField` / `ElementDeletionManager`,
-all boot via the assigned global.
+`observe.ts` binds a FieldToggle to every `.fieldtoggle` on the page, and to each
+one added later, so inserted markup needs no `Craft.initUiElements()` call.
+`Cp.init()` starts it. Toggles already bound (by `$.fn.fieldtoggle`,
+`new Craft.FieldToggle(...)` in the adapter's `ui.js`, or `LinkField`) are left alone.
 
 ## jQuery + global seams
 
@@ -39,8 +42,8 @@ switch reveal to a bound FieldToggle). The instance is also stored in the
 
 ## Related implementations (not consolidated here)
 
-The reveal feature also lives in `craft-switch` (`__syncToggleTargets`, the switch
-case on Inertia surfaces where the `.fieldtoggle` sweep doesn't run) and
+The reveal feature also lives in `craft-switch` (`__syncToggleTargets`, for a switch
+with no bound FieldToggle) and
 `craft-disclosure` (the button/disclosure case, via `aria-controls` + `data-state`).
 This port keeps `Craft.FieldToggle` as the full multi-type implementation; those
 two remain for their surfaces (craft-switch already defers to a bound FieldToggle).

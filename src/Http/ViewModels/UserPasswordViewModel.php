@@ -70,13 +70,22 @@ class UserPasswordViewModel extends ViewModel
         }
 
         return collect($method->getActionMenuItems())
-            ->map(fn (array $item): array => [
-                'label' => $item['label'] ?? '',
-                'icon' => $item['icon'] ?? null,
-                'action' => $item['action'] ?? null,
-                'requireElevatedSession' => (bool) ($item['requireElevatedSession'] ?? false),
-                'download' => isset($item['action']) && str_contains((string) $item['action'], 'download'),
-            ])
+            ->map(function (array $item): array {
+                // An action is either a URL string or a descriptor array that
+                // carries its own URL, type and elevation flag.
+                $action = $item['action'] ?? null;
+                $url = is_array($action) ? ($action['url'] ?? null) : $action;
+
+                return [
+                    'label' => $item['label'] ?? '',
+                    'icon' => $item['icon'] ?? null,
+                    'action' => $url,
+                    'requireElevatedSession' => (bool) ($item['requireElevatedSession'] ?? $action['requireElevatedSession'] ?? false),
+                    'download' => is_array($action)
+                        ? ($action['type'] ?? null) === 'download'
+                        : $url !== null && str_contains((string) $url, 'download'),
+                ];
+            })
             ->values()
             ->all();
     }
