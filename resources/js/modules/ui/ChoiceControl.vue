@@ -283,12 +283,23 @@
             checked: true,
           }));
         }
-      } else if (customRadio.value && typeof props.value === 'string') {
-        if (choiceValues.has(props.value)) {
+      } else if (customRadio.value) {
+        const value = props.value ?? '';
+
+        if (typeof value !== 'string') {
+          return;
+        }
+
+        if (choiceValues.has(value)) {
           customRadioSelected.value = false;
-        } else if (props.value !== '') {
-          customRadioText.value = props.value;
+        } else if (value !== '') {
+          customRadioText.value = value;
           customRadioSelected.value = true;
+        } else if (customRadioText.value !== '') {
+          // Clearing the custom text empties the value too, but leaves the
+          // text empty first, so only an outside write gets here.
+          customRadioText.value = '';
+          customRadioSelected.value = false;
         }
       }
     }

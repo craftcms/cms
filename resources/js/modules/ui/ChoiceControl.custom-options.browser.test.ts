@@ -142,4 +142,32 @@ it('selects the custom radio for a custom value written from outside, and leaves
 
   value.value = 'a';
   await vi.waitFor(() => expect(radio().checked).toBe(false));
+
+  value.value = 'copied';
+  await vi.waitFor(() => expect(radio().checked).toBe(true));
+  value.value = '';
+  await vi.waitFor(() => expect(radio().checked).toBe(false));
+  expect(
+    container!.querySelector<HTMLInputElement>(
+      '[data-custom] input[type=text]'
+    )!.value
+  ).toBe('');
+});
+
+it('keeps the custom radio selected while its text is cleared', async () => {
+  const emitted = await mount('mine', false);
+  const input = container!.querySelector<HTMLInputElement>(
+    '[data-custom] input[type=text]'
+  )!;
+
+  await userEvent.clear(input);
+  value.value = emitted.at(-1) as string;
+  await nextTick();
+
+  expect(emitted.at(-1)).toBe('');
+  expect(
+    container!.querySelector<HTMLInputElement>(
+      '[data-custom] input[type=radio]'
+    )!.checked
+  ).toBe(true);
 });
