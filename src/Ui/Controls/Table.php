@@ -8,6 +8,8 @@ use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Ui\Contracts\Control as ControlContract;
+use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
+use CraftCms\Cms\Ui\Contracts\WritableValueControl;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\NestedUiPayload;
@@ -26,7 +28,7 @@ use Illuminate\Support\Arr;
  *
  * @since 6.0.0
  */
-class Table extends Control
+class Table extends Control implements ReadableValueControl, WritableValueControl
 {
     /** @var array<string, array<string, mixed>> */
     private array $columns = [];

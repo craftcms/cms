@@ -15,8 +15,6 @@
     useTemplateRef,
     watch,
   } from 'vue';
-  import CopyElementValuesController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/CopyElementValuesController';
-  import CrossSiteCopyModal from './CrossSiteCopyModal.vue';
   import FieldChangesModal, {
     type CompareFieldChangesDetail,
   } from './FieldChangesModal.vue';
@@ -47,21 +45,13 @@
     UiValue,
   } from './types';
 
-  type CrossSiteCopyDetail = {
-    trigger?: unknown;
-    elementType: string;
-    elementId: number;
-    draftId: number | null;
-    siteId: number;
-    layoutElementUid: string;
-    label?: string | null;
-    siteIds: number[];
-  };
-
   /**
    * A field action that generates the field’s value on the server, such as
-   * alt text written by AI. The value fills the field without being saved.
+   * alt text written by AI. The value fills the field without being saved,
+   * for a field whose control says it can be given one from outside.
    */
+  const GENERATE_VALUE_EVENT = 'craft:generate-field-value';
+
   type GenerateValueDetail = {
     trigger?: unknown;
     url: string;
@@ -71,12 +61,6 @@
   type GenerateValueResponse = {
     value: UiValue;
     message?: string;
-  };
-
-  type CrossSiteCopyResponse = {
-    message: string;
-    field: UiNodePayload<FieldNodeProps>;
-    values: UiPayload['values'];
   };
 
   type FieldNodeProps = {
@@ -108,6 +92,8 @@
     width?: number;
     status?: string;
     statusLabel?: string;
+    /** A short badge right after the label, like the read-only one. */
+    labelBadge?: string | null;
     hasActions?: boolean;
     /** Hidden from view; the control still resolves and still holds its value. */
     hidden?: boolean;
@@ -154,7 +140,35 @@
     return component;
   });
   const override = computed(() => overrides[control.value.path.join('.')]);
-  const actions = computed(() => resolvedNode.value.children ?? []);
+  /**
+   * The field's action menus, without the ones that generate its value when
+   * its control doesn't say it can be given one from outside.
+   */
+  const actions = computed(() => {
+    const children = resolvedNode.value.children ?? [];
+
+    if (control.value.writable) {
+      return children;
+    }
+
+    return children.flatMap((child) => {
+      if (child.component !== 'craft:action-menu') {
+        return [child];
+      }
+
+      // SAFETY: an action menu node's props are its menu's, not a field's.
+      const {items = []} = child.props as unknown as {
+        items?: {action?: {name?: string}}[];
+      };
+      const kept = items.filter(
+        (item) => item.action?.name !== GENERATE_VALUE_EVENT
+      );
+
+      return kept.length
+        ? [{...child, props: {...child.props, items: kept}}]
+        : [];
+    });
+  });
 
   provide(FieldActionItems, shallowRef());
 
@@ -273,27 +287,6 @@
   }
 
   const field = useTemplateRef<HTMLElement>('field');
-  const copyDetail = shallowRef<CrossSiteCopyDetail>();
-  const copySites = shallowRef<Array<{id: number; name: string}>>([]);
-  const copying = shallowRef(false);
-
-  useEventListener(window, 'craft:copy-value-from-site', (event: Event) => {
-    const detail = (event as CustomEvent<CrossSiteCopyDetail>).detail;
-
-    if (
-      !detail ||
-      !(detail.trigger instanceof HTMLElement) ||
-      detail.trigger.closest('craft-field') !== field.value
-    ) {
-      return;
-    }
-
-    copyDetail.value = detail;
-    copySites.value = Craft.sites.filter((site) =>
-      detail.siteIds.includes(site.id)
-    );
-  });
-
   const compareDetail = shallowRef<CompareFieldChangesDetail>();
 
   useEventListener(window, 'craft:compare-field-changes', (event: Event) => {
@@ -367,83 +360,41 @@
 
   const generating = shallowRef(false);
 
-  useEventListener(
-    window,
-    'craft:generate-field-value',
-    async (event: Event) => {
-      const detail = (event as CustomEvent<GenerateValueDetail>).detail;
+  useEventListener(window, GENERATE_VALUE_EVENT, async (event: Event) => {
+    const detail = (event as CustomEvent<GenerateValueDetail>).detail;
 
-      if (
-        !detail ||
-        !(detail.trigger instanceof HTMLElement) ||
-        detail.trigger.closest('craft-field') !== field.value ||
-        generating.value
-      ) {
-        return;
-      }
-
-      generating.value = true;
-
-      try {
-        const {data} = await actionClient.post<GenerateValueResponse>(
-          detail.url,
-          detail.params
-        );
-
-        setValue(data.value);
-
-        if (data.message) {
-          showNotice(data.message);
-        }
-      } catch (error) {
-        const message = isHttpError<{message?: string}>(error)
-          ? error.response?.data?.message
-          : undefined;
-        showError(message ?? t('Couldn’t generate a value for this field.'));
-      } finally {
-        generating.value = false;
-      }
-    }
-  );
-
-  async function copyValue(fromSiteId: number): Promise<void> {
-    const detail = copyDetail.value;
-
-    if (!detail) {
+    if (
+      !detail ||
+      !(detail.trigger instanceof HTMLElement) ||
+      detail.trigger.closest('craft-field') !== field.value ||
+      !control.value.writable ||
+      generating.value
+    ) {
       return;
     }
 
-    copying.value = true;
+    generating.value = true;
 
     try {
-      const {data} = await actionClient.post<CrossSiteCopyResponse>(
-        CopyElementValuesController.url(),
-        {
-          elementType: detail.elementType,
-          elementId: detail.elementId,
-          draftId: detail.draftId,
-          siteId: detail.siteId,
-          layoutElementUid: detail.layoutElementUid,
-          fromSiteId,
-          namespace: props.scope.join('.') || null,
-        }
+      const {data} = await actionClient.post<GenerateValueResponse>(
+        detail.url,
+        detail.params
       );
 
-      resolvedNode.value = data.field;
-      setValue(controlValueAt(data.values, data.field.control!));
-      copyDetail.value = undefined;
-      showNotice(data.message);
+      setValue(data.value);
+
+      if (data.message) {
+        showNotice(data.message);
+      }
     } catch (error) {
       const message = isHttpError<{message?: string}>(error)
         ? error.response?.data?.message
         : undefined;
-      showError(
-        message ?? t('Couldn’t copy the field value from the selected site.')
-      );
+      showError(message ?? t('Couldn’t generate a value for this field.'));
     } finally {
-      copying.value = false;
+      generating.value = false;
     }
-  }
+  });
 </script>
 
 <template>
@@ -508,6 +459,12 @@
       slot="heading-suffix"
       v-html="resolvedNode.props.headingSuffix"
     />
+    <span
+      v-if="resolvedNode.props.labelBadge"
+      slot="label-badge"
+      class="field-node__label-badge"
+      >{{ resolvedNode.props.labelBadge }}</span
+    >
     <div v-if="actions.length" slot="actions">
       <UiNodeList
         :nodes="actions"
@@ -569,16 +526,16 @@
       <li v-for="error in controlErrors" :key="error">{{ error }}</li>
     </ul>
   </craft-field>
-  <CrossSiteCopyModal
-    :active="Boolean(copyDetail)"
-    :label="copyDetail?.label"
-    :sites="copySites"
-    :loading="copying"
-    @close="copyDetail = undefined"
-    @submit="copyValue"
-  />
   <FieldChangesModal
     :detail="compareDetail"
     @close="compareDetail = undefined"
   />
 </template>
+
+<style scoped>
+  .field-node__label-badge {
+    background-color: var(--c-color-violet-fill-quiet);
+    color: var(--c-color-violet-on-quiet);
+    border-color: var(--c-color-violet-border-quiet);
+  }
+</style>

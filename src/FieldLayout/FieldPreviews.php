@@ -164,6 +164,9 @@ readonly class FieldPreviews
                 emptyValue: $control->emptyValue,
                 nestsUis: $control->nestsUis,
                 omitNullValue: $control->omitNullValue,
+                readable: $control->readable,
+                writable: $control->writable,
+                valueProps: $control->valueProps,
             );
         }
 

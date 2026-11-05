@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Ui\Controls;
 
 use CraftCms\Cms\Cp\Components\Combobox as ComboboxComponent;
+use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
+use CraftCms\Cms\Ui\Contracts\WritableValueControl;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\Controls\Combobox\CreateOption as ComboboxCreateOption;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
@@ -14,7 +16,7 @@ use InvalidArgumentException;
 /**
  * @since 6.0.0
  */
-class Combobox extends Control
+class Combobox extends Control implements ReadableValueControl, WritableValueControl
 {
     /** @var list<array<string, mixed>> */
     private array $options = [];
