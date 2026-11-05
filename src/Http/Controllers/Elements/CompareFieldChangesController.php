@@ -56,9 +56,6 @@ readonly class CompareFieldChangesController
 
         abort_if($comparison === null, 400, 'The field isn’t in the element’s form.');
 
-        return new JsonResponse([
-            ...$comparison->toArray(),
-            'compareUrl' => $this->comparisons->compareUrl($element),
-        ]);
+        return new JsonResponse($comparison->toArray());
     }
 }

@@ -116,6 +116,25 @@ it('renders a Sites pane with a status switch for each site', function () {
         );
 });
 
+it('links each other site in the Sites pane to the Compare screen against it', function () {
+    get($this->entry->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('sidebarUi', function (Collection $sidebarUi) {
+                $sites = collect($sidebarUi['nodes'])
+                    ->first(fn (array $node) => ($node['control']['component'] ?? null) === 'craft:element-sites')['control']['props']['sites'];
+                $url = parse_url((string) $sites[1]['compareUrl']);
+                parse_str($url['query'] ?? '', $query);
+
+                return $sites[0]['compareUrl'] === null
+                    && str_ends_with($url['path'] ?? '', '/compare')
+                    && ($query['siteId'] ?? null) === (string) $this->entry->siteId
+                    && ($query['fromSiteId'] ?? null) === (string) $this->secondSite->id;
+            })
+            ->etc()
+        );
+});
+
 it('omits the site switcher and per-site switches when the section is single-site', function () {
     $section = Section::factory()->withEntryTypes($this->entryType)->create(['handle' => 'solo']);
     Sections::refreshSections();

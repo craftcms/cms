@@ -9,6 +9,7 @@ export interface RevisionItem {
   description?: string;
   active?: boolean;
   href?: string;
+  compareHref?: string;
 }
 
 export interface RevisionGroup {
@@ -26,6 +27,7 @@ function toItem(item: ElementContextMenuItem, index: number): RevisionItem {
     description: item.description,
     href: item.href,
     active: item.selected,
+    compareHref: item.compareHref ?? undefined,
   };
 }
 

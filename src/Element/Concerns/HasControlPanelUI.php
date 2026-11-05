@@ -26,6 +26,7 @@ use CraftCms\Cms\Element\Events\ElementInlineAttributeInputHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementMetadataResolving;
 use CraftCms\Cms\Element\Events\ElementMetaFieldsHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving;
+use CraftCms\Cms\Element\FieldChangeComparisons;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\ElementEditViewModel;
@@ -1293,6 +1294,10 @@ JS, [
                                 : null,
                             'current' => $site->id === $this->siteId,
                             'removable' => in_array($site->id, $newSiteIds, true),
+                            // Sites only this draft has aren't in the current entry to compare with.
+                            'compareUrl' => $site->id !== $this->siteId && ! in_array($site->id, $newSiteIds, true)
+                                ? app(FieldChangeComparisons::class)->siteCompareUrl($this, $site->id)
+                                : null,
                         ])->all())
                         ->additionalSites(array_map(fn (array $site) => [
                             'id' => $site['siteId'],

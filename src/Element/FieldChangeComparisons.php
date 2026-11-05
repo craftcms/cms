@@ -8,7 +8,6 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Data\FieldChangeComparison;
 use CraftCms\Cms\Element\Data\FieldComparisonRow;
-use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -64,46 +63,73 @@ readonly class FieldChangeComparisons
      */
     public function compare(ElementInterface $element, BaseField $layoutElement): ?FieldChangeComparison
     {
-        if ($element->getIsRevision()) {
-            // An unchanged nested element can be shared by its owner’s revisions, so its base can be itself.
-            [$base, $previous] = $this->previousRevision($element);
-
-            return $this->comparison(
-                $layoutElement,
-                from: $base,
-                fromLabel: $previous ? $this->label($previous) : t('No earlier revision'),
-                to: $element,
-                toLabel: $this->label($element),
-                hasBase: $previous !== null,
-            );
-        }
+        // An unchanged nested element can be shared by its owner’s revisions, so its base can be itself. The version
+        // the base belongs to names the side, even when a nested element wasn’t in it yet.
+        [$base, $version] = $this->base($element);
 
         return $this->comparison(
             $layoutElement,
-            from: $element->getCanonical(),
-            fromLabel: t('Current'),
+            from: $base,
+            fromLabel: $version ? $this->label($version) : t('No earlier revision'),
             to: $element,
             toLabel: $this->label($element),
+            hasBase: $version !== null,
         );
     }
 
     /**
      * Returns the Compare screen’s URL for a version of an entry in a section, comparing it with what it was based
-     * on, or null when there’s nothing to compare: an unpublished draft, or a current entry without revisions. A
-     * nested element’s is its root owner’s.
+     * on, or null when there’s nothing to compare it with, as with the first revision, or it can’t be compared: an
+     * unpublished draft, or one that isn’t an entry. A nested element’s is its root owner’s.
+     *
+     * @param  bool|null  $hasBase  Whether the version is known to have something to compare with, which spares looking.
      */
-    public function compareUrl(ElementInterface $element): ?string
+    public function compareUrl(ElementInterface $element, ?bool $hasBase = null): ?string
     {
         $element = $element->getRootOwner();
+
+        if (! ($hasBase ?? $this->baseOf($element) !== null)) {
+            return null;
+        }
+
+        return $this->compareScreenUrl($element, ['revisionId' => $element->revisionId]);
+    }
+
+    /**
+     * Returns the Compare screen’s URL for a version of an entry in a section, comparing it with the current entry in
+     * another site, or null when the entry can’t be compared: a revision, an unpublished draft, or one that isn’t an
+     * entry. A nested element’s is its root owner’s.
+     */
+    public function siteCompareUrl(ElementInterface $element, int $siteId): ?string
+    {
+        $element = $element->getRootOwner();
+
+        if ($element->getIsRevision()) {
+            return null;
+        }
+
+        return $this->compareScreenUrl($element, [
+            'siteId' => $element->siteId,
+            'fromSiteId' => $siteId,
+        ]);
+    }
+
+    /**
+     * Returns the Compare screen’s URL showing a version of an entry in a section, or null when it can’t be shown: an
+     * unpublished draft, or one that isn’t an entry. The user’s unsaved edits are the current entry’s, which the
+     * screen shows in their place.
+     *
+     * @param  array<string, int|string|null>  $params
+     */
+    private function compareScreenUrl(ElementInterface $element, array $params): ?string
+    {
         $canonical = $element->getCanonical(true);
-        $isDraft = $element->getIsDraft() && ! $element->isProvisionalDraft;
 
         if (
             ! $canonical instanceof Entry ||
             ! $canonical->id ||
             ! $canonical->sectionId ||
-            $element->getIsUnpublishedDraft() ||
-            (! $isDraft && ! $element->getIsRevision() && ! $canonical->hasRevisions())
+            $element->getIsUnpublishedDraft()
         ) {
             return null;
         }
@@ -111,32 +137,53 @@ readonly class FieldChangeComparisons
         $url = Uri::of($canonical->getCpEditUrl());
 
         return $url->withPath("{$url->path()}/compare")->withQuery(array_filter([
-            'draftId' => $isDraft ? $element->draftId : null,
-            'revisionId' => $element->revisionId,
+            'draftId' => $element->getIsDraft() && ! $element->isProvisionalDraft ? $element->draftId : null,
+            ...$params,
         ]))->value();
     }
 
     /**
-     * Returns what a version of an element is compared with by default: the current element for a draft, and the
-     * revision before for a revision, or for the current element, the revision before its current one.
+     * Returns what a version of an element is compared with by default: the current element for a draft or an element
+     * nested in one, and the revision before for a revision, or for the current element, the revision before its
+     * current one. It’s what the “Compare changes” field action and the Compare screen both compare with.
      */
     public function baseOf(ElementInterface $element): ?ElementInterface
     {
-        if ($element->getIsDraft()) {
-            return $element->getCanonical();
+        return $this->base($element)[0];
+    }
+
+    /**
+     * Returns what a version of an element is compared with by default, as {@see self::baseOf()} does, along with the
+     * version of its root element that it belongs to, which names it: the current element, or the revision before.
+     * For an element nested in a revision, the base is the same element in the owner’s previous revision, which may
+     * not have it, so there can be a version without a base.
+     *
+     * @return array{?ElementInterface, ?ElementInterface}
+     */
+    private function base(ElementInterface $element): array
+    {
+        if ($element->getIsRevision()) {
+            return $this->previousRevision($element);
         }
 
-        $revision = $element->getIsRevision() ? $element : $element->getCurrentRevision();
+        // A draft, or an element nested in one, which needn't be a draft itself.
+        if (! $element->getIsCanonical()) {
+            $canonical = $element->getCanonical();
 
-        return $revision ? $this->previousRevision($revision)[1] : null;
+            return [$canonical, $canonical];
+        }
+
+        $revision = $element->getCurrentRevision();
+
+        return $revision ? $this->previousRevision($revision) : [null, null];
     }
 
     /**
      * Compares every field in two versions of an element, which can be in different sites, as two read-only forms
-     * whose fields are in the same order: the newer version’s, followed by fields only the older version has. Each
-     * changed field gets the “modified” status on both sides, and nothing else has a status.
+     * whose fields are in the same order: the newer version’s, followed by fields only the older version has. Changed
+     * fields are badged on the sides {@see self::badgedSides()} picks, and no field has a status.
      *
-     * @return array{from: UiPayload, to: UiPayload, rows: list<FieldComparisonRow>}
+     * @return array{from: UiPayload, to: UiPayload, rows: list<FieldComparisonRow>, badged: array{from: bool, to: bool}}
      */
     public function compareElements(ElementInterface $from, ElementInterface $to): array
     {
@@ -158,17 +205,30 @@ readonly class FieldChangeComparisons
         }
 
         $matchedFromNodes = array_filter(array_column($pairs, 1));
+        $previousFromNode = null;
 
+        // A field only the older version has goes after the one before it there, so it stays in the older version's
+        // order, and in its tab.
         foreach ($fromNodes as $fromNode) {
             $layoutElement = $from->getFieldLayout()?->getElementByUid($this->nodeUid($fromNode));
 
-            if ($layoutElement instanceof BaseField && ! in_array($fromNode, $matchedFromNodes, true)) {
-                $pairs[] = [$layoutElement, $fromNode, null];
+            if (! $layoutElement instanceof BaseField) {
+                continue;
             }
+
+            if (! in_array($fromNode, $matchedFromNodes, true)) {
+                $previousIndex = $previousFromNode
+                    ? array_find_key($pairs, fn (array $pair): bool => $pair[1] === $previousFromNode)
+                    : null;
+                array_splice($pairs, $previousIndex === null ? 0 : $previousIndex + 1, 0, [[$layoutElement, $fromNode, null]]);
+            }
+
+            $previousFromNode = $fromNode;
         }
 
         $rows = [];
         $paneNodes = ['from' => [], 'to' => []];
+        $badged = $this->badgedSides($from, $to);
 
         foreach ($pairs as [$layoutElement, $fromNode, $toNode]) {
             $changed = $this->changed($layoutElement, $fromPayload, $fromNode, $from, $toPayload, $toNode, $to);
@@ -179,11 +239,11 @@ readonly class FieldChangeComparisons
             );
 
             if ($fromNode) {
-                $paneNodes['from'][] = $this->paneNode($fromNode, $changed);
+                $paneNodes['from'][] = $this->paneNode($fromNode, $badged['from'] && $changed === true);
             }
 
             if ($toNode) {
-                $paneNodes['to'][] = $this->paneNode($toNode, $changed);
+                $paneNodes['to'][] = $this->paneNode($toNode, $badged['to'] && $changed === true);
             }
         }
 
@@ -191,7 +251,40 @@ readonly class FieldChangeComparisons
             'from' => $this->pane($fromPayload, $paneNodes['from']),
             'to' => $this->pane($toPayload, $paneNodes['to']),
             'rows' => $rows,
+            'badged' => $badged,
         ];
+    }
+
+    /**
+     * Returns which sides of a comparison badge their changed fields: the side that made the changes, when one did,
+     * and otherwise both.
+     *
+     * - Of two revisions, the newer one.
+     * - Of a revision and the current element, the current element.
+     * - Of a draft and the current element or a revision, the draft.
+     * - Of the user’s unsaved edits and the current element or a revision, the edits.
+     *
+     * @return array{from: bool, to: bool}
+     */
+    public function badgedSides(ElementInterface $from, ElementInterface $to): array
+    {
+        $kind = fn (ElementInterface $element): string => match (true) {
+            $element->getIsRevision() => 'revision',
+            $element->isProvisionalDraft => 'edits',
+            $element->getIsDraft() => 'draft',
+            default => 'current',
+        };
+
+        $changer = match ([$kind($from), $kind($to)]) {
+            ['revision', 'revision'] => $from->revisionNum <=> $to->revisionNum,
+            ['revision', 'current'], ['revision', 'draft'], ['current', 'draft'],
+            ['revision', 'edits'], ['current', 'edits'] => -1,
+            ['current', 'revision'], ['draft', 'revision'], ['draft', 'current'],
+            ['edits', 'revision'], ['edits', 'current'] => 1,
+            default => 0,
+        };
+
+        return ['from' => $changer >= 0, 'to' => $changer <= 0];
     }
 
     /**
@@ -249,9 +342,10 @@ readonly class FieldChangeComparisons
 
     /**
      * Returns a field’s node as one side of the Compare screen shows it: full width, so it can line up with the other
-     * side’s, with the comparison’s status rather than the version’s own, and with nothing to act on.
+     * side’s, without the version’s own status, badged when it’s the newer version’s and changed, and with nothing to
+     * act on.
      */
-    private function paneNode(NodePayload $node, ?bool $changed): NodePayload
+    private function paneNode(NodePayload $node, bool $badged): NodePayload
     {
         $node = $this->previews->withoutActionMenus($node);
 
@@ -261,8 +355,9 @@ readonly class FieldChangeComparisons
             props: [
                 ...$node->props,
                 'width' => null,
-                'status' => $changed ? AttributeStatus::Modified->value : null,
-                'statusLabel' => $changed ? t('Changed') : null,
+                'status' => null,
+                'statusLabel' => null,
+                'labelBadge' => $badged ? t('Changed') : null,
             ],
             uid: $node->uid,
             control: $node->control,

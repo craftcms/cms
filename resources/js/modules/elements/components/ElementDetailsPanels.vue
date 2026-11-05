@@ -1,7 +1,7 @@
 <script setup lang="ts">
   /**
    * An element editor's details panels: Info, the field layout's sidebar
-   * tabs, Activity, Revisions, and any registered with
+   * tabs, Activity, Versions, and any registered with
    * `Cp.$elementDetailsPanels`, each added to the screen with `ScreenPanel`.
    */
   import {t} from '@craftcms/ui';
@@ -15,7 +15,6 @@
   import ElementActivityTimeline from '@/modules/elements/components/ElementActivityTimeline.vue';
   import ElementActivityTimelineActions from '@/modules/elements/components/ElementActivityTimelineActions.vue';
   import RevisionsList from '@/modules/elements/components/RevisionsList.vue';
-  import ElementRevisionsActions from '@/modules/elements/components/ElementRevisionsActions.vue';
   import type {
     ElementEditPayload,
     ElementEditPayloadUpdater,
@@ -51,10 +50,9 @@
     },
     {
       id: 'revisions',
-      label: t('Revisions'),
+      label: t('Versions'),
       icon: 'clock-rotate-left',
       component: RevisionsList,
-      headerActionsComponent: ElementRevisionsActions,
       order: 20,
       props: ({payload}) => ({payload}),
     },

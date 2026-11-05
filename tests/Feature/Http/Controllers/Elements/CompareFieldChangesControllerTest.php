@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\FieldChangeComparisons;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -254,8 +255,7 @@ it('compares a draft with the current entry', function () {
             'unchanged' => false,
             'diff' => ['current' => 'Old summary', 'proposed' => 'New summary'],
             'preview' => null,
-        ])
-        ->assertJsonPath('compareUrl', fn (string $url) => str_contains($url, "/compare?draftId=$draft->draftId"));
+        ]);
 });
 
 it('compares a draft that changed its entry type, by the field’s layout element on each side', function () {
@@ -550,6 +550,39 @@ it('compares a field in a nested entry with the owner’s previous revision', fu
             'diff' => ['current' => 'Old heading', 'proposed' => 'New heading'],
             'preview' => null,
         ]);
+});
+
+it('takes a nested entry’s own earlier version as its base, not its owner’s previous revision', function () {
+    $entry = comparisonEntry();
+    travel(1)->minutes();
+    $entry->setFieldValue('blocks', [
+        'new1' => ['type' => 'block', 'title' => 'Intro', 'fields' => ['heading' => 'Old heading']],
+    ]);
+    expect(Elements::saveElement($entry))->toBeTrue();
+    $first = latestRevision($entry);
+
+    travel(1)->minutes();
+    $block = $entry->getFieldValue('blocks')->status(null)->one();
+    $entry->setFieldValue('blocks', [
+        'sortOrder' => [$block->id],
+        'entries' => [$block->id => ['type' => 'block', 'title' => 'Intro', 'fields' => ['heading' => 'New heading']]],
+    ]);
+    expect(Elements::saveElement($entry))->toBeTrue();
+    $second = latestRevision($entry);
+
+    $revisionBlock = Entry::find()
+        ->ownerId($second->id)
+        ->fieldId($this->blocksField->id)
+        ->revisions(null)
+        ->status(null)
+        ->one();
+
+    $base = app(FieldChangeComparisons::class)->baseOf($revisionBlock);
+
+    expect($base)->toBeInstanceOf(Entry::class)
+        ->and($base->id)->not->toBe($first->id)
+        ->and($base->getOwnerId())->toBe($first->id)
+        ->and($base->getFieldValue('heading'))->toBe('Old heading');
 });
 
 it('reports a nested entry shared by its owner’s revisions as unchanged', function () {

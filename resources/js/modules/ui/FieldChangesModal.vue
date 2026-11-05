@@ -8,7 +8,6 @@
   import {actionClient, isHttpError, t} from '@craftcms/ui';
   import {computed, shallowRef, watch} from 'vue';
   import CompareFieldChangesController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/CompareFieldChangesController';
-  import CpLink from '@/common/components/CpLink.vue';
   import Modal from '@/common/components/Modal.vue';
   import ChangeComparison from './ChangeComparison.vue';
   import type {UiPayload} from './types';
@@ -32,8 +31,6 @@
     unchanged: boolean;
     diff: {current: string; proposed: string} | null;
     preview: {current: UiPayload | null; proposed: UiPayload} | null;
-    /** The Compare screen for the same versions, with every field. */
-    compareUrl?: string | null;
   }
 
   const props = defineProps<{
@@ -127,15 +124,6 @@
     @close="emit('close')"
   >
     <craft-pane :label="title" :class="{'field-changes--ruled': ruled}">
-      <CpLink
-        v-if="comparison?.compareUrl"
-        slot="header-actions"
-        :href="comparison.compareUrl"
-        class="field-changes__all"
-      >
-        {{ t('Compare all fields') }}
-        <craft-icon name="code-compare" />
-      </CpLink>
       <craft-button
         slot="header-actions"
         type="button"
@@ -246,18 +234,15 @@
     text-decoration: underline;
   }
 
-  .field-changes__all {
-    font-size: var(--c-text-sm);
-  }
-
   .field-changes__heads {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: calc(
-      (var(--cp-container-padding) + var(--c-size-control-sm) / 2) * 2 + 1px
-    );
+    column-gap: calc(var(--cp-container-padding) * 2 + 1px);
     margin-block-start: calc(var(--c-spacing-lg) * -1);
     margin-inline: calc(var(--c-spacing-lg) * -1);
+    box-sizing: content-box;
+    min-block-size: var(--c-size-control-sm);
+    align-items: center;
     padding-block: var(--c-spacing-sm);
     padding-inline: var(--c-spacing-lg);
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);

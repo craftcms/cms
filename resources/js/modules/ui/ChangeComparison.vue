@@ -138,9 +138,7 @@
     }
 
     .change-comparison__sides--ruled.change-comparison__sides--previews {
-      column-gap: calc(
-        (var(--cp-container-padding) + var(--c-size-control-sm) / 2) * 2 + 1px
-      );
+      column-gap: calc(var(--cp-container-padding) * 2 + 1px);
     }
   }
 
