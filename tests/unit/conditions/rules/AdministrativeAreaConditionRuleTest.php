@@ -32,6 +32,8 @@ class AdministrativeAreaConditionRuleTest extends TestCase
         ]);
         self::assertSame(['SRY', 'DUR', 'Custom'], $rule->getValues());
         self::assertTrue($rule->matchElement(new Address(['countryCode' => 'GB', 'administrativeArea' => 'SRY'])));
+        // selected codes keep their labels
+        self::assertStringContainsString('>Surrey<', $rule->getHtml());
 
         // other countries' values are left alone
         /** @var AdministrativeAreaConditionRule $rule */

@@ -91,7 +91,7 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
         $administrativeAreas = Craft::$app->getAddresses()->getSubdivisionRepository()->getList([$this->countryCode], Craft::$app->language);
         // Allow custom states that are currently in the administrative areas list to remain in the list.
         foreach ($this->getValues() as $val) {
-            if (!in_array($val, $administrativeAreas, false)) {
+            if (!array_key_exists($val, $administrativeAreas)) {
                 $administrativeAreas[$val] = $val;
             }
         }
