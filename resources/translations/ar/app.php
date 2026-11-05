@@ -3248,6 +3248,7 @@ return [
     'Upload failed for “{filename}”.' => 'فشل تحميل “{filename}”.',
     'Upload failed.' => 'فشل التحميل.',
     'Upload files' => 'تحميل الملفات',
+    'Upload progress' => 'تقدم التحميل',
     'Uploaded By' => 'تم التحميل بواسطة',
     'Uploaded by' => 'تم التحميل بواسطة',
     'Use the AI assistant' => 'استخدام مساعد الذكاء الاصطناعي',
