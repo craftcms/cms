@@ -609,6 +609,7 @@
 - Removed `CraftCms\Cms\Cp\Components\CheckboxSelect::allCheckbox()`. `allOption()` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Removed the `<craft-sortable-checkbox-select>` web component. `<craft-checkbox-select>` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))
 
+- `<craft-action-item>`’s `icon-color` attribute can now be set to a custom property name, such as `--c-field-modified-indicator`, to tint the item’s icon with the color the property holds.
 ### Accessibility
 - Links to other sites now show an external-link icon and tell screen readers that they open in a new window. They open in a new tab on every control panel page again, including links in Ask AI replies, Vue-rendered pages, and `<craft-button>`, `<craft-action-item>`, `<craft-breadcrumb-item>`, and `<craft-nav-item>` components. ([#20306](https://github.com/craftcms/cms/pull/20306))
 - Search fields’ clear buttons are no longer in the <kbd>Tab</kbd> order. <kbd>Esc</kbd> clears the field from the keyboard. ([#20127](https://github.com/craftcms/cms/pull/20127))

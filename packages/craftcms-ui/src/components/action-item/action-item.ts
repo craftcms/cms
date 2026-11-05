@@ -89,7 +89,8 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
   /**
    * Optional Craft color name used to tint the item's icon, in the color's
    * loud tone. Black and white icons take the default text color, so they
-   * stay visible in both themes.
+   * stay visible in both themes. A custom property name (`--…`) uses the
+   * color it holds instead, such as one that means something on its own.
    */
   @property({attribute: 'icon-color'}) iconColor: string | null = null;
 
@@ -99,6 +100,10 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
    * vanish against the surface; they take the default text color instead.
    */
   #iconColorValue(color: string): string {
+    if (color.startsWith('--')) {
+      return `var(${color}, currentColor)`;
+    }
+
     return color === 'black' || color === 'white'
       ? 'var(--c-text-default)'
       : `var(--c-color-${color}-fill-loud, currentColor)`;
