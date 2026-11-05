@@ -831,6 +831,25 @@ describe('ElementSelectControl', () => {
     expect(selectedChips(root)).toEqual([]);
   });
 
+  it('names the selected elements by their type', async () => {
+    const root = await mount({
+      props: {
+        limit: 3,
+        elementDisplayName: 'entry',
+        elementPluralDisplayName: 'entries',
+      },
+      value: [5, 6],
+    });
+
+    selectChip(chips(root)[0]!, true);
+    await nextTick();
+    expect(root.textContent).toContain('1 entry selected');
+
+    selectChip(chips(root)[1]!, true);
+    await nextTick();
+    expect(root.textContent).toContain('2 entries selected');
+  });
+
   it('selects a range when the chip reports a shift-click', async () => {
     const root = await mount({props: {limit: 3}, value: [5, 6, 7]});
 

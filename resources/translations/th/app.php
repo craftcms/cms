@@ -3677,7 +3677,7 @@ return [
     '{num, number} {num, plural, =1{hour} other{hours}}' => '{num, number} {num, plural, =1{ชั่วโมง} other{ชั่วโมง}}',
     '{num, number} {num, plural, =1{issue} other{issues}}' => '{num, number} {num, plural, =1{ปัญหา} other{ปัญหา}}',
     '{num, number} {num, plural, =1{item} other{items}}' => '{num, number} {num, plural, =1{รายการ} other{รายการ}}',
-    '{num, number} {num, plural, =1{item} other{items}} selected' => 'เลือก {num, number} {num, plural, =1{รายการ} other{รายการ}}แล้ว',
+    '{num, number} {num, plural, =1{{item}} other{{items}}} selected' => 'เลือก {num, number} {num, plural, =1{{item}} other{{items}}}แล้ว',
     '{num, number} {num, plural, =1{minute} other{minutes}}' => '{num, number} {num, plural, =1{นาที} other{นาที}}',
     '{num, number} {num, plural, =1{month} other{months}}' => '{num, number} {num, plural, =1{เดือน} other{เดือน}}',
     '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number} {num, plural, =1{การแจ้งเตือน} other{การแจ้งเตือน}}',
