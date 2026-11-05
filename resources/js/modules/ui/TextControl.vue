@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import CraftInput from '@craftcms/ui/components/input/input';
   import '@craftcms/ui/components/text-expander/text-expander';
-  import {onMounted, useId, useTemplateRef} from 'vue';
+  import {computed, onMounted, useId, useTemplateRef} from 'vue';
   import type {UiChangeKind, UiControlPayload, TextControlProps} from './types';
   import {
     ignoreModelValueInitialization,
@@ -32,10 +32,17 @@
 
   const input = useTemplateRef<CraftInput>('input');
 
+  // Respect the user's "Disable autofocus" accessibility preference.
+  const autofocus = computed(
+    () =>
+      props.control.props.autofocus === true &&
+      window.Craft?.autofocusPreferred === true
+  );
+
   // The browser only autofocuses on page load, so a control rendered later (such as in a
   // modal or slideout) focuses itself.
   onMounted(() => {
-    if (props.control.props.autofocus !== true) {
+    if (!autofocus.value) {
       return;
     }
 
@@ -53,7 +60,9 @@
     );
   }
 
-  function onFocusIn(): void {
+  // `focus` rather than `focusin`: Lion re-dispatches the native input's focus on the host,
+  // and unlike `focusin`, focus on a suffix button doesn't bubble up to it.
+  function onFocus(): void {
     if (props.control.props.selectOnFocus === true) {
       nativeInput()?.select();
     }
@@ -79,7 +88,7 @@
 <template>
   <craft-input
     ref="input"
-    @focusin="onFocusIn"
+    @focus="onFocus"
     v-bind="$attrs"
     :name="editable ? inputName(control.path) : ''"
     :type="control.props.inputType ?? 'text'"
@@ -90,7 +99,7 @@
     :maxlength="control.props.maxLength"
     :placeholder="control.props.placeholder"
     .inputMode="control.props.inputMode"
-    .autofocus="control.props.autofocus === true"
+    .autofocus="autofocus"
     .autocomplete="autocompleteValue(control.props.autocomplete)"
     .autoCorrect="control.props.autocorrect ?? true"
     .autoCapitalize="control.props.autocapitalize ?? true"
