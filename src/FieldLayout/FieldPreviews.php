@@ -6,6 +6,7 @@ namespace CraftCms\Cms\FieldLayout;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\BaseOptionsField;
+use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Ui\ControlPayload;
@@ -42,6 +43,31 @@ readonly class FieldPreviews
         $layout = $layoutElement->getFieldLayout();
 
         return $layout ? $this->compiler->compile($layout, $element, new UiContext(namespace: $namespace, mode: $mode, preview: true)) : null;
+    }
+
+    /**
+     * Returns the layout element in an element’s field layout for the same field: the same layout element, or one
+     * with the same attribute, and for custom fields, the same field. A draft can change its entry type, so the field
+     * can have another layout element, or none, on the element it’s compared with.
+     */
+    public function matchingLayoutElement(ElementInterface $element, BaseField $layoutElement): ?BaseField
+    {
+        $layout = $element->getFieldLayout();
+        $sameUid = $layout?->getElementByUid((string) $layoutElement->uid);
+
+        if ($sameUid instanceof BaseField) {
+            return $sameUid;
+        }
+
+        return array_find(
+            $layout?->getElementsByType(BaseField::class) ?? [],
+            fn (BaseField $candidate): bool => $candidate::class === $layoutElement::class
+                && $candidate->attribute() === $layoutElement->attribute()
+                && (! $layoutElement instanceof CustomField || (
+                    $candidate instanceof CustomField
+                    && $candidate->getField()->id === $layoutElement->getField()->id
+                )),
+        );
     }
 
     /**
@@ -117,7 +143,7 @@ readonly class FieldPreviews
      * Returns a node without action menus, in its children or in its control’s nested UIs, such as a Matrix field’s
      * entries’ fields.
      */
-    private function withoutActionMenus(NodePayload $node): NodePayload
+    public function withoutActionMenus(NodePayload $node): NodePayload
     {
         $control = $node->control;
 

@@ -254,7 +254,8 @@ it('compares a draft with the current entry', function () {
             'unchanged' => false,
             'diff' => ['current' => 'Old summary', 'proposed' => 'New summary'],
             'preview' => null,
-        ]);
+        ])
+        ->assertJsonPath('compareUrl', fn (string $url) => str_contains($url, "/compare?draftId=$draft->draftId"));
 });
 
 it('compares a draft that changed its entry type, by the field’s layout element on each side', function () {
@@ -423,6 +424,25 @@ it('previews Matrix fields as a list of cards, whatever their view mode', functi
     'cards grid' => [Matrix::VIEW_MODE_CARDS_GRID, Matrix::VIEW_MODE_CARDS],
     'index' => [Matrix::VIEW_MODE_INDEX, Matrix::VIEW_MODE_CARDS],
 ]);
+
+it('tells whether a Matrix field’s entries changed, though their cards load their own values', function () {
+    $this->blocksField->update(['settings' => [...$this->blocksField->settings, 'viewMode' => Matrix::VIEW_MODE_CARDS]]);
+    Fields::refreshFields();
+    $entry = comparisonEntry();
+    $entry->setFieldValue('blocks', [
+        'new1' => ['type' => 'block', 'title' => 'Intro', 'fields' => ['heading' => 'Same heading']],
+    ]);
+    expect(Elements::saveElement($entry))->toBeTrue();
+    $draft = draftWithSummary($entry, 'New summary');
+
+    postJson(action(CompareFieldChangesController::class), [
+        'elementType' => Entry::class,
+        'elementId' => $draft->id,
+        'siteId' => $draft->siteId,
+        'layoutElementUid' => comparisonFieldUid($draft, 'blocks'),
+    ])->assertOk()
+        ->assertJsonPath('unchanged', true);
+});
 
 /** @return array{Entry, Entry} The entry with a Content Block holding an Index-mode Matrix field, and a draft of it */
 function contentBlockDraft(string $heading): array

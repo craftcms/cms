@@ -7,7 +7,12 @@ namespace CraftCms\Cms\Element;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Data\FieldChangeComparison;
+use CraftCms\Cms\Element\Data\FieldComparisonRow;
+use CraftCms\Cms\Element\Enums\AttributeStatus;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\FieldLayout\FieldPreviews;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
@@ -19,17 +24,18 @@ use CraftCms\Cms\Ui\NodePayload;
 use CraftCms\Cms\Ui\UiPayload;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Support\Uri;
 
 use function CraftCms\Cms\t;
 
 /**
- * Compares a field layout element on a draft, revision, or nested element with what it was based on, for the
- * “Compare changes” field action.
+ * Compares the fields of two versions of an element: one field, for the “Compare changes” field action, or all of
+ * them, for the Compare screen.
  *
  * - A draft, or an element nested in one, is compared with the current element.
  * - A revision, or an element nested in one, is compared with the revision before it.
  *
- * The field is shown with {@see FieldPreviews}, as the AI assistant shows its proposed changes.
+ * Fields are shown with {@see FieldPreviews}, as the AI assistant shows its proposed changes.
  *
  * @internal
  *
@@ -81,6 +87,217 @@ readonly class FieldChangeComparisons
     }
 
     /**
+     * Returns the Compare screen’s URL for a version of an entry in a section, comparing it with what it was based
+     * on, or null when there’s nothing to compare: an unpublished draft, or a current entry without revisions. A
+     * nested element’s is its root owner’s.
+     */
+    public function compareUrl(ElementInterface $element): ?string
+    {
+        $element = $element->getRootOwner();
+        $canonical = $element->getCanonical(true);
+        $isDraft = $element->getIsDraft() && ! $element->isProvisionalDraft;
+
+        if (
+            ! $canonical instanceof Entry ||
+            ! $canonical->id ||
+            ! $canonical->sectionId ||
+            $element->getIsUnpublishedDraft() ||
+            (! $isDraft && ! $element->getIsRevision() && ! $canonical->hasRevisions())
+        ) {
+            return null;
+        }
+
+        $url = Uri::of($canonical->getCpEditUrl());
+
+        return $url->withPath("{$url->path()}/compare")->withQuery(array_filter([
+            'draftId' => $isDraft ? $element->draftId : null,
+            'revisionId' => $element->revisionId,
+        ]))->value();
+    }
+
+    /**
+     * Returns what a version of an element is compared with by default: the current element for a draft, and the
+     * revision before for a revision, or for the current element, the revision before its current one.
+     */
+    public function baseOf(ElementInterface $element): ?ElementInterface
+    {
+        if ($element->getIsDraft()) {
+            return $element->getCanonical();
+        }
+
+        $revision = $element->getIsRevision() ? $element : $element->getCurrentRevision();
+
+        return $revision ? $this->previousRevision($revision)[1] : null;
+    }
+
+    /**
+     * Compares every field in two versions of an element, which can be in different sites, as two read-only forms
+     * whose fields are in the same order: the newer version’s, followed by fields only the older version has. Each
+     * changed field gets the “modified” status on both sides, and nothing else has a status.
+     *
+     * @return array{from: UiPayload, to: UiPayload, rows: list<FieldComparisonRow>}
+     */
+    public function compareElements(ElementInterface $from, ElementInterface $to): array
+    {
+        $namespace = 'compare'.Str::random(8);
+        $fromPayload = $this->previews->compile($from, $from, "{$namespace}From", ControlMode::ReadOnly);
+        $toPayload = $this->previews->compile($to, $to, "{$namespace}To", ControlMode::ReadOnly);
+        $fromNodes = $fromPayload ? $this->previews->fieldNodes($fromPayload->nodes) : [];
+        $toNodes = $toPayload ? $this->previews->fieldNodes($toPayload->nodes) : [];
+        $pairs = [];
+
+        foreach ($toNodes as $toNode) {
+            $layoutElement = $to->getFieldLayout()?->getElementByUid($this->nodeUid($toNode));
+
+            if ($layoutElement instanceof BaseField) {
+                $match = $this->previews->matchingLayoutElement($from, $layoutElement);
+                $fromNode = $match ? array_find($fromNodes, fn (NodePayload $node): bool => $this->nodeUid($node) === (string) $match->uid) : null;
+                $pairs[] = [$layoutElement, $fromNode, $toNode];
+            }
+        }
+
+        $matchedFromNodes = array_filter(array_column($pairs, 1));
+
+        foreach ($fromNodes as $fromNode) {
+            $layoutElement = $from->getFieldLayout()?->getElementByUid($this->nodeUid($fromNode));
+
+            if ($layoutElement instanceof BaseField && ! in_array($fromNode, $matchedFromNodes, true)) {
+                $pairs[] = [$layoutElement, $fromNode, null];
+            }
+        }
+
+        $rows = [];
+        $paneNodes = ['from' => [], 'to' => []];
+
+        foreach ($pairs as [$layoutElement, $fromNode, $toNode]) {
+            $changed = $this->changed($layoutElement, $fromPayload, $fromNode, $from, $toPayload, $toNode, $to);
+            $rows[] = new FieldComparisonRow(
+                fromUid: $fromNode ? $this->nodeUid($fromNode) : null,
+                toUid: $toNode ? $this->nodeUid($toNode) : null,
+                changed: $changed,
+            );
+
+            if ($fromNode) {
+                $paneNodes['from'][] = $this->paneNode($fromNode, $changed);
+            }
+
+            if ($toNode) {
+                $paneNodes['to'][] = $this->paneNode($toNode, $changed);
+            }
+        }
+
+        return [
+            'from' => $this->pane($fromPayload, $paneNodes['from']),
+            'to' => $this->pane($toPayload, $paneNodes['to']),
+            'rows' => $rows,
+        ];
+    }
+
+    /**
+     * Returns what a version of an element is called in a comparison: “Current”, a revision, or a draft.
+     */
+    public function label(ElementInterface $element): string
+    {
+        $root = $element->getRootOwner();
+
+        return match (true) {
+            $root->getIsRevision() => $root->getRevisionLabel(),
+            $root->getIsDraft() && $root->isProvisionalDraft => t('Your changes'),
+            $root->getIsDraft() => $root->draftName ?: t('Draft'),
+            default => t('Current'),
+        };
+    }
+
+    private function nodeUid(NodePayload $node): string
+    {
+        return (string) ($node->props['layoutUid'] ?? $node->uid);
+    }
+
+    /**
+     * Returns whether a field changed between two versions, or `null` when that can’t be told from their form values.
+     * Translations are meant to differ, so between sites only a value missing on one side counts as a change, and a
+     * field that isn’t translated, which both sites of a version share, hasn’t changed.
+     */
+    private function changed(
+        BaseField $layoutElement,
+        ?UiPayload $fromPayload,
+        ?NodePayload $fromNode,
+        ElementInterface $from,
+        ?UiPayload $toPayload,
+        ?NodePayload $toNode,
+        ElementInterface $to,
+    ): ?bool {
+        if ($fromNode === null || $toNode === null) {
+            return true;
+        }
+
+        $otherSite = $from->siteId !== $to->siteId;
+
+        if ($otherSite && $from->id === $to->id && ! ($toNode->props['translatable'] ?? false)) {
+            return false;
+        }
+
+        [$unchanged] = $this->compareNodes($layoutElement, [$fromPayload, $fromNode], $from, [$toPayload, $toNode], $to);
+
+        return match (true) {
+            $unchanged === null => null,
+            $otherSite => $this->isEmpty($fromPayload, $fromNode, $from, $layoutElement) !== $this->isEmpty($toPayload, $toNode, $to, $layoutElement),
+            default => ! $unchanged,
+        };
+    }
+
+    /**
+     * Returns a field’s node as one side of the Compare screen shows it: full width, so it can line up with the other
+     * side’s, with the comparison’s status rather than the version’s own, and with nothing to act on.
+     */
+    private function paneNode(NodePayload $node, ?bool $changed): NodePayload
+    {
+        $node = $this->previews->withoutActionMenus($node);
+
+        return new NodePayload(
+            type: $node->type,
+            component: $node->component,
+            props: [
+                ...$node->props,
+                'width' => null,
+                'status' => $changed ? AttributeStatus::Modified->value : null,
+                'statusLabel' => $changed ? t('Changed') : null,
+            ],
+            uid: $node->uid,
+            control: $node->control,
+            children: $node->children,
+        );
+    }
+
+    /**
+     * Returns a version’s form with just the given field nodes, outside of tabs.
+     *
+     * @param  list<NodePayload>  $nodes
+     */
+    private function pane(?UiPayload $payload, array $nodes): UiPayload
+    {
+        return new UiPayload(
+            scope: $payload->scope ?? [],
+            refreshable: false,
+            nodes: $nodes,
+            values: $payload->values ?? [],
+            errors: [],
+            globalErrors: [],
+        );
+    }
+
+    private function isEmpty(?UiPayload $payload, ?NodePayload $node, ElementInterface $element, BaseField $layoutElement): bool
+    {
+        if ($node && $this->loadsOwnValues($node) && ($nested = $this->nestedElements($element, $layoutElement)) !== null) {
+            return $nested === [];
+        }
+
+        $value = $payload && $node ? data_get($payload->values, $node->control->path ?? []) : null;
+
+        return $value === null || $value === '' || $value === [];
+    }
+
+    /**
      * Compiles the field on both elements, read-only and each with its own field layout, as the AI assistant previews
      * its proposed changes: text as a diff, and anything else as the field’s own controls.
      */
@@ -94,31 +311,93 @@ readonly class FieldChangeComparisons
     ): ?FieldChangeComparison {
         // Unique to this comparison, so its fields don’t share IDs with the editor’s.
         $namespace = 'fieldChanges'.Str::random(8);
-        [$toPayload, $toNode] = $this->compileField($to, $layoutElement, "{$namespace}To");
+        $toField = $this->compileField($to, $layoutElement, "{$namespace}To");
 
-        if (! $toPayload || ! $toNode) {
+        if ($toField === null) {
             return null;
         }
 
-        [$fromPayload, $fromNode] = $from ? $this->compileField($from, $layoutElement, "{$namespace}From") : [null, null];
-        $toValue = data_get($toPayload->values, $toNode->control->path ?? []);
-        $fromValue = $fromPayload && $fromNode ? data_get($fromPayload->values, $fromNode->control->path ?? []) : null;
-        $diff = $fromNode ? FieldPreviews::diff($fromValue, $toValue, [$from, $to], $layoutElement) : null;
+        $fromField = $from ? $this->compileField($from, $layoutElement, "{$namespace}From") : null;
+        [$unchanged, $diff] = $this->compareNodes($layoutElement, $fromField, $from, $toField, $to);
 
         return new FieldChangeComparison(
             fromLabel: $fromLabel,
             toLabel: $toLabel,
             hasBase: $hasBase,
-            unchanged: $hasBase && $fromNode !== null && (
-                $from->id === $to->id
-                || ($toValue !== null && $fromValue === $toValue && ! $this->loadsOwnValues($toNode))
-            ),
+            unchanged: $hasBase && $unchanged === true,
             diff: $diff,
             preview: $diff === null ? [
-                'current' => $fromPayload && $fromNode ? $this->previews->payloadFor($fromPayload, $fromNode) : null,
-                'proposed' => $this->previews->payloadFor($toPayload, $toNode),
+                'current' => $fromField ? $this->previews->payloadFor(...$fromField) : null,
+                'proposed' => $this->previews->payloadFor(...$toField),
             ] : null,
         );
+    }
+
+    /**
+     * Compares a field’s compiled nodes on two elements. The field is unchanged when both have the same value, or when
+     * both are the same element in the same site, and it’s `null` when that can’t be told from their form values.
+     *
+     * @param  array{UiPayload, NodePayload}|null  $fromField
+     * @param  array{UiPayload, NodePayload}|null  $toField
+     * @return array{?bool, array{current: string, proposed: string}|null}
+     */
+    private function compareNodes(
+        BaseField $layoutElement,
+        ?array $fromField,
+        ?ElementInterface $from,
+        ?array $toField,
+        ElementInterface $to,
+    ): array {
+        [$fromPayload, $fromNode] = $fromField ?? [null, null];
+        [$toPayload, $toNode] = $toField ?? [null, null];
+        $fromValue = $fromNode ? data_get($fromPayload->values, $fromNode->control->path ?? []) : null;
+        $toValue = $toNode ? data_get($toPayload->values, $toNode->control->path ?? []) : null;
+        $diff = $fromNode && $toNode ? FieldPreviews::diff($fromValue, $toValue, [$from, $to], $layoutElement) : null;
+
+        $unchanged = match (true) {
+            $fromNode === null || $toNode === null => false,
+            $from->id === $to->id && $from->siteId === $to->siteId => true,
+            $this->loadsOwnValues($toNode) || $this->loadsOwnValues($fromNode) => $from ? $this->sameNestedElements($layoutElement, $from, $to) : null,
+            default => $fromValue === $toValue,
+        };
+
+        return [$unchanged, $diff];
+    }
+
+    /**
+     * Returns whether a field holds the same nested elements on two versions, in the same order and with the same
+     * content, or `null` when it doesn’t hold nested elements of its own, such as a Matrix field in a Content Block.
+     * A draft’s or revision’s copy of a nested element is the same element as the one it was copied from.
+     */
+    private function sameNestedElements(BaseField $layoutElement, ElementInterface $from, ElementInterface $to): ?bool
+    {
+        $fromNested = $this->nestedElements($from, $layoutElement);
+        $toNested = $this->nestedElements($to, $layoutElement);
+
+        return $fromNested === null || $toNested === null ? null : $fromNested === $toNested;
+    }
+
+    /**
+     * Returns what identifies a field’s nested elements and their content, in order, or `null` if the field doesn’t
+     * hold nested elements of its own.
+     *
+     * @return list<array{int|null, string|null, bool, array<string, mixed>}>|null
+     */
+    private function nestedElements(ElementInterface $element, BaseField $layoutElement): ?array
+    {
+        $field = $layoutElement instanceof CustomField ? $layoutElement->getField() : null;
+        $value = $field instanceof ElementContainerFieldInterface ? $element->getFieldValue($field->handle) : null;
+
+        if (! $value instanceof ElementQueryInterface) {
+            return null;
+        }
+
+        return array_map(fn (ElementInterface $nested): array => [
+            $nested->getCanonicalId(),
+            $nested->title,
+            (bool) $nested->enabled,
+            $nested->getSerializedFieldValues(),
+        ], (clone $value)->status(null)->all());
     }
 
     /**
@@ -141,61 +420,22 @@ readonly class FieldChangeComparisons
     }
 
     /**
-     * Compiles an element’s form with its own field layout, and finds the field in it. A draft can change its entry
-     * type, so the field can have another layout element, or none, on the element it’s compared with.
+     * Compiles an element’s form with its own field layout, and finds the field in it.
      *
-     * @return array{?UiPayload, ?NodePayload}
+     * @return array{UiPayload, NodePayload}|null
      */
-    private function compileField(ElementInterface $element, BaseField $layoutElement, string $namespace): array
+    private function compileField(ElementInterface $element, BaseField $layoutElement, string $namespace): ?array
     {
-        $match = $this->matchingLayoutElement($element, $layoutElement);
+        $match = $this->previews->matchingLayoutElement($element, $layoutElement);
 
         if ($match === null) {
-            return [null, null];
+            return null;
         }
 
         $payload = $this->previews->compile($element, $element, $namespace, ControlMode::ReadOnly);
+        $node = $payload ? $this->previews->findNode($payload->nodes, (string) $match->uid) : null;
 
-        return [$payload, $payload ? $this->previews->findNode($payload->nodes, (string) $match->uid) : null];
-    }
-
-    /**
-     * Returns the layout element in an element’s field layout for the same field: the same layout element, or one
-     * with the same attribute, and for custom fields, the same field.
-     */
-    private function matchingLayoutElement(ElementInterface $element, BaseField $layoutElement): ?BaseField
-    {
-        $layout = $element->getFieldLayout();
-        $sameUid = $layout?->getElementByUid((string) $layoutElement->uid);
-
-        if ($sameUid instanceof BaseField) {
-            return $sameUid;
-        }
-
-        return array_find(
-            $layout?->getElementsByType(BaseField::class) ?? [],
-            fn (BaseField $candidate): bool => $candidate::class === $layoutElement::class
-                && $candidate->attribute() === $layoutElement->attribute()
-                && (! $layoutElement instanceof CustomField || (
-                    $candidate instanceof CustomField
-                    && $candidate->getField()->id === $layoutElement->getField()->id
-                )),
-        );
-    }
-
-    /**
-     * Returns what an element is called in a comparison: “Current”, a revision, or a draft.
-     */
-    private function label(ElementInterface $element): string
-    {
-        $root = $element->getRootOwner();
-
-        return match (true) {
-            $root->getIsRevision() => $root->getRevisionLabel(),
-            $root->getIsDraft() && $root->isProvisionalDraft => t('Your changes'),
-            $root->getIsDraft() => $root->draftName ?: t('Draft'),
-            default => t('Current'),
-        };
+        return $payload && $node ? [$payload, $node] : null;
     }
 
     /**

@@ -209,6 +209,8 @@ export interface ElementEditPayload {
   aiAssistant: CraftCms.Cms.Ai.Assistant.Data.ElementParams | null;
   activityTimelineUrl: string | null;
   activityPageUrl: string | null;
+  /** Where this version can be compared side by side with another. */
+  comparePageUrl?: string | null;
   updatedTimestamps: {element: number | null; canonical: number | null};
   contextMenu: {
     label: string;

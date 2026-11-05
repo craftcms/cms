@@ -8,6 +8,7 @@
   import {actionClient, isHttpError, t} from '@craftcms/ui';
   import {computed, shallowRef, watch} from 'vue';
   import CompareFieldChangesController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/CompareFieldChangesController';
+  import CpLink from '@/common/components/CpLink.vue';
   import Modal from '@/common/components/Modal.vue';
   import ChangeComparison from './ChangeComparison.vue';
   import type {UiPayload} from './types';
@@ -31,6 +32,8 @@
     unchanged: boolean;
     diff: {current: string; proposed: string} | null;
     preview: {current: UiPayload | null; proposed: UiPayload} | null;
+    /** The Compare screen for the same versions, with every field. */
+    compareUrl?: string | null;
   }
 
   const props = defineProps<{
@@ -148,6 +151,13 @@
                 to: comparison.toLabel,
               })
             }}</span>
+            <CpLink
+              v-if="comparison.compareUrl"
+              :href="comparison.compareUrl"
+              class="field-changes__all"
+            >
+              {{ t('Compare all fields') }}
+            </CpLink>
           </p>
 
           <p v-if="comparison.unchanged" class="field-changes__message">
@@ -210,6 +220,10 @@
     align-items: baseline;
     color: var(--c-text-quiet);
     font-size: var(--c-text-sm);
+  }
+
+  .field-changes__all {
+    margin-inline-start: auto;
   }
 
   .field-changes__from {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\FieldChangeComparisons;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Support\Facades\Workflows;
@@ -89,6 +90,12 @@ class EntryEditViewModel extends ElementEditViewModel
         $url = Uri::of($canonical->getCpEditUrl());
 
         return $url->withPath("{$url->path()}/activity")->value();
+    }
+
+    #[Override]
+    public function comparePageUrl(): ?string
+    {
+        return app(FieldChangeComparisons::class)->compareUrl($this->entry);
     }
 
     public function sectionHandle(): ?string

@@ -499,6 +499,12 @@ class ElementEditViewModel extends ViewModel
         return null;
     }
 
+    /** Where this version can be compared side by side with another, such as what it was based on. */
+    public function comparePageUrl(): ?string
+    {
+        return null;
+    }
+
     /**
      * The element's and its canonical's last-modified stamps at render time.
      * Activity polling compares these against the server's to notice that

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {t} from '@craftcms/ui';
   import {computed} from 'vue';
   import CpLink from '@/common/components/CpLink.vue';
   import type {ElementEditPayload} from '@/modules/elements/composables/useElementEditor';
@@ -18,6 +19,14 @@
 </script>
 
 <template>
+  <CpLink
+    v-if="payload.comparePageUrl"
+    :href="payload.comparePageUrl"
+    class="text-sm me-md"
+  >
+    {{ t('Compare versions') }}
+    <craft-icon name="code-compare" />
+  </CpLink>
   <CpLink
     v-for="item in links"
     :key="item.id"

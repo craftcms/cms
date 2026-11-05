@@ -11,13 +11,15 @@
 <script setup lang="ts">
   /**
    * Shows a field before and after a change: a word diff when both sides are
-   * text, and both sides next to each other otherwise. Used by the activity
-   * timeline, the AI assistant’s proposed changes, and “Compare changes”.
+   * text, and both sides next to each other otherwise, with lines between the
+   * nested entries they share. Used by the activity timeline, the AI
+   * assistant’s proposed changes, and “Compare changes”.
    */
   import {t} from '@craftcms/ui';
   import '@craftcms/ui/components/text-diff/text-diff';
-  import {computed} from 'vue';
+  import {computed, useTemplateRef} from 'vue';
   import ChangeValue from './ChangeValue.vue';
+  import NestedEntryLinks from './NestedEntryLinks.vue';
   import UiRenderer from './UiRenderer.vue';
   import {provideUiPreview} from './uiPreview';
   import {provideUiValueGroup} from './uiValueGroup';
@@ -51,6 +53,20 @@
     )
   );
 
+  const sidesElement = useTemplateRef<HTMLElement>('sides');
+
+  /** Both previews of a nested element field, such as Matrix, to connect their entries. */
+  const linkScopes = (): [HTMLElement | null, HTMLElement | null][] => [
+    [
+      sidesElement.value?.querySelector<HTMLElement>(
+        '[data-change-side="from"]'
+      ) ?? null,
+      sidesElement.value?.querySelector<HTMLElement>(
+        '[data-change-side="to"]'
+      ) ?? null,
+    ],
+  ];
+
   /** Whether either side previews a field, which needs more room. */
   const hasPreviews = computed(() =>
     sides.value.some(({side}) => 'payload' in side)
@@ -67,6 +83,7 @@
   ></craft-text-diff>
   <div v-else class="change-comparison">
     <dl
+      ref="sides"
       class="change-comparison__sides"
       :class="{'change-comparison__sides--previews': hasPreviews}"
     >
@@ -80,6 +97,7 @@
           <ChangeValue v-else :value="side.value" />
         </dd>
       </div>
+      <NestedEntryLinks v-if="hasPreviews" :scopes="linkScopes" />
     </dl>
   </div>
 </template>
@@ -90,6 +108,7 @@
   }
 
   .change-comparison__sides {
+    position: relative;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--c-spacing-sm);
@@ -105,6 +124,10 @@
   @container change-comparison (min-width: 500px) {
     .change-comparison__sides--previews {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .change-comparison__sides--previews:has(.nested-entry-links g) {
+      column-gap: var(--c-spacing-2xl, 3rem);
     }
   }
 

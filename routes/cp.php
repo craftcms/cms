@@ -21,6 +21,7 @@ use CraftCms\Cms\Http\Controllers\CommandPaletteController;
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Http\Controllers\ContentIndexController;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
+use CraftCms\Cms\Http\Controllers\Elements\CompareElementsController;
 use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementActivityController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementRedirectController;
@@ -250,6 +251,11 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     ]);
     Route::get('entries/{section}/{id}{slug?}/activity', [ElementActivityController::class, 'index'])->where($idSlugParams);
     Route::get('content/{page}/{section}/{id}{slug?}/activity', [ElementActivityController::class, 'index'])->where([
+        ...$idSlugParams,
+        'page' => '[^\/]+',
+    ]);
+    Route::get('entries/{section}/{id}{slug?}/compare', CompareElementsController::class)->where($idSlugParams);
+    Route::get('content/{page}/{section}/{id}{slug?}/compare', CompareElementsController::class)->where([
         ...$idSlugParams,
         'page' => '[^\/]+',
     ]);
