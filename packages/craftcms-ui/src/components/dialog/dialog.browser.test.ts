@@ -366,36 +366,54 @@ it('returns focus to a popover’s button once a dialog opened from inside it cl
   );
 });
 
-it('returns focus to a popover’s button linked with for once a dialog opened from inside it closes', async () => {
-  await import('../popover/popover.js');
-  document.body.innerHTML = `
+it.each([
+  ['for', (popover: CraftPopover) => popover.setAttribute('for', 'view')],
+  [
+    'a virtual anchor',
+    (popover: CraftPopover) => {
+      const button = document.getElementById('view')!;
+      popover.anchor = {
+        contextElement: button,
+        getBoundingClientRect: () => button.getBoundingClientRect(),
+      };
+    },
+  ],
+])(
+  'returns focus to a popover’s button linked with %s once a dialog opened from inside it closes',
+  async (_, link) => {
+    await import('../popover/popover.js');
+    document.body.innerHTML = `
     <button type="button" id="view">View</button>
-    <craft-popover for="view">
+    <craft-popover>
       <div slot="content"><button type="button">Edit columns</button></div>
     </craft-popover>
     <craft-dialog label="Columns"><button type="button">Done</button></craft-dialog>
   `;
-  const popover = document.querySelector<CraftPopover>('craft-popover')!;
-  const dialog = document.querySelector('craft-dialog') as CraftDialog;
-  popover
-    .querySelector('[slot="content"] button')!
-    .addEventListener('click', () => (dialog.opened = true));
-  const opener = page.getByRole('button', {name: 'Edit columns'});
-  await popover.updateComplete;
+    const popover = document.querySelector<CraftPopover>('craft-popover')!;
+    link(popover);
+    const dialog = document.querySelector('craft-dialog') as CraftDialog;
+    popover
+      .querySelector('[slot="content"] button')!
+      .addEventListener('click', () => (dialog.opened = true));
+    const opener = page.getByRole('button', {name: 'Edit columns'});
+    await popover.updateComplete;
 
-  await userEvent.click(page.getByRole('button', {name: 'View'}));
-  await expect.element(opener).toBeVisible();
-  await userEvent.click(opener);
+    await userEvent.click(page.getByRole('button', {name: 'View'}));
+    await expect.element(opener).toBeVisible();
+    await userEvent.click(opener);
 
-  await expect.poll(() => dialog.matches(':focus-within')).toBe(true);
-  await expect.poll(() => popover.opened).toBe(false);
+    await expect.poll(() => dialog.matches(':focus-within')).toBe(true);
+    await expect.poll(() => popover.opened).toBe(false);
 
-  await userEvent.keyboard('{Escape}');
-  await dialog.updateComplete;
+    await userEvent.keyboard('{Escape}');
+    await dialog.updateComplete;
 
-  expect(dialog.opened).toBe(false);
-  await expect.element(page.getByRole('button', {name: 'View'})).toHaveFocus();
-});
+    expect(dialog.opened).toBe(false);
+    await expect
+      .element(page.getByRole('button', {name: 'View'}))
+      .toHaveFocus();
+  }
+);
 
 it('closes on Escape through craft-before-hide', async () => {
   const dialog = await openDialog();
