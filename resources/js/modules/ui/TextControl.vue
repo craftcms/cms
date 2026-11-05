@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import CraftInput from '@craftcms/ui/components/input/input';
   import '@craftcms/ui/components/text-expander/text-expander';
-  import {useId} from 'vue';
+  import {onMounted, useId, useTemplateRef} from 'vue';
   import type {UiChangeKind, UiControlPayload, TextControlProps} from './types';
   import {
     ignoreModelValueInitialization,
@@ -9,7 +9,7 @@
     serverErrorValidators,
   } from './runtime';
 
-  defineProps<{
+  const props = defineProps<{
     control: UiControlPayload<TextControlProps>;
     value: unknown;
     label?: string;
@@ -30,6 +30,25 @@
     return value === true ? 'on' : 'off';
   }
 
+  const input = useTemplateRef<CraftInput>('input');
+
+  // The browser only autofocuses on page load, so a control rendered later (such as in a
+  // modal or slideout) focuses itself, and selects its value so it can be typed over.
+  onMounted(() => {
+    if (props.control.props.autofocus !== true) {
+      return;
+    }
+
+    requestAnimationFrame(async () => {
+      await input.value?.updateComplete;
+      const nativeInput = input.value?.querySelector<
+        HTMLInputElement | HTMLTextAreaElement
+      >('input, textarea');
+      nativeInput?.focus();
+      nativeInput?.select();
+    });
+  });
+
   const onModelValueChanged = ignoreModelValueInitialization((event) => {
     if (!(event.target instanceof CraftInput)) {
       throw new TypeError('Expected a craft input event target.');
@@ -49,6 +68,7 @@
 
 <template>
   <craft-input
+    ref="input"
     v-bind="$attrs"
     :name="editable ? inputName(control.path) : ''"
     :type="control.props.inputType ?? 'text'"
