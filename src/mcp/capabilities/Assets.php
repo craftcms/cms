@@ -240,6 +240,8 @@ readonly class Assets
             if ($staged) {
                 $asset->newFilename = $filename;
                 $asset->newFolderId = $folder->id;
+                // Fail rather than rename if the checked filename was taken since, so the condition still holds
+                $asset->avoidFilenameConflicts = false;
                 $asset->setScenario(Asset::SCENARIO_MOVE);
 
                 if (!$this->elements->saveElement($asset)) {

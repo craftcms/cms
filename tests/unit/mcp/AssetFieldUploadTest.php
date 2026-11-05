@@ -23,6 +23,7 @@ class AssetFieldUploadTest extends TestCase
     private string $file;
     private array $fields = [];
     private ?array $originalVolume = null;
+    private mixed $originalMaxUploadFileSize;
 
     public function _fixtures(): array
     {
@@ -32,6 +33,9 @@ class AssetFieldUploadTest extends TestCase
     protected function _before(): void
     {
         Craft::$app->getUser()->setIdentity(User::find()->admin()->one());
+        // Other tests may leave a lower limit behind
+        $this->originalMaxUploadFileSize = Craft::$app->getConfig()->getGeneral()->maxUploadFileSize;
+        Craft::$app->getConfig()->getGeneral()->maxUploadFileSize = 1024 * 1024;
         $this->file = sys_get_temp_dir() . '/photo.png';
         file_put_contents($this->file, base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='));
     }
@@ -55,6 +59,7 @@ class AssetFieldUploadTest extends TestCase
         }
 
         @unlink($this->file);
+        Craft::$app->getConfig()->getGeneral()->maxUploadFileSize = $this->originalMaxUploadFileSize;
         Craft::$app->getUser()->setIdentity(null);
     }
 
