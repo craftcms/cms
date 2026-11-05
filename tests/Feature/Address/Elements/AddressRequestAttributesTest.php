@@ -35,3 +35,38 @@ it('prefers top-level attributes over the nested address fields', function () {
 
     expect($address->locality)->toBe('Salem');
 });
+
+it('drops a province from the previous country’s list when the country changes', function () {
+    // Autofill can fill a new country and a province chosen from the old country's list together.
+    $address = new Address(['countryCode' => 'US']);
+
+    $address->setAttributesFromRequest([
+        'countryCode' => 'CA',
+        'address' => ['administrativeArea' => 'AR'],
+    ]);
+
+    expect($address->countryCode)->toBe('CA')
+        ->and($address->administrativeArea)->toBeNull();
+});
+
+it('keeps a province that belongs to the new country', function () {
+    $address = new Address(['countryCode' => 'US']);
+
+    $address->setAttributesFromRequest([
+        'countryCode' => 'CA',
+        'address' => ['administrativeArea' => 'NS'],
+    ]);
+
+    expect($address->administrativeArea)->toBe('NS');
+});
+
+it('keeps an unrecognized province when the country is unchanged', function () {
+    $address = new Address(['countryCode' => 'CA', 'administrativeArea' => 'XX']);
+
+    $address->setAttributesFromRequest([
+        'countryCode' => 'CA',
+        'address' => ['administrativeArea' => 'XX'],
+    ]);
+
+    expect($address->administrativeArea)->toBe('XX');
+});

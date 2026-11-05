@@ -80,6 +80,7 @@ class CountryCodeField extends BaseNativeField
 
         return Choice::make($this->attribute())
             ->options($options)
+            ->autocomplete($context->element->getBelongsToCurrentUser() ? 'country' : 'off')
             ->value($context->element->countryCode);
     }
 

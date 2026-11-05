@@ -680,6 +680,18 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             unset($values['address']);
         }
 
+        // Autofill can fill a new country and a province chosen from the old country's list together.
+        // Drop that province, so it isn't kept as an extra option that autofill selects again.
+        if (
+            isset($values['countryCode'], $values['administrativeArea']) &&
+            $values['countryCode'] !== ($this->countryCode ?? null)
+        ) {
+            $provinces = app(Addresses::class)->getSubdivisionRepository()->getList([$values['countryCode']]);
+            if ($provinces !== [] && ! isset($provinces[$values['administrativeArea']])) {
+                $values['administrativeArea'] = null;
+            }
+        }
+
         parent::setAttributesFromRequest($values);
     }
 

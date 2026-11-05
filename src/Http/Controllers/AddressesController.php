@@ -27,6 +27,7 @@ readonly class AddressesController
             'countryCode' => ['required', 'string'],
             'administrativeArea' => ['nullable', 'string'],
             'locality' => ['nullable', 'string'],
+            'belongsToCurrentUser' => ['nullable', 'boolean'],
         ]);
 
         $address = new Address([
@@ -41,7 +42,8 @@ readonly class AddressesController
 
         return new JsonResponse([
             'fieldsHtml' => $html,
-            'fieldDefinitions' => $this->addresses->getFormFieldDefinitions($address),
+            // The address has no owner here, so the control says whether it's the current user's own.
+            'fieldDefinitions' => $this->addresses->getFormFieldDefinitions($address, $request->boolean('belongsToCurrentUser')),
             'headHtml' => $HtmlStack->headHtml(),
             'bodyHtml' => $HtmlStack->bodyHtml(),
         ]);

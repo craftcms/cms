@@ -76,6 +76,8 @@
      * values added that way. Checkboxes and radios only.
      */
     allowCustom?: true;
+    /** The select's `autocomplete` token, such as `country`. Select presentation only. */
+    autocomplete?: string;
   };
 
   const props = defineProps<{
@@ -487,6 +489,7 @@
       :multiple="control.props.multiple"
       :disabled="!editable"
       :required="editable && required"
+      :autocomplete="control.props.autocomplete"
       :aria-invalid="invalid ? 'true' : undefined"
       @change="onSelect"
     >

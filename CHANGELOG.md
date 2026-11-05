@@ -631,6 +631,8 @@
 - `craft-spinner` now has a `label` property, which describes what is loading to screen readers. Slotted text still replaces it.
 - `craft-field` now has an `instructions-sr-only` attribute, and UI fields and the `Field` view component have `instructionsSrOnly()`, which visually hide instructions while keeping them in the input’s accessible description.
 - Added the `<craft-option-group>` and `<craft-combobox-token>` web components. Multi-select comboboxes’ values are now rendered in the light DOM, within a `<ul slot="selection">` element. ([#20279](https://github.com/craftcms/cms/pull/20279))
+- The current user’s own First Name and Last Name fields now have `autocomplete="given-name"` and `autocomplete="family-name"`, so browsers and password managers can fill them in.
+- The Full Name, First Name, Last Name, and Organization fields on the current user’s own addresses now have `autocomplete` tokens, so browsers and password managers can fill them in.
 
 ### Templates and Routing
 - Section and Matrix site settings now have a single “Route To” setting, in place of separate Route Type and Route settings. Namespaced controller actions and values that match a named route are saved as routes, and anything else is saved as a template. ([#19942](https://github.com/craftcms/cms/pull/19942))
@@ -725,6 +727,10 @@
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
 
 ### Bug Fixes
+- Fixed a bug where the current user’s own Full Name, Username, and Email fields had `autocomplete="off"`, so browsers and password managers couldn’t fill them in.
+- Fixed a bug where the current user’s own addresses had `autocomplete="off"` on their country, address lines, locality, administrative area, and postal code fields, including after their country was changed.
+- Fixed a bug where autofilling an address could save an administrative area from the previously selected country, such as “AR” for a Canadian address.
+- Fixed a bug where handle inputs didn’t have `autocomplete="off"` on Vue-rendered pages, so browsers could suggest autofill values for them.
 - Fixed a bug where publishing an approved draft through a workflow marked all of the element’s fields as modified, on both the element and its new revision.
 - Fixed a bug where read-only nested entry cards, such as on revisions, couldn’t be opened from their edit buttons or by double-clicking them. ([#20307](https://github.com/craftcms/cms/pull/20307))
 - Fixed a bug where keyboard shortcuts were shown with <kbd>Super</kbd> on Linux, rather than <kbd>Ctrl</kbd>.

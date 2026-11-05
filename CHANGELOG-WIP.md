@@ -136,6 +136,8 @@
 - Improved the accessibility of the control panel, including element indexes, element edit screens, and the login page. ([#19025](https://github.com/craftcms/cms/pull/19025), [#19520](https://github.com/craftcms/cms/pull/19520), [#19699](https://github.com/craftcms/cms/pull/19699), [#19749](https://github.com/craftcms/cms/pull/19749), [#19785](https://github.com/craftcms/cms/pull/19785))
 - Added a “Skip to messages” link, and errors are now announced to screen readers immediately.
 - Error summaries now receive focus when a form fails validation, and each error links to its field, switching tabs if needed. ([#20044](https://github.com/craftcms/cms/issues/20044))
+- The current user’s own First Name and Last Name fields now have `autocomplete="given-name"` and `autocomplete="family-name"`, so browsers and password managers can fill them in.
+- The Full Name, First Name, Last Name, and Organization fields on the current user’s own addresses now have `autocomplete` tokens, so browsers and password managers can fill them in.
 
 ### Administration
 

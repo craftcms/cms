@@ -28,9 +28,8 @@ class TextField extends BaseNativeField
     /**
      * @var string|bool|null The input’s `autocomplete` attribute value.
      *
-     * This can be set to `true` (`"on"`), `false` ("off")`, or any other allowed `autocomplete` value.
-     *
-     * If this is explicitly set to `null`, the input won’t get an `autocomplete` attribute.
+     * This can be set to `true` (`"on"`), `false` (`"off"`), or any other allowed `autocomplete` value.
+     * `null` is treated as `false`.
      */
     public string|bool|null $autocomplete = false;
 
@@ -116,8 +115,16 @@ class TextField extends BaseNativeField
     #[Override]
     protected function uiControl(FieldLayoutElementContext $context): ?Control
     {
+        // Subclasses set per-element tokens, such as the current user's `email`, through inputAttributes(),
+        // and some of them require an element.
+        $autocomplete = ($context->element ? $this->inputAttributes($context->element)['autocomplete'] ?? null : null)
+            ?? $this->autocomplete;
+
         return Text::make($this->name ?? $this->attribute())
             ->inputType($this->inputType ?? 'text')
+            ->autocomplete($autocomplete ?? false)
+            ->autocorrect($this->autocorrect)
+            ->autocapitalize($this->autocapitalize)
             ->value($this->value($context->element))
             ->mode($this->disabled
                 ? ControlMode::Disabled

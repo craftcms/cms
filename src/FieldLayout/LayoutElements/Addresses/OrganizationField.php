@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements\Addresses;
 
+use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextField;
 use CraftCms\Cms\Support\Arr;
@@ -47,6 +48,15 @@ class OrganizationField extends TextField
     public function previewable(): bool
     {
         return true;
+    }
+
+    /** @return array<string, string|array<string, string>> */
+    #[Override]
+    protected function inputAttributes(?ElementInterface $element = null, bool $static = false): array
+    {
+        return [
+            'autocomplete' => $element instanceof Address && $element->getBelongsToCurrentUser() ? 'organization' : 'off',
+        ];
     }
 
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string

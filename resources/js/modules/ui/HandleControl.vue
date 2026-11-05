@@ -63,6 +63,7 @@
     .modelValue="String(value ?? '')"
     :maxlength="control.props.maxLength"
     :placeholder="control.props.placeholder"
+    .autocomplete="'off'"
     :required="editable && required"
     :readonly="control.mode === 'readOnly'"
     .disabled="control.mode === 'disabled'"

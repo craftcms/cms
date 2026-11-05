@@ -26,9 +26,13 @@ class FullNameField extends BaseFullNameField
             throw new InvalidArgumentException(sprintf('%s can only be used in user field layouts.', self::class));
         }
 
-        return [
-            'autocomplete' => $element->getIsCurrent() ? 'name' : 'off',
-        ];
+        return parent::inputAttributes($element, $static);
+    }
+
+    #[Override]
+    protected function nameBelongsToCurrentUser(ElementInterface $element): bool
+    {
+        return $element instanceof User && $element->getIsCurrent();
     }
 
     #[Override]
