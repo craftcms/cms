@@ -68,6 +68,15 @@ select :is(option, optgroup) {
   border-radius: var(--c-radius-sm);
 }
 
+/* Chrome only sets `visibility: hidden` on the picker here, which leaves a gap. */
+:is(craft-input, craft-input-date, craft-input-time)
+  > input:is([type='date'], [type='time']):is(
+    [readonly],
+    :disabled
+  )::-webkit-calendar-picker-indicator {
+  display: none;
+}
+
 h1,
 h2,
 h3,

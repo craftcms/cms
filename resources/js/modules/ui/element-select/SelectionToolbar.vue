@@ -14,6 +14,10 @@
     actions: ActionItem[];
     /** How many elements the field relates. */
     total: number;
+    /** What one element is called, such as “entry”. */
+    elementDisplayName: string;
+    /** What several elements are called, such as “entries”. */
+    elementPluralDisplayName: string;
     limit: number | null;
   }>();
 
@@ -25,8 +29,10 @@
    * nested interpolation to the template compiler.
    */
   const selectionCountLabel = computed(() =>
-    t('{num, number} {num, plural, =1{item} other{items}} selected', {
+    t('{num, number} {num, plural, =1{{item}} other{{items}}} selected', {
       num: selectedIds.value.length,
+      item: props.elementDisplayName,
+      items: props.elementPluralDisplayName,
     })
   );
 

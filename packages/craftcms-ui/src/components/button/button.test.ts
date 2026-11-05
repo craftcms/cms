@@ -1,6 +1,10 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type CraftButton from './button.js';
 import './button.js';
+import {
+  computeAccessibleDescription,
+  computeAccessibleName,
+} from 'dom-accessibility-api';
 
 async function createButton(
   attrs: Record<string, string> = {},
@@ -83,6 +87,32 @@ describe('craft-button link mode', () => {
     expect(a.getAttribute('target')).toBe('_blank');
     expect(a.getAttribute('rel')).toBe('noopener');
     expect(a.textContent).toContain('Opens in a new window');
+  });
+
+  it('names an icon-only link with the host’s aria-label', async () => {
+    const element = await createButton(
+      {href: '/settings', 'aria-label': 'Open Settings'},
+      ''
+    );
+    const a = anchor(element)!;
+    expect(computeAccessibleName(a)).toBe('Open Settings');
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(content(element)!.classList.contains('a11y-error')).toBe(false);
+
+    element.setAttribute('aria-label', 'Open Users');
+    await new Promise((resolve) => setTimeout(resolve));
+    await element.updateComplete;
+    expect(computeAccessibleName(a)).toBe('Open Users');
+  });
+
+  it('describes a labeled link to another host as opening in a new window', async () => {
+    const element = await createButton(
+      {href: 'https://craftcms.com/', 'aria-label': 'Craft website'},
+      ''
+    );
+    const a = anchor(element)!;
+    expect(computeAccessibleName(a)).toBe('Craft website');
+    expect(computeAccessibleDescription(a)).toBe('Opens in a new window');
   });
 
   it('keeps its own target for a link to another host', async () => {

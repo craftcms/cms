@@ -27,8 +27,8 @@ use Mcp\Server\Session\Session;
  * user’s permissions for the records it touches. Tools that can change anything ask the user to approve each call, as
  * {@see McpTool} does. Changes are recorded as the AI assistant’s, in their activity.
  *
- * Tool names are renamed for providers, which only allow letters, numbers, underscores, and hyphens: `elements.get`
- * becomes `elements_get`.
+ * Providers only allow letters, numbers, underscores, and hyphens in tool names. Craft’s tool names already follow that;
+ * dots in plugin tool names that don’t are replaced with underscores.
  *
  * @internal
  *
@@ -62,18 +62,12 @@ class McpTools
     }
 
     /**
-     * Returns the admin MCP server’s instructions, with tool names as the assistant knows them, and without the line about
-     * guidance and skills, which the assistant gets in its own instructions.
+     * Returns the admin MCP server’s instructions, without the line about guidance and skills, which the assistant gets in
+     * its own instructions.
      */
     public function instructions(): string
     {
-        $names = [];
-
-        foreach ($this->references() as $name => $reference) {
-            $names[$reference->tool->name] = $name;
-        }
-
-        return strtr($this->instructions->get(withGuidance: false), $names);
+        return $this->instructions->get(withGuidance: false);
     }
 
     /**
@@ -124,7 +118,7 @@ class McpTools
 
         foreach ($discovered->getTools() as $reference) {
             // The assistant loads skills with its own tool, but can still manage them.
-            if (in_array($reference->tool->name, ['skills.list', 'skills.get'], true)) {
+            if (in_array($reference->tool->name, ['skills_list', 'skills_get'], true)) {
                 continue;
             }
 

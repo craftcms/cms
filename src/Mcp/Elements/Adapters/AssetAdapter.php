@@ -75,7 +75,7 @@ class AssetAdapter extends BaseElementAdapter
     protected function notes(): array
     {
         return [
-            'Create assets with assets.create and replace their files with assets.replace; both accept the file to upload.',
+            'Create assets with assets_create and replace their files with assets_replace; both accept the file to upload.',
             'Restoring an asset only succeeds if its file was moved to the trashed asset disk when it was deleted.',
             'Validation does not move or rename files.',
         ];
@@ -83,7 +83,7 @@ class AssetAdapter extends BaseElementAdapter
 
     public function create(array $attributes, array $fields, CraftUser $actor): array
     {
-        throw new ToolCallException('Create assets with assets.create, which accepts the file to upload.');
+        throw new ToolCallException('Create assets with assets_create, which accepts the file to upload.');
     }
 
     /** @param Asset|null $element */

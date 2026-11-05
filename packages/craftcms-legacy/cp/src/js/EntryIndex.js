@@ -79,8 +79,18 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
 
       // Determine if they are viewing a section that they have permission to create entries in
       const selectedSection = this.publishableSections.find(
-        (s) => s.handle === sectionHandle
+        (s) => s.handle === sectionHandle && s.sites.includes(this.siteId)
       );
+
+      // Ignore the source's entry type if it isn't available for the section
+      if (
+        entryTypeHandle &&
+        !selectedSection?.entryTypesBySite[this.siteId].some(
+          (t) => t.handle === entryTypeHandle
+        )
+      ) {
+        entryTypeHandle = undefined;
+      }
 
       this.$newEntryBtnGroup = $('<div class="btngroup submit" data-wrapper/>');
       let $menuBtn;

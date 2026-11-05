@@ -48,7 +48,7 @@ it('searches across element types through MCP', function () {
     Passport::actingAs($user, ['mcp:admin'], 'craft-mcp');
 
     $result = McpRequest::send($this, 'tools/call', [
-        'name' => 'search.query',
+        'name' => 'search_query',
         'arguments' => ['query' => $query, 'types' => ['entries', 'users', 'test-mcp-search-element']],
     ])->assertOk()->assertJsonPath('result.isError', false)->json('result');
     $search = $result['structuredContent'];

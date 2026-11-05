@@ -4,11 +4,12 @@
   import '@craftcms/ui/components/disclosure/disclosure';
   import '@craftcms/ui/components/spinner/spinner';
   import {t} from '@craftcms/ui/utilities/translate';
+  import {useMounted} from '@vueuse/core';
   import {computed} from 'vue';
   import {useDelayedLoading} from '@/common/composables/useDelayedLoading';
   import UiNodeList from './UiNodeList.vue';
   import {useOptionalUiRenderer} from './renderer/context';
-  import {useOutlet} from './outlets';
+  import {useOutlet, useOutletPending} from './outlets';
   import type {UiChange, UiNodePayload, UiPayload} from './types';
 
   type GroupNodeProps = {
@@ -69,10 +70,23 @@
   });
   const showLoading = useDelayedLoading(loading);
   const outlet = useOutlet(() => props.node.props.outlet);
+  const outletPending = useOutletPending(() => props.node.props.outlet);
+  const mounted = useMounted();
+  /**
+   * Holds back a group bound for an outlet until the outlet is registered, or
+   * known not to be coming. Waiting for mount lets controls later in the form
+   * mark their outlets as pending first.
+   */
+  const awaitingOutlet = computed(
+    () =>
+      Boolean(props.node.props.outlet) &&
+      !outlet.value &&
+      (!mounted.value || outletPending.value)
+  );
 </script>
 
 <template>
-  <Teleport :to="outlet" :disabled="!outlet">
+  <Teleport v-if="!awaitingOutlet" :to="outlet" :disabled="!outlet">
     <craft-field
       v-if="node.props.asField"
       fieldset

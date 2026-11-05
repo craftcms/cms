@@ -12,7 +12,7 @@
   /** A tool call waiting for approval. */
   export interface AssistantApproval {
     id: string;
-    /** The tool’s name as Craft’s MCP server knows it, such as `elements.update`. */
+    /** The tool’s name, such as `elements_update`. */
     tool: string;
     /** Why it needs approval. */
     reason: string | null;

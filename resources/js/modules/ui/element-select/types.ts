@@ -84,6 +84,8 @@ export type ElementSelectProps = {
   branchLimit?: number | null;
   /** Lower-cased, for "Edit entry" / "Copy entry". */
   elementDisplayName: string;
+  /** Lower-cased, for "2 entries selected". */
+  elementPluralDisplayName: string;
   /** `AssetSelect` only; absent for every other element type. */
   canUpload?: boolean;
   uploadFolderId?: number | null;

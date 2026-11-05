@@ -369,7 +369,7 @@ describe('NestedElementsIndex', () => {
     await nextTick();
     expect(
       [...root.querySelectorAll('[role="status"]')].some((status) =>
-        status.textContent?.includes('1 item selected')
+        status.textContent?.includes('1 entry selected')
       )
     ).toBe(true);
     button(root, 'Clear selection').click();

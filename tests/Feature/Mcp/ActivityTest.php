@@ -59,7 +59,7 @@ afterEach(function (): void {
 it('creates editorial comments with authenticated authorship, mentions, and durable MCP provenance', function (): void {
     $editor = User::factory()->create(['admin' => true, 'username' => 'editor']);
     $markdown = "Please review [@editor](craft-user:{$editor->id}).";
-    $created = ($this->callActivity)('activity.comments.create', ['markdown' => $markdown])
+    $created = ($this->callActivity)('activity_comments_create', ['markdown' => $markdown])
         ->assertOk()
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.event.actor.id', $this->author->id)
@@ -73,7 +73,7 @@ it('creates editorial comments with authenticated authorship, mentions, and dura
     Notification::assertSentTo($editor->asElement(), ActivityMentionNotification::class);
     app(ActivityComments::class)->edit($comment, $this->author->asElement(), 'Updated review request', $this->entry);
 
-    ($this->callActivity)('activity.list')
+    ($this->callActivity)('activity_list')
         ->assertJsonPath('result.structuredContent.events.0.comment.markdown', 'Updated review request')
         ->assertJsonPath('result.structuredContent.events.0.origin', 'MCP');
 });
@@ -81,7 +81,7 @@ it('creates editorial comments with authenticated authorship, mentions, and dura
 it('captures provenance for existing mutation tools without leaking it into subsequent editor actions', function (): void {
     Context::addHidden('host.request', 'preserved');
 
-    ($this->callActivity)('elements.update', ['attributes' => ['title' => 'Updated through MCP']])
+    ($this->callActivity)('elements_update', ['attributes' => ['title' => 'Updated through MCP']])
         ->assertOk()->assertJsonPath('result.isError', false);
     $mcpEvent = ActivityEvent::query()->eventTypes(ElementUpdated::class)->firstOrFail();
 
@@ -116,7 +116,7 @@ it('lists canonical activity with inclusive timezone bounds, site isolation, and
     $activities->record(new ElementUpdated(subject: $this->entry, site: $site));
     $criteria = ['occurredFrom' => '2026-10-05T12:00:00+02:00', 'occurredUntil' => '2026-10-05T10:00:00Z', 'limit' => 1];
 
-    ($this->callActivity)('activity.list', ['id' => $draft->id, 'criteria' => $criteria])
+    ($this->callActivity)('activity_list', ['id' => $draft->id, 'criteria' => $criteria])
         ->assertOk()
         ->assertJsonPath('result.structuredContent.count', 1)
         ->assertJsonPath('result.structuredContent.events.0.id', (string) $changed->id)
@@ -124,11 +124,11 @@ it('lists canonical activity with inclusive timezone bounds, site isolation, and
         ->assertJsonPath('result.structuredContent.events.0.changes.0.old', 'Original')
         ->assertJsonPath('result.structuredContent.events.0.changes.0.new', 'Revised')
         ->assertJsonMissingPath('result.structuredContent.events.0.component');
-    ($this->callActivity)('activity.list', ['criteria' => [...$criteria, 'offset' => 1]])
+    ($this->callActivity)('activity_list', ['criteria' => [...$criteria, 'offset' => 1]])
         ->assertJsonPath('result.structuredContent.events.0.id', (string) $neutral->id);
-    ($this->callActivity)('activity.list', ['criteria' => [...$criteria, 'offset' => 2]])
+    ($this->callActivity)('activity_list', ['criteria' => [...$criteria, 'offset' => 2]])
         ->assertJsonPath('result.structuredContent.count', 0);
-    ($this->callActivity)('activity.list', ['criteria' => [
+    ($this->callActivity)('activity_list', ['criteria' => [
         'occurredFrom' => '2026-10-05T10:00:00.001Z',
         'occurredUntil' => '2026-10-05T10:00:01Z',
     ]])->assertJsonPath('result.structuredContent.count', 0);
@@ -139,35 +139,35 @@ it('allows view-only editors to comment and protects comment versions from other
         'accessCp', "viewEntries:{$this->entry->getSection()->uid}",
         "viewPeerEntries:{$this->entry->getSection()->uid}",
     ])->create(['admin' => false]);
-    ($this->callActivity)('activity.comments.create', ['markdown' => 'View-only editorial note'], $viewer)
+    ($this->callActivity)('activity_comments_create', ['markdown' => 'View-only editorial note'], $viewer)
         ->assertOk()->assertJsonPath('result.isError', false);
 
     $root = app(ActivityComments::class)->create($this->entry, $this->author->asElement(), null, 'Original text');
     app(ActivityComments::class)->edit($root, $this->author->asElement(), 'Current text', $this->entry);
-    ($this->callActivity)('activity.list', actor: $viewer)
+    ($this->callActivity)('activity_list', actor: $viewer)
         ->assertJsonPath('result.structuredContent.events.0.id', (string) $root->id)
         ->assertJsonPath('result.structuredContent.events.0.comment.markdown', null)
         ->assertJsonPath('result.structuredContent.events.0.comment.edited', true)
         ->assertJsonPath('result.structuredContent.count', 2);
 
     app(ActivityComments::class)->delete($root, $this->author->asElement());
-    ($this->callActivity)('activity.list')
+    ($this->callActivity)('activity_list')
         ->assertJsonPath('result.structuredContent.events.0.comment.deleted', true)
         ->assertJsonPath('result.structuredContent.events.0.comment.html', null)
         ->assertJsonPath('result.structuredContent.events.0.comment.markdown', null);
 
     $denied = User::factory()->withPermissions(['accessCp'])->create(['admin' => false]);
-    ($this->callActivity)('activity.list', actor: $denied)
+    ($this->callActivity)('activity_list', actor: $denied)
         ->assertOk()->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'Element not found.');
-    ($this->callActivity)('activity.comments.create', ['markdown' => 'Unauthorized'], $denied)
+    ($this->callActivity)('activity_comments_create', ['markdown' => 'Unauthorized'], $denied)
         ->assertOk()->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'Element not found.');
     expect(ActivityEvent::query()->eventTypes(CommentCreated::class)->count())->toBe(2);
 });
 
 it('rejects ambiguous identities and invalid timezone bounds before returning activity', function (Closure $arguments, string $message): void {
-    $response = ($this->callActivity)('activity.list', $arguments($this->entry))
+    $response = ($this->callActivity)('activity_list', $arguments($this->entry))
         ->assertOk()->assertJsonPath('result.isError', true);
 
     expect($response->json('result.content.0.text'))->toContain($message);
@@ -181,7 +181,7 @@ it('rejects ambiguous identities and invalid timezone bounds before returning ac
 it('carries MCP provenance into queued work and clears it for unrelated worker jobs', function (): void {
     Cms::config()->queueName('mcp-activity')->trackedQueueNames(['mcp-activity']);
     app(CapabilityRegistry::class)->register(QueuedActivityCapability::class);
-    ($this->callActivity)('test.activity.queue')->assertOk()->assertJsonPath('result.isError', false);
+    ($this->callActivity)('test_activity_queue')->assertOk()->assertJsonPath('result.isError', false);
     $queue = app(QueueManager::class)->connection('database');
     $queue->push(new QueuedActivityJob($this->entry->id), queue: 'mcp-activity');
 
@@ -199,7 +199,7 @@ it('carries MCP provenance into queued work and clears it for unrelated worker j
 class QueuedActivityCapability
 {
     /** @return array{queued: true} */
-    #[McpTool(name: 'test.activity.queue')]
+    #[McpTool(name: 'test_activity_queue')]
     public function queue(string $type, int $id): array
     {
         app(QueueManager::class)->connection('database')->push(new QueuedActivityJob($id), queue: 'mcp-activity');

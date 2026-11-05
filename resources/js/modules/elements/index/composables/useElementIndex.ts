@@ -107,28 +107,6 @@ export function useElementIndex(options: UseElementIndexOptions) {
     () => visibleViewModes.value.map(({mode}) => mode),
     (mode) => thumbSizeModeParams(mode)
   );
-  const filters = useElementIndexFilters(visitor, {
-    search: elementIndex.search,
-    status: elementIndex.statusMenuValue,
-    conditions: elementIndex.currentCondition,
-    busy: options.busy,
-    preferredSort: () => {
-      const saved = viewState.value.sources?.[sourceKey()]?.sort?.filter(
-        ({field}) => field !== 'score'
-      );
-
-      if (saved?.length) {
-        return saved;
-      }
-
-      return sourceKey() === initialSourceKey ? preferredSort : [];
-    },
-    params: () => ({
-      source: elementIndex.source?.key,
-      viewMode: persistedMode(),
-      ...options.filterParams?.(),
-    }),
-  });
   const pinnedColumn =
     options.pinnedColumn === undefined
       ? {key: 'title', label: elementIndex.elementDisplayName}
@@ -182,6 +160,28 @@ export function useElementIndex(options: UseElementIndexOptions) {
     set: (value) => {
       savedMode.value = value;
     },
+  });
+  const filters = useElementIndexFilters(visitor, {
+    search: elementIndex.search,
+    status: elementIndex.statusMenuValue,
+    conditions: elementIndex.currentCondition,
+    busy: options.busy,
+    preferredSort: () => {
+      const saved = viewState.value.sources?.[sourceKey()]?.sort?.filter(
+        ({field}) => field !== 'score'
+      );
+
+      if (saved?.length) {
+        return saved;
+      }
+
+      return sourceKey() === initialSourceKey ? preferredSort : [];
+    },
+    params: () => ({
+      source: elementIndex.source?.key,
+      viewMode: mode.value,
+      ...options.filterParams?.(),
+    }),
   });
   const {
     thumbSize,

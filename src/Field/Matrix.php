@@ -636,7 +636,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             $uis[$uid] = app(FieldLayoutCompiler::class)->ui(
                 $entry->getFieldLayout(),
                 $entry,
-                new UiContext(mode: $context->mode === ControlMode::Editable ? $context->ui->mode : $context->mode),
+                new UiContext(
+                    mode: $context->mode === ControlMode::Editable ? $context->ui->mode : $context->mode,
+                    preview: $context->ui->preview,
+                ),
             );
             $sortOrder[] = $uid;
         }
@@ -1456,6 +1459,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             && $context->ui->mode === ControlMode::Editable
             && ! ($owner?->getIsRevision() ?? false);
 
+        // Previews show their entries as a list of cards, which fits side by side and shows which ones changed.
+        $viewMode = $context->ui->preview ? self::VIEW_MODE_CARDS : $this->viewMode;
+
         // Every nested entry's permission checks ask whether the owner has reached Max Entries, and nothing adds entries
         // while they render, so the owner's entries are counted once.
         $totalEntries = self::$renderingTotalEntries;
@@ -1465,8 +1471,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             return $this->entryManager()->uiControl(
                 $context->path,
                 $owner,
-                $this->viewMode,
-                $this->nestedElementManagerConfig($context->value, $owner, ! $editable),
+                $viewMode,
+                $this->nestedElementManagerConfig($context->value, $owner, ! $editable, $viewMode),
             );
         } finally {
             self::$renderingTotalEntries = $totalEntries;
@@ -1477,7 +1483,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
      * @param  EntryQuery<Entry>|ElementCollection<int,Entry>|null  $value
      * @return array<string, mixed>
      */
-    private function nestedElementManagerConfig(EntryQuery|ElementCollection|null $value, ?ElementInterface $owner, bool $static): array
+    private function nestedElementManagerConfig(EntryQuery|ElementCollection|null $value, ?ElementInterface $owner, bool $static, string $viewMode): array
     {
         if (Event::hasListeners(EntryTypesForFieldResolving::class)) {
             if ($owner?->hasEagerLoadedElements($this->handle)) {
@@ -1500,7 +1506,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         }
 
         $config = [
-            'showInGrid' => $this->viewMode === self::VIEW_MODE_CARDS_GRID,
+            'showInGrid' => $viewMode === self::VIEW_MODE_CARDS_GRID,
             'nestedActionEvents' => true,
             'prevalidate' => false,
             'static' => $static,
@@ -1538,7 +1544,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             }
         }
 
-        if ($this->viewMode !== self::VIEW_MODE_INDEX) {
+        if ($viewMode !== self::VIEW_MODE_INDEX) {
             return $config;
         }
 

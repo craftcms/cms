@@ -54,13 +54,13 @@
     inline
     read-only
   />
-  <span v-else class="activity-timeline-change-value__text">
+  <span v-else class="change-value__text">
     {{ valueText(value) }}
   </span>
 </template>
 
 <style scoped>
-  .activity-timeline-change-value__text {
+  .change-value__text {
     white-space: pre-wrap;
   }
 </style>

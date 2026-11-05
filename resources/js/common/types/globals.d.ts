@@ -139,6 +139,7 @@ interface ElementSelectorModalSettings {
 }
 
 interface CraftStatic {
+  autofocusPreferred?: boolean;
   csrfTokenName?: string;
   csrfTokenValue?: string;
   ProgressBar: ProgressBarInterface;

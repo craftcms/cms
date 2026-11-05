@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import {default as settingsIndex} from '@actions/Settings/SettingsIndexController';
   import CpLink from '@/common/components/CpLink.vue';
   import CpContainer from '@/common/components/CpContainer.vue';
@@ -24,10 +23,6 @@
 
 <template>
   <CpContainer class="py-lg">
-    <template v-if="readOnly">
-      <CalloutReadOnly />
-    </template>
-
     <div class="grid gap-6">
       <div v-for="(items, category, index) in settings" :key="category">
         <h2
