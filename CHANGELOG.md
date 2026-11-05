@@ -732,6 +732,7 @@
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
 
 ### Bug Fixes
+- Fixed a bug where users with an authenticator app or recovery codes couldn’t sign in to the control panel, because the verification step showed an empty pane.
 - Fixed a bug where the control panel could error after updating Craft, when Laravel’s compiled Blade views were newer than the updated views they were compiled from. Compiled views are now cleared after updates, and the Caches utility has a “Compiled views” option. ([#20366](https://github.com/craftcms/cms/issues/20366), [#20374](https://github.com/craftcms/cms/pull/20374))
 - Fixed a bug where elements couldn’t be selected, edited inline, or reordered on element indexes when the `allowAdminChanges` config setting was disabled, and the “Changes to these settings aren’t permitted in this environment.” notice was shown on screens other than settings, and twice on the Settings and Sites index pages. ([#20339](https://github.com/craftcms/cms/issues/20339), [#20340](https://github.com/craftcms/cms/issues/20340), [#20344](https://github.com/craftcms/cms/issues/20344), [#20364](https://github.com/craftcms/cms/pull/20364))
 - Fixed a bug where publishing an approved draft through a workflow marked all of the element’s fields as modified, on both the element and its new revision.
