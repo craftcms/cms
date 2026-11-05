@@ -3248,6 +3248,7 @@ return [
     'Upload failed for “{filename}”.' => 'Súbor {filename} sa nepodarilo nahrať.',
     'Upload failed.' => 'Nahrávanie sa nepodarilo.',
     'Upload files' => 'Nahrať súbory',
+    'Upload progress' => 'Priebeh nahrávania',
     'Uploaded By' => 'Nahral používateľ',
     'Uploaded by' => 'Nahral používateľ',
     'Use the AI assistant' => 'Používať asistenta AI',
