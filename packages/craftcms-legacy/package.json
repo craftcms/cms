@@ -17,9 +17,7 @@
     "extends @craftcms/browserslist-config"
   ],
   "devDependencies": {
-    "@craftcms/playwright": "workspace:*",
     "@craftcms/webpack": "workspace:*",
-    "@playwright/test": "catalog:",
     "vite-plus": "catalog:",
     "webpack": "catalog:",
     "webpack-dev-server": "catalog:",

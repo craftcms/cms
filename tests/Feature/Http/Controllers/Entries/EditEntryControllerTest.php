@@ -348,8 +348,8 @@ it('ends the breadcrumbs with a revision switcher instead of naming the draft in
         );
 });
 
-it('caps the context menu at five revisions, listing every draft', function () {
-    foreach (range(1, 7) as $i) {
+it('caps the context menu at ten revisions, listing every draft', function () {
+    foreach (range(1, 12) as $i) {
         app(Drafts::class)->createDraft($this->entry, auth()->id(), name: "Draft $i");
         app(Revisions::class)->createRevision($this->entry, auth()->id(), "Revision $i", force: true);
     }
@@ -370,12 +370,28 @@ it('caps the context menu at five revisions, listing every draft', function () {
                         ->takeWhile(fn (array $item): bool => ($item['type'] ?? null) === 'link');
                 };
 
-                return $group('Drafts')->count() === 7
-                    && $group('Recent Revisions')->count() === 5;
+                return $group('Drafts')->count() === 12
+                    && $group('Recent Revisions')->count() === 10;
             })
             ->etc()
         );
 });
+
+it('links to every revision only when the context menu leaves some out', function (int $revisions, bool $linked) {
+    foreach (range(1, $revisions) as $i) {
+        app(Revisions::class)->createRevision($this->entry, auth()->id(), "Revision $i", force: true);
+    }
+
+    get($this->entry->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('contextMenu.items', fn (Collection $items) => $items->pluck('label')->contains('View all revisions') === $linked)
+            ->etc()
+        );
+})->with([
+    'not when it lists them all' => [3, false],
+    'when there are more than it lists' => [12, true],
+]);
 
 it('renders a provisional draft in the Inertia editor', function () {
     $draft = app(Drafts::class)->createDraft($this->entry, auth()->id(), provisional: true);

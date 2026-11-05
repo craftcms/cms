@@ -84,7 +84,7 @@ class ElementEditViewModel extends ViewModel
      * when there are more. Drafts are listed in full: they're the ones still
      * being worked on, and there's no drafts index to link out to.
      */
-    private const int MAX_CONTEXT_MENU_REVISIONS = 5;
+    private const int MAX_CONTEXT_MENU_REVISIONS = 10;
 
     use EditsElement;
 
@@ -725,21 +725,29 @@ class ElementEditViewModel extends ViewModel
             return false;
         }
 
-        return ($this->revisionQuery($element)->getCountForPagination() - 1) > 0;
+        // The newest revision is the current element's, which isn't listed as a revision. The count ignores the
+        // query's limit, so it's of every revision.
+        return $this->revisionQuery($element)->getCountForPagination() - 1 > $this->revisionLimit();
+    }
+
+    /** How many revisions the context menu lists, besides the current element's. */
+    private function revisionLimit(): int
+    {
+        $maxRevisions = Cms::config()->maxRevisions;
+
+        return $maxRevisions
+            ? min($maxRevisions - 1, self::MAX_CONTEXT_MENU_REVISIONS)
+            : self::MAX_CONTEXT_MENU_REVISIONS;
     }
 
     private function revisionQuery(ElementInterface $element): ElementQueryInterface
     {
-        $maxRevisions = Cms::config()->maxRevisions;
-
         return $element::find()
             ->revisionOf($element)
             ->siteId($element->siteId)
             ->status(null)
             ->offset(1)
-            ->limit($maxRevisions
-                ? min($maxRevisions - 1, self::MAX_CONTEXT_MENU_REVISIONS)
-                : self::MAX_CONTEXT_MENU_REVISIONS)
+            ->limit($this->revisionLimit())
             ->orderByDesc('dateCreated')
             ->with(['revisionCreator']);
     }
