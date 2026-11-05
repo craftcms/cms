@@ -10,9 +10,9 @@ export interface IntervalManagerSettings extends GarnishBaseSettings {
  * `Base`. A thin `setInterval` wrapper: `start()` begins calling
  * `settings.onInterval` every `settings.interval` ms, `stop()` clears it.
  *
- * Instantiated imperatively (`new Craft.IntervalManager(...)` — only
- * `Craft.ProgressBar` does so today), so the class is exposed on `window.Craft`
- * as a seam rather than as a custom element.
+ * Instantiated imperatively, so the class is exposed on `window.Craft` as a
+ * seam rather than as a custom element: the legacy `Craft.ProgressBar` still
+ * reaches it there.
  */
 export class IntervalManager extends Base<IntervalManagerSettings> {
   static defaults: IntervalManagerSettings = {

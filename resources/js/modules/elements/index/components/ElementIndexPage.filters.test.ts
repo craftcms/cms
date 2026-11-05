@@ -2,6 +2,7 @@ import {createApp, h, nextTick, shallowReactive, type App} from 'vue';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
 import type {ContentIndexData} from '@/modules/elements/index/composables/useContentIndexData';
 import {appendIndexQuery} from '@/modules/elements/index/composables/useElementIndexVisits';
+import {ConfigService} from '@craftcms/ui/services/Config';
 
 const inertia = vi.hoisted(() => ({
   visit: vi.fn(),
@@ -90,7 +91,8 @@ let container: HTMLElement;
 
 async function mountPage() {
   vi.useFakeTimers();
-  vi.stubGlobal('Craft', {systemUid: 'test', pageTrigger: 'p'});
+  vi.stubGlobal('Craft', {systemUid: 'test'});
+  ConfigService.getInstance().initialize({pageTrigger: 'p'});
   window.history.replaceState(
     {},
     '',
@@ -140,6 +142,7 @@ async function type(input: HTMLInputElement, value: string) {
 }
 
 afterEach(() => {
+  ConfigService.resetInstance();
   app?.unmount();
   container?.remove();
   localStorage.clear();
@@ -184,6 +187,7 @@ it.each([
     'condition[conditionRules][0][value]': 'Alpha',
     'sort[0][field]': 'score',
     'sort[0][direction]': 'desc',
+    viewMode: 'table',
   });
   expect(options).toMatchObject({
     only: [],

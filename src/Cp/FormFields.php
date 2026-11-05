@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Cp;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Components\ActionMenu;
 use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Components\ButtonGroup;
 use CraftCms\Cms\Cp\Components\Checkbox;
@@ -35,7 +36,6 @@ use CraftCms\Cms\Cp\Components\SelectRich;
 use CraftCms\Cms\Cp\Components\Textarea;
 use CraftCms\Cms\Cp\Enums\CheckboxSelectPresentation;
 use CraftCms\Cms\Cp\Enums\Size;
-use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
@@ -151,12 +151,10 @@ readonly class FormFields
 
         $actions = implode('', array_filter([
             $showActionMenu
-                ? app(MenuHtml::class)->disclosureMenu($config['actionMenuItems'], [
-                    'hiddenLabel' => t('Actions'),
-                    'buttonAttributes' => [
-                        'class' => ['action-btn', 'small', 'prevent-autofocus'],
-                    ],
-                ])
+                ? ActionMenu::make()
+                    ->menuItems($config['actionMenuItems'])
+                    ->label(t('Actions'))
+                    ->toHtml()
                 : null,
             $showAttribute
                 ? CopyAttribute::make()->value((string) $config['attribute'])->toHtml()
@@ -547,11 +545,13 @@ readonly class FormFields
         if ($custom) {
             HtmlStack::jsWithVars(fn ($radio, $text) => <<<JS
                 (() => {
-                  const \$radio = $($radio);
-                  const \$text = $($text);
-                  \$text.on('input', () => {
-                    \$radio.val(\$text.val());
-                  });
+                  const radio = document.querySelector($radio);
+                  const text = document.querySelector($text);
+                  if (radio && text) {
+                    text.addEventListener('input', () => {
+                      radio.value = text.value;
+                    });
+                  }
                 })();
                 JS, [
                 'radio' => '#'.InputNamespace::namespaceId($id),
@@ -1727,11 +1727,9 @@ JS, Json::encode(InputNamespace::namespaceId($id)), Json::encode(InputNamespace:
     /** @param array<string, mixed> $config */
     public static function dateHtml(array $config): string
     {
-        $html = self::dateFromConfig($config)->toHtml();
-
         return ($config['hasOuterContainer'] ?? false)
-            ? $html
-            : Html::tag('craft-input-date-time', $html, ['class' => 'datetimewrapper']);
+            ? self::dateFromConfig($config)->toHtml()
+            : self::dateTimeFromConfig($config)->showTime(false)->toHtml();
     }
 
     /** @param array<string, mixed> $config */
@@ -1782,11 +1780,9 @@ JS, Json::encode(InputNamespace::namespaceId($id)), Json::encode(InputNamespace:
     /** @param array<string, mixed> $config */
     public static function timeHtml(array $config): string
     {
-        $html = self::timeFromConfig($config)->toHtml();
-
         return ($config['hasOuterContainer'] ?? false)
-            ? $html
-            : Html::tag('craft-input-date-time', $html, ['class' => 'datetimewrapper']);
+            ? self::timeFromConfig($config)->toHtml()
+            : self::dateTimeFromConfig($config)->showDate(false)->toHtml();
     }
 
     /** @param array<string, mixed> $config */
@@ -1882,6 +1878,9 @@ JS, Json::encode(InputNamespace::namespaceId($id)), Json::encode(InputNamespace:
             ->required((bool) ($config['required'] ?? false))
             ->describedBy(($config['describedBy'] ?? false) ?: null)
             ->width($config['width'] ?? null)
+            ->inputAttributes($config['inputAttributes'] ?? [])
+            ->outputLocaleParam((bool) ($config['outputLocaleParam'] ?? true))
+            ->outputTimezoneParam((bool) ($config['outputTzParam'] ?? true))
             ->attributes(Arr::merge(
                 ['class' => Html::explodeClass($config['class'] ?? [])],
                 $config['containerAttributes'] ?? [],

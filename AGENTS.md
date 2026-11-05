@@ -63,12 +63,19 @@ queues. The merge safeguards below still apply.
 ## Merging pull requests
 
 When explicitly instructed to merge a PR, resolve conflicts in the final merge
-commit into the PR's actual target branch if every conflict is inconsequential
-and nonfunctional, such as overlapping `CHANGELOG.md` entries. Do not merge the
-target branch into the PR or rebase and push the PR merely to resolve these
-conflicts and trigger repeated PR CI. Judge the conflicting content, not just
-the filename. Ask for confirmation before resolving substantive conflicts,
-including code, dependencies, or generated artifacts.
+commit into the PR's actual target branch if every conflict is either:
+
+- Inconsequential and nonfunctional, such as overlapping `CHANGELOG.md` entries.
+- A generated build artifact that can be regenerated from merged sources with
+  the appropriate documented build script. Regenerate outputs; do not hand-merge
+  generated content.
+
+Do not merge the target branch into the PR or rebase and push the PR merely to
+resolve these conflicts and trigger repeated PR CI. Judge the conflicting
+content, not just the filename. Ask for confirmation before resolving substantive
+source or dependency conflicts, or any other conflicts outside these categories.
+Eligibility for build artifact regeneration does not make behavior-changing
+artifacts eligible for `[ci skip]` or nonfunctional-only CI inheritance.
 
 For this path:
 
@@ -84,7 +91,7 @@ For this path:
    Check the target's branch protections, required merged-result checks, and
    merge queue requirements before pushing. CI inheritance cannot override
    GitHub's head-check requirements or any other protection. With explicit
-   authorization to merge the PR and only genuinely nonfunctional conflicts, an
+   authorization to merge the PR and only conflicts eligible under this policy, an
    ordinary push of the final target-based merge commit may use the credential's
    existing bypass permission solely for the PR-only rule, after the CI
    verification and current-state approval checks above. Never bypass failed or
@@ -94,15 +101,16 @@ For this path:
    proceed.
 2. Use a clean worktree based on the fetched target commit, then run
    `git merge --no-ff --no-commit <verified-pr-head-sha>`. Resolve only the
-   inconsequential conflicts covered above, preserving both sides' intended
-   content, including changelog entries and release ordering.
+   eligible conflicts covered above, preserving both sides' intended content,
+   including changelog entries and release ordering. For generated build artifact
+   conflicts, run the appropriate documented build script on the merged sources.
 3. Inspect the staged merge result and the complete diff against the target.
-   Validate the resolved documentation, check for leftover conflict markers,
-   and run `git diff --cached --check`. These lightweight checks validate the
-   documentation resolution, not the substantive merged result. Run all
-   required tests and merged-result verification for the PR's substantive
-   changes; passing or inherited PR CI does not replace required merged-result
-   checks.
+   Validate the resolved documentation and inspect regenerated outputs. Check for
+   leftover conflict markers and run `git diff --cached --check`. These lightweight
+   checks do not validate the substantive merged result. Run applicable build
+   verification and tests for regenerated artifacts, plus all required tests and
+   merged-result verification for the PR's substantive changes; passing or
+   inherited PR CI does not replace required merged-result checks.
 4. Before committing and pushing, confirm that the PR head is still the
    verified commit and that CI verification and current-state approvals remain
    valid. If the head changed, restart with the latest head and repeat those

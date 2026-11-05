@@ -1,4 +1,5 @@
 import type {NestedOwnerContext} from './nested-owner';
+import {jq} from '@/common/utils/jquery';
 
 type HtmlElementEditor = {
   settings?: {
@@ -12,13 +13,20 @@ type HtmlElementEditor = {
   getDraftElementId?: (id: number) => number;
 };
 
+/** The legacy element editor a form belongs to; it only exists with the Yii2 adapter. */
+export function legacyElementEditor<T = HtmlElementEditor>(
+  form: HTMLFormElement
+): T | undefined {
+  return jq()?.(form).data('elementEditor') as T | undefined;
+}
+
 /** Prepares the owner through the surrounding HTML form's element editor. */
 export async function prepareHtmlNestedOwner(
   form: HTMLFormElement,
   context: NestedOwnerContext,
   fieldName: string
 ): Promise<NestedOwnerContext | null> {
-  const editor = $(form).data('elementEditor') as HtmlElementEditor | undefined;
+  const editor = legacyElementEditor(form);
   if (!editor) {
     return context.requiresDerivative === false ? context : null;
   }

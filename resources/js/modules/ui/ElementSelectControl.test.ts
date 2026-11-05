@@ -1,6 +1,8 @@
 import {createApp, h, nextTick, ref} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {ConfigService} from '@craftcms/ui/services/Config';
 import type {UiControlPayload} from './types';
+import {provideUiPreview} from './uiPreview';
 
 const stub = vi.hoisted(() => {
   const show = vi.fn(async () => {});
@@ -31,9 +33,21 @@ const stub = vi.hoisted(() => {
     openSlideout,
     post,
     copy: null as ((elementInfo: unknown[]) => void) | null,
+    copyElements: vi.fn(),
     clearCopiedElements: vi.fn(),
   };
 });
+
+vi.mock('@/modules/elements/clipboard', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  copyElements: stub.copyElements,
+  clearCopiedElements: stub.clearCopiedElements,
+  getCopiedElements: () => [],
+  onCopiedElementsChange: (callback: (elementInfo: unknown[]) => void) => {
+    stub.copy = callback;
+    return () => {};
+  },
+}));
 
 vi.mock('@craftcms/ui', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@craftcms/ui')>()),
@@ -128,8 +142,7 @@ describe('ElementSelectControl', () => {
       'fetch',
       vi.fn(async () => new Response('<svg></svg>'))
     );
-    vi.stubGlobal('Craft', {
-      siteId: 1,
+    ConfigService.getInstance().initialize({
       elementTypeNames: {
         'CraftCms\\Cms\\Elements\\Entry': [
           'Entry',
@@ -138,14 +151,8 @@ describe('ElementSelectControl', () => {
           'entries',
         ],
       },
-      cp: {
-        getCopiedElements: () => [],
-        onCopyElements: (callback: (elementInfo: unknown[]) => void) => {
-          stub.copy = callback;
-        },
-        clearCopiedElements: stub.clearCopiedElements,
-      },
     });
+    vi.stubGlobal('Craft', {siteId: 1});
   });
 
   afterEach(() => {
@@ -158,6 +165,8 @@ describe('ElementSelectControl', () => {
     stub.openSlideout.mockClear();
     stub.copy?.([]);
     stub.clearCopiedElements.mockClear();
+    stub.copyElements.mockClear();
+    ConfigService.resetInstance();
     stub.post.mockReset();
     stub.post.mockResolvedValue({data: {elements: []}});
   });
@@ -169,12 +178,18 @@ describe('ElementSelectControl', () => {
       props?: Record<string, unknown>;
       editable?: boolean;
       value?: number[] | number | null;
+      preview?: boolean;
     } = {}
   ): Promise<HTMLElement> {
     updates = [];
     container = document.createElement('div');
     document.body.append(container);
     app = createApp({
+      setup: () => {
+        if (options.preview) {
+          provideUiPreview();
+        }
+      },
       render: () =>
         h(ElementSelectControl, {
           control: control(options.props),
@@ -610,6 +625,25 @@ describe('ElementSelectControl', () => {
     expect(actionLabels(menus(root)[0])).toEqual(['Edit entry']);
   });
 
+  it('offers no editor in a preview, which slideouts can’t open over', async () => {
+    const root = await mount({
+      editable: false,
+      preview: true,
+      props: {
+        elementDisplayName: 'entry',
+        elements: [{id: 5, label: 'Some entry', canEdit: true}],
+      },
+    });
+    const event = new MouseEvent('dblclick', {bubbles: false});
+    Object.defineProperty(event, 'composedPath', {
+      value: () => [root.querySelector('craft-chip')],
+    });
+    root.querySelector('craft-chip')!.dispatchEvent(event);
+
+    expect(menus(root)).toHaveLength(0);
+    expect(stub.openSlideout).not.toHaveBeenCalled();
+  });
+
   it('keeps server card actions alongside the field actions', async () => {
     const root = await mount({
       props: {
@@ -803,6 +837,25 @@ describe('ElementSelectControl', () => {
     selectChip(chips(root)[0]!, false);
     await nextTick();
     expect(selectedChips(root)).toEqual([]);
+  });
+
+  it('names the selected elements by their type', async () => {
+    const root = await mount({
+      props: {
+        limit: 3,
+        elementDisplayName: 'entry',
+        elementPluralDisplayName: 'entries',
+      },
+      value: [5, 6],
+    });
+
+    selectChip(chips(root)[0]!, true);
+    await nextTick();
+    expect(root.textContent).toContain('1 entry selected');
+
+    selectChip(chips(root)[1]!, true);
+    await nextTick();
+    expect(root.textContent).toContain('2 entries selected');
   });
 
   it('selects a range when the chip reports a shift-click', async () => {
@@ -1426,8 +1479,7 @@ describe('ElementSelectControl', () => {
     });
 
     it('copies the selected elements through the clipboard', async () => {
-      const copyElements = vi.fn();
-      vi.stubGlobal('Craft', {cp: {copyElements}});
+      const copyElements = stub.copyElements;
 
       const root = await mountSelected();
       menuItem(bulkMenu(root)!, 'Copy selected').click();

@@ -16,7 +16,17 @@ const menuStub = vi.hoisted(() => ({
 }));
 
 const action = vi.hoisted(() => ({post: vi.fn()}));
-const clipboard = vi.hoisted(() => ({elements: [] as unknown[]}));
+const clipboard = vi.hoisted(() => ({
+  elements: [] as unknown[],
+  copyElements: vi.fn(),
+  pasteElements: vi.fn(),
+}));
+
+vi.mock('@/modules/elements/clipboard', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  copyElements: clipboard.copyElements,
+  pasteElements: clipboard.pasteElements,
+}));
 
 vi.mock('@/modules/matrix/copied-elements', () => ({
   useCopiedElements: () => ({
@@ -903,13 +913,8 @@ describe('NestedElementBlocksControl', () => {
     );
 
     it('hands the block to the CP clipboard by its element id', async () => {
-      const copyElements = vi.fn();
-      Object.assign(window, {
-        Craft: {
-          ...window.Craft,
-          cp: {...window.Craft?.cp, copyElements},
-        },
-      });
+      const {copyElements} = clipboard;
+      copyElements.mockClear();
       mountWithMenu();
       await nextTick();
 
@@ -1826,10 +1831,8 @@ describe('NestedElementBlocksControl', () => {
         })
     );
     owner = {prepare};
-    const pasteElements = vi.fn().mockResolvedValue([{id: 201}]);
-    Object.assign(window, {
-      Craft: {...window.Craft, cp: {...window.Craft?.cp, pasteElements}},
-    });
+    const {pasteElements} = clipboard;
+    pasteElements.mockReset().mockResolvedValue([{id: 201}]);
     clipboard.elements = [{id: 12, type: 'Entry', data: {entryTypeId: 9}}];
     action.post.mockResolvedValue({
       data: {

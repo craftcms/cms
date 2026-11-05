@@ -1,11 +1,16 @@
 /* jshint esversion: 6 */
 /* globals module, require */
 const {getConfig} = require('@craftcms/webpack');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = getConfig({
   context: __dirname,
   config: {
     entry: {
+      craft: './craft/index.js',
+      ui: './ui.js',
+      'craft-cp': './craft-cp.js',
+      'element-editor': './element-editor.js',
       'component-select-input': './component-select-input.js',
       dashboard: require('path').resolve(
         __dirname,
@@ -13,9 +18,23 @@ module.exports = getConfig({
       ),
       'cp-compat': './cp-compat.js',
       'legacy-html-control': './legacy-html-control.js',
+      'assets-field-settings': './assets-field-settings.js',
+      'element-field-settings': './element-field-settings.js',
+      'element-index': './element-index/index.js',
+      'admin-table': './admin-table.js',
     },
     output: {
       path: __dirname + '/../../../cms-assets/resources/legacy/cpcompat/dist',
     },
+    plugins: [
+      new CopyWebpackPlugin({
+        patterns: [
+          {
+            from: './images/**/*',
+            to: '.',
+          },
+        ],
+      }),
+    ],
   },
 });

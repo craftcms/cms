@@ -10,7 +10,7 @@ beforeAll(async () => {
   legacyWindow.jQuery = legacyWindow.$ = $;
   legacyWindow.Craft = {t: (_category: string, message: string) => message};
   await import('../../../packages/craftcms-legacy/cpcompat/src/cp-compat.js');
-  await import('../../../packages/craftcms-legacy/cp/src/js/UI.js');
+  await import('../../../packages/craftcms-legacy/cpcompat/src/ui.js');
 });
 
 afterEach(() => {

@@ -13,7 +13,7 @@
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {openSlideout} from '@/common/slideouts';
   import {http, isHttpError} from '@craftcms/ui/utilities/api/http';
-  import {showMessagesFromResponse} from '@/modules/messages';
+  import {showError, showMessagesFromResponse} from '@/modules/messages';
   import type {AgentSkillData} from '@/modules/ai/skills/types';
 
   const props = defineProps<{
@@ -68,7 +68,7 @@
       const message = isHttpError<{message?: string}>(error)
         ? error.response?.data?.message
         : undefined;
-      Craft.cp?.displayError?.(message ?? t('Couldn’t delete the skill.'));
+      showError(message ?? t('Couldn’t delete the skill.'));
 
       // Someone else may have deleted it already.
       await refreshSkills();

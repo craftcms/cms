@@ -16,6 +16,7 @@ use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Updates;
+use CraftCms\Cms\View\CompiledViews;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
@@ -328,6 +329,15 @@ class UpdaterController extends BaseUpdaterController
     {
         // Disable maintenance mode
         app()->maintenanceMode()->deactivate();
+
+        // Composer installs files with their commit's mtime, so compiled views can be newer than their updated sources
+        try {
+            CompiledViews::clear();
+        } catch (Throwable $e) {
+            Log::error('Could not delete compiled views: '.$e->getMessage(), [__METHOD__]);
+
+            report($e);
+        }
 
         return parent::sendFinished($state);
     }

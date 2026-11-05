@@ -34,7 +34,7 @@ readonly class WorkflowStageKind extends TypeRegistryKind
 
     public function usage(): string
     {
-        return 'configuration.* with type: workflows takes the class as each stage’s type and its settings as the stage’s settings.';
+        return 'configuration_* with type: workflows takes the class as each stage’s type and its settings as the stage’s settings.';
     }
 
     protected function registry(): TypeRegistry

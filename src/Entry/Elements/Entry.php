@@ -2543,23 +2543,23 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
         if (! $this->isEntryTypeCompatible()) {
             $js = <<<JS
-let applyDraftBtn = $('#action-buttons .tooltip-draft-btn')
-if (applyDraftBtn.length > 0) {
-  applyDraftBtn.addClass('disabled');
-  let tooltipBtn = `<craft-tooltip aria-label="$draftMessage">` +
-    applyDraftBtn.get(0).outerHTML +
-    `</craft-tooltip>`;
-  applyDraftBtn.replaceWith(tooltipBtn);
-}
+(() => {
+  const applyDraftBtn = document.querySelector('#action-buttons .tooltip-draft-btn');
+  if (applyDraftBtn) {
+    applyDraftBtn.classList.add('disabled');
+    applyDraftBtn.outerHTML = `<craft-tooltip aria-label="$draftMessage">` +
+      applyDraftBtn.outerHTML +
+      `</craft-tooltip>`;
+  }
 
-let revertRevisionBtn = $('#action-buttons .revision-draft-btn');
-if (revertRevisionBtn.length > 0) {
-  revertRevisionBtn.addClass('disabled');
-  let tooltipBtn = `<craft-tooltip aria-label="$revisionMessage">` +
-    revertRevisionBtn.get(0).outerHTML +
-    `</craft-tooltip>`;
-  revertRevisionBtn.replaceWith(tooltipBtn);
-}
+  const revertRevisionBtn = document.querySelector('#action-buttons .revision-draft-btn');
+  if (revertRevisionBtn) {
+    revertRevisionBtn.classList.add('disabled');
+    revertRevisionBtn.outerHTML = `<craft-tooltip aria-label="$revisionMessage">` +
+      revertRevisionBtn.outerHTML +
+      `</craft-tooltip>`;
+  }
+})();
 JS;
             HtmlStack::js($js);
         }

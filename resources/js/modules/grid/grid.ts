@@ -3,11 +3,54 @@ import {
   type GarnishBaseSettings,
   muteResizeEvents,
 } from '@craftcms/garnish';
-import {resolveElement, type ElementArg} from '@/common/utils/dom';
+import {startSide} from '@/common/craft/direction';
+import {contentSize, resolveElement, type ElementArg} from '@/common/utils/dom';
 import {jq} from '@/common/utils/jquery';
 
-declare const Craft: any;
-declare const $: any;
+/** Sets the content height, accounting for `box-sizing`, like jQuery's `height(value)`. */
+function setContentHeight(el: HTMLElement, height: number | 'auto'): void {
+  if (height === 'auto') {
+    el.style.height = 'auto';
+    return;
+  }
+
+  const style = getComputedStyle(el);
+  const extra =
+    style.boxSizing === 'border-box'
+      ? parseFloat(style.paddingTop || '0') +
+        parseFloat(style.paddingBottom || '0') +
+        parseFloat(style.borderTopWidth || '0') +
+        parseFloat(style.borderBottomWidth || '0')
+      : 0;
+  el.style.height = `${height + extra}px`;
+}
+
+function show(el: HTMLElement): void {
+  if (el.style.display === 'none') {
+    el.style.display = '';
+  }
+  if (getComputedStyle(el).display === 'none') {
+    el.style.display = 'block';
+  }
+}
+
+function numberData(el: HTMLElement, name: string): number | null {
+  const value = parseInt(el.dataset[name] ?? '', 10);
+  return Number.isNaN(value) ? null : value;
+}
+
+function toElements(items: unknown): HTMLElement[] {
+  if (!items) {
+    return [];
+  }
+  if (items instanceof HTMLElement) {
+    return [items];
+  }
+  // Arrays, NodeLists and jQuery collections
+  return Array.from(items as ArrayLike<HTMLElement>);
+}
+
+const grids = new WeakMap<HTMLElement, Grid>();
 
 interface GridSettings extends GarnishBaseSettings {
   itemSelector: string;
@@ -37,13 +80,8 @@ interface GridLayout {
  * absolutely-positions the items. (This is why it can't be a CSS `display:grid`
  * — native masonry isn't shipped cross-browser.)
  *
- * The layout math is plain TS, but — like the other complex legacy managers
- * (CpModal) — it keeps the `declare const $` seam for the DOM: masonry
- * correctness depends on jQuery's box-model measurement (`height`/`outerHeight`/
- * `width`), and the public `$items`/`$container` API + `addItems(jQuery)` are
- * consumed by the still-legacy Dashboard and the field-layout-designer. Booted
- * via `new Craft.Grid(...)` and the `.grid` jQuery plugin, so exposed on
- * `window.Craft`.
+ * It works on plain elements; `addItems()` also accepts jQuery collections. Booted via `new Craft.Grid(...)` and the `.grid` jQuery
+ * plugin, so exposed on `window.Craft`.
  */
 export class Grid extends Base<GridSettings> {
   static defaults: GridSettings = {
@@ -58,10 +96,8 @@ export class Grid extends Base<GridSettings> {
     onRefreshCols: () => {},
   };
 
-  // jQuery objects (public API + measurement seam).
-  $container: any = null;
-  $items: any = null;
-  items: any[] = [];
+  container: HTMLElement | null = null;
+  items: HTMLElement[] = [];
 
   totalCols: number | null = null;
   colGutterDrop = 0;
@@ -90,49 +126,54 @@ export class Grid extends Base<GridSettings> {
     if (!el) {
       return;
     }
-    this.$container = $(el);
+    // SAFETY: Grids are laid out on HTML elements.
+    this.container = el as HTMLElement;
 
     // Is this already a grid?
-    if (this.$container.data('grid')) {
+    const existing = grids.get(this.container);
+    if (existing) {
       console.warn('Double-instantiating a grid on an element');
-      this.$container.data('grid').destroy();
+      existing.destroy();
     }
 
-    this.$container.data('grid', this);
+    grids.set(this.container, this);
+    jq()?.(this.container).data('grid', this);
 
     this.setSettings(settings, Grid.defaults);
 
-    this.$items = $();
-    this.addItems(this.$container.children(this.settings!.itemSelector));
+    this.items = [];
+    this.addItems(
+      Array.from(this.container.children).filter((child) =>
+        child.matches(this.settings!.itemSelector)
+      )
+    );
 
-    this.addListener(this.$container, 'resize', () => {
+    this.addListener(this.container, 'resize', () => {
       this.refreshCols();
     });
   }
 
-  addItems(items: any): void {
-    this.$items = $().add(this.$items.add(items));
-    this.setItems();
+  addItems(items: unknown): void {
+    this.setItems([...this.items, ...toElements(items)]);
     this.refreshCols(true);
   }
 
-  removeItems(items: any): void {
-    this.$items = $().add(this.$items.not(items));
-    this.setItems();
+  removeItems(items: unknown): void {
+    const removed = new Set(toElements(items));
+    this.setItems(this.items.filter((item) => !removed.has(item)));
     this.refreshCols(true);
   }
 
   resetItemOrder(): void {
-    this.$items = $().add(this.$items);
-    this.setItems();
+    this.setItems(this.items);
     this.refreshCols(true);
   }
 
-  setItems(): void {
-    this.items = [];
-    for (let i = 0; i < this.$items.length; i++) {
-      this.items.push($(this.$items[i]));
-    }
+  /** Replaces the items, deduplicated and in document order. */
+  setItems(items: unknown = this.items): void {
+    this.items = Array.from(new Set(toElements(items))).sort((a, b) =>
+      a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
+    );
   }
 
   refreshCols(force = false): void {
@@ -152,8 +193,7 @@ export class Grid extends Base<GridSettings> {
     }
 
     const settings = this.settings!;
-    // SAFETY: Grid construction normalizes `$container` around its HTMLElement root.
-    const container = this.$container[0] as HTMLElement;
+    const container = this.container!;
 
     // Check to see if the grid is actually visible
     const oldHeight = container.style.height;
@@ -170,12 +210,14 @@ export class Grid extends Base<GridSettings> {
     if (settings.cols) {
       totalCols = settings.cols;
     } else {
-      totalCols = Math.floor(this.$container.width() / settings.minColWidth);
+      totalCols = Math.floor(
+        contentSize(container).width / settings.minColWidth
+      );
 
       // If we're adding a new column, require an extra 20 pixels in case a scrollbar shows up
       if (this.totalCols !== null && totalCols > this.totalCols) {
         totalCols = Math.floor(
-          (this.$container.width() - 20) / settings.minColWidth
+          (contentSize(container).width - 20) / settings.minColWidth
         );
       }
 
@@ -229,7 +271,9 @@ export class Grid extends Base<GridSettings> {
         i < itemIndex + totalCols && i < this.items.length;
         i++
       ) {
-        const itemHeight = this.items[i].height('auto').height();
+        const item = this.items[i]!;
+        setContentHeight(item, 'auto');
+        const itemHeight = contentSize(item).height;
         if (itemHeight > tallestItemHeight) {
           tallestItemHeight = itemHeight;
         }
@@ -248,7 +292,7 @@ export class Grid extends Base<GridSettings> {
         i < itemIndex + totalCols && i < this.items.length;
         i++
       ) {
-        this.items[i].height(tallestItemHeight);
+        setContentHeight(this.items[i]!, tallestItemHeight);
       }
 
       itemIndex += totalCols;
@@ -261,15 +305,22 @@ export class Grid extends Base<GridSettings> {
 
     // If there's only one column, sneak out early
     if (totalCols === 1) {
-      this.$container.height('auto');
-      this.$items
-        .show()
-        .css({position: 'relative', width: 'auto', top: 0})
-        .css(Craft.left, 0);
+      this.container!.style.height = 'auto';
+      for (const item of this.items) {
+        show(item);
+        Object.assign(item.style, {
+          position: 'relative',
+          width: 'auto',
+          top: '0',
+        });
+        item.style.setProperty(startSide(), '0');
+      }
       return;
     }
 
-    this.$items.css('position', 'absolute');
+    for (const item of this.items) {
+      item.style.position = 'absolute';
+    }
     this.colPctWidth = 100 / totalCols;
 
     this.layouts = [];
@@ -284,20 +335,17 @@ export class Grid extends Base<GridSettings> {
       this.possibleItemPositionsByColspan[item] = {};
       this.itemHeightsByColspan[item] = {};
 
-      const $item = this.items[item].show();
-      const positionRight = $item.data('position') === 'right';
-      const positionLeft = $item.data('position') === 'left';
+      const $item = this.items[item]!;
+      show($item);
+      const positionRight = $item.dataset.position === 'right';
+      const positionLeft = $item.dataset.position === 'left';
 
-      let minColspan = $item.data('colspan')
-        ? $item.data('colspan')
-        : $item.data('min-colspan')
-          ? $item.data('min-colspan')
-          : 1;
-      let maxColspan = $item.data('colspan')
-        ? $item.data('colspan')
-        : $item.data('max-colspan')
-          ? $item.data('max-colspan')
-          : totalCols;
+      let minColspan =
+        numberData($item, 'colspan') ?? numberData($item, 'minColspan') ?? 1;
+      let maxColspan =
+        numberData($item, 'colspan') ??
+        numberData($item, 'maxColspan') ??
+        totalCols;
 
       if (minColspan > totalCols) {
         minColspan = totalCols;
@@ -308,8 +356,8 @@ export class Grid extends Base<GridSettings> {
 
       for (let colspan = minColspan; colspan <= maxColspan; colspan++) {
         // Get the height for this colspan
-        $item.css('width', this.getItemWidthCss(colspan));
-        this.itemHeightsByColspan[item]![colspan] = $item.outerHeight();
+        $item.style.width = this.getItemWidthCss(colspan);
+        this.itemHeightsByColspan[item]![colspan] = $item.offsetHeight;
 
         this.possibleItemColspans[item]!.push(colspan);
         this.possibleItemPositionsByColspan[item]![colspan] = [];
@@ -393,29 +441,34 @@ export class Grid extends Base<GridSettings> {
 
     // Set the item widths and left positions
     for (let i = 0; i < this.items.length; i++) {
-      const css = {
-        width: this.getItemWidthCss(this.layout.colspans[i]!),
-        [Craft.left]: this.getItemLeftPosCss(this.layout.positions[i]!),
-      };
-      this.items[i].css(css);
+      const item = this.items[i]!;
+      item.style.width = this.getItemWidthCss(this.layout.colspans[i]!);
+      item.style.setProperty(
+        startSide(),
+        this.getItemLeftPosCss(this.layout.positions[i]!)
+      );
     }
 
     // If every item is at position 0, then let them lay out au naturel
     if (this.isSimpleLayout()) {
-      this.$container.height('auto');
-      this.$items.css({
-        position: 'relative',
-        top: 0,
-        'margin-bottom': settings.gutter + 'px',
-      });
+      this.container!.style.height = 'auto';
+      for (const item of this.items) {
+        Object.assign(item.style, {
+          position: 'relative',
+          top: '0',
+          marginBottom: `${settings.gutter}px`,
+        });
+      }
     } else {
-      this.$items.css('position', 'absolute');
+      for (const item of this.items) {
+        item.style.position = 'absolute';
+      }
 
       // Now position the items
       this.positionItems();
 
       // Update the positions as the items' heights change
-      this.addListener(this.$items, 'resize', 'onItemResize');
+      this.addListener(this.items, 'resize', 'onItemResize');
     }
   }
 
@@ -443,7 +496,7 @@ export class Grid extends Base<GridSettings> {
 
   getItemWidthInPx(colspan: number): number {
     return (
-      (this.getItemWidth(colspan) / 100) * this.$container.width() -
+      (this.getItemWidth(colspan) / 100) * contentSize(this.container!).width -
       this.colGutterDrop
     );
   }
@@ -456,7 +509,7 @@ export class Grid extends Base<GridSettings> {
 
   getItemLeftPosInPx(position: number): number {
     return (
-      ((this.getItemWidth(1) / 100) * this.$container.width() +
+      ((this.getItemWidth(1) / 100) * contentSize(this.container!).width +
         (this.settings!.gutter - this.colGutterDrop)) *
       position
     );
@@ -513,7 +566,7 @@ export class Grid extends Base<GridSettings> {
         top += settings.gutter;
       }
 
-      this.items[i].css('top', top);
+      this.items[i]!.style.top = `${top}px`;
 
       // Now add the new heights to those columns
       for (let col = layout.positions[i]!; col <= endingCol; col++) {
@@ -523,7 +576,7 @@ export class Grid extends Base<GridSettings> {
     }
 
     // Set the container height
-    this.$container.height(Math.max.apply(null, colHeights));
+    setContentHeight(this.container!, Math.max.apply(null, colHeights));
   }
 
   onItemResize(ev: any): void {
@@ -534,7 +587,7 @@ export class Grid extends Base<GridSettings> {
 
     if (item !== -1) {
       // Update the height and reposition the items
-      const newHeight = this.items[item].outerHeight();
+      const newHeight = this.items[item]!.offsetHeight;
 
       if (
         newHeight !==
@@ -548,12 +601,7 @@ export class Grid extends Base<GridSettings> {
   }
 
   #itemIndex(el: HTMLElement): number {
-    for (let i = 0; i < this.$items.length; i++) {
-      if (this.$items[i] === el) {
-        return i;
-      }
-    }
-    return -1;
+    return this.items.indexOf(el);
   }
 
   onRefreshCols(): void {
@@ -562,7 +610,10 @@ export class Grid extends Base<GridSettings> {
   }
 
   override destroy(): void {
-    jq()?.(this.$container).removeData('grid');
+    if (this.container) {
+      grids.delete(this.container);
+      jq()?.(this.container).removeData('grid');
+    }
     super.destroy();
   }
 }

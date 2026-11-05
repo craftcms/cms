@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/field/field';
+  import {showError, showNotice} from '@/modules/messages/messages';
   // Leaf module, not the barrel — the barrel registers every `craft-*` element.
   import {actionClient, isHttpError} from '@craftcms/ui';
   import {t} from '@craftcms/ui/utilities/translate';
@@ -16,6 +17,9 @@
   } from 'vue';
   import CopyElementValuesController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/CopyElementValuesController';
   import CrossSiteCopyModal from './CrossSiteCopyModal.vue';
+  import FieldChangesModal, {
+    type CompareFieldChangesDetail,
+  } from './FieldChangesModal.vue';
   import {revealElement} from '@/common/utils/dom';
   import {assistantApi} from '@/bootstrap/assistant';
   import {addElementField} from '@/modules/ai/assistant/element-context';
@@ -290,6 +294,19 @@
     );
   });
 
+  const compareDetail = shallowRef<CompareFieldChangesDetail>();
+
+  useEventListener(window, 'craft:compare-field-changes', (event: Event) => {
+    const detail = (event as CustomEvent<CompareFieldChangesDetail>).detail;
+
+    if (
+      detail?.trigger instanceof HTMLElement &&
+      detail.trigger.closest('craft-field') === field.value
+    ) {
+      compareDetail.value = detail;
+    }
+  });
+
   const assistantEditor = inject(AssistantEditorKey, null);
 
   // Adds this field to the AI assistant's context, and opens the assistant.
@@ -376,15 +393,13 @@
         setValue(data.value);
 
         if (data.message) {
-          Craft.cp?.displayNotice?.(data.message);
+          showNotice(data.message);
         }
       } catch (error) {
         const message = isHttpError<{message?: string}>(error)
           ? error.response?.data?.message
           : undefined;
-        Craft.cp?.displayError?.(
-          message ?? t('Couldn’t generate a value for this field.')
-        );
+        showError(message ?? t('Couldn’t generate a value for this field.'));
       } finally {
         generating.value = false;
       }
@@ -417,12 +432,12 @@
       resolvedNode.value = data.field;
       setValue(controlValueAt(data.values, data.field.control!));
       copyDetail.value = undefined;
-      Craft.cp?.displayNotice?.(data.message);
+      showNotice(data.message);
     } catch (error) {
       const message = isHttpError<{message?: string}>(error)
         ? error.response?.data?.message
         : undefined;
-      Craft.cp?.displayError?.(
+      showError(
         message ?? t('Couldn’t copy the field value from the selected site.')
       );
     } finally {
@@ -561,5 +576,9 @@
     :loading="copying"
     @close="copyDetail = undefined"
     @submit="copyValue"
+  />
+  <FieldChangesModal
+    :detail="compareDetail"
+    @close="compareDetail = undefined"
   />
 </template>

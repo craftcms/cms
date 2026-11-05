@@ -1,7 +1,8 @@
 <script setup lang="ts">
+  import {isMobileBrowser} from '@craftcms/garnish';
   import CraftInput from '@craftcms/ui/components/input/input';
   import '@craftcms/ui/components/text-expander/text-expander';
-  import {useId} from 'vue';
+  import {computed, onMounted, useId, useTemplateRef} from 'vue';
   import type {UiChangeKind, UiControlPayload, TextControlProps} from './types';
   import {
     ignoreModelValueInitialization,
@@ -9,7 +10,7 @@
     serverErrorValidators,
   } from './runtime';
 
-  defineProps<{
+  const props = defineProps<{
     control: UiControlPayload<TextControlProps>;
     value: unknown;
     label?: string;
@@ -28,6 +29,46 @@
     }
 
     return value === true ? 'on' : 'off';
+  }
+
+  const input = useTemplateRef<CraftInput>('input');
+
+  // Respect the user's "Disable autofocus" accessibility preference, and don't pop up
+  // the on-screen keyboard on mobile and tablet browsers.
+  const autofocus = computed(
+    () =>
+      props.control.props.autofocus === true &&
+      window.Craft?.autofocusPreferred === true &&
+      !isMobileBrowser(true)
+  );
+
+  // The browser only autofocuses on page load, so a control rendered later (such as in a
+  // modal or slideout) focuses itself.
+  onMounted(() => {
+    if (!autofocus.value) {
+      return;
+    }
+
+    requestAnimationFrame(async () => {
+      await input.value?.updateComplete;
+      nativeInput()?.focus();
+    });
+  });
+
+  function nativeInput(): HTMLInputElement | HTMLTextAreaElement | null {
+    return (
+      input.value?.querySelector<HTMLInputElement | HTMLTextAreaElement>(
+        'input, textarea'
+      ) ?? null
+    );
+  }
+
+  // `focus` rather than `focusin`: Lion re-dispatches the native input's focus on the host,
+  // and unlike `focusin`, focus on a suffix button doesn't bubble up to it.
+  function onFocus(): void {
+    if (props.control.props.selectOnFocus === true) {
+      nativeInput()?.select();
+    }
   }
 
   const onModelValueChanged = ignoreModelValueInitialization((event) => {
@@ -49,6 +90,8 @@
 
 <template>
   <craft-input
+    ref="input"
+    @focus="onFocus"
     v-bind="$attrs"
     :name="editable ? inputName(control.path) : ''"
     :type="control.props.inputType ?? 'text'"
@@ -59,7 +102,7 @@
     :maxlength="control.props.maxLength"
     :placeholder="control.props.placeholder"
     .inputMode="control.props.inputMode"
-    .autofocus="control.props.autofocus === true"
+    .autofocus="autofocus"
     .autocomplete="autocompleteValue(control.props.autocomplete)"
     .autoCorrect="control.props.autocorrect ?? true"
     .autoCapitalize="control.props.autocapitalize ?? true"

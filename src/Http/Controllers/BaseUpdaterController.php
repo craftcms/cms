@@ -8,7 +8,6 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Exceptions\MigrateException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Update\Data\UpdaterState;
@@ -80,20 +79,17 @@ abstract class BaseUpdaterController
 
     public function index(): Response|View
     {
-        // Load the updater JS
+        // Its styles; the updater itself starts from legacy.ts
         app(InternalAssetRegistry::class)->register(UpdaterAsset::class);
 
         $this->data = $this->initialData();
         $state = $this->realInitialState();
         $state['data'] = $this->hashedData();
 
-        $segments = $this->request->actionSegments();
-        $idJs = Json::encode(implode('/', $segments));
-        $stateJs = Json::encode($state);
-        HtmlStack::js("Craft.updater = (new Craft.Updater($idJs)).setState($stateJs);");
-
         return view('_special/updater', [
             'title' => $this->pageTitle(),
+            'actionPrefix' => implode('/', $this->request->actionSegments()),
+            'state' => $state,
         ]);
     }
 

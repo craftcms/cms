@@ -7,6 +7,7 @@
    * Live Preview and a release preview share it, so both look and load the
    * same. Slideouts opened during either cover the editor.
    */
+  import {iframeResize} from 'iframe-resizer';
   import {t} from '@craftcms/ui';
   import {
     addModalAttributes,
@@ -452,7 +453,7 @@
   const resizerOptions = computed(() => {
     const options = preview.iframeResizerOptions.value;
 
-    return options !== false && window.iFrameResize ? options : null;
+    return options !== false ? options : null;
   });
 
   // The page inside doesn't always report a new height when the frame's width
@@ -511,7 +512,7 @@
         el.style.height = `${current.offsetHeight}px`;
       }
 
-      window.iFrameResize!(
+      iframeResize(
         {
           checkOrigin: false,
           ...resizerOptions.value,

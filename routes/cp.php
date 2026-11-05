@@ -394,7 +394,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         });
 
         // Control panel navigations
-        Route::prefix('settings/cp-nav')->name('settings.cp-nav.')->middleware(RequireEdition::class.':'.Edition::Team->value)->group(function () {
+        Route::prefix('settings/cp-nav')->name('settings.cp-nav.')->group(function () {
             Route::get('/', [CpNavigationController::class, 'index'])->name('index');
             Route::get('default', [CpNavigationController::class, 'editDefault'])->name('default');
             Route::post('item-settings', [CpNavigationController::class, 'itemSettings'])->name('item-settings');

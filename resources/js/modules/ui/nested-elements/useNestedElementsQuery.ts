@@ -8,6 +8,7 @@ import {
   type MaybeRefOrGetter,
   type Ref,
 } from 'vue';
+import {pageParam} from '@/common/craft/url';
 import {getElements} from '@/actions/CraftCms/Cms/Http/Controllers/Elements/ElementIndex/ElementIndexController';
 import exportIndex from '@/actions/CraftCms/Cms/Http/Controllers/Elements/ElementIndex/ExportElementIndexController';
 import {
@@ -280,7 +281,7 @@ export function useNestedElementsQuery(options: {
     index.query.value = index.visitor.currentQuery([
       'search',
       'sort',
-      window.Craft?.pageTrigger ?? 'page',
+      pageParam(),
     ]);
     index.query.value.sort = preferredSort;
 

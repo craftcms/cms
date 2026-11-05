@@ -69,7 +69,7 @@ it('filters capabilities by their required Craft permissions', function (bool $a
 it('rejects plugin capabilities that would replace another registered capability', function (): void {
     $conflicting = new class
     {
-        #[McpTool(name: 'example.greet')]
+        #[McpTool(name: 'example_greet')]
         public function replace(): string
         {
             return 'A different greeting';
@@ -78,7 +78,7 @@ it('rejects plugin capabilities that would replace another registered capability
     $registry = new CapabilityRegistry;
     $registry->register(Example::class, $conflicting::class);
 
-    expect($registry->definitions(...))->toThrow(LogicException::class, 'Duplicate MCP capability identity [example.greet].');
+    expect($registry->definitions(...))->toThrow(LogicException::class, 'Duplicate MCP capability identity [example_greet].');
 });
 
 it('lets plugins hide capabilities from users, but not approved public capabilities', function (): void {

@@ -59,7 +59,7 @@ readonly class Releases
      * @param  array<string, mixed>  $criteria
      * @return array{count: int, limit: int, offset: int, nextOffset: int|null, releases: list<array<string, mixed>>}
      */
-    #[McpTool(name: 'releases.list', description: 'Lists content releases, including published releases. Defaults to newest first; search matches names.', annotations: new ToolAnnotations(readOnlyHint: true))]
+    #[McpTool(name: 'releases_list', description: 'Lists content releases, including published releases. Defaults to newest first; search matches names.', annotations: new ToolAnnotations(readOnlyHint: true))]
     public function list(#[Schema(definition: self::CriteriaSchema)] array $criteria = []): array
     {
         $this->validate(['criteria' => $criteria], [
@@ -92,14 +92,14 @@ readonly class Releases
     }
 
     /** @return array{release: array<string, mixed>} */
-    #[McpTool(name: 'releases.get', description: 'Reads a release and basic member metadata across sites. Content fields require drafts.get and content view permission.', annotations: new ToolAnnotations(readOnlyHint: true))]
+    #[McpTool(name: 'releases_get', description: 'Reads a release and basic member metadata across sites. Content fields require drafts_get and content view permission.', annotations: new ToolAnnotations(readOnlyHint: true))]
     public function get(#[Schema(minimum: 1)] int $id): array
     {
         return ['release' => $this->serializer->serialize($this->release($id))];
     }
 
     /** @return array{release: array<string, mixed>} */
-    #[McpTool(name: 'releases.create', description: 'Creates an empty content release. targetDate is a target date for planning; scheduling is a separate operation.')]
+    #[McpTool(name: 'releases_create', description: 'Creates an empty content release. targetDate is a target date for planning; scheduling is a separate operation.')]
     #[RequiresPermission('manageReleases')]
     public function create(string $name, ?string $description = null, #[Schema(format: 'date-time')] ?string $targetDate = null): array
     {
@@ -112,7 +112,7 @@ readonly class Releases
      * @param  array<string, mixed>  $changes
      * @return array{release: array<string, mixed>}
      */
-    #[McpTool(name: 'releases.update', description: 'Updates the metadata of a release that isn’t publishing or published. Omitted properties are preserved; null clears description or targetDate. Scheduling is separate.')]
+    #[McpTool(name: 'releases_update', description: 'Updates the metadata of a release that isn’t publishing or published. Omitted properties are preserved; null clears description or targetDate. Scheduling is separate.')]
     #[RequiresPermission('manageReleases')]
     public function update(#[Schema(minimum: 1)] int $id, #[Schema(definition: self::MetadataSchema)] array $changes): array
     {
@@ -122,7 +122,7 @@ readonly class Releases
     }
 
     /** @return array{deleted: true, id: int} */
-    #[McpTool(name: 'releases.delete', description: 'Deletes a mutable release, preserving its unpublished drafts.', annotations: new ToolAnnotations(destructiveHint: true))]
+    #[McpTool(name: 'releases_delete', description: 'Deletes a mutable release, preserving its unpublished drafts.', annotations: new ToolAnnotations(destructiveHint: true))]
     #[RequiresPermission('manageReleases')]
     public function delete(#[Schema(minimum: 1)] int $id): array
     {
@@ -132,7 +132,7 @@ readonly class Releases
     }
 
     /** @return array{release: array<string, mixed>} */
-    #[McpTool(name: 'releases.attach', description: 'Adds a saved, non-provisional root draft to a release that isn’t publishing or published. Drafts added to a scheduled release must be ready to publish. Uses the draft record ID and checks content publication permission across sites and workflow approval.')]
+    #[McpTool(name: 'releases_attach', description: 'Adds a saved, non-provisional root draft to a release that isn’t publishing or published. Drafts added to a scheduled release must be ready to publish. Uses the draft record ID and checks content publication permission across sites and workflow approval.')]
     public function attach(#[Schema(minimum: 1)] int $id, #[Schema(minimum: 1)] int $draftId): array
     {
         return $this->result(function () use ($id, $draftId): Release {
@@ -145,7 +145,7 @@ readonly class Releases
     }
 
     /** @return array{release: array<string, mixed>} */
-    #[McpTool(name: 'releases.detach', description: 'Removes a draft from a release that isn’t publishing or published, without deleting it. A scheduled release left with no drafts is unscheduled.')]
+    #[McpTool(name: 'releases_detach', description: 'Removes a draft from a release that isn’t publishing or published, without deleting it. A scheduled release left with no drafts is unscheduled.')]
     public function detach(#[Schema(minimum: 1)] int $id, #[Schema(minimum: 1)] int $draftId): array
     {
         return $this->result(function () use ($id, $draftId): Release {
@@ -157,14 +157,14 @@ readonly class Releases
     }
 
     /** @return array<string, mixed> */
-    #[McpTool(name: 'releases.check-readiness', description: 'Checks readiness and returns per-item errors and warnings without changing or publishing content. Requires manageReleases or publishReleases. Publishing still checks current state.', annotations: new ToolAnnotations(readOnlyHint: true))]
+    #[McpTool(name: 'releases_check_readiness', description: 'Checks readiness and returns per-item errors and warnings without changing or publishing content. Requires manageReleases or publishReleases. Publishing still checks current state.', annotations: new ToolAnnotations(readOnlyHint: true))]
     public function checkReadiness(#[Schema(minimum: 1)] int $id): array
     {
         return $this->run(fn (): array => ['id' => $id, 'readiness' => $this->releases->checkReadiness($this->release($id), $this->actor->user())->toArray()]);
     }
 
     /** @return array{release: array<string, mixed>} */
-    #[McpTool(name: 'releases.schedule', description: 'Schedules a ready release for a future ISO timestamp with Z or an explicit offset. publishReleases is independent of permission to edit individual content.')]
+    #[McpTool(name: 'releases_schedule', description: 'Schedules a ready release for a future ISO timestamp with Z or an explicit offset. publishReleases is independent of permission to edit individual content.')]
     #[RequiresPermission('publishReleases')]
     public function schedule(#[Schema(minimum: 1)] int $id, #[Schema(format: 'date-time')] string $publishAt): array
     {
@@ -175,7 +175,7 @@ readonly class Releases
     }
 
     /** @return array{release: array<string, mixed>} */
-    #[McpTool(name: 'releases.unschedule', description: 'Unschedules a release and makes it mutable while preserving its target date.')]
+    #[McpTool(name: 'releases_unschedule', description: 'Unschedules a release and makes it mutable while preserving its target date.')]
     #[RequiresPermission('publishReleases')]
     public function unschedule(#[Schema(minimum: 1)] int $id): array
     {
@@ -183,7 +183,7 @@ readonly class Releases
     }
 
     /** @return array{release: array<string, mixed>} */
-    #[McpTool(name: 'releases.publish', description: 'Publishes a draft, scheduled, or failed release atomically after merging live changes and checking current workflow approval and validation. Publishing a scheduled release publishes it now rather than at its scheduled time. After an uncertain response, use releases.get before retrying.', annotations: new ToolAnnotations(destructiveHint: true))]
+    #[McpTool(name: 'releases_publish', description: 'Publishes a draft, scheduled, or failed release atomically after merging live changes and checking current workflow approval and validation. Publishing a scheduled release publishes it now rather than at its scheduled time. After an uncertain response, use releases_get before retrying.', annotations: new ToolAnnotations(destructiveHint: true))]
     #[RequiresPermission('publishReleases')]
     public function publish(#[Schema(minimum: 1)] int $id): array
     {

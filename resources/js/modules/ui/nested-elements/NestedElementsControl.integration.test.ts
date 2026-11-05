@@ -4,6 +4,7 @@ import {
   NestedOwnerEditorKey,
   type NestedOwnerContext,
 } from '@/modules/elements/nested-owner';
+import {ConfigService} from '@craftcms/ui/services/Config';
 import type {UiControlPayload} from '../types';
 import NestedElementsControl from './NestedElementsControl.vue';
 import type {NestedElementsProps} from './nested-elements';
@@ -43,6 +44,13 @@ vi.mock('@craftcms/ui', async (original) => ({
   actionClient: request,
 }));
 vi.mock('@craftcms/ui/actions.mjs', () => ({runAction: actions.run}));
+const clipboard = vi.hoisted(() => ({pasteElements: vi.fn()}));
+vi.mock('@/modules/elements/clipboard', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  getCopiedElements: () => [{type: 'Entry', id: 81, data: {entryTypeId: 9}}],
+  onCopiedElementsChange: () => () => {},
+  pasteElements: clipboard.pasteElements,
+}));
 
 vi.mock('@inertiajs/vue3', async () => ({
   ...(await vi.importActual('@inertiajs/vue3')),
@@ -55,6 +63,7 @@ describe('NestedElementsControl', () => {
   let restoreElementInternals = () => {};
 
   afterEach(() => {
+    ConfigService.resetInstance();
     app?.unmount();
     root?.remove();
     request.post.mockReset();
@@ -71,7 +80,8 @@ describe('NestedElementsControl', () => {
     const movedToSecondPage = new Set<number>();
     let inlineSaveFailures = 1;
     let reorderFailures = 0;
-    const pasteElements = vi.fn(async () => [{id: 92}]);
+    const {pasteElements} = clipboard;
+    pasteElements.mockReset().mockResolvedValue([{id: 92}]);
     const ownerRefresh = vi.fn(async () => {});
     const prepare = vi.fn<() => Promise<NestedOwnerContext>>(async () => ({
       ownerId: 73,
@@ -84,24 +94,18 @@ describe('NestedElementsControl', () => {
       postMessage: vi.fn(),
     });
 
+    ConfigService.getInstance().initialize({
+      pageTrigger: 'p',
+      elementTypeNames: {Entry: ['Entry', 'Entries', 'entry', 'entries']},
+    });
+
     vi.stubGlobal('Craft', {
       broadcaster,
       pageId: 'owner-page',
-      pageTrigger: 'p',
       systemUid: 'test',
-      elementTypeNames: {Entry: ['Entry', 'Entries', 'entry', 'entries']},
       findDeltaData: (_before: string, after: string, names: string[]) =>
         `${after}&modifiedDeltaNames[]=${encodeURIComponent(names[0]!)}`,
-      cp: {
-        copyElements: vi.fn(),
-        displayError: vi.fn(),
-        displayNotice: vi.fn(),
-        getCopiedElements: () => [
-          {type: 'Entry', id: 81, data: {entryTypeId: 9}},
-        ],
-        onCopyElements: vi.fn(),
-        pasteElements,
-      },
+      cp: {},
       Preview: {refresh: vi.fn()},
     });
     vi.stubGlobal(

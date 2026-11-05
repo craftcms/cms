@@ -13,7 +13,6 @@ use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Auth\SessionAuth;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
@@ -423,7 +422,7 @@ class Assets extends BaseRelationField
 
         // Now make sure that they all check out
         foreach ($filenames as $filename) {
-            if (! in_array(mb_strtolower(pathinfo((string) $filename, PATHINFO_EXTENSION)), $allowedExtensions, true)) {
+            if (! $this->isAllowedFilename((string) $filename, $allowedExtensions)) {
                 $validator->errors()->add($attribute, t('“{filename}” is not allowed in this field.', [
                     'filename' => $filename,
                 ]));
@@ -436,33 +435,46 @@ class Assets extends BaseRelationField
      */
     public function validateFileSize(ElementInterface $element, string $attribute, Validator $validator): void
     {
-        $maxSize = Cms::config()->maxUploadFileSize;
-
-        $filenames = [];
-
-        // Get any uploaded filenames
-        $uploadedFiles = $this->_getUploadedFiles($element);
-        foreach ($uploadedFiles as $file) {
-            switch ($file['type']) {
-                case 'data':
-                    if (strlen((string) $file['data']) > $maxSize) {
-                        $filenames[] = $file['filename'];
-                    }
-                    break;
-                case 'file':
-                case 'upload':
-                    if (file_exists($file['path']) && (filesize($file['path']) > $maxSize)) {
-                        $filenames[] = $file['filename'];
-                    }
-                    break;
+        foreach ($this->_getUploadedFiles($element) as $file) {
+            if ($this->isTooLarge($file)) {
+                $validator->errors()->add($attribute, t('“{filename}” is too large.', [
+                    'filename' => $file['filename'],
+                ]));
             }
         }
+    }
 
-        foreach ($filenames as $filename) {
-            $validator->errors()->add($attribute, t('“{filename}” is too large.', [
-                'filename' => $filename,
-            ]));
-        }
+    /**
+     * Returns whether any uploaded files would fail {@see validateFileType()} or {@see validateFileSize()}.
+     *
+     * Uploaded files are saved as assets before the element is validated, so they’re checked first, and left in place
+     * for validation to report, rather than leaving assets behind for an element that won’t save.
+     *
+     * @param  list<UploadedFileData>  $files
+     */
+    private function hasInvalidUploadedFiles(array $files): bool
+    {
+        $allowedExtensions = $this->_getAllowedExtensions();
+
+        return array_any($files, fn ($file) => $this->isTooLarge($file) ||
+        (! empty($allowedExtensions) && ! $this->isAllowedFilename($file['filename'], $allowedExtensions)));
+    }
+
+    /** @param  list<string>  $allowedExtensions */
+    private function isAllowedFilename(string $filename, array $allowedExtensions): bool
+    {
+        return in_array(mb_strtolower(pathinfo($filename, PATHINFO_EXTENSION)), $allowedExtensions, true);
+    }
+
+    /** @param  UploadedFileData  $file */
+    private function isTooLarge(array $file): bool
+    {
+        $size = match ($file['type']) {
+            'data' => strlen($file['data']),
+            default => file_exists($file['path']) ? filesize($file['path']) : 0,
+        };
+
+        return $size > AssetsHelper::getMaxAssetUploadSize();
     }
 
     #[Override]
@@ -599,7 +611,7 @@ class Assets extends BaseRelationField
                 // Were there any uploaded files?
                 $uploadedFiles = $this->_getUploadedFiles($element);
 
-                if (! empty($uploadedFiles)) {
+                if (! empty($uploadedFiles) && ! $this->hasInvalidUploadedFiles($uploadedFiles)) {
                     $uploadFolderId = $getUploadFolderId();
 
                     // Convert them to assets
@@ -837,10 +849,11 @@ class Assets extends BaseRelationField
      * The same three facts {@see inputTemplateVariables()} hands the legacy
      * Twig input, on the same terms: uploads have to be enabled on the field,
      * there has to be a volume to put them in, and the user needs permission
-     * to save assets there. The upload folder is resolved without creating
-     * dynamic folders — rendering a field should not have the side effect of
-     * creating one — so a field pointed at an as-yet-unmade dynamic subfolder
-     * reports no folder, and the button renders disabled rather than absent.
+     * to save assets there.
+     *
+     * Uploads name the field and element rather than a folder, as the legacy
+     * input's do, so the server resolves the folder itself and holds each file
+     * to the field's selection condition before it's attached.
      */
     #[Override]
     protected function selectControl(FieldContext $context): ElementSelect
@@ -859,7 +872,9 @@ class Assets extends BaseRelationField
         }
 
         try {
-            $uploadFolderId = $this->_uploadFolder($context->element, false)->id;
+            // Resolved without creating dynamic folders, since rendering a field
+            // shouldn't create one, only to find out whether there's a location
+            $this->_uploadFolder($context->element, false);
         } catch (InvalidFsException|InvalidSubpathException) {
             // A misconfigured location costs the field its upload affordance,
             // not its ability to relate what's already there. What went wrong
@@ -869,7 +884,11 @@ class Assets extends BaseRelationField
 
         return $control
             ->canUpload()
-            ->uploadFolderId($uploadFolderId);
+            ->uploadParams(array_filter([
+                'fieldId' => $this->id,
+                'elementId' => $context->element?->id,
+                'siteId' => $context->element?->siteId,
+            ]));
     }
 
     /**

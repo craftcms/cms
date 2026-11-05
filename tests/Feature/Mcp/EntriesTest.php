@@ -96,7 +96,7 @@ it('reads custom fields on demand and expands only one level of nested content',
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     $selected = McpRequest::send($this, 'tools/call', [
-        'name' => 'elements.list',
+        'name' => 'elements_list',
         'arguments' => ['type' => 'entries', 'criteria' => ['id' => $entry->id], 'fields' => ['blocks']],
     ])->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent.elements.0');
 

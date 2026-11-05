@@ -18,6 +18,12 @@
       disabled?: boolean;
       /** Leaves out the item count and page size, for the page controls alone. */
       controlsOnly?: boolean;
+      /** What one item is called in the count, such as “entry”. */
+      itemLabel?: string;
+      /** What several items are called in the count, such as “entries”. */
+      itemsLabel?: string;
+      /** The page size menu’s label, such as “Entries per Page”. */
+      pageSizeLabel?: string;
     }>(),
     {
       paginated: true,
@@ -25,6 +31,9 @@
       pageSizeOptions: () => [50, 100, 250],
       disabled: false,
       controlsOnly: false,
+      itemLabel: () => t('item'),
+      itemsLabel: () => t('items'),
+      pageSizeLabel: () => t('Items per Page'),
     }
   );
   const emit = defineEmits<{
@@ -92,7 +101,6 @@
   const showDisplayedRows = computed(
     () => props.total != null && props.from != null && props.to != null
   );
-  const pageSizeLabel = t('Items per Page');
 </script>
 
 <template>
@@ -100,8 +108,14 @@
     <div v-if="!controlsOnly">
       <Text
         v-if="showDisplayedRows"
-        template="{from} – {to} of {total, plural, =1{# item} other{# items}}"
-        :params="{from: from ?? 0, to: to ?? 0, total: total ?? 0}"
+        template="{from} – {to} of {total, plural, =1{# {item}} other{# {items}}}"
+        :params="{
+          from: from ?? 0,
+          to: to ?? 0,
+          total: total ?? 0,
+          item: itemLabel,
+          items: itemsLabel,
+        }"
       />
     </div>
     <div class="flex gap-sm">

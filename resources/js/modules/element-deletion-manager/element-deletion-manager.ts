@@ -2,40 +2,24 @@ import {Base} from '@craftcms/garnish';
 import type CraftButton from '@craftcms/ui/components/button/button';
 import type CraftDialog from '@craftcms/ui/components/dialog/dialog';
 import './element-deletion-manager.css';
+import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {
+  appendBodyHtml,
+  appendElementHtml,
+  appendHeadHtml,
+} from '@craftcms/ui/utilities/dom';
+import {setElementAttributes} from '@/common/craft/attributes';
+import {elementTypeName} from '@/common/craft/element-types';
+import {elevatedSessionManager} from '@/modules/auth/elevated-session/manager';
+import {create} from '@craftcms/ui/utilities/create';
+import {showError, showSuccess} from '@/modules/messages/messages';
+import {loadElementThumbs} from '@/modules/element-thumb-loader/globals';
+import {initLegacyUi} from '@/common/craft/legacy-ui';
 
 // jQuery-built blocker markup + Craft.ui/Craft.cp seams, shown in a
 // `craft-dialog`.
-declare const $: any;
 declare const Craft: any;
-
-/** A `craft-button`, which is styled in both control panels, unlike `.btn`. */
-function createButton({
-  label,
-  icon,
-  variant,
-}: {
-  label: string;
-  icon?: string | null;
-  variant?: string;
-}): CraftButton {
-  const button = document.createElement('craft-button') as CraftButton;
-  button.setAttribute('type', 'button');
-
-  if (variant) {
-    button.setAttribute('variant', variant);
-  }
-
-  if (icon) {
-    const iconElement = document.createElement('craft-icon');
-    iconElement.setAttribute('name', icon);
-    iconElement.slot = 'prefix';
-    button.append(iconElement);
-  }
-
-  button.append(label);
-
-  return button;
-}
 
 const DEFAULTS = {
   siteId: null,
@@ -62,7 +46,8 @@ export class ElementDeletionManager extends Base {
   elementIds: any = null;
   hardDelete = false;
   modal: CraftDialog | null = null;
-  $blockersContainer: any = null;
+  blockersContainer: HTMLElement | null = null;
+
   submitButton: CraftButton | null = null;
   blockers: any = null;
   succeeded = false;
@@ -83,12 +68,9 @@ export class ElementDeletionManager extends Base {
   }
 
   async run(): Promise<void> {
-    const {data} = await Craft.sendActionRequest(
-      'POST',
+    const {data} = await actionClient.post(
       'delete-elements/deletion-blockers',
-      {
-        data: this.getParams(),
-      }
+      this.getParams()
     );
 
     this.settings.onLoadBlockers();
@@ -104,8 +86,8 @@ export class ElementDeletionManager extends Base {
       this.blockers.push(new Blocker(this, blocker));
     }
 
-    await Craft.appendHeadHtml(data.headHtml);
-    await Craft.appendBodyHtml(data.bodyHtml);
+    await appendHeadHtml(data.headHtml);
+    await appendBodyHtml(data.bodyHtml);
   }
 
   getParams(): any {
@@ -142,12 +124,9 @@ export class ElementDeletionManager extends Base {
     }
     let data: any = null;
     try {
-      const response = await Craft.sendActionRequest(
-        'POST',
+      const response = await actionClient.post(
         'delete-elements/delete',
-        {
-          data: this.getParams(),
-        }
+        this.getParams()
       );
       data = response.data;
     } catch {
@@ -164,9 +143,9 @@ export class ElementDeletionManager extends Base {
 
     if (data) {
       if (data.showAsFailure) {
-        Craft.cp.displayError(data.message);
+        showError(data.message);
       } else {
-        Craft.cp.displaySuccess(data.message);
+        showSuccess(data.message);
       }
     }
   }
@@ -176,23 +155,18 @@ export class ElementDeletionManager extends Base {
       return this.settings.confirmationMessage;
     }
 
-    const elementTypeName =
-      totalElements === 1
-        ? Craft.elementTypeNames[this.elementType][2]
-        : Craft.elementTypeNames[this.elementType][3];
+    const typeName = elementTypeName(this.elementType, totalElements !== 1);
 
     if (this.settings.hardDelete) {
-      return Craft.t(
-        'app',
+      return t(
         'Are you sure you want to permanently delete {numElements, plural, =1{this} other{these}} {type}?',
-        {type: elementTypeName, numElements: totalElements}
+        {type: typeName, numElements: totalElements}
       );
     }
 
-    return Craft.t(
-      'app',
+    return t(
       'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?',
-      {type: elementTypeName, numElements: totalElements}
+      {type: typeName, numElements: totalElements}
     );
   }
 
@@ -209,39 +183,36 @@ export class ElementDeletionManager extends Base {
     dialog.nonModal = true;
     dialog.resizable = true;
 
-    const $heading = $('<h1/>', {
-      class: 'edm-heading',
-      html: Craft.t(
-        'app',
-        'Before deleting {label}, please address the following {numBlockers, plural, =1{issue} other{issues}}:',
-        {numBlockers: data.blockers.length, label: data.elementPreview}
-      ),
-    }).appendTo(dialog);
-    dialog.label = $heading.text().replace(/\s+/g, ' ').trim();
-
-    this.$blockersContainer = $('<div/>', {class: 'edm-blockers'}).appendTo(
-      dialog
+    const heading = document.createElement('h1');
+    heading.className = 'edm-heading';
+    heading.innerHTML = t(
+      'Before deleting {label}, please address the following {numBlockers, plural, =1{issue} other{issues}}:',
+      {numBlockers: data.blockers.length, label: data.elementPreview}
     );
+    dialog.append(heading);
+    dialog.label = (heading.textContent ?? '').replace(/\s+/g, ' ').trim();
+
+    this.blockersContainer = document.createElement('div');
+    this.blockersContainer.className = 'edm-blockers';
+    dialog.append(this.blockersContainer);
 
     const footer = document.createElement('div');
     footer.slot = 'footer';
     footer.className = 'edm-footer';
-    const closeButton = createButton({label: Craft.t('app', 'Close')});
-    this.submitButton = createButton({
-      label: Craft.t('app', 'Delete {type}', {
-        type:
-          this.elementIds.length === 1
-            ? Craft.elementTypeNames[this.elementType][2]
-            : Craft.elementTypeNames[this.elementType][3],
-      }),
-      variant: 'danger',
-    });
+    const closeButton = create('craft-button', {type: 'button'}, t('Close'));
+    this.submitButton = create(
+      'craft-button',
+      {type: 'button', variant: 'danger'},
+      t('Delete {type}', {
+        type: elementTypeName(this.elementType, this.elementIds.length !== 1),
+      })
+    );
     this.submitButton.disabled = true;
     footer.append(closeButton, this.submitButton);
     dialog.append(footer);
 
     dialog.addEventListener('craft-after-show', () => {
-      Craft.cp?.elementThumbLoader?.load($(dialog));
+      loadElementThumbs(dialog);
     });
     dialog.addEventListener('craft-hide', () => {
       if (!this.succeeded) {
@@ -291,7 +262,8 @@ class Blocker extends Base {
   manager: any = null;
   data: any = null;
   id: any = null;
-  $container: any = null;
+  container: HTMLElement | null = null;
+
   buttons: CraftButton[] = [];
 
   constructor(manager?: any, data?: any) {
@@ -307,14 +279,15 @@ class Blocker extends Base {
     this.buttons = [];
 
     this.id = `blocker-${Math.floor(Math.random() * 1000000)}`;
-    this.$container = $('<div/>', {
-      id: this.id,
-      class: 'edm-blocker',
-    }).appendTo(this.manager.$blockersContainer);
+    const container = document.createElement('div');
+    container.id = this.id;
+    container.className = 'edm-blocker';
+    this.manager.blockersContainer.append(container);
+    this.container = container;
 
-    const $heading = $('<h2/>', {class: 'edm-blocker-heading'}).appendTo(
-      this.$container
-    );
+    const heading = document.createElement('h2');
+    heading.className = 'edm-blocker-heading';
+    container.append(heading);
 
     if (this.data.details) {
       // A disclosure: the heading's button shows and hides the details. It's
@@ -329,14 +302,14 @@ class Blocker extends Base {
       toggle.setAttribute('aria-controls', `${this.id}-details`);
       toggle.iconPosition = 'suffix';
       toggle.append(this.data.summary);
-      $heading.append(toggle);
+      heading.append(toggle);
 
-      const $details = $('<div/>', {
-        id: `${this.id}-details`,
-        class: 'edm-details',
-        hidden: true,
-        html: this.data.details,
-      }).appendTo(this.$container);
+      const details = document.createElement('div');
+      details.id = `${this.id}-details`;
+      details.className = 'edm-details';
+      details.hidden = true;
+      container.append(details);
+      void appendElementHtml(this.data.details, details);
 
       const setExpanded = (expanded: boolean): void => {
         const rtl = getComputedStyle(toggle).direction === 'rtl';
@@ -346,7 +319,7 @@ class Blocker extends Base {
           : rtl
             ? 'chevron-left'
             : 'chevron-right';
-        $details.prop('hidden', !expanded);
+        details.hidden = !expanded;
       };
 
       setExpanded(false);
@@ -354,21 +327,24 @@ class Blocker extends Base {
         setExpanded(toggle.getAttribute('aria-expanded') !== 'true');
       });
     } else {
-      $heading.text(this.data.summary);
+      heading.textContent = this.data.summary;
     }
 
     if (this.data.actions) {
-      const $actions = $('<div/>', {class: 'edm-actions'}).appendTo(
-        this.$container
-      );
+      const actions = document.createElement('div');
+      actions.className = 'edm-actions';
+      container.append(actions);
 
       for (const action of this.data.actions) {
-        const button = createButton({
-          label: action.label,
-          icon: action.icon,
-          variant: action.destructive ? 'danger' : 'outline',
-        });
-        const $button = $(button);
+        const button = create(
+          'craft-button',
+          {
+            type: 'button',
+            icon: action.icon,
+            variant: action.destructive ? 'danger' : 'outline',
+          },
+          action.label
+        );
         this.buttons.push(button);
 
         if (action.id) {
@@ -376,14 +352,16 @@ class Blocker extends Base {
         }
 
         if (action.class) {
-          $button.addClass(action.class);
+          button.classList.add(
+            ...String(action.class).split(/\s+/).filter(Boolean)
+          );
         }
 
         if (action.attributes) {
-          $button.attr(action.attributes);
+          setElementAttributes(button, action.attributes);
         }
 
-        $button.appendTo($actions);
+        actions.append(button);
 
         button.addEventListener('click', async () => {
           if (action.callback) {
@@ -438,11 +416,9 @@ class Blocker extends Base {
             button.loading = true;
             let response;
             try {
-              response = await Craft.sendActionRequest('POST', action.action, {
-                data: {
-                  elementIds: this.manager.elementIds,
-                  ...action.params,
-                },
+              response = await actionClient.post(action.action, {
+                elementIds: this.manager.elementIds,
+                ...action.params,
               });
             } finally {
               button.loading = false;
@@ -451,32 +427,32 @@ class Blocker extends Base {
             this.resolve(response.data.message);
           };
 
-          if (action.requireElevatedSession) {
-            Craft.elevatedSessionManager.requireElevatedSession(async () => {
-              await submit();
-            });
-          } else {
+          if (
+            !action.requireElevatedSession ||
+            (await elevatedSessionManager.require())
+          ) {
             await submit();
           }
         });
       }
     }
 
-    Craft.initUiElements(this.$container);
+    initLegacyUi(container);
   }
 
   async resolve(message: any = null): Promise<void> {
-    this.$container.addClass('edm-blocker--resolved');
+    this.container?.classList.add('edm-blocker--resolved');
     for (const button of this.buttons) {
       button.disabled = true;
     }
-    const $messageContainer = $('<div/>', {
-      class: 'edm-blocker-resolved-message',
-    }).appendTo(this.$container);
-    $('<craft-icon/>', {name: 'check'}).appendTo($messageContainer);
-    $('<p/>', {text: message ?? Craft.t('app', 'Resolved')}).appendTo(
-      $messageContainer
-    );
+    const messageContainer = document.createElement('div');
+    messageContainer.className = 'edm-blocker-resolved-message';
+    const icon = document.createElement('craft-icon');
+    icon.setAttribute('name', 'check');
+    const text = document.createElement('p');
+    text.textContent = message ?? t('Resolved');
+    messageContainer.append(icon, text);
+    this.container?.append(messageContainer);
     this.manager.resolveBlocker(this);
   }
 }
