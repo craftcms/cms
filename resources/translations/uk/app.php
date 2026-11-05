@@ -3248,6 +3248,7 @@ return [
     'Upload failed for “{filename}”.' => 'Збій завантаження для «{filename}».',
     'Upload failed.' => 'Збій завантаження.',
     'Upload files' => 'Завантажити файли',
+    'Upload progress' => 'Хід завантаження',
     'Uploaded By' => 'Завантажено користувачем',
     'Uploaded by' => 'Завантажено користувачем',
     'Use the AI assistant' => 'Використовувати ШІ-асистента',
