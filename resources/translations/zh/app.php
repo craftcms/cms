@@ -3677,7 +3677,7 @@ return [
     '{num, number} {num, plural, =1{hour} other{hours}}' => '{num, number} {num, plural, =1{小时} other{小时}}',
     '{num, number} {num, plural, =1{issue} other{issues}}' => '{num, number} 个{num, plural, =1{问题} other{问题}}',
     '{num, number} {num, plural, =1{item} other{items}}' => '{num, number} {num, plural, =1{项} other{项}}',
-    '{num, number} {num, plural, =1{item} other{items}} selected' => '已选择 {num, number} 个{num, plural, =1{项目} other{项目}}',
+    '{num, number} {num, plural, =1{{item}} other{{items}}} selected' => '{num, number} {num, plural, =1{{item}} other{{items}}} selected',
     '{num, number} {num, plural, =1{minute} other{minutes}}' => '{num, number} {num, plural, =1{分钟} other{分钟}}',
     '{num, number} {num, plural, =1{month} other{months}}' => '{num, number} 个{num, plural, =1{月} other{月}}',
     '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number} 条{num, plural, =1{通知} other{通知}}',
