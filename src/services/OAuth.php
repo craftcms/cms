@@ -30,6 +30,7 @@ use League\OAuth2\Server\Grant\AuthCodeGrant;
 use League\OAuth2\Server\Grant\RefreshTokenGrant;
 use League\OAuth2\Server\RequestTypes\AuthorizationRequestInterface;
 use League\OAuth2\Server\ResourceServer;
+use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -344,6 +345,23 @@ class OAuth extends Component
         chmod($public, 0600);
     }
 
+    /**
+     * Returns whether valid signing keys are available, so tokens can be issued and verified.
+     *
+     * @since 5.12.1
+     */
+    public function hasKeys(): bool
+    {
+        try {
+            $this->key('private');
+            $this->key('public');
+        } catch (InvalidConfigException) {
+            return false;
+        }
+
+        return true;
+    }
+
     public function resource(string $resource): string
     {
         return $this->getResource($resource)->getResourceUrl();
@@ -428,13 +446,19 @@ class OAuth extends Component
                 throw new InvalidConfigException("The OAuth `{$type}Key` config setting isn’t a valid PEM-encoded key.");
             }
         } else {
-            $value = Craft::getAlias($value);
-            if (!is_readable(preg_replace('~^file://~', '', $value))) {
-                throw new InvalidConfigException("The OAuth $type key file “{$value}” doesn’t exist or isn’t readable. Run `php craft oauth/generate-keys`, or set the `{$type}Key` OAuth config setting.");
+            $path = Craft::getAlias($value, false);
+            if ($path === false || !is_readable(preg_replace('~^file://~', '', $path))) {
+                $path = $path ?: $value;
+                throw new InvalidConfigException("The OAuth $type key file “{$path}” doesn’t exist or isn’t readable. Run `php craft oauth/generate-keys`, or set the `{$type}Key` OAuth config setting.");
             }
+            $value = $path;
         }
 
-        return new CryptKey($value);
+        try {
+            return new CryptKey($value);
+        } catch (LogicException $e) {
+            throw new InvalidConfigException("The OAuth $type key isn’t valid: {$e->getMessage()}. Run `php craft oauth/generate-keys`, or set the `{$type}Key` OAuth config setting.", previous: $e);
+        }
     }
 
     private function keyPath(string $type): string
