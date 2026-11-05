@@ -1,8 +1,8 @@
 <script setup lang="ts">
   /**
-   * Bézier lines between the nested elements two versions of a field share,
-   * such as Matrix entries, so a reordered entry can be followed from one side
-   * to the other. They stay faint until the element on either end is hovered
+   * Bézier lines between the nested elements, such as Matrix entries, that
+   * moved between two versions of a field, so each can be followed from one
+   * side to the other. They stay faint until the element on either end is hovered
    * or focused. Lays itself over its positioned parent, which holds both.
    */
   import {t} from '@craftcms/ui';

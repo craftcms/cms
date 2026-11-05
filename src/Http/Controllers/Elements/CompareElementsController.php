@@ -88,6 +88,10 @@ readonly class CompareElementsController
                     $comparison['rows'],
                 ),
                 'editUrl' => $to->getCpEditUrl(),
+                // The same comparison the other way around, which edits the other version, when it can be.
+                'reverseUrl' => $state['from'] !== $state['to']
+                    ? $this->compareUrl($request, ['from' => $state['to'], 'to' => $state['from']])
+                    : null,
             ]);
     }
 

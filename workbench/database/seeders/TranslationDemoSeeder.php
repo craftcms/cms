@@ -64,7 +64,11 @@ class TranslationDemoSeeder extends Seeder
             'enableVersioning' => true,
             'createButtonLabel' => 'Add a section',
         ]);
-        $exhibitionType = $this->entryType('exhibition', 'Exhibition', [$summary, $description, $venue, $sections]);
+        // A content tab for the Matrix field and a sidebar tab, which the Compare screen shows alongside the others.
+        $exhibitionType = $this->entryType('exhibition', 'Exhibition', [$summary, $description], [
+            ['name' => 'Sections', 'fields' => [$sections]],
+            ['name' => 'Visit', 'type' => 'sidebar', 'fields' => [$venue]],
+        ]);
 
         $section = Sections::getSectionByHandle('exhibitions');
 
@@ -201,8 +205,11 @@ class TranslationDemoSeeder extends Seeder
         return $field;
     }
 
-    /** @param list<FieldInterface> $fields */
-    private function entryType(string $handle, string $name, array $fields): EntryType
+    /**
+     * @param  list<FieldInterface>  $fields  The fields in the Content tab, after the title.
+     * @param  list<array{name: string, type?: string, fields: list<FieldInterface>}>  $tabs  The tabs after it.
+     */
+    private function entryType(string $handle, string $name, array $fields, array $tabs = []): EntryType
     {
         if ($entryType = EntryTypes::getEntryTypeByHandle($handle)) {
             return $entryType;
@@ -211,18 +218,22 @@ class TranslationDemoSeeder extends Seeder
         $layout = FieldLayout::create([
             'uid' => Str::uuid()->toString(),
             'type' => Entry::class,
-            'config' => ['tabs' => [[
-                'uid' => Str::uuid()->toString(),
-                'name' => 'Content',
-                'elements' => [
-                    ['uid' => Str::uuid()->toString(), 'type' => EntryTitleField::class, 'required' => true],
-                    ...array_map(fn (FieldInterface $field): array => [
-                        'uid' => Str::uuid()->toString(),
-                        'type' => CustomField::class,
-                        'fieldUid' => $field->uid,
-                    ], $fields),
+            'config' => ['tabs' => [
+                [
+                    'uid' => Str::uuid()->toString(),
+                    'name' => 'Content',
+                    'elements' => [
+                        ['uid' => Str::uuid()->toString(), 'type' => EntryTitleField::class, 'required' => true],
+                        ...$this->fieldElements($fields),
+                    ],
                 ],
-            ]]],
+                ...array_map(fn (array $tab): array => [
+                    'uid' => Str::uuid()->toString(),
+                    'name' => $tab['name'],
+                    'type' => $tab['type'] ?? 'content',
+                    'elements' => $this->fieldElements($tab['fields']),
+                ], $tabs),
+            ]],
         ]);
         $entryType = new EntryType([
             'name' => $name,
@@ -235,6 +246,19 @@ class TranslationDemoSeeder extends Seeder
         }
 
         return $entryType;
+    }
+
+    /**
+     * @param  list<FieldInterface>  $fields
+     * @return list<array<string, string>>
+     */
+    private function fieldElements(array $fields): array
+    {
+        return array_map(fn (FieldInterface $field): array => [
+            'uid' => Str::uuid()->toString(),
+            'type' => CustomField::class,
+            'fieldUid' => $field->uid,
+        ], $fields);
     }
 
     /**
