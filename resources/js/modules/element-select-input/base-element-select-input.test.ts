@@ -1,267 +1,155 @@
-import jquery from 'jquery';
-import {afterEach, expect, it, vi} from 'vite-plus/test';
-import {
-  BaseElementSelectInput,
-  type BaseElementSelectInputSettings,
-} from './base-element-select-input';
-import {EntrySelectInput} from './entry-select-input';
-import {TagSelectInput} from './tag-select-input';
+import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {BaseElementSelectInput} from './base-element-select-input';
 
-it('preserves legacy element select input extension points', () => {
-  class UninitializedElementSelectInput extends BaseElementSelectInput {}
+vi.mock('@/common/craft/icon-svg', () => ({
+  iconSvg: async () => document.createElement('svg'),
+}));
 
-  const input = new UninitializedElementSelectInput();
+function chip(id: number): string {
+  return `<li><div class="element chip small" data-id="${id}" data-site-id="1">
+    <input type="hidden" name="related[]" value="${id}">
+    <div class="chip-content"><span class="label">Entry ${id}</span><div class="chip-actions"></div></div>
+  </div></li>`;
+}
 
-  expect('_ignoreSearchBlur' in input).toBe(true);
-  expect('_initialized' in input).toBe(true);
-  expect('_$replaceElement' in input).toBe(true);
-  expect(
-    Object.getOwnPropertyDescriptor(
-      BaseElementSelectInput.prototype,
-      'thumbLoader'
-    )
-  ).toMatchObject({get: expect.any(Function)});
-  expect(
-    Object.getOwnPropertyDescriptor(
-      BaseElementSelectInput.prototype,
-      '_animateStructureElementAway'
-    )?.value
-  ).toBeInstanceOf(Function);
+function boot(settings = {}): BaseElementSelectInput {
+  document.body.innerHTML = `
+    <div id="related" class="elementselect">
+      <ul class="elements">${chip(1)}${chip(2)}</ul>
+      <div class="flex"><button type="button" class="btn add">Add</button></div>
+    </div>`;
 
-  expect(
-    Object.getOwnPropertyDescriptor(EntrySelectInput.prototype, 'section')
-  ).toMatchObject({get: expect.any(Function)});
-  expect(
-    Object.getOwnPropertyDescriptor(
-      EntrySelectInput.prototype,
-      'showElementEditor'
-    )?.value
-  ).toBeInstanceOf(Function);
-
-  for (const method of [
-    'focusOption',
-    'searchForTags',
-    'focusSelectedOption',
-    'focusFirstOption',
-    'killSearchMenu',
-  ]) {
-    expect(Object.hasOwn(TagSelectInput.prototype, method)).toBe(true);
-  }
-  expect(
-    Object.getOwnPropertyDescriptor(TagSelectInput.prototype, 'fieldName')
-  ).toMatchObject({get: expect.any(Function)});
-
-  expect(BaseElementSelectInput.defaults).toMatchObject({
-    allowAdd: true,
-    allowRemove: true,
-    modalSettings: {},
+  return new BaseElementSelectInput({
+    id: 'related',
+    name: 'related',
+    elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+    ...settings,
   });
-  expect(TagSelectInput.defaults).toMatchObject({tagGroupId: null});
+}
+
+const container = () => document.getElementById('related')!;
+const addButton = () => container().querySelector('.btn.add')!;
+const postedIds = () =>
+  [
+    ...container().querySelectorAll<HTMLInputElement>(
+      'input[name="related[]"]'
+    ),
+  ].map((input) => input.value);
+
+beforeEach(() => {
+  expect(window.jQuery).toBeUndefined();
 });
 
 afterEach(() => {
-  vi.unstubAllGlobals();
+  document.body.innerHTML = '';
+  vi.restoreAllMocks();
 });
 
-/**
- * An instance with just enough state stubbed to exercise the chip actions —
- * `init()` needs the DOM, jQuery and garnish, none of which these behaviors
- * touch.
- */
-function chipActionInput(elementSelect: any = null) {
-  class UninitializedElementSelectInput extends BaseElementSelectInput {}
+it('reads its chips and hides Add once the limit is reached', () => {
+  const input = boot({limit: 2});
 
-  const showModal = vi.fn();
-  const removeElement = vi.fn();
-  const input = new UninitializedElementSelectInput();
-  input.settings = {
-    allowRemove: true,
-    elementType: 'entry',
-    sortable: false,
-  } as BaseElementSelectInputSettings;
-  input.elementSelect = elementSelect;
-  input.showModal = showModal;
-  input.removeElement = removeElement;
-
-  return {input, showModal, removeElement};
-}
-
-it('stages the element the modal should replace', () => {
-  const {input, showModal} = chipActionInput();
-  const $chip = {chip: true};
-
-  input.showReplaceModal($chip);
-
-  expect(input._$replaceElement).toBe($chip);
-  expect(showModal).toHaveBeenCalledOnce();
+  expect(input.getSelectedElementIds()).toEqual([1, 2]);
+  expect(addButton().classList.contains('hidden')).toBe(true);
 });
 
-it('removes the whole selection when the chip is part of it', () => {
-  const $chip = {chip: true};
-  const $selection = {selection: true};
-  const {input, removeElement} = chipActionInput({
-    isSelected: (candidate: any) => candidate === $chip,
-    getSelectedItems: () => $selection,
+it('removes a chip from the value and frees its slot', async () => {
+  const input = boot({limit: 2});
+  const change = vi.fn();
+  container().addEventListener('change', change);
+
+  input.removeElement(input.getElementById(1)!);
+
+  expect(input.getSelectedElementIds()).toEqual([2]);
+  expect(postedIds()).toEqual(['2']);
+  expect(addButton().classList.contains('hidden')).toBe(false);
+  expect(change).toHaveBeenCalled();
+});
+
+it('adds the modal selection as chips posted with the field', async () => {
+  vi.spyOn(actionClient, 'post').mockResolvedValue({
+    data: {
+      elements: {
+        3: [
+          '<div class="element chip small" data-id="3" data-site-id="1"><div class="chip-content"><div class="chip-actions"></div></div></div>',
+        ],
+      },
+      headHtml: '',
+      bodyHtml: '',
+    },
+  } as never);
+  const input = boot();
+
+  await input.onModalSelect([{id: 3, siteId: 1}]);
+
+  expect(input.getSelectedElementIds()).toEqual([1, 2, 3]);
+  expect(postedIds()).toEqual(['1', '2', '3']);
+});
+
+it('swaps the chip staged for replacement with the selection', async () => {
+  vi.spyOn(actionClient, 'post').mockResolvedValue({
+    data: {
+      elements: {
+        5: [
+          '<div class="element chip small" data-id="5" data-site-id="1"><div class="chip-content"><div class="chip-actions"></div></div></div>',
+        ],
+      },
+      headHtml: '',
+      bodyHtml: '',
+    },
+  } as never);
+  const input = boot();
+  vi.spyOn(input, 'createModal').mockResolvedValue({
+    show: vi.fn(),
+    hide: vi.fn(),
+    setDisabledElementIds: vi.fn(),
   });
 
-  input.removeElementOrSelection($chip);
-  expect(removeElement).toHaveBeenCalledWith($selection);
+  input.showReplaceModal(input.getElementById(1)!);
+  await input.onModalSelect([{id: 5, siteId: 1}]);
 
-  const $other = {chip: true};
-  input.removeElementOrSelection($other);
-  expect(removeElement).toHaveBeenLastCalledWith($other);
+  expect(input.getSelectedElementIds()).toEqual([2, 5]);
 });
 
-it('routes its injected chip actions through those methods', () => {
-  vi.stubGlobal('Craft', {t: (_category: string, message: string) => message});
+it('moves a chip when its reorder button asks to', () => {
+  const input = boot();
+  const button = input
+    .getElementById(2)!
+    .querySelector('craft-reorder-button')!;
 
-  const {input, showModal, removeElement} = chipActionInput();
-  const $chip = {chip: true};
-  const actions = input.defineElementActions($chip);
+  button.dispatchEvent(
+    new CustomEvent('craft-reorder', {detail: {direction: 'up'}, bubbles: true})
+  );
 
-  expect(actions.map((action) => action.label)).toEqual(['Replace', 'Remove']);
-
-  actions[0].callback();
-  expect(input._$replaceElement).toBe($chip);
-  expect(showModal).toHaveBeenCalledOnce();
-
-  actions[1].callback();
-  expect(removeElement).toHaveBeenCalledWith($chip);
+  expect(input.getSelectedElementIds()).toEqual([2, 1]);
+  expect(postedIds()).toEqual(['2', '1']);
 });
 
-it("moves elements from their reorder buttons' menus", () => {
-  vi.stubGlobal('$', jquery);
+it("opens its chips' Edit items with its own settings, ahead of the global listener", () => {
+  const openSlideout = vi.fn();
+  vi.stubGlobal('Craft', {...window.Craft, openSlideout});
+  const globalListener = vi.fn();
+  window.addEventListener('craft:edit-element', globalListener);
+  const input = boot({prevalidate: true});
 
-  class UninitializedElementSelectInput extends BaseElementSelectInput {}
-
-  const input = new UninitializedElementSelectInput();
-  const list = document.createElement('ul');
-  list.innerHTML =
-    '<li><div class="element"><craft-reorder-button></craft-reorder-button></div></li>';
-  input.$elementsContainer = jquery(list);
-  input.moveElementForward = vi.fn();
-  input.moveElementBackward = vi.fn();
-  input.initReorderButtons();
-
-  const button = list.querySelector('craft-reorder-button')!;
-  const reorder = (direction: 'up' | 'down') =>
-    button.dispatchEvent(
-      new CustomEvent('craft-reorder', {
-        bubbles: true,
-        composed: true,
-        detail: {direction},
-      })
+  const editFrom = (trigger: Element) =>
+    window.dispatchEvent(
+      new CustomEvent('craft:edit-element', {detail: {trigger}})
     );
 
-  reorder('up');
-  expect(input.moveElementForward).toHaveBeenCalledOnce();
-  expect(vi.mocked(input.moveElementForward).mock.calls[0]![0][0]).toBe(button);
+  editFrom(input.getElementById(2)!.querySelector('.chip-actions')!);
+  expect(openSlideout).toHaveBeenCalledOnce();
+  expect(openSlideout.mock.calls[0]![0]).toMatch(/elementId=2.*prevalidate=1/);
+  expect(globalListener).not.toHaveBeenCalled();
 
-  reorder('down');
-  expect(input.moveElementBackward).toHaveBeenCalledOnce();
-  expect(vi.mocked(input.moveElementBackward).mock.calls[0]![0][0]).toBe(
-    button
-  );
-});
+  editFrom(addButton());
+  expect(globalListener).toHaveBeenCalledOnce();
 
-/**
- * An instance with just enough stubbed to observe the order of
- * `onModalSelect()`'s side effects — the real method wants jQuery, garnish and
- * a live modal, none of which bear on when the replaced chip is dropped.
- */
-function replaceFlowInput() {
-  class UninitializedElementSelectInput extends BaseElementSelectInput {}
+  input.destroy();
+  editFrom(document.querySelector('.chip-actions')!);
+  expect(openSlideout).toHaveBeenCalledOnce();
+  expect(globalListener).toHaveBeenCalledTimes(2);
 
-  const log: string[] = [];
-  const input = new UninitializedElementSelectInput();
-
-  input.settings = {
-    viewMode: 'list',
-    elementType: 'entry',
-    limit: null,
-    maintainHierarchy: false,
-    showActionMenu: false,
-    criteria: {},
-  } as BaseElementSelectInputSettings;
-  input.$elements = {length: 1};
-
-  const removeElement = vi.fn(() => {
-    log.push('removeElement');
-    input.$elements = {length: 0};
-    // Stands in for the host reacting to the value change. Vue schedules its
-    // re-render as a microtask, so anything that lands after this marker is
-    // too late to be part of the same combined update.
-    void Promise.resolve().then(() => log.push('host re-render'));
-  });
-  const selectElements = vi.fn(() => {
-    log.push('selectElements');
-  });
-
-  input.removeElement = removeElement;
-  input.selectElements = selectElements as never;
-  input.updateDisabledElementsInModal = vi.fn();
-
-  vi.stubGlobal('$', (value: unknown) => ({rendered: value}));
-  vi.stubGlobal('Craft', {
-    sendActionRequest: vi.fn(async () => {
-      log.push('render-elements');
-      return {data: {elements: {7: ['<div/>']}, headHtml: '', bodyHtml: ''}};
-    }),
-    appendHeadHtml: vi.fn(),
-    appendBodyHtml: vi.fn(),
-    setElementSize: vi.fn(),
-  });
-
-  return {input, log, removeElement, selectElements};
-}
-
-it('drops the replaced chip only once the replacement has rendered', async () => {
-  const {input, log, removeElement} = replaceFlowInput();
-  const $chip = {chip: true};
-  input._$replaceElement = $chip;
-
-  await input.onModalSelect([{id: 7, siteId: 1}]);
-
-  expect(removeElement).toHaveBeenCalledWith($chip);
-  expect(input._$replaceElement).toBeNull();
-
-  // Removing before the request tore down hosts that key on this input's
-  // value, leaving the resumed flow writing into a detached DOM — Replace
-  // opened its modal but never completed. The removal and the insertion also
-  // have to share one synchronous stretch, so those hosts see a single
-  // combined change rather than an empty intermediate one.
-  expect(log).toEqual([
-    'render-elements',
-    'removeElement',
-    'selectElements',
-    'host re-render',
-  ]);
-});
-
-it('frees the replaced chip’s slot before applying the limit', async () => {
-  const {input, selectElements} = replaceFlowInput();
-  input.settings.limit = 1;
-  input._$replaceElement = {chip: true};
-
-  await input.onModalSelect([{id: 7, siteId: 1}]);
-
-  // The outgoing chip still occupied the field's only slot when the limit was
-  // applied, the replacement would be sliced away and nothing would be added.
-  expect(selectElements).toHaveBeenCalledWith([
-    expect.objectContaining({id: 7}),
-  ]);
-});
-
-it.each([
-  '<button class="btn add">Choose</button>',
-  '<button command="--add-element">Choose</button>',
-])('finds the add button in supported element picker markup', (html) => {
-  const {input} = chipActionInput();
-  const container = document.createElement('div');
-  container.innerHTML = html;
-  input.$container = {
-    find: (selector: string) => container.querySelectorAll(selector),
-  };
-
-  expect([...input.getAddElementsBtn()]).toEqual([container.firstElementChild]);
+  window.removeEventListener('craft:edit-element', globalListener);
+  vi.unstubAllGlobals();
 });

@@ -4,6 +4,7 @@ import {createApp, defineComponent, h, ref, shallowRef, type App} from 'vue';
 import UiRenderer from './UiRenderer.vue';
 import {isRecord} from './runtime';
 import type {UiPayload, UiPropertyValue, UiValues} from './types';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 
 // TODO: Remove this legacy bridge once the field layout designer's settings
 // slideout is rendered by the Inertia/Vue CP.
@@ -113,16 +114,13 @@ export function defineLayoutComponentSettingsUiHost(
           );
         }
 
-        const {data} = await Craft.sendActionRequest(
-          'POST',
+        const {data} = await actionClient.post(
           'fields/refresh-layout-component-settings',
           {
-            data: {
-              // `values` is already relative to `scope`, unlike currentValues().
-              ...this.#requestData(),
-              settings: values,
-              scope,
-            },
+            // `values` is already relative to `scope`, unlike currentValues().
+            ...this.#requestData(),
+            settings: values,
+            scope,
           }
         );
 

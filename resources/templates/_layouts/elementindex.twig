@@ -2,24 +2,22 @@
 
 {% hook 'cp.layouts.elementindex' %}
 
-{# When the control panel shell is collecting this screen rather than letting it
-   draw a document, it can render the real element index instead of the legacy
-   one: this layout knows the element type, and everything else the Vue index
-   needs it asks the element type for. Declaring it here means a screen that is
-   just `{% extends "_layouts/elementindex" %}` gets the new index without its
-   author touching anything.
+{# The control panel shell renders the Vue element index for this screen: this
+   layout knows the element type, and everything else the index needs it asks
+   the element type for. So a screen that is just
+   `{% extends "_layouts/elementindex" %}` gets the index without its author
+   touching anything.
 
    `CONTENT_SENTINEL` goes in this layout's own content block. If a child
    template has replaced that block, the sentinel won't survive and the shell
-   falls back to drawing the legacy markup — a screen that supplies its own
-   content isn't an element index the Vue one can stand in for.
+   draws the child's content instead — a screen that supplies its own content
+   isn't an element index the Vue one can stand in for.
 
    @see CraftCms\Cms\Http\Responses\BridgedScreen #}
-{% set shimToVueIndex = craft.cp.screenCollecting() %}
-{% set elementIndex = shimToVueIndex ? {
+{% set elementIndex = {
     elementType: elementType,
     page: page ?? null,
-} : null %}
+} %}
 
 {% if showSiteMenu %}
     {% if selectableSites is not defined %}
@@ -76,30 +74,14 @@
 
 
 {% block toolbar %}
-    {# The Vue index renders its own search, filters and view modes, so the
-       legacy toolbar would duplicate them. Leaving this empty also means a
-       child's `{{ parent() }}` contributes nothing but the child's own
-       additions, which is exactly what the shell wants for its toolbar slot. #}
-    {% if not shimToVueIndex %}
-        {% include '_elements/toolbar' with {
-            showSiteMenu: false,
-        } %}
-    {% endif %}
+    {# The Vue index renders its own search, filters and view modes. Leaving this
+       empty means a child's `{{ parent() }}` contributes nothing but the child's
+       own additions, which is exactly what the shell wants for its toolbar slot. #}
 {% endblock %}
 
 
 {% block content %}
-    {% if shimToVueIndex %}
-        {{- craft.cp.elementIndexSentinel()|raw -}}
-    {% else %}
-        <div class="main element-index">
-            <span class="visually-hidden" role="status" data-status-message></span>
-            <a class="skip-link btn" href="#footer">{{ 'Skip to footer'|t('app') }}</a>
-            <div id="elements" class="elements busy">
-                <div class="update-spinner spinner spinner-absolute"></div>
-            </div>
-        </div>
-    {% endif %}
+    {{- craft.cp.elementIndexSentinel()|raw -}}
 {% endblock %}
 
 
@@ -107,21 +89,5 @@
     {% include '_elements/footer' %}
 {% endblock %}
 
-{% block initJs %}
-    Craft.elementIndex = Craft.createElementIndex('{{ elementType|e("js") }}', $('#page-container'), {
-        canHaveDrafts: {{ canHaveDrafts ? 'true' : 'false' }},
-        context: '{{ context }}',
-        criteria: Craft.defaultIndexCriteria,
-        defaultSource: {{ (defaultSource ?? null)|json_encode|raw }},
-        defaultSourcePath: {{ (defaultSourcePath ?? null)|json_encode|raw }},
-        elementTypeName: '{{ elementDisplayName|e("js") }}',
-        elementTypePluralName: '{{ elementPluralDisplayName|e("js") }}',
-        page: {{ (page ?? null)|json_encode|raw }},
-        storageKey: 'elementindex.{{ elementType|e("js") }}',
-        toolbarSelector: '#toolbar',
-    });
-{% endblock %}
-
-{% if not shimToVueIndex %}
-    {% js block('initJs') %}
-{% endif %}
+{# Kept so child templates that extend it with `{{ parent() }}` still render. #}
+{% block initJs %}{% endblock %}

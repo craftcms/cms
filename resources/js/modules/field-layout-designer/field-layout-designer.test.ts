@@ -1,5 +1,4 @@
 import {afterAll, afterEach, beforeAll, expect, it, vi} from 'vite-plus/test';
-import $ from 'jquery';
 import {Base} from '@craftcms/garnish';
 import {CardViewDesigner} from './card-view-designer';
 import {FieldLayoutDesigner} from './field-layout-designer';
@@ -38,16 +37,13 @@ afterAll(() => {
 
 afterEach(() => {
   delete window.Craft;
-  delete window.$;
   vi.clearAllMocks();
   vi.restoreAllMocks();
   vi.useRealTimers();
 });
 
-it('waits for the jQuery seam before initializing', async () => {
+it('waits for the field search, not jQuery, before initializing', async () => {
   vi.useFakeTimers();
-  window.Craft = Object.assign(Object.create(null), {Grid: class {}});
-  delete window.$;
 
   const deferredInit = vi
     .spyOn(FieldLayoutDesigner.prototype, 'deferredInit')
@@ -81,7 +77,6 @@ it('waits for the jQuery seam before initializing', async () => {
   if (!library) throw new Error('Expected the field library fixture.');
   library.prepend(field);
 
-  window.$ = $;
   await vi.advanceTimersByTimeAsync(100);
 
   expect(deferredInit).toHaveBeenCalledOnce();
@@ -166,9 +161,7 @@ it('adds a field returned by the field editor slideout', () => {
   designer.initLibraryElements = vi.fn();
   designer.addLibraryElementToActiveTab = addLibraryElementToActiveTab;
   designer.getActiveHud = vi.fn(() => undefined);
-  window.Craft = Object.assign(Object.create(null), {
-    getCpUrl: vi.fn(() => '/admin/settings/fields/edit'),
-  });
+  window.Craft = Object.assign(Object.create(null), {baseCpUrl: '/admin'});
 
   designer.createField();
 
@@ -213,9 +206,7 @@ it('opens the field editor from the library HUD trigger and closes the HUD', () 
   designer.initLibraryElements = vi.fn();
   designer.addLibraryElementToActiveTab = vi.fn();
   designer.getActiveHud = vi.fn(() => ({$trigger, hide}));
-  window.Craft = Object.assign(Object.create(null), {
-    getCpUrl: vi.fn(() => '/admin/settings/fields/edit'),
-  });
+  window.Craft = Object.assign(Object.create(null), {baseCpUrl: '/admin'});
 
   designer.createField();
 
@@ -294,4 +285,28 @@ it('gives the card preview the owner’s name, color, and icon', async () => {
   expect(chip.hasAttribute('data-color')).toBe(false);
 
   document.body.innerHTML = '';
+});
+
+it('adds no tab when the name prompt is cancelled', () => {
+  const designer = Object.create(
+    FieldLayoutDesigner.prototype
+  ) as FieldLayoutDesigner;
+  const container = document.createElement('div');
+  const content = document.createElement('div');
+  content.className = 'fld-tabs__content';
+  container.append(content);
+  document.body.append(container);
+
+  Object.assign(designer, {
+    settings: {customizableTabs: true},
+    $tabContainer: container,
+    $contentTabContainer: content,
+  });
+
+  vi.stubGlobal('prompt', () => null);
+  designer.addTab('content');
+  vi.unstubAllGlobals();
+
+  expect(designer.tabElements()).toEqual([]);
+  container.remove();
 });

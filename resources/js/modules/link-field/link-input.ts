@@ -3,14 +3,21 @@ import {
   type GarnishBaseSettings,
   type GarnishEvent,
 } from '@craftcms/garnish';
-import {
-  createTextInput as buildTextInput,
-  createCopyTextPrompt,
-} from '@craftcms/ui/factory';
+import {showCopyTextPrompt} from '@craftcms/ui/utilities/copy-text-prompt';
+// The server sends the text input's settings in the Craft.ui shape
+import {createTextInput as buildTextInput} from '@/modules/ui/legacy/text-input';
 import {resolveElement, type ElementArg} from '@/common/utils/dom';
 import {jq} from '@/common/utils/jquery';
 import punycode from 'punycode/';
-import type {LinkField} from './link-field';
+import {LinkField} from './link-field';
+import {
+  removeLeft,
+  removeRight,
+  startsWith,
+  trim,
+} from '@/common/craft/strings';
+import {t} from '@craftcms/ui/utilities/translate';
+import {addActionsToChip} from '@/common/craft/chip-actions';
 
 declare const Craft: any;
 
@@ -35,11 +42,10 @@ interface LinkInputSettings extends GarnishBaseSettings {
  * validating the value against the type's pattern and prefixes.
  *
  * jQuery-free, but carries a few documented seams: the chip's action menu is
- * built through `Craft.addActionsToChip` (the smart `craft-action-menu` helper,
+ * built through `addActionsToChip()` (the smart `craft-action-menu` helper,
  * still in the cp bundle — same seam component-select uses), and the paired
- * {@link LinkField} instance is read via the legacy `.data('linkField')` cache.
- * The text input and copy prompt come from `@craftcms/ui/factory`. Booted from
- * `BaseTextLinkType.php`.
+ * {@link LinkField} instance is found with {@link LinkField.forContainer}.
+ * Booted from `BaseTextLinkType.php`.
  */
 export class LinkInput extends Base<LinkInputSettings> {
   static defaults: LinkInputSettings = {
@@ -69,14 +75,11 @@ export class LinkInput extends Base<LinkInputSettings> {
     }
     this.setSettings(settings, LinkInput.defaults);
 
-    const $ = jq();
-    // Legacy self-reference + read the paired LinkField, both via `.data`.
-    $?.(this.container).data('linkInput', this);
-    this.#field =
-      $?.(this.container)
-        .closest('[data-link-field]')
-        .parent()
-        .data('linkField') ?? null;
+    // Legacy self-reference for jQuery code reading `.data('linkInput')`
+    jq()?.(this.container).data('linkInput', this);
+    this.#field = LinkField.forContainer(
+      this.container.closest('[data-link-field]')?.parentElement
+    );
 
     this.#chip = this.container.querySelector<HTMLElement>(':scope > .chip');
     this.#textInput =
@@ -107,7 +110,7 @@ export class LinkInput extends Base<LinkInputSettings> {
   hasPrefix(value: string): boolean {
     value = value.toLowerCase();
     for (const prefix of this.settings!.prefixes ?? []) {
-      if (Craft.startsWith(value, prefix, true)) {
+      if (startsWith(value, prefix, true)) {
         return true;
       }
     }
@@ -124,23 +127,20 @@ export class LinkInput extends Base<LinkInputSettings> {
 
   removePrefix(value: string): string {
     for (const prefix of this.settings!.prefixes ?? []) {
-      value = Craft.removeLeft(value, prefix, true);
+      value = removeLeft(value, prefix, true);
     }
     return value;
   }
 
   removeFirstPrefix(value: string): string {
-    const prefixes = this.settings!.prefixes ?? [];
-    if (prefixes.length) {
-      return Craft.removeLeft(value, prefixes[0], true);
-    }
-    return value;
+    const [prefix] = this.settings!.prefixes ?? [];
+    return prefix === undefined ? value : removeLeft(value, prefix, true);
   }
 
   createChip(value: string): void {
     let label = this.removePrefix(value);
     if (label.match(/^[^/]+\/$/)) {
-      label = Craft.removeRight(label, '/');
+      label = removeRight(label, '/');
     }
 
     this.reset();
@@ -159,7 +159,7 @@ export class LinkInput extends Base<LinkInputSettings> {
     link.textContent = label;
     content.append(link);
 
-    // Empty actions container — `Craft.addActionsToChip` builds a
+    // Empty actions container — `addActionsToChip()` builds a
     // `<craft-action-menu>` inside it.
     const actions = document.createElement('div');
     actions.className = 'chip-actions';
@@ -220,7 +220,7 @@ export class LinkInput extends Base<LinkInputSettings> {
   }
 
   normalize(value: string): string {
-    value = Craft.trim(value);
+    value = trim(value);
     if (!value) {
       return '';
     }
@@ -252,13 +252,13 @@ export class LinkInput extends Base<LinkInputSettings> {
       return;
     }
 
-    // Descriptors for `Craft.addActionsToChip`: it prefers/builds a
+    // Descriptors for `addActionsToChip()`: it prefers/builds a
     // `<craft-action-menu>` and auto-groups the `destructive` item, so no manual
     // divider is needed (icons are name strings resolved by craft-action-item).
     const actions = [
       {
         icon: 'share',
-        label: Craft.t('app', 'View in a new tab'),
+        label: t('View in a new tab'),
         onActivate: () => {
           const href = this.#chip?.querySelector('a')?.getAttribute('href');
           if (href) {
@@ -268,7 +268,7 @@ export class LinkInput extends Base<LinkInputSettings> {
       },
       {
         icon: 'pencil',
-        label: Craft.t('app', 'Edit'),
+        label: t('Edit'),
         onActivate: () => {
           this.switchToTextInput();
           this.#textInput?.focus();
@@ -276,9 +276,9 @@ export class LinkInput extends Base<LinkInputSettings> {
       },
       {
         icon: 'link',
-        label: Craft.t('app', 'Copy URL'),
+        label: t('Copy URL'),
         onActivate: () => {
-          createCopyTextPrompt({
+          showCopyTextPrompt({
             label: 'Full URL',
             value: (this.#hiddenInput?.value ?? '').replace(/ /g, '+'),
           });
@@ -286,7 +286,7 @@ export class LinkInput extends Base<LinkInputSettings> {
       },
       {
         icon: 'xmark-large',
-        label: Craft.t('app', 'Remove'),
+        label: t('Remove'),
         destructive: true,
         onActivate: () => {
           this.createTextInput('');
@@ -295,7 +295,7 @@ export class LinkInput extends Base<LinkInputSettings> {
       },
     ];
 
-    Craft.addActionsToChip(this.#chip, actions);
+    addActionsToChip(this.#chip, actions);
   }
 
   reset(): void {

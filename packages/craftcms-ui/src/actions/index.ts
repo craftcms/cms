@@ -13,6 +13,8 @@ export type BaseAction =
       url: string;
       body?: Record<string, unknown>;
       confirm?: string;
+      /** Asks the user to re-enter their password first, if their session needs it. */
+      requireElevatedSession?: boolean;
     }
   | {
       type: 'event';
@@ -33,6 +35,7 @@ export type BaseAction =
       method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
       body?: Record<string, unknown>;
       confirm?: string;
+      requireElevatedSession?: boolean;
     };
 
 export type FeedbackData = {
@@ -155,6 +158,10 @@ export async function runAction(
         }
       }
 
+      if (action.requireElevatedSession && !(await elevateSession())) {
+        return;
+      }
+
       const response = await fetch(action.url, {
         method: action.method || 'POST',
         headers: {
@@ -207,6 +214,10 @@ export async function runAction(
         return;
       }
 
+      if (action.requireElevatedSession && !(await elevateSession())) {
+        return;
+      }
+
       // A non-GET download can't be a simple anchor navigation: fetch the file
       // as a blob (through actionClient, so the action URL + CP headers resolve)
       // and hand the browser an object URL to save.
@@ -249,6 +260,21 @@ export async function runAction(
       throw new Error(`Unknown action type: ${(unhandled as BaseAction).type}`);
     }
   }
+}
+
+/**
+ * Asks the host for an elevated session through a
+ * `craft:require-elevated-session` event, whose listener sets
+ * `detail.confirmed` to a promise of whether the user confirmed. With no host
+ * listening, the request goes ahead and the server decides.
+ */
+async function elevateSession(): Promise<boolean> {
+  const detail: {confirmed?: Promise<boolean>} = {};
+  window.dispatchEvent(
+    new CustomEvent('craft:require-elevated-session', {detail})
+  );
+
+  return detail.confirmed ?? true;
 }
 
 /**

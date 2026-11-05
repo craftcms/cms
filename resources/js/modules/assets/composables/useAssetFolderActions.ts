@@ -8,6 +8,7 @@ import {
   moveFolders,
 } from '@/modules/assets/assetMover';
 import type {ElementIndexOperations} from '@/modules/elements/index/types/model';
+import {showError, showNotice} from '@/modules/messages/messages';
 
 interface FolderActionDetail {
   elementIds?: Array<string | number>;
@@ -109,7 +110,7 @@ export function useAssetFolderActions(
         parentId: newFolderParentId.value,
         folderName,
       });
-      Craft.cp?.displayNotification?.('notice', t('Folder created.'));
+      showNotice(t('Folder created.'));
       closeNewFolder();
       onActionPerformed();
     } catch (error) {
@@ -117,7 +118,7 @@ export function useAssetFolderActions(
         ? (error.response?.data?.message ?? t('Couldn’t create the folder.'))
         : t('Couldn’t create the folder.');
       newFolderError.value = message;
-      Craft.cp?.displayError?.(message);
+      showError(message);
     } finally {
       creatingFolder.value = false;
     }
@@ -159,7 +160,7 @@ export function useAssetFolderActions(
         }
       );
       closeRename();
-      Craft.cp?.displayNotice?.(t('Folder renamed.'));
+      showNotice(t('Folder renamed.'));
       if (navigate && data.folderUrl) {
         router.visit(data.folderUrl);
       } else {
@@ -170,7 +171,7 @@ export function useAssetFolderActions(
         ? (error.response?.data?.message ?? t('Couldn’t rename the folder.'))
         : t('Couldn’t rename the folder.');
       renameError.value = message;
-      Craft.cp?.displayError?.(message);
+      showError(message);
     } finally {
       renaming.value = false;
     }
@@ -206,14 +207,14 @@ export function useAssetFolderActions(
           folderId,
         });
       }
-      Craft.cp?.displayNotice?.(t('Folder deleted.'));
+      showNotice(t('Folder deleted.'));
       if (action.redirectUrl) {
         router.visit(action.redirectUrl);
       } else {
         onActionPerformed();
       }
     } catch (error: any) {
-      Craft.cp?.displayError?.(error?.response?.data?.message);
+      showError(error?.response?.data?.message);
     }
   }
 
@@ -267,7 +268,7 @@ export function useAssetFolderActions(
             resolveConflict
           );
           if (result.movedCount > 0) {
-            Craft.cp?.displayNotice?.(
+            showNotice(
               t('{num, plural, =1{Item} other{Items}} moved.', {
                 num: result.movedCount,
               })
@@ -279,7 +280,7 @@ export function useAssetFolderActions(
             }
           }
         } catch (error: any) {
-          Craft.cp?.displayError?.(error?.response?.data?.message);
+          showError(error?.response?.data?.message);
         }
       },
     });

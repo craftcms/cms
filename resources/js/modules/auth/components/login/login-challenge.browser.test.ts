@@ -2,7 +2,14 @@ import {afterEach, expect, it, vi} from 'vite-plus/test';
 import type {TwoFactorData} from './login-challenge';
 import './login-challenge';
 
+const smsStyles = () =>
+  [...document.head.querySelectorAll('style')].filter((style) =>
+    style.textContent?.includes('.sms-form')
+  );
+
 afterEach(() => {
+  smsStyles().forEach((style) => style.remove());
+  delete (window as {smsReady?: boolean}).smsReady;
   document.body.replaceChildren();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
@@ -27,8 +34,6 @@ it.each([
   'reports a failed method switch after %s and restores the form once',
   async (_case, fetchResponse, expectedMessage) => {
     const Craft = {
-      appendHeadHtml: vi.fn().mockResolvedValue(undefined),
-      appendBodyHtml: vi.fn().mockResolvedValue(undefined),
       initUiElements: vi.fn(),
       createAuthFormHandler: vi.fn(),
     };
@@ -64,10 +69,34 @@ it.each([
     await vi.waitFor(() =>
       expect(challenge.shadowRoot!.querySelector('.sms-form')).not.toBeNull()
     );
-    expect(Craft.appendHeadHtml).toHaveBeenCalledTimes(1);
-    expect(Craft.appendBodyHtml).toHaveBeenCalledTimes(1);
+    expect(smsStyles()).toHaveLength(1);
+    expect((window as {smsReady?: boolean}).smsReady).toBe(true);
   }
 );
+
+it('reports a legacy auth method it can’t wire up, rather than hanging', async () => {
+  // No `createAuthFormHandler`: the Yii2 adapter isn't on the page.
+  vi.stubGlobal('Craft', {initUiElements: vi.fn()});
+
+  const data: TwoFactorData = {
+    authForm: '<form class="sms-form"><input name="code"></form>',
+    headHtml: '',
+    bodyHtml: '',
+    returnUrl: '/admin/dashboard',
+    authMethod: 'plugin\\auth\\Sms',
+    otherMethods: [],
+  };
+  const challenge = document.createElement('craft-login-challenge');
+  challenge.data = data;
+  const failures: string[] = [];
+  challenge.addEventListener('login-failed', (event) =>
+    failures.push((event as CustomEvent<{message: string}>).detail.message)
+  );
+  document.body.append(challenge);
+
+  await vi.waitFor(() => expect(failures).toHaveLength(1));
+  expect(failures[0]).toContain('isn’t available here');
+});
 
 it.each([
   ['CraftCms\\Cms\\Auth\\Methods\\TOTP', 'craft-totp-form'],

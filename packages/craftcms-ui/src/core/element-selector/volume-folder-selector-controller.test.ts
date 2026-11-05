@@ -13,7 +13,7 @@ import type {ElementInfo} from './types.js';
 function create(options: Partial<VolumeFolderSelectorOptions> = {}) {
   return new VolumeFolderSelectorController({
     hideOnSelect: false,
-    loadIndexBody: async () => ({html: '', props: {}}),
+    loadIndexBody: async () => ({props: {}}),
     ...options,
   });
 }

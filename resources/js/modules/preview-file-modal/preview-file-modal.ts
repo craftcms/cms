@@ -2,12 +2,28 @@ import {
   focusReturnFor,
   type FocusReturnResolver,
 } from '@craftcms/ui/utilities/focus-return';
+import {announce} from '@/common/announcer';
 import {hasAttr} from '@craftcms/garnish';
 import {submitNativeForm} from '@/common/utils/forms';
 import {highlightCodeBlocks} from '@/common/utils/highlight-code';
+import {
+  bootFocalPoint,
+  destroyFocalPoint,
+  renderFocalPoint,
+} from '@/modules/focal-point/focal-point';
+import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {
+  appendBodyHtml,
+  appendElementHtml,
+  appendHeadHtml,
+} from '@craftcms/ui/utilities/dom';
+import {isPlainObject} from '@craftcms/garnish';
+import {resolveElement} from '@/common/utils/dom';
+import {jq} from '@/common/utils/jquery';
+import {showError, showNotice} from '@/modules/messages/messages';
 
 declare const Craft: any;
-declare const $: any;
 
 /** A `craft-dialog`. */
 interface PreviewDialog extends HTMLElement {
@@ -41,9 +57,9 @@ const EMPTY_CLASSES = 'zilch flex items-center justify-center';
  * element select.
  *
  * Preview templates reach the open preview through
- * `Craft.PreviewFileModal.openInstance`: `$container` is the jQuery-wrapped
- * element holding the preview HTML, and `resizePreviewImage()` fits an
- * image preview to the viewport once it has loaded. Top-level
+ * `Craft.PreviewFileModal.openInstance`: `container` is the element holding
+ * the preview HTML, and `resizePreviewImage()` fits an image preview to the
+ * viewport once it has loaded. Top-level
  * `slot="footer"` elements in a preview's HTML move to the start of the
  * dialog's footer, ahead of its Download and Close buttons.
  */
@@ -54,11 +70,10 @@ export class PreviewFileModal {
   assetId: number | null = null;
   elementSelect: any = null;
   $triggerElement: HTMLElement | null = null;
-  $bumperButtonStart: any = null;
-  $bumperButtonEnd: any = null;
+  $bumperButtonStart: HTMLButtonElement;
+  $bumperButtonEnd: HTMLButtonElement;
   dialog: PreviewDialog;
   container: HTMLElement;
-  $container: any;
   visible = false;
   requestId = 0;
   #downloadButton: HTMLElement;
@@ -89,7 +104,7 @@ export class PreviewFileModal {
     settings?: Partial<PreviewFileModalSettings>
   ) {
     // (assetId, settings) overload
-    if (settings === undefined && $.isPlainObject(elementSelectOrSettings)) {
+    if (settings === undefined && isPlainObject(elementSelectOrSettings)) {
       settings = elementSelectOrSettings;
       elementSelectOrSettings = null;
     }
@@ -108,36 +123,33 @@ export class PreviewFileModal {
     this.dialog.classList.add('previewmodal');
     this.dialog.noHeader = true;
     this.dialog.closeOnOutsideClick = true;
-    this.dialog.label = Craft.t('app', 'Preview file');
+    this.dialog.label = t('Preview file');
 
     this.container = document.createElement('div');
     this.container.className = 'previewmodal-content size-full overflow-auto';
     this.container.tabIndex = -1;
     this.container.setAttribute('role', 'region');
     this.container.setAttribute('aria-label', this.dialog.label);
-    this.$container = $(this.container);
     this.dialog.append(this.container);
 
-    this.$bumperButtonStart = $('<button/>', {
-      type: 'button',
-      class: 'skip-link top-0 start-0',
-      text: Craft.t('app', 'Close Preview'),
-    }).on('click', () => this.hide());
-    this.$bumperButtonEnd = this.$bumperButtonStart.clone(true);
+    const bumperButton = () => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'skip-link top-0 start-0';
+      button.textContent = t('Close Preview');
+      button.addEventListener('click', () => this.hide());
+      return button;
+    };
+    this.$bumperButtonStart = bumperButton();
+    this.$bumperButtonEnd = bumperButton();
 
-    this.#downloadButton = this.#footerButton(
-      Craft.t('app', 'Download'),
-      'download',
-      () => {
-        // A real form post: the response is the file.
-        submitNativeForm(Craft.getActionUrl('assets/download-asset'), {
-          assetId: this.assetId,
-        });
-      }
-    );
-    const closeButton = this.#footerButton(Craft.t('app', 'Close'), null, () =>
-      this.hide()
-    );
+    this.#downloadButton = this.#footerButton(t('Download'), 'download', () => {
+      // A real form post: the response is the file.
+      submitNativeForm(Craft.getActionUrl('assets/download-asset'), {
+        assetId: this.assetId,
+      });
+    });
+    const closeButton = this.#footerButton(t('Close'), null, () => this.hide());
     this.dialog.append(this.#downloadButton, closeButton);
 
     this.dialog.addEventListener('keydown', this.#onKeydown);
@@ -153,7 +165,7 @@ export class PreviewFileModal {
       }
     });
     this.visible = true;
-    Craft.cp.announce(Craft.t('app', 'Loading'));
+    announce(t('Loading'));
 
     this.loadAsset(
       assetId,
@@ -162,34 +174,42 @@ export class PreviewFileModal {
     );
   }
 
-  getSelectItem(): any {
-    const $item = this.elementSelect?.$items.filter(
-      `[data-id=${this.assetId}]`
+  /** The select's items, from a native select or a legacy jQuery one. */
+  #selectItems(): HTMLElement[] {
+    return Array.from(this.elementSelect?.$items ?? []);
+  }
+
+  getSelectItem(): HTMLElement | null {
+    return (
+      this.#selectItems().find(
+        (item) => item.dataset.id == String(this.assetId)
+      ) ?? null
     );
-    return $item?.length ? $item : null;
   }
 
   previewPreviousAsset(): void {
-    this.#previewSibling('getPreviousItem');
+    this.#previewSibling(-1);
   }
 
   previewNextAsset(): void {
-    this.#previewSibling('getNextItem');
+    this.#previewSibling(1);
   }
 
-  #previewSibling(getter: 'getPreviousItem' | 'getNextItem'): void {
-    const $element = this.getSelectItem();
-    if (!$element) return;
+  #previewSibling(step: 1 | -1): void {
+    const items = this.#selectItems();
+    const item = this.getSelectItem();
+    if (!item) return;
 
-    const index = this.elementSelect.getItemIndex($element);
-    const $sibling = this.elementSelect[getter](index);
-    if (
-      $sibling?.length &&
-      PreviewFileModal.showForAsset($sibling, this.elementSelect)
-    ) {
+    const sibling = items[items.indexOf(item) + step];
+    if (sibling && PreviewFileModal.showForAsset(sibling, this.elementSelect)) {
       this.elementSelect.deselectAll();
-      this.elementSelect.selectItem($sibling, false, false);
+      this.elementSelect.selectItem(this.#forSelect(sibling), false, false);
     }
+  }
+
+  /** An item as the select takes it: legacy selects take jQuery collections. */
+  #forSelect(item: HTMLElement): any {
+    return Array.isArray(this.elementSelect.$items) ? item : jq()?.(item);
   }
 
   /** Closes the preview, returning focus to the asset or whatever opened it. */
@@ -225,9 +245,7 @@ export class PreviewFileModal {
 
     if (PreviewFileModal.openInstance === this) {
       PreviewFileModal.openInstance = null;
-      // SAFETY: The focal point bundle owns the optional imageFocalPoint global.
-      (window as any).imageFocalPoint?.destruct();
-      delete (window as any).imageFocalPoint;
+      destroyFocalPoint();
     }
   }
 
@@ -237,7 +255,8 @@ export class PreviewFileModal {
     startingHeight?: number | null
   ): void {
     this.assetId = assetId;
-    this.$container.empty().removeClass(EMPTY_CLASSES);
+    this.container.replaceChildren();
+    this.container.classList.remove(...EMPTY_CLASSES.split(' '));
     this.#removePreviewFooterItems();
 
     const [width, height] =
@@ -257,35 +276,36 @@ export class PreviewFileModal {
       spinner.remove();
     };
 
-    Craft.sendActionRequest('POST', 'assets/preview-file', {
-      data: {assetId, requestId},
-    })
+    actionClient
+      .post('assets/preview-file', {assetId, requestId})
       .then(async (response: any) => {
         if (response.data.requestId !== this.requestId) return;
         onResponse();
 
         if (!response.data.previewHtml) {
-          this.$container
-            .addClass(EMPTY_CLASSES)
-            .append($('<p/>', {text: Craft.t('app', 'No preview available.')}));
+          const message = document.createElement('p');
+          message.textContent = t('No preview available.');
+          this.container.classList.add(...EMPTY_CLASSES.split(' '));
+          this.container.append(message);
           this._addBumperButtons();
           return;
         }
 
         this.container.dataset.assetId = String(assetId);
-        this.$container.append(response.data.previewHtml);
+        await appendElementHtml(response.data.previewHtml, this.container);
+        bootFocalPoint(this.container);
         const text = this.container.querySelector('pre > code')?.textContent;
         highlightCodeBlocks(this.container);
         this.#addPreviewFooterItems(text);
         this._addBumperButtons();
         this.#focusContent();
-        await Craft.appendHeadHtml(response.data.headHtml);
-        await Craft.appendBodyHtml(response.data.bodyHtml);
+        await appendHeadHtml(response.data.headHtml);
+        await appendBodyHtml(response.data.bodyHtml);
       })
       .catch(({response}: any) => {
         if (requestId !== this.requestId) return;
         onResponse();
-        Craft.cp.displayError(response?.data?.message);
+        showError(response?.data?.message);
         this.hide();
       });
   }
@@ -322,16 +342,14 @@ export class PreviewFileModal {
     if (text === undefined) return;
 
     const copyButton = this.#footerButton(
-      Craft.t('app', 'Copy'),
+      t('Copy'),
       'custom-icons/clone-dashed',
       async () => {
         try {
           await navigator.clipboard.writeText(text);
-          Craft.cp.displayNotice(Craft.t('app', 'Copied to clipboard.'));
+          showNotice(t('Copied to clipboard.'));
         } catch {
-          Craft.cp.displayError(
-            Craft.t('app', 'Couldn’t copy to the clipboard.')
-          );
+          showError(t('Couldn’t copy to the clipboard.'));
         }
       }
     );
@@ -347,9 +365,8 @@ export class PreviewFileModal {
   }
 
   _addBumperButtons(): void {
-    this.$container
-      .prepend(this.$bumperButtonStart)
-      .append(this.$bumperButtonEnd);
+    this.container.prepend(this.$bumperButtonStart);
+    this.container.append(this.$bumperButtonEnd);
   }
 
   /** Sizes the dialog to fit a `width` × `height` preview above its footer. */
@@ -428,11 +445,11 @@ export class PreviewFileModal {
   #onAfterHide = (ev: Event): void => {
     if (ev.target !== this.dialog) return;
 
-    const $element = this.getSelectItem();
+    const item = this.getSelectItem();
     this.destroy();
 
-    if ($element) {
-      this.elementSelect.focusItem($element);
+    if (item) {
+      this.elementSelect.focusItem(this.#forSelect(item));
     } else {
       this.#returnFocus()?.focus();
     }
@@ -490,41 +507,41 @@ export class PreviewFileModal {
     img.style.height = `${height}px`;
     instance._resizeContainer(width, height);
 
-    // SAFETY: The focal point bundle owns the optional imageFocalPoint global.
-    (window as any).imageFocalPoint?.renderFocal();
+    renderFocalPoint();
   }
 
-  static showForAsset($element: any, elementSelect?: any): boolean {
-    if (!$element.hasClass('element')) {
-      $element = $element.find('.element:first');
-    }
-    if (
-      !$element.hasClass('element') ||
-      hasAttr($element[0], 'data-folder-id')
-    ) {
+  /** Previews the asset `element` is, or contains. Takes jQuery collections too. */
+  static showForAsset(element: any, elementSelect?: any): boolean {
+    const root = resolveElement(element);
+    const asset = root?.classList.contains('element')
+      ? root
+      : root?.querySelector<HTMLElement>('.element');
+
+    if (!asset || hasAttr(asset, 'data-folder-id')) {
       return false;
     }
 
     const settings: Partial<PreviewFileModalSettings> = {};
-    if ($element.data('image-width')) {
-      settings.startingWidth = $element.data('image-width');
-      settings.startingHeight = $element.data('image-height');
+    if (asset.dataset.imageWidth) {
+      settings.startingWidth = Number(asset.dataset.imageWidth);
+      settings.startingHeight = Number(asset.dataset.imageHeight);
     }
 
+    const assetId = Number(asset.dataset.id);
     const instance = PreviewFileModal.openInstance;
     if (
       instance?.visible &&
       instance.elementSelect === (elementSelect ?? null)
     ) {
       instance.loadAsset(
-        $element.data('id'),
+        assetId,
         settings.startingWidth,
         settings.startingHeight
       );
       return true;
     }
 
-    new PreviewFileModal($element.data('id'), elementSelect, settings);
+    new PreviewFileModal(assetId, elementSelect, settings);
     return true;
   }
 }

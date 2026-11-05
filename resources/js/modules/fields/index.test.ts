@@ -1,26 +1,27 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 
 const openSlideout = vi.hoisted(() => vi.fn());
-const createCopyTextPrompt = vi.hoisted(() => vi.fn());
+const showCopyTextPrompt = vi.hoisted(() => vi.fn());
 const copyElements = vi.hoisted(() => vi.fn());
 
 vi.mock('@/common/slideouts', () => ({
   openSlideout,
 }));
-vi.mock('@craftcms/ui/factory', () => ({createCopyTextPrompt}));
+vi.mock('@craftcms/ui/utilities/copy-text-prompt', () => ({
+  showCopyTextPrompt,
+}));
+vi.mock('@/modules/elements/clipboard', () => ({copyElements}));
 
 describe('field action listeners', () => {
   beforeEach(async () => {
     openSlideout.mockReset();
-    createCopyTextPrompt.mockReset();
+    showCopyTextPrompt.mockReset();
     copyElements.mockReset();
     document.body.innerHTML = '';
 
     window.Craft = {
-      cp: {copyElements},
       openSlideout,
-      getCpUrl: (path: string, params?: Record<string, unknown>) =>
-        `/admin/${path}?${new URLSearchParams(params as never).toString()}`,
+      baseCpUrl: '/admin',
     } as never;
 
     await import('./index');
@@ -70,7 +71,7 @@ describe('field action listeners', () => {
       })
     );
 
-    expect(createCopyTextPrompt).toHaveBeenCalledWith({
+    expect(showCopyTextPrompt).toHaveBeenCalledWith({
       label: 'Field Handle',
       value: 'body',
     });
@@ -81,16 +82,16 @@ describe('field action listeners', () => {
       new CustomEvent('craft:copy-text-prompt', {detail: {label: 'Nope'}})
     );
 
-    expect(createCopyTextPrompt).not.toHaveBeenCalled();
+    expect(showCopyTextPrompt).not.toHaveBeenCalled();
   });
 });
 
 describe('field input action listeners', () => {
   beforeEach(async () => {
     openSlideout.mockReset();
-    createCopyTextPrompt.mockReset();
+    showCopyTextPrompt.mockReset();
     copyElements.mockReset();
-    window.Craft = {cp: {copyElements}, getCpUrl: () => ''} as never;
+    window.Craft = {baseCpUrl: '/admin'} as never;
     await import('./index');
   });
 

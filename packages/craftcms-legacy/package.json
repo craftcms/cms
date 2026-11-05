@@ -50,7 +50,6 @@
     "picturefill": "^3.0.3",
     "punycode": "catalog:",
     "timepicker": "^1.14.1",
-    "ttf2woff2": "^5.0.0",
     "typescript": "catalog:legacy",
     "velocity-animate": "^1.5.2",
     "vue": "catalog:legacy",

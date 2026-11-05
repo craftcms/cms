@@ -6,13 +6,15 @@ const actions = vi.hoisted(() => ({
   run: vi.fn(async (..._args: unknown[]) => {}),
 }));
 vi.mock('@craftcms/ui/actions.mjs', () => ({runAction: actions.run}));
+const copyElements = vi.hoisted(() => vi.fn());
+vi.mock('@/modules/elements/clipboard', () => ({copyElements}));
 
 const BulkActionsBar = (await import('./ElementBulkActionsBar.vue')).default;
 const apps: App[] = [];
 const containers: HTMLElement[] = [];
 
 beforeEach(() => {
-  vi.stubGlobal('Craft', {cp: {copyElements: vi.fn()}, siteId: 1});
+  vi.stubGlobal('Craft', {siteId: 1});
   vi.stubGlobal(
     'fetch',
     vi.fn(async () => new Response('<svg></svg>'))
@@ -23,6 +25,7 @@ afterEach(() => {
   apps.splice(0).forEach((app) => app.unmount());
   containers.splice(0).forEach((container) => container.remove());
   actions.run.mockClear();
+  copyElements.mockClear();
   vi.unstubAllGlobals();
 });
 
@@ -127,7 +130,7 @@ it('copies the selected nested-element metadata', async () => {
     })
   );
 
-  expect(window.Craft?.cp?.copyElements).toHaveBeenCalledWith([
+  expect(copyElements).toHaveBeenCalledWith([
     {
       type: 'Entry',
       id: 11,
@@ -164,8 +167,7 @@ it('omits actions when any selected row lacks the required capability', async ()
 });
 
 it('copies the selected element with its site ID', async () => {
-  const copyElements = vi.fn();
-  vi.stubGlobal('Craft', {cp: {copyElements}, siteId: 1});
+  vi.stubGlobal('Craft', {siteId: 1});
   const container = mount(
     {
       key: 'Copy',
@@ -195,7 +197,7 @@ it('copies the selected element with its site ID', async () => {
 
 it('previews the selected asset', async () => {
   const PreviewFileModal = vi.fn();
-  vi.stubGlobal('Craft', {cp: {copyElements: vi.fn()}, PreviewFileModal});
+  vi.stubGlobal('Craft', {PreviewFileModal});
   const container = mount({
     key: 'PreviewAsset',
     label: 'Preview file',

@@ -5,7 +5,10 @@ import {
   openImageEditorDialog,
   type ImageEditorSettings,
 } from './open-image-editor-dialog';
+import {QueueService} from '@/modules/queue/queue';
+import {broadcast} from '@/common/craft/broadcast';
 import type {SaveResult} from './useImageEditor';
+import {showError} from '@/modules/messages/messages';
 
 /**
  * Opens the image editor dialog from markup that isn't an Inertia page — asset
@@ -31,13 +34,13 @@ export async function openAssetImageEditor(
 
   await openImageEditorDialog(settings, (result) => {
     if (!result.newAssetId) {
-      Craft.broadcaster?.postMessage({
+      broadcast({
         event: 'saveElement',
         id: settings.assetId,
       });
     }
 
-    Craft.cp?.runQueue?.();
+    void QueueService.getInstance().runQueue();
     refreshPreviews();
     onSaved?.(result);
   });
@@ -53,7 +56,7 @@ export class AssetImageEditor {
     settings: {onSave?: (result: SaveResult) => void} = {}
   ) {
     openAssetImageEditor(assetId, settings.onSave).catch((error) =>
-      Craft.cp?.displayError?.(error?.response?.data?.message)
+      showError(error?.response?.data?.message)
     );
   }
 }

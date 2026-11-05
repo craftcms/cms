@@ -83,3 +83,49 @@ it.each(['actionButton', 'actionMenu', 'contextMenu', 'all'])(
     }
   }
 );
+
+it('switches legacy tab panes without jQuery', async () => {
+  expect((window as any).jQuery).toBeUndefined();
+
+  host = document.createElement('div');
+  document.body.append(host);
+  app = createApp({
+    setup() {
+      provideLayoutSlotRegistry();
+
+      return () =>
+        h('div', [
+          h(LayoutSlotOutlet, {name: 'content-tabs'}),
+          h(Screen, {
+            tabs: `<div class="pane-tabs"><div role="tablist">
+              <a role="tab" id="tab-one" href="#pane-one" class="sel" aria-selected="true" tabindex="0">One</a>
+              <a role="tab" id="tab-two" href="#pane-two" aria-selected="false" tabindex="-1">Two</a>
+            </div></div>`,
+            content: `<div id="pane-one">First</div><div id="pane-two" class="hidden">Second</div>`,
+          }),
+        ]);
+    },
+  });
+  app.provide(ScreenPropsStoreKey, createScreenPropsStore());
+  app.provide(ScreenContentReadyKey, () => {});
+  app.mount(host);
+
+  await vi.waitFor(() => {
+    expect(host.querySelector('#tab-two')).not.toBeNull();
+    expect(host.querySelector('#pane-two')).not.toBeNull();
+  });
+
+  host.querySelector<HTMLElement>('#tab-two')!.click();
+
+  await vi.waitFor(() => {
+    expect(host.querySelector('#pane-two')!.classList.contains('hidden')).toBe(
+      false
+    );
+  });
+  expect(host.querySelector('#pane-one')!.classList.contains('hidden')).toBe(
+    true
+  );
+  expect(host.querySelector('#tab-two')!.getAttribute('aria-selected')).toBe(
+    'true'
+  );
+});

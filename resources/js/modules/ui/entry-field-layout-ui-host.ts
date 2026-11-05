@@ -12,7 +12,11 @@ import {
 import UiRenderer from './UiRenderer.vue';
 import UpdateFieldLayoutController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/UpdateFieldLayoutController';
 import {isolateFieldUi, rebaseFieldUi, preserveFieldUis} from './html-field-ui';
-import {prepareHtmlNestedOwner} from '@/modules/elements/html-nested-owner';
+import {
+  legacyElementEditor,
+  prepareHtmlNestedOwner,
+} from '@/modules/elements/html-nested-owner';
+import {serializeFormInputs} from '@craftcms/ui/utilities/dom';
 import {
   NestedOwnerEditorKey,
   nestedOwnerContext,
@@ -234,7 +238,7 @@ export function defineEntryFieldLayoutUiHost(
                     return nativeOwner.resolveElementId?.(id) ?? id;
                   const form = this.closest('form');
                   const editor = form
-                    ? ($(form).data('elementEditor') as
+                    ? (legacyElementEditor(form) as
                         | {getDraftElementId?: (id: number) => number}
                         | undefined)
                     : undefined;
@@ -318,7 +322,7 @@ export function defineEntryFieldLayoutUiHost(
       ): Promise<UiPayload> {
         const form = this.closest('form');
         const editor = form
-          ? parseElementEditor($(form).data('elementEditor'))
+          ? parseElementEditor(legacyElementEditor(form))
           : null;
 
         if (!form || (!editor && !this.dataset.owner)) {
@@ -333,7 +337,7 @@ export function defineEntryFieldLayoutUiHost(
         const epoch = this.#refreshEpoch;
         const sequence = ++this.#refreshSequence;
         this.#refreshes.set(scopeKey, {scope, sequence});
-        const data = new URLSearchParams($(form).serialize());
+        const data = new URLSearchParams(serializeFormInputs(form));
         const metadata = this.#fieldPath
           ? this.requestMetadata()
           : {
@@ -348,7 +352,7 @@ export function defineEntryFieldLayoutUiHost(
               ...this.requestMetadata(),
             };
         if (this.#fieldPath) {
-          const ownerEditor = $(form).data('elementEditor') as
+          const ownerEditor = legacyElementEditor(form) as
             | {
                 getDraftElementId?: (id: number) => number;
               }

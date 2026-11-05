@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {QueueService} from '@/modules/queue/queue';
   import {t} from '@craftcms/ui';
   import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
   import {router} from '@inertiajs/vue3';
@@ -12,6 +13,7 @@
   import type {AssetUploadDestination} from '@/modules/uploader/upload-notification';
 
   import {Uploader as FileUploader} from '@/modules/uploader/uploader';
+  import {showError} from '@/modules/messages/messages';
 
   interface Uploader {
     destroy(): void;
@@ -145,9 +147,7 @@
         }
       }
     } catch (error) {
-      Craft.cp?.displayError?.(
-        error instanceof Error ? error.message : t('Upload failed.')
-      );
+      showError(error instanceof Error ? error.message : t('Upload failed.'));
     } finally {
       finishUploads();
     }
@@ -180,7 +180,7 @@
       on: {
         start: () => promptHandler.resetPrompts(),
         done: ({result}: {result: UploadResult}) => {
-          Craft.cp?.runQueue?.();
+          void QueueService.getInstance().runQueue();
 
           if (result.assetId && result.filename && result.conflict) {
             queueConflict(result as Omit<ConflictPrompt, 'prompt'>);
@@ -190,7 +190,7 @@
         },
         fail: ({error, canceled}) => {
           if (!canceled) {
-            Craft.cp?.displayError?.(
+            showError(
               error instanceof Error ? error.message : t('Upload failed.')
             );
           }

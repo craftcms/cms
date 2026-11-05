@@ -24,6 +24,7 @@ class MoneyAsset implements LegacyAssetInterface
 {
     public array $depends = [
         CpAsset::class,
+        GarnishAsset::class,
         InputmaskAsset::class,
     ];
 

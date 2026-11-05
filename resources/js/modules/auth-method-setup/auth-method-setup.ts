@@ -9,9 +9,16 @@
 import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
 import {Base, type GarnishBaseSettings} from '@craftcms/garnish';
 import {AuthMethodSetupSlideout} from './auth-method-setup-slideout';
+import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
+import {ConfigService} from '@craftcms/ui/services/Config';
+import {elevatedSessionManager} from '@/modules/auth/elevated-session/manager';
+import {showError} from '@/modules/messages/messages';
+import {announce} from '@/common/announcer';
+import {initLegacyUi} from '@/common/craft/legacy-ui';
 
 declare const Craft: any;
-declare const $: any;
 
 export interface AuthMethodSetupSettings extends GarnishBaseSettings {
   /** Called after {@link AuthMethodSetup.refresh} re-renders the listing. */
@@ -48,6 +55,21 @@ export class AuthMethodSetup extends Base<AuthMethodSetupSettings> {
   init(settings?: Partial<AuthMethodSetupSettings>): void {
     this.setSettings(settings, AuthMethodSetup.defaults);
     this.initUi();
+
+    // A method's menu posts its actions (e.g. Remove) without reloading the page
+    this.addListener(
+      document.getElementById('auth-method-setup'),
+      'craft-state-change',
+      (event) => {
+        const {detail} = event as unknown as CustomEvent<{
+          state: string;
+          actionType?: string;
+        }>;
+        if (detail.state === 'success' && detail.actionType === 'http') {
+          this.refresh();
+        }
+      }
+    );
   }
 
   initUi(): void {
@@ -93,23 +115,36 @@ export class AuthMethodSetup extends Base<AuthMethodSetupSettings> {
     }
 
     button.classList.add('loading');
-    Craft.cp.announce(Craft.t('app', 'Loading'));
+    announce(t('Loading'));
 
-    Craft.elevatedSessionManager.requireElevatedSession(
-      () => {
-        Craft.sendActionRequest('POST', 'auth/method-setup-html', {
-          data: {method},
-        })
+    void elevatedSessionManager
+      .require({
+        // Re-request an elevated session even if the user just logged in, so
+        // they have the full elevated-session duration (capped at 5 minutes)
+        // to complete the setup.
+        minimumRemainingSeconds: Math.min(
+          ConfigService.getInstance().get('elevatedSessionDuration', 300),
+          300
+        ),
+      })
+      .then((confirmed) => {
+        if (!confirmed) {
+          button.classList.remove('loading');
+          return;
+        }
+
+        return actionClient
+          .post('auth/method-setup-html', {method})
           .then(async ({data}: any) => {
             this.showingSlideout = true;
             const slideout = new AuthMethodSetupSlideout(data);
             slideout.on('close', () => {
               this.showingSlideout = false;
             });
-            await Craft.appendHeadHtml(data.headHtml);
-            await Craft.appendBodyHtml(data.bodyHtml);
+            await appendHeadHtml(data.headHtml);
+            await appendBodyHtml(data.bodyHtml);
             this.addListener(
-              slideout.$container.find('.auth-method-close-btn'),
+              slideout.container!.querySelector('.auth-method-close-btn'),
               'activate',
               () => {
                 slideout.close();
@@ -125,26 +160,19 @@ export class AuthMethodSetup extends Base<AuthMethodSetupSettings> {
             }
           })
           .catch(({response}: any) => {
-            Craft.cp.displayError(response.data.message);
+            showError(response.data.message);
           })
           .finally(() => {
             button.classList.remove('loading');
           });
-      },
-      () => {
-        button.classList.remove('loading');
-      },
-      // Re-request an elevated session even if the user just logged in, so
-      // they have the full elevated-session duration (capped at 5 minutes)
-      // to complete the setup.
-      Math.min(Craft.elevatedSessionDuration, 300)
-    );
+      });
   }
 
   /** Re-fetch and re-render the method listing, then re-wire it. */
   refresh(): void {
-    Craft.sendActionRequest('POST', 'auth/method-listing-html').then(
-      async ({data}: any) => {
+    void actionClient
+      .post('auth/method-listing-html')
+      .then(async ({data}: any) => {
         // Release the outgoing listing's button listeners before replacing
         // the markup below.
         for (const container of Object.values(this.methodListings ?? {})) {
@@ -153,17 +181,23 @@ export class AuthMethodSetup extends Base<AuthMethodSetupSettings> {
           );
         }
 
-        const $container = $('#auth-method-setup').html(
-          $(data.html).children()
-        );
-        Craft.initUiElements($container);
-        await Craft.appendHeadHtml(data.headHtml);
-        await Craft.appendBodyHtml(data.bodyHtml);
+        const container = document.getElementById('auth-method-setup');
+        if (container) {
+          const template = document.createElement('template');
+          template.innerHTML = data.html;
+          container.replaceChildren(
+            ...Array.from(template.content.children).flatMap((element) =>
+              Array.from(element.children)
+            )
+          );
+          initLegacyUi(container);
+        }
+        await appendHeadHtml(data.headHtml);
+        await appendBodyHtml(data.bodyHtml);
         this.initUi();
         this.settings!.onRefresh();
         this.trigger('refresh');
-      }
-    );
+      });
   }
 }
 

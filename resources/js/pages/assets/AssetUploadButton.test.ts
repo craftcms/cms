@@ -2,6 +2,10 @@ import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {createApp, h, nextTick} from 'vue';
 import AssetUploadButton from './AssetUploadButton.vue';
 import {Uploader} from '@/modules/uploader/uploader';
+
+vi.mock('@/modules/queue/queue', () => ({
+  QueueService: {getInstance: () => ({runQueue: vi.fn(async () => {})})},
+}));
 vi.mock('@/modules/uploader/uploader', () => ({Uploader: vi.fn()}));
 import {assetUploadQueue} from '@/modules/uploader/asset-upload-queue';
 
@@ -65,10 +69,6 @@ beforeEach(() => {
   Object.assign(globalThis, {
     $: vi.fn((value) => value),
     Craft: {
-      cp: {
-        displayError: vi.fn(),
-        runQueue: vi.fn(),
-      },
       t: (_category: string, message: string) => message,
     },
   });

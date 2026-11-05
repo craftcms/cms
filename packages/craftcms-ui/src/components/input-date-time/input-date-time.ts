@@ -1,6 +1,7 @@
 import {css, html, LitElement, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import CraftInput from '../input/input.js';
+import '../button/button.js';
 import CraftInputDate from '../input-date/input-date.js';
 import CraftInputTime, {
   type DisabledTimeRange,
@@ -133,6 +134,9 @@ export default class CraftInputDateTime extends LitElement {
   /** Marks the date and time inputs as required. */
   @property({type: Boolean}) required = false;
 
+  /** Adds a button after the inputs that clears them. */
+  @property({type: Boolean}) clearable = false;
+
   /**
    * Id of the element describing this field, applied as `aria-describedby` to
    * each input the component owns. `craft-field` supplies this for you.
@@ -256,15 +260,22 @@ export default class CraftInputDateTime extends LitElement {
       Slotted controls, such as a clear button, sit inside the border too, at
       their own size, with no divider before them.
     */
-    slot:not([name])::slotted(*) {
+    slot:not([name])::slotted(*),
+    [part='clear'] {
       flex: none;
       align-self: center;
       margin-inline-end: var(--_button-inset);
     }
 
-    :host([stacked]) slot:not([name])::slotted(*) {
+    :host([stacked]) slot:not([name])::slotted(*),
+    :host([stacked]) [part='clear'] {
       align-self: end;
       margin-block-end: var(--_button-inset);
+    }
+
+    /* Hidden rather than removed, so the inputs keep the same width */
+    [part='clear'].invisible {
+      visibility: hidden;
     }
 
     :host([width='full']) .inputs {
@@ -291,8 +302,39 @@ export default class CraftInputDateTime extends LitElement {
     return html`<div class="inputs" part="inputs">
         <slot name="inputs"></slot>
       </div>
-      <slot @slotchange=${() => this.#queueStackedSync()}></slot>`;
+      <slot @slotchange=${() => this.#queueStackedSync()}></slot>
+      ${this.clearable && !this.disabled && !this.readonly
+        ? html`<craft-button
+            part="clear"
+            class=${this.#hasValue() ? '' : 'invisible'}
+            type="button"
+            icon="xmark-large"
+            aria-label=${t('Clear')}
+            variant="plain"
+            size="small"
+            @click=${this.#clear}
+          ></craft-button>`
+        : null}`;
   }
+
+  #hasValue(): boolean {
+    return Boolean(
+      (this.showDate && this.dateValue) ||
+      (this.showTime && this.timeValue) ||
+      (this.showTimezone && this.timezone)
+    );
+  }
+
+  #clear = async () => {
+    if (this.showDate) this.dateValue = '';
+    if (this.showTime) this.timeValue = '';
+    if (this.showTimezone) this.timezone = '';
+    await this.updateComplete;
+    this.dispatchEvent(new Event('change', {bubbles: true}));
+
+    // The button hides once there's nothing to clear, so focus the first input
+    this.querySelector<HTMLElement>('[data-date-time-part] input')?.focus();
+  };
 
   /** Watches for the inputs wrapping onto rows of their own. */
   #resizeObserver?: ResizeObserver;

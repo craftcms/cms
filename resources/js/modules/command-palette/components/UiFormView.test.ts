@@ -39,7 +39,7 @@ describe('UiFormView', () => {
   }
 
   beforeEach(() => {
-    (window as any).Craft = {cp: {displayError: vi.fn()}};
+    (window as any).Craft = {cp: {}};
   });
 
   afterEach(() => {

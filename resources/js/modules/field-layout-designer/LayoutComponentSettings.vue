@@ -8,7 +8,7 @@
    */
   import {ref, shallowRef} from 'vue';
   import {useForm} from '@inertiajs/vue3';
-  import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui';
+  import {actionClient, appendBodyHtml, appendHeadHtml} from '@craftcms/ui';
   import CpContainer from '@/common/components/CpContainer.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useSlideout} from '@/common/slideouts';
@@ -96,13 +96,10 @@
     values: UiPayload['values'],
     scope: string[] = payload.value.scope ?? []
   ): Promise<UiPayload> {
-    const {data} = await Craft.sendActionRequest(
-      'POST',
+    const {data} = await actionClient.post(
       'fields/refresh-layout-component-settings',
-      {
-        // `values` is already relative to `scope`, unlike currentValues().
-        data: {...context.requestData(), settings: values, scope},
-      }
+      // `values` is already relative to `scope`, unlike currentValues().
+      {...context.requestData(), settings: values, scope}
     );
 
     if (!data.ui) {

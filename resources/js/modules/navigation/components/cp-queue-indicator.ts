@@ -5,6 +5,7 @@ import type {JobInfo} from '@/modules/queue/types';
 
 import '@craftcms/ui/components/progress/progress';
 import {QueueService} from '@/modules/queue/queue';
+import {getCpUrl} from '@/common/craft/url';
 
 @customElement('cp-queue-indicator')
 class CpQueueIndicator extends LitElement {
@@ -98,7 +99,7 @@ class CpQueueIndicator extends LitElement {
       return null;
     }
 
-    return Craft.getCpUrl('utilities/queue-manager');
+    return getCpUrl('utilities/queue-manager');
   }
 
   protected override render() {

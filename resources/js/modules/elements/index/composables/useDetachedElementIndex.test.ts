@@ -16,7 +16,7 @@ afterEach(() => {
 it.each(['earlier first', 'latest first'])(
   'keeps the latest detached response and loading state when responses arrive %s',
   async (order) => {
-    vi.stubGlobal('Craft', {systemUid: 'test', pageTrigger: 'p'});
+    vi.stubGlobal('Craft', {systemUid: 'test'});
     const first = deferred<ContentIndexData>();
     const second = deferred<ContentIndexData>();
     const fetch = vi
@@ -73,7 +73,7 @@ it('requests the rows a payload left out, for the view mode it shows', async () 
 });
 
 it('keeps the loading state off for a thumb size change', async () => {
-  vi.stubGlobal('Craft', {systemUid: 'test', pageTrigger: 'p'});
+  vi.stubGlobal('Craft', {systemUid: 'test'});
   const response = deferred<ContentIndexData>();
   const fetch = vi.fn().mockReturnValueOnce(response.promise);
   scope = effectScope();
@@ -138,7 +138,7 @@ it('gives a source switch the new source’s own mode and thumbnail size', async
 
 it('uses the new source default when clearing a search without a saved sort', async () => {
   vi.useFakeTimers();
-  vi.stubGlobal('Craft', {systemUid: 'test', pageTrigger: 'p'});
+  vi.stubGlobal('Craft', {systemUid: 'test'});
   const source = {type: 'native' as const, key: 'section:news', label: 'News'};
   const score = [{field: 'score', direction: 'desc' as const}];
   const fetch = vi

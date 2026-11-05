@@ -244,7 +244,7 @@ it('shows composite input errors and focuses the invalid field without discardin
     errors: [],
     globalErrors: [],
   };
-  vi.stubGlobal('Craft', {cp: {displayError: vi.fn()}});
+  vi.stubGlobal('Craft', {cp: {}});
   vi.spyOn(actionClient, 'get').mockResolvedValue({
     data: {ui, title: 'Schedule release', submitLabel: 'Schedule'},
   });
