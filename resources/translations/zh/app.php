@@ -1313,6 +1313,7 @@ return [
     'Compatibility' => '兼容性',
     'Compiled classes' => '编译类',
     'Compiled templates' => '已编译的模板',
+    'Compiled views' => 'Compiled views',
     'Complete the Update' => '完成更新',
     'Completed job' => '已完成的作业',
     'Completed' => '已完成',
