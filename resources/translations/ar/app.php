@@ -1313,6 +1313,7 @@ return [
     'Compatibility' => 'التوافق',
     'Compiled classes' => 'فئات مجمعة',
     'Compiled templates' => 'القوالب المترجمة برمجياً',
+    'Compiled views' => 'Compiled views',
     'Complete the Update' => 'إتمام التحديث',
     'Completed job' => 'إنهاء مهمة',
     'Completed' => 'مكتمل',
