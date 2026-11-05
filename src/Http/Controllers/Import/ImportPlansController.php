@@ -26,6 +26,7 @@ use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Import\ImportPlans;
+use CraftCms\Cms\Import\SourceSuggestions;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Ui\UiResolver;
@@ -181,6 +182,19 @@ class ImportPlansController
     private function hasDestination(?BaseImporter $importer): bool
     {
         return $importer !== null && (! $importer instanceof ElementImporter || ! empty($importer->fieldLayout));
+    }
+
+    /**
+     * Suggests a step's data source as it's typed, for the Data Source field's text expander.
+     */
+    public function sourceSuggestions(SourceSuggestions $suggestions): JsonResponse
+    {
+        $data = $this->request->validate([
+            'query' => ['required', 'string', 'max:1024'],
+            'limit' => ['nullable', 'integer', 'min:1', 'max:200'],
+        ]);
+
+        return new JsonResponse($suggestions->suggest($data['query'], (int) ($data['limit'] ?? 50)));
     }
 
     /**

@@ -8,6 +8,7 @@ use CraftCms\Cms\Element\Import\ElementTransformer;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\Jobs\Import as ImportJob;
+use CraftCms\Cms\Import\SourceSuggestions;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\Hidden;
 use CraftCms\Cms\Ui\Controls\Number;
@@ -50,8 +51,10 @@ class ImportPlanStepUiViewModel extends ViewModel
         return $this->uiResolver->resolve(Ui::make([
             HiddenField::make('uid'),
             UiField::make(t('Data Source'), Text::make('source')
-                ->placeholder('resources/my-data.json'))
+                ->placeholder('resources/my-data.json')
+                ->textExpanderTriggers($this->canSave ? SourceSuggestions::triggers('import/source-suggestions') : []))
                 ->instructions(t('The aliased or @root-relative path to a file or a URL containing the data you want this step to import.'))
+                ->tip($this->canSave ? t('Type `./` to browse the project folder, or `@` for an alias.') : null)
                 ->required(),
             UiField::make(t('Importer Type'), Choice::make('type')
                 ->options($this->importerTypeOptions())

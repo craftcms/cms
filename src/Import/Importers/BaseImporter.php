@@ -667,7 +667,11 @@ abstract class BaseImporter
         ]);
     }
 
-    private static function isFilepathAllowed(string $filePath): bool
+    /**
+     * Returns whether a local file may be read as an import source: not a dotfile, and not in a system or
+     * sensitive directory, before or after its symlinks are resolved.
+     */
+    public static function isFilepathAllowed(string $filePath): bool
     {
         // disallow if the filename starts with a dot
         $basename = basename($filePath);

@@ -29,6 +29,7 @@ use CraftCms\Cms\User\Import\UserImporter;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\File;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -582,4 +583,89 @@ it('forbids reordering import plans without permission to save them', function (
     postJson(action([ImportPlansController::class, 'reorder']), [
         'uids' => [$uid],
     ])->assertForbidden();
+});
+
+describe('data source suggestions', function () {
+    beforeEach(function () {
+        $this->sourceRoot = sys_get_temp_dir().'/import-sources-'.Str::random(8);
+        mkdir($this->sourceRoot.'/resources/nested', 0777, true);
+        touch($this->sourceRoot.'/resources/posts.json');
+        touch($this->sourceRoot.'/resources/people.csv');
+        touch($this->sourceRoot.'/resources/notes.php');
+        touch($this->sourceRoot.'/resources/.secret.json');
+        touch($this->sourceRoot.'/resources/nested/inner.xml');
+        Aliases::set('@root', $this->sourceRoot);
+
+        $this->suggest = fn (string $query) => $this->getJson(action([ImportPlansController::class, 'sourceSuggestions'], ['query' => $query]))
+            ->assertOk()
+            ->json();
+    });
+
+    afterEach(function () {
+        File::deleteDirectory($this->sourceRoot);
+    });
+
+    it('starts `./` in the project root', function () {
+        touch($this->sourceRoot.'/root.json');
+
+        expect(($this->suggest)('./'))->toBe([
+            ['label' => 'resources/', 'value' => './resources/', 'data' => ['hint' => 'Folder'], 'continues' => true],
+            ['label' => 'root.json', 'value' => './root.json'],
+        ]);
+    });
+
+    it('lists a folder’s subfolders first, leaving out files that can’t be imported', function () {
+        expect(($this->suggest)('./resources/'))->toBe([
+            ['label' => 'nested/', 'value' => './resources/nested/', 'data' => ['hint' => 'Folder'], 'continues' => true],
+            ['label' => 'people.csv', 'value' => './resources/people.csv'],
+            ['label' => 'posts.json', 'value' => './resources/posts.json'],
+        ]);
+    });
+
+    it('narrows the suggestions to what’s been typed of a name', function () {
+        expect(array_column(($this->suggest)('./resources/po'), 'value'))->toBe(['./resources/posts.json']);
+    });
+
+    it('goes on into a folder once its path is typed', function () {
+        expect(array_column(($this->suggest)('./resources/nested/'), 'value'))->toBe(['./resources/nested/inner.xml']);
+    });
+
+    // one request per test: the controller, and the request it holds, outlive a request in tests
+    it('offers aliases after `@`', function () {
+        Aliases::set('@importData', $this->sourceRoot.'/resources');
+
+        expect(($this->suggest)('@importD'))->toBe([
+            ['label' => '@importData', 'value' => '@importData/', 'data' => ['hint' => $this->sourceRoot.'/resources'], 'continues' => true],
+        ]);
+    });
+
+    it('goes on into the folder an alias names', function () {
+        Aliases::set('@importData', $this->sourceRoot.'/resources');
+
+        expect(array_column(($this->suggest)('@importData/ne'), 'value'))->toBe(['@importData/nested/']);
+    });
+
+    it('doesn’t follow a path out of the folder it starts in', function () {
+        expect(($this->suggest)('./resources/../'))->toBe([]);
+    });
+
+    it('doesn’t suggest anything inside a system folder', function () {
+        expect(($this->suggest)('@vendor/'))->toBe([]);
+    });
+
+    it('adds the triggers to the Data Source field', function () {
+        $response = $this->postJson(action([ImportPlansController::class, 'stepSettings']), [
+            'step' => ($this->entryStep)(),
+        ])->assertOk();
+
+        $source = collect($response->json('ui.nodes'))->first(fn (array $node) => ($node['control']['path'] ?? null) === ['source']);
+
+        expect(array_column($source['control']['props']['textExpanderTriggers'], 'trigger'))->toBe(['./', '@']);
+    });
+});
+
+it('forbids data source suggestions without permission to save import plans', function () {
+    actingAs(UserModel::factory()->withPermissions(['accessCp', 'viewImportPlans'])->createElement());
+
+    $this->getJson(action([ImportPlansController::class, 'sourceSuggestions'], ['query' => './']))->assertForbidden();
 });
