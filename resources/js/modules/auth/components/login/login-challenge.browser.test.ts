@@ -73,3 +73,27 @@ it.each([
     expect((window as {smsReady?: boolean}).smsReady).toBe(true);
   }
 );
+
+it('reports a legacy auth method it can’t wire up, rather than hanging', async () => {
+  // No `createAuthFormHandler`: the Yii2 adapter isn't on the page.
+  vi.stubGlobal('Craft', {initUiElements: vi.fn()});
+
+  const data: TwoFactorData = {
+    authForm: '<form class="sms-form"><input name="code"></form>',
+    headHtml: '',
+    bodyHtml: '',
+    returnUrl: '/admin/dashboard',
+    authMethod: 'plugin\\auth\\Sms',
+    otherMethods: [],
+  };
+  const challenge = document.createElement('craft-login-challenge');
+  challenge.data = data;
+  const failures: string[] = [];
+  challenge.addEventListener('login-failed', (event) =>
+    failures.push((event as CustomEvent<{message: string}>).detail.message)
+  );
+  document.body.append(challenge);
+
+  await vi.waitFor(() => expect(failures).toHaveLength(1));
+  expect(failures[0]).toContain('isn’t available here');
+});

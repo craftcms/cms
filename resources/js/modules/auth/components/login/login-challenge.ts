@@ -90,8 +90,18 @@ export default class CraftLoginChallenge extends LitElement {
     }
     initLegacyUi($authForm);
 
-    // Auth methods registered with the Yii2 adapter's legacy handler API
-    Craft.createAuthFormHandler?.(
+    // Auth methods registered with the Yii2 adapter's legacy handler API.
+    // Without the adapter on the page there's nothing to wire the form up, so
+    // say so rather than leaving its submit button spinning forever.
+    if (typeof Craft.createAuthFormHandler !== 'function') {
+      this.#dispatchLoginFailed(
+        t('This authentication method isn’t available here.')
+      );
+
+      return;
+    }
+
+    Craft.createAuthFormHandler(
       this.data.authMethod,
       $authForm,
       () => {
