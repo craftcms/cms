@@ -678,38 +678,45 @@ class Gc extends Component
     {
         $this->_stdout('    > deleting orphaned foreign key rows ... ');
 
-        // Disable FK checks
-        try {
-            $this->db->transaction(function() {
-                $this->db->createCommand()->checkIntegrity(false)->execute();
-            });
-            $disabledFkChecks = true;
-        } catch (DbException) {
-            // the DB user probably didn't have permission
-            // see https://github.com/craftcms/cms/issues/15063#issuecomment-2194059768
-            $disabledFkChecks = false;
+        $isMysql = $this->db->getIsMysql();
+        $disabledFkChecks = false;
+
+        // Disable FK checks on MySQL, where they only apply to this session.
+        // On PostgreSQL, this disables triggers on every table for all connections,
+        // and they would stay disabled if the request died before re-enabling them.
+        // (https://github.com/craftcms/cms/issues/20386)
+        if ($isMysql) {
+            try {
+                $this->db->transaction(function() {
+                    $this->db->createCommand()->checkIntegrity(false)->execute();
+                });
+                $disabledFkChecks = true;
+            } catch (DbException) {
+                // the DB user probably didn't have permission
+                // see https://github.com/craftcms/cms/issues/15063#issuecomment-2194059768
+            }
         }
 
-        $isMysql = $this->db->getIsMysql();
-        foreach ($this->db->getSchema()->getTableSchemas() as $table) {
-            /** @var TableSchema $table */
-            $extendedFkInfo = $table->getExtendedForeignKeys();
-            $counter = 0;
-            foreach ($table->foreignKeys as $fk) {
-                if ($extendedFkInfo[$counter]['deleteType'] === 'CASCADE') {
-                    $fk = array_merge($fk);
-                    $refTable = array_shift($fk);
+        try {
+            foreach ($this->db->getSchema()->getTableSchemas() as $table) {
+                /** @var TableSchema $table */
+                $extendedFkInfo = $table->getExtendedForeignKeys();
+                $counter = 0;
+                foreach ($table->foreignKeys as $fk) {
+                    if ($extendedFkInfo[$counter]['deleteType'] === 'CASCADE') {
+                        $fk = array_merge($fk);
+                        $refTable = array_shift($fk);
 
-                    foreach ($fk as $fkColumn => $pkColumn) {
-                        if ($isMysql) {
-                            $sql = <<<SQL
+                        foreach ($fk as $fkColumn => $pkColumn) {
+                            if ($isMysql) {
+                                $sql = <<<SQL
 DELETE t.* FROM $table->name t
 LEFT JOIN $refTable t2 ON t2.$pkColumn = t.$fkColumn
 WHERE t.$fkColumn IS NOT NULL
 AND t2.$pkColumn IS NULL
 SQL;
-                        } else {
-                            $sql = <<<SQL
+                            } else {
+                                $sql = <<<SQL
 DELETE FROM $table->name t
 WHERE t."$fkColumn" IS NOT NULL
 AND NOT EXISTS (
@@ -717,19 +724,20 @@ AND NOT EXISTS (
     WHERE "$pkColumn" = t."$fkColumn"
 )
 SQL;
+                            }
+
+                            $this->db->createCommand($sql)->execute();
                         }
-
-                        $this->db->createCommand($sql)->execute();
                     }
+
+                    $counter++;
                 }
-
-                $counter++;
             }
-        }
-
-        // Re-enable FK checks
-        if ($disabledFkChecks) {
-            $this->db->createCommand()->checkIntegrity(true)->execute();
+        } finally {
+            // Re-enable FK checks
+            if ($disabledFkChecks) {
+                $this->db->createCommand()->checkIntegrity(true)->execute();
+            }
         }
 
         $this->_stdout("done\n", Console::FG_GREEN);
