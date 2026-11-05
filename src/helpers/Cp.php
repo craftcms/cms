@@ -2663,10 +2663,9 @@ JS, [
      *          - for countries that don't use administrativeArea field; that's the case with Andorra
      *      - it could be the country code and the administrative area code
      *          - for countries that use both administrative areas and localities; e.g. Chile (Chile => Araucania > Carahue)
-     *          - the administrative area can be passed as null too;
-     *              this will be triggered for the United Kingdom (GB), where you can conditionally turn on administrativeArea;
-     *              in the case of GB, not passing null as the second value would result
-     *              in the administrativeAreas list being returned for the locality field (https://github.com/craftcms/cms/issues/15551);
+     *          - the administrative area can be passed as null too, if one hasn't been selected yet;
+     *              passing just the country code would result in the administrativeAreas list
+     *              being returned for the locality field (https://github.com/craftcms/cms/issues/15551);
      *
      * For the dependentLocality:
      *      - as above but taking locality into consideration too; e.g. China has all 3 levels of subdivisions and has lists for all 3 of them
