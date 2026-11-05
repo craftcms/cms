@@ -47,6 +47,7 @@ use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
 use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\gql\interfaces\elements\User as UserInterface;
+use craft\gql\mutations\Address as AddressMutation;
 use craft\gql\mutations\Asset as AssetMutation;
 use craft\gql\mutations\Category as CategoryMutation;
 use craft\gql\mutations\Entry as EntryMutation;
@@ -1717,6 +1718,7 @@ class Gql extends Component
     {
         $mutationList = [
             // Mutations
+            AddressMutation::getMutations(),
             PingMutation::getMutations(),
             EntryMutation::getMutations(),
             TagMutation::getMutations(),
@@ -2119,7 +2121,29 @@ class Gql extends Component
             }
         }
 
-        return [$queryComponents, []];
+        // Anyone can reach the address mutations. Who can change which address is up to the address’s owner
+        $mutationComponents = [
+            'addresses.all:edit' => [
+                'label' => Craft::t('app', 'Edit addresses'),
+                'authenticated' => true,
+                'info' => Craft::t('app', 'Adds “{save}” and “{delete}” mutations. Authenticated users can change their own addresses, and addresses of users they can edit.', [
+                    'save' => 'save_Address',
+                    'delete' => 'deleteAddress',
+                ]),
+                'nested' => [
+                    'addresses.all:save' => [
+                        'label' => Craft::t('app', 'Save addresses'),
+                        'authenticated' => true,
+                    ],
+                    'addresses.all:delete' => [
+                        'label' => Craft::t('app', 'Delete addresses'),
+                        'authenticated' => true,
+                    ],
+                ],
+            ],
+        ];
+
+        return [$queryComponents, $mutationComponents];
     }
 
     /**

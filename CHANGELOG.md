@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added the `save_Address` and `deleteAddress` GraphQL mutations, enabled via new “Edit addresses” schema components. Authenticated users can add, update, and delete their own addresses, as well as the addresses of users they can edit.
 - Renamed Craft’s MCP tools to use snake_case names, such as `elements_list` instead of `elements.list` and `craft_query` instead of `craft-query`, because VS Code, claude.ai, and other MCP clients reject or rename tools with dots in their names. Public MCP server approvals are updated automatically. Plugins should name their MCP tools the same way, such as `my_plugin_orders_list`. ([#20351](https://github.com/craftcms/cms/issues/20351))
 - The **My Account** → **Tokens** screen is now only shown to admins when OAuth signing keys haven’t been set up yet, and explains how to set them up, rather than failing with a server error when a token is created. ([#20357](https://github.com/craftcms/cms/issues/20357))
 - Fixed a bug where MCP clients couldn’t sign in when the control panel had its own domain and no `cpTrigger`. ([#20353](https://github.com/craftcms/cms/issues/20353))
