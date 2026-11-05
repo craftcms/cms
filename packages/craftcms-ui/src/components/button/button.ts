@@ -125,6 +125,15 @@ function unwatchFieldsets(root: Node, sync: () => void): void {
   }
 }
 
+/** Runs a callback once the browser is idle, or in the next task without `requestIdleCallback`. */
+function whenIdle(callback: () => void): void {
+  if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(callback);
+  } else {
+    setTimeout(callback);
+  }
+}
+
 /**
  * @summary Interactive element that triggers an action or event.
  * @since 1.0
@@ -454,8 +463,7 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
       this.#syncContent();
       this._hostLabel = this.getAttribute('aria-label');
       if (this.hasUpdated) {
-        // After the anchor has rendered the label it may have just taken.
-        void this.updateComplete.then(() => this.#checkAccessibleName());
+        this.#scheduleNameCheck();
       }
     });
     this.#contentObserver.observe(this, {
@@ -469,7 +477,7 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
     // Moved while it was still waiting to be shown: disconnecting dropped the
     // observer, so pick the wait back up rather than never judging it.
     if (this.hasUpdated && !this._accessibleName.trim()) {
-      this.#checkAccessibleName();
+      this.#scheduleNameCheck();
     }
   }
 
@@ -751,17 +759,27 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
     }
   }
 
-  override async firstUpdated(changedProperties: Map<string, any>) {
+  override firstUpdated(changedProperties: Map<string, any>) {
     super.firstUpdated(changedProperties);
+    this.#scheduleNameCheck();
+  }
 
-    await this.updateComplete;
+  /**
+   * Checks the name once the browser is idle. Computing it reads styles, which
+   * would restyle the page once per button while it's still rendering. By
+   * then the button's icons have rendered, and so has the anchor, with any
+   * label it has just taken.
+   */
+  #scheduleNameCheck(): void {
+    if (this.#nameCheckScheduled) {
+      return;
+    }
 
-    const childComponents = this.querySelectorAll('craft-icon, craft-spinner');
-    await Promise.all(
-      Array.from(childComponents).map((child: any) => child.updateComplete)
-    );
-
-    this.#checkAccessibleName();
+    this.#nameCheckScheduled = true;
+    whenIdle(() => {
+      this.#nameCheckScheduled = false;
+      this.#checkAccessibleName();
+    });
   }
 
   /**
@@ -951,6 +969,9 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
   #shortcutAriaKeys: string | null = null;
 
   #contentObserver: MutationObserver | null = null;
+
+  /** Whether a name check is waiting for the browser to be idle. */
+  #nameCheckScheduled = false;
 
   /** Waits for a hidden button to be shown before judging its name. */
   #renderObserver: ResizeObserver | null = null;

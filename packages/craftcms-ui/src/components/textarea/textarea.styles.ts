@@ -17,4 +17,17 @@ export default css`
     line-height: var(--leading-normal);
     resize: vertical;
   }
+
+  @supports (field-sizing: content) {
+    /* Matches the selector that makes the textarea content-box. */
+    .input-group__container > .input-group__input ::slotted([slot='input']) {
+      box-sizing: border-box;
+      --_block-offset: calc(
+        2 * (var(--c-spacing-md, 0px) + var(--_input-border-width, 0px))
+      );
+      field-sizing: content;
+      min-block-size: calc(var(--_rows) * 1lh + var(--_block-offset));
+      max-block-size: calc(var(--_max-rows) * 1lh + var(--_block-offset));
+    }
+  }
 `;

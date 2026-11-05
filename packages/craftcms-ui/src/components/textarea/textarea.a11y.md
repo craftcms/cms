@@ -18,7 +18,7 @@ Shares `FormControl` with `craft-input`; see `input.a11y.md` for label, help tex
 
 ### Reflow and zoom
 
-- [ ] The textarea grows with its content up to `max-rows` (6 by default), then scrolls, so no text is clipped at 200% zoom or a 320px viewport. Per WCAG 1.4.4 (Resize Text) and 1.4.10 (Reflow). Not yet verified.
+- [x] The textarea is at least `rows` tall and grows with its content up to `max-rows` (30 by default, or without limit with `none`), then scrolls, so no text is clipped. Per WCAG 1.4.4 (Resize Text) and 1.4.10 (Reflow). Verified by `is as tall as its rows when it holds less`, `grows with its content`, `stops growing at max-rows`, `keeps growing when max-rows is none`, `scrolls the content that doesn’t fit once it stops growing` and `grows as text is typed into it` in `textarea.browser.test.ts`.
 - [ ] The resize handle stays available, and a manual resize turns auto-grow off so the next keystroke doesn't undo it. Per WCAG 1.4.4 (Resize Text). Not yet verified. The drag is still capped at the `max-rows` height.
 
 ## Depends on usage
