@@ -52,7 +52,9 @@ it('unlinks directory symlinks without deleting their targets', function () {
         expect(is_link($link))->toBeFalse()
             ->and(File::exists("$target/keep.txt"))->toBeTrue();
     } finally {
-        @unlink($link);
+        if (is_link($link)) {
+            PHP_OS_FAMILY === 'Windows' ? rmdir($link) : unlink($link);
+        }
         File::deleteDirectory($target);
     }
 });
