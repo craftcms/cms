@@ -153,7 +153,9 @@ it('reads value() from the first element', function () {
         ->and($query()->value('postDate'))->toBeInstanceOf(DateTimeInterface::class)
         ->and($query()->id($b->id)->soleValue('teaser'))->toBe('Teaser B')
         ->and($query()->id(-1)->value('title'))->toBeNull()
-        ->and(fn () => $query()->id(-1)->valueOrFail('title'))->toThrow(ElementNotFoundException::class);
+        ->and(fn () => $query()->id(-1)->valueOrFail('title'))->toThrow(ElementNotFoundException::class)
+        ->and($query()->select(['title', 'teaser'])->asArray()->get()->map(fn (array $row) => [$row['title'], $row['teaser']])->all())
+        ->toBe([['A', 'Teaser A'], ['B', 'Teaser B']]);
 });
 
 it('plucks and aggregates mapped columns and custom fields', function () {

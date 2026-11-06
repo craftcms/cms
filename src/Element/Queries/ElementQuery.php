@@ -1610,19 +1610,15 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             } else {
                 // Is this a mapped column name?
                 if (is_string($column) && $this->hasColumnMapping($column)) {
-                    $column = $this->resolveColumnMapping($column);
+                    $mapped = $this->resolveColumnMapping($column);
 
                     // Completely ditch the mapped name if instantiated elements are going to be returned
-                    if (! $this->asArray && is_string($column)) {
-                        $alias = $column;
+                    if (! $this->asArray && is_string($mapped)) {
+                        $alias = $mapped;
                     }
                 }
 
-                if (is_array($column)) {
-                    $select[] = new Alias(new Coalesce($column), $alias);
-                } else {
-                    $select[] = new Alias($column, $alias);
-                }
+                $select[] = new Alias($this->resolveColumn($column), $alias);
             }
         }
 
