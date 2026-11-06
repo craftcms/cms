@@ -50,11 +50,23 @@ Some files contain Unicode characters in comments and strings. If a text edit fa
 
 ## CI skip markers
 
+Decide this for every commit before you make it, including commits in a
+worktree or on another branch. Once a commit is pushed, the marker can't be
+added without rewriting history.
+
 For commits touching only genuinely inconsequential, nonfunctional files, put
-`[ci skip]` at the end of the extended commit message (the commit body). Judge
-eligibility by the actual effect, not filenames alone. Code, dependencies,
-executable configuration, workflows, and behavior-changing generated artifacts
-are not eligible.
+`[ci skip]` on its own line at the end of the extended commit message (the
+commit body), before trailers such as `Co-Authored-By`. Judge eligibility by
+the actual effect, not filenames alone. Code, dependencies, executable
+configuration, workflows, and behavior-changing generated artifacts are not
+eligible.
+
+Commits that are usually eligible:
+
+- Release notes only: `CHANGELOG.md` and `CHANGELOG-WIP.md`.
+- Documentation and code comments only.
+- Agent instructions, rules and skills only: `AGENTS.md`, `.ai/`, `.agents/`
+  and `.claude/`, including scripts that only agents run.
 
 Skip markers can leave required checks pending and do not establish green CI.
 Never use them to evade required checks, merged-result verification, or merge
