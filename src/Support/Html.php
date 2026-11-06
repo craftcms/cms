@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Support;
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Http\Middleware\PreventRequestForgery;
 use CraftCms\Cms\Image\SvgAllowedAttributes;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -207,9 +208,14 @@ class Html
      *
      * Printing the token saves the visitor’s session and marks the response `no-cache`. Forms posted from
      * the same origin don’t need one, as `PreventRequestForgery` accepts them by their `Sec-Fetch-Site` or `Origin` header.
+     * Nothing is printed when `PreventRequestForgery::useOriginOnly()` is enabled, as tokens are never checked then.
      */
     public static function csrfInput(): string
     {
+        if (PreventRequestForgery::checksOriginOnly()) {
+            return '';
+        }
+
         ResponseHeaders::noCache();
 
         return (string) csrf_field();

@@ -211,7 +211,7 @@
 - Added the `{% render %}` Twig tag. `{% render %}` tags and `render()` methods are allowed within the Twig sandbox. ([#19988](https://github.com/craftcms/cms/pull/19988))
 - Templates can now choose white or black text for legibility over an image or one of its edges, with `asset.analysis.colors.textColor()`, which also gives the text’s contrast ratio. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Front-end forms no longer need CSRF tokens. POST requests that browsers mark with a `Sec-Fetch-Site: same-origin` header are accepted without one, as are requests without `Sec-Fetch-Site` whose `Origin` header matches the site’s scheme and host, such as from plain-HTTP local dev sites like `http://my-site.test`. `csrfInput()` calls should be removed from front-end templates and plugin-rendered forms, as printing a CSRF token saves the visitor’s session and marks the page `no-cache`, so shared caches can’t store it. Keep them only to support clients that send neither header. Token-less form submissions from those clients get a 419 response.
-- `csrfInput()` now always prints a CSRF input, and no longer accepts an `async` option or tag attributes.
+- `csrfInput()` no longer accepts an `async` option or tag attributes. It prints nothing when request forgery checks are origin-only, such as with `$middleware->preventRequestForgery(originOnly: true)`, as CSRF tokens are never checked then, so pages with plugin-rendered forms stay cacheable.
 
 #### GraphQL
 - GraphQL schemas can now include read-only components for sites, sections, entry types, volumes, and user groups, which add `site` fields to elements, `volume` fields to assets, and `groups` fields to users. ([#20055](https://github.com/craftcms/cms/pull/20055))

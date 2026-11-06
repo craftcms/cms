@@ -23,6 +23,14 @@ use Override;
 class PreventRequestForgery extends LaravelMiddleware
 {
     /**
+     * Whether requests are checked by their origin alone, set by {@see useOriginOnly()}, so CSRF tokens are never checked.
+     */
+    public static function checksOriginOnly(): bool
+    {
+        return static::$originOnly;
+    }
+
+    /**
      * @param  Request  $request
      */
     #[Override]
