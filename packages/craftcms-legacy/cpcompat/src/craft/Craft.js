@@ -1967,7 +1967,9 @@ Garnish.$scrollContainer = Garnish.$win;
 
 if (typeof BroadcastChannel !== 'undefined') {
   const channelName = `CraftCMS:${Craft.appId}`;
-  Craft.broadcaster = new BroadcastChannel(channelName);
+  // The control panel may have opened it already, to send its own messages
+  // through. Listeners on it only hear other tabs.
+  Craft.broadcaster ??= new BroadcastChannel(channelName);
   Craft.messageReceiver = new BroadcastChannel(channelName);
 
   Craft.messageReceiver.addEventListener('message', (ev) => {
