@@ -32,7 +32,7 @@ describe('input-password', function () {
             ->and($html)->toContain('type="password"');
     });
 
-    it('carries the host name for Lion upgrade, like craft-input', function () {
+    it('carries the host name, like craft-input', function () {
         $html = InputPassword::make()->id('p')->name('newPassword')->toHtml();
 
         expect($html)->toContain('<craft-input-password name="newPassword">');

@@ -14,14 +14,14 @@ async function createInput(
   element.innerHTML = innerHTML;
   document.body.append(element);
   await element.updateComplete;
-  // Lion wires the label and feedback relations after its own first update,
-  // so give it a turn before reading them.
+  // The label and feedback relations are wired after the first update, so
+  // give them a turn before reading them.
   await new Promise((resolve) => setTimeout(resolve, 0));
   await element.updateComplete;
   return element;
 }
 
-/** Lion's native input, which is the element the component drives. */
+/** The native input, which is the element the component drives. */
 function native(element: CraftInput): HTMLInputElement {
   return element.querySelector('input')!;
 }

@@ -356,7 +356,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
     // replace flow still needs it, so reveal it for the duration of the
     // choose and let #updateButtons() recompute the hidden state once the
     // menu closes. (The legacy jQuery menu re-anchored itself to the chip
-    // instead; Lion's dropdown anchors to the invoker.)
+    // instead; the action menu anchors to its invoker.)
     if (menu.classList.contains('hidden')) {
       menu.classList.remove('hidden');
       menu
@@ -1114,10 +1114,8 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
   // --- Choose menu (craft-action-menu) ----------------------------------------
 
   /**
-   * The Choose menu's option elements. A descendant query on the menu host —
-   * not `[slot="content"] >` — because Lion's overlay controller relocates the
-   * content node inside its wrapper (dropping the `slot` attribute) once the
-   * overlay boots.
+   * The Choose menu's option elements, at whatever depth the menu's content
+   * holds them.
    */
   #options(): HTMLElement[] {
     if (!this.#menu) {
@@ -1187,8 +1185,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
     chip: HTMLElement | null
   ): void {
     // Append beside an existing option when there is one; otherwise fall back
-    // to the content container (which may have lost its `slot` attribute to
-    // Lion's relocation, hence the two-step lookup).
+    // to the content container.
     const container =
       this.#options().pop()?.parentElement ??
       this.#menu?.querySelector<HTMLElement>('[slot="content"]');

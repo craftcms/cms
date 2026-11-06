@@ -469,8 +469,8 @@ export function useBlockCreation(options: BlockCreationOptions) {
    * Deferred a tick on purpose. Changing sortOrder rebuilds the field,
    * which tears the whole subtree down and rebuilds it — and the button that was
    * clicked lives in there. Doing that while its click is still dispatching
-   * leaves Vue patching against DOM a Lion overlay inside a block has already
-   * moved, which throws `insertBefore` on null and takes the ui down with it.
+   * leaves Vue patching against DOM an action menu inside a block has already
+   * restructured, which throws `insertBefore` on null and takes the ui down with it.
    */
   async function insertBlocks(
     blocks: ReadonlyArray<CreatedBlock | {uid: string; type: string}>,
