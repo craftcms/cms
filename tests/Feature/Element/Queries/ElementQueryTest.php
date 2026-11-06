@@ -181,6 +181,38 @@ it('plucks and aggregates mapped columns and custom fields', function () {
         ->and($query()->max('dateCreated'))->not->toBeNull();
 });
 
+it('resolves mapped columns and custom fields in where clauses and groupBy', function () {
+    $result = EntryModel::factory()
+        ->withField('teaser', PlainText::class, value: 'Alpha AI')
+        ->withField('num', Number::class, value: 5)
+        ->createElementWithFields();
+    $alpha = $result->element;
+    $layout = FieldLayout::factory()->forField($result->fields->get('teaser'))->forField($result->fields->get('num'));
+    $entries = [$alpha];
+
+    foreach ([['Beta', 20], ['Gamma AI', 10], [null, 10]] as [$teaser, $num]) {
+        $entry = EntryModel::factory()->withFieldLayout($layout)->createElement();
+        $entry->setFieldValue('teaser', $teaser);
+        $entry->setFieldValue('num', $num);
+        Elements::saveElement($entry);
+        $entries[] = $entry;
+    }
+
+    [$alpha, $beta, $gamma, $empty] = array_column($entries, 'id');
+    $query = fn () => entryQuery()->id([$alpha, $beta, $gamma, $empty])->orderBy('elements.id');
+
+    expect($query()->where('id', $beta)->ids())->toBe([$beta])
+        ->and($query()->whereIn('id', [$alpha, $gamma])->ids())->toBe([$alpha, $gamma])
+        ->and($query()->where('teaser', 'Beta')->ids())->toBe([$beta])
+        ->and($query()->whereLike('teaser', '%AI%')->ids())->toBe([$alpha, $gamma])
+        ->and($query()->where('num', '>', 7)->ids())->toBe([$beta, $gamma, $empty])
+        ->and($query()->whereAny(['title', 'teaser'], 'like', 'Gamma%')->ids())->toBe([$gamma])
+        ->and($query()->whereNull('teaser')->ids())->toBe([$empty])
+        ->and($query()->where(fn ($query) => $query->where('num', 5)->orWhere('teaser', 'Beta'))->ids())->toBe([$alpha, $beta])
+        ->and($query()->whereColumn('dateCreated', '<=', 'dateUpdated')->count())->toBe(4)
+        ->and($query()->groupBy('num')->reorder('num')->pluck('num')->map(fn ($num) => (int) $num)->all())->toBe([5, 10, 20]);
+});
+
 it('ignores inner query pagination when getting a pagination count', function () {
     EntryModel::factory(5)->create();
 

@@ -1451,11 +1451,65 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
         $this->elementQueryBeforeQuery();
 
+        $this->query->wheres = [
+            ...$this->resolveWhereColumns(array_slice($this->query->wheres, 0, $originalWhereCount)),
+            ...array_slice($this->query->wheres, $originalWhereCount),
+        ];
+
         if (count($this->query->wheres) > $originalWhereCount) {
             $this->addNewWheresWithinGroup($originalWhereCount);
         }
 
         $this->convertDateBindingsToUtc();
+    }
+
+    /**
+     * Resolves the columns in where clauses through the column map, so they can name custom fields
+     * and columns that several joined tables share, as orderBy() and select() can.
+     *
+     * Subqueries select from their own tables, and Laravel’s JSON where clauses need real columns,
+     * so neither is resolved.
+     *
+     * @param  array<int, array<string, mixed>>  $wheres
+     * @return array<int, array<string, mixed>>
+     */
+    private function resolveWhereColumns(array $wheres): array
+    {
+        return array_map(function (array $where) {
+            $type = $where['type'] ?? '';
+
+            if ($type === 'Nested') {
+                $where['query'] = clone $where['query'];
+                $where['query']->wheres = $this->resolveWhereColumns($where['query']->wheres);
+
+                return $where;
+            }
+
+            if (str_starts_with($type, 'Json') || $type === 'Fulltext') {
+                return $where;
+            }
+
+            foreach (['column', 'first', 'second'] as $key) {
+                if (isset($where[$key]) && (is_string($where[$key]) || $where[$key] instanceof Expression)) {
+                    $where[$key] = $this->resolveColumn($where[$key]);
+                }
+            }
+
+            // Laravel’s MySQL grammar mistakes a JSON extraction in a null check for a JSON path, so compile it as raw SQL
+            if (in_array($type, ['Null', 'NotNull'], true) && $where['column'] instanceof Expression) {
+                return [
+                    'type' => 'raw',
+                    'sql' => $where['column']->getValue($this->query->getGrammar()).($type === 'Null' ? ' is null' : ' is not null'),
+                    'boolean' => $where['boolean'],
+                ];
+            }
+
+            if ($type === 'RowValues') {
+                $where['columns'] = array_map($this->resolveColumn(...), $where['columns']);
+            }
+
+            return $where;
+        }, $wheres);
     }
 
     /**
@@ -1519,7 +1573,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         $this->applySelectParams();
 
         if ($this->query->groups) {
-            $this->query->groups = array_map($this->sqlColumn(...), $this->query->groups);
+            $this->query->groups = array_map(fn ($column) => $this->resolveColumn($this->sqlColumn($column)), $this->query->groups);
         }
 
         // If the query isn't sourced from a concrete element table, explicitly filter by element type.
