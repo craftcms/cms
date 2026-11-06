@@ -211,6 +211,7 @@
 - Added the `{% render %}` Twig tag. `{% render %}` tags and `render()` methods are allowed within the Twig sandbox. ([#19988](https://github.com/craftcms/cms/pull/19988))
 - Templates can now choose white or black text for legibility over an image or one of its edges, with `asset.analysis.colors.textColor()`, which also gives the text’s contrast ratio. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Front-end forms no longer need CSRF tokens, as POST requests that browsers mark with a `Sec-Fetch-Site: same-origin` header are accepted without one. `csrfInput()` calls should be removed from front-end templates and plugin-rendered forms, as printing a CSRF token saves the visitor’s session and marks the page `no-cache`, so shared caches can’t store it. Keep them only to support browsers that don’t send `Sec-Fetch-Site`, such as Safari before 16.4, or sites served over plain HTTP from a host other than `localhost`. Token-less form submissions from those browsers get a 419 response.
+- `csrfInput()` now always prints a CSRF input, and no longer accepts an `async` option or tag attributes.
 
 #### GraphQL
 - GraphQL schemas can now include read-only components for sites, sections, entry types, volumes, and user groups, which add `site` fields to elements, `volume` fields to assets, and `groups` fields to users. ([#20055](https://github.com/craftcms/cms/pull/20055))
@@ -240,6 +241,7 @@
 - Deprecated the `testToEmailAddress` general config setting. `Illuminate\Support\Facades\Mail::alwaysTo()` should be used instead.
 - Deprecated the `blowfishHashCost` general config setting in favor of Laravel's `hashing.bcrypt.rounds` config or the `BCRYPT_ROUNDS` environment variable.
 - Deprecated the `csrfTokenName`, `enableCsrfCookie`, and `enableCsrfProtection` general config settings. ([#18806](https://github.com/craftcms/cms/pull/18806))
+- Deprecated the `asyncCsrfInputs` general config setting. It no longer has any effect, as front-end forms don’t need CSRF inputs.
 - Deprecated `craft.app.config.general` in Twig. `app.config.craft.general` should be used instead.
 - Deprecated `craft.app.userPermissions`. `craft.userPermissions` should be used instead.
 - Deprecated `asset.setTransform()`. `asset.transform()` should be used instead. With the Yii adapter installed, `setTransform()` still works on assets returned by Assets fields and asset queries, but the transform only applies to the asset’s URL, not its width, height, or `getImg()` output. ([#20191](https://github.com/craftcms/cms/pull/20191))

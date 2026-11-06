@@ -64,6 +64,13 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     }
 
     /**
+     * @var bool Whether CSRF values should be injected via JavaScript for greater cache-ability.
+     *
+     * @deprecated in 6.0.0. Front-end forms don’t need CSRF inputs, as POST requests with a `Sec-Fetch-Site: same-origin` header are accepted without one.
+     */
+    public bool $asyncCsrfInputs = false;
+
+    /**
      * @var bool Whether Craft image transforms should be generated before page load.
      *
      * @deprecated in 6.0.0. Configure immediate generation on the Craft asset transformer instead.
@@ -588,6 +595,28 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     public function isSystemLive(?bool $value): self
     {
         $this->isSystemLive = $value;
+
+        return $this;
+    }
+
+    /**
+     * Whether CSRF values should be injected via JavaScript for greater cache-ability.
+     *
+     * ```php
+     * ->asyncCsrfInputs(true)
+     * ```
+     *
+     * @group Security
+     *
+     * @see $asyncCsrfInputs
+     * @since 5.1.0
+     */
+    #[Deprecated(message: 'in 6.0.0. This setting no longer has any effect.')]
+    public function asyncCsrfInputs(bool $value = true): self
+    {
+        app()->booting(fn() => Deprecator::log('generalConfig.asyncCsrfInputs', 'Calling asyncCsrfInputs() is deprecated. This setting no longer has any effect, as front-end forms don’t need CSRF inputs.'));
+
+        $this->asyncCsrfInputs = $value;
 
         return $this;
     }
