@@ -15,9 +15,10 @@ export default css`
       --c-callout-padding-inline,
       var(--c-spacing-sm)
     );
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, max-content);
+    display: flex;
+    flex-wrap: wrap;
     align-items: start;
+    row-gap: var(--c-spacing-sm);
     padding-block: var(--_callout-padding-block);
     padding-inline: var(--_callout-padding-inline);
     border: 1px solid transparent;
@@ -27,9 +28,10 @@ export default css`
 
   .callout__body {
     display: flex;
+    flex: 1 1 0;
     align-items: start;
     align-self: center;
-    min-width: 0;
+    min-inline-size: min(16rem, 100%);
   }
 
   .callout__text {
@@ -64,6 +66,8 @@ export default css`
   }
 
   .callout__action {
+    flex: 0 1 auto;
+    min-width: 0;
     margin-inline-start: auto;
   }
 
