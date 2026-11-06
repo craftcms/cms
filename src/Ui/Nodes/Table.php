@@ -131,7 +131,9 @@ class Table implements Node
      *
      * A link with `'slideout' => true` opens its URL's screen in a slideout, and reloads the
      * table once that screen is saved. `'slideoutWidth'` sets that slideout's width as a CSS
-     * length (e.g. `'85vw'`).
+     * length (e.g. `'85vw'`). `'refreshOnClose' => true` also reloads the table when the
+     * slideout closes, for a screen whose changes are made by actions within it rather than
+     * its save. A table inside a slideout reloads that slideout's screen, not the page behind it.
      *
      * Double-clicking a row opens its slideout link, if it has one, the way clicking it would.
      *
