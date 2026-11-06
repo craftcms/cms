@@ -781,7 +781,6 @@ return [
     'This asset transformer cannot be deleted because it is assigned to a volume.' => 'This asset transformer cannot be deleted because it is assigned to a volume.',
     'This asset transformer cannot be deleted because it is configured as the default.' => 'This asset transformer cannot be deleted because it is configured as the default.',
     'This asset transformer cannot be deleted because it is registered in code.' => 'This asset transformer cannot be deleted because it is registered in code.',
-    'This asset transformer is registered in code and cannot be edited.' => 'This asset transformer is registered in code and cannot be edited.',
     'This asset transformer’s driver is unavailable.' => 'This asset transformer’s driver is unavailable.',
     'This asset transformer’s driver is unavailable. Select an available driver to save it.' => 'This asset transformer’s driver is unavailable. Select an available driver to save it.',
     'This column type has no settings.' => 'This column type has no settings.',

@@ -66,6 +66,18 @@ class AssetTransformers
         private readonly AssetTransformDrivers $transformDrivers,
     ) {
         $this->validatedParameters = new WeakMap;
+        $this->registeredTransformers[self::CRAFT_TRANSFORMER_UID] = new AssetTransformer([
+            'uid' => self::CRAFT_TRANSFORMER_UID,
+            'name' => 'Craft',
+            'handle' => 'craft',
+            'driver' => 'craft',
+            'settings' => [
+                'disk' => null,
+                'hasUrls' => false,
+                'subpath' => null,
+                'generateTransformsBeforePageLoad' => false,
+            ],
+        ]);
 
         $this->parameterRules = [
             'fill' => ['string'],
@@ -122,8 +134,9 @@ class AssetTransformers
     /**
      * Registers an asset transformer profile in code rather than project config.
      *
-     * Registered profiles are listed and resolved alongside project config profiles, but can’t be edited or deleted
-     * through Craft. They replace any project config profile with the same UID or handle.
+     * The registered profile’s name, handle, and driver are fixed, and its settings are defaults. Saving the profile
+     * stores settings overrides in project config, keyed by its UID; removing them restores the defaults. Registered
+     * profiles can’t be deleted, and they replace any project config profile with the same handle.
      *
      * @throws InvalidArgumentException if the profile is invalid, has no UID, or conflicts with another registered profile.
      */
@@ -158,21 +171,15 @@ class AssetTransformers
 
     public function saveAssetTransformer(AssetTransformer $transformer, bool $runValidation = true): bool
     {
-        if ($this->isRegisteredAssetTransformer($transformer)) {
-            $transformer->errors()->add('handle', t('This asset transformer is registered in code and cannot be edited.'));
-            $this->reset();
-
-            return false;
-        }
-
         $existing = $transformer->uid
             ? $this->getAssetTransformerByUid($transformer->uid)
             : null;
 
-        if ($existing?->handle === 'craft') {
-            $transformer->name = 'Craft';
-            $transformer->handle = 'craft';
-            $transformer->driver = 'craft';
+        if ($this->isRegisteredAssetTransformer($transformer)) {
+            $registered = $this->registeredTransformers[$transformer->uid];
+            $transformer->name = $registered->name;
+            $transformer->handle = $registered->handle;
+            $transformer->driver = $registered->driver;
         }
 
         if ($runValidation) {
@@ -230,6 +237,12 @@ class AssetTransformers
             return;
         }
 
+        if (isset($this->registeredTransformers[$uid])) {
+            $this->handleChangedRegisteredTransformer($uid, $event->oldValue, $event->newValue);
+
+            return;
+        }
+
         $newTransformer = $this->createAssetTransformer($uid, $event->newValue);
         $oldTransformer = is_array($event->oldValue)
             ? $this->createAssetTransformer($uid, $event->oldValue)
@@ -239,13 +252,6 @@ class AssetTransformers
             $this->reset();
 
             return;
-        }
-
-        if (
-            ($oldTransformer?->handle === 'craft' && $newTransformer->handle !== 'craft')
-            || ($newTransformer->handle === 'craft' && ($newTransformer->name !== 'Craft' || $newTransformer->driver !== 'craft'))
-        ) {
-            throw new AssetTransformException('The reserved [craft] asset transformer’s name, handle, and driver cannot be changed.');
         }
 
         if (
@@ -264,6 +270,12 @@ class AssetTransformers
 
         if (! is_string($uid) || ! is_array($event->oldValue)) {
             $this->reset();
+
+            return;
+        }
+
+        if (isset($this->registeredTransformers[$uid])) {
+            $this->handleChangedRegisteredTransformer($uid, $event->oldValue, null);
 
             return;
         }
@@ -415,30 +427,46 @@ class AssetTransformers
             ->filter(fn (mixed $config, mixed $uid): bool => is_string($uid) && is_array($config))
             ->map(fn (array $config, string $uid): AssetTransformer => $this->createAssetTransformer($uid, $config))
             ->reject(fn (AssetTransformer $transformer): bool => $this->isReplacedByRegisteredTransformer($transformer))
-            ->union(array_map(fn (AssetTransformer $transformer): AssetTransformer => clone $transformer, $this->registeredTransformers));
-
-        $craft = $transformers->firstWhere('handle', 'craft');
-
-        if ($craft !== null && $craft->driver !== 'craft') {
-            throw new AssetTransformException('The reserved [craft] asset transformer must use the [craft] driver.');
-        }
-
-        if ($craft === null) {
-            $transformers->put(self::CRAFT_TRANSFORMER_UID, new AssetTransformer([
-                'uid' => self::CRAFT_TRANSFORMER_UID,
-                'name' => 'Craft',
-                'handle' => 'craft',
-                'driver' => 'craft',
-                'settings' => [
-                    'disk' => null,
-                    'hasUrls' => false,
-                    'subpath' => null,
-                    'generateTransformsBeforePageLoad' => false,
-                ],
-            ]));
-        }
+            ->union(array_map(
+                fn (AssetTransformer $transformer): AssetTransformer => $this->registeredAssetTransformer(
+                    $transformer->uid,
+                    is_array($configs[$transformer->uid] ?? null) ? $configs[$transformer->uid] : null,
+                ),
+                $this->registeredTransformers,
+            ));
 
         return $this->transformers = $transformers;
+    }
+
+    /**
+     * Returns a registered profile with any stored settings overrides applied. Stored identity values are ignored.
+     *
+     * @param  array<string, mixed>|null  $config
+     */
+    private function registeredAssetTransformer(string $uid, ?array $config): AssetTransformer
+    {
+        $transformer = clone $this->registeredTransformers[$uid];
+
+        if ($config !== null) {
+            $transformer->settings = array_replace(
+                $transformer->settings,
+                $this->createAssetTransformer($uid, $config)->settings,
+            );
+        }
+
+        return $transformer;
+    }
+
+    private function handleChangedRegisteredTransformer(string $uid, mixed $oldConfig, mixed $newConfig): void
+    {
+        $oldTransformer = $this->registeredAssetTransformer($uid, is_array($oldConfig) ? $oldConfig : null);
+        $newTransformer = $this->registeredAssetTransformer($uid, is_array($newConfig) ? $newConfig : null);
+
+        if ($oldTransformer->settings !== $newTransformer->settings) {
+            event(new AssetTransformerUpdating($oldTransformer, $newTransformer));
+        }
+
+        $this->reset();
     }
 
     private function isReplacedByRegisteredTransformer(AssetTransformer $transformer): bool
@@ -475,20 +503,14 @@ class AssetTransformers
         if ($duplicate !== null) {
             $transformer->errors()->add('handle', t('The asset transformer handle has already been taken.'));
         }
-
-        if ($transformer->handle === 'craft' && $transformer->driver !== 'craft') {
-            $transformer->errors()->add('driver', t('The reserved [craft] asset transformer must use the [craft] driver.'));
-        }
     }
 
     public function getDeleteDisabledReason(AssetTransformer $transformer): ?string
     {
-        if ($transformer->handle === 'craft') {
-            return t('The Craft asset transformer cannot be deleted.');
-        }
-
         if ($this->isRegisteredAssetTransformer($transformer)) {
-            return t('This asset transformer cannot be deleted because it is registered in code.');
+            return $transformer->uid === self::CRAFT_TRANSFORMER_UID
+                ? t('The Craft asset transformer cannot be deleted.')
+                : t('This asset transformer cannot be deleted because it is registered in code.');
         }
 
         $default = Env::parse(Cms::config()->defaultAssetTransformer);

@@ -186,7 +186,6 @@ class AssetTransformersController extends BaseAssetSettingsController
 
     private function editScreen(AssetTransformer $transformer): CpScreenResponse
     {
-        $readOnly = $this->readOnly || $this->assetTransformers->isRegisteredAssetTransformer($transformer);
         $title = $transformer->uid
             ? trim($transformer->name) ?: t('Edit Asset Transformer')
             : t('Create a new asset transformer');
@@ -198,7 +197,7 @@ class AssetTransformersController extends BaseAssetSettingsController
             ->addCrumb(t('Asset Transformers'), 'settings/assets/transformers')
             ->inertiaPage('Ui', $this->viewModel($transformer))
             ->redirectUrl('settings/assets/transformers')
-            ->unless($readOnly, function (CpScreenResponse $response) {
+            ->unless($this->readOnly, function (CpScreenResponse $response) {
                 $response
                     ->addAltAction(t('Save and continue editing'), [
                         'redirect' => 'settings/assets/transformers/{handle}',
@@ -211,15 +210,13 @@ class AssetTransformersController extends BaseAssetSettingsController
     /** @param array<string, mixed>|null $values */
     private function viewModel(AssetTransformer $transformer, ?array $values = null): AssetTransformerEditViewModel
     {
-        $registered = $this->assetTransformers->isRegisteredAssetTransformer($transformer);
-
         return new AssetTransformerEditViewModel(
             $transformer,
             $this->assetTransformDrivers,
             $this->uiResolver,
-            readOnly: $this->readOnly || $registered,
+            readOnly: $this->readOnly,
             values: $values,
-            registered: $registered,
+            registered: $this->assetTransformers->isRegisteredAssetTransformer($transformer),
         );
     }
 }

@@ -249,29 +249,38 @@ it('deletes non-reserved transformers', function () {
     expect(app(AssetTransformers::class)->getAssetTransformerByHandle('disposable'))->toBeNull();
 });
 
-it('shows registered transformers as read-only', function () {
+it('saves settings overrides for registered transformers and keeps them undeletable', function () {
+    app(AssetTransformDrivers::class)->extend('controller-test', fn () => new ControllerTestAssetTransformDriver);
     app(AssetTransformers::class)->registerAssetTransformer(new AssetTransformer([
         'uid' => 'b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f',
         'name' => 'Cloud',
         'handle' => 'cloud',
-        'driver' => 'missing-driver',
+        'driver' => 'controller-test',
+        'settings' => ['endpoint' => 'https://default.example.test'],
     ]));
 
+    get(action([AssetTransformersController::class, 'edit'], ['handle' => 'cloud']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('readOnly', false)
+            ->where('ui.values.settings.endpoint', 'https://default.example.test')
+            ->etc());
+    postJson(action([AssetTransformersController::class, 'store']), [
+        'uid' => 'b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f',
+        'name' => 'Changed',
+        'handle' => 'changed',
+        'driver' => 'controller-test',
+        'settings' => ['endpoint' => 'https://custom.example.test'],
+    ])->assertOk();
     $index = get(action([AssetTransformersController::class, 'index']))->assertOk();
     $table = collect(flattenUiNodes($index->inertiaProps('ui.nodes')))->firstWhere('component', 'craft:admin-table')['props'];
     $row = collect($table['rows'])->firstWhere('id', 'b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f');
-    $edit = get(action([AssetTransformersController::class, 'edit'], ['handle' => 'cloud']))
-        ->assertOk()
-        ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('readOnly', true)
-            ->where('showReadOnlyNotice', false)
-            ->where('refreshUrl', null)
-            ->etc());
-    $callout = collect(flattenUiNodes($edit->inertiaProps('ui.nodes')))->firstWhere('uid', 'registered-transformer');
+    $saved = app(AssetTransformers::class)->getAssetTransformerByUid('b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f');
 
-    expect($row['_deletable'])->toBeFalse()
-        ->and($row['_deleteDisabledReason'])->toBe('This asset transformer cannot be deleted because it is registered in code.')
-        ->and($callout)->not->toBeNull();
+    expect([$saved->name, $saved->handle])->toBe(['Cloud', 'cloud'])
+        ->and($saved->settings)->toBe(['endpoint' => 'https://custom.example.test'])
+        ->and($row['_deletable'])->toBeFalse()
+        ->and($row['_deleteDisabledReason'])->toBe('This asset transformer cannot be deleted because it is registered in code.');
 });
 
 it('respects read-only mode', function () {

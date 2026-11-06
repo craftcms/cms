@@ -59,7 +59,8 @@ class ConfigRebuilder
         $config[ProjectConfig::PATH_SYSTEM]['schemaVersion'] = Info::fetch()->schemaVersion;
         $config[ProjectConfig::PATH_ADDRESSES] = $this->fieldLayout(Address::class);
         $config[ProjectConfig::PATH_ASSET_TRANSFORMERS] = $this->components($this->assetTransformers->getAllAssetTransformers()
-            ->reject(fn ($transformer): bool => $this->assetTransformers->isRegisteredAssetTransformer($transformer)));
+            ->reject(fn ($transformer): bool => $this->assetTransformers->isRegisteredAssetTransformer($transformer)
+                && ! isset($config[ProjectConfig::PATH_ASSET_TRANSFORMERS][$transformer->uid])));
         $config[ProjectConfig::PATH_ENTRY_TYPES] = $this->components($this->entryTypes->getAllEntryTypes());
         $config[ProjectConfig::PATH_FIELDS] = collect($this->fields->getAllFields('global'))
             ->mapWithKeys(fn ($field): array => [$field->uid => $this->fields->createFieldConfig($field)])

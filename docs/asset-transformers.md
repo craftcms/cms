@@ -99,8 +99,8 @@ different parameter sets, even when they share a driver.
 
 ## The Craft transformer
 
-Craft reserves the `craft` transformer and driver. Its name, handle, and driver cannot change, and the transformer cannot be
-deleted. You can still edit these settings:
+Craft reserves the `craft` transformer and driver. Craft [registers the transformer in code](#registering-transformers-in-code),
+so its name, handle, and driver cannot change, and the transformer cannot be deleted. You can still edit these settings:
 
 - **Output Disk** selects the Laravel filesystem disk where Craft stores generated transforms. Leave it empty to use the
   source Asset's disk.
@@ -285,8 +285,9 @@ Laravel's driver manager resolves and caches one driver instance per registratio
 
 ## Registering transformers in code
 
-A package can register a transformer profile in code instead of asking each project to create one in Project Config. Use
-this when the profile depends on the environment rather than the project, such as a hosting platform's image service:
+A package can register a transformer profile in code instead of asking each project to create one in Project Config. The
+profile works as soon as the package is installed, and projects can still adjust its settings. Craft's own `craft`
+transformer is registered the same way.
 
 ```php
 use CraftCms\Cms\Asset\AssetTransformDrivers;
@@ -319,13 +320,18 @@ Transforms key their custom parameter values by transformer UID, so changing it 
 valid Craft handle, and `craft` is reserved. `registerAssetTransformer()` throws an `InvalidArgumentException` if the
 profile has no UID, is invalid, or reuses the handle of another registered profile.
 
-Craft never writes registered profiles to Project Config, and the Control Panel shows them as read-only. They cannot be
-saved or deleted through Craft, and Project Config rebuilds leave them out. A registered profile replaces any Project
-Config profile with the same UID or handle. Craft ignores Project Config changes to a replaced profile, so removing one
-doesn't fail when its handle is the default or assigned to a volume.
+The registration defines the profile's name, handle, and driver, which the Control Panel shows as read-only, and its
+default settings. When someone saves the profile, Craft stores its settings in Project Config under its UID, and those
+stored settings override the defaults key by key. Settings the package adds to its defaults later still apply. Craft
+ignores any name, handle, or driver stored for a registered profile.
 
-Register the profile only in environments where its driver works. A volume or `defaultAssetTransformer` that references
-the handle throws `AssetTransformerNotFoundException` wherever the profile isn't registered.
+Registered profiles cannot be deleted. Removing a profile's entry from Project Config restores its default settings and
+dispatches `AssetTransformerUpdating` if the settings change. Project Config rebuilds only write registered profiles that
+have stored settings. Craft ignores Project Config profiles with a different UID that use a registered profile's handle.
+
+Register the profile in every environment that references it. A volume or `defaultAssetTransformer` that references the
+handle throws `AssetTransformerNotFoundException` wherever the profile isn't registered, and stored settings for a profile
+that is no longer registered appear as a Project Config profile with that driver.
 
 ## Optional transform preloading
 

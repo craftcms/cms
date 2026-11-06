@@ -12,6 +12,7 @@ use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Data\Volume as VolumeData;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
+use CraftCms\Cms\Asset\Events\AssetTransformerUpdating;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformerNotFoundException;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
 use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
@@ -30,6 +31,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -152,7 +154,62 @@ it('lets registered transformers replace project config profiles with the same U
         ->and($transformers->getAssetTransformerByUid($sameHandle->uid))->toBeNull();
 });
 
-it('keeps registered transformers out of saves, deletes, and config rebuilds', function () {
+it('stores settings overrides for registered transformers without changing their identity', function () {
+    app(AssetTransformDrivers::class)->extend('cloud', fn () => new TestAssetTransformDriver);
+    $transformers = app(AssetTransformers::class);
+    $registration = fn (array $settings) => new AssetTransformer([
+        'uid' => 'b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f',
+        'name' => 'Cloud',
+        'handle' => 'cloud',
+        'driver' => 'cloud',
+        'settings' => $settings,
+    ]);
+    $transformers->registerAssetTransformer($registration(['zone' => 'default', 'quality' => 80]));
+    $override = $transformers->resolve('cloud');
+    $override->name = 'Renamed';
+    $override->handle = 'renamed';
+    $override->settings = ['zone' => 'custom'];
+    $duplicate = new AssetTransformer(['name' => 'Duplicate', 'handle' => 'cloud', 'driver' => 'craft']);
+
+    $saved = $transformers->saveAssetTransformer($override);
+    $transformers->registerAssetTransformer($registration(['zone' => 'default', 'quality' => 80, 'format' => 'webp']));
+    $resolved = $transformers->resolve('cloud');
+
+    expect($saved)->toBeTrue()
+        ->and($resolved->name)->toBe('Cloud')
+        ->and($resolved->settings)->toBe(['zone' => 'custom', 'quality' => 80, 'format' => 'webp'])
+        ->and($transformers->getAssetTransformerByHandle('renamed'))->toBeNull()
+        ->and($transformers->saveAssetTransformer($duplicate))->toBeFalse()
+        ->and($duplicate->errors()->first('handle'))->toBe('The asset transformer handle has already been taken.')
+        ->and($transformers->getDeleteDisabledReason($resolved))->toBe('This asset transformer cannot be deleted because it is registered in code.')
+        ->and(fn () => $transformers->deleteAssetTransformer($resolved))->toThrow(AssetTransformException::class);
+});
+
+it('resets registered transformers to their defaults when their overrides are removed', function () {
+    $updates = [];
+    Event::listen(AssetTransformerUpdating::class, function (AssetTransformerUpdating $event) use (&$updates) {
+        $updates[] = [$event->oldTransformer->settings['subpath'], $event->newTransformer->settings['subpath']];
+    });
+    $transformers = app(AssetTransformers::class);
+    $craft = $transformers->resolve('craft');
+    $craft->settings = [...$craft->settings, 'subpath' => 'transforms'];
+    $projectConfig = app(ProjectConfig::class);
+    $path = ProjectConfig::PATH_ASSET_TRANSFORMERS.'.'.$craft->uid;
+
+    $transformers->saveAssetTransformer($craft);
+    $projectConfig->set("$path.name", 'Renamed');
+    $projectConfig->set("$path.driver", 'other');
+    $overridden = $transformers->resolve('craft');
+    $projectConfig->remove($path);
+    $reset = $transformers->resolve('craft');
+
+    expect([$overridden->name, $overridden->driver, $overridden->settings['subpath']])->toBe(['Craft', 'craft', 'transforms'])
+        ->and($reset->uid)->toBe($craft->uid)
+        ->and($reset->settings['subpath'])->toBeNull()
+        ->and($updates)->toBe([[null, 'transforms'], ['transforms', null]]);
+});
+
+it('rebuilds only registered transformers that have stored overrides', function () {
     $transformers = app(AssetTransformers::class);
     $transformers->registerAssetTransformer(new AssetTransformer([
         'uid' => 'b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f',
@@ -160,19 +217,16 @@ it('keeps registered transformers out of saves, deletes, and config rebuilds', f
         'handle' => 'cloud',
         'driver' => 'cloud',
     ]));
-    $registered = $transformers->resolve('cloud');
-    $registered->name = 'Renamed';
-    $duplicate = new AssetTransformer(['name' => 'Duplicate', 'handle' => 'cloud', 'driver' => 'craft']);
+    $rebuild = fn (): array => app(ConfigRebuilder::class)->build(app(ProjectConfig::class)->get())[ProjectConfig::PATH_ASSET_TRANSFORMERS];
 
-    expect($transformers->saveAssetTransformer($registered))->toBeFalse()
-        ->and($transformers->resolve('cloud')->name)->toBe('Cloud')
-        ->and($transformers->saveAssetTransformer($duplicate))->toBeFalse()
-        ->and($duplicate->errors()->first('handle'))->toBe('The asset transformer handle has already been taken.')
-        ->and($transformers->getDeleteDisabledReason($registered))->toBe('This asset transformer cannot be deleted because it is registered in code.')
-        ->and(fn () => $transformers->deleteAssetTransformer($registered))->toThrow(AssetTransformException::class)
-        ->and(app(ConfigRebuilder::class)->build(app(ProjectConfig::class)->get())[ProjectConfig::PATH_ASSET_TRANSFORMERS])
-        ->not->toHaveKey('b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f')
-        ->and(app(ProjectConfig::class)->get(ProjectConfig::PATH_ASSET_TRANSFORMERS))->toBeNull();
+    $beforeOverride = $rebuild();
+    $craft = $transformers->resolve('craft');
+    $craft->settings = [...$craft->settings, 'subpath' => 'transforms'];
+    $transformers->saveAssetTransformer($craft);
+
+    expect($beforeOverride)->toBe([])
+        ->and(array_keys($rebuild()))->toBe([$craft->uid])
+        ->and($rebuild()[$craft->uid]['settings']['subpath'])->toBe('transforms');
 });
 
 it('rejects invalid transformer registrations', function (array $config) {

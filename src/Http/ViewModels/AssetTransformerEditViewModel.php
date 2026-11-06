@@ -42,16 +42,6 @@ class AssetTransformerEditViewModel extends ViewModel
         private readonly bool $registered = false,
     ) {}
 
-    public function readOnly(): bool
-    {
-        return $this->readOnly;
-    }
-
-    public function showReadOnlyNotice(): bool
-    {
-        return ! $this->registered;
-    }
-
     public function ui(): UiPayload
     {
         $values = $this->values ?? [
@@ -63,7 +53,7 @@ class AssetTransformerEditViewModel extends ViewModel
             'settings' => $this->transformer->settings,
         ];
         $mode = $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable;
-        $identityMode = $this->transformer->handle === 'craft' ? ControlMode::ReadOnly : ControlMode::Editable;
+        $identityMode = $this->registered ? ControlMode::ReadOnly : ControlMode::Editable;
         $handle = Handle::make('handle')->mode($identityMode);
 
         if ($this->transformer->uid === null) {
@@ -80,7 +70,6 @@ class AssetTransformerEditViewModel extends ViewModel
         }
 
         return $this->uiResolver->resolve(Ui::make([
-            ...($this->registered ? [Callout::make('registered-transformer', t('This asset transformer is registered in code and cannot be edited.'))] : []),
             HiddenField::make('uid'),
             HiddenField::make('oldDriver'),
             Field::make(t('Name'), Text::make('name')->autofocus()->mode($identityMode))->required(),
