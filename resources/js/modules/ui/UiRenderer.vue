@@ -380,14 +380,54 @@
     publishValueChange(change);
   }
 
-  /** The control at a path, as the form has it now. */
-  function controlAt(path: string[]): UiControlPayload | undefined {
-    let found: UiControlPayload | undefined;
-    visitControls(payload.value.nodes, (control) => {
-      found ??= pathsMatch(control.path, path) ? control : undefined;
-    });
+  type OwnedControl = {
+    control: UiControlPayload;
+    scope: string[];
+    refreshable: boolean;
+  };
 
-    return found;
+  /**
+   * The control at a path, as the form has it now, with the scope and
+   * refreshability of the UI it's in.
+   */
+  function controlAt(path: string[]): OwnedControl | undefined {
+    const find = (
+      nodes: UiNodePayload[],
+      scope: string[],
+      refreshable: boolean
+    ): OwnedControl | undefined => {
+      for (const node of nodes) {
+        if (node.control) {
+          if (pathsMatch(node.control.path, path)) {
+            return {control: node.control, scope, refreshable};
+          }
+
+          for (const ui of node.control.uis ?? []) {
+            const found = find(ui.nodes, ui.scope, ui.refreshable);
+
+            if (found) {
+              return found;
+            }
+          }
+        }
+
+        const found = node.children
+          ? find(node.children, scope, refreshable)
+          : undefined;
+
+        if (found) {
+          return found;
+        }
+      }
+
+      return undefined;
+    };
+
+    return find(
+      payload.value.nodes,
+      payload.value.scope,
+      payload.value.refreshable
+    );
   }
 
   /**
@@ -395,7 +435,7 @@
    * it with, or `null` when there's no control there that says it can be read.
    */
   function readValue(path: string[]): UiValueSnapshot | null {
-    const control = controlAt(path);
+    const control = controlAt(path)?.control;
 
     return control ? readControlValue(control, currentValues()) : null;
   }
@@ -406,18 +446,22 @@
    * can take one.
    */
   function writeValue(path: string[], snapshot: UiValueSnapshot): boolean {
-    const control = controlAt(path);
+    const found = controlAt(path);
 
-    if (!control?.writable) {
+    if (!found?.control.writable) {
       return false;
     }
 
-    setValue(
+    valueState.write(path, cloneRaw(snapshot.value));
+    const change: UiChange = {
+      kind: 'discrete',
       path,
-      cloneRaw(snapshot.value),
-      'discrete',
-      controlForSnapshot(control, snapshot)
-    );
+      control: controlForSnapshot(found.control, snapshot),
+      scope: found.scope,
+      refreshable: found.refreshable && Boolean(found.control.reactive),
+    };
+    recordChange(change);
+    publishValueChange(change);
 
     return true;
   }

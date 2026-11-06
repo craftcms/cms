@@ -672,6 +672,8 @@ class ElementEditViewModel extends ViewModel
             $items[] = ['type' => 'heading', 'label' => t('Drafts')];
 
             foreach ($drafts as $draft) {
+                // They're all drafts of the same entry, in its site, so needn't each look it up to link a comparison.
+                $draft->setCanonical($element->getCanonical(true));
                 $creator = $draft->getDraftCreator();
                 $timestamp = $formatter->asTimestamp($draft->dateUpdated, Locale::LENGTH_SHORT, true);
 

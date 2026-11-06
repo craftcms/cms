@@ -86,9 +86,23 @@
     invalid: boolean;
     required: boolean;
   }>();
-  const emit = defineEmits<{
+  const emitEvent = defineEmits<{
     (event: 'update:value', value: string | string[]): void;
   }>();
+
+  /** The value this control last emitted, which comes back as its value. */
+  let emittedValue: string | undefined;
+
+  function valueKey(value: unknown): string {
+    return Array.isArray(value)
+      ? `[${value.map(String).join('\0')}]`
+      : String(value ?? '');
+  }
+
+  function emit(event: 'update:value', value: string | string[]): void {
+    emittedValue = valueKey(value);
+    emitEvent(event, value);
+  }
   const fieldLabelSrOnly = inject(FieldLabelSrOnly, undefined);
 
   /** Whether a button shows only its option's icon, named by the label. */
@@ -257,6 +271,60 @@
       }))
   );
   const customOptionInputs = new Map<number, HTMLInputElement>();
+
+  // A value written from outside, such as one copied from another version,
+  // can hold different custom options than the rows show. The control's own
+  // edits come back as its value too, and leave the rows as they are.
+  watch(
+    () => props.value,
+    () => {
+      const ownEdit = valueKey(props.value) === emittedValue;
+      // Each emitted value comes back once, so a later write of the same
+      // value, such as an Undo, comes from outside.
+      emittedValue = undefined;
+
+      if (ownEdit) {
+        return;
+      }
+
+      const choiceValues = new Set(
+        choiceOptions.value.map((option) => inputValue(option.value))
+      );
+
+      if (customCheckboxes.value) {
+        const custom = currentValues().filter(
+          (value) => !choiceValues.has(value)
+        );
+        const shown = customOptions.value
+          .filter((option) => option.checked && option.text !== '')
+          .map((option) => option.text);
+
+        if (custom.join('\0') !== shown.join('\0')) {
+          customOptions.value = custom.map((text) => ({
+            key: customOptionKey++,
+            text,
+            checked: true,
+          }));
+        }
+      } else if (customRadio.value) {
+        const value = props.value ?? '';
+
+        if (typeof value !== 'string') {
+          return;
+        }
+
+        if (choiceValues.has(value)) {
+          customRadioSelected.value = false;
+        } else if (value !== '') {
+          customRadioText.value = value;
+          customRadioSelected.value = true;
+        } else {
+          customRadioText.value = '';
+          customRadioSelected.value = false;
+        }
+      }
+    }
+  );
   const addOptionButton = ref<HTMLElement | null>(null);
 
   function customOptionId(option: CustomOption): string {

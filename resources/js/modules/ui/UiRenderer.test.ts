@@ -1033,6 +1033,59 @@ describe('UiRenderer', () => {
     outlet.remove();
   });
 
+  it('keeps a nested UI’s fields in its control, even when they share an outlet’s layout UID', async () => {
+    const outlet = document.createElement('div');
+    document.body.append(outlet);
+    const payload = choiceFieldsPayload();
+    const [, moved] = payload.nodes;
+    payload.nodes.push({
+      type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+      component: 'craft:field',
+      props: {label: 'Block', layoutUid: 'block'},
+      control: {
+        type: 'CraftCms\\Cms\\Ui\\Controls\\ContentBlock',
+        component: 'craft:content-block',
+        props: {addLabel: 'Add content'},
+        path: ['settings', 'block'],
+        mode: 'editable',
+        deltaGroup: ['settings', 'block'],
+        uis: [
+          {
+            scope: ['settings', 'block'],
+            refreshable: false,
+            nodes: [
+              {
+                ...moved!,
+                control: {
+                  ...moved!.control!,
+                  path: ['settings', 'block', 'moved'],
+                },
+              },
+            ],
+          },
+        ],
+      },
+    });
+    payload.values = {
+      settings: {stays: 'in', moved: 'in', block: {moved: 'in'}},
+    };
+    app.unmount();
+    await mount(payload, {
+      fieldOutlets: (layoutUid) => (layoutUid === 'moved' ? outlet : undefined),
+    });
+
+    expect(outlet.querySelectorAll('select')).toHaveLength(1);
+    expect(
+      outlet.querySelector('select[name="settings[moved]"]')
+    ).not.toBeNull();
+    expect(
+      container.querySelector(
+        '[data-content-block] select[name="settings[block][moved]"]'
+      )
+    ).not.toBeNull();
+    outlet.remove();
+  });
+
   it('badges a field’s label row', async () => {
     app.unmount();
     await mount(choiceFieldsPayload({moved: {labelBadge: 'Changed'}}));
@@ -4902,6 +4955,31 @@ describe('UiRenderer', () => {
 
       expect(input.value).toBe('Original');
       expect(input.placeholder).toBe('Before');
+    });
+
+    it('refreshes the layout after writing a reactive control’s value, as an edit does', async () => {
+      const refresh = vi.fn(
+        async (values: UiPayload['values']): Promise<UiPayload> => ({
+          ...choiceFieldsPayload(),
+          refreshable: true,
+          values: {settings: values},
+        })
+      );
+      const payload = {...choiceFieldsPayload(), refreshable: true};
+      Object.assign(payload.nodes[1]!.control!, {
+        writable: true,
+        reactive: true,
+      });
+      app.unmount();
+      await mount(payload, {refresh});
+
+      expect(renderer.writeValue(['settings', 'moved'], {value: 'notIn'})).toBe(
+        true
+      );
+      await nextTick();
+
+      expect(refresh).toHaveBeenCalledOnce();
+      expect(refresh.mock.calls[0]![0]).toMatchObject({moved: 'notIn'});
     });
 
     it('neither reads nor writes a control that doesn’t say it can', async () => {

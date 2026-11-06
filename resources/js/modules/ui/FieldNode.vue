@@ -27,6 +27,7 @@
     type ApplyAssistantProposalDetail,
   } from '@/modules/ai/assistant/context';
   import UiNodeList from './UiNodeList.vue';
+  import {UiFieldOutletsKey} from './fieldOutlets';
   import {
     FieldActionItems,
     FieldLabelSrOnly,
@@ -171,6 +172,9 @@
   });
 
   provide(FieldActionItems, shallowRef());
+  // A nested UI's fields stay in its control, even when they share layout UIDs
+  // with the form's own fields.
+  provide(UiFieldOutletsKey, null);
 
   onErrorCaptured((error) => {
     invalidate(

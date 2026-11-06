@@ -6,7 +6,8 @@
    */
   import '@craftcms/ui/components/spinner/spinner';
   import {actionClient, isHttpError, t} from '@craftcms/ui';
-  import {computed, shallowRef, watch} from 'vue';
+  import {useElementSize} from '@vueuse/core';
+  import {computed, shallowRef, useTemplateRef, watch} from 'vue';
   import CompareFieldChangesController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/CompareFieldChangesController';
   import Modal from '@/common/components/Modal.vue';
   import ChangeComparison from './ChangeComparison.vue';
@@ -44,8 +45,10 @@
   const error = shallowRef<string>();
   let request = 0;
 
-  /** Whether both versions are previewed side by side, split by a hairline. */
-  const ruled = computed(() =>
+  const {width} = useElementSize(useTemplateRef('content'));
+
+  /** Whether both versions are previewed, each with its own label. */
+  const previewed = computed(() =>
     Boolean(
       !error.value &&
       comparison.value?.preview?.current &&
@@ -53,6 +56,13 @@
       !comparison.value.unchanged
     )
   );
+
+  /**
+   * Whether the previews are side by side, split by a hairline under a header
+   * row of their labels. Narrower than `ChangeComparison`'s breakpoint, they
+   * stack instead.
+   */
+  const ruled = computed(() => previewed.value && width.value >= 500);
 
   const title = computed(() =>
     props.detail?.label
@@ -135,7 +145,7 @@
         @click="emit('close')"
       ></craft-button>
 
-      <div class="field-changes" data-field-changes-modal>
+      <div ref="content" class="field-changes" data-field-changes-modal>
         <p class="sr-only" role="status">{{ status }}</p>
         <p v-if="error" class="field-changes__message" role="alert">
           {{ error }}
@@ -148,7 +158,10 @@
             <span>{{ comparison.fromLabel }}</span>
             <span>{{ comparison.toLabel }}</span>
           </div>
-          <p v-else-if="comparison.hasBase" class="field-changes__versions">
+          <p
+            v-else-if="comparison.hasBase && !previewed"
+            class="field-changes__versions"
+          >
             <span class="field-changes__from" aria-hidden="true">{{
               comparison.fromLabel
             }}</span>
