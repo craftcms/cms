@@ -191,7 +191,8 @@ it.each([
 
     await open();
 
-    await expect.poll(focusedText).toBe('Three');
+    // Hidden items are skipped; disabled ones stay reachable, as with the arrow keys.
+    await expect.poll(focusedText).toBe('Two');
   }
 );
 
