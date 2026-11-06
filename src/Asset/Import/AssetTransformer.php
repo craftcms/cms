@@ -19,12 +19,6 @@ class AssetTransformer extends ElementTransformer
      */
     protected function normalizeFolderId(mixed $value, ElementInterface $element): ?int
     {
-        // if folder ID wasn't provided in the incoming data (which should be very common)
-        // we need to get the root folder for given volume
-        if ($value === null) {
-            return null;
-        }
-
         $folder = null;
         /** @var Asset $element */
         $volume = $element->getVolume();

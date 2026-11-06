@@ -122,12 +122,6 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
     {
         $urlValidator = $importer::urlValidator();
 
-        // a temp folder means the real upload location can’t be resolved until the element is saved,
-        // so there’s nothing to match against; the new assets get moved there after the save
-        if ($folder->volumeId === null && $conflict !== ImportFileConflict::KeepBoth) {
-            // ImportLog::info("The {$field->name} field’s upload location can’t be resolved before the element is saved, so incoming files will be added as new assets.");
-        }
-
         $assetIds = [];
 
         foreach ($items as $item) {

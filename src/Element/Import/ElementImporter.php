@@ -218,7 +218,13 @@ abstract class ElementImporter extends BaseImporter
     #[Override]
     public static function getSettingsRules(): array
     {
+        $validateMap = fn ($attribute, $value, Closure $fail, Validator $validator) => static::validateMap($value, $attribute, $fail, $validator);
+
         return array_merge(parent::getSettingsRules(), [
+            // matchCriteria and clearableItems are keyed like the map
+            'settings.map' => ['array', $validateMap],
+            'settings.matchCriteria' => ['nullable', 'array', $validateMap],
+            'settings.clearableItems' => ['nullable', 'array', $validateMap],
             'settings.fieldLayout' => fn ($attribute, $value, Closure $fail, Validator $validator) => static::validateFieldLayout($value, $attribute, $fail, $validator),
             'settings.site' => ['required', new SiteRule],
             'settings.keepMissingNestedElements' => ['nullable', 'array'],
@@ -278,15 +284,30 @@ abstract class ElementImporter extends BaseImporter
     #[Override]
     public static function validateMap(mixed $value, string $attribute, Closure $fail, Validator $validator, array $params = []): bool
     {
+        if (! is_array($value)) {
+            return true;
+        }
+
         // in case of an element importer, the $params might contain the field this map partial is for
-        // if $params is empty, then we're validating the whole map
+        // if $params is empty, then we're validating the whole map against the importer's field layout
         if (! empty($params['field'])) {
             $field = $params['field'];
 
             if ($field instanceof ImportableElementContainerFieldInterface) {
                 $field->validateMapping($value, $attribute, $fail, $validator, $params);
             }
+
+            return true;
         }
+
+        $fieldLayout = $validator->getData()['settings']['fieldLayout'] ?? null;
+
+        // a missing or unknown field layout is reported by the fieldLayout rule
+        if (! is_string($fieldLayout) && ! is_int($fieldLayout)) {
+            return true;
+        }
+
+        ImportHelper::validateMappingTree($value, self::normalizeFieldLayout($fieldLayout), $attribute, $fail, $validator);
 
         return true;
     }
@@ -818,7 +839,7 @@ abstract class ElementImporter extends BaseImporter
                 )));
 
             // give element a chance to adjust the query
-            $this->prepareRootElementImportQuery($element, $query);
+            $query = $this->prepareRootElementImportQuery($element, $query);
 
             // by now the match criteria from various sources (ui, config, transformer) should have been merged,
             // and the values from incoming data should have been applied to it

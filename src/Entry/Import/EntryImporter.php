@@ -207,9 +207,7 @@ class EntryImporter extends ElementImporter
             if ($entryType) {
                 $element->setTypeId($entryType->id);
                 $element->fieldLayoutId = $entryType->getFieldLayoutId();
-                if (isset($data['matchCriteria']['typeId'])) {
-                    unset($data['matchCriteria']['typeId']);
-                }
+                unset($data['matchCriteria']['typeId']);
             }
         }
 

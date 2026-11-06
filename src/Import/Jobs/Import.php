@@ -340,12 +340,6 @@ class Import extends Job
      */
     private function getChunkSize(BaseImporter $step): int
     {
-        // if chunk size was left empty, it was cast to a null, and we should use the default chunk size
-        if (($step->batchSize ?? null) === null) {
-            return $this->defaultBatchSize;
-        }
-
-        // otherwise, return the number specified in the step
-        return $step->batchSize;
+        return $step->batchSize ?? $this->defaultBatchSize;
     }
 }

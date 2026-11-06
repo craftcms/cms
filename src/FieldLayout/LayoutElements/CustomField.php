@@ -1065,10 +1065,6 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
             return null;
         }
 
-        if (method_exists($field, 'getFieldsForImportMapping')) {
-            return $field->getFieldsForImportMapping();
-        }
-
         $attribute = $this->attribute();
         $isContainer = $field instanceof ImportableElementContainerFieldInterface;
 
@@ -1107,10 +1103,6 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
             return false;
         }
 
-        if (method_exists($field, 'canBeImportMatchCriteria')) {
-            return $field->canBeImportMatchCriteria();
-        }
-
         return true;
     }
 
@@ -1127,10 +1119,6 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
 
         if ($field instanceof ImportableElementContainerFieldInterface) {
             return false;
-        }
-
-        if (method_exists($field, 'canBeImportCleared')) {
-            return $field->canBeImportCleared();
         }
 
         return true;

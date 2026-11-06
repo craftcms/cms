@@ -2232,7 +2232,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             }
 
             $entryElement = null;
-            $newKey = null;
 
             // if there's no type or type is not allowed - bail
             if (! isset($entry['type'])) {
@@ -2264,16 +2263,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                     Typecast::configure($query, $criteria);
                     $entryElement = $query->one();
                 }
-
-                if ($entryElement) {
-                    $newKey = $entryElement->id;
-                } else {
-                    $newKey = 'new:'.++$i;
-                }
             }
 
-            // if we still don't have a key, generate a new one
-            $newKey ??= 'new:'.++$i;
+            // use the matched entry's ID, or generate a new key
+            $newKey = $entryElement->id ?? 'new:'.++$i;
 
             Arr::forget($entry, [/* 'type', */ 'matchCriteria']);
 
@@ -2358,22 +2351,27 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     #[Override]
     public function validateMapping(mixed $value, string $attribute, Closure $fail, Validator $validator, array $params = []): bool
     {
-        $field = $params['field'];
-
         if (! is_array($value)) {
-            $value = [];
+            return true;
         }
 
-        // validate that the provider types are allowed
-        $providers = $field->getFieldLayoutProviders();
-        $providerUids = array_map(fn ($provider) => $provider->uid, $providers);
+        // entry types are keyed by uid from the mapping screen, or by handle in hand-written maps
+        $entryTypes = [];
+        foreach ($this->getEntryTypes() as $entryType) {
+            $entryTypes[$entryType->uid] = $entryType;
+            $entryTypes[$entryType->handle] = $entryType;
+        }
 
-        $typesFromMap = array_unique(array_keys($value));
-
-        if (array_diff($typesFromMap, $providerUids)) {
+        if (array_diff_key($value, $entryTypes)) {
             $fail($attribute, t('The map contains mapping for entry types that aren’t allowed for this field.'));
 
             return false;
+        }
+
+        foreach ($value as $key => $branch) {
+            if (is_array($branch['fields'] ?? null)) {
+                ImportHelper::validateMappingTree($branch['fields'], $entryTypes[$key]->getFieldLayout(), "$attribute.$key.fields", $fail, $validator);
+            }
         }
 
         return true;

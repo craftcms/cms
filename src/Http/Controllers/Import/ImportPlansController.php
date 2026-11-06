@@ -379,7 +379,7 @@ class ImportPlansController
         $data = $this->request->validate([
             'step' => ['required', 'array'],
             'step.uid' => ['nullable', 'string', 'max:36'],
-            'step.type' => [$requireType ? 'required' : 'nullable', 'nullable', 'string', Rule::in($this->importService->getAllImporterTypes())],
+            'step.type' => [$requireType ? 'required' : 'nullable', 'string', Rule::in($this->importService->getAllImporterTypes())],
             'step.source' => ['nullable', 'string'],
             'step.transformer' => ['nullable', 'string'],
             'step.batchSize' => ['nullable', 'integer'],

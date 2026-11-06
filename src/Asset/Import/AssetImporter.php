@@ -147,9 +147,7 @@ class AssetImporter extends ElementImporter
             $volume = $allFieldLayouts->firstWhere('uid', $this->fieldLayout)?->provider;
             if ($volume) {
                 $element->setVolumeId($volume->id);
-                if (isset($data['matchCriteria']['volumeId'])) {
-                    unset($data['matchCriteria']['volumeId']);
-                }
+                unset($data['matchCriteria']['volumeId']);
             }
         }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import;
 
+use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
@@ -20,6 +21,7 @@ use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Controls\Concerns\HasTextExpander;
+use Illuminate\Validation\Validator;
 
 use function CraftCms\Cms\renderSandboxedObjectTemplate;
 use function CraftCms\Cms\t;
@@ -366,6 +368,33 @@ class ImportHelper
         }
 
         return $resolved;
+    }
+
+    /**
+     * Validates one level of a mapping tree, passing each container field’s branch to the field’s `validateMapping()`.
+     * Keys can be layout element uids (as saved from the mapping screen) or field handles.
+     *
+     * @param  array<mixed>  $tree
+     */
+    public static function validateMappingTree(array $tree, ?FieldLayout $fieldLayout, string $attribute, Closure $fail, Validator $validator): void
+    {
+        if (! $fieldLayout) {
+            return;
+        }
+
+        foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
+            $field = $layoutElement->getField();
+
+            if (! $field instanceof ImportableElementContainerFieldInterface) {
+                continue;
+            }
+
+            foreach (array_filter([$layoutElement->uid, $layoutElement->attribute()]) as $key) {
+                if (is_array($tree[$key] ?? null)) {
+                    $field->validateMapping($tree[$key], "$attribute.$key", $fail, $validator, ['field' => $field]);
+                }
+            }
+        }
     }
 
     /**

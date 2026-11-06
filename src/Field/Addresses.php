@@ -1071,7 +1071,6 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
             }
 
             $addressElement = null;
-            $newKey = null;
 
             // try to match existing address entries,
             // but only if owner already has an ID; no point trying to match nested entry for a brand new owner element
@@ -1090,16 +1089,10 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                     Typecast::configure($query, $criteria);
                     $addressElement = $query->one();
                 }
-
-                if ($addressElement) {
-                    $newKey = $addressElement->id;
-                } else {
-                    $newKey = 'new:'.++$i;
-                }
             }
 
-            // if we still don't have a key, generate a new one
-            $newKey ??= 'new:'.++$i;
+            // use the matched address's ID, or generate a new key
+            $newKey = $addressElement->id ?? 'new:'.++$i;
 
             Arr::forget($address, ['matchCriteria']);
 

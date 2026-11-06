@@ -20,11 +20,7 @@ class EntryTransformer extends ElementTransformer
      */
     protected function normalizeSectionId(mixed $value, ElementInterface $element): ?int
     {
-        if ($value === null) {
-            return null;
-        }
-
-        if (is_int($value) || is_numeric($value)) {
+        if (is_numeric($value)) {
             return (int) $value;
         }
 
@@ -43,12 +39,7 @@ class EntryTransformer extends ElementTransformer
      */
     protected function normalizeTypeId(mixed $value, ElementInterface $element): ?int
     {
-        if ($value === null) {
-            /** @var Entry $element */
-            return $element->getTypeId();
-        }
-
-        if (is_int($value) || is_numeric($value)) {
+        if (is_numeric($value)) {
             $type = EntryTypes::getEntryTypeById((int) $value);
 
             return $type?->id;
