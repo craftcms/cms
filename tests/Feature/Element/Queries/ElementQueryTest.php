@@ -178,7 +178,45 @@ it('plucks and aggregates mapped columns and custom fields', function () {
         ->and((int) $query()->max('num'))->toBe(20)
         ->and((float) $query()->avg('num'))->toBe(12.5)
         ->and($query()->count('num'))->toBe(2)
-        ->and($query()->max('dateCreated'))->not->toBeNull();
+        ->and($query()->max('dateCreated'))->not->toBeNull()
+        ->and($query()->addSelect(['secondId' => entryQuery()->id($second->id)->select('elements.id')->limit(1)])->pluck('secondId')->all())->toBe([$second->id, $second->id])
+        ->and($query()->selectRaw('? + 1 as bound', [6])->pluck('bound')->map(fn ($value) => (int) $value)->all())->toBe([7, 7]);
+});
+
+it('uses element queries as subqueries', function () {
+    [$a, $b, $c] = EntryModel::factory(3)->create()->pluck('id')->all();
+    $subquery = fn () => entryQuery()->id([$a, $b])->select('elements.id');
+    $query = fn () => entryQuery()->id([$a, $b, $c])->orderBy('elements.id');
+
+    expect($query()->whereIn('elements.id', $subquery())->ids())->toBe([$a, $b])
+        ->and($query()->whereNotIn('elements.id', $subquery())->ids())->toBe([$c])
+        ->and($query()->joinSub($subquery(), 'sub', 'sub.id', '=', 'elements.id')->ids())->toBe([$a, $b])
+        ->and($query()->whereIn('elements.id', entryQuery()->section('nonexistent')->select('elements.id'))->ids())->toBe([])
+        ->and(DB::table(Table::ELEMENTS)->whereIn('id', $subquery()->toBase())->orderBy('id')->pluck('id')->all())->toBe([$a, $b])
+        ->and(array_keys($query()->select(['elements.id', 'title'])->asArray()->one()))->toBe(['id', 'title'])
+        ->and($query()->select(['enabled'])->groupBy('enabled')->reorder('enabled')->asArray()->get())->toHaveCount(1);
+});
+
+it('cursor paginates elements by date columns', function () {
+    expect(now()->getOffset())->not->toBe(0);
+
+    $ids = collect(['2026-01-03', '2026-01-01', '2026-01-02'])
+        ->map(fn (string $day) => EntryModel::factory()->create(['postDate' => "$day 23:30:00"])->id);
+    $query = fn () => entryQuery()->id($ids->all())->orderBy('postDate')->orderBy('elements.id');
+
+    $pages = [];
+    $cursor = null;
+
+    do {
+        $page = $query()->cursorPaginate(1, cursor: $cursor);
+        $pages[] = $page->first()->id;
+        $cursor = $page->nextCursor();
+    } while ($cursor !== null && count($pages) < 5);
+
+    expect($page->first())->toBeInstanceOf(Entry::class)
+        ->and($pages)->toBe([$ids[1], $ids[2], $ids[0]])
+        ->and($query()->cursorPaginate(1, cursor: $page->previousCursor())->pluck('id')->all())->toBe([$ids[2]])
+        ->and(fn () => entryQuery()->id($ids->all())->fixedOrder()->cursorPaginate(1))->toThrow(InvalidArgumentException::class);
 });
 
 it('resolves mapped columns and custom fields in where clauses and groupBy', function () {
