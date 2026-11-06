@@ -250,4 +250,10 @@ class Entries extends BaseRelationField
 
         return $this->sources;
     }
+
+    #[Override]
+    protected function importMatchAttributes(): array
+    {
+        return [...parent::importMatchAttributes(), 'slug' => t('Slug')];
+    }
 }

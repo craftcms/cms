@@ -1252,4 +1252,10 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         // by default, just return the value we were given
         return $value;
     }
+
+    #[Override]
+    public function importMappingSettings(): array
+    {
+        return [];
+    }
 }

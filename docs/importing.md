@@ -154,6 +154,32 @@ mapping), downloading a remote source to a temp file and deleting it afterwards.
 
 ---
 
+
+### Relation fields
+
+A relation field's incoming values are element IDs unless its `matchBy` mapping setting (**Match related
+elements by**, held in the step's `fieldSettings`) names another attribute. Fields declare their own
+mapping settings with `FieldInterface::importMappingSettings()`, listed ahead of their import handler's;
+relation fields offer `matchBy` when `importMatchAttributes()` has more than ID:
+
+- Entries: ID, Title, Slug.
+- Users: ID, Username, Email.
+- Assets: ID or file (the default, where a plain string is a file to upload), Title, Filename. Matching
+  by title or filename only relates existing assets: the lookup turns the values into IDs before
+  `AssetsFieldImportHandler` runs, so nothing is uploaded and its `fileConflict` setting doesn't apply.
+- Other relation fields: ID, plus Title if the element type `hasTitles()`.
+
+Values are looked up with the element query param of the same name, so title, username and email
+matches ignore case, and each value is taken literally (commas, `*` and operators are escaped). The
+lookup covers the sources the field is configured with (`importSourceKeys()`: its sources, or for an
+Assets field restricted to one location, that location), with its selection condition (referencing
+the element being imported), its selection criteria and target site, and the index's base criteria (canonical elements and saved unpublished drafts, so no revisions, drafts
+of published elements, or nested entries). Unlike the element selector's `getInputSources()`, the
+sources aren't narrowed to what the current user may view, as an import usually runs without a user
+(queue jobs, the CLI); Assets fields also look in the subfolders of their volume and folder sources. A value matching several elements gets the live one with
+the lowest ID, or failing that, the one with the lowest ID in any status. A value matching nothing is
+skipped and logged as a warning. The related elements keep the incoming order. Lookups aren't cached.
+
 ## 3. Running an import plan
 
 `Import::dispatchImport()` (`src/Import/Import.php:123`) generates a `runId`, builds one

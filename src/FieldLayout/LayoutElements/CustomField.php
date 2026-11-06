@@ -1165,6 +1165,9 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
             }
         }
 
-        return Import::getFieldImportHandlerFor($field)?->mappingSettings($field) ?? [];
+        return [
+            ...$field->importMappingSettings(),
+            ...(Import::getFieldImportHandlerFor($field)?->mappingSettings($field) ?? []),
+        ];
     }
 }

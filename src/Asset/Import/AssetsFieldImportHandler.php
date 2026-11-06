@@ -106,7 +106,7 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
                 label: t('What should happen when an incoming file matches an existing one?'),
                 options: ImportFileConflict::asOptions(),
                 default: ImportFileConflict::UseExisting->value,
-                instructions: t('Incoming files are matched against existing assets by filename, within the folder they’d be uploaded to.'),
+                instructions: t('Incoming files are matched against existing assets by filename, within the folder they’d be uploaded to. Only applies when related assets are matched by ID or file.'),
             ),
         ];
     }
