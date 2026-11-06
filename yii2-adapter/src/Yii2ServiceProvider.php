@@ -6,8 +6,10 @@ namespace CraftCms\Yii2Adapter;
 
 use Craft;
 use craft\events\ExceptionEvent;
+use craft\events\RedirectEvent;
 use craft\web\Application as WebApplication;
 use craft\web\ErrorHandler;
+use craft\web\RedirectRule;
 use craft\web\twig\variables\CraftVariable as LegacyCraftVariable;
 use CraftCms\Cms\Asset\AssetFileKinds;
 use CraftCms\Cms\Asset\AssetTransformers;
@@ -32,6 +34,7 @@ use CraftCms\Cms\Gql\GqlDirectives;
 use CraftCms\Cms\Gql\GqlTypes;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
+use CraftCms\Cms\Route\Events\Redirecting;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\SystemMessage\SystemMessages;
@@ -269,6 +272,28 @@ class Yii2ServiceProvider extends ServiceProvider
             }
 
             return null;
+        });
+
+        Event::listen(Redirecting::class, function(Redirecting $event) {
+            if (!class_exists(Craft::class) || !Craft::$app) {
+                return;
+            }
+
+            $errorHandler = Craft::$app->getErrorHandler();
+
+            if (!$errorHandler->hasEventHandlers(ErrorHandler::EVENT_BEFORE_REDIRECT)) {
+                return;
+            }
+
+            $errorHandler->trigger(ErrorHandler::EVENT_BEFORE_REDIRECT, new RedirectEvent([
+                'rule' => new RedirectRule(array_filter([
+                    'from' => $event->rule->from,
+                    'to' => $event->rule->to,
+                    'statusCode' => $event->rule->statusCode,
+                    'caseSensitive' => $event->rule->caseSensitive,
+                    'match' => $event->rule->match,
+                ], fn($value) => $value !== null)),
+            ]));
         });
     }
 
