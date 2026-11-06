@@ -1189,6 +1189,7 @@
 - Fixed a bug where the Settings nav item had no icon when `allowAdminChanges` was disabled. ([#20338](https://github.com/craftcms/cms/issues/20338))
 - Fixed a bug where text and number controls with `autofocus()` weren’t focused when they were shown after the page loaded, such as in modals and slideouts. They also no longer autofocus on mobile browsers, or for users who have disabled autofocus. ([#20373](https://github.com/craftcms/cms/pull/20373))
 - Fixed a bug where Assets fields’ thumbnail tiles could overflow into the next field when the field’s column was too narrow for the thumbnail size. ([#20392](https://github.com/craftcms/cms/issues/20392))
+- Fixed a bug where relational fields’ “Add” and “Upload files” buttons overlapped when the field was too narrow for them. ([#20423](https://github.com/craftcms/cms/pull/20423))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 
