@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Ui\Controls;
 
 use CraftCms\Cms\Cp\Components\InputMoney;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
+use CraftCms\Cms\Ui\Contracts\WritableValueControl;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
 use Illuminate\Support\Arr;
@@ -13,7 +15,7 @@ use Illuminate\Support\Arr;
 /**
  * @since 6.0.0
  */
-class Money extends Control
+class Money extends Control implements ReadableValueControl, WritableValueControl
 {
     private string $currency = 'USD';
 

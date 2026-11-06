@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ElementAwareTableCellInterface;
 use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
@@ -64,7 +63,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class Table extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, InputSchemaFieldInterface, TracksReferencesFieldInterface
+class Table extends Field implements DefaultableFieldInterface, InputSchemaFieldInterface, TracksReferencesFieldInterface
 {
     /** @var array<string, array<string, true>> */
     private array $columnErrors = [];

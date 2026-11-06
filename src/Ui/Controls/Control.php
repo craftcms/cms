@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Ui\Controls;
 
 use CraftCms\Cms\Ui\Contracts\Control as ControlContract;
+use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\Ui;
 
@@ -198,6 +199,17 @@ abstract class Control implements ControlContract
     public function nestsUis(): bool
     {
         return false;
+    }
+
+    /**
+     * The props the control draws its value with, read along with it, for a control that implements
+     * {@see ReadableValueControl}. None, by default.
+     *
+     * @return list<string>
+     */
+    public function valueProps(): array
+    {
+        return [];
     }
 
     /**

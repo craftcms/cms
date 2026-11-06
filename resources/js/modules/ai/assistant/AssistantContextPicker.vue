@@ -60,11 +60,7 @@
 </script>
 
 <template>
-  <craft-popover
-    :label="t('Fields of “{name}”', {name: editor.label()})"
-    placement="top-start"
-    @craft-show="load"
-  >
+  <craft-popover placement="top-start" @craft-show="load">
     <craft-button
       slot="invoker"
       class="assistant-context-picker__invoker"

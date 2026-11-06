@@ -28,6 +28,7 @@
   import {useNavItemActions} from '@/common/composables/useNavItemActions';
   import type {
     ActionItem,
+    ActionItemBadge,
     ActionItemButton,
     ActionItemGroup,
     ActionItemLink,
@@ -47,6 +48,7 @@
     external?: boolean;
     label?: string;
     status?: string;
+    badge?: ActionItemBadge;
     onClick?: (event: Event) => void;
     /**
      * Everything optional, with the unset keys left out entirely. Binding an
@@ -193,6 +195,7 @@
           external: link.external || Boolean(link.target),
           label: action.label,
           status: isItem ? action.status : undefined,
+          badge: isItem ? action.badge : undefined,
           onClick: action.onClick,
           attrs: defined({...attrs, target: link.target, size}),
         },
@@ -204,6 +207,7 @@
         kind: 'button',
         label: action.label,
         status: isItem ? action.status : undefined,
+        badge: isItem ? action.badge : undefined,
         onClick: action.onClick,
         attrs: defined({
           ...attrs,
@@ -548,6 +552,19 @@
           :fill="action.status"
         ></craft-indicator>
         {{ action.label }}
+        <craft-badge
+          v-if="action.badge"
+          class="action-list__badge"
+          :fill="action.badge.fill ?? 'gray'"
+          size="small"
+        >
+          <craft-icon
+            v-if="action.badge.icon"
+            :name="action.badge.icon"
+            slot="prefix"
+          ></craft-icon>
+          {{ action.badge.label }}
+        </craft-badge>
       </component>
 
       <CpLink
@@ -563,6 +580,19 @@
           :fill="action.status"
         ></craft-indicator>
         {{ action.label }}
+        <craft-badge
+          v-if="action.badge"
+          class="action-list__badge"
+          :fill="action.badge.fill ?? 'gray'"
+          size="small"
+        >
+          <craft-icon
+            v-if="action.badge.icon"
+            :name="action.badge.icon"
+            slot="prefix"
+          ></craft-icon>
+          {{ action.badge.label }}
+        </craft-badge>
       </CpLink>
 
       <component
@@ -578,12 +608,31 @@
           :fill="action.status"
         ></craft-indicator>
         {{ action.label }}
+        <craft-badge
+          v-if="action.badge"
+          class="action-list__badge"
+          :fill="action.badge.fill ?? 'gray'"
+          size="small"
+        >
+          <craft-icon
+            v-if="action.badge.icon"
+            :name="action.badge.icon"
+            slot="prefix"
+          ></craft-icon>
+          {{ action.badge.label }}
+        </craft-badge>
       </component>
     </template>
   </template>
 </template>
 
 <style scoped lang="css">
+  /* Beside the label it's about, rather than across at the item's far end. */
+  .action-list__badge {
+    margin-inline-start: var(--c-spacing-xs);
+    vertical-align: middle;
+  }
+
   /* Matching what `craft-action-menu` applies inline to the separators in a
      menu, for the lists that aren't in one. */
   .action-list__separator {

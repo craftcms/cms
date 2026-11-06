@@ -18,6 +18,7 @@ All UI — PHP view components, Twig templates, Vue components, and the Lit web 
 ## Commands
 
 - Use `composer fix-cs`, `composer phpstan`, and `composer ci` for repository-wide PHP checks.
+- Run JavaScript tooling through pnpm (`pnpm vp test run …`, `pnpm vp run build:ui`). The repo requires pnpm, so `npm` and `npx` fail with `EBADDEVENGINES`.
 - Pass `--no-interaction` to Artisan commands.
 
 ## Routes
@@ -40,6 +41,9 @@ Some files contain Unicode characters in comments and strings. If a text edit fa
 - Run `composer ci` before creating a pull request.
 - Prefix the title with the origin version branch, such as `[6.x]` or `[5.x]`.
 - Use a `### Description` section and add `### Related issues` only when applicable. Do not add validation summaries.
+- Copilot's pull request review can arrive as a formal review, or only as ordinary comments on the conversation tab. When waiting for or checking a Copilot review, look at reviews (`gh api repos/craftcms/cms/pulls/<number>/reviews`), inline review comments (`.../pulls/<number>/comments`), and conversation comments (`gh api repos/craftcms/cms/issues/<number>/comments`). Don't conclude Copilot hasn't responded from reviews alone.
+- When asked to watch for a Copilot review, schedule checks of all three until it arrives. Don't rely on a GitHub event subscription alone; it doesn't report every Copilot response.
+- Read each Copilot review's full body. Findings can appear only there, such as under "previously missed issues", even when the summary says there are no open issues.
 
 - When the branch already identifies a Linear issue, reference the related GitHub issue instead of repeating the Linear identifier.
 
@@ -136,7 +140,7 @@ For this path:
 
 - Take a test's expected result from an independent oracle: measure the real output (what's rendered, returned, or stored) rather than recomputing it with the model or simplifications the code itself relies on. An oracle that shares the code's assumptions agrees with it whenever those assumptions are wrong.
 - Choose inputs that could make the test fail: extremes, and inputs where the code's assumptions break, such as data that's missing, stale, or doesn't match what it describes.
-- Watch every new test go red once: weaken the code it guards, confirm the failure, then restore it.
+- Watch every new test go red once: weaken the code it guards, confirm the failure, then restore it. A red browser test leaves a failure screenshot in its `__screenshots__/` folder; delete it once the test passes again.
 
 ## Working through tasks
 

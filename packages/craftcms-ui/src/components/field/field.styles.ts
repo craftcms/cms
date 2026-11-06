@@ -97,16 +97,20 @@ export default css`
     line-height: var(--c-field-label-line-height, inherit);
   }
 
-  .read-only-badge {
+  .read-only-badge,
+  ::slotted([slot='label-badge']) {
     font-size: calc(11rem / 16);
     font-weight: normal;
     line-height: 1.45;
     padding-block: 0;
     padding-inline: 0.25em;
-    background-color: var(--c-color-neutral-fill-quiet);
-    color: var(--c-color-neutral-on-quiet);
     border: 1px solid var(--c-color-neutral-border-quiet);
     border-radius: var(--c-radius-sm, 3px);
+  }
+
+  .read-only-badge {
+    background-color: var(--c-color-neutral-fill-quiet);
+    color: var(--c-color-neutral-on-quiet);
   }
 
   /* Input container (.field > .input in the CP) */

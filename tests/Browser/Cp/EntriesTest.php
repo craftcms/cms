@@ -111,7 +111,7 @@ it('reverts an entry to an earlier revision', function () {
     Elements::saveElement($entry);
 
     visitCp("content/entries/articles/$entry->id")
-        ->click('role=button[name="Revisions"]')
+        ->click('role=button[name="Versions"]')
         ->click('role=link[name="Revision 1"]')
         ->assertSee('You’re viewing a revision.')
         ->assertSeeIn('#main h1', 'Original')
