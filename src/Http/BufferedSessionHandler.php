@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http;
 
+use Illuminate\Session\ExistenceAwareInterface;
 use SessionHandlerInterface;
 
 /**
@@ -13,7 +14,7 @@ use SessionHandlerInterface;
  *
  * @since 6.0.0
  */
-class BufferedSessionHandler implements SessionHandlerInterface
+class BufferedSessionHandler implements ExistenceAwareInterface, SessionHandlerInterface
 {
     /** @var array{string, string}|null */
     private ?array $write = null;
@@ -54,6 +55,15 @@ class BufferedSessionHandler implements SessionHandlerInterface
     public function destroy(string $id): bool
     {
         return $this->handler->destroy($id);
+    }
+
+    public function setExists($value): SessionHandlerInterface
+    {
+        if ($this->handler instanceof ExistenceAwareInterface) {
+            $this->handler->setExists($value);
+        }
+
+        return $this;
     }
 
     public function gc(int $max_lifetime): int|false

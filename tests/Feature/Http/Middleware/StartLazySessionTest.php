@@ -39,10 +39,14 @@ it('sends no cookies for a site page that only reads the session', function () {
 });
 
 it('saves the session when a site page writes to it', function () {
-    get('/writes')
+    $response = get('/writes')
         ->assertOk()
         ->assertCookie(config('session.cookie'))
         ->assertCookie('XSRF-TOKEN');
+
+    $saved = unserialize(app(SessionManager::class)->driver()->getHandler()->read($response->getCookie(config('session.cookie'))->getValue()));
+
+    expect($saved['notice'] ?? null)->toBe('Saved');
 });
 
 it('saves the session with the CSRF token a site page prints', function () {
