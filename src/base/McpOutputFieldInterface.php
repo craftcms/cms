@@ -1,0 +1,32 @@
+<?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
+namespace craft\base;
+
+/**
+ * McpOutputFieldInterface defines the common interface to be implemented by field classes
+ * that control how their values are returned by MCP tools.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 5.12.1
+ * @mixin Field
+ */
+interface McpOutputFieldInterface extends FieldInterface
+{
+    /**
+     * Returns the field’s value as MCP tools should return it.
+     *
+     * Elements, element queries, and element collections are expanded as nested elements,
+     * subject to the user’s permissions and the nested element limit.
+     *
+     * @param mixed $value
+     * @param ElementInterface $element
+     * @param bool $public
+     * @return mixed
+     */
+    public function getMcpValue(mixed $value, ElementInterface $element, bool $public): mixed;
+}

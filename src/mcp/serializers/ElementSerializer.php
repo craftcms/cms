@@ -7,6 +7,7 @@ namespace craft\mcp\serializers;
 use Closure;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
+use craft\base\McpOutputFieldInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\mcp\Authorization;
@@ -73,16 +74,26 @@ class ElementSerializer extends \yii\base\Component
             }
 
             $value = $element->getFieldValue($field->handle);
-            // Container fields like CKEditor can hold nested elements without their value being elements
-            $isNested = $field instanceof ElementContainerFieldInterface && $this->isNestedValue($value);
+
+            if ($field instanceof McpOutputFieldInterface) {
+                $value = $field->getMcpValue($value, $element, $public);
+                $isNested = $this->isNestedValue($value);
+            } else {
+                // Container fields like CKEditor can hold nested elements without their value being elements
+                $isNested = $field instanceof ElementContainerFieldInterface && $this->isNestedValue($value);
+
+                if (!$isNested) {
+                    $value = $field->serializeValue($value, $element);
+                }
+            }
 
             if ($fields === null && $isNested) {
                 continue;
             }
 
-            $value = $isNested
-                ? $this->nestedValue($value, $remaining, $serializeNested)
-                : $field->serializeValue($value, $element);
+            if ($isNested) {
+                $value = $this->nestedValue($value, $remaining, $serializeNested);
+            }
 
             $data += [$field->handle => $value];
         }
