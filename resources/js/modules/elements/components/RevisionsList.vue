@@ -87,6 +87,7 @@
                   class="revision-item__compare"
                   icon=""
                   size="small"
+                  flush="inline-end"
                   :variant="ButtonVariant.Plain"
                 >
                   <craft-icon

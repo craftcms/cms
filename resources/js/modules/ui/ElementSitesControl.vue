@@ -269,7 +269,11 @@
             icon="xmark-large"
             variant="plain"
             size="small"
-            :flush="control.props.withStatuses ? undefined : 'inline-end'"
+            :flush="
+              control.props.withStatuses || site.compareUrl
+                ? undefined
+                : 'inline-end'
+            "
             :aria-label="t('Remove {name}', {name: site.name})"
             .loading="deleting === site.id"
             @click="deleteSite(site)"
@@ -280,6 +284,7 @@
               :href="site.compareUrl"
               icon=""
               size="small"
+              :flush="control.props.withStatuses ? undefined : 'inline-end'"
               :variant="ButtonVariant.Plain"
             >
               <craft-icon
