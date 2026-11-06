@@ -3,13 +3,11 @@
 declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
-use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\Twig\TwigExceptionMapper;
 use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Debug\ExceptionHandler;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 
 it('ignores missing compiled template files', function () {
@@ -29,13 +27,18 @@ it('maps errors thrown in templates to their source template', function () {
     try {
         app(TemplateManager::class)->renderTemplate('broken', templateMode: TemplateMode::Site);
     } catch (Throwable $exception) {
-        $response = app(ExceptionHandler::class)->render(Request::create('/', server: ['HTTP_ACCEPT' => 'application/json']), $exception);
-        $data = Json::decode((string) $response->getContent());
+        $handler = app(ExceptionHandler::class);
+        $handler->reportable(function (Throwable $reported) use (&$mapped) {
+            $mapped = $reported;
 
-        expect($data['exception'])->toBe(DivisionByZeroError::class)
-            ->and($data['file'])->toBe("$tempDir/broken.twig")
-            ->and($data['line'])->toBe(2)
-            ->and(collect($data['trace'])->pluck('file')->filter()->contains(fn (string $file) => str_contains($file, 'compiled_templates')))->toBeFalse();
+            return false;
+        });
+        $handler->report($exception);
+
+        expect($mapped)->toBeInstanceOf(DivisionByZeroError::class)
+            ->and($mapped->getFile())->toBe("$tempDir/broken.twig")
+            ->and($mapped->getLine())->toBe(2)
+            ->and(collect($mapped->getTrace())->pluck('file')->filter()->contains(fn (string $file) => str_contains($file, 'compiled_templates')))->toBeFalse();
 
         return;
     } finally {
