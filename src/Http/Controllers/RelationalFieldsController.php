@@ -74,15 +74,10 @@ readonly class RelationalFieldsController
         ]);
         $thumbSize = $request->enum('thumbSize', ChipThumbSize::class);
         $viewMode = $request->input('viewMode') ?? ElementSelect::VIEW_MODE_LIST;
-        $user = $request->craftUser();
 
         return new JsonResponse([
             'elements' => array_map(
-                // Cards and thumbnails show the element's content, so they're only drawn for elements the user can
-                // view. Others get the label-level list presentation.
-                fn (ElementInterface $element): array => $user?->can('view', $element)
-                    ? ElementSelect::presentation($element, $viewMode, $thumbSize)
-                    : ElementSelect::presentation($element),
+                fn (ElementInterface $element): array => ElementSelect::presentation($element, $viewMode, $thumbSize),
                 $this->normalizedElements($request, $structures),
             ),
         ]);
