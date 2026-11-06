@@ -448,6 +448,12 @@ class AssetTransformers
             return t('This asset transformer cannot be deleted because it is configured as the default.');
         }
 
+        foreach (array_keys(Arr::wrap(config('filesystems.disks'))) as $disk) {
+            if ($this->diskAssetTransformer((string) $disk) === $transformer->handle) {
+                return t('This asset transformer cannot be deleted because it is assigned to a disk.');
+            }
+        }
+
         $volumes = $this->projectConfig->get(ProjectConfig::PATH_VOLUMES);
 
         if (! is_array($volumes)) {
@@ -463,6 +469,16 @@ class AssetTransformers
         }
 
         return null;
+    }
+
+    /**
+     * Returns the transformer handle set by a Laravel disk's `assetTransformer` config key.
+     */
+    private function diskAssetTransformer(string $disk): ?string
+    {
+        $handle = Arr::wrap(config('filesystems.disks'))[$disk]['assetTransformer'] ?? null;
+
+        return is_string($handle) && $handle !== '' ? $handle : null;
     }
 
     private function rewriteHandleReferences(string $oldHandle, string $newHandle): void
@@ -530,9 +546,11 @@ class AssetTransformers
         #[\SensitiveParameter] mixed $definition,
         ?string $transformerHandle = null,
     ): AssetTransformRequest {
-        $volumeTransformer = $asset->getVolume()->getAssetTransformerHandle(false);
-        $transformerHandle ??= ($volumeTransformer !== null && $volumeTransformer !== '' ? $volumeTransformer : null)
-        ?? Cms::config()->defaultAssetTransformer;
+        $volume = $asset->getVolume();
+        $disk = $volume->getResolvedFsTarget();
+        $transformerHandle ??= $volume->getAssetTransformerHandle(false)
+            ?? ($disk !== null ? $this->diskAssetTransformer($disk) : null)
+            ?? Cms::config()->defaultAssetTransformer;
         $transformer = $this->resolve($transformerHandle);
 
         try {

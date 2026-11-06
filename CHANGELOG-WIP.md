@@ -91,6 +91,7 @@
 - Removed Craft-managed filesystems and their control panel settings. Volumes and Craft asset transformers now reference Laravel filesystem disks configured in `config/filesystems.php`, and each defines whether its assets have public URLs. Existing filesystem references are migrated to matching disks automatically, with an actionable error if a disk isn’t configured. ([#19650](https://github.com/craftcms/cms/pull/19650))
 - Added configurable asset transformers, which can be managed from Settings → Assets → Asset Transformers and assigned to asset volumes by handle.
 - Packages can now register asset transformers in code, via `CraftCms\Cms\Asset\AssetTransformerRegistry::register()`. Registered transformers have fixed names, handles, and drivers, can’t be deleted, and supply default settings that can be overridden in project config. The `craft` transformer is now registered the same way, and removing its project config entry restores its default settings. ([#20411](https://github.com/craftcms/cms/pull/20411))
+- Laravel filesystem disks can now set a default asset transformer via an `assetTransformer` key in `config/filesystems.php`. It applies to volumes using the disk that don’t set their own transformer, ahead of the `defaultAssetTransformer` config setting.
 - Added support for the libvips image driver via the optional `intervention/image-driver-vips` package.
 - Added BMP, HEIC, ICO, JPEG 2000, JPEG XL, and TIFF image transform formats, when supported by the active image driver.
 - Added the `defaultAssetTransformer` config setting.
