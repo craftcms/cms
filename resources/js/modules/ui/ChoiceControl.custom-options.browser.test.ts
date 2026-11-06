@@ -204,3 +204,24 @@ it('keeps the custom radio selected while typing text that matches a regular opt
 
   expect(emitted.at(-1)).toBe('abc');
 });
+
+it('rebuilds the custom options when an Undo puts back the value they last sent', async () => {
+  await mount(['mine']);
+  const input = container!.querySelector<HTMLInputElement>(
+    '[data-custom] input[type=text]'
+  )!;
+  const customTexts = () =>
+    [
+      ...container!.querySelectorAll<HTMLInputElement>(
+        '[data-custom] input[type=text]'
+      ),
+    ].map((custom) => custom.value);
+
+  await userEvent.clear(input);
+  await userEvent.type(input, 'typed');
+  value.value = ['copied'];
+  await vi.waitFor(() => expect(customTexts()).toEqual(['copied']));
+  value.value = ['typed'];
+
+  await vi.waitFor(() => expect(customTexts()).toEqual(['typed']));
+});

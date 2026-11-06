@@ -278,7 +278,12 @@
   watch(
     () => props.value,
     () => {
-      if (valueKey(props.value) === emittedValue) {
+      const ownEdit = valueKey(props.value) === emittedValue;
+      // Each emitted value comes back once, so a later write of the same
+      // value, such as an Undo, comes from outside.
+      emittedValue = undefined;
+
+      if (ownEdit) {
         return;
       }
 
