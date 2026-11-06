@@ -1278,6 +1278,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             $this->beforeQueryCallbacksBeforePrepare = $this->beforeQueryCallbacks;
         }
 
+        $originalWhereCount = count($this->query->wheres);
+
         foreach ($this->beforeQueryCallbacks as $i => $callback) {
             $callback($this);
 
@@ -1287,6 +1289,43 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         $this->beforeQueryCallbacks = [];
 
         $this->elementQueryBeforeQuery();
+
+        if (count($this->query->wheres) > $originalWhereCount) {
+            $this->addNewWheresWithinGroup($originalWhereCount);
+        }
+    }
+
+    /**
+     * Groups the conditions added before the query was prepared apart from the ones its params added,
+     * so an `orWhere()` can't bypass the element query's own conditions.
+     *
+     * @see \Illuminate\Database\Eloquent\Builder::addNewWheresWithinGroup()
+     */
+    private function addNewWheresWithinGroup(int $originalWhereCount): void
+    {
+        $allWheres = $this->query->wheres;
+
+        $this->query->wheres = [];
+
+        $this->groupWhereSlice(array_slice($allWheres, 0, $originalWhereCount));
+        $this->groupWhereSlice(array_slice($allWheres, $originalWhereCount));
+    }
+
+    /** @param array<int, array<string, mixed>> $whereSlice */
+    private function groupWhereSlice(array $whereSlice): void
+    {
+        $booleans = array_column($whereSlice, 'boolean');
+
+        if (! array_any($booleans, fn (string $boolean) => str_contains($boolean, 'or'))) {
+            $this->query->wheres = [...$this->query->wheres, ...$whereSlice];
+
+            return;
+        }
+
+        $group = $this->query->forNestedWhere();
+        $group->wheres = $whereSlice;
+
+        $this->query->wheres[] = ['type' => 'Nested', 'query' => $group, 'boolean' => str_replace(' not', '', $booleans[0])];
     }
 
     protected function elementQueryBeforeQuery(): void

@@ -104,6 +104,24 @@ test('trashed', function () {
     expect(entryQuery()->trashed(null)->count())->toBe(4);
 });
 
+it('keeps its own conditions when the query has a top-level orWhere', function () {
+    $live = EntryModel::factory()->create();
+    $disabled = EntryModel::factory()->for($live->section)->create();
+    $trashed = EntryModel::factory()->for($live->section)->trashed()->create();
+    $otherSection = EntryModel::factory()->create();
+    ElementModel::whereKey($disabled->id)->update(['enabled' => false]);
+
+    $ids = entryQuery()
+        ->sectionId($live->sectionId)
+        ->where('elements.id', $disabled->id)
+        ->orWhere('elements.id', $trashed->id)
+        ->orWhere('elements.id', $otherSection->id)
+        ->orWhere('elements.id', $live->id)
+        ->ids();
+
+    expect($ids)->toBe([$live->id]);
+});
+
 it('ignores inner query pagination when getting a pagination count', function () {
     EntryModel::factory(5)->create();
 
