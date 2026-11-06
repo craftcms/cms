@@ -621,6 +621,18 @@ describe('craft-field label-sr-only', () => {
     ).not.toBeNull();
   });
 
+  it('hides the read-only badge along with the label', async () => {
+    const element = await createField({
+      label: 'My field',
+      'label-sr-only': '',
+      readonly: '',
+    });
+
+    const heading = element.shadowRoot!.querySelector('.form-field__label')!;
+    expect(heading.classList.contains('cp-visually-hidden')).toBe(true);
+    expect(heading.querySelector('.read-only-badge')).not.toBeNull();
+  });
+
   it('shows the label again when label-sr-only is unset', async () => {
     const element = await createField({
       label: 'My field',

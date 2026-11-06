@@ -49,6 +49,8 @@ type FormControlTarget = HTMLElement & {
  * @slot feedback - Validation errors (e.g. an error list).
  * @slot tip - Tip notice content, rendered inside an info callout.
  * @slot warning - Warning notice content, rendered inside a warning callout.
+ * @slot label-badge - A short badge right after the label, styled like the
+ *   read-only badge, such as one saying the field changed. Give it its colors.
  * @slot label-extra - Extra heading content, rendered after a flex-grow spacer.
  *   @deprecated Use `actions` instead.
  * @slot actions - Field-level actions (hide-label toggles, copy-value buttons,
@@ -357,9 +359,10 @@ export default class CraftField extends FieldNotices(
    * entirely when there's nothing to put in it.
    *
    * With `label-sr-only`, the label stays available to screen readers but is
-   * visually hidden. When it's the only thing in the heading, the whole
-   * heading is hidden rather than just the label, so it leaves the flow and
-   * takes no gap; otherwise only the label is, keeping the rest visible.
+   * visually hidden, along with the read-only badge that belongs to it. When
+   * they're all the heading has, the whole heading is hidden rather than just
+   * the label, so it leaves the flow and takes no gap; otherwise only the
+   * label is, keeping the rest visible.
    */
   protected override _labelTemplate() {
     const hasLabel = this.__hasLabel;
@@ -368,11 +371,12 @@ export default class CraftField extends FieldNotices(
     const hasOtherContent =
       hasLabelExtra ||
       hasActions ||
-      this.readOnly ||
+      (this.readOnly && !this.labelSrOnly) ||
+      this.__hasSlot.test('label-badge') ||
       this.__hasSlot.test('heading-prefix') ||
       this.__hasSlot.test('heading-suffix');
 
-    if (!hasLabel && !hasOtherContent) {
+    if (!hasLabel && !hasOtherContent && !this.readOnly) {
       // Lion types this override as returning a TemplateResult.
       return html``;
     }
@@ -397,8 +401,15 @@ export default class CraftField extends FieldNotices(
         <slot name="heading-prefix"></slot>
         ${label}
         ${this.readOnly
-          ? html`<span class="read-only-badge">${t('Read Only')}</span>`
+          ? html`<span
+              class=${classMap({
+                'read-only-badge': true,
+                'cp-visually-hidden': this.labelSrOnly && hasOtherContent,
+              })}
+              >${t('Read Only')}</span
+            >`
           : nothing}
+        <slot name="label-badge"></slot>
         ${hasLabelExtra || hasActions
           ? html`<div class="flex-grow"></div>`
           : nothing}

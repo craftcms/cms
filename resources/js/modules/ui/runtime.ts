@@ -5,6 +5,7 @@ import type {
   UiChange,
   UiControlPayload,
   UiNodePayload,
+  UiPayload,
   UiValue,
   UiValues,
 } from './types';
@@ -344,6 +345,23 @@ export function pathsMatch(left: string[], right: string[]): boolean {
   return (
     left.length === right.length &&
     left.every((segment, index) => segment === right[index])
+  );
+}
+
+/** Whether any of a node's controls, including those nested in it, has an error. */
+export function nodeHasErrors(
+  node: UiNodePayload,
+  errors: UiPayload['errors']
+): boolean {
+  const controlPath = node.control?.path;
+
+  return Boolean(
+    (controlPath &&
+      errors.some((error) => pathsMatch(error.path, controlPath))) ||
+    node.children?.some((child) => nodeHasErrors(child, errors)) ||
+    node.control?.uis?.some((ui) =>
+      ui.nodes.some((child) => nodeHasErrors(child, errors))
+    )
   );
 }
 

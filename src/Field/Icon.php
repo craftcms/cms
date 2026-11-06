@@ -11,7 +11,6 @@ use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\IconSets;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
@@ -39,7 +38,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, ThumbableFieldInterface
+class Icon extends Field implements InlineEditableFieldInterface, MergeableFieldInterface, ThumbableFieldInterface
 {
     /**
      * @var array<string, array{name: string, terms: string, pro: bool, styles: list<string>}> Info about the available icons

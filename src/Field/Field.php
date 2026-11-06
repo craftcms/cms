@@ -899,14 +899,6 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         $to->setFieldValue($this->handle, $value);
     }
 
-    /**
-     * @see CrossSiteCopyableFieldInterface::copyCrossSiteValue()
-     */
-    public function copyCrossSiteValue(ElementInterface $from, ElementInterface $to): void
-    {
-        $this->copyValue($from, $to);
-    }
-
     public function getElementConditionRuleType(): array|string|null
     {
         return null;
