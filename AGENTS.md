@@ -12,6 +12,20 @@ Follow [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidance.
   translations from Craft CMS, but must not modify those translations or their
   catalog.
 
+## Control panel trigger
+
+Sites can use a custom `cpTrigger` to keep their control panel URL private, so
+treat it as sensitive.
+
+- Never reveal the `cpTrigger`, or control panel URLs that contain it, on the
+  front end: in site responses, discovery metadata (such as `.well-known/*`),
+  response headers, redirects, error messages, or anything else served to
+  visitors who haven't already reached the control panel. Use site or action
+  URLs instead.
+- Never include a real site's `cpTrigger` or control panel URL in pull request
+  descriptions, commit messages, changelog entries, issue comments, or other
+  public text. Use a placeholder such as `{cpTrigger}`.
+
 ## Migrations
 
 - Only add new migrations when working on a new major or minor release (such
