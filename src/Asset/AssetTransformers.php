@@ -288,7 +288,9 @@ class AssetTransformers
 
         $transformer = $this->createAssetTransformer($uid, $event->oldValue);
 
+        // A profile hidden by a registered one with the same handle isn't referenced, but still needs its cleanup.
         if ($this->isReplacedByRegisteredTransformer($transformer)) {
+            event(new AssetTransformerDeleting($transformer));
             $this->reset();
 
             return;

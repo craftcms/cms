@@ -12,6 +12,7 @@ use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Data\Volume as VolumeData;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
+use CraftCms\Cms\Asset\Events\AssetTransformerDeleting;
 use CraftCms\Cms\Asset\Events\AssetTransformerUpdating;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformerNotFoundException;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
@@ -143,6 +144,10 @@ it('lets registered transformers replace project config profiles with the same U
         'driver' => 'cloud',
     ]));
     Cms::config()->defaultAssetTransformer('cloud');
+    $deleted = [];
+    Event::listen(AssetTransformerDeleting::class, function (AssetTransformerDeleting $event) use (&$deleted) {
+        $deleted[] = $event->transformer->uid;
+    });
     app(ProjectConfig::class)->remove(ProjectConfig::PATH_ASSET_TRANSFORMERS.'.'.$sameHandle->uid);
 
     expect($transformers->getAllAssetTransformers()->pluck('name', 'handle')->sortKeys()->all())->toBe([
@@ -151,7 +156,8 @@ it('lets registered transformers replace project config profiles with the same U
         'kept' => 'Kept',
     ])
         ->and($transformers->resolve('cloud')->uid)->toBe($sameUid->uid)
-        ->and($transformers->getAssetTransformerByUid($sameHandle->uid))->toBeNull();
+        ->and($transformers->getAssetTransformerByUid($sameHandle->uid))->toBeNull()
+        ->and($deleted)->toBe([$sameHandle->uid]);
 });
 
 it('stores settings overrides for registered transformers without changing their identity', function () {
