@@ -338,7 +338,7 @@ is accepted and expanded). Behavior:
 - **Not** marked clearable + value empty → the key is `unset()` entirely, so the
   existing value is left untouched.
 
-"Empty" means null, whitespace-only string, or `[]`.
+"Empty" means null, a whitespace-only string, or an empty array (Laravel's `blank()`).
 
 ---
 
@@ -485,6 +485,11 @@ Implementors: `TitleField`, `CustomField`, `FullNameField`, `UsernameField`,
 `getMappingUiPrefix()`, `validateMapping()`, `canKeepMissingNestedElements()`,
 `setKeepMissingNestedElements()`. Used by `Matrix`, `Addresses`, `ContentBlock`.
 Matrix and Addresses can keep missing nested elements; ContentBlock can't (single block).
+
+Element importers validate `map`, `matchCriteria` and `clearableItems` against the field layout
+(`ImportHelper::validateMappingTree()`), passing each container field's branch to its
+`validateMapping()`. Matrix rejects entry types the field doesn't allow, keyed by uid or handle, at
+any depth. Addresses and ContentBlock don't check their nested fields yet.
 
 `FieldInterface::normalizeValueForImport($value, $importer, $rootOwner, $importSettings)` — base returns
 the value unchanged. Overridden by `BaseRelationField` (returns `[]` rather than null so
@@ -709,11 +714,13 @@ No command takes a `--map`, so CLI mapping is the transformer's job.
 Registries (register from a service provider's `boot()`; see `Component\TypeRegistry`):
 
 - `Import\DataTypes\DataTypes` — `$dataTypes->register(MyType::class);`.
-  Built-ins: JSON (`json`), CSV (`csv`, `tsv`, `txt`), XML (`xml`). A data type implements five
+  Built-ins: JSON (`json`), CSV (`csv`, `tsv`, `txt`), XML (`xml`). A data type implements eight
   **static** methods: `displayName()`, `extensions()`, `matches()`, `settingsUi()`, `getSettingsRules()`,
   `splitList()`, `format()` and `getHeadings()`. It may claim extensions another data type claims, and may add its own
   settings (see "Data types and their settings" in §2).
-  To replace a built-in, `remove()` it first.
+  To replace a built-in, `remove()` it first. `DataTypes::sampleStart()` (a sample without its BOM
+  and leading whitespace) and `DataTypes::dottedHeadings()` (a heading per dot-notation key of
+  nested data) are there to reuse in `matches()` and `getHeadings()`.
 - `Import\ImporterTypes` — `$importerTypes->register(MyImporter::class);`. Registering a new
   importable element type or model means contributing a concrete `ElementImporter` or
   `ModelImporter` subclass that implements `targetClass()`.
@@ -730,6 +737,8 @@ Registries (register from a service provider's `boot()`; see `Component\TypeRegi
 - Transformers: extend `ElementTransformer` (or the per-type one) and override
   `transform()`; or implement `additionalMatchCriteria()`. Transformers can also be
   given as a class string.
+  `ElementTransformer::fieldLayoutFor()` picks the layout an item's fields are matched against
+  (`EntryTransformer` falls back to the incoming entry type's).
   `ElementTransformer` also supports convention-based `normalize{PropName}()` methods, and
   auto-matches incoming keys that don't match exactly (`ImportHelper::prepKeyForAutoMatching()`,
   e.g. `Plain Text` / `plain_text` → `plainText`).
