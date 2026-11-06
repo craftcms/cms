@@ -49,7 +49,7 @@ it('maps renamed general config settings in the adapter', function(): void {
 it('supports moved deprecated config settings', function(): void {
     $config = GeneralConfig::create();
 
-    expect($config->generateTransformsBeforePageLoad)->toBeFalse();
+    expect($config->generateTransformsBeforePageLoad)->toBeNull();
 
     $config
         ->defaultCookieDomain('.example.test')
@@ -178,4 +178,26 @@ it('applies array general configs through the legacy settings', function(): void
 
 it('maps the renamed temp asset upload setting', function(): void {
     expect(GeneralConfig::create()->tempAssetUploadFs('uploads')->tempAssetUploadDisk)->toBe('uploads');
+});
+
+it('lets application type array overlays replace base settings before they are applied', function(): void {
+    $config = new GeneralConfigCompatibility()->convert(
+        ['extraAllowedFileExtensions' => ['foo']],
+        ['extraAllowedFileExtensions' => []],
+    );
+
+    expect($config->allowedFileExtensions)->not->toContain('foo');
+});
+
+it('does not restore an unset transform generation setting as an override', function(): void {
+    $config = new GeneralConfigCompatibility()->convert([]);
+
+    eval('$restored = ' . var_export($config, true) . ';');
+
+    expect($restored)->toBeInstanceOf(GeneralConfig::class)
+        ->and(Context::hasHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT))->toBeFalse();
+});
+
+it('accepts null trusted hosts in array general configs', function(): void {
+    expect(new GeneralConfigCompatibility()->convert(['trustedHosts' => null])->trustedHosts)->toBeNull();
 });
