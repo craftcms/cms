@@ -503,6 +503,7 @@ function generateGroupWrapper(component) {
 -->
 <script setup lang="ts">
   import type ${component.className} from '${component.importPath}.ts.mjs';
+  import {computed} from 'vue';
 
   defineOptions({
     name: '${component.className}',
@@ -517,6 +518,11 @@ ${defaults}
 
   const model = defineModel<${component.modelType}>();
 
+  // Without a model the group keeps the choices' own checked state.
+  const valueBinding = computed(() =>
+    model.value === undefined ? {} : {'.value': model.value}
+  );
+
   function onChange(event: Event) {
     model.value = (event.currentTarget as ${component.className}).value;
   }
@@ -525,7 +531,7 @@ ${defaults}
 <template>
   <${component.tagName}
 ${bindings}
-    .value="model ?? ${component.modelType === 'string' ? "''" : '[]'}"
+    v-bind="valueBinding"
     @change="onChange"
     :invalid="Boolean(error)"
   >
