@@ -91,7 +91,7 @@ it('lists sorted transformers with editable default labels, handles, drivers, an
 
     if ($allowAdminChanges) {
         expect($craftRow['_deletable'])->toBeFalse()
-            ->and($craftRow['_deleteDisabledReason'])->toBe('The Craft asset transformer cannot be deleted.')
+            ->and($craftRow['_deleteDisabledReason'])->toBe('This asset transformer cannot be deleted because it is registered in code.')
             ->and($remoteRow['_deletable'])->toBe($defaultHandle !== 'remote')
             ->and($remoteRow['_deleteDisabledReason'])->toBe($defaultHandle === 'remote' ? 'This asset transformer cannot be deleted because it is configured as the default.' : null)
             ->and($remoteRow['_deleteUrl'])->toBe(action([AssetTransformersController::class, 'destroy'], ['handle' => 'remote']))

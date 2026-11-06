@@ -439,9 +439,7 @@ class AssetTransformers
     public function getDeleteDisabledReason(AssetTransformer $transformer): ?string
     {
         if ($this->registry->has($transformer->uid)) {
-            return $transformer->uid === AssetTransformerRegistry::CRAFT_TRANSFORMER_UID
-                ? t('The Craft asset transformer cannot be deleted.')
-                : t('This asset transformer cannot be deleted because it is registered in code.');
+            return t('This asset transformer cannot be deleted because it is registered in code.');
         }
 
         $default = Env::parse(Cms::config()->defaultAssetTransformer);

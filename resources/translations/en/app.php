@@ -732,7 +732,6 @@ return [
     'Tasks' => 'Tasks',
     'Team permissions can be managed from' => 'Team permissions can be managed from',
     'Terminal' => 'Terminal',
-    'The Craft asset transformer cannot be deleted.' => 'The Craft asset transformer cannot be deleted.',
     'The app-relative path MCP clients connect to, such as `/mcp`.' => 'The app-relative path MCP clients connect to, such as `/mcp`.',
     'The app-relative path public MCP clients connect to, such as `/mcp`.' => 'The app-relative path public MCP clients connect to, such as `/mcp`.',
     'The app-relative path to give MCP clients that sign in with OAuth. It always requires an access token, so clients can discover how to sign in.' => 'The app-relative path to give MCP clients that sign in with OAuth. It always requires an access token, so clients can discover how to sign in.',

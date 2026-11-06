@@ -232,7 +232,7 @@ it('refuses asset transformer changes Craft doesn’t allow', function (): void 
 
     ($this->call)('delete', ['type' => 'asset-transformers', 'identifier' => ['handle' => 'craft']])
         ->assertJsonPath('result.isError', true)
-        ->assertJsonPath('result.content.0.text', 'The Craft asset transformer cannot be deleted.');
+        ->assertJsonPath('result.content.0.text', 'This asset transformer cannot be deleted because it is registered in code.');
 });
 
 it('separates a section lookup handle from its new handle and preserves section settings', function (): void {
