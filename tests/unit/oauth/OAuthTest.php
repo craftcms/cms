@@ -365,6 +365,12 @@ class OAuthTest extends TestCase
         // A resource on another origin isn’t within the control panel, even when its path matches
         $this->oauth->getResource('mcp')->resourceUrl = 'https://other.example/admin/mcp';
         self::assertSame(['https://site.example/actions/oauth/mcp'], $this->oauth->protectedResourceMetadata('mcp')['authorization_servers']);
+
+        // Relative site base URLs are resolved against the resource’s URL
+        $this->app->siteBaseUrl = '/';
+        self::assertSame(['https://api.example/actions/oauth/api'], $this->oauth->protectedResourceMetadata('api')['authorization_servers']);
+        $this->app->siteBaseUrl = '//site.example/';
+        self::assertSame(['https://site.example/actions/oauth/api'], $this->oauth->protectedResourceMetadata('api')['authorization_servers']);
     }
 
     private function grant(string $resource, ?string $scope = null, ?callable $prepare = null): array
@@ -438,6 +444,7 @@ class OAuthTestApplication extends Application
     public object $oauthConfig;
     public object $generalConfig;
     public OAuthTestUser $identity;
+    public string $siteBaseUrl = 'https://site.example/';
 
     public function getIsInitialized(): bool
     {
@@ -470,10 +477,14 @@ class OAuthTestApplication extends Application
 
     public function getSites(): object
     {
-        return new class() {
+        return new class($this->siteBaseUrl) {
+            public function __construct(private string $baseUrl)
+            {
+            }
+
             public function getPrimarySite(): Site
             {
-                return new Site(['baseUrl' => 'https://site.example/']);
+                return new Site(['baseUrl' => $this->baseUrl]);
             }
         };
     }

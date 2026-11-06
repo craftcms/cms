@@ -25,6 +25,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use yii\filters\RateLimiter;
 use yii\web\BadRequestHttpException;
 use yii\web\MethodNotAllowedHttpException;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 class OauthController extends Controller
@@ -84,8 +85,8 @@ class OauthController extends Controller
     public function bindActionParams($action, $params): array
     {
         // Site action URLs identify the resource with `oauthResource`, because clients send their RFC 8707 resource
-        // indicator, an absolute URL, as `resource`. Control panel routes have it in their path.
-        if (isset($params['oauthResource'])) {
+        // indicator, an absolute URL, as `resource`. Routed requests get it from their route, which can't be overridden.
+        if ($this->request->getIsActionRequest() && isset($params['oauthResource'])) {
             $params['resource'] = $params['oauthResource'];
         }
         return parent::bindActionParams($action, $params);
@@ -93,6 +94,11 @@ class OauthController extends Controller
 
     public function beforeAction($action): bool
     {
+        // Metadata is only served from its routes, so anonymous requests can't get it for resources whose URLs are
+        // within the control panel
+        if (in_array($action->id, ['metadata', 'resource'], true) && $this->request->getIsActionRequest()) {
+            throw new NotFoundHttpException();
+        }
         if (in_array($action->id, ['register', 'token'], true)) {
             $this->enableCsrfValidation = false;
         }

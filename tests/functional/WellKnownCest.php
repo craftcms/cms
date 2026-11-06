@@ -69,17 +69,6 @@ class WellKnownCest
             $endpoint = Json::decode($I->grabPageSource())['registration_endpoint'];
             $I->assertStringContainsString('/index.php?p=actions/oauth/register', $endpoint);
 
-            // URLs with the script name are built on the request's host, but the endpoints stay on the primary site's,
-            // even for metadata requested through the control panel on its own host
-            $general->baseCpUrl = 'https://cp.example.com';
-            $I->haveServerParameter('HTTP_HOST', 'cp.example.com');
-            $I->haveServerParameter('HTTPS', 'on');
-            $I->amOnPage("/$general->cpTrigger/$general->actionTrigger/oauth/metadata?resource=graphql");
-            $I->seeResponseCodeIs(200);
-            $I->assertSame($endpoint, Json::decode($I->grabPageSource())['registration_endpoint']);
-            $general->baseCpUrl = null;
-            $I->haveServerParameter('HTTP_HOST', parse_url($endpoint, PHP_URL_HOST));
-
             $I->sendAjaxPostRequest(UrlHelper::rootRelativeUrl($endpoint), [
                 'client_name' => 'Test client',
                 'redirect_uris' => ['https://client.example/callback'],
@@ -87,7 +76,30 @@ class WellKnownCest
             $I->seeResponseCodeIs(201);
         } finally {
             $general->omitScriptNameInUrls = true;
-            $general->baseCpUrl = null;
+        }
+    }
+
+    /**
+     * @param FunctionalTester $I
+     */
+    public function testOAuthDiscoveryOnlyServesRoutedResources(FunctionalTester $I)
+    {
+        $general = Craft::$app->getConfig()->getGeneral();
+        // The authenticated MCP server defaults to the control panel, so its discovery metadata has the cpTrigger
+        $I->assertStringContainsString("/$general->cpTrigger/", Craft::$app->getOAuth()->resource('mcp'));
+
+        $I->amOnPage('/.well-known/oauth-protected-resource/actions/graphql/api?oauthResource=mcp');
+        $I->seeResponseCodeIs(200);
+        $I->assertStringNotContainsString($general->cpTrigger, $I->grabPageSource());
+
+        // Metadata is only served from its routes, which can't be pointed at another resource
+        foreach (['', "/$general->cpTrigger"] as $prefix) {
+            foreach (['resource', 'metadata'] as $action) {
+                foreach (['resource', 'oauthResource'] as $param) {
+                    $I->amOnPage("$prefix/$general->actionTrigger/oauth/$action?$param=mcp");
+                    $I->seeResponseCodeIs(404);
+                }
+            }
         }
     }
 }

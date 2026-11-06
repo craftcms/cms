@@ -22,6 +22,7 @@ use DateInterval;
 use DateTime;
 use DateTimeImmutable;
 use GuzzleHttp\Psr7\Uri;
+use GuzzleHttp\Psr7\UriResolver;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\CryptKey;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
@@ -411,13 +412,15 @@ class OAuth extends Component
             return $this->cpUrl($endpoint, $resource);
         }
 
+        // Site base URLs can be relative, but OAuth URLs must be absolute, so resolve the base against the resource’s URL
         $site = Craft::$app->getSites()->getPrimarySite();
-        $baseUrl = $site->getBaseUrl() ?? UrlHelper::baseUrl();
+        $baseUrl = (string)UriResolver::resolve(new Uri($resourceUrl), new Uri($site->getBaseUrl() ?? UrlHelper::baseUrl()));
         if ($endpoint !== '') {
-            // `resource` is left for clients’ RFC 8707 resource indicators. URLs with the script name are built on the
-            // current request’s host, so move them to the primary site’s, like the issuer.
-            $url = UrlHelper::siteUrl("$general->actionTrigger/oauth/$endpoint", ['oauthResource' => $resource], siteId: $site->id);
-            return UrlHelper::hostInfo($baseUrl) . substr($url, strlen(UrlHelper::hostInfo($url)));
+            // `resource` is left for clients’ RFC 8707 resource indicators. URLs are built on the current request’s
+            // host when they have the script name or the base URL is relative, so put them on the base URL’s.
+            $url = new Uri(UrlHelper::siteUrl("$general->actionTrigger/oauth/$endpoint", ['oauthResource' => $resource], siteId: $site->id));
+            $base = new Uri($baseUrl);
+            return (string)$url->withScheme($base->getScheme())->withHost($base->getHost())->withPort($base->getPort());
         }
 
         // The issuer can’t have a query string, so it identifies the resource in its path, like the control panel’s.
