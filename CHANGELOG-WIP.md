@@ -254,7 +254,7 @@
 ### Extensibility
 
 #### Plugins
-- Added `CraftCms\Cms\User\Users::getFieldLayout()`, matching `CraftCms\Cms\Address\Addresses::getFieldLayout()`.
+- Added `CraftCms\Cms\User\Users::getFieldLayout()`.
 - Added the `appearance` property to `craft-radio-group`, and `CraftCms\Cms\Cp\Components\RadioGroup::appearance()`. `buttons` and `button-group` draw its radios as separate or joined buttons, and `cards` and `card-group` as separate or joined cards, with each radio’s icon drawn large above its label. Added the `icon` slot to `craft-radio`, shown before its label. Options wrap when they don’t fit in one row, and a joined group comes apart as it wraps. `Choice` options and `CraftCms\Cms\Cp\Components\Radio` with a `thumbnail` use this automatically. A thumbnail can be inline `svg` markup colored with the `--c-illustration-*` tokens, so it follows the theme and its outlines turn blue when selected; `CraftCms\Cms\Cp\Cp::illustration()` inlines one from `resources/public`. ([#20233](https://github.com/craftcms/cms/pull/20233), [#20285](https://github.com/craftcms/cms/pull/20285))
 - Added `CraftCms\Cms\Element\Contracts\ElementActionInterface::supportsQueue()`, which determines whether an element action can be performed on more than `CraftCms\Cms\Element\ElementActions::SYNC_LIMIT` elements from a queue job. `CraftCms\Cms\Element\Actions\ElementAction` returns `true` unless the action is a download. ([#20262](https://github.com/craftcms/cms/pull/20262))
 - Added the `craft:ui-value-change` DOM event and `Cp.$ui.active()` for plugins to observe canonical values from Craft 6 UI-rendered fields. ([#19920](https://github.com/craftcms/cms/discussions/19920))
