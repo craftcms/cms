@@ -311,7 +311,7 @@ it('returns focus to the action menu invoker when focus left the dialog before i
   const {dialog, menuInvoker} = await openFromMenuItem();
 
   (deepActiveElement() as HTMLElement).blur();
-  expect(dialog.matches(':focus-within')).toBe(false);
+  expect(document.activeElement).not.toBe(dialog);
   dialog.opened = false;
   await dialog.updateComplete;
 
@@ -354,7 +354,7 @@ it('returns focus to a popover’s button once a dialog opened from inside it cl
   await expect.element(opener).toBeVisible();
   await userEvent.click(opener);
 
-  await expect.poll(() => dialog.matches(':focus-within')).toBe(true);
+  await expect.poll(() => document.activeElement).toBe(dialog);
   await expect.poll(() => popover.opened).toBe(false);
 
   await userEvent.keyboard('{Escape}');
@@ -402,7 +402,7 @@ it.each([
     await expect.element(opener).toBeVisible();
     await userEvent.click(opener);
 
-    await expect.poll(() => dialog.matches(':focus-within')).toBe(true);
+    await expect.poll(() => document.activeElement).toBe(dialog);
     await expect.poll(() => popover.opened).toBe(false);
 
     await userEvent.keyboard('{Escape}');
