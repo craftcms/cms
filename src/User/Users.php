@@ -87,6 +87,7 @@ class Users
     public function __construct(
         private readonly Elements $elements,
         private readonly ElementCaches $elementCaches,
+        private readonly Fields $fields,
     ) {}
 
     /**
@@ -444,6 +445,14 @@ class Users
         $photo->avoidFilenameConflicts = true;
         $photo->newFolderId = $folderId;
         $this->elements->saveElement($photo);
+    }
+
+    /**
+     * Returns the user field layout.
+     */
+    public function getFieldLayout(): FieldLayout
+    {
+        return $this->fields->getLayoutByType(User::class);
     }
 
     /**
@@ -1153,10 +1162,8 @@ class Users
     {
         $data = $event->newValue;
 
-        $fieldsService = app(Fields::class);
-
         if (empty($data) || empty($config = reset($data))) {
-            $fieldsService->deleteLayoutsByType(User::class);
+            $this->fields->deleteLayoutsByType(User::class);
 
             return;
         }
@@ -1166,10 +1173,10 @@ class Users
 
         // Save the field layout
         $layout = FieldLayout::createFromConfig($config);
-        $layout->id = $fieldsService->getLayoutByType(User::class)->id;
+        $layout->id = $this->fields->getLayoutByType(User::class)->id;
         $layout->type = User::class;
         $layout->uid = key($data);
-        $fieldsService->saveLayout($layout, false);
+        $this->fields->saveLayout($layout, false);
 
         // Invalidate user caches
         $this->elementCaches->invalidateForElementType(User::class);
