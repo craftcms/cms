@@ -15,6 +15,7 @@ use craft\mcp\Authorization;
 use craft\mcp\elements\ElementAdapterRegistry;
 use craft\mcp\events\ElementSerializing;
 use craft\mcp\McpActor;
+use craft\mcp\McpOutputContext;
 use Illuminate\Support\Arr;
 use Mcp\Exception\ToolCallException;
 
@@ -142,20 +143,23 @@ class ElementSerializer extends \yii\base\Component
 
             $value = $element->getFieldValue($handle);
 
-            if ($field instanceof McpOutputFieldInterface) {
-                $value = $field->getMcpValue($value, $element, $public);
-            } elseif (!$field instanceof ElementContainerFieldInterface || !$this->isNestedValue($value)) {
-                // Container fields like CKEditor can hold nested elements without their value being elements
-                $data += [$handle => $field->serializeValue($value, $element)];
-                continue;
-            }
-
             // Nested elements are expanded for requested fields, summarized for requested dot paths, and omitted otherwise
             $mode = match (true) {
                 $requested !== null => self::NestedExpand,
                 isset($nested[$handle]) => self::NestedSummarize,
                 default => self::NestedOmit,
             };
+
+            if ($field instanceof McpOutputFieldInterface) {
+                $value = $field->getMcpValue($value, $element, new McpOutputContext(
+                    public: $public,
+                    requested: $mode !== self::NestedOmit,
+                ));
+            } elseif (!$field instanceof ElementContainerFieldInterface || !$this->isNestedValue($value)) {
+                // Container fields like CKEditor can hold nested elements without their value being elements
+                $data += [$handle => $field->serializeValue($value, $element)];
+                continue;
+            }
 
             if ($mode === self::NestedOmit && $this->isNestedValue($value)) {
                 continue;

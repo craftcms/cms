@@ -17,6 +17,7 @@
 - Fixed a bug where field values submitted for nested entries, Content Block fields, and addresses could be saved even if the user wasn’t permitted to see or edit the fields, per their field layout conditions. ([#20391](https://github.com/craftcms/cms/pull/20391))
 - Fixed a bug where MCP tools returned empty arrays for CKEditor field values.
 - Added `craft\base\McpOutputFieldInterface`, which fields can implement to control how their values are returned by MCP tools.
+- Added `craft\mcp\McpOutputContext`.
 - MCP `fields` arguments now accept dot paths, such as `blocks.innerBlocks`, which include nested fields of nested elements as summaries.
 - MCP tools now return users’ addresses when `addresses` is included in `fields`.
 - Added `craft\mcp\elements\ElementAdapterRegistry::supports()`.
