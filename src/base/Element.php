@@ -1006,6 +1006,16 @@ abstract class Element extends Component implements ElementInterface, AllowableI
     }
 
     /**
+     * Forgets the memoized sources of every element type.
+     *
+     * @internal
+     */
+    public static function forgetSources(): void
+    {
+        self::$sources = [];
+    }
+
+    /**
      * @inheritdoc
      */
     public static function sources(string $context): array

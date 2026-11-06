@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\conditions\ConditionInterface;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
@@ -74,6 +75,17 @@ class ElementSources extends Component
      * @see defineSources()
      */
     private array $sources = [];
+
+    /**
+     * Forgets memoized sources, for long-running processes such as the stdio MCP server.
+     *
+     * @internal
+     */
+    public function refreshSources(): void
+    {
+        $this->sources = [];
+        Element::forgetSources();
+    }
 
     /**
      * Returns the element index sources in the custom groupings/order.
