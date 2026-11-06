@@ -109,7 +109,7 @@ readonly class StartLazySession
         [$startSession, $parameters] = $this->startSession($request);
 
         if (($config['driver'] ?? null) === null || $request->cookies->get($config['cookie']) !== null) {
-            return $startSession->handle($request, $next);
+            return $startSession->handle($request, $next, ...$parameters);
         }
 
         $session = $this->manager->driver();
@@ -130,7 +130,7 @@ readonly class StartLazySession
                     || $this->attributes($request, $session->all()) !== $attributes;
 
                 return $response;
-            });
+            }, ...$parameters);
 
             // Checked on the final response, in case a host `StartSession` subclass adds the token to it.
             $used = $used || $this->hasToken($response, $session->token());
