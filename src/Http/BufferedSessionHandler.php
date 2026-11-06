@@ -7,13 +7,13 @@ namespace CraftCms\Cms\Http;
 use SessionHandlerInterface;
 
 /**
- * Holds back session writes until {@see flush()} is called.
+ * Buffers the session write, which is only passed on to the real handler if {@see flush()} is called.
  *
  * @internal
  *
  * @since 6.0.0
  */
-class DeferredSessionHandler implements SessionHandlerInterface
+class BufferedSessionHandler implements SessionHandlerInterface
 {
     /** @var array{string, string}|null */
     private ?array $write = null;

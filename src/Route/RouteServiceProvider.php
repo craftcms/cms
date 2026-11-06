@@ -32,8 +32,8 @@ use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Http\Middleware\RunQueue;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Http\Middleware\ShowBrokenImage;
+use CraftCms\Cms\Http\Middleware\StartLazySession;
 use CraftCms\Cms\Http\Middleware\StartSessionWithoutPersistence;
-use CraftCms\Cms\Http\Middleware\StartSiteSession;
 use CraftCms\Cms\Http\Middleware\TrackSessionActivity;
 use CraftCms\Cms\Http\Middleware\UpdateLocale;
 use CraftCms\Cms\Http\Middleware\UseCraftAuthGuard;
@@ -67,7 +67,7 @@ class RouteServiceProvider extends ServiceProvider
     public function register(): void
     {
         CraftMaintenanceMiddleware::registerRouteMacro();
-        StartSiteSession::registerRouteMacro();
+        StartLazySession::registerRouteMacro();
 
         /**
          * These middleware must run before all others
@@ -75,11 +75,11 @@ class RouteServiceProvider extends ServiceProvider
          */
         $kernel = $this->app->get(HttpKernel::class);
         $kernel->addToMiddlewarePriorityAfter(StartSession::class, StartSessionWithoutPersistence::class);
-        $kernel->addToMiddlewarePriorityAfter(StartSession::class, StartSiteSession::class);
+        $kernel->addToMiddlewarePriorityAfter(StartSession::class, StartLazySession::class);
         $kernel->addToMiddlewarePriorityBefore(AuthenticatesRequests::class, UseCraftAuthGuard::class);
         $kernel->addToMiddlewarePriorityBefore(SubstituteBindings::class, ResolveSite::class);
         $kernel->addToMiddlewarePriorityAfter(SubstituteBindings::class, ResolveElementRoute::class);
-        $kernel->addToMiddlewarePriorityAfter([StartSession::class, StartSessionWithoutPersistence::class, StartSiteSession::class], PreventStaleDatabaseReads::class);
+        $kernel->addToMiddlewarePriorityAfter([StartSession::class, StartSessionWithoutPersistence::class, StartLazySession::class], PreventStaleDatabaseReads::class);
         $globalMiddleware = array_map(
             fn (string $middleware): string => $middleware === LaravelMaintenanceMiddleware::class
                 ? CraftMaintenanceMiddleware::class

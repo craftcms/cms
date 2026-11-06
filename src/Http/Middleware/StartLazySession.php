@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
-use CraftCms\Cms\Http\DeferredSessionHandler;
+use CraftCms\Cms\Http\BufferedSessionHandler;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
@@ -28,7 +28,7 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * @since 6.0.0
  */
-readonly class StartSiteSession
+readonly class StartLazySession
 {
     public function __construct(
         private SessionManager $manager,
@@ -48,14 +48,14 @@ readonly class StartSiteSession
         RouteRegistrar::macro('withLazySession', function (): RouteRegistrar {
             /** @var RouteRegistrar $this */
             return $this
-                ->middleware([...(array) ($this->attributes['middleware'] ?? []), StartSiteSession::class])
+                ->middleware([...(array) ($this->attributes['middleware'] ?? []), StartLazySession::class])
                 ->withoutMiddleware(StartSession::class);
         });
 
         Route::macro('withLazySession', function (): Route {
             /** @var Route $this */
             return $this
-                ->middleware(StartSiteSession::class)
+                ->middleware(StartLazySession::class)
                 ->withoutMiddleware(StartSession::class);
         });
     }
@@ -71,8 +71,8 @@ readonly class StartSiteSession
         $session = $this->manager->driver();
         $session->setRequestOnHandler($request);
         $handler = $session->getHandler();
-        $deferredHandler = new DeferredSessionHandler($handler);
-        $session->setHandler($deferredHandler);
+        $bufferedHandler = new BufferedSessionHandler($handler);
+        $session->setHandler($bufferedHandler);
         $used = false;
 
         try {
@@ -93,7 +93,7 @@ readonly class StartSiteSession
         }
 
         if ($used) {
-            $deferredHandler->flush();
+            $bufferedHandler->flush();
         } elseif ($response instanceof Response) {
             // `StartSession` and `PreventRequestForgery` add these to every response.
             $response->headers->removeCookie($config['cookie'], $config['path'], $config['domain']);

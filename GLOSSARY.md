@@ -33,3 +33,9 @@ _Avoid_: Purge, clear, bust (except as a vendor's API verb)
 **Cache tag**:
 A label attached to a stored response so it can be invalidated together with every other response sharing that label. Not defined by an RFC.
 _Avoid_: Surrogate key (Fastly), cache key
+
+## Sessions
+
+**Lazy session**:
+A visitor's session that isn't stored, and sends no cookie, until something writes to it or uses its CSRF token.
+_Avoid_: Deferred session, stateless session, cookieless session
