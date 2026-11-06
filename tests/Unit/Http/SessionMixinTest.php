@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Providers\AppServiceProvider;
 use CraftCms\Cms\Support\Flash;
+use CraftCms\Cms\View\Enums\Position;
 use Illuminate\Http\Request;
 use Illuminate\Session\SessionManager;
 use Illuminate\Session\Store as SessionStore;
@@ -56,4 +57,17 @@ it('does not queue broadcast messages outside the control panel', function () {
     ]);
 
     expect(session()->getJs(false))->toBe([]);
+});
+
+it('flashes broadcast messages as scripts for pages that render flashed JS', function () {
+    app()->instance('request', Request::create('/admin/dashboard'));
+
+    session()->broadcastToJs(['event' => 'saveElement', 'id' => 42]);
+
+    expect(session()->getJs())->toBe([[
+        "window.dispatchEvent(new CustomEvent('craft:broadcast', {detail: {\"event\":\"saveElement\",\"id\":42}}));",
+        Position::Ready->value,
+        null,
+    ]])
+        ->and(session()->getBroadcasts())->toBe([]);
 });

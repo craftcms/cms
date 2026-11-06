@@ -16,7 +16,11 @@ import {installElementInstanceRefresh} from '@/modules/elements/element-instance
 import {installAnnouncer} from '@/common/announcer';
 import {observeFieldToggles} from '@/modules/field-toggle/observe';
 import {answerElevatedSessionRequests} from '@/modules/auth/elevated-session';
-import {relayBroadcastEvents} from '@/common/craft/broadcast';
+import {
+  broadcast,
+  relayBroadcastEvents,
+  type BroadcastMessage,
+} from '@/common/craft/broadcast';
 import {config, installCpApp, queue} from './cp-app';
 import {cpComponentRegistry} from './components.js';
 import {assistantApi} from './assistant.js';
@@ -169,6 +173,7 @@ const Cp = {
 
     // Before the app mounts, so the first page's messages have somewhere to go.
     setUpInertiaMessages();
+    relayPageBroadcasts();
 
     await createInertiaApp({
       resolve: async (name) => {
@@ -200,6 +205,26 @@ const Cp = {
  * When navigating to a new page, set keyboard focus on the route focus anchor and
  * announce route change.
  */
+/**
+ * Broadcasts the messages the server queued for the page with
+ * `session()->broadcastToJs()`, such as a full-page element save, so other
+ * tabs and this one hear about them. `success` covers visits, and the first
+ * `navigate` the page the CP loaded on; later `navigate`s restore history,
+ * whose messages have already gone out.
+ */
+function relayPageBroadcasts() {
+  const relay = (page: {props: Record<string, unknown>}) => {
+    const messages = page.props.broadcasts as BroadcastMessage[] | undefined;
+    messages?.forEach(broadcast);
+  };
+
+  const stopInitial = router.on('navigate', (event) => {
+    stopInitial();
+    relay(event.detail.page);
+  });
+  router.on('success', (event) => relay(event.detail.page));
+}
+
 function handleAccessibleRouting() {
   const {announce} = useAnnouncer();
   let previousPathname = window.location.pathname;

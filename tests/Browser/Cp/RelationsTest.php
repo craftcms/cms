@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
@@ -16,6 +17,8 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\User\Models\User;
+use Pest\Browser\Api\AwaitableWebpage;
+use Pest\Browser\Support\ComputeUrl;
 
 use function Pest\Laravel\actingAs;
 
@@ -39,6 +42,16 @@ beforeEach(function () {
         $title => Entry::factory()->forSection($section)->forEntryType($type)->indexed()->createElement(['title' => $title]),
     ]);
 });
+
+/**
+ * Opens a control panel page in another tab of the same browser as `$page`, so the two can broadcast to each other.
+ */
+function openCpTab(AwaitableWebpage $page, string $path): AwaitableWebpage
+{
+    $url = ComputeUrl::from('/'.trim((string) Cms::config()->cpTrigger, '/').'/'.ltrim($path, '/'));
+
+    return new AwaitableWebpage($page->page()->context()->newPage()->goto($url), $url)->assertPresent('main[id]');
+}
 
 /**
  * @return list<string>
@@ -134,4 +147,21 @@ it('refreshes a server-rendered chip in place when its entry is saved', function
                 };
             })()
             JS, ['selected' => true, 'input' => (string) $alpha->id, 'actions' => 1, 'focused' => true]);
+});
+
+it('updates a related entry’s chip in another tab when the entry is saved there', function () {
+    $home = $this->entries['Home'];
+    $alpha = $this->entries['Alpha'];
+    $home->setFieldValue('related', [$alpha->id]);
+    Elements::saveElement($home);
+
+    $homeTab = visitCp("content/entries/articles/$home->id")
+        ->assertSeeIn('role=group[name="Related"] >> craft-chip', 'Alpha');
+
+    openCpTab($homeTab, "content/entries/articles/$alpha->id")
+        ->type('#main >> input[name="title"]', 'Alpha Prime')
+        ->click('#main >> role=button[name="Save"]')
+        ->assertSee('Entry saved.');
+
+    $homeTab->assertSeeIn('role=group[name="Related"] >> craft-chip', 'Alpha Prime');
 });

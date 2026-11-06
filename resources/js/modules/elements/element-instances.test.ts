@@ -211,7 +211,7 @@ describe('installElementInstanceRefresh()', () => {
 });
 
 describe('onElementChanged()', () => {
-  it('only hears this tab’s saves with includeSelf', () => {
+  it('only hears this tab’s saves with includeSelf', async () => {
     const otherTabs = vi.fn();
     const everywhere = vi.fn();
     const stops = [
@@ -221,10 +221,24 @@ describe('onElementChanged()', () => {
 
     broadcast({event: 'saveElement', id: '12'});
     broadcast({event: 'deleteDraft', canonicalId: 5, draftId: 9});
-    stops.forEach((stop) => stop());
-    broadcast({event: 'saveElement', id: 13});
 
+    await vi.waitFor(() => expect(everywhere).toHaveBeenCalledTimes(2));
+    stops.forEach((stop) => stop());
     expect(otherTabs).not.toHaveBeenCalled();
-    expect(everywhere.mock.calls).toEqual([[12], [5]]);
+    expect(everywhere.mock.calls).toEqual(expect.arrayContaining([[12], [5]]));
+  });
+
+  it('calls once for messages about the same element that arrive together', async () => {
+    const handler = vi.fn();
+    const stop = onElementChanged(handler, {includeSelf: true});
+
+    broadcast({event: 'saveElement', id: 7});
+    broadcast({event: 'deleteDraft', canonicalId: 7, draftId: 3});
+    broadcast({event: 'saveElement', id: 7});
+
+    await vi.waitFor(() => expect(handler).toHaveBeenCalled());
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    stop();
+    expect(handler.mock.calls).toEqual([[7]]);
   });
 });

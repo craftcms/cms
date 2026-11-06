@@ -159,3 +159,16 @@ it('leaves out the stable config the client already has, until it changes', func
     }],
     'the user’s permissions change' => [fn (UserModel $user) => app(UserPermissions::class)->saveUserPermissions($user->id, ['accessCp', 'utility:system-report'])],
 ]);
+
+it('shares broadcast messages with the next page once', function () {
+    actingAs(User::find()->one());
+    swapUrlRequest(cp_url('dashboard'));
+    session()->broadcastToJs(['event' => 'saveElement', 'id' => 42]);
+
+    get(action([DashboardController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('broadcasts', [['event' => 'saveElement', 'id' => 42]]));
+
+    get(action([DashboardController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('broadcasts', []));
+});

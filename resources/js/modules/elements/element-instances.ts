@@ -48,6 +48,9 @@ const PAGE_OWNED_ATTRIBUTES = new Set([
   'draggable',
 ]);
 
+/** How long messages about the same element are gathered into one change. */
+const COALESCE_MS = 50;
+
 const FOCUSABLE = 'a[href], button, input, select, textarea, [tabindex]';
 
 let installed = false;
@@ -313,21 +316,44 @@ function isServerStateClass(name: string): boolean {
  * Calls `handler` with the ID of each element that's saved, or whose draft is
  * deleted, in another tab — and in this one too, with `includeSelf`. For
  * components that draw chips or cards from data, to refetch it.
+ *
+ * Messages about the same element that arrive together, such as the
+ * `saveElement` and `deleteDraft` an applied draft sends, call it once.
  */
 export function onElementChanged(
   handler: (elementId: number) => void,
   options: OnBroadcastOptions = {}
 ): () => void {
+  const pending = new Map<number, ReturnType<typeof setTimeout>>();
+  const changed = (id: unknown) => {
+    const elementId = Number(id);
+    if (!elementId || pending.has(elementId)) {
+      return;
+    }
+
+    pending.set(
+      elementId,
+      setTimeout(() => {
+        pending.delete(elementId);
+        handler(elementId);
+      }, COALESCE_MS)
+    );
+  };
+
   const stops = [
-    onBroadcast('saveElement', ({id}) => handler(Number(id)), options),
+    onBroadcast('saveElement', ({id}) => changed(id), options),
     onBroadcast(
       'deleteDraft',
-      ({canonicalId}) => handler(Number(canonicalId)),
+      ({canonicalId}) => changed(canonicalId),
       options
     ),
   ];
 
-  return () => stops.forEach((stop) => stop());
+  return () => {
+    stops.forEach((stop) => stop());
+    pending.forEach((timer) => clearTimeout(timer));
+    pending.clear();
+  };
 }
 
 /**

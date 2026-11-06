@@ -880,6 +880,9 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     }
   }
 
+  /** The element being saved, for announcing the save once it's done. */
+  let savingElementId: number | null = null;
+
   const {save} = useSettingsSave(
     form,
     () => ({
@@ -981,6 +984,9 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       // A submission supersedes any in-flight draft write, and what the last
       // one reported.
       onBeforeSave: () => {
+        // Read now: a save that redirects has swapped in the next page's props
+        // by the time it succeeds.
+        savingElementId = props.canonicalId;
         invalidateUiRefreshes();
         autosave.cancel();
         autosave.resetStatus();
@@ -989,6 +995,10 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
         draftElementIds.clear();
         if (slideout) {
           announceSaved(data);
+        } else if (savingElementId) {
+          // Each element type saves through its own action, not all of which
+          // tell other tabs, so the editor does.
+          broadcast({event: 'saveElement', id: savingElementId});
         }
 
         autosave.suspend(() => {
