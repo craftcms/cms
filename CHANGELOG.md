@@ -638,6 +638,8 @@
 - `craft-spinner` now has a `label` property, which describes what is loading to screen readers. Slotted text still replaces it.
 - `craft-field` now has an `instructions-sr-only` attribute, and UI fields and the `Field` view component have `instructionsSrOnly()`, which visually hide instructions while keeping them in the input’s accessible description.
 - Added the `<craft-option-group>` and `<craft-combobox-token>` web components. Multi-select comboboxes’ values are now rendered in the light DOM, within a `<ul slot="selection">` element. ([#20279](https://github.com/craftcms/cms/pull/20279))
+- Added `autocomplete="given-name"` and `autocomplete="family-name"` to the current user’s own First Name and Last Name fields, so browsers and password managers can fill them in.
+- Added `autocomplete` tokens to the Full Name, First Name, Last Name, and Organization fields on the current user’s own addresses, so browsers and password managers can fill them in.
 
 ### Templates and Routing
 - Section and Matrix site settings now have a single “Route To” setting, in place of separate Route Type and Route settings. Namespaced controller actions and values that match a named route are saved as routes, and anything else is saved as a template. ([#19942](https://github.com/craftcms/cms/pull/19942))
@@ -697,6 +699,8 @@
 - Nested elements now have a `$touchOwnersOnSave` property.
 - `CraftCms\Cms\Element\ElementHelper::normalizeSlug()` now has a `$language` argument, which defaults to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
 - `CraftCms\Cms\Support\Str::lower()`, `::title()`, and `::upper()` now have `$language` arguments, which default to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
+- Added `CraftCms\Cms\Ui\Controls\Choice::autocomplete()`, which sets a select’s `autocomplete` attribute.
+- `CraftCms\Cms\Ui\Controls\Text` controls have `autocomplete="off"` unless `autocomplete()` is called. Inputs that collect the current user’s own data should pass a token, such as `name` or `email`.
 - Removed the `plugin-store/craft-data` and `plugin-store/save-plugin-license-keys` actions.
 - Removed `CraftCms\Cms\Plugin\Contracts\PluginInterface::createSettingsModel()`. The static `createSettings()` must be implemented instead. (`createSettingsModel()` remains supported for plugins extending `craft\base\Plugin` through the Yii adapter.) ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Removed `Craft.AuthManager` and `Craft.cp.authManager`, which no longer had a remaining session time to act on. ([#20085](https://github.com/craftcms/cms/pull/20085))
@@ -740,6 +744,11 @@
 - Fixed a bug where users with an authenticator app or recovery codes couldn’t sign in to the control panel, because the verification step showed an empty pane.
 - Fixed a bug where the control panel could error after updating Craft, when Laravel’s compiled Blade views were newer than the updated views they were compiled from. Compiled views are now cleared after updates, and the Caches utility has a “Compiled views” option. ([#20366](https://github.com/craftcms/cms/issues/20366), [#20374](https://github.com/craftcms/cms/pull/20374))
 - Fixed a bug where elements couldn’t be selected, edited inline, or reordered on element indexes when the `allowAdminChanges` config setting was disabled, and the “Changes to these settings aren’t permitted in this environment.” notice was shown on screens other than settings, and twice on the Settings and Sites index pages. ([#20339](https://github.com/craftcms/cms/issues/20339), [#20340](https://github.com/craftcms/cms/issues/20340), [#20344](https://github.com/craftcms/cms/issues/20344), [#20364](https://github.com/craftcms/cms/pull/20364))
+- Fixed a bug where the current user’s own Full Name, Username, and Email fields had `autocomplete="off"`, so browsers and password managers couldn’t fill them in.
+- Fixed a bug where the current user’s own addresses had `autocomplete="off"` on their country, address lines, locality, administrative area, and postal code fields, including after their country was changed.
+- Fixed a bug where autofilling an address could save an administrative area from the previously selected country, such as “AR” for a Canadian address.
+- Fixed a bug where handle inputs didn’t have `autocomplete="off"` on Vue-rendered pages, so browsers could suggest autofill values for them.
+- Fixed a bug where Vue-rendered text fields ignored their `autocorrect` and `autocapitalize` settings.
 - Fixed a bug where publishing an approved draft through a workflow marked all of the element’s fields as modified, on both the element and its new revision.
 - Fixed a bug where read-only nested entry cards, such as on revisions, couldn’t be opened from their edit buttons or by double-clicking them. ([#20307](https://github.com/craftcms/cms/pull/20307))
 - Fixed a bug where keyboard shortcuts were shown with <kbd>Super</kbd> on Linux, rather than <kbd>Ctrl</kbd>.

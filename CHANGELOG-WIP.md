@@ -137,6 +137,8 @@
 - Improved the accessibility of the control panel, including element indexes, element edit screens, and the login page. ([#19025](https://github.com/craftcms/cms/pull/19025), [#19520](https://github.com/craftcms/cms/pull/19520), [#19699](https://github.com/craftcms/cms/pull/19699), [#19749](https://github.com/craftcms/cms/pull/19749), [#19785](https://github.com/craftcms/cms/pull/19785))
 - Added a “Skip to messages” link, and errors are now announced to screen readers immediately.
 - Error summaries now receive focus when a form fails validation, and each error links to its field, switching tabs if needed. ([#20044](https://github.com/craftcms/cms/issues/20044))
+- Added `autocomplete="given-name"` and `autocomplete="family-name"` to the current user’s own First Name and Last Name fields, so browsers and password managers can fill them in.
+- Added `autocomplete` tokens to the Full Name, First Name, Last Name, and Organization fields on the current user’s own addresses, so browsers and password managers can fill them in.
 
 ### Administration
 
@@ -335,6 +337,8 @@
 - Added `CraftCms\Cms\Ui\Controls\Checkbox`.
 - Added `CraftCms\Cms\Ui\Controls\FieldSelect`.
 - Added `CraftCms\Cms\Ui\Controls\ConditionBuilder::fieldLayouts()`.
+- Added `CraftCms\Cms\Ui\Controls\Choice::autocomplete()`, which sets a select’s `autocomplete` attribute.
+- `CraftCms\Cms\Ui\Controls\Text` controls have `autocomplete="off"` unless `autocomplete()` is called. Inputs that collect the current user’s own data should pass a token, such as `name` or `email`.
 - Added `CraftCms\Cms\Cp\Components\Field::actions()`.
 - Added `CraftCms\Cms\Cp\Components\ElementSelect` and `CraftCms\Cms\Cp\Components\SelectRich`, available as the `element-select` and `select-rich` `ui()` components. ([#20275](https://github.com/craftcms/cms/pull/20275))
 - Added `CraftCms\Cms\Field\BaseRelationField::elementSelectHtml()`, which renders relation fields’ editable inputs. ([#20275](https://github.com/craftcms/cms/pull/20275))

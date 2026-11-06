@@ -49,6 +49,8 @@ class Choice extends Control
     /** Label for the leading blank option, or `false` when there shouldn't be one. */
     private string|false|null $placeholder = null;
 
+    private ?string $autocomplete = null;
+
     private ?string $allLabel = null;
 
     private string $allValue = self::ALL_VALUE;
@@ -199,6 +201,18 @@ class Choice extends Control
         return $this;
     }
 
+    /**
+     * Sets the select’s `autocomplete` attribute, such as `country` when it collects the current user’s own data.
+     *
+     * Select presentation only. Without it, the select gets no `autocomplete` attribute.
+     */
+    public function autocomplete(string $autocomplete): static
+    {
+        $this->autocomplete = $autocomplete;
+
+        return $this;
+    }
+
     public function allOption(
         ?string $label = null,
         string $value = self::ALL_VALUE,
@@ -253,6 +267,10 @@ class Choice extends Control
 
         if ($this->allowCustom) {
             $props['allowCustom'] = true;
+        }
+
+        if ($this->autocomplete !== null) {
+            $props['autocomplete'] = $this->autocomplete;
         }
 
         return $props;
@@ -331,6 +349,7 @@ class Choice extends Control
             ->required($attributes['required'])
             ->describedBy($attributes['aria']['describedby'] ?? null)
             ->selectAttributes([
+                'autocomplete' => $control->props['autocomplete'] ?? null,
                 'aria' => ['invalid' => $attributes['aria']['invalid'] ?? null],
             ]);
     }

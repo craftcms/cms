@@ -78,6 +78,14 @@ describe('HandleControl', () => {
       'customHandle'
     );
   });
+
+  it('turns autocomplete off on the handle input', async () => {
+    const input = container.querySelector<HTMLInputElement>(
+      'input[name="settings[identity][handle]"]'
+    )!;
+
+    expect(input.getAttribute('autocomplete')).toBe('off');
+  });
 });
 
 const payload: UiPayload = {
