@@ -41,6 +41,7 @@ Some files contain Unicode characters in comments and strings. If a text edit fa
 - Run `composer ci` before creating a pull request.
 - Prefix the title with the origin version branch, such as `[6.x]` or `[5.x]`.
 - Use a `### Description` section and add `### Related issues` only when applicable. Do not add validation summaries.
+- Copilot's pull request review can arrive as a formal review with inline comments, or only as ordinary comments on the conversation tab. When waiting for or checking a Copilot review, look at both: reviews and review comments (`gh api repos/craftcms/cms/pulls/<number>/reviews` and `.../pulls/<number>/comments`) and conversation comments (`gh api repos/craftcms/cms/issues/<number>/comments`). Don't conclude Copilot hasn't responded from reviews alone.
 
 - When the branch already identifies a Linear issue, reference the related GitHub issue instead of repeating the Linear identifier.
 
