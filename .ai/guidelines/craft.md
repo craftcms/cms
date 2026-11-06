@@ -43,7 +43,7 @@ Some files contain Unicode characters in comments and strings. If a text edit fa
 - Use a `### Description` section and add `### Related issues` only when applicable. Do not add validation summaries.
 - Copilot's pull request review can arrive as a formal review, or only as ordinary comments on the conversation tab. When waiting for or checking a Copilot review, look at reviews (`gh api repos/craftcms/cms/pulls/<number>/reviews`), inline review comments (`.../pulls/<number>/comments`), and conversation comments (`gh api repos/craftcms/cms/issues/<number>/comments`). Don't conclude Copilot hasn't responded from reviews alone.
 - When asked to watch for a Copilot review, schedule checks of all three until it arrives. Don't rely on a GitHub event subscription alone; it doesn't report every Copilot response.
-- Read each Copilot review's full body. Findings can appear only there, such as under "previously missed issues", even when the summary says there are no open issues.
+- Read each Copilot review's full body. Findings can appear only there, such as under "previously missed issues", even when the summary says there are no open issues. The summary line can also raise concerns, such as "Needs a closer look" with no open issues; investigate each one like a finding.
 
 - When the branch already identifies a Linear issue, reference the related GitHub issue instead of repeating the Linear identifier.
 
