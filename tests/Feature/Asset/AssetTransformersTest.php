@@ -157,7 +157,7 @@ it('lets registered transformers replace project config profiles with the same h
         ->and($deleted)->toBe([$sameHandle->uid]);
 });
 
-it('stores settings overrides for registered transformers without changing their identity', function () {
+it('stores settings overrides for registered transformers and rejects identity changes', function () {
     app(AssetTransformDrivers::class)->extend('cloud', fn () => new TestAssetTransformDriver);
     $transformers = app(AssetTransformers::class);
     $registration = fn (array $settings) => new AssetTransformer([
@@ -167,19 +167,22 @@ it('stores settings overrides for registered transformers without changing their
         'settings' => $settings,
     ]);
     app(AssetTransformerRegistry::class)->register($registration(['zone' => 'default', 'quality' => 80, 'format' => 'webp']));
-    $override = $transformers->resolve('cloud');
-    $override->name = 'Renamed';
-    $override->handle = 'renamed';
+    $renamed = clone $transformers->resolve('cloud');
+    $renamed->name = 'Renamed';
+    $renamed->settings = ['zone' => 'renamed'];
+    $override = clone $transformers->resolve('cloud');
     $override->settings = ['zone' => 'custom'];
     $duplicate = new AssetTransformer(['name' => 'Duplicate', 'handle' => 'cloud', 'driver' => 'craft']);
 
+    $renamedSaved = $transformers->saveAssetTransformer($renamed);
     $saved = $transformers->saveAssetTransformer($override);
     $resolved = $transformers->resolve('cloud');
 
-    expect($saved)->toBeTrue()
+    expect($renamedSaved)->toBeFalse()
+        ->and($renamed->errors()->first('handle'))->toBe('The name, handle, and driver of a registered asset transformer can’t be changed.')
+        ->and($saved)->toBeTrue()
         ->and($resolved->name)->toBe('Cloud')
         ->and($resolved->settings)->toBe(['zone' => 'custom', 'quality' => 80, 'format' => 'webp'])
-        ->and($transformers->getAssetTransformerByHandle('renamed'))->toBeNull()
         ->and($transformers->saveAssetTransformer($duplicate))->toBeFalse()
         ->and($duplicate->errors()->first('handle'))->toBe('The asset transformer handle has already been taken.')
         ->and($transformers->getDeleteDisabledReason($resolved))->toBe('This asset transformer cannot be deleted because it is registered in code.')
@@ -229,13 +232,16 @@ it('rebuilds only registered transformers that have stored overrides', function 
         ->and($rebuild()[$craft->uid]['settings']['subpath'])->toBe('transforms');
 });
 
-it('refuses to change a registered transformer driver', function () {
+it('refuses to change a registered transformer identity', function () {
     $transformers = app(AssetTransformers::class);
     $craft = $transformers->resolve('craft');
     $craft->driver = 'other';
+    $renamed = clone $transformers->resolve('craft');
+    $renamed->handle = 'renamed';
 
     expect($transformers->saveAssetTransformer($craft))->toBeFalse()
-        ->and($craft->errors()->first('driver'))->toBe('The driver of a registered asset transformer can’t be changed.')
+        ->and($craft->errors()->first('handle'))->toBe('The name, handle, and driver of a registered asset transformer can’t be changed.')
+        ->and($transformers->saveAssetTransformer($renamed))->toBeFalse()
         ->and(app(ProjectConfig::class)->get(ProjectConfig::PATH_ASSET_TRANSFORMERS))->toBeNull();
 });
 

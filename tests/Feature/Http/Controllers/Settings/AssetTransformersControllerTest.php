@@ -216,23 +216,26 @@ it('renders stored settings for an unavailable transformer driver', function () 
         ->and($crawler->text())->toContain('This asset transformer’s driver is unavailable.');
 });
 
-it('keeps the Craft transformer identity pinned', function () {
+it('rejects identity changes to the Craft transformer but saves its settings', function () {
     $craft = app(AssetTransformers::class)->resolve('craft');
-
-    postJson(action([AssetTransformersController::class, 'store']), [
+    $payload = fn (array $identity) => [
         'uid' => $craft->uid,
-        'name' => 'Changed',
-        'handle' => 'changed',
         'driver' => 'craft',
+        ...$identity,
         'settings' => [
             'subpath' => 'transforms',
             'generateTransformsBeforePageLoad' => true,
         ],
-    ])->assertOk();
+    ];
+
+    postJson(action([AssetTransformersController::class, 'store']), $payload(['name' => 'Changed', 'handle' => 'changed']))
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['handle' => 'The name, handle, and driver of a registered asset transformer can’t be changed.']);
+    postJson(action([AssetTransformersController::class, 'store']), $payload(['name' => 'Craft', 'handle' => 'craft']))
+        ->assertOk();
 
     $saved = app(AssetTransformers::class)->resolve('craft');
     expect($saved->name)->toBe('Craft')
-        ->and($saved->driver)->toBe('craft')
         ->and($saved->settings['subpath'])->toBe('transforms')
         ->and($saved->settings['generateTransformsBeforePageLoad'])->toBeTrue();
 });
@@ -269,8 +272,8 @@ it('saves settings overrides for registered transformers and keeps them undeleta
             ->etc());
     postJson(action([AssetTransformersController::class, 'store']), [
         'uid' => $uid,
-        'name' => 'Changed',
-        'handle' => 'changed',
+        'name' => 'Cloud',
+        'handle' => 'cloud',
         'driver' => 'controller-test',
         'settings' => ['endpoint' => 'https://custom.example.test'],
     ])->assertOk();

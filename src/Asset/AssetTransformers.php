@@ -125,15 +125,10 @@ class AssetTransformers
             ? $this->registry->get($transformer->uid)
             : null;
 
-        if ($registered !== null) {
-            if ($transformer->driver !== $registered->driver) {
-                $transformer->errors()->add('driver', t('The driver of a registered asset transformer can’t be changed.'));
+        if ($registered !== null && [$transformer->name, $transformer->handle, $transformer->driver] !== [$registered->name, $registered->handle, $registered->driver]) {
+            $transformer->errors()->add('handle', t('The name, handle, and driver of a registered asset transformer can’t be changed.'));
 
-                return false;
-            }
-
-            $transformer->name = $registered->name;
-            $transformer->handle = $registered->handle;
+            return false;
         }
 
         if ($runValidation) {
