@@ -81,29 +81,48 @@ it('keeps getUrl transform arguments with a deprecation warning', function () {
         ->and($deprecation?->message)->toBe('Passing transform arguments to `Asset::getUrl()` is deprecated. Use `Asset::transform()->url` instead.');
 });
 
-it('selects explicit, volume, and default transformers in that order', function () {
+it('selects explicit, volume, disk, and default transformers in that order', function () {
     $explicit = registerTransformer('explicit');
     $volumeTransformer = registerTransformer('volume');
+    $diskTransformer = registerTransformer('disk');
     $default = registerTransformer('default');
     Cms::config()->defaultAssetTransformer('default');
     config()->set('filesystems.disks.transformer-source', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/transformer-source'),
+        'assetTransformer' => 'disk',
     ]);
     $volume = Volume::factory()->create([
         'fs' => 'transformer-source',
         'assetTransformer' => 'volume',
     ]);
+    $diskVolume = Volume::factory()->create(['fs' => 'transformer-source']);
     $asset = Asset::factory()->createElement(['volumeId' => $volume->id]);
+    $diskAsset = Asset::factory()->createElement(['volumeId' => $diskVolume->id]);
     $defaultAsset = Asset::factory()->createElement();
 
     app(AssetTransformers::class)->transform($asset, ['width' => 100]);
     app(AssetTransformers::class)->transform($asset, ['width' => 200], transformer: 'explicit');
-    app(AssetTransformers::class)->transform($defaultAsset, ['width' => 300]);
+    app(AssetTransformers::class)->transform($diskAsset, ['width' => 300]);
+    app(AssetTransformers::class)->transform($defaultAsset, ['width' => 400]);
 
     expect($volumeTransformer->request->parameters['width'])->toBe(100)
         ->and($explicit->request->parameters['width'])->toBe(200)
-        ->and($default->request->parameters['width'])->toBe(300);
+        ->and($diskTransformer->request->parameters['width'])->toBe(300)
+        ->and($default->request->parameters['width'])->toBe(400);
+});
+
+it('protects transformers referenced by disks', function () {
+    registerTransformer('disk');
+    config()->set('filesystems.disks.transformer-source', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/transformer-source'),
+        'assetTransformer' => 'disk',
+    ]);
+    $transformers = app(AssetTransformers::class);
+
+    expect($transformers->getDeleteDisabledReason($transformers->resolve('disk')))
+        ->toBe('This asset transformer cannot be deleted because it is assigned to a disk.');
 });
 
 it('resolves code-registered transformers without project config', function () {

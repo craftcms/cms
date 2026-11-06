@@ -15,8 +15,8 @@ driver while targeting different accounts or delivery domains.
 Craft stores transformers in Project Config under `assetTransformers`. Manage them under **Settings → Assets → Asset
 Transformers**. Each driver defines its own settings fields with the Control Panel UI system.
 
-Craft will not delete a transformer while it is the default or is assigned to a volume. Renaming its handle updates the
-default and volume references. If a plugin-provided driver is unavailable, Craft keeps the transformer and its settings in
+Craft will not delete a transformer while it is the default or is assigned to a volume or disk. Renaming its handle
+updates volume references; update `defaultAssetTransformer` and disk config yourself. If a plugin-provided driver is unavailable, Craft keeps the transformer and its settings in
 Project Config, marks the driver as unavailable, and refuses to save the transformer until the driver returns.
 
 ## Transformer selection
@@ -25,7 +25,22 @@ Craft chooses one transformer for each request, in this order:
 
 1. The `transformer` argument passed to `transform()`.
 2. The transformer assigned to the Asset's volume.
-3. The [`defaultAssetTransformer`](../src/Config/GeneralConfig.php) general config setting, whose default is `craft`.
+3. The `assetTransformer` key in the config of the volume's Laravel disk.
+4. The [`defaultAssetTransformer`](../src/Config/GeneralConfig.php) general config setting, whose default is `craft`.
+
+A disk's `assetTransformer` lets a transformer that only works with one kind of storage follow that storage, rather than
+becoming the default for every volume:
+
+```php
+// config/filesystems.php
+'disks' => [
+    'cloud' => [
+        'driver' => 's3',
+        // ...
+        'assetTransformer' => 'craftCloud',
+    ],
+],
+```
 
 Pass an explicit transformer with an inline definition:
 
@@ -312,7 +327,8 @@ public function boot(AssetTransformDrivers $drivers, AssetTransformerRegistry $t
 ```
 
 Registered profiles appear everywhere Project Config profiles do: the transformer index, volume settings, the `transformer`
-argument, and `defaultAssetTransformer`. To use one by default, set `defaultAssetTransformer` to its handle.
+argument, a disk's `assetTransformer`, and `defaultAssetTransformer`. To use one by default, set a disk's
+`assetTransformer` or `defaultAssetTransformer` to its handle.
 
 Craft derives each registered profile's UID from its handle, so don't set one. Named Image Transforms key their custom
 parameter values by transformer UID, so changing a registered profile's handle orphans those values. The handle must be a

@@ -95,7 +95,7 @@ class VolumeEditViewModel extends ViewModel
                 Combobox::make('assetTransformer')
                     ->options($this->assetTransformerOptions())
                     ->showAllOnEmpty(),
-            )->instructions(t('Select the asset transformer for this volume. Leave blank to use the global default.')),
+            )->instructions(t('Select the asset transformer for this volume. Leave blank to use the disk’s transformer or the global default.')),
         ]);
 
         if (Sites::isMultiSite()) {
