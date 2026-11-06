@@ -309,11 +309,14 @@ readonly class CompareElementsController
                 ->get()
             : collect();
 
+        // The newest revision is the current entry's, which is listed as “Current” rather than as a revision, as in the
+        // Versions panel.
         $revisions = $hasRevisions
             ? $canonical::find()
                 ->revisionOf($canonical)
                 ->siteId($canonical->siteId)
                 ->status(null)
+                ->offset(1)
                 ->limit(self::MAX_REVISIONS)
                 ->orderByDesc('dateCreated')
                 ->get()

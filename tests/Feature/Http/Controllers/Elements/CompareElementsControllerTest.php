@@ -476,6 +476,33 @@ it('compares a revision with the revision before it', function () {
         ]));
 });
 
+it('lists the current entry’s own revision only when it’s being compared', function () {
+    $entry = comparedEntry(['summary' => 'Opens in March']);
+    $firstId = app(Revisions::class)->createRevision($entry, auth()->id());
+    travel(1)->minutes();
+    $entry->setFieldValue('summary', 'Opens in April');
+    expect(Elements::saveElement($entry))->toBeTrue();
+    $currentId = app(Revisions::class)->createRevision($entry, auth()->id());
+
+    $first = Entry::find()->id($firstId)->revisions(null)->status(null)->one();
+    $current = Entry::find()->id($currentId)->revisions(null)->status(null)->one();
+    $revisionLabels = fn (array $menu): array => collect($menu)
+        ->firstWhere('heading', 'Revisions')['items'] ?? [];
+
+    get(compareScreenUrl($entry, []))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => expect(
+            collect($revisionLabels($page->toArray()['props']['from']['versionMenu']))->pluck('label')->all()
+        )->toContain("Revision $first->revisionNum")->not->toContain("Revision $current->revisionNum"));
+
+    app()->forgetScopedInstances();
+    get(compareScreenUrl($entry, ['from' => "revision-$current->revisionId"]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => expect(
+            collect($revisionLabels($page->toArray()['props']['from']['versionMenu']))->pluck('label')->all()
+        )->toContain("Revision $current->revisionNum"));
+});
+
 it('compares two sites, flagging only translations that are missing on one side', function () {
     $entry = comparedEntry(['summary' => 'Twelve works on paper', 'tagline' => 'Drawing as light', 'venue' => 'Main campus']);
     $translation = Entry::find()->id($entry->id)->siteId($this->secondarySite->id)->status(null)->one();
@@ -503,6 +530,11 @@ it('links each version in one side’s menu to a comparison that keeps the other
         ->revisions(null)
         ->status(null)
         ->one();
+    // A newer revision, which is the current entry's, so the one above is listed.
+    travel(1)->minutes();
+    $entry->setFieldValue('summary', 'Shown in the North Wing');
+    expect(Elements::saveElement($entry))->toBeTrue();
+    app(Revisions::class)->createRevision($entry, auth()->id());
 
     $links = [];
     get(compareScreenUrl($entry, ['draftId' => $draft->draftId]))
