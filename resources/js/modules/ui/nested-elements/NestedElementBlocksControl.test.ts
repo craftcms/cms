@@ -8,9 +8,9 @@ import {
 import type {ActionItems} from '@/common/types';
 import type {UiControlPayload} from '../types';
 
-// `craft-action-menu` is a Lion overlay and doesn't bootstrap under happy-dom.
-// These tests are about which items NestedElementBlocksControl composes, so stand in for it
-// and record the props each block's menu is handed.
+// These tests are about which items NestedElementBlocksControl composes, so
+// stand in for the action menu and record the props each block's menu is
+// handed.
 const menuStub = vi.hoisted(() => ({
   instances: [] as Array<{actions: ActionItems}>,
 }));

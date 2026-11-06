@@ -44,7 +44,7 @@ describe('craft-textarea', () => {
     );
   });
 
-  it('carries the value as Lion s modelValue', async () => {
+  it('pushes its value onto the native textarea', async () => {
     const element = await createTextarea();
 
     element.value = 'Some description';

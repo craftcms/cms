@@ -1,9 +1,8 @@
-import {LionButtonSubmit} from '@lion/ui/button.js';
-import {html, nothing} from 'lit';
+import {html, LitElement, nothing} from 'lit';
 import {property, state, query} from 'lit/decorators.js';
 import {t} from '@src/utilities/translate';
 import {linkRel, linkTarget, newTabCue} from '@src/utilities/external-links';
-import styles from './button.styles.js';
+import styles, {buttonBaseStyles} from './button.styles.js';
 import a11yErrorStyles from '@src/styles/a11y-error.styles.js';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import '../spinner/spinner.js';
@@ -29,6 +28,30 @@ export const ButtonVariant = {
 } as const;
 
 export type ButtonVariant = (typeof ButtonVariant)[keyof typeof ButtonVariant];
+
+const isActivationKey = (event: KeyboardEvent) =>
+  event.key === ' ' || event.key === 'Enter';
+
+/**
+ * Hidden native submit buttons, one per form holding a submit `craft-button`,
+ * so pressing Enter in a field still submits the form.
+ */
+const implicitSubmitters = new WeakMap<
+  HTMLFormElement,
+  {button: HTMLButtonElement; owners: Set<CraftButton>}
+>();
+
+function createImplicitSubmitter(): HTMLButtonElement {
+  const button = document.createElement('button');
+  button.type = 'submit';
+  button.tabIndex = -1;
+  button.setAttribute('aria-hidden', 'true');
+  button.style.cssText =
+    'position:absolute;inset-block-start:0;inset-inline-start:0;width:1px;height:1px;padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;';
+  // Its click is an implementation detail of the form, not one to listen for.
+  button.addEventListener('click', (event) => event.stopPropagation());
+  return button;
+}
 
 /**
  * @summary Interactive element that triggers an action or event.
@@ -57,57 +80,115 @@ export type ButtonVariant = (typeof ButtonVariant)[keyof typeof ButtonVariant];
  *   is the state being asked for. Cancelable — `active` is owned by whoever set
  *   it, and the button never changes it itself.
  */
-export default class CraftButton extends HasShortcut(
-  Actionable(LionButtonSubmit)
-) {
-  static override get styles() {
-    return [...super.styles, visuallyHiddenStyles, a11yErrorStyles, styles];
-  }
+export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
+  static override styles = [
+    buttonBaseStyles,
+    visuallyHiddenStyles,
+    a11yErrorStyles,
+    styles,
+  ];
 
   /**
-   * Defaults to `button` rather than Lion's `submit`: a plain action button is
-   * far the more common case, and Lion gates its submit and reset wiring
-   * behind this, so the default also skips that work.
+   * What the button does in a form: `submit` and `reset` act on the form
+   * that contains it, like a native button. Defaults to `button`.
    */
-  override type = 'button';
+  @property({reflect: true}) type: 'button' | 'submit' | 'reset' = 'button';
+
+  /** Disables the button: it can't be clicked, and leaves the tab order. */
+  @property({type: Boolean, reflect: true}) disabled = false;
 
   constructor() {
     super();
-    // We extend LionButtonSubmit so `type="submit"`/`"reset"` Just Work inside
-    // forms, but a plain action button is the far more common case — and Lion
-    // gates all of its submit/reset helper wiring behind `type`, so defaulting
-    // to "button" also skips that runtime cost. (LionButtonSubmit's constructor
-    // sets this to "submit"; we override it after super().)
-    this.type = 'button';
-    this.addEventListener('mousedown', this.#releaseOnDragEnd);
-    this.addEventListener('click', this.#blockDisabledClick, {capture: true});
+    this.addEventListener('click', this.#onClick, {capture: true});
+    this.addEventListener('mousedown', this.#onMouseDown);
+    this.addEventListener('keydown', this.#onKeyDown);
+    this.addEventListener('keyup', this.#onKeyUp);
+  }
+
+  /** Clicks the button, unless it's disabled. */
+  override click(): void {
+    if (!this.disabled) {
+      super.click();
+    }
   }
 
   /**
-   * A disabled button that stays reachable by the pointer still receives
-   * clicks, so they stop here, before any of the page's own listeners.
+   * Runs ahead of the page's own listeners: a disabled button that stays
+   * reachable by the pointer swallows the click, and a submit or reset button
+   * acts on its form.
    */
-  #blockDisabledClick = (event: Event) => {
+  #onClick = (event: Event) => {
     if (this.disabled) {
       event.preventDefault();
       event.stopImmediatePropagation();
+      return;
+    }
+
+    const form = this.closest('form');
+
+    if (this.type === 'submit') {
+      form?.requestSubmit();
+    } else if (this.type === 'reset') {
+      form?.reset();
+    }
+  };
+
+  /**
+   * Marks the button `active` while it's pressed. A press that starts a
+   * native drag, from a reorder handle say, never gets its mouseup, so the
+   * end of the drag releases it too.
+   */
+  #onMouseDown = () => {
+    this.active = true;
+
+    const release = () => {
+      this.active = false;
+      document.removeEventListener('mouseup', release, true);
+      document.removeEventListener('dragend', release, true);
+    };
+
+    document.addEventListener('mouseup', release, true);
+    document.addEventListener('dragend', release, true);
+  };
+
+  /** Space and Enter press the button; Space mustn't scroll the page. */
+  #onKeyDown = (event: KeyboardEvent) => {
+    if (event.key === ' ') {
+      event.preventDefault();
+    }
+
+    if (this.active || !isActivationKey(event)) {
+      return;
+    }
+
+    this.active = true;
+
+    const release = (keyup: KeyboardEvent) => {
+      if (isActivationKey(keyup)) {
+        this.active = false;
+        document.removeEventListener('keyup', release, true);
+      }
+    };
+
+    document.addEventListener('keyup', release, true);
+  };
+
+  #onKeyUp = (event: KeyboardEvent) => {
+    if (isActivationKey(event) && event.target === this) {
+      this.click();
     }
   };
 
   override connectedCallback() {
-    // Set link-appropriate host state *before* Lion runs, so it skips its
-    // role="button" assignment and (via type) its submit-helper wiring.
-    if (this.href && !this.disabled) {
-      this.originalType = this.type;
-      this.type = 'button';
-      this.setAttribute('role', 'presentation');
-      // Mark link state as applied so syncLinkHostState() below re-applies the
-      // rest (tabindex) without re-capturing the (now-overwritten) type.
-      this.linkHostStateApplied = true;
-    }
     super.connectedCallback();
     this._hostLabel = this.getAttribute('aria-label');
+
+    if (!this.hasAttribute('role')) {
+      this.setAttribute('role', 'button');
+    }
+
     this.syncLinkHostState();
+    this.#syncImplicitSubmitter();
     this.addEventListener('click', this.#handleToggleClick);
 
     this.#syncContent();
@@ -142,29 +223,63 @@ export default class CraftButton extends HasShortcut(
     this.#contentObserver?.disconnect();
     this.#contentObserver = null;
     this.#stopAwaitingRender();
+    this.#releaseImplicitSubmitter();
   }
 
-  /**
-   * Lion marks a pressed button `active` on mousedown and waits for the next
-   * mouseup to clear it. A button that starts a native drag — a reorder
-   * handle, say — never gets that mouseup: the drag swallows it, and the
-   * button stays `active` (and looks selected) until the next click anywhere.
-   * So for as long as this press lasts, the end of a drag counts as its
-   * release too, clearing `active` just as Lion's mouseup would have.
-   */
-  #releaseOnDragEnd = () => {
-    const release = () => {
-      this.active = false;
-      stop();
-    };
-    const stop = () => {
-      document.removeEventListener('dragend', release, true);
-      document.removeEventListener('mouseup', stop, true);
-    };
+  /** The form this button registered an implicit submitter with. */
+  #submitterForm: HTMLFormElement | null = null;
 
-    document.addEventListener('dragend', release, true);
-    document.addEventListener('mouseup', stop, true);
-  };
+  #syncImplicitSubmitter(): void {
+    const form =
+      this.isConnected && this.type === 'submit' ? this.closest('form') : null;
+
+    if (form === this.#submitterForm) {
+      return;
+    }
+
+    this.#releaseImplicitSubmitter();
+
+    if (!form) {
+      return;
+    }
+
+    let entry = implicitSubmitters.get(form);
+
+    if (!entry) {
+      entry = {button: createImplicitSubmitter(), owners: new Set()};
+      implicitSubmitters.set(form, entry);
+    }
+
+    entry.owners.add(this);
+    form.append(entry.button);
+    this.#submitterForm = form;
+  }
+
+  #releaseImplicitSubmitter(): void {
+    const form = this.#submitterForm;
+
+    if (!form) {
+      return;
+    }
+
+    const entry = implicitSubmitters.get(form);
+    this.#submitterForm = null;
+
+    if (!entry) {
+      return;
+    }
+
+    entry.owners.delete(this);
+
+    // Deferred: the form may be mid-removal itself, and a button moved within
+    // it registers again before this runs.
+    queueMicrotask(() => {
+      if (!entry.owners.size && implicitSubmitters.get(form) === entry) {
+        entry.button.remove();
+        implicitSubmitters.delete(form);
+      }
+    });
+  }
 
   /**
    * Reports that a toggle was activated, for the owner of `active` to act on.
@@ -207,6 +322,20 @@ export default class CraftButton extends HasShortcut(
     super.updated(changedProperties);
     if (changedProperties.has('href') || changedProperties.has('disabled')) {
       this.syncLinkHostState();
+    }
+
+    if (changedProperties.has('type')) {
+      this.#syncImplicitSubmitter();
+    }
+
+    // Only an `aria-disabled` it set itself is taken away again: an author
+    // may mark an enabled button disabled to keep it focusable.
+    if (changedProperties.has('disabled')) {
+      if (this.disabled) {
+        this.setAttribute('aria-disabled', 'true');
+      } else if (changedProperties.get('disabled')) {
+        this.removeAttribute('aria-disabled');
+      }
     }
 
     if (
@@ -277,10 +406,7 @@ export default class CraftButton extends HasShortcut(
       this.setAttribute('role', 'presentation');
       // No tabindex at all, rather than -1: a negative tabindex on a shadow
       // host drops its whole shadow tree from sequential focus navigation,
-      // so the anchor could never be reached with Tab. The null property
-      // keeps a pending reflect (Lion's constructor queues a 0) from adding
-      // it back; removing the attribute too takes effect right away.
-      this.tabIndex = null as unknown as number;
+      // so the anchor could never be reached with Tab.
       this.removeAttribute('tabindex');
       this.type = 'button';
       this.linkHostStateApplied = true;
@@ -443,7 +569,7 @@ export default class CraftButton extends HasShortcut(
   @property({reflect: true}) value: string;
 
   /** Whether the button is in a selected/active state (e.g. inside a radio button-group) */
-  @property({reflect: true, type: Boolean}) override active: boolean = false;
+  @property({reflect: true, type: Boolean}) active: boolean = false;
 
   /**
    * Makes the button a toggle: `aria-pressed` follows `active`. The button
@@ -545,7 +671,7 @@ export default class CraftButton extends HasShortcut(
   private linkHostStateApplied = false;
 
   /** The caller's `type` before link mode forced it to "button". */
-  private originalType: string | null = null;
+  private originalType: CraftButton['type'] | null = null;
 
   private get isLink(): boolean {
     return !!this.href && !this.disabled;

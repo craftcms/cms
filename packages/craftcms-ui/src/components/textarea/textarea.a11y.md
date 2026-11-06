@@ -1,6 +1,6 @@
 # `craft-textarea` accessibility
 
-Shares `HasLabel` with `craft-input`; see `input.a11y.md` for label, help text and error requirements. Built on Lion's textarea rather than `CraftInput`, so `input.test.ts` doesn't cover it; this file lists what it adds and what its own tests verify.
+Shares `HasLabel` with `craft-input`; see `input.a11y.md` for label, help text and error requirements. Built on `NativeField` directly rather than `CraftInput`, so `input.test.ts` doesn't cover it; this file lists what it adds and what its own tests verify.
 
 ## Requirements
 

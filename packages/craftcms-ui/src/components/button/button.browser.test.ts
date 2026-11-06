@@ -539,8 +539,7 @@ describe('[disabled]', () => {
   });
 
   it('keeps the variant’s own fill rather than repainting it', async () => {
-    // Lion's own disabled rule paints a flat gray; the variants override it, so
-    // muting is what has to carry the state.
+    // Muting carries the state, not a flat gray fill.
     const {enabled, disabled} = await mountPair('fill');
 
     expect(getComputedStyle(disabled).backgroundColor).toBe(
@@ -664,6 +663,153 @@ describe('craft-button link padding', () => {
         '<craft-button href="/" icon="arrow-right" aria-label="Go"></craft-button>'
       )
     ).toBe('0px');
+  });
+});
+
+describe('in a form', () => {
+  async function mountForm(markup: string): Promise<{
+    form: HTMLFormElement;
+    submits: SubmitEvent[];
+  }> {
+    document.body.innerHTML = `<form>${markup}</form>`;
+    const form = document.querySelector('form')!;
+    await Promise.all(
+      [...form.querySelectorAll('craft-button')].map((b) => b.updateComplete)
+    );
+    const submits: SubmitEvent[] = [];
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      submits.push(event);
+    });
+    return {form, submits};
+  }
+
+  it('submits its form when a submit button is clicked', async () => {
+    const {submits} = await mountForm(
+      '<craft-button type="submit">Save</craft-button>'
+    );
+
+    document.querySelector('craft-button')!.click();
+
+    expect(submits).toHaveLength(1);
+  });
+
+  it('submits when the click lands on an element in its label', async () => {
+    const {submits} = await mountForm(
+      '<craft-button type="submit"><span>Save</span></craft-button>'
+    );
+
+    document
+      .querySelector('craft-button span')!
+      .dispatchEvent(new MouseEvent('click', {bubbles: true, composed: true}));
+
+    expect(submits).toHaveLength(1);
+  });
+
+  it('checks the form is valid before submitting it', async () => {
+    const {submits} = await mountForm(
+      '<input required><craft-button type="submit">Save</craft-button>'
+    );
+
+    document.querySelector('craft-button')!.click();
+
+    expect(submits).toHaveLength(0);
+  });
+
+  it('resets its form when a reset button is clicked', async () => {
+    const {form} = await mountForm(
+      '<input value="a"><craft-button type="reset">Reset</craft-button>'
+    );
+    const input = form.querySelector('input')!;
+    input.value = 'b';
+
+    document.querySelector('craft-button')!.click();
+
+    expect(input.value).toBe('a');
+  });
+
+  it('leaves its form alone as a plain button', async () => {
+    const {submits} = await mountForm('<craft-button>Add</craft-button>');
+
+    document.querySelector('craft-button')!.click();
+
+    expect(submits).toHaveLength(0);
+  });
+
+  it('does not submit while disabled, even when the pointer reaches it', async () => {
+    const {submits} = await mountForm(
+      '<craft-button type="submit" disabled focusable-when-disabled>Save</craft-button>'
+    );
+
+    document
+      .querySelector('craft-button')!
+      .dispatchEvent(new MouseEvent('click', {bubbles: true, composed: true}));
+
+    expect(submits).toHaveLength(0);
+  });
+
+  it('lets Enter in a field submit the form', async () => {
+    const {userEvent} = await import('vite-plus/test/browser');
+    const {form, submits} = await mountForm(
+      '<input name="a"><input name="b"><craft-button type="submit">Save</craft-button>'
+    );
+
+    form.querySelector('input')!.focus();
+    await userEvent.keyboard('{Enter}');
+
+    expect(submits).toHaveLength(1);
+  });
+
+  it('takes its hidden submitter away with the last submit button', async () => {
+    const {form} = await mountForm(
+      '<craft-button type="submit">Save</craft-button><craft-button type="submit">Publish</craft-button>'
+    );
+    const [save, publish] = form.querySelectorAll('craft-button');
+    const submitters = () => form.querySelectorAll('button').length;
+
+    expect(submitters()).toBe(1);
+    save!.remove();
+    await Promise.resolve();
+    expect(submitters()).toBe(1);
+    publish!.type = 'button';
+    await publish!.updateComplete;
+    await Promise.resolve();
+    expect(submitters()).toBe(0);
+  });
+});
+
+describe('keyboard', () => {
+  it.each(['{Enter}', ' '])('clicks on %s', async (key) => {
+    const {userEvent} = await import('vite-plus/test/browser');
+    document.body.innerHTML = '<craft-button>Add</craft-button>';
+    const button = document.querySelector('craft-button')!;
+    await button.updateComplete;
+    const onClick = vi.fn();
+    button.addEventListener('click', onClick);
+
+    await userEvent.tab();
+    await userEvent.keyboard(key);
+
+    expect(onClick).toHaveBeenCalledOnce();
+  });
+
+  it('is pressed while Space is held, without scrolling the page', async () => {
+    const {userEvent} = await import('vite-plus/test/browser');
+    document.body.innerHTML = '<craft-button>Add</craft-button>';
+    const button = document.querySelector('craft-button')!;
+    await button.updateComplete;
+    let scrolled = true;
+    button.addEventListener('keydown', (event) => {
+      scrolled = !event.defaultPrevented;
+    });
+
+    await userEvent.tab();
+    await userEvent.keyboard('[Space>]');
+    expect(button.active).toBe(true);
+    expect(scrolled).toBe(false);
+
+    await userEvent.keyboard('[/Space]');
+    expect(button.active).toBe(false);
   });
 });
 

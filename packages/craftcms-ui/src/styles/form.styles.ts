@@ -37,9 +37,8 @@ export const baseFormControlStyles = css`
 
 /**
  * Base styles for the `.input-group__input`/`.input-group__container` div
- * that Lion's `FormControlMixin` renders around a slotted form control (see
- * `_inputGroupInputTemplate()` in `@lion/ui`'s `form-core`). Apply this to
- * that wrapper element, not the control itself.
+ * that the `FormControl` mixin renders around a slotted form control. Apply
+ * this to that wrapper element, not the control itself.
  *
  * It only sets layout/sizing concerns the wrapper needs (flex, width,
  * position) — it does not draw a border, radius, or background of its own.
