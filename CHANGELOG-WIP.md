@@ -805,7 +805,7 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 #### Control Panel
 - Added `Cp.$assistant`, with `addContext()`, `removeContext()`, `getContext()`, `registerContextSource()`, and `registerTextExpander()` methods, for adding items to Ask AI’s context, its “Add context” menu, and text expanders in its message box. See `docs/ask-ai.md`. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - `<craft-action-menu>` now spaces `<hr>` elements in its slotted content as it does the dividers it renders from its `actions`. ([#20109](https://github.com/craftcms/cms/pull/20109))
-- Removed `<craft-popover>`’s `label` property. Popover panels no longer have a `dialog` role, so they can’t be named. `<craft-action-menu>`’s `label` still names its generated button.
+- Removed `<craft-popover>`’s `label` property. Popover panels are now disclosure panels with no role of their own, so they can’t be named. `<craft-action-menu>`’s `label` still names its generated button.
 - `<craft-action-menu>` no longer sets `aria-haspopup` on its invoker.
 - `<craft-popover>`, and `<craft-action-menu>` with it, now closes when focus moves outside it.
 - Renamed `<craft-callout>`’s `title` property to `label`, and `CraftCms\Cms\Cp\Components\Callout::title()` to `label()`, so the title no longer adds a native tooltip. The `title` slot is unchanged.
