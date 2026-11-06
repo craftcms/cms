@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Mcp;
 
 use CraftCms\Cms\Activity\ActivityEventRecorder;
+use CraftCms\Cms\Element\Element;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Context;
 use Mcp\Server\Transport\StdioTransport as BaseStdioTransport;
@@ -38,6 +39,7 @@ class StdioTransport extends BaseStdioTransport
     protected function handleMessage(string $payload, ?Uuid $sessionId): void
     {
         $this->app->forgetScopedInstances();
+        Element::forgetSources();
         Context::addHidden(ActivityEventRecorder::ContextOrigin, 'MCP');
         Context::addHidden(self::ContextStdio, true);
 

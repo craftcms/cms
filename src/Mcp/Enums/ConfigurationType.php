@@ -17,6 +17,7 @@ use CraftCms\Cms\Mcp\Capabilities\Sites;
 use CraftCms\Cms\Mcp\Capabilities\UserGroups;
 use CraftCms\Cms\Mcp\Capabilities\Volumes;
 use CraftCms\Cms\Mcp\Capabilities\Workflows;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 
 /**
  * @since 6.0.0
@@ -100,6 +101,37 @@ enum ConfigurationType: string
             self::CpNavigations => 'navigations',
             default => $this->value,
         };
+    }
+
+    /**
+     * The project config paths that hold a record’s complete, unredacted configuration.
+     *
+     * A user group’s CP navigation also depends on the default navigation it builds on.
+     *
+     * @param  array<string, mixed>  $item  The record as the type’s capability returns it
+     * @return list<string>
+     */
+    public function configPaths(array $item): array
+    {
+        if ($this === self::CpNavigations) {
+            $default = ProjectConfig::PATH_CP_NAV.'.default';
+
+            return $item['userGroupUid'] === null ? [$default] : [$default, ProjectConfig::PATH_CP_NAV.'.groups.'.$item['userGroupUid']];
+        }
+
+        return [match ($this) {
+            self::Sections => ProjectConfig::PATH_SECTIONS,
+            self::EntryTypes => ProjectConfig::PATH_ENTRY_TYPES,
+            self::Fields => ProjectConfig::PATH_FIELDS,
+            self::Volumes => ProjectConfig::PATH_VOLUMES,
+            self::Sites => ProjectConfig::PATH_SITES,
+            self::SiteGroups => ProjectConfig::PATH_SITE_GROUPS,
+            self::UserGroups => ProjectConfig::PATH_USER_GROUPS,
+            self::ImageTransforms => ProjectConfig::PATH_IMAGE_TRANSFORMS,
+            self::Routes => ProjectConfig::PATH_ROUTES,
+            self::AssetTransformers => ProjectConfig::PATH_ASSET_TRANSFORMERS,
+            self::Workflows => ProjectConfig::PATH_WORKFLOWS,
+        }.'.'.$item['uid']];
     }
 
     /** @return list<string> */
