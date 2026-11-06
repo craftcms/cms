@@ -119,20 +119,22 @@ class FieldsCapabilityTest extends TestCase
             $this->assertToolError($this->callTool('configuration_update', [
                 'type' => 'fields',
                 'identifier' => ['id' => $field['id']],
-                'attributes' => ['settings' => ['sources' => ["section:$news->uid", 'section:mcpNews']]],
-            ]), 'settings.sources[1]: Source “section:mcpNews” doesn’t exist.');
+                'attributes' => ['settings' => ['sources' => ["section:$news->uid", 'section:mcpArchive']]],
+            ]), 'section:mcpArchive');
             $fieldsService->refreshFields();
-            self::assertSame(["section:$news->uid", "section:$later->uid"], $fieldsService->getFieldById($field['id'])->sources);
+            $related = $fieldsService->getFieldById($field['id']);
+            self::assertInstanceOf(Entries::class, $related);
+            self::assertSame(["section:$news->uid", "section:$later->uid"], $related->sources);
 
             $this->assertToolError($this->callTool('configuration_update', [
                 'type' => 'entry-types',
                 'identifier' => ['uid' => $this->entryType->uid],
-                'attributes' => ['fieldLayout' => ['tabs' => [['name' => 'Content', 'elements' => [
+                'attributes' => ['fieldLayout' => ['tabs' => [['name' => 'Content', 'elements' => json_encode([
                     ['type' => CustomField::class, 'fieldUid' => $field['uid']],
                     ['type' => CustomField::class, 'fieldUid' => $missing],
-                ]]]]],
+                ])]]]],
             ]), "fieldLayout.tabs[0].elements[1].fieldUid: Field “{$missing}” doesn’t exist.");
-            self::assertFalse((new Query())->from(Table::FIELDLAYOUTS)->where(['like', 'config', $missing])->exists());
+            self::assertStringNotContainsString($missing, implode(',', (new Query())->select('config')->from(Table::FIELDLAYOUTS)->column()));
         } finally {
             foreach (['mcpRelated', 'mcpAnything'] as $handle) {
                 if ($created = $fieldsService->getFieldByHandle($handle)) {

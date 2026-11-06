@@ -6,6 +6,7 @@ namespace craft\mcp\schema;
 
 use craft\base\ElementInterface;
 use craft\fieldlayoutelements\CustomField;
+use craft\helpers\Json;
 use craft\models\FieldLayout;
 use craft\services\Fields;
 use Mcp\Exception\ToolCallException;
@@ -69,7 +70,10 @@ class FieldLayoutConfig
         $errors = [];
 
         foreach ($config['tabs'] ?? [] as $tabIndex => $tab) {
-            foreach ($tab['elements'] ?? [] as $elementIndex => $element) {
+            // Tabs accept their elements as JSON, too
+            $elements = is_string($tab['elements'] ?? null) ? Json::decode($tab['elements']) : ($tab['elements'] ?? []);
+
+            foreach ((array)$elements as $elementIndex => $element) {
                 $fieldUid = $element['fieldUid'] ?? null;
 
                 if (is_a($element['type'] ?? '', CustomField::class, true) && $fieldUid !== null && !$this->fields->getFieldByUid((string)$fieldUid)) {
