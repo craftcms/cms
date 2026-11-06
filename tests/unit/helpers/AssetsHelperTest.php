@@ -161,8 +161,15 @@ class AssetsHelperTest extends TestCase
      */
     public function testMaxUploadSize(): void
     {
-        Craft::$app->getConfig()->getGeneral()->maxUploadFileSize = 1;
-        self::assertSame(1, Assets::getMaxUploadSize());
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $originalMaxUploadFileSize = $generalConfig->maxUploadFileSize;
+        $generalConfig->maxUploadFileSize = 1;
+
+        try {
+            self::assertSame(1, Assets::getMaxUploadSize());
+        } finally {
+            $generalConfig->maxUploadFileSize = $originalMaxUploadFileSize;
+        }
     }
 
     /**
