@@ -194,8 +194,8 @@
 - Updated paginated requests to resolve the current page from the configured `pageTrigger` query parameter rather than path-style pagination segments.
 - Using routes in `config/routes.php` is no longer supported. Register routes using [Laravel's routing](https://laravel.com/docs/12.x/routing) instead.
 - Routes outside the `craft` middleware group can now use `Route::allowDuringMaintenance()` to stay reachable during maintenance mode. ([#20095](https://github.com/craftcms/cms/pull/20095))
-- Front-end site requests no longer start a session or send `laravel_session` and `XSRF-TOKEN` cookies for visitors without one, unless something writes to the session or puts its CSRF token in the response. Responses that don't need a session can then be stored by shared caches, such as CDNs. Requests that arrive with a session cookie are unaffected. For visitors without a session, `back()` and `url()->previous()` rely on the `Referer` header, so sites should send a `Referrer-Policy` such as `same-origin` or `strict-origin-when-cross-origin` (the browser default), not `no-referrer`.
-- Added `Route::withLazySession()`, which gives any route, such as a plugin’s or the host app’s own, the same lazy session as front-end site requests.
+- Requests to Craft’s site routes no longer start a session or send `laravel_session` and `XSRF-TOKEN` cookies for visitors without one, unless something writes to the session or puts its CSRF token in the response. Responses that don't need a session can then be stored by shared caches, such as CDNs. Requests that arrive with a session cookie are unaffected. For visitors without a session, `back()` and `url()->previous()` rely on the `Referer` header, so sites should send a `Referrer-Policy` such as `same-origin` or `strict-origin-when-cross-origin` (the browser default), not `no-referrer`.
+- Added `Route::withLazySession()`, which gives any route, such as a plugin’s or the host app’s own, the same lazy session as Craft’s site routes.
 
 #### Templates
 - It’s now possible to load Blade views within Twig templates. ([#19148](https://github.com/craftcms/cms/pull/19148))
