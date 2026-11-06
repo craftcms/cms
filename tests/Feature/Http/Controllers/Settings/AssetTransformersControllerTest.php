@@ -253,13 +253,13 @@ it('deletes non-reserved transformers', function () {
 it('saves settings overrides for registered transformers and keeps them undeletable', function () {
     app(AssetTransformDrivers::class)->extend('controller-test', fn () => new ControllerTestAssetTransformDriver);
     app(AssetTransformerRegistry::class)->register(new AssetTransformer([
-        'uid' => 'b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f',
         'name' => 'Cloud',
         'handle' => 'cloud',
         'driver' => 'controller-test',
         'settings' => ['endpoint' => 'https://default.example.test'],
     ]));
     app(AssetTransformers::class)->reset();
+    $uid = app(AssetTransformers::class)->resolve('cloud')->uid;
 
     get(action([AssetTransformersController::class, 'edit'], ['handle' => 'cloud']))
         ->assertOk()
@@ -268,7 +268,7 @@ it('saves settings overrides for registered transformers and keeps them undeleta
             ->where('ui.values.settings.endpoint', 'https://default.example.test')
             ->etc());
     postJson(action([AssetTransformersController::class, 'store']), [
-        'uid' => 'b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f',
+        'uid' => $uid,
         'name' => 'Changed',
         'handle' => 'changed',
         'driver' => 'controller-test',
@@ -276,8 +276,8 @@ it('saves settings overrides for registered transformers and keeps them undeleta
     ])->assertOk();
     $index = get(action([AssetTransformersController::class, 'index']))->assertOk();
     $table = collect(flattenUiNodes($index->inertiaProps('ui.nodes')))->firstWhere('component', 'craft:admin-table')['props'];
-    $row = collect($table['rows'])->firstWhere('id', 'b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f');
-    $saved = app(AssetTransformers::class)->getAssetTransformerByUid('b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f');
+    $row = collect($table['rows'])->firstWhere('id', $uid);
+    $saved = app(AssetTransformers::class)->getAssetTransformerByUid($uid);
 
     expect([$saved->name, $saved->handle])->toBe(['Cloud', 'cloud'])
         ->and($saved->settings)->toBe(['endpoint' => 'https://custom.example.test'])

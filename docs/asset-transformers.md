@@ -303,7 +303,6 @@ public function boot(AssetTransformDrivers $drivers, AssetTransformerRegistry $t
     );
 
     $transformers->register(new AssetTransformer([
-        'uid' => '6f1f8c2e-3b7a-4d4e-9c1a-0d5e2b7f9a31',
         'name' => 'Remote Images',
         'handle' => 'remoteImages',
         'driver' => 'remote-images',
@@ -315,10 +314,10 @@ public function boot(AssetTransformDrivers $drivers, AssetTransformerRegistry $t
 Registered profiles appear everywhere Project Config profiles do: the transformer index, volume settings, the `transformer`
 argument, and `defaultAssetTransformer`. To use one by default, set `defaultAssetTransformer` to its handle.
 
-Give each registered profile a fixed UID, either a literal UUID or a UUIDv5 derived from a stable name. Named Image
-Transforms key their custom parameter values by transformer UID, so changing it orphans those values. The handle must be a
-valid Craft handle, and `craft` is reserved. `register()` throws an `InvalidArgumentException` if the
-profile has no UID, is invalid, or reuses the handle of another registered profile.
+Craft derives each registered profile's UID from its handle, so don't set one. Named Image Transforms key their custom
+parameter values by transformer UID, so changing a registered profile's handle orphans those values. The handle must be a
+valid Craft handle, and `craft` is reserved. `register()` throws an `InvalidArgumentException` if the profile sets a UID,
+is invalid, or reuses the handle of another registered profile.
 
 The registration defines the profile's name, handle, and driver, which the Control Panel shows as read-only, and its
 default settings. When someone saves the profile, Craft stores its settings in Project Config under its UID, and those

@@ -36,6 +36,7 @@ use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Ramsey\Uuid\Uuid;
 
 it('resolves the Craft transformer without writing project config', function () {
     $projectConfig = app(ProjectConfig::class);
@@ -111,7 +112,6 @@ it('resolves code-registered transformers without project config', function () {
     app(AssetTransformDrivers::class)->extend('cloud', fn () => $driver);
     $transformers = app(AssetTransformers::class);
     app(AssetTransformerRegistry::class)->register(new AssetTransformer([
-        'uid' => 'b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f',
         'name' => 'Cloud',
         'handle' => 'cloud',
         'driver' => 'cloud',
@@ -123,23 +123,20 @@ it('resolves code-registered transformers without project config', function () {
 
     app(AssetTransformers::class)->transform(Asset::factory()->createElement(), ['width' => 100]);
 
-    expect($driver->request->transformer->uid)->toBe('b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f')
+    expect($driver->request->transformer->uid)->toBe(Uuid::uuid5(Uuid::NAMESPACE_URL, 'craftcms:asset-transformer:cloud')->toString())
         ->and($driver->request->transformer->settings)->toBe(['zone' => 'example'])
         ->and($transformers->getAllAssetTransformers()->pluck('handle')->sort()->values()->all())->toBe(['cloud', 'craft'])
         ->and($projectConfig->get(ProjectConfig::PATH_ASSET_TRANSFORMERS))->toBeNull();
 });
 
-it('lets registered transformers replace project config profiles with the same UID or handle', function () {
+it('lets registered transformers replace project config profiles with the same handle', function () {
     $transformers = app(AssetTransformers::class);
     $sameHandle = new AssetTransformer(['name' => 'Old Cloud', 'handle' => 'cloud', 'driver' => 'craft']);
-    $sameUid = new AssetTransformer(['name' => 'Other', 'handle' => 'other', 'driver' => 'craft']);
     $unrelated = new AssetTransformer(['name' => 'Kept', 'handle' => 'kept', 'driver' => 'craft']);
     $transformers->saveAssetTransformer($sameHandle);
-    $transformers->saveAssetTransformer($sameUid);
     $transformers->saveAssetTransformer($unrelated);
 
     app(AssetTransformerRegistry::class)->register(new AssetTransformer([
-        'uid' => $sameUid->uid,
         'name' => 'Cloud',
         'handle' => 'cloud',
         'driver' => 'cloud',
@@ -156,7 +153,6 @@ it('lets registered transformers replace project config profiles with the same U
         'craft' => 'Craft',
         'kept' => 'Kept',
     ])
-        ->and($transformers->resolve('cloud')->uid)->toBe($sameUid->uid)
         ->and($transformers->getAssetTransformerByUid($sameHandle->uid))->toBeNull()
         ->and($deleted)->toBe([$sameHandle->uid]);
 });
@@ -165,7 +161,6 @@ it('stores settings overrides for registered transformers without changing their
     app(AssetTransformDrivers::class)->extend('cloud', fn () => new TestAssetTransformDriver);
     $transformers = app(AssetTransformers::class);
     $registration = fn (array $settings) => new AssetTransformer([
-        'uid' => 'b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f',
         'name' => 'Cloud',
         'handle' => 'cloud',
         'driver' => 'cloud',
@@ -218,7 +213,6 @@ it('resets registered transformers to their defaults when their overrides are re
 it('rebuilds only registered transformers that have stored overrides', function () {
     $transformers = app(AssetTransformers::class);
     app(AssetTransformerRegistry::class)->register(new AssetTransformer([
-        'uid' => 'b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f',
         'name' => 'Cloud',
         'handle' => 'cloud',
         'driver' => 'cloud',
@@ -248,13 +242,13 @@ it('refuses to change a registered transformer driver', function () {
 it('rebuilds registered transformer overrides without their defaults', function () {
     $transformers = app(AssetTransformers::class);
     app(AssetTransformerRegistry::class)->register(new AssetTransformer([
-        'uid' => 'b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f',
         'name' => 'Cloud',
         'handle' => 'cloud',
         'driver' => 'cloud',
         'settings' => ['zone' => 'default', 'quality' => 80],
     ]));
-    app(ProjectConfig::class)->set(ProjectConfig::PATH_ASSET_TRANSFORMERS.'.b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f', [
+    $uid = $transformers->resolve('cloud')->uid;
+    app(ProjectConfig::class)->set(ProjectConfig::PATH_ASSET_TRANSFORMERS.".$uid", [
         'name' => 'Cloud',
         'handle' => 'cloud',
         'driver' => 'cloud',
@@ -263,14 +257,13 @@ it('rebuilds registered transformer overrides without their defaults', function 
 
     $rebuilt = app(ConfigRebuilder::class)->build(app(ProjectConfig::class)->get())[ProjectConfig::PATH_ASSET_TRANSFORMERS];
 
-    expect($rebuilt['b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f']['settings'])->toBe(['zone' => 'custom'])
+    expect($rebuilt[$uid]['settings'])->toBe(['zone' => 'custom'])
         ->and($transformers->resolve('cloud')->settings)->toBe(['zone' => 'custom', 'quality' => 80]);
 });
 
 it('rejects invalid transformer registrations', function (array $config) {
     $transformers = app(AssetTransformers::class);
     app(AssetTransformerRegistry::class)->register(new AssetTransformer([
-        'uid' => 'b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f',
         'name' => 'Cloud',
         'handle' => 'cloud',
         'driver' => 'cloud',
@@ -282,10 +275,10 @@ it('rejects invalid transformer registrations', function (array $config) {
         ...$config,
     ])))->toThrow(InvalidArgumentException::class);
 })->with([
-    'missing UID' => [['handle' => 'registered']],
-    'invalid handle' => [['uid' => '2f6c0b9e-1d3a-4c55-9f0e-6a1b2c3d4e5f', 'handle' => 'craft-cloud']],
-    'reserved handle' => [['uid' => '2f6c0b9e-1d3a-4c55-9f0e-6a1b2c3d4e5f', 'handle' => 'craft']],
-    'duplicate handle' => [['uid' => '2f6c0b9e-1d3a-4c55-9f0e-6a1b2c3d4e5f', 'handle' => 'cloud']],
+    'explicit UID' => [['uid' => '2f6c0b9e-1d3a-4c55-9f0e-6a1b2c3d4e5f', 'handle' => 'registered']],
+    'invalid handle' => [['handle' => 'craft-cloud']],
+    'reserved handle' => [['handle' => 'craft']],
+    'duplicate handle' => [['handle' => 'cloud']],
 ]);
 
 it('lets the Craft driver control immediate generation', function () {

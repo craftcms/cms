@@ -7,13 +7,15 @@ namespace CraftCms\Cms\Asset;
 use CraftCms\Cms\Asset\Data\AssetTransformer;
 use Illuminate\Container\Attributes\Singleton;
 use InvalidArgumentException;
+use Ramsey\Uuid\Uuid;
 
 /**
  * Registers asset transformer profiles in code rather than project config.
  *
  * A registered profile’s name, handle, and driver are fixed, and its settings are defaults. Saving the profile stores
  * settings overrides in project config, keyed by its UID; removing them restores the defaults. Registered profiles
- * can’t be deleted, and they replace any project config profile with the same handle.
+ * can’t be deleted, and they replace any project config profile with the same handle. Each registered profile’s UID is
+ * derived from its handle, so it stays the same across environments and releases.
  *
  * Packages register profiles from their service provider:
  *
@@ -21,7 +23,6 @@ use InvalidArgumentException;
  * public function boot(AssetTransformerRegistry $transformers): void
  * {
  *     $transformers->register(new AssetTransformer([
- *         'uid' => '6f1f8c2e-3b7a-4d4e-9c1a-0d5e2b7f9a31',
  *         'name' => 'Remote Images',
  *         'handle' => 'remoteImages',
  *         'driver' => 'remote-images',
@@ -56,24 +57,20 @@ class AssetTransformerRegistry
     }
 
     /**
-     * @throws InvalidArgumentException if the profile is invalid, has no UID, or conflicts with another registered profile.
+     * @throws InvalidArgumentException if the profile is invalid, sets a UID, or conflicts with another registered profile.
      */
     public function register(AssetTransformer $transformer): void
     {
-        if ($transformer->uid === null) {
-            throw new InvalidArgumentException("Asset transformer [{$transformer->handle}] must have a UID to be registered.");
+        if ($transformer->uid !== null) {
+            throw new InvalidArgumentException("Asset transformer [{$transformer->handle}] can’t set a UID; registered transformers derive it from their handle.");
         }
 
         if (! $transformer->validate()) {
             throw new InvalidArgumentException("Asset transformer [{$transformer->handle}] is invalid: {$transformer->errors()->first()}");
         }
 
-        if ($transformer->handle === 'craft' || $transformer->uid === self::CRAFT_TRANSFORMER_UID) {
+        if ($transformer->handle === 'craft') {
             throw new InvalidArgumentException('The reserved [craft] asset transformer cannot be registered.');
-        }
-
-        if (isset($this->transformers[$transformer->uid])) {
-            throw new InvalidArgumentException("An asset transformer with the UID [{$transformer->uid}] is already registered.");
         }
 
         foreach ($this->transformers as $registered) {
@@ -82,7 +79,9 @@ class AssetTransformerRegistry
             }
         }
 
-        $this->transformers[$transformer->uid] = clone $transformer;
+        $transformer = clone $transformer;
+        $transformer->uid = Uuid::uuid5(Uuid::NAMESPACE_URL, "craftcms:asset-transformer:{$transformer->handle}")->toString();
+        $this->transformers[$transformer->uid] = $transformer;
     }
 
     public function has(?string $uid): bool
