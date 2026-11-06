@@ -26,12 +26,12 @@ One subtlety they handle for you: Lion emits a `model-value-changed` on mount ca
 
 Only the controls that need the bridge, seventeen in all:
 
-| Kind    | Components                                                                                                                                                                                             |
-| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Value   | `CraftInput`, `CraftInputColor`, `CraftInputHandle`, `CraftInputMoney`, `CraftInputPassword`, `CraftTextarea`, `CraftSelect`, `CraftSelectRich`, `CraftCombobox`, `CraftInputFile`, `CraftSelectColor` |
-| Checked | `CraftSwitch`, `CraftCheckbox`                                                                                                                                                                         |
-| Group   | `CraftCheckboxGroup`, `CraftPermissionTree`, `CraftRadioGroup`                                                                                                                                         |
-| Chrome  | `CraftField`                                                                                                                                                                                           |
+| Kind    | Components                                                                                                                                                                           |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Value   | `CraftInput`, `CraftInputColor`, `CraftInputHandle`, `CraftInputMoney`, `CraftInputPassword`, `CraftTextarea`, `CraftSelect`, `CraftSelectRich`, `CraftCombobox`, `CraftSelectColor` |
+| Checked | `CraftSwitch`, `CraftCheckbox`                                                                                                                                                       |
+| Group   | `CraftCheckboxGroup`, `CraftPermissionTree`, `CraftRadioGroup`                                                                                                                       |
+| Chrome  | `CraftField`                                                                                                                                                                         |
 
 Everything else — buttons, chips, cards, menus, overlays — has no value to bind, so there is no wrapper and none is needed. Use the custom element directly.
 

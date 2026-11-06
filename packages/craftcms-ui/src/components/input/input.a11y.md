@@ -1,6 +1,6 @@
 # `craft-input` accessibility
 
-The shared text-field requirements for `craft-input` and every control that extends it (`craft-input-color`, `-copy`, `-date`, `-handle`, `-money`, `-password` and `-time`). `craft-textarea` and `craft-input-file` share the `HasLabel` mixin and Lion's form-control wiring without extending `CraftInput`. Inside `craft-field`, the field draws the label, required indicator and instructions; see `field.a11y.md`.
+The shared text-field requirements for `craft-input` and every control that extends it (`craft-input-color`, `-copy`, `-date`, `-handle`, `-money`, `-password` and `-time`). `craft-textarea` shares the `HasLabel` mixin and Lion's form-control wiring without extending `CraftInput`. Inside `craft-field`, the field draws the label, required indicator and instructions; see `field.a11y.md`.
 
 Lion's `FormControlMixin` does the label, help text and feedback wiring. `HasLabel` itself only reflects a `has-label` attribute so the label is spaced from the control when there's one to space, and no gap is left when there isn't.
 
