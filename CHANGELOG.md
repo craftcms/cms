@@ -149,6 +149,7 @@
 - Element revision listings now use the control panel’s standard table, with a choice of page sizes. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Edit pages for elements without statuses, such as assets, no longer show a status badge or “Status” metadata, except for drafts. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Element edit pages’ “View” button is now on the right side of the toolbar, beside the action menu.
+- Removed the `useIframeResizer` and `previewIframeResizerOptions` config settings. Live Preview no longer uses iFrame Resizer. The previewed page always scrolls within its iframe.
 - Activity timeline day headings now show the date as a badge, and the Workflow details panel’s review panes are no longer outlined. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Details for the issues that block an element’s deletion now list the related elements as chips, rather than an embedded element index.
 - Comments in the Activity and Workflow details panels, and Ask AI’s messages and replies, are now styled the same, with syntax-highlighted code blocks on a dark background, and inline code in red. ([#20246](https://github.com/craftcms/cms/pull/20246))
@@ -686,6 +687,7 @@
 - `CraftCms\Cms\Element\Element::attributes()` no longer includes elements’ internal state, such as `forceSave`, `siteSettingsId`, and `trackDraftChanges`, so it’s left out of MCP tools’ results, element responses, and exports. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - `craft\web\assets\prismjs\PrismJsAsset` no longer registers Prism, or Craft 5.12’s Prism shim. Plugins that rely on Prism should bundle it themselves, or use `Craft.highlighter` instead. ([#20088](https://github.com/craftcms/cms/pull/20088))
 - `craft\web\assets\pluginstore\PluginStoreAsset` is now deprecated and does nothing.
+- The control panel no longer loads iFrame Resizer. `craft\web\assets\iframeresizer\IframeResizerAsset` and `craft\web\assets\iframeresizer\ContentWindowAsset` are now deprecated and don’t register it, so plugins that rely on it should bundle it themselves. `@craftcms/webpack` no longer treats `iframe-resizer` as an external.
 - Control panel screens from plugins that haven’t been updated for Craft 6 now render inside the control panel shell, with their tabs, assets, and JavaScript intact.
 - Element index screens from plugins that haven’t been updated for Craft 6 now use the new element index, with the element type’s sources in the secondary nav and a Customize Sources action.
 - System messages can now list the Twig variables they’re rendered with via a `variables` attribute, which the System Messages utility suggests while editing. Added `CraftCms\Cms\SystemMessage\SystemMessages::getTemplateVariables()`. ([#19946](https://github.com/craftcms/cms/pull/19946))
@@ -704,6 +706,7 @@
 - `CraftCms\Cms\Element\ElementHelper::normalizeSlug()` now has a `$language` argument, which defaults to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
 - `CraftCms\Cms\Support\Str::lower()`, `::title()`, and `::upper()` now have `$language` arguments, which default to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
 - Removed the `plugin-store/craft-data` and `plugin-store/save-plugin-license-keys` actions.
+- Removed `Craft.previewIframeResizerOptions`.
 - Removed `CraftCms\Cms\Plugin\Contracts\PluginInterface::createSettingsModel()`. The static `createSettings()` must be implemented instead. (`createSettingsModel()` remains supported for plugins extending `craft\base\Plugin` through the Yii adapter.) ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Removed `Craft.AuthManager` and `Craft.cp.authManager`, which no longer had a remaining session time to act on. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Removed the `users/login-modal` action and the `_special/login-modal` template. ([#20085](https://github.com/craftcms/cms/pull/20085))
