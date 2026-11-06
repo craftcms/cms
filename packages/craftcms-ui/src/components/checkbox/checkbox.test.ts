@@ -214,6 +214,20 @@ describe('semantics', () => {
 
     expect(element.querySelector('input')!.indeterminate).toBe(true);
   });
+
+  it('stops being indeterminate once the user clicks it', async () => {
+    const element = await createFromMarkup(
+      '<craft-checkbox label="All" indeterminate></craft-checkbox>'
+    );
+    const input = element.querySelector('input')!;
+
+    input.click();
+    await element.updateComplete;
+
+    expect(input.checked).toBe(true);
+    expect(input.indeterminate).toBe(false);
+    expect(element.indeterminate).toBe(false);
+  });
 });
 
 describe('events', () => {
