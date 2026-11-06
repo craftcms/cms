@@ -6,7 +6,7 @@ import {
   onTestFinished,
   vi,
 } from 'vite-plus/test';
-import {effectScope, ref} from 'vue';
+import {effectScope, nextTick, ref} from 'vue';
 import {actionClient} from '@craftcms/ui';
 import {broadcast} from '@/common/craft/broadcast';
 import {
@@ -128,7 +128,9 @@ describe('useElementPresentations()', () => {
 
     broadcast({event: 'saveElement', id: 7});
     await settle(post);
-    field.presentations.seed([{id: 7, label: 'Rendered later'}], 1);
+    field.presentations.seed([{id: 7, label: 'Rendered later'}], 1, {
+      replace: true,
+    });
 
     expect(field.presentations.get(7, 1)?.label).toBe('Rendered later');
   });
@@ -153,5 +155,64 @@ describe('useElementPresentations()', () => {
     scope.stop();
     const later = consume(list, []);
     expect(later.presentations.get(7, 1)).toBeUndefined();
+  });
+
+  it('keeps what a component mounted with from replacing a newer entry', async () => {
+    const post = respond();
+    const list = {elementType: ENTRY, viewMode: 'list'};
+    const field = consume(list, [{id: 7, siteId: 1}], [{id: 7, label: 'Old'}]);
+
+    broadcast({event: 'saveElement', id: 7});
+    await settle(post);
+    const fresh = field.presentations.get(7, 1)?.label;
+    const hiddenTab = consume(
+      list,
+      [{id: 7, siteId: 1}],
+      [{id: 7, label: 'Old'}]
+    );
+
+    expect(fresh).toMatch(/^list 7 #/);
+    expect(hiddenTab.presentations.get(7, 1)?.label).toBe(fresh);
+  });
+
+  it('ignores a refetch answered after a newer write', async () => {
+    let answer!: () => void;
+    const post = vi.spyOn(actionClient, 'post').mockImplementation(
+      (_url, body: any) =>
+        new Promise((resolve) => {
+          answer = () =>
+            resolve({
+              data: {elements: [{id: 7, siteId: body.siteId, label: 'Stale'}]},
+            } as never);
+        })
+    );
+    const field = consume({elementType: ENTRY, viewMode: 'list'}, [
+      {id: 7, siteId: 1},
+    ]);
+
+    broadcast({event: 'saveElement', id: 7});
+    await vi.waitFor(() => expect(post).toHaveBeenCalled());
+    field.presentations.seed([{id: 7, label: 'Rendered later'}], 1, {
+      replace: true,
+    });
+    answer();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(field.presentations.get(7, 1)?.label).toBe('Rendered later');
+  });
+
+  it('drops an element as soon as no component draws it', async () => {
+    const elements = ref<PresentedElement[]>([{id: 7, siteId: 1}]);
+    const scope = effectScope();
+    const field = scope.run(() =>
+      useElementPresentations({elementType: ENTRY, viewMode: 'list'}, elements)
+    )!;
+    onTestFinished(() => scope.stop());
+    field.seed([{id: 7, label: 'Related'}], 1);
+
+    elements.value = [];
+    await nextTick();
+
+    expect(field.get(7, 1)).toBeUndefined();
   });
 });

@@ -125,8 +125,8 @@
 
   /**
    * Elements drawn through the page's shared cache, so they're refetched when
-   * they're saved, here or in another tab. The server's render seeds it, since
-   * it's never older than what's cached.
+   * they're saved, here or in another tab. The server's renders seed it; the
+   * one the field mounted with only fills gaps, since it may be older.
    */
   const cached = useElementPresentations(
     () => ({
@@ -138,7 +138,10 @@
   );
   watch(
     () => props.control.props.elements,
-    (elements) => cached.seed(elements, props.control.props.criteria.siteId),
+    (elements, previous) =>
+      cached.seed(elements, props.control.props.criteria.siteId, {
+        replace: previous !== undefined,
+      }),
     {immediate: true}
   );
 

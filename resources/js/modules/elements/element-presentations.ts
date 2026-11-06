@@ -10,7 +10,7 @@
  */
 
 import {actionClient} from '@craftcms/ui';
-import {reactive, toValue, type MaybeRefOrGetter} from 'vue';
+import {reactive, toValue, watch, type MaybeRefOrGetter} from 'vue';
 import {tryOnScopeDispose} from '@vueuse/core';
 import {onElementChanged} from '@/modules/elements/element-instances';
 import type {ElementPresentation} from '@/modules/ui/element-select/types';
@@ -40,6 +40,12 @@ interface Consumer {
 const BATCH_MS = 10;
 
 const cache = reactive(new Map<string, ElementPresentation>());
+/**
+ * Each entry's latest write or refetch. A refetch's answer is only cached if
+ * nothing has written, refetched or evicted the entry since it was sent.
+ */
+const generations = new Map<string, number>();
+let lastGeneration = 0;
 const consumers = new Set<Consumer>();
 const changedIds = new Set<number>();
 let stopListening: (() => void) | null = null;
@@ -63,6 +69,23 @@ function entryKey(
   id: number
 ): string {
   return `${groupKey(query, siteId)}|${id}`;
+}
+
+function nextGeneration(key: string): number {
+  generations.set(key, ++lastGeneration);
+  return lastGeneration;
+}
+
+/** The entries components are drawing. */
+function usedKeys(): Set<string> {
+  const used = new Set<string>();
+  consumers.forEach((consumer) => {
+    const query = consumer.query();
+    consumer
+      .elements()
+      .forEach(({id, siteId}) => used.add(entryKey(query, siteId, id)));
+  });
+  return used;
 }
 
 /** Refetches the changed elements that components are drawing, one request per way they're drawn. */
@@ -90,6 +113,12 @@ async function refetchChanged(): Promise<void> {
 
   await Promise.all(
     [...groups.values()].map(async ({query, siteId, ids}) => {
+      const sent = new Map(
+        [...ids].map((id) => {
+          const key = entryKey(query, siteId, id);
+          return [key, nextGeneration(key)];
+        })
+      );
       const {data} = await actionClient.post<{
         elements?: ElementPresentation[];
       }>('relational-fields/structured-elements', {
@@ -100,11 +129,12 @@ async function refetchChanged(): Promise<void> {
         thumbSize: query.thumbSize ?? null,
       });
 
-      data.elements
-        ?.filter((element) => ids.has(element.id))
-        .forEach((element) =>
-          cache.set(entryKey(query, siteId, element.id), element)
-        );
+      data.elements?.forEach((element) => {
+        const key = entryKey(query, siteId, element.id);
+        if (sent.has(key) && generations.get(key) === sent.get(key)) {
+          cache.set(key, element);
+        }
+      });
     })
   );
 }
@@ -127,17 +157,14 @@ function listen(): void {
 
 /** Drops the entries no component draws any more. */
 function prune(): void {
-  const used = new Set<string>();
-  consumers.forEach((consumer) => {
-    const query = consumer.query();
-    consumer
-      .elements()
-      .forEach(({id, siteId}) => used.add(entryKey(query, siteId, id)));
-  });
+  const used = usedKeys();
 
-  [...cache.keys()]
+  [...new Set([...cache.keys(), ...generations.keys()])]
     .filter((key) => !used.has(key))
-    .forEach((key) => cache.delete(key));
+    .forEach((key) => {
+      cache.delete(key);
+      generations.delete(key);
+    });
 
   if (consumers.size === 0) {
     stopListening?.();
@@ -155,8 +182,16 @@ export function useElementPresentations(
 ): {
   /** The cached presentation of an element, if there is one. */
   get(id: number, siteId: unknown): ElementPresentation | undefined;
-  /** Caches what the server rendered, which is never older than what's cached. */
-  seed(presentations: ElementPresentation[], fallbackSiteId: unknown): void;
+  /**
+   * Caches what the server rendered. Only a render the component received
+   * after it mounted replaces what's cached: the one it mounted with may be
+   * older, if it was held back, as a hidden tab's fields are.
+   */
+  seed(
+    presentations: ElementPresentation[],
+    fallbackSiteId: unknown,
+    options?: {replace?: boolean}
+  ): void;
 } {
   const consumer: Consumer = {
     query: () => toValue(query),
@@ -164,6 +199,18 @@ export function useElementPresentations(
   };
   consumers.add(consumer);
   listen();
+
+  // Removed elements are dropped as soon as nothing draws them.
+  watch(
+    () => {
+      const query = consumer.query();
+      return consumer
+        .elements()
+        .map(({id, siteId}) => entryKey(query, siteId, id))
+        .join(',');
+    },
+    () => prune()
+  );
 
   tryOnScopeDispose(() => {
     consumers.delete(consumer);
@@ -173,17 +220,18 @@ export function useElementPresentations(
   return {
     get: (id, siteId) =>
       cache.get(entryKey(toValue(query), siteKey(siteId), id)),
-    seed: (presentations, fallbackSiteId) => {
-      presentations.forEach((presentation) =>
-        cache.set(
-          entryKey(
-            toValue(query),
-            siteKey(presentation.siteId ?? fallbackSiteId),
-            presentation.id
-          ),
-          presentation
-        )
-      );
+    seed: (presentations, fallbackSiteId, {replace = false} = {}) => {
+      presentations.forEach((presentation) => {
+        const key = entryKey(
+          toValue(query),
+          siteKey(presentation.siteId ?? fallbackSiteId),
+          presentation.id
+        );
+        if (replace || !cache.has(key)) {
+          cache.set(key, presentation);
+          nextGeneration(key);
+        }
+      });
     },
   };
 }
