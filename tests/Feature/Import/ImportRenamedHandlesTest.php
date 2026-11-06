@@ -76,7 +76,7 @@ beforeEach(function () {
             ],
         ]);
 
-        [$job] = new ImportJob($importPlan, 'step-1', $importerClass::resolvedSourcePath($source), 'run-id')->withFakeBatch();
+        [$job] = new ImportJob($importPlan, 'step-1', 'run-id')->withFakeBatch();
         $job->handle();
     };
 

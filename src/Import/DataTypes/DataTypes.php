@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import\DataTypes;
 
 use CraftCms\Cms\Component\TypeRegistry;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
 
 /**
@@ -84,5 +86,42 @@ class DataTypes extends TypeRegistry
         }
 
         return array_values(array_filter($types, fn (string $type) => $type::matches($sample)));
+    }
+
+    /**
+     * Returns the start of a file sample with any UTF-8 BOM and leading whitespace removed, for `matches()` checks.
+     *
+     * @param  string  $sample  The first few kilobytes of the file.
+     */
+    public static function sampleStart(string $sample): string
+    {
+        return ltrim(Str::chopStart($sample, "\xEF\xBB\xBF"));
+    }
+
+    /**
+     * Returns a heading for each unique dot-notation key in nested data, sorted by key,
+     * with a sample value as a hint where there is one.
+     *
+     * @param  array<mixed>  $data
+     * @return list<array{label: string, value: string, data?: array{hint: string}}>
+     */
+    public static function dottedHeadings(array $data): array
+    {
+        $headings = [];
+
+        foreach (Arr::uniqueDotifiedKeys($data) as $key) {
+            $sample = Arr::sampleValueAtDotifiedKey($data, $key);
+            $heading = ['label' => $key, 'value' => $key];
+
+            if (is_scalar($sample) && $sample !== '') {
+                $heading['data'] = ['hint' => (string) $sample];
+            }
+
+            $headings[] = $heading;
+        }
+
+        usort($headings, fn ($a, $b) => $a['label'] <=> $b['label']);
+
+        return $headings;
     }
 }

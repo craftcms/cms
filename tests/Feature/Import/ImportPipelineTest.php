@@ -20,7 +20,6 @@ use CraftCms\Cms\Import\Jobs\FinishImport;
 use CraftCms\Cms\Import\Jobs\Import as ImportJob;
 use CraftCms\Cms\Import\Jobs\ImportPipeline;
 use CraftCms\Cms\Support\Facades\ImportLog;
-use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\SystemMessage\Import\SystemMessageImporter;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use Illuminate\Bus\PendingBatch;
@@ -28,7 +27,6 @@ use Illuminate\Contracts\Queue\Job as QueueJob;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Testing\Fakes\BatchFake;
@@ -39,8 +37,6 @@ beforeEach(function () {
     // resolvedSourcePath() resolves against @root, which points at the Testbench skeleton in tests
     $this->originalRoot = Aliases::get('@root');
     Aliases::set('@root', dirname(__DIR__, 3));
-
-    $this->filePath = SystemMessageImporter::resolvedSourcePath('tests/Fixtures/Import/entries-plain-text.json');
 
     $this->importPlan = new ImportPlanData([
         'name' => 'Pipeline Plan',
@@ -55,7 +51,7 @@ beforeEach(function () {
     $this->step = fn (string $uid) => [
         'name' => "Step {$uid}",
         'uid' => $uid,
-        'job' => new ImportJob($this->importPlan, $uid, '/path/to/file.json', 'run-id'),
+        'job' => new ImportJob($this->importPlan, $uid, 'run-id'),
     ];
 
     $this->batchWithFailures = fn (int $failedJobs) => new BatchFake(
@@ -83,7 +79,7 @@ beforeEach(function () {
     };
 
     $this->runJob = function (int $start = 0): void {
-        [$job] = new ImportJob($this->importPlan, 'step-1', $this->filePath, 'run-id', $start)->withFakeBatch();
+        [$job] = new ImportJob($this->importPlan, 'step-1', 'run-id', $start)->withFakeBatch();
         $job->handle();
     };
 });
@@ -265,12 +261,17 @@ it('skips the first chunk of a step whose source is invalid', function () {
 });
 
 it('doesn’t check the step’s source again in later chunks', function () {
+    Storage::fake(Cms::config()->getImportDisk());
     Event::fake([ImportChunkStarted::class]);
+    $this->importPlan->steps[0]->batchSize(1);
+
+    [$job, $batch] = new ImportJob($this->importPlan, 'step-1', 'run-id')->withFakeBatch();
+    $job->handle();
     $this->importPlan->steps[0]->source('tests/Fixtures/Import/missing.json');
+    [$nextJob] = $batch->added[0]->withFakeBatch();
+    $nextJob->handle();
 
-    ($this->runJob)(1);
-
-    Event::assertDispatched(ImportChunkStarted::class);
+    Event::assertDispatchedTimes(ImportChunkStarted::class, 2);
 });
 
 it('fires the import started event with the plan’s steps and run ID', function () {
@@ -388,7 +389,7 @@ it('stops importing and doesn’t queue the next chunk once the job is canceled'
     $queueJob = Mockery::mock(QueueJob::class);
     $queueJob->allows(['uuid' => 'canceled-job-uuid', 'getConnectionName' => 'database']);
 
-    [$job, $batch] = new ImportJob($this->importPlan, 'step-1', $this->filePath, 'run-id')->withFakeBatch();
+    [$job, $batch] = new ImportJob($this->importPlan, 'step-1', 'run-id')->withFakeBatch();
     $job->setJob($queueJob);
     $job->handle();
 
@@ -399,17 +400,15 @@ it('stops importing and doesn’t queue the next chunk once the job is canceled'
 it('imports a step’s later chunks from the import disk rather than the source', function () {
     Storage::fake(Cms::config()->getImportDisk());
     $this->importPlan->steps[0]->batchSize(2);
-    $filePath = Path::temp().'/'.Str::uuid().'.json';
-    File::copy($this->filePath, $filePath);
     $importedTitles = [];
     Event::listen(ItemImporting::class, function (ItemImporting $event) use (&$importedTitles) {
         $importedTitles[] = $event->data['title'];
         $event->isValid = false;
     });
 
-    [$job, $batch] = new ImportJob($this->importPlan, 'step-1', $filePath, 'run-id')->withFakeBatch();
+    [$job, $batch] = new ImportJob($this->importPlan, 'step-1', 'run-id')->withFakeBatch();
     $job->handle();
-    File::delete($filePath);
+    $this->importPlan->steps[0]->source('tests/Fixtures/Import/missing.json');
 
     expect($batch->added)->toHaveCount(1);
 
@@ -435,7 +434,7 @@ it('reads a later chunk that starts partway through a stored piece', function ()
     ($this->runJob)();
     $importedTitles = [];
 
-    [$job] = new ImportJob($this->importPlan, 'step-1', '/path/to/missing.json', 'run-id', 1, 3)->withFakeBatch();
+    [$job] = new ImportJob($this->importPlan, 'step-1', 'run-id', 1, 3)->withFakeBatch();
     $job->handle();
 
     expect($importedTitles)->toBe(['second file entry', 'third file entry']);

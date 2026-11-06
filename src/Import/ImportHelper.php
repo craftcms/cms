@@ -83,6 +83,40 @@ class ImportHelper
     }
 
     /**
+     * Returns an item's keys prepared for auto-matching, indexed by the original key.
+     *
+     * @param  array<array-key, mixed>  $item
+     * @return array<array-key, string>
+     */
+    public static function autoMatchingKeys(array $item): array
+    {
+        $keys = array_keys($item);
+
+        return array_combine($keys, array_map(fn ($key) => self::prepKeyForAutoMatching((string) $key), $keys));
+    }
+
+    /**
+     * Returns the item key to read a handle's value from: the handle itself when the item has it
+     * (as mapped, or already named that way), otherwise the first incoming key that auto-matches it.
+     * An exact match is removed from `$incomingKeys` so it can't be auto-matched to another handle.
+     *
+     * @param  array<array-key, mixed>  $item
+     * @param  array<array-key, string>  $incomingKeys  from autoMatchingKeys()
+     */
+    public static function autoMatchedKey(string $handle, array $item, array &$incomingKeys): int|string|null
+    {
+        if (array_key_exists($handle, $item)) {
+            unset($incomingKeys[$handle]);
+
+            return $handle;
+        }
+
+        $key = array_search(self::prepKeyForAutoMatching($handle), $incomingKeys, true);
+
+        return $key === false ? null : $key;
+    }
+
+    /**
      * Normalizes match criteria coming from an importer config (UI or a registered import plan)
      * into an array where keys are the fields/attributes/properties to update,
      * and values containing the incoming data keys.

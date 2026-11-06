@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import\DataTypes;
 
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\Text;
 use CraftCms\Cms\Ui\Nodes\Field;
@@ -44,7 +43,7 @@ class Csv implements DataTypeInterface
     #[Override]
     public static function matches(string $sample): bool
     {
-        $start = ltrim(Str::chopStart($sample, "\xEF\xBB\xBF"));
+        $start = DataTypes::sampleStart($sample);
 
         // anything that isn't binary or opened like JSON or XML could be a heading row
         return $start !== ''

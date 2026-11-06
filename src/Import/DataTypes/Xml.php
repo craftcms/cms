@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import\DataTypes;
 
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json as JsonHelper;
-use CraftCms\Cms\Support\Str;
 use Exception;
 use InvalidArgumentException;
 use Override;
@@ -33,7 +31,7 @@ class Xml implements DataTypeInterface
     #[Override]
     public static function matches(string $sample): bool
     {
-        return str_starts_with(ltrim(Str::chopStart($sample, "\xEF\xBB\xBF")), '<');
+        return str_starts_with(DataTypes::sampleStart($sample), '<');
     }
 
     #[Override]
@@ -79,23 +77,7 @@ class Xml implements DataTypeInterface
             return ['success' => false, 'error' => $error];
         }
 
-        // iterate through the array and get all unique properties;
-        $keys = Arr::uniqueDotifiedKeys($array);
-
-        $headings = [];
-        foreach ($keys as $key) {
-            $sample = Arr::sampleValueAtDotifiedKey($array, $key);
-            $hint = is_scalar($sample) && $sample !== '' ? (string) $sample : null;
-            $headings[] = array_filter([
-                'label' => $key,
-                'value' => $key,
-                'data' => $hint !== null ? ['hint' => $hint] : null,
-            ], fn ($value) => $value !== null);
-        }
-
-        usort($headings, fn ($a, $b) => $a['label'] <=> $b['label']);
-
-        return $headings;
+        return DataTypes::dottedHeadings($array);
     }
 
     /**

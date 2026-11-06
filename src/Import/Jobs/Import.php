@@ -15,7 +15,6 @@ use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Import as ImportFacade;
 use CraftCms\Cms\Support\Facades\ImportLog;
-use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
 use Illuminate\Bus\Batchable;
@@ -47,12 +46,11 @@ class Import extends Job
     private int $defaultBatchSize = 100;
 
     /**
-     * Promotes the owning import plan, the step's UID, the file path, the import run's ID
+     * Promotes the owning import plan, the step's UID, the import run's ID
      * and the starting offset, then calls the parent constructor.
      *
      * @param  ImportPlanData  $importPlan  The import plan, as it was when the import was dispatched.
      * @param  string  $stepUid  The UID of the step being run.
-     * @param  string  $filePath  The path to the file being imported.
      * @param  string  $runId  The unique ID of the import run this job belongs to.
      * @param  int  $start  The offset to start processing from.
      * @param  int|null  $totalCount  The total number of the step's items, if an earlier chunk stored them on the import disk.
@@ -60,7 +58,6 @@ class Import extends Job
     public function __construct(
         private readonly ImportPlanData $importPlan,
         private readonly string $stepUid,
-        private readonly string $filePath,
         private readonly string $runId,
         private readonly int $start = 0,
         private readonly ?int $totalCount = null,
@@ -224,7 +221,6 @@ class Import extends Job
             $this->batch()->add(new self(
                 $this->importPlan,
                 $this->stepUid,
-                $this->filePath,
                 $this->runId,
                 $this->start + $processedCount,
                 $spooled ? $totalCount : null,
@@ -250,19 +246,9 @@ class Import extends Job
      */
     private function parseSource(BaseImporter $step): array
     {
-        if (! $step::isRemoteSource($step->source)) {
-            return ImportFacade::getFormattedData($this->filePath, $step);
-        }
-
-        // this should stay local as it's downloaded, parsed and deleted in the first chunk
+        // a remote file is downloaded, parsed and deleted in the first chunk
         // (the parsed items are shared with later chunks, so stored on the importDisk)
-        $filePath = $step->downloadFile(Path::temp());
-
-        try {
-            return ImportFacade::getFormattedData($filePath, $step);
-        } finally {
-            @unlink($filePath);
-        }
+        return $step->withLocalFile(fn (string $filePath) => ImportFacade::getFormattedData($filePath, $step));
     }
 
     /**
