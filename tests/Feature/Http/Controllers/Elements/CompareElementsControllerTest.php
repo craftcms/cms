@@ -665,7 +665,8 @@ it('compares an asset in two sites, with site menus but no version menus, as ass
             ->where('to.siteName', 'Secondary')
             ->where('from.versionMenu', [])
             ->where('to.versionMenu', [])
-            ->where('to.siteMenu', fn (Collection $menu) => $menu->pluck('label')->all() === [$primary->getName(), 'Secondary'])
+            // Sites are listed by their groups’ names, which the factory makes up.
+            ->where('to.siteMenu', fn (Collection $menu) => $menu->pluck('label')->sort()->values()->all() === collect([$primary->getName(), 'Secondary'])->sort()->values()->all())
             ->where('to.editor.siteId', $asset->siteId));
 });
 
