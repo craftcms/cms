@@ -11,9 +11,15 @@ use CraftCms\Cms\Support\Typecast;
 
 readonly class GeneralConfigCompatibility
 {
-    public function convert(mixed $config, mixed $overlay = null): GeneralConfig|array
+    /**
+     * Converts a Craft 5 general config to a config object.
+     *
+     * An array config becomes a legacy config object, so settings removed from
+     * core still reach their shims, the same as when they're set fluently.
+     */
+    public function convert(mixed $config, mixed $overlay = null): GeneralConfig
     {
-        $config = $this->resolve($config, LegacyGeneralConfig::create());
+        $config = $this->toConfigObject($this->resolve($config, LegacyGeneralConfig::create()));
 
         if ($overlay === null || $overlay === []) {
             return $config;
@@ -21,23 +27,13 @@ readonly class GeneralConfigCompatibility
 
         Deprecator::log('config-general-app-type', 'Using general.web.php and general.console.php configuration files is deprecated.');
 
-        $overlay = $this->resolve($overlay, $config instanceof GeneralConfig ? $config : LegacyGeneralConfig::create());
+        $overlay = $this->resolve($overlay, $config);
 
         if ($overlay instanceof GeneralConfig) {
             return $overlay;
         }
 
-        if (is_array($config)) {
-            return array_merge($config, $overlay);
-        }
-
-        Typecast::properties($config::class, $overlay);
-
-        foreach ($overlay as $setting => $value) {
-            method_exists($config, $setting)
-                ? $config->{$setting}($value)
-                : $config->{$setting} = $value;
-        }
+        $this->applySettings($config, $overlay);
 
         return $config;
     }
@@ -54,5 +50,36 @@ readonly class GeneralConfigCompatibility
         }
 
         return [];
+    }
+
+    /**
+     * @param GeneralConfig|array<string, mixed> $config
+     */
+    private function toConfigObject(GeneralConfig|array $config): GeneralConfig
+    {
+        if ($config instanceof GeneralConfig) {
+            return $config;
+        }
+
+        $object = LegacyGeneralConfig::create();
+        $this->applySettings($object, $config);
+
+        return $object;
+    }
+
+    /**
+     * Applies settings the way core applies an array config, through the fluent methods when they exist.
+     *
+     * @param array<string, mixed> $settings
+     */
+    private function applySettings(GeneralConfig $config, array $settings): void
+    {
+        Typecast::properties($config::class, $settings);
+
+        foreach ($settings as $setting => $value) {
+            method_exists($config, $setting)
+                ? $config->{$setting}($value)
+                : $config->{$setting} = $value;
+        }
     }
 }

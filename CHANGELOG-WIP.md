@@ -189,6 +189,8 @@
 - The “Assets” settings nav item is now listed under “Content”, and “Globals”, “Categories”, and “Tags” are now listed under a new “Deprecated” heading, if those concepts are supported for the project. ([#19670](https://github.com/craftcms/cms/pull/19670))
 - The System Messages utility now shows each message in a card, and edits messages in a slideout with a Markdown editor. Typing `{{` in a message’s subject or body suggests the Twig variables it can use. ([#19946](https://github.com/craftcms/cms/pull/19946))
 - Removed the `isSystemLive` config setting and the `craft:on` and `craft:off` commands. Laravel maintenance mode should be used instead.
+- Removed the `allowedGraphqlOrigins`, `enableBasicHttpAuth`, `enableTwigSandbox`, `omitScriptNameInUrls`, `pathParam`, `permissionsPolicyHeader`, `purgeStaleUserSessionDuration`, `requireMatchingUserAgentForSession`, `requireUserAgentAndIpForSession`, `useFileLocks`, and `usePathInfo` config settings, which no longer have any effect.
+- Craft 5 config settings that were deprecated or removed are still accepted when the Yii adapter is installed, including from array-based general configs and environment variables, and log a deprecation warning when they’re set.
 
 ### Development
 
@@ -241,6 +243,10 @@
 - Deprecated the `testToEmailAddress` general config setting. `Illuminate\Support\Facades\Mail::alwaysTo()` should be used instead.
 - Deprecated the `blowfishHashCost` general config setting in favor of Laravel's `hashing.bcrypt.rounds` config or the `BCRYPT_ROUNDS` environment variable.
 - Deprecated the `csrfTokenName`, `enableCsrfCookie`, and `enableCsrfProtection` general config settings. ([#18806](https://github.com/craftcms/cms/pull/18806))
+- Deprecated the `defaultCookieDomain`, `phpSessionName`, `sameSiteCookieValue`, `useSecureCookies`, and `userSessionDuration` general config settings. Laravel’s `session` config should be used instead.
+- Deprecated the `rememberedUserSessionDuration` and `verificationCodeDuration` general config settings. Laravel’s `auth.guards.craft.remember` and `auth.passwords.craft.expire` config values should be used instead.
+- Deprecated the `secureHeaders`, `secureProtocolHeaders`, and `trustedHosts` general config settings. [Laravel’s trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) should be configured instead.
+- Deprecated the `devMode` and `securityKey` general config settings. Laravel’s `app.debug` and `app.key` config values should be used instead.
 - Deprecated `craft.app.config.general` in Twig. `app.config.craft.general` should be used instead.
 - Deprecated `craft.app.userPermissions`. `craft.userPermissions` should be used instead.
 - Deprecated `asset.setTransform()`. `asset.transform()` should be used instead. With the Yii adapter installed, `setTransform()` still works on assets returned by Assets fields and asset queries, but the transform only applies to the asset’s URL, not its width, height, or `getImg()` output. ([#20191](https://github.com/craftcms/cms/pull/20191))
