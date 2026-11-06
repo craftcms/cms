@@ -386,7 +386,9 @@ class AssetPropagationTest extends TestCase
             // Once it exists in another site, it can be deleted for either one
             $asset = Craft::$app->getAssets()->getAssetById($asset->id, 1000);
             $asset->setEnabledForSite([1000 => true, 1001 => true]);
+            self::assertFalse(ElementHelper::isMultiSite($asset), 'Unsaved site statuses shouldn’t count.');
             self::assertTrue(Craft::$app->getElements()->saveElement($asset), json_encode($asset->getErrors()));
+            self::assertTrue(ElementHelper::isMultiSite($asset));
             $deleteForSite($asset, 1001);
             self::assertSame([1000], $this->siteIdsForAsset($asset));
         } finally {
