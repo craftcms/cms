@@ -750,8 +750,9 @@ it('lists only the versions and sites the user can view in each side’s menus',
     get(compareScreenUrl($entry, ['draftId' => $second->draftId, 'from' => "draft-$first->draftId"]))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            // Not the current entry, its revisions, or someone else’s draft.
-            ->where('to.versionMenu', fn (Collection $menu) => $menu->flatMap(fn (array $group) => $group['items'])->pluck('label')->all() === ['First', 'Second'])
+            // Not the current entry, its revisions, or someone else’s draft. Drafts are listed newest first, which
+            // depends on whether they were saved in the same second.
+            ->where('to.versionMenu', fn (Collection $menu) => $menu->flatMap(fn (array $group) => $group['items'])->pluck('label')->sort()->values()->all() === ['First', 'Second'])
             // Nor the site the user can’t edit.
             ->where('to.siteName', null)
             ->where('to.siteMenu', []));
