@@ -8,6 +8,7 @@ use CraftCms\Cms\Import\DataTypes\DataTypes;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Tests\Support\Import\TestDataType;
 use CraftCms\Cms\Tests\Support\Import\TestImporter;
+use Override;
 
 beforeEach(function () {
     $this->import = app(Import::class);
@@ -144,4 +145,19 @@ it('returns the source headings with a "Please select" option prepended', functi
 
     expect($headings[0])->toEqual(new SourceColumn('Please select', ''))
         ->and(array_column($headings, 'value'))->toContain('title', 'plainText', 'slug');
+});
+
+it('keeps the error a data type throws while formatting', function () {
+    $throwingType = new class extends TestDataType
+    {
+        #[Override]
+        public static function format(string $data, array $settings = [], ?string $extension = null): array
+        {
+            throw new RuntimeException('The lines are tangled.');
+        }
+    };
+    app(DataTypes::class)->register($throwingType::class);
+
+    expect(fn () => $this->import->getFormattedData(($this->fixturePath)('lines.txt'), new TestImporter()->dataType($throwingType::class)))
+        ->toThrow(Exception::class, 'The lines are tangled.');
 });

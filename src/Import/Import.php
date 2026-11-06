@@ -644,34 +644,20 @@ class Import
         $rawData = $this->getRawData($filePath);
 
         // process raw data based on the file type it came from
-        $data = $this->formatData($filePath, $rawData, $importer);
-
-        if ($data === null || $data['success'] === false) {
-            throw new Exception($data['error'] ?? t('Unable to parse data.'));
-        }
-
-        return $data['data'];
-    }
-
-    /**
-     * Determines the data type from the file and delegates formatting to that type's `format()`, logging and returning null on error.
-     *
-     * @return array<string, mixed>|null
-     */
-    private function formatData(string $filePath, string $rawData, ?BaseImporter $importer): ?array
-    {
         $dataTypeClass = $this->dataTypeClass($filePath, $importer?->dataType);
         $settings = self::dataTypeSettings($dataTypeClass, $importer);
 
         try {
             $data = $dataTypeClass::format($rawData, $settings, strtolower(File::extension($filePath)));
         } catch (Throwable $e) {
-            ImportLog::error($e->getMessage());
-
-            return null;
+            throw new Exception($e->getMessage(), previous: $e);
         }
 
-        return $data;
+        if ($data['success'] === false) {
+            throw new Exception($data['error'] ?? t('Unable to parse data.'));
+        }
+
+        return $data['data'];
     }
 
     /**
