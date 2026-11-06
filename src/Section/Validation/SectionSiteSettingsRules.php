@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Section\Validation;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Validation\Rules\SingleSectionUriRule;
+use CraftCms\Cms\Site\Validation\Rules\SiteRule;
 use CraftCms\Cms\Validation\Rules\ElementRouteRule;
-use CraftCms\Cms\Validation\Rules\SiteIdRule;
 use CraftCms\Cms\Validation\Rules\UriFormatRule;
 use CraftCms\Cms\Validation\Ruleset;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -32,7 +32,7 @@ class SectionSiteSettingsRules extends Ruleset
 
         return [
             'id' => ['nullable', 'integer'],
-            'siteId' => ['nullable', 'integer', new SiteIdRule],
+            'siteId' => ['nullable', 'integer', SiteRule::forSiteId()],
             'template' => ['nullable', 'string', 'max:500', 'prohibits:route'],
             'route' => ['nullable', 'string', 'max:500', new ElementRouteRule],
             'uriFormat' => array_merge(

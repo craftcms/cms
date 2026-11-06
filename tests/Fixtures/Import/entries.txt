@@ -1,0 +1,2 @@
+title,plainText
+first txt entry,txt text one

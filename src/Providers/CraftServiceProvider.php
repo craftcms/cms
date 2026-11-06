@@ -18,6 +18,7 @@ use CraftCms\Cms\Entry\EntryServiceProvider;
 use CraftCms\Cms\Field\FieldsServiceProvider;
 use CraftCms\Cms\FieldLayout\FieldLayoutServiceProvider;
 use CraftCms\Cms\Gql\GqlServiceProvider;
+use CraftCms\Cms\Import\ImportServiceProvider;
 use CraftCms\Cms\License\LicenseServiceProvider;
 use CraftCms\Cms\Mcp\McpServiceProvider;
 use CraftCms\Cms\Plugin\PluginServiceProvider;
@@ -78,5 +79,6 @@ class CraftServiceProvider extends AggregateServiceProvider
         UserReviewServiceProvider::class,
         StructureServiceProvider::class,
         QueueServiceProvider::class,
+        ImportServiceProvider::class,
     ];
 }

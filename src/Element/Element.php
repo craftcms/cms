@@ -19,6 +19,7 @@ use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\Gql\Attributes\Gql;
+use CraftCms\Cms\Support\Attributes\Importable as ImportableAttribute;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Utils;
@@ -89,6 +90,7 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
      * @var int|null The element's ID
      */
     #[AllowedInSandbox]
+    #[ImportableAttribute('id', 'ID', canBeCleared: false, canBeSet: false)]
     public ?int $id = null;
 
     /**
@@ -100,6 +102,7 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
      * @var string|null The element’s UID
      */
     #[AllowedInSandbox]
+    #[ImportableAttribute('uid', 'UID', canBeCleared: false, canBeSet: false)]
     public ?string $uid = null;
 
     /**
@@ -113,6 +116,7 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
      * @var string|null The element’s title
      */
     #[AllowedInSandbox]
+    // importing is handled via native field
     #[ElementProperty(ElementPropertyType::String, 'The {element}’s title.', nullable: true, readable: true)]
     public ?string $title = null;
 
@@ -120,6 +124,7 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
      * @var string|null The element’s slug
      */
     #[AllowedInSandbox]
+    #[ImportableAttribute('slug', 'Slug')]
     #[ElementProperty(ElementPropertyType::String, 'The {element}’s slug.', nullable: true, readable: true)]
     #[Gql(write: false)]
     public ?string $slug = null;
@@ -193,6 +198,11 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
      * @since 3.2.0
      */
     public bool $hardDelete = false;
+
+    /**
+     * @var bool Whether the element is currently being imported.
+     */
+    public private(set) bool $importing = false;
 
     #[Override]
     public static function displayName(): string
@@ -776,6 +786,14 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
     public function setAttributesFromRequest(array $values): void
     {
         $this->setAttributes($values);
+    }
+
+    /**
+     * Marks the element as currently being imported.
+     */
+    public function markAsImporting(): void
+    {
+        $this->importing = true;
     }
 
     /** @return string[] */

@@ -10,6 +10,7 @@ use GuzzleHttp\Handler\CurlHandler;
 use GuzzleHttp\RequestOptions;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
@@ -21,7 +22,14 @@ readonly class RemoteFileDownloader
 {
     public function __construct(private UrlValidator $urls) {}
 
-    public function download(string $url, string $path, int $maxBytes): void
+    /**
+     * Downloads a remote file to a path, after checking its URL with the downloader’s validator, and pinning
+     * the connection to the validated IP addresses so cURL can’t re-resolve the hostname to a different
+     * (potentially internal) address.
+     *
+     * @throws RuntimeException if the URL is disallowed, or the file couldn’t be downloaded, is empty or is too large
+     */
+    public function download(string $url, string $path, int $maxBytes): Response
     {
         $parts = parse_url($url);
 
@@ -30,13 +38,11 @@ readonly class RemoteFileDownloader
         }
 
         try {
-            $ips = $this->urls->validate($url);
+            // validate the URL and pin its hostname/port to the validated IPs *before* opening any connection
+            $curlResolve = $this->urls->curlResolve($url);
         } catch (UrlValidationException) {
             throw new RuntimeException('The file URL must resolve to a public HTTP or HTTPS address.');
         }
-
-        $host = $parts['host'];
-        $port = $parts['port'] ?? (strtolower($parts['scheme']) === 'https' ? 443 : 80);
 
         try {
             $response = Http::createPendingRequest()
@@ -63,10 +69,7 @@ readonly class RemoteFileDownloader
                         }
                     },
                     'curl' => [
-                        CURLOPT_RESOLVE => ["$host:$port:".implode(',', array_map(
-                            static fn (string $ip): string => str_contains($ip, ':') ? "[$ip]" : $ip,
-                            $ips,
-                        ))],
+                        CURLOPT_RESOLVE => $curlResolve,
                         CURLOPT_MAXFILESIZE_LARGE => $maxBytes,
                     ],
                 ])
@@ -88,5 +91,7 @@ readonly class RemoteFileDownloader
         if ($size > $maxBytes) {
             throw new RuntimeException('The file exceeds the maximum upload size.');
         }
+
+        return $response;
     }
 }
