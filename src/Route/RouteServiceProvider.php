@@ -22,6 +22,7 @@ use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\HandleTemplateRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
+use CraftCms\Cms\Http\Middleware\PreventRequestForgery as CraftPreventRequestForgery;
 use CraftCms\Cms\Http\Middleware\PreventRequestsDuringMaintenance as CraftMaintenanceMiddleware;
 use CraftCms\Cms\Http\Middleware\PreventStaleDatabaseReads;
 use CraftCms\Cms\Http\Middleware\RenderBridgedScreen;
@@ -68,6 +69,8 @@ class RouteServiceProvider extends ServiceProvider
     {
         CraftMaintenanceMiddleware::registerRouteMacro();
         StartLazySession::registerRouteMacro();
+
+        $this->app->bind(PreventRequestForgery::class, CraftPreventRequestForgery::class);
 
         /**
          * These middleware must run before all others

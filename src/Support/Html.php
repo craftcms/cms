@@ -206,7 +206,7 @@ class Html
      * Generates a hidden CSRF input tag.
      *
      * Printing the token saves the visitor’s session and marks the response `no-cache`. Forms posted from
-     * the same origin don’t need one, as `PreventRequestForgery` accepts them by their `Sec-Fetch-Site` header.
+     * the same origin don’t need one, as `PreventRequestForgery` accepts them by their `Sec-Fetch-Site` or `Origin` header.
      */
     public static function csrfInput(): string
     {
