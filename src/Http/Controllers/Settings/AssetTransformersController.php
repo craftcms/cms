@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\AssetTransformerRegistry;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -38,6 +39,7 @@ class AssetTransformersController extends BaseAssetSettingsController
         GeneralConfig $generalConfig,
         private readonly AssetTransformers $assetTransformers,
         private readonly AssetTransformDrivers $assetTransformDrivers,
+        private readonly AssetTransformerRegistry $assetTransformerRegistry,
         private readonly UiResolver $uiResolver,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
@@ -216,6 +218,7 @@ class AssetTransformersController extends BaseAssetSettingsController
             $this->uiResolver,
             readOnly: $this->readOnly,
             values: $values,
+            registered: $this->assetTransformerRegistry->has($transformer->uid),
         );
     }
 }
