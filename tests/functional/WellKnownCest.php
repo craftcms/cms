@@ -69,6 +69,17 @@ class WellKnownCest
             $endpoint = Json::decode($I->grabPageSource())['registration_endpoint'];
             $I->assertStringContainsString('/index.php?p=actions/oauth/register', $endpoint);
 
+            // URLs with the script name are built on the request's host, but the endpoints stay on the primary site's,
+            // even for metadata requested through the control panel on its own host
+            $general->baseCpUrl = 'https://cp.example.com';
+            $I->haveServerParameter('HTTP_HOST', 'cp.example.com');
+            $I->haveServerParameter('HTTPS', 'on');
+            $I->amOnPage("/$general->cpTrigger/$general->actionTrigger/oauth/metadata?resource=graphql");
+            $I->seeResponseCodeIs(200);
+            $I->assertSame($endpoint, Json::decode($I->grabPageSource())['registration_endpoint']);
+            $general->baseCpUrl = null;
+            $I->haveServerParameter('HTTP_HOST', parse_url($endpoint, PHP_URL_HOST));
+
             $I->sendAjaxPostRequest(UrlHelper::rootRelativeUrl($endpoint), [
                 'client_name' => 'Test client',
                 'redirect_uris' => ['https://client.example/callback'],
@@ -76,6 +87,7 @@ class WellKnownCest
             $I->seeResponseCodeIs(201);
         } finally {
             $general->omitScriptNameInUrls = true;
+            $general->baseCpUrl = null;
         }
     }
 }

@@ -78,6 +78,19 @@ class OauthController extends Controller
         ];
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function bindActionParams($action, $params): array
+    {
+        // Site action URLs identify the resource with `oauthResource`, because clients send their RFC 8707 resource
+        // indicator, an absolute URL, as `resource`. Control panel routes have it in their path.
+        if (isset($params['oauthResource'])) {
+            $params['resource'] = $params['oauthResource'];
+        }
+        return parent::bindActionParams($action, $params);
+    }
+
     public function beforeAction($action): bool
     {
         if (in_array($action->id, ['register', 'token'], true)) {
@@ -210,7 +223,7 @@ class OauthController extends Controller
                     strcasecmp((string)parse_url($userSession->loginUrl, PHP_URL_HOST), $host) !== 0 &&
                     strcasecmp((string)parse_url(UrlHelper::siteHost(), PHP_URL_HOST), $host) !== 0
                 ) {
-                    $params = ['resource' => $resource] + $this->request->getQueryParamsWithoutPath();
+                    $params = ['oauthResource' => $resource] + $this->request->getQueryParamsWithoutPath();
                     return $this->redirect($this->siteHostUrl(UrlHelper::siteUrl("$general->actionTrigger/oauth/authorize", $params)));
                 }
             }

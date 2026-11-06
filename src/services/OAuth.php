@@ -387,7 +387,7 @@ class OAuth extends Component
         $request = Craft::$app->getRequest();
         if (!$request->getIsConsoleRequest() && !$request->getIsCpRequest()) {
             $this->getResource($resource);
-            return UrlHelper::actionUrl("oauth/$endpoint", ['resource' => $resource]);
+            return UrlHelper::actionUrl("oauth/$endpoint", ['oauthResource' => $resource]);
         }
 
         return $this->cpUrl($endpoint, $resource);
@@ -412,13 +412,17 @@ class OAuth extends Component
         }
 
         $site = Craft::$app->getSites()->getPrimarySite();
+        $baseUrl = $site->getBaseUrl() ?? UrlHelper::baseUrl();
         if ($endpoint !== '') {
-            return UrlHelper::siteUrl("$general->actionTrigger/oauth/$endpoint", ['resource' => $resource], siteId: $site->id);
+            // `resource` is left for clients’ RFC 8707 resource indicators. URLs with the script name are built on the
+            // current request’s host, so move them to the primary site’s, like the issuer.
+            $url = UrlHelper::siteUrl("$general->actionTrigger/oauth/$endpoint", ['oauthResource' => $resource], siteId: $site->id);
+            return UrlHelper::hostInfo($baseUrl) . substr($url, strlen(UrlHelper::hostInfo($url)));
         }
 
         // The issuer can’t have a query string, so it identifies the resource in its path, like the control panel’s.
         // Only clients compare it; they fetch its metadata from the `.well-known` URL.
-        return rtrim($site->getBaseUrl() ?? UrlHelper::baseUrl(), '/') . "/$general->actionTrigger/oauth/$resource";
+        return rtrim($baseUrl, '/') . "/$general->actionTrigger/oauth/$resource";
     }
 
     private function cpUrl(string $endpoint, string $resource): string
