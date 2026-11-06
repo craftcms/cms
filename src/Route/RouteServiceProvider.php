@@ -104,6 +104,7 @@ class RouteServiceProvider extends ServiceProvider
     {
         Event::listen(RouteMatched::class, function (RouteMatched $event): void {
             MatchedElement::set(null);
+            StartLazySession::applyTo($event->route);
 
             if (Cms::isInstalled() && $event->request->isSiteRequest() && ! $event->request->isActionRequest() && ! Cms::config()->headlessMode) {
                 $event->route->middleware([ResolveSite::class, ResolveElementRoute::class]);

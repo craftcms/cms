@@ -79,8 +79,10 @@ it('opts routes in with withLazySession()', function () {
     Route::middleware(['web', 'craft', 'craft.web'])->get('eager-session', fn () => 'eager');
     Route::middleware(['web', 'craft', 'craft.web'])->withLazySession()->get('lazy-session', fn () => 'lazy');
     Route::middleware(['web', 'craft', 'craft.web'])->get('lazy-route-session', fn () => 'lazy')->withLazySession();
+    Route::withLazySession()->middleware(['web', 'craft', 'craft.web'])->get('lazy-first-session', fn () => 'lazy');
 
     get('/eager-session')->assertOk()->assertCookie(config('session.cookie'));
     get('/lazy-session')->assertOk()->assertCookieMissing(config('session.cookie'));
     get('/lazy-route-session')->assertOk()->assertCookieMissing(config('session.cookie'));
+    get('/lazy-first-session')->assertOk()->assertCookieMissing(config('session.cookie'));
 });

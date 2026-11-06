@@ -60,7 +60,7 @@ readonly class TrackSessionActivity
         return $request->hasSession()
             && (
                 ! in_array(StartSession::class, $route?->excludedMiddleware() ?? [], true)
-                || in_array(StartLazySession::class, $route?->middleware() ?? [], true)
+                || StartLazySession::isAppliedTo($route)
             );
     }
 }

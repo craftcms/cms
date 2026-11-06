@@ -36,28 +36,59 @@ readonly class StartLazySession
     ) {}
 
     /**
+     * The route metadata key set by `withLazySession()`.
+     */
+    public const string METADATA = 'craft.lazySession';
+
+    /**
      * Registers the `withLazySession()` macro on the router, route registrars, and routes.
+     *
+     * The macro tags routes with metadata rather than adding middleware, so a later
+     * `middleware()` call on the same registrar can't drop it. {@see applyTo()} adds this
+     * middleware to tagged routes once one is matched.
      */
     public static function registerRouteMacro(): void
     {
-        Router::macro('withLazySession', function (): RouteRegistrar {
+        $metadata = self::METADATA;
+
+        Router::macro('withLazySession', function () use ($metadata): RouteRegistrar {
             /** @var Router $this */
-            return new RouteRegistrar($this)->withLazySession();
+            return new RouteRegistrar($this)
+                ->metadata([$metadata => true])
+                ->withoutMiddleware(StartSession::class);
         });
 
-        RouteRegistrar::macro('withLazySession', function (): RouteRegistrar {
+        RouteRegistrar::macro('withLazySession', function () use ($metadata): RouteRegistrar {
             /** @var RouteRegistrar $this */
             return $this
-                ->middleware([...(array) ($this->attributes['middleware'] ?? []), StartLazySession::class])
+                ->metadata([$metadata => true])
                 ->withoutMiddleware(StartSession::class);
         });
 
-        Route::macro('withLazySession', function (): Route {
+        Route::macro('withLazySession', function () use ($metadata): Route {
             /** @var Route $this */
             return $this
-                ->middleware(StartLazySession::class)
+                ->metadata([$metadata => true])
                 ->withoutMiddleware(StartSession::class);
         });
+    }
+
+    /**
+     * Adds this middleware to a matched route if it was tagged by `withLazySession()`.
+     */
+    public static function applyTo(Route $route): void
+    {
+        if (self::isAppliedTo($route)) {
+            $route->middleware(self::class);
+        }
+    }
+
+    /**
+     * Whether the route was tagged by `withLazySession()`.
+     */
+    public static function isAppliedTo(?Route $route): bool
+    {
+        return $route?->getMetadata(self::METADATA) === true;
     }
 
     public function handle(Request $request, Closure $next): mixed
