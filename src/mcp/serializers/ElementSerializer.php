@@ -170,6 +170,11 @@ class ElementSerializer extends \yii\base\Component
             $data += [$handle => $hidden ? null : $resolved];
         }
 
+        // Users’ addresses are a native field, so they’re only included when requested
+        if (!$public && $element instanceof \craft\elements\User && isset($requested['addresses']) && !array_key_exists('addresses', $data)) {
+            $data['addresses'] = $this->resolveNested($element->getAddresses(), self::NestedSummarize, $requested['addresses'], $serializeNested);
+        }
+
         $event = new ElementSerializing([
             'element' => $element,
             'serializedData' => $data,
@@ -182,15 +187,9 @@ class ElementSerializer extends \yii\base\Component
     }
 
     /**
-     * Runs a callback with a single nested element budget shared by everything it serializes.
-     *
-     * Element adapters can use this to apply one budget to an element’s custom fields and its native nested fields.
-     *
-     * @template T
-     * @param callable(): T $callback
-     * @return T
+     * Runs a callback with a nested element budget shared by everything it serializes.
      */
-    public function withBudget(callable $callback): mixed
+    private function withBudget(callable $callback): mixed
     {
         if ($this->remaining !== null) {
             return $callback();
@@ -264,8 +263,9 @@ class ElementSerializer extends \yii\base\Component
         }
 
         $isList = array_is_list($value);
-        // A list of only elements keeps its visible ones; any other array is removed along with its hidden elements
-        $isElementList = $isList && !array_filter($value, fn(mixed $item): bool => !$this->isNestedValue($item));
+        // A list of only arrays and elements keeps its visible items; any other array, such as ['marker', $element],
+        // is removed along with its hidden elements
+        $isCollection = $isList && !array_filter($value, fn(mixed $item): bool => !is_array($item) && !$this->isNestedValue($item));
         $resolved = [];
 
         foreach ($value as $key => $item) {
@@ -284,8 +284,8 @@ class ElementSerializer extends \yii\base\Component
             }
 
             if ($itemHidden) {
-                // Drop it from a list, or mark this array as hidden so its parent list drops it
-                if (!$isList || ($this->isNestedValue($item) && !$isElementList)) {
+                // Drop it from a collection, or mark this array as hidden so its parent list drops it
+                if (!$isCollection) {
                     $hidden = true;
                 }
 

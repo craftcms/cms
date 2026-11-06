@@ -8,6 +8,7 @@ use craft\base\McpOutputFieldInterface;
 use craft\db\Connection;
 use craft\elements\ElementCollection;
 use craft\elements\Entry;
+use craft\elements\User;
 use craft\fields\Lightswitch;
 use craft\fields\PlainText;
 use craft\mcp\elements\ElementAdapterRegistry;
@@ -185,6 +186,7 @@ class ElementSerializerTest extends TestCase
                 ['type' => 'entry', 'entry' => new TestEntry(10, [], [])],
                 ['marker', new TestEntry(20, [], [])],
                 ['marker', new TestEntry(10, [], [])],
+                [['marker', ['entry' => new TestEntry(20, [], [])]]],
                 [new TestEntry(10, [], []), new TestEntry(20, [], [])],
             ],
         ]);
@@ -196,6 +198,7 @@ class ElementSerializerTest extends TestCase
                 ['type' => 'markup', 'html' => '<p>A</p>'],
                 ['type' => 'entry', 'entry' => ['id' => 10]],
                 ['marker', ['id' => 10]],
+                [],
                 [['id' => 10]],
             ], 'public' => false, 'requested' => true]],
             $serializer->serialize($element, data: [], fields: ['custom'], serializeNested: $serializeNested),
@@ -207,6 +210,7 @@ class ElementSerializerTest extends TestCase
                 ['type' => 'markup', 'html' => '<p>A</p>'],
                 ['type' => 'entry'],
                 ['marker'],
+                [],
                 [],
             ], 'public' => false, 'requested' => false]],
             $serializer->serialize($element, data: [], fields: null, serializeNested: $serializeNested),
@@ -230,22 +234,21 @@ class ElementSerializerTest extends TestCase
         $serializer->serialize($element, data: [], fields: ['blocks.inner'], serializeNested: $this->visible($serializer));
     }
 
-    public function testNestedElementLimitIsSharedWithNativeNestedFields(): void
+    public function testUserAddressesAreIncludedWhenRequestedAndShareTheLimit(): void
     {
-        $element = new TestEntry(1, [new McpOutputTestField(['handle' => 'blocks'])], [
-            'blocks' => ElementCollection::make(array_map(fn(int $i): TestEntry => new TestEntry(100 + $i, [], []), range(1, 80))),
-        ]);
-        $native = ElementCollection::make(array_map(fn(int $i): TestEntry => new TestEntry(200 + $i, [], []), range(1, 30)));
+        $blocks = ElementCollection::make(array_map(fn(int $i): TestEntry => new TestEntry(100 + $i, [], []), range(1, 80)));
+        $addresses = array_map(fn(int $i): TestEntry => new TestEntry(200 + $i, [], []), range(1, 30));
+        $user = new TestUser([new McpOutputTestField(['handle' => 'blocks'])], ['blocks' => $blocks], $addresses);
         $serializer = $this->serializer();
 
-        $serializer->serialize($element, data: [], fields: ['blocks'], serializeNested: $this->visible($serializer));
-        $serializer->serializeNestedValue($native, serializeNested: $this->visible($serializer));
+        self::assertSame([], $serializer->serialize($user, data: [], fields: [], serializeNested: $this->visible($serializer)));
+        self::assertSame(
+            ['type' => TestEntry::class, 'id' => 201, 'status' => 'live'],
+            $serializer->serialize($user, data: [], fields: ['addresses'], serializeNested: $this->visible($serializer))['addresses'][0],
+        );
 
         $this->expectException(ToolCallException::class);
-        $serializer->withBudget(function() use ($serializer, $element, $native): void {
-            $serializer->serialize($element, data: [], fields: ['blocks'], serializeNested: $this->visible($serializer));
-            $serializer->serializeNestedValue($native, serializeNested: $this->visible($serializer));
-        });
+        $serializer->serialize($user, data: [], fields: ['blocks', 'addresses'], serializeNested: $this->visible($serializer));
     }
 
     /**
@@ -390,6 +393,43 @@ class TestEntry extends Entry
     public function getStatus(): ?string
     {
         return 'live';
+    }
+}
+
+class TestUser extends User
+{
+    public function __construct(private array $testFields, private array $testValues, private array $testAddresses)
+    {
+        $this->id = 1;
+    }
+
+    public function getFieldLayout(): FieldLayout
+    {
+        return new class($this->testFields) extends FieldLayout {
+            public function __construct(private array $layoutFields)
+            {
+            }
+
+            public function getCustomFields(): array
+            {
+                return $this->layoutFields;
+            }
+
+            public function getVisibleCustomFields(ElementInterface $element): array
+            {
+                return $this->layoutFields;
+            }
+        };
+    }
+
+    public function getFieldValue(string $fieldHandle): mixed
+    {
+        return $this->testValues[$fieldHandle] ?? null;
+    }
+
+    public function getAddresses(): ElementCollection
+    {
+        return ElementCollection::make($this->testAddresses);
     }
 }
 
