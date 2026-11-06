@@ -74,7 +74,7 @@ it('redacts only sensitive settings in MCP responses', function (): void {
     ])->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent');
 
     $settings = [
-        'sources' => ['singles'],
+        'sources' => '*',
         'defaultPlacement' => Entries::DEFAULT_PLACEMENT_BEGINNING,
         'viewMode' => 'cards',
         'selectionLabel' => 'Choose an entry',
