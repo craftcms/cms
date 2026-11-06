@@ -16,23 +16,37 @@ export interface OnBroadcastOptions {
 let channel: BroadcastChannel | null | undefined;
 const thisTab = new EventTarget();
 
+/**
+ * The channel is `Craft.broadcaster`, shared with legacy code. A channel doesn't
+ * hear its own messages, so legacy listeners on `Craft.broadcaster`, such as
+ * element editors, only hear other tabs, as they expect.
+ */
 function getChannel(): BroadcastChannel | null {
-  if (channel === undefined) {
-    channel =
-      typeof BroadcastChannel === 'undefined'
-        ? null
-        : new BroadcastChannel(
-            `CraftCMS:${ConfigService.getInstance().get('appId', '')}`
-          );
+  if (channel !== undefined) {
+    return channel;
   }
 
-  return channel;
+  if (typeof BroadcastChannel === 'undefined') {
+    return (channel = null);
+  }
+
+  const shared: BroadcastChannel =
+    window.Craft?.broadcaster ??
+    new BroadcastChannel(
+      `CraftCMS:${ConfigService.getInstance().get('appId', '')}`
+    );
+  if (window.Craft) {
+    window.Craft.broadcaster = shared;
+  }
+
+  return (channel = shared);
 }
 
 /**
  * Tells other control panel tabs, listeners on `Craft.messageReceiver` in
  * this one, and this tab's {@link onBroadcast} listeners that pass
- * `includeSelf`, that something changed.
+ * `includeSelf`, that something changed. Listeners on `Craft.broadcaster`
+ * in this tab don't hear it.
  */
 export function broadcast(message: BroadcastMessage): void {
   getChannel()?.postMessage(message);
