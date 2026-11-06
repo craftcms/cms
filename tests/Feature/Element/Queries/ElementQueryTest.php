@@ -282,6 +282,18 @@ it('passes element queries to where() closures', function () {
         ->and($query()->where('elements.id', $viewer)->orWhere(fn (Builder $q) => $q->where('elements.id', $editor))->ids())->toBe([$editor, $viewer]);
 });
 
+it('chunks and lazily iterates by id', function () {
+    $ids = EntryModel::factory(3)->create()->pluck('id')->all();
+    $chunks = [];
+
+    entryQuery()->id($ids)->chunkById(2, function ($chunk) use (&$chunks) {
+        $chunks[] = $chunk->pluck('id')->all();
+    });
+
+    expect($chunks)->toBe([[$ids[0], $ids[1]], [$ids[2]]])
+        ->and(entryQuery()->id($ids)->asArray()->lazyByIdDesc(2)->pluck('id')->all())->toBe(array_reverse($ids));
+});
+
 it('ignores inner query pagination when getting a pagination count', function () {
     EntryModel::factory(5)->create();
 

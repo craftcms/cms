@@ -1123,6 +1123,16 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     }
 
     /**
+     * Get the default key name for `chunkById()` and `lazyById()`, as Eloquent uses the model’s key name.
+     *
+     * It resolves to `elements.id` in the query and is read back from each element or row as `id`.
+     */
+    protected function defaultKeyName(): string
+    {
+        return 'id';
+    }
+
+    /**
      * Get the underlying query builder instance.
      */
     public function getQuery(): Builder
