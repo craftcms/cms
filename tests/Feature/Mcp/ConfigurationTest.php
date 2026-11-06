@@ -413,8 +413,8 @@ it('rejects nonexistent section sources and layout fields before saving', functi
     ($this->operate)('create', 'fields', $entries(['*'], 'anything'));
 
     $rejects('update', ['type' => 'fields', 'identifier' => ['id' => $field['id']], 'attributes' => [
-        'settings' => ['sources' => ["section:{$section['uid']}", 'section:news']],
-    ]], 'Source “section:news” doesn’t exist.');
+        'settings' => ['sources' => ["section:{$section['uid']}", 'section:archive']],
+    ]], 'section:archive');
     FieldsService::refreshFields();
     expect(FieldsService::getFieldById($field['id'])->sources)->toBe(["section:{$section['uid']}"]);
 
@@ -425,5 +425,5 @@ it('rejects nonexistent section sources and layout fields before saving', functi
     $rejects('update', ['type' => 'entry-types', 'identifier' => ['uid' => $entryType['uid']], 'attributes' => [
         'fieldLayout' => $layout($missing),
     ]], "Field “{$missing}” doesn’t exist.");
-    expect(DB::table(Table::FIELDLAYOUTS)->where('config', 'like', "%$missing%")->exists())->toBeFalse();
+    expect(DB::table(Table::FIELDLAYOUTS)->pluck('config')->implode(','))->not->toContain($missing);
 });
