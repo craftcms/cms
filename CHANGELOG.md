@@ -1178,6 +1178,7 @@
 - Fixed a bug where some settings fields, such as section and Matrix fields’ “Entry Types” and field layout designers, jumped in height once their contents loaded, and stayed empty if they couldn’t be loaded. They now hold their space while loading, and show an error with a “Retry” button if loading fails. ([#20326](https://github.com/craftcms/cms/pull/20326))
 - Fixed a bug where the Settings nav item had no icon when `allowAdminChanges` was disabled. ([#20338](https://github.com/craftcms/cms/issues/20338))
 - Fixed a bug where text and number controls with `autofocus()` weren’t focused when they were shown after the page loaded, such as in modals and slideouts. They also no longer autofocus on mobile browsers, or for users who have disabled autofocus. ([#20373](https://github.com/craftcms/cms/pull/20373))
+- Fixed a bug where Assets fields’ thumbnail tiles could overflow into the next field when the field’s column was too narrow for the thumbnail size. ([#20392](https://github.com/craftcms/cms/issues/20392))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 
