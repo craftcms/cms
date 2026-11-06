@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Facades\Drafts as DraftsFacade;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Structures as StructuresFacade;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Auth;
 
 use function Pest\Laravel\actingAs;
@@ -204,4 +205,19 @@ it('returns the parts a view mode draws its elements with', function () {
         'elementIds' => [$entry->id],
         'viewMode' => 'carousel',
     ])->assertUnprocessable();
+});
+
+it('only draws cards for elements the user can view', function () {
+    $entry = EntryModel::factory()->createElement(['title' => 'Private entry']);
+    actingAs(UserModel::factory()->withPermissions(['accessCp'])->createElement(['admin' => false]));
+
+    $elements = postJson(action([RelationalFieldsController::class, 'structuredElements']), [
+        'elementType' => EntryElement::class,
+        'elementIds' => [$entry->id],
+        'siteId' => Site::first()->id,
+        'viewMode' => 'cards',
+    ])->assertOk()->json('elements');
+
+    expect($elements[0])->not->toHaveKey('cardHeaderHtml')
+        ->and($elements[0])->not->toHaveKey('cardContentHtml');
 });

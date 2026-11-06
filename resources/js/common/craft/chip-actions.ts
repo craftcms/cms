@@ -87,6 +87,8 @@ async function buildActionItem(action: ChipAction): Promise<HTMLElement> {
   const item = document.createElement('craft-action-item') as HTMLElement & {
     disabled?: boolean;
   };
+  // So a refresh of the chip knows the menu holds more than the server's items.
+  item.dataset.pageAction = '';
 
   if (action.destructive) {
     item.setAttribute('variant', 'danger');

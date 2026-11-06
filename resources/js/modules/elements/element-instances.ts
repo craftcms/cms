@@ -141,6 +141,39 @@ async function refreshGroup(
 }
 
 /**
+ * The server's action menus in a fresh render of a page-owned part, each with
+ * the one it would replace.
+ */
+function pairMenus(
+  fresh: Element,
+  existing: Element
+): Array<[Element, Element]> {
+  const menus = (part: Element) =>
+    part.matches('craft-action-menu')
+      ? [part]
+      : [...part.querySelectorAll('craft-action-menu')];
+  const existingMenus = menus(existing);
+
+  return menus(fresh).flatMap((menu, i) =>
+    existingMenus[i] ? [[menu, existingMenus[i]] as [Element, Element]] : []
+  );
+}
+
+/**
+ * Whether a server-rendered action menu can be swapped for a fresh one, whose
+ * items, such as “View in a new tab”, follow the element’s new URL. Not while
+ * it’s open or focused, or once the page has added items of its own.
+ */
+function canReplaceMenu(menu: Element, focused: Element | null): boolean {
+  return (
+    !menu.querySelector('[data-page-action]') &&
+    !menu.hasAttribute('open') &&
+    !(menu as Element & {open?: boolean}).open &&
+    !(focused && menu.contains(focused))
+  );
+}
+
+/**
  * Updates a chip or card to match a fresh render of it, without replacing the
  * element itself or the parts the page owns, so its selection, listeners and
  * focus survive.
@@ -188,8 +221,17 @@ export function patchInstance(target: Element, replacement: Element): void {
     });
   }
 
+  const freshMenus = [...keep].flatMap(([counterpart, existing]) =>
+    pairMenus(counterpart, existing)
+  );
+
   syncAttributes(target, replacement);
   mergeChildren(target, replacement, keep, reuse, orphans);
+  freshMenus.forEach(([fresh, existing]) => {
+    if (canReplaceMenu(existing, focused)) {
+      existing.replaceWith(fresh);
+    }
+  });
 
   if (focused && !focused.isConnected) {
     restoreFocus(
