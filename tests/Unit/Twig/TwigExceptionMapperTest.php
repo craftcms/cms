@@ -36,7 +36,7 @@ it('maps errors thrown in templates to their source template', function () {
         $handler->report($exception);
 
         expect($mapped)->toBeInstanceOf(DivisionByZeroError::class)
-            ->and($mapped->getFile())->toBe("$tempDir/broken.twig")
+            ->and(realpath($mapped->getFile()))->toBe(realpath("$tempDir/broken.twig"))
             ->and($mapped->getLine())->toBe(2)
             ->and(collect($mapped->getTrace())->pluck('file')->filter()->contains(fn (string $file) => str_contains($file, 'compiled_templates')))->toBeFalse();
 
