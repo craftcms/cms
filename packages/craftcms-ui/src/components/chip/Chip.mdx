@@ -95,6 +95,7 @@ An explicit `size` still wins, so a large thumbnail can sit in a chip with a sma
 
 `prefix-placement` sets which side of the label the prefix sits on.
 The default, `inline-start`, puts it before the label. `block-start` stacks it above the label, centered, for a tile in a grid; the checkbox and suffix then share a row along the top.
+A `full-width` stacked chip too narrow for its thumbnail steps it down to the next `thumb-size` that fits.
 Element indexes draw their thumbnail tiles this way, at every `thumb-size`:
 
 <Canvas of={ChipStories.Stacked} sourceState="shown" />

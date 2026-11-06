@@ -269,9 +269,9 @@ describe('WorkflowReviewPanel', () => {
     expect(
       (
         container!.querySelector('craft-callout') as HTMLElement & {
-          title: string;
+          label: string;
         }
-      ).title
+      ).label
     ).toBe('Your input is needed');
     expect(container!.textContent).toContain(
       'Choose an action for Publishers.'

@@ -185,6 +185,7 @@
 
 ### Drafts, Workflows, and Releases
 - Modified fields on drafts and revisions now have a “Compare changes” action, which shows how the field’s value differs from the current entry or the previous revision. Matrix fields that show their entries as cards or in an index show them as cards, with the edited and new ones marked, and each card can be opened in a new tab. ([#8135](https://github.com/craftcms/cms/discussions/8135), [#20307](https://github.com/craftcms/cms/pull/20307))
+- Entries now have a Compare screen, which shows two versions side by side: a draft and the current entry, two revisions, the user’s unsaved changes and the entry as it’s saved, or the entry in two sites. It’s opened from the Versions panel (formerly “Revisions”), which has a compare button beside each draft and revision, from the Sites panel, from the “Compare changes” item atop the editor’s action menu, and from the “Showing your unsaved changes” notice. The two versions are shown as editor panes with their fields lined up in their tabs, including sidebar tabs, and changed fields are marked on the side that made the change, or on both when neither did. Selecting a tab on either side selects it on both. The right-hand version can be edited in place, with autosave and the editor’s Save button, unless it’s a revision, and fields are marked as they’re edited. Arrow buttons between the panes copy a field’s value from the left-hand version into the right-hand one, with an “Undo” option. Each pane has a menu for choosing another version or another site, for whichever differs between the two panes, and a button between them swaps the two sides. On narrow screens, each field’s two versions are stacked, marked A and B. Between sites, a field counts as changed only when its translation is missing on one side. Nested and related elements, such as Matrix entries and relations, keep each version’s own order, with faint lines connecting the elements that moved, which are highlighted when either end is hovered or focused, and that follow the element when it’s reordered on the editable side. “Compare changes” draws the same lines. ([#20384](https://github.com/craftcms/cms/pull/20384))
 - Nested entry cards in drafts and revisions now have a violet bar along their edge, as modified fields do, when the entry was edited or added in that draft or revision. Screen readers read the status as part of the card.
 - Workflow review stages now show their status in words beside a status dot, and a stage where a withdrawn review stopped now says “Withdrawn” rather than looking unstarted. ([#20258](https://github.com/craftcms/cms/pull/20258))
 - Workflow review notes can now be up to 10,000 characters long, matching activity comments. ([#19923](https://github.com/craftcms/cms/pull/19923))
@@ -319,6 +320,7 @@
 - Removed `CraftCms\Cms\Field\BaseRelationField::$inputTemplate` and `$settingsTemplate`. Relation fields that extend the Yii adapter’s base relation field classes can still set them; other relation fields that set `$inputTemplate` now throw an exception, and should override `CraftCms\Cms\Field\BaseRelationField::elementSelectHtml()` instead. ([#20275](https://github.com/craftcms/cms/pull/20275))
 
 - Relational fields’ elements are no longer shown on white tiles, unless the element has a color of its own, so they take the colors around them.
+- Removed the “Copy value from site” field action. Field values can be copied between sites from the Compare screen instead. ([#20384](https://github.com/craftcms/cms/pull/20384))
 ### Color Fields
 - Color fields now support translucent colors. Authors can choose translucent palette colors, and set custom colors’ opacity when the field allows it, via the color picker in browsers that support it or by entering an 8-digit hex value. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - Color fields’ palette colors can now have an alpha channel, by entering an 8-digit hex value or via the color picker in browsers that support it. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
@@ -613,6 +615,7 @@
 - Removed the `<craft-sortable-checkbox-select>` web component. `<craft-checkbox-select>` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))
 
 - `<craft-action-item>`’s `icon-color` attribute can now be set to a custom property name, such as `--c-field-modified-indicator`, to tint the item’s icon with the color the property holds.
+- Added the `label-badge` slot to `<craft-field>`, for a badge beside the field’s label. ([#20384](https://github.com/craftcms/cms/pull/20384))
 ### Accessibility
 - Links to other sites now show an external-link icon and tell screen readers that they open in a new window. They open in a new tab on every control panel page again, including links in Ask AI replies, Vue-rendered pages, and `<craft-button>`, `<craft-action-item>`, `<craft-breadcrumb-item>`, and `<craft-nav-item>` components. ([#20306](https://github.com/craftcms/cms/pull/20306))
 - Search fields’ clear buttons are no longer in the <kbd>Tab</kbd> order. <kbd>Esc</kbd> clears the field from the keyboard. ([#20127](https://github.com/craftcms/cms/pull/20127))
@@ -708,6 +711,8 @@
 - Removed `Craft.AuthManager` and `Craft.cp.authManager`, which no longer had a remaining session time to act on. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Removed the `users/login-modal` action and the `_special/login-modal` template. ([#20085](https://github.com/craftcms/cms/pull/20085))
 
+- Added `CraftCms\Cms\Ui\Contracts\ReadableValueControl` and `CraftCms\Cms\Ui\Contracts\WritableValueControl`, which UI controls implement to let the control panel read and set their values, such as to copy them on the Compare screen. Field types that use a control that implements both get the Compare screen’s copy buttons, and field actions that generate a value are only offered for writable controls. ([#20384](https://github.com/craftcms/cms/pull/20384))
+- Removed `CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface`, `CraftCms\Cms\Field\Field::copyCrossSiteValue()`, `CraftCms\Cms\FieldLayout\LayoutElements\BaseField::isCrossSiteCopyable()`, `CraftCms\Cms\Element\Contracts\ElementInterface::getIsCrossSiteCopyable()`, and the `elements/copy-values-from-site` action. ([#20384](https://github.com/craftcms/cms/pull/20384))
 ### Security
 - Fixed an XSS vulnerability where element editors followed unsigned `returnUrl` params pointing outside the control panel and sites. ([#20222](https://github.com/craftcms/cms/pull/20222))
 - Added the `defaultRateLimit` and `defaultRateLimitDuration` config settings, which configure the rate limits for login, password reset, and two-step verification requests. ([#20054](https://github.com/craftcms/cms/pull/20054))
@@ -1187,6 +1192,8 @@
 - Fixed a bug where some settings fields, such as section and Matrix fields’ “Entry Types” and field layout designers, jumped in height once their contents loaded, and stayed empty if they couldn’t be loaded. They now hold their space while loading, and show an error with a “Retry” button if loading fails. ([#20326](https://github.com/craftcms/cms/pull/20326))
 - Fixed a bug where the Settings nav item had no icon when `allowAdminChanges` was disabled. ([#20338](https://github.com/craftcms/cms/issues/20338))
 - Fixed a bug where text and number controls with `autofocus()` weren’t focused when they were shown after the page loaded, such as in modals and slideouts. They also no longer autofocus on mobile browsers, or for users who have disabled autofocus. ([#20373](https://github.com/craftcms/cms/pull/20373))
+- Fixed a bug where Assets fields’ thumbnail tiles could overflow into the next field when the field’s column was too narrow for the thumbnail size. ([#20392](https://github.com/craftcms/cms/issues/20392))
+- Fixed a bug where relational fields’ “Add” and “Upload files” buttons overlapped when the field was too narrow for them. ([#20423](https://github.com/craftcms/cms/pull/20423))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 

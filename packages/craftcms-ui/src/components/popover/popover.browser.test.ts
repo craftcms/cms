@@ -1,5 +1,5 @@
-import {beforeEach, expect, it} from 'vite-plus/test';
-import {userEvent} from 'vite-plus/test/browser';
+import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {page, userEvent} from 'vite-plus/test/browser';
 import type CraftButton from '../button/button.js';
 import type CraftPopover from './popover.js';
 import '../button/button.js';
@@ -7,6 +7,154 @@ import './popover.js';
 
 beforeEach(() => {
   document.body.innerHTML = '';
+});
+
+it('gives the panel itself no role', async () => {
+  document.body.innerHTML = `
+    <craft-popover>
+      <craft-button slot="invoker" type="button">Open</craft-button>
+      <div slot="content"><button type="button">Pick</button></div>
+    </craft-popover>
+  `;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  await popover.updateComplete;
+
+  await expect
+    .element(page.getByRole('button', {name: 'Open', expanded: false}))
+    .toBeInTheDocument();
+
+  await userEvent.click(page.getByRole('button', {name: 'Open'}));
+
+  await expect
+    .element(page.getByRole('button', {name: 'Open', expanded: true}))
+    .toBeInTheDocument();
+  await expect.element(page.getByRole('button', {name: 'Pick'})).toBeVisible();
+  await expect.element(page.getByRole('dialog')).not.toBeInTheDocument();
+});
+
+describe('when focus moves', () => {
+  async function openWith(markup: string): Promise<CraftPopover> {
+    document.body.innerHTML = markup;
+    const popover = document.querySelector<CraftPopover>('craft-popover')!;
+    await popover.updateComplete;
+    popover.opened = true;
+    await popover.updateComplete;
+    return popover;
+  }
+
+  it('stays open while focus moves within it', async () => {
+    const popover = await openWith(`
+      <craft-popover>
+        <craft-button slot="invoker" type="button">Open</craft-button>
+        <div slot="content">
+          <button type="button">One</button>
+          <button type="button">Two</button>
+        </div>
+      </craft-popover>
+    `);
+
+    page.getByRole('button', {name: 'One'}).element().focus();
+    await userEvent.keyboard('{Tab}');
+    await userEvent.keyboard('{Shift>}{Tab}{Tab}{/Shift}');
+    await popover.updateComplete;
+
+    expect(document.activeElement).toBe(
+      popover.querySelector('[slot="invoker"]')
+    );
+    expect(popover.opened).toBe(true);
+  });
+
+  it('closes once focus leaves, leaving focus on the next control', async () => {
+    const popover = await openWith(`
+      <craft-popover>
+        <craft-button slot="invoker" type="button">Open</craft-button>
+        <div slot="content"><button type="button">Pick</button></div>
+      </craft-popover>
+      <button type="button">Next</button>
+    `);
+
+    page.getByRole('button', {name: 'Pick'}).element().focus();
+    await userEvent.keyboard('{Tab}');
+
+    await expect.poll(() => popover.opened).toBe(false);
+    await expect
+      .element(page.getByRole('button', {name: 'Next'}))
+      .toHaveFocus();
+  });
+
+  it('stays open when focus moves to an invoker linked with for', async () => {
+    const popover = await openWith(`
+      <button type="button" id="trigger">Open</button>
+      <craft-popover for="trigger">
+        <div slot="content"><button type="button">Pick</button></div>
+      </craft-popover>
+    `);
+
+    page.getByRole('button', {name: 'Pick'}).element().focus();
+    document.getElementById('trigger')!.focus();
+    await popover.updateComplete;
+
+    expect(popover.opened).toBe(true);
+  });
+
+  it('stays open when focus moves to another button that controls its content', async () => {
+    const popover = await openWith(`
+      <a href="#" id="anchor">Settings</a>
+      <button type="button" aria-controls="subnav">Show submenu</button>
+      <craft-popover for="anchor">
+        <div slot="content" id="subnav"><button type="button">Pick</button></div>
+      </craft-popover>
+    `);
+
+    page.getByRole('button', {name: 'Pick'}).element().focus();
+    page.getByRole('button', {name: 'Show submenu'}).element().focus();
+    await popover.updateComplete;
+
+    expect(popover.opened).toBe(true);
+  });
+
+  it('stays open while focus is in a popover nested in its content', async () => {
+    const outer = await openWith(`
+      <craft-popover class="outer">
+        <craft-button slot="invoker" type="button">Outer</craft-button>
+        <div slot="content">
+          <craft-popover class="inner">
+            <craft-button slot="invoker" type="button">Inner</craft-button>
+            <div slot="content"><button type="button">Deep</button></div>
+          </craft-popover>
+        </div>
+      </craft-popover>
+    `);
+    const inner = outer.querySelector<CraftPopover>('.inner')!;
+    await inner.updateComplete;
+    inner.opened = true;
+    await inner.updateComplete;
+
+    page.getByRole('button', {name: 'Inner'}).element().focus();
+    page.getByRole('button', {name: 'Deep'}).element().focus();
+    await outer.updateComplete;
+
+    expect(outer.opened).toBe(true);
+    expect(inner.opened).toBe(true);
+  });
+
+  it('stays open when text in the panel is clicked', async () => {
+    const popover = await openWith(`
+      <craft-popover>
+        <craft-button slot="invoker" type="button">Open</craft-button>
+        <div slot="content">
+          <p>Columns</p>
+          <button type="button">Pick</button>
+        </div>
+      </craft-popover>
+    `);
+
+    page.getByRole('button', {name: 'Pick'}).element().focus();
+    await userEvent.click(page.getByText('Columns'));
+    await popover.updateComplete;
+
+    expect(popover.opened).toBe(true);
+  });
 });
 
 it('returns focus to the invoker, and stays closed, when Enter inside it calls hide()', async () => {
@@ -111,7 +259,7 @@ it('lets one Escape close the popover around it after it was closed another way'
 it('keeps Escape from reaching a container while it closes the popover', async () => {
   document.body.innerHTML = `
     <section>
-      <craft-popover label="Context">
+      <craft-popover>
         <craft-button slot="invoker" type="button">Context</craft-button>
         <div slot="content"><label><input type="checkbox"> Title</label></div>
       </craft-popover>
@@ -145,7 +293,7 @@ async function openTallPopover(
 ): Promise<{pane: DOMRect; footer: DOMRect}> {
   document.body.innerHTML = `
     <div style="${wrapperStyle}">
-      <craft-popover label="View" style="${popoverStyle}">
+      <craft-popover style="${popoverStyle}">
         <craft-button slot="invoker" type="button">View</craft-button>
         <div slot="content-body" style="block-size: 3000px">Columns</div>
         <div slot="content-footer"><button type="button">Close</button></div>
