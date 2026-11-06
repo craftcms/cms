@@ -16,7 +16,6 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Concerns\MacroableByClass;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Query;
@@ -108,7 +107,6 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     use Concerns\QueriesUniqueElements;
     use Concerns\SearchesElements;
     use ForwardsCalls;
-    use MacroableByClass;
 
     protected string $table = Table::ELEMENTS;
 
@@ -116,16 +114,6 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * The base query builder instance.
      */
     protected Builder $query;
-
-    /**
-     * The registered macros, by the class they were registered on.
-     *
-     * @var array<class-string, array<string, object|callable>>
-     *
-     * @see MacroableByClass
-     */
-    #[Override]
-    protected static $macros = [];
 
     /**
      * All of the locally registered builder macros.

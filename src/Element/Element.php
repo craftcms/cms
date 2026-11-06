@@ -19,7 +19,6 @@ use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\Gql\Attributes\Gql;
-use CraftCms\Cms\Support\Concerns\MacroableByClass;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Utils;
@@ -29,7 +28,6 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateTimeInterface;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
-use Illuminate\Support\Traits\Macroable;
 use Illuminate\Validation\Validator as LaravelValidator;
 use Override;
 use Throwable;
@@ -77,21 +75,6 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
     use Concerns\Structurable;
     use Concerns\TracksChanges;
     use LegacyConstants;
-    use Macroable, MacroableByClass {
-        MacroableByClass::macro insteadof Macroable;
-        MacroableByClass::hasMacro insteadof Macroable;
-        MacroableByClass::flushMacros insteadof Macroable;
-    }
-
-    /**
-     * The registered macros, by the class they were registered on.
-     *
-     * @var array<class-string, array<string, object|callable>>
-     *
-     * @see MacroableByClass
-     */
-    #[Override]
-    protected static $macros = [];
 
     /**
      * @since 3.3.6
