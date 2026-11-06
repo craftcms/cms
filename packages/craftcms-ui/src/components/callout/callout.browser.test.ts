@@ -59,3 +59,56 @@ it.each([
     ).toBeLessThanOrEqual(0.5);
   }
 );
+
+it.each([
+  ['beside its body when they both fit', '36rem', false],
+  ['below its body when they don’t both fit', '20rem', true],
+])('puts its action %s', async (_case, width, below) => {
+  document.body.innerHTML = `
+    <div style="inline-size: ${width}">
+      <craft-callout icon="info">
+        Showing your unsaved changes.
+        <div slot="action" style="display: flex; flex-wrap: wrap; gap: 0.5rem">
+          <craft-button size="small">Compare changes</craft-button>
+          <craft-button size="small">Discard changes</craft-button>
+        </div>
+      </craft-callout>
+    </div>`;
+  const callout = document.querySelector<CraftCallout>('craft-callout')!;
+  await callout.updateComplete;
+  const body = callout
+    .shadowRoot!.querySelector('.callout__body')!
+    .getBoundingClientRect();
+  const action = callout
+    .shadowRoot!.querySelector('.callout__action')!
+    .getBoundingClientRect();
+
+  expect(action.top >= body.bottom).toBe(below);
+});
+
+it('adds no space for an empty action, however narrow', async () => {
+  document.body.innerHTML = `
+    <div style="inline-size: 8rem">
+      <craft-callout icon="info">Showing your unsaved changes.</craft-callout>
+    </div>`;
+  const callout = document.querySelector<CraftCallout>('craft-callout')!;
+  await callout.updateComplete;
+  const base = callout
+    .shadowRoot!.querySelector('.callout')!
+    .getBoundingClientRect();
+  const body = callout
+    .shadowRoot!.querySelector('.callout__body')!
+    .getBoundingClientRect();
+  const {paddingBlockEnd, borderBlockEndWidth} = getComputedStyle(
+    callout.shadowRoot!.querySelector('.callout')!
+  );
+
+  expect(
+    Math.round(
+      base.bottom -
+        body.bottom -
+        parseFloat(paddingBlockEnd) -
+        parseFloat(borderBlockEndWidth)
+    )
+  ).toBe(0);
+});

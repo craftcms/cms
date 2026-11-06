@@ -25,7 +25,7 @@
 
 ### Reflow and zoom
 
-- [ ] The icon, title, body and action stay readable without horizontal scrolling at a 320px viewport and at 200% zoom. Per WCAG 1.4.10 (Reflow) and 1.4.4 (Resize Text). Not yet verified. The grid keeps the action beside the body rather than wrapping it below.
+- [ ] The icon, title, body and action stay readable without horizontal scrolling at a 320px viewport and at 200% zoom. Per WCAG 1.4.10 (Reflow) and 1.4.4 (Resize Text). Not yet verified at 320px or at 200% zoom. The action moves below the body when they don't both fit, as `puts its action below its body when they don’t both fit` in `callout.browser.test.ts` shows.
 
 ## Depends on usage
 
