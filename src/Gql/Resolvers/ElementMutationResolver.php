@@ -76,15 +76,28 @@ abstract class ElementMutationResolver extends MutationResolver
         $arguments = $event->arguments;
         $element = $event->element;
 
+        // For authenticated requests, custom field values are set after everything else, so field layout conditions
+        // can be evaluated against the populated element
+        $authenticated = GqlHelper::getSchemaUser() !== null;
+        $fieldValues = [];
+
         foreach ($arguments as $argument => $value) {
             if (isset($contentFields[$argument])) {
                 if (! $normalized) {
                     $value = $this->normalizeValue($argument, $value);
                 }
-                $element->setFieldValueFromRequest($argument, $value);
+                if ($authenticated) {
+                    $fieldValues[$argument] = $value;
+                } else {
+                    $element->setFieldValueFromRequest($argument, $value);
+                }
             } elseif ($element->canSetProperty($argument)) {
                 $element->{$argument} = $value;
             }
+        }
+
+        if (! empty($fieldValues)) {
+            GqlHelper::populateFieldValues($element, $fieldValues);
         }
 
         // Fire an 'afterMutationPopulateElement' event
