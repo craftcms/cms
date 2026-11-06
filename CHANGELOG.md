@@ -13,7 +13,7 @@
 - Fixed a bug where the `configuration_update` MCP tool couldn’t update Matrix field settings. ([#20406](https://github.com/craftcms/cms/issues/20406))
 - Fixed a bug where MCP tools redacted all field and project config settings, rather than only sensitive ones. ([#20412](https://github.com/craftcms/cms/discussions/20412))
 - Fixed a bug where unhandled MCP tool errors were logged without their exception details. ([#20406](https://github.com/craftcms/cms/issues/20406))
-- Fixed a bug where system directory restrictions weren’t consistently enforced on Windows.
+- Fixed a bug where system directory restrictions weren’t consistently enforced on Windows. ([#20444](https://github.com/craftcms/cms/pull/20444))
 - Fixed a bug where field layout conditions within Content Block fields and nested entries didn’t update based on dropdown values, such as a Link field’s selected link type. ([#20332](https://github.com/craftcms/cms/issues/20332))
 - Fixed a bug where strict MCP clients, such as VS Code, rejected the `search.query` MCP tool. ([#20329](https://github.com/craftcms/cms/issues/20329))
 - Fixed a bug where the “New token” button on the Tokens screen didn’t work after a personal access token was created. ([#20356](https://github.com/craftcms/cms/issues/20356))
