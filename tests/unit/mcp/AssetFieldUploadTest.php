@@ -26,7 +26,6 @@ class AssetFieldUploadTest extends TestCase
     private string $file;
     private array $fields = [];
     private ?array $originalVolume = null;
-    private mixed $originalMaxUploadFileSize;
 
     public function _fixtures(): array
     {
@@ -36,9 +35,6 @@ class AssetFieldUploadTest extends TestCase
     protected function _before(): void
     {
         Craft::$app->getUser()->setIdentity(User::find()->admin()->one());
-        // Other tests may leave a lower limit behind
-        $this->originalMaxUploadFileSize = Craft::$app->getConfig()->getGeneral()->maxUploadFileSize;
-        Craft::$app->getConfig()->getGeneral()->maxUploadFileSize = 1024 * 1024;
         // Local paths must be within the project, outside system directories (which include tests/)
         FileHelper::createDirectory(Craft::getAlias('@root/mcp-upload-test'));
         $this->file = Craft::getAlias('@root/mcp-upload-test/photo.png');
@@ -64,7 +60,6 @@ class AssetFieldUploadTest extends TestCase
         }
 
         FileHelper::removeDirectory(Craft::getAlias('@root/mcp-upload-test'));
-        Craft::$app->getConfig()->getGeneral()->maxUploadFileSize = $this->originalMaxUploadFileSize;
         Craft::$app->getUser()->setIdentity(null);
     }
 

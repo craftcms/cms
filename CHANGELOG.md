@@ -15,7 +15,12 @@
 - Fixed a bug where project config changes made through the stdio MCP server (`mcp/serve`) weren’t saved until the server stopped. ([#20330](https://github.com/craftcms/cms/issues/20330))
 - Fixed a bug where authenticated GraphQL requests didn’t respect field layout conditions. Fields that are hidden from the user are now excluded from the schema, or resolve to `null` when their conditions are element-specific. Fields the user can’t edit are now excluded from mutation arguments, or result in an error when set if their conditions are element-specific. ([#20391](https://github.com/craftcms/cms/pull/20391))
 - Fixed a bug where field values submitted for nested entries, Content Block fields, and addresses could be saved even if the user wasn’t permitted to see or edit the fields, per their field layout conditions. ([#20391](https://github.com/craftcms/cms/pull/20391))
+- Fixed a bug where entries and assets could be deleted for the only site they exist in, via the `elements/delete-for-site` action or the “Delete for site” element action.
+- Fixed a bug where “Delete for this site” could be offered for an entry’s provisional draft when the canonical entry only existed in that site.
 - Fixed a bug where “New entry” buttons could offer entry types or sections that `craft\elements\Entry::EVENT_DEFINE_ENTRY_TYPES` had excluded, resulting in a 400 error. ([#20322](https://github.com/craftcms/cms/issues/20322))
+- Fixed a bug where garbage collection could leave foreign key constraints disabled if it didn’t finish, and on PostgreSQL, other requests could write data without foreign key enforcement while it ran. ([#20386](https://github.com/craftcms/cms/issues/20386))
+- Fixed a bug where `craft\base\Element::EVENT_AUTHORIZE_DELETE_FOR_SITE` handlers were never called, so they couldn’t authorize users to delete elements for a site.
+- Fixed a bug where Markdown field layout elements weren’t getting translated. ([#20408](https://github.com/craftcms/cms/discussions/20408))
 - Fixed a bug where date pickers within slideouts could open far away from their inputs at some browser zoom and display scaling levels. ([#20399](https://github.com/craftcms/cms/issues/20399))
 
 ## 5.12.0.1 - 2026-11-03

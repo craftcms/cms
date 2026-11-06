@@ -9,6 +9,7 @@ namespace crafttests\unit\services;
 
 use Codeception\Test\Unit;
 use Craft;
+use craft\db\Command;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
@@ -29,6 +30,7 @@ use DateTime;
 use DateTimeZone;
 use Exception;
 use yii\base\InvalidArgumentException;
+use yii\db\Exception as DbException;
 
 /**
  * Unit tests for the garbage collector service.
@@ -251,6 +253,42 @@ class GcTest extends TestCase
             ['active', 'authorized', 'authorized-same-second', 'new', 'personal', 'revoked-live'],
             $remaining(Table::OAUTH_CLIENTS, array_keys($clients)),
         );
+    }
+
+    /**
+     * Foreign key checks must be back on when deleting orphaned FK rows fails partway through.
+     *
+     * @see https://github.com/craftcms/cms/issues/20386
+     */
+    public function testFkChecksRestoredWhenOrphanedFkRowDeletionFails(): void
+    {
+        $db = Craft::$app->getDb();
+        $commandClass = $db->commandClass;
+        $db->commandClass = get_class(new class() extends Command {
+            public function execute()
+            {
+                // only fail the orphaned FK row deletions
+                if (preg_match('/^DELETE (t\.\* )?FROM \S+ t\s/', $this->getSql())) {
+                    throw new DbException('Simulated failure');
+                }
+                return parent::execute();
+            }
+        });
+
+        try {
+            $this->gc->run(true);
+            self::fail('Garbage collection should have failed.');
+        } catch (DbException $e) {
+            self::assertSame('Simulated failure', $e->getMessage());
+        } finally {
+            $db->commandClass = $commandClass;
+        }
+
+        if ($db->getIsMysql()) {
+            self::assertSame(1, (int)$db->createCommand('SELECT @@foreign_key_checks')->queryScalar());
+        } else {
+            self::assertSame(0, (int)$db->createCommand("SELECT count(*) FROM pg_trigger WHERE tgenabled = 'D'")->queryScalar());
+        }
     }
 
     /**
