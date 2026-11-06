@@ -8,10 +8,8 @@ use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\ImportFileConflict;
-use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Validation\AssetRules;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -156,11 +154,10 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
         try {
             // without an extension, the file has to be fetched to find out what it is
             if (pathinfo($filename, PATHINFO_EXTENSION) === '') {
-                [$tempPath, $extension] = AssetsHelper::fetchImportFile($urlValidator, $source, $filename, $allowLocalPath);
-                $filename .= ".$extension";
+                [$tempPath, $filename] = AssetsHelper::fetchImportFile($urlValidator, $source, $filename, $allowLocalPath);
             }
 
-            $this->ensureAllowed($field, $filename);
+            AssetsHelper::ensureImportExtensionAllowed($filename, $field->getAllowedExtensions());
 
             $existingAsset = $conflict === ImportFileConflict::KeepBoth ? null : $this->findExistingAsset($filename, $folder);
 
@@ -250,26 +247,6 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
 
             return $this->findExistingAsset($filename, $folder)->id ?? $item;
         }, $items);
-    }
-
-    /**
-     * Ensures an imported file’s extension is allowed, both site-wide and by the field.
-     *
-     * @throws AssetDisallowedExtensionException if it isn’t
-     */
-    private function ensureAllowed(AssetsField $field, string $filename): void
-    {
-        $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-        $allowedExtensions = $field->getAllowedExtensions();
-
-        if (
-            ! in_array($extension, Cms::config()->allowedFileExtensions, true) ||
-            (! empty($allowedExtensions) && ! in_array($extension, $allowedExtensions, true))
-        ) {
-            throw new AssetDisallowedExtensionException(t('“{filename}” is not allowed in this field.', [
-                'filename' => $filename,
-            ]));
-        }
     }
 
     /**

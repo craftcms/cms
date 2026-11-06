@@ -135,15 +135,7 @@ class UserImporter extends ElementImporter
         $tempPath = null;
 
         try {
-            [$tempPath, $extension] = AssetsHelper::fetchImportFile(static::urlValidator(), $source, $filename, ! self::isRemoteSource($this->source));
-
-            // without an extension, the fetched file's type decides it, and the temp file needs it too to be saved as a photo
-            if (pathinfo($filename, PATHINFO_EXTENSION) === '') {
-                $filename .= ".$extension";
-                $typedTempPath = sprintf('%s/%s.%s', pathinfo($tempPath, PATHINFO_DIRNAME), pathinfo($tempPath, PATHINFO_FILENAME), $extension);
-                File::move($tempPath, $typedTempPath);
-                $tempPath = $typedTempPath;
-            }
+            [$tempPath, $filename] = AssetsHelper::fetchImportFile(static::urlValidator(), $source, $filename, ! self::isRemoteSource($this->source));
 
             Users::saveUserPhoto($tempPath, $user, $filename);
         } catch (Throwable $e) {

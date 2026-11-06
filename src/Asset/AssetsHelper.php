@@ -10,6 +10,7 @@ use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\SetAssetFilename;
+use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Exceptions\FileException;
 use CraftCms\Cms\Cms;
@@ -907,7 +908,7 @@ class AssetsHelper
 
     /**
      * Fetches an imported file (an absolute URL or a local path) to a temp path, and returns the path along with
-     * the file’s extension, taken from its content type when the filename doesn’t have one.
+     * the filename. A filename without an extension gets one from the file’s content type, and so does the temp file.
      *
      * A local file is copied, so the source file itself is never handed over to be moved into a volume.
      *
@@ -956,6 +957,11 @@ class AssetsHelper
                         'filename' => $filename,
                     ]), previous: $e);
                 }
+
+                $filename .= ".$extension";
+                $typedTempPath = sprintf('%s/%s.%s', pathinfo($tempPath, PATHINFO_DIRNAME), pathinfo($tempPath, PATHINFO_FILENAME), $extension);
+                File::move($tempPath, $typedTempPath);
+                $tempPath = $typedTempPath;
             }
         } catch (Throwable $e) {
             File::delete($tempPath);
@@ -963,6 +969,35 @@ class AssetsHelper
             throw $e;
         }
 
-        return [$tempPath, $extension];
+        return [$tempPath, $filename];
+    }
+
+    /**
+     * Ensures an imported file’s extension is allowed site-wide and, when given, by the field it’s imported into.
+     *
+     * @param  list<string>|null  $fieldExtensions  The extensions the field allows, or null when it isn’t imported into a field.
+     *
+     * @throws AssetDisallowedExtensionException if it isn’t
+     */
+    public static function ensureImportExtensionAllowed(string $filename, ?array $fieldExtensions = null): void
+    {
+        $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        $allowedSiteWide = in_array($extension, Cms::config()->allowedFileExtensions, true);
+
+        if ($fieldExtensions === null) {
+            if (! $allowedSiteWide) {
+                throw new AssetDisallowedExtensionException(t('“{extension}” is not an allowed file extension.', [
+                    'extension' => $extension,
+                ]));
+            }
+
+            return;
+        }
+
+        if (! $allowedSiteWide || ($fieldExtensions !== [] && ! in_array($extension, $fieldExtensions, true))) {
+            throw new AssetDisallowedExtensionException(t('“{filename}” is not allowed in this field.', [
+                'filename' => $filename,
+            ]));
+        }
     }
 }

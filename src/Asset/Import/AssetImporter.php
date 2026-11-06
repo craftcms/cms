@@ -7,11 +7,9 @@ namespace CraftCms\Cms\Asset\Import;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Exceptions\FileException;
 use CraftCms\Cms\Asset\Validation\Rules\VolumeRule;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Element\Queries\AssetQuery;
@@ -184,15 +182,16 @@ class AssetImporter extends ElementImporter
 
         // a filename with an extension can be checked before anything is fetched
         if (isset($attributes['filename']) && pathinfo($attributes['filename'], PATHINFO_EXTENSION) !== '') {
-            self::ensureAllowedExtension($attributes['filename']);
+            AssetsHelper::ensureImportExtensionAllowed($attributes['filename']);
         }
 
         // fetch the file (a local path or a URL) to a temp location
         if (! empty($attributes['tempFilePath'])) {
             $source = $attributes['tempFilePath'];
+            $hadExtension = pathinfo($attributes['filename'], PATHINFO_EXTENSION) !== '';
 
             try {
-                [$tempPath, $extension] = AssetsHelper::fetchImportFile(static::urlValidator(), $source, $attributes['filename'], ! self::isRemoteSource($this->source));
+                [$tempPath, $attributes['filename']] = AssetsHelper::fetchImportFile(static::urlValidator(), $source, $attributes['filename'], ! self::isRemoteSource($this->source));
             } catch (AssetException|FileException $e) {
                 throw $e;
             } catch (Throwable $e) {
@@ -203,12 +202,10 @@ class AssetImporter extends ElementImporter
 
             $attributes['tempFilePath'] = $tempPath;
 
-            // without an extension, the fetched file's type decides it
-            if (pathinfo($attributes['filename'], PATHINFO_EXTENSION) === '') {
-                $attributes['filename'] .= ".$extension";
-
+            // without an extension, the fetched file's type decided it, so it can only be checked now
+            if (! $hadExtension) {
                 try {
-                    self::ensureAllowedExtension($attributes['filename']);
+                    AssetsHelper::ensureImportExtensionAllowed($attributes['filename']);
                 } catch (Throwable $e) {
                     File::delete($tempPath);
 
@@ -217,7 +214,7 @@ class AssetImporter extends ElementImporter
             }
         } elseif (isset($attributes['filename']) && pathinfo($attributes['filename'], PATHINFO_EXTENSION) === '') {
             // nothing was fetched to tell what an extension-less filename is
-            self::ensureAllowedExtension($attributes['filename']);
+            AssetsHelper::ensureImportExtensionAllowed($attributes['filename']);
         }
 
         // avoid filename conflicts
@@ -229,22 +226,6 @@ class AssetImporter extends ElementImporter
         }
 
         parent::setAttributesForImport($element, $attributes, $data);
-    }
-
-    /**
-     * Ensures an imported file’s extension is allowed site-wide.
-     *
-     * @throws AssetDisallowedExtensionException if it isn’t
-     */
-    private static function ensureAllowedExtension(string $filename): void
-    {
-        $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-
-        if (! in_array($extension, Cms::config()->allowedFileExtensions, true)) {
-            throw new AssetDisallowedExtensionException(t('“{extension}” is not an allowed file extension.', [
-                'extension' => $extension,
-            ]));
-        }
     }
 
     /**
