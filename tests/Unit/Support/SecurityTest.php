@@ -52,7 +52,10 @@ test('isSystemDir', function () {
     $security = new Security;
 
     expect($security->isSystemDir($configPath))->toBeTrue();
+    expect($security->isSystemDir($configPath.DIRECTORY_SEPARATOR.'nested'))->toBeTrue();
     expect($security->isSystemDir($vendorPath))->toBeTrue();
+    expect($security->isSystemDir(base_path()))->toBeTrue();
+    expect($security->isSystemDir($vendorPath.'-other'))->toBeFalse();
     expect($security->isSystemDir('/tmp/random-path'))->toBeFalse();
 });
 
