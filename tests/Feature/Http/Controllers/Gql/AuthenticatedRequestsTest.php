@@ -11,10 +11,12 @@ use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Contracts\Auth\Factory;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
 use Laravel\Passport\ClientRepository;
@@ -121,6 +123,17 @@ it('rejects invalid access tokens and tokens without a GraphQL scope', function 
         return UserModel::findOrFail($user->id)->createToken('MCP', ['mcp:read'])->accessToken;
     }],
 ]);
+
+it('keeps the request’s site token out of its OAuth discovery metadata', function (): void {
+    $headers = ['X-Craft-Site-Token' => Crypt::encrypt((string) Sites::getPrimarySite()->id)];
+
+    $resource = $this->getJson('https://localhost/.well-known/oauth-protected-resource/actions/graphql/api', $headers)
+        ->assertOk()
+        ->assertJsonPath('resource', 'https://localhost/actions/graphql/api')
+        ->json();
+
+    expect($resource['authorization_servers'])->toBe(['https://localhost/actions/graphql']);
+});
 
 it('lets OAuth clients discover, register for, and use the API with the access level the user chooses', function (?string $access, array $granted, bool $canDelete): void {
     $challenge = gqlAsUser('not.a.jwt', '{ __typename }')->assertUnauthorized()->headers->get('WWW-Authenticate');

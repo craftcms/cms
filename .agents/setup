@@ -38,7 +38,7 @@ fi
 # Backups shell out to the sqlite3 CLI. intl is installed below instead.
 packages=(php8.5-cli php8.5-bcmath php8.5-curl php8.5-gd
     php8.5-mbstring php8.5-mysql php8.5-pgsql php8.5-sqlite3 php8.5-xml
-    php8.5-zip php8.5-soap php8.5-imagick libvips42 unzip sqlite3 zstd
+    php8.5-zip php8.5-soap php8.5-imagick libvips42 unzip sqlite3 zstd fonts-noto-core
     mysql-community-server-core mysql-community-client-core postgresql-15)
 missing=()
 for package in "${packages[@]}"; do
@@ -50,6 +50,13 @@ if ((${#missing[@]})); then
     step 'Refresh apt indexes' sudo apt-get update -qq
     step 'Install PHP, database engines, and image libraries' sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${missing[@]}"
 fi
+
+# So the fonts we install (e.g. Noto Sans, for the control panel's system-ui
+# stack) resolve for every user of the orb. Runs even when nothing was just
+# installed, in case the base image's fontconfig state changed.
+sudo env DEBIAN_FRONTEND=noninteractive dpkg-reconfigure fontconfig-config
+sudo env DEBIAN_FRONTEND=noninteractive dpkg-reconfigure fontconfig
+
 sudo update-alternatives --set php /usr/bin/php8.5
 
 # CI's ubuntu-24.04 PHP links intl against ICU 74.2, and date formats differ

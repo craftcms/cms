@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Entries;
+use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -90,4 +92,29 @@ it('redacts only sensitive settings in MCP responses', function (): void {
         ->toMatchArray($settings)
         ->and($call('project_config_get', ['path' => 'plugins.mcpTest.settings'])['value'])
         ->toBe(['apiKey' => '•••••••••••', 'region' => 'us-east-1']);
+});
+
+it('accepts the settings it returned for a Matrix field when updating it through MCP', function (): void {
+    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
+    Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
+    $entryType = EntryType::factory()->create();
+    $call = fn (string $operation, array $arguments) => McpRequest::send($this, 'tools/call', [
+        'name' => "configuration_$operation",
+        'arguments' => ['type' => 'fields', ...$arguments],
+    ])->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent.item');
+
+    $created = $call('create', ['attributes' => [
+        'type' => Matrix::class,
+        'name' => 'Blocks',
+        'handle' => 'blocks',
+        'settings' => ['entryTypes' => [$entryType->uid]],
+    ]]);
+    $updated = $call('update', [
+        'identifier' => ['id' => $created['id']],
+        'attributes' => ['settings' => [...$created['settings'], 'maxEntries' => 5]],
+    ]);
+
+    expect($updated['settings']['maxEntries'])->toBe(5)
+        ->and(Fields::getFieldById($created['id'])->getEntryTypes()[0]->uid)->toBe($entryType->uid);
 });

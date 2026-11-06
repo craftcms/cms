@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Data\ActionItem;
+use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
 use CraftCms\Cms\Element\Events\ElementAltActionsResolving;
 use CraftCms\Cms\Element\Events\ElementAttributeHtmlResolving;
@@ -13,8 +15,11 @@ use CraftCms\Cms\Element\Events\ElementMetadataResolving;
 use CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Facades\Elements as ElementsFacade;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Url;
@@ -155,6 +160,41 @@ describe('getActionMenuItems', function () {
 
         expect($items)->toHaveCount(1);
         expect($items[0]['label'])->toBe('Only Item');
+    });
+
+    test('only offers deleting a provisional draft for a site when the canonical entry exists in another site', function () {
+        $primarySiteId = Sites::getPrimarySite()->id;
+        $secondarySite = Site::factory()->create();
+        $section = Section::factory()
+            ->withSites($secondarySite)
+            ->withEntryTypes($entryType = EntryType::factory()->create())
+            ->create(['propagationMethod' => PropagationMethod::Custom]);
+        $entry = EntryModel::factory()
+            ->forSection($section)
+            ->forEntryType($entryType)
+            ->createElement();
+        $draft = app(Drafts::class)->createDraft($entry, auth()->id(), provisional: true);
+        $draft->setEnabledForSite([$primarySiteId => true, $secondarySite->id => true]);
+        expect(ElementsFacade::saveElement($draft))->toBeTrue();
+
+        $offersDeleteForSite = function (int $siteId) use ($draft): array {
+            $siteDraft = Entry::find()->id($draft->id)->drafts()->provisionalDrafts()->siteId($siteId)->status(null)->one();
+            $label = 'Delete entry for this site';
+
+            return [
+                collect($siteDraft->getActionMenuItems())->pluck('label')->contains($label),
+                collect($siteDraft->actionMenuDescriptors())->pluck('label')->contains($label),
+            ];
+        };
+
+        // Deleting the draft for the original site would delete the canonical entry for its only site
+        expect($offersDeleteForSite($primarySiteId))->toBe([false, false])
+            ->and($offersDeleteForSite($secondarySite->id))->toBe([true, true]);
+
+        // Once the canonical entry exists in both sites, it can be deleted for the original site too
+        $entry->setEnabledForSite([$primarySiteId => true, $secondarySite->id => true]);
+        expect(ElementsFacade::saveElement($entry))->toBeTrue()
+            ->and($offersDeleteForSite($primarySiteId))->toBe([true, true]);
     });
 });
 

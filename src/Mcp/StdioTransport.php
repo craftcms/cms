@@ -18,6 +18,9 @@ use Symfony\Component\Uid\Uuid;
  */
 class StdioTransport extends BaseStdioTransport
 {
+    /** The hidden context key that marks messages handled by the stdio server. */
+    public const string ContextStdio = 'craft.mcp.stdio';
+
     /**
      * @param  resource  $input
      * @param  resource  $output
@@ -36,6 +39,7 @@ class StdioTransport extends BaseStdioTransport
     {
         $this->app->forgetScopedInstances();
         Context::addHidden(ActivityEventRecorder::ContextOrigin, 'MCP');
+        Context::addHidden(self::ContextStdio, true);
 
         parent::handleMessage($payload, $sessionId);
     }

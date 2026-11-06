@@ -75,6 +75,14 @@
   const modalTitle = computed(() => {
     return editing.value ? editing.value.name : t('Create a new token');
   });
+  const keySetupInstructions = t(
+    'Run {command}, or set the {privateKey} and {publicKey} environment variables to PEM-encoded keys.',
+    {
+      command: '<code>php craft passport:keys</code>',
+      privateKey: '<code>PASSPORT_PRIVATE_KEY</code>',
+      publicKey: '<code>PASSPORT_PUBLIC_KEY</code>',
+    }
+  );
   const expiryOptions = [
     {label: t('7 days'), value: '7'},
     {label: t('30 days'), value: '30'},
@@ -246,7 +254,16 @@
 
 <template>
   <UserScreen>
-    <div class="grid gap-lg">
+    <craft-callout v-if="!page.props.hasKeys" variant="warning">
+      <div class="grid gap-md">
+        <p>
+          {{ t('Tokens can’t be created until Craft has OAuth signing keys.') }}
+        </p>
+        <p v-html="keySetupInstructions"></p>
+      </div>
+    </craft-callout>
+
+    <div v-else class="grid gap-lg">
       <div>
         <p>
           {{
