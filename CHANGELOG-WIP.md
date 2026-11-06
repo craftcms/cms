@@ -516,6 +516,7 @@
 - Added `php craft twig:cache` - Precompile Twig views
 - Added `php craft twig:clear` - Clear precompiled Twig views
 - Added `php craft project-config:check` - Check project config schema compatibility without applying changes
+- Removed the `setup:cloud` command (`setup/cloud`). To prepare a project for Craft Cloud, run `composer require craftcms/cloud` and then `php craft cloud:setup`.
 - `craft\console\controllers\EnvController` has been removed in favor of the classes below:
   - `CraftCms\Cms\Console\Commands\Env\EnvRemoveCommand` => `php craft env:remove`
   - `CraftCms\Cms\Console\Commands\Env\EnvSetCommand` => `php craft env:set`
