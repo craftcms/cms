@@ -1307,6 +1307,7 @@ return [
     'Column handles can’t be in the format “{format}”.' => 'Column handles can’t be in the format “{format}”.',
     'Column headers with buttons are sortable' => 'Column headers with buttons are sortable',
     'Columns' => 'Columns',
+    'Compare {element}' => 'Compare {element}',
     'Compatibility' => 'Compatibility',
     'Compiled classes' => 'Compiled classes',
     'Compiled templates' => 'Compiled templates',

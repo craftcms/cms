@@ -454,6 +454,19 @@ it('keeps each field in its tab, along with sidebar tabs, which have no sidebar 
         });
 });
 
+it('names the element in its heading with its chip, without a status', function () {
+    $entry = comparedEntry(['summary' => 'Opens in March']);
+
+    get(compareScreenUrl($entry, []))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('title', 'Compare “Light and Line”')
+            ->where('elementChip', fn (string $html) => str_contains($html, '<craft-chip')
+                && str_contains($html, 'Light and Line')
+                && str_contains($html, 'inline-chips')
+                && ! str_contains($html, 'show-status')));
+});
+
 it('compares a revision with the revision before it', function () {
     $entry = comparedEntry(['summary' => 'Opens in March']);
     $firstId = app(Revisions::class)->createRevision($entry, auth()->id());

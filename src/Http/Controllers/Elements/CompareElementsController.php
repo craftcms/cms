@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
+use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\FieldComparisonRow;
@@ -101,6 +102,8 @@ readonly class CompareElementsController
                     $comparison['rows'],
                 ),
                 'editUrl' => $to->getCpEditUrl(),
+                // The heading's chip, as the deletion blocker modal shows it.
+                'elementChip' => app(PreviewHtml::class)->elementPreviewHtml([$canonical], showStatus: false),
                 // The same comparison the other way around, which edits the other version, when it can be.
                 'reverseUrl' => $state['from'] !== $state['to']
                     ? $this->compareUrl($request, ['from' => $state['to'], 'to' => $state['from']], $hasEdits)

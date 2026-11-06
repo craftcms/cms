@@ -80,6 +80,8 @@
      */
     badged: Record<CompareSide, boolean>;
     editUrl: string | null;
+    /** The element's chip, as server-rendered HTML, for the heading. */
+    elementChip: string;
     /** The same comparison with the two sides swapped. */
     reverseUrl: string | null;
     title: string;
@@ -563,7 +565,12 @@
 <template>
   <div ref="root" class="compare">
     <LayoutSlot name="title">
-      <h1 class="text-xl">{{ title }}</h1>
+      <h1
+        v-if="elementChip"
+        class="compare__heading text-xl"
+        v-html="t('Compare {element}', {element: elementChip})"
+      ></h1>
+      <h1 v-else class="text-xl">{{ title }}</h1>
     </LayoutSlot>
 
     <LayoutSlot v-if="editUrl" name="content-actions">
@@ -785,6 +792,11 @@
 </template>
 
 <style scoped>
+  .compare__heading :deep(.inline-chips) {
+    display: inline-flex;
+    vertical-align: middle;
+  }
+
   .compare {
     flex: 1 0 auto;
     --compare-cell-padding-inline: var(
