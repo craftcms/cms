@@ -61,6 +61,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use PDO;
+use Ramsey\Uuid\Uuid;
 use Throwable;
 
 use function CraftCms\Cms\t;
@@ -124,8 +125,8 @@ class Fields
     private ?MemoizableArray $_layouts = null;
 
     /**
-     * The layouts made for element types that don’t have one saved, so each type’s is the same one, with the same
-     * element UIDs, every time it’s asked for.
+     * The layouts made for element types that don’t have one saved, so each type’s is the same one every time it’s
+     * asked for.
      *
      * @var array<class-string<ElementInterface>, FieldLayout>
      */
@@ -1088,12 +1089,31 @@ class Fields
         $layout = $this->_layouts()->firstWhere('type', $type);
 
         if (! $layout && $create) {
-            if (! isset($this->_defaultLayouts[$type])) {
-                $this->_defaultLayouts[$type] = new FieldLayout(['type' => $type]);
-                $this->_defaultLayouts[$type]->resetUids();
-            }
+            return $this->_defaultLayouts[$type] ??= $this->defaultLayout($type);
+        }
 
-            return $this->_defaultLayouts[$type];
+        return $layout;
+    }
+
+    /**
+     * Returns a layout for an element type that doesn’t have one saved. Its UIDs are derived from the type and their
+     * positions, so they’re the same in every request, and one version of an element can be paired with another
+     * field by field.
+     *
+     * @param  class-string<ElementInterface>  $type
+     */
+    private function defaultLayout(string $type): FieldLayout
+    {
+        $layout = new FieldLayout(['type' => $type]);
+        $uid = fn (string $name): string => Uuid::uuid5(Uuid::NAMESPACE_URL, "craft:default-field-layout:$type$name")->toString();
+        $layout->uid = $uid('');
+
+        foreach ($layout->getTabs() as $tabIndex => $tab) {
+            $tab->uid = $uid(":$tabIndex");
+
+            foreach ($tab->getElements() as $elementIndex => $element) {
+                $element->uid = $uid(":$tabIndex:$elementIndex");
+            }
         }
 
         return $layout;
