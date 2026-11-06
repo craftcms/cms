@@ -450,6 +450,17 @@ it('orders by rand() and random() on every database', function () {
     expect($query()->orderBy(['random()' => SORT_ASC])->ids())->toEqualCanonicalizing($ids);
 });
 
+it('orders latest() and oldest() by the creation date', function () {
+    $ids = EntryModel::factory(3)->create()->pluck('id')->all();
+
+    foreach (['2026-01-02', '2026-01-03', '2026-01-01'] as $i => $day) {
+        ElementModel::whereKey($ids[$i])->update(['dateCreated' => "$day 10:00:00"]);
+    }
+
+    expect(entryQuery()->id($ids)->latest()->ids())->toBe([$ids[1], $ids[0], $ids[2]])
+        ->and(entryQuery()->id($ids)->oldest()->ids())->toBe([$ids[2], $ids[0], $ids[1]]);
+});
+
 it('rejects other SQL expressions passed as strings', function (Closure $query) {
     $entry = EntryModel::factory()->create();
 

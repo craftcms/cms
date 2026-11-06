@@ -1207,6 +1207,26 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         return $this;
     }
 
+    /**
+     * Order the query by a date column, newest first, as Eloquent orders by the model’s creation date by default.
+     *
+     * @return self<TElement>
+     */
+    public function latest(string|Expression|null $column = null): self
+    {
+        return $this->orderBy($column ?? 'dateCreated', 'desc');
+    }
+
+    /**
+     * Order the query by a date column, oldest first, as Eloquent orders by the model’s creation date by default.
+     *
+     * @return self<TElement>
+     */
+    public function oldest(string|Expression|null $column = null): self
+    {
+        return $this->orderBy($column ?? 'dateCreated');
+    }
+
     private function isDeprecatedOrderByString(string $columns): bool
     {
         return count($this->splitOrderByString($columns)) > 1 || preg_match('/\s+(asc|desc)(?:\s*(?:,|$))/i', $columns) === 1;
