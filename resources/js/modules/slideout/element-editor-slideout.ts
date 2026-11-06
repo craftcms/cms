@@ -14,12 +14,14 @@ import {
   elementEditorParams,
   type ElementEditorParams,
 } from './element-editor-params';
+import {broadcast} from '@/common/craft/broadcast';
 import {
   CpScreenSlideout,
   type CpScreenSlideoutSettings,
 } from './cp-screen-slideout';
 import {refreshPreviews} from '@/modules/elements/live-preview/previews';
 import type {UiValues} from '@/modules/ui/types';
+import {t} from '@craftcms/ui/utilities/translate';
 
 declare const Craft: any;
 declare const $: any;
@@ -57,7 +59,7 @@ export interface ElementEditorSlideoutSettings extends CpScreenSlideoutSettings 
  *
  * @example
  * ```ts
- * import {ElementEditorSlideout} from '@/modules/slideout';
+ * import {ElementEditorSlideout} from '@/modules/slideout/element-editor-slideout';
  *
  * const slideout = new ElementEditorSlideout($chip, {siteId: 2});
  * slideout.on('submit', ({data}) => console.log('saved', data.id));
@@ -152,7 +154,7 @@ export class ElementEditorSlideout extends CpScreenSlideout {
       // the save button, and change the wording on the cancel one.
       if (this.elementEditor.settings.isStatic) {
         this.$saveBtn.remove();
-        this.$cancelBtn[0].innerText = Craft.t('app', 'Close');
+        this.$cancelBtn[0].innerText = t('Close');
       }
 
       this.elementEditor.on('beforeSubmit', () => {
@@ -173,12 +175,7 @@ export class ElementEditorSlideout extends CpScreenSlideout {
     });
 
     this.on('submit', (ev: any) => {
-      if (Craft.broadcaster) {
-        Craft.broadcaster.postMessage({
-          event: 'saveElement',
-          id: ev.response.data.element.id,
-        });
-      }
+      broadcast({event: 'saveElement', id: ev.response.data.element.id});
 
       // Pass the response data off to onSaveElement() for backwards
       // compatibility.
@@ -226,10 +223,7 @@ export class ElementEditorSlideout extends CpScreenSlideout {
       } else if (
         this.isDirty() &&
         !confirm(
-          Craft.t(
-            'app',
-            'Are you sure you want to switch sites? Any changes will be lost.'
-          )
+          t('Are you sure you want to switch sites? Any changes will be lost.')
         )
       ) {
         return;
@@ -289,7 +283,7 @@ export class ElementEditorSlideout extends CpScreenSlideout {
           const $label = $item.find('craft-truncate');
           $('<craft-icon/>', {
             name: 'triangle-exclamation',
-            label: Craft.t('app', 'Error'),
+            label: t('Error'),
             'data-element-error': '',
           }).appendTo($label.length ? $label : $item);
         }

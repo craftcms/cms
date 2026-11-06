@@ -5,6 +5,7 @@ import {runAction} from './index';
 afterEach(() => {
   document.body.innerHTML = '';
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 function listen(name: string): Promise<CustomEvent> {
@@ -51,5 +52,43 @@ describe('event actions', () => {
     void detail.returnFocus;
     void detail.returnFocus;
     expect(focusReturnFor).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('http actions that require an elevated session', () => {
+  const action = {
+    type: 'http',
+    url: '/actions/auth/remove-method',
+    requireElevatedSession: true,
+  } as const;
+
+  function hostAnswers(confirmed: boolean): void {
+    window.addEventListener(
+      'craft:require-elevated-session',
+      (event) => {
+        (event as CustomEvent).detail.confirmed = Promise.resolve(confirmed);
+      },
+      {once: true}
+    );
+  }
+
+  it('send the request once the session is elevated', async () => {
+    const fetch = vi.fn().mockResolvedValue(new Response('{}'));
+    vi.stubGlobal('fetch', fetch);
+    hostAnswers(true);
+
+    await runAction(action);
+
+    expect(fetch).toHaveBeenCalledOnce();
+  });
+
+  it('send nothing when the user cancels', async () => {
+    const fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
+    hostAnswers(false);
+
+    await runAction(action);
+
+    expect(fetch).not.toHaveBeenCalled();
   });
 });

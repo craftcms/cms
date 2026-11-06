@@ -1,6 +1,7 @@
 import {Base, type GarnishBaseSettings} from '@craftcms/garnish';
 import {resolveElement, type ElementArg} from '@/common/utils/dom';
 import {jq} from '@/common/utils/jquery';
+import {isRtl} from '@/common/craft/direction';
 
 declare const Craft: any;
 
@@ -48,9 +49,9 @@ type TabArg = number | string | HTMLElement | {0?: HTMLElement} | null;
  *
  * jQuery-free logic, with two documented seams: the overflow menu button is the
  * legacy `.disclosureMenu()` plugin (read via `.data('trigger')`), and the
- * `selectTab`/`deselectTab` events carry a jQuery-wrapped `$tab` because every
- * consumer (CP, Preview, matrix-entry, cp-screen-slideout) reads
- * `ev.$tab.attr('href')`. Booted as `new Craft.Tabs(...)`, so exposed on
+ * `selectTab`/`deselectTab` events carry the tab as `tab`, and jQuery-wrapped
+ * as `$tab` when jQuery is loaded, for the legacy consumers (CP, Preview,
+ * matrix-entry, cp-screen-slideout) that read `ev.$tab.attr('href')`. Booted as `new Craft.Tabs(...)`, so exposed on
  * `window.Craft`.
  */
 export class Tabs extends Base<TabsSettings> {
@@ -97,8 +98,8 @@ export class Tabs extends Base<TabsSettings> {
     const $ = jq();
     this.#menuBtnEl =
       this.container.querySelector<HTMLElement>(':scope > .menubtn');
-    if ($ && this.#menuBtnEl) {
-      // SAFETY: CP pages install the disclosureMenu jQuery plugin before Tabs boots.
+    // The legacy menu plugin comes with the Yii2 adapter
+    if ($ && this.#menuBtnEl && 'disclosureMenu' in $.fn) {
       const $menuBtn = $(this.#menuBtnEl) as JQuery<HTMLElement> & {
         disclosureMenu(): JQuery<HTMLElement>;
       };
@@ -190,8 +191,7 @@ export class Tabs extends Base<TabsSettings> {
       (ev.key === 'ArrowLeft' || ev.key === 'ArrowRight') &&
       this.#tablist?.contains(current)
     ) {
-      const goPrev =
-        ev.key === (Craft.orientation === 'ltr' ? 'ArrowLeft' : 'ArrowRight');
+      const goPrev = ev.key === (isRtl() ? 'ArrowRight' : 'ArrowLeft');
       if (goPrev) {
         tab =
           siblingMatch(current, '[role="tab"]:not(.hidden)', 'prev') ??
@@ -251,7 +251,7 @@ export class Tabs extends Base<TabsSettings> {
       }
     }
 
-    this.trigger('selectTab', {$tab: jq()?.(tabEl)});
+    this.trigger('selectTab', {tab: tabEl, $tab: jq()?.(tabEl)});
 
     document.getElementById('content')?.dispatchEvent(new Event('scroll'));
 
@@ -270,7 +270,10 @@ export class Tabs extends Base<TabsSettings> {
     this.#selectedTab = null;
 
     const $ = jq();
-    this.trigger('deselectTab', {$tab: $ && tabEl ? $(tabEl) : undefined});
+    this.trigger('deselectTab', {
+      tab: tabEl,
+      $tab: $ && tabEl ? $(tabEl) : undefined,
+    });
   }
 
   makeTabFocusable(tab: TabArg): void {

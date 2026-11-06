@@ -8,6 +8,17 @@ paths:
 ## Use the main Pest suite
 Run these tests with `composer tests` or `./vendor/bin/pest --parallel tests/path/to/TestFile.php`.
 
+## Browser tests run on their own
+`tests/Browser/` holds Pest browser tests of the control panel. They're left out of `composer tests`; run them with `composer tests-browser` or `./vendor/bin/pest tests/Browser/Cp/SomeTest.php`. They need the built CP assets (`vp run build:all`) and Chromium (`./node_modules/.bin/playwright install chromium`).
+
+`BrowserTestCase` serves every request from the test's app, so it resets per-request state (memoized values, `Context`, route controllers) after each one. When a page misbehaves only in a browser test, look for state carried between requests before suspecting the control panel, and confirm on the workbench. The same applies to the test's own queries after a visit: a Live Preview request leaves its draft as the placeholder element that queries return.
+
+Open pages with `visitCp()`, and end page tours with `assertNoJavaScriptErrors()`. After an action, assert something that differs from the state before it (the URL, a row that must disappear) before asserting what should remain; otherwise the assertion can pass against the page as it was.
+
+Find elements by role and accessible name (`role=button[name="Save"]`), scoped to a named landmark or group (`#main`, `role=group[name="Related"]`, `role=dialog`) when the name repeats. A quoted `name` must match the whole accessible name, so use an anchored regex when the name carries extra text, such as a required field (`role=textbox[name=/^Title/]`) or a menu item with a shortcut. Form inputs may use their `name` attribute, which is the request contract. Avoid generated IDs (`#ui-type-1`, `[id^="chip-"]`) and styling classes. Fall back to component tags (`craft-chip:has-text("Alpha")`) or legacy classes (`.fld-field`) only where nothing has a role, and treat that as an accessibility gap. `assertScript()`, `assertMissing()` and `assertPresent()` check once without retrying, so precede them with an assertion that waits for the page to settle.
+
+Playwright dismisses native `confirm()` and `prompt()` dialogs, so stub them with `$page->script('window.confirm = () => true')` before the click that opens one. Links the app builds outside a request (such as in emails) use the test site's `https://localhost` base URL; visit their path and query instead.
+
 ## Choose the base class by runtime needs
 `tests/Unit/` uses `UnitTestCase`. It boots the package, routes, Laravel
 container, and Craft configuration without running Craft migrations. Use it

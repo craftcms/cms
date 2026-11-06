@@ -5,7 +5,8 @@ import type {QueryParams} from '@/common/types/query';
 import type {ContentIndexData} from '@/modules/elements/index/composables/useContentIndexData';
 import type {InlineEditableRow} from '@/modules/elements/index/composables/useInlineEditing';
 import type {BulkActionItem} from '@/modules/elements/types/actions';
-import {craft, type CopiedElementInfo} from '@/modules/matrix/clipboard';
+import {elementTypeName} from '@/common/craft/element-types';
+import type {CopiedElementInfo} from '@/modules/elements/clipboard';
 
 export type NestedElement = CraftCms.Cms.Element.Data.NestedElementCard &
   InlineEditableRow &
@@ -175,9 +176,9 @@ export function nestedPasteLabel(
   count: number,
   position?: 'above' | 'before'
 ): string {
-  const names = craft().elementTypeNames[elementType ?? ''];
   const type =
-    names?.[count === 1 ? 2 : 3] ?? t(count === 1 ? 'element' : 'elements');
+    elementTypeName(elementType ?? '', count !== 1) ??
+    t(count === 1 ? 'element' : 'elements');
   const label = position
     ? t(position === 'above' ? 'Paste {type} above' : 'Paste {type} before', {
         type,

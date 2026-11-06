@@ -49,6 +49,29 @@ describe('ElementThumbs', () => {
     return {root: container, selection};
   }
 
+  it.each([
+    ['white, by default', {}, ['white', 'violet']],
+    ['uncolored when told to', {fallbackColor: null}, [null, 'violet']],
+  ])(
+    'colors a tile with its element’s own color, or %s',
+    async (_, props, colors) => {
+      const {root} = mount({
+        data: [
+          {id: 5, label: 'Homepage'},
+          {id: 6, label: 'Untitled entry', color: 'violet'},
+        ],
+        ...props,
+      });
+      await nextTick();
+
+      expect(
+        [...root.querySelectorAll('li craft-chip')].map((chip) =>
+          chip.getAttribute('data-color')
+        )
+      ).toEqual(colors);
+    }
+  );
+
   it("labels each tile's checkbox with that tile's own title", async () => {
     const {root} = mount();
     await nextTick();

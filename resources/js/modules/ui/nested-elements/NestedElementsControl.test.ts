@@ -1,5 +1,6 @@
 import {createApp, h, nextTick, provide, reactive, shallowRef} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
+import {ConfigService} from '@craftcms/ui/services/Config';
 import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import type {Selectable} from '@/common/composables/useSelectable';
 import type {ActionItemButton} from '@/common/types';
@@ -107,6 +108,7 @@ describe('NestedElementsControl', () => {
     actions.run.mockClear();
     slideout.mockClear();
     copiedElements.value = [];
+    ConfigService.resetInstance();
     vi.useRealTimers();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
@@ -171,10 +173,12 @@ describe('NestedElementsControl', () => {
       manager?: Partial<NonNullable<NestedElementsProps['manager']>>;
     } = {}
   ) {
+    ConfigService.getInstance().initialize({
+      elementTypeNames: {Entry: ['Entry', 'Entries', 'entry', 'entries']},
+    });
     vi.stubGlobal('Craft', {
       openSlideout: vi.fn(),
-      cp: {displayNotice: vi.fn()},
-      elementTypeNames: {Entry: ['Entry', 'Entries', 'entry', 'entries']},
+      cp: {},
       Preview: {refresh: vi.fn()},
       broadcaster: new EventTarget(),
     });

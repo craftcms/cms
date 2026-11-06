@@ -316,6 +316,7 @@
 - `CraftCms\Cms\Field\Contracts\TableCellInterface::serializeValue()` can now return arrays. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Removed `CraftCms\Cms\Field\BaseRelationField::$inputTemplate` and `$settingsTemplate`. Relation fields that extend the Yii adapter’s base relation field classes can still set them; other relation fields that set `$inputTemplate` now throw an exception, and should override `CraftCms\Cms\Field\BaseRelationField::elementSelectHtml()` instead. ([#20275](https://github.com/craftcms/cms/pull/20275))
 
+- Relational fields’ elements are no longer shown on white tiles, unless the element has a color of its own, so they take the colors around them.
 ### Color Fields
 - Color fields now support translucent colors. Authors can choose translucent palette colors, and set custom colors’ opacity when the field allows it, via the color picker in browsers that support it or by entering an 8-digit hex value. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - Color fields’ palette colors can now have an alpha channel, by entering an 8-digit hex value or via the color picker in browsers that support it. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
@@ -609,11 +610,13 @@
 - Removed `CraftCms\Cms\Cp\Components\CheckboxSelect::allCheckbox()`. `allOption()` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Removed the `<craft-sortable-checkbox-select>` web component. `<craft-checkbox-select>` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))
 
+- `<craft-action-item>`’s `icon-color` attribute can now be set to a custom property name, such as `--c-field-modified-indicator`, to tint the item’s icon with the color the property holds.
 ### Accessibility
 - Links to other sites now show an external-link icon and tell screen readers that they open in a new window. They open in a new tab on every control panel page again, including links in Ask AI replies, Vue-rendered pages, and `<craft-button>`, `<craft-action-item>`, `<craft-breadcrumb-item>`, and `<craft-nav-item>` components. ([#20306](https://github.com/craftcms/cms/pull/20306))
 - Search fields’ clear buttons are no longer in the <kbd>Tab</kbd> order. <kbd>Esc</kbd> clears the field from the keyboard. ([#20127](https://github.com/craftcms/cms/pull/20127))
 - Improved labeling and keyboard focus management in shared control panel modals. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Buttons and menu items with keyboard shortcuts now announce them to assistive technology, including the Save menu’s items, inline editing’s and modals’ Save buttons, and comments’ Comment buttons. On a Mac, the ⌥, ⇧, and ⌘ symbols are read as “Option”, “Shift”, and “Command”. ([#20219](https://github.com/craftcms/cms/pull/20219))
+- Disabled menu items can now be reached with the arrow keys and <kbd>Tab</kbd>, and are announced as unavailable, rather than being skipped.
 - Opening a slideout no longer focuses its resize handle. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Page and source items in the Customize Sources modal now show a focus ring around the whole row, including their drag handle and action menu. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Tips on standalone inputs are now part of the input’s accessible description. ([#20085](https://github.com/craftcms/cms/pull/20085))
@@ -673,6 +676,7 @@
 - Added `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager::config()`, which returns the `Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig` for a sanitizer defined as an array, so it can be extended. ([#20328](https://github.com/craftcms/cms/pull/20328))
 - Renamed `CraftCms\Cms\Cp\Events\ElementCardHtmlResolving` to `ElementCardPartsResolving`. It’s now fired for every element card, including cards rendered by the card component’s slots, such as those in Matrix fields, relation fields, element indexes, and CKEditor fields, and its `$html` property has been replaced by `$parts`, which listeners can modify to change the card wherever it’s shown. ([#20335](https://github.com/craftcms/cms/pull/20335))
 - `craft\helpers\Cp::EVENT_DEFINE_ELEMENT_CARD_HTML` handlers now apply to every element card when the Yii adapter is installed, as they did in Craft 5. Changes they make to the card’s HTML are split back into the card’s parts. ([#20335](https://github.com/craftcms/cms/pull/20335))
+- Added `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager::config()`, which returns the `Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig` for a sanitizer defined as an array, so it can be extended.
 - `CraftCms\Cms\Element\Element::attributes()` no longer includes elements’ internal state, such as `forceSave`, `siteSettingsId`, and `trackDraftChanges`, so it’s left out of MCP tools’ results, element responses, and exports. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - `craft\web\assets\prismjs\PrismJsAsset` no longer registers Prism, or Craft 5.12’s Prism shim. Plugins that rely on Prism should bundle it themselves, or use `Craft.highlighter` instead. ([#20088](https://github.com/craftcms/cms/pull/20088))
 - `craft\web\assets\pluginstore\PluginStoreAsset` is now deprecated and does nothing.

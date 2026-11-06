@@ -70,8 +70,8 @@
    * panels slide in from, so `Craft.slideoutPosition` flips it.
    */
   const positionProp = computed(() =>
-    Object.getOwnPropertyDescriptor(window.Craft, 'slideoutPosition')?.value ===
-    'start'
+    Object.getOwnPropertyDescriptor(window.Craft ?? {}, 'slideoutPosition')
+      ?.value === 'start'
       ? 'inset-inline-end'
       : 'inset-inline-start'
   );
@@ -302,7 +302,7 @@
     <AppLayout v-else-if="instance.component">
       <component :is="instance.component" v-bind="instance.props" />
     </AppLayout>
-    <!-- Where `Craft.cp.announce()` speaks while this panel is the top modal
+    <!-- Where `announce()` speaks while this panel is the top modal
       layer; the page's global region sits behind `aria-hidden` by then. -->
     <span class="sr-only" role="status" data-slideout-live-region></span>
   </div>

@@ -1,23 +1,44 @@
 import {
   BACKSPACE_KEY,
   Base,
-  bod,
   CustomSelect,
   DELETE_KEY,
   DOWN_KEY,
   DragSort,
   firstFocusableElement,
+  getOffset,
   hasAttr,
   isCtrlKeyPressed,
+  isFocusable,
   RETURN_KEY,
   Select,
   UP_KEY,
   type GarnishBaseSettings,
 } from '@craftcms/garnish';
+import {
+  animate,
+  animateAll,
+  getElementInfo,
+  setElementSize,
+  type ElementInfo,
+} from '@/common/craft/element-markup';
+import {announce} from '@/common/announcer';
+import {loadElementThumbs} from '@/modules/element-thumb-loader/globals';
+import {iconSvg} from '@/common/craft/icon-svg';
+import {elementTypeName} from '@/common/craft/element-types';
+import {isRtl} from '@/common/craft/direction';
 import {elementSelectInputData} from './support';
+import {getActionUrl} from '@/common/craft/url';
+import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
+import {addActionsToChip, type ChipAction} from '@/common/craft/chip-actions';
+import {hasMousePointerEvents} from '@/common/craft/pointer';
+import {showError} from '@/modules/messages/messages';
+import {jq} from '@/common/utils/jquery';
+import {onLongPress} from '@vueuse/core';
 
 declare const Craft: any;
-declare const $: any;
 
 const noop = () => {};
 
@@ -45,6 +66,15 @@ type ElementSelectViewMode =
   | 'large'
   | 'cards'
   | 'cards-grid';
+
+/** A selected element, as the modal and search hand it over. */
+export interface SelectedElement {
+  id: number;
+  siteId: number | null;
+  /** The chip to add, once rendered. */
+  element?: HTMLElement | null;
+  [key: string]: unknown;
+}
 
 export interface BaseElementSelectInputSettings extends GarnishBaseSettings {
   id: string | null;
@@ -74,7 +104,7 @@ export interface BaseElementSelectInputSettings extends GarnishBaseSettings {
   modalStorageKey: string | null;
   modalSettings: ElementSelectModalSettings;
   onAddElements(): void;
-  onSelectElements(elements: Array<{id: number}>): void;
+  onSelectElements(elements: SelectedElement[]): void;
   onRemoveElements(): void;
   sortable: boolean;
   selectable: boolean;
@@ -85,7 +115,6 @@ export interface BaseElementSelectInputSettings extends GarnishBaseSettings {
   canUpload?: boolean;
   describedBy?: string;
   sectionId?: number;
-  tagGroupId?: number | null;
   targetSiteId?: number;
   selectionLabel?: string;
 }
@@ -94,10 +123,6 @@ interface ActionMenuElement extends HTMLElement {
   opened: boolean;
 }
 
-/**
- * Settings defaults that don't rely on runtime globals.
- * Craft.t() labels are resolved lazily in init() so Craft is available.
- */
 const DEFAULTS: BaseElementSelectInputSettings = {
   id: null,
   name: null,
@@ -132,7 +157,7 @@ const DEFAULTS: BaseElementSelectInputSettings = {
   selectable: true,
   // Whether chips get an action menu at all: it's forwarded to
   // `app/render-elements` for the chips fetched after a selection, and gates
-  // the client-side `Craft.addActionsToChip()` injection in `addElements()`.
+  // the client-side `addActionsToChip()` injection in `addElements()`.
   // Set it to `false` when the host renders the chips' menus itself (e.g.
   // `ElementSelectControl.vue`).
   showActionMenu: true,
@@ -141,22 +166,13 @@ const DEFAULTS: BaseElementSelectInputSettings = {
   editorSettings: {},
 };
 
+const CHIP_ACTIONS =
+  ':scope > .chip-content > .chip-actions, :scope > .card-titlebar > .card-actions-container > .card-actions';
+
 /**
- * BaseElementSelectInput — a port of `Craft.BaseElementSelectInput` onto the
- * modern `@craftcms/garnish` `Base`. Manages a relational field's element list:
- * drag-sort, element selection, search-as-you-type, and modal element picker.
- *
- * Seam notes:
- * - The "Add" button uses `$(btn).on('activate', ...)` because `activate` is a
- *   jQuery synthetic event; `addListener` (native addEventListener) would miss
- *   jQuery-triggered activation.
- * - `taphold` on element items likewise uses `$(el).on('taphold', ...)`.
- * - `keydown` on element items uses `addListener` (native event).
- * - `Garnish.Select` / `DragSort` / `CustomSelect` are imported from the
- *   modern @craftcms/garnish package.
- * - Booted via `new Craft.BaseElementSelectInput({id, …})` from PHP templates,
- *   so there is no custom element — the class is registered on `window.Craft`
- *   via `registerCraftGlobals`.
+ * A relation field's element list: drag-sort, selection, search-as-you-type,
+ * and the element selector modal. Booted by `<craft-element-select-input>`
+ * and its entry and asset variants.
  */
 export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings> {
   declare settings: BaseElementSelectInputSettings;
@@ -165,74 +181,42 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
   static readonly REMOVE_FX_DURATION = 200;
   static defaults = DEFAULTS;
 
-  elementSelect: any = null;
-  elementSort: any = null;
+  elementSelect: Select | null = null;
+  elementSort: DragSort | null = null;
   modal: any = null;
   elementEditor: any = null;
   modalFirstOpen = true;
   openingModal = false;
 
-  $container: any = null;
-  $form: any = null;
-  $elementsContainer: any = null;
-  $elements: any = null;
-  $addElementBtn: any = null;
-  $spinner: any = null;
+  container!: HTMLElement;
+  form: HTMLFormElement | null = null;
+  elementsContainer!: HTMLElement;
+  elements: HTMLElement[] = [];
+  addElementBtn: HTMLElement | null = null;
+  spinner: HTMLElement | null = null;
 
   searchTimeout: ReturnType<typeof setTimeout> | null = null;
-  searchMenu: any = null;
-  $searchContainer: any = null;
-  $searchInput: any = null;
-  $searchSpinner: any = null;
+  searchMenu: CustomSelect | null = null;
+  searchContainer: HTMLElement | null = null;
+  searchInput: HTMLInputElement | null = null;
+  searchSpinner: HTMLElement | null = null;
 
   modalStorageKey: string | null = null;
 
-  _$replaceElement: any = null;
-  _ignoreSearchBlur = false;
-  _initialized = false;
+  replacing: HTMLElement | null = null;
+  #ignoreSearchBlur = false;
+  #cleanups: Array<() => void> = [];
+  /** Cleanups for each chip's own listeners, run when it leaves the input. */
+  #chipCleanups = new Map<HTMLElement, Array<() => void>>();
 
-  #handleShowElementEditor: ((ev: any) => void) | null = null;
-
-  constructor(settings?: any) {
+  constructor(settings?: Partial<BaseElementSelectInputSettings>) {
     super();
     if (new.target === BaseElementSelectInput) {
       this.init(settings);
     }
   }
 
-  get thumbLoader(): any {
-    console.warn(
-      'Craft.BaseElementSelectInput::thumbLoader is deprecated. Craft.cp.elementThumbLoader should be used instead.'
-    );
-    return Craft.cp.elementThumbLoader;
-  }
-
-  init(...initArgs: any[]): void {
-    // Legacy compat: positional arguments were once accepted.
-    let settings = initArgs[0];
-    if (!$.isPlainObject(settings)) {
-      const argNames = [
-        'id',
-        'name',
-        'elementType',
-        'sources',
-        'criteria',
-        'sourceElementId',
-        'limit',
-        'modalStorageKey',
-        'fieldId',
-      ];
-      const normalized: Partial<BaseElementSelectInputSettings> = {};
-      for (let i = 0; i < argNames.length; i++) {
-        if (initArgs[i] !== undefined) {
-          Object.assign(normalized, {[argNames[i]!]: initArgs[i]});
-        } else {
-          break;
-        }
-      }
-      settings = normalized;
-    }
-
+  init(settings?: Partial<BaseElementSelectInputSettings>): void {
     this.settings = Object.assign(
       {},
       BaseElementSelectInput.defaults,
@@ -248,17 +232,20 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       this.settings.sortable = false;
     }
 
-    this.$container = this.getContainer();
-    elementSelectInputData.set(this.$container[0], this);
-    this.$form = this.$container.closest('form');
-    this.$container.data('elementSelect', this);
+    const container = this.getContainer();
+    if (!container) {
+      throw new Error(`No element select input with ID [${this.settings.id}].`);
+    }
+    this.container = container;
+    elementSelectInputData.set(this.container, this);
+    this.form = this.container.closest('form');
 
-    this.$elementsContainer = this.getElementsContainer();
-    this.$addElementBtn = this.getAddElementsBtn();
-    this.$spinner = this.getSpinner();
-    this.$searchContainer = this.getSearchContainer();
-    this.$searchInput = this.getSearchInput();
-    this.$searchSpinner = this.getSearchSpinner();
+    this.elementsContainer = this.getElementsContainer();
+    this.addElementBtn = this.getAddElementsBtn();
+    this.spinner = this.getSpinner();
+    this.searchContainer = this.getSearchContainer();
+    this.searchInput = this.getSearchInput();
+    this.searchSpinner = this.getSearchSpinner();
 
     this.initElementSelect();
     this.initElementSort();
@@ -266,38 +253,44 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
     this.initSearch();
     this.resetElements();
 
-    if (this.$addElementBtn.length) {
-      // activate is a jQuery synthetic event — must use jQuery .on(), not addListener.
-      $(this.$addElementBtn).on(
-        'activate.elementSelectInput',
+    if (this.addElementBtn) {
+      // `<craft-button>` fires click for Enter and Space too
+      this.addListener(
+        this.addElementBtn,
+        'click',
         () => void this.showModal()
       );
     }
 
-    requestAnimationFrame(() => {
-      this._initialized = true;
-    });
-
     if (this.elementSelect) {
       this.addListener(window, 'mousedown', (ev) => {
-        if (!(ev instanceof MouseEvent) || !(ev.target instanceof Element)) {
-          return;
-        }
         const target = ev.target;
         if (
-          !this.$container.is(target) &&
-          !this.$container.find(target).length &&
-          !$(target).closest('.menu').length
+          target instanceof Element &&
+          !this.container.contains(target) &&
+          !target.closest('.menu')
         ) {
-          this.elementSelect.deselectAll();
+          this.elementSelect?.deselectAll();
         }
       });
     }
 
+    // Chip menu items announce themselves on the window; the ones from this
+    // input's chips are handled here, ahead of the global listeners, so they
+    // use this input's settings and update its chips.
+    const onChipAction = (ev: Event) => this.#onChipAction(ev as CustomEvent);
+    for (const name of ['craft:edit-element', 'craft:element-action']) {
+      window.addEventListener(name, onChipAction, {capture: true});
+      this.#cleanups.push(() =>
+        window.removeEventListener(name, onChipAction, {capture: true})
+      );
+    }
+
+    // The legacy element editor stores itself on its form
     setTimeout(() => {
-      this.elementEditor = this.$container
-        .closest('form')
-        .data('elementEditor');
+      this.elementEditor = this.form
+        ? (jq()?.(this.form).data('elementEditor') ?? null)
+        : null;
     }, 100);
   }
 
@@ -311,65 +304,69 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       this.killSearchMenu();
     }
 
-    this.$addElementBtn?.off('.elementSelectInput');
-    this.$elementsContainer?.off('.elementSelectInput');
-    if (this.#handleShowElementEditor) {
-      this.$elements?.off('taphold', this.#handleShowElementEditor);
-      this.#handleShowElementEditor = null;
+    for (const cleanup of this.#cleanups) {
+      cleanup();
     }
+    this.#cleanups = [];
+    this.#cleanUpChips([...this.#chipCleanups.keys()]);
 
-    this.elementSort?.destroy?.();
+    this.elementSort?.destroy();
     this.elementSort = null;
-    this.elementSelect?.destroy?.();
+    this.elementSelect?.destroy();
     this.elementSelect = null;
     this.modal?.destroy?.();
     this.modal = null;
 
-    if (this.$container?.[0]) {
-      elementSelectInputData.delete(this.$container[0]);
-    }
+    elementSelectInputData.delete(this.container);
 
     super.destroy();
   }
 
   get totalSelected(): number {
-    return this.$elements.length;
+    return this.elements.length;
   }
 
-  getContainer(): any {
-    return $('#' + this.settings.id);
+  getContainer(): HTMLElement | null {
+    return this.settings.id ? document.getElementById(this.settings.id) : null;
   }
 
-  getElementsContainer(): any {
-    return this.$container.children('.elements');
+  getElementsContainer(): HTMLElement {
+    return this.container.querySelector<HTMLElement>(':scope > .elements')!;
   }
 
-  getElements(): any {
-    if (this.$elementsContainer.hasClass('structure')) {
-      return this.$elementsContainer.find('> li .row .element');
-    } else {
-      return this.$elementsContainer.find('> li > .element');
-    }
+  getElements(): HTMLElement[] {
+    const selector = this.elementsContainer.classList.contains('structure')
+      ? ':scope > li .row .element'
+      : ':scope > li > .element';
+
+    return [...this.elementsContainer.querySelectorAll<HTMLElement>(selector)];
   }
 
-  getSearchContainer(): any {
-    return this.$container.find('.elementselect__search-input-wrapper');
+  getSearchContainer(): HTMLElement | null {
+    return this.container.querySelector<HTMLElement>(
+      '.elementselect__search-input-wrapper'
+    );
   }
 
-  getSearchInput(): any {
-    return this.$searchContainer.find('input');
+  getSearchInput(): HTMLInputElement | null {
+    return this.searchContainer?.querySelector('input') ?? null;
   }
 
-  getSearchSpinner(): any {
-    return this.$searchContainer.find('.spinner');
+  getSearchSpinner(): HTMLElement | null {
+    return this.searchContainer?.querySelector<HTMLElement>('.spinner') ?? null;
   }
 
-  getAddElementsBtn(): any {
-    return this.$container.find('[command="--add-element"], .btn.add');
+  getAddElementsBtn(): HTMLElement | null {
+    return this.container.querySelector<HTMLElement>(
+      '[command="--add-element"], .btn.add'
+    );
   }
 
-  getSpinner(): any {
-    return this.$container.find('.spinner');
+  getSpinner(): HTMLElement | null {
+    // Not the search input's spinner, which is hidden once the limit is reached
+    return this.container.querySelector<HTMLElement>(
+      ':scope > .flex > .spinner'
+    );
   }
 
   initElementSelect(): void {
@@ -378,12 +375,11 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
     }
   }
 
-  elementSelectSettings(): any {
+  elementSelectSettings(): Record<string, unknown> {
     return {
       multi: this.settings.sortable,
-      filter: (target: Element) => {
-        return !$(target).closest('a[href],button,[role=button]').length;
-      },
+      filter: (target: Element) =>
+        !target.closest('a[href],button,[role=button]'),
       makeFocusable: false,
     };
   }
@@ -393,79 +389,92 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
    * items are chosen, whether the server or `createNewElement()` added it.
    */
   initReorderButtons(): void {
-    this.$elementsContainer.on(
-      'craft-reorder.elementSelectInput',
-      'craft-reorder-button',
-      (event: JQuery.TriggeredEvent) => {
-        const {direction} = (
-          event.originalEvent as CustomEvent<{direction: 'up' | 'down'}>
-        ).detail;
-        const $button = $(event.currentTarget);
-        if (direction === 'up') {
-          this.moveElementForward($button);
-        } else {
-          this.moveElementBackward($button);
-        }
+    this.addListener(this.elementsContainer, 'craft-reorder', (ev) => {
+      const button =
+        ev.target instanceof Element
+          ? ev.target.closest('craft-reorder-button')
+          : null;
+      const element = button?.closest<HTMLElement>('.element');
+      if (!element) {
+        return;
       }
-    );
+
+      const {direction} = (
+        ev as unknown as CustomEvent<{direction: 'up' | 'down'}>
+      ).detail;
+      if (direction === 'up') {
+        this.moveElementForward(element);
+      } else {
+        this.moveElementBackward(element);
+      }
+    });
   }
 
   initElementSort(): void {
-    if (this.settings.sortable && Craft.hasMousePointerEvents()) {
-      this.elementSort = new DragSort({
-        container: this.$elementsContainer,
-        filter: this.settings.selectable
-          ? () => {
-              if (
-                this.elementSort.$targetItem
-                  .children('.element')
-                  .hasClass('sel')
-              ) {
-                return this.elementSelect.getSelectedItems().parent('li');
-              } else {
-                return this.elementSort.$targetItem;
-              }
-            }
-          : null,
-        ignoreHandleSelector: '.delete',
-        handle: (() => {
-          switch (this.settings.viewMode) {
-            case 'list':
-            case 'list-inline':
-            case 'thumbs':
-            case 'large':
-              return '> .element > .chip-content > .chip-actions > .move-btn';
-            case 'cards':
-              return '> .element > .card-titlebar > .card-actions-container > .card-actions > .move-btn';
-            default:
-              return null;
-          }
-        })(),
-        axis: this.getElementSortAxis(),
-        collapseDraggees: true,
-        magnetStrength: 4,
-        helperLagBase: 1.5,
-        onBeforeDragStart: () => {
-          this.elementEditor?.pause();
-          // Disable the labels' overflow tooltips while dragging so they
-          // don't recompute/pop up during the drag.
-          this.$elementsContainer.find('craft-truncate').attr('disabled', true);
-        },
-        onDragStop: () => {
-          this.elementEditor?.resume();
-          this.$elementsContainer.find('craft-truncate').removeAttr('disabled');
-        },
-        onSortChange: () => {
-          this.onSortChange();
-        },
-      });
+    if (!this.settings.sortable || !hasMousePointerEvents()) {
+      return;
     }
+
+    this.elementSort = new DragSort({
+      container: this.elementsContainer,
+      filter: this.settings.selectable
+        ? () => {
+            const target = this.elementSort?.$targetItem;
+            const element = target?.querySelector(':scope > .element');
+            if (element?.classList.contains('sel') && this.elementSelect) {
+              return this.elementSelect
+                .getSelectedItems()
+                .map((item) => item.parentElement!)
+                .filter((li) => li.tagName === 'LI');
+            }
+            return target ? [target] : [];
+          }
+        : null,
+      ignoreHandleSelector: '.delete',
+      handle: (() => {
+        switch (this.settings.viewMode) {
+          case 'list':
+          case 'list-inline':
+          case 'thumbs':
+          case 'large':
+            return '> .element > .chip-content > .chip-actions > .move-btn';
+          case 'cards':
+            return '> .element > .card-titlebar > .card-actions-container > .card-actions > .move-btn';
+          default:
+            return null;
+        }
+      })(),
+      axis: this.getElementSortAxis(),
+      collapseDraggees: true,
+      magnetStrength: 4,
+      helperLagBase: 1.5,
+      onBeforeDragStart: () => {
+        this.elementEditor?.pause();
+        // Keep the labels' overflow tooltips from popping up mid-drag
+        for (const truncate of this.elementsContainer.querySelectorAll(
+          'craft-truncate'
+        )) {
+          truncate.setAttribute('disabled', '');
+        }
+      },
+      onDragStop: () => {
+        this.elementEditor?.resume();
+        for (const truncate of this.elementsContainer.querySelectorAll(
+          'craft-truncate'
+        )) {
+          truncate.removeAttribute('disabled');
+        }
+      },
+      onSortChange: () => {
+        this.onSortChange();
+      },
+    } as any);
   }
 
   getElementSortAxis(): 'x' | 'y' | null {
     if (
       this.settings.viewMode === 'list' &&
-      !this.getElementsContainer().hasClass('inline-chips')
+      !this.elementsContainer.classList.contains('inline-chips')
     ) {
       return 'y';
     }
@@ -475,7 +484,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
   canAddMoreElements(): boolean {
     return (
       this.settings.allowAdd &&
-      (!this.settings.limit || this.$elements.length < this.settings.limit)
+      (!this.settings.limit || this.elements.length < this.settings.limit)
     );
   }
 
@@ -488,202 +497,96 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
   }
 
   enableAddElementsBtn(): void {
-    if (this.settings.allowAdd && this.$addElementBtn.length) {
-      this.$addElementBtn.removeClass('hidden');
-      this.$searchContainer.removeClass('hidden');
+    if (this.settings.allowAdd && this.addElementBtn) {
+      this.addElementBtn.classList.remove('hidden');
+      this.searchContainer?.classList.remove('hidden');
     }
     this.updateButtonContainer();
   }
 
   disableAddElementsBtn(): void {
-    if (this.$addElementBtn.length) {
-      this.$addElementBtn.addClass('hidden');
-      this.$searchContainer.addClass('hidden');
+    if (this.addElementBtn) {
+      this.addElementBtn.classList.add('hidden');
+      this.searchContainer?.classList.add('hidden');
     }
     this.updateButtonContainer();
   }
 
   showSpinner(): void {
-    this.$spinner?.removeClass('hidden');
+    this.spinner?.classList.remove('hidden');
     this.updateButtonContainer();
   }
 
   hideSpinner(): void {
-    this.$spinner?.addClass('hidden');
+    this.spinner?.classList.add('hidden');
     this.updateButtonContainer();
   }
 
   updateButtonContainer(): void {
-    const $container =
-      this.$addElementBtn.length && this.$addElementBtn.parent('.flex');
-    if ($container?.length) {
-      if ($container.children(':not(.hidden)').length) {
-        $container.removeClass('hidden');
-      } else {
-        $container.addClass('hidden');
-      }
+    const container = this.addElementBtn?.parentElement;
+    if (!container?.classList.contains('flex')) {
+      return;
     }
+
+    const anyVisible = [...container.children].some(
+      (child) => !child.classList.contains('hidden')
+    );
+    container.classList.toggle('hidden', !anyVisible);
   }
 
-  getNextLogicalFocusElement(): any {
+  getNextLogicalFocusElement(): HTMLElement | null {
     if (!this.canAddMoreElements()) {
       return this.getLastActionBtn();
     }
 
     if (
-      this.$searchContainer.length &&
-      !this.$searchContainer.hasClass('hidden')
+      this.searchInput &&
+      !this.searchContainer?.classList.contains('hidden')
     ) {
-      return this.$searchInput;
+      return this.searchInput;
     }
 
-    if (this.$addElementBtn.length && !this.$addElementBtn.hasClass('hidden')) {
-      return this.$addElementBtn;
+    if (
+      this.addElementBtn &&
+      !this.addElementBtn.classList.contains('hidden')
+    ) {
+      return this.addElementBtn;
     }
 
-    return this.$container.attr('tabindex', '-1');
+    this.container.setAttribute('tabindex', '-1');
+    return this.container;
   }
 
   focusNextLogicalElement(): void {
-    const $focusTarget = this.getNextLogicalFocusElement();
-    if ($focusTarget?.length) {
-      $focusTarget.focus();
-    }
+    this.getNextLogicalFocusElement()?.focus();
   }
 
-  /** @deprecated */
-  focusLastRemoveBtn(): void {
-    this.focusLastActionBtn();
-  }
-
-  getLastActionBtn(): any {
-    return this.$container.find('.action-btn').last();
+  getLastActionBtn(): HTMLElement | null {
+    const buttons = this.container.querySelectorAll<HTMLElement>('.action-btn');
+    return buttons[buttons.length - 1] ?? null;
   }
 
   focusLastActionBtn(): void {
-    this.getLastActionBtn().focus();
+    this.getLastActionBtn()?.focus();
   }
 
   resetElements(): void {
-    if (this.$elements !== null) {
-      this.removeElements(this.$elements);
-    } else {
-      this.$elements = $();
+    if (this.elements.length) {
+      this.removeElements(this.elements);
     }
     this.addElements(this.getElements());
   }
 
-  addElements($elements: any): void {
-    for (let i = 0; i < $elements.length; i++) {
-      const $element = $elements.eq(i);
+  addElements(elements: HTMLElement[]): void {
+    for (const element of elements) {
       const actions = this.settings.showActionMenu
-        ? this.defineElementActions($element)
+        ? this.defineElementActions(element)
         : [];
 
       if (actions.length) {
-        Craft.addActionsToChip($element, actions);
-
-        const updateMoveButtons = () => {
-          const $li = $element.parent();
-          const $prev = $li.prev();
-          const $next = $li.next();
-
-          return {showForward: !!$prev.length, showBackward: !!$next.length};
-        };
-
-        // The common case (`ElementHtml::componentActionMenu()`): a modern
-        // `<craft-action-menu>`, whose `craft-action-item`s aren't jQuery
-        // disclosure-menu items, so there's no `disclosureMenu` data to read.
-        const element = $element[0];
-        const actionMenu =
-          element instanceof Element
-            ? element.querySelector<ActionMenuElement>('craft-action-menu')
-            : null;
-
-        if (actionMenu) {
-          const moveForwardItem = actionMenu.querySelector(
-            '[data-move-forward]'
-          );
-          const moveBackwardItem = actionMenu.querySelector(
-            '[data-move-backward]'
-          );
-
-          // No public "opening" event on `<craft-action-menu>` to defer to
-          // (mirroring the disclosure-menu `show` handler below), so watch
-          // its reflected `opened` attribute instead.
-          const observer = new MutationObserver(() => {
-            if (!actionMenu.opened) {
-              return;
-            }
-
-            const {showForward, showBackward} = updateMoveButtons();
-            moveForwardItem?.toggleAttribute('hidden', !showForward);
-            moveBackwardItem?.toggleAttribute('hidden', !showBackward);
-          });
-          observer.observe(actionMenu, {
-            attributes: true,
-            attributeFilter: ['opened'],
-          });
-        } else {
-          // An old-markup, or modern-chip-with-legacy-trigger, disclosure menu.
-          const disclosureMenu =
-            $element
-              .find(
-                '> .chip-content > .chip-actions .action-btn, > .card-titlebar > .card-actions-container > .card-actions .action-btn'
-              )
-              .data('disclosureMenu') ||
-            $element
-              .children('[slot="suffix"]')
-              .find('[data-disclosure-trigger]')
-              .first()
-              .data('disclosureMenu');
-
-          if (disclosureMenu) {
-            const moveForwardBtn = disclosureMenu.$container.find(
-              '[data-move-forward]'
-            )[0];
-            const moveBackwardBtn = disclosureMenu.$container.find(
-              '[data-move-backward]'
-            )[0];
-
-            disclosureMenu.on('show', () => {
-              const {showForward, showBackward} = updateMoveButtons();
-
-              if (moveForwardBtn) {
-                disclosureMenu.toggleItem(moveForwardBtn, showForward);
-              }
-              if (moveBackwardBtn) {
-                disclosureMenu.toggleItem(moveBackwardBtn, showBackward);
-              }
-            });
-          }
-        }
+        addActionsToChip(element, actions);
+        this.#watchMoveActions(element);
       }
-
-      // Route the Edit actions through createElementEditor()
-      $element
-        .find('[id*="action-edit"]')
-        .each((_: number, btn: HTMLElement) => {
-          const $btn = $(btn);
-          // Remove the existing handler, and change the ID in case it hasn't been registered yet
-          $btn
-            .off('activate')
-            .attr('id', `${btn.id}-${Math.floor(Math.random() * 1000000)}`);
-          $btn.on('activate', (ev: any) => {
-            const cpEditUrl = $element.data('cp-url');
-            if (
-              cpEditUrl &&
-              ev.originalEvent &&
-              isCtrlKeyPressed(ev.originalEvent)
-            ) {
-              window.open(cpEditUrl);
-              return;
-            }
-            // focus on the button so that when the slideout is closed, it's returned to the button
-            $btn.focus();
-            this.createElementEditor($element);
-          });
-        });
 
       if (this.settings.sortable) {
         // Its menu reorders without a mouse, so it's shown on touch devices too.
@@ -692,121 +595,137 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
         if (this.getElementSortAxis() !== 'y') {
           reorderButton.setAttribute('orientation', 'horizontal');
         }
-        $(reorderButton).appendTo(
-          $element.find(
-            '> .chip-content > .chip-actions, > .card-titlebar > .card-actions-container > .card-actions'
+        element.querySelector(CHIP_ACTIONS)?.append(reorderButton);
+      }
+
+      if (this.settings.editable) {
+        this.addListener(element, 'dblclick', () => this.#editElement(element));
+        this.#onChipCleanup(
+          element,
+          onLongPress(
+            element,
+            (ev) => {
+              if (
+                ev.pointerType === 'touch' &&
+                !(ev.target instanceof Element && ev.target.closest('button'))
+              ) {
+                this.#editElement(element);
+              }
+            },
+            {delay: 750}
           )
         );
       }
-    }
 
-    Craft.cp.elementThumbLoader.load($elements);
-
-    // `?.` rather than a bare call, matching `elementSort` below: `destroy()`
-    // nulls both, and a host that re-renders this input mid-selection can
-    // destroy the controller between the modal resolving and the chips landing.
-    // `onModalSelect()` keeps the non-structured path clear of that window, but
-    // `selectStructuredElements()` still awaits after the replaced chip is
-    // dropped, so the window survives there. Skipping is the right outcome
-    // anyway — the replacement element is on its way out.
-    if (this.settings.selectable) {
-      this.elementSelect?.addItems($elements);
-    }
-
-    if (this.settings.sortable) {
-      this.elementSort?.addItems($elements.parent('li'));
-    }
-
-    if (this.settings.editable) {
-      this.#handleShowElementEditor = (ev: any) => {
-        if (ev.type === 'taphold' && ev.target.nodeName === 'BUTTON') {
-          return;
-        }
-        const $element = $(ev.currentTarget);
+      this.addListener(element, 'keydown', (ev) => {
         if (
-          hasAttr($element[0], 'data-editable') &&
-          !$element.hasClass('disabled') &&
-          !$element.hasClass('loading')
+          ev instanceof KeyboardEvent &&
+          [BACKSPACE_KEY, DELETE_KEY].includes(ev.keyCode)
         ) {
-          this.createElementEditor($element);
-        }
-      };
-
-      // dblclick is a native event — addListener works.
-      this.addListener(
-        $elements.toArray(),
-        'dblclick',
-        this.#handleShowElementEditor
-      );
-
-      // taphold is a jQuery synthetic event — must use jQuery .on().
-      if ($.isTouchCapable()) {
-        $elements.on('taphold', this.#handleShowElementEditor);
-      }
-    }
-
-    // keydown is native — addListener works.
-    $elements.each((_: number, el: Element) => {
-      this.addListener(el, 'keydown', (ev) => {
-        if (!(ev instanceof KeyboardEvent)) {
-          return;
-        }
-        if ([BACKSPACE_KEY, DELETE_KEY].includes(ev.keyCode)) {
           ev.stopPropagation();
           ev.preventDefault();
-          const $selected = this.elementSelect?.getSelectedItems() ?? $();
-          for (let i = 0; i < $selected.length; i++) {
-            this.removeElement($selected.eq(i));
+          for (const selected of this.elementSelect?.getSelectedItems() ?? []) {
+            this.removeElement(selected);
           }
         }
       });
-    });
+    }
 
-    this.$elements = this.$elements.add($elements);
+    loadElementThumbs(elements);
+
+    // `?.` because a host that re-renders this input mid-selection can destroy
+    // the controller between the modal resolving and the chips landing.
+    if (this.settings.selectable) {
+      this.elementSelect?.addItems(elements);
+    }
+
+    if (this.settings.sortable) {
+      this.elementSort?.addItems(
+        elements.map((element) => element.parentElement!)
+      );
+    }
+
+    this.elements = [...this.elements, ...elements];
     this.updateAddElementsBtn();
     this.onAddElements();
     this.onSortChange();
   }
 
-  defineElementActions($element: any): any[] {
+  /** Hides the Move up/down menu items that don't apply when the menu opens. */
+  #watchMoveActions(element: HTMLElement): void {
+    const actionMenu =
+      element.querySelector<ActionMenuElement>('craft-action-menu');
+    if (!actionMenu) {
+      return;
+    }
+
+    const moveForwardItem = actionMenu.querySelector('[data-move-forward]');
+    const moveBackwardItem = actionMenu.querySelector('[data-move-backward]');
+
+    // No public "opening" event, so watch the reflected `opened` attribute
+    const observer = new MutationObserver(() => {
+      if (!actionMenu.opened) {
+        return;
+      }
+
+      const li = element.parentElement;
+      moveForwardItem?.toggleAttribute('hidden', !li?.previousElementSibling);
+      moveBackwardItem?.toggleAttribute('hidden', !li?.nextElementSibling);
+    });
+    observer.observe(actionMenu, {
+      attributes: true,
+      attributeFilter: ['opened'],
+    });
+    this.#onChipCleanup(element, () => observer.disconnect());
+  }
+
+  #onChipCleanup(element: HTMLElement, cleanup: () => void): void {
+    const cleanups = this.#chipCleanups.get(element) ?? [];
+    cleanups.push(cleanup);
+    this.#chipCleanups.set(element, cleanups);
+  }
+
+  #cleanUpChips(elements: HTMLElement[]): void {
+    for (const element of elements) {
+      for (const cleanup of this.#chipCleanups.get(element) ?? []) {
+        cleanup();
+      }
+      this.#chipCleanups.delete(element);
+    }
+  }
+
+  #editElement(element: HTMLElement): void {
+    if (
+      hasAttr(element, 'data-editable') &&
+      !element.classList.contains('disabled') &&
+      !element.classList.contains('loading')
+    ) {
+      this.createElementEditor(element);
+    }
+  }
+
+  defineElementActions(element: HTMLElement): ChipAction[] {
+    // `iconSvg()` is typed to resolve to null too, which ChipAction doesn't allow
     const actions: any[] = [];
 
     if (this.settings.sortable) {
       const axis = this.getElementSortAxis();
       actions.push({
         icon: async () =>
-          await Craft.ui.icon(
-            axis === 'y'
-              ? 'arrow-up'
-              : Craft.orientation === 'ltr'
-                ? 'arrow-left'
-                : 'arrow-right'
+          await iconSvg(
+            axis === 'y' ? 'arrow-up' : isRtl() ? 'arrow-right' : 'arrow-left'
           ),
-        label:
-          axis === 'y'
-            ? Craft.t('app', 'Move up')
-            : Craft.t('app', 'Move forward'),
-        callback: () => {
-          this.moveElementForward($element);
-        },
+        label: axis === 'y' ? t('Move up') : t('Move forward'),
+        callback: () => this.moveElementForward(element),
         attributes: {'data-move-forward': true},
       });
       actions.push({
         icon: async () =>
-          await Craft.ui.icon(
-            axis === 'y'
-              ? 'arrow-down'
-              : Craft.orientation === 'ltr'
-                ? 'arrow-right'
-                : 'arrow-left'
+          await iconSvg(
+            axis === 'y' ? 'arrow-down' : isRtl() ? 'arrow-left' : 'arrow-right'
           ),
-        label:
-          axis === 'y'
-            ? Craft.t('app', 'Move down')
-            : Craft.t('app', 'Move backward'),
-        callback: () => {
-          this.moveElementBackward($element);
-        },
+        label: axis === 'y' ? t('Move down') : t('Move backward'),
+        callback: () => this.moveElementBackward(element),
         attributes: {'data-move-backward': true},
       });
     }
@@ -814,20 +733,16 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
     if (this.settings.allowRemove) {
       if (this.settings.elementType) {
         actions.push({
-          icon: async () => await Craft.ui.icon('arrows-rotate'),
-          label: Craft.t('app', 'Replace'),
-          callback: () => {
-            this.showReplaceModal($element);
-          },
+          icon: async () => await iconSvg('arrows-rotate'),
+          label: t('Replace'),
+          callback: () => this.showReplaceModal(element),
         });
       }
 
       actions.push({
-        icon: async () => await Craft.ui.icon('remove'),
-        label: Craft.t('app', 'Remove'),
-        callback: () => {
-          this.removeElementOrSelection($element);
-        },
+        icon: async () => await iconSvg('remove'),
+        label: t('Remove'),
+        callback: () => this.removeElementOrSelection(element),
       });
     }
 
@@ -835,49 +750,95 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
   }
 
   /**
-   * Opens the element selector modal with `$element` staged as the chip the
-   * next selection should replace.
-   *
-   * The Replace behavior lives here rather than inline in
-   * {@link defineElementActions} so consumers that render the chip's action
-   * menu themselves — `ElementSelectControl.vue` via
-   * `<craft-element-select-input>.replaceElement()` — trigger the same flow as the
-   * client-injected menu the Twig stack still gets.
+   * Opens the element selector modal with `element` staged as the chip the
+   * next selection replaces. Shared with hosts that render the chips' action
+   * menus themselves, via `<craft-element-select-input>.replaceElement()`.
    */
-  showReplaceModal($element: any): void {
-    this._$replaceElement = $element;
-    this.showModal();
+  showReplaceModal(element: HTMLElement): void {
+    this.replacing = element;
+    void this.showModal();
   }
 
   /**
-   * Removes `$element`, or — when it's part of the current multi-selection —
-   * the whole selection, matching the Remove action's long-standing behavior.
-   * Shared with consumers that render the menu themselves; see
-   * {@link showReplaceModal}.
+   * Removes `element`, or the whole selection when it's part of it, as the
+   * Remove action does.
    */
-  removeElementOrSelection($element: any): void {
-    if (this.elementSelect?.isSelected($element)) {
+  removeElementOrSelection(element: HTMLElement): void {
+    if (this.elementSelect?.isSelected(element)) {
       this.removeElement(this.elementSelect.getSelectedItems());
     } else {
-      this.removeElement($element);
+      this.removeElement(element);
     }
   }
 
+  /** The chip for an element ID. */
+  getElementById(id: number | string): HTMLElement | undefined {
+    return this.elements.find((element) => element.dataset.id == String(id));
+  }
+
+  #onChipAction(ev: CustomEvent): void {
+    const trigger = ev.detail?.trigger;
+    const chip =
+      trigger instanceof Element
+        ? trigger.closest<HTMLElement>('.element')
+        : null;
+
+    if (
+      chip &&
+      this.elements.includes(chip) &&
+      this.handleChipAction(chip, ev.type, ev.detail)
+    ) {
+      ev.stopImmediatePropagation();
+    }
+  }
+
+  /**
+   * Handles an action from a chip's menu, returning whether it did. Edit opens
+   * the element editor with this input's settings, or the edit page in a new
+   * tab on ctrl-click.
+   */
+  protected handleChipAction(
+    chip: HTMLElement,
+    name: string,
+    detail: Record<string, any>
+  ): boolean {
+    if (name !== 'craft:edit-element') {
+      return false;
+    }
+
+    const cpEditUrl = chip.dataset.cpUrl;
+    if (
+      cpEditUrl &&
+      (detail.sourceEvent instanceof MouseEvent ||
+        detail.sourceEvent instanceof KeyboardEvent) &&
+      isCtrlKeyPressed(detail.sourceEvent)
+    ) {
+      window.open(cpEditUrl);
+    } else {
+      this.createElementEditor(chip);
+    }
+
+    return true;
+  }
+
   /** Opens an element's editor slideout. */
-  createElementEditor($element: any, settings?: Record<string, unknown>): void {
+  createElementEditor(
+    element: HTMLElement,
+    settings?: Record<string, unknown>
+  ): void {
     const params = Object.fromEntries(
       Object.entries({
         elementType: this.settings.elementType,
-        elementId: $element.data('id'),
-        draftId: $element.data('draft-id'),
-        siteId: $element.data('site-id'),
+        elementId: element.dataset.id,
+        draftId: element.dataset.draftId,
+        siteId: element.dataset.siteId,
         prevalidate: this.settings.prevalidate ? 1 : null,
         ...settings,
       }).filter(([, value]) => value !== null && value !== undefined)
     );
 
-    void Craft.openSlideout(Craft.getActionUrl('elements/edit', params), {
-      opener: $element[0],
+    void Craft.openSlideout(getActionUrl('elements/edit', params), {
+      opener: element,
       onSaved: ({data}: {data?: Record<string, any>}) => {
         // An image saved as a new asset takes the edited asset's place.
         if (data?.replacedAssetId && data.newAssetId) {
@@ -887,85 +848,86 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
     });
   }
 
-  replaceElement(elementId: number, replacementId: number): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!this.settings.allowRemove) {
-        reject('Elements cannot be removed from this input.');
-        return;
-      }
+  async replaceElement(
+    elementId: number,
+    replacementId: number
+  ): Promise<void> {
+    if (!this.settings.allowRemove) {
+      throw new Error('Elements cannot be removed from this input.');
+    }
 
-      const $existing = this.$elements.filter(`[data-id="${elementId}"]`);
+    const existing = this.getElementById(elementId);
+    if (!existing) {
+      throw new Error(`No element selected with an ID of ${elementId}.`);
+    }
 
-      if (!$existing.length) {
-        reject(`No element selected with an ID of ${elementId}.`);
-        return;
-      }
+    this.showSpinner();
 
-      this.showSpinner();
+    try {
+      const {data} = await actionClient.post('app/render-elements', {
+        elements: [
+          {
+            type: this.settings.elementType,
+            id: replacementId,
+            siteId: this.settings.criteria.siteId,
+            instances: [
+              {
+                context: 'field',
+                ui: ['list', 'list-inline', 'thumbs', 'large'].includes(
+                  this.settings.viewMode
+                )
+                  ? 'chip'
+                  : 'card',
+                size: ['thumbs', 'large'].includes(this.settings.viewMode)
+                  ? 'large'
+                  : 'small',
+                showActionMenu: this.settings.showActionMenu,
+              },
+            ],
+          },
+        ],
+      });
 
-      Craft.sendActionRequest('POST', 'app/render-elements', {
-        data: {
-          elements: [
-            {
-              type: this.settings.elementType,
-              id: replacementId,
-              siteId: this.settings.criteria.siteId,
-              instances: [
-                {
-                  context: 'field',
-                  ui: ['list', 'list-inline', 'thumbs', 'large'].includes(
-                    this.settings.viewMode
-                  )
-                    ? 'chip'
-                    : 'card',
-                  size: ['thumbs', 'large'].includes(this.settings.viewMode)
-                    ? 'large'
-                    : 'small',
-                  showActionMenu: this.settings.showActionMenu,
-                },
-              ],
-            },
-          ],
-        },
-      })
-        .then(async ({data}: any) => {
-          this.removeElement($existing);
-          const elementInfo = Craft.getElementInfo(
-            data.elements[replacementId][0]
-          );
-          this.selectElements([elementInfo]).then(resolve);
-          await Craft.appendHeadHtml(data.headHtml);
-          await Craft.appendBodyHtml(data.bodyHtml);
-        })
-        .catch((e: any) => {
-          Craft.cp.displayError(e?.response?.data?.message);
-          reject(e?.response?.data?.message);
-        })
-        .finally(() => {
-          this.hideSpinner();
-        });
-    });
+      this.removeElement(existing);
+      await this.selectElements([
+        this.#selectedElement(getElementInfo(data.elements[replacementId][0])),
+      ]);
+      await appendHeadHtml(data.headHtml);
+      await appendBodyHtml(data.bodyHtml);
+    } catch (e: any) {
+      showError(e?.response?.data?.message);
+      throw e;
+    } finally {
+      this.hideSpinner();
+    }
+  }
+
+  #selectedElement(info: ElementInfo): SelectedElement {
+    return {...info, id: Number(info.id), siteId: info.siteId};
   }
 
   onSortChange(): void {
     this.elementSelect?.resetItemOrder();
-    this.$elements = $().add(this.$elements);
+    // Keep `elements` in DOM order
+    this.elements.sort((a, b) =>
+      a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
+    );
   }
 
-  moveElementForward($element: any): void {
-    const $li = $element.closest('li');
-    const $prev = $li.prev();
-    if ($prev.length) {
-      $li.insertBefore($prev);
+  moveElementForward(element: HTMLElement): void {
+    const li = element.closest('li');
+    const prev = li?.previousElementSibling;
+    if (li && prev) {
+      prev.before(li);
       this.onSortChange();
     }
   }
 
-  moveElementBackward($element: any): void {
-    const $li = $element.closest('li');
-    const $next = $li.next();
-    if ($next.length) {
-      $li.insertAfter($next);
+  moveElementBackward(element: HTMLElement): void {
+    const li = element.closest('li');
+    const next = li?.nextElementSibling;
+    if (li && next) {
+      next.after(li);
       this.onSortChange();
     }
   }
@@ -973,112 +935,148 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
   /**
    * Removes elements from the field value without removing their DOM nodes.
    */
-  removeElements($elements: any): void {
+  removeElements(elements: HTMLElement | HTMLElement[]): void {
+    const removing = Array.isArray(elements) ? elements : [elements];
+
     if (this.settings.selectable) {
-      this.elementSelect.removeItems($elements);
+      this.elementSelect?.removeItems(removing);
     }
 
-    // Removing a relation makes it selectable again, so the modal's disabled
-    // set has to shrink to match.
+    for (const element of removing) {
+      for (const input of element.querySelectorAll<HTMLInputElement>(
+        ':scope > input'
+      )) {
+        input.disabled = true;
+      }
+    }
+
+    let focusTarget: HTMLElement | null = null;
+    if (this.settings.selectable && removing.length) {
+      const lastIdx = this.elements.indexOf(removing[removing.length - 1]!);
+      const neighbor =
+        this.elements[lastIdx + 1] ??
+        (lastIdx - 1 >= 0 ? this.elements[lastIdx - 1] : undefined);
+      if (neighbor && !removing.includes(neighbor)) {
+        focusTarget = this.getElementFocusTarget(neighbor);
+      }
+    }
+
+    this.elements = this.elements.filter((el) => !removing.includes(el));
+    this.#cleanUpChips(removing);
+
+    // Removing a relation makes it selectable again
     this.updateDisabledElementsInModal();
 
-    $elements.children('input').prop('disabled', true);
-
-    let $nextElement: any, $prevElement: any;
-    if (this.settings.selectable) {
-      const lastIdx = this.$elements.index($elements.last());
-      $nextElement = this.$elements.eq(lastIdx + 1);
-      $prevElement = lastIdx - 1 >= 0 ? this.$elements.eq(lastIdx - 1) : null;
-    }
-
-    if ($nextElement?.length || $prevElement?.length) {
-      const $target = $nextElement?.length
-        ? this.getElementFocusTarget($nextElement)
-        : this.getElementFocusTarget($prevElement);
-      $target?.focus();
+    if (focusTarget) {
+      focusTarget.focus();
     } else {
-      setTimeout(() => {
-        this.focusNextLogicalElement();
-      }, 200);
+      setTimeout(() => this.focusNextLogicalElement(), 200);
     }
 
-    this.$elements = this.$elements.not($elements);
     this.updateAddElementsBtn();
     this.onSortChange();
     this.onRemoveElements();
   }
 
-  getElementFocusTarget($element: any): any {
-    if ($element.is(':focusable')) {
-      return $element;
-    }
-    const $first = firstFocusableElement($element[0]);
-    return $first ?? null;
+  getElementFocusTarget(element: HTMLElement): HTMLElement | null {
+    return isFocusable(element) ? element : firstFocusableElement(element);
   }
 
   /**
    * Completely removes element(s) from the UI and field value.
    */
-  removeElement($elements: any): void {
+  removeElement(elements: HTMLElement | HTMLElement[]): void {
+    let removing = Array.isArray(elements) ? elements : [elements];
+
     if (this.settings.maintainHierarchy) {
-      let $descendants = $();
-      for (let i = 0; i < $elements.length; i++) {
-        $descendants = $descendants.add(
-          $elements.eq(i).parent().siblings('ul').find('.element')
-        );
-      }
-      $elements = $elements.add($descendants);
+      const descendants = removing.flatMap((element) =>
+        [...(element.parentElement?.parentElement?.children ?? [])]
+          .filter((sibling) => sibling.tagName === 'UL')
+          .flatMap((ul) => [...ul.querySelectorAll<HTMLElement>('.element')])
+      );
+      removing = [...new Set([...removing, ...descendants])];
     }
 
-    $('[name]', $elements).removeAttr('name');
-    this.removeElements($elements);
+    for (const element of removing) {
+      for (const named of element.querySelectorAll('[name]')) {
+        named.removeAttribute('name');
+      }
+    }
+    this.removeElements(removing);
 
     if (this.settings.maintainHierarchy) {
-      for (let i = 0; i < $elements.length; i++) {
-        this._animateStructureElementAway($elements, i);
-      }
+      this.#animateStructureElementsAway(removing);
     } else {
-      for (let i = 0; i < $elements.length; i++) {
-        const $element = $elements.eq(i);
-        const $li = $element.parent('li');
-        this.animateElementAway($element);
-        $li.remove();
+      for (const element of removing) {
+        const li =
+          element.parentElement?.tagName === 'LI'
+            ? element.parentElement
+            : null;
+        void this.animateElementAway(element);
+        li?.remove();
       }
     }
   }
 
   async animateElementAway(
-    $element: any,
+    element: HTMLElement,
     callback?: () => void
   ): Promise<void> {
-    const offset = $element.offset();
-    const width = $element.width();
+    const offset = getOffset(element);
+    const width = element.getBoundingClientRect().width;
 
-    $element.appendTo($(bod)).css({
-      'z-index': 0,
+    document.body.append(element);
+    Object.assign(element.style, {
+      zIndex: '0',
       position: 'absolute',
-      top: offset.top,
-      left: offset.left,
-      maxWidth: width + 'px',
+      top: `${offset.top}px`,
+      left: `${offset.left}px`,
+      maxWidth: `${width}px`,
     });
 
-    await Craft.animate($element, {
+    await animate(element, {
       opacity: -1,
-      left: offset.left + 100 * (Craft.orientation === 'ltr' ? -1 : 1),
+      left: offset.left + 100 * (isRtl() ? 1 : -1),
     });
 
-    $element.remove();
+    element.remove();
     callback?.();
   }
 
+  /** Animates structure chips away one after another, then tidies up their list items. */
+  #animateStructureElementsAway(elements: HTMLElement[]): void {
+    const li = elements[0]?.parentElement?.parentElement;
+    const ul = li?.parentElement;
+
+    elements.forEach((element, i) => {
+      const callback =
+        i === elements.length - 1 && li && ul
+          ? () => {
+              if (
+                ul === this.elementsContainer ||
+                li.parentElement?.children.length! > 1
+              ) {
+                li.remove();
+              } else {
+                ul.remove();
+              }
+            }
+          : undefined;
+
+      setTimeout(
+        () => void this.animateElementAway(element, callback),
+        100 * i
+      );
+    });
+  }
+
   async showModal(): Promise<void> {
-    if (!this._$replaceElement && !this.canAddMoreElements()) {
+    if (!this.replacing && !this.canAddMoreElements()) {
       return;
     }
 
     if (this.modal) {
       void this.modal.show();
-
       return;
     }
 
@@ -1117,23 +1115,17 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
     return createElementSelectorModal(elementType, this.getModalSettings());
   }
 
-  getModalSettings(): any {
-    const settings = Object.assign(
+  getModalSettings(): Record<string, any> {
+    const settings: Record<string, any> = Object.assign(
       {
         closeOtherModals: false,
         storageKey: this.modalStorageKey,
         sources: this.settings.sources,
         condition: this.settings.condition,
-        referenceElementId: this.settings.referenceElementId
-          ? this.elementEditor?.getDraftElementId(
-              this.settings.referenceElementId
-            ) || this.settings.referenceElementId
-          : null,
-        referenceElementOwnerId: this.settings.referenceElementOwnerId
-          ? this.elementEditor?.getDraftElementId(
-              this.settings.referenceElementOwnerId
-            ) || this.settings.referenceElementOwnerId
-          : null,
+        referenceElementId: this.#draftId(this.settings.referenceElementId),
+        referenceElementOwnerId: this.#draftId(
+          this.settings.referenceElementOwnerId
+        ),
         referenceElementSiteId: this.settings.referenceElementSiteId,
         criteria: Object.assign({}, this.settings.criteria),
         multiSelect: this.settings.limit != 1,
@@ -1142,11 +1134,10 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
         siteIds: this.settings.siteIds,
         disabledElementIds: this.getDisabledElementIds(),
         onSelect: this.onModalSelect.bind(this),
-        // Was `onHide`; the controller calls this one whenever it closes,
-        // whether that came from Cancel, Escape or a completed selection.
+        // Called whenever the modal closes: Cancel, Escape or a selection
         onClose: this.onModalHide.bind(this),
         triggerElement: () => this.getNextLogicalFocusElement(),
-        modalTitle: Craft.t('app', 'Choose'),
+        modalTitle: t('Choose'),
       },
       this.settings.modalSettings
     );
@@ -1158,24 +1149,22 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
     return settings;
   }
 
+  /** An element ID, or its draft's when the legacy element editor has one. */
+  #draftId(id: number | null): number | null {
+    return id ? this.elementEditor?.getDraftElementId(id) || id : null;
+  }
+
   getSelectedElementIds(): number[] {
-    const ids: number[] = [];
-    for (let i = 0; i < this.$elements.length; i++) {
-      if (
-        this.settings.modalSettings.matchSiteBeforeDisablingElement &&
-        this.settings.modalSettings.siteId
-      ) {
-        if (
-          this.$elements.eq(i).data('siteId') ==
-          this.settings.modalSettings.siteId
-        ) {
-          ids.push(this.$elements.eq(i).data('id'));
-        }
-      } else {
-        ids.push(this.$elements.eq(i).data('id'));
-      }
-    }
-    return ids;
+    const {matchSiteBeforeDisablingElement, siteId} =
+      this.settings.modalSettings;
+
+    return this.elements
+      .filter(
+        (element) =>
+          !(matchSiteBeforeDisablingElement && siteId) ||
+          element.dataset.siteId == String(siteId)
+      )
+      .map((element) => Number(element.dataset.id));
   }
 
   getDisabledElementIds(): number[] {
@@ -1192,7 +1181,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
     return ids;
   }
 
-  async onModalSelect(elements: any[]): Promise<void> {
+  async onModalSelect(elements: SelectedElement[]): Promise<void> {
     this.elementEditor?.pause();
 
     const [inputUiType, inputUiSize] = (() => {
@@ -1208,63 +1197,47 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       }
     })();
 
-    const {data} = await Craft.sendActionRequest(
-      'POST',
-      'app/render-elements',
-      {
-        data: {
-          elements: [
+    const {data} = await actionClient.post('app/render-elements', {
+      elements: [
+        {
+          type: this.settings.elementType,
+          id: elements.map((e) => e.id),
+          siteId: elements[0]?.siteId,
+          instances: [
             {
-              type: this.settings.elementType,
-              id: elements.map((e) => e.id),
-              siteId: elements[0].siteId,
-              instances: [
-                {
-                  context: 'field',
-                  ui: inputUiType,
-                  size: inputUiSize,
-                  showActionMenu: this.settings.showActionMenu,
-                },
-              ],
+              context: 'field',
+              ui: inputUiType,
+              size: inputUiSize,
+              showActionMenu: this.settings.showActionMenu,
             },
           ],
         },
-      }
-    );
+      ],
+    });
 
-    for (let i = 0; i < elements.length; i++) {
-      if (data.elements[elements[i].id] !== undefined) {
-        elements[i].$modalElement = elements[i].$element;
-        elements[i].$element = $(data.elements[elements[i].id][0]);
+    for (const element of elements) {
+      const html = data.elements[element.id]?.[0];
+      if (html !== undefined) {
+        element.element = getElementInfo(html).element;
       }
     }
 
     // Drop the chip being replaced only now that the replacement markup is in
-    // hand, and never before an await.
-    //
-    // Removing it earlier publishes an intermediate value — one element short
-    // and with no replacement yet — to hosts that re-render this input from
-    // it. `ElementSelectControl.vue` keys `<craft-element-select-input>` on its
-    // value, so that intermediate state tore the custom element down mid-flight
-    // and left the rest of this method, including the `selectElements()` that
-    // actually inserts the replacement, writing into a detached DOM. Replace
-    // could open its modal but never complete.
-    //
-    // Removing here keeps the removal and the insertion in the same
-    // synchronous stretch, so such hosts observe a single combined change and
-    // re-render once, with the replacement already in place. It still lands
-    // ahead of the limit math below, which needs the outgoing chip gone to
-    // free up its slot.
-    if (this._$replaceElement) {
-      this.removeElement(this._$replaceElement);
-      this._$replaceElement = null;
+    // hand, and never before an await. Hosts that re-render this input from
+    // its value (`ElementSelectControl.vue` keys the custom element on it)
+    // would otherwise see an intermediate value and tear the element down
+    // mid-flight. It still lands ahead of the limit math below, which needs the
+    // outgoing chip gone to free up its slot.
+    if (this.replacing) {
+      this.removeElement(this.replacing);
+      this.replacing = null;
     }
 
     if (this.settings.maintainHierarchy) {
       await this.selectStructuredElements(elements);
     } else {
       if (this.settings.limit) {
-        const slotsLeft = this.settings.limit - this.$elements.length;
+        const slotsLeft = this.settings.limit - this.elements.length;
         if (elements.length > slotsLeft) {
           elements = elements.slice(0, slotsLeft);
         }
@@ -1274,12 +1247,10 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       this.updateDisabledElementsInModal();
     }
 
-    // `busy` is the controller's, held across this method because it is the
-    // awaited `onSelect`. Only the close is ours to ask for.
     this.modal?.hide();
 
-    await Craft.appendHeadHtml(data.headHtml);
-    await Craft.appendBodyHtml(data.bodyHtml);
+    await appendHeadHtml(data.headHtml);
+    await appendBodyHtml(data.bodyHtml);
 
     this.elementEditor?.resume();
   }
@@ -1293,500 +1264,405 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       this.modal.destroy();
       this.modal = null;
     }
-    this._$replaceElement = null;
+    this.replacing = null;
   }
 
-  async selectElements(elements: any[]): Promise<void> {
-    const animateElements: any[] = [];
+  async selectElements(elements: SelectedElement[]): Promise<void> {
+    const added: HTMLElement[] = [];
 
-    for (const elementInfo of elements) {
-      const $inputElement = this.createNewElement(elementInfo);
-      this.appendElement($inputElement);
-      this.addElements($inputElement);
-      elementInfo.$element = $inputElement;
-
-      const $modalElement = elementInfo.$modalElement || elementInfo.$element;
-      if ($modalElement?.parent().length) {
-        animateElements.push({$modalElement, $inputElement});
+    for (const info of elements) {
+      if (!info.element) {
+        continue;
       }
+      const element = this.createNewElement(info);
+      this.appendElement(element);
+      this.addElements([element]);
+      info.element = element;
+      added.push(element);
     }
 
-    this.animateElementsIntoPlace(animateElements);
+    await this.animateElementsIn(added);
     this.onSelectElements(elements);
   }
 
-  async selectStructuredElements(elements: any[]): Promise<void> {
+  async selectStructuredElements(elements: SelectedElement[]): Promise<void> {
     const selectedElementIds =
       this.settings.branchLimit == 1 ? [] : this.getSelectedElementIds();
 
-    for (const el of elements) {
-      selectedElementIds.push(el.id);
-    }
+    selectedElementIds.push(...elements.map((el) => el.id));
 
-    const data = {
-      elementIds: selectedElementIds,
-      siteId: elements[0].siteId,
-      containerId: this.settings.id,
-      name: this.settings.name,
-      branchLimit: this.settings.branchLimit,
-      selectionLabel: this.settings.selectionLabel,
-      elementType: this.settings.elementType,
-    };
-
-    const response = await Craft.sendActionRequest(
-      'POST',
+    const {data} = await actionClient.post(
       'relational-fields/structured-input-html',
-      {data}
+      {
+        elementIds: selectedElementIds,
+        siteId: elements[0]?.siteId,
+        containerId: this.settings.id,
+        name: this.settings.name,
+        branchLimit: this.settings.branchLimit,
+        selectionLabel: this.settings.selectionLabel,
+        elementType: this.settings.elementType,
+      }
     );
 
-    const $newInput = $(response.data.html);
-    const $newElementsContainer = $newInput.children('.elements');
+    const template = document.createElement('template');
+    template.innerHTML = data.html.trim();
+    const newElementsContainer =
+      template.content.firstElementChild?.querySelector<HTMLElement>(
+        ':scope > .elements'
+      );
 
-    this.$elementsContainer.replaceWith($newElementsContainer);
-    this.$elementsContainer = $newElementsContainer;
+    if (newElementsContainer) {
+      this.elementsContainer.replaceWith(newElementsContainer);
+      this.elementsContainer = newElementsContainer;
+    }
 
-    await Craft.appendHeadHtml(response.data.headHtml);
-    await Craft.appendBodyHtml(response.data.bodyHtml);
+    await appendHeadHtml(data.headHtml);
+    await appendBodyHtml(data.bodyHtml);
 
+    // The replaced chips are detached now, so drop them from the selection
+    this.elementSelect?.removeItems(this.elements);
+    this.#cleanUpChips(this.elements);
+    this.elements = [];
     this.resetElements();
 
-    const filteredElements: any[] = [];
-    const animateElements: any[] = [];
+    const selected = elements.filter((element) => {
+      element.element = this.getElementById(element.id) ?? null;
+      return !!element.element;
+    });
 
-    for (const element of elements) {
-      const $inputElement = this.getElementById(element.id);
-      if ($inputElement) {
-        filteredElements.push(element);
-        animateElements.push({
-          $modalElement: element.$element,
-          $inputElement,
-        });
-      }
-    }
-
-    this.animateElementsIntoPlace(animateElements);
+    await this.animateElementsIn(selected.map((element) => element.element!));
     this.updateDisabledElementsInModal();
-    this.onSelectElements(filteredElements);
+    this.onSelectElements(selected);
   }
 
-  createNewElement(elementInfo: any): any {
-    const $element = elementInfo.$element.clone();
-    Craft.setElementSize(
-      $element,
+  createNewElement(info: SelectedElement): HTMLElement {
+    const element = info.element!.cloneNode(true) as HTMLElement;
+    setElementSize(
+      element,
       ['thumbs', 'large'].includes(this.settings.viewMode) ? 'large' : 'small'
     );
-    $element.addClass('removable').append(
-      $('<input/>', {
-        type: 'hidden',
-        name: this.settings.name + (this.settings.single ? '' : '[]'),
-        value: elementInfo.id,
-      })
-    );
-    return $element;
+    element.classList.add('removable');
+
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = this.settings.name + (this.settings.single ? '' : '[]');
+    input.value = String(info.id);
+    element.append(input);
+
+    return element;
   }
 
-  appendElement($element: any): void {
-    const $li = $('<li/>').append($element);
+  appendElement(element: HTMLElement): void {
+    const li = document.createElement('li');
+    li.append(element);
     if (this.settings.defaultPlacement === 'beginning') {
-      $li.prependTo(this.$elementsContainer);
+      this.elementsContainer.prepend(li);
     } else {
-      $li.appendTo(this.$elementsContainer);
+      this.elementsContainer.append(li);
     }
   }
 
-  async animateElementIntoPlace(
-    $modalElement: any,
-    $inputElement: any
-  ): Promise<void> {
-    await this.animateElementsIntoPlace([{$modalElement, $inputElement}]);
-  }
-
-  async animateElementsIntoPlace(
-    elements: Array<{$modalElement: any; $inputElement: any}>
-  ): Promise<void> {
-    const animations: any[] = [];
-
-    for (const {$modalElement, $inputElement} of elements) {
-      const oldOffset = $modalElement.offset();
-      const newOffset = $inputElement.offset();
-
-      const $helper = $inputElement
-        .clone()
-        .appendTo($(bod))
-        .width($inputElement.width());
-
-      $inputElement.css('visibility', 'hidden');
-
-      $helper.css({
-        position: 'absolute',
-        zIndex: 'var(--c-layer-drag)',
-        top: oldOffset.top,
-        left: oldOffset.left,
-      });
-
-      animations.push([$helper, {top: newOffset.top, left: newOffset.left}]);
+  /** Fades newly added chips in. */
+  async animateElementsIn(elements: HTMLElement[]): Promise<void> {
+    if (!elements.length) {
+      return;
     }
 
-    await Craft.animateAll(animations);
-
-    for (const [$helper] of animations) {
-      $helper.remove();
+    for (const element of elements) {
+      element.style.opacity = '0';
     }
 
-    for (const {$inputElement} of elements) {
-      $inputElement.css('visibility', '');
+    await animateAll(elements.map((element) => [element, {opacity: 1}]));
+
+    for (const element of elements) {
+      element.style.removeProperty('opacity');
     }
   }
 
   /**
-   * Republishes which elements the modal may not select.
-   *
-   * The modal's index reads this as a whole set rather than being told to
-   * enable or disable individual ids, so both directions are one assignment.
+   * Republishes which elements the modal may not select, as a whole set.
    */
   updateDisabledElementsInModal(): void {
     this.modal?.setDisabledElementIds(this.getDisabledElementIds());
   }
 
-  getElementById(id: number): any {
-    for (let i = 0; i < this.$elements.length; i++) {
-      const $element = this.$elements.eq(i);
-      if ($element.data('id') == id) {
-        return $element;
-      }
-    }
+  #change(): void {
+    this.container.dispatchEvent(new Event('change', {bubbles: true}));
   }
 
-  onSelectElements(elements: any[]): void {
+  onSelectElements(elements: SelectedElement[]): void {
     this.trigger('selectElements', {elements});
     this.settings.onSelectElements(elements);
-    this.$container.trigger('change');
+    this.#change();
   }
 
   onAddElements(): void {
     this.trigger('addElements');
     this.settings.onAddElements();
-    this.$container.trigger('change');
+    this.#change();
   }
 
   onRemoveElements(): void {
     this.trigger('removeElements');
     this.settings.onRemoveElements();
-    this.$container.trigger('change');
-  }
-
-  _animateStructureElementAway($allElements: any, i: number): void {
-    let callback: (() => void) | undefined;
-
-    if (i === $allElements.length - 1) {
-      const $li = $allElements.first().parent().parent();
-      const $ul = $li.parent();
-      callback = () => {
-        if ($ul[0] === this.$elementsContainer[0] || $li.siblings().length) {
-          $li.remove();
-        } else {
-          $ul.remove();
-        }
-      };
-    }
-
-    const func = () => {
-      this.animateElementAway($allElements.eq(i), callback);
-    };
-
-    if (i === 0) {
-      func();
-    } else {
-      setTimeout(func, 100 * i);
-    }
+    this.#change();
   }
 
   canCreateElements(): boolean {
     return false;
   }
 
-  async createElement(title: string): Promise<number | null> {
-    void title;
+  async createElement(_title: string): Promise<number | null> {
     return null;
   }
 
   initSearch(): void {
-    if (!this.$searchInput.length) {
+    const input = this.searchInput;
+    if (!input) {
       return;
     }
 
-    this.addListener(this.$searchInput[0], 'input', () => {
+    this.addListener(input, 'input', () => {
       if (this.searchTimeout) {
         clearTimeout(this.searchTimeout);
       }
-      this.searchTimeout = setTimeout(() => {
-        this.searchForTags();
-      }, 500);
+      this.searchTimeout = setTimeout(() => void this.search(), 500);
     });
 
-    this.addListener(this.$searchInput[0], 'keydown', (ev) => {
+    this.addListener(input, 'keydown', (ev) => {
       if (!(ev instanceof KeyboardEvent)) {
         return;
-      }
-      if (ev.keyCode === RETURN_KEY) {
-        ev.preventDefault();
       }
 
       switch (ev.keyCode) {
         case RETURN_KEY: {
           ev.preventDefault();
-          if (this.searchMenu) {
-            this.selectSearchResult(this.searchMenu.$options.filter('.hover'));
+          const hovered = this.#hoveredOption();
+          if (this.searchMenu && hovered) {
+            void this.selectSearchResult(hovered);
           }
           return;
         }
-        case DOWN_KEY: {
-          ev.preventDefault();
-          if (this.searchMenu) {
-            const $hoverOption = this.searchMenu.$options.filter('.hover');
-            if ($hoverOption.length) {
-              const $nextOption = $hoverOption
-                .parent()
-                .nextAll()
-                .find('.menu-item:not(.disabled)')
-                .first();
-              if ($nextOption.length) {
-                this.focusOption($nextOption);
-              }
-            } else {
-              this.focusOption(this.searchMenu.$options.eq(0));
-            }
-          }
-          return;
-        }
+        case DOWN_KEY:
         case UP_KEY: {
           ev.preventDefault();
-          if (this.searchMenu) {
-            const $hoverOption = this.searchMenu.$options.filter('.hover');
-            if ($hoverOption.length) {
-              const $prevOption = $hoverOption
-                .parent()
-                .prevAll()
-                .find('.menu-item:not(.disabled)')
-                .last();
-              if ($prevOption.length) {
-                this.focusOption($prevOption);
-              }
-            } else {
-              this.focusOption(
-                this.searchMenu.$options.eq(this.searchMenu.$options.length - 1)
-              );
-            }
-          }
+          this.#moveHover(ev.keyCode === DOWN_KEY ? 1 : -1);
           return;
         }
       }
     });
 
-    this.addListener(this.$searchInput[0], 'focus', () => {
-      if (this.searchMenu) {
-        this.searchMenu.show();
-      }
+    this.addListener(input, 'focus', () => {
+      this.searchMenu?.show();
     });
 
-    this.addListener(this.$searchInput[0], 'blur', () => {
-      if (this._ignoreSearchBlur) {
-        this._ignoreSearchBlur = false;
+    this.addListener(input, 'blur', () => {
+      if (this.#ignoreSearchBlur) {
+        this.#ignoreSearchBlur = false;
         return;
       }
-      setTimeout(() => {
-        if (this.searchMenu) {
-          this.searchMenu.hide();
-        }
-      }, 1);
+      setTimeout(() => this.searchMenu?.hide(), 1);
     });
   }
 
-  async searchForTags(): Promise<void> {
+  #enabledOptions(): HTMLElement[] {
+    return (this.searchMenu?.$options ?? []).filter(
+      (option) => !option.classList.contains('disabled')
+    );
+  }
+
+  #hoveredOption(): HTMLElement | undefined {
+    return this.searchMenu?.$options.find((option) =>
+      option.classList.contains('hover')
+    );
+  }
+
+  #moveHover(step: 1 | -1): void {
+    const options = this.#enabledOptions();
+    if (!options.length) {
+      return;
+    }
+
+    const hovered = this.#hoveredOption();
+    const index = hovered ? options.indexOf(hovered) : -1;
+    const next =
+      index === -1
+        ? options[step === 1 ? 0 : options.length - 1]
+        : options[index + step];
+
+    if (next) {
+      this.focusOption(next);
+    }
+  }
+
+  async search(): Promise<void> {
     if (this.searchMenu) {
       this.killSearchMenu();
     }
 
-    const val = this.$searchInput.val();
+    const val = this.searchInput?.value;
 
-    if (val) {
-      this.$searchSpinner.removeClass('hidden');
-      Craft.cp.announce(Craft.t('app', 'Loading'));
-
-      const excludeIds: number[] = [];
-      for (let i = 0; i < this.$elements.length; i++) {
-        const id = $(this.$elements[i]).data('id');
-        if (id) excludeIds.push(id);
-      }
-
-      if (this.settings.sourceElementId && !this.settings.allowSelfRelations) {
-        excludeIds.push(this.settings.sourceElementId);
-      }
-
-      let response: any;
-
-      try {
-        response = await Craft.sendActionRequest(
-          'POST',
-          'element-search/search',
-          {
-            data: {
-              elementType: this.settings.elementType,
-              siteId: this.settings.criteria.siteId,
-              search: val,
-              criteria: this.settings.searchCriteria,
-              condition: this.settings.condition,
-              referenceElementId: this.settings.referenceElementId
-                ? this.elementEditor?.getDraftElementId(
-                    this.settings.referenceElementId
-                  ) || this.settings.referenceElementId
-                : null,
-              referenceElementOwnerId: this.settings.referenceElementOwnerId
-                ? this.elementEditor?.getDraftElementId(
-                    this.settings.referenceElementOwnerId
-                  ) || this.settings.referenceElementOwnerId
-                : null,
-              referenceElementSiteId: this.settings.referenceElementSiteId,
-              excludeIds,
-            },
-          }
-        );
-      } finally {
-        if (this.searchMenu) {
-          this.killSearchMenu();
-        }
-        this.$searchSpinner.addClass('hidden');
-        Craft.cp.announce(Craft.t('app', 'Loading complete'));
-      }
-
-      const $menu = $('<div class="menu tagmenu"/>').appendTo($(bod));
-      const $ul = $('<ul/>').appendTo($menu);
-
-      for (const element of response.data.elements) {
-        const $li = $('<li/>').appendTo($ul);
-        const optionLabel = `${Craft.t('app', 'Existing {type}', {
-          type:
-            (this.settings.elementType
-              ? Craft.elementTypeNames[this.settings.elementType]?.[2]
-              : null) ?? Craft.t('app', 'element'),
-        })}: ${element.title}`;
-        $li.attr('aria-label', optionLabel);
-
-        const $item = $('<div class="menu-item"/>')
-          .appendTo($li)
-          .html(element.html)
-          .data('id', element.id);
-
-        if (element.exclude) {
-          $item.addClass('disabled');
-        }
-      }
-
-      if (!response.data.exactMatch && this.canCreateElements()) {
-        const $li = $('<li/>').appendTo($ul);
-        const optionLabel = `${Craft.t('app', 'Create {type}', {
-          type:
-            (this.settings.elementType
-              ? Craft.elementTypeNames[this.settings.elementType]?.[2]
-              : null) ?? Craft.t('app', 'element'),
-        })}: ${val}`;
-        $li.attr('aria-label', optionLabel);
-
-        $('<div class="menu-item"/>')
-          .appendTo($li)
-          .text(val)
-          .prepend('<craft-icon name="plus"></craft-icon>');
-      }
-
-      $ul.find('.menu-item:not(.disabled):first').addClass('hover');
-
-      this.searchMenu = new CustomSelect($menu[0], {
-        anchor: this.$searchInput[0],
-        onOptionSelect: (option: Element) => {
-          this.selectSearchResult(option);
-        },
-      });
-
-      this.$searchInput.attr('aria-controls', this.searchMenu.menuId);
-
-      this.searchMenu.on('show', () => {
-        this.$searchInput.attr('aria-expanded', 'true');
-        this.focusSelectedOption();
-        Craft.cp.elementThumbLoader.load($menu);
-      });
-
-      this.searchMenu.on('hide', () => {
-        this.$searchInput.attr('aria-expanded', 'false');
-        this.$searchInput.removeAttr('aria-activedescendant');
-      });
-
-      // mousedown on menu → keep focus on search input (ignore next blur).
-      this.addListener($menu[0], 'mousedown', () => {
-        this._ignoreSearchBlur = true;
-      });
-
-      this.searchMenu.show();
-    } else {
-      this.$searchSpinner.addClass('hidden');
-    }
-  }
-
-  focusOption($option: any): void {
-    this.searchMenu.$options.removeClass('hover');
-    this.searchMenu.$ariaOptions.attr('aria-selected', 'false');
-    $option.addClass('hover');
-    this.$searchInput.attr(
-      'aria-activedescendant',
-      $option.parent('li').attr('id')
-    );
-  }
-
-  focusSelectedOption(): void {
-    const $option = this.searchMenu.$options.filter('.hover:first');
-    if ($option.length) {
-      this.focusOption($option);
-    } else {
-      this.focusFirstOption();
-    }
-  }
-
-  focusFirstOption(): void {
-    const $option = this.searchMenu.$options.first();
-    this.focusOption($option);
-  }
-
-  async selectSearchResult(option: any): Promise<void> {
-    const $option = $(option);
-
-    if ($option.hasClass('disabled')) {
+    if (!val) {
+      this.searchSpinner?.classList.add('hidden');
       return;
     }
 
-    let id = $option.data('id');
+    this.searchSpinner?.classList.remove('hidden');
+    announce(t('Loading'));
+
+    const excludeIds = this.elements
+      .map((element) => Number(element.dataset.id))
+      .filter(Boolean);
+
+    if (this.settings.sourceElementId && !this.settings.allowSelfRelations) {
+      excludeIds.push(this.settings.sourceElementId);
+    }
+
+    let response: any;
+
+    try {
+      response = await actionClient.post('element-search/search', {
+        elementType: this.settings.elementType,
+        siteId: this.settings.criteria.siteId,
+        search: val,
+        criteria: this.settings.searchCriteria,
+        condition: this.settings.condition,
+        referenceElementId: this.#draftId(this.settings.referenceElementId),
+        referenceElementOwnerId: this.#draftId(
+          this.settings.referenceElementOwnerId
+        ),
+        referenceElementSiteId: this.settings.referenceElementSiteId,
+        excludeIds,
+      });
+    } finally {
+      if (this.searchMenu) {
+        this.killSearchMenu();
+      }
+      this.searchSpinner?.classList.add('hidden');
+      announce(t('Loading complete'));
+    }
+
+    const typeName =
+      (this.settings.elementType
+        ? elementTypeName(this.settings.elementType)
+        : null) ?? t('element');
+
+    const menu = document.createElement('div');
+    menu.className = 'menu tagmenu';
+    const ul = document.createElement('ul');
+    menu.append(ul);
+    document.body.append(menu);
+
+    const addOption = (label: string): HTMLElement => {
+      const li = document.createElement('li');
+      li.setAttribute('aria-label', label);
+      const item = document.createElement('div');
+      item.className = 'menu-item';
+      li.append(item);
+      ul.append(li);
+      return item;
+    };
+
+    for (const element of response.data.elements) {
+      const item = addOption(
+        `${t('Existing {type}', {type: typeName})}: ${element.title}`
+      );
+      item.innerHTML = element.html;
+      item.dataset.id = String(element.id);
+      if (element.exclude) {
+        item.classList.add('disabled');
+      }
+    }
+
+    if (!response.data.exactMatch && this.canCreateElements()) {
+      const item = addOption(`${t('Create {type}', {type: typeName})}: ${val}`);
+      const icon = document.createElement('craft-icon');
+      icon.setAttribute('name', 'plus');
+      item.append(icon, val);
+    }
+
+    ul.querySelector('.menu-item:not(.disabled)')?.classList.add('hover');
+
+    const searchMenu = new CustomSelect(menu, {
+      anchor: this.searchInput,
+      onOptionSelect: (option: Element) => {
+        void this.selectSearchResult(option as HTMLElement);
+      },
+    } as any);
+    this.searchMenu = searchMenu;
+
+    this.searchInput?.setAttribute('aria-controls', searchMenu.menuId);
+
+    searchMenu.on('show', () => {
+      this.searchInput?.setAttribute('aria-expanded', 'true');
+      this.focusSelectedOption();
+      loadElementThumbs(menu);
+    });
+
+    searchMenu.on('hide', () => {
+      this.searchInput?.setAttribute('aria-expanded', 'false');
+      this.searchInput?.removeAttribute('aria-activedescendant');
+    });
+
+    // Clicking the menu shouldn't count as leaving the search input
+    this.addListener(menu, 'mousedown', () => {
+      this.#ignoreSearchBlur = true;
+    });
+
+    searchMenu.show();
+  }
+
+  focusOption(option: HTMLElement): void {
+    for (const o of this.searchMenu?.$options ?? []) {
+      o.classList.remove('hover');
+    }
+    for (const o of this.searchMenu?.$ariaOptions ?? []) {
+      o.setAttribute('aria-selected', 'false');
+    }
+    option.classList.add('hover');
+
+    const id = option.closest('li')?.id;
+    if (id) {
+      this.searchInput?.setAttribute('aria-activedescendant', id);
+    }
+  }
+
+  focusSelectedOption(): void {
+    const option = this.#hoveredOption() ?? this.searchMenu?.$options[0];
+    if (option) {
+      this.focusOption(option);
+    }
+  }
+
+  async selectSearchResult(option: HTMLElement): Promise<void> {
+    if (option.classList.contains('disabled')) {
+      return;
+    }
+
+    let id: number | null = option.dataset.id
+      ? Number(option.dataset.id)
+      : null;
 
     if (!id && this.canCreateElements()) {
-      id = await this.createElement($option.text());
+      id = await this.createElement(option.textContent ?? '');
     }
 
     if (id) {
       await this.onModalSelect([
-        {
-          id,
-          siteId: this.settings.criteria.siteId,
-        },
+        {id, siteId: (this.settings.criteria.siteId as number) ?? null},
       ]);
     }
 
     this.killSearchMenu();
-    this.$searchInput.val('');
-    setTimeout(() => {
-      this.focusNextLogicalElement();
-    }, 200);
+    if (this.searchInput) {
+      this.searchInput.value = '';
+    }
+    setTimeout(() => this.focusNextLogicalElement(), 200);
   }
 
   killSearchMenu(): void {
-    this.searchMenu.hide();
-    this.searchMenu.destroy();
+    this.searchMenu?.hide();
+    this.searchMenu?.destroy();
     this.searchMenu = null;
   }
 }

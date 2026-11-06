@@ -14,8 +14,8 @@
  */
 
 import {jq} from '@/common/utils/jquery';
-import type {ClipboardRuntime} from '@/modules/matrix/clipboard';
-export type {CopiedElementInfo} from '@/modules/matrix/clipboard';
+import type {CopiedElementInfo} from '@/modules/elements/clipboard';
+export type {CopiedElementInfo};
 type ElementId = string | number | null;
 import type {MatrixEntry} from './matrix-entry';
 import type {MatrixInput} from './matrix-input';
@@ -93,6 +93,26 @@ export interface LegacyElementEditor {
  * These members aren't part of the typed `CraftStatic` surface (yet) — narrow
  * them here instead of sprinkling casts around the module.
  */
+/** `Craft.cp`'s clipboard and live-region methods, which Matrix still calls. */
+interface ClipboardRuntime {
+  cp: {
+    announce(message: string): void;
+    displayError(message?: string): void;
+    copyElements(elementInfo: CopiedElementInfo[]): void;
+    getCopiedElements(): CopiedElementInfo[];
+    onCopyElements(
+      callback: (elementInfo: CopiedElementInfo[], buttonLabel?: string) => void
+    ): void;
+    pasteElements(params: {
+      primaryOwnerId: ElementId;
+      ownerId: ElementId;
+      fieldId: number | null;
+      siteId: number | null;
+    }): Promise<{id: number}[]>;
+  };
+  elementTypeNames: Record<string, string[]>;
+}
+
 export interface LegacyCraftRuntime extends ClipboardRuntime {
   queue: {push(job: () => Promise<void>): Promise<void>};
   getText(value: string): string;

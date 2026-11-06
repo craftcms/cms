@@ -53,7 +53,7 @@ function state(
     busy: false,
     selection: [],
     disabledElementIds: [],
-    indexBody: {html: '', props: {}},
+    indexBody: {props: {}},
     error: null,
     title: 'Choose an entry',
     showTitle: true,

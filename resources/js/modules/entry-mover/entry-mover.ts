@@ -1,4 +1,8 @@
 import {Base, Modal} from '@craftcms/garnish';
+import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {showError, showSuccess} from '@/modules/messages/messages';
+import {announce} from '@/common/announcer';
 
 /** A `craft-button`, whose `disabled` and `loading` states are properties. */
 type SelectButton = HTMLElement & {disabled: boolean; loading: boolean};
@@ -33,8 +37,7 @@ interface LegacyElementIndex {
  *
  * First consumer of the modern `@craftcms/garnish` `Modal` + `Select` from
  * `resources/js` — both replace their legacy `Garnish.*` equivalents 1:1.
- * `Craft.ui.createSubmitButton` stays a legacy jQuery seam (not yet ported to
- * `@craftcms/ui/factory`). Booted imperatively from `MoveToSection.php`
+ * Booted imperatively from `MoveToSection.php`
  * (`new Craft.EntryMover(...)`), so the class is exposed on `window.Craft`.
  */
 export class EntryMover extends Base {
@@ -87,7 +90,7 @@ export class EntryMover extends Base {
     )}`;
     const heading = document.createElement('h1');
     heading.id = headingId;
-    heading.textContent = Craft.t('app', 'Move to');
+    heading.textContent = t('Move to');
     header.append(heading);
 
     const body = document.createElement('div');
@@ -108,7 +111,7 @@ export class EntryMover extends Base {
     this.#sectionsList = document.createElement(
       'craft-radio-group'
     ) as SectionGroup;
-    this.#sectionsList.setAttribute('label', Craft.t('app', 'Move to'));
+    this.#sectionsList.setAttribute('label', t('Move to'));
     this.#sectionsList.setAttribute('label-sr-only', '');
     this.#sectionsList.setAttribute('name', 'sectionId');
     listContainer.append(this.#sectionsList);
@@ -123,13 +126,13 @@ export class EntryMover extends Base {
 
     const cancelBtn = document.createElement('craft-button');
     cancelBtn.setAttribute('type', 'button');
-    cancelBtn.textContent = Craft.t('app', 'Cancel');
+    cancelBtn.textContent = t('Cancel');
     primaryButtons.append(cancelBtn);
 
     this.#selectBtn = document.createElement('craft-button') as SelectButton;
     this.#selectBtn.setAttribute('type', 'button');
     this.#selectBtn.setAttribute('variant', 'primary');
-    this.#selectBtn.textContent = Craft.t('app', 'Move');
+    this.#selectBtn.textContent = t('Move');
     this.#selectBtn.disabled = true;
     primaryButtons.append(this.#selectBtn);
 
@@ -150,14 +153,16 @@ export class EntryMover extends Base {
     }
     this.#abortController = new AbortController();
 
-    Craft.sendActionRequest('POST', 'entries/move-to-section-modal-data', {
-      data: {
-        entryIds: this.entryIds,
-        siteId: this.elementIndex?.siteId,
-        currentSectionUid: this.currentSectionUid,
-      },
-      signal: this.#abortController.signal,
-    })
+    actionClient
+      .post(
+        'entries/move-to-section-modal-data',
+        {
+          entryIds: this.entryIds,
+          siteId: this.elementIndex?.siteId,
+          currentSectionUid: this.currentSectionUid,
+        },
+        {signal: this.#abortController.signal}
+      )
       .then(({data}: {data?: {sections?: MoveTargetSection[]}}) => {
         const list = this.#sectionsList;
         if (!list) {
@@ -169,8 +174,7 @@ export class EntryMover extends Base {
         if (!sections.length) {
           const message = document.createElement('p');
           message.className = 'zilch';
-          message.textContent = Craft.t(
-            'app',
+          message.textContent = t(
             'Couldn’t find any sections that all selected elements could be moved to.'
           );
           list.replaceWith(message);
@@ -194,7 +198,7 @@ export class EntryMover extends Base {
         });
       })
       .catch(({response}: {response?: {data?: {message?: string}}}) => {
-        Craft.cp.displayError(response?.data?.message);
+        showError(response?.data?.message);
         this.modal?.hide();
       })
       .finally(() => {
@@ -211,25 +215,26 @@ export class EntryMover extends Base {
     }
 
     this.#selectBtn.loading = true;
-    Craft.cp.announce(Craft.t('app', 'Loading'));
+    announce(t('Loading'));
 
     const data = {
       sectionId: this.#sectionsList?.modelValue,
       entryIds: this.entryIds,
     };
 
-    Craft.sendActionRequest('POST', 'entries/move-to-section', {data})
+    actionClient
+      .post('entries/move-to-section', data)
       .then((response: {data: {message: string}}) => {
-        Craft.cp.displaySuccess(response.data.message);
-        Craft.cp.announce(response.data.message);
+        showSuccess(response.data.message);
+        announce(response.data.message);
 
         this.elementIndex?.updateElements();
         this.elementIndex?.$elements.attr('tabindex', '-1').focus();
         this.modal?.hide();
       })
       .catch((e: {response?: {data?: {message?: string}}}) => {
-        Craft.cp.displayError(e?.response?.data?.message);
-        Craft.cp.announce(e?.response?.data?.message);
+        showError(e?.response?.data?.message);
+        announce(e?.response?.data?.message);
       })
       .finally(() => {
         if (this.#selectBtn) {

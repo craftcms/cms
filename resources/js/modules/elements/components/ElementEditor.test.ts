@@ -431,11 +431,11 @@ it('describes a revision with its own notice alone', async () => {
 });
 
 it.each([
-  ['a revision', 'readOnly', 'readOnly', false],
-  ['a draft locked for review', 'disabled', 'editable', true],
+  ['a revision', 'readOnly', false],
+  ['a draft locked for review', 'editable', true],
 ] as const)(
-  'renders the fields of %s as %s',
-  async (_, expected, controlMode, reviewLocked) => {
+  'renders the fields of %s read-only, keeping them legible',
+  async (_, controlMode, reviewLocked) => {
     state.editor.workflowReviewLocked = computed(() => reviewLocked);
     state.editor.props.readOnly = controlMode === 'readOnly';
     state.editor.errors = computed(() => []);
@@ -469,8 +469,8 @@ it.each([
       HTMLElement & {readOnly: boolean; disabled: boolean}
     >('craft-field')!;
     expect({readOnly: field.readOnly, disabled: field.disabled}).toEqual({
-      readOnly: expected === 'readOnly',
-      disabled: expected === 'disabled',
+      readOnly: true,
+      disabled: false,
     });
   }
 );

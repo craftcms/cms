@@ -40,9 +40,7 @@ these seams:
 
 - **`Craft.Grid`** on `.fld-tabs` — instantiated and fed via `$(...)`. _TODO:_ a
   later pass can replace it with CSS Grid (out of scope here).
-- Plain (non-jQuery) Craft calls — `Craft.t`, `Craft.sendActionRequest`,
-  `Craft.cp.*`, `Craft.escapeHtml`, `Craft.uuid`, `Craft.appendHead/BodyHtml`,
-  `Craft.initUiElements` — are left as-is.
+- Plain (non-jQuery) Craft calls — `Craft.cp.*` — are left as-is.
 
 The module assigns `window.Craft.FieldLayoutDesigner` (plus `.Tab`, `.Element`,
 `.CardViewDesigner`, `.BaseDrag`, `.TabDrag`, `.ElementDrag`) so the existing PHP

@@ -112,7 +112,7 @@ describe('useNestedElementsQuery', () => {
       initial?: NestedContentIndexData;
     } = {}
   ) {
-    vi.stubGlobal('Craft', {systemUid: 'test', pageTrigger: 'p'});
+    vi.stubGlobal('Craft', {systemUid: 'test'});
     const initial = options.initial ?? payload();
     const props = reactive({
       viewMode: 'index',

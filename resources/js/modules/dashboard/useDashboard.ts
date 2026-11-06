@@ -1,7 +1,6 @@
 import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import {useMessages} from '@/modules/messages/useMessages';
 import {provideHtmlWidgets} from './htmlWidgets';
-import {jq} from '@/common/utils/jquery';
 
 import {
   computed,
@@ -107,15 +106,16 @@ export function useDashboard(props: {
   });
 
   function refreshGrid() {
-    if (!grid) return;
+    // A refresh can land after the dashboard unmounts and destroys the grid
+    if (!grid?.container) return;
 
-    grid.$items = jq()!(container.value!).children('.item');
-    grid.$items.each((_: number, element: HTMLElement) =>
-      jq()!(element).data('colspan', Number(element.dataset.colspan))
+    grid.setItems(
+      Array.from(container.value!.children).filter((child) =>
+        child.matches('.item')
+      )
     );
-    grid.setItems();
     grid.refreshCols(true);
-    if (!grid.items.length) grid.$container.height('auto');
+    if (!grid.items.length) grid.container.style.height = 'auto';
   }
 
   function refreshTypes() {
