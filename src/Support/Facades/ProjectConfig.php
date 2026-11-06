@@ -26,6 +26,7 @@ use Override;
  * @method static void saveModifiedConfigData()
  * @method static void flushChanges()
  * @method static void flush()
+ * @method static void acquireLock()
  * @method static \CraftCms\DependencyAwareCache\Dependency\CallbackDependency getCacheDependency()
  * @method static bool getDoesExternalConfigExist()
  * @method static bool getHadFileWriteIssues()
