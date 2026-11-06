@@ -11,6 +11,7 @@ use CraftCms\Cms\Mcp\Capabilities\Users;
 use CraftCms\Cms\Mcp\Public\ElementQuery;
 use CraftCms\Cms\Mcp\Settings;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigPaths;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Models\User;
@@ -46,6 +47,7 @@ it('selects user custom fields while retaining the public account attribute allo
     actingAs($actor);
     app(Request::class)->setUserResolver(static fn (): User => $actor);
     $field = Field::factory()->create(['handle' => 'profileSummary', 'type' => PlainText::class]);
+    Fields::refreshFields();
     $layout = FieldLayout::factory()->forField($field)->create();
     $users = app(Users::class);
     $users->updateFieldLayout($layout->config);

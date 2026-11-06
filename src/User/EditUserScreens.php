@@ -196,9 +196,11 @@ class EditUserScreens
         }
 
         // Users who can’t create tokens still see the apps they’ve authorized.
+        // Without signing keys, only admins see the screen, so they can find out how to set them up.
         $tokens = app(PersonalAccessTokens::class);
 
-        return $tokens->scopeGroupsFor($user)->isNotEmpty() || $tokens->grants($user) !== [];
+        return ($tokens->scopeGroupsFor($user)->isNotEmpty() || $tokens->grants($user) !== [])
+            && ($user->admin || $tokens->hasKeys());
     }
 
     public function showSignInProvidersScreen(User $user): bool

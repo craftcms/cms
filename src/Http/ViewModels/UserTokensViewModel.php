@@ -41,8 +41,13 @@ class UserTokensViewModel extends ViewModel
      */
     public array $grants;
 
+    /** Whether Passport has signing keys. Without them, the screen explains how to set them up. */
+    public bool $hasKeys;
+
     public function __construct(User $user, PersonalAccessTokens $tokens)
     {
+        $this->hasKeys = $tokens->hasKeys();
+
         $this->groups = $tokens->scopeGroupsFor($user)
             ->map(fn (ScopeGroup $group): array => [
                 'handle' => $group->handle,
