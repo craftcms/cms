@@ -27,12 +27,13 @@ readonly class GeneralConfigCompatibility
 
         Deprecator::log('config-general-app-type', 'Using general.web.php and general.console.php configuration files is deprecated.');
 
-        // Merge array overlays first, so overridden settings never reach setters with side effects
-        if (is_array($config) && is_array($overlay)) {
-            return $this->toConfigObject(array_merge($config, $overlay));
+        if (is_array($config)) {
+            $overlay = $this->resolve($overlay, LegacyGeneralConfig::create());
+
+            // Merge array overlays first, so overridden settings never reach setters with side effects
+            return is_array($overlay) ? $this->toConfigObject(array_merge($config, $overlay)) : $overlay;
         }
 
-        $config = $this->toConfigObject($config);
         $overlay = $this->resolve($overlay, $config);
 
         if ($overlay instanceof GeneralConfig) {

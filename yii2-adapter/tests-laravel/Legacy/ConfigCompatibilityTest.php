@@ -180,14 +180,20 @@ it('maps the renamed temp asset upload setting', function(): void {
     expect(GeneralConfig::create()->tempAssetUploadFs('uploads')->tempAssetUploadDisk)->toBe('uploads');
 });
 
-it('lets application type array overlays replace base settings before they are applied', function(): void {
-    $config = new GeneralConfigCompatibility()->convert(
-        ['extraAllowedFileExtensions' => ['foo']],
-        ['extraAllowedFileExtensions' => []],
-    );
+it('lets application type array overlays replace base settings before they are applied', function(mixed $overlay): void {
+    $config = new GeneralConfigCompatibility()->convert(['extraAllowedFileExtensions' => ['foo']], $overlay);
 
     expect($config->allowedFileExtensions)->not->toContain('foo');
-});
+})->with([
+    'array' => [['extraAllowedFileExtensions' => []]],
+    'closure' => [fn() => fn() => ['extraAllowedFileExtensions' => []]],
+    'callable array' => [fn() => [new class() {
+        public function web(): array
+        {
+            return ['extraAllowedFileExtensions' => []];
+        }
+    }, 'web']],
+]);
 
 it('does not restore an unset transform generation setting as an override', function(): void {
     $config = new GeneralConfigCompatibility()->convert([]);
@@ -198,6 +204,12 @@ it('does not restore an unset transform generation setting as an override', func
         ->and(Context::hasHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT))->toBeFalse();
 });
 
-it('accepts null trusted hosts in array general configs', function(): void {
-    expect(new GeneralConfigCompatibility()->convert(['trustedHosts' => null])->trustedHosts)->toBeNull();
+it('accepts null deprecated settings in array general configs', function(): void {
+    $config = new GeneralConfigCompatibility()->convert([
+        'generateTransformsBeforePageLoad' => null,
+        'trustedHosts' => null,
+    ]);
+
+    expect($config->generateTransformsBeforePageLoad)->toBeNull()
+        ->and($config->trustedHosts)->toBeNull();
 });

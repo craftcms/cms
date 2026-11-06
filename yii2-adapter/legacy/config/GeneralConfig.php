@@ -849,7 +849,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * @deprecated in 6.0.0. Configure immediate generation on the Craft asset transformer instead.
      */
     #[Deprecated(message: 'in 6.0.0. Configure immediate generation on the Craft asset transformer instead.')]
-    public function generateTransformsBeforePageLoad(bool $value = true): self
+    public function generateTransformsBeforePageLoad(?bool $value = true): self
     {
         $this->deprecate('generateTransformsBeforePageLoad', 'Configure immediate generation on the Craft asset transformer instead.');
 
