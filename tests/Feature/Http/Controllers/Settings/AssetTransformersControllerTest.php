@@ -249,6 +249,31 @@ it('deletes non-reserved transformers', function () {
     expect(app(AssetTransformers::class)->getAssetTransformerByHandle('disposable'))->toBeNull();
 });
 
+it('shows registered transformers as read-only', function () {
+    app(AssetTransformers::class)->registerAssetTransformer(new AssetTransformer([
+        'uid' => 'b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f',
+        'name' => 'Cloud',
+        'handle' => 'cloud',
+        'driver' => 'missing-driver',
+    ]));
+
+    $index = get(action([AssetTransformersController::class, 'index']))->assertOk();
+    $table = collect(flattenUiNodes($index->inertiaProps('ui.nodes')))->firstWhere('component', 'craft:admin-table')['props'];
+    $row = collect($table['rows'])->firstWhere('id', 'b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f');
+    $edit = get(action([AssetTransformersController::class, 'edit'], ['handle' => 'cloud']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('readOnly', true)
+            ->where('showReadOnlyNotice', false)
+            ->where('refreshUrl', null)
+            ->etc());
+    $callout = collect(flattenUiNodes($edit->inertiaProps('ui.nodes')))->firstWhere('uid', 'registered-transformer');
+
+    expect($row['_deletable'])->toBeFalse()
+        ->and($row['_deleteDisabledReason'])->toBe('This asset transformer cannot be deleted because it is registered in code.')
+        ->and($callout)->not->toBeNull();
+});
+
 it('respects read-only mode', function () {
     Cms::config()->allowAdminChanges = false;
 
