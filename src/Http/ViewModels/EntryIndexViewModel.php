@@ -59,12 +59,15 @@ class EntryIndexViewModel extends ContentIndexViewModel
     #[Override]
     protected function sourceUrl(array $source): ?string
     {
-        $handle = $source['key'] === 'singles'
-            ? 'singles'
-            : ($source['data']['handle'] ?? null);
+        $handle = match (true) {
+            $source['key'] === 'singles' => 'singles',
+            str_starts_with((string) $source['key'], 'section:') => $source['data']['handle'] ?? null,
+            default => null,
+        };
 
-        // Anything that isn't a section source (a custom source, say) has no
-        // URL of its own, so fall back to the `?source=` query.
+        // Anything that isn't a section source has no URL of its own, so fall
+        // back to the `?source=` query. That includes a custom source limited
+        // to one section, which carries the section's handle too.
         return $handle === null
             ? parent::sourceUrl($source)
             : Url::cpUrl(sprintf('%s/%s', $this->pageUri(), $handle));

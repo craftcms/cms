@@ -35,6 +35,7 @@
 - “Pending” statuses are now blue rather than orange, and “Edited” badges and modified-field indicators are now violet rather than blue. ([#20258](https://github.com/craftcms/cms/pull/20258))
 - Link and Email field values in element indexes and cards now stay on one line, cut off with an ellipsis, after a button that shows the full address with options to open or copy it. Hovering over the link shows the same details. ([#20123](https://github.com/craftcms/cms/pull/20123))
 - The “View Mode” (Matrix, relation, Addresses, and Content Block fields), “Thumb Style”, “Section Type”, and image transforms’ “Mode” settings now show their options as joined, illustrated buttons, with each option’s label inside the button, below its illustration, and the selected option’s illustration drawn in blue. When there isn’t room for them in one row, they wrap as separate buttons. ([#20233](https://github.com/craftcms/cms/pull/20233), [#20285](https://github.com/craftcms/cms/pull/20285))
+- Fixed a bug where date pickers within slideouts could open far away from their inputs at some browser zoom and display scaling levels. ([#20399](https://github.com/craftcms/cms/issues/20399))
 
 ### Workflows
 - Added publishing workflows, which control when drafts may be applied to entries. Workflows are configured from Settings → Workflows and assigned to sections. (Craft Pro and Enterprise only.) ([#19667](https://github.com/craftcms/cms/pull/19667))
@@ -62,6 +63,9 @@
 - Live Preview now fades between device sizes, rather than re-laying out the previewed page throughout the animation. ([#19964](https://github.com/craftcms/cms/pull/19964))
 - Live Preview now reloads once after a run of quick edits, rather than after every autosave. ([#19964](https://github.com/craftcms/cms/pull/19964))
 - Live Preview’s editor is now docked to the right of the preview, with the element’s details panels beside it. Slideouts opened from the editor now cover it as nested views, with a Back button.
+- Entries and assets can no longer be deleted for the only site they exist in, via the `elements/delete-for-site` action or the “Delete for site” element action, and “Delete for this site” is no longer offered for provisional drafts whose canonical entry only exists in that site.
+- Field values submitted for nested entries, Content Block fields, and addresses are now ignored if the user isn’t permitted to see or edit the fields, per their field layout conditions. ([#20391](https://github.com/craftcms/cms/pull/20391))
+- Fixed an error that occurred when editing an address within a draft, if the owner element wasn’t saved in the primary site. ([#20413](https://github.com/craftcms/cms/issues/20413))
 
 #### Entries
 - Added support for disabling Matrix entries for individual sites. ([#19686](https://github.com/craftcms/cms/pull/19686))
@@ -86,6 +90,7 @@
 - Asset conditions, such as for index filters and Assets fields’ sources, now have an “Orientation” rule, which filters images by whether they’re landscape, portrait, or square. Images whose width and height differ by up to 2% count as square. ([#20114](https://github.com/craftcms/cms/pull/20114))
 - Removed Craft-managed filesystems and their control panel settings. Volumes and Craft asset transformers now reference Laravel filesystem disks configured in `config/filesystems.php`, and each defines whether its assets have public URLs. Existing filesystem references are migrated to matching disks automatically, with an actionable error if a disk isn’t configured. ([#19650](https://github.com/craftcms/cms/pull/19650))
 - Added configurable asset transformers, which can be managed from Settings → Assets → Asset Transformers and assigned to asset volumes by handle.
+- Packages can now register asset transformers in code, via `CraftCms\Cms\Asset\AssetTransformerRegistry::register()`. Registered transformers have fixed names, handles, and drivers, can’t be deleted, and supply default settings that can be overridden in project config. The `craft` transformer is now registered the same way, and removing its project config entry restores its default settings. ([#20411](https://github.com/craftcms/cms/pull/20411))
 - Added support for the libvips image driver via the optional `intervention/image-driver-vips` package.
 - Added BMP, HEIC, ICO, JPEG 2000, JPEG XL, and TIFF image transform formats, when supported by the active image driver.
 - Added the `defaultAssetTransformer` config setting.
@@ -97,12 +102,15 @@
 - Added the `blurhash`, `analysis`, and `placeholderDataUrl` fields to assets in GraphQL queries. `analysis` holds what was found in an image, such as its colors, embedded metadata, and type. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750), [#19755](https://github.com/craftcms/cms/pull/19755), [#20103](https://github.com/craftcms/cms/pull/20103))
 - Images can now be queried by orientation via the `orientation` asset query param and GraphQL argument, and image assets’ orientations are available via `asset.orientation` in templates and the `orientation` GraphQL field. ([#20114](https://github.com/craftcms/cms/pull/20114))
 - Fixed a bug where files uploaded to Assets fields when saving an element, such as from front-end forms, weren’t held to the `maxUploadFileSize` config setting, and were left behind as assets when the element couldn’t be saved because a file wasn’t allowed in the field.
+- Users can now save their own assets in their temporary upload folder.
+- Uploads to Assets fields with selection conditions are now checked against the asset’s final filename and location, and keep their custom field values once moved to the upload location.
 
 #### Users & Auth
 - Users can now connect their accounts to one or more Laravel Socialite providers, which are listed on the login page. ([#19202](https://github.com/craftcms/cms/pull/19202))
 - Added the `authGuard` and `authPasswordBroker` config settings, allowing Craft authentication to use a dedicated Laravel guard, provider, and password broker. ([#19598](https://github.com/craftcms/cms/issues/19598))
 - The `loginPath` config setting is now `false` by default.
 - Added a **My Account → Tokens** screen, where users can create Laravel Passport personal access tokens with the scopes they choose from any of the APIs offered, behind an elevated session, rename them, and revoke them along with the apps they’ve authorized. It’s shown when an API offers personal access token scopes the user may grant, or when the user has authorized an app.
+- The **My Account** → **Tokens** screen is now only shown to admins when OAuth signing keys haven’t been set up yet, and explains how to set them up, rather than failing with a server error when a token is created. Requests to create tokens are rejected with a 400 error until the keys are set up. ([#20357](https://github.com/craftcms/cms/issues/20357))
 
 ### Conditions
 - Added support for nested condition groups. ([#19587](https://github.com/craftcms/cms/pull/19587))
@@ -131,6 +139,7 @@
 - Relational fields now have a “Paste” button when the clipboard holds elements they could relate.
 - Relational fields now have a “Thumb Size” setting, like element index View menus, with “Small”, “Medium”, and “Large” options for the List and Inline list view modes, plus “XL” and “2XL” for the Thumbs view mode. ([#20257](https://github.com/craftcms/cms/pull/20257))
 - Read-only Markdown fields’ values can now be focused, selected, and scrolled, rather than being disabled. ([#20109](https://github.com/craftcms/cms/pull/20109))
+- Markdown field layout elements’ content is now translated. ([#20408](https://github.com/craftcms/cms/discussions/20408))
 
 ### Mail
 - Removed legacy `projectConfig.email` mail settings and mail transport adapter configuration in favor of Laravel's `mail` config and drivers.
@@ -176,6 +185,13 @@
 - MCP tools now accept times of day for Time fields within nested entries, and reject times they can’t parse. ([#20319](https://github.com/craftcms/cms/issues/20319))
 - MCP tool input schemas now declare the items of `relatedTo` and `notRelatedTo` element query criteria, so strict MCP clients such as VS Code accept the `search_query` tool. ([#20329](https://github.com/craftcms/cms/issues/20329))
 - The MCP server’s configuration tools can now manage control panel navigations, via the `cp-navigations` configuration type, which reads and writes each navigation as the tree the navigation builder edits. ([#20247](https://github.com/craftcms/cms/pull/20247))
+- Added the `user_permissions_user_update` and `user_permissions_group_update` MCP tools, which add and remove specific permissions without resending complete lists. ([#20437](https://github.com/craftcms/cms/pull/20437))
+- The `configuration_get`, `configuration_list`, `configuration_create`, and `configuration_update` MCP tools now return each record’s revision, and `configuration_update` and `configuration_delete` accept it as `expectedRevision`, failing without changing anything if the record has changed since it was read. Without `expectedRevision`, they can still overwrite changes made since the read. ([#20438](https://github.com/craftcms/cms/pull/20438))
+- The `assets_create` and `assets_replace` MCP tools accept base64-encoded file data and local file paths (stdio server only, limited to project directories where a local volume could be located), in addition to download URLs. Download URLs don’t require a `file_id`, and follow up to 3 redirects, each validated against SSRF.
+- The `assets_create` and `assets_upload_prepare` MCP tools can upload files to an Assets field’s default upload location, via their `fieldId` and `elementId` arguments.
+- The `configuration_update` MCP tool accepts field settings in the form that `configuration_get` returns them, such as Matrix fields’ entry types. ([#20406](https://github.com/craftcms/cms/issues/20406))
+- MCP tools now return CKEditor field values, rather than empty arrays. Fields can implement `CraftCms\Cms\Field\Contracts\McpOutputFieldInterface` to control how their values are returned by MCP tools.
+- MCP clients can now sign in when the control panel has its own domain and no `cpTrigger`. ([#20353](https://github.com/craftcms/cms/issues/20353))
 
 #### General
 - Replaced Craft’s system status with Laravel maintenance mode, including an admin-only Maintenance Mode control in General Settings.
@@ -226,6 +242,8 @@
 - Added the `canonicalId`, `canonicalUid`, `draftId`, `draftName`, `draftNotes`, `fieldId`, `isDraft`, `isUnpublishedDraft`, `ownerId`, and `sortOrder` fields to addresses, and the `sortOrder` field to content blocks, in GraphQL queries. ([#20251](https://github.com/craftcms/cms/pull/20251))
 - Element query argument descriptions in GraphQL, and the `elements_*` MCP tools’ query criteria descriptions, now name the element type, such as “the entries’ statuses”, rather than referring to “elements”. ([#20250](https://github.com/craftcms/cms/pull/20250))
 - GraphQL mutations now return an error when new Matrix entries aren’t listed in `sortOrder`, rather than ignoring them, and each Matrix entry input can only specify one entry type. ([#19965](https://github.com/craftcms/cms/pull/19965))
+- Authenticated GraphQL requests now respect field layout conditions. Fields that are hidden from the user are excluded from the schema, or resolve to `null` when their conditions are element-specific. Fields the user can’t edit are excluded from mutation arguments, or result in an error when set if their conditions are element-specific. ([#20391](https://github.com/craftcms/cms/pull/20391))
+- OAuth discovery metadata for the GraphQL API no longer includes the request’s site token.
 
 #### Debugging
 - Removed support for the Debug Toolbar. [Laravel Debugbar](https://laraveldebugbar.com) can be used instead. ([#18812](https://github.com/craftcms/cms/pull/18812))
@@ -260,6 +278,7 @@
 - Two-factor authentication recovery codes are now encrypted at rest. ([#19252](https://github.com/craftcms/cms/pull/19252))
 - MySQL database backups and restores now carry over SSL/TLS settings from the system’s MySQL option files, if the database connection doesn’t have any `PDO::MYSQL_ATTR_SSL_*` attributes set, and respect the `PDO::MYSQL_ATTR_SSL_CAPATH` and `PDO::MYSQL_ATTR_SSL_CIPHER` attributes. ([#19366](https://github.com/craftcms/cms/pull/19366))
 - Fixed a bug where multi-instance fields’ search keywords were indexed per field rather than per instance, so searching by one instance’s handle could match other instances’ values. ([#13991](https://github.com/craftcms/cms/pull/13991))
+- Garbage collection now always re-enables foreign key checks, even if it doesn’t finish. ([#20386](https://github.com/craftcms/cms/issues/20386))
 
 ### Extensibility
 
@@ -522,6 +541,7 @@
 - Added `php craft twig:cache` - Precompile Twig views
 - Added `php craft twig:clear` - Clear precompiled Twig views
 - Added `php craft project-config:check` - Check project config schema compatibility without applying changes
+- Removed the `setup:cloud` command (`setup/cloud`). To prepare a project for Craft Cloud, run `composer require craftcms/cloud` and then `php craft cloud:setup`.
 - `craft\console\controllers\EnvController` has been removed in favor of the classes below:
   - `CraftCms\Cms\Console\Commands\Env\EnvRemoveCommand` => `php craft env:remove`
   - `CraftCms\Cms\Console\Commands\Env\EnvSetCommand` => `php craft env:set`

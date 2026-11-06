@@ -373,3 +373,23 @@ it('only shows and accepts the custom fields the user can see', function (): voi
 
     expect(Entry::find()->id($entry->id)->one()->getFieldValue('secret'))->toBe('Hidden value');
 });
+
+it('sets entry post and expiry dates from date strings, and rejects invalid ones', function (): void {
+    $elements = app(ElementCapabilities::class);
+    $created = $elements->create('entries', [
+        'sectionId' => $this->section->id,
+        'title' => 'Dated',
+        'postDate' => '2026-01-15T10:00:00+02:00',
+        'expiryDate' => '2027-01-15T00:00:00Z',
+    ], ['summary' => 'Summary'])['element'];
+    $entry = Entry::find()->id($created['id'])->status(null)->one();
+
+    expect($entry->postDate->getTimestamp())->toBe(strtotime('2026-01-15T08:00:00Z'))
+        ->and($entry->expiryDate->getTimestamp())->toBe(strtotime('2027-01-15T00:00:00Z'));
+
+    $elements->update('entries', id: $created['id'], attributes: ['expiryDate' => null]);
+
+    expect(Entry::find()->id($created['id'])->status(null)->one()->expiryDate)->toBeNull()
+        ->and(fn () => $elements->update('entries', id: $created['id'], attributes: ['postDate' => 'not-a-date']))
+        ->toThrow(ToolCallException::class, '/postDate');
+});
