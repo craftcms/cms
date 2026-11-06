@@ -160,6 +160,22 @@ class ElementSerializerTest extends TestCase
         );
     }
 
+    public function testFieldsNamedViaDotPathsAreRequested(): void
+    {
+        $block = new TestEntry(10, [new McpOutputTestField(['handle' => 'custom'])], ['custom' => 'raw']);
+        $element = new TestEntry(1, [new McpOutputTestField(['handle' => 'blocks'])], ['blocks' => ElementCollection::make([$block])]);
+        $serializer = $this->serializer();
+
+        self::assertSame(
+            ['blocks' => [['id' => 10, 'custom' => ['value' => 'raw', 'public' => false, 'requested' => false]]]],
+            $serializer->serialize($element, data: [], fields: ['blocks'], serializeNested: $this->visible($serializer)),
+        );
+        self::assertSame(
+            ['blocks' => [['id' => 10, 'custom' => ['value' => 'raw', 'public' => false, 'requested' => true]]]],
+            $serializer->serialize($element, data: [], fields: ['blocks.custom'], serializeNested: $this->visible($serializer)),
+        );
+    }
+
     public function testListItemsWithHiddenElementsAreRemoved(): void
     {
         $element = new TestEntry(1, [new McpOutputTestField(['handle' => 'custom'])], [
