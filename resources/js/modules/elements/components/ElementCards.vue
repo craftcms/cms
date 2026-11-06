@@ -110,8 +110,15 @@
       return undefined;
     }
 
+    // Without `data-settings`, so the CP's chip refresh leaves Vue's cards to
+    // their owner, which refetches the data they're drawn from instead.
+    const {'data-settings': _settings, ...cardAttributes} = attrs(
+      element.cardAttributes,
+      {exclude: ['class']}
+    );
+
     return {
-      ...attrs(element.cardAttributes, {exclude: ['class']}),
+      ...cardAttributes,
       class: serverClasses(element).filter((name) => !ITEM_CLASSES.has(name)),
       'thumb-alignment': element.thumbAlignment ?? undefined,
     };

@@ -175,7 +175,8 @@ export class ElementEditorSlideout extends CpScreenSlideout {
     });
 
     this.on('submit', (ev: any) => {
-      broadcast({event: 'saveElement', id: ev.response.data.element.id});
+      const {modelId, element} = ev.response.data;
+      broadcast({event: 'saveElement', id: modelId ?? element?.id});
 
       // Pass the response data off to onSaveElement() for backwards
       // compatibility.

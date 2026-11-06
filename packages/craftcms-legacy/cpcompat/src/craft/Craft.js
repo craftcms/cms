@@ -1587,11 +1587,21 @@ $.extend(Craft, {
    * Refreshes all DOM instances of an element with the given ID by re-rendering them via an AJAX request.
    *
    * Finds all `.element` divs with the specified `elementId` and updates their HTML using the server-rendered markup.
-   * Useful for keeping element displays in sync after edits or changes.
+   * Useful for keeping element displays in sync after edits or changes. `craft-chip` and `craft-card` instances are
+   * refreshed by the control panel's `element-instances` module, which listens for `craft:refresh-element-instances`.
    *
    * @param {number|string} elementId The ID of the element to refresh.
+   * @param {boolean} [refreshComponents=true] Whether to refresh `craft-chip` and `craft-card` instances too.
    */
-  refreshElementInstances(elementId) {
+  refreshElementInstances(elementId, refreshComponents = true) {
+    if (refreshComponents) {
+      window.dispatchEvent(
+        new CustomEvent('craft:refresh-element-instances', {
+          detail: {id: elementId},
+        })
+      );
+    }
+
     const $elements = $(`div.element[data-id="${elementId}"][data-settings]`);
     if (!$elements.length) {
       return;
@@ -1962,11 +1972,13 @@ if (typeof BroadcastChannel !== 'undefined') {
 
   Craft.messageReceiver.addEventListener('message', (ev) => {
     switch (ev.data.event) {
+      // The control panel refreshes `craft-chip` and `craft-card` instances
+      // itself, for messages from this tab as well as others.
       case 'saveElement':
-        Craft.refreshElementInstances(ev.data.id);
+        Craft.refreshElementInstances(ev.data.id, false);
         break;
       case 'deleteDraft':
-        Craft.refreshElementInstances(ev.data.canonicalId);
+        Craft.refreshElementInstances(ev.data.canonicalId, false);
         break;
     }
   });

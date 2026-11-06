@@ -1,7 +1,8 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/chip/chip';
   import {actionClient, t} from '@craftcms/ui';
-  import {computed, reactive, ref, useId} from 'vue';
+  import {computed, reactive, ref, useId, watch} from 'vue';
+  import {tryOnScopeDispose} from '@vueuse/core';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import ElementList from '@/modules/elements/components/ElementList.vue';
   import {useElementList} from '@/modules/elements/composables/useElementList';
@@ -15,6 +16,7 @@
   import SelectionToolbar from './element-select/SelectionToolbar.vue';
   import {chipMenu, selectionMenu} from './element-select/chipMenu';
   import {usePasteableElements} from './element-select/usePasteableElements';
+  import {onElementChanged} from '@/modules/elements/element-instances';
   import type {
     ElementPresentation,
     ElementSelectProps,
@@ -113,14 +115,58 @@
     return Number(value);
   }
 
+  /**
+   * Elements refetched since the server last rendered the field, because they
+   * were saved, here or in another tab. They draw over the field's props until
+   * the next server render brings its own.
+   */
+  const refreshed = reactive(new Map<number, ElementPresentation>());
+  watch(
+    () => props.control.props.elements,
+    () => refreshed.clear()
+  );
+
   function presentation(value: number | string): ElementPresentation {
     const id = elementId(value);
 
     return (
+      refreshed.get(id) ??
       providedPresentations.value.get(id) ??
       presentations.get(id) ?? {id, label: String(id)}
     );
   }
+
+  async function refreshPresentation(id: number): Promise<void> {
+    if (!ids.value.includes(id)) {
+      return;
+    }
+
+    const siteId =
+      presentation(id).siteId ?? props.control.props.criteria.siteId;
+    const {data} = await actionClient.post<{
+      elements?: ElementPresentation[];
+    }>('relational-fields/structured-elements', {
+      elementType: props.control.props.elementType,
+      elementIds: [id],
+      siteId: Number(siteId) || null,
+      viewMode: viewMode.value,
+      thumbSize: props.control.props.thumbSize ?? null,
+    });
+    const fresh = data.elements?.find((element) => element.id === id);
+
+    if (fresh) {
+      refreshed.set(id, fresh);
+    }
+  }
+
+  tryOnScopeDispose(
+    onElementChanged(
+      (id) => {
+        refreshPresentation(id).catch(() => {});
+      },
+      {includeSelf: true}
+    )
+  );
 
   // ───────────────────────────── selection ─────────────────────────────
 

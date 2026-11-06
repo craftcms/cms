@@ -1206,8 +1206,11 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       showSuccess(data.message, data.notificationSettings);
     }
 
-    if (data?.element?.id) {
-      broadcast({event: 'saveElement', id: data.element.id});
+    // Element types' own save actions name the saved element after
+    // themselves (`entry`), but all of them send its `modelId`.
+    const id = data?.modelId ?? data?.element?.id;
+    if (id) {
+      broadcast({event: 'saveElement', id});
     }
 
     refreshPreviews();
@@ -1227,13 +1230,20 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     autosave.cancel();
 
     try {
+      const draftId = autosave.draftId.value;
       await actionClient.post(props.discardDraftUrl, {
         ...contextParams(),
         elementType: props.elementType,
         elementId: draftableElementId(),
         siteId: props.siteId,
-        draftId: autosave.draftId.value,
+        draftId,
         provisional: 1,
+      });
+      // Chips that showed the element as edited go back to the canonical one.
+      broadcast({
+        event: 'deleteDraft',
+        canonicalId: props.canonicalId,
+        draftId,
       });
 
       // The draft is gone, so anything autosave stashed about it now describes

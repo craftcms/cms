@@ -28,6 +28,8 @@ import {
   useElementIndexStructure,
 } from '@/modules/elements/index/composables/useElementIndexStructure';
 import {useElementIndexViewMode} from '@/modules/elements/index/composables/useElementIndexViewMode';
+import {onElementChanged} from '@/modules/elements/element-instances';
+import {tryOnScopeDispose} from '@vueuse/core';
 import {useElementIndexViewState} from '@/modules/elements/index/composables/useElementIndexViewState';
 import type {
   IndexQueryParams,
@@ -553,6 +555,16 @@ export function useElementIndex(options: UseElementIndexOptions) {
       .rows.find(({original}) => original.id === refreshOptions.selectId);
     if (row) selection.selectRow(row, {checked: true});
   }
+
+  // Rows saved in another tab are reloaded. Saves in this one refresh the index
+  // where they happen, such as after a quick edit.
+  tryOnScopeDispose(
+    onElementChanged((id) => {
+      if (elementIndex.data?.some((row) => Number(row.id) === id)) {
+        void refresh();
+      }
+    })
+  );
 
   const processing = computed(
     () => loading.value || pending.value || Boolean(toValue(options.busy))

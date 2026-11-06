@@ -5,7 +5,16 @@ export interface BroadcastMessage {
   [key: string]: unknown;
 }
 
+export interface OnBroadcastOptions {
+  /**
+   * Also hear messages this tab sends with {@link broadcast}, for listeners
+   * that should react the same way wherever the change happened.
+   */
+  includeSelf?: boolean;
+}
+
 let channel: BroadcastChannel | null | undefined;
+const thisTab = new EventTarget();
 
 function getChannel(): BroadcastChannel | null {
   if (channel === undefined) {
@@ -21,30 +30,40 @@ function getChannel(): BroadcastChannel | null {
 }
 
 /**
- * Tells other control panel tabs, and listeners on `Craft.messageReceiver` in
- * this one, that something changed.
+ * Tells other control panel tabs, listeners on `Craft.messageReceiver` in
+ * this one, and this tab's {@link onBroadcast} listeners that pass
+ * `includeSelf`, that something changed.
  */
 export function broadcast(message: BroadcastMessage): void {
   getChannel()?.postMessage(message);
+  thisTab.dispatchEvent(new MessageEvent('message', {data: message}));
 }
 
 /**
  * Listens for an event broadcast from other tabs. Messages this tab sends
- * with {@link broadcast} aren't heard.
+ * with {@link broadcast} are only heard with `includeSelf`.
  */
 export function onBroadcast(
   event: string,
-  handler: (message: BroadcastMessage) => void
+  handler: (message: BroadcastMessage) => void,
+  options: OnBroadcastOptions = {}
 ): () => void {
-  const listener = (ev: MessageEvent<BroadcastMessage>) => {
-    if (ev.data?.event === event) {
-      handler(ev.data);
+  const listener = (ev: Event) => {
+    const data = (ev as MessageEvent<BroadcastMessage>).data;
+    if (data?.event === event) {
+      handler(data);
     }
   };
 
   getChannel()?.addEventListener('message', listener);
+  if (options.includeSelf) {
+    thisTab.addEventListener('message', listener);
+  }
 
-  return () => getChannel()?.removeEventListener('message', listener);
+  return () => {
+    getChannel()?.removeEventListener('message', listener);
+    thisTab.removeEventListener('message', listener);
+  };
 }
 
 /**
