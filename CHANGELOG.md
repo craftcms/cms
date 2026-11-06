@@ -700,6 +700,8 @@
 - Nested elements now have a `$touchOwnersOnSave` property.
 - `CraftCms\Cms\Element\ElementHelper::normalizeSlug()` now has a `$language` argument, which defaults to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
 - `CraftCms\Cms\Support\Str::lower()`, `::title()`, and `::upper()` now have `$language` arguments, which default to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
+- Element saves and draft deletions made during control panel requests, including plugins’, are now announced to every open control panel tab, so their chips, cards, and editors update without client-side `broadcast()` calls. ([#20419](https://github.com/craftcms/cms/pull/20419))
+- Messages queued with `session()->broadcastToJs()` now reach every open control panel tab, sent with the next page after a redirect, or in an `X-Craft-Broadcast` header on action responses. ([#20419](https://github.com/craftcms/cms/pull/20419))
 - `Craft.refreshElementInstances()` now refreshes `craft-chip` and `craft-card` instances too. ([#20419](https://github.com/craftcms/cms/pull/20419))
 - Removed the `plugin-store/craft-data` and `plugin-store/save-plugin-license-keys` actions.
 - Removed `CraftCms\Cms\Plugin\Contracts\PluginInterface::createSettingsModel()`. The static `createSettings()` must be implemented instead. (`createSettingsModel()` remains supported for plugins extending `craft\base\Plugin` through the Yii adapter.) ([#19574](https://github.com/craftcms/cms/pull/19574))
