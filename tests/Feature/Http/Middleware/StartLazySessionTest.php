@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Auth\SessionTimeout;
+use CraftCms\Cms\Tests\TestClasses\Http\HostStartSession;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Session\SessionManager;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
@@ -89,4 +92,14 @@ it('opts routes in with withLazySession()', function () {
     get('/lazy-session')->assertOk()->assertCookieMissing(config('session.cookie'));
     get('/lazy-route-session')->assertOk()->assertCookieMissing(config('session.cookie'));
     get('/lazy-first-session')->assertOk()->assertCookieMissing(config('session.cookie'));
+});
+
+it('uses the host app’s StartSession subclass', function () {
+    Route::middlewareGroup('host-web', [EncryptCookies::class, AddQueuedCookiesToResponse::class, HostStartSession::class]);
+    Route::middleware('host-web')->withLazySession()->get('host-session', fn () => session('notice', 'none'));
+
+    get('/host-session')
+        ->assertOk()
+        ->assertHeader('X-Host-Start-Session', 'yes')
+        ->assertCookieMissing(config('session.cookie'));
 });

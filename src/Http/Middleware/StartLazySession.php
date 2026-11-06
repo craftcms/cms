@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
 use CraftCms\Cms\Http\BufferedSessionHandler;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
@@ -24,7 +25,14 @@ use Symfony\Component\HttpFoundation\Response;
  * {@see StartSession} as usual.
  *
  * Routes opt in with `Route::withLazySession()`, which replaces
- * {@see StartSession} with this middleware.
+ * {@see StartSession} with this middleware. If the route's middleware includes a
+ * subclass of {@see StartSession}, such as one in the host app's `web` group, that
+ * subclass handles the request instead of Laravel's.
+ *
+ * This middleware runs at {@see StartSession}'s position in the middleware priority
+ * list, not at its position in the `web` group. Middleware that reads the session
+ * must be in the priority list after {@see StartSession}, such as with
+ * `$middleware->priority()` or `addToMiddlewarePriorityAfter(StartSession::class, …)`.
  *
  * @since 6.0.0
  */
@@ -33,6 +41,8 @@ readonly class StartLazySession
     public function __construct(
         private SessionManager $manager,
         private StartSession $startSession,
+        private Router $router,
+        private Container $container,
     ) {}
 
     /**
@@ -95,8 +105,10 @@ readonly class StartLazySession
     {
         $config = $this->manager->getSessionConfig();
 
+        $startSession = $this->startSession($request);
+
         if (($config['driver'] ?? null) === null || $request->cookies->get($config['cookie']) !== null) {
-            return $this->startSession->handle($request, $next);
+            return $startSession->handle($request, $next);
         }
 
         $session = $this->manager->driver();
@@ -107,7 +119,7 @@ readonly class StartLazySession
         $used = false;
 
         try {
-            $response = $this->startSession->handle($request, function (Request $request) use ($next, $session, &$used) {
+            $response = $startSession->handle($request, function (Request $request) use ($next, $session, &$used) {
                 $id = $session->getId();
                 $attributes = $this->attributes($session->all());
 
@@ -132,6 +144,24 @@ readonly class StartLazySession
         }
 
         return $response;
+    }
+
+    /**
+     * Returns the route's own {@see StartSession} subclass, if it has one, as `withLazySession()` excludes it too.
+     */
+    private function startSession(Request $request): StartSession
+    {
+        $route = $request->route();
+
+        if ($route instanceof Route) {
+            foreach ($this->router->resolveMiddleware($route->gatherMiddleware()) as $middleware) {
+                if (is_string($middleware) && is_subclass_of($class = explode(':', $middleware, 2)[0], StartSession::class)) {
+                    return $this->container->make($class);
+                }
+            }
+        }
+
+        return $this->startSession;
     }
 
     /**
