@@ -8,6 +8,7 @@ use craft\config\OAuthConfig;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
+use craft\models\Site;
 use craft\oauth\Resource;
 use craft\oauth\User as OAuthUser;
 use craft\services\Mcp;
@@ -334,8 +335,12 @@ class OAuthTest extends TestCase
     public function testDiscoveryUrlsRetainCpBasePathAndPort(): void
     {
         $this->app->generalConfig->baseCpUrl = 'https://cms.example:8443/installation/';
-        self::assertSame('https://cms.example:8443/installation/admin/oauth/api/token', $this->oauth->metadata('api')['token_endpoint']);
+        $this->oauth->getResource('mcp')->resourceUrl = 'https://cms.example:8443/installation/admin/mcp';
+        self::assertSame('https://cms.example:8443/installation/admin/oauth/mcp/token', $this->oauth->metadata('mcp')['token_endpoint']);
         self::assertSame('https://api.example/content', $this->oauth->protectedResourceMetadata('api')['resource']);
+        // Front-end resources must not reveal the cpTrigger
+        self::assertSame('https://site.example/actions/oauth/api', $this->oauth->protectedResourceMetadata('api')['authorization_servers'][0]);
+        self::assertSame('https://site.example/actions/oauth/token?resource=api', $this->oauth->metadata('api')['token_endpoint']);
         self::assertSame('https://api.example/.well-known/oauth-protected-resource/content', $this->oauth->resourceMetadataUrl('api'));
 
         $this->app->generalConfig->cpTrigger = null;
@@ -452,6 +457,16 @@ class OAuthTestApplication extends Application
             public function getGeneral(): object
             {
                 return $this->generalConfig;
+            }
+        };
+    }
+
+    public function getSites(): object
+    {
+        return new class() {
+            public function getPrimarySite(): Site
+            {
+                return new Site(['baseUrl' => 'https://site.example/']);
             }
         };
     }

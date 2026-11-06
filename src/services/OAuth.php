@@ -369,14 +369,14 @@ class OAuth extends Component
 
     public function issuer(string $resource): string
     {
-        return $this->cpUrl('', $resource);
+        return $this->serverUrl('', $resource);
     }
 
     /**
      * Returns the URL to an OAuth endpoint for the current request.
      *
      * Front-end requests get a site action URL, so the authorization flow can stay on the front end. Discovery
-     * metadata and the issuer always use the control panel URLs, so they don’t vary by request.
+     * metadata and the issuer don’t vary by request; see [[serverUrl()]].
      *
      * @param string $endpoint
      * @param string $resource
@@ -391,6 +391,29 @@ class OAuth extends Component
         }
 
         return $this->cpUrl($endpoint, $resource);
+    }
+
+    /**
+     * Returns the URL to an OAuth endpoint, or the issuer when `$endpoint` is empty, for discovery metadata.
+     *
+     * Discovery metadata is public, so when the control panel shares the site’s host via `cpTrigger`, resources
+     * outside the control panel get site action URLs on the primary site, so the metadata never reveals the
+     * `cpTrigger`. Resources within the control panel, and control panels on their own host, keep the control panel
+     * URLs.
+     */
+    private function serverUrl(string $endpoint, string $resource): string
+    {
+        $general = Craft::$app->getConfig()->getGeneral();
+        $cpBase = UrlHelper::rootRelativeUrl(UrlHelper::removeParam(UrlHelper::cpUrl(), 'site'));
+        $resourceUrl = UrlHelper::rootRelativeUrl($this->resource($resource));
+        if (!$general->cpTrigger || str_starts_with("$resourceUrl/", rtrim($cpBase, '/') . '/')) {
+            return $this->cpUrl($endpoint, $resource);
+        }
+
+        $baseUrl = Craft::$app->getSites()->getPrimarySite()->getBaseUrl() ?? UrlHelper::baseUrl();
+        $url = rtrim($baseUrl, '/') . "/$general->actionTrigger/oauth";
+        // The issuer can’t have a query string, so it identifies the resource in its path, like the control panel’s.
+        return $endpoint === '' ? "$url/$resource" : "$url/$endpoint?resource=$resource";
     }
 
     private function cpUrl(string $endpoint, string $resource): string
@@ -419,9 +442,9 @@ class OAuth extends Component
     {
         return [
             'issuer' => $this->issuer($resource),
-            'authorization_endpoint' => $this->cpUrl('authorize', $resource),
-            'token_endpoint' => $this->cpUrl('token', $resource),
-            'registration_endpoint' => $this->cpUrl('register', $resource),
+            'authorization_endpoint' => $this->serverUrl('authorize', $resource),
+            'token_endpoint' => $this->serverUrl('token', $resource),
+            'registration_endpoint' => $this->serverUrl('register', $resource),
             'token_endpoint_auth_methods_supported' => ['none'],
             'response_types_supported' => ['code'],
             'grant_types_supported' => ['authorization_code', 'refresh_token'],
