@@ -72,7 +72,14 @@ class Xml implements DataTypeInterface
      */
     private static function getData(string $data): array
     {
-        $xmlObj = simplexml_load_string($data);
+        $previous = libxml_use_internal_errors(true);
+
+        try {
+            $xmlObj = simplexml_load_string($data);
+        } finally {
+            libxml_clear_errors();
+            libxml_use_internal_errors($previous);
+        }
 
         if ($xmlObj === false) {
             throw new InvalidArgumentException('The data must be an XML document.');
