@@ -31,42 +31,23 @@ class EntryTransformer extends ElementTransformer
     }
 
     /**
-     * Normalizes an incoming section value (numeric id or handle string) to a section ID.
+     * Normalizes an incoming section value (an ID, UID or handle) to a section ID.
      */
     protected function normalizeSectionId(mixed $value, ElementInterface $element): ?int
     {
-        if (is_numeric($value)) {
-            return (int) $value;
-        }
-
-        if (is_string($value)) {
-            $section = Sections::getSectionByHandle($value) ?? Sections::getSectionByUid($value);
-            if ($section) {
-                return $section->id;
-            }
-        }
-
-        return null;
+        return Sections::resolveSection($value)?->id;
     }
 
     /**
-     * Normalizes an incoming entry-type value (numeric id or handle string) to a type ID, falling back to the element's current type ID.
+     * Normalizes an incoming entry-type value (an ID, UID or handle) to a type ID, falling back to the element's current type ID for any other kind of value.
      */
     protected function normalizeTypeId(mixed $value, ElementInterface $element): ?int
     {
-        if (is_numeric($value)) {
-            $type = EntryTypes::getEntryTypeById((int) $value);
-
-            return $type?->id;
+        if (! is_int($value) && ! is_string($value)) {
+            /** @var Entry $element */
+            return $element->getTypeId();
         }
 
-        if (is_string($value)) {
-            $type = EntryTypes::getEntryTypeByHandle($value);
-
-            return $type?->id;
-        }
-
-        /** @var Entry $element */
-        return $element->getTypeId();
+        return EntryTypes::resolveEntryType($value)?->id;
     }
 }
