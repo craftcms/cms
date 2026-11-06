@@ -37,6 +37,11 @@ export const buttonBaseStyles = css`
     pointer-events: none;
   }
 
+  /* Its own rule: a browser without :state() drops the whole selector list. */
+  :host(:state(fieldset-disabled)) {
+    pointer-events: none;
+  }
+
   .button-content {
     display: flex;
     align-items: center;
@@ -582,6 +587,11 @@ export default css`
 
   /* Muted rather than recolored, so each variant keeps its own look. */
   :host([disabled]) {
+    opacity: 0.5;
+    user-select: none;
+  }
+
+  :host(:state(fieldset-disabled)) {
     opacity: 0.5;
     user-select: none;
   }

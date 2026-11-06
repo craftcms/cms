@@ -799,6 +799,61 @@ describe('in a form', () => {
     expect(submits).toHaveLength(1);
   });
 
+  it('submits the form its form attribute names', async () => {
+    document.body.innerHTML =
+      '<form id="other"><input name="a"></form><craft-button type="submit" form="other">Save</craft-button>';
+    const form = document.querySelector('form')!;
+    const button = document.querySelector('craft-button')!;
+    await button.updateComplete;
+    const submits: SubmitEvent[] = [];
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      submits.push(event);
+    });
+
+    expect(button.form).toBe(form);
+    button.click();
+    expect(submits).toHaveLength(1);
+
+    const {userEvent} = await import('vite-plus/test/browser');
+    form.querySelector('input')!.focus();
+    await userEvent.keyboard('{Enter}');
+    expect(submits).toHaveLength(2);
+  });
+
+  it('is disabled by a disabled fieldset around it, until it is enabled', async () => {
+    const {form, submits} = await mountForm(
+      '<fieldset disabled><input name="a"><craft-button type="submit">Save</craft-button></fieldset>'
+    );
+    const fieldset = form.querySelector('fieldset')!;
+    const button = form.querySelector('craft-button')!;
+    await button.updateComplete;
+
+    expect(button.tabIndex).toBe(-1);
+    expect(button.getAttribute('aria-disabled')).toBe('true');
+    button.click();
+    expect(submits).toHaveLength(0);
+
+    fieldset.disabled = false;
+    await new Promise((resolve) => setTimeout(resolve));
+    await button.updateComplete;
+
+    expect(button.tabIndex).toBe(0);
+    expect(button.hasAttribute('aria-disabled')).toBe(false);
+    button.click();
+    expect(submits).toHaveLength(1);
+  });
+
+  it("stays enabled in a disabled fieldset's legend", async () => {
+    const {submits} = await mountForm(
+      '<fieldset disabled><legend><craft-button type="submit">Save</craft-button></legend></fieldset>'
+    );
+
+    document.querySelector('craft-button')!.click();
+
+    expect(submits).toHaveLength(1);
+  });
+
   it('takes its hidden submitter away with the last submit button', async () => {
     const {form} = await mountForm(
       '<craft-button type="submit">Save</craft-button><craft-button type="submit">Publish</craft-button>'

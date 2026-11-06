@@ -27,10 +27,15 @@ describe('attributes', function () {
         expect(Button::make()->inherit()->toHtml())->toContain('inherit');
     });
 
-    it('always renders an explicit type, since the web component defaults to submit', function () {
+    it('always renders an explicit type', function () {
         expect(Button::make()->toHtml())->toContain('type="button"');
 
         expect(Button::make()->type('submit')->toHtml())->toContain('type="submit"');
+    });
+
+    it('renders the form it acts on', function () {
+        expect(Button::make()->toHtml())->not->toContain('form=');
+        expect(Button::make()->type('submit')->form('settings')->toHtml())->toContain('form="settings"');
     });
 
     it('renders state attributes', function () {
