@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Address\Models\Address;
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\ContentBlockQuery;
@@ -479,6 +480,31 @@ it('scopes macros to the query class they are registered on', function () {
     }
 
     expect(EntryQuery::hasMacro('entryOnly'))->toBeFalse();
+});
+
+it('starts element queries from static calls on element classes, after macros', function () {
+    [$a, $b] = EntryModel::factory(2)->create()->pluck('id')->all();
+    Entry::macro('macroWins', fn () => 'macro');
+    UserElement::macro('userOnly', fn () => 'user');
+    Element::macro('everyElement', fn () => $this::class);
+
+    try {
+        expect(Entry::query())->toBeInstanceOf(EntryQuery::class)
+            ->and(Entry::id([$a, $b])->orderByDesc('elements.id')->ids())->toBe([$b, $a])
+            ->and(Entry::whereIn('elements.id', [$a])->ids())->toBe([$a])
+            ->and(UserElement::query())->toBeInstanceOf(UserQuery::class)
+            ->and(UserElement::admin()->count())->toBe(UserElement::find()->admin()->count())
+            ->and(Entry::macroWins())->toBe('macro')
+            ->and(fn () => Entry::notAQueryMethod())->toThrow(BadMethodCallException::class)
+            ->and(new UserElement()->everyElement())->toBe(UserElement::class)
+            ->and(new UserElement()->userOnly())->toBe('user')
+            ->and(Entry::hasMacro('userOnly'))->toBeFalse()
+            ->and(fn () => new Entry()->userOnly())->toThrow(BadMethodCallException::class);
+    } finally {
+        Element::flushMacros();
+    }
+
+    expect(UserElement::hasMacro('userOnly'))->toBeFalse();
 });
 
 it('rejects other SQL expressions passed as strings', function (Closure $query) {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element;
 
 use ArrayIterator;
-use BadMethodCallException;
+use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Exceptions\InvalidCallException;
@@ -19,6 +19,7 @@ use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\Gql\Attributes\Gql;
+use CraftCms\Cms\Support\Concerns\MacroableByClass;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Utils;
@@ -76,9 +77,21 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
     use Concerns\Structurable;
     use Concerns\TracksChanges;
     use LegacyConstants;
-    use Macroable {
-        __call as macroCall;
+    use Macroable, MacroableByClass {
+        MacroableByClass::macro insteadof Macroable;
+        MacroableByClass::hasMacro insteadof Macroable;
+        MacroableByClass::flushMacros insteadof Macroable;
     }
+
+    /**
+     * The registered macros, by the class they were registered on.
+     *
+     * @var array<class-string, array<string, object|callable>>
+     *
+     * @see MacroableByClass
+     */
+    #[Override]
+    protected static $macros = [];
 
     /**
      * @since 3.3.6
@@ -422,11 +435,44 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
             return $this->isFieldEmpty(substr($name, 13));
         }
 
-        try {
-            return $this->macroCall($name, $params);
-        } catch (BadMethodCallException) {
+        $macro = static::findMacro($name);
+
+        if ($macro === null) {
             return parent::__call($name, $params);
         }
+
+        if ($macro instanceof Closure) {
+            $macro = $macro->bindTo($this, static::class);
+        }
+
+        return $macro(...$params);
+    }
+
+    /**
+     * Forwards static calls that aren’t macros to a new element query, as Eloquent models do,
+     * so `Entry::section('blog')->all()` works like `Entry::find()->section('blog')->all()`.
+     *
+     * Like the other macro methods, this has no return type, so element classes that use Laravel’s
+     * `Macroable` trait again stay compatible.
+     *
+     * @param  string  $method
+     * @param  array<int, mixed>  $parameters
+     * @return mixed
+     */
+    #[Override]
+    public static function __callStatic($method, $parameters)
+    {
+        $macro = static::findMacro($method);
+
+        if ($macro === null) {
+            return static::find()->{$method}(...$parameters);
+        }
+
+        if ($macro instanceof Closure) {
+            $macro = $macro->bindTo(null, static::class);
+        }
+
+        return $macro(...$parameters);
     }
 
     /**

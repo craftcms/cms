@@ -16,6 +16,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Concerns\MacroableByClass;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Query;
@@ -107,6 +108,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     use Concerns\QueriesUniqueElements;
     use Concerns\SearchesElements;
     use ForwardsCalls;
+    use MacroableByClass;
 
     protected string $table = Table::ELEMENTS;
 
@@ -116,10 +118,11 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     protected Builder $query;
 
     /**
-     * The registered builder macros, by the class they were registered on, so a macro registered on one element
-     * query class applies to it and its subclasses, and one registered on this class applies to every element query.
+     * The registered macros, by the class they were registered on.
      *
-     * @var array<class-string, array<string, callable>>
+     * @var array<class-string, array<string, object|callable>>
+     *
+     * @see MacroableByClass
      */
     #[Override]
     protected static $macros = [];
@@ -859,7 +862,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         try {
             $this->applyBeforeQueryCallbacks();
         } catch (QueryAbortedException) {
-            return $this->cursorPaginator(new ElementCollection, $perPage, null, [
+            return $this->cursorPaginator(new Collection, $perPage, null, [
                 'path' => Paginator::resolveCurrentPath(),
                 'cursorName' => $cursorName,
             ]);
@@ -1355,19 +1358,9 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Get the given global macro by name, as registered on this class or the closest parent class.
      */
-    public static function getGlobalMacro(string $name): ?callable
+    public static function getGlobalMacro(string $name): object|callable|null
     {
-        for ($class = static::class; $class !== false; $class = get_parent_class($class)) {
-            if (isset(static::$macros[$class][$name])) {
-                return static::$macros[$class][$name];
-            }
-
-            if ($class === self::class) {
-                break;
-            }
-        }
-
-        return null;
+        return static::findMacro($name);
     }
 
     /**
@@ -1377,43 +1370,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      */
     public static function hasGlobalMacro($name): bool
     {
-        return static::getGlobalMacro($name) !== null;
-    }
-
-    /**
-     * Register a macro for this element query class and its subclasses.
-     *
-     * @param  string  $name
-     * @param  callable  $macro
-     */
-    #[Override]
-    public static function macro($name, $macro): void
-    {
-        static::$macros[static::class][$name] = $macro;
-    }
-
-    /**
-     * Checks if a macro is registered on this class or a parent class.
-     *
-     * @param  string  $name
-     */
-    #[Override]
-    public static function hasMacro($name): bool
-    {
-        return static::hasGlobalMacro($name);
-    }
-
-    /**
-     * Flush the macros registered on this class and its subclasses.
-     */
-    #[Override]
-    public static function flushMacros(): void
-    {
-        static::$macros = array_filter(
-            static::$macros,
-            fn (string $class) => ! is_a($class, static::class, true),
-            ARRAY_FILTER_USE_KEY,
-        );
+        return static::hasMacro($name);
     }
 
     /**
@@ -1523,7 +1480,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return $this->localMacros[$method](...$parameters);
         }
 
-        if (($callable = static::getGlobalMacro($method)) !== null) {
+        if (($callable = static::findMacro($method)) !== null) {
 
             if ($callable instanceof Closure) {
                 $callable = $callable->bindTo($this, static::class);
@@ -1576,7 +1533,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return null;
         }
 
-        $callable = static::getGlobalMacro($method);
+        $callable = static::findMacro($method);
 
         if ($callable === null) {
             static::throwBadMethodCallException($method);
