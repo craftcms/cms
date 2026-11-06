@@ -3902,7 +3902,7 @@ abstract class Element extends Component implements ElementInterface, AllowableI
         }
 
         // Fire an 'authorizeDeleteForSite' event
-        if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_DELETE_FOR_SITE)) {
+        if ($this->hasEventHandlers(self::EVENT_AUTHORIZE_DELETE_FOR_SITE)) {
             $event = new AuthorizationCheckEvent($user);
             $this->trigger(self::EVENT_AUTHORIZE_DELETE_FOR_SITE, $event);
             return $event->authorized;

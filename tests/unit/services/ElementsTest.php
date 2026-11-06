@@ -11,11 +11,13 @@ declare(strict_types=1);
 namespace crafttests\unit\services;
 
 use Craft;
+use craft\base\Element;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\enums\PropagationMethod;
+use craft\events\AuthorizationCheckEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\fields\Matrix;
@@ -456,6 +458,18 @@ class ElementsTest extends TestCase
 
         self::assertFalse((new Query())->from(Table::ELEMENTS)->where(['id' => $draft->id])->exists(), 'Drafts should be hard-deleted when deleted for their only site.');
         self::assertNotNull(Entry::find()->id($owner->id)->status(null)->one(), 'The canonical entry should be unaffected.');
+    }
+
+    public function testAuthorizeDeleteForSiteEvent(): void
+    {
+        $entry = $this->_createOwnerEntry();
+        $user = new User();
+        self::assertFalse($entry->canDeleteForSite($user));
+
+        $entry->on(Element::EVENT_AUTHORIZE_DELETE_FOR_SITE, function(AuthorizationCheckEvent $event) {
+            $event->authorized = true;
+        });
+        self::assertTrue($entry->canDeleteForSite($user));
     }
 
     private function _createOwnerEntry(): Entry
