@@ -404,16 +404,21 @@ class OAuth extends Component
     private function serverUrl(string $endpoint, string $resource): string
     {
         $general = Craft::$app->getConfig()->getGeneral();
-        $cpBase = UrlHelper::rootRelativeUrl(UrlHelper::removeParam(UrlHelper::cpUrl(), 'site'));
-        $resourceUrl = UrlHelper::rootRelativeUrl($this->resource($resource));
-        if (!$general->cpTrigger || str_starts_with("$resourceUrl/", rtrim($cpBase, '/') . '/')) {
+        // Compare whole URLs, so a resource on another origin with a matching path isn’t mistaken for a control panel one
+        $cpUrl = rtrim((string)new Uri(UrlHelper::removeParam(UrlHelper::cpUrl(), 'site')), '/');
+        $resourceUrl = (string)new Uri($this->resource($resource));
+        if (!$general->cpTrigger || str_starts_with("$resourceUrl/", "$cpUrl/")) {
             return $this->cpUrl($endpoint, $resource);
         }
 
-        $baseUrl = Craft::$app->getSites()->getPrimarySite()->getBaseUrl() ?? UrlHelper::baseUrl();
-        $url = rtrim($baseUrl, '/') . "/$general->actionTrigger/oauth";
+        $site = Craft::$app->getSites()->getPrimarySite();
+        if ($endpoint !== '') {
+            return UrlHelper::siteUrl("$general->actionTrigger/oauth/$endpoint", ['resource' => $resource], siteId: $site->id);
+        }
+
         // The issuer can’t have a query string, so it identifies the resource in its path, like the control panel’s.
-        return $endpoint === '' ? "$url/$resource" : "$url/$endpoint?resource=$resource";
+        // Only clients compare it; they fetch its metadata from the `.well-known` URL.
+        return rtrim($site->getBaseUrl() ?? UrlHelper::baseUrl(), '/') . "/$general->actionTrigger/oauth/$resource";
     }
 
     private function cpUrl(string $endpoint, string $resource): string

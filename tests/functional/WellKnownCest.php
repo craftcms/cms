@@ -55,4 +55,27 @@ class WellKnownCest
         ]);
         $I->seeResponseCodeIs(201);
     }
+
+    /**
+     * @param FunctionalTester $I
+     */
+    public function testOAuthEndpointsRespectScriptNameRouting(FunctionalTester $I)
+    {
+        $general = Craft::$app->getConfig()->getGeneral();
+        $general->omitScriptNameInUrls = false;
+        try {
+            $I->amOnPage('/.well-known/oauth-authorization-server/actions/oauth/graphql');
+            $I->seeResponseCodeIs(200);
+            $endpoint = Json::decode($I->grabPageSource())['registration_endpoint'];
+            $I->assertStringContainsString('/index.php?p=actions/oauth/register', $endpoint);
+
+            $I->sendAjaxPostRequest(UrlHelper::rootRelativeUrl($endpoint), [
+                'client_name' => 'Test client',
+                'redirect_uris' => ['https://client.example/callback'],
+            ]);
+            $I->seeResponseCodeIs(201);
+        } finally {
+            $general->omitScriptNameInUrls = true;
+        }
+    }
 }

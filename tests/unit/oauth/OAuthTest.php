@@ -338,9 +338,6 @@ class OAuthTest extends TestCase
         $this->oauth->getResource('mcp')->resourceUrl = 'https://cms.example:8443/installation/admin/mcp';
         self::assertSame('https://cms.example:8443/installation/admin/oauth/mcp/token', $this->oauth->metadata('mcp')['token_endpoint']);
         self::assertSame('https://api.example/content', $this->oauth->protectedResourceMetadata('api')['resource']);
-        // Front-end resources must not reveal the cpTrigger
-        self::assertSame('https://site.example/actions/oauth/api', $this->oauth->protectedResourceMetadata('api')['authorization_servers'][0]);
-        self::assertSame('https://site.example/actions/oauth/token?resource=api', $this->oauth->metadata('api')['token_endpoint']);
         self::assertSame('https://api.example/.well-known/oauth-protected-resource/content', $this->oauth->resourceMetadataUrl('api'));
 
         $this->app->generalConfig->cpTrigger = null;
@@ -358,6 +355,16 @@ class OAuthTest extends TestCase
             'pathInfo' => '',
         ]));
         self::assertSame('https://cms.example:8443/index.php?p=oauth/api/token', $this->oauth->url('token', 'api'));
+    }
+
+    public function testFrontEndResourceDiscoveryHidesCpTrigger(): void
+    {
+        self::assertSame(['https://site.example/actions/oauth/api'], $this->oauth->protectedResourceMetadata('api')['authorization_servers']);
+        self::assertSame(['https://cms.example/admin/oauth/mcp'], $this->oauth->protectedResourceMetadata('mcp')['authorization_servers']);
+
+        // A resource on another origin isn’t within the control panel, even when its path matches
+        $this->oauth->getResource('mcp')->resourceUrl = 'https://other.example/admin/mcp';
+        self::assertSame(['https://site.example/actions/oauth/mcp'], $this->oauth->protectedResourceMetadata('mcp')['authorization_servers']);
     }
 
     private function grant(string $resource, ?string $scope = null, ?callable $prepare = null): array
