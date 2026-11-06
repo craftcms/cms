@@ -8,6 +8,7 @@ use craft\config\OAuthConfig;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
+use craft\models\Site;
 use craft\oauth\Resource;
 use craft\oauth\User as OAuthUser;
 use craft\services\Mcp;
@@ -334,7 +335,8 @@ class OAuthTest extends TestCase
     public function testDiscoveryUrlsRetainCpBasePathAndPort(): void
     {
         $this->app->generalConfig->baseCpUrl = 'https://cms.example:8443/installation/';
-        self::assertSame('https://cms.example:8443/installation/admin/oauth/api/token', $this->oauth->metadata('api')['token_endpoint']);
+        $this->oauth->getResource('mcp')->resourceUrl = 'https://cms.example:8443/installation/admin/mcp';
+        self::assertSame('https://cms.example:8443/installation/admin/oauth/mcp/token', $this->oauth->metadata('mcp')['token_endpoint']);
         self::assertSame('https://api.example/content', $this->oauth->protectedResourceMetadata('api')['resource']);
         self::assertSame('https://api.example/.well-known/oauth-protected-resource/content', $this->oauth->resourceMetadataUrl('api'));
 
@@ -353,6 +355,27 @@ class OAuthTest extends TestCase
             'pathInfo' => '',
         ]));
         self::assertSame('https://cms.example:8443/index.php?p=oauth/api/token', $this->oauth->url('token', 'api'));
+    }
+
+    public function testFrontEndResourceDiscoveryHidesCpTrigger(): void
+    {
+        self::assertSame(['https://site.example/actions/oauth/api'], $this->oauth->protectedResourceMetadata('api')['authorization_servers']);
+        self::assertSame(['https://cms.example/admin/oauth/mcp'], $this->oauth->protectedResourceMetadata('mcp')['authorization_servers']);
+
+        // A resource on another origin isn’t within the control panel, even when its path matches
+        $this->oauth->getResource('mcp')->resourceUrl = 'https://other.example/admin/mcp';
+        self::assertSame(['https://site.example/actions/oauth/mcp'], $this->oauth->protectedResourceMetadata('mcp')['authorization_servers']);
+
+        // Resource URLs keep their own query params as configured, without the request's tokens
+        $this->oauth->getResource('api')->resourceUrl = 'https://api.example/content?api.version=2&tag=a&tag=b&token=abc';
+        self::assertSame('https://api.example/content?api.version=2&tag=a&tag=b', $this->oauth->protectedResourceMetadata('api')['resource']);
+        $this->oauth->getResource('api')->resourceUrl = 'https://api.example/content';
+
+        // Relative site base URLs are resolved against the resource’s URL
+        $this->app->siteBaseUrl = '/';
+        self::assertSame(['https://api.example/actions/oauth/api'], $this->oauth->protectedResourceMetadata('api')['authorization_servers']);
+        $this->app->siteBaseUrl = '//site.example/';
+        self::assertSame(['https://site.example/actions/oauth/api'], $this->oauth->protectedResourceMetadata('api')['authorization_servers']);
     }
 
     private function grant(string $resource, ?string $scope = null, ?callable $prepare = null): array
@@ -426,6 +449,7 @@ class OAuthTestApplication extends Application
     public object $oauthConfig;
     public object $generalConfig;
     public OAuthTestUser $identity;
+    public string $siteBaseUrl = 'https://site.example/';
 
     public function getIsInitialized(): bool
     {
@@ -452,6 +476,20 @@ class OAuthTestApplication extends Application
             public function getGeneral(): object
             {
                 return $this->generalConfig;
+            }
+        };
+    }
+
+    public function getSites(): object
+    {
+        return new class($this->siteBaseUrl) {
+            public function __construct(private string $baseUrl)
+            {
+            }
+
+            public function getPrimarySite(): Site
+            {
+                return new Site(['baseUrl' => $this->baseUrl]);
             }
         };
     }

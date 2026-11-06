@@ -7,6 +7,7 @@
 - The `assets_create` MCP tool can now upload files to an Assets field’s default upload location, via its new `fieldId` and `elementId` arguments.
 - `craft\elements\Asset::canSave()` now returns `true` for users’ own assets in their temporary upload folder.
 - The **My Account** → **Tokens** screen is now only shown to admins when OAuth signing keys haven’t been set up yet, and explains how to set them up, rather than failing with a server error when a token is created. ([#20357](https://github.com/craftcms/cms/issues/20357))
+- Fixed a bug where OAuth discovery metadata for front-end resources, such as the GraphQL API, revealed the control panel URL. Their OAuth endpoints are now advertised as site action URLs, and OAuth discovery metadata is only served from its `.well-known` URLs and no longer includes the request’s site or preview tokens.
 - Fixed a bug where MCP clients couldn’t sign in when the control panel had its own domain and no `cpTrigger`. ([#20353](https://github.com/craftcms/cms/issues/20353))
 - Fixed a bug where the MCP server required date-time values for Time fields within nested entries, which those fields couldn’t parse. ([#20319](https://github.com/craftcms/cms/issues/20319))
 - Fixed a bug where the `configuration_update` MCP tool couldn’t update Matrix field settings. ([#20406](https://github.com/craftcms/cms/issues/20406))
