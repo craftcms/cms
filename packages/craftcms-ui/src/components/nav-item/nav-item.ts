@@ -10,6 +10,7 @@ import '../popover/popover.js';
 import '../tooltip/tooltip.js';
 import styles from './nav-item.styles';
 import {t} from '@src/utilities/translate.js';
+import {focusStaysWithin} from '@src/utilities/focus-out.js';
 import {isExternalUrl, newTabCue} from '@src/utilities/external-links.js';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import {
@@ -369,9 +370,7 @@ export default class CraftNavItem extends LitElement {
    * narrows the focus case.
    */
   #scheduleFlyoutClose = (event: Event) => {
-    const moved = (event as FocusEvent).relatedTarget;
-
-    if (moved instanceof Node && (moved === this || this.contains(moved))) {
+    if (focusStaysWithin(event as FocusEvent, this)) {
       return;
     }
 

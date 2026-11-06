@@ -48,7 +48,7 @@ it.each([
   ['another page', `${cpUrl}/assets/images`],
   ['another page’s fragment', `${cpUrl}/settings#plugins`],
   ['the same page with another query', `${cpUrl}/entries?site=fr`],
-  ['a link in a popover', `${cpUrl}/assets/images`, 'role="dialog"'],
+  ['a link in a non-modal popup', `${cpUrl}/assets/images`, 'role="dialog"'],
 ])(
   'opens plain links to control panel pages with Inertia: %s',
   (_case, href, wrapper = '') => {

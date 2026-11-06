@@ -136,6 +136,7 @@
 - Links to other sites now show an external-link icon and tell screen readers that they open in a new window. ([#20306](https://github.com/craftcms/cms/pull/20306))
 - Improved the accessibility of the control panel, including element indexes, element edit screens, and the login page. ([#19025](https://github.com/craftcms/cms/pull/19025), [#19520](https://github.com/craftcms/cms/pull/19520), [#19699](https://github.com/craftcms/cms/pull/19699), [#19749](https://github.com/craftcms/cms/pull/19749), [#19785](https://github.com/craftcms/cms/pull/19785))
 - Added a “Skip to messages” link, and errors are now announced to screen readers immediately.
+- Action menu buttons no longer announce a menu pop-up.
 - Error summaries now receive focus when a form fails validation, and each error links to its field, switching tabs if needed. ([#20044](https://github.com/craftcms/cms/issues/20044))
 
 ### Administration
@@ -808,6 +809,10 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 #### Control Panel
 - Added `Cp.$assistant`, with `addContext()`, `removeContext()`, `getContext()`, `registerContextSource()`, and `registerTextExpander()` methods, for adding items to Ask AI’s context, its “Add context” menu, and text expanders in its message box. See `docs/ask-ai.md`. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - `<craft-action-menu>` now spaces `<hr>` elements in its slotted content as it does the dividers it renders from its `actions`. ([#20109](https://github.com/craftcms/cms/pull/20109))
+- Removed `<craft-popover>`’s `label` property. Popover panels are now disclosure panels with no role of their own, so they can’t be named. `<craft-action-menu>`’s `label` still names its generated button.
+- `<craft-action-menu>` no longer sets `aria-haspopup` on its invoker.
+- `<craft-popover>`, and `<craft-action-menu>` with it, now closes when focus moves outside it.
+- Renamed `<craft-callout>`’s `title` property to `label`, and `CraftCms\Cms\Cp\Components\Callout::title()` to `label()`, so the title no longer adds a native tooltip. The `title` slot is unchanged.
 - Added `CraftCms\Cms\Cp\CommandPalette\CommandPaletteItem`, `PageRegistry`, `ActionRegistry`, and `SearchProviderRegistry`, which plugins can use to add pages, actions, and search providers to the command palette, and `CraftCms\Cms\Cp\CommandPalette\Contracts\SearchProvider` and `CraftCms\Cms\Cp\CommandPalette\SearchProviders\ElementSearchProvider`, for searching custom content or element types. ([#20081](https://github.com/craftcms/cms/pull/20081))
 - Added `CommandPalette` to the `@craftcms/cp` import-map module, with `open()`, `close()`, `registerActions()`, `registerProvider()`, and `registerView()` methods, for opening the command palette and adding page actions, client-side search providers, and views to it. A page’s own action menus are listed as command palette actions when they’re within an element with a `data-command-palette-actions` attribute. ([#20081](https://github.com/craftcms/cms/pull/20081))
 - Added a renderer-neutral control panel UI system with shared PHP and Vue rendering, extensible Nodes and Controls, nested and refreshable scopes, changed-only submission, and integration with configurable component settings, fields, and field layouts. ([#19384](https://github.com/craftcms/cms/pull/19384))
