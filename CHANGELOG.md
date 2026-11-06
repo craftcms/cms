@@ -24,6 +24,7 @@
 - Fixed a bug where `craft\base\Element::EVENT_AUTHORIZE_DELETE_FOR_SITE` handlers were never called, so they couldn’t authorize users to delete elements for a site.
 - Fixed a bug where Markdown field layout elements weren’t getting translated. ([#20408](https://github.com/craftcms/cms/discussions/20408))
 - Fixed a bug where date pickers within slideouts could open far away from their inputs at some browser zoom and display scaling levels. ([#20399](https://github.com/craftcms/cms/issues/20399))
+- Fixed an error that occurred when editing an address within a draft, if the owner element wasn’t saved in the primary site. ([#20413](https://github.com/craftcms/cms/issues/20413))
 
 ## 5.12.0.1 - 2026-11-03
 
