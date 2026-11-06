@@ -8,9 +8,13 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Mcp\Capabilities\Configuration;
 use CraftCms\Cms\Mcp\Enums\ConfigurationOperation;
 use CraftCms\Cms\Mcp\Enums\ConfigurationType;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -64,6 +68,41 @@ it('manages configuration records using the shared operations', function (string
     'site groups' => ['site-groups', ['name' => 'Archive'], ['name' => 'Legacy'], []],
     'asset transformers' => ['asset-transformers', ['name' => 'Local', 'handle' => 'local', 'driver' => 'craft'], ['handle' => 'localImages'], ['name' => 'Local', 'driver' => 'craft']],
 ]);
+
+it('refuses updates and deletes based on an outdated revision without changing the record', function (): void {
+    $layout = fn (string $handle): array => ['tabs' => [['name' => 'Content', 'elements' => [
+        ['type' => CustomField::class, 'fieldUid' => Field::factory()->create(['handle' => $handle, 'type' => PlainText::class])->uid],
+    ]]]];
+    $layoutA = $layout('fieldA');
+    $layoutB = $layout('fieldB');
+    $identifier = ['handle' => 'article'];
+    $created = ($this->operate)('create', 'entry-types', ['attributes' => ['name' => 'Article', 'handle' => 'article']]);
+    $read = ($this->operate)('get', 'entry-types', ['identifier' => $identifier]);
+
+    $updated = ($this->operate)('update', 'entry-types', ['identifier' => $identifier, 'attributes' => ['fieldLayout' => $layoutA], 'expectedRevision' => $read['revision']]);
+
+    foreach ([
+        ['update', ['attributes' => ['fieldLayout' => $layoutB]]],
+        ['delete', []],
+    ] as [$operation, $arguments]) {
+        ($this->call)($operation, ['type' => 'entry-types', 'identifier' => $identifier, ...$arguments, 'expectedRevision' => $read['revision']])
+            ->assertJsonPath('result.isError', true)
+            ->assertJsonPath('result.content.0.text', "The entry-types record has changed since revision {$read['revision']} was read, so nothing was changed. Read it again with configuration_get, redo your change on the current values, and pass the new revision.");
+    }
+
+    app(ProjectConfig::class)->reset();
+    $current = ($this->operate)('get', 'entry-types', ['identifier' => $identifier]);
+
+    expect($read['revision'])->toBe($created['revision'])
+        ->and($current['revision'])->toBe($updated['revision'])->not->toBe($read['revision'])
+        ->and($current['item']['fieldLayout']['config']['tabs'][0]['elements'][0]['fieldUid'])->toBe($layoutA['tabs'][0]['elements'][0]['fieldUid'])
+        ->and(collect(($this->operate)('list', 'entry-types')['items'])->firstWhere('handle', 'article')['revision'])->toBe($current['revision']);
+
+    $replaced = ($this->operate)('update', 'entry-types', ['identifier' => $identifier, 'attributes' => ['fieldLayout' => $layoutB], 'expectedRevision' => $current['revision']]);
+
+    expect($replaced['item']['fieldLayout']['config']['tabs'][0]['elements'][0]['fieldUid'])->toBe($layoutB['tabs'][0]['elements'][0]['fieldUid'])
+        ->and(($this->operate)('delete', 'entry-types', ['identifier' => $identifier, 'expectedRevision' => $replaced['revision']]))->toBe(['type' => 'entry-types', 'deleted' => true]);
+});
 
 it('manages workflows, keeping stages that aren’t replaced', function (): void {
     $group = UserGroup::factory()->create();
