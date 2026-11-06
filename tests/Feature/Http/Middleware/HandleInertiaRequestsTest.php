@@ -10,6 +10,7 @@ use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
+use CraftCms\Cms\Http\Middleware\SendBroadcasts;
 use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -166,6 +167,7 @@ it('shares broadcast messages with the next page once', function () {
     session()->broadcastToJs(['event' => 'saveElement', 'id' => 42]);
 
     get(action([DashboardController::class, 'index']))
+        ->assertHeaderMissing(SendBroadcasts::HEADER)
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('broadcasts', [['event' => 'saveElement', 'id' => 42]]));
 

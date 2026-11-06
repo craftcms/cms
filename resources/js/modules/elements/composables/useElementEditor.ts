@@ -23,7 +23,7 @@ import {
   shallowRef,
   watch,
 } from 'vue';
-import {broadcast, onBroadcast} from '@/common/craft/broadcast';
+import {onBroadcast} from '@/common/craft/broadcast';
 import {refreshPreviews} from '@/modules/elements/live-preview/previews';
 import {
   useScreenPageProps,
@@ -880,9 +880,6 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     }
   }
 
-  /** The element being saved, for announcing the save once it's done. */
-  let savingElementId: number | null = null;
-
   const {save} = useSettingsSave(
     form,
     () => ({
@@ -984,9 +981,6 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       // A submission supersedes any in-flight draft write, and what the last
       // one reported.
       onBeforeSave: () => {
-        // Read now: a save that redirects has swapped in the next page's props
-        // by the time it succeeds.
-        savingElementId = props.canonicalId;
         invalidateUiRefreshes();
         autosave.cancel();
         autosave.resetStatus();
@@ -995,10 +989,6 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
         draftElementIds.clear();
         if (slideout) {
           announceSaved(data);
-        } else if (savingElementId) {
-          // Each element type saves through its own action, not all of which
-          // tell other tabs, so the editor does.
-          broadcast({event: 'saveElement', id: savingElementId});
         }
 
         autosave.suspend(() => {
@@ -1207,20 +1197,13 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
 
   /**
    * What a save from inside a panel tells the rest of the CP, since the page
-   * behind it isn't reloaded: the confirmation, other tabs and element indexes
-   * (via a broadcast), and Live Preview.
+   * behind it isn't reloaded: the confirmation, and Live Preview. Other tabs
+   * hear about the save from the server.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function announceSaved(data: any): void {
     if (data?.message) {
       showSuccess(data.message, data.notificationSettings);
-    }
-
-    // Element types' own save actions name the saved element after
-    // themselves (`entry`), but all of them send its `modelId`.
-    const id = data?.modelId ?? data?.element?.id;
-    if (id) {
-      broadcast({event: 'saveElement', id});
     }
 
     refreshPreviews();
@@ -1240,20 +1223,13 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     autosave.cancel();
 
     try {
-      const draftId = autosave.draftId.value;
       await actionClient.post(props.discardDraftUrl, {
         ...contextParams(),
         elementType: props.elementType,
         elementId: draftableElementId(),
         siteId: props.siteId,
-        draftId,
+        draftId: autosave.draftId.value,
         provisional: 1,
-      });
-      // Chips that showed the element as edited go back to the canonical one.
-      broadcast({
-        event: 'deleteDraft',
-        canonicalId: props.canonicalId,
-        draftId,
       });
 
       // The draft is gone, so anything autosave stashed about it now describes

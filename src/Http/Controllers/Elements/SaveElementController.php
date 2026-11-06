@@ -85,14 +85,6 @@ readonly class SaveElementController
             ])));
         }
 
-        if (! $this->request->acceptsJson()) {
-            // Tell all browser windows about the element save
-            session()->broadcastToJs([
-                'event' => 'saveElement',
-                'id' => $element->id,
-            ]);
-        }
-
         return new ElementResponse()->success($element, t('{type} saved.', [
             'type' => $element::displayName(),
         ]), supportsAddAnother: true);

@@ -14,7 +14,6 @@ import {
   elementEditorParams,
   type ElementEditorParams,
 } from './element-editor-params';
-import {broadcast} from '@/common/craft/broadcast';
 import {
   CpScreenSlideout,
   type CpScreenSlideoutSettings,
@@ -175,9 +174,6 @@ export class ElementEditorSlideout extends CpScreenSlideout {
     });
 
     this.on('submit', (ev: any) => {
-      const {modelId, element} = ev.response.data;
-      broadcast({event: 'saveElement', id: modelId ?? element?.id});
-
       // Pass the response data off to onSaveElement() for backwards
       // compatibility.
       if (this.settings!.onSaveElement) {

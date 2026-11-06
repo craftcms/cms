@@ -16,7 +16,14 @@ use Illuminate\Session\SessionManager;
 class SessionMixin
 {
     /**
-     * Queues a message for the next page to broadcast to every open control panel tab.
+     * The most messages a response broadcasts. A bulk save would otherwise list every element it touched; pages that
+     * show that many elements reload them anyway.
+     */
+    public const int MAX_BROADCASTS = 50;
+
+    /**
+     * Queues a message for every open control panel tab, including the one the request came from. It goes out with
+     * the response, or the next page after a redirect.
      */
     public function broadcastToJs(): Closure
     {
@@ -30,7 +37,13 @@ class SessionMixin
              *
              * @phpstan-ignore-next-line
              */
-            $this->flash('__broadcasts', [...$this->get('__broadcasts', []), $message]);
+            $messages = $this->get('__broadcasts', []);
+
+            if (in_array($message, $messages, true) || count($messages) >= SessionMixin::MAX_BROADCASTS) {
+                return;
+            }
+
+            $this->flash('__broadcasts', [...$messages, $message]);
         };
     }
 
