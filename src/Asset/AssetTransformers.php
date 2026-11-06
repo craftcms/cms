@@ -197,12 +197,6 @@ class AssetTransformers
             ? $this->createAssetTransformer($uid, $event->oldValue)
             : null;
 
-        if ($this->isReplacedByRegisteredTransformer($newTransformer) || ($oldTransformer !== null && $this->isReplacedByRegisteredTransformer($oldTransformer))) {
-            $this->reset();
-
-            return;
-        }
-
         if (
             $oldTransformer !== null
             && ($oldTransformer->driver !== $newTransformer->driver || $oldTransformer->settings !== $newTransformer->settings)
@@ -230,14 +224,6 @@ class AssetTransformers
         }
 
         $transformer = $this->createAssetTransformer($uid, $event->oldValue);
-
-        // A profile hidden by a registered one with the same handle isn't referenced, but still needs its cleanup.
-        if ($this->isReplacedByRegisteredTransformer($transformer)) {
-            event(new AssetTransformerDeleting($transformer));
-            $this->reset();
-
-            return;
-        }
 
         $deleteDisabledReason = $this->getDeleteDisabledReason($transformer);
 
@@ -377,7 +363,7 @@ class AssetTransformers
         $transformers = collect($configs)
             ->filter(fn (mixed $config, mixed $uid): bool => is_string($uid) && is_array($config))
             ->map(fn (array $config, string $uid): AssetTransformer => $this->createAssetTransformer($uid, $config))
-            ->reject(fn (AssetTransformer $transformer): bool => $this->isReplacedByRegisteredTransformer($transformer))
+            ->reject(fn (AssetTransformer $transformer): bool => $this->registry->has($transformer->uid))
             ->union(array_map(
                 fn (AssetTransformer $transformer): AssetTransformer => $this->registeredAssetTransformer(
                     $transformer->uid,
@@ -418,11 +404,6 @@ class AssetTransformers
         }
 
         $this->reset();
-    }
-
-    private function isReplacedByRegisteredTransformer(AssetTransformer $transformer): bool
-    {
-        return $this->registry->has($transformer->uid) || $this->registry->hasHandle($transformer->handle);
     }
 
     /** @param array<string, mixed> $config */

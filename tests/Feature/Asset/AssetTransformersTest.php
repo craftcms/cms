@@ -13,7 +13,6 @@ use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Data\Volume as VolumeData;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
-use CraftCms\Cms\Asset\Events\AssetTransformerDeleting;
 use CraftCms\Cms\Asset\Events\AssetTransformerUpdating;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformerNotFoundException;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
@@ -127,34 +126,6 @@ it('resolves code-registered transformers without project config', function () {
         ->and($driver->request->transformer->settings)->toBe(['zone' => 'example'])
         ->and($transformers->getAllAssetTransformers()->pluck('handle')->sort()->values()->all())->toBe(['cloud', 'craft'])
         ->and($projectConfig->get(ProjectConfig::PATH_ASSET_TRANSFORMERS))->toBeNull();
-});
-
-it('lets registered transformers replace project config profiles with the same handle', function () {
-    $transformers = app(AssetTransformers::class);
-    $sameHandle = new AssetTransformer(['name' => 'Old Cloud', 'handle' => 'cloud', 'driver' => 'craft']);
-    $unrelated = new AssetTransformer(['name' => 'Kept', 'handle' => 'kept', 'driver' => 'craft']);
-    $transformers->saveAssetTransformer($sameHandle);
-    $transformers->saveAssetTransformer($unrelated);
-
-    app(AssetTransformerRegistry::class)->register(new AssetTransformer([
-        'name' => 'Cloud',
-        'handle' => 'cloud',
-        'driver' => 'cloud',
-    ]));
-    Cms::config()->defaultAssetTransformer('cloud');
-    $deleted = [];
-    Event::listen(AssetTransformerDeleting::class, function (AssetTransformerDeleting $event) use (&$deleted) {
-        $deleted[] = $event->transformer->uid;
-    });
-    app(ProjectConfig::class)->remove(ProjectConfig::PATH_ASSET_TRANSFORMERS.'.'.$sameHandle->uid);
-
-    expect($transformers->getAllAssetTransformers()->pluck('name', 'handle')->sortKeys()->all())->toBe([
-        'cloud' => 'Cloud',
-        'craft' => 'Craft',
-        'kept' => 'Kept',
-    ])
-        ->and($transformers->getAssetTransformerByUid($sameHandle->uid))->toBeNull()
-        ->and($deleted)->toBe([$sameHandle->uid]);
 });
 
 it('stores settings overrides for registered transformers and rejects identity changes', function () {

@@ -14,7 +14,7 @@ use Ramsey\Uuid\Uuid;
  *
  * A registered profile’s name, handle, and driver are fixed, and its settings are defaults. Saving the profile stores
  * settings overrides in project config, keyed by its UID; removing them restores the defaults. Registered profiles
- * can’t be deleted, and they replace any project config profile with the same handle. Each registered profile’s UID is
+ * can’t be deleted. Each registered profile’s UID is
  * derived from its handle, so it stays the same across environments and releases.
  *
  * Packages register profiles from their service provider:
@@ -92,11 +92,6 @@ class AssetTransformerRegistry
     public function get(string $uid): ?AssetTransformer
     {
         return isset($this->transformers[$uid]) ? clone $this->transformers[$uid] : null;
-    }
-
-    public function hasHandle(string $handle): bool
-    {
-        return array_any($this->transformers, fn (AssetTransformer $transformer): bool => $transformer->handle === $handle);
     }
 
     /**

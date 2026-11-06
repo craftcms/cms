@@ -326,7 +326,7 @@ ignores any name, handle, or driver stored for a registered profile.
 
 Registered profiles cannot be deleted. Removing a profile's entry from Project Config restores its default settings and
 dispatches `AssetTransformerUpdating` if the settings change. Project Config rebuilds only write registered profiles that
-have stored settings. Craft ignores Project Config profiles with a different UID that use a registered profile's handle.
+have stored settings.
 
 Register the profile in every environment that references it. A volume or `defaultAssetTransformer` that references the
 handle throws `AssetTransformerNotFoundException` wherever the profile isn't registered, and stored settings for a profile
