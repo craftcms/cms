@@ -160,6 +160,27 @@ class ElementSerializerTest extends TestCase
         );
     }
 
+    public function testListItemsWithHiddenElementsAreRemoved(): void
+    {
+        $element = new TestEntry(1, [new McpOutputTestField(['handle' => 'custom'])], [
+            'custom' => [
+                ['type' => 'markup', 'html' => '<p>A</p>'],
+                ['type' => 'entry', 'entry' => new TestEntry(20, [], [])],
+                ['type' => 'entry', 'entry' => new TestEntry(10, [], [])],
+            ],
+        ]);
+        $serializer = $this->serializer();
+        $serializeNested = fn(ElementInterface $nested): ?array => $nested->getId() === 20 ? null : ['id' => $nested->getId()];
+
+        self::assertSame(
+            ['custom' => ['value' => [
+                ['type' => 'markup', 'html' => '<p>A</p>'],
+                ['type' => 'entry', 'entry' => ['id' => 10]],
+            ], 'public' => false, 'requested' => true]],
+            $serializer->serialize($element, data: [], fields: ['custom'], serializeNested: $serializeNested),
+        );
+    }
+
     public function testNestedElementLimitIsSharedAcrossLevels(): void
     {
         $blocks = array_map(

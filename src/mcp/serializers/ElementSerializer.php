@@ -238,17 +238,24 @@ class ElementSerializer extends \yii\base\Component
 
     /**
      * Resolves nested elements within a value, including within arrays.
+     *
+     * Elements that resolve to `null` (because they aren’t visible) are removed from lists,
+     * along with any array within a list that contains one, so nothing reveals where they were.
      */
-    private function resolveNested(mixed $value, string $mode, array $paths, Closure $serializeNested): mixed
+    private function resolveNested(mixed $value, string $mode, array $paths, Closure $serializeNested, bool &$hidden = false): mixed
     {
         if ($this->isNestedValue($value)) {
-            return $this->nestedValue($value, $mode === self::NestedSummarize, $paths, $serializeNested);
+            $resolved = $this->nestedValue($value, $mode === self::NestedSummarize, $paths, $serializeNested);
+            $hidden = $resolved === null && $value instanceof ElementInterface;
+
+            return $resolved;
         }
 
         if (!is_array($value)) {
             return $value;
         }
 
+        $isList = array_is_list($value);
         $resolved = [];
 
         foreach ($value as $key => $item) {
@@ -256,10 +263,22 @@ class ElementSerializer extends \yii\base\Component
                 continue;
             }
 
-            $resolved[$key] = $this->resolveNested($item, $mode, $paths, $serializeNested);
+            $itemHidden = false;
+            $result = $this->resolveNested($item, $mode, $paths, $serializeNested, $itemHidden);
+
+            if ($itemHidden) {
+                // Drop it from a list, or mark this array as hidden so its parent list drops it
+                if (!$isList) {
+                    $hidden = true;
+                }
+
+                continue;
+            }
+
+            $resolved[$key] = $result;
         }
 
-        return array_is_list($value) ? array_values($resolved) : $resolved;
+        return $isList ? array_values($resolved) : $resolved;
     }
 
     /**
