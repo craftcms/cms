@@ -16,6 +16,7 @@ use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use DateInterval;
 use Deprecated;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
@@ -88,11 +89,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      */
     public ?bool $generateTransformsBeforePageLoad = null {
         set {
-            if ($value === null) {
-                Context::forgetHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT);
-            } else {
-                Context::addHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT, $value);
-            }
+            $this->whenBooting(fn() => $value === null
+                ? Context::forgetHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT)
+                : Context::addHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT, $value));
 
             $this->generateTransformsBeforePageLoad = $value;
         }
@@ -780,7 +779,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     {
         $this->deprecate('blowfishHashCost', 'Configure `hashing.bcrypt.rounds` or set the `BCRYPT_ROUNDS` environment variable instead.');
 
-        app()->booting(fn() => ConfigFacade::set('hashing.bcrypt.rounds', $value));
+        $this->whenBooting(fn() => ConfigFacade::set('hashing.bcrypt.rounds', $value));
 
         $this->blowfishHashCost = $value;
 
@@ -829,7 +828,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     {
         $this->deprecate('devMode', 'Configure `app.debug` or set the `APP_DEBUG` environment variable instead.');
 
-        app()->booting(fn() => ConfigFacade::set('app.debug', $value));
+        $this->whenBooting(fn() => ConfigFacade::set('app.debug', $value));
 
         $this->devMode = $value;
 
@@ -877,7 +876,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     {
         $this->deprecate('defaultCookieDomain', 'Configure `session.domain` or set the `SESSION_DOMAIN` environment variable instead.');
 
-        app()->booting(fn() => ConfigFacade::set('session.domain', $value));
+        $this->whenBooting(fn() => ConfigFacade::set('session.domain', $value));
 
         $this->defaultCookieDomain = $value;
 
@@ -915,7 +914,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         $this->rememberedUserSessionDuration = $interval ? ConfigHelper::durationInSeconds($interval) : 0;
 
-        app()->booting(fn() => ConfigFacade::set('auth.guards.craft.remember', floor($this->rememberedUserSessionDuration / 60)));
+        $this->whenBooting(fn() => ConfigFacade::set('auth.guards.craft.remember', floor($this->rememberedUserSessionDuration / 60)));
 
         return $this;
     }
@@ -950,7 +949,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         $this->verificationCodeDuration = ConfigHelper::durationInSeconds($value);
 
-        app()->booting(fn() => ConfigFacade::set('auth.passwords.craft.expire', floor($this->verificationCodeDuration / 60)));
+        $this->whenBooting(fn() => ConfigFacade::set('auth.passwords.craft.expire', floor($this->verificationCodeDuration / 60)));
 
         return $this;
     }
@@ -1055,7 +1054,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         $this->elevatedSessionDuration = ConfigHelper::durationInSeconds($value);
 
-        app()->booting(fn() => ConfigFacade::set('auth.password_timeout', $this->elevatedSessionDuration === 0 ? -1 : $this->elevatedSessionDuration));
+        $this->whenBooting(fn() => ConfigFacade::set('auth.password_timeout', $this->elevatedSessionDuration === 0 ? -1 : $this->elevatedSessionDuration));
 
         return $this;
     }
@@ -1208,7 +1207,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     {
         $this->deprecate('phpSessionName', 'Configure `session.cookie` or set the `SESSION_COOKIE` environment variable instead.');
 
-        app()->booting(fn() => ConfigFacade::set('session.cookie', $value));
+        $this->whenBooting(fn() => ConfigFacade::set('session.cookie', $value));
 
         $this->phpSessionName = $value;
 
@@ -1442,7 +1441,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     {
         $this->deprecate('securityKey', 'Configure `app.key` or set the `APP_KEY` environment variable instead.');
 
-        app()->booting(fn() => ConfigFacade::set('app.key', $value));
+        $this->whenBooting(fn() => ConfigFacade::set('app.key', $value));
 
         $this->securityKey = $value;
 
@@ -1587,7 +1586,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     {
         $this->deprecate('useSecureCookies', 'Configure `session.secure` or set the `SESSION_SECURE_COOKIE` environment variable instead.');
 
-        app()->booting(fn() => ConfigFacade::set('session.secure', $value === 'auto' ? null : $value));
+        $this->whenBooting(fn() => ConfigFacade::set('session.secure', $value === 'auto' ? null : $value));
 
         $this->useSecureCookies = $value;
 
@@ -1702,6 +1701,34 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
         }
 
         return $to;
+    }
+
+    /**
+     * Marks when settings can start changing Laravel’s state immediately.
+     *
+     * @internal
+     */
+    public static function registerBootingCallback(Application $app): void
+    {
+        $app->booting(fn() => $app->instance(self::class . '::booting', true));
+    }
+
+    /**
+     * Runs a callback that changes Laravel’s state, such as its config.
+     *
+     * Settings applied while config files load and providers register are deferred until the application starts
+     * booting, so they run in order after Laravel’s config and facades are ready. Settings applied after that, such as
+     * `CRAFT_` environment overrides, run immediately.
+     */
+    private function whenBooting(callable $callback): void
+    {
+        $app = app();
+
+        if ($app->bound(self::class . '::booting')) {
+            $callback();
+        } else {
+            $app->booting($callback);
+        }
     }
 
     /**

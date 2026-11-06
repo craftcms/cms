@@ -63,6 +63,7 @@ it('supports moved deprecated config settings', function(): void {
         ->firstWhere('key', 'generalConfig.generateTransformsBeforePageLoad');
 
     expect($config->defaultCookieDomain)->toBe('.example.test')
+        ->and(config('session.domain'))->toBe('.example.test')
         ->and($config->generateTransformsBeforePageLoad)->toBeFalse()
         ->and(Context::getHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT))->toBeFalse()
         ->and($deprecation?->message)->toBe('The `generateTransformsBeforePageLoad` config setting is deprecated. Configure immediate generation on the Craft asset transformer instead.')
