@@ -241,6 +241,12 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     private bool $isNestedCondition = false;
 
     /**
+     * @var bool Whether columns were added to the default select with addSelect() or its variants, so the
+     *           columns passed to get() don't apply, as in Laravel
+     */
+    private bool $addsSelect = false;
+
+    /**
      * @var bool|null Whether the prepared query selects the default columns, rather than only the ones passed to select(),
      *                or null until the select is resolved
      *
@@ -658,6 +664,11 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
         if (($eagerResult = $this->eagerLoad(columns: $columns)) !== null) {
             return $eagerResult->all();
+        }
+
+        // Select the given columns unless the query has its own select, as Eloquent does
+        if ($columns !== ['*'] && $columns !== '*' && ! $this->addsSelect && in_array('**', $this->query->columns ?? [], true)) {
+            $this->query->select($columns);
         }
 
         try {
@@ -1552,6 +1563,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         $this->forwardCallTo($this->query, $method, $this->toBaseSubqueries($parameters));
+
+        if (in_array(strtolower($method), ['addselect', 'selectraw', 'selectsub', 'selectexpression'], true)) {
+            $this->addsSelect = true;
+        }
 
         return $this;
     }

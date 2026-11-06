@@ -308,6 +308,17 @@ it('unions element queries and orders the combined result', function () {
         ->and($query->orderByDesc('id')->get()->pluck('id')->all())->toBe([$c, $b, $a]);
 });
 
+it('selects the columns passed to get() unless the query has its own select', function () {
+    $result = EntryModel::factory()->withField('teaser', PlainText::class, value: 'Hi')->createElementWithFields();
+    $id = $result->element->id;
+    $title = $result->element->title;
+
+    expect(entryQuery()->id($id)->asArray()->get(['elements.id', 'teaser'])->all())->toBe([['id' => $id, 'teaser' => 'Hi']])
+        ->and(entryQuery()->id($id)->asArray()->select('title')->get(['slug'])->all())->toBe([['title' => $title]])
+        ->and(entryQuery()->id($id)->asArray()->addSelect('title as heading')->first(['slug']))->toHaveKeys(['id', 'heading'])
+        ->and(entryQuery()->id($id)->first(['title'])->slug)->toBeNull();
+});
+
 it('chunks and lazily iterates by id', function () {
     $ids = EntryModel::factory(3)->create()->pluck('id')->all();
     $chunks = [];
