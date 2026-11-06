@@ -38,11 +38,13 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\LazyCollection;
+use Illuminate\Support\Reflector;
 use Illuminate\Support\Traits\ForwardsCalls;
 use InvalidArgumentException;
 use Override;
 use ReflectionClass;
 use ReflectionException;
+use ReflectionFunction;
 use ReflectionMethod;
 use ReflectionProperty;
 use RuntimeException;
@@ -64,11 +66,10 @@ use Tpetry\QueryExpressions\Language\Alias;
  * @method static orderByDesc($column)
  * @method static reorder($column = null, $direction = 'asc')
  * @method static rightJoin($table, $first, $operator = null, $second = null)
- * @method static where($column, $operator = null, $value = null, $boolean = 'and')
  * @method static whereIn($column, $values, $boolean = 'and', $not = false)
- * @method static whereNot($column, $operator = null, $value = null, $boolean = 'and')
  * @method static whereNotIn($column, $values, $boolean = 'and')
  * @method static whereNotNull($columns, $boolean = 'and')
+ * @method static whereNested(Closure $callback, string $boolean = 'and')
  * @method static whereNotExists($callback, $boolean = 'and')
  * @method static whereNull($columns, $boolean = 'and', $not = false)
  *
@@ -227,6 +228,14 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     private bool $elementQueryBeforeQueryCalled = false;
 
     private ?Builder $queryBeforePrepare = null;
+
+    /**
+     * @var bool Whether this query only provides the conditions for another query’s nested where clause,
+     *           so it leaves out the default site and archived conditions
+     *
+     * @see whereNestedElementQuery()
+     */
+    private bool $isNestedCondition = false;
 
     /**
      * @var bool Whether the prepared query selects the default columns, rather than only the ones passed to select()
@@ -1372,6 +1381,144 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
                 static::macro($method->name, $method->invoke($mixin));
             }
         }
+    }
+
+    /**
+     * Add a basic where clause to the query.
+     *
+     * Given a closure, the closure receives a new element query of the same type, so its params can be used
+     * in a nested condition, as Eloquent passes a model query. A closure whose first parameter is typed as
+     * the base query builder receives one instead.
+     *
+     * @param  Closure|string|array<array-key, mixed>|Expression  $column
+     */
+    public function where($column, mixed $operator = null, mixed $value = null, string $boolean = 'and'): static
+    {
+        if ($column instanceof Closure && $operator === null) {
+            return $this->whereNestedElementQuery($column, $boolean);
+        }
+
+        $this->query->where(...func_get_args());
+
+        return $this;
+    }
+
+    /**
+     * Add an "or where" clause to the query.
+     *
+     * @param  Closure|string|array<array-key, mixed>|Expression  $column
+     */
+    public function orWhere($column, mixed $operator = null, mixed $value = null): static
+    {
+        if ($column instanceof Closure && $operator === null) {
+            return $this->whereNestedElementQuery($column, 'or');
+        }
+
+        $this->query->orWhere(...func_get_args());
+
+        return $this;
+    }
+
+    /**
+     * Add a "where not" clause to the query.
+     *
+     * @param  Closure|string|array<array-key, mixed>|Expression  $column
+     */
+    public function whereNot($column, mixed $operator = null, mixed $value = null, string $boolean = 'and'): static
+    {
+        if ($column instanceof Closure && $operator === null) {
+            return $this->whereNestedElementQuery($column, $boolean.' not');
+        }
+
+        $this->query->whereNot(...func_get_args());
+
+        return $this;
+    }
+
+    /**
+     * Add an "or where not" clause to the query.
+     *
+     * @param  Closure|string|array<array-key, mixed>|Expression  $column
+     */
+    public function orWhereNot($column, mixed $operator = null, mixed $value = null): static
+    {
+        if ($column instanceof Closure && $operator === null) {
+            return $this->whereNestedElementQuery($column, 'or not');
+        }
+
+        $this->query->orWhereNot(...func_get_args());
+
+        return $this;
+    }
+
+    /**
+     * Adds the conditions a closure sets on a new element query of the same type as a nested where clause.
+     *
+     * Like Eloquent’s nested queries, which leave out global scopes, the new query starts without the
+     * default site, status, draft, revision and trashed conditions, which this query applies once.
+     *
+     * A closure whose first parameter can’t accept an element query, such as one typed as the base
+     * query builder, gets a nested base query builder instead.
+     *
+     * @param  Closure(static): mixed|Closure(Builder): mixed  $callback
+     */
+    private function whereNestedElementQuery(Closure $callback, string $boolean): static
+    {
+        $parameter = new ReflectionFunction($callback)->getParameters()[0] ?? null;
+        $types = $parameter ? Reflector::getParameterClassNames($parameter) : [];
+
+        if ($types !== [] && ! array_any($types, fn (string $type) => $this instanceof $type)) {
+            $this->query->whereNested($callback, $boolean);
+
+            return $this;
+        }
+
+        $baseline = $this->newNestedElementQuery();
+        $nested = $this->newNestedElementQuery();
+        $callback($nested);
+
+        try {
+            $nested->applyBeforeQueryCallbacks();
+        } catch (QueryAbortedException) {
+            $this->query->whereRaw('1 = 0', boolean: $boolean);
+
+            return $this;
+        }
+
+        $baseline->applyBeforeQueryCallbacks();
+        $baselineJoins = array_map(fn ($join) => $join->table, $baseline->query->joins ?? []);
+
+        foreach ($nested->query->joins ?? [] as $join) {
+            if (! in_array($join->table, $baselineJoins)) {
+                $table = $join->table instanceof Expression ? $join->table->getValue($this->query->getGrammar()) : $join->table;
+
+                throw new InvalidArgumentException(sprintf(
+                    'A param set in a nested where() closure joins `%s`, which a nested condition can’t add. Set that param on the outer query instead.',
+                    $table,
+                ));
+            }
+        }
+
+        if ($nested->query->wheres !== []) {
+            $this->query->addNestedWhereQuery($nested->query, $boolean);
+        }
+
+        return $this;
+    }
+
+    private function newNestedElementQuery(): static
+    {
+        /** @var static $query */
+        $query = $this->elementType::find();
+        $query->isNestedCondition = true;
+
+        return $query
+            ->site(null)
+            ->status(null)
+            ->drafts(null)
+            ->provisionalDrafts(null)
+            ->revisions(null)
+            ->trashed(null);
     }
 
     public function clone(): static

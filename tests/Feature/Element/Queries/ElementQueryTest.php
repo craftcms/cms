@@ -213,6 +213,37 @@ it('resolves mapped columns and custom fields in where clauses and groupBy', fun
         ->and($query()->groupBy('num')->reorder('num')->pluck('num')->map(fn ($num) => (int) $num)->all())->toBe([5, 10, 20]);
 });
 
+it('passes element queries to where() closures', function () {
+    $result = EntryModel::factory()
+        ->withField('role', PlainText::class, value: 'admin')
+        ->withField('num', Number::class, value: 1)
+        ->createElementWithFields();
+    $admin = $result->element;
+    $layout = FieldLayout::factory()->forField($result->fields->get('role'))->forField($result->fields->get('num'));
+    $entries = [$admin];
+
+    foreach ([['editor', 0], ['editor', 1], ['viewer', 1]] as [$role, $num]) {
+        $entry = EntryModel::factory()->withFieldLayout($layout)->createElement();
+        $entry->setFieldValue('role', $role);
+        $entry->setFieldValue('num', $num);
+        Elements::saveElement($entry);
+        $entries[] = $entry;
+    }
+
+    [$admin, $editor, $blockedEditor, $viewer] = array_column($entries, 'id');
+    $viewerSectionId = $entries[3]->sectionId;
+    ElementModel::whereKey($admin)->update(['enabled' => false]);
+    $query = fn () => entryQuery()->id([$admin, $editor, $blockedEditor, $viewer])->orderBy('elements.id');
+
+    expect($query()->status(null)->where(fn ($q) => $q->role('admin'))->orWhere(fn ($q) => $q->role('editor')->num(0))->ids())->toBe([$admin, $editor])
+        ->and($query()->where(fn ($q) => $q->role('admin'))->ids())->toBe([])
+        ->and($query()->whereNot(fn ($q) => $q->role('editor'))->ids())->toBe([$viewer])
+        ->and($query()->where('elements.id', $editor)->orWhere(fn ($q) => $q->sectionId($viewerSectionId))->ids())->toBe([$editor, $viewer])
+        ->and(fn () => $query()->where(fn ($q) => $q->ref('news/slug'))->ids())->toThrow(InvalidArgumentException::class)
+        ->and($query()->whereNot(fn (Builder $q) => $q->where('elements.id', $editor))->ids())->toBe([$blockedEditor, $viewer])
+        ->and($query()->where('elements.id', $viewer)->orWhere(fn (Builder $q) => $q->where('elements.id', $editor))->ids())->toBe([$editor, $viewer]);
+});
+
 it('ignores inner query pagination when getting a pagination count', function () {
     EntryModel::factory(5)->create();
 
