@@ -414,6 +414,16 @@ class ElementsTest extends TestCase
             }
             self::assertEqualsCanonicalizing([$primarySiteId, 1000], $siteIds($draft->id, true));
 
+            $offersDeleteForSite = function(int $siteId) use ($draft): bool {
+                $siteDraft = Entry::find()->id($draft->id)->drafts()->provisionalDrafts()->siteId($siteId)->status(null)->one();
+                $labels = array_column($siteDraft->getActionMenuItems(), 'label');
+                return in_array('Delete entry for this site', $labels, true);
+            };
+
+            // Deleting the draft for the original site would delete the canonical entry for its only site
+            self::assertFalse($offersDeleteForSite($primarySiteId));
+            self::assertTrue($offersDeleteForSite(1000));
+
             // The draft's creator can remove it from the new site again, without affecting the canonical entry
             $newSiteDraft = Entry::find()->id($draft->id)->drafts()->provisionalDrafts()->siteId(1000)->status(null)->one();
             self::assertNotNull($newSiteDraft);
@@ -422,6 +432,15 @@ class ElementsTest extends TestCase
             $this->elements->deleteElementForSite($newSiteDraft);
             self::assertSame([$primarySiteId], $siteIds($draft->id, true));
             self::assertSame([$primarySiteId], $siteIds($entry->id, false));
+
+            // Once the canonical entry exists in both sites, it can be deleted for the original site too
+            $entry->setEnabledForSite([$primarySiteId => true, 1000 => true]);
+            self::assertTrue($this->elements->saveElement($entry));
+            $draft = Entry::find()->id($draft->id)->drafts()->provisionalDrafts()->siteId($primarySiteId)->status(null)->one();
+            $draft->setEnabledForSite([$primarySiteId => true, 1000 => true]);
+            self::assertTrue($this->elements->saveElement($draft));
+            self::assertEqualsCanonicalizing([$primarySiteId, 1000], $siteIds($draft->id, true));
+            self::assertTrue($offersDeleteForSite($primarySiteId));
         } finally {
             Craft::$app->getEntries()->deleteSection($section);
         }

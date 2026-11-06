@@ -4323,7 +4323,11 @@ JS, [
         $canDeleteCanonicalForSite = $elementsService->canDeleteForSite($canonical, $user);
         $canDeleteForSite = (
             ElementHelper::isMultiSite($this) &&
-            (($isCurrent && $canDeleteCanonicalForSite) || ($canDeleteDraft && $isNewSite)) &&
+            (
+                // Deleting a provisional draft for the site deletes the canonical element for it too
+                ($isCurrent && $canDeleteCanonicalForSite && ($canonical === $this || $isNewSite || ElementHelper::isMultiSite($canonical))) ||
+                ($canDeleteDraft && $isNewSite)
+            ) &&
             $elementsService->canDeleteForSite($this, $user)
         );
 

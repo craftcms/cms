@@ -1098,8 +1098,8 @@ JS, [
                     'deletable-for-site' => (
                         $editable &&
                         self::contextIsAdministrative($config['context']) &&
-                        ElementHelper::isMultiSite($element) &&
-                        $elementsService->canDeleteForSite($element, $user)
+                        $elementsService->canDeleteForSite($element, $user) &&
+                        ElementHelper::isMultiSite($element)
                     ),
                 ]),
             ],

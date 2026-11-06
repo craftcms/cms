@@ -1193,6 +1193,8 @@ class ElementHelper
     /**
      * Returns whether the given element is a multi-site element.
      *
+     * Saved elements must also exist in at least one other supported site.
+     *
      * @param ElementInterface $element
      * @return bool
      * @throws Exception
@@ -1207,7 +1209,26 @@ class ElementHelper
         }
 
         $propSites = array_filter($supportedSites, fn($site) => $site['propagate']);
-        return count($propSites) > 1;
+        if (count($propSites) <= 1) {
+            return false;
+        }
+
+        if (!$element->id) {
+            return true;
+        }
+
+        $otherSiteIds = array_values(array_filter(
+            array_map(fn($site) => $site['siteId'], $propSites),
+            fn(int $siteId) => $siteId !== $element->siteId,
+        ));
+
+        return (new Query())
+            ->from(Table::ELEMENTS_SITES)
+            ->where([
+                'elementId' => $element->id,
+                'siteId' => $otherSiteIds,
+            ])
+            ->exists();
     }
 
     /**
