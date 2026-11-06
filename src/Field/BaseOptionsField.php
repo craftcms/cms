@@ -21,6 +21,7 @@ use CraftCms\Cms\Field\Data\SingleOptionFieldData;
 use CraftCms\Cms\Field\Events\InputOptionsResolving;
 use CraftCms\Cms\Gql\Arguments\OptionField as OptionFieldArguments;
 use CraftCms\Cms\Gql\Resolvers\OptionField as OptionFieldResolver;
+use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -447,6 +448,12 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     public function getDefaultValue(): array|string|null
     {
         return $this->defaultValue();
+    }
+
+    #[Override]
+    public function normalizeValueForImport(mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null, array $importSettings = []): mixed
+    {
+        return static::$multi ? $importer->listValue($value) : $value;
     }
 
     #[Override]

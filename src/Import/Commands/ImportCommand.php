@@ -50,7 +50,9 @@ abstract class ImportCommand extends Command implements PromptsForMissingInput
         }
 
         $this->addOption('transformer', null, InputOption::VALUE_OPTIONAL, 'The fully qualified class name of the transformer you want to use to manipulate the data on import.')
-            ->addOption('match-criteria', null, InputOption::VALUE_OPTIONAL, 'An array of key-value pairs that will be used to match existing elements when importing.');
+            ->addOption('match-criteria', null, InputOption::VALUE_OPTIONAL, 'An array of key-value pairs that will be used to match existing elements when importing.')
+            ->addOption('data-type', null, InputOption::VALUE_REQUIRED, 'The fully qualified class name of the data type to read the source as, if its contents could be read as more than one, or it’s a URL without a data type’s extension.')
+            ->addOption('data-type-settings', null, InputOption::VALUE_REQUIRED, 'A JSON object of settings for the data type the source is read as, such as {"delimiter":"tab"} for CSV.');
     }
 
     /**
@@ -149,7 +151,7 @@ abstract class ImportCommand extends Command implements PromptsForMissingInput
         $matchCriteria = ImportHelper::normalizeMatchCriteriaFromImporterConfig($importer);
 
         try {
-            $allData = $importer->withLocalFile(fn (string $filePath) => ImportFacade::getFormattedData($filePath));
+            $allData = $importer->withLocalFile(fn (string $filePath) => ImportFacade::getFormattedData($filePath, $importer));
         } catch (\Exception $e) {
             $this->fail($e->getMessage());
         }

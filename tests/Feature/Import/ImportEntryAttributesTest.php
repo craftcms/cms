@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Import\EntryImporter;
@@ -142,6 +143,27 @@ it('imports multiple authorIds in the order given', function () {
     ]));
 
     expect(($this->importedEntry)()->getAuthorIds())->toBe([$second->id, $first->id]);
+});
+
+it('splits a CSV cell of authorIds with the step’s list separator, leaving other values whole', function () {
+    $first = User::factory()->admin()->create();
+    $second = User::factory()->admin()->create();
+    $root = Aliases::get('@root');
+    Aliases::set('@root', dirname(__DIR__, 3));
+
+    try {
+        $this->importer->source('tests/Fixtures/Import/entries.csv')->dataTypeSettings(['listSeparator' => '-|-']);
+
+        $this->import->importItem($this->importer, ($this->entryData)([
+            'authorIds' => "$second->id -|- $first->id",
+            'plainText' => 'rock -|- roll',
+        ]));
+    } finally {
+        Aliases::set('@root', $root);
+    }
+
+    expect(($this->importedEntry)()->getAuthorIds())->toBe([$second->id, $first->id])
+        ->and(($this->importedEntry)()->getFieldValue('plainText'))->toBe('rock -|- roll');
 });
 
 it('defaults the author to the logged-in user when authorIds is absent', function () {

@@ -251,7 +251,7 @@ class Import extends Job
     private function parseSource(BaseImporter $step): array
     {
         if (! $step::isRemoteSource($step->source)) {
-            return ImportFacade::getFormattedData($this->filePath);
+            return ImportFacade::getFormattedData($this->filePath, $step);
         }
 
         // this should stay local as it's downloaded, parsed and deleted in the first chunk
@@ -259,7 +259,7 @@ class Import extends Job
         $filePath = $step->downloadFile(Path::temp());
 
         try {
-            return ImportFacade::getFormattedData($filePath);
+            return ImportFacade::getFormattedData($filePath, $step);
         } finally {
             @unlink($filePath);
         }

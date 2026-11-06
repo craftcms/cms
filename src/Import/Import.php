@@ -25,6 +25,7 @@ use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -41,6 +42,11 @@ class Import
      */
     private const int RUN_LOCK_TTL = 86400;
 
+    /**
+     * The number of bytes from the start of a file that data types check its contents against.
+     */
+    private const int SAMPLE_SIZE = 4096;
+
     public function __construct(
         private readonly DataTypes $dataTypes,
         private readonly ImporterTypes $importerTypes,
@@ -48,13 +54,34 @@ class Import
     ) {}
 
     /**
-     * Returns the available data type classes, keyed by extension.
+     * Returns the available data type classes.
      *
-     * @return array<string, class-string<DataTypeInterface>>
+     * @return list<class-string<DataTypeInterface>>
      */
     public function getAllDataTypes(): array
     {
-        return $this->dataTypes->byExtension();
+        return $this->dataTypes->types()->all();
+    }
+
+    /**
+     * Returns the file extensions the available data types claim.
+     *
+     * @return list<string>
+     */
+    public function getDataTypeExtensions(): array
+    {
+        return $this->dataTypes->extensions();
+    }
+
+    /**
+     * Returns the data types that claim a file's extension.
+     *
+     * @param  string  $filePath  The path or URL of the file.
+     * @return list<class-string<DataTypeInterface>>
+     */
+    public function getDataTypesForExtension(string $filePath): array
+    {
+        return $this->dataTypes->forExtension(File::extension($filePath));
     }
 
     /**
@@ -66,20 +93,131 @@ class Import
     {
         $extension = strtolower(File::extension($filePath));
 
-        return $this->dataTypes->find($extension) !== null ? $extension : null;
+        return $this->dataTypes->forExtension($extension) !== [] ? $extension : null;
     }
 
     /**
-     * Returns the data type class for a local file, based on its extension.
+     * Returns the data types a local file could be read as: the only one that claims its extension, or else
+     * those that its contents match.
      *
+     * @param  string  $filePath  The path to the file.
+     * @return list<class-string<DataTypeInterface>>
+     */
+    public function getDataTypeCandidates(string $filePath): array
+    {
+        $types = $this->getDataTypesForExtension($filePath);
+
+        // a file is only sampled when its extension doesn't settle its data type
+        if (count($types) < 2) {
+            return $types;
+        }
+
+        return $this->dataTypes->candidates(File::extension($filePath), $this->getSample($filePath));
+    }
+
+    /**
+     * Returns the first few kilobytes of a local file, which data types check its contents against.
+     *
+     * @param  string  $filePath  The path to the file.
+     */
+    public function getSample(string $filePath): string
+    {
+        $handle = @fopen($filePath, 'rb');
+
+        if ($handle === false) {
+            return '';
+        }
+
+        $sample = fread($handle, self::SAMPLE_SIZE);
+        fclose($handle);
+
+        return $sample === false ? '' : $sample;
+    }
+
+    /**
+     * Returns why a local file can't be read as a single data type, or null if it can.
+     *
+     * The chosen data type only counts when more than one data type claims the file's extension, and then
+     * it must be one the file's contents match.
+     *
+     * @param  string  $filePath  The path to the file.
+     * @param  class-string<DataTypeInterface>|null  $dataType  The data type chosen for the file, if any.
+     */
+    public function getDataTypeError(string $filePath, ?string $dataType = null): ?string
+    {
+        $types = $this->getDataTypesForExtension($filePath);
+
+        if ($types === []) {
+            return t('Unsupported data type: {type}', ['type' => File::extension($filePath)]);
+        }
+
+        if (count($types) === 1) {
+            return null;
+        }
+
+        $candidates = $this->getDataTypeCandidates($filePath);
+
+        if ($dataType !== null && in_array($dataType, $types, true)) {
+            return in_array($dataType, $candidates, true) ? null : t('The file can’t be read as {dataType}.', [
+                'dataType' => $dataType::displayName(),
+            ]);
+        }
+
+        return match (count($candidates)) {
+            0 => t('The file’s contents don’t match any data type for .{extension} files.', [
+                'extension' => strtolower(File::extension($filePath)),
+            ]),
+            1 => null,
+            default => t('The file could be read as {dataTypes}. Choose which data type to read it as.', [
+                'dataTypes' => implode(', ', array_map(fn (string $type) => $type::displayName(), $candidates)),
+            ]),
+        };
+    }
+
+    /**
+     * Returns the settings a data type reads a file with for an import step, after checking them against the data
+     * type's rules.
+     *
+     * @param  class-string<DataTypeInterface>  $dataType
+     * @return array<string, mixed>
+     *
+     * @throws Exception if the settings aren't valid for the data type.
+     */
+    private static function dataTypeSettings(string $dataType, ?BaseImporter $importer): array
+    {
+        $settings = $importer?->dataTypeSettingsFor($dataType) ?? [];
+        $validator = Validator::make($settings, $dataType::getSettingsRules());
+
+        if ($validator->fails()) {
+            throw new Exception($validator->errors()->first());
+        }
+
+        return $settings;
+    }
+
+    /**
+     * Returns the data type class to read a local file as.
+     *
+     * @param  class-string<DataTypeInterface>|null  $dataType  The data type chosen for the file, if any.
      * @return class-string<DataTypeInterface>
      *
-     * @throws Exception if the file isn't of an available data type.
+     * @throws Exception if the file can't be read as a single data type.
      */
-    private function dataTypeClass(string $filePath): string
+    private function dataTypeClass(string $filePath, ?string $dataType): string
     {
-        return $this->dataTypes->find(File::extension($filePath))
-            ?? throw new Exception(t('Unsupported data type: {type}', ['type' => File::extension($filePath)]));
+        $error = $this->getDataTypeError($filePath, $dataType);
+
+        if ($error !== null) {
+            throw new Exception($error);
+        }
+
+        $types = $this->getDataTypesForExtension($filePath);
+
+        if (count($types) === 1) {
+            return $types[0];
+        }
+
+        return in_array($dataType, $types, true) ? $dataType : $this->getDataTypeCandidates($filePath)[0];
     }
 
     /**
@@ -514,14 +652,15 @@ class Import
      * Return the formatted data, throws on failure.
      *
      * @param  string  $filePath  The path to the file to read and format.
+     * @param  BaseImporter|null  $importer  The import step reading the file, whose settings say how to read it.
      * @return array<mixed>
      */
-    public function getFormattedData(string $filePath): array
+    public function getFormattedData(string $filePath, ?BaseImporter $importer = null): array
     {
         $rawData = $this->getRawData($filePath);
 
         // process raw data based on the file type it came from
-        $data = $this->formatData($filePath, $rawData);
+        $data = $this->formatData($filePath, $rawData, $importer);
 
         if ($data === null || $data['success'] === false) {
             throw new Exception($data['error'] ?? t('Unable to parse data.'));
@@ -531,16 +670,17 @@ class Import
     }
 
     /**
-     * Determines the data type from the file extension and delegates formatting to that type's `format()`, logging and returning null on error.
+     * Determines the data type from the file and delegates formatting to that type's `format()`, logging and returning null on error.
      *
      * @return array<string, mixed>|null
      */
-    private function formatData(string $filePath, string $rawData): ?array
+    private function formatData(string $filePath, string $rawData, ?BaseImporter $importer): ?array
     {
-        $dataTypeClass = $this->dataTypeClass($filePath);
+        $dataTypeClass = $this->dataTypeClass($filePath, $importer?->dataType);
+        $settings = self::dataTypeSettings($dataTypeClass, $importer);
 
         try {
-            $data = $dataTypeClass::format($rawData);
+            $data = $dataTypeClass::format($rawData, $settings, strtolower(File::extension($filePath)));
         } catch (Throwable $e) {
             ImportLog::error($e->getMessage());
 
@@ -555,15 +695,17 @@ class Import
      * a "Use template" option, and without the reserved keys), logging and returning null on error.
      *
      * @param  string  $filePath  The path to the file to read.
+     * @param  BaseImporter|null  $importer  The import step reading the file, whose settings say how to read it.
      * @return list<SourceColumn>|null
      */
-    public function getDataHeadings(string $filePath): ?array
+    public function getDataHeadings(string $filePath, ?BaseImporter $importer = null): ?array
     {
         $rawData = $this->getRawData($filePath);
-        $dataTypeClass = $this->dataTypeClass($filePath);
+        $dataTypeClass = $this->dataTypeClass($filePath, $importer?->dataType);
+        $settings = self::dataTypeSettings($dataTypeClass, $importer);
 
         try {
-            $headings = $dataTypeClass::getHeadings($rawData);
+            $headings = $dataTypeClass::getHeadings($rawData, $settings, strtolower(File::extension($filePath)));
         } catch (Throwable $e) {
             ImportLog::error($e->getMessage());
 

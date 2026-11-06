@@ -3,9 +3,11 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Import\Data\SourceColumn;
+use CraftCms\Cms\Import\DataTypes\Csv;
 use CraftCms\Cms\Import\DataTypes\DataTypes;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Tests\Support\Import\TestDataType;
+use CraftCms\Cms\Tests\Support\Import\TestImporter;
 
 beforeEach(function () {
     $this->import = app(Import::class);
@@ -58,20 +60,67 @@ it('throws the data type’s own error for malformed JSON', function () {
 });
 
 it('reports an unsupported file extension as an unsupported data type', function () {
-    expect(fn () => $this->import->getFormattedData(($this->fixturePath)('unsupported.txt')))
-        ->toThrow(Exception::class, 'Unsupported data type: txt');
+    expect(fn () => $this->import->getFormattedData(($this->fixturePath)('unsupported.md')))
+        ->toThrow(Exception::class, 'Unsupported data type: md');
 });
 
 it('reports an unsupported file extension when reading headings too', function () {
-    expect(fn () => $this->import->getDataHeadings(($this->fixturePath)('unsupported.txt')))
-        ->toThrow(Exception::class, 'Unsupported data type: txt');
+    expect(fn () => $this->import->getDataHeadings(($this->fixturePath)('unsupported.md')))
+        ->toThrow(Exception::class, 'Unsupported data type: md');
 });
 
-it('reads a file with a registered data type for its extension', function () {
+it('reads .txt and .tsv files as CSV, splitting .tsv rows on tabs', function () {
+    expect($this->import->getFormattedData(($this->fixturePath)('entries.txt')))
+        ->toBe([['title' => 'first txt entry', 'plainText' => 'txt text one']])
+        ->and($this->import->getFormattedData(($this->fixturePath)('entries.tsv')))
+        ->toBe([['title' => 'first tsv entry', 'plainText' => 'tsv text, with a comma']]);
+});
+
+it('reads a CSV file with the step’s delimiter', function () {
+    $importer = new TestImporter()->dataTypeSettings(['delimiter' => 'comma']);
+
+    expect($this->import->getFormattedData(($this->fixturePath)('entries.tsv'), $importer))
+        ->toBe([["title\tplainText" => "first tsv entry\ttsv text", '' => ' with a comma']]);
+});
+
+it('reads a file as the only data type claiming its extension that its contents match', function () {
     app(DataTypes::class)->register(TestDataType::class);
 
-    expect($this->import->getFormattedData(($this->fixturePath)('unsupported.txt')))
-        ->toBe([['line' => 'not import data']]);
+    expect($this->import->getFormattedData(($this->fixturePath)('entries.txt')))
+        ->toBe([['title' => 'first txt entry', 'plainText' => 'txt text one']]);
+});
+
+it('asks for a data type when a file’s contents match more than one claiming its extension', function () {
+    app(DataTypes::class)->register(TestDataType::class);
+
+    expect(fn () => $this->import->getFormattedData(($this->fixturePath)('lines.txt')))
+        ->toThrow(Exception::class, 'The file could be read as CSV, Lines. Choose which data type to read it as.')
+        ->and($this->import->getFormattedData(($this->fixturePath)('lines.txt'), new TestImporter()->dataType(TestDataType::class)))
+        ->toBe([['line' => 'first line'], ['line' => 'second line']]);
+});
+
+it('reads a file with the settings of the data type it’s read as, ignoring those made for another', function () {
+    app(DataTypes::class)->register(TestDataType::class);
+    $importer = new TestImporter()->dataType(TestDataType::class);
+
+    expect($this->import->getFormattedData(($this->fixturePath)('lines.txt'), $importer->dataTypeSettings(['column' => 'text'])))
+        ->toBe([['text' => 'first line'], ['text' => 'second line']])
+        ->and($this->import->getFormattedData(($this->fixturePath)('lines.txt'), $importer->dataTypeSettings(['type' => TestDataType::class, 'column' => 'text'])))
+        ->toBe([['text' => 'first line'], ['text' => 'second line']])
+        ->and($this->import->getFormattedData(($this->fixturePath)('lines.txt'), $importer->dataTypeSettings(['type' => Csv::class, 'column' => 'text'])))
+        ->toBe([['line' => 'first line'], ['line' => 'second line']]);
+});
+
+it('rejects data type settings its rules don’t allow', function () {
+    expect(fn () => $this->import->getFormattedData(($this->fixturePath)('entries.csv'), new TestImporter()->dataTypeSettings(['delimiter' => 'colon'])))
+        ->toThrow(Exception::class, 'The selected delimiter is invalid.');
+});
+
+it('rejects a chosen data type that a file’s contents don’t match', function () {
+    app(DataTypes::class)->register(TestDataType::class);
+
+    expect(fn () => $this->import->getFormattedData(($this->fixturePath)('entries.txt'), new TestImporter()->dataType(TestDataType::class)))
+        ->toThrow(Exception::class, 'The file can’t be read as Lines.');
 });
 
 it('leaves the reserved keys out of the source headings, wherever they’re nested', function () {

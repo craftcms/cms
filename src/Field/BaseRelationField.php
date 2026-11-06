@@ -1231,7 +1231,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         // A cleared relation field arrives as null, which normalizeValue() reads as “never set” and
         // resolves back to the stored relations; an empty list is what actually clears them - the
         // same translation normalizeValueFromRequest() does for the control panel.
-        return $value ?? [];
+        return $importer->listValue($value) ?? [];
     }
 
     #[Override]

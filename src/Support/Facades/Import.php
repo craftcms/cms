@@ -13,7 +13,12 @@ use Override;
 
 /**
  * @method static array getAllDataTypes()
+ * @method static array getDataTypeExtensions()
+ * @method static array getDataTypesForExtension(string $filePath)
  * @method static ?string getDataTypeFromExtension(string $filePath)
+ * @method static array getDataTypeCandidates(string $filePath)
+ * @method static string getSample(string $filePath)
+ * @method static ?string getDataTypeError(string $filePath, ?string $dataType = null)
  * @method static array getAllImporterTypes()
  * @method static ?FieldImportHandlerInterface getFieldImportHandlerFor(FieldInterface $field)
  * @method static bool dispatchImport(ImportPlanData $importPlan, ?string $connection = null)
@@ -21,8 +26,8 @@ use Override;
  * @method static void unlock(ImportPlanData $importPlan)
  * @method static void importItem(BaseImporter $importer, array $data, array $matchCriteria = [], ?string $runId = null)
  * @method static string getRawData(string $filePath)
- * @method static array getFormattedData(string $filePath)
- * @method static ?array getDataHeadings(string $filePath)
+ * @method static array getFormattedData(string $filePath, ?BaseImporter $importer = null)
+ * @method static ?array getDataHeadings(string $filePath, ?BaseImporter $importer = null)
  * @method static array processData(BaseImporter $importer, array $data, mixed $element)
  *
  * @see \CraftCms\Cms\Import\Import

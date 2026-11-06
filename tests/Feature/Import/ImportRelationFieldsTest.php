@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Import\EntryImporter;
@@ -64,6 +65,26 @@ it('imports an entries field value', function () {
     $this->import->importItem($this->importer, ($this->entryData)(['myEntries' => [$this->relatedEntry->id]]));
     $entry = EntryElement::find()->title('imported entry')->one();
     expect($entry->getFieldValue('myEntries')->ids())->toBe([$this->relatedEntry->id]);
+});
+
+it('splits a CSV cell into an entries field’s values with the step’s list separator', function () {
+    $otherEntry = Entry::factory()
+        ->forSection($this->section)
+        ->forEntryType($this->entryType)
+        ->createElementWithFields(['title' => 'other entry', 'slug' => 'other-entry'])
+        ->element;
+    $root = Aliases::get('@root');
+    Aliases::set('@root', dirname(__DIR__, 3));
+
+    try {
+        $this->importer->source('tests/Fixtures/Import/entries.csv')->dataTypeSettings(['listSeparator' => '|']);
+        $this->import->importItem($this->importer, ($this->entryData)(['myEntries' => "{$otherEntry->id}|{$this->relatedEntry->id}"]));
+    } finally {
+        Aliases::set('@root', $root);
+    }
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+    expect($entry->getFieldValue('myEntries')->ids())->toBe([$otherEntry->id, $this->relatedEntry->id]);
 });
 
 it('imports a users field value', function () {

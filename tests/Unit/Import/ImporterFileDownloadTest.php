@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Import\DataTypes\Csv;
+use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Tests\Support\Import\TestImporter;
 use Illuminate\Support\Facades\File;
@@ -39,6 +41,22 @@ it('falls back to the URL’s extension for a generic content type', function ()
     Http::fake(['example.com/*' => Http::response("title,body\nfirst,one\nsecond,two\n", 200, ['Content-Type' => 'text/plain'])]);
 
     expect($this->importer->source('https://example.com/data.csv')->downloadFile($this->directory))->toEndWith('.csv');
+});
+
+it('prefers the URL’s extension to a generic content type another data type claims', function () {
+    Http::fake(['example.com/*' => Http::response('[{"title":"first"}]', 200, ['Content-Type' => 'text/plain'])]);
+
+    expect($this->importer->source('https://example.com/data.json')->downloadFile($this->directory))->toEndWith('.json');
+});
+
+it('reads a URL without a data type’s extension as the data type chosen for it', function () {
+    Http::fake(['example.com/*' => Http::response("title;body\nfirst;one\n", 200, ['Content-Type' => 'application/octet-stream'])]);
+
+    $importer = $this->importer->source('https://example.com/export')->dataType(Csv::class)->dataTypeSettings(['delimiter' => 'semicolon']);
+    $filePath = $importer->downloadFile($this->directory);
+
+    expect($filePath)->toEndWith('.csv')
+        ->and(Import::getFormattedData($filePath, $importer))->toBe([['title' => 'first', 'body' => 'one']]);
 });
 
 it('rejects a remote file whose type can’t be determined', function () {

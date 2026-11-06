@@ -71,11 +71,11 @@ class ElementTransformer extends BaseTransformer
             // if it exists, then it was either mapped like this or the "correct" key already existed in the incoming data
             // use it and remove it from a list of keys we can mess with in the next step
             if (array_key_exists((string) $prop['name'], $item)) {
-                $array[$prop['name']] = $this->normalizePropertyValue($item[$prop['name']], $prop, $element);
+                $array[$prop['name']] = $this->normalizePropertyValue($item[$prop['name']], $prop, $element, $importer);
                 unset($incomingKeys[$prop['name']]);
                 // otherwise attempt to match auto-magically
             } elseif (($key = array_search(ImportHelper::prepKeyForAutoMatching((string) $prop['name']), $incomingKeys, true)) !== false) {
-                $array[$prop['name']] = $this->normalizePropertyValue($item[$key], $prop, $element);
+                $array[$prop['name']] = $this->normalizePropertyValue($item[$key], $prop, $element, $importer);
             }
         }
 
@@ -120,12 +120,17 @@ class ElementTransformer extends BaseTransformer
 
     /**
      * Calls a `normalize{PropName}()` method on a raw property value if one is defined on the transformer, else returns the raw or default value.
+     * A property that takes a list gets a list-holding string split into its values first.
      *
      * @param  array<string, mixed>  $prop
      */
-    private function normalizePropertyValue(mixed $rawValue, array $prop, ElementInterface $element): mixed
+    private function normalizePropertyValue(mixed $rawValue, array $prop, ElementInterface $element, BaseImporter $importer): mixed
     {
         if ($rawValue !== null) {
+            if ($prop['isList'] ?? false) {
+                $rawValue = $importer->listValue($rawValue);
+            }
+
             if (method_exists($this, 'normalize'.ucfirst((string) $prop['name']))) {
                 return $this->{'normalize'.ucfirst((string) $prop['name'])}($rawValue, $element);
             }

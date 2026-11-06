@@ -41,3 +41,9 @@ it('returns the heading row as sorted label/value pairs, each hinting at its fir
         ['label' => 'title', 'value' => 'title', 'data' => ['hint' => 'first entry']],
     ]);
 });
+
+it('splits a value on the list separator, trimming the values and dropping empty ones', function () {
+    expect(Csv::splitList(' 1 -|- 2 -|--|- 3 ', ['listSeparator' => '-|-']))->toBe(['1', '2', '3'])
+        ->and(Csv::splitList('1|2', ['listSeparator' => '']))->toBeNull()
+        ->and(Csv::splitList('1|2', []))->toBeNull();
+});

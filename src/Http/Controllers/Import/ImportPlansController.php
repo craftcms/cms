@@ -156,7 +156,8 @@ class ImportPlansController
     {
         $importer = $this->draftImporter(requireType: false);
         $batchSize = $this->request->input('step.batchSize');
-        $sourceError = BaseImporter::sourceError($importer?->source, resolveHost: false);
+        $sourceError = BaseImporter::sourceError($importer?->source, resolveHost: false)
+            ?? BaseImporter::dataTypeError($importer?->source, $importer?->dataType);
 
         return new JsonResponse(new StepUiPayload(
             ui: new ImportPlanStepUiViewModel(

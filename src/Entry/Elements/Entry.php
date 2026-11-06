@@ -235,7 +235,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      * @see getAuthorIds()
      * @see setAuthorIds()
      */
-    #[Importable('authorIds', 'Author IDs')]
+    #[Importable('authorIds', 'Author IDs', isList: true)]
     private array $_authorIds;
 
     /**

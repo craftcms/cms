@@ -25,7 +25,7 @@ use function CraftCms\Cms\renderSandboxedObjectTemplate;
 use function CraftCms\Cms\t;
 
 /**
- * @phpstan-type ImportableProperty array{property: string, name: string, label: string, excludeFromUiMapping: bool, isContainer: bool, canBeMatchCriteria: bool, canBeCleared: bool, canBeSet: bool, defaultValue: mixed, trait: class-string|null}
+ * @phpstan-type ImportableProperty array{property: string, name: string, label: string, excludeFromUiMapping: bool, isContainer: bool, canBeMatchCriteria: bool, canBeCleared: bool, canBeSet: bool, isList: bool, defaultValue: mixed, trait: class-string|null}
  * @phpstan-type MappedNode array{data: array<mixed>, consumed: list<int|string>}
  * @phpstan-type MappingSource array{value: array<mixed>, basePath: string, consumed: list<string>}
  * @phpstan-type MappedScalar array{value: mixed, consumed: string|null}
@@ -162,6 +162,7 @@ class ImportHelper
                 'canBeMatchCriteria' => $arguments[4] ?? $arguments['canBeMatchCriteria'] ?? true,
                 'canBeCleared' => $arguments[5] ?? $arguments['canBeCleared'] ?? true,
                 'canBeSet' => $arguments[6] ?? $arguments['canBeSet'] ?? true,
+                'isList' => $arguments[7] ?? $arguments['isList'] ?? false,
                 'defaultValue' => $property->getDefaultValue(),
                 'trait' => self::declaringTrait($property->getDeclaringClass(), $property->getName()),
             ];

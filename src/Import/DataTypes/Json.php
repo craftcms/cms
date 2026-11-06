@@ -6,8 +6,11 @@ namespace CraftCms\Cms\Import\DataTypes;
 
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json as JsonHelper;
+use CraftCms\Cms\Support\Str;
 use InvalidArgumentException;
 use Override;
+
+use function CraftCms\Cms\t;
 
 /**
  * @since 6.0.0
@@ -15,13 +18,45 @@ use Override;
 class Json implements DataTypeInterface
 {
     #[Override]
-    public static function extension(): string
+    public static function displayName(): string
     {
-        return 'json';
+        return t('JSON');
     }
 
     #[Override]
-    public static function format(string $data): array
+    public static function extensions(): array
+    {
+        return ['json'];
+    }
+
+    #[Override]
+    public static function matches(string $sample): bool
+    {
+        $start = ltrim(Str::chopStart($sample, "\xEF\xBB\xBF"));
+
+        return str_starts_with($start, '[') || str_starts_with($start, '{');
+    }
+
+    #[Override]
+    public static function settingsUi(array $settings, ?string $extension): array
+    {
+        return [];
+    }
+
+    #[Override]
+    public static function getSettingsRules(): array
+    {
+        return [];
+    }
+
+    #[Override]
+    public static function splitList(string $value, array $settings): ?array
+    {
+        return null;
+    }
+
+    #[Override]
+    public static function format(string $data, array $settings = [], ?string $extension = null): array
     {
         // Parse the JSON string
         try {
@@ -36,7 +71,7 @@ class Json implements DataTypeInterface
     }
 
     #[Override]
-    public static function getHeadings(string $data): array
+    public static function getHeadings(string $data, array $settings = [], ?string $extension = null): array
     {
         try {
             $array = self::getData($data);

@@ -8,7 +8,7 @@ use CraftCms\Cms\Component\TypeRegistry;
 use Illuminate\Container\Attributes\Singleton;
 
 /**
- * Registers the data types that import source files can be parsed as, keyed by file extension.
+ * Registers the data types that import source files can be parsed as, by the file extensions they claim.
  *
  * Plugins may register data types from their service provider:
  *
@@ -19,7 +19,8 @@ use Illuminate\Container\Attributes\Singleton;
  * }
  * ```
  *
- * To replace a built-in data type, remove it before registering another for its extension.
+ * Several data types may claim the same extension. A file with that extension is read as the one whose
+ * `matches()` accepts its contents, or, when more than one does, the one chosen for its import step.
  *
  * @extends TypeRegistry<DataTypeInterface>
  *
@@ -37,30 +38,51 @@ class DataTypes extends TypeRegistry
     ];
 
     /**
-     * Returns the registered data types, keyed by file extension.
+     * Returns the file extensions claimed by the registered data types.
      *
-     * @return array<string, class-string<DataTypeInterface>>
+     * @return list<string>
      */
-    public function byExtension(): array
+    public function extensions(): array
     {
-        return $this->typesByIdentity()->all();
+        return $this->types()
+            ->flatMap(fn (string $type) => array_map(strtolower(...), $type::extensions()))
+            ->unique()
+            ->values()
+            ->all();
     }
 
     /**
-     * Returns the data type registered for a file extension, if any.
+     * Returns the data types that claim a file extension.
      *
      * @param  string  $extension  The file extension, without a leading dot.
-     * @return class-string<DataTypeInterface>|null
+     * @return list<class-string<DataTypeInterface>>
      */
-    public function find(string $extension): ?string
+    public function forExtension(string $extension): array
     {
-        return $this->typeByIdentity(strtolower($extension));
+        $extension = strtolower($extension);
+
+        return $this->types()
+            ->filter(fn (string $type) => in_array($extension, array_map(strtolower(...), $type::extensions()), true))
+            ->values()
+            ->all();
     }
 
-    /** @param class-string<DataTypeInterface> $type */
-    #[\Override]
-    protected function identity(string $type): string
+    /**
+     * Returns the data types a file could be read as: the only one that claims its extension, or else those
+     * whose `matches()` accepts the start of the file.
+     *
+     * @param  string  $extension  The file extension, without a leading dot.
+     * @param  string  $sample  The first few kilobytes of the file.
+     * @return list<class-string<DataTypeInterface>>
+     */
+    public function candidates(string $extension, string $sample): array
     {
-        return strtolower($type::extension());
+        $types = $this->forExtension($extension);
+
+        if (count($types) < 2) {
+            return $types;
+        }
+
+        return array_values(array_filter($types, fn (string $type) => $type::matches($sample)));
     }
 }

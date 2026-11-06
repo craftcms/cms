@@ -48,7 +48,11 @@ vi.mock('@/modules/ui/UiRenderer.vue', () => ({
     setup(props: any, {expose, emit}: any) {
       state.refresh = props.refresh;
       state.emitChange = () => emit('change', {}, state.values);
-      expose({currentValues: () => state.values});
+      expose({
+        currentValues: () => state.values,
+        // a refreshable change refreshes the form, as the real renderer does
+        setValues: () => void props.refresh?.(state.values)?.catch(() => {}),
+      });
 
       return () => {
         state.errors = props.errors;
@@ -113,7 +117,9 @@ function mappingSection(): HTMLElement | null {
 }
 
 function mappingButton(): HTMLElement & {disabled: boolean; loading: boolean} {
-  return mappingSection()!.querySelector('craft-button') as HTMLElement & {
+  return mappingSection()!.querySelector(
+    'craft-button'
+  ) as unknown as HTMLElement & {
     disabled: boolean;
     loading: boolean;
   };
@@ -320,7 +326,7 @@ it('clears the spinner and keeps the mapping section hidden when a refresh fails
   expect(mappingSection()).toBeNull();
 });
 
-it('checks whether the step can be mapped once the data source field loses focus', async () => {
+it('refreshes the form to check whether the step can be mapped once the data source field loses focus', async () => {
   const checking = deferred<{ui: UiPayload; canMap: boolean}>();
   state.fetchStepUi.mockReturnValue(checking.promise);
   mount(false);

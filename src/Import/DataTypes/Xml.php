@@ -6,9 +6,12 @@ namespace CraftCms\Cms\Import\DataTypes;
 
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json as JsonHelper;
+use CraftCms\Cms\Support\Str;
 use Exception;
 use InvalidArgumentException;
 use Override;
+
+use function CraftCms\Cms\t;
 
 /**
  * @since 6.0.0
@@ -16,13 +19,43 @@ use Override;
 class Xml implements DataTypeInterface
 {
     #[Override]
-    public static function extension(): string
+    public static function displayName(): string
     {
-        return 'xml';
+        return t('XML');
     }
 
     #[Override]
-    public static function format(string $data): array
+    public static function extensions(): array
+    {
+        return ['xml'];
+    }
+
+    #[Override]
+    public static function matches(string $sample): bool
+    {
+        return str_starts_with(ltrim(Str::chopStart($sample, "\xEF\xBB\xBF")), '<');
+    }
+
+    #[Override]
+    public static function settingsUi(array $settings, ?string $extension): array
+    {
+        return [];
+    }
+
+    #[Override]
+    public static function getSettingsRules(): array
+    {
+        return [];
+    }
+
+    #[Override]
+    public static function splitList(string $value, array $settings): ?array
+    {
+        return null;
+    }
+
+    #[Override]
+    public static function format(string $data, array $settings = [], ?string $extension = null): array
     {
         try {
             $array = self::getData($data);
@@ -36,7 +69,7 @@ class Xml implements DataTypeInterface
     }
 
     #[Override]
-    public static function getHeadings(string $data): array
+    public static function getHeadings(string $data, array $settings = [], ?string $extension = null): array
     {
         try {
             $array = self::getData($data);

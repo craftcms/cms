@@ -92,7 +92,7 @@ abstract class ModelImporter extends BaseImporter
             return [];
         }
 
-        return $this->withLocalFile(fn (string $filePath) => Import::getDataHeadings($filePath));
+        return $this->withLocalFile(fn (string $filePath) => Import::getDataHeadings($filePath, $this));
     }
 
     #[Override]

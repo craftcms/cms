@@ -386,6 +386,7 @@ abstract class ElementImporter extends BaseImporter
                 'canBeMatchCriteria' => false,
                 'canBeCleared' => false,
                 'canBeSet' => true,
+                'isList' => false,
                 'defaultValue' => false,
                 'trait' => null,
             ];
@@ -413,7 +414,7 @@ abstract class ElementImporter extends BaseImporter
             return [];
         }
 
-        return $this->withLocalFile(fn (string $filePath) => Import::getDataHeadings($filePath));
+        return $this->withLocalFile(fn (string $filePath) => Import::getDataHeadings($filePath, $this));
     }
 
     #[Override]

@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Import\DataTypes\DataTypes;
 use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Tests\Support\Import\TestDataType;
 use CraftCms\Cms\Tests\Support\Import\TestImporter;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -32,6 +34,8 @@ it('accepts a valid local file', function (string $file) {
     'tests/Fixtures/Import/entries.csv',
     'tests/Fixtures/Import/entries-plain-text.json',
     'tests/Fixtures/Import/entries.xml',
+    'tests/Fixtures/Import/entries.txt',
+    'tests/Fixtures/Import/entries.tsv',
     '@root/tests/Fixtures/Import/entries.csv',
 ]);
 
@@ -44,7 +48,7 @@ it('rejects an invalid local file', function (?string $file, string $message) {
     'missing file' => ['tests/Fixtures/Import/missing.csv', 'does not exist.'],
     'directory' => ['tests/Fixtures/Import', 'does not exist.'],
     'dotfile' => ['tests/Fixtures/Import/.hidden.csv', 'is not permitted.'],
-    'unsupported type' => ['tests/Fixtures/Import/unsupported.txt', 'Only files of these types are allowed'],
+    'unsupported type' => ['tests/Fixtures/Import/unsupported.md', 'Only files of these types are allowed'],
     'contents not matching the extension' => ['tests/Fixtures/Import/json-content.csv', 'don’t match its type (csv).'],
     'stream wrapper' => ['data:text/plain,a', 'Access to this file (data:text/plain,a) is not permitted.'],
 ]);
@@ -127,4 +131,36 @@ it('stores the source as given and leaves checking it to validate()', function (
     expect($this->importer->source('https://example.com/data.json')->source)->toBe('https://example.com/data.json')
         ->and($this->importer->source('tests/Fixtures/Import/missing.csv')->source)->toBe('tests/Fixtures/Import/missing.csv')
         ->and(fn () => $this->importer->validate())->toThrow(ValidationException::class, 'does not exist.');
+});
+
+it('requires a data type for a file whose contents match more than one claiming its extension', function () {
+    app(DataTypes::class)->register(TestDataType::class);
+
+    $sourceError = fn (string $source, ?string $dataType = null) => Validator::make(
+        ['source' => $source, 'settings' => ['dataType' => $dataType]],
+        ['source' => TestImporter::getRules(resolveHost: false)['source']],
+    )->errors()->first('source');
+
+    expect($sourceError('tests/Fixtures/Import/lines.txt'))->toBe('The file could be read as CSV, Lines. Choose which data type to read it as.')
+        ->and($sourceError('tests/Fixtures/Import/lines.txt', TestDataType::class))->toBe('')
+        ->and($sourceError('tests/Fixtures/Import/entries.txt'))->toBe('')
+        ->and($sourceError('tests/Fixtures/Import/entries.txt', TestDataType::class))->toBe('The file can’t be read as Lines.');
+});
+
+it('validates the settings of the data type a source is definitely read as', function () {
+    app(DataTypes::class)->register(TestDataType::class);
+
+    $errors = fn (string $source, ?string $dataType, array $dataTypeSettings) => Validator::make(
+        ['source' => $source, 'settings' => ['dataType' => $dataType, 'dataTypeSettings' => $dataTypeSettings]],
+        ['settings.dataTypeSettings' => TestImporter::getSettingsRules()['settings.dataTypeSettings']],
+    )->errors()->toArray();
+
+    expect($errors('tests/Fixtures/Import/entries.csv', null, ['delimiter' => 'colon']))
+        ->toBe(['settings.dataTypeSettings.delimiter' => ['The selected delimiter is invalid.']])
+        // made for another data type, so ignored
+        ->and($errors('tests/Fixtures/Import/entries.csv', null, ['type' => TestDataType::class, 'delimiter' => 'colon']))->toBe([])
+        // the data type is still to be chosen
+        ->and($errors('tests/Fixtures/Import/lines.txt', null, ['delimiter' => 'colon']))->toBe([])
+        ->and($errors('tests/Fixtures/Import/lines.txt', TestDataType::class, ['column' => str_repeat('x', 21)]))
+        ->toBe(['settings.dataTypeSettings.column' => ['The column field must not be greater than 20 characters.']]);
 });
