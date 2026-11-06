@@ -37,12 +37,28 @@ export default class CraftCheckbox extends ChoiceInput(LitElement) {
     };
   }
 
+  #indeterminateInput?: HTMLInputElement;
+
+  constructor() {
+    super();
+    // A click clears the input's indeterminate state, so the host follows.
+    this.addEventListener('change', (event) => {
+      if (event.target === this._inputNode && this.indeterminate) {
+        this.indeterminate = (event.target as HTMLInputElement).indeterminate;
+      }
+    });
+  }
+
   override updated(changed: PropertyValues) {
     super.updated(changed);
 
     const input = this._inputNode;
-    if (input instanceof HTMLInputElement) {
+    if (
+      input instanceof HTMLInputElement &&
+      (changed.has('indeterminate') || input !== this.#indeterminateInput)
+    ) {
       input.indeterminate = this.indeterminate;
+      this.#indeterminateInput = input;
     }
   }
 
