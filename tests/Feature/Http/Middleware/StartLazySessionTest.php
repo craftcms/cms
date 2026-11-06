@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Auth\SessionTimeout;
 use CraftCms\Cms\Tests\TestClasses\Http\HostStartSession;
+use CraftCms\Cms\Tests\TestClasses\Http\HostTokenStartSession;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -121,4 +122,24 @@ it('saves the session when an unsafe request changes database records', function
     $saved = unserialize(app(SessionManager::class)->driver()->getHandler()->read($response->getCookie(config('session.cookie'))->getValue()));
 
     expect($saved['_database_modified_at'] ?? null)->toBeInt();
+});
+
+it('checks the final response for the CSRF token', function () {
+    Route::middlewareGroup('host-token-web', [EncryptCookies::class, AddQueuedCookiesToResponse::class, HostTokenStartSession::class]);
+    Route::middleware('host-token-web')->withLazySession()->get('host-token', fn () => 'page');
+
+    get('/host-token')
+        ->assertOk()
+        ->assertHeader('X-CSRF-Token')
+        ->assertCookie(config('session.cookie'));
+});
+
+it('saves the session for streamed responses', function () {
+    Route::middleware(['web', 'craft', 'craft.web'])->withLazySession()->get('streamed', fn () => response()->stream(function () {
+        echo csrf_token();
+    }));
+
+    get('/streamed')
+        ->assertOk()
+        ->assertCookie(config('session.cookie'));
 });

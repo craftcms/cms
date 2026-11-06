@@ -329,6 +329,7 @@ class Session extends \yii\web\Session
         $this->ensureFlashCountersUpdated();
 
         $counters = $this->get($this->flashParam, []);
+        $original = $counters;
         $flashes = [];
 
         $session = $this->getIlluminateSession()->all();
@@ -348,7 +349,10 @@ class Session extends \yii\web\Session
             }
         }
 
-        $this->set($this->flashParam, $counters);
+        // Only write when something changed, so lazy sessions stay unsaved.
+        if ($counters !== $original) {
+            $this->set($this->flashParam, $counters);
+        }
 
         return $flashes;
     }

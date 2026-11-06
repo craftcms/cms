@@ -14,6 +14,7 @@ use Illuminate\Routing\RouteRegistrar;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Session\SessionManager;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Starts the session lazily for requests that arrive without a session cookie.
@@ -126,11 +127,13 @@ readonly class StartLazySession
                 $response = $next($request);
 
                 $used = $session->getId() !== $id
-                    || $this->attributes($request, $session->all()) !== $attributes
-                    || $this->hasToken($response, $session->token());
+                    || $this->attributes($request, $session->all()) !== $attributes;
 
                 return $response;
             });
+
+            // Checked on the final response, in case a host `StartSession` subclass adds the token to it.
+            $used = $used || $this->hasToken($response, $session->token());
         } finally {
             $session->setHandler($handler);
         }
@@ -185,11 +188,17 @@ readonly class StartLazySession
 
     /**
      * Whether the session's CSRF token was put in the response body or headers, which only works if the session is saved.
+     * Streamed responses are assumed to contain it, as their bodies can't be checked.
      */
     private function hasToken(mixed $response, mixed $token): bool
     {
         if (! $response instanceof Response || ! is_string($token)) {
             return false;
+        }
+
+        // Streamed bodies can't be checked, so they're assumed to contain it.
+        if ($response instanceof StreamedResponse) {
+            return true;
         }
 
         $content = $response->getContent();

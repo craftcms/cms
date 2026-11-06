@@ -12,6 +12,7 @@ it('reads flash messages without writing to an empty session', function() {
     $session = new Session();
 
     expect($session->getFlash('notice'))->toBeNull()
+        ->and($session->getAllFlashes(true))->toBe([])
         ->and($store->all())->toBe($attributes);
 });
 
