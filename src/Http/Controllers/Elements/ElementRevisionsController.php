@@ -19,7 +19,6 @@ use CraftCms\Cms\Http\Responses\ElementResponse;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Ui\Nodes\Table;
 use CraftCms\Cms\Ui\Ui;
@@ -61,7 +60,7 @@ class ElementRevisionsController
             ->preferSites([$element->siteId])
             ->unique()
             ->status(null)
-            ->whereNot('elements.dateCreated', Query::prepareDateForDb($element->dateUpdated))
+            ->whereNot('elements.dateCreated', $element->dateUpdated)
             ->with(['revisionCreator'])
             ->paginate($tableRequest->limit(), pageName: $pageParam, page: $tableRequest->page())
             ->appends($tableRequest->except($pageParam));

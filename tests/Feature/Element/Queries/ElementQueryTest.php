@@ -18,6 +18,7 @@ use CraftCms\Cms\Field\Number;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\MultipleRecordsFoundException;
@@ -120,6 +121,17 @@ it('keeps its own conditions when the query has a top-level orWhere', function (
         ->ids();
 
     expect($ids)->toBe([$live->id]);
+});
+
+it('compares bound dates in UTC', function () {
+    expect(now()->getOffset())->not->toBe(0);
+
+    $past = EntryModel::factory()->create(['postDate' => Query::prepareDateForDb(now()->subHour())]);
+    $future = EntryModel::factory()->create(['postDate' => Query::prepareDateForDb(now()->addHour())]);
+
+    expect(entryQuery()->status(null)->where('entries.postDate', '<=', now())->ids())->toBe([$past->id])
+        ->and(entryQuery()->status(null)->whereFuture('entries.postDate')->ids())->toBe([$future->id])
+        ->and(entryQuery()->status(null)->whereBetween('entries.postDate', [now()->subMinutes(90), now()])->ids())->toBe([$past->id]);
 });
 
 it('ignores inner query pagination when getting a pagination count', function () {

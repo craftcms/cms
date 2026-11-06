@@ -18,10 +18,12 @@ use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
+use DateTimeInterface;
 use Exception;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Contracts\Support\Arrayable;
@@ -1292,6 +1294,25 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
         if (count($this->query->wheres) > $originalWhereCount) {
             $this->addNewWheresWithinGroup($originalWhereCount);
+        }
+
+        $this->convertDateBindingsToUtc();
+    }
+
+    /**
+     * Converts dates bound to the query to UTC, which is how Craft stores them.
+     *
+     * Laravel binds a date in its own time zone, which is the system time zone,
+     * so `where('postDate', '<=', now())` would otherwise compare against the wrong time.
+     */
+    private function convertDateBindingsToUtc(): void
+    {
+        foreach ($this->query->bindings as $type => $bindings) {
+            foreach ($bindings as $i => $binding) {
+                if ($binding instanceof DateTimeInterface) {
+                    $this->query->bindings[$type][$i] = Query::prepareDateForDb($binding);
+                }
+            }
         }
     }
 
