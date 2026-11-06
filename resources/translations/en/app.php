@@ -2970,6 +2970,7 @@ return [
     'The developer recommends using <a href="{url}">{name}</a> instead.' => 'The developer recommends using <a href="{url}">{name}</a> instead.',
     'The draft could not be saved.' => 'The draft could not be saved.',
     'The draft has been saved.' => 'The draft has been saved.',
+    'The driver of a registered asset transformer can’t be changed.' => 'The driver of a registered asset transformer can’t be changed.',
     'The email address Craft CMS will use when sending email.' => 'The email address Craft CMS will use when sending email.',
     'The field layout is invalid.' => 'The field layout is invalid.',
     'The file failed to upload to the server properly.' => 'The file failed to upload to the server properly.',

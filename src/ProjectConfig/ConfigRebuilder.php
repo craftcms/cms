@@ -6,6 +6,7 @@ namespace CraftCms\Cms\ProjectConfig;
 
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Database\Table;
@@ -58,9 +59,16 @@ class ConfigRebuilder
         $config[ProjectConfig::PATH_DATE_MODIFIED] = now()->getTimestamp();
         $config[ProjectConfig::PATH_SYSTEM]['schemaVersion'] = Info::fetch()->schemaVersion;
         $config[ProjectConfig::PATH_ADDRESSES] = $this->fieldLayout(Address::class);
+        // Registered transformers keep their stored overrides as-is, so code defaults aren't written into project config.
+        $storedTransformers = $config[ProjectConfig::PATH_ASSET_TRANSFORMERS] ?? [];
         $config[ProjectConfig::PATH_ASSET_TRANSFORMERS] = $this->components($this->assetTransformers->getAllAssetTransformers()
-            ->reject(fn ($transformer): bool => $this->assetTransformers->isRegisteredAssetTransformer($transformer)
-                && ! isset($config[ProjectConfig::PATH_ASSET_TRANSFORMERS][$transformer->uid])));
+            ->reject(fn ($transformer): bool => $this->assetTransformers->isRegisteredAssetTransformer($transformer)))
+            + array_filter(
+                is_array($storedTransformers) ? $storedTransformers : [],
+                fn (mixed $stored, mixed $uid): bool => is_string($uid) && is_array($stored)
+                    && $this->assetTransformers->isRegisteredAssetTransformer(new AssetTransformer(['uid' => $uid])),
+                ARRAY_FILTER_USE_BOTH,
+            );
         $config[ProjectConfig::PATH_ENTRY_TYPES] = $this->components($this->entryTypes->getAllEntryTypes());
         $config[ProjectConfig::PATH_FIELDS] = collect($this->fields->getAllFields('global'))
             ->mapWithKeys(fn ($field): array => [$field->uid => $this->fields->createFieldConfig($field)])

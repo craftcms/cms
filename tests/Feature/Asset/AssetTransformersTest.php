@@ -229,6 +229,38 @@ it('rebuilds only registered transformers that have stored overrides', function 
         ->and($rebuild()[$craft->uid]['settings']['subpath'])->toBe('transforms');
 });
 
+it('refuses to change a registered transformer driver', function () {
+    $transformers = app(AssetTransformers::class);
+    $craft = $transformers->resolve('craft');
+    $craft->driver = 'other';
+
+    expect($transformers->saveAssetTransformer($craft))->toBeFalse()
+        ->and($craft->errors()->first('driver'))->toBe('The driver of a registered asset transformer can’t be changed.')
+        ->and(app(ProjectConfig::class)->get(ProjectConfig::PATH_ASSET_TRANSFORMERS))->toBeNull();
+});
+
+it('rebuilds registered transformer overrides without their defaults', function () {
+    $transformers = app(AssetTransformers::class);
+    $transformers->registerAssetTransformer(new AssetTransformer([
+        'uid' => 'b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f',
+        'name' => 'Cloud',
+        'handle' => 'cloud',
+        'driver' => 'cloud',
+        'settings' => ['zone' => 'default', 'quality' => 80],
+    ]));
+    app(ProjectConfig::class)->set(ProjectConfig::PATH_ASSET_TRANSFORMERS.'.b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f', [
+        'name' => 'Cloud',
+        'handle' => 'cloud',
+        'driver' => 'cloud',
+        'settings' => ['zone' => 'custom'],
+    ]);
+
+    $rebuilt = app(ConfigRebuilder::class)->build(app(ProjectConfig::class)->get())[ProjectConfig::PATH_ASSET_TRANSFORMERS];
+
+    expect($rebuilt['b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f']['settings'])->toBe(['zone' => 'custom'])
+        ->and($transformers->resolve('cloud')->settings)->toBe(['zone' => 'custom', 'quality' => 80]);
+});
+
 it('rejects invalid transformer registrations', function (array $config) {
     $transformers = app(AssetTransformers::class);
     $transformers->registerAssetTransformer(new AssetTransformer([

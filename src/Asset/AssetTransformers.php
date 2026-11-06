@@ -177,9 +177,15 @@ class AssetTransformers
 
         if ($this->isRegisteredAssetTransformer($transformer)) {
             $registered = $this->registeredTransformers[$transformer->uid];
+
+            if ($transformer->driver !== $registered->driver) {
+                $transformer->errors()->add('driver', t('The driver of a registered asset transformer can’t be changed.'));
+
+                return false;
+            }
+
             $transformer->name = $registered->name;
             $transformer->handle = $registered->handle;
-            $transformer->driver = $registered->driver;
         }
 
         if ($runValidation) {
