@@ -2,7 +2,6 @@
   import '@craftcms/ui/components/chip/chip';
   import {actionClient, t} from '@craftcms/ui';
   import {computed, reactive, ref, useId, watch} from 'vue';
-  import {tryOnScopeDispose} from '@vueuse/core';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import ElementList from '@/modules/elements/components/ElementList.vue';
   import {useElementList} from '@/modules/elements/composables/useElementList';
@@ -16,7 +15,7 @@
   import SelectionToolbar from './element-select/SelectionToolbar.vue';
   import {chipMenu, selectionMenu} from './element-select/chipMenu';
   import {usePasteableElements} from './element-select/usePasteableElements';
-  import {onElementChanged} from '@/modules/elements/element-instances';
+  import {useElementPresentations} from '@/modules/elements/element-presentations';
   import type {
     ElementPresentation,
     ElementSelectProps,
@@ -115,58 +114,43 @@
     return Number(value);
   }
 
+  /** The site an element is drawn in. */
+  function siteOf(id: number): number | string | null | undefined {
+    return (
+      providedPresentations.value.get(id)?.siteId ??
+      presentations.get(id)?.siteId ??
+      (props.control.props.criteria.siteId as number | string | null)
+    );
+  }
+
   /**
-   * Elements refetched since the server last rendered the field, because they
-   * were saved, here or in another tab. They draw over the field's props until
-   * the next server render brings its own.
+   * Elements drawn through the page's shared cache, so they're refetched when
+   * they're saved, here or in another tab. The server's render seeds it, since
+   * it's never older than what's cached.
    */
-  const refreshed = reactive(new Map<number, ElementPresentation>());
+  const cached = useElementPresentations(
+    () => ({
+      elementType: props.control.props.elementType,
+      viewMode: props.control.props.viewMode,
+      thumbSize: props.control.props.thumbSize,
+    }),
+    () => ids.value.map((id) => ({id, siteId: Number(siteOf(id)) || null}))
+  );
   watch(
     () => props.control.props.elements,
-    () => refreshed.clear()
+    (elements) => cached.seed(elements, props.control.props.criteria.siteId),
+    {immediate: true}
   );
 
   function presentation(value: number | string): ElementPresentation {
     const id = elementId(value);
 
     return (
-      refreshed.get(id) ??
+      cached.get(id, siteOf(id)) ??
       providedPresentations.value.get(id) ??
       presentations.get(id) ?? {id, label: String(id)}
     );
   }
-
-  async function refreshPresentation(id: number): Promise<void> {
-    if (!ids.value.includes(id)) {
-      return;
-    }
-
-    const siteId =
-      presentation(id).siteId ?? props.control.props.criteria.siteId;
-    const {data} = await actionClient.post<{
-      elements?: ElementPresentation[];
-    }>('relational-fields/structured-elements', {
-      elementType: props.control.props.elementType,
-      elementIds: [id],
-      siteId: Number(siteId) || null,
-      viewMode: viewMode.value,
-      thumbSize: props.control.props.thumbSize ?? null,
-    });
-    const fresh = data.elements?.find((element) => element.id === id);
-
-    if (fresh) {
-      refreshed.set(id, fresh);
-    }
-  }
-
-  tryOnScopeDispose(
-    onElementChanged(
-      (id) => {
-        refreshPresentation(id).catch(() => {});
-      },
-      {includeSelf: true}
-    )
-  );
 
   // ───────────────────────────── selection ─────────────────────────────
 
