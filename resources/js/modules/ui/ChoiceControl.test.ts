@@ -1,4 +1,4 @@
-import {createApp, h, nextTick, reactive} from 'vue';
+import {createApp, h, nextTick, reactive, shallowRef} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type CraftCheckboxSelect from '@craftcms/ui/components/checkbox-select/checkbox-select';
 import ChoiceControl from './ChoiceControl.vue';
@@ -44,12 +44,15 @@ describe('ChoiceControl', () => {
     }
   });
 
+  const currentValue = shallowRef<UiValue>(null);
+
   async function mount(
     props: Record<string, unknown>,
     value: UiValue,
     required = false
   ): Promise<void> {
     emitted = [];
+    currentValue.value = value;
     const control = reactive<UiControlPayload<any>>({
       type: 'CraftCms\\Cms\\Ui\\Controls\\Choice',
       component: 'craft:choice',
@@ -64,7 +67,7 @@ describe('ChoiceControl', () => {
       render: () =>
         h(ChoiceControl, {
           control,
-          value,
+          value: currentValue.value,
           editable: true,
           invalid: false,
           required,
@@ -514,5 +517,41 @@ describe('ChoiceControl', () => {
       'one',
       'two',
     ]);
+  });
+
+  it('shows a value written from outside in its order, and keeps that order on the next edit', async () => {
+    await mount(
+      {
+        sortable: true,
+        options: [
+          {label: 'One', value: 'one'},
+          {label: 'Two', value: 'two'},
+          {label: 'Three', value: 'three'},
+        ],
+      },
+      ['one', 'two']
+    );
+    const element = await checkboxSelect();
+
+    // Copied from another version, which has them the other way around.
+    currentValue.value = ['two', 'one'];
+    await nextTick();
+    await element.updateComplete;
+
+    expect(element.options.map((option) => option.value)).toEqual([
+      'two',
+      'one',
+      'three',
+    ]);
+
+    const three = element.querySelector<HTMLInputElement>(
+      'input[type=checkbox][value=three]'
+    )!;
+    three.checked = true;
+    three.dispatchEvent(new Event('change', {bubbles: true}));
+    await nextTick();
+    await element.updateComplete;
+
+    expect(emitted.at(-1)).toEqual(['two', 'one', 'three']);
   });
 });

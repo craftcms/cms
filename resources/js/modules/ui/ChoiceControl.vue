@@ -287,6 +287,10 @@
         return;
       }
 
+      if (props.control.props.sortable === true) {
+        showSelectedInValueOrder();
+      }
+
       const choiceValues = new Set(
         choiceOptions.value.map((option) => inputValue(option.value))
       );
@@ -477,6 +481,21 @@
       ];
     }
   );
+
+  /**
+   * Puts the selected options first, in the value's order, as the server
+   * does, so the next edit doesn't emit the order shown before.
+   */
+  function showSelectedInValueOrder(): void {
+    const selectedValues = currentValues().filter((value) =>
+      order.value.includes(value)
+    );
+
+    order.value = [
+      ...selectedValues,
+      ...order.value.filter((value) => !selectedValues.includes(value)),
+    ];
+  }
 
   function optionValues(options: ChoiceOption[]): string[] {
     return options.map((option) => inputValue(option.value));
