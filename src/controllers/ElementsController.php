@@ -1889,6 +1889,10 @@ JS, [
             throw new ForbiddenHttpException('User not authorized to delete the element for this site.');
         }
 
+        if (!ElementHelper::isMultiSite($element)) {
+            throw new BadRequestHttpException('Elements can’t be deleted for the only site they exist in.');
+        }
+
         if ($element->isProvisionalDraft) {
             $canonical = $element->getCanonical();
 
@@ -1898,6 +1902,10 @@ JS, [
 
             if ($canonical && !$elementsService->canDeleteForSite($canonical)) {
                 throw new ForbiddenHttpException('User not authorized to delete the element for this site.');
+            }
+
+            if ($canonical && !ElementHelper::isMultiSite($canonical)) {
+                throw new BadRequestHttpException('Elements can’t be deleted for the only site they exist in.');
             }
         } else {
             $canonical = null;
