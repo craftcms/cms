@@ -19,14 +19,20 @@ readonly class GeneralConfigCompatibility
      */
     public function convert(mixed $config, mixed $overlay = null): GeneralConfig
     {
-        $config = $this->toConfigObject($this->resolve($config, LegacyGeneralConfig::create()));
+        $config = $this->resolve($config, LegacyGeneralConfig::create());
 
         if ($overlay === null || $overlay === []) {
-            return $config;
+            return $this->toConfigObject($config);
         }
 
         Deprecator::log('config-general-app-type', 'Using general.web.php and general.console.php configuration files is deprecated.');
 
+        // Merge array overlays first, so overridden settings never reach setters with side effects
+        if (is_array($config) && is_array($overlay)) {
+            return $this->toConfigObject(array_merge($config, $overlay));
+        }
+
+        $config = $this->toConfigObject($config);
         $overlay = $this->resolve($overlay, $config);
 
         if ($overlay instanceof GeneralConfig) {

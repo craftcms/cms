@@ -72,7 +72,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     public ?bool $isSystemLive = null;
 
     /**
-     * @var bool Whether image transforms should be generated before page load.
+     * @var bool|null Whether image transforms should be generated before page load. `null` leaves it up to the asset transformer.
      *
      * ::: code
      * ```php Static Config
@@ -86,9 +86,14 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * @group Image Handling
      * @deprecated in 6.0.0. Configure immediate generation on the Craft asset transformer instead.
      */
-    public bool $generateTransformsBeforePageLoad = false {
+    public ?bool $generateTransformsBeforePageLoad = null {
         set {
-            Context::addHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT, $value);
+            if ($value === null) {
+                Context::forgetHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT);
+            } else {
+                Context::addHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT, $value);
+            }
+
             $this->generateTransformsBeforePageLoad = $value;
         }
     }
@@ -1462,7 +1467,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * @deprecated in 6.0.0. [Configure trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) instead.
      */
     #[Deprecated(message: 'in 6.0.0. [Configure trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) instead.')]
-    public function trustedHosts(array $value): self
+    public function trustedHosts(?array $value): self
     {
         $this->deprecate('trustedHosts', '[Configure trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) instead.');
 
