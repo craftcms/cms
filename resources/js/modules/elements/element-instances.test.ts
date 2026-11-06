@@ -168,6 +168,40 @@ describe('refreshElementInstances()', () => {
   });
 });
 
+describe('refreshElementInstances() action menus', () => {
+  const menu = (url: string, extra = '') =>
+    `<div slot="suffix"><craft-action-menu><div slot="content"><craft-action-item href="${url}">View in a new tab</craft-action-item>${extra}</div></craft-action-menu></div>`;
+
+  it('takes the server’s fresh menu, so its links follow a new URL', async () => {
+    document.body.innerHTML = chipHtml('Old', {children: menu('/old-slug')});
+    respondWith(() => chipHtml('New', {children: menu('/new-slug')}));
+
+    await refreshElementInstances(7);
+
+    expect(
+      document.querySelector('craft-action-item')!.getAttribute('href')
+    ).toBe('/new-slug');
+  });
+
+  it('keeps a menu the page added items to', async () => {
+    document.body.innerHTML = chipHtml('Old', {
+      children: menu(
+        '/old-slug',
+        '<craft-action-item data-page-action>Remove</craft-action-item>'
+      ),
+    });
+    respondWith(() => chipHtml('New', {children: menu('/new-slug')}));
+
+    await refreshElementInstances(7);
+
+    expect(
+      [...document.querySelectorAll('craft-action-item')].map(
+        (item) => item.textContent
+      )
+    ).toEqual(['View in a new tab', 'Remove']);
+  });
+});
+
 describe('refreshElementInstances() for nested elements', () => {
   it('renders each owner’s instances with that owner', async () => {
     document.body.innerHTML =

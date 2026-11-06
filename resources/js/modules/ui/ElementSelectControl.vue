@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/chip/chip';
   import {actionClient, t} from '@craftcms/ui';
-  import {computed, reactive, ref, useId, watch} from 'vue';
+  import {computed, nextTick, reactive, ref, useId, watch} from 'vue';
   import {tryOnScopeDispose} from '@vueuse/core';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import ElementList from '@/modules/elements/components/ElementList.vue';
@@ -130,6 +130,45 @@
       latestRefetch.clear();
     }
   );
+  // An element that leaves the selection loses its refetched presentation,
+  // which would otherwise outlive saves it no longer hears about.
+  watch(ids, (current) => {
+    [...refreshed.keys(), ...latestRefetch.keys()]
+      .filter((id) => !current.includes(id))
+      .forEach((id) => {
+        refreshed.delete(id);
+        latestRefetch.delete(id);
+      });
+  });
+
+  const FOCUSABLE = 'a[href], button, input, select, textarea, [tabindex]';
+
+  /**
+   * Applies a refetch without losing keyboard focus. Card parts are compiled
+   * as templates, so new markup remounts them, and a focused link inside goes
+   * with it; focus moves to its counterpart unless it went somewhere else.
+   */
+  async function keepingFocus(apply: () => void): Promise<void> {
+    const root = dropZone.value;
+    const focused = document.activeElement;
+    const index =
+      root && focused && root.contains(focused)
+        ? [...root.querySelectorAll(FOCUSABLE)].indexOf(focused)
+        : -1;
+
+    apply();
+
+    if (index === -1) {
+      return;
+    }
+
+    await nextTick();
+    const active = document.activeElement;
+    if (focused!.isConnected || (active && active !== document.body)) {
+      return;
+    }
+    root!.querySelectorAll<HTMLElement>(FOCUSABLE)[index]?.focus();
+  }
 
   function presentation(value: number | string): ElementPresentation {
     const id = elementId(value);
@@ -168,11 +207,13 @@
           thumbSize: props.control.props.thumbSize ?? null,
         });
 
-        data.elements?.forEach((fresh) => {
-          if (latestRefetch.get(fresh.id) === request) {
-            refreshed.set(fresh.id, fresh);
-          }
-        });
+        await keepingFocus(() =>
+          data.elements?.forEach((fresh) => {
+            if (latestRefetch.get(fresh.id) === request) {
+              refreshed.set(fresh.id, fresh);
+            }
+          })
+        );
       })
     );
   }

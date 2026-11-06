@@ -488,6 +488,63 @@ describe('ElementSelectControl', () => {
     expect(root.textContent).not.toContain('Older title');
   });
 
+  it('forgets a refetched element once it leaves the selection', async () => {
+    const value = ref<number[] | number | null>([5]);
+    // Picked client-side, so the server's render doesn't name it.
+    const payload = control({elements: []});
+    container = document.createElement('div');
+    document.body.append(container);
+    app = createApp({
+      render: () =>
+        h(ElementSelectControl, {
+          control: payload,
+          value: value.value,
+          editable: true,
+          'onUpdate:value': (next: number[] | number | null) => {
+            value.value = next;
+          },
+        }),
+    });
+    app.mount(container);
+    await nextTick();
+    stub.post.mockResolvedValue({data: {elements: [{id: 5, label: 'Saved'}]}});
+    broadcast({event: 'saveElement', id: 5});
+    await vi.waitFor(() => expect(container!.textContent).toContain('Saved'));
+
+    value.value = [];
+    await nextTick();
+    (
+      container.querySelector('[data-element-select-add]') as HTMLElement
+    ).click();
+    await flushSelector();
+    const [, settings] = stub.createElementSelectorModal.mock.calls[0]!;
+    settings.onSelect([{id: 5, label: 'Renamed', siteId: 1}]);
+    await nextTick();
+
+    expect(container.textContent).toContain('Renamed');
+    expect(container.textContent).not.toContain('Saved');
+  });
+
+  it('keeps focus on a card’s link when its refetched card remounts', async () => {
+    const card = (label: string) => ({
+      id: 5,
+      label,
+      cardHeaderHtml: `<a href="/entries/5" class="card-link">${label}</a>`,
+    });
+    const root = await mount({
+      props: {viewMode: 'cards', elements: [card('Old')]},
+      value: [5],
+    });
+    root.querySelector<HTMLElement>('a.card-link')!.focus();
+    stub.post.mockResolvedValue({data: {elements: [card('New')]}});
+
+    broadcast({event: 'saveElement', id: 5});
+
+    await vi.waitFor(() =>
+      expect(document.activeElement?.textContent).toBe('New')
+    );
+  });
+
   describe('maintaining hierarchy', () => {
     const news = {id: 1, label: 'News', level: 1};
     const clubNews = {id: 2, label: 'Club news', level: 2};

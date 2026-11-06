@@ -1982,6 +1982,14 @@ if (typeof BroadcastChannel !== 'undefined') {
       case 'deleteDraft':
         Craft.refreshElementInstances(ev.data.canonicalId, false);
         break;
+      // A response had too many saves to list, so any element may have changed.
+      case 'broadcastOverflow':
+        new Set(
+          $('div.element[data-id][data-settings]')
+            .toArray()
+            .map((element) => element.dataset.id)
+        ).forEach((id) => Craft.refreshElementInstances(id, false));
+        break;
     }
   });
 }
