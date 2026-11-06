@@ -17,6 +17,13 @@ use ReflectionMethod;
  */
 class ConfigurationSchema
 {
+    /** The precondition update and delete accept. */
+    public const ExpectedRevision = [
+        'type' => 'string',
+        'minLength' => 1,
+        'description' => 'The revision from the read your change is based on. The call fails without changing anything if the record has changed since. Without it, changes made since your read can be overwritten.',
+    ];
+
     public function __construct(private SchemaGenerator $generator)
     {
     }
@@ -59,6 +66,10 @@ class ConfigurationSchema
 
         if ($operation === ConfigurationOperation::Delete) {
             $properties['options'] = $this->object($parameters);
+        }
+
+        if (in_array($operation, [ConfigurationOperation::Update, ConfigurationOperation::Delete], true)) {
+            $properties['expectedRevision'] = self::ExpectedRevision;
         }
 
         return (new Tool(
