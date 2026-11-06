@@ -702,8 +702,30 @@ describe('in a form', () => {
     document
       .querySelector('craft-button span')!
       .dispatchEvent(new MouseEvent('click', {bubbles: true, composed: true}));
+    await new Promise((resolve) => setTimeout(resolve));
 
     expect(submits).toHaveLength(1);
+  });
+
+  it.each([
+    ['click()', (button: HTMLElement) => button.click()],
+    [
+      'a dispatched click',
+      (button: HTMLElement) =>
+        button.dispatchEvent(
+          new MouseEvent('click', {bubbles: true, cancelable: true})
+        ),
+    ],
+  ])('does not submit when a listener cancels %s', async (_, click) => {
+    const {form, submits} = await mountForm(
+      '<craft-button type="submit">Save</craft-button>'
+    );
+    form.addEventListener('click', (event) => event.preventDefault());
+
+    click(document.querySelector('craft-button')!);
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(submits).toHaveLength(0);
   });
 
   it('checks the form is valid before submitting it', async () => {
@@ -760,6 +782,23 @@ describe('in a form', () => {
     expect(submits).toHaveLength(1);
   });
 
+  it('does not let Enter in a field submit while its submit button is disabled', async () => {
+    const {userEvent} = await import('vite-plus/test/browser');
+    const {form, submits} = await mountForm(
+      '<input name="a"><input name="b"><craft-button type="submit" disabled>Save</craft-button>'
+    );
+
+    form.querySelector('input')!.focus();
+    await userEvent.keyboard('{Enter}');
+    expect(submits).toHaveLength(0);
+
+    const button = form.querySelector('craft-button')!;
+    button.disabled = false;
+    await button.updateComplete;
+    await userEvent.keyboard('{Enter}');
+    expect(submits).toHaveLength(1);
+  });
+
   it('takes its hidden submitter away with the last submit button', async () => {
     const {form} = await mountForm(
       '<craft-button type="submit">Save</craft-button><craft-button type="submit">Publish</craft-button>'
@@ -789,6 +828,20 @@ describe('keyboard', () => {
 
     await userEvent.tab();
     await userEvent.keyboard(key);
+
+    expect(onClick).toHaveBeenCalledOnce();
+  });
+
+  it('clicks once on Enter as a link', async () => {
+    const {userEvent} = await import('vite-plus/test/browser');
+    document.body.innerHTML = '<craft-button href="#here">Go</craft-button>';
+    const button = document.querySelector('craft-button')!;
+    await button.updateComplete;
+    const onClick = vi.fn((event: Event) => event.preventDefault());
+    button.addEventListener('click', onClick);
+
+    await userEvent.tab();
+    await userEvent.keyboard('{Enter}');
 
     expect(onClick).toHaveBeenCalledOnce();
   });

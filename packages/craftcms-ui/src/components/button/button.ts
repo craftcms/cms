@@ -54,6 +54,20 @@ function createImplicitSubmitter(): HTMLButtonElement {
 }
 
 /**
+ * Disables a form's hidden submitter while its first submit `craft-button` is
+ * disabled, as a disabled default button blocks implicit submission.
+ */
+function syncImplicitSubmitter(entry: {
+  button: HTMLButtonElement;
+  owners: Set<CraftButton>;
+}): void {
+  const [first] = [...entry.owners].sort((a, b) =>
+    a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
+  );
+  entry.button.disabled = first?.disabled ?? false;
+}
+
+/**
  * @summary Interactive element that triggers an action or event.
  * @since 1.0
  *
@@ -107,20 +121,60 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
 
   /** Clicks the button, unless it's disabled. */
   override click(): void {
-    if (!this.disabled) {
+    if (this.disabled) {
+      return;
+    }
+
+    this.#clicking = true;
+    try {
       super.click();
+    } finally {
+      this.#clicking = false;
+    }
+
+    if (this.#pendingFormAction) {
+      this.#runFormAction(this.#pendingFormAction);
     }
   }
 
+  /** Whether `click()` is dispatching, so it can act on the form itself. */
+  #clicking = false;
+
+  /** A click whose form action waits for every listener to have seen it. */
+  #pendingFormAction?: Event;
+
   /**
-   * Runs ahead of the page's own listeners: a disabled button that stays
-   * reachable by the pointer swallows the click, and a submit or reset button
-   * acts on its form.
+   * Runs ahead of the page's own listeners, so a disabled button that stays
+   * reachable by the pointer swallows the click.
    */
   #onClick = (event: Event) => {
     if (this.disabled) {
       event.preventDefault();
       event.stopImmediatePropagation();
+      return;
+    }
+
+    if (this.type === 'button') {
+      return;
+    }
+
+    // Like a native submit button, acting on the form only once the click is
+    // done, so a listener that cancels it stops the submit.
+    this.#pendingFormAction = event;
+
+    if (!this.#clicking) {
+      setTimeout(() => this.#runFormAction(event));
+    }
+  };
+
+  #runFormAction(event: Event): void {
+    if (this.#pendingFormAction !== event) {
+      return;
+    }
+
+    this.#pendingFormAction = undefined;
+
+    if (event.defaultPrevented) {
       return;
     }
 
@@ -131,7 +185,7 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
     } else if (this.type === 'reset') {
       form?.reset();
     }
-  };
+  }
 
   /**
    * Marks the button `active` while it's pressed. A press that starts a
@@ -153,6 +207,11 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
 
   /** Space and Enter press the button; Space mustn't scroll the page. */
   #onKeyDown = (event: KeyboardEvent) => {
+    // Keys on the link in link mode are the link's to handle.
+    if (event.composedPath()[0] !== this) {
+      return;
+    }
+
     if (event.key === ' ') {
       event.preventDefault();
     }
@@ -174,7 +233,7 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
   };
 
   #onKeyUp = (event: KeyboardEvent) => {
-    if (isActivationKey(event) && event.target === this) {
+    if (isActivationKey(event) && event.composedPath()[0] === this) {
       this.click();
     }
   };
@@ -253,6 +312,7 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
     entry.owners.add(this);
     form.append(entry.button);
     this.#submitterForm = form;
+    syncImplicitSubmitter(entry);
   }
 
   #releaseImplicitSubmitter(): void {
@@ -270,6 +330,7 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
     }
 
     entry.owners.delete(this);
+    syncImplicitSubmitter(entry);
 
     // Deferred: the form may be mid-removal itself, and a button moved within
     // it registers again before this runs.
@@ -326,6 +387,11 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
 
     if (changedProperties.has('type')) {
       this.#syncImplicitSubmitter();
+    } else if (changedProperties.has('disabled') && this.#submitterForm) {
+      const entry = implicitSubmitters.get(this.#submitterForm);
+      if (entry) {
+        syncImplicitSubmitter(entry);
+      }
     }
 
     // Only an `aria-disabled` it set itself is taken away again: an author
