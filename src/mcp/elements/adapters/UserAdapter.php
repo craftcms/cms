@@ -143,14 +143,16 @@ class UserAdapter extends BaseElementAdapter
             ];
         }
 
-        $data = $this->elementSerializer->serialize($element, $data, filterNulls: false, fields: $fields);
+        return $this->elementSerializer->withBudget(function() use ($element, $data, $fields): array {
+            $data = $this->elementSerializer->serialize($element, $data, filterNulls: false, fields: $fields);
 
-        // Addresses are a native field, so they’re only included when requested
-        if ($fields !== null && in_array('addresses', $fields, true) && !array_key_exists('addresses', $data)) {
-            $data['addresses'] = $this->elementSerializer->serializeNestedValue($element->getAddresses());
-        }
+            // Addresses are a native field, so they’re only included when requested
+            if ($fields !== null && in_array('addresses', $fields, true) && !array_key_exists('addresses', $data)) {
+                $data['addresses'] = $this->elementSerializer->serializeNestedValue($element->getAddresses());
+            }
 
-        return $data;
+            return $data;
+        });
     }
 
     public function create(array $attributes, array $fields, User $actor): array

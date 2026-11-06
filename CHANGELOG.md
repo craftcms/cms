@@ -21,7 +21,7 @@
 - MCP `fields` arguments now accept dot paths, such as `blocks.innerBlocks`, which include nested fields of nested elements as summaries.
 - MCP tools now return users’ addresses when `addresses` is included in `fields`.
 - Added `craft\mcp\elements\ElementAdapterRegistry::supports()`.
-- Added `craft\mcp\serializers\ElementSerializer::serializeNestedValue()` and `summarize()`.
+- Added `craft\mcp\serializers\ElementSerializer::serializeNestedValue()`, `summarize()`, and `withBudget()`.
 - Fixed a bug where “New entry” buttons could offer entry types or sections that `craft\elements\Entry::EVENT_DEFINE_ENTRY_TYPES` had excluded, resulting in a 400 error. ([#20322](https://github.com/craftcms/cms/issues/20322))
 
 ## 5.12.0.1 - 2026-11-03

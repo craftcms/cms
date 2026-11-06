@@ -165,7 +165,9 @@ class ElementSerializer extends \yii\base\Component
                 continue;
             }
 
-            $data += [$handle => $this->resolveNested($value, $mode, $requested[$handle] ?? $nested[$handle] ?? [], $serializeNested)];
+            $hidden = false;
+            $resolved = $this->resolveNested($value, $mode, $requested[$handle] ?? $nested[$handle] ?? [], $serializeNested, $hidden);
+            $data += [$handle => $hidden ? null : $resolved];
         }
 
         $event = new ElementSerializing([
@@ -180,9 +182,15 @@ class ElementSerializer extends \yii\base\Component
     }
 
     /**
-     * Runs a callback with a nested element budget shared by everything it serializes.
+     * Runs a callback with a single nested element budget shared by everything it serializes.
+     *
+     * Element adapters can use this to apply one budget to an element’s custom fields and its native nested fields.
+     *
+     * @template T
+     * @param callable(): T $callback
+     * @return T
      */
-    private function withBudget(callable $callback): mixed
+    public function withBudget(callable $callback): mixed
     {
         if ($this->remaining !== null) {
             return $callback();
@@ -256,19 +264,28 @@ class ElementSerializer extends \yii\base\Component
         }
 
         $isList = array_is_list($value);
+        // A list of only elements keeps its visible ones; any other array is removed along with its hidden elements
+        $isElementList = $isList && !array_filter($value, fn(mixed $item): bool => !$this->isNestedValue($item));
         $resolved = [];
 
         foreach ($value as $key => $item) {
-            if ($mode === self::NestedOmit && $this->isNestedValue($item)) {
-                continue;
-            }
-
             $itemHidden = false;
-            $result = $this->resolveNested($item, $mode, $paths, $serializeNested, $itemHidden);
+            $result = null;
+
+            if ($mode === self::NestedOmit && $this->isNestedValue($item)) {
+                // Omitted elements are still checked, so hidden ones remove the arrays that contain them too
+                $itemHidden = $item instanceof ElementInterface && $serializeNested($item, [], true) === null;
+
+                if (!$itemHidden) {
+                    continue;
+                }
+            } else {
+                $result = $this->resolveNested($item, $mode, $paths, $serializeNested, $itemHidden);
+            }
 
             if ($itemHidden) {
                 // Drop it from a list, or mark this array as hidden so its parent list drops it
-                if (!$isList) {
+                if (!$isList || ($this->isNestedValue($item) && !$isElementList)) {
                     $hidden = true;
                 }
 

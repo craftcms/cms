@@ -183,6 +183,9 @@ class ElementSerializerTest extends TestCase
                 ['type' => 'markup', 'html' => '<p>A</p>'],
                 ['type' => 'entry', 'entry' => new TestEntry(20, [], [])],
                 ['type' => 'entry', 'entry' => new TestEntry(10, [], [])],
+                ['marker', new TestEntry(20, [], [])],
+                ['marker', new TestEntry(10, [], [])],
+                [new TestEntry(10, [], []), new TestEntry(20, [], [])],
             ],
         ]);
         $serializer = $this->serializer();
@@ -192,8 +195,21 @@ class ElementSerializerTest extends TestCase
             ['custom' => ['value' => [
                 ['type' => 'markup', 'html' => '<p>A</p>'],
                 ['type' => 'entry', 'entry' => ['id' => 10]],
+                ['marker', ['id' => 10]],
+                [['id' => 10]],
             ], 'public' => false, 'requested' => true]],
             $serializer->serialize($element, data: [], fields: ['custom'], serializeNested: $serializeNested),
+        );
+
+        // Hidden elements are removed the same way when nested elements are omitted
+        self::assertSame(
+            ['custom' => ['value' => [
+                ['type' => 'markup', 'html' => '<p>A</p>'],
+                ['type' => 'entry'],
+                ['marker'],
+                [],
+            ], 'public' => false, 'requested' => false]],
+            $serializer->serialize($element, data: [], fields: null, serializeNested: $serializeNested),
         );
     }
 
@@ -212,6 +228,24 @@ class ElementSerializerTest extends TestCase
 
         $this->expectException(ToolCallException::class);
         $serializer->serialize($element, data: [], fields: ['blocks.inner'], serializeNested: $this->visible($serializer));
+    }
+
+    public function testNestedElementLimitIsSharedWithNativeNestedFields(): void
+    {
+        $element = new TestEntry(1, [new McpOutputTestField(['handle' => 'blocks'])], [
+            'blocks' => ElementCollection::make(array_map(fn(int $i): TestEntry => new TestEntry(100 + $i, [], []), range(1, 80))),
+        ]);
+        $native = ElementCollection::make(array_map(fn(int $i): TestEntry => new TestEntry(200 + $i, [], []), range(1, 30)));
+        $serializer = $this->serializer();
+
+        $serializer->serialize($element, data: [], fields: ['blocks'], serializeNested: $this->visible($serializer));
+        $serializer->serializeNestedValue($native, serializeNested: $this->visible($serializer));
+
+        $this->expectException(ToolCallException::class);
+        $serializer->withBudget(function() use ($serializer, $element, $native): void {
+            $serializer->serialize($element, data: [], fields: ['blocks'], serializeNested: $this->visible($serializer));
+            $serializer->serializeNestedValue($native, serializeNested: $this->visible($serializer));
+        });
     }
 
     /**
