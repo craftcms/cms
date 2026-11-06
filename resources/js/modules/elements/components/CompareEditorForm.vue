@@ -30,7 +30,6 @@
     fieldNodes,
     layoutUid,
     rememberValues,
-    sideIconHtml,
     withoutCompareAction,
   } from '@/modules/elements/compareLayout';
   import {
@@ -125,7 +124,6 @@
           // The screen marks changes itself, so not with the editor's indicator too.
           showStatus: false,
           labelBadge: props.changed[uid] ? t('Changed') : null,
-          headingPrefix: sideIconHtml('to'),
         },
       });
     };

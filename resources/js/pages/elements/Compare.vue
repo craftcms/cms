@@ -40,7 +40,8 @@
     tabsWithChanges,
     tabsWithErrors,
     withServerTabFields,
-    withSideIcon,
+    withoutCompareActions,
+    sideIcons,
     type CompareRow,
     type CompareSide,
     type CompareTab,
@@ -180,10 +181,10 @@
     version: props.from.label === props.to.label,
   }));
 
-  /** Each read-only side's form, with its icon before each field's label. */
+  /** Each read-only side's form, without the fields' “Compare changes” action. */
   const sideForms = computed(() => ({
-    from: withSideIcon(props.from.ui, 'from'),
-    to: withSideIcon(props.to.ui, 'to'),
+    from: withoutCompareActions(props.from.ui),
+    to: withoutCompareActions(props.to.ui),
   }));
 
   const tabs = computed(() =>
@@ -720,6 +721,13 @@
             role="group"
             :aria-labelledby="`compare-${key}-title`"
           >
+            <!-- Tells stacked sides apart. Decorative: the cell is named by
+                 its side's heading. -->
+            <craft-icon
+              :name="sideIcons[key]"
+              class="compare__side-icon"
+              aria-hidden="true"
+            ></craft-icon>
             <p v-if="!rowUid(rowIndex, key)" class="compare__missing">
               {{ t('Not in this version') }}
             </p>
@@ -966,11 +974,7 @@
     display: none;
   }
 
-  /*
-   * The side icons only tell stacked sides apart. Hidden with the slot that
-   * holds them, which would otherwise keep its gap before the field's label.
-   */
-  .compare__panels :deep([slot='heading-prefix']:has(> .compare-side-icon)) {
+  .compare__side-icon {
     display: none;
   }
 
@@ -982,8 +986,31 @@
   }
 
   @container compare (width < 48rem) {
-    .compare__panels :deep([slot='heading-prefix']:has(> .compare-side-icon)) {
+    .compare__row {
+      /* A craft-icon is 1.25em wide, as the header's side icon is. */
+      --compare-side-icon-column: calc(var(--c-size-icon-md) * 1.25);
+      --compare-side-indent: calc(
+        var(--compare-side-icon-column) + var(--c-spacing-sm)
+      );
+    }
+
+    .compare__cell {
+      display: grid;
+      grid-template-columns: var(--compare-side-icon-column) minmax(0, 1fr);
+      column-gap: var(--c-spacing-sm);
+    }
+
+    .compare__cell > * {
+      grid-column: 2;
+    }
+
+    .compare__cell > .compare__side-icon {
       display: inline-flex;
+      grid-column: 1;
+      grid-row: 1 / span 99;
+      align-self: start;
+      margin-block-start: calc((1lh - 1em) / 2);
+      font-size: var(--c-size-icon-md);
     }
 
     .compare__panel:not(
@@ -998,8 +1025,9 @@
       .compare__cell--to::before {
         content: '';
         position: absolute;
-        inset-block-start: 0;
-        inset-inline: var(--compare-cell-padding-inline);
+        grid-area: 1 / 2 / 2 / 3;
+        inset-block-start: calc(var(--compare-cell-padding-block) * -1);
+        inset-inline: 0;
         border-block-start: 1px solid var(--c-color-neutral-border-quiet);
       }
     }
@@ -1011,6 +1039,7 @@
       align-self: start;
       justify-self: center;
       display: flex;
+      margin-inline-start: var(--compare-side-indent);
       translate: 0 -50%;
     }
 

@@ -3,7 +3,6 @@ import type {
   UiNodePayload,
   UiPayload,
   UiProperties,
-  UiValue,
   UiValues,
 } from '@/modules/ui/types';
 import {readControlValue, type UiValueSnapshot} from '@/modules/ui/valueAccess';
@@ -256,27 +255,19 @@ export const sideIcons: Record<CompareSide, string> = {
   to: 'circle-b',
 };
 
-/** The markup for a side's icon before a field's label. */
-export function sideIconHtml(side: CompareSide): string {
-  return `<craft-icon name="${sideIcons[side]}" class="compare-side-icon" aria-hidden="true"></craft-icon>`;
-}
-
 /**
- * A side's form with its icon before each field's label, for the screen to
- * show once the sides are stacked. It's decorative: the field's cell is
- * already named by the side's heading. Its fields lose their “Compare
- * changes” action, which the screen already is.
+ * A side's form without its fields' “Compare changes” action, which the
+ * screen already is.
  */
-export function withSideIcon(ui: UiPayload, side: CompareSide): UiPayload {
-  const headingPrefix = sideIconHtml(side);
-  const prefix = (nodes: UiNodePayload[]): UiNodePayload[] =>
+export function withoutCompareActions(ui: UiPayload): UiPayload {
+  const strip = (nodes: UiNodePayload[]): UiNodePayload[] =>
     nodes.map((node) =>
       node.control
-        ? withoutCompareAction({...node, props: {...node.props, headingPrefix}})
-        : {...node, children: node.children && prefix(node.children)}
+        ? withoutCompareAction(node)
+        : {...node, children: node.children && strip(node.children)}
     );
 
-  return {...ui, nodes: prefix(ui.nodes)};
+  return {...ui, nodes: strip(ui.nodes)};
 }
 
 /** The field action that opens “Compare changes”, which the screen already is. */

@@ -7,12 +7,11 @@ import {
   editedFields,
   rememberValues,
   liveRows,
-  sideIconHtml,
   tabsWithChanges,
   tabsWithErrors,
   withServerTabFields,
   withoutCompareAction,
-  withSideIcon,
+  withoutCompareActions,
   type CompareRow,
 } from './compareLayout';
 
@@ -314,32 +313,6 @@ describe('withServerTabFields', () => {
   });
 });
 
-describe('withSideIcon', () => {
-  it('puts the side’s icon before every field’s label, in tabs or not, and leaves the rest alone', () => {
-    const ui = withSideIcon(
-      form([field('title'), tab('visit', 'Visit', ['venue'])]),
-      'to'
-    );
-    const prefixes = (nodes: UiNodePayload[]): unknown[] =>
-      nodes.flatMap((node) =>
-        node.control
-          ? [node.props.headingPrefix]
-          : [
-              [node.props.label, node.props.headingPrefix],
-              ...prefixes(node.children ?? []),
-            ]
-      );
-
-    expect(prefixes(ui.nodes)).toEqual([
-      sideIconHtml('to'),
-      ['Visit', undefined],
-      sideIconHtml('to'),
-    ]);
-    expect(sideIconHtml('to')).toContain('name="circle-b"');
-    expect(sideIconHtml('from')).toContain('name="circle-a"');
-  });
-});
-
 describe('withoutCompareAction', () => {
   const compare = {
     type: 'button',
@@ -386,6 +359,18 @@ describe('withoutCompareAction', () => {
         )
       )
     ).toEqual([{type: 'group', items: [copy]}]);
+  });
+
+  it('drops it from every field of a side’s form, in tabs or not', () => {
+    const ui = withoutCompareActions(
+      form([
+        withMenu([compare, copy]),
+        {...tab('visit', 'Visit', []), children: [withMenu([compare, copy])]},
+      ])
+    );
+
+    expect(menuItems(ui.nodes[0]!)).toEqual([copy]);
+    expect(menuItems(ui.nodes[1]!.children![0]!)).toEqual([copy]);
   });
 
   it('drops the action menu when that was all it had, keeping the field’s other actions', () => {
