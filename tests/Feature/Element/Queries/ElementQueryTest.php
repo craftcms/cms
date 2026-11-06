@@ -156,6 +156,29 @@ it('reads value() from the first element', function () {
         ->and(fn () => $query()->id(-1)->valueOrFail('title'))->toThrow(ElementNotFoundException::class);
 });
 
+it('plucks and aggregates mapped columns and custom fields', function () {
+    $result = EntryModel::factory()->withField('num', Number::class, value: 5)->createElementWithFields();
+    $first = $result->element;
+    $second = EntryModel::factory()->withFieldLayout(FieldLayout::factory()->forField($result->fields->get('num')))->createElement();
+    $second->setFieldValue('num', 20);
+    Elements::saveElement($second);
+    $first->title = 'First';
+    $second->title = 'Second';
+    Elements::saveElement($first);
+    Elements::saveElement($second);
+
+    $query = fn () => entryQuery()->id([$first->id, $second->id])->orderBy('title');
+
+    expect($query()->pluck('num')->map(fn ($value) => (int) $value)->all())->toBe([5, 20])
+        ->and($query()->pluck('title', 'id')->all())->toBe([$first->id => 'First', $second->id => 'Second'])
+        ->and($query()->implode('title', ', '))->toBe('First, Second')
+        ->and((int) $query()->sum('num'))->toBe(25)
+        ->and((int) $query()->max('num'))->toBe(20)
+        ->and((float) $query()->avg('num'))->toBe(12.5)
+        ->and($query()->count('num'))->toBe(2)
+        ->and($query()->max('dateCreated'))->not->toBeNull();
+});
+
 it('ignores inner query pagination when getting a pagination count', function () {
     EntryModel::factory(5)->create();
 

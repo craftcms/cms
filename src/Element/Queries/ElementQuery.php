@@ -163,7 +163,6 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         'getconnection',
         'getgrammar',
         'getrawbindings',
-        'implode',
         'insert',
         'insertgetid',
         'insertorignore',
@@ -228,6 +227,13 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     private bool $elementQueryBeforeQueryCalled = false;
 
     private ?Builder $queryBeforePrepare = null;
+
+    /**
+     * @var bool Whether the prepared query selects the default columns, rather than only the ones passed to select()
+     *
+     * @see applySelectParams()
+     */
+    private bool $selectsDefaultColumns = true;
 
     /** @var array<string,string|callable|array<array-key, mixed>>|null */
     private ?array $columnMapBeforePrepare = null;
@@ -296,6 +302,20 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
                 $this->columnMap[$column] ??= "$this->table.$column";
             }
         }
+
+        // The other columns the query selects by default, which several joined tables can share
+        $this->columnMap += [
+            'archived' => 'elements.archived',
+            'canonicalId' => 'elements.canonicalId',
+            'dateDeleted' => 'elements.dateDeleted',
+            'dateLastMerged' => 'elements.dateLastMerged',
+            'draftId' => 'elements.draftId',
+            'enabledForSite' => 'elements_sites.enabled',
+            'fieldLayoutId' => 'elements.fieldLayoutId',
+            'revisionId' => 'elements.revisionId',
+            'siteSettingsId' => 'elements_sites.id',
+            'uri' => 'elements_sites.uri',
+        ];
 
         $this->initTraits();
 
@@ -520,19 +540,23 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     }
 
     /**
-     * Reads an attribute from a result, dropping a table prefix such as `elements.` from the column name.
+     * Reads an attribute from a result.
      *
      * @param  TElement|array<string, mixed>  $element
      */
     private function elementValue(ElementInterface|array $element, string|Expression $column): mixed
     {
+        return data_get($element, $this->attributeName($column));
+    }
+
+    /**
+     * Returns the element attribute a column name refers to, dropping a table prefix such as `elements.`.
+     */
+    private function attributeName(string|Expression $column): string
+    {
         $column = $column instanceof Expression ? (string) $column->getValue($this->query->getGrammar()) : $column;
 
-        if (! $this->isCustomFieldHandle(explode('.', $column, 2)[0])) {
-            $column = Str::afterLast($column, '.');
-        }
-
-        return data_get($element, $column);
+        return $this->isCustomFieldHandle(explode('.', $column, 2)[0]) ? $column : Str::afterLast($column, '.');
     }
 
     /**
@@ -642,13 +666,17 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         return $this->first($columns);
     }
 
-    /** @return Collection<array-key, mixed> */
-    public function pluck(string $column, ?string $key = null): Collection
+    /**
+     * Get a collection of a column’s raw values, optionally keyed by another column’s.
+     *
+     * Columns can be custom field handles and other mapped names, such as `id` or `dateCreated`.
+     *
+     * @return Collection<array-key, mixed>
+     */
+    public function pluck(string|Expression $column, string|Expression|null $key = null): Collection
     {
-        $column = $this->hasColumnMapping($column) ? $this->columnMap[$column] : $column;
-
         if (! is_null($result = $this->getResultOverride())) {
-            return collect($result)->pluck($column, $key);
+            return collect($result)->pluck($this->attributeName($column), $key === null ? null : $this->attributeName($key));
         }
 
         try {
@@ -657,18 +685,68 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return new Collection;
         }
 
-        $column = $this->hasColumnMapping($column) ? $this->columnMap[$column] : $column;
+        // Select only the plucked columns, unless the query selects its own, which they may refer to by alias
+        $query = clone $this->query;
+        $query->columns = $this->selectsDefaultColumns ? [] : $query->columns;
+        $valueColumn = $this->pluckColumn($query, $column, 'pluckValue');
+        $keyColumn = $key === null ? null : $this->pluckColumn($query, $key, 'pluckKey');
+
+        $pluck = fn () => $query->pluck($valueColumn, $keyColumn);
 
         if ((int) $this->queryCacheDuration >= 0) {
             return DependencyCache::remember(
                 key: $this->queryCacheKey($this, 'pluck', [$column, $key]),
                 ttl: $this->queryCacheDuration,
-                callback: fn () => $this->query->pluck($column, $key),
+                callback: $pluck,
                 dependency: $this->getCacheDependency(),
             );
         }
 
-        return $this->query->pluck($column, $key);
+        return $pluck();
+    }
+
+    /**
+     * Concatenate a column’s raw values as a string.
+     */
+    public function implode(string|Expression $column, string $glue = ''): string
+    {
+        return $this->pluck($column)->implode($glue);
+    }
+
+    /**
+     * Adds a column to a pluck query’s select under the given alias and returns the name to read it by.
+     *
+     * A column the query’s own select already includes is read by its name, as in Laravel.
+     */
+    private function pluckColumn(Builder $query, string|Expression $column, string $alias): string
+    {
+        if (! $this->selectsDefaultColumns && is_string($column) && ! $this->hasColumnMapping($column)) {
+            return $column;
+        }
+
+        $query->columns[] = new Alias($this->resolveColumn($column), $alias);
+
+        return $alias;
+    }
+
+    /**
+     * Resolves a column name through the column map, so custom field handles and names like `id` refer to their columns.
+     *
+     * A custom field used in several field layouts resolves to the first of its instances’ values that isn’t null.
+     */
+    private function resolveColumn(string|Expression $column): string|Expression
+    {
+        if (! is_string($column) || ! $this->hasColumnMapping($column)) {
+            return $column;
+        }
+
+        $column = $this->resolveColumnMapping($column);
+
+        if (! is_array($column)) {
+            return $column;
+        }
+
+        return count($column) === 1 ? reset($column) : new Coalesce($column);
     }
 
     /**
@@ -739,6 +817,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         $eagerLoadedCount = $this->eagerLoad(count: true, columns: $columns);
+        $cacheKeyColumns = $columns;
+        $columns = is_array($columns) ? array_map($this->resolveColumn(...), $columns) : $this->resolveColumn($columns);
 
         if ($eagerLoadedCount !== null) {
             return $this->applyAfterQueryCallbacks($eagerLoadedCount);
@@ -746,7 +826,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
         if ((int) $this->queryCacheDuration >= 0) {
             $result = DependencyCache::remember(
-                key: $this->queryCacheKey($this, 'count', $columns),
+                key: $this->queryCacheKey($this, 'count', $cacheKeyColumns),
                 ttl: $this->queryCacheDuration,
                 callback: fn () => $this->query->count($columns),
                 dependency: $this->getCacheDependency(),
@@ -1153,6 +1233,32 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     }
 
     /**
+     * Resolves the columns passed to an aggregate method, such as `sum('price')`, through the column map.
+     *
+     * @param  array<int, mixed>  $parameters
+     * @return array<int, mixed>
+     */
+    private function resolveAggregateColumns(string $method, array $parameters): array
+    {
+        $index = match ($method) {
+            'average', 'avg', 'max', 'min', 'sum' => 0,
+            'aggregate', 'numericaggregate' => 1,
+            default => null,
+        };
+
+        if ($index === null || ! isset($parameters[$index])) {
+            return $parameters;
+        }
+
+        $columns = $parameters[$index];
+        $parameters[$index] = is_array($columns)
+            ? array_map(fn ($column) => is_string($column) || $column instanceof Expression ? $this->resolveColumn($column) : $column, $columns)
+            : (is_string($columns) || $columns instanceof Expression ? $this->resolveColumn($columns) : $columns);
+
+        return $parameters;
+    }
+
+    /**
      * Dynamically handle calls into the query instance.
      *
      * @param  string  $method
@@ -1196,9 +1302,12 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
                 return null;
             }
 
+            $cacheKeyParameters = $parameters;
+            $parameters = $this->resolveAggregateColumns(strtolower($method), $parameters);
+
             if ((int) $this->queryCacheDuration >= 0) {
                 return DependencyCache::remember(
-                    key: $this->queryCacheKey($this, strtolower($method), $parameters),
+                    key: $this->queryCacheKey($this, strtolower($method), $cacheKeyParameters),
                     ttl: $this->queryCacheDuration,
                     callback: fn () => $this->getQuery()->{$method}(...$parameters),
                     dependency: $this->getCacheDependency(),
@@ -1516,6 +1625,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
                 }
             }
         }
+
+        $this->selectsDefaultColumns = $includeDefaults;
 
         // Is there still a ** placeholder param?
         if (! $includeDefaults) {
