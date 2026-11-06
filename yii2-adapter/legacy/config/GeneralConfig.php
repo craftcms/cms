@@ -1653,7 +1653,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     #[Deprecated(message: 'in 6.0.0. [[tempAssetUploadDisk()]] should be used instead.')]
     public function tempAssetUploadFs(?string $value): self
     {
-        return $this->tempAssetUploadDisk($value);
+        $this->tempAssetUploadDisk($value);
+
+        return $this;
     }
 
     /**
