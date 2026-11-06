@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\ContentBlockQuery;
 use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
@@ -132,6 +133,27 @@ it('compares bound dates in UTC', function () {
     expect(entryQuery()->status(null)->where('entries.postDate', '<=', now())->ids())->toBe([$past->id])
         ->and(entryQuery()->status(null)->whereFuture('entries.postDate')->ids())->toBe([$future->id])
         ->and(entryQuery()->status(null)->whereBetween('entries.postDate', [now()->subMinutes(90), now()])->ids())->toBe([$past->id]);
+});
+
+it('reads value() from the first element', function () {
+    $result = EntryModel::factory()->withField('teaser', PlainText::class, value: 'Teaser B')->createElementWithFields();
+    $b = $result->element;
+    $a = EntryModel::factory()->state(['typeId' => $b->typeId, 'sectionId' => $b->sectionId])->createElement();
+    $a->title = 'A';
+    $a->setFieldValue('teaser', 'Teaser A');
+    $b->title = 'B';
+    Elements::saveElement($a);
+    Elements::saveElement($b);
+
+    $query = fn () => entryQuery()->sectionId($b->sectionId)->orderBy('title');
+
+    expect($query()->value('title'))->toBe('A')
+        ->and($query()->value('elements.id'))->toBe($a->id)
+        ->and($query()->value('teaser'))->toBe('Teaser A')
+        ->and($query()->value('postDate'))->toBeInstanceOf(DateTimeInterface::class)
+        ->and($query()->id($b->id)->soleValue('teaser'))->toBe('Teaser B')
+        ->and($query()->id(-1)->value('title'))->toBeNull()
+        ->and(fn () => $query()->id(-1)->valueOrFail('title'))->toThrow(ElementNotFoundException::class);
 });
 
 it('ignores inner query pagination when getting a pagination count', function () {

@@ -2616,11 +2616,12 @@ JS;
             if ($this->id) {
                 // Figure out how deep the ancestors go
                 $maxDepth = self::find()
-                    ->select('level')
                     ->descendantOf($this)
                     ->status(null)
                     ->leaves()
-                    ->value('level');
+                    ->limit(1)
+                    ->pluck('level')
+                    ->first();
                 $depth = 1 + ($maxDepth ?: $this->level) - $this->level;
             } else {
                 $depth = 1;
@@ -2889,13 +2890,14 @@ JS;
         // If this is a provisional draft and its new parent matches the canonical entry’s, just drop it from the structure
         if ($this->isProvisionalDraft) {
             $canonicalParentId = self::find()
-                ->select(['elements.id'])
                 ->ancestorOf($this->getCanonicalId())
                 ->ancestorDist(1)
                 ->status(null)
                 ->site('*')
                 ->unique()
-                ->value('id');
+                ->limit(1)
+                ->pluck('elements.id')
+                ->first();
 
             if ($parentId === $canonicalParentId) {
                 Structures::remove($this->structureId, $this);

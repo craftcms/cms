@@ -19,6 +19,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Query;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
@@ -177,7 +178,6 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         'sum',
         'tosql',
         'torawsql',
-        'value',
     ];
 
     /**
@@ -483,6 +483,56 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         } catch (RecordsNotFoundException) {
             throw (new ElementNotFoundException)->setElement($this->elementType);
         }
+    }
+
+    /**
+     * Get a single attribute’s value from the first result of the query.
+     *
+     * Like Eloquent, the value is read from the hydrated element, so custom fields return their normalized values.
+     * Use `pluck()` for raw column values.
+     */
+    public function value(string|Expression $column): mixed
+    {
+        $element = $this->first();
+
+        return $element === null ? null : $this->elementValue($element, $column);
+    }
+
+    /**
+     * Get a single attribute’s value from the first result of the query if it’s the sole matching element.
+     *
+     * @throws ElementNotFoundException<TElement>
+     * @throws MultipleRecordsFoundException
+     */
+    public function soleValue(string|Expression $column): mixed
+    {
+        return $this->elementValue($this->sole(), $column);
+    }
+
+    /**
+     * Get a single attribute’s value from the first result of the query or throw an exception.
+     *
+     * @throws ElementNotFoundException<TElement>
+     */
+    public function valueOrFail(string|Expression $column): mixed
+    {
+        return $this->elementValue($this->firstOrFail(), $column);
+    }
+
+    /**
+     * Reads an attribute from a result, dropping a table prefix such as `elements.` from the column name.
+     *
+     * @param  TElement|array<string, mixed>  $element
+     */
+    private function elementValue(ElementInterface|array $element, string|Expression $column): mixed
+    {
+        $column = $column instanceof Expression ? (string) $column->getValue($this->query->getGrammar()) : $column;
+
+        if (! $this->isCustomFieldHandle(explode('.', $column, 2)[0])) {
+            $column = Str::afterLast($column, '.');
+        }
+
+        return data_get($element, $column);
     }
 
     /**

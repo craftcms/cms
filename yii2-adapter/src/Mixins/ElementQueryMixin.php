@@ -55,10 +55,10 @@ class ElementQueryMixin
     public function scalar(): Closure
     {
         return function() {
-            Deprecator::log('ElementQuery-scalar', 'Calling ->scalar on an ElementQuery is deprecated. Use ->value($column) instead.');
+            Deprecator::log('ElementQuery-scalar', 'Calling ->scalar on an ElementQuery is deprecated. Use ->pluck($column)->first() for the raw value, or ->value($column) for the element’s value.');
 
             /** @phpstan-ignore-next-line */
-            return $this->value($this->query->getColumns()[0]);
+            return (clone $this)->limit(1)->pluck($this->query->getColumns()[0])->first();
         };
     }
 
