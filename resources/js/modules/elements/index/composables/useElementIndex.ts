@@ -556,13 +556,21 @@ export function useElementIndex(options: UseElementIndexOptions) {
     if (row) selection.selectRow(row, {checked: true});
   }
 
-  // Rows saved in another tab are reloaded. Saves in this one refresh the index
-  // where they happen, such as after a quick edit.
+  // Rows saved in another tab are reloaded, once for all the rows saved
+  // together. Saves in this one refresh the index where they happen, such as
+  // after a quick edit.
+  let reloadQueued = false;
   tryOnScopeDispose(
     onElementChanged((id) => {
-      if (elementIndex.data?.some((row) => Number(row.id) === id)) {
+      const shown =
+        id === null ||
+        elementIndex.data?.some((row) => Number(row.id) === id) === true;
+      if (!shown || reloadQueued) return;
+      reloadQueued = true;
+      queueMicrotask(() => {
+        reloadQueued = false;
         void refresh();
-      }
+      });
     })
   );
 

@@ -33,12 +33,6 @@ interface Consumer {
   elements: () => PresentedElement[];
 }
 
-/**
- * How long changes are gathered into one refetch. `onElementChanged()` calls
- * back once per element, so elements saved together arrive a moment apart.
- */
-const BATCH_MS = 10;
-
 const cache = reactive(new Map<string, ElementPresentation>());
 /**
  * Each entry's latest write or refetch. A refetch's answer is only cached if
@@ -48,6 +42,8 @@ const generations = new Map<string, number>();
 let lastGeneration = 0;
 const consumers = new Set<Consumer>();
 const changedIds = new Set<number>();
+/** Whether a response left saves out, so every drawn element may have changed. */
+let everythingChanged = false;
 let stopListening: (() => void) | null = null;
 
 function siteKey(siteId: unknown): number | null {
@@ -91,7 +87,9 @@ function usedKeys(): Set<string> {
 /** Refetches the changed elements that components are drawing, one request per way they're drawn. */
 async function refetchChanged(): Promise<void> {
   const ids = new Set(changedIds);
+  const everything = everythingChanged;
   changedIds.clear();
+  everythingChanged = false;
 
   const groups = new Map<
     string,
@@ -100,7 +98,7 @@ async function refetchChanged(): Promise<void> {
   consumers.forEach((consumer) => {
     const query = consumer.query();
     consumer.elements().forEach(({id, siteId}) => {
-      if (!ids.has(id)) {
+      if (!everything && !ids.has(id)) {
         return;
       }
 
@@ -142,14 +140,20 @@ async function refetchChanged(): Promise<void> {
 function listen(): void {
   stopListening ??= onElementChanged(
     (id) => {
-      if (changedIds.size === 0) {
-        setTimeout(() => {
+      // `onElementChanged()` hands over everything that changed together in
+      // one task, so it's all refetched together.
+      if (changedIds.size === 0 && !everythingChanged) {
+        queueMicrotask(() => {
           refetchChanged().catch((error: unknown) => {
             console.warn('Couldn’t refresh elements:', error);
           });
-        }, BATCH_MS);
+        });
       }
-      changedIds.add(id);
+      if (id === null) {
+        everythingChanged = true;
+      } else {
+        changedIds.add(id);
+      }
     },
     {includeSelf: true}
   );

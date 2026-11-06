@@ -121,6 +121,20 @@ describe('useElementPresentations()', () => {
     expect((post.mock.calls[0]![1] as any).elementIds).toEqual([7, 8]);
   });
 
+  it('refetches everything components draw when a response left saves out', async () => {
+    const post = respond();
+    consume({elementType: ENTRY, viewMode: 'list'}, [
+      {id: 7, siteId: 1},
+      {id: 8, siteId: 1},
+    ]);
+
+    broadcast({event: 'broadcastOverflow'});
+    await settle(post);
+
+    expect(post).toHaveBeenCalledOnce();
+    expect((post.mock.calls[0]![1] as any).elementIds).toEqual([7, 8]);
+  });
+
   it('lets a later server render replace what was refetched', async () => {
     const post = respond();
     const list = {elementType: ENTRY, viewMode: 'list'};

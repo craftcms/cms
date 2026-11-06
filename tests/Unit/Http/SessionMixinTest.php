@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\Mixins\SessionMixin;
 use CraftCms\Cms\Providers\AppServiceProvider;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\View\Enums\Position;
@@ -70,4 +71,26 @@ it('flashes broadcast messages as scripts for pages that render flashed JS', fun
         null,
     ]])
         ->and(session()->getBroadcasts())->toBe([]);
+});
+
+it('keeps queued broadcast messages when JS is flashed', function () {
+    app()->instance('request', Request::create('/admin/dashboard'));
+
+    session()->broadcastToJs(['event' => 'saveElement', 'id' => 42]);
+    session()->flashJs('console.log("saved");');
+
+    expect(session()->getBroadcasts())->toBe([['event' => 'saveElement', 'id' => 42]]);
+});
+
+it('says when it leaves broadcast messages out', function () {
+    app()->instance('request', Request::create('/admin/dashboard'));
+
+    foreach (range(1, SessionMixin::MAX_BROADCASTS + 5) as $id) {
+        session()->broadcastToJs(['event' => 'saveElement', 'id' => $id]);
+    }
+    $messages = session()->getBroadcasts();
+
+    expect($messages)->toHaveCount(SessionMixin::MAX_BROADCASTS + 1)
+        ->and($messages[SessionMixin::MAX_BROADCASTS - 1])->toBe(['event' => 'saveElement', 'id' => SessionMixin::MAX_BROADCASTS])
+        ->and($messages[SessionMixin::MAX_BROADCASTS])->toBe(SessionMixin::OVERFLOW_BROADCAST);
 });

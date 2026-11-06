@@ -16,10 +16,16 @@ use Illuminate\Session\SessionManager;
 class SessionMixin
 {
     /**
-     * The most messages a response broadcasts. A bulk save would otherwise list every element it touched; pages that
-     * show that many elements reload them anyway.
+     * The most messages a response broadcasts. A bulk save would otherwise list every element it touched; past this,
+     * {@see OVERFLOW_BROADCAST} stands in for the rest.
      */
     public const int MAX_BROADCASTS = 50;
+
+    /**
+     * Sent after {@see MAX_BROADCASTS} messages, to say that more were left out. Listeners for element changes refresh
+     * every element they show.
+     */
+    public const array OVERFLOW_BROADCAST = ['event' => 'broadcastOverflow'];
 
     /**
      * Queues a message for every open control panel tab, including the one the request came from. It goes out with
@@ -39,8 +45,12 @@ class SessionMixin
              */
             $messages = $this->get('__broadcasts', []);
 
-            if (in_array($message, $messages, true) || count($messages) >= SessionMixin::MAX_BROADCASTS) {
+            if (in_array($message, $messages, true) || in_array(SessionMixin::OVERFLOW_BROADCAST, $messages, true)) {
                 return;
+            }
+
+            if (count($messages) >= SessionMixin::MAX_BROADCASTS) {
+                $message = SessionMixin::OVERFLOW_BROADCAST;
             }
 
             $this->flash('__broadcasts', [...$messages, $message]);
@@ -102,7 +112,7 @@ class SessionMixin
              *
              * @phpstan-ignore-next-line
              */
-            $scripts = $this->getJs();
+            $scripts = $this->get('__js', []);
             $scripts[] = [$js, $position->value, $key];
             $this->flash('__js', $scripts);
         };
