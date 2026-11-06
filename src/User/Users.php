@@ -87,7 +87,6 @@ class Users
     public function __construct(
         private readonly Elements $elements,
         private readonly ElementCaches $elementCaches,
-        private readonly Fields $fields,
     ) {}
 
     /**
@@ -452,7 +451,7 @@ class Users
      */
     public function getFieldLayout(): FieldLayout
     {
-        return $this->fields->getLayoutByType(User::class);
+        return app(Fields::class)->getLayoutByType(User::class);
     }
 
     /**
@@ -1162,8 +1161,10 @@ class Users
     {
         $data = $event->newValue;
 
+        $fieldsService = app(Fields::class);
+
         if (empty($data) || empty($config = reset($data))) {
-            $this->fields->deleteLayoutsByType(User::class);
+            $fieldsService->deleteLayoutsByType(User::class);
 
             return;
         }
@@ -1173,10 +1174,10 @@ class Users
 
         // Save the field layout
         $layout = FieldLayout::createFromConfig($config);
-        $layout->id = $this->fields->getLayoutByType(User::class)->id;
+        $layout->id = $fieldsService->getLayoutByType(User::class)->id;
         $layout->type = User::class;
         $layout->uid = key($data);
-        $this->fields->saveLayout($layout, false);
+        $fieldsService->saveLayout($layout, false);
 
         // Invalidate user caches
         $this->elementCaches->invalidateForElementType(User::class);
