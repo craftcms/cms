@@ -1,0 +1,56 @@
+name: 'ci / Benchmarks comment'
+on:
+  workflow_run:
+    workflows: ['ci / Benchmarks']
+    types: [completed]
+
+# Runs from the default branch with a write token, so it never checks out or runs the pull request's code. It only
+# reads the report that benchmarks.yml uploaded.
+permissions:
+  actions: read
+  pull-requests: write
+
+jobs:
+  comment:
+    name: 'Comment'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+
+    steps:
+      - name: Download the report
+        uses: actions/download-artifact@v4
+        with:
+          name: benchmarks
+          path: benchmarks
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+
+      - name: Comment on the pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          pr=$(cat benchmarks/pr-number)
+          if ! [[ "$pr" =~ ^[0-9]+$ ]]; then
+            echo "Invalid pull request number."
+            exit 1
+          fi
+
+          # The PR number comes from the pull request's own run, so make sure it's the pull request that was measured
+          if [ "$(gh api "repos/$REPO/pulls/$pr" --jq .head.sha)" != "$HEAD_SHA" ]; then
+            echo "Pull request #$pr has moved on from $HEAD_SHA."
+            exit 0
+          fi
+
+          # Update the earlier report rather than adding another one
+          comment=$(gh api --paginate "repos/$REPO/issues/$pr/comments" \
+            --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("<!-- craft-benchmarks -->"))) | .id' \
+            | head -n 1)
+
+          if [ -n "$comment" ]; then
+            gh api --method PATCH "repos/$REPO/issues/comments/$comment" -F body=@benchmarks/report.md > /dev/null
+          else
+            gh api "repos/$REPO/issues/$pr/comments" -F body=@benchmarks/report.md > /dev/null
+          fi
