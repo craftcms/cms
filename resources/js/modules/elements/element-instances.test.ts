@@ -7,7 +7,7 @@ import {
   refreshElementInstances,
 } from './element-instances';
 
-const ENTRY = 'craft\\elements\\Entry';
+const ENTRY = 'CraftCms\\Cms\\Entry\\Elements\\Entry';
 
 function chipHtml(
   label: string,
