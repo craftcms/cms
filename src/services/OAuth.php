@@ -365,7 +365,7 @@ class OAuth extends Component
 
     public function resource(string $resource): string
     {
-        return $this->getResource($resource)->getResourceUrl();
+        return $this->withoutRequestTokens($this->getResource($resource)->getResourceUrl());
     }
 
     public function issuer(string $resource): string
@@ -418,7 +418,7 @@ class OAuth extends Component
         if ($endpoint !== '') {
             // `resource` is left for clients’ RFC 8707 resource indicators. URLs are built on the current request’s
             // host when they have the script name or the base URL is relative, so put them on the base URL’s.
-            $url = new Uri(UrlHelper::siteUrl("$general->actionTrigger/oauth/$endpoint", ['oauthResource' => $resource], siteId: $site->id));
+            $url = new Uri($this->withoutRequestTokens(UrlHelper::siteUrl("$general->actionTrigger/oauth/$endpoint", ['oauthResource' => $resource], siteId: $site->id)));
             $base = new Uri($baseUrl);
             return (string)$url->withScheme($base->getScheme())->withHost($base->getHost())->withPort($base->getPort());
         }
@@ -426,6 +426,16 @@ class OAuth extends Component
         // The issuer can’t have a query string, so it identifies the resource in its path, like the control panel’s.
         // Only clients compare it; they fetch its metadata from the `.well-known` URL.
         return rtrim($baseUrl, '/') . "/$general->actionTrigger/oauth/$resource";
+    }
+
+    /**
+     * Removes the site and preview tokens that site URLs carry over from the current request, so they don’t end up in
+     * public discovery metadata or vary the resource’s identifier.
+     */
+    private function withoutRequestTokens(string $url): string
+    {
+        $general = Craft::$app->getConfig()->getGeneral();
+        return UrlHelper::removeParams($url, [$general->siteToken, $general->tokenParam, 'x-craft-preview', 'x-craft-live-preview']);
     }
 
     private function cpUrl(string $endpoint, string $resource): string

@@ -10,7 +10,9 @@ namespace crafttests\functional;
 use Craft;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
+use craft\mcp\Settings;
 use FunctionalTester;
+use ReflectionProperty;
 
 /**
  * Tests `.well-known/*` discoverable URLs.
@@ -100,6 +102,25 @@ class WellKnownCest
                     $I->seeResponseCodeIs(404);
                 }
             }
+        }
+    }
+
+    /**
+     * @param FunctionalTester $I
+     */
+    public function testOAuthDiscoveryOmitsRequestTokens(FunctionalTester $I)
+    {
+        // Front-end MCP resource URLs are built like any site URL
+        $mcp = Craft::$app->get('mcp');
+        (new ReflectionProperty($mcp, 'settings'))->setValue($mcp, new Settings(['enabled' => true, 'route' => '/mcp', 'authorizationRoute' => '/mcp/auth']));
+        try {
+            foreach (['/.well-known/oauth-protected-resource/mcp/auth', '/.well-known/oauth-authorization-server/actions/oauth/mcp'] as $url) {
+                $I->amOnPage("$url?siteToken=site-token-secret");
+                $I->seeResponseCodeIs(200);
+                $I->assertStringNotContainsString('site-token-secret', $I->grabPageSource());
+            }
+        } finally {
+            $mcp->resetSettings();
         }
     }
 }
