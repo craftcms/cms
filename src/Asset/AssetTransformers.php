@@ -121,9 +121,11 @@ class AssetTransformers
             ? $this->getAssetTransformerByUid($transformer->uid)
             : null;
 
-        if ($this->registry->has($transformer->uid)) {
-            $registered = $this->registry->get($transformer->uid);
+        $registered = $transformer->uid
+            ? $this->registry->get($transformer->uid)
+            : null;
 
+        if ($registered !== null) {
             if ($transformer->driver !== $registered->driver) {
                 $transformer->errors()->add('driver', t('The driver of a registered asset transformer can’t be changed.'));
 
