@@ -176,6 +176,8 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
 
     #describedNodes: HTMLElement[] = [];
 
+    #writtenReferences = new Set<string>();
+
     /** Slots the consumer supplied, which are never generated. */
     #suppliedSlots = new Set<string>();
 
@@ -231,12 +233,24 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       this.#createSlots();
       this._enhanceLightDomA11y();
       this._labelNode?.addEventListener('click', this.#onLabelClick);
+      this.addEventListener('focusin', this.#onFocusChange);
+      this.addEventListener('focusout', this.#onFocusChange);
     }
 
     override disconnectedCallback() {
       super.disconnectedCallback();
       this._labelNode?.removeEventListener('click', this.#onLabelClick);
+      this.removeEventListener('focusin', this.#onFocusChange);
+      this.removeEventListener('focusout', this.#onFocusChange);
     }
+
+    /** Feedback is announced politely while the user is in the field. */
+    #onFocusChange = (event: FocusEvent): void => {
+      this._feedbackNode?.setAttribute(
+        'aria-live',
+        event.type === 'focusin' ? 'polite' : 'assertive'
+      );
+    };
 
     protected override updated(changed: PropertyValues) {
       super.updated(changed);
@@ -338,12 +352,6 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       }
 
       if (_feedbackNode) {
-        this.addEventListener('focusin', () =>
-          _feedbackNode.setAttribute('aria-live', 'polite')
-        );
-        this.addEventListener('focusout', () =>
-          _feedbackNode.setAttribute('aria-live', 'assertive')
-        );
         this.addToAriaDescribedBy(_feedbackNode, {idPrefix: 'feedback'});
       }
 
@@ -412,9 +420,14 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
         return;
       }
 
+      // An empty list only clears a reference this control wrote, so one the
+      // markup arrived with stays.
       const write = (attribute: string, nodes: HTMLElement[]) => {
         if (nodes.length) {
           control.setAttribute(attribute, nodes.map((n) => n.id).join(' '));
+          this.#writtenReferences.add(attribute);
+        } else if (this.#writtenReferences.delete(attribute)) {
+          control.removeAttribute(attribute);
         }
       };
 

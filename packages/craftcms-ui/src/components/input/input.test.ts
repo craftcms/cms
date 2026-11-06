@@ -141,6 +141,34 @@ describe('craft-input', () => {
   });
 });
 
+describe('craft-input references', () => {
+  it('drops aria-describedby once nothing describes the input', async () => {
+    const element = await createInput(
+      {},
+      '<label slot="label">Handle</label><div slot="help-text">Lowercase</div>'
+    );
+    const help = element.querySelector<HTMLElement>('[slot="help-text"]')!;
+    expect(native(element).getAttribute('aria-describedby')).toBe(help.id);
+
+    element.removeFromAriaDescribedBy(help);
+    expect(native(element).hasAttribute('aria-describedby')).toBe(false);
+  });
+
+  it('announces feedback politely only while the field has focus', async () => {
+    const element = await createInput(
+      {},
+      '<label slot="label">Handle</label><div slot="feedback">Required</div>'
+    );
+    const feedback = element.querySelector('[slot="feedback"]')!;
+
+    native(element).dispatchEvent(new FocusEvent('focusin', {bubbles: true}));
+    expect(feedback.getAttribute('aria-live')).toBe('polite');
+
+    native(element).dispatchEvent(new FocusEvent('focusout', {bubbles: true}));
+    expect(feedback.getAttribute('aria-live')).toBe('assertive');
+  });
+});
+
 describe('craft-input invalid', () => {
   it('marks the native input invalid', async () => {
     const element = await createInput();
