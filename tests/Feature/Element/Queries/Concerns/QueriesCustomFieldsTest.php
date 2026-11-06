@@ -204,7 +204,8 @@ it('exposes the active query while applying custom field query params', function
 
     $query->count();
 
-    expect(TestActiveQueryField::$activeQueryDuringModify)->toBe($query)
+    expect(TestActiveQueryField::$activeQueryDuringModify)->toBeInstanceOf($query::class)
+        ->and(TestActiveQueryField::$activeQueryDuringModify->getCriteria()['activeQueryField'])->toBe('Foo')
         ->and(ElementQuery::$activeQuery)->toBeNull();
 });
 
@@ -224,6 +225,7 @@ it('clears the active query when custom field query modification fails', functio
 
     expect(fn () => $query->count())->toThrow(RuntimeException::class, 'Active query failure.');
 
-    expect(TestActiveQueryField::$activeQueryDuringModify)->toBe($query)
+    expect(TestActiveQueryField::$activeQueryDuringModify)->toBeInstanceOf($query::class)
+        ->and(TestActiveQueryField::$activeQueryDuringModify->getCriteria()['activeQueryField'])->toBe('Foo')
         ->and(ElementQuery::$activeQuery)->toBeNull();
 });

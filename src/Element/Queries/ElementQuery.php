@@ -225,6 +225,14 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     private ?Builder $queryBeforePrepare = null;
 
     /**
+     * @var bool Whether this is the copy of a query that one of its execution methods prepares and runs,
+     *           so the query itself stays unprepared and params set on it later still apply
+     *
+     * @see executeOnCopy()
+     */
+    private bool $isExecutionCopy = false;
+
+    /**
      * @var bool Whether this query only provides the conditions for another query’s nested where clause,
      *           so it leaves out the default site and archived conditions
      *
@@ -579,6 +587,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      */
     public function first($columns = ['*']): ElementInterface|array|null
     {
+        if (! $this->isExecutionCopy) {
+            return $this->executeOnCopy(fn (self $query) => $query->first($columns));
+        }
+
         // Eagerly?
         $eagerResult = $this->eagerLoad(
             criteria: ['limit' => 1],
@@ -600,6 +612,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      */
     public function get($columns = ['*']): ElementCollection|Collection
     {
+        if (! $this->isExecutionCopy) {
+            return $this->executeOnCopy(fn (self $query) => $query->get($columns));
+        }
+
         $models = $this->getModels($columns);
 
         $results = $this->asArray
@@ -628,6 +644,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      */
     public function getModels(array|string $columns = ['*']): array
     {
+        if (! $this->isExecutionCopy) {
+            return $this->executeOnCopy(fn (self $query) => $query->getModels($columns));
+        }
+
         if (! is_null($result = $this->getResultOverride())) {
             if ($this->with) {
                 Elements::eagerLoadElements($this->elementType, $result, $this->with);
@@ -689,6 +709,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      */
     public function pluck(string|Expression $column, string|Expression|null $key = null): Collection
     {
+        if (! $this->isExecutionCopy) {
+            return $this->executeOnCopy(fn (self $query) => $query->pluck($column, $key));
+        }
+
         if (! is_null($result = $this->getResultOverride())) {
             return collect($result)->pluck($this->attributeName($column), $key === null ? null : $this->attributeName($key));
         }
@@ -793,6 +817,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      */
     public function paginate($perPage = 15, $columns = ['*'], $pageName = 'page', $page = null, $total = null): LengthAwarePaginator
     {
+        if (! $this->isExecutionCopy) {
+            return $this->executeOnCopy(fn (self $query) => $query->paginate($perPage, $columns, $pageName, $page, $total));
+        }
+
         $page = $page ?: Paginator::resolveCurrentPage($pageName);
 
         $total = value($total) ?? $this->getCountForPagination();
@@ -820,6 +848,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      */
     public function simplePaginate($perPage = 15, $columns = ['*'], $pageName = 'page', $page = null)
     {
+        if (! $this->isExecutionCopy) {
+            return $this->executeOnCopy(fn (self $query) => $query->simplePaginate($perPage, $columns, $pageName, $page));
+        }
+
         $page = $page ?: Paginator::resolveCurrentPage($pageName);
 
         // Next we will set the limit and offset for this query so that when we get the
@@ -846,6 +878,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      */
     public function cursorPaginate($perPage = 15, $columns = ['*'], $cursorName = 'cursor', $cursor = null): CursorPaginator
     {
+        if (! $this->isExecutionCopy) {
+            return $this->executeOnCopy(fn (self $query) => $query->cursorPaginate($perPage, $columns, $cursorName, $cursor));
+        }
+
         // Prepare the query first, so the orders cursor pagination reads are the resolved ones
         try {
             $this->applyBeforeQueryCallbacks();
@@ -959,6 +995,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /** @param array<int, string>|string $columns */
     public function count($columns = '*'): int
     {
+        if (! $this->isExecutionCopy) {
+            return $this->executeOnCopy(fn (self $query) => $query->count($columns));
+        }
+
         if (! $this->getOffset() && ! $this->getLimit() && ! is_null($result = $this->getResultOverride())) {
             return count($result);
         }
@@ -1022,6 +1062,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
     public function exists(): bool
     {
+        if (! $this->isExecutionCopy) {
+            return $this->executeOnCopy(fn (self $query) => $query->exists());
+        }
+
         try {
             $this->applyBeforeQueryCallbacks();
         } catch (QueryAbortedException) {
@@ -1098,6 +1142,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      */
     public function cursor(): LazyCollection
     {
+        if (! $this->isExecutionCopy) {
+            return $this->executeOnCopy(fn (self $query) => $query->cursor());
+        }
+
         try {
             $this->applyBeforeQueryCallbacks();
         } catch (QueryAbortedException) {
@@ -1478,6 +1526,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         if (in_array(strtolower($method), $this->passthru)) {
+            if (! $this->isExecutionCopy) {
+                return $this->executeOnCopy(fn (self $query) => $query->__call($method, $parameters));
+            }
+
             try {
                 $this->applyBeforeQueryCallbacks();
             } catch (QueryAbortedException) {
@@ -1688,6 +1740,23 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             ->trashed(null);
     }
 
+    /**
+     * Runs an execution method on a copy of this query, which the method prepares, so this query stays unprepared
+     * and params set on it afterwards still apply, as Eloquent applies its scopes to a copy of its query.
+     *
+     * @template TResult
+     *
+     * @param  Closure(static): TResult  $callback
+     * @return TResult
+     */
+    private function executeOnCopy(Closure $callback): mixed
+    {
+        $copy = clone $this;
+        $copy->isExecutionCopy = true;
+
+        return $callback($copy);
+    }
+
     public function clone(): static
     {
         return clone $this;
@@ -1729,6 +1798,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         } else {
             $this->query = clone $this->query;
         }
+
+        $this->isExecutionCopy = false;
 
         foreach ($this->onCloneCallbacks as $onCloneCallback) {
             $onCloneCallback($this);

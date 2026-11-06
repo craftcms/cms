@@ -286,6 +286,20 @@ it('passes element queries to where() closures', function () {
         ->and($query()->where('elements.id', $viewer)->orWhere(fn (Builder $q) => $q->where('elements.id', $editor))->ids())->toBe([$editor, $viewer]);
 });
 
+it('applies params set after the query has run', function () {
+    $result = EntryModel::factory()->withField('teaser', PlainText::class, value: 'Beta')->createElementWithFields();
+    $beta = $result->element->id;
+    [$a, $b] = EntryModel::factory(2)->create()->pluck('id')->all();
+    $query = entryQuery()->id([$a, $b, $beta])->orderBy('elements.id');
+
+    expect($query->count())->toBe(3)
+        ->and($query->first()->id)->toBe($beta)
+        ->and($query->ids())->toBe([$beta, $a, $b])
+        ->and($query->teaser('Beta')->ids())->toBe([$beta])
+        ->and($query->teaser(null)->id([$a, $b])->count())->toBe(2)
+        ->and($query->reorder('elements.id', 'desc')->ids())->toBe([$b, $a]);
+});
+
 it('chunks and lazily iterates by id', function () {
     $ids = EntryModel::factory(3)->create()->pluck('id')->all();
     $chunks = [];
