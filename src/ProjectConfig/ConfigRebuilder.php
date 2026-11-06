@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\ProjectConfig;
 
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Asset\AssetTransformerRegistry;
 use CraftCms\Cms\Asset\AssetTransformers;
-use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Database\Table;
@@ -35,6 +35,7 @@ class ConfigRebuilder
 {
     public function __construct(
         private readonly AssetTransformers $assetTransformers,
+        private readonly AssetTransformerRegistry $assetTransformerRegistry,
         private readonly ImageTransforms $imageTransforms,
         private readonly Conditions $conditions,
         private readonly EntryTypes $entryTypes,
@@ -62,11 +63,11 @@ class ConfigRebuilder
         // Registered transformers keep their stored overrides as-is, so code defaults aren't written into project config.
         $storedTransformers = $config[ProjectConfig::PATH_ASSET_TRANSFORMERS] ?? [];
         $config[ProjectConfig::PATH_ASSET_TRANSFORMERS] = $this->components($this->assetTransformers->getAllAssetTransformers()
-            ->reject(fn ($transformer): bool => $this->assetTransformers->isRegisteredAssetTransformer($transformer)))
+            ->reject(fn ($transformer): bool => $this->assetTransformerRegistry->has($transformer->uid)))
             + array_filter(
                 is_array($storedTransformers) ? $storedTransformers : [],
                 fn (mixed $stored, mixed $uid): bool => is_string($uid) && is_array($stored)
-                    && $this->assetTransformers->isRegisteredAssetTransformer(new AssetTransformer(['uid' => $uid])),
+                    && $this->assetTransformerRegistry->has($uid),
                 ARRAY_FILTER_USE_BOTH,
             );
         $config[ProjectConfig::PATH_ENTRY_TYPES] = $this->components($this->entryTypes->getAllEntryTypes());

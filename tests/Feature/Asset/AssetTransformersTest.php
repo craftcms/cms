@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\AssetTransformerRegistry;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Contracts\PreloadsAssetTransforms;
@@ -109,7 +110,7 @@ it('resolves code-registered transformers without project config', function () {
     $driver = new TestAssetTransformDriver;
     app(AssetTransformDrivers::class)->extend('cloud', fn () => $driver);
     $transformers = app(AssetTransformers::class);
-    $transformers->registerAssetTransformer(new AssetTransformer([
+    app(AssetTransformerRegistry::class)->register(new AssetTransformer([
         'uid' => 'b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f',
         'name' => 'Cloud',
         'handle' => 'cloud',
@@ -137,7 +138,7 @@ it('lets registered transformers replace project config profiles with the same U
     $transformers->saveAssetTransformer($sameUid);
     $transformers->saveAssetTransformer($unrelated);
 
-    $transformers->registerAssetTransformer(new AssetTransformer([
+    app(AssetTransformerRegistry::class)->register(new AssetTransformer([
         'uid' => $sameUid->uid,
         'name' => 'Cloud',
         'handle' => 'cloud',
@@ -170,7 +171,7 @@ it('stores settings overrides for registered transformers without changing their
         'driver' => 'cloud',
         'settings' => $settings,
     ]);
-    $transformers->registerAssetTransformer($registration(['zone' => 'default', 'quality' => 80]));
+    app(AssetTransformerRegistry::class)->register($registration(['zone' => 'default', 'quality' => 80, 'format' => 'webp']));
     $override = $transformers->resolve('cloud');
     $override->name = 'Renamed';
     $override->handle = 'renamed';
@@ -178,7 +179,6 @@ it('stores settings overrides for registered transformers without changing their
     $duplicate = new AssetTransformer(['name' => 'Duplicate', 'handle' => 'cloud', 'driver' => 'craft']);
 
     $saved = $transformers->saveAssetTransformer($override);
-    $transformers->registerAssetTransformer($registration(['zone' => 'default', 'quality' => 80, 'format' => 'webp']));
     $resolved = $transformers->resolve('cloud');
 
     expect($saved)->toBeTrue()
@@ -217,7 +217,7 @@ it('resets registered transformers to their defaults when their overrides are re
 
 it('rebuilds only registered transformers that have stored overrides', function () {
     $transformers = app(AssetTransformers::class);
-    $transformers->registerAssetTransformer(new AssetTransformer([
+    app(AssetTransformerRegistry::class)->register(new AssetTransformer([
         'uid' => 'b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f',
         'name' => 'Cloud',
         'handle' => 'cloud',
@@ -247,7 +247,7 @@ it('refuses to change a registered transformer driver', function () {
 
 it('rebuilds registered transformer overrides without their defaults', function () {
     $transformers = app(AssetTransformers::class);
-    $transformers->registerAssetTransformer(new AssetTransformer([
+    app(AssetTransformerRegistry::class)->register(new AssetTransformer([
         'uid' => 'b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f',
         'name' => 'Cloud',
         'handle' => 'cloud',
@@ -269,14 +269,14 @@ it('rebuilds registered transformer overrides without their defaults', function 
 
 it('rejects invalid transformer registrations', function (array $config) {
     $transformers = app(AssetTransformers::class);
-    $transformers->registerAssetTransformer(new AssetTransformer([
+    app(AssetTransformerRegistry::class)->register(new AssetTransformer([
         'uid' => 'b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f',
         'name' => 'Cloud',
         'handle' => 'cloud',
         'driver' => 'cloud',
     ]));
 
-    expect(fn () => $transformers->registerAssetTransformer(new AssetTransformer([
+    expect(fn () => app(AssetTransformerRegistry::class)->register(new AssetTransformer([
         'name' => 'Registered',
         'driver' => 'cloud',
         ...$config,

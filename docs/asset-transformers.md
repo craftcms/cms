@@ -291,18 +291,18 @@ transformer is registered the same way.
 
 ```php
 use CraftCms\Cms\Asset\AssetTransformDrivers;
-use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\AssetTransformerRegistry;
 use CraftCms\Cms\Asset\Data\AssetTransformer;
 use Illuminate\Contracts\Container\Container;
 
-public function boot(AssetTransformDrivers $drivers, AssetTransformers $transformers): void
+public function boot(AssetTransformDrivers $drivers, AssetTransformerRegistry $transformers): void
 {
     $drivers->extend(
         'remote-images',
         fn (Container $container) => $container->make(RemoteImageDriver::class),
     );
 
-    $transformers->registerAssetTransformer(new AssetTransformer([
+    $transformers->register(new AssetTransformer([
         'uid' => '6f1f8c2e-3b7a-4d4e-9c1a-0d5e2b7f9a31',
         'name' => 'Remote Images',
         'handle' => 'remoteImages',
@@ -317,7 +317,7 @@ argument, and `defaultAssetTransformer`. To use one by default, set `defaultAsse
 
 Give each registered profile a fixed UID, either a literal UUID or a UUIDv5 derived from a stable name. Named Image
 Transforms key their custom parameter values by transformer UID, so changing it orphans those values. The handle must be a
-valid Craft handle, and `craft` is reserved. `registerAssetTransformer()` throws an `InvalidArgumentException` if the
+valid Craft handle, and `craft` is reserved. `register()` throws an `InvalidArgumentException` if the
 profile has no UID, is invalid, or reuses the handle of another registered profile.
 
 The registration defines the profile's name, handle, and driver, which the Control Panel shows as read-only, and its

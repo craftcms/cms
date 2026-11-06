@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\AssetTransformerRegistry;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
@@ -251,13 +252,14 @@ it('deletes non-reserved transformers', function () {
 
 it('saves settings overrides for registered transformers and keeps them undeletable', function () {
     app(AssetTransformDrivers::class)->extend('controller-test', fn () => new ControllerTestAssetTransformDriver);
-    app(AssetTransformers::class)->registerAssetTransformer(new AssetTransformer([
+    app(AssetTransformerRegistry::class)->register(new AssetTransformer([
         'uid' => 'b3a1c1f2-6d4e-4c8a-9f10-2a3b4c5d6e7f',
         'name' => 'Cloud',
         'handle' => 'cloud',
         'driver' => 'controller-test',
         'settings' => ['endpoint' => 'https://default.example.test'],
     ]));
+    app(AssetTransformers::class)->reset();
 
     get(action([AssetTransformersController::class, 'edit'], ['handle' => 'cloud']))
         ->assertOk()
