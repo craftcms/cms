@@ -278,6 +278,8 @@ class Session extends \yii\web\Session
             return;
         }
 
+        $original = $counters;
+
         foreach ($counters as $key => $count) {
             if ($count > 0) {
                 unset($counters[$key]);
@@ -287,7 +289,10 @@ class Session extends \yii\web\Session
             }
         }
 
-        $this->set($this->flashParam, $counters);
+        // Only write when something changed, so lazy sessions stay unsaved.
+        if ($counters !== $original) {
+            $this->set($this->flashParam, $counters);
+        }
     }
 
     /**
