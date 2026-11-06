@@ -10,6 +10,7 @@ use craft\mcp\capabilities\UserPermissions;
 use craft\mcp\McpActor;
 use craft\services\UserPermissions as UserPermissionService;
 use craft\test\TestCase;
+use crafttests\fixtures\UserFixture;
 use crafttests\fixtures\UserGroupsFixture;
 use Mcp\Exception\ToolCallException;
 use yii\base\Event;
@@ -19,7 +20,10 @@ class UserPermissionsCapabilityTest extends TestCase
 {
     public function _fixtures(): array
     {
-        return ['user-groups' => ['class' => UserGroupsFixture::class]];
+        return [
+            'user-groups' => ['class' => UserGroupsFixture::class],
+            'users' => ['class' => UserFixture::class],
+        ];
     }
 
     public function testStoredGroupPermissionsWithUnregisteredProviderAreKept(): void
@@ -28,11 +32,17 @@ class UserPermissionsCapabilityTest extends TestCase
         Craft::$app->getUser()->setIdentity(User::find()->admin()->one());
         $service = Craft::$app->getUserPermissions();
         $handler = function(RegisterUserPermissionsEvent $event) {
-            $event->permissions[] = ['heading' => 'Probe', 'permissions' => ['probe:view' => ['label' => 'View']]];
+            $event->permissions[] = ['heading' => 'Probe', 'permissions' => [
+                'probe:view' => ['label' => 'View', 'nested' => ['probe:edit' => ['label' => 'Edit']]],
+            ]];
         };
         Event::on(UserPermissionService::class, UserPermissionService::EVENT_REGISTER_PERMISSIONS, $handler);
         $service->reset();
         $service->saveGroupPermissions(1000, ['accessCp', 'probe:view']);
+        /** @var User $user */
+        $user = User::find()->admin(false)->one();
+        Craft::$app->getUsers()->assignUserToGroups($user->id, [1000]);
+        $service->saveUserPermissions($user->id, ['probe:view', 'probe:edit']);
 
         // Like a plugin that only registers its permissions for control panel requests
         Event::off(UserPermissionService::class, UserPermissionService::EVENT_REGISTER_PERMISSIONS, $handler);
@@ -69,6 +79,23 @@ class UserPermissionsCapabilityTest extends TestCase
                 ['accesscp', 'viewusers'],
                 $capability->updateGroup(remove: ['probe:view'], groupId: 1000)['permissions'],
             );
+
+            // Direct user permissions keep unregistered stored grants, without copying group-only ones
+            $service->saveGroupPermissions(1000, ['probe:view']);
+            $result = $capability->updateUser(add: ['accessCp'], userId: $user->id)['directPermissions'];
+            sort($result);
+            self::assertSame(['accesscp', 'probe:edit', 'probe:view'], $result);
+
+            try {
+                $capability->setUser(['accessCp', 'probe:edit', 'probe:other'], userId: $user->id);
+                self::fail('Assigning an unknown permission was not rejected.');
+            } catch (ToolCallException $e) {
+                self::assertStringContainsString('probe:other', $e->getMessage());
+            }
+
+            $result = $capability->updateUser(remove: ['probe:view'], userId: $user->id)['directPermissions'];
+            sort($result);
+            self::assertSame(['accesscp', 'probe:edit'], $result);
         } finally {
             Craft::$app->getUser()->setIdentity(null);
         }
