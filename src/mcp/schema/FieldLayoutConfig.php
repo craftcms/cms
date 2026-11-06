@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace craft\mcp\schema;
 
 use craft\base\ElementInterface;
+use craft\fieldlayoutelements\CustomField;
 use craft\models\FieldLayout;
 use craft\services\Fields;
+use Mcp\Exception\ToolCallException;
 
 /**
  * @since 5.12.0
@@ -35,6 +37,7 @@ class FieldLayoutConfig
      */
     public function make(array $config, string $elementType, ?FieldLayout $existing = null): FieldLayout
     {
+        $this->validateFieldReferences($config);
         $config['type'] = $elementType;
 
         if ($existing) {
@@ -54,5 +57,29 @@ class FieldLayoutConfig
             'type' => $layout->type,
             'config' => $layout->getConfig() ?? ['tabs' => []],
         ];
+    }
+
+    /**
+     * Rejects custom field elements whose field doesn’t exist.
+     *
+     * @param array<string, mixed> $config
+     */
+    private function validateFieldReferences(array $config): void
+    {
+        $errors = [];
+
+        foreach ($config['tabs'] ?? [] as $tabIndex => $tab) {
+            foreach ($tab['elements'] ?? [] as $elementIndex => $element) {
+                $fieldUid = $element['fieldUid'] ?? null;
+
+                if (is_a($element['type'] ?? '', CustomField::class, true) && $fieldUid !== null && !$this->fields->getFieldByUid((string)$fieldUid)) {
+                    $errors[] = "fieldLayout.tabs[$tabIndex].elements[$elementIndex].fieldUid: Field “{$fieldUid}” doesn’t exist.";
+                }
+            }
+        }
+
+        if ($errors) {
+            throw new ToolCallException(implode("\n", $errors));
+        }
     }
 }
