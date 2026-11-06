@@ -8,6 +8,7 @@
 - `craft\elements\Asset::canSave()` now returns `true` for users’ own assets in their temporary upload folder.
 - The **My Account** → **Tokens** screen is now only shown to admins when OAuth signing keys haven’t been set up yet, and explains how to set them up, rather than failing with a server error when a token is created. ([#20357](https://github.com/craftcms/cms/issues/20357))
 - Fixed a bug where MCP clients couldn’t sign in when the control panel had its own domain and no `cpTrigger`. ([#20353](https://github.com/craftcms/cms/issues/20353))
+- Fixed a bug where MCP tools couldn’t set entries’ `postDate` or `expiryDate` values. ([#20405](https://github.com/craftcms/cms/issues/20405))
 - Fixed a bug where the MCP server required date-time values for Time fields within nested entries, which those fields couldn’t parse. ([#20319](https://github.com/craftcms/cms/issues/20319))
 - Fixed a bug where field layout conditions within Content Block fields and nested entries didn’t update based on dropdown values, such as a Link field’s selected link type. ([#20332](https://github.com/craftcms/cms/issues/20332))
 - Fixed a bug where strict MCP clients, such as VS Code, rejected the `search.query` MCP tool. ([#20329](https://github.com/craftcms/cms/issues/20329))
