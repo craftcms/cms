@@ -115,18 +115,13 @@ class AssetTransformers
             ?? throw new AssetTransformerNotFoundException("Asset transformer [{$parsedHandle}] is not configured.");
     }
 
-    private function isRegisteredAssetTransformer(AssetTransformer $transformer): bool
-    {
-        return $this->registry->has($transformer->uid);
-    }
-
     public function saveAssetTransformer(AssetTransformer $transformer, bool $runValidation = true): bool
     {
         $existing = $transformer->uid
             ? $this->getAssetTransformerByUid($transformer->uid)
             : null;
 
-        if ($this->isRegisteredAssetTransformer($transformer)) {
+        if ($this->registry->has($transformer->uid)) {
             $registered = $this->registry->get($transformer->uid);
 
             if ($transformer->driver !== $registered->driver) {
@@ -430,7 +425,7 @@ class AssetTransformers
 
     private function isReplacedByRegisteredTransformer(AssetTransformer $transformer): bool
     {
-        return $this->isRegisteredAssetTransformer($transformer) || $this->registry->hasHandle($transformer->handle);
+        return $this->registry->has($transformer->uid) || $this->registry->hasHandle($transformer->handle);
     }
 
     /** @param array<string, mixed> $config */
@@ -465,7 +460,7 @@ class AssetTransformers
 
     public function getDeleteDisabledReason(AssetTransformer $transformer): ?string
     {
-        if ($this->isRegisteredAssetTransformer($transformer)) {
+        if ($this->registry->has($transformer->uid)) {
             return $transformer->uid === AssetTransformerRegistry::CRAFT_TRANSFORMER_UID
                 ? t('The Craft asset transformer cannot be deleted.')
                 : t('This asset transformer cannot be deleted because it is registered in code.');
