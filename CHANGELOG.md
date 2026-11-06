@@ -9,9 +9,11 @@
 - `craft\elements\Asset::canSave()` now returns `true` for users’ own assets in their temporary upload folder.
 - The **My Account** → **Tokens** screen is now only shown to admins when OAuth signing keys haven’t been set up yet, and explains how to set them up, rather than failing with a server error when a token is created. ([#20357](https://github.com/craftcms/cms/issues/20357))
 - Fixed a bug where saving user or group permissions dropped stored permissions whose plugins hadn’t registered them for the current request, such as when using the `user_permissions_group_set` MCP tool over stdio. The MCP permission tools now also reject unknown permissions rather than ignoring them. ([#20412](https://github.com/craftcms/cms/discussions/20412))
+- Fixed a bug where OAuth discovery metadata for front-end resources, such as the GraphQL API, revealed the control panel URL. Their OAuth endpoints are now advertised as site action URLs, and OAuth discovery metadata is only served from its `.well-known` URLs and no longer includes the request’s site or preview tokens.
 - Fixed a bug where MCP clients couldn’t sign in when the control panel had its own domain and no `cpTrigger`. ([#20353](https://github.com/craftcms/cms/issues/20353))
 - Fixed a bug where the MCP server required date-time values for Time fields within nested entries, which those fields couldn’t parse. ([#20319](https://github.com/craftcms/cms/issues/20319))
 - Fixed a bug where the `configuration_update` MCP tool couldn’t update Matrix field settings. ([#20406](https://github.com/craftcms/cms/issues/20406))
+- Fixed a bug where MCP tools redacted all field and project config settings, rather than only sensitive ones. ([#20412](https://github.com/craftcms/cms/discussions/20412))
 - Fixed a bug where unhandled MCP tool errors were logged without their exception details. ([#20406](https://github.com/craftcms/cms/issues/20406))
 - Fixed a bug where field layout conditions within Content Block fields and nested entries didn’t update based on dropdown values, such as a Link field’s selected link type. ([#20332](https://github.com/craftcms/cms/issues/20332))
 - Fixed a bug where strict MCP clients, such as VS Code, rejected the `search.query` MCP tool. ([#20329](https://github.com/craftcms/cms/issues/20329))
@@ -19,6 +21,9 @@
 - Fixed a bug where project config changes made through the stdio MCP server (`mcp/serve`) weren’t saved until the server stopped. ([#20330](https://github.com/craftcms/cms/issues/20330))
 - Fixed a bug where authenticated GraphQL requests didn’t respect field layout conditions. Fields that are hidden from the user are now excluded from the schema, or resolve to `null` when their conditions are element-specific. Fields the user can’t edit are now excluded from mutation arguments, or result in an error when set if their conditions are element-specific. ([#20391](https://github.com/craftcms/cms/pull/20391))
 - Fixed a bug where field values submitted for nested entries, Content Block fields, and addresses could be saved even if the user wasn’t permitted to see or edit the fields, per their field layout conditions. ([#20391](https://github.com/craftcms/cms/pull/20391))
+- Fixed a bug where MCP tools returned empty arrays for CKEditor field values.
+- Added `craft\base\McpOutputFieldInterface`, which fields can implement to control how their values are returned by MCP tools.
+- Added `craft\mcp\McpOutputContext`.
 - Fixed a bug where entries and assets could be deleted for the only site they exist in, via the `elements/delete-for-site` action or the “Delete for site” element action.
 - Fixed a bug where “Delete for this site” could be offered for an entry’s provisional draft when the canonical entry only existed in that site.
 - Fixed a bug where “New entry” buttons could offer entry types or sections that `craft\elements\Entry::EVENT_DEFINE_ENTRY_TYPES` had excluded, resulting in a 400 error. ([#20322](https://github.com/craftcms/cms/issues/20322))
@@ -26,6 +31,7 @@
 - Fixed a bug where `craft\base\Element::EVENT_AUTHORIZE_DELETE_FOR_SITE` handlers were never called, so they couldn’t authorize users to delete elements for a site.
 - Fixed a bug where Markdown field layout elements weren’t getting translated. ([#20408](https://github.com/craftcms/cms/discussions/20408))
 - Fixed a bug where date pickers within slideouts could open far away from their inputs at some browser zoom and display scaling levels. ([#20399](https://github.com/craftcms/cms/issues/20399))
+- Fixed an error that occurred when editing an address within a draft, if the owner element wasn’t saved in the primary site. ([#20413](https://github.com/craftcms/cms/issues/20413))
 
 ## 5.12.0.1 - 2026-11-03
 

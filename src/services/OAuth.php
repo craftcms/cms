@@ -22,6 +22,7 @@ use DateInterval;
 use DateTime;
 use DateTimeImmutable;
 use GuzzleHttp\Psr7\Uri;
+use GuzzleHttp\Psr7\UriResolver;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\CryptKey;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
@@ -364,19 +365,19 @@ class OAuth extends Component
 
     public function resource(string $resource): string
     {
-        return $this->getResource($resource)->getResourceUrl();
+        return $this->withoutRequestTokens($this->getResource($resource)->getResourceUrl());
     }
 
     public function issuer(string $resource): string
     {
-        return $this->cpUrl('', $resource);
+        return $this->serverUrl('', $resource);
     }
 
     /**
      * Returns the URL to an OAuth endpoint for the current request.
      *
      * Front-end requests get a site action URL, so the authorization flow can stay on the front end. Discovery
-     * metadata and the issuer always use the control panel URLs, so they don’t vary by request.
+     * metadata and the issuer don’t vary by request; see [[serverUrl()]].
      *
      * @param string $endpoint
      * @param string $resource
@@ -387,10 +388,60 @@ class OAuth extends Component
         $request = Craft::$app->getRequest();
         if (!$request->getIsConsoleRequest() && !$request->getIsCpRequest()) {
             $this->getResource($resource);
-            return UrlHelper::actionUrl("oauth/$endpoint", ['resource' => $resource]);
+            return UrlHelper::actionUrl("oauth/$endpoint", ['oauthResource' => $resource]);
         }
 
         return $this->cpUrl($endpoint, $resource);
+    }
+
+    /**
+     * Returns the URL to an OAuth endpoint, or the issuer when `$endpoint` is empty, for discovery metadata.
+     *
+     * Discovery metadata is public, so when the control panel shares the site’s host via `cpTrigger`, resources
+     * outside the control panel get site action URLs on the primary site, so the metadata never reveals the
+     * `cpTrigger`. Resources within the control panel, and control panels on their own host, keep the control panel
+     * URLs.
+     */
+    private function serverUrl(string $endpoint, string $resource): string
+    {
+        $general = Craft::$app->getConfig()->getGeneral();
+        // Compare whole URLs, so a resource on another origin with a matching path isn’t mistaken for a control panel one
+        $cpUrl = rtrim((string)new Uri(UrlHelper::removeParam(UrlHelper::cpUrl(), 'site')), '/');
+        $resourceUrl = (string)new Uri($this->resource($resource));
+        if (!$general->cpTrigger || str_starts_with("$resourceUrl/", "$cpUrl/")) {
+            return $this->cpUrl($endpoint, $resource);
+        }
+
+        // Site base URLs can be relative, but OAuth URLs must be absolute, so resolve the base against the resource’s URL
+        $site = Craft::$app->getSites()->getPrimarySite();
+        $baseUrl = (string)UriResolver::resolve(new Uri($resourceUrl), new Uri($site->getBaseUrl() ?? UrlHelper::baseUrl()));
+        if ($endpoint !== '') {
+            // `resource` is left for clients’ RFC 8707 resource indicators. URLs are built on the current request’s
+            // host when they have the script name or the base URL is relative, so put them on the base URL’s.
+            $url = new Uri($this->withoutRequestTokens(UrlHelper::siteUrl("$general->actionTrigger/oauth/$endpoint", ['oauthResource' => $resource], siteId: $site->id)));
+            $base = new Uri($baseUrl);
+            return (string)$url->withScheme($base->getScheme())->withHost($base->getHost())->withPort($base->getPort());
+        }
+
+        // The issuer can’t have a query string, so it identifies the resource in its path, like the control panel’s.
+        // Only clients compare it; they fetch its metadata from the `.well-known` URL.
+        return rtrim($baseUrl, '/') . "/$general->actionTrigger/oauth/$resource";
+    }
+
+    /**
+     * Removes the site and preview tokens that site URLs carry over from the current request, so they don’t end up in
+     * public discovery metadata or vary the resource’s identifier.
+     */
+    private function withoutRequestTokens(string $url): string
+    {
+        $general = Craft::$app->getConfig()->getGeneral();
+        // Filter the raw query, since parsing and rebuilding it would alter other params’ names and repeated params
+        $uri = new Uri($url);
+        $filtered = $uri;
+        foreach ([$general->siteToken, $general->tokenParam, 'x-craft-preview', 'x-craft-live-preview'] as $param) {
+            $filtered = Uri::withoutQueryValue($filtered, $param);
+        }
+        return $filtered->getQuery() === $uri->getQuery() ? $url : (string)$filtered;
     }
 
     private function cpUrl(string $endpoint, string $resource): string
@@ -419,9 +470,9 @@ class OAuth extends Component
     {
         return [
             'issuer' => $this->issuer($resource),
-            'authorization_endpoint' => $this->cpUrl('authorize', $resource),
-            'token_endpoint' => $this->cpUrl('token', $resource),
-            'registration_endpoint' => $this->cpUrl('register', $resource),
+            'authorization_endpoint' => $this->serverUrl('authorize', $resource),
+            'token_endpoint' => $this->serverUrl('token', $resource),
+            'registration_endpoint' => $this->serverUrl('register', $resource),
             'token_endpoint_auth_methods_supported' => ['none'],
             'response_types_supported' => ['code'],
             'grant_types_supported' => ['authorization_code', 'refresh_token'],

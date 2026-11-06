@@ -6,6 +6,7 @@ use Craft;
 use craft\elements\User;
 use craft\enums\PropagationMethod;
 use craft\fields\Matrix;
+use craft\mcp\SensitiveValues;
 use craft\mcp\ServerFactory;
 use craft\models\EntryType;
 use craft\test\TestCase;
@@ -55,6 +56,25 @@ class FieldsCapabilityTest extends TestCase
         self::assertInstanceOf(Matrix::class, $field);
         self::assertSame(5, $field->maxEntries);
         self::assertSame(PropagationMethod::Language, $field->propagationMethod);
+    }
+
+    public function testReadingFieldsRedactsOnlySensitiveSettings(): void
+    {
+        $result = $this->callTool('configuration_get', [
+            'type' => 'fields',
+            'identifier' => ['handle' => 'mcpMatrix'],
+        ]);
+
+        self::assertFalse($result['isError'] ?? false, json_encode($result));
+        $settings = $result['structuredContent']['item']['settings'];
+        self::assertSame('language', $settings['propagationMethod']);
+        self::assertSame('cards', $settings['viewMode']);
+
+        $sensitiveValues = Craft::$app->get('mcp')->getCapabilityContainer()->get(SensitiveValues::class);
+        self::assertSame(
+            ['selectionLabel' => 'Choose', 'apiKey' => '•••••••'],
+            $sensitiveValues->redact(['selectionLabel' => 'Choose', 'apiKey' => 'sk_live']),
+        );
     }
 
     private function callTool(string $name, array $arguments): array
