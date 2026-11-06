@@ -54,7 +54,8 @@ queues. The merge safeguards below still apply.
   report every Copilot response.
 - Read each Copilot review's full body. Findings can appear only there, such
   as under "previously missed issues", even when the summary says there are no
-  open issues.
+  open issues. The summary line can also raise concerns, such as "Needs a
+  closer look" with no open issues; investigate each one like a finding.
 
 ## Merging pull requests
 

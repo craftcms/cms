@@ -10,6 +10,8 @@
 - Fixed a bug where MCP clients couldn’t sign in when the control panel had its own domain and no `cpTrigger`. ([#20353](https://github.com/craftcms/cms/issues/20353))
 - Fixed a bug where MCP tools couldn’t set entries’ `postDate` or `expiryDate` values. ([#20405](https://github.com/craftcms/cms/issues/20405))
 - Fixed a bug where the MCP server required date-time values for Time fields within nested entries, which those fields couldn’t parse. ([#20319](https://github.com/craftcms/cms/issues/20319))
+- Fixed a bug where the `configuration_update` MCP tool couldn’t update Matrix field settings. ([#20406](https://github.com/craftcms/cms/issues/20406))
+- Fixed a bug where unhandled MCP tool errors were logged without their exception details. ([#20406](https://github.com/craftcms/cms/issues/20406))
 - Fixed a bug where field layout conditions within Content Block fields and nested entries didn’t update based on dropdown values, such as a Link field’s selected link type. ([#20332](https://github.com/craftcms/cms/issues/20332))
 - Fixed a bug where strict MCP clients, such as VS Code, rejected the `search.query` MCP tool. ([#20329](https://github.com/craftcms/cms/issues/20329))
 - Fixed a bug where the “New token” button on the Tokens screen didn’t work after a personal access token was created. ([#20356](https://github.com/craftcms/cms/issues/20356))
@@ -21,6 +23,9 @@
 - Fixed a bug where “New entry” buttons could offer entry types or sections that `craft\elements\Entry::EVENT_DEFINE_ENTRY_TYPES` had excluded, resulting in a 400 error. ([#20322](https://github.com/craftcms/cms/issues/20322))
 - Fixed a bug where garbage collection could leave foreign key constraints disabled if it didn’t finish, and on PostgreSQL, other requests could write data without foreign key enforcement while it ran. ([#20386](https://github.com/craftcms/cms/issues/20386))
 - Fixed a bug where `craft\base\Element::EVENT_AUTHORIZE_DELETE_FOR_SITE` handlers were never called, so they couldn’t authorize users to delete elements for a site.
+- Fixed a bug where Markdown field layout elements weren’t getting translated. ([#20408](https://github.com/craftcms/cms/discussions/20408))
+- Fixed a bug where date pickers within slideouts could open far away from their inputs at some browser zoom and display scaling levels. ([#20399](https://github.com/craftcms/cms/issues/20399))
+- Fixed an error that occurred when editing an address within a draft, if the owner element wasn’t saved in the primary site. ([#20413](https://github.com/craftcms/cms/issues/20413))
 
 ## 5.12.0.1 - 2026-11-03
 

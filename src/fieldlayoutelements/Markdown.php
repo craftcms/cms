@@ -102,7 +102,7 @@ class Markdown extends BaseUiElement
      */
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
-        $content = Html::tag('div', MarkdownHelper::process(Html::encode($this->content)), [
+        $content = Html::tag('div', MarkdownHelper::process(Html::encode(Craft::t('site', $this->content))), [
             'class' => array_filter([
                 'markdown',
                 $this->displayInPane ? 'pane' : null,
