@@ -12,7 +12,6 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\Concerns\ProvidesLinkField;
 use CraftCms\Cms\Field\Conditions\LinkFieldConditionRule;
-use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
@@ -46,7 +45,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, TracksReferencesFieldInterface
+class Link extends Field implements InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, TracksReferencesFieldInterface
 {
     use ProvidesLinkField;
 

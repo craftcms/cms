@@ -47,14 +47,29 @@ Some files contain Unicode characters in comments and strings. If a text edit fa
 - Run `composer ci` before creating a pull request.
 - Prefix the title with the origin version branch, such as `[6.x]` or `[5.x]`.
 - Use the `pr` skill to write the pull request body.
+- Copilot's pull request review can arrive as a formal review, or only as ordinary comments on the conversation tab. When waiting for or checking a Copilot review, look at reviews (`gh api repos/craftcms/cms/pulls/<number>/reviews`), inline review comments (`.../pulls/<number>/comments`), and conversation comments (`gh api repos/craftcms/cms/issues/<number>/comments`). Don't conclude Copilot hasn't responded from reviews alone.
+- When asked to watch for a Copilot review, schedule checks of all three until it arrives. Don't rely on a GitHub event subscription alone; it doesn't report every Copilot response.
+- Read each Copilot review's full body. Findings can appear only there, such as under "previously missed issues", even when the summary says there are no open issues.
 
 ## CI skip markers
 
+Decide this for every commit before you make it, including commits in a
+worktree or on another branch. Once a commit is pushed, the marker can't be
+added without rewriting history.
+
 For commits touching only genuinely inconsequential, nonfunctional files, put
-`[ci skip]` at the end of the extended commit message (the commit body). Judge
-eligibility by the actual effect, not filenames alone. Code, dependencies,
-executable configuration, workflows, and behavior-changing generated artifacts
-are not eligible.
+`[ci skip]` on its own line at the end of the extended commit message (the
+commit body), before trailers such as `Co-Authored-By`. Judge eligibility by
+the actual effect, not filenames alone. Code, dependencies, executable
+configuration, workflows, and behavior-changing generated artifacts are not
+eligible.
+
+Commits that are usually eligible:
+
+- Release notes only: `CHANGELOG.md` and `CHANGELOG-WIP.md`.
+- Documentation and code comments only.
+- Agent instructions, rules and skills only: `AGENTS.md`, `.ai/`, `.agents/`
+  and `.claude/`, including scripts that only agents run.
 
 Skip markers can leave required checks pending and do not establish green CI.
 Never use them to evade required checks, merged-result verification, or merge

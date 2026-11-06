@@ -24,7 +24,9 @@
         },
         "path": ["settings", "uiMode"],
         "mode": "editable",
-        "deltaGroup": ["settings", "uiMode"]
+        "deltaGroup": ["settings", "uiMode"],
+        "readable": true,
+        "writable": true
       }
     },
     {
@@ -42,7 +44,9 @@
         "props": [],
         "path": ["settings", "placeholder"],
         "mode": "editable",
-        "deltaGroup": ["settings", "placeholder"]
+        "deltaGroup": ["settings", "placeholder"],
+        "readable": true,
+        "writable": true
       }
     },
     {
@@ -70,7 +74,9 @@
             "props": {"inputType": "number", "min": 1, "size": 3},
             "path": ["settings", "fieldLimit"],
             "mode": "editable",
-            "deltaGroup": ["settings"]
+            "deltaGroup": ["settings"],
+            "readable": true,
+            "writable": true
           }
         },
         {
@@ -90,7 +96,9 @@
             },
             "path": ["settings", "limitUnit"],
             "mode": "editable",
-            "deltaGroup": ["settings"]
+            "deltaGroup": ["settings"],
+            "readable": true,
+            "writable": true
           }
         }
       ]
@@ -115,7 +123,9 @@
             "props": [],
             "path": ["settings", "code"],
             "mode": "editable",
-            "deltaGroup": ["settings", "code"]
+            "deltaGroup": ["settings", "code"],
+            "readable": true,
+            "writable": true
           }
         },
         {
@@ -133,7 +143,9 @@
             "path": ["settings", "multiline"],
             "mode": "editable",
             "deltaGroup": ["settings", "multiline"],
-            "reactive": true
+            "reactive": true,
+            "readable": true,
+            "writable": true
           }
         }
       ]
@@ -161,7 +173,9 @@
             "props": {"inputType": "number", "min": 1},
             "path": ["settings", "initialRows"],
             "mode": "editable",
-            "deltaGroup": ["settings", "initialRows"]
+            "deltaGroup": ["settings", "initialRows"],
+            "readable": true,
+            "writable": true
           }
         }
       ]
