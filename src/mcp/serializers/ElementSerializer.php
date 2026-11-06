@@ -72,13 +72,17 @@ class ElementSerializer extends \yii\base\Component
                 continue;
             }
 
-            if ($fields === null && $field instanceof ElementContainerFieldInterface) {
+            $value = $element->getFieldValue($field->handle);
+            // Container fields like CKEditor can hold nested elements without their value being elements
+            $isNested = $field instanceof ElementContainerFieldInterface && $this->isNestedValue($value);
+
+            if ($fields === null && $isNested) {
                 continue;
             }
 
-            $value = $field instanceof ElementContainerFieldInterface
-                ? $this->nestedValue($element->getFieldValue($field->handle), $remaining, $serializeNested)
-                : $field->serializeValue($element->getFieldValue($field->handle), $element);
+            $value = $isNested
+                ? $this->nestedValue($value, $remaining, $serializeNested)
+                : $field->serializeValue($value, $element);
 
             $data += [$field->handle => $value];
         }
@@ -92,6 +96,16 @@ class ElementSerializer extends \yii\base\Component
         $this->trigger(self::EVENT_SERIALIZING, $event);
 
         return $filterNulls ? Arr::whereNotNull($event->serializedData) : $event->serializedData;
+    }
+
+    /**
+     * Returns whether a field value holds nested elements.
+     */
+    private function isNestedValue(mixed $value): bool
+    {
+        return $value instanceof ElementInterface ||
+            $value instanceof ElementQueryInterface ||
+            $value instanceof ElementCollection;
     }
 
     /**
