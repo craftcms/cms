@@ -183,6 +183,29 @@ describe('refreshElementInstances() action menus', () => {
     ).toBe('/new-slug');
   });
 
+  it('takes a fresh menu for a closed menu that has upgraded, and keeps an open one', async () => {
+    document.body.innerHTML =
+      chipHtml('Old', {children: menu('/old-slug')}) +
+      chipHtml('Old', {id: 8, children: menu('/old-slug')});
+    const [closed, opened] = [
+      ...document.querySelectorAll('craft-action-menu'),
+    ] as unknown as Array<Element & {open?: () => void; opened?: boolean}>;
+    // An upgraded menu has an `open()` method, whatever its state.
+    closed!.open = () => {};
+    opened!.open = () => {};
+    opened!.opened = true;
+    respondWith((id) => chipHtml('New', {id, children: menu('/new-slug')}));
+
+    await refreshElementInstances(7);
+    await refreshElementInstances(8);
+
+    expect(
+      [...document.querySelectorAll('craft-action-item')].map((item) =>
+        item.getAttribute('href')
+      )
+    ).toEqual(['/new-slug', '/old-slug']);
+  });
+
   it('keeps a menu the page added items to', async () => {
     document.body.innerHTML = chipHtml('Old', {
       children: menu(
