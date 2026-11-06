@@ -6,6 +6,7 @@ namespace craft\mcp\capabilities;
 
 use Craft;
 use craft\base\FieldInterface;
+use craft\fields\BaseRelationField;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\Typecast;
@@ -86,6 +87,7 @@ class Fields
             throw new ToolCallException('Field type is invalid or unavailable.');
         }
 
+        $settings = $this->sensitiveValues->restore($settings, []);
         $field = $this->fields->createField([
             'type' => $type,
             'name' => $name,
@@ -94,8 +96,10 @@ class Fields
             'searchable' => $searchable,
             'translationMethod' => $translationMethod,
             'translationKeyFormat' => $translationKeyFormat,
-            'settings' => $this->sensitiveValues->restore($settings, []),
+            'settings' => $settings,
         ]);
+
+        $this->validateSources($field, $settings);
 
         return ['field' => $this->save($field)];
     }
@@ -147,7 +151,9 @@ class Fields
         ], $request->arguments);
 
         if (array_key_exists('settings', $request->arguments)) {
-            $attributes = [...array_replace($field->getSettings(), $this->sensitiveValues->restore($settings, $field->getSettings())), ...$attributes];
+            $settings = $this->sensitiveValues->restore($settings, $field->getSettings());
+            $this->validateSources($field, $settings);
+            $attributes = [...array_replace($field->getSettings(), $settings), ...$attributes];
         }
 
         // Settings may contain serialized values, such as enum cases as strings
@@ -228,6 +234,38 @@ class Fields
             $handle !== null => $this->fields->getFieldByHandle($handle),
             default => null,
         };
+    }
+
+    /**
+     * Rejects relation field sources that the field type doesn’t offer.
+     *
+     * @param array<string, mixed> $settings
+     */
+    private function validateSources(FieldInterface $field, array $settings): void
+    {
+        if (!$field instanceof BaseRelationField) {
+            return;
+        }
+
+        // The stdio server is long-running, so memoized sources may predate a recent change
+        Craft::$app->getElementSources()->refreshSources();
+        $valid = ['*', '', ...array_column($field->getSourceOptions(), 'value')];
+        $errors = [];
+
+        foreach (['sources', 'source'] as $setting) {
+            $value = $settings[$setting] ?? null;
+
+            foreach ((array)$value as $index => $source) {
+                if (!in_array($source, $valid, true)) {
+                    $path = is_array($value) ? "settings.{$setting}[$index]" : "settings.$setting";
+                    $errors[] = "$path: Source “{$source}” doesn’t exist.";
+                }
+            }
+        }
+
+        if ($errors) {
+            throw new ToolCallException(implode("\n", $errors));
+        }
     }
 
     /** @return array<string, mixed> */

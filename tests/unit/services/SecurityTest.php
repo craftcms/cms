@@ -7,6 +7,7 @@
 
 namespace crafttests\unit\services;
 
+use Craft;
 use craft\services\Security;
 use craft\test\TestCase;
 
@@ -19,6 +20,33 @@ use craft\test\TestCase;
  */
 class SecurityTest extends TestCase
 {
+    public function testIsSystemDir(): void
+    {
+        $configPath = Craft::$app->getPath()->getConfigPath();
+        $vendorPath = Craft::$app->getPath()->getVendorPath();
+        $security = Craft::$app->getSecurity();
+
+        self::assertTrue($security->isSystemDir($configPath));
+        self::assertTrue($security->isSystemDir($configPath . DIRECTORY_SEPARATOR . 'nested'));
+        self::assertTrue($security->isSystemDir($vendorPath));
+        self::assertTrue($security->isSystemDir(dirname($vendorPath)));
+        self::assertFalse($security->isSystemDir($vendorPath . '-other'));
+    }
+
+    public function testWindowsRestrictedDirectories(): void
+    {
+        if (PHP_OS_FAMILY !== 'Windows') {
+            self::markTestSkipped('Windows-specific system directories.');
+        }
+
+        $security = Craft::$app->getSecurity();
+        $windowsPath = $_SERVER['SystemRoot'] ?? 'C:\\Windows';
+
+        self::assertTrue($security->isRestrictedDir($windowsPath));
+        self::assertTrue($security->isRestrictedDir($windowsPath . DIRECTORY_SEPARATOR . 'System32'));
+        self::assertFalse($security->isRestrictedDir($windowsPath . '-other' . DIRECTORY_SEPARATOR . 'uploads'));
+    }
+
     /**
      * @dataProvider redactIfSensitiveDataProvider
      * @param mixed $expected
