@@ -658,6 +658,18 @@ test('field layouts', function () {
         ->and($savedLayout?->getTab('Updated'))->toBeInstanceOf(FieldLayoutTab::class);
 });
 
+test('an element type without a saved layout gets the same layout element UIDs in every request', function () {
+    $uids = fn (Fields $fields): array => collect($fields->getLayoutByType(User::class)->getTabs())
+        ->flatMap(fn (FieldLayoutTab $tab) => $tab->getElements())
+        ->pluck('uid')
+        ->all();
+
+    expect($this->fields->getLayoutByType(User::class, false))->toBeNull()
+        ->and($uids($this->fields))->not->toBeEmpty()->each->toBeString()
+        // A new instance has nothing cached, like the next request.
+        ->and($uids(app()->build(Fields::class)))->toBe($uids($this->fields));
+});
+
 it('knows the field handles that saved layouts give fields', function () {
     $field = FieldModel::factory()->create([
         'name' => 'Plain Text',

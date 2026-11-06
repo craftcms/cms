@@ -273,6 +273,22 @@ it('closes with Escape and returns focus to the details button', async () => {
   expect(shadowPath()).toEqual(['craft-link', 'craft-button']);
 });
 
+it('closes once focus leaves the panel, leaving focus where it went', async () => {
+  await tabToDetailsButton();
+  await userEvent.keyboard('{Enter}');
+  await settle();
+  await userEvent.keyboard('{Tab}');
+  await settle();
+  expect(popover().opened).toBe(true);
+
+  const anchor = link().querySelector('a')!;
+  anchor.focus();
+  await settle();
+
+  expect(popover().opened).toBe(false);
+  expect(document.activeElement).toBe(anchor);
+});
+
 it('shows a tooltip on each of the panel buttons', async () => {
   await popover().show();
 

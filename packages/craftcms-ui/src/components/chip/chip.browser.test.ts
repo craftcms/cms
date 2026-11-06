@@ -1119,6 +1119,33 @@ it('stacks the prefix above the label, with the checkbox and suffix on top', asy
   expect(Math.abs(prefix.left + prefix.width / 2 - center)).toBeLessThan(1);
 });
 
+it.each([
+  [300, 240],
+  [250, 180],
+  [180, 120],
+  [100, 60],
+])(
+  'steps a full-width stacked 2xl tile’s thumbnail down to fit a %ipx parent',
+  async (width, thumb) => {
+    document.body.innerHTML = `
+      <div style="width: ${width}px; display: flex">
+        <craft-chip prefix-placement="block-start" full-width thumb-size="2xl" show-thumb>
+          <div slot="thumbnail"><craft-thumbnail src="${image}"></craft-thumbnail></div>
+          Label
+        </craft-chip>
+      </div>`;
+    const chip = document.querySelector('craft-chip')!;
+    const thumbnail = chip.querySelector('craft-thumbnail')!;
+    await chip.updateComplete;
+    await thumbnail.updateComplete;
+
+    expect(box(chip.shadowRoot!.querySelector('.cp-chip')!).width).toBe(width);
+    expect(box(thumbnail.shadowRoot!.querySelector('.thumbnail')!).width).toBe(
+      thumb
+    );
+  }
+);
+
 // The thumbnail size and the chip's: a thumb-size picks a chip size to suit,
 // unless the chip has one of its own.
 it('sizes the thumbnail by thumb-size, and the chip to suit it', async () => {

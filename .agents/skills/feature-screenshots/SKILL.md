@@ -27,12 +27,22 @@ captures at the display's pixel density, so Retina shots come out at 2×.
 1. Size the window so its page area is a consistent 16:9, e.g. 1408×792 on a
    display that caps the window at 939 points tall. Every shot in a set uses
    the same page size, so the feature lands in the same place each time.
-2. Get the page's screen origin from the page; `capture.sh` takes screen
-   points:
+2. Get the page's screen origin; `capture.sh` takes screen points. Read
+   `innerHeight` from the page, then pass it to `origin.sh`, which takes the
+   window's position from Chrome and prints `x y`:
 
-   ```js
-   [screenX, screenY + outerHeight - innerHeight]
+   ```bash
+   scripts/origin.sh <innerHeight>
    ```
+
+   Don't take it from the page's own `screenX`/`screenY`: in fullscreen or on
+   another display, they report the wrong position.
+
+   Chrome's “started debugging this browser” bar can appear after a JavaScript
+   call and push the page down about 56 points, which an `innerHeight` read
+   before it doesn't reflect. Before capturing, check the page's position with
+   a full-screen `screencapture -x`, and adjust. For a transparent PNG, a
+   generous region absorbs the shift, since `matte.sh` trims to the feature.
 
 3. Capture every shot in both themes, light and dark, so it matches the
    reader's own GitHub theme. Switch the page's theme without touching the
@@ -185,6 +195,34 @@ the difference. Shadows come out as real partial transparency.
    pixels suits most features; use the same value across a set.
 3. Capture that region once with `capture.sh`. Nothing but the feature
    remains inside the padding.
+
+## Phone-width shots
+
+Chrome won't size a window as narrow as a phone. Overlay a same-origin iframe
+of the page at phone width instead: media and container queries respond to
+the iframe's own width, so it lays out as it would on a phone.
+
+```js
+const frame = document.createElement('iframe');
+frame.id = 'shot-phone';
+frame.src = location.href;
+Object.assign(frame.style, {
+  position: 'fixed', left: '509px', top: '48px', width: '390px',
+  height: '680px', border: '0', zIndex: '2147483647',
+  borderRadius: '28px',
+  boxShadow: '0 0 0 1px rgba(0,0,0,.12), 0 8px 24px rgba(0,0,0,.18)',
+});
+document.body.append(frame);
+await new Promise((resolve) => (frame.onload = resolve));
+frame.contentDocument.documentElement.dataset.theme = 'light'; // or 'dark'
+```
+
+- Isolate it with `__iso(bg)` and `#shot-phone` as the feature, and capture it
+  as a transparent PNG, so the rounded corners and shadow read as a phone
+  screen.
+- Scroll and query inside it through `frame.contentDocument`.
+- Keep the iframe and its shadow about 24px clear of the window's edges.
+- Remove it when you're done.
 
 ## Adding them to a PR
 

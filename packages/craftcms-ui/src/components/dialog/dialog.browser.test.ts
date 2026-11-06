@@ -2,6 +2,7 @@ import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {page, userEvent} from 'vite-plus/test/browser';
 import type CraftButton from '../button/button.js';
 import type CraftDialog from './dialog.js';
+import type CraftPopover from '../popover/popover.js';
 import '../../styles/cp.css';
 import '../button/button.js';
 import './dialog.js';
@@ -310,7 +311,7 @@ it('returns focus to the action menu invoker when focus left the dialog before i
   const {dialog, menuInvoker} = await openFromMenuItem();
 
   (deepActiveElement() as HTMLElement).blur();
-  expect(dialog.matches(':focus-within')).toBe(false);
+  expect(document.activeElement).not.toBe(dialog);
   dialog.opened = false;
   await dialog.updateComplete;
 
@@ -331,6 +332,88 @@ it('returns focus to the action menu invoker when the native dialog closes by it
   expect(dialog.opened).toBe(false);
   expect(document.activeElement).toBe(menuInvoker);
 });
+
+it('returns focus to a popover’s button once a dialog opened from inside it closes', async () => {
+  await import('../popover/popover.js');
+  document.body.innerHTML = `
+    <craft-popover>
+      <craft-button slot="invoker" type="button">View</craft-button>
+      <div slot="content"><button type="button">Edit columns</button></div>
+    </craft-popover>
+    <craft-dialog label="Columns"><button type="button">Done</button></craft-dialog>
+  `;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  const dialog = document.querySelector('craft-dialog') as CraftDialog;
+  popover
+    .querySelector('[slot="content"] button')!
+    .addEventListener('click', () => (dialog.opened = true));
+  const opener = page.getByRole('button', {name: 'Edit columns'});
+  await popover.updateComplete;
+
+  await userEvent.click(page.getByRole('button', {name: 'View'}));
+  await expect.element(opener).toBeVisible();
+  await userEvent.click(opener);
+
+  await expect.poll(() => document.activeElement).toBe(dialog);
+  await expect.poll(() => popover.opened).toBe(false);
+
+  await userEvent.keyboard('{Escape}');
+  await dialog.updateComplete;
+
+  expect(dialog.opened).toBe(false);
+  expect(document.activeElement).toBe(
+    popover.querySelector('[slot="invoker"]')
+  );
+});
+
+it.each([
+  ['for', (popover: CraftPopover) => popover.setAttribute('for', 'view')],
+  [
+    'a virtual anchor',
+    (popover: CraftPopover) => {
+      const button = document.getElementById('view')!;
+      popover.anchor = {
+        contextElement: button,
+        getBoundingClientRect: () => button.getBoundingClientRect(),
+      };
+    },
+  ],
+])(
+  'returns focus to a popover’s button linked with %s once a dialog opened from inside it closes',
+  async (_, link) => {
+    await import('../popover/popover.js');
+    document.body.innerHTML = `
+    <button type="button" id="view">View</button>
+    <craft-popover>
+      <div slot="content"><button type="button">Edit columns</button></div>
+    </craft-popover>
+    <craft-dialog label="Columns"><button type="button">Done</button></craft-dialog>
+  `;
+    const popover = document.querySelector<CraftPopover>('craft-popover')!;
+    link(popover);
+    const dialog = document.querySelector('craft-dialog') as CraftDialog;
+    popover
+      .querySelector('[slot="content"] button')!
+      .addEventListener('click', () => (dialog.opened = true));
+    const opener = page.getByRole('button', {name: 'Edit columns'});
+    await popover.updateComplete;
+
+    await userEvent.click(page.getByRole('button', {name: 'View'}));
+    await expect.element(opener).toBeVisible();
+    await userEvent.click(opener);
+
+    await expect.poll(() => document.activeElement).toBe(dialog);
+    await expect.poll(() => popover.opened).toBe(false);
+
+    await userEvent.keyboard('{Escape}');
+    await dialog.updateComplete;
+
+    expect(dialog.opened).toBe(false);
+    await expect
+      .element(page.getByRole('button', {name: 'View'}))
+      .toHaveFocus();
+  }
+);
 
 it('closes on Escape through craft-before-hide', async () => {
   const dialog = await openDialog();

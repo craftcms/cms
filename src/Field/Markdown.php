@@ -15,7 +15,6 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Concerns\ProvidesLinkField;
 use CraftCms\Cms\Field\Concerns\TracksReferences;
 use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
-use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
@@ -58,7 +57,7 @@ use function CraftCms\Cms\template;
 /**
  * @since 6.0.0
  */
-class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, SortableFieldInterface, TracksReferencesFieldInterface
+class Markdown extends Field implements InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, SortableFieldInterface, TracksReferencesFieldInterface
 {
     use ProvidesLinkField;
     use TracksReferences;

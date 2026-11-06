@@ -10,7 +10,6 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Data\Thumb;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
-use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\FieldChangeComparisons;
 use CraftCms\Cms\Field\Icon;
@@ -547,7 +546,6 @@ abstract class BaseField extends FieldLayoutElement
 
         $coreActions = array_values(array_filter([
             $this->compareChangesAction($context),
-            $this->crossSiteCopyAction($context),
             $this->aiAssistantAction($context),
         ]));
 
@@ -615,6 +613,7 @@ abstract class BaseField extends FieldLayoutElement
 
         return [
             'icon' => 'code-compare',
+            'color' => '--c-field-modified-indicator',
             'label' => t('Compare changes'),
             'action' => [
                 'type' => 'event',
@@ -627,48 +626,6 @@ abstract class BaseField extends FieldLayoutElement
                     'fieldId' => $element instanceof NestedElementInterface ? $element->getField()?->id : null,
                     'layoutElementUid' => $this->uid,
                     'label' => $this->showLabel() ? $this->label() : null,
-                ],
-            ],
-        ];
-    }
-
-    /** @return array<string, mixed>|null */
-    private function crossSiteCopyAction(FieldLayoutElementContext $context): ?array
-    {
-        $element = $context->element;
-
-        if (
-            ! $this->uid ||
-            ! $element?->id ||
-            $context->mode !== ControlMode::Editable ||
-            $context->ui->mode !== ControlMode::Editable ||
-            ! $this->isCrossSiteCopyable($element) ||
-            ! $this->translatable($element) ||
-            ! $element->getIsCrossSiteCopyable()
-        ) {
-            return null;
-        }
-
-        $siteIds = array_values(array_filter(
-            array_keys(ElementHelper::siteStatusesForElement($element, true)),
-            fn (int $siteId): bool => $siteId !== $element->siteId,
-        ));
-        $label = $this->showLabel() ? $this->label() : null;
-
-        return [
-            'icon' => 'clone',
-            'label' => t('Copy value from site…'),
-            'action' => [
-                'type' => 'event',
-                'name' => 'craft:copy-value-from-site',
-                'detail' => [
-                    'elementType' => $element::class,
-                    'elementId' => $element->id,
-                    'draftId' => $element->draftId,
-                    'siteId' => $element->siteId,
-                    'layoutElementUid' => $this->uid,
-                    'label' => $label,
-                    'siteIds' => $siteIds,
                 ],
             ],
         ];
@@ -1139,14 +1096,6 @@ abstract class BaseField extends FieldLayoutElement
     protected function translationDescription(?ElementInterface $element = null, bool $static = false): ?string
     {
         return null;
-    }
-
-    /**
-     * Returns whether field supports copying its value across sites.
-     */
-    public function isCrossSiteCopyable(ElementInterface $element): bool
-    {
-        return false;
     }
 
     /**

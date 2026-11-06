@@ -1,4 +1,4 @@
-import {html, LitElement, nothing, type PropertyValues} from 'lit';
+import {html, LitElement, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {OverlayMixin, withDropdownConfig} from '@lion/ui/overlays.js';
 // Named explicitly so the emitted .d.ts can reference Lion's mixin
@@ -7,6 +7,7 @@ import type {} from '@open-wc/dedupe-mixin';
 import type {Modifier, VirtualElement} from '@popperjs/core';
 import {swallowHeldEnterKeyup} from '@src/utilities/enter-keyup.js';
 import {isFocusable} from '@src/utilities/focus-return.js';
+import {focusStaysWithin} from '@src/utilities/focus-out.js';
 import {wireOverlayLifecycleEvents} from '@src/utilities/overlay-events.js';
 import {viewportEscapingModifiers} from '@src/utilities/overlay-position.js';
 import {
@@ -118,12 +119,6 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
   // it overshoots whatever it was sized to.
   static override styles = [hostStyles, topLayerStyles, styles];
 
-  /**
-   * Names the popup for assistive tech. Lion gives the content `role="dialog"`,
-   * and a dialog without a name is a WCAG 4.1.2 failure.
-   */
-  @property() label?: string;
-
   /** Id of the trigger element within the same document/shadow root. */
   @property({reflect: true}) for?: string;
 
@@ -176,6 +171,52 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
     super();
     wireOverlayLifecycleEvents(this);
     this.addEventListener('keydown', this.#claimEscape);
+    this.addEventListener('focusout', this.#closeOnFocusOut);
+  }
+
+  /**
+   * Closes the popover once focus moves outside it, as in the APG Disclosure
+   * Navigation Menu example, so the open panel can't cover the control that
+   * now has focus (WCAG 2.4.11).
+   *
+   * An invoker linked with `for` or `anchor` sits outside the popover, so it
+   * counts as inside too: otherwise clicking it would close the popover and
+   * the same click would open it again. So does any other button whose
+   * `aria-controls` points into the content, such as a disclosure button kept
+   * apart from the positioning anchor. Focus moving to nothing, as when
+   * someone clicks text in the panel, is left to Lion's outside click and
+   * window blur. Focus stays where it went, since `#returnFocus` only acts
+   * while focus is still in the content.
+   */
+  #closeOnFocusOut = (event: FocusEvent): void => {
+    if (!this.opened || !(event.relatedTarget instanceof Node)) {
+      return;
+    }
+
+    if (
+      focusStaysWithin(event, this, this._overlayInvokerNode) ||
+      this.#controlsContent(event.relatedTarget)
+    ) {
+      return;
+    }
+
+    this.opened = false;
+  };
+
+  /** Whether `node`'s `aria-controls` names an element in the popover. */
+  #controlsContent(node: Node): boolean {
+    if (!(node instanceof Element)) {
+      return false;
+    }
+
+    const root = node.getRootNode() as Document | ShadowRoot;
+    return (node.getAttribute('aria-controls') ?? '')
+      .split(/\s+/)
+      .filter(Boolean)
+      .some((id) => {
+        const controlled = root.getElementById(id);
+        return controlled !== null && this.contains(controlled);
+      });
   }
 
   /**
@@ -350,16 +391,15 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
     return this.anchor as HTMLElement | undefined;
   }
 
+  // The pane is a disclosure panel, not a dialog. Lion gives overlay content
+  // that has no role `role="dialog"`, so `role="none"` claims it first, while
+  // Lion still keeps the invoker's `aria-expanded` in sync.
   protected override render(): unknown {
     return html`
       <slot name="invoker"></slot>
       <slot name="backdrop"></slot>
       <div id="overlay-content-node-wrapper">
-        <div
-          class="popover-pane"
-          part="popup"
-          aria-label="${this.label ?? nothing}"
-        >
+        <div class="popover-pane" part="popup" role="none">
           <slot name="content">
             <slot name="content-body"></slot>
             <slot name="content-footer"></slot>

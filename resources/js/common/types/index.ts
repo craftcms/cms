@@ -109,6 +109,14 @@ export interface ActionItemDisplay {
   is: Component;
 }
 
+/** A small badge after an item's label, such as one marking a version “Edited”. */
+export interface ActionItemBadge {
+  label: string;
+  /** A palette color or status variant. Defaults to gray. */
+  fill?: string;
+  icon?: string;
+}
+
 export interface ActionItemButton {
   type?: 'button';
   id?: string;
@@ -147,6 +155,8 @@ export interface ActionItemButton {
   iconSvg?: string;
   /** A status dot in place of the icon, as a palette color or status variant. */
   status?: string;
+  /** A badge after the label, in a menu. */
+  badge?: ActionItemBadge;
   hidden?: boolean;
   disabled?: boolean;
   disabledReason?: string | null;
@@ -180,6 +190,8 @@ export interface ActionItemLink {
   iconSvg?: string;
   /** A status dot in place of the icon, as a palette color or status variant. */
   status?: string;
+  /** A badge after the label, in a menu. */
+  badge?: ActionItemBadge;
   /** A dot beside the label, for a nav entry with a badge count. */
   indicator?: boolean;
   /** A number after the label, for a nav entry that counts what it lists. */

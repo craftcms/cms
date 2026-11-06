@@ -37,6 +37,10 @@ inputs:
     description: 'Additional directory to run composer install in (e.g. yii2-adapter)'
     required: false
     default: ''
+  disable-browser-plugin:
+    description: 'Stop Pest from loading pestphp/pest-plugin-browser'
+    required: false
+    default: 'false'
 
 runs:
   using: 'composite'
@@ -92,6 +96,15 @@ runs:
         key: pest-tia-v2-${{ github.base_ref }}-${{ runner.os }}-${{ inputs.php-version }}-${{ inputs.tia-environment }}-${{ github.event.pull_request.base.sha }}
         restore-keys: |
           pest-tia-v2-${{ github.base_ref }}-${{ runner.os }}-${{ inputs.php-version }}-${{ inputs.tia-environment }}-
+
+    # Pest loads every plugin listed in vendor/pest-plugins.json. With the
+    # browser plugin loaded, php.exe on Windows fail-fasts (0xC0000409) as it
+    # exits, after every test has passed, and Git Bash reports that as exit
+    # code 127. Suites without browser tests don't need the plugin.
+    - name: Disable the Pest browser plugin
+      if: inputs.disable-browser-plugin == 'true'
+      shell: bash
+      run: php -r '$file = "vendor/pest-plugins.json"; file_put_contents($file, json_encode(array_values(array_diff(json_decode(file_get_contents($file), true), ["Pest\\Browser\\Plugin"]))));'
 
     - name: Run tests
       shell: bash

@@ -20,10 +20,13 @@ use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
+use CraftCms\Cms\Ui\Contracts\WritableValueControl;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
 use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -32,9 +35,9 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class ElementSelect extends Control
+class ElementSelect extends Control implements ReadableValueControl, WritableValueControl
 {
-    #[\Override]
+    #[Override]
     protected mixed $value = [];
 
     /** @var class-string<ElementInterface>|null */
@@ -110,6 +113,18 @@ class ElementSelect extends Control
             'useCustomElement' => true,
             'customElement' => $control->props['customElement'],
         ]));
+    }
+
+    /**
+     * The chips draw from the presentations of the elements the control was rendered with, so its value is read along
+     * with them.
+     *
+     * @return list<string>
+     */
+    #[Override]
+    public function valueProps(): array
+    {
+        return ['elements'];
     }
 
     public function component(): string
@@ -299,7 +314,7 @@ class ElementSelect extends Control
         ];
     }
 
-    #[\Override]
+    #[Override]
     public function props(mixed $value = null): array
     {
         if ($this->elementType === null) {

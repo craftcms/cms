@@ -17,6 +17,8 @@ use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\Enums\CheckboxSelectPresentation;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
+use CraftCms\Cms\Ui\Contracts\WritableValueControl;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\Enums\AllOptionMode;
 use CraftCms\Cms\Ui\Enums\ChoicePresentation;
@@ -28,7 +30,7 @@ use function CraftCms\Cms\t;
 /**
  * @since 6.0.0
  */
-class Choice extends Control
+class Choice extends Control implements ReadableValueControl, WritableValueControl
 {
     /** The token {@see self::allOption()} posts by default. */
     public const string ALL_VALUE = '*';
