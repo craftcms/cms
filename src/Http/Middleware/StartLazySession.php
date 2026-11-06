@@ -106,7 +106,7 @@ readonly class StartLazySession
     {
         $config = $this->manager->getSessionConfig();
 
-        $startSession = $this->startSession($request);
+        [$startSession, $parameters] = $this->startSession($request);
 
         if (($config['driver'] ?? null) === null || $request->cookies->get($config['cookie']) !== null) {
             return $startSession->handle($request, $next);
@@ -150,21 +150,30 @@ readonly class StartLazySession
     }
 
     /**
-     * Returns the route's own {@see StartSession} subclass, if it has one, as `withLazySession()` excludes it too.
+     * Returns the route's own {@see StartSession} subclass, if it has one, as `withLazySession()` excludes it too,
+     * along with its middleware parameters.
+     *
+     * @return array{StartSession, list<string>}
      */
-    private function startSession(Request $request): StartSession
+    private function startSession(Request $request): array
     {
         $route = $request->route();
 
         if ($route instanceof Route) {
             foreach ($this->router->resolveMiddleware($route->gatherMiddleware()) as $middleware) {
-                if (is_string($middleware) && is_subclass_of($class = explode(':', $middleware, 2)[0], StartSession::class)) {
-                    return $this->container->make($class);
+                if (! is_string($middleware)) {
+                    continue;
+                }
+
+                [$class, $parameters] = array_pad(explode(':', $middleware, 2), 2, null);
+
+                if (is_subclass_of($class, StartSession::class)) {
+                    return [$this->container->make($class), $parameters === null ? [] : explode(',', $parameters)];
                 }
             }
         }
 
-        return $this->startSession;
+        return [$this->startSession, []];
     }
 
     /**

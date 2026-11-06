@@ -99,13 +99,18 @@ it('opts routes in with withLazySession()', function () {
 });
 
 it('uses the host app’s StartSession subclass', function () {
-    Route::middlewareGroup('host-web', [EncryptCookies::class, AddQueuedCookiesToResponse::class, HostStartSession::class]);
+    Route::middlewareGroup('host-web', [EncryptCookies::class, AddQueuedCookiesToResponse::class, HostStartSession::class.':custom']);
     Route::middleware('host-web')->withLazySession()->get('host-session', fn () => session('notice', 'none'));
 
     get('/host-session')
         ->assertOk()
-        ->assertHeader('X-Host-Start-Session', 'yes')
+        ->assertHeader('X-Host-Start-Session', 'custom')
         ->assertCookieMissing(config('session.cookie'));
+
+    $this->withCookie(config('session.cookie'), 'existing')
+        ->get('/host-session')
+        ->assertOk()
+        ->assertHeader('X-Host-Start-Session', 'custom');
 });
 
 it('saves the session when an unsafe request changes database records', function () {

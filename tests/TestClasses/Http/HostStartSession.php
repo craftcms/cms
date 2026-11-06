@@ -10,8 +10,8 @@ use Override;
 class HostStartSession extends StartSession
 {
     #[Override]
-    public function handle($request, \Closure $next)
+    public function handle($request, \Closure $next, string $label = 'yes')
     {
-        return parent::handle($request, $next)->header('X-Host-Start-Session', 'yes');
+        return parent::handle($request, $next)->header('X-Host-Start-Session', $label);
     }
 }
