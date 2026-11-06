@@ -116,9 +116,11 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     protected Builder $query;
 
     /**
-     * All of the globally registered builder macros.
+     * The registered builder macros, by the class they were registered on, so a macro registered on one element
+     * query class applies to it and its subclasses, and one registered on this class applies to every element query.
+     *
+     * @var array<class-string, array<string, callable>>
      */
-    /** @var array<string, Closure> */
     #[Override]
     protected static $macros = [];
 
@@ -1351,21 +1353,67 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     }
 
     /**
-     * Get the given global macro by name.
+     * Get the given global macro by name, as registered on this class or the closest parent class.
      */
-    public static function getGlobalMacro(string $name): Closure
+    public static function getGlobalMacro(string $name): ?callable
     {
-        return Arr::get(static::$macros, $name);
+        for ($class = static::class; $class !== false; $class = get_parent_class($class)) {
+            if (isset(static::$macros[$class][$name])) {
+                return static::$macros[$class][$name];
+            }
+
+            if ($class === self::class) {
+                break;
+            }
+        }
+
+        return null;
     }
 
     /**
-     * Checks if a global macro is registered.
+     * Checks if a global macro is registered on this class or a parent class.
      *
      * @param  string  $name
      */
     public static function hasGlobalMacro($name): bool
     {
-        return isset(static::$macros[$name]);
+        return static::getGlobalMacro($name) !== null;
+    }
+
+    /**
+     * Register a macro for this element query class and its subclasses.
+     *
+     * @param  string  $name
+     * @param  callable  $macro
+     */
+    #[Override]
+    public static function macro($name, $macro): void
+    {
+        static::$macros[static::class][$name] = $macro;
+    }
+
+    /**
+     * Checks if a macro is registered on this class or a parent class.
+     *
+     * @param  string  $name
+     */
+    #[Override]
+    public static function hasMacro($name): bool
+    {
+        return static::hasGlobalMacro($name);
+    }
+
+    /**
+     * Flush the macros registered on this class and its subclasses.
+     */
+    #[Override]
+    public static function flushMacros(): void
+    {
+        static::$macros = array_filter(
+            static::$macros,
+            fn (string $class) => ! is_a($class, static::class, true),
+            ARRAY_FILTER_USE_KEY,
+        );
     }
 
     /**
@@ -1475,8 +1523,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return $this->localMacros[$method](...$parameters);
         }
 
-        if (static::hasGlobalMacro($method)) {
-            $callable = static::$macros[$method];
+        if (($callable = static::getGlobalMacro($method)) !== null) {
 
             if ($callable instanceof Closure) {
                 $callable = $callable->bindTo($this, static::class);
@@ -1523,23 +1570,17 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     #[Override]
     public static function __callStatic($method, $parameters): mixed
     {
-        if ($method === 'macro') {
-            static::$macros[$parameters[0]] = $parameters[1];
-
-            return null;
-        }
-
         if ($method === 'mixin') {
             static::registerMixin($parameters[0], $parameters[1] ?? true);
 
             return null;
         }
 
-        if (! static::hasGlobalMacro($method)) {
+        $callable = static::getGlobalMacro($method);
+
+        if ($callable === null) {
             static::throwBadMethodCallException($method);
         }
-
-        $callable = static::$macros[$method];
 
         if ($callable instanceof Closure) {
             $callable = $callable->bindTo(null, static::class);

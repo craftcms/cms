@@ -9,7 +9,9 @@ use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\ContentBlockQuery;
 use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
+use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
@@ -20,6 +22,7 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Query;
+use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\MultipleRecordsFoundException;
@@ -459,6 +462,23 @@ it('orders latest() and oldest() by the creation date', function () {
 
     expect(entryQuery()->id($ids)->latest()->ids())->toBe([$ids[1], $ids[0], $ids[2]])
         ->and(entryQuery()->id($ids)->oldest()->ids())->toBe([$ids[2], $ids[0], $ids[1]]);
+});
+
+it('scopes macros to the query class they are registered on', function () {
+    EntryQuery::macro('entryOnly', fn () => static::class);
+    ElementQuery::macro('everyQuery', fn () => $this::class);
+
+    try {
+        expect(entryQuery()->entryOnly())->toBe(EntryQuery::class)
+            ->and(UserQuery::hasMacro('entryOnly'))->toBeFalse()
+            ->and(fn () => UserElement::find()->entryOnly())->toThrow(BadMethodCallException::class)
+            ->and(UserElement::find()->everyQuery())->toBe(UserQuery::class)
+            ->and(EntryQuery::hasMacro('everyQuery'))->toBeTrue();
+    } finally {
+        ElementQuery::flushMacros();
+    }
+
+    expect(EntryQuery::hasMacro('entryOnly'))->toBeFalse();
 });
 
 it('rejects other SQL expressions passed as strings', function (Closure $query) {
