@@ -242,6 +242,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
 
     Route::get('preview/{id}{slug?}', PreviewElementController::class)->where($idSlugParams);
     Route::get('edit/{id}{slug?}', ElementRedirectController::class)->where($idSlugParams);
+    Route::get('compare/{id}', CompareElementsController::class)->whereNumber('id')->name('elements.compare');
     Route::get('edit/{uid}', ElementRedirectController::class);
     Route::get('revisions/{id}{slug}', [ElementRevisionsController::class, 'index'])->where($idSlugParams);
     Route::get('entries/{section}/{id}{slug}/revisions', [ElementRevisionsController::class, 'index'])->where($idSlugParams);
@@ -251,11 +252,6 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     ]);
     Route::get('entries/{section}/{id}{slug?}/activity', [ElementActivityController::class, 'index'])->where($idSlugParams);
     Route::get('content/{page}/{section}/{id}{slug?}/activity', [ElementActivityController::class, 'index'])->where([
-        ...$idSlugParams,
-        'page' => '[^\/]+',
-    ]);
-    Route::get('entries/{section}/{id}{slug?}/compare', CompareElementsController::class)->where($idSlugParams);
-    Route::get('content/{page}/{section}/{id}{slug?}/compare', CompareElementsController::class)->where([
         ...$idSlugParams,
         'page' => '[^\/]+',
     ]);

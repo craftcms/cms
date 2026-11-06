@@ -123,6 +123,14 @@ class Fields
      */
     private ?MemoizableArray $_layouts = null;
 
+    /**
+     * The layouts made for element types that don’t have one saved, so each type’s is the same one, with the same
+     * element UIDs, every time it’s asked for.
+     *
+     * @var array<class-string<ElementInterface>, FieldLayout>
+     */
+    private array $_defaultLayouts = [];
+
     /** @var array<string, FieldInterface> */
     private array $_savingFields = [];
 
@@ -1080,7 +1088,12 @@ class Fields
         $layout = $this->_layouts()->firstWhere('type', $type);
 
         if (! $layout && $create) {
-            return new FieldLayout(['type' => $type]);
+            if (! isset($this->_defaultLayouts[$type])) {
+                $this->_defaultLayouts[$type] = new FieldLayout(['type' => $type]);
+                $this->_defaultLayouts[$type]->resetUids();
+            }
+
+            return $this->_defaultLayouts[$type];
         }
 
         return $layout;

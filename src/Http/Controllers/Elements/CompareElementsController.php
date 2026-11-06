@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\FieldComparisonRow;
-use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Events\ElementEditorPayloadResolving;
 use CraftCms\Cms\Element\FieldChangeComparisons;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\ElementCrumbs;
@@ -14,20 +14,22 @@ use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Url;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
 /**
- * The Compare screen, which shows two versions of an entry side by side, field by field: a draft and the current
- * entry, two revisions, or the entry in two sites.
+ * The Compare screen, which shows two versions of an element side by side, field by field: a draft and the current
+ * element, two revisions, or the element in two sites. Element types offer it by linking to it; each side gets a
+ * version menu when the element type has drafts or revisions, and a site menu when it’s localized.
  *
  * The newer version is identified like the editor’s, by `draftId`, `revisionId`, and `siteId`. The one it’s compared
  * with is identified by `from` (`current`, `draft-{draftId}`, or `revision-{revisionId}`) and `fromSiteId`, and
  * defaults to what the newer version was based on.
  *
- * The newer version is edited in place when it can be — the current entry or a draft the user can save, but never a
- * revision — through the same editor payload as its edit page, and saving it comes back here.
+ * The newer version is edited in place when it can be — the current element or a draft the user can save, but never
+ * a revision — through the same editor payload as its edit page, and saving it comes back here.
  *
  * @since 6.0.0
  */
@@ -45,8 +47,8 @@ readonly class CompareElementsController
 
     public function __invoke(ElementRequest $request): CpScreenResponse|Response
     {
-        // As on the edit screen, the current entry is shown with the user’s unsaved edits, when they have any, unless
-        // the request asks for it as it’s saved.
+        // As on the edit screen, the current element is shown with the user’s unsaved edits, when they have any,
+        // unless the request asks for it as it’s saved.
         $to = $request->element(['id' => $request->route('id')], checkForProvisionalDraft: $request->query('edits') !== '0');
 
         if ($to instanceof Response) {
@@ -58,13 +60,19 @@ readonly class CompareElementsController
         }
 
         $canonical = $to->getCanonical(true);
-        $hasEdits = $to->isProvisionalDraft || $this->edits($request, $canonical, $to->siteId) !== null;
+        $edits = match (true) {
+            $to->isProvisionalDraft => $to,
+            $to::hasDrafts() => $this->edits($request, $canonical, $to->siteId),
+            default => null,
+        };
+        $hasEdits = $edits !== null;
         $from = $this->fromVersion($request, $to, $canonical);
-        $versions = $this->versions($request, $canonical, [$from, $to], $hasEdits);
-        $siteIds = $this->siteIds($canonical);
+        $versions = $this->versions($request, $canonical, $edits, [$from, $to]);
+        // A site only identifies a side of a localized element.
+        $localized = $to::isLocalized();
         $state = [
-            'from' => ['version' => $this->versionKey($from), 'siteId' => $from->siteId],
-            'to' => ['version' => $this->versionKey($to), 'siteId' => $to->siteId],
+            'from' => ['version' => $this->versionKey($from), 'siteId' => $localized ? $from->siteId : null],
+            'to' => ['version' => $this->versionKey($to), 'siteId' => $localized ? $to->siteId : null],
         ];
 
         $comparison = $this->comparisons->compareElements($from, $to);
@@ -78,11 +86,11 @@ readonly class CompareElementsController
             ->redirectUrl($this->compareUrl($request, $state, $hasEdits))
             ->inertiaPage('elements/Compare', [
                 'from' => [
-                    ...$this->side($request, 'from', $from, $state, $versions, $siteIds, $hasEdits),
+                    ...$this->side($request, 'from', $from, $state, $versions, $hasEdits),
                     'ui' => $comparison['from'],
                 ],
                 'to' => [
-                    ...$this->side($request, 'to', $to, $state, $versions, $siteIds, $hasEdits),
+                    ...$this->side($request, 'to', $to, $state, $versions, $hasEdits),
                     'ui' => $comparison['to'],
                     'editor' => $this->editor($request, $to, $hasEdits),
                 ],
@@ -101,7 +109,7 @@ readonly class CompareElementsController
     }
 
     /**
-     * The edit screen’s payload for the newer version, when the user can edit it. The current entry as it’s saved
+     * The edit screen’s payload for the newer version, when the user can edit it. The current element as it’s saved
      * can’t be, while the user has unsaved edits to it: saving would go into those edits, as it does on the edit
      * screen, which shows them in its place.
      *
@@ -131,12 +139,14 @@ readonly class CompareElementsController
     private function fromVersion(ElementRequest $request, ElementInterface $to, ElementInterface $canonical): ElementInterface
     {
         $version = $request->query('from');
-        $siteId = $request->integer('fromSiteId') ?: $to->siteId;
+        $siteId = $to::isLocalized() ? ($request->integer('fromSiteId') ?: $to->siteId) : $to->siteId;
 
         if (! is_string($version) && $siteId === $to->siteId) {
             $from = $this->comparisons->baseOf($to) ?? $to;
         } else {
-            abort_unless(in_array($siteId, $this->sites->getEditableSiteIds()->all(), true), 403, 'User not authorized to edit content for this site.');
+            if ($siteId !== $to->siteId) {
+                abort_unless(in_array($siteId, $this->sites->getEditableSiteIds()->all(), true), 403, 'User not authorized to edit content for this site.');
+            }
 
             [$type, $id] = array_pad(explode('-', is_string($version) ? $version : 'current', 2), 2, null);
             $query = $canonical::find()->siteId($siteId)->status(null);
@@ -162,13 +172,13 @@ readonly class CompareElementsController
      * keep the other side as it is.
      *
      * @param  'from'|'to'  $key
-     * @param  array{from: array{version: string, siteId: int}, to: array{version: string, siteId: int}}  $state
+     * @param  array{from: array{version: string, siteId: int|null}, to: array{version: string, siteId: int|null}}  $state
      * @param  list<array{key: string, label: string, group: string, badge?: array{label: string, fill: string, icon: string}}>  $versions
-     * @param  list<int>  $siteIds
      * @return array{label: string, edited: bool, siteName: string|null, versionMenu: list<array<string, mixed>>, siteMenu: list<array<string, mixed>>}
      */
-    private function side(ElementRequest $request, string $key, ElementInterface $element, array $state, array $versions, array $siteIds, bool $hasEdits): array
+    private function side(ElementRequest $request, string $key, ElementInterface $element, array $state, array $versions, bool $hasEdits): array
     {
+        $siteIds = $this->siteIds($element);
         $other = $key === 'from' ? 'to' : 'from';
 
         // A choice that would show the same site and version as the other side is there, but can’t be made.
@@ -204,8 +214,13 @@ readonly class CompareElementsController
         }
 
         return [
-            // As in the editor, the user’s unsaved edits are the current version, marked “Edited”.
-            'label' => $element->isProvisionalDraft ? t('Current') : $this->comparisons->label($element),
+            // As in the editor, the user’s unsaved edits are the current version, marked “Edited”. Without versions to
+            // tell apart, the side is the element.
+            'label' => match (true) {
+                $versions === [] => $element->getUiLabel(),
+                $element->isProvisionalDraft => t('Current'),
+                default => $this->comparisons->label($element),
+            },
             'edited' => (bool) $element->isProvisionalDraft,
             'siteName' => $siteIds !== [] ? $element->getSite()->getName() : null,
             'versionMenu' => $versionMenu,
@@ -217,10 +232,10 @@ readonly class CompareElementsController
     }
 
     /**
-     * The URL of the Compare screen with both sides as given. The newer one is the current entry with the user’s
-     * unsaved edits unless it says otherwise, so the current entry as it’s saved does when there are any.
+     * The URL of the Compare screen with both sides as given. The newer one is the current element with the user’s
+     * unsaved edits unless it says otherwise, so the current element as it’s saved does when there are any.
      *
-     * @param  array{from: array{version: string, siteId: int}, to: array{version: string, siteId: int}}  $state
+     * @param  array{from: array{version: string, siteId: int|null}, to: array{version: string, siteId: int|null}}  $state
      */
     private function compareUrl(ElementRequest $request, array $state, bool $hasEdits): string
     {
@@ -252,7 +267,7 @@ readonly class CompareElementsController
     }
 
     /**
-     * The user’s unsaved edits to the current entry in a site, if they have any.
+     * The user’s unsaved edits to the current element in a site, if they have any.
      */
     private function edits(ElementRequest $request, ElementInterface $canonical, int $siteId): ?ElementInterface
     {
@@ -266,25 +281,35 @@ readonly class CompareElementsController
     }
 
     /**
-     * The versions either side can show: the current entry, along with the user’s unsaved edits to it when there are
-     * any, its drafts, and its recent revisions, along with any older revision that’s being compared.
+     * The versions either side can show, of the ones the user can view: the current element, along with the user’s
+     * unsaved edits to it when there are any, its drafts, and its recent revisions, along with any older revision
+     * that’s being compared. None, when the element type has neither drafts nor revisions.
      *
      * @param  list<ElementInterface>  $selected
      * @return list<array{key: string, label: string, group: string, badge?: array{label: string, fill: string, icon: string}}>
      */
-    private function versions(ElementRequest $request, ElementInterface $canonical, array $selected, bool $hasEdits): array
+    private function versions(ElementRequest $request, ElementInterface $canonical, ?ElementInterface $edits, array $selected): array
     {
+        $hasDrafts = $canonical::hasDrafts();
+        $hasRevisions = $canonical->hasRevisions();
+
+        if (! $hasDrafts && ! $hasRevisions) {
+            return [];
+        }
+
         $user = $request->craftUser();
+        $viewable = fn (ElementInterface $element): bool => $user->can('view', $element);
 
-        $drafts = $canonical::find()
-            ->draftOf($canonical)
-            ->siteId($canonical->siteId)
-            ->status(null)
-            ->orderByDesc('dateUpdated')
-            ->get()
-            ->filter(fn (ElementInterface $draft): bool => $user->can('view', $draft));
+        $drafts = $hasDrafts
+            ? $canonical::find()
+                ->draftOf($canonical)
+                ->siteId($canonical->siteId)
+                ->status(null)
+                ->orderByDesc('dateUpdated')
+                ->get()
+            : collect();
 
-        $revisions = $canonical->hasRevisions()
+        $revisions = $hasRevisions
             ? $canonical::find()
                 ->revisionOf($canonical)
                 ->siteId($canonical->siteId)
@@ -301,20 +326,20 @@ readonly class CompareElementsController
         }
 
         return [
-            ['key' => 'current', 'label' => t('Current'), 'group' => 'current'],
+            ...($viewable($canonical) ? [['key' => 'current', 'label' => t('Current'), 'group' => 'current']] : []),
             // Marked as the editor marks it.
-            ...($hasEdits ? [[
+            ...($edits && $viewable($edits) ? [[
                 'key' => 'edits',
                 'label' => t('Current'),
                 'group' => 'current',
                 'badge' => ['label' => t('Edited'), 'fill' => 'violet', 'icon' => 'pen-circle'],
             ]] : []),
-            ...$drafts->map(fn (ElementInterface $draft): array => [
+            ...$drafts->filter($viewable)->map(fn (ElementInterface $draft): array => [
                 'key' => $this->versionKey($draft),
                 'label' => $draft->draftName ?: t('Draft'),
                 'group' => 'drafts',
             ])->values()->all(),
-            ...$revisions->map(fn (ElementInterface $revision): array => [
+            ...$revisions->filter($viewable)->map(fn (ElementInterface $revision): array => [
                 'key' => $this->versionKey($revision),
                 'label' => $revision->getRevisionLabel(),
                 'group' => 'revisions',
@@ -323,17 +348,26 @@ readonly class CompareElementsController
     }
 
     /**
-     * The sites either side can show: the ones the entry is in that the user can edit, or none for a single site.
+     * The sites a side can show: the ones its version is in that the user can edit, or none when there’s only one, or
+     * the element type isn’t localized.
      *
      * @return list<int>
      */
-    private function siteIds(ElementInterface $canonical): array
+    private function siteIds(ElementInterface $element): array
     {
-        $editableSiteIds = $this->sites->getEditableSiteIds()->all();
-        $siteIds = array_values(array_filter(
-            array_column(ElementHelper::supportedSitesForElement($canonical), 'siteId'),
-            fn (int $siteId): bool => in_array($siteId, $editableSiteIds, true),
-        ));
+        if (! $element::isLocalized()) {
+            return [];
+        }
+
+        $existingSiteIds = DB::table(Table::ELEMENTS_SITES)
+            ->where('elementId', $element->id)
+            ->pluck('siteId')
+            ->map(fn (mixed $siteId): int => (int) $siteId)
+            ->all();
+        $siteIds = $this->sites->getEditableSiteIds()
+            ->filter(fn (int $siteId): bool => in_array($siteId, $existingSiteIds, true))
+            ->values()
+            ->all();
 
         return count($siteIds) > 1 ? $siteIds : [];
     }

@@ -10,13 +10,13 @@ use CraftCms\Cms\Element\Data\FieldChangeComparison;
 use CraftCms\Cms\Element\Data\FieldComparisonRow;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
-use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\FieldLayout\FieldPreviews;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Ui\Controls\NestedElements;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\NestedUiPayload;
@@ -24,7 +24,6 @@ use CraftCms\Cms\Ui\NodePayload;
 use CraftCms\Cms\Ui\UiPayload;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Database\Query\Builder;
-use Illuminate\Support\Uri;
 
 use function CraftCms\Cms\t;
 
@@ -78,9 +77,9 @@ readonly class FieldChangeComparisons
     }
 
     /**
-     * Returns the Compare screen’s URL for a version of an entry in a section, comparing it with what it was based
-     * on, or null when there’s nothing to compare it with, as with the first revision, or it can’t be compared: an
-     * unpublished draft, or one that isn’t an entry. A nested element’s is its root owner’s.
+     * Returns the Compare screen’s URL for a version of an element, comparing it with what it was based on, or null
+     * when there’s nothing to compare it with, as with the first revision, or it can’t be compared: an unpublished
+     * draft. A nested element’s is its root owner’s.
      *
      * @param  bool|null  $hasBase  Whether the version is known to have something to compare with, which spares looking.
      */
@@ -96,9 +95,9 @@ readonly class FieldChangeComparisons
     }
 
     /**
-     * Returns the Compare screen’s URL for a version of an entry in a section, comparing it with the current entry in
-     * another site, or null when the entry can’t be compared: a revision, an unpublished draft, or one that isn’t an
-     * entry. A nested element’s is its root owner’s.
+     * Returns the Compare screen’s URL for a version of an element, comparing it with the current element in another
+     * site, or null when the element can’t be compared: a revision, or an unpublished draft. A nested element’s is its
+     * root owner’s.
      */
     public function siteCompareUrl(ElementInterface $element, int $siteId): ?string
     {
@@ -108,16 +107,12 @@ readonly class FieldChangeComparisons
             return null;
         }
 
-        return $this->compareScreenUrl($element, [
-            'siteId' => $element->siteId,
-            'fromSiteId' => $siteId,
-        ]);
+        return $this->compareScreenUrl($element, ['fromSiteId' => $siteId]);
     }
 
     /**
-     * Returns the Compare screen’s URL showing a version of an entry in a section, or null when it can’t be shown: an
-     * unpublished draft, or one that isn’t an entry. The user’s unsaved edits are the current entry’s, which the
-     * screen shows in their place.
+     * Returns the Compare screen’s URL showing a version of an element, or null when it can’t be shown: an unpublished
+     * draft. The user’s unsaved edits are the current element’s, which the screen shows in their place.
      *
      * @param  array<string, int|string|null>  $params
      */
@@ -125,21 +120,15 @@ readonly class FieldChangeComparisons
     {
         $canonical = $element->getCanonical(true);
 
-        if (
-            ! $canonical instanceof Entry ||
-            ! $canonical->id ||
-            ! $canonical->sectionId ||
-            $element->getIsUnpublishedDraft()
-        ) {
+        if (! $canonical->id || $element->getIsUnpublishedDraft()) {
             return null;
         }
 
-        $url = Uri::of($canonical->getCpEditUrl());
-
-        return $url->withPath("{$url->path()}/compare")->withQuery(array_filter([
+        return Url::urlWithParams(route('craft.cp.elements.compare', ['id' => $canonical->id]), array_filter([
             'draftId' => $element->getIsDraft() && ! $element->isProvisionalDraft ? $element->draftId : null,
             ...$params,
-        ]))->value();
+            'siteId' => $element::isLocalized() ? $element->siteId : null,
+        ]));
     }
 
     /**

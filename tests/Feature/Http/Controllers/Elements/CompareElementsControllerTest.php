@@ -2,7 +2,12 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
+use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -22,12 +27,14 @@ use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Uri;
 use Inertia\Testing\AssertableInertia;
 
 use function Pest\Laravel\actingAs;
@@ -99,9 +106,15 @@ function comparedEntry(array $values): Entry
 /** @param array<string, int|string> $params */
 function compareScreenUrl(Entry $entry, array $params): string
 {
-    $uri = Uri::of($entry->getCanonical(true)->getCpEditUrl());
+    $canonical = $entry->getCanonical(true);
 
-    return $uri->withPath("{$uri->path()}/compare")->withQuery($params)->value();
+    // As the screen’s requests build it.
+    url()->forceScheme('https');
+
+    return Url::urlWithParams(
+        route('craft.cp.elements.compare', ['id' => $canonical->id]),
+        array_replace([...$params, 'siteId' => $canonical->siteId], $params),
+    );
 }
 
 /**
@@ -158,7 +171,7 @@ it('compares a draft with the current entry by default', function () {
             ->where('to.ui.values', fn ($values) => collect($values)->flatten()->contains('Shown in the North Wing'))
             ->where('rows', fn ($rows) => collect($rows)->pluck('changed')->contains(true))
             ->where('to.editor.draftId', $draft->draftId)
-            ->where('redirectUrl', fn (string $url) => str_contains(Crypt::decrypt($url), "/compare?draftId=$draft->draftId")))
+            ->where('redirectUrl', fn (string $url) => str_contains(Crypt::decrypt($url), "/compare/$entry->id?draftId=$draft->draftId")))
         ->assertInertia(function (AssertableInertia $page) {
             foreach (['from', 'to'] as $side) {
                 expect(changedFields($page, $side))->toMatchArray([
@@ -602,4 +615,98 @@ it('links each draft in the Versions panel to a comparison without looking up th
     }
 
     expect($queriesForEditScreen())->toBe($withOneDraft);
+});
+
+function comparedAsset(): Asset
+{
+    config()->set('filesystems.disks.compare-test', ['driver' => 'local', 'root' => storage_path('framework/testing/compare')]);
+    $volume = Volume::factory()->create(['fs' => 'compare-test', 'propagationMethod' => PropagationMethod::All->value]);
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => VolumeFolderModel::factory()->create(['volumeId' => $volume->id])->id,
+        'filename' => 'light.txt',
+        'kind' => 'text',
+    ]);
+    $asset->title = 'Light';
+    expect(Elements::saveElement($asset))->toBeTrue();
+    $translation = Asset::find()->id($asset->id)->siteId(test()->secondarySite->id)->one();
+    $translation->title = 'Lumière';
+    expect(Elements::saveElement($translation))->toBeTrue();
+
+    return $translation;
+
+}
+
+it('links an asset’s other sites to a comparison from its edit screen', function () {
+    $asset = comparedAsset();
+
+    get(Url::urlWithParams($asset->getCpEditUrl(), ['siteId' => $asset->siteId]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('sidebarUi.nodes', function (Collection $nodes) use ($asset) {
+            $sites = collect($nodes->first(fn (array $node) => ($node['control']['component'] ?? null) === 'craft:element-sites')['control']['props']['sites'])
+                ->pluck('compareUrl', 'id');
+
+            return $sites[$asset->siteId] === null &&
+                str_ends_with($sites[Sites::getPrimarySite()->id], sprintf('/compare/%s?fromSiteId=%s&siteId=%s', $asset->id, Sites::getPrimarySite()->id, $asset->siteId));
+        }));
+});
+
+it('compares an asset in two sites, with site menus but no version menus, as assets have no drafts or revisions', function () {
+    $asset = comparedAsset();
+    $primary = Sites::getPrimarySite();
+
+    get(route('craft.cp.elements.compare', ['id' => $asset->id, 'fromSiteId' => $primary->id, 'siteId' => $asset->siteId]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('elements/Compare')
+            ->where('from.label', 'Light')
+            ->where('to.label', 'Lumière')
+            ->where('from.siteName', $primary->getName())
+            ->where('to.siteName', 'Secondary')
+            ->where('from.versionMenu', [])
+            ->where('to.versionMenu', [])
+            ->where('to.siteMenu', fn (Collection $menu) => $menu->pluck('label')->all() === [$primary->getName(), 'Secondary'])
+            ->where('to.editor.siteId', $asset->siteId));
+});
+
+it('shows a non-localized element without drafts or revisions with no menus, by its label', function () {
+    $user = UserModel::factory()->createElement(['admin' => false, 'firstName' => 'Ada', 'lastName' => 'Lovelace']);
+
+    get(route('craft.cp.elements.compare', ['id' => $user->id]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('elements/Compare')
+            ->where('from.label', $user->getUiLabel())
+            ->where('to.label', $user->getUiLabel())
+            ->where('to.siteName', null)
+            ->where('to.siteMenu', [])
+            ->where('to.versionMenu', [])
+            // Users have no field layout saved by default, which pairs the fields all the same.
+            ->where('rows', fn (Collection $rows) => $rows->isNotEmpty() && $rows->every(fn (array $row) => $row['fromUid'] === $row['toUid'] && $row['changed'] === false)));
+});
+
+it('lists only the versions and sites the user can view in each side’s menus', function () {
+    $entry = comparedEntry(['summary' => 'Someone else’s']);
+    app(Revisions::class)->createRevision($entry, auth()->id());
+    app(Drafts::class)->createDraft($entry, auth()->id(), 'Their draft');
+    $user = UserModel::factory()
+        ->withPermissions([
+            'accessCp',
+            sprintf('editSite:%s', Site::query()->where('primary', true)->value('uid')),
+            "viewEntries:{$this->section->uid}",
+        ])
+        ->createElement(['admin' => false]);
+    $first = app(Drafts::class)->createDraft($entry, $user->id, 'First');
+    $second = app(Drafts::class)->createDraft($entry, $user->id, 'Second');
+
+    actingAs($user);
+
+    get(compareScreenUrl($entry, ['draftId' => $second->draftId, 'from' => "draft-$first->draftId"]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            // Not the current entry, its revisions, or someone else’s draft.
+            ->where('to.versionMenu', fn (Collection $menu) => $menu->flatMap(fn (array $group) => $group['items'])->pluck('label')->all() === ['First', 'Second'])
+            // Nor the site the user can’t edit.
+            ->where('to.siteName', null)
+            ->where('to.siteMenu', []));
 });

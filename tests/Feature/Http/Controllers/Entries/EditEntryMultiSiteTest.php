@@ -130,7 +130,7 @@ it('links each other site in the Sites pane to the Compare screen against it', f
                 parse_str($url['query'] ?? '', $query);
 
                 return $sites[0]['compareUrl'] === null
-                    && str_ends_with($url['path'] ?? '', '/compare')
+                    && str_ends_with($url['path'] ?? '', "/compare/{$this->entry->id}")
                     && ($query['siteId'] ?? null) === (string) $this->entry->siteId
                     && ($query['fromSiteId'] ?? null) === (string) $this->secondSite->id;
             })

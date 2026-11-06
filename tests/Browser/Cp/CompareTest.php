@@ -75,9 +75,7 @@ function compareDraft(string $summary): EntryElement
  */
 function visitCompare(EntryElement $draft): AwaitableWebpage
 {
-    $path = parse_url(test()->entry->getCpEditUrl(), PHP_URL_PATH);
-
-    return visit("$path/compare?draftId=$draft->draftId")->assertPresent('main[id]');
+    return visit(route('craft.cp.elements.compare', ['id' => test()->entry->id, 'draftId' => $draft->draftId], false))->assertPresent('main[id]');
 }
 
 /**
@@ -149,7 +147,7 @@ it('offers no copy once a table is edited back to the older version’s value, a
     $cell = 'role=group[name=/Showing/] >> role=group[name=/^Programme/] >> role=textbox[name=/Event/]';
     $copy = 'role=button[name="Copy Programme from Current"]';
 
-    $page = visit(parse_url($this->entry->getCpEditUrl(), PHP_URL_PATH).'/compare')
+    $page = visit(route('craft.cp.elements.compare', ['id' => $this->entry->id], false))
         ->assertPresent('main[id]')
         ->assertValue($cell, 'Opening talk')
         ->assertMissing($copy)

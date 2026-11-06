@@ -2,7 +2,9 @@
   /**
    * One side's header on the Compare screen: menus for the site and the
    * version it shows, under a heading that names its pane. Where there isn't
-   * room for both, they're one menu, with a section for each.
+   * room for both, they're one menu, with a section for each. An element in
+   * one site has no site menu, and one without drafts or revisions has no
+   * version menu; with neither, the header is just its label.
    */
   import '@craftcms/ui/components/tooltip/tooltip';
   import {t} from '@craftcms/ui';
@@ -21,8 +23,9 @@
     /** The heading's id, which names the side's pane. */
     headingId: string;
     label: string;
-    /** Set when the entry is in more than one site the user can edit. */
+    /** Set when the element is in more than one site the user can edit. */
     siteName: string | null;
+    /** Empty when the element type has no drafts or revisions. */
     versionMenu: ActionItems;
     siteMenu: ActionItems;
     /** Whether the version has unsaved edits, as the editor's “Edited” badge shows. */
@@ -39,27 +42,46 @@
     Boolean(props.siteMenu.length && props.siteName)
   );
 
-  /** Both menus in one: the sites, then the versions, each choice in its own section. */
-  const combinedMenu = computed<ActionItems>(() => [
-    {
-      type: 'group',
-      heading: t('Sites'),
-      items: props.siteMenu.filter(
-        (item): item is ActionItemButton | ActionItemLink =>
-          item.type === undefined ||
-          item.type === 'button' ||
-          item.type === 'link'
-      ),
-    },
-    {type: 'hr'},
-    ...props.versionMenu.map((item, index) =>
-      index === 0 && item.type === 'group' && !item.heading
-        ? {...item, heading: t('Versions')}
-        : item
-    ),
-  ]);
+  const hasVersionMenu = computed(() => props.versionMenu.length > 0);
 
-  type ButtonKey = 'site' | 'version' | 'combined';
+  /**
+   * The menus there are, in one: the sites, then the versions, each choice in
+   * its own section when there are both.
+   */
+  const combinedMenu = computed<ActionItems>(() => {
+    if (!hasSiteMenu.value || !hasVersionMenu.value) {
+      return hasSiteMenu.value ? props.siteMenu : props.versionMenu;
+    }
+
+    return [
+      {
+        type: 'group',
+        heading: t('Sites'),
+        items: props.siteMenu.filter(
+          (item): item is ActionItemButton | ActionItemLink =>
+            item.type === undefined ||
+            item.type === 'button' ||
+            item.type === 'link'
+        ),
+      },
+      {type: 'hr'},
+      ...props.versionMenu.map((item, index) =>
+        index === 0 && item.type === 'group' && !item.heading
+          ? {...item, heading: t('Versions')}
+          : item
+      ),
+    ];
+  });
+
+  const combinedMenuName = computed(() => {
+    if (hasSiteMenu.value && hasVersionMenu.value) {
+      return t('Choose a site or version');
+    }
+
+    return hasSiteMenu.value ? t('Choose a site') : t('Choose a version');
+  });
+
+  type ButtonKey = 'site' | 'version' | 'combined' | 'label' | 'narrowLabel';
 
   const buttons: Record<
     ButtonKey,
@@ -68,10 +90,12 @@
     site: useTemplateRef<HTMLElement>('siteButton'),
     version: useTemplateRef<HTMLElement>('versionButton'),
     combined: useTemplateRef<HTMLElement>('combinedButton'),
+    label: useTemplateRef<HTMLElement>('label'),
+    narrowLabel: useTemplateRef<HTMLElement>('narrowLabel'),
   };
 
   /**
-   * The id of each button whose label is cut short to fit, which then gets
+   * The id of each button or label that's cut short to fit, which then gets
    * its full text in a tooltip. Only then: the label is already the button's
    * name. The action menu gives its invoker its own id.
    */
@@ -82,6 +106,8 @@
       Boolean(element && element.scrollWidth > element.clientWidth);
 
     return (
+      (button?.classList.contains('compare-version-header__part') &&
+        clipped(button)) ||
       clipped(
         button?.shadowRoot?.querySelector<HTMLElement>('[part="label"]')
       ) ||
@@ -149,10 +175,11 @@
       <span class="sr-only">{{
         side === 'from' ? t('Compared with:') : t('Showing:')
       }}</span>
-      <span :class="{'compare-version-header__wide': hasSiteMenu}">
+      <span class="compare-version-header__wide">
         <!-- Keyed on everything its button shows: the action menu renders
              its invoker once, so a change means a new menu. -->
         <ActionMenu
+          v-if="hasVersionMenu"
           :key="`${side}-${label}-${edited}`"
           :label="label"
           :actions="versionMenu"
@@ -182,11 +209,20 @@
             </craft-button>
           </template>
         </ActionMenu>
+        <span
+          v-else
+          :id="`${headingId}-label`"
+          ref="label"
+          class="compare-version-header__part compare-version-header__label"
+          :class="{'compare-version-header__label--after-site': hasSiteMenu}"
+          >{{ label }}</span
+        >
       </span>
-      <span v-if="hasSiteMenu" class="compare-version-header__narrow">
+      <span class="compare-version-header__narrow">
         <ActionMenu
+          v-if="hasSiteMenu || hasVersionMenu"
           :key="`${side}-${siteName}-${label}-${edited}`"
-          :label="`${siteName} / ${label}`"
+          :label="hasSiteMenu ? `${siteName} / ${label}` : label"
           :actions="combinedMenu"
         >
           <template #invoker>
@@ -201,21 +237,23 @@
               flush="inline"
             >
               <span class="compare-version-header__parts">
-                <span
-                  class="compare-version-header__part compare-version-header__part--site"
-                  >{{ siteName }}</span
-                >
-                <span
-                  class="compare-version-header__slash"
-                  aria-hidden="true"
-                  v-text="' / '"
-                ></span>
+                <template v-if="hasSiteMenu">
+                  <span
+                    class="compare-version-header__part compare-version-header__part--site"
+                    >{{ siteName }}</span
+                  >
+                  <span
+                    class="compare-version-header__slash"
+                    aria-hidden="true"
+                    v-text="' / '"
+                  ></span>
+                </template>
                 <span
                   class="compare-version-header__part compare-version-header__part--version"
                   >{{ label }}</span
                 >
               </span>
-              <span class="sr-only">{{ t('Choose a site or version') }}</span>
+              <span class="sr-only">{{ combinedMenuName }}</span>
               <craft-badge
                 v-if="edited"
                 slot="suffix"
@@ -230,6 +268,15 @@
             </craft-button>
           </template>
         </ActionMenu>
+        <span v-else class="compare-version-header__label-with-icon">
+          <craft-icon :name="sideIcons[side]" aria-hidden="true"></craft-icon>
+          <span
+            :id="`${headingId}-narrow-label`"
+            ref="narrowLabel"
+            class="compare-version-header__part compare-version-header__label"
+            >{{ label }}</span
+          >
+        </span>
       </span>
     </h2>
     <craft-tooltip v-if="truncatedIds.site" :for="truncatedIds.site">{{
@@ -238,8 +285,16 @@
     <craft-tooltip v-if="truncatedIds.version" :for="truncatedIds.version">{{
       label
     }}</craft-tooltip>
-    <craft-tooltip v-if="truncatedIds.combined" :for="truncatedIds.combined"
-      >{{ siteName }} / {{ label }}</craft-tooltip
+    <craft-tooltip v-if="truncatedIds.combined" :for="truncatedIds.combined">{{
+      hasSiteMenu ? `${siteName} / ${label}` : label
+    }}</craft-tooltip>
+    <craft-tooltip v-if="truncatedIds.label" :for="truncatedIds.label">{{
+      label
+    }}</craft-tooltip>
+    <craft-tooltip
+      v-if="truncatedIds.narrowLabel"
+      :for="truncatedIds.narrowLabel"
+      >{{ label }}</craft-tooltip
     >
   </div>
 </template>
@@ -291,8 +346,29 @@
     text-overflow: ellipsis;
   }
 
-  .compare-version-header__combined::part(prefix) {
+  .compare-version-header__combined::part(prefix),
+  .compare-version-header__label-with-icon craft-icon {
     font-size: var(--c-text-base);
+  }
+
+  .compare-version-header__label {
+    font-size: var(--c-text-sm);
+    font-weight: var(--font-weight-medium);
+  }
+
+  .compare-version-header__label--after-site {
+    padding-inline-start: var(--c-spacing-xs);
+  }
+
+  .compare-version-header__label-with-icon {
+    display: flex;
+    align-items: center;
+    gap: var(--c-spacing-xs);
+    min-width: 0;
+  }
+
+  .compare-version-header__label-with-icon craft-icon {
+    flex: none;
   }
 
   .compare-version-header__parts {
