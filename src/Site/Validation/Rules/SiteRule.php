@@ -31,6 +31,14 @@ readonly class SiteRule extends ModelReferenceRule
         parent::__construct($by, $message);
     }
 
+    /**
+     * Returns a rule for a site ID that content is saved for, with the matching error message.
+     */
+    public static function forSiteId(?bool $allowDisabled = null): self
+    {
+        return new self([ModelIdentifier::Id], $allowDisabled, fn (string $site) => t('Your system isn’t set up to save content for the site “{site}”.', ['site' => $site]));
+    }
+
     #[Override]
     protected function resolve(mixed $value): ?object
     {

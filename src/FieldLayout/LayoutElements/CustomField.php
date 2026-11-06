@@ -1057,11 +1057,10 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
     #[Override]
     public function getFieldsForMapping(FieldLayout $fieldLayout, ?FieldInterface $ownerField, mixed $provider, ?string $prefix = null): MappingColumn|CompoundMappingColumn|null
     {
-        try {
-            // getField() needs to be called before label() or we won't always get the label.
-            $field = $this->getField();
-        } catch (FieldNotFoundException) {
-            // skip silently
+        // getField() needs to be called before label() or we won't always get the label.
+        $field = $this->fieldOrNull();
+
+        if ($field === null) {
             return null;
         }
 
@@ -1087,41 +1086,19 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
     #[Override]
     public function canBeMatchCriteria(): bool
     {
-        try {
-            // getField() needs to be called before label() or we won't always get the label.
-            $field = $this->getField();
-        } catch (FieldNotFoundException) {
-            // skip silently
-            return false;
-        }
+        $field = $this->fieldOrNull();
 
-        if ($field instanceof ImportableElementContainerFieldInterface) {
-            return false;
-        }
-
-        if ($field instanceof BaseRelationField) {
-            return false;
-        }
-
-        return true;
+        return $field !== null
+            && ! $field instanceof ImportableElementContainerFieldInterface
+            && ! $field instanceof BaseRelationField;
     }
 
     #[Override]
     public function canBeCleared(): bool
     {
-        try {
-            // getField() needs to be called before label() or we won't always get the label.
-            $field = $this->getField();
-        } catch (FieldNotFoundException) {
-            // skip silently
-            return false;
-        }
+        $field = $this->fieldOrNull();
 
-        if ($field instanceof ImportableElementContainerFieldInterface) {
-            return false;
-        }
-
-        return true;
+        return $field !== null && ! $field instanceof ImportableElementContainerFieldInterface;
     }
 
     /**
@@ -1130,13 +1107,7 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
      */
     public function canKeepMissingNestedElements(): bool
     {
-        try {
-            // getField() needs to be called before label() or we won't always get the label.
-            $field = $this->getField();
-        } catch (FieldNotFoundException) {
-            // skip silently
-            return false;
-        }
+        $field = $this->fieldOrNull();
 
         return $field instanceof ImportableElementContainerFieldInterface && $field->canKeepMissingNestedElements();
     }
@@ -1144,18 +1115,27 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
     #[Override]
     public function getImportMappingExtraSettings(?FieldInterface $field = null): array
     {
+        $field ??= $this->fieldOrNull();
+
         if ($field === null) {
-            try {
-                $field = $this->getField();
-            } catch (FieldNotFoundException) {
-                // skip silently
-                return [];
-            }
+            return [];
         }
 
         return [
             ...$field->importMappingSettings(),
             ...(Import::getFieldImportHandlerFor($field)?->mappingSettings($field) ?? []),
         ];
+    }
+
+    /**
+     * Returns the field, or null if it can't be found.
+     */
+    private function fieldOrNull(): ?FieldInterface
+    {
+        try {
+            return $this->getField();
+        } catch (FieldNotFoundException) {
+            return null;
+        }
     }
 }
