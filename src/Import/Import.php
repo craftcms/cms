@@ -560,7 +560,7 @@ class Import
     {
         foreach ($clearableItems as $key => $value) {
             if (! is_array($value)) {
-                if ($value && (! array_key_exists($key, $data) || self::isEmptyValue($data[$key]))) {
+                if ($value && (! array_key_exists($key, $data) || blank($data[$key]))) {
                     $data[$key] = null;
                 }
 
@@ -604,30 +604,10 @@ class Import
                 continue;
             }
 
-            if (self::isEmptyValue($value)) {
+            if (blank($value)) {
                 unset($data[$key]);
             }
         }
-    }
-
-    /**
-     * Determines whether a value should be treated as "empty" for the purposes of clearableItems.
-     */
-    private static function isEmptyValue(mixed $value): bool
-    {
-        if ($value === null) {
-            return true;
-        }
-
-        if (is_string($value)) {
-            return trim($value) === '';
-        }
-
-        if (is_array($value)) {
-            return $value === [];
-        }
-
-        return false;
     }
 
     /**

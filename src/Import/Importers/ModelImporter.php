@@ -148,25 +148,13 @@ abstract class ModelImporter extends BaseImporter
     private function getModel(array $data): BaseModel
     {
         $model = new (static::targetClass());
+        $criteria = $data['matchCriteria'] ?? null;
 
-        // if null then return a brand new model
-        if (! isset($data['matchCriteria'])) {
+        // without criteria, it's a brand new model
+        if (! is_array($criteria) || $criteria === []) {
             return $model;
         }
 
-        if (is_array($data['matchCriteria'])) {
-            $criteria = $data['matchCriteria'];
-
-            if (empty($criteria)) {
-                return $model;
-            }
-
-            $query = $model::query()
-                ->where($criteria);
-
-            return $query->first() ?? $model;
-        }
-
-        return $model;
+        return $model::query()->where($criteria)->first() ?? $model;
     }
 }

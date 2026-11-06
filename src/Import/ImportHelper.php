@@ -230,16 +230,7 @@ class ImportHelper
      */
     public static function getImportableContainerProperties(BaseImporter $importer): array
     {
-        $importableProperties = self::getImportableProperties($importer);
-        $importableContainerProperties = [];
-
-        foreach ($importableProperties as $property) {
-            if ($property['isContainer']) {
-                $importableContainerProperties[] = $property;
-            }
-        }
-
-        return $importableContainerProperties;
+        return array_values(array_filter(self::getImportableProperties($importer), fn ($property) => $property['isContainer']));
     }
 
     /**
@@ -615,25 +606,17 @@ class ImportHelper
         // If any direct scalar rule points exactly to the resolved source path, that scalar is
         // consuming the source container as its whole value — not iterating over its items.
         // Return null so mapNode processes this rule as a flat dict instead.
-        $sourceAbsPath = self::pathJoin($currentBasePath, $sourceRelativePath);
-        foreach ($rule as $ruleValue) {
-            if (is_string($ruleValue) && $ruleValue === $sourceAbsPath) {
-                return null;
-            }
+        $absolutePath = self::pathJoin($currentBasePath, $sourceRelativePath);
+        if (in_array($absolutePath, $rule, true)) {
+            return null;
         }
 
         // Try the current data first, then fall back to the root data.
-        if (is_array($currentData) && $source = self::getArrayAtPath($currentData, $sourceRelativePath, self::pathJoin($currentBasePath, $sourceRelativePath), $sourceKey)) {
+        if (is_array($currentData) && $source = self::getArrayAtPath($currentData, $sourceRelativePath, $absolutePath, $sourceKey)) {
             return $source;
         }
 
-        $absolutePath = self::pathJoin($currentBasePath, $sourceRelativePath);
-
-        if ($source = self::getArrayAtPath($rootData, $absolutePath, $absolutePath, $sourceKey)) {
-            return $source;
-        }
-
-        return null;
+        return self::getArrayAtPath($rootData, $absolutePath, $absolutePath, $sourceKey);
     }
 
     /**
