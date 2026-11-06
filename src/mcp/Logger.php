@@ -5,6 +5,7 @@ namespace craft\mcp;
 use Craft;
 use Psr\Log\AbstractLogger;
 use Stringable;
+use Throwable;
 use yii\log\Logger as YiiLogger;
 
 class Logger extends AbstractLogger
@@ -18,6 +19,11 @@ class Logger extends AbstractLogger
             default => YiiLogger::LEVEL_INFO,
         };
 
-        Craft::getLogger()->log((string)$message, $level, 'mcp');
+        $message = (string)$message;
+        if (($context['exception'] ?? null) instanceof Throwable) {
+            $message .= "\n" . $context['exception'];
+        }
+
+        Craft::getLogger()->log($message, $level, 'mcp');
     }
 }

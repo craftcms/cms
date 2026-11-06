@@ -8,6 +8,7 @@ use Craft;
 use craft\base\FieldInterface;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\StringHelper;
+use craft\helpers\Typecast;
 use craft\mcp\attributes\RequiresAdmin;
 use craft\mcp\attributes\RequiresAdminChanges;
 use craft\mcp\SensitiveValues;
@@ -149,6 +150,8 @@ class Fields
             $attributes = [...array_replace($field->getSettings(), $this->sensitiveValues->restore($settings, $field->getSettings())), ...$attributes];
         }
 
+        // Settings may contain serialized values, such as enum cases as strings
+        Typecast::properties($field::class, $attributes);
         Craft::configure($field, $attributes);
 
         return ['field' => $this->save($field)];
