@@ -435,7 +435,13 @@ class OAuth extends Component
     private function withoutRequestTokens(string $url): string
     {
         $general = Craft::$app->getConfig()->getGeneral();
-        return UrlHelper::removeParams($url, [$general->siteToken, $general->tokenParam, 'x-craft-preview', 'x-craft-live-preview']);
+        // Filter the raw query, since parsing and rebuilding it would alter other params’ names and repeated params
+        $uri = new Uri($url);
+        $filtered = $uri;
+        foreach ([$general->siteToken, $general->tokenParam, 'x-craft-preview', 'x-craft-live-preview'] as $param) {
+            $filtered = Uri::withoutQueryValue($filtered, $param);
+        }
+        return $filtered->getQuery() === $uri->getQuery() ? $url : (string)$filtered;
     }
 
     private function cpUrl(string $endpoint, string $resource): string

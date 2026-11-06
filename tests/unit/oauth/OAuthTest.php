@@ -366,6 +366,11 @@ class OAuthTest extends TestCase
         $this->oauth->getResource('mcp')->resourceUrl = 'https://other.example/admin/mcp';
         self::assertSame(['https://site.example/actions/oauth/mcp'], $this->oauth->protectedResourceMetadata('mcp')['authorization_servers']);
 
+        // Resource URLs keep their own query params as configured, without the request's tokens
+        $this->oauth->getResource('api')->resourceUrl = 'https://api.example/content?api.version=2&tag=a&tag=b&token=abc';
+        self::assertSame('https://api.example/content?api.version=2&tag=a&tag=b', $this->oauth->protectedResourceMetadata('api')['resource']);
+        $this->oauth->getResource('api')->resourceUrl = 'https://api.example/content';
+
         // Relative site base URLs are resolved against the resource’s URL
         $this->app->siteBaseUrl = '/';
         self::assertSame(['https://api.example/actions/oauth/api'], $this->oauth->protectedResourceMetadata('api')['authorization_servers']);
