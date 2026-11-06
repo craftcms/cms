@@ -247,6 +247,10 @@ class ElementSerializerTest extends TestCase
             $serializer->serialize($user, data: [], fields: ['addresses'], serializeNested: $this->visible($serializer))['addresses'][0],
         );
 
+        $profile = new TestEntry(2, [new McpOutputTestField(['handle' => 'profile'])], ['profile' => ElementCollection::make([$user])]);
+        self::assertCount(30, $serializer->serialize($profile, data: [], fields: ['profile.addresses'], serializeNested: $this->visible($serializer))['profile'][0]['addresses']);
+        self::assertArrayNotHasKey('addresses', $serializer->serialize($profile, data: [], fields: ['profile'], serializeNested: $this->visible($serializer))['profile'][0]);
+
         $this->expectException(ToolCallException::class);
         $serializer->serialize($user, data: [], fields: ['blocks', 'addresses'], serializeNested: $this->visible($serializer));
     }

@@ -170,9 +170,11 @@ class ElementSerializer extends \yii\base\Component
             $data += [$handle => $hidden ? null : $resolved];
         }
 
-        // Users’ addresses are a native field, so they’re only included when requested
-        if (!$public && $element instanceof \craft\elements\User && isset($requested['addresses']) && !array_key_exists('addresses', $data)) {
-            $data['addresses'] = $this->resolveNested($element->getAddresses(), self::NestedSummarize, $requested['addresses'], $serializeNested);
+        // Users’ addresses are a native field, so they’re only included when requested, directly or via a dot path
+        $addressPaths = $requested !== null ? ($requested['addresses'] ?? null) : ($nested['addresses'] ?? null);
+
+        if (!$public && $element instanceof \craft\elements\User && $addressPaths !== null && !array_key_exists('addresses', $data)) {
+            $data['addresses'] = $this->resolveNested($element->getAddresses(), self::NestedSummarize, $addressPaths, $serializeNested);
         }
 
         $event = new ElementSerializing([
