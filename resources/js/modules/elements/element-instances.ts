@@ -166,8 +166,9 @@ function pairMenus(
 function canReplaceMenu(menu: Element, focused: Element | null): boolean {
   return (
     !menu.querySelector('[data-page-action]') &&
-    !menu.hasAttribute('open') &&
-    !(menu as Element & {open?: boolean}).open &&
+    // `opened` is the menu's state; `open` is a method it inherits.
+    !menu.hasAttribute('opened') &&
+    !(menu as Element & {opened?: unknown}).opened &&
     !(focused && menu.contains(focused))
   );
 }
