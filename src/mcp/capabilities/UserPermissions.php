@@ -201,6 +201,8 @@ class UserPermissions
 
         $current = $this->userPermissions($user->id)['directPermissions'];
 
+        $this->rejectUnknownPermissions($remove, $current);
+
         return $this->setUser($this->applyChanges($current, $add, $remove), userId: $user->id);
     }
 
@@ -233,6 +235,8 @@ class UserPermissions
         }
 
         $current = $this->permissions->getPermissionsByGroupId($group->id);
+
+        $this->rejectUnknownPermissions($remove, $current);
 
         return $this->setGroup($this->applyChanges($current, $add, $remove), groupId: $group->id);
     }

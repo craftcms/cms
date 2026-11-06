@@ -54,6 +54,13 @@ class UserPermissionsCapabilityTest extends TestCase
                 self::assertStringContainsString('probe:edit', $e->getMessage());
             }
 
+            try {
+                $capability->updateGroup(remove: ['accessCpp'], groupId: 1000);
+                self::fail('Removing an unknown permission was not rejected.');
+            } catch (ToolCallException $e) {
+                self::assertStringContainsString('accessCpp', $e->getMessage());
+            }
+
             self::assertSame(
                 ['accesscp', 'probe:view', 'viewusers'],
                 $capability->updateGroup(add: ['viewUsers'], remove: ['accessSiteWhenSystemIsOff'], groupId: 1000)['permissions'],
