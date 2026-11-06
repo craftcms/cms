@@ -99,12 +99,14 @@ it('keeps stored group permissions whose provider is not registered', function (
     ])->assertOk();
 
     app(UserPermissions::class)->saveGroupPermissions($group->id, ['probe:view']);
-    $callUser('user_permissions_user_update', ['add' => ['accessCp']])
+    expect($callUser('user_permissions_user_update', ['add' => ['accessCp']])
         ->assertJsonPath('result.isError', false)
-        ->assertJsonPath('result.structuredContent.directPermissions', ['accessCp', 'probe:edit', 'probe:view']);
+        ->json('result.structuredContent.directPermissions'))
+        ->toEqualCanonicalizing(['accessCp', 'probe:edit', 'probe:view']);
     $callUser('user_permissions_user_set', ['permissions' => ['accessCp', 'probe:edit', 'probe:other']])
         ->assertJsonPath('result.isError', true)
         ->assertSee('probe:other');
-    $callUser('user_permissions_user_update', ['remove' => ['probe:view']])
-        ->assertJsonPath('result.structuredContent.directPermissions', ['accessCp', 'probe:edit']);
+    expect($callUser('user_permissions_user_update', ['remove' => ['probe:view']])
+        ->json('result.structuredContent.directPermissions'))
+        ->toEqualCanonicalizing(['accessCp', 'probe:edit']);
 });
