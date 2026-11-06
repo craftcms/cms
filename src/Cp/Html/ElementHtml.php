@@ -1238,8 +1238,8 @@ readonly class ElementHtml
                     'deletable-for-site' => (
                         $editable &&
                         $this->contextIsAdministrative($config['context']) &&
-                        ElementHelper::isMultiSite($element) &&
-                        Gate::check('deleteForSite', $element)
+                        Gate::check('deleteForSite', $element) &&
+                        ElementHelper::isMultiSite($element)
                     ),
                 ]),
             ],

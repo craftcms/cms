@@ -9,8 +9,10 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Contracts\McpOutputFieldInterface;
 use CraftCms\Cms\Mcp\Events\ElementSerializing;
 use CraftCms\Cms\Mcp\McpActor;
+use CraftCms\Cms\Mcp\McpOutputContext;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\Gate;
 use Mcp\Exception\ToolCallException;
@@ -59,13 +61,27 @@ class ElementSerializer
                 continue;
             }
 
-            if ($fields === null && $field instanceof ElementContainerFieldInterface) {
+            $value = $element->getFieldValue($field->handle);
+
+            if ($field instanceof McpOutputFieldInterface) {
+                $value = $field->getMcpValue($value, $element, new McpOutputContext(public: $public, requested: $fields !== null));
+                $isNested = $this->isNestedValue($value);
+            } else {
+                // Container fields like CKEditor can hold nested elements without their value being elements
+                $isNested = $field instanceof ElementContainerFieldInterface && $this->isNestedValue($value);
+
+                if (! $isNested) {
+                    $value = $field->serializeValue($value, $element);
+                }
+            }
+
+            if ($fields === null && $isNested) {
                 continue;
             }
 
-            $value = $field instanceof ElementContainerFieldInterface
-                ? $this->nestedValue($element->getFieldValue($field->handle), $remaining, $serializeNested)
-                : $field->serializeValue($element->getFieldValue($field->handle), $element);
+            if ($isNested) {
+                $value = $this->nestedValue($value, $remaining, $serializeNested);
+            }
 
             $data += [$field->handle => $value];
         }
@@ -79,6 +95,16 @@ class ElementSerializer
         event($event);
 
         return $filterNulls ? Arr::whereNotNull($event->data) : $event->data;
+    }
+
+    /**
+     * Returns whether a field value holds nested elements.
+     */
+    private function isNestedValue(mixed $value): bool
+    {
+        return $value instanceof ElementInterface
+            || $value instanceof ElementQueryInterface
+            || $value instanceof ElementCollection;
     }
 
     /**
