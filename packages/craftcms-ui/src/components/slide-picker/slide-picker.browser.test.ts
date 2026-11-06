@@ -8,7 +8,7 @@ beforeEach(() => {
 
 async function render(attributes = '', value = 100): Promise<CraftSlidePicker> {
   await import('../../styles/cp.css');
-  document.body.innerHTML = `<craft-slide-picker min="25" max="100" step="25" model-value="${value}" ${attributes}></craft-slide-picker>`;
+  document.body.innerHTML = `<craft-slide-picker min="25" max="100" step="25" value="${value}" ${attributes}></craft-slide-picker>`;
   const picker =
     document.querySelector<CraftSlidePicker>('craft-slide-picker')!;
   await picker.updateComplete;
@@ -130,7 +130,7 @@ it('takes its name and description from a surrounding field', async () => {
   const label = 'Card width';
   const helpText = 'How many columns the card spans.';
   const error = 'Card width must be at least 2 columns.';
-  document.body.innerHTML = `<craft-field label="${label}" help-text="${helpText}"><craft-slide-picker slot="input" min="1" max="4" step="1" model-value="1"></craft-slide-picker><ul slot="feedback" class="errors"><li>${error}</li></ul></craft-field>`;
+  document.body.innerHTML = `<craft-field label="${label}" help-text="${helpText}"><craft-slide-picker slot="input" min="1" max="4" step="1" value="1"></craft-slide-picker><ul slot="feedback" class="errors"><li>${error}</li></ul></craft-field>`;
 
   const slider = page.getByRole('slider');
 
@@ -150,7 +150,7 @@ it('has no name of its own until one is given', async () => {
 it('is named and described by the elements its host references', async () => {
   const {page} = await import('vite-plus/test/browser');
   await import('../../styles/cp.css');
-  document.body.innerHTML = `<table><thead><tr><th id="width-heading">Width</th></tr></thead><tbody><tr><td><craft-slide-picker min="1" max="4" step="1" model-value="2" labelled-by="width-heading" described-by="width-help"></craft-slide-picker></td></tr></tbody></table><p id="width-help">How many columns the field spans.</p>`;
+  document.body.innerHTML = `<table><thead><tr><th id="width-heading">Width</th></tr></thead><tbody><tr><td><craft-slide-picker min="1" max="4" step="1" value="2" labelled-by="width-heading" described-by="width-help"></craft-slide-picker></td></tr></tbody></table><p id="width-help">How many columns the field spans.</p>`;
 
   const slider = page.getByRole('slider');
 
@@ -176,7 +176,7 @@ it('follows changes to the references on its host', async () => {
 });
 
 it('keeps its value when the form reset is canceled', async () => {
-  document.body.innerHTML = `<form><craft-slide-picker name="columns" min="1" max="4" step="1" model-value="2"></craft-slide-picker><input name="title" value="Original"></form>`;
+  document.body.innerHTML = `<form><craft-slide-picker name="columns" min="1" max="4" step="1" value="2"></craft-slide-picker><input name="title" value="Original"></form>`;
   const form = document.querySelector('form')!;
   const picker =
     document.querySelector<CraftSlidePicker>('craft-slide-picker')!;
@@ -184,14 +184,14 @@ it('keeps its value when the form reset is canceled', async () => {
   await picker.updateComplete;
   form.addEventListener('reset', (event) => event.preventDefault());
 
-  picker.modelValue = 4;
+  picker.value = 4;
   input.value = 'Changed';
   await picker.updateComplete;
   form.reset();
   await picker.updateComplete;
 
   expect(input.value).toBe('Changed');
-  expect(picker.modelValue).toBe(4);
+  expect(picker.value).toBe(4);
   expect(new FormData(form).get('columns')).toBe('4');
 });
 
