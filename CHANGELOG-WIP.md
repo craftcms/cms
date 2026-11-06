@@ -110,7 +110,7 @@
 - Added the `authGuard` and `authPasswordBroker` config settings, allowing Craft authentication to use a dedicated Laravel guard, provider, and password broker. ([#19598](https://github.com/craftcms/cms/issues/19598))
 - The `loginPath` config setting is now `false` by default.
 - Added a **My Account → Tokens** screen, where users can create Laravel Passport personal access tokens with the scopes they choose from any of the APIs offered, behind an elevated session, rename them, and revoke them along with the apps they’ve authorized. It’s shown when an API offers personal access token scopes the user may grant, or when the user has authorized an app.
-- The **My Account** → **Tokens** screen is now only shown to admins when OAuth signing keys haven’t been set up yet, and explains how to set them up, rather than failing with a server error when a token is created. ([#20357](https://github.com/craftcms/cms/issues/20357))
+- The **My Account** → **Tokens** screen is now only shown to admins when OAuth signing keys haven’t been set up yet, and explains how to set them up, rather than failing with a server error when a token is created. Requests to create tokens are rejected with a 400 error until the keys are set up. ([#20357](https://github.com/craftcms/cms/issues/20357))
 
 ### Conditions
 - Added support for nested condition groups. ([#19587](https://github.com/craftcms/cms/pull/19587))

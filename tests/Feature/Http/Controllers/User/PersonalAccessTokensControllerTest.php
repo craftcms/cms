@@ -133,6 +133,13 @@ it('only shows the screen to admins, to explain how to set up keys, without vali
                 ->component('users/Tokens')
                 ->where('hasKeys', false));
 
+        // Requests made directly to the action are rejected too, rather than failing when signing the token
+        postJson(action([PersonalAccessTokensController::class, 'store']), [
+            'name' => 'Build script',
+            'scopes' => ['test-api:read'],
+            'expiresIn' => 7,
+        ])->assertBadRequest()->assertJsonPath('message', 'Tokens can’t be created until Craft has OAuth signing keys.');
+
         $this->user->update(['admin' => false]);
         app(UserPermissions::class)->saveUserPermissions($this->user->id, ['accessCp']);
         actingAs($this->user->fresh());
