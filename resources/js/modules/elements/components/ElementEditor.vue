@@ -201,9 +201,9 @@
       Boolean(payload.activityTimelineUrl) ||
       elementDetailsPanelRegistry.hasVisible(payload)
   );
-  const detailsPanels = useTemplateRef<{select: (panelId: string) => void}>(
-    'detailsPanels'
-  );
+  const detailsPanels = useTemplateRef<{
+    select: (panelId: string, options?: {focus?: string}) => void;
+  }>('detailsPanels');
 
   /**
    * Shows the fields read-only until the draft can be edited, as a read-only
@@ -299,6 +299,13 @@
         onSuccess: () => activity.rebase(payload.updatedTimestamps),
       });
     }
+  }
+
+  /** Opens the Workflow panel in its comment box, to note what's ready for review. */
+  function openWorkflowComment(): void {
+    detailsPanels.value?.select('workflow', {
+      focus: '.comment-field textarea',
+    });
   }
 
   function primaryAction(options?: FormSaveOptions): void {
@@ -746,6 +753,17 @@
               'Your changes are saved in a draft and won’t be published until the draft is approved and applied.'
             )
           }}
+          <craft-button
+            v-if="payload.workflow.current?.canSubmit"
+            slot="action"
+            type="button"
+            variant="outline"
+            size="small"
+            inherit
+            @click="openWorkflowComment"
+          >
+            {{ payload.workflow.current.submitLabel }}
+          </craft-button>
         </craft-callout>
 
         <WorkflowEditLockCallout

@@ -85,9 +85,21 @@
     return `layout-tab-${tab.uid}`;
   }
 
-  /** Opens a panel, moving focus into it. */
-  function select(panelId: string): void {
-    screenPanels?.open(panelId);
+  /**
+   * Opens a panel, moving focus into it: to the element `focus` selects in
+   * it, when there is one, or else to what the panel focuses itself.
+   */
+  function select(panelId: string, options?: {focus?: string}): void {
+    const selector = options?.focus;
+
+    screenPanels?.open(panelId, {
+      focus: selector
+        ? () =>
+            screenPanels.sections
+              .get(panelId)
+              ?.querySelector<HTMLElement>(selector)
+        : undefined,
+    });
   }
 
   defineExpose({select});

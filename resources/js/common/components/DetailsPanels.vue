@@ -28,6 +28,7 @@
     useScreenDetailsRail,
   } from '@/common/composables/screen';
   import type {
+    PanelFocusTarget,
     PreferredPanel,
     ScreenPanels,
   } from '@/common/composables/screenPanels';
@@ -125,7 +126,8 @@
   const openPanel = computed(() => findPanel(openPanelId.value));
 
   /** A panel to move focus into once the dialog has opened, and taken focus itself. */
-  let focusOnDialogShow: string | null = null;
+  let focusOnDialogShow: {panelId: string; focus?: PanelFocusTarget} | null =
+    null;
 
   // Menus and popovers in a panel fire `craft-show` and `craft-hide` too, and
   // theirs bubble up through the dialog, so only the dialog's own count.
@@ -134,11 +136,11 @@
       return;
     }
 
-    const panelId = focusOnDialogShow;
+    const pending = focusOnDialogShow;
     focusOnDialogShow = null;
 
-    if (panelId !== null) {
-      focusPanelNow(panelId);
+    if (pending !== null) {
+      focusPanelNow(pending.panelId, pending.focus);
     }
   }
 
@@ -205,27 +207,32 @@
     void nextTick(() => document.getElementById(id)?.focus());
   }
 
-  function focusPanelNow(panelId: string): void {
+  function focusPanelNow(panelId: string, focus?: PanelFocusTarget): void {
     const panel = findPanel(panelId);
 
     (
+      focus?.() ??
       panel?.initialFocus?.() ??
       (panel && document.getElementById(panel.headingId))
     )?.focus();
   }
 
-  function focusPanel(panelId: string): void {
+  function focusPanel(panelId: string, focus?: PanelFocusTarget): void {
     // The dialog moves focus into itself as it opens, so this waits for that.
     if (isModal.value) {
-      focusOnDialogShow = panelId;
+      focusOnDialogShow = {panelId, focus};
 
       return;
     }
 
-    void nextTick(() => focusPanelNow(panelId));
+    void nextTick(() => focusPanelNow(panelId, focus));
   }
 
-  function open(panelId: string, withFocus: boolean): void {
+  function open(
+    panelId: string,
+    withFocus: boolean,
+    focus?: PanelFocusTarget
+  ): void {
     props.registry.select(panelId);
     updateLocationHash();
 
@@ -234,7 +241,7 @@
     }
 
     if (withFocus) {
-      focusPanel(panelId);
+      focusPanel(panelId, focus);
     }
   }
 
@@ -271,9 +278,9 @@
 
   onMounted(() =>
     props.registry.attach({
-      open: (panelId, withFocus) => {
+      open: (panelId, withFocus, focus) => {
         if (isVisible(panelId)) {
-          open(panelId, withFocus);
+          open(panelId, withFocus, focus);
         }
       },
       close,
