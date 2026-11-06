@@ -55,9 +55,12 @@ const FOCUSABLE = 'a[href], button, input, select, textarea, [tabindex]';
 
 let installed = false;
 
+/** The latest render requested for each instance; older ones are discarded. */
+const latestRender = new WeakMap<HTMLElement, object>();
+
 /**
  * Re-renders every server-rendered chip and card for an element, with one
- * request per site.
+ * request per site and owner, since nested elements render per owner.
  */
 export async function refreshElementInstances(
   elementId: ElementId,
@@ -69,25 +72,25 @@ export async function refreshElementInstances(
     ),
   ];
 
-  const bySite = new Map<string, HTMLElement[]>();
+  const groups = new Map<string, HTMLElement[]>();
   for (const instance of instances) {
-    const siteId = instance.dataset.siteId ?? '';
-    bySite.set(siteId, [...(bySite.get(siteId) ?? []), instance]);
+    const {type, siteId, ownerId, fieldId} = instance.dataset;
+    const key = JSON.stringify([type, siteId, ownerId, fieldId]);
+    groups.set(key, [...(groups.get(key) ?? []), instance]);
   }
 
   await Promise.all(
-    [...bySite.entries()].map(([siteId, group]) =>
-      refreshGroup(elementId, siteId, group)
-    )
+    [...groups.values()].map((group) => refreshGroup(elementId, group))
   );
 }
 
 async function refreshGroup(
   elementId: ElementId,
-  siteId: string,
   instances: HTMLElement[]
 ): Promise<void> {
   const first = instances[0]!;
+  const request = {};
+  instances.forEach((instance) => latestRender.set(instance, request));
   const {data} = await actionClient.post<RenderedElements>(
     renderElementsAction.url(),
     {
@@ -97,7 +100,7 @@ async function refreshGroup(
           id: elementId,
           fieldId: first.dataset.fieldId ?? null,
           ownerId: first.dataset.ownerId ?? null,
-          siteId,
+          siteId: first.dataset.siteId ?? '',
           instances: instances.map((instance) =>
             JSON.parse(instance.dataset.settings ?? '{}')
           ),
@@ -111,7 +114,11 @@ async function refreshGroup(
 
   instances.forEach((instance, i) => {
     const html = rendered[i];
-    if (html === undefined || !instance.isConnected) {
+    if (
+      html === undefined ||
+      !instance.isConnected ||
+      latestRender.get(instance) !== request
+    ) {
       return;
     }
 
@@ -317,27 +324,37 @@ function isServerStateClass(name: string): boolean {
  * deleted, in another tab — and in this one too, with `includeSelf`. For
  * components that draw chips or cards from data, to refetch it.
  *
- * Messages about the same element that arrive together, such as the
- * `saveElement` and `deleteDraft` an applied draft sends, call it once.
+ * Messages that arrive together, such as the `saveElement` and `deleteDraft`
+ * an applied draft sends, or a bulk save's, are handled in one go, once per
+ * element. When a response had too many to list, `handler` is called once
+ * with `null` instead: any element may have changed.
  */
 export function onElementChanged(
-  handler: (elementId: number) => void,
+  handler: (elementId: number | null) => void,
   options: OnBroadcastOptions = {}
 ): () => void {
-  const pending = new Map<number, ReturnType<typeof setTimeout>>();
+  const pending = new Set<number>();
+  let unknown = false;
+  let timer: ReturnType<typeof setTimeout> | null = null;
+
+  const flush = () => {
+    timer = null;
+    const ids = unknown ? [null] : [...pending];
+    pending.clear();
+    unknown = false;
+    ids.forEach((id) => handler(id));
+  };
+
   const changed = (id: unknown) => {
-    const elementId = Number(id);
-    if (!elementId || pending.has(elementId)) {
+    if (id === null) {
+      unknown = true;
+    } else if (Number(id)) {
+      pending.add(Number(id));
+    } else {
       return;
     }
 
-    pending.set(
-      elementId,
-      setTimeout(() => {
-        pending.delete(elementId);
-        handler(elementId);
-      }, COALESCE_MS)
-    );
+    timer ??= setTimeout(flush, COALESCE_MS);
   };
 
   const stops = [
@@ -347,11 +364,14 @@ export function onElementChanged(
       ({canonicalId}) => changed(canonicalId),
       options
     ),
+    onBroadcast('broadcastOverflow', () => changed(null), options),
   ];
 
   return () => {
     stops.forEach((stop) => stop());
-    pending.forEach((timer) => clearTimeout(timer));
+    if (timer) {
+      clearTimeout(timer);
+    }
     pending.clear();
   };
 }
@@ -374,7 +394,23 @@ export function installElementInstanceRefresh(): void {
     });
   };
 
-  onElementChanged(refresh, {includeSelf: true});
+  onElementChanged(
+    (elementId) => {
+      if (elementId !== null) {
+        refresh(elementId);
+        return;
+      }
+
+      new Set(
+        [
+          ...document.querySelectorAll<HTMLElement>(
+            ':is(craft-chip, craft-card).element[data-id][data-settings]'
+          ),
+        ].map((instance) => instance.dataset.id!)
+      ).forEach(refresh);
+    },
+    {includeSelf: true}
+  );
   window.addEventListener(REFRESH_EVENT, (event) => {
     const id = (event as CustomEvent<{id?: ElementId}>).detail?.id;
     if (id) {

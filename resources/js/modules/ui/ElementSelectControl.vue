@@ -121,9 +121,14 @@
    * the next server render brings its own.
    */
   const refreshed = reactive(new Map<number, ElementPresentation>());
+  /** The latest refetch of each element; older answers are discarded. */
+  const latestRefetch = new Map<number, object>();
   watch(
     () => props.control.props.elements,
-    () => refreshed.clear()
+    () => {
+      refreshed.clear();
+      latestRefetch.clear();
+    }
   );
 
   function presentation(value: number | string): ElementPresentation {
@@ -136,33 +141,46 @@
     );
   }
 
-  async function refreshPresentation(id: number): Promise<void> {
-    if (!ids.value.includes(id)) {
-      return;
-    }
+  /** Refetches the given elements, or all of them, grouped by site. */
+  async function refreshPresentations(changed: number[] | null): Promise<void> {
+    const bySite = new Map<number | null, number[]>();
+    (changed ?? ids.value)
+      .filter((id) => ids.value.includes(id))
+      .forEach((id) => {
+        const siteId =
+          Number(
+            presentation(id).siteId ?? props.control.props.criteria.siteId
+          ) || null;
+        bySite.set(siteId, [...(bySite.get(siteId) ?? []), id]);
+      });
 
-    const siteId =
-      presentation(id).siteId ?? props.control.props.criteria.siteId;
-    const {data} = await actionClient.post<{
-      elements?: ElementPresentation[];
-    }>('relational-fields/structured-elements', {
-      elementType: props.control.props.elementType,
-      elementIds: [id],
-      siteId: Number(siteId) || null,
-      viewMode: viewMode.value,
-      thumbSize: props.control.props.thumbSize ?? null,
-    });
-    const fresh = data.elements?.find((element) => element.id === id);
+    await Promise.all(
+      [...bySite.entries()].map(async ([siteId, elementIds]) => {
+        const request = {};
+        elementIds.forEach((id) => latestRefetch.set(id, request));
+        const {data} = await actionClient.post<{
+          elements?: ElementPresentation[];
+        }>('relational-fields/structured-elements', {
+          elementType: props.control.props.elementType,
+          elementIds,
+          siteId,
+          viewMode: viewMode.value,
+          thumbSize: props.control.props.thumbSize ?? null,
+        });
 
-    if (fresh) {
-      refreshed.set(id, fresh);
-    }
+        data.elements?.forEach((fresh) => {
+          if (latestRefetch.get(fresh.id) === request) {
+            refreshed.set(fresh.id, fresh);
+          }
+        });
+      })
+    );
   }
 
   tryOnScopeDispose(
     onElementChanged(
       (id) => {
-        refreshPresentation(id).catch(() => {});
+        refreshPresentations(id === null ? null : [id]).catch(() => {});
       },
       {includeSelf: true}
     )

@@ -168,6 +168,53 @@ describe('refreshElementInstances()', () => {
   });
 });
 
+describe('refreshElementInstances() for nested elements', () => {
+  it('renders each owner’s instances with that owner', async () => {
+    document.body.innerHTML =
+      chipHtml('Old', {attrs: 'data-owner-id="1" data-field-id="4"'}) +
+      chipHtml('Old', {attrs: 'data-owner-id="2" data-field-id="4"'});
+    const post = vi
+      .spyOn(actionClient, 'post')
+      .mockImplementation(async (_url, body: any) => {
+        const [{ownerId, instances}] = body.elements;
+        const rendered: Record<number, string> = {};
+        instances.forEach((_: unknown, i: number) => {
+          rendered[i] = chipHtml(`Owner ${ownerId}`);
+        });
+        return {data: {elements: {7: rendered}}} as never;
+      });
+
+    await refreshElementInstances(7);
+
+    expect(post).toHaveBeenCalledTimes(2);
+    expect(
+      [...document.querySelectorAll('craft-chip a')].map((a) => a.textContent)
+    ).toEqual(['Owner 1', 'Owner 2']);
+  });
+
+  it('discards a render that a newer one overtook', async () => {
+    document.body.innerHTML = chipHtml('Old');
+    const answers: Array<(label: string) => void> = [];
+    vi.spyOn(actionClient, 'post').mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          answers.push((label) =>
+            resolve({data: {elements: {7: {0: chipHtml(label)}}}} as never)
+          );
+        })
+    );
+
+    const older = refreshElementInstances(7);
+    const newer = refreshElementInstances(7);
+    answers[1]!('Newer');
+    await newer;
+    answers[0]!('Older');
+    await older;
+
+    expect(document.querySelector('craft-chip a')!.textContent).toBe('Newer');
+  });
+});
+
 describe('installElementInstanceRefresh()', () => {
   beforeEach(() => installElementInstanceRefresh());
 
@@ -194,6 +241,21 @@ describe('installElementInstanceRefresh()', () => {
         'Canonical'
       )
     );
+  });
+
+  it('refreshes every chip on the page when a response left saves out', async () => {
+    document.body.innerHTML =
+      chipHtml('Old seven') + chipHtml('Old eight', {id: 8});
+    const post = respondWith((id) => chipHtml(`New ${id}`, {id}));
+
+    broadcast({event: 'broadcastOverflow'});
+
+    await vi.waitFor(() =>
+      expect(
+        [...document.querySelectorAll('craft-chip a')].map((a) => a.textContent)
+      ).toEqual(['New 7', 'New 8'])
+    );
+    expect(post).toHaveBeenCalledTimes(2);
   });
 
   it('refreshes chips when legacy code asks it to', async () => {
@@ -226,6 +288,41 @@ describe('onElementChanged()', () => {
     stops.forEach((stop) => stop());
     expect(otherTabs).not.toHaveBeenCalled();
     expect(everywhere.mock.calls).toEqual(expect.arrayContaining([[12], [5]]));
+  });
+
+  it('hands over everything saved together before any follow-up work runs', async () => {
+    const seen: Array<number | null> = [];
+    let seenBeforeMicrotasks = 0;
+    const stop = onElementChanged(
+      (id) => {
+        if (seen.length === 0) {
+          queueMicrotask(() => (seenBeforeMicrotasks = seen.length));
+        }
+        seen.push(id);
+      },
+      {includeSelf: true}
+    );
+
+    broadcast({event: 'saveElement', id: 7});
+    broadcast({event: 'saveElement', id: 8});
+    broadcast({event: 'saveElement', id: 9});
+
+    await vi.waitFor(() => expect(seen).toHaveLength(3));
+    stop();
+    expect(seenBeforeMicrotasks).toBe(3);
+  });
+
+  it('calls once with null when a response left saves out', async () => {
+    const handler = vi.fn();
+    const stop = onElementChanged(handler, {includeSelf: true});
+
+    broadcast({event: 'saveElement', id: 7});
+    broadcast({event: 'broadcastOverflow'});
+
+    await vi.waitFor(() => expect(handler).toHaveBeenCalled());
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    stop();
+    expect(handler.mock.calls).toEqual([[null]]);
   });
 
   it('calls once for messages about the same element that arrive together', async () => {

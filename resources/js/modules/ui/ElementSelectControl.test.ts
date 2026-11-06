@@ -2,6 +2,7 @@ import {createApp, h, nextTick, ref} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {ConfigService} from '@craftcms/ui/services/Config';
 import type {UiControlPayload} from './types';
+import {broadcast} from '@/common/craft/broadcast';
 import {provideUiPreview} from './uiPreview';
 
 const stub = vi.hoisted(() => {
@@ -459,6 +460,32 @@ describe('ElementSelectControl', () => {
     settings.onSelect([{id: 9, label: 'Another entry', siteId: 1}]);
 
     expect(updates).toEqual([[5, 9]]);
+  });
+
+  it('keeps the newest refetch of a saved element when answers arrive out of order', async () => {
+    const answers: Array<(label: string) => void> = [];
+    const root = await mount();
+    stub.post.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          answers.push((label) =>
+            resolve({data: {elements: [{id: 5, label}]}})
+          );
+        })
+    );
+
+    broadcast({event: 'saveElement', id: 5});
+    await vi.waitFor(() => expect(answers).toHaveLength(1));
+    broadcast({event: 'saveElement', id: 5});
+    await vi.waitFor(() => expect(answers).toHaveLength(2));
+    answers[1]!('Newer title');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    answers[0]!('Older title');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await nextTick();
+
+    expect(root.textContent).toContain('Newer title');
+    expect(root.textContent).not.toContain('Older title');
   });
 
   describe('maintaining hierarchy', () => {

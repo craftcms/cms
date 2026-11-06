@@ -1,4 +1,4 @@
-import {createInertiaApp, router} from '@inertiajs/vue3';
+import {createInertiaApp, router, usePage} from '@inertiajs/vue3';
 import {handleControlPanelLinks} from '@/common/inertia-links';
 import {observeExternalLinks} from '@craftcms/ui/utilities/external-links';
 import type {DefineComponent} from 'vue';
@@ -208,7 +208,7 @@ const Cp = {
 /**
  * Broadcasts the messages the server queued for the page with
  * `session()->broadcastToJs()`, such as a full-page element save, so other
- * tabs and this one hear about them. `success` covers visits, and the first
+ * tabs and this one hear about them. `success` and `error` cover visits, and the first
  * `navigate` the page the CP loaded on; later `navigate`s restore history,
  * whose messages have already gone out.
  */
@@ -223,6 +223,9 @@ function relayPageBroadcasts() {
     relay(event.detail.page);
   });
   router.on('success', (event) => relay(event.detail.page));
+  // A visit that comes back with validation errors fires this instead, after
+  // its page is in place.
+  router.on('error', () => relay(usePage()));
 }
 
 function handleAccessibleRouting() {
