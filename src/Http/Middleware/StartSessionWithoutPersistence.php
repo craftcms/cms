@@ -26,7 +26,8 @@ readonly class StartSessionWithoutPersistence
 
         // Without a session cookie there's no session to keep from being extended, and a CSRF token
         // returned to the visitor (such as by `users/session-info`) only works if its session is saved.
-        if ($request->cookies->get($this->manager->getSessionConfig()['cookie']) === null) {
+        // Unsafe requests, such as polling, never persist a session.
+        if ($request->isMethodSafe() && $request->cookies->get($this->manager->getSessionConfig()['cookie']) === null) {
             return $this->startLazySession->handle($request, $next);
         }
 

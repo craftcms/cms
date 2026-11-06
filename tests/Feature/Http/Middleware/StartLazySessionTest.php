@@ -9,13 +9,16 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Session\SessionManager;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
+use function Pest\Laravel\post;
 
 beforeEach(function () {
     $this->tempDir = sys_get_temp_dir().'/craft-site-session-test-'.uniqid();
@@ -102,4 +105,20 @@ it('uses the host app’s StartSession subclass', function () {
         ->assertOk()
         ->assertHeader('X-Host-Start-Session', 'yes')
         ->assertCookieMissing(config('session.cookie'));
+});
+
+it('saves the session when an unsafe request changes database records', function () {
+    Route::middleware(['web', 'craft', 'craft.web'])->withLazySession()->post('lazy-write', function () {
+        DB::table('cache')->insert(['key' => 'lazy-write', 'value' => 'x', 'expiration' => 0]);
+
+        return 'written';
+    })->withoutMiddleware(PreventRequestForgery::class);
+
+    $response = post('/lazy-write')
+        ->assertOk()
+        ->assertCookie(config('session.cookie'));
+
+    $saved = unserialize(app(SessionManager::class)->driver()->getHandler()->read($response->getCookie(config('session.cookie'))->getValue()));
+
+    expect($saved['_database_modified_at'] ?? null)->toBeInt();
 });

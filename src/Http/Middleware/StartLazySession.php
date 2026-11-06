@@ -121,12 +121,12 @@ readonly class StartLazySession
         try {
             $response = $startSession->handle($request, function (Request $request) use ($next, $session, &$used) {
                 $id = $session->getId();
-                $attributes = $this->attributes($session->all());
+                $attributes = $this->attributes($request, $session->all());
 
                 $response = $next($request);
 
                 $used = $session->getId() !== $id
-                    || $this->attributes($session->all()) !== $attributes
+                    || $this->attributes($request, $session->all()) !== $attributes
                     || $this->hasToken($response, $session->token());
 
                 return $response;
@@ -168,14 +168,17 @@ readonly class StartLazySession
      * Returns the session's attributes, minus bookkeeping that doesn't need a session of its own.
      *
      * `_database_modified_at` is set by {@see PreventStaleDatabaseReads} whenever the request changes
-     * database records, so later requests read their own writes. That alone doesn't need a session.
+     * database records, so later requests read their own writes. Safe requests can set it too, such as
+     * when a page writes caches, so it only counts as using the session on unsafe requests.
      *
      * @param  array<string, mixed>  $attributes
      * @return array<string, mixed>
      */
-    private function attributes(array $attributes): array
+    private function attributes(Request $request, array $attributes): array
     {
-        unset($attributes['_database_modified_at']);
+        if ($request->isMethodSafe()) {
+            unset($attributes['_database_modified_at']);
+        }
 
         return $attributes;
     }
