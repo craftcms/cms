@@ -14,7 +14,7 @@
 - Fixed a bug where the “New token” button on the Tokens screen didn’t work after a personal access token was created. ([#20356](https://github.com/craftcms/cms/issues/20356))
 - Fixed a bug where project config changes made through the stdio MCP server (`mcp/serve`) weren’t saved until the server stopped. ([#20330](https://github.com/craftcms/cms/issues/20330))
 - Fixed a bug where “New entry” buttons could offer entry types or sections that `craft\elements\Entry::EVENT_DEFINE_ENTRY_TYPES` had excluded, resulting in a 400 error. ([#20322](https://github.com/craftcms/cms/issues/20322))
-- Fixed a bug where garbage collection on PostgreSQL disabled foreign key triggers on every table for all connections, and could leave them disabled if it didn’t finish. ([#20386](https://github.com/craftcms/cms/issues/20386))
+- Fixed a bug where garbage collection could leave foreign key constraints disabled if it didn’t finish, and on PostgreSQL, other requests could write data without foreign key enforcement while it ran. ([#20386](https://github.com/craftcms/cms/issues/20386))
 
 ## 5.12.0.1 - 2026-11-03
 
