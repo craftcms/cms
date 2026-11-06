@@ -300,6 +300,14 @@ it('applies params set after the query has run', function () {
         ->and($query->reorder('elements.id', 'desc')->ids())->toBe([$b, $a]);
 });
 
+it('unions element queries and orders the combined result', function () {
+    [$a, $b, $c] = EntryModel::factory(3)->create()->pluck('id')->all();
+    $query = entryQuery()->id($a)->union(entryQuery()->id([$b, $c]));
+
+    expect($query->count())->toBe(3)
+        ->and($query->orderByDesc('id')->get()->pluck('id')->all())->toBe([$c, $b, $a]);
+});
+
 it('chunks and lazily iterates by id', function () {
     $ids = EntryModel::factory(3)->create()->pluck('id')->all();
     $chunks = [];

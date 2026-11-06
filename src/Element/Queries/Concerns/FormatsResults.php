@@ -249,8 +249,9 @@ trait FormatsResults
             callback: fn ($order) => ! isset($order['column']) || ! $order['column'] instanceof OrderByPlaceholderExpression,
         );
 
-        // Order by was set
-        if (count($elementQuery->query->orders) > 0) {
+        // Order by was set, or the query is unioned: Laravel puts orders added after union() on the combined
+        // result, where the default order's table-qualified columns don't exist.
+        if (count($elementQuery->query->orders) > 0 || ! empty($elementQuery->query->unions)) {
             return;
         }
 
