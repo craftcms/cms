@@ -11,6 +11,7 @@ use craft\elements\Entry;
 use craft\fields\Lightswitch;
 use craft\fields\PlainText;
 use craft\mcp\McpActor;
+use craft\mcp\McpOutputContext;
 use craft\mcp\serializers\ElementSerializer;
 use craft\models\FieldLayout;
 use craft\services\Config;
@@ -58,11 +59,11 @@ class ElementSerializerTest extends TestCase
         $data = $this->serializer()->serialize($element, data: [], fields: null);
 
         self::assertTrue($data['toggle']);
-        self::assertSame(['value' => 'raw', 'public' => false], $data['custom']);
+        self::assertSame(['value' => 'raw', 'public' => false, 'requested' => false], $data['custom']);
 
         $data = $this->serializer()->serialize($element, data: [], public: true, fields: ['custom']);
 
-        self::assertSame(['custom' => ['value' => 'raw', 'public' => true]], $data);
+        self::assertSame(['custom' => ['value' => 'raw', 'public' => true, 'requested' => true]], $data);
     }
 
     public function testElementsReturnedByFieldsAreExpandedAsNestedElements(): void
@@ -142,8 +143,8 @@ class SerializerTestApplication extends Application
 
 class McpOutputTestField extends PlainText implements McpOutputFieldInterface
 {
-    public function getMcpValue(mixed $value, ElementInterface $element, bool $public): mixed
+    public function getMcpValue(mixed $value, ElementInterface $element, McpOutputContext $context): mixed
     {
-        return $value instanceof ElementCollection ? $value : ['value' => $value, 'public' => $public];
+        return $value instanceof ElementCollection ? $value : ['value' => $value, 'public' => $context->public, 'requested' => $context->requested];
     }
 }

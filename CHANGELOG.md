@@ -17,6 +17,7 @@
 - Fixed a bug where field values submitted for nested entries, Content Block fields, and addresses could be saved even if the user wasn’t permitted to see or edit the fields, per their field layout conditions. ([#20391](https://github.com/craftcms/cms/pull/20391))
 - Fixed a bug where MCP tools returned empty arrays for CKEditor field values.
 - Added `craft\base\McpOutputFieldInterface`, which fields can implement to control how their values are returned by MCP tools.
+- Added `craft\mcp\McpOutputContext`.
 - Fixed a bug where “New entry” buttons could offer entry types or sections that `craft\elements\Entry::EVENT_DEFINE_ENTRY_TYPES` had excluded, resulting in a 400 error. ([#20322](https://github.com/craftcms/cms/issues/20322))
 
 ## 5.12.0.1 - 2026-11-03

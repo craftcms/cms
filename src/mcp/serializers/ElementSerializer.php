@@ -13,6 +13,7 @@ use craft\elements\ElementCollection;
 use craft\mcp\Authorization;
 use craft\mcp\events\ElementSerializing;
 use craft\mcp\McpActor;
+use craft\mcp\McpOutputContext;
 use Illuminate\Support\Arr;
 use Mcp\Exception\ToolCallException;
 
@@ -76,7 +77,7 @@ class ElementSerializer extends \yii\base\Component
             $value = $element->getFieldValue($field->handle);
 
             if ($field instanceof McpOutputFieldInterface) {
-                $value = $field->getMcpValue($value, $element, $public);
+                $value = $field->getMcpValue($value, $element, new McpOutputContext(public: $public, requested: $fields !== null));
                 $isNested = $this->isNestedValue($value);
             } else {
                 // Container fields like CKEditor can hold nested elements without their value being elements

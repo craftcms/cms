@@ -7,6 +7,8 @@
 
 namespace craft\base;
 
+use craft\mcp\McpOutputContext;
+
 /**
  * McpOutputFieldInterface defines the common interface to be implemented by field classes
  * that control how their values are returned by MCP tools.
@@ -25,8 +27,8 @@ interface McpOutputFieldInterface extends FieldInterface
      *
      * @param mixed $value
      * @param ElementInterface $element
-     * @param bool $public
+     * @param McpOutputContext $context
      * @return mixed
      */
-    public function getMcpValue(mixed $value, ElementInterface $element, bool $public): mixed;
+    public function getMcpValue(mixed $value, ElementInterface $element, McpOutputContext $context): mixed;
 }
