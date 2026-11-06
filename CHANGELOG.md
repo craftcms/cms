@@ -2,7 +2,6 @@
 
 ## Unreleased
 
-- Added the `save_Address` and `deleteAddress` GraphQL mutations, enabled via new “Edit addresses” schema components. Authenticated users can add, update, and delete their own addresses, as well as the addresses of users they can edit.
 - Renamed Craft’s MCP tools to use snake_case names, such as `elements_list` instead of `elements.list` and `craft_query` instead of `craft-query`, because VS Code, claude.ai, and other MCP clients reject or rename tools with dots in their names. Public MCP server approvals are updated automatically. Plugins should name their MCP tools the same way, such as `my_plugin_orders_list`. ([#20351](https://github.com/craftcms/cms/issues/20351))
 - The `assets_create` and `assets_replace` MCP tools now accept base64-encoded file data, local file paths (stdio server only, limited to project directories where a local volume could be located), and files sent to single-use upload URLs from the new `assets_upload_url` MCP tool, in addition to download URLs. Download URLs no longer require a `file_id`, follow up to 3 redirects, and are validated against SSRF via craftcms/url-validator.
 - The `assets_create` MCP tool can now upload files to an Assets field’s default upload location, via its new `fieldId` and `elementId` arguments.
