@@ -33,6 +33,7 @@ use craft\records\Volume;
 use craft\records\VolumeFolder;
 use DateTime;
 use ReflectionMethod;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -678,14 +679,16 @@ class Gc extends Component
     {
         $this->_stdout('    > deleting orphaned foreign key rows ... ');
 
+        // Do everything in a transaction, so disabling FK checks can't outlive it.
+        // On PostgreSQL, checkIntegrity(false) disables triggers on every table for all connections,
+        // so they must be re-enabled before the transaction commits, and get re-enabled by the
+        // rollback if anything fails. Other connections' writes wait until then.
+        // (https://github.com/craftcms/cms/issues/20386)
         $isMysql = $this->db->getIsMysql();
         $disabledFkChecks = false;
-
-        // Disable FK checks on MySQL, where they only apply to this session.
-        // On PostgreSQL, this disables triggers on every table for all connections,
-        // and they would stay disabled if the request died before re-enabling them.
-        // (https://github.com/craftcms/cms/issues/20386)
-        if ($isMysql) {
+        $transaction = $this->db->beginTransaction();
+        try {
+            // Disable FK checks
             try {
                 $this->db->transaction(function() {
                     $this->db->createCommand()->checkIntegrity(false)->execute();
@@ -695,9 +698,7 @@ class Gc extends Component
                 // the DB user probably didn't have permission
                 // see https://github.com/craftcms/cms/issues/15063#issuecomment-2194059768
             }
-        }
 
-        try {
             foreach ($this->db->getSchema()->getTableSchemas() as $table) {
                 /** @var TableSchema $table */
                 $extendedFkInfo = $table->getExtendedForeignKeys();
@@ -733,11 +734,20 @@ SQL;
                     $counter++;
                 }
             }
-        } finally {
+
             // Re-enable FK checks
             if ($disabledFkChecks) {
                 $this->db->createCommand()->checkIntegrity(true)->execute();
             }
+
+            $transaction->commit();
+        } catch (Throwable $e) {
+            $transaction->rollBack();
+            // MySQL's FK checks setting belongs to the session, so the rollback doesn't restore it
+            if ($disabledFkChecks && $isMysql) {
+                $this->db->createCommand()->checkIntegrity(true)->execute();
+            }
+            throw $e;
         }
 
         $this->_stdout("done\n", Console::FG_GREEN);
