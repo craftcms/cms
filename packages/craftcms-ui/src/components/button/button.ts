@@ -53,18 +53,56 @@ function createImplicitSubmitter(): HTMLButtonElement {
   return button;
 }
 
+/** Whether a disabled fieldset disables the element, as it would a native control. */
+function inDisabledFieldset(element: Element): boolean {
+  for (
+    let fieldset = element.parentElement?.closest('fieldset');
+    fieldset;
+    fieldset = fieldset.parentElement?.closest('fieldset')
+  ) {
+    // Controls in a fieldset's first legend stay enabled.
+    if (
+      fieldset.disabled &&
+      !fieldset.querySelector(':scope > legend')?.contains(element)
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 /**
- * Disables a form's hidden submitter while its first submit `craft-button` is
- * disabled, as a disabled default button blocks implicit submission.
+ * Buttons to recheck when a fieldset is enabled or disabled, which no event
+ * reports. One observer serves them all.
  */
-function syncImplicitSubmitter(entry: {
-  button: HTMLButtonElement;
-  owners: Set<CraftButton>;
-}): void {
-  const [first] = [...entry.owners].sort((a, b) =>
-    a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
-  );
-  entry.button.disabled = first?.disabled ?? false;
+const fieldsetWatchers = new Set<() => void>();
+let fieldsetObserver: MutationObserver | undefined;
+
+function watchFieldsets(sync: () => void): void {
+  fieldsetWatchers.add(sync);
+
+  if (!fieldsetObserver) {
+    fieldsetObserver = new MutationObserver((records) => {
+      if (records.some((r) => r.target instanceof HTMLFieldSetElement)) {
+        fieldsetWatchers.forEach((watcher) => watcher());
+      }
+    });
+    fieldsetObserver.observe(document, {
+      attributes: true,
+      attributeFilter: ['disabled'],
+      subtree: true,
+    });
+  }
+}
+
+function unwatchFieldsets(sync: () => void): void {
+  fieldsetWatchers.delete(sync);
+
+  if (!fieldsetWatchers.size) {
+    fieldsetObserver?.disconnect();
+    fieldsetObserver = undefined;
+  }
 }
 
 /**
@@ -77,6 +115,9 @@ function syncImplicitSubmitter(entry: {
  * @slot - The button's label.
  * @slot prefix - Content to display before the label (typically an icon).
  * @slot suffix - Content to display after the label (typically an icon).
+ *
+ * @attr form - The id of the form a `submit` or `reset` button acts on, when
+ *   it isn't the one the button is in.
  *
  * @attr shortcut - A keyboard shortcut shown at the end of the button: a key
  *   (`"K"`), or JSON naming its modifiers (`'{"key": "S", "shift": true}'`).
@@ -103,13 +144,80 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
   ];
 
   /**
-   * What the button does in a form: `submit` and `reset` act on the form
-   * that contains it, like a native button. Defaults to `button`.
+   * What the button does in a form: `submit` and `reset` act on its `form`,
+   * like a native button. Defaults to `button`.
    */
   @property({reflect: true}) type: 'button' | 'submit' | 'reset' = 'button';
 
   /** Disables the button: it can't be clicked, and leaves the tab order. */
   @property({type: Boolean, reflect: true}) disabled = false;
+
+  /** Whether a disabled fieldset around the button disables it. */
+  @state() private fieldsetDisabled = false;
+
+  #internals: ElementInternals | undefined = this.attachInternals?.();
+
+  /** Whether `aria-disabled` is the button's own, to take away again. */
+  #ownsAriaDisabled = false;
+
+  /**
+   * The form the button submits or resets: the one its `form` attribute
+   * names, or else the one it's in.
+   */
+  get form(): HTMLFormElement | null {
+    const id = this.getAttribute('form');
+
+    if (id === null) {
+      return this.closest('form');
+    }
+
+    const root = this.getRootNode() as Document | ShadowRoot;
+    const form = root.getElementById?.(id);
+
+    return form instanceof HTMLFormElement ? form : null;
+  }
+
+  static override get observedAttributes(): string[] {
+    return [...super.observedAttributes, 'form'];
+  }
+
+  override attributeChangedCallback(
+    name: string,
+    old: string | null,
+    value: string | null
+  ): void {
+    super.attributeChangedCallback(name, old, value);
+
+    if (name === 'form') {
+      this.#syncImplicitSubmitter();
+    }
+  }
+
+  /**
+   * Disabled by its own `disabled`, or by a disabled fieldset. A link isn't a
+   * form control, so a fieldset leaves it alone.
+   */
+  get #inactive(): boolean {
+    return this.disabled || (this.fieldsetDisabled && !this.href);
+  }
+
+  #syncFieldsetDisabled = (): void => {
+    this.fieldsetDisabled = inDisabledFieldset(this);
+  };
+
+  /**
+   * Disables a form's hidden submitter while its first submit `craft-button`
+   * is disabled, as a disabled default button blocks implicit submission.
+   */
+  static #updateImplicitSubmitter(entry: {
+    button: HTMLButtonElement;
+    owners: Set<CraftButton>;
+  }): void {
+    const [first] = [...entry.owners].sort((a, b) =>
+      a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
+    );
+    entry.button.disabled = first ? first.#inactive : false;
+  }
 
   constructor() {
     super();
@@ -121,7 +229,7 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
 
   /** Clicks the button, unless it's disabled. */
   override click(): void {
-    if (this.disabled) {
+    if (this.#inactive) {
       return;
     }
 
@@ -148,7 +256,7 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
    * reachable by the pointer swallows the click.
    */
   #onClick = (event: Event) => {
-    if (this.disabled) {
+    if (this.#inactive) {
       event.preventDefault();
       event.stopImmediatePropagation();
       return;
@@ -178,7 +286,7 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
       return;
     }
 
-    const form = this.closest('form');
+    const form = this.form;
 
     if (this.type === 'submit') {
       form?.requestSubmit();
@@ -247,6 +355,8 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
     }
 
     this.syncLinkHostState();
+    this.#syncFieldsetDisabled();
+    watchFieldsets(this.#syncFieldsetDisabled);
     this.#syncImplicitSubmitter();
     this.addEventListener('click', this.#handleToggleClick);
 
@@ -283,14 +393,14 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
     this.#contentObserver = null;
     this.#stopAwaitingRender();
     this.#releaseImplicitSubmitter();
+    unwatchFieldsets(this.#syncFieldsetDisabled);
   }
 
   /** The form this button registered an implicit submitter with. */
   #submitterForm: HTMLFormElement | null = null;
 
   #syncImplicitSubmitter(): void {
-    const form =
-      this.isConnected && this.type === 'submit' ? this.closest('form') : null;
+    const form = this.isConnected && this.type === 'submit' ? this.form : null;
 
     if (form === this.#submitterForm) {
       return;
@@ -312,7 +422,7 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
     entry.owners.add(this);
     form.append(entry.button);
     this.#submitterForm = form;
-    syncImplicitSubmitter(entry);
+    CraftButton.#updateImplicitSubmitter(entry);
   }
 
   #releaseImplicitSubmitter(): void {
@@ -330,7 +440,7 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
     }
 
     entry.owners.delete(this);
-    syncImplicitSubmitter(entry);
+    CraftButton.#updateImplicitSubmitter(entry);
 
     // Deferred: the form may be mid-removal itself, and a button moved within
     // it registers again before this runs.
@@ -349,7 +459,7 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
    * either way.
    */
   #handleToggleClick = (event: Event) => {
-    if (!this.toggle || this.disabled || this.loading) {
+    if (!this.toggle || this.#inactive || this.loading) {
       return;
     }
 
@@ -385,31 +495,43 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
       this.syncLinkHostState();
     }
 
+    const inactivityChanged =
+      changedProperties.has('disabled') ||
+      changedProperties.has('fieldsetDisabled') ||
+      changedProperties.has('href');
+
     if (changedProperties.has('type')) {
       this.#syncImplicitSubmitter();
-    } else if (changedProperties.has('disabled') && this.#submitterForm) {
+    } else if (inactivityChanged && this.#submitterForm) {
       const entry = implicitSubmitters.get(this.#submitterForm);
       if (entry) {
-        syncImplicitSubmitter(entry);
+        CraftButton.#updateImplicitSubmitter(entry);
       }
     }
 
-    // Only an `aria-disabled` it set itself is taken away again: an author
-    // may mark an enabled button disabled to keep it focusable.
-    if (changedProperties.has('disabled')) {
-      if (this.disabled) {
+    if (inactivityChanged) {
+      // Only an `aria-disabled` it set itself is taken away again: an author
+      // may mark an enabled button disabled to keep it focusable.
+      if (this.#inactive) {
         this.setAttribute('aria-disabled', 'true');
-      } else if (changedProperties.get('disabled')) {
+        this.#ownsAriaDisabled = true;
+      } else if (this.#ownsAriaDisabled) {
         this.removeAttribute('aria-disabled');
+        this.#ownsAriaDisabled = false;
+      }
+
+      if (this.fieldsetDisabled && !this.href) {
+        this.#internals?.states?.add('fieldset-disabled');
+      } else {
+        this.#internals?.states?.delete('fieldset-disabled');
       }
     }
 
-    if (
-      changedProperties.has('disabled') ||
-      changedProperties.has('focusableWhenDisabled')
-    ) {
+    if (inactivityChanged || changedProperties.has('focusableWhenDisabled')) {
       if (this.disabled) {
         this.tabIndex = this.focusableWhenDisabled ? 0 : -1;
+      } else if (this.#inactive) {
+        this.tabIndex = -1;
       } else if (!this.isLink) {
         this.tabIndex = 0;
       }
