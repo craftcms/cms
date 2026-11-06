@@ -269,6 +269,7 @@
             icon="xmark-large"
             variant="plain"
             size="small"
+            :flush="control.props.withStatuses ? undefined : 'inline-end'"
             :aria-label="t('Remove {name}', {name: site.name})"
             .loading="deleting === site.id"
             @click="deleteSite(site)"
@@ -317,6 +318,7 @@
           icon="xmark-large"
           variant="plain"
           size="small"
+          :flush="control.props.withStatuses ? undefined : 'inline-end'"
           :aria-label="t('Remove {name}', {name: site.name})"
           @click="removeStatus(site.id)"
         ></craft-button>
