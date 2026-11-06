@@ -7,14 +7,29 @@ namespace CraftCms\Cms\Entry\Import;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Import\ElementTransformer;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
+use Override;
 
 /**
  * @since 6.0.0
  */
 class EntryTransformer extends ElementTransformer
 {
+    #[Override]
+    protected function fieldLayoutFor(ElementInterface $element, array $properties): ?FieldLayout
+    {
+        $fieldLayout = parent::fieldLayoutFor($element, $properties);
+
+        // a new entry may not have a field layout yet, so fall back to the incoming entry type's
+        if ($fieldLayout === null && isset($properties['typeId'])) {
+            $fieldLayout = EntryTypes::getEntryTypeById((int) $properties['typeId'])?->getFieldLayout();
+        }
+
+        return $fieldLayout;
+    }
+
     /**
      * Normalizes an incoming section value (numeric id or handle string) to a section ID.
      */

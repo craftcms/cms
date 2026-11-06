@@ -296,9 +296,7 @@ class Arr extends \Illuminate\Support\Arr
      */
     public static function bracketsToArray(string $string): array
     {
-        return $string
-                |> (fn ($v) => str_replace(']', '', $v))
-                |> (fn ($v) => explode('[', (string) $v));
+        return explode('[', str_replace(']', '', $string));
     }
 
     /**

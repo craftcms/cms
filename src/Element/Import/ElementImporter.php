@@ -245,7 +245,7 @@ abstract class ElementImporter extends BaseImporter
     {
         $data = parent::toArrayData();
         $data['settings']['site'] = $this->site?->handle;
-        $data['settings']['fieldLayout'] = $this->fieldLayout ?? null;
+        $data['settings']['fieldLayout'] = $this->fieldLayout;
         $data['settings']['keepMissingNestedElements'] = $this->keepMissingNestedElements;
         $data['settings']['fieldSettings'] = $this->fieldSettings;
 
@@ -353,25 +353,19 @@ abstract class ElementImporter extends BaseImporter
     #[Override]
     public function getDestinationCols(): array
     {
-        $propertyCols = [];
+        // attribute mapping - get all importable properties that apply to the current settings,
+        // except those that are not supposed to be available for UI mapping
+        $props = array_filter($this->getAvailableProperties(), fn ($prop) => empty($prop['excludeFromUiMapping']));
 
-        // attribute mapping - get all importable properties that apply to the current settings
-        $props = $this->getAvailableProperties();
-
-        // exclude all those that are not supposed to be available for UI mapping
-        $props = array_filter($props, fn ($prop) => ! isset($prop['excludeFromUiMapping']) || $prop['excludeFromUiMapping'] === false);
-
-        if (! empty($props)) {
-            $propertyCols = array_values(array_map(fn ($prop) => MappingColumn::make(
-                handle: $prop['name'],
-                label: $prop['label'],
-                isContainer: $prop['isContainer'],
-                canBeMatchCriteria: $prop['canBeMatchCriteria'],
-                canBeCleared: $prop['canBeCleared'],
-                canBeSet: $prop['canBeSet'],
-                isProperty: true,
-            ), $props));
-        }
+        $propertyCols = array_values(array_map(fn ($prop) => MappingColumn::make(
+            handle: $prop['name'],
+            label: $prop['label'],
+            isContainer: $prop['isContainer'],
+            canBeMatchCriteria: $prop['canBeMatchCriteria'],
+            canBeCleared: $prop['canBeCleared'],
+            canBeSet: $prop['canBeSet'],
+            isProperty: true,
+        ), $props));
 
         if ($this->fieldLayout === null) {
             return $propertyCols;
@@ -464,13 +458,13 @@ abstract class ElementImporter extends BaseImporter
         // get a list of container properties
         $containerProps = ImportHelper::getImportableContainerProperties($this);
         // and deduce attributes from those
-        $containerAttributes = collect($containerProps)->map(fn ($prop) => $prop['name'])->all();
+        $containerAttributes = array_column($containerProps, 'name');
 
         // $fieldHandles has custom and native fields - basically all field layout elements
         $fieldHandles = array_diff(array_keys($item), $attributeHandles, $containerAttributes, ImportHelper::RESERVED_DATA_KEYS);
 
-        $attributes = array_filter($item, fn ($key) => in_array($key, $attributeHandles), ARRAY_FILTER_USE_KEY);
-        $fields = array_filter($item, fn ($key) => in_array($key, $fieldHandles), ARRAY_FILTER_USE_KEY);
+        $attributes = Arr::only($item, $attributeHandles);
+        $fields = Arr::only($item, $fieldHandles);
 
         // If any container property has data present in $item, treat the element as changed
         // (there's no cheap/reliable way to diff this,
@@ -524,7 +518,8 @@ abstract class ElementImporter extends BaseImporter
             $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         }
 
-        $restoreKeepFlagFields = $this->enableKeepMissingNestedElements($element);
+        $fieldLayout = $element->getFieldLayout();
+        $restoreKeepFlagFields = $this->collectAndEnableKeepFields($fieldLayout, $fieldLayout, null, null, null);
 
         try {
             $saved = $createDraft
@@ -609,19 +604,6 @@ abstract class ElementImporter extends BaseImporter
     public static function isElementImporter(): bool
     {
         return true;
-    }
-
-    /**
-     * Enables keeping missing nested elements for any container field opted in via
-     * `keepMissingNestedElements`, returning the fields that should be restored after the save.
-     *
-     * @return ImportableElementContainerFieldInterface[]
-     */
-    private function enableKeepMissingNestedElements(ElementInterface $element): array
-    {
-        $fieldLayout = $element->getFieldLayout();
-
-        return $this->collectAndEnableKeepFields($fieldLayout, $fieldLayout, null, null, null);
     }
 
     /**

@@ -2234,10 +2234,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             $entryElement = null;
 
             // if there's no type or type is not allowed - bail
-            if (! isset($entry['type'])) {
-                continue;
-            }
-            if (! isset($allowedEntryTypes[$entry['type']])) {
+            if (! isset($entry['type'], $allowedEntryTypes[$entry['type']])) {
                 continue;
             }
 
@@ -2268,7 +2265,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             // use the matched entry's ID, or generate a new key
             $newKey = $entryElement->id ?? 'new:'.++$i;
 
-            Arr::forget($entry, [/* 'type', */ 'matchCriteria']);
+            Arr::forget($entry, ['matchCriteria']);
 
             $keyMap[$originalKey] = $newKey;
             $normalizedValue['sortOrder'][] = $newKey;
@@ -2297,19 +2294,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     #[Override]
     public function getMappingUiPrefix(FieldLayout $fieldLayout, mixed $provider = null, ?string $prefix = null): string
     {
-        $newPrefix = '';
-
-        if (! empty($prefix)) {
-            $newPrefix = $prefix;
-        }
-
-        // bail silently if we don't have an entry type here
-        if (empty($provider)) {
-            return $newPrefix;
-        }
-
         // use the entry type’s uid, because its handle can be overridden in each Matrix field
-        return $newPrefix."[$provider->uid]";
+        return ($prefix ?? '').($provider ? "[$provider->uid]" : '');
     }
 
     /**
@@ -2322,11 +2308,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     #[Override]
     public function resolveMappingKeys(array $tree): array
     {
-        $entryTypes = [];
-        foreach ($this->getEntryTypes() as $entryType) {
-            $entryTypes[$entryType->uid] = $entryType;
-        }
-
+        $entryTypes = Arr::keyBy($this->getEntryTypes(), 'uid');
         $resolved = [];
 
         foreach ($tree as $key => $value) {

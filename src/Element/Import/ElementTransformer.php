@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Import;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Import\Transformers\BaseTransformer;
-use CraftCms\Cms\Support\Facades\EntryTypes;
 
 /**
  * @since 6.0.0
@@ -73,24 +74,14 @@ class ElementTransformer extends BaseTransformer
         }
 
         // include all custom fields
-        $fieldLayout = $element->getFieldLayout();
-        // if we don't have a field layout here, it means we're creating a new element and the field layout isn't set yet
-        if (! $fieldLayout) {
-            // if we have a typeId, try to get the field layout from the entry type - this is the case for Entry element
-            if (isset($array['typeId'])) {
-                $entryType = EntryTypes::getEntryTypeById((int) $array['typeId']);
-                if ($entryType) {
-                    $fieldLayout = $entryType->getFieldLayout();
-                }
-            }
-        }
+        $fieldLayout = $this->fieldLayoutFor($element, $array);
 
         // now, we should have a layout, so we can get all the field handles
         if ($fieldLayout) {
             $fieldHandles = $this->fieldHandles[$fieldLayout->uid ?? spl_object_id($fieldLayout)] ??= array_filter(
                 array_map(
-                    fn ($fieldLayoutElement) => $fieldLayoutElement->attribute(),
-                    $fieldLayout->getAllElements()
+                    fn (BaseField $fieldLayoutElement) => $fieldLayoutElement->attribute(),
+                    $fieldLayout->getElementsByType(BaseField::class)
                 )
             );
 
@@ -103,6 +94,16 @@ class ElementTransformer extends BaseTransformer
         }
 
         return $array;
+    }
+
+    /**
+     * Returns the field layout whose fields the item is mapped onto.
+     *
+     * @param  array<string, mixed>  $properties  The item's normalized property values.
+     */
+    protected function fieldLayoutFor(ElementInterface $element, array $properties): ?FieldLayout
+    {
+        return $element->getFieldLayout();
     }
 
     /**

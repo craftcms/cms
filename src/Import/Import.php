@@ -145,32 +145,44 @@ class Import
      */
     public function getDataTypeError(string $filePath, ?string $dataType = null): ?string
     {
+        return $this->resolveDataType($filePath, $dataType)[1];
+    }
+
+    /**
+     * Works out which data type to read a local file as, sampling the file at most once.
+     * Returns the data type, or an error saying why there isn't a single one.
+     *
+     * @param  class-string<DataTypeInterface>|null  $dataType  The data type chosen for the file, if any.
+     * @return array{0: class-string<DataTypeInterface>|null, 1: string|null}
+     */
+    private function resolveDataType(string $filePath, ?string $dataType): array
+    {
         $types = $this->getDataTypesForExtension($filePath);
 
         if ($types === []) {
-            return t('Unsupported data type: {type}', ['type' => File::extension($filePath)]);
+            return [null, t('Unsupported data type: {type}', ['type' => File::extension($filePath)])];
         }
 
         if (count($types) === 1) {
-            return null;
+            return [$types[0], null];
         }
 
         $candidates = $this->getDataTypeCandidates($filePath);
 
         if ($dataType !== null && in_array($dataType, $types, true)) {
-            return in_array($dataType, $candidates, true) ? null : t('The file can’t be read as {dataType}.', [
-                'dataType' => $dataType::displayName(),
-            ]);
+            return in_array($dataType, $candidates, true)
+                ? [$dataType, null]
+                : [null, t('The file can’t be read as {dataType}.', ['dataType' => $dataType::displayName()])];
         }
 
         return match (count($candidates)) {
-            0 => t('The file’s contents don’t match any data type for .{extension} files.', [
+            0 => [null, t('The file’s contents don’t match any data type for .{extension} files.', [
                 'extension' => strtolower(File::extension($filePath)),
-            ]),
-            1 => null,
-            default => t('The file could be read as {dataTypes}. Choose which data type to read it as.', [
+            ])],
+            1 => [$candidates[0], null],
+            default => [null, t('The file could be read as {dataTypes}. Choose which data type to read it as.', [
                 'dataTypes' => implode(', ', array_map(fn (string $type) => $type::displayName(), $candidates)),
-            ]),
+            ])],
         };
     }
 
@@ -205,19 +217,13 @@ class Import
      */
     private function dataTypeClass(string $filePath, ?string $dataType): string
     {
-        $error = $this->getDataTypeError($filePath, $dataType);
+        [$dataTypeClass, $error] = $this->resolveDataType($filePath, $dataType);
 
-        if ($error !== null) {
-            throw new Exception($error);
+        if ($dataTypeClass === null) {
+            throw new Exception((string) $error);
         }
 
-        $types = $this->getDataTypesForExtension($filePath);
-
-        if (count($types) === 1) {
-            return $types[0];
-        }
-
-        return in_array($dataType, $types, true) ? $dataType : $this->getDataTypeCandidates($filePath)[0];
+        return $dataTypeClass;
     }
 
     /**

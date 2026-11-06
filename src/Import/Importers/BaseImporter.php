@@ -51,7 +51,7 @@ abstract class BaseImporter
 {
     public protected(set) ?string $source = null;
 
-    public protected(set) string|BaseTransformer|null $transformer = null;
+    public protected(set) ?BaseTransformer $transformer = null;
 
     public protected(set) ?int $batchSize = null;
 
@@ -464,17 +464,7 @@ abstract class BaseImporter
      */
     public function toImportStep(): ImportStep
     {
-        $data = $this->toArrayData();
-
-        return new ImportStep(
-            uid: $data['uid'],
-            type: $data['type'],
-            source: $data['source'],
-            transformer: $data['transformer'],
-            batchSize: $data['batchSize'],
-            enabled: $data['enabled'],
-            settings: $data['settings'],
-        );
+        return new ImportStep(...$this->toArrayData());
     }
 
     /**
@@ -488,7 +478,7 @@ abstract class BaseImporter
             'uid' => $this->uid,
             'type' => static::class,
             'source' => $this->source,
-            'transformer' => $this->transformer instanceof BaseTransformer ? $this->transformer::class : $this->transformer,
+            'transformer' => $this->transformerAsString(),
             'batchSize' => $this->batchSize,
             'enabled' => $this->enabled,
             'settings' => [
@@ -901,20 +891,12 @@ abstract class BaseImporter
      * @param  Closure  $fail  The callback function to invoke when validation fails.
      * @param  Validator  $validator  The validator instance performing the validation.
      */
-    public static function validateTransformer(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
+    public static function validateTransformer(mixed $value, string $attribute, Closure $fail, Validator $validator): void
     {
-        // if it's empty - that's fine (we'll probably use the default ElementTransformer)
-        if (empty($value)) {
-            return true;
-        }
-
-        if (self::normalizeTransformer($value) === null) {
+        // empty is fine (the importer's default transformer is used)
+        if (! empty($value) && self::normalizeTransformer($value) === null) {
             $fail($attribute, t('Transformer has to be empty or a valid transformer class.'));
-
-            return false;
         }
-
-        return true;
     }
 
     /**
@@ -1123,7 +1105,7 @@ abstract class BaseImporter
      */
     public function transformerAsString(): ?string
     {
-        return $this->transformer instanceof BaseTransformer ? $this->transformer::class : null;
+        return $this->transformer ? $this->transformer::class : null;
     }
 
     public static function isElementImporter(): bool
@@ -1136,19 +1118,6 @@ abstract class BaseImporter
      */
     public function usesDefaultTransformer(): bool
     {
-        $currentTransformer = $this->transformer;
-        $defaultTransformer = static::getDefaultTransformer();
-
-        // if they're simply the same - they're the same
-        if ($currentTransformer === $defaultTransformer) {
-            return true;
-        }
-
-        // if the current transformer is an object and the class matches the default one - they're the same
-        if ($currentTransformer instanceof BaseTransformer && $currentTransformer::class === $defaultTransformer) {
-            return true;
-        }
-
-        return false;
+        return $this->transformerAsString() === static::getDefaultTransformer();
     }
 }

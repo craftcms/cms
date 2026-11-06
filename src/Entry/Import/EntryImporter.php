@@ -150,8 +150,8 @@ class EntryImporter extends ElementImporter
     public function toArrayData(): array
     {
         $data = parent::toArrayData();
-        $data['settings']['section'] = $this->section ?? null;
-        $data['settings']['entryType'] = $this->entryType ?? null;
+        $data['settings']['section'] = $this->section;
+        $data['settings']['entryType'] = $this->entryType;
 
         return $data;
     }

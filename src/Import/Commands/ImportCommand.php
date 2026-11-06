@@ -91,15 +91,8 @@ abstract class ImportCommand extends Command implements PromptsForMissingInput
         }
         $responses = $options->submit();
 
-        $matchCriteria = null;
-        if ($this->option('match-criteria')) {
-            $matchCriteria = self::normalizeMatchCriteria($this->option('match-criteria'));
-        } elseif ($responses['matchCriteria']) {
-            if (! str_starts_with((string) $responses['matchCriteria'], '=')) {
-                $responses['matchCriteria'] = '='.$responses['matchCriteria'];
-            }
-            $matchCriteria = self::normalizeMatchCriteria($responses['matchCriteria']);
-        }
+        $rawMatchCriteria = $this->option('match-criteria') ?: ($responses['matchCriteria'] ?? null);
+        $matchCriteria = $rawMatchCriteria ? self::normalizeMatchCriteria((string) $rawMatchCriteria) : null;
 
         // options are kebab-case, while settings are named after the importer setters they're applied through
         $options = collect($this->options())->mapWithKeys(fn ($value, $name) => [Str::camel($name) => $value])->all();
@@ -216,18 +209,14 @@ abstract class ImportCommand extends Command implements PromptsForMissingInput
     }
 
     /**
-     * Strips a leading `=` from a match-criteria string and JSON-decodes it, returning null if not prefixed.
+     * Strips any leading `=` from a match-criteria string and JSON-decodes it, returning null if it isn't valid JSON.
      *
      * @return array<string, mixed>|null
      */
     private static function normalizeMatchCriteria(string $matchCriteria): ?array
     {
-        if (str_starts_with($matchCriteria, '=')) {
-            $matchCriteria = substr($matchCriteria, 1);
-        }
-
         try {
-            return Json::decode($matchCriteria);
+            return Json::decode(Str::chopStart($matchCriteria, '='));
         } catch (\InvalidArgumentException) {
             return null;
         }

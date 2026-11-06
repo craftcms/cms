@@ -11,6 +11,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\ImportHelper;
+use CraftCms\Cms\Support\Arr;
 use Illuminate\Validation\Validator;
 
 /**
@@ -32,25 +33,13 @@ trait ImportableElementContainerField
         // the ones that match a custom field in the layout there; anything else (native attributes
         // like an address's countryCode, or reserved keys) stays where it is
         if (! isset($dataItem['fields'])) {
-            $customFieldHandles = array_filter(
-                array_map(
-                    fn ($fieldLayoutElement) => $fieldLayoutElement instanceof CustomField ? $fieldLayoutElement->attribute() : null,
-                    $fieldLayout->getAllElements()
-                )
-            );
-
-            $customFields = [];
-            foreach ($dataItem as $key => $value) {
-                if (in_array($key, $customFieldHandles)) {
-                    $customFields[$key] = $value;
-                    unset($dataItem[$key]);
-                }
-            }
-
+            $customFieldHandles = array_map(fn (CustomField $element) => $element->attribute(), $fieldLayout->getCustomFieldElements());
+            $customFields = Arr::only($dataItem, $customFieldHandles);
+            $dataItem = Arr::except($dataItem, $customFieldHandles);
             $dataItem['fields'] = $customFields;
         }
 
-        $fields = $dataItem['fields'] ?? [];
+        $fields = $dataItem['fields'];
 
         foreach ($fields as $handle => $value) {
             $field = $fieldLayout->getFieldByHandle($handle);

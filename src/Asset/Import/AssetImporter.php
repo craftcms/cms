@@ -124,7 +124,7 @@ class AssetImporter extends ElementImporter
     public function toArrayData(): array
     {
         $data = parent::toArrayData();
-        $data['settings']['volume'] = $this->volume ?? null;
+        $data['settings']['volume'] = $this->volume;
 
         return $data;
     }
@@ -138,13 +138,7 @@ class AssetImporter extends ElementImporter
         // if it's UI-driven element import where the fieldLayout was chosen in the editable config,
         // we need to ensure the volumeId is set
         if ($this->fieldLayout) {
-            $allVolumes = Volumes::getAllVolumes();
-            $allFieldLayouts = $allVolumes->mapWithKeys(function ($volume) {
-                $fieldLayout = $volume->getFieldLayout();
-
-                return [$fieldLayout->id => $fieldLayout];
-            });
-            $volume = $allFieldLayouts->firstWhere('uid', $this->fieldLayout)?->provider;
+            $volume = Volumes::getAllVolumes()->first(fn ($volume) => $volume->getFieldLayout()->uid === $this->fieldLayout);
             if ($volume) {
                 $element->setVolumeId($volume->id);
                 unset($data['matchCriteria']['volumeId']);
