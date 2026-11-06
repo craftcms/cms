@@ -1,22 +1,30 @@
 #!/bin/bash
-# Captures a region of the Chrome window whose active tab is titled
-# SCREENSHOT-TARGET, at the display's pixel density (2x on Retina).
+# Captures a region of the screen showing the Chrome tab titled
+# SCREENSHOT-TARGET, at the display's pixel density (2x on Retina). The tab is
+# made its window's active tab, and the window brought to the front.
 #
 # usage: capture.sh <out.png> <screen-x> <screen-y> <width> <height>
 #   Coordinates are screen points: the page's own coordinates plus the page's
-#   screen origin, which the page reports as
-#   [screenX, screenY + outerHeight - innerHeight].
+#   screen origin, which origin.sh prints.
 set -euo pipefail
 
 out=$1 x=$2 y=$3 w=$4 h=$5
 
-osascript \
-  -e 'tell application "Google Chrome"' \
-  -e 'repeat with w in windows' \
-  -e 'if title of active tab of w is "SCREENSHOT-TARGET" then set index of w to 1' \
-  -e 'end repeat' \
-  -e 'activate' \
-  -e 'end tell'
+osascript <<'APPLESCRIPT'
+tell application "Google Chrome"
+  repeat with w in windows
+    set i to 0
+    repeat with t in tabs of w
+      set i to i + 1
+      if title of t is "SCREENSHOT-TARGET" then
+        set active tab index of w to i
+        set index of w to 1
+      end if
+    end repeat
+  end repeat
+  activate
+end tell
+APPLESCRIPT
 sleep 0.8
 screencapture -x -R"$x,$y,$w,$h" "$out"
 sips -g pixelWidth -g pixelHeight "$out" | tail -2 | tr '\n' ' '

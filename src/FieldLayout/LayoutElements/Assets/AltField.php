@@ -129,12 +129,6 @@ class AltField extends TextareaField implements ImportableFieldLayoutElementInte
     }
 
     #[Override]
-    public function isCrossSiteCopyable(ElementInterface $element): bool
-    {
-        return true;
-    }
-
-    #[Override]
     protected function uiIcon(): ?string
     {
         return 'universal-access';

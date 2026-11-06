@@ -215,7 +215,6 @@
         ref="popover"
         class="craft-link-popover"
         :for="buttonId"
-        :label="t('Link')"
         placement="bottom-start"
         @craft-show="onShow"
         @craft-after-show="onAfterShow"

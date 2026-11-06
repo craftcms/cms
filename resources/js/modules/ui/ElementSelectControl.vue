@@ -588,7 +588,7 @@
 
       <div
         v-if="editable && !atLimit"
-        class="flex gap-md"
+        class="flex flex-wrap gap-md"
         :class="{'pt-md': ids.length > 0}"
       >
         <craft-button

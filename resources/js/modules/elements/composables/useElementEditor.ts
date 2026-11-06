@@ -120,6 +120,8 @@ export interface ElementContextMenuItem {
   description?: string;
   href?: string;
   selected?: boolean;
+  /** The Compare screen comparing this draft or revision with what it was based on. */
+  compareHref?: string | null;
 }
 
 /**
@@ -205,6 +207,8 @@ export interface ElementEditPayload {
   notice: string | null;
   mergeNotice: string | null;
   canDiscardDraft: boolean;
+  /** The Compare screen comparing this version with what it was based on, when there's anything to compare. */
+  compareChangesUrl?: string | null;
   actionMenu: Array<ElementActionMenuItem>;
   previewTargets: Array<ElementPreviewTarget>;
   /** What Live Preview needs; `null` when the element has no preview targets. */

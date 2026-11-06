@@ -1601,13 +1601,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      */
     public function getCurrentRevision(): ?self;
 
-    /**
-     * Return if the element is copyable between sites.
-     * Checks if it's a multisite installation, if user can edit the element in other sites,
-     * and if the element actually exists in other sites.
-     */
-    public function getIsCrossSiteCopyable(): bool;
-
     // Indexes, etc.
     // -------------------------------------------------------------------------
     /**

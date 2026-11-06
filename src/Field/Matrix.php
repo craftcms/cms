@@ -749,6 +749,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             // Not `id`: `data-id` is the block's UID, which is what both
             // renderers, the sort order and the posted value are all keyed by.
             'element-id' => $entry->isProvisionalDraft ? $entry->getCanonicalId() : $entry->id,
+            // Matches the block to the same entry in another version, such as on the Compare screen.
+            'canonical-id' => $entry->getCanonicalId(),
             'draft-id' => $entry->isProvisionalDraft ? null : $entry->draftId,
             'revision-id' => $entry->revisionId,
             'owner-id' => $entry->getOwnerId(),

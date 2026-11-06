@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\FieldChangeComparisons;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -424,6 +425,25 @@ it('previews Matrix fields as a list of cards, whatever their view mode', functi
     'index' => [Matrix::VIEW_MODE_INDEX, Matrix::VIEW_MODE_CARDS],
 ]);
 
+it('tells whether a Matrix field’s entries changed, though their cards load their own values', function () {
+    $this->blocksField->update(['settings' => [...$this->blocksField->settings, 'viewMode' => Matrix::VIEW_MODE_CARDS]]);
+    Fields::refreshFields();
+    $entry = comparisonEntry();
+    $entry->setFieldValue('blocks', [
+        'new1' => ['type' => 'block', 'title' => 'Intro', 'fields' => ['heading' => 'Same heading']],
+    ]);
+    expect(Elements::saveElement($entry))->toBeTrue();
+    $draft = draftWithSummary($entry, 'New summary');
+
+    postJson(action(CompareFieldChangesController::class), [
+        'elementType' => Entry::class,
+        'elementId' => $draft->id,
+        'siteId' => $draft->siteId,
+        'layoutElementUid' => comparisonFieldUid($draft, 'blocks'),
+    ])->assertOk()
+        ->assertJsonPath('unchanged', true);
+});
+
 /** @return array{Entry, Entry} The entry with a Content Block holding an Index-mode Matrix field, and a draft of it */
 function contentBlockDraft(string $heading): array
 {
@@ -530,6 +550,39 @@ it('compares a field in a nested entry with the owner’s previous revision', fu
             'diff' => ['current' => 'Old heading', 'proposed' => 'New heading'],
             'preview' => null,
         ]);
+});
+
+it('takes a nested entry’s own earlier version as its base, not its owner’s previous revision', function () {
+    $entry = comparisonEntry();
+    travel(1)->minutes();
+    $entry->setFieldValue('blocks', [
+        'new1' => ['type' => 'block', 'title' => 'Intro', 'fields' => ['heading' => 'Old heading']],
+    ]);
+    expect(Elements::saveElement($entry))->toBeTrue();
+    $first = latestRevision($entry);
+
+    travel(1)->minutes();
+    $block = $entry->getFieldValue('blocks')->status(null)->one();
+    $entry->setFieldValue('blocks', [
+        'sortOrder' => [$block->id],
+        'entries' => [$block->id => ['type' => 'block', 'title' => 'Intro', 'fields' => ['heading' => 'New heading']]],
+    ]);
+    expect(Elements::saveElement($entry))->toBeTrue();
+    $second = latestRevision($entry);
+
+    $revisionBlock = Entry::find()
+        ->ownerId($second->id)
+        ->fieldId($this->blocksField->id)
+        ->revisions(null)
+        ->status(null)
+        ->one();
+
+    $base = app(FieldChangeComparisons::class)->baseOf($revisionBlock);
+
+    expect($base)->toBeInstanceOf(Entry::class)
+        ->and($base->id)->not->toBe($first->id)
+        ->and($base->getOwnerId())->toBe($first->id)
+        ->and($base->getFieldValue('heading'))->toBe('Old heading');
 });
 
 it('reports a nested entry shared by its owner’s revisions as unchanged', function () {
