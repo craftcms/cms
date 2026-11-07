@@ -22,9 +22,9 @@ const meta = {
   component: 'craft-input',
   args: {
     ...args,
-    // Lion's `label` and `help-text` are not in the manifest, so the helpers
-    // would drop them from `template()`. They are slots too, and slot args do
-    // reach the element.
+    // `label` and `help-text` are accessors the manifest leaves out, so the
+    // helpers would drop them from `template()`. They are slots too, and slot
+    // args do reach the element.
     'label-slot': 'Craft Input',
     'help-text-slot': 'This is some instructions text',
   },
@@ -37,7 +37,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<InputArgs>;
 
-/** `label` and `help-text` come from Lion, as attributes or slots. */
+/** `label` and `help-text` can be set as attributes or slots. */
 export const Default: Story = {};
 
 /**

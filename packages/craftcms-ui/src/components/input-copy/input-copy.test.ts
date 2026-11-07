@@ -62,14 +62,14 @@ describe('craft-input-copy', () => {
 
   it('updates the copy button when modelValue changes', async () => {
     const element = await createInputCopy();
-    element.modelValue = 'new value';
+    element.value = 'new value';
     await element.updateComplete;
     expect(copyButton(element)?.value).toBe('new value');
   });
 
   it('prefers copy-value over a changed modelValue', async () => {
     const element = await createInputCopy({'copy-value': 'fixed'});
-    element.modelValue = 'something else';
+    element.value = 'something else';
     await element.updateComplete;
     expect(copyButton(element)?.value).toBe('fixed');
   });

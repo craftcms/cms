@@ -13,7 +13,6 @@
   import '@craftcms/ui/components/radio-group/radio-group';
   import '@craftcms/ui/components/select/select';
   import {t} from '@craftcms/ui/utilities/translate';
-  import {Required} from '@lion/ui/form-core.js';
   import {computed, inject, nextTick, ref, watch} from 'vue';
   import type {UiControlPayload, UiValue} from './types';
   import {FieldLabelSrOnly, inputName, serverErrorValidators} from './runtime';
@@ -109,17 +108,6 @@
   function iconOnly(option: ChoiceOption): boolean {
     return option.icon !== undefined && props.control.props.iconsOnly !== false;
   }
-
-  // Lion skips other validators for an empty select. The field renders the
-  // server's message; this validator keeps the native invalid state in sync.
-  const selectValidators = computed(() =>
-    props.invalid && props.required
-      ? [
-          new Required(undefined, {getMessage: () => ''}),
-          ...serverErrorValidators(true),
-        ]
-      : serverErrorValidators(props.invalid)
-  );
 
   /**
    * A leading blank keeps an unset value from looking like the first real
@@ -561,8 +549,7 @@
     "
     .disabled="!editable"
     :required="editable && required"
-    .validators="selectValidators"
-    .submitted="invalid"
+    :invalid="invalid"
   >
     <select
       slot="input"
@@ -792,14 +779,11 @@
             {{ t('Custom:') }}
           </label>
         </craft-checkbox>
-        <!-- Lion's choice groups only accept checkboxes or radios as
-             registered fields, so the text field mustn't register with it. -->
-        <div @form-element-register.stop>
+        <div>
           <craft-input
             :label="t('Custom:')"
             label-sr-only
             .inputSize="'small'"
-            .modelValue="option.text"
             .disabled="!editable || !option.checked"
           >
             <input
@@ -852,13 +836,11 @@
         />
         <label slot="label" :for="customRadioId">{{ t('Custom:') }}</label>
       </craft-radio>
-      <!-- See the custom checkboxes above. -->
-      <div @form-element-register.stop>
+      <div>
         <craft-input
           :label="t('Custom:')"
           label-sr-only
           .inputSize="'small'"
-          .modelValue="customRadioText"
           .disabled="!editable"
         >
           <input

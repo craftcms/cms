@@ -4,11 +4,7 @@
   import '@craftcms/ui/components/text-expander/text-expander';
   import {computed, onMounted, useId, useTemplateRef} from 'vue';
   import type {UiChangeKind, UiControlPayload, TextControlProps} from './types';
-  import {
-    ignoreModelValueInitialization,
-    inputName,
-    serverErrorValidators,
-  } from './runtime';
+  import {inputName} from './runtime';
 
   const props = defineProps<{
     control: UiControlPayload<TextControlProps>;
@@ -63,39 +59,42 @@
     );
   }
 
-  // `focus` rather than `focusin`: Lion re-dispatches the native input's focus on the host,
-  // and unlike `focusin`, focus on a suffix button doesn't bubble up to it.
-  function onFocus(): void {
-    if (props.control.props.selectOnFocus === true) {
+  // Only the input itself selects, not a suffix button.
+  function onFocusIn(event: FocusEvent): void {
+    if (
+      props.control.props.selectOnFocus === true &&
+      event.target === nativeInput()
+    ) {
       nativeInput()?.select();
     }
   }
 
-  const onModelValueChanged = ignoreModelValueInitialization((event) => {
-    if (!(event.target instanceof CraftInput)) {
+  function onInput(event: Event): void {
+    const target = event.currentTarget;
+    if (!(target instanceof CraftInput)) {
       throw new TypeError('Expected a craft input event target.');
     }
 
     emit(
       'update:value',
-      String(event.target.modelValue ?? ''),
+      target.value,
       ['text', 'email', 'url', 'tel', 'password', 'number'].includes(
-        String(event.target.type)
+        target.type ?? 'text'
       )
         ? 'typing'
         : 'discrete'
     );
-  });
+  }
 </script>
 
 <template>
   <craft-input
     ref="input"
-    @focus="onFocus"
+    @focusin="onFocusIn"
     v-bind="$attrs"
     :name="editable ? inputName(control.path) : ''"
     :type="control.props.inputType ?? 'text'"
-    .modelValue="String(value ?? '')"
+    .value="String(value ?? '')"
     :min="control.props.min"
     :max="control.props.max"
     :step="control.props.step"
@@ -115,8 +114,8 @@
       control.mode === 'disabled' ||
       (control.mode === 'readOnly' && control.props.inputType === 'range')
     "
-    .validators="serverErrorValidators(invalid)"
-    @model-value-changed="onModelValueChanged"
+    :invalid="invalid"
+    @input="onInput"
   >
     <input :id="inputId" slot="input" />
     <slot name="suffix">

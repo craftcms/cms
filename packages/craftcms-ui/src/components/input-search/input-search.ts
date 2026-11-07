@@ -142,7 +142,7 @@ export default class CraftInputSearch extends CraftInput {
     super.updated(changedProperties);
 
     if (
-      changedProperties.has('modelValue') ||
+      changedProperties.has('value') ||
       changedProperties.has('disabled') ||
       changedProperties.has('readOnly')
     ) {
@@ -171,22 +171,19 @@ export default class CraftInputSearch extends CraftInput {
   override get slots() {
     return {
       ...super.slots,
-      prefix: () => ({
-        template: html`<craft-icon name="search"></craft-icon>`,
-        renderAsDirectHostChild: true,
-      }),
+      prefix: () => html`<craft-icon slot="prefix" name="search"></craft-icon>`,
     };
   }
 
   /**
    * Empties the field, moves focus to it, and fires `clear`.
    */
-  override clear() {
+  clear() {
     if (this.disabled || this.readOnly) {
       return;
     }
 
-    this.modelValue = '';
+    this.value = '';
     this._inputNode?.dispatchEvent(
       new Event('input', {bubbles: true, composed: true})
     );
@@ -197,7 +194,7 @@ export default class CraftInputSearch extends CraftInput {
   }
 
   #hasValue(): boolean {
-    return String(this.modelValue ?? '') !== '';
+    return this.value !== '';
   }
 
   #onKeydown = (event: KeyboardEvent) => {

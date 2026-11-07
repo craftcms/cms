@@ -63,22 +63,12 @@
     onSave: save,
   }));
 
-  function onTitleChanged(event: CustomEvent<{initialize?: boolean}>): void {
-    if (event.detail?.initialize) {
-      return;
-    }
-
-    form.title = String((event.target as CraftInput).modelValue ?? '');
+  function onTitleChanged(event: Event): void {
+    form.title = (event.currentTarget as CraftInput).value;
   }
 
-  function onDescriptionChanged(
-    event: CustomEvent<{initialize?: boolean}>
-  ): void {
-    if (event.detail?.initialize) {
-      return;
-    }
-
-    form.description = String((event.target as CraftInput).modelValue ?? '');
+  function onDescriptionChanged(event: Event): void {
+    form.description = (event.currentTarget as CraftInput).value;
   }
 </script>
 
@@ -94,11 +84,11 @@
       >
         <craft-input
           slot="input"
-          .modelValue="form.title"
+          .value="form.title"
           maxlength="255"
           required
-          :aria-invalid="form.errors.title ? 'true' : undefined"
-          @model-value-changed="onTitleChanged"
+          :invalid="Boolean(form.errors.title)"
+          @input="onTitleChanged"
         >
           <input :id="titleId" slot="input" />
         </craft-input>
@@ -121,11 +111,11 @@
       >
         <craft-input
           slot="input"
-          .modelValue="form.description"
+          .value="form.description"
           maxlength="255"
           required
-          :aria-invalid="form.errors.description ? 'true' : undefined"
-          @model-value-changed="onDescriptionChanged"
+          :invalid="Boolean(form.errors.description)"
+          @input="onDescriptionChanged"
         >
           <input :id="descriptionId" slot="input" />
         </craft-input>

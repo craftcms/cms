@@ -357,10 +357,10 @@ it.each([
     const ids = [...form.querySelectorAll('[id]')].map((element) => element.id);
     expect(new Set(ids).size).toBe(ids.length);
     const input = host.querySelector('craft-input')!;
-    input.modelValue = 'Unsaved block title';
-    input.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    input.value = 'Unsaved block title';
+    input
+      .querySelector('input, textarea, select')!
+      .dispatchEvent(new Event('input', {bubbles: true}));
     await nextTick();
     blockAction(host, 'disable');
     await nextTick();
@@ -411,10 +411,10 @@ it.each([false, true])(
       payload,
     } = await mount('editable', insideBlock, false, 0, true);
     const input = host.querySelector('craft-input')!;
-    input.modelValue = 'Later unsaved edit';
-    input.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    input.value = 'Later unsaved edit';
+    input
+      .querySelector('input, textarea, select')!
+      .dispatchEvent(new Event('input', {bubbles: true}));
     await nextTick();
     await nextTick();
     expect(valueAt(values, [...path, 'entries', 'block-a', 'title'])).toBe(
@@ -508,8 +508,10 @@ function createdBlock(path: string[], uid = 'block-b') {
 it('retains nested HTML block values and names when its enclosing block moves', async () => {
   const {form, host, fieldName, scope} = await mount('editable', true);
   const input = host.querySelector('craft-input')!;
-  input.modelValue = 'Unsaved reordered title';
-  input.dispatchEvent(new CustomEvent('model-value-changed', {bubbles: true}));
+  input.value = 'Unsaved reordered title';
+  input
+    .querySelector('input, textarea, select')!
+    .dispatchEvent(new Event('input', {bubbles: true}));
   await nextTick();
 
   const field = host.closest('craft-field')!;
@@ -549,10 +551,10 @@ it.each(['add', 'duplicate', 'paste'])(
     await nextTick();
     clipboard.changed?.([{type: 'Entry', id: 101, data: {entryTypeId: 4}}]);
     const input = host.querySelector('craft-input')!;
-    input.modelValue = 'Pending duplicate source edit';
-    input.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    input.value = 'Pending duplicate source edit';
+    input
+      .querySelector('input, textarea, select')!
+      .dispatchEvent(new Event('input', {bubbles: true}));
     await nextTick();
 
     let savedTitle: unknown;
@@ -634,10 +636,10 @@ it.each([false, true])(
     const added = host
       .querySelector('[data-id="block-b"]')!
       .querySelector('craft-input')!;
-    added.modelValue = 'Unsaved new block title';
-    added.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    added.value = 'Unsaved new block title';
+    added
+      .querySelector('input, textarea, select')!
+      .dispatchEvent(new Event('input', {bubbles: true}));
     await nextTick();
     await nextTick();
     expect(
@@ -762,7 +764,7 @@ it.each(['readOnly', 'disabled'] as const)(
     const {form, host} = await mount(mode, false, false, 2);
     await nextTick();
     expect(host.querySelectorAll('[data-matrix-block]')).toHaveLength(1);
-    expect(host.querySelector('craft-input')?.modelValue).toBe('Original');
+    expect(host.querySelector('craft-input')?.value).toBe('Original');
     expect(Object.fromEntries(new FormData(form))).toEqual({
       'editor[fields][body]': 'Unsaved owner text',
     });
@@ -804,10 +806,10 @@ it.each([false, true])(
     await nextTick();
     expect(host.querySelector('[role="alert"]')?.textContent ?? '').toBe('');
     const input = host.querySelector('craft-input')!;
-    input.modelValue = 'Unsaved block title';
-    input.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    input.value = 'Unsaved block title';
+    input
+      .querySelector('input, textarea, select')!
+      .dispatchEvent(new Event('input', {bubbles: true}));
     await vi.advanceTimersByTimeAsync(1000);
     expect(request).toHaveBeenCalledOnce();
     const data = new URLSearchParams(String(request.mock.calls[0]![1]));
@@ -822,7 +824,7 @@ it.each([false, true])(
     expect(
       form.querySelector('input[name="editor[fields][body]"]')
     ).not.toBeNull();
-    expect(host.querySelector('craft-input')?.modelValue).toBe(
+    expect(host.querySelector('craft-input')?.value).toBe(
       'Unsaved block title'
     );
     await vi.waitFor(() =>
@@ -879,10 +881,10 @@ it.each([false, true])(
     await nextTick();
     expect(host.querySelector('[role="alert"]')?.textContent ?? '').toBe('');
     const input = host.querySelector('craft-input')!;
-    input.modelValue = 'Unsaved block title';
-    input.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    input.value = 'Unsaved block title';
+    input
+      .querySelector('input, textarea, select')!
+      .dispatchEvent(new Event('input', {bubbles: true}));
     await nextTick();
     const trigger = host.querySelector<HTMLElement>('[data-nested-id="81"]')!;
     trigger.dispatchEvent(
@@ -904,7 +906,7 @@ it.each([false, true])(
     expect(host.querySelector('[role="alert"]')).toBeNull();
     expect(host.textContent).not.toContain('Unrelated owner field');
     expect(host.textContent).not.toContain('Outer field action');
-    expect(host.querySelector('craft-input')?.modelValue).toBe(
+    expect(host.querySelector('craft-input')?.value).toBe(
       'Unsaved block title'
     );
     expect(serializeFormInputsAsObject(form)).toMatchObject({
