@@ -71,7 +71,7 @@ class Html extends \yii\helpers\Html
      */
     public static function csrfInput(array $options = []): string
     {
-        return \CraftCms\Cms\Support\Html::csrfInput($options);
+        return \CraftCms\Cms\Support\Html::csrfInput();
     }
 
     /**
