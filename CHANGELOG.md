@@ -306,6 +306,7 @@
 - Table cell validation errors now name the column. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Table columns with invalid settings are now flagged in the Table field’s settings, and link setting validation errors in Link, Markdown, and Table fields now name the setting. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Link cells in Table fields now truncate long URLs, so columns keep their configured widths.
+- Table fields’ Lightswitch, Checkbox, and Dropdown columns now take values pasted from a spreadsheet: yes/no words such as “TRUE” and “no”, and options’ values or labels. Pasted values a column can’t take, such as text in a Number column, are skipped rather than clearing the cell.
 - Read-only Markdown fields’ values can now be focused, selected, and scrolled, rather than being disabled. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - The Markdown field’s default toolbar now only includes bold, italic, code, list, link, and preview buttons. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Custom fields now have “Default Tip” and “Default Warning” settings. ([#19976](https://github.com/craftcms/cms/pull/19976))
@@ -758,6 +759,7 @@
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
 
 ### Bug Fixes
+- Fixed a bug where spreadsheet cells containing line breaks or tabs were split across several Table field cells when pasted, with their quotes left in.
 - Fixed a bug where site error templates weren’t rendered, and unknown site URLs returned an empty 404 response. ([#20448](https://github.com/craftcms/cms/pull/20448))
 - Fixed a bug where `config/redirects.php` rules weren’t applied. ([#20448](https://github.com/craftcms/cms/pull/20448))
 - Fixed a bug where the “Show full exception views when Dev Mode is disabled” user preference had no effect. ([#20448](https://github.com/craftcms/cms/pull/20448))

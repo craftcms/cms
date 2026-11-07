@@ -47,6 +47,9 @@ async function mountTable(
       rowUi.nodes[0]!.props.required = true;
     }
   }
+  if (controlProps.rowTemplate) {
+    source.nodes[0]!.control!.uis = [];
+  }
   if (refresh) {
     source.nodes[0]!.control!.reactive = true;
   }
@@ -400,6 +403,102 @@ describe('Vue table rows', () => {
     button('Add a row').click();
     await settle();
     expect(form.querySelectorAll('tbody tr')).toHaveLength(3);
+  });
+
+  it('pastes spreadsheet cells rightward and downward, keeping only values each column can take', async () => {
+    const cell = (key: string, component: string, props = {}) => ({
+      type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+      component: 'craft:field',
+      props: {label: key},
+      control: {
+        type: component,
+        component,
+        props,
+        path: [key],
+        mode: 'editable' as const,
+        deltaGroup: ['rows'],
+      },
+    });
+    const {mutation} = await mountTable(
+      false,
+      undefined,
+      {
+        columns: {
+          title: {type: 'singleline', heading: 'Title'},
+          quantity: {type: 'number', heading: 'Quantity'},
+          stocked: {type: 'checkbox', heading: 'Stocked'},
+          size: {type: 'select', heading: 'Size'},
+        },
+        defaultValues: {},
+        rowTemplate: {
+          scope: [],
+          refreshable: false,
+          nodes: [
+            cell('title', 'craft:text'),
+            cell('quantity', 'craft:number', {inputType: 'number'}),
+            cell('stocked', 'craft:checkbox'),
+            cell('size', 'craft:choice', {
+              presentation: 'select',
+              placeholder: false,
+              options: [
+                {label: 'Small', value: 's'},
+                {label: 'Medium', value: 'm'},
+              ],
+            }),
+          ],
+        },
+      },
+      {
+        rows: [
+          {title: 'Alpha', quantity: '3', stocked: false, size: 's'},
+          {title: 'Beta', quantity: '7', stocked: true, size: 'm'},
+        ],
+      }
+    );
+    const paste = (column: string, row: number, text: string) => {
+      const data = new DataTransfer();
+      data.setData('text/plain', text);
+      const event = new ClipboardEvent('paste', {
+        clipboardData: data,
+        bubbles: true,
+        cancelable: true,
+      });
+      form
+        .querySelectorAll(`tbody td[data-column="${column}"]`)
+        [row]!.querySelector('craft-field')!
+        .dispatchEvent(event);
+      return event;
+    };
+
+    expect(
+      paste(
+        'title',
+        0,
+        '"Pears\nripe"\t5\tTRUE\tmedium\r\nPlums\tlots\tno\tXL\r\nFigs\t2\r\n'
+      ).defaultPrevented
+    ).toBe(true);
+    await settle();
+
+    expect(mutation.value.rows).toEqual([
+      {title: 'Pears\nripe', quantity: '5', stocked: true, size: 'm'},
+      {title: 'Plums', quantity: '7', stocked: false, size: 'm'},
+      {title: 'Figs', quantity: '2', stocked: false, size: ''},
+    ]);
+    const submitted = new FormData(form);
+    expect(submitted.get('rows[1][title]')).toBe('Plums');
+    expect(submitted.get('rows[0][quantity]')).toBe('5');
+    expect(submitted.get('rows[1][quantity]')).toBe('7');
+    expect(submitted.get('rows[2][title]')).toBe('Figs');
+
+    paste('stocked', 2, 'yes\tSmall');
+    await settle();
+
+    expect((mutation.value.rows as UiValues[])[2]).toEqual({
+      title: 'Figs',
+      quantity: '2',
+      stocked: true,
+      size: 's',
+    });
   });
 
   it('locks row structure while a refresh is pending and unlocks it when the response arrives', async () => {
