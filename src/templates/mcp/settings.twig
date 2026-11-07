@@ -12,9 +12,6 @@
     'mcp-authenticated': {label: 'Authenticated'|t('app'), url: '#mcp-authenticated', class: authenticatedErrors ? 'error' : null},
 } %}
 {% set selectedTab = authenticatedErrors and not publicErrors ? 'mcp-authenticated' : 'mcp-public' %}
-{% if not craft.app.oauth.hasKeys() %}
-    {% set errorSummary = include('_includes/oauth-keys-missing', {heading: 'MCP clients can’t sign in until Craft has OAuth signing keys.'|t('app')}) %}
-{% endif %}
 
 {% macro notice(id, type, label, message, show) %}
     <p id="{{ id }}" class="{{ type }} has-icon{% if not show %} hidden{% endif %}">
@@ -98,6 +95,9 @@
     </div>
 
     <div id="mcp-authenticated"{% if selectedTab != 'mcp-authenticated' %} class="hidden"{% endif %}>
+        {% if not craft.app.oauth.hasKeys() %}
+            {% include '_includes/oauth-keys-missing' with {heading: 'MCP clients can’t sign in until Craft has OAuth signing keys.'|t('app')} %}
+        {% endif %}
         <p>{{ 'Lets MCP clients act as a Craft user after the user signs in and approves access. Any active user can sign in. Tools still check their permissions.'|t('app') }}</p>
         {{ forms.lightswitchField({label: 'Enable the authenticated MCP server'|t('app'), id: 'mcp-enabled', name: 'settings[enabled]', on: settings.enabled, disabled: readOnly, errors: settings.getErrors('enabled')}) }}
         {{ forms.textField({label: 'Endpoint'|t('app'), id: 'mcp-route', instructions: 'The app-relative path MCP clients connect to, such as `/mcp`.'|t('app'), name: 'settings[route]', value: settings.route, required: true, disabled: readOnly, class: 'code', errors: settings.getErrors('route')}) }}
