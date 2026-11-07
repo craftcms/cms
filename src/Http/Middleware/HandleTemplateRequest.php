@@ -25,8 +25,26 @@ readonly class HandleTemplateRequest
 
     public function handle(Request $request, Closure $next): mixed
     {
-        $response = $next($request);
+        $response = $this->handleTemplateRequest($request, $next($request));
 
+        /**
+         * The site fallback route returns an empty 404 when nothing matched, so
+         * template routing can run before an error page is rendered.
+         */
+        if (
+            $request->routeIs('craft.siteFallback') &&
+            $response instanceof Response &&
+            $response->getStatusCode() === 404 &&
+            $response->getContent() === ''
+        ) {
+            abort(404);
+        }
+
+        return $response;
+    }
+
+    private function handleTemplateRequest(Request $request, mixed $response): mixed
+    {
         if ($request->isSiteRequest() && Cms::config()->headlessMode) {
             return $response;
         }

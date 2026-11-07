@@ -466,7 +466,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      *
      * @group System
      *
-     * @deprecated in 6.0.0. Configure [Laravel’s custom error pages](https://laravel.com/docs/13.x/errors#custom-http-error-pages) instead.
+     * @deprecated in 6.0.0. Put error templates in an `errors/` folder within the site templates instead, such as `errors/404.twig` or `errors/_404.twig`.
      */
     public string $errorTemplatePrefix = '';
 
@@ -1677,12 +1677,12 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * @group System
      *
      * @see $errorTemplatePrefix
-     * @deprecated in 6.0.0. Configure [Laravel’s custom error pages](https://laravel.com/docs/13.x/errors#custom-http-error-pages) instead.
+     * @deprecated in 6.0.0. Put error templates in an `errors/` folder within the site templates instead, such as `errors/404.twig` or `errors/_404.twig`.
      */
-    #[Deprecated(message: 'in 6.0.0. Configure [Laravel’s custom error pages](https://laravel.com/docs/13.x/errors#custom-http-error-pages) instead.')]
+    #[Deprecated(message: 'in 6.0.0. Put error templates in an `errors/` folder within the site templates instead, such as `errors/404.twig` or `errors/_404.twig`.')]
     public function errorTemplatePrefix(string $value): self
     {
-        $this->deprecate('errorTemplatePrefix', 'Configure [Laravel’s custom error pages](https://laravel.com/docs/13.x/errors#custom-http-error-pages) instead.');
+        $this->deprecate('errorTemplatePrefix', 'Put error templates in an `errors/` folder within the site templates instead, such as `errors/404.twig` or `errors/_404.twig`.');
 
         $this->errorTemplatePrefix = $value;
 
