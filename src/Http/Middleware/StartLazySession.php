@@ -7,12 +7,14 @@ namespace CraftCms\Cms\Http\Middleware;
 use Closure;
 use CraftCms\Cms\Http\BufferedSessionHandler;
 use Illuminate\Contracts\Container\Container;
+use Illuminate\Contracts\Cookie\QueueingFactory;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
 use Illuminate\Routing\RouteRegistrar;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Session\SessionManager;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -44,6 +46,7 @@ readonly class StartLazySession
         private StartSession $startSession,
         private Router $router,
         private Container $container,
+        private QueueingFactory $cookies,
     ) {}
 
     /**
@@ -196,7 +199,7 @@ readonly class StartLazySession
     }
 
     /**
-     * Whether the session's CSRF token was put in the response body or headers, which only works if the session is saved.
+     * Whether the session's CSRF token was put in the response body, headers, or cookies, which only works if the session is saved.
      * Streamed responses are assumed to contain it, as their bodies can't be checked.
      */
     private function hasToken(mixed $response, mixed $token): bool
@@ -216,7 +219,6 @@ readonly class StartLazySession
             return true;
         }
 
-        // Cookies are skipped, as `PreventRequestForgery` puts the token in `XSRF-TOKEN` on every response.
         foreach ($response->headers->allPreserveCaseWithoutCookies() as $values) {
             foreach ($values as $value) {
                 if (is_string($value) && str_contains($value, $token)) {
@@ -225,6 +227,11 @@ readonly class StartLazySession
             }
         }
 
-        return false;
+        // Queued cookies are only added to the response after this middleware, by `AddQueuedCookiesToResponse`.
+        // `XSRF-TOKEN` is skipped, as `PreventRequestForgery` puts the token in it on every response.
+        return array_any(
+            [...$response->headers->getCookies(), ...$this->cookies->getQueuedCookies()],
+            fn (Cookie $cookie) => $cookie->getName() !== 'XSRF-TOKEN' && str_contains((string) $cookie->getValue(), $token),
+        );
     }
 }

@@ -12,6 +12,7 @@ use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Session\SessionManager;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
@@ -137,6 +138,18 @@ it('checks the final response for the CSRF token', function () {
         ->assertOk()
         ->assertHeader('X-CSRF-Token')
         ->assertCookie(config('session.cookie'));
+});
+
+it('saves the session when a response cookie contains the CSRF token', function () {
+    Route::middleware(['web', 'craft', 'craft.web'])->withLazySession()->get('token-cookie', fn () => response('page')->cookie('csrf', csrf_token()));
+    Route::middleware(['web', 'craft', 'craft.web'])->withLazySession()->get('queued-token-cookie', function () {
+        Cookie::queue('csrf', csrf_token());
+
+        return 'page';
+    });
+
+    get('/token-cookie')->assertOk()->assertCookie(config('session.cookie'));
+    get('/queued-token-cookie')->assertOk()->assertCookie(config('session.cookie'));
 });
 
 it('saves the session for streamed responses', function () {
