@@ -1062,6 +1062,7 @@ return [
     'Looks like you are trying to load a template outside the template folder.' => 'このテンプレートをテンプレートフォルダの外からロードしようとしているようです。',
     'Low' => '低い',
     'MCP Settings' => 'MCP 設定',
+    'MCP clients can’t sign in until Craft has OAuth signing keys.' => 'MCP clients can’t sign in until Craft has OAuth signing keys.',
     'MCP server' => 'MCP サーバー',
     'MCP settings saved.' => 'MCP 設定を保存しました。',
     'MCP' => 'MCP',
