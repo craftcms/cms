@@ -8,6 +8,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Asset;
 use craft\elements\Entry;
+use craft\elements\GlobalSet;
 use craft\elements\User;
 use craft\models\VolumeFolder;
 
@@ -26,6 +27,12 @@ class Authorization
 
                 return !$authorIds || in_array($user->id, $authorIds, true)
                     || $user->can("changeAuthorForPeerEntries:{$subject->getSection()->uid}");
+            }
+
+            // Global sets’ own rules allow everyone to save them; the control panel requires permission to edit
+            // each set, and deleted sets can only come back through project config
+            if ($subject instanceof GlobalSet && $ability !== 'view' && ($subject->trashed || !$user->can("editGlobalSet:$subject->uid"))) {
+                return false;
             }
 
             $method = 'can' . ucfirst($ability);

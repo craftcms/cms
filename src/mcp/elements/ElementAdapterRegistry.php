@@ -8,7 +8,10 @@ use Craft;
 use craft\events\RegisterComponentTypesEvent;
 use craft\mcp\elements\adapters\AddressAdapter;
 use craft\mcp\elements\adapters\AssetAdapter;
+use craft\mcp\elements\adapters\CategoryAdapter;
 use craft\mcp\elements\adapters\EntryAdapter;
+use craft\mcp\elements\adapters\GlobalSetAdapter;
+use craft\mcp\elements\adapters\TagAdapter;
 use craft\mcp\elements\adapters\UserAdapter;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -25,7 +28,15 @@ class ElementAdapterRegistry extends Component
     {
         if ($this->_types === null) {
             $event = new RegisterComponentTypesEvent([
-                'types' => [EntryAdapter::class, AssetAdapter::class, UserAdapter::class, AddressAdapter::class],
+                'types' => [
+                    EntryAdapter::class,
+                    AssetAdapter::class,
+                    UserAdapter::class,
+                    AddressAdapter::class,
+                    CategoryAdapter::class,
+                    TagAdapter::class,
+                    GlobalSetAdapter::class,
+                ],
             ]);
             $this->trigger(self::EVENT_REGISTER_ADAPTERS, $event);
             $this->_types = [];
