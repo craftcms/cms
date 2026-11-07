@@ -96,6 +96,12 @@
 
     <div id="mcp-authenticated"{% if selectedTab != 'mcp-authenticated' %} class="hidden"{% endif %}>
         <p>{{ 'Lets MCP clients act as a Craft user after the user signs in and approves access. Any active user can sign in. Tools still check their permissions.'|t('app') }}</p>
+        {% if not craft.app.oauth.hasKeys() %}
+            <blockquote class="note warning">
+                <p>{{ 'MCP clients can’t sign in until Craft has OAuth signing keys.'|t('app') }}</p>
+                <p>{{ 'Run `php craft oauth/generate-keys`, or set the `CRAFT_OAUTH_PRIVATE_KEY` and `CRAFT_OAUTH_PUBLIC_KEY` environment variables to PEM-encoded keys or key file paths.'|t('app')|md(inlineOnly=true) }}</p>
+            </blockquote>
+        {% endif %}
         {{ forms.lightswitchField({label: 'Enable the authenticated MCP server'|t('app'), id: 'mcp-enabled', name: 'settings[enabled]', on: settings.enabled, disabled: readOnly, errors: settings.getErrors('enabled')}) }}
         {{ forms.textField({label: 'Endpoint'|t('app'), id: 'mcp-route', instructions: 'The app-relative path MCP clients connect to, such as `/mcp`.'|t('app'), name: 'settings[route]', value: settings.route, required: true, disabled: readOnly, class: 'code', errors: settings.getErrors('route')}) }}
         {{ _self.notice('mcp-route-cp', 'notice', 'Tip:'|t('app'), 'This endpoint is in the control panel, so only users with control panel access can use it.'|t('app'), settings.isCpRoute(settings.route)) }}
