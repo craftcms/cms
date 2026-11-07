@@ -124,11 +124,7 @@ class Yii2ServiceProvider extends ServiceProvider
 
         LegacyGeneralConfig::registerBootingCallback($this->app);
 
-        $appType = $this->app->runningInConsole() ? 'console' : 'web';
-        Config::set('craft.general', new GeneralConfigCompatibility()->convert(
-            Config::get('craft.general', []),
-            Config::get("craft.general.{$appType}"),
-        ));
+        new GeneralConfigCompatibility()->register($this->app);
 
         $this->registerConstants();
 

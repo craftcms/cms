@@ -199,6 +199,53 @@ it('lets application type array overlays replace base settings before they are a
     }, 'web']],
 ]);
 
+it('applies application type overlays on top of the general config', function(string $config, string $overlay): void {
+    $originalConfigPath = $this->app->configPath();
+    $configPath = sys_get_temp_dir() . '/craft-config-' . bin2hex(random_bytes(8));
+    mkdir("$configPath/craft", recursive: true);
+    file_put_contents("$configPath/craft/general.php", "<?php return $config;");
+    file_put_contents("$configPath/craft/general.console.php", "<?php return $overlay;");
+    file_put_contents("$configPath/craft/general.web.php", "<?php return ['maxUploadFileSize' => 1234];");
+    $this->app->useConfigPath($configPath);
+
+    try {
+        foreach (['general', 'general.console', 'general.web'] as $file) {
+            Config::set("craft.$file", require "$configPath/craft/$file.php");
+        }
+
+        new GeneralConfigCompatibility()->register($this->app);
+
+        expect(Config::get('craft.general'))->toBeInstanceOf(GeneralConfig::class)
+            ->and(Config::get('craft.general')->cpTrigger)->toBe('control')
+            ->and(Config::get('craft.general')->cacheDuration)->toBe(60)
+            ->and(Config::get('craft.general')->maxUploadFileSize)->not->toBe(1234);
+    } finally {
+        $this->app->useConfigPath($originalConfigPath);
+        array_map(unlink(...), glob("$configPath/craft/*.php"));
+        rmdir("$configPath/craft");
+        rmdir($configPath);
+    }
+})->with([
+    'array' => "['cpTrigger' => 'control']",
+    'object' => "craft\\config\\GeneralConfig::create()->cpTrigger('control')",
+    'callable' => "fn(\$config) => \$config->cpTrigger('control')",
+], [
+    'array overlay' => "['cacheDuration' => 60]",
+    'callable overlay' => "fn(\$config) => \$config->cacheDuration(60)",
+]);
+
+it('trusts the proxies that trusted hosts list', function(array $trustedHosts, array $client): void {
+    GeneralConfig::create()->trustedHosts($trustedHosts);
+
+    expect(proxiedClient())->toBe($client);
+})->with([
+    'any' => [['any'], ['203.0.113.5', 'forwarded.test']],
+    'wildcard' => [['*'], ['203.0.113.5', 'forwarded.test']],
+    'network alias' => [['private'], ['203.0.113.5', 'forwarded.test']],
+    'host with headers' => [['10.0.0.1' => ['X-Forwarded-For']], ['203.0.113.5', 'forwarded.test']],
+    'other network alias' => [['localhost'], ['10.0.0.1', 'localhost']],
+]);
+
 it('does not restore unset deprecated settings as overrides', function(): void {
     $config = new GeneralConfigCompatibility()->convert([]);
     TrustProxies::at('*');

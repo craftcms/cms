@@ -6,11 +6,33 @@ namespace CraftCms\Yii2Adapter\Config;
 
 use craft\config\GeneralConfig as LegacyGeneralConfig;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Typecast;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Support\Facades\Config;
 
 readonly class GeneralConfigCompatibility
 {
+    /**
+     * Converts the general config, with the general.web.php or general.console.php overlay for the application type.
+     */
+    public function register(Application $app): void
+    {
+        $appType = $app->runningInConsole() ? 'console' : 'web';
+        $config = Config::get('craft.general', []);
+        $overlay = Config::get("craft.general.$appType");
+
+        // Laravel loads the overlays into `craft.general.web` and `craft.general.console`, which replaces a
+        // general.php object or callable with an array, so the files are read again
+        if (!$app->configurationIsCached() && (is_file(config_path('craft/general.web.php')) || is_file(config_path('craft/general.console.php')))) {
+            $config = $this->requireConfigFile($app, 'general') ?? [];
+            $overlay = $this->requireConfigFile($app, "general.$appType");
+        }
+
+        Config::set('craft.general', $this->convert($config, $overlay));
+    }
+
     /**
      * Converts a Craft 5 general config to a config object.
      *
@@ -27,22 +49,41 @@ readonly class GeneralConfigCompatibility
 
         Deprecator::log('config-general-app-type', 'Using general.web.php and general.console.php configuration files is deprecated.');
 
-        if (is_array($config)) {
-            $overlay = $this->resolve($overlay, LegacyGeneralConfig::create());
-
-            // Merge array overlays first, so overridden settings never reach setters with side effects
-            return is_array($overlay) ? $this->toConfigObject(array_merge($config, $overlay)) : $overlay;
+        // Merge array overlays first, so overridden settings never reach setters with side effects
+        if (is_array($config) && is_array($overlay) && !is_callable($overlay)) {
+            return $this->toConfigObject(array_merge($config, $overlay));
         }
 
-        $overlay = $this->resolve($overlay, $config);
+        $object = $this->toConfigObject($config);
+        $overlay = $this->resolve($overlay, $object);
 
+        // An object overlay replaces the config, as it did in Craft 5
         if ($overlay instanceof GeneralConfig) {
             return $overlay;
         }
 
-        $this->applySettings($config, $overlay);
+        if (is_array($config)) {
+            return $this->toConfigObject(array_merge($config, $overlay));
+        }
 
-        return $config;
+        $this->applySettings($object, $overlay);
+
+        return $object;
+    }
+
+    private function requireConfigFile(Application $app, string $name): mixed
+    {
+        $path = config_path("craft/$name.php");
+
+        if (!is_file($path)) {
+            return null;
+        }
+
+        $config = require $path;
+
+        return is_array($config) && array_key_exists('*', $config)
+            ? Arr::merge($config['*'], $config[$app->environment()] ?? [])
+            : $config;
     }
 
     private function resolve(mixed $config, GeneralConfig $default): GeneralConfig|array

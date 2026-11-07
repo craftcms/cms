@@ -26,6 +26,7 @@ use InvalidArgumentException;
 use ReflectionProperty;
 use RuntimeException;
 use yii\base\InvalidConfigException;
+use yii\validators\IpValidator;
 
 use function CraftCms\Cms\t;
 
@@ -1478,10 +1479,32 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
         $this->trustedHosts = $value;
 
         if (!empty($value)) {
-            $this->applyMiddlewareSetting('trustedHosts', $value);
+            $this->applyMiddlewareSetting('trustedHosts', self::trustedProxies($value));
         }
 
         return $this;
+    }
+
+    /**
+     * Converts trusted hosts to the proxies Laravel trusts.
+     *
+     * Network aliases such as `any` and `private` expand the way Yii’s IP validator expands them. Laravel trusts the
+     * same headers from every proxy, so a host’s own list of headers to trust is ignored.
+     *
+     * @param array<int|string, string|string[]> $hosts
+     * @return string[]
+     */
+    private static function trustedProxies(array $hosts): array
+    {
+        $networks = get_class_vars(IpValidator::class)['networks'];
+        $proxies = [];
+
+        foreach ($hosts as $host => $headers) {
+            $host = is_array($headers) ? $host : $headers;
+            array_push($proxies, ...(isset($networks[$host]) ? self::trustedProxies($networks[$host]) : [$host]));
+        }
+
+        return array_values(array_unique($proxies));
     }
 
     /**
