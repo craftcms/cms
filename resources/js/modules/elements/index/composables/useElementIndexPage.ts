@@ -31,10 +31,11 @@ export function useElementIndexPage(
   const {loading} = useElementIndexLoading();
   const visitor = createIndexVisitor(options.route);
 
-  function refresh(): Promise<boolean> {
+  function refresh(refreshOptions?: {silent?: boolean}): Promise<boolean> {
     return new Promise((resolve) => {
       let applied = false;
       router.reload({
+        showProgress: !refreshOptions?.silent,
         only: [
           'data',
           'pagination',

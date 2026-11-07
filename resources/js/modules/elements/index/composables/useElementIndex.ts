@@ -85,7 +85,8 @@ interface UseElementIndexOptions {
   ) => ComputedRef<Array<ColumnDef<CraftTableFeatures, ElementIndexRow>>>;
   structure?: boolean;
   readOnly?: MaybeRefOrGetter<boolean>;
-  refresh: () => Promise<boolean>;
+  /** `silent` reloads without the loading state, keeping the rows on screen. */
+  refresh: (options?: {silent?: boolean}) => Promise<boolean>;
 }
 
 /** Shared state and table setup for page and detached element indexes. */
@@ -547,8 +548,11 @@ export function useElementIndex(options: UseElementIndexOptions) {
     visitor.merge({site: handle}, {resetPage: true});
   }
 
-  async function refresh(refreshOptions?: {selectId?: number}): Promise<void> {
-    const applied = await options.refresh();
+  async function refresh(refreshOptions?: {
+    selectId?: number;
+    silent?: boolean;
+  }): Promise<void> {
+    const applied = await options.refresh({silent: refreshOptions?.silent});
     if (!applied || refreshOptions?.selectId === undefined) return;
     const row = table
       .getRowModel()
@@ -558,8 +562,10 @@ export function useElementIndex(options: UseElementIndexOptions) {
 
   // Rows saved in another tab are reloaded, once for all the rows saved
   // together. Saves in this one refresh the index where they happen, such as
-  // after a quick edit. While rows are edited inline, the reload waits until
-  // editing ends, so it doesn't redraw the inputs over unsaved changes.
+  // after a quick edit. The reload is silent, so the rows stay on screen, and
+  // focus within them, instead of making way for placeholders. While rows are
+  // edited inline, it waits until editing ends, so it doesn't redraw the
+  // inputs over unsaved changes.
   let reloadQueued = false;
   let reloadAfterEditing = false;
   tryOnScopeDispose(
@@ -575,14 +581,14 @@ export function useElementIndex(options: UseElementIndexOptions) {
       reloadQueued = true;
       queueMicrotask(() => {
         reloadQueued = false;
-        void refresh();
+        void refresh({silent: true});
       });
     })
   );
   watch(inlineEditingActive, (active) => {
     if (active || !reloadAfterEditing) return;
     reloadAfterEditing = false;
-    void refresh();
+    void refresh({silent: true});
   });
 
   const processing = computed(
