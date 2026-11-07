@@ -248,6 +248,34 @@ describe('useElementPresentations()', () => {
     expect(field.presentations.get(7, 1)).toBeUndefined();
   });
 
+  it('gives each component that draws a card its own DOM IDs', () => {
+    const cards = {elementType: ENTRY, viewMode: 'cards'};
+    const card = {
+      id: 7,
+      label: 'Related',
+      cardAttributes: {id: 'card-5'},
+      cardContentHtml: '<span id="card-5-label">Related</span>',
+    };
+    const first = consume(cards, [{id: 7, siteId: 1}], [card]);
+    const second = consume(cards, [{id: 7, siteId: 1}], [card]);
+    const domIds = (presentations: typeof first.presentations) => {
+      const drawn = presentations.get(7, 1)!;
+      return [
+        drawn.cardAttributes!.id,
+        /id="([^"]+)"/.exec(drawn.cardContentHtml as string)![1],
+      ];
+    };
+
+    const [firstCard, firstLabel] = domIds(first.presentations);
+    const [secondCard, secondLabel] = domIds(second.presentations);
+
+    expect(firstCard).not.toBe(secondCard);
+    expect(firstLabel).toBe(`${firstCard}-label`);
+    expect(secondLabel).toBe(`${secondCard}-label`);
+    // The same copy each time, so the card doesn't re-render for nothing.
+    expect(first.presentations.get(7, 1)).toBe(first.presentations.get(7, 1));
+  });
+
   it('drops an element as soon as no component draws it', async () => {
     const elements = ref<PresentedElement[]>([{id: 7, siteId: 1}]);
     const scope = effectScope();

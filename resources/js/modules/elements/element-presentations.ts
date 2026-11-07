@@ -12,6 +12,7 @@
 import {actionClient} from '@craftcms/ui';
 import {reactive, toValue, watch, type MaybeRefOrGetter} from 'vue';
 import {tryOnScopeDispose} from '@vueuse/core';
+import {escapeRegex} from '@/common/craft/strings';
 import {onElementChanged} from '@/modules/elements/element-instances';
 import type {ElementPresentation} from '@/modules/ui/element-select/types';
 
@@ -45,6 +46,8 @@ const changedIds = new Set<number>();
 /** Whether a response left saves out, so every drawn element may have changed. */
 let everythingChanged = false;
 let stopListening: (() => void) | null = null;
+/** Numbers each component, to make the DOM IDs in its cards its own. */
+let lastInstance = 0;
 
 function siteKey(siteId: unknown): number | null {
   return Number(siteId) || null;
@@ -221,9 +224,44 @@ export function useElementPresentations(
     prune();
   });
 
+  // Components share cards' data, but not their DOM IDs: the server gives
+  // each card its own, which its HTML refers to, so each component gets a
+  // copy with them made its own.
+  const instance = ++lastInstance;
+  const copies = new WeakMap<ElementPresentation, ElementPresentation>();
+  function withOwnIds(presentation: ElementPresentation): ElementPresentation {
+    const domId = presentation.cardAttributes?.id;
+    if (typeof domId !== 'string' || domId === '') {
+      return presentation;
+    }
+
+    let copy = copies.get(presentation);
+    if (!copy) {
+      const ownId = `${domId}-${instance}`;
+      // Not where it starts a longer ID, such as `card-12` in `card-123`.
+      const references = new RegExp(`${escapeRegex(domId)}(?!\\w)`, 'g');
+      copy = Object.fromEntries(
+        Object.entries(presentation).map(([key, value]) => [
+          key,
+          key.endsWith('Html') && typeof value === 'string'
+            ? value.replace(references, ownId)
+            : value,
+        ])
+      ) as ElementPresentation;
+      copy.cardAttributes = {...presentation.cardAttributes, id: ownId};
+      copies.set(presentation, copy);
+    }
+
+    return copy;
+  }
+
   return {
-    get: (id, siteId) =>
-      cache.get(entryKey(toValue(query), siteKey(siteId), id)),
+    get: (id, siteId) => {
+      const presentation = cache.get(
+        entryKey(toValue(query), siteKey(siteId), id)
+      );
+      return presentation && withOwnIds(presentation);
+    },
     seed: (presentations, fallbackSiteId, {replace = false} = {}) => {
       // Only elements a component draws are kept: a render can include
       // relations the user has removed but not saved.
