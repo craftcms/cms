@@ -64,7 +64,7 @@ describe('renderValuePreview', () => {
     ).toEqual(['Apples']);
   });
 
-  it('draws a table’s first rows', async () => {
+  it('draws a table’s first rows, without its headings', async () => {
     const rows = Array.from(
       {length: 7},
       (_, row) => `<tr><td>Row ${row + 1}</td></tr>`
@@ -76,7 +76,7 @@ describe('renderValuePreview', () => {
       })
     )) as HTMLTableElement;
 
-    expect(preview.querySelector('thead')?.textContent).toBe('Item');
+    expect(preview.querySelector('thead')).toBeNull();
     expect(
       [...preview.querySelectorAll('tbody > tr')].map((row) => row.textContent)
     ).toEqual(['Row 1', 'Row 2', 'Row 3', 'Row 4', 'Row 5']);

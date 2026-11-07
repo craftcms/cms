@@ -267,25 +267,80 @@
   overflow: hidden;
 }
 
+/* A copied table runs under the Cancel button and off the card's right and
+   bottom edges, fading out as it reaches them. */
+.cp-messages .copied-field-value-notification:has(.copied-field-value-table) {
+  .notification-inner {
+    display: grid;
+    grid-template-columns: calc(20rem / 16) 1fr auto;
+    column-gap: var(--c-spacing-md);
+    align-items: start;
+    overflow: hidden;
+  }
+
+  .notification-body,
+  .notification-main {
+    display: contents;
+  }
+
+  .notification-icon,
+  .notification-message,
+  .notification-inner > :last-child {
+    grid-row: 1;
+  }
+
+  .notification-close-btn {
+    margin-inline-start: 0;
+  }
+
+  .notification-details {
+    grid-row: 2;
+    grid-column: 2 / -1;
+    margin-block-end: calc(var(--c-spacing) * -2.5);
+    margin-inline-end: calc(var(--c-spacing) * -3.5);
+  }
+
+  /* A table that fits ends above the bottom fade; only one that doesn't
+     runs into it. */
+  .copied-field-value-preview {
+    --fade-block: calc(var(--c-spacing) * 6);
+
+    box-sizing: border-box;
+    max-block-size: calc(var(--c-spacing) * 30);
+    padding-block-end: var(--fade-block);
+    mask-image:
+      linear-gradient(to left, transparent, #000 calc(var(--c-spacing) * 12)),
+      linear-gradient(to top, transparent, #000 var(--fade-block));
+    mask-composite: intersect;
+  }
+}
+
 /* A copied table's first rows, with long cells cut short. */
 .cp-messages .copied-field-value-table {
-  border-collapse: collapse;
+  border: 1px solid var(--c-color-neutral-border-quiet);
+  border-radius: var(--c-radius-md);
+  border-spacing: 0;
+  border-collapse: separate;
   font-size: var(--c-text-sm);
 
-  th,
   td {
     max-width: 12em;
-    padding-block: calc(var(--c-spacing) * 0.5);
-    padding-inline: var(--c-spacing);
+    padding-block: calc(var(--c-spacing) * 1);
+    padding-inline: calc(var(--c-spacing) * 2.5);
     overflow: hidden;
-    border: 1px solid var(--c-color-neutral-border-quiet);
     text-align: start;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  th {
-    font-weight: 600;
+  td + td {
+    border-inline-start: 1px solid
+      color-mix(in oklab, var(--c-color-neutral-border-quiet) 60%, transparent);
+  }
+
+  tr + tr td {
+    border-block-start: 1px solid
+      color-mix(in oklab, var(--c-color-neutral-border-quiet) 60%, transparent);
   }
 }
 

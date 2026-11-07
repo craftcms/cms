@@ -44,7 +44,7 @@ const elementChips: UiValuePreview = async ({props}) => {
   return stack?.container ?? null;
 };
 
-/** Tables, as the HTML table they were copied to the clipboard as. */
+/** Tables, as the first rows of the HTML table they were copied to the clipboard as. */
 const table: UiValuePreview = ({html}) => {
   if (!html) {
     return null;
@@ -59,6 +59,7 @@ const table: UiValuePreview = ({html}) => {
   }
 
   preview.className = 'copied-field-value-table';
+  preview.querySelector('thead')?.remove();
   [...preview.querySelectorAll('tbody > tr')]
     .slice(TABLE_PREVIEW_ROWS)
     .forEach((row) => row.remove());
