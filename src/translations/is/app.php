@@ -1062,6 +1062,7 @@ return [
     'Looks like you are trying to load a template outside the template folder.' => 'Það lítur út fyrir að þú sért að reyna að hlaða sniðmát fyrir utan sniðmátamöppuna.',
     'Low' => 'Lágt',
     'MCP Settings' => 'MCP-stillingar',
+    'MCP clients can’t sign in until Craft has OAuth signing keys.' => 'MCP clients can’t sign in until Craft has OAuth signing keys.',
     'MCP server' => 'MCP-þjónn',
     'MCP settings saved.' => 'MCP-stillingar vistaðar.',
     'MCP' => 'MCP',
