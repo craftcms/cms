@@ -6,9 +6,13 @@ use CraftCms\Cms\Activity\EventTypes\CommentCreated;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Field\Entries as EntriesField;
 use CraftCms\Cms\Mcp\Events\CollectingAdminInstructions;
 use CraftCms\Cms\Mcp\StdioTransport;
+use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -151,3 +155,23 @@ class StdioTestOutput
         return strlen($data);
     }
 }
+
+it('sees sections added since an earlier message read element sources', function (): void {
+    EntryElement::sources(ElementSources::CONTEXT_MODAL);
+    $section = Section::factory()->create();
+
+    $responses = ($this->serve)(User::query()->where('admin', true)->firstOrFail()->username, [[
+        'jsonrpc' => '2.0',
+        'id' => 'create',
+        'method' => 'tools/call',
+        'params' => ['name' => 'configuration_create', 'arguments' => ['type' => 'fields', 'attributes' => [
+            'type' => EntriesField::class,
+            'name' => 'Related',
+            'handle' => 'related',
+            'settings' => ['sources' => ["section:$section->uid"]],
+        ]]],
+    ]]);
+
+    expect($responses['create']['result']['isError'])->toBeFalse()
+        ->and($responses['create']['result']['structuredContent']['item']['settings']['sources'])->toBe(["section:$section->uid"]);
+});

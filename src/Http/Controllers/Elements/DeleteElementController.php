@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\ElementResponse;
@@ -58,6 +59,10 @@ class DeleteElementController
 
         Gate::authorize('deleteForSite', $element);
 
+        if (! ElementHelper::isMultiSite($element)) {
+            abort(400, 'Elements can’t be deleted for the only site they exist in.');
+        }
+
         if ($element->isProvisionalDraft) {
             $canonical = $element->getCanonical();
 
@@ -67,6 +72,10 @@ class DeleteElementController
 
             if ($canonical) {
                 Gate::authorize('deleteForSite', $canonical);
+
+                if (! ElementHelper::isMultiSite($canonical)) {
+                    abort(400, 'Elements can’t be deleted for the only site they exist in.');
+                }
             }
         } else {
             $canonical = null;

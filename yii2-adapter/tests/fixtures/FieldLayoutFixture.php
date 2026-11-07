@@ -27,7 +27,7 @@ class FieldLayoutFixture extends BaseFieldLayoutFixture
     /**
      * @inheritdoc
      */
-    public $depends = [EntryTypeFixture::class];
+    public $depends = [EntryTypeFixture::class, SectionsFixture::class];
 
     public function afterLoad(): void
     {

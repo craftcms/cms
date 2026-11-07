@@ -64,8 +64,8 @@ function buildActionMenu(): HTMLElement {
   const invoker = document.createElement('craft-button');
   invoker.setAttribute('type', 'button');
   invoker.setAttribute('slot', 'invoker');
-  invoker.setAttribute('appearance', 'plain');
-  invoker.setAttribute('variant', 'inherit');
+  invoker.setAttribute('variant', 'plain');
+  invoker.toggleAttribute('inherit', true);
   invoker.setAttribute('size', 'small');
   invoker.setAttribute('icon', '');
   invoker.setAttribute('aria-label', t('Actions'));

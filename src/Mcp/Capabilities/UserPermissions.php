@@ -8,6 +8,7 @@ use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
 use CraftCms\Cms\Mcp\Attributes\RequiresPermission;
 use CraftCms\Cms\Mcp\McpActor;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
 use CraftCms\Cms\User\Data\UserGroup;
@@ -126,6 +127,7 @@ readonly class UserPermissions
             throw new ToolCallException('User not found.');
         }
 
+        $this->rejectUnknownPermissions($permissions, $this->permissions->getDirectPermissionsByUserId($user->id)->all());
         $this->authorizeAssignablePermissions($permissions, $user);
 
         if (! $this->permissions->saveUserPermissions($user->id, $permissions)) {
@@ -160,6 +162,7 @@ readonly class UserPermissions
             throw new ToolCallException('User group not found.');
         }
 
+        $this->rejectUnknownPermissions($permissions, $this->permissions->getPermissionsByGroupId($group->id)->all());
         $this->authorizeAssignablePermissions($permissions, $group);
 
         if (! $this->permissions->saveGroupPermissions($group->id, $permissions)) {
@@ -167,6 +170,77 @@ readonly class UserPermissions
         }
 
         return $this->groupPermissions($group->id);
+    }
+
+    /**
+     * @param  list<string>  $add  Direct permission keys to add.
+     * @param  list<string>  $remove  Direct permission keys to remove.
+     * @return array<string, mixed>
+     */
+    #[McpTool(
+        name: 'user_permissions_user_update',
+        description: 'Adds and removes direct permissions for a user, keeping their other direct permissions. Group grants remain.',
+        annotations: new ToolAnnotations(destructiveHint: true),
+    )]
+    #[RequiresPermission('assignUserPermissions')]
+    public function updateUser(
+        #[Schema(items: ['type' => 'string'])]
+        array $add = [],
+        #[Schema(items: ['type' => 'string'])]
+        array $remove = [],
+        ?int $userId = null,
+        #[Schema(format: 'uuid')]
+        ?string $userUid = null,
+        ?string $username = null,
+        #[Schema(format: 'email')]
+        ?string $email = null,
+    ): array {
+        $user = $this->findUser($userId, $userUid, $username, $email);
+
+        if (! $user?->id) {
+            throw new ToolCallException('User not found.');
+        }
+
+        $current = $this->permissions->getDirectPermissionsByUserId($user->id)->all();
+
+        $this->rejectUnknownPermissions($remove, $current);
+
+        return $this->setUser($this->applyChanges($current, $add, $remove), userId: $user->id);
+    }
+
+    /**
+     * @param  list<string>  $add  Permission keys to add.
+     * @param  list<string>  $remove  Permission keys to remove.
+     * @return array<string, mixed>
+     */
+    #[McpTool(
+        name: 'user_permissions_group_update',
+        description: 'Adds and removes permissions for a user group, keeping its other permissions.',
+        annotations: new ToolAnnotations(destructiveHint: true),
+    )]
+    #[RequiresAdminChanges]
+    #[RequiresPermission('assignUserPermissions')]
+    public function updateGroup(
+        #[Schema(items: ['type' => 'string'])]
+        array $add = [],
+        #[Schema(items: ['type' => 'string'])]
+        array $remove = [],
+        ?int $groupId = null,
+        #[Schema(format: 'uuid')]
+        ?string $groupUid = null,
+        ?string $groupHandle = null,
+    ): array {
+        $group = $this->findGroup($groupId, $groupUid, $groupHandle);
+
+        if (! $group?->id) {
+            throw new ToolCallException('User group not found.');
+        }
+
+        $current = $this->permissions->getPermissionsByGroupId($group->id)->all();
+
+        $this->rejectUnknownPermissions($remove, $current);
+
+        return $this->setGroup($this->applyChanges($current, $add, $remove), groupId: $group->id);
     }
 
     /** @return array{count: int, groups: list<array<string, mixed>>} */
@@ -181,6 +255,46 @@ readonly class UserPermissions
     public function resource(): array
     {
         return $this->list();
+    }
+
+    /**
+     * @param  list<string>  $current
+     * @param  list<string>  $add
+     * @param  list<string>  $remove
+     * @return list<string>
+     */
+    private function applyChanges(array $current, array $add, array $remove): array
+    {
+        $remove = array_map(Str::lower(...), $remove);
+
+        return array_values(array_filter(
+            [...$current, ...$add],
+            static fn (string $permission): bool => ! in_array(Str::lower($permission), $remove, true),
+        ));
+    }
+
+    /**
+     * Rejects permissions that aren’t registered and aren’t already assigned, rather than letting saving drop them.
+     *
+     * @param  list<string>  $permissions
+     * @param  list<string>  $assigned
+     */
+    private function rejectUnknownPermissions(array $permissions, array $assigned): void
+    {
+        $assigned = array_map(Str::lower(...), $assigned);
+
+        $unknown = array_values(array_filter(
+            $permissions,
+            fn (string $permission): bool => ! $this->permissions->validatePermission($permission)
+                && ! in_array(Str::lower($permission), $assigned, true),
+        ));
+
+        if ($unknown !== []) {
+            throw new ToolCallException(sprintf(
+                'Unknown permissions: %s. Call user_permissions_list for the permissions that can be assigned.',
+                implode(', ', $unknown),
+            ));
+        }
     }
 
     /**

@@ -101,15 +101,17 @@ Six tools manage sections, entry types, fields, volumes, sites, site groups, use
 | Tool | Purpose |
 | --- | --- |
 | `configuration_schema` | Lists types and available operations, or returns a selected operation's input schema and deletion effects |
-| `configuration_list` | Returns `{type, count, items}` for one type |
-| `configuration_get` | Returns `{type, item}` for a supported identifier |
-| `configuration_create` | Creates a record from `attributes` and returns `{type, item}` |
-| `configuration_update` | Updates supplied `attributes` and returns `{type, item}` |
+| `configuration_list` | Returns `{type, count, items}` for one type, with each item's `revision` |
+| `configuration_get` | Returns `{type, item, revision}` for a supported identifier |
+| `configuration_create` | Creates a record from `attributes` and returns `{type, item, revision}` |
+| `configuration_update` | Updates supplied `attributes` and returns `{type, item, revision}` |
 | `configuration_delete` | Deletes a record with optional type-specific `options` and returns `{type, deleted: true}` |
 
 Call `configuration_schema` without arguments to discover type values. Supply `type` and `operation` to fetch the full input schema before calling that operation. Craft validates the input against this schema before dispatching to the type's configuration service. These schemas are loaded on demand rather than repeated in the tool catalog.
 
 Put exactly one supported lookup key in `identifier`. Keep replacement values in `attributes`, so an update can use `{"identifier": {"handle": "news"}, "attributes": {"handle": "articles"}}`. Omitted attributes retain their values; explicit nulls are accepted only where the selected schema permits them. The outer `type` selects the configuration type; `attributes.type` can select a section kind or field class.
+
+`revision` is an opaque hash of the record's complete project config, including nested settings and field layouts. Pass the revision a change is based on as `expectedRevision` to `configuration_update` or `configuration_delete`. Craft compares it with the current config while holding the project config lock, and refuses the call without changing anything if the record has changed since. `expectedRevision` is optional for compatibility, but without it an update based on an old read can overwrite newer changes, such as replacing a field layout that another client has since changed. A user group's revision includes its permissions, and a user group CP navigation's revision includes the default navigation it builds on.
 
 All configuration tools require administrator access. Writes also require `allowAdminChanges`. Read the selected delete schema's effects before deleting: behavior depends on the type and can affect related content. For sites, `options.transferContentTo` selects the destination site ID. Existing `craft://` resources remain available. Permission assignment and project-config operations keep their dedicated tools.
 
@@ -197,7 +199,7 @@ The `CollectingAdminInstructions` event runs each time `info_get` is called. Ser
 
 `elements_list`, `drafts_list`, and `revisions_list` return normalized `limit`, `offset`, and `nextOffset`. `search_query` returns those values for each element type in `pagination`, keyed by its reference handle or class name. Pass a non-null `nextOffset` as `criteria.offset` with the same filters and a stable ordering, including an ID tie-breaker. For searches, continue each type separately through `types`. A null `nextOffset` marks the end of that query. Permission checks can leave a page empty even when later pages contain visible records; `count` only counts the visible records on the current page.
 
-`user_permissions_user_get` and `user_permissions_user_set` return effective `permissions`, including group grants, and a separate `directPermissions` list. To change direct assignments, read and modify `directPermissions`, then pass the complete new list to `user_permissions_user_set`. An empty list clears direct assignments while retaining group grants. Group permission tools return `permissions`; `user_permissions_group_set` replaces that complete list.
+`user_permissions_user_get` and `user_permissions_user_set` return effective `permissions`, including group grants, and a separate `directPermissions` list. To change direct assignments, read and modify `directPermissions`, then pass the complete new list to `user_permissions_user_set`. An empty list clears direct assignments while retaining group grants. Group permission tools return `permissions`; `user_permissions_group_set` replaces that complete list. To add or remove specific permissions without resending the complete list, use `user_permissions_user_update` or `user_permissions_group_update`. Stored permissions that aren't registered in the current request, such as those of plugins that only register permissions for control panel requests, are kept when included; other unregistered permissions are rejected.
 
 ## Running the server over stdio
 

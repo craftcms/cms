@@ -401,7 +401,11 @@ JS, [
         $canDeleteDraft = $isDraft && ! $this->isProvisionalDraft && Gate::check('delete', $this);
         $canDeleteForSite = (
             ElementHelper::isMultiSite($this) &&
-            (($isCurrent && Gate::check('deleteForSite', $canonical)) || ($canDeleteDraft && $isNewSite)) &&
+            (
+                // Deleting a provisional draft for the site deletes the canonical element for it too
+                ($isCurrent && Gate::check('deleteForSite', $canonical) && ($canonical === $this || $isNewSite || ElementHelper::isMultiSite($canonical))) ||
+                ($canDeleteDraft && $isNewSite)
+            ) &&
             Gate::check('deleteForSite', $this)
         );
 
@@ -601,7 +605,11 @@ JS, [
         $canDeleteCanonicalForSite = Gate::check('deleteForSite', $canonical);
         $canDeleteForSite = (
             ElementHelper::isMultiSite($this) &&
-            (($isCurrent && $canDeleteCanonicalForSite) || ($canDeleteDraft && $isNewSite)) &&
+            (
+                // Deleting a provisional draft for the site deletes the canonical element for it too
+                ($isCurrent && $canDeleteCanonicalForSite && ($canonical === $this || $isNewSite || ElementHelper::isMultiSite($canonical))) ||
+                ($canDeleteDraft && $isNewSite)
+            ) &&
             Gate::check('deleteForSite', $this)
         );
 
