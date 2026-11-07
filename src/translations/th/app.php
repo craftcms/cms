@@ -1063,6 +1063,7 @@ return [
     'Looks like you are trying to load a template outside the template folder.' => 'ดูเหมือนว่าคุณกำลังพยายามโหลดเทมเพลตภายนอกโฟลเดอร์เทมเพลต',
     'Low' => 'ต่ำ',
     'MCP Settings' => 'การตั้งค่า MCP',
+    'MCP clients can’t sign in until Craft has OAuth signing keys.' => 'MCP clients can’t sign in until Craft has OAuth signing keys.',
     'MCP server' => 'เซิร์ฟเวอร์ MCP',
     'MCP settings saved.' => 'บันทึกการตั้งค่า MCP แล้ว',
     'MCP' => 'MCP',
