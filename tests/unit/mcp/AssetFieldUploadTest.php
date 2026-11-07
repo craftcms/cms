@@ -154,7 +154,8 @@ class AssetFieldUploadTest extends TestCase
 
         self::assertFalse($upload['isError'] ?? true, json_encode($upload));
         $upload = $upload['structuredContent'];
-        self::assertStringStartsWith('https://example.test/craft/?', $upload['upload_url']);
+        // The scheme follows useSslOnTokenizedUrls
+        self::assertSame(['example.test', '/craft/'], [parse_url($upload['upload_url'], PHP_URL_HOST), parse_url($upload['upload_url'], PHP_URL_PATH)]);
         parse_str((string)parse_url($upload['upload_url'], PHP_URL_QUERY), $query);
         $token = $query[$general->tokenParam];
         self::assertSame(['mcp/upload', ['uploadId' => $upload['upload_id']]], Craft::$app->getTokens()->getTokenRoute($token));
