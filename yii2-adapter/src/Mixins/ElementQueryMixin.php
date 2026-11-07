@@ -58,7 +58,10 @@ class ElementQueryMixin
             Deprecator::log('ElementQuery-scalar', 'Calling ->scalar on an ElementQuery is deprecated. Use ->pluck($column)->first() for the raw value, or ->value($column) for the element’s value.');
 
             /** @phpstan-ignore-next-line */
-            return (clone $this)->limit(1)->pluck($this->query->getColumns()[0])->first();
+            $row = $this->toBase()->first();
+
+            // The first column of the first row, as Yii’s scalar() returned
+            return $row === null ? null : Arr::first((array) $row);
         };
     }
 

@@ -184,7 +184,8 @@ it('plucks and aggregates mapped columns and custom fields', function () {
         ->and($query()->count('num'))->toBe(2)
         ->and($query()->max('dateCreated'))->not->toBeNull()
         ->and($query()->addSelect(['secondId' => entryQuery()->id($second->id)->select('elements.id')->limit(1)])->pluck('secondId')->all())->toBe([$second->id, $second->id])
-        ->and($query()->selectRaw('? + 1 as bound', [6])->pluck('bound')->map(fn ($value) => (int) $value)->all())->toBe([7, 7]);
+        ->and($query()->selectRaw('? + 1 as bound', [6])->pluck('bound')->map(fn ($value) => (int) $value)->all())->toBe([7, 7])
+        ->and($query()->addSelect('title as heading')->pluck('heading')->all())->toBe(['First', 'Second']);
 });
 
 it('uses element queries as subqueries', function () {
@@ -197,6 +198,7 @@ it('uses element queries as subqueries', function () {
         ->and($query()->joinSub($subquery(), 'sub', 'sub.id', '=', 'elements.id')->ids())->toBe([$a, $b])
         ->and($query()->whereIn('elements.id', entryQuery()->section('nonexistent')->select('elements.id'))->ids())->toBe([])
         ->and(DB::table(Table::ELEMENTS)->whereIn('id', $subquery()->toBase())->orderBy('id')->pluck('id')->all())->toBe([$a, $b])
+        ->and(entryQuery()->typeId([])->select('elements.id')->where('elements.id', $a)->orWhere('elements.id', $b)->toBase()->pluck('id')->all())->toBe([])
         ->and(array_keys($query()->select(['elements.id', 'title'])->asArray()->one()))->toBe(['id', 'title'])
         ->and($query()->select(['enabled'])->groupBy('enabled')->reorder('enabled')->asArray()->get())->toHaveCount(1);
 });
@@ -217,10 +219,15 @@ it('cursor paginates elements by date columns', function () {
         $cursor = $page->nextCursor();
     } while ($cursor !== null && count($pages) < 5);
 
+    $aliasQuery = fn () => entryQuery()->id($ids->all())->select('elements.id as entryId')->asArray()->orderBy('entryId');
+    $aliasPage = $aliasQuery()->cursorPaginate(1, cursor: $aliasQuery()->cursorPaginate(1)->nextCursor());
+
     expect($page->first())->toBeInstanceOf(Entry::class)
         ->and($pages)->toBe([$ids[1], $ids[2], $ids[0]])
         ->and($query()->cursorPaginate(1, cursor: $page->previousCursor())->pluck('id')->all())->toBe([$ids[2]])
-        ->and(fn () => entryQuery()->id($ids->all())->fixedOrder()->cursorPaginate(1))->toThrow(InvalidArgumentException::class);
+        ->and(collect($aliasPage->items())->map(fn (array $row) => (int) $row['entryId'])->all())->toBe([$ids->sort()->values()[1]])
+        ->and(fn () => entryQuery()->id($ids->all())->fixedOrder()->cursorPaginate(1))->toThrow(InvalidArgumentException::class)
+        ->and(fn () => entryQuery()->id($ids->all())->orderByRaw('elements.id desc')->cursorPaginate(1))->toThrow(InvalidArgumentException::class);
 });
 
 it('resolves mapped columns and custom fields in where clauses and groupBy', function () {
@@ -282,6 +289,8 @@ it('passes element queries to where() closures', function () {
         ->and($query()->whereNot(fn ($q) => $q->role('editor'))->ids())->toBe([$viewer])
         ->and($query()->where('elements.id', $editor)->orWhere(fn (Illuminate\Contracts\Database\Query\Builder $q) => $q->sectionId($viewerSectionId))->ids())->toBe([$editor, $viewer])
         ->and(fn () => $query()->where(fn (Illuminate\Contracts\Database\Query\Builder $q) => $q->ref('news/slug'))->ids())->toThrow(InvalidArgumentException::class)
+        ->and($query()->drafts(null)->where(fn (Illuminate\Contracts\Database\Query\Builder $q) => $q->drafts(true))->ids())->toBe([])
+        ->and(fn () => $query()->where(fn (Illuminate\Contracts\Database\Query\Builder $q) => $q->draftCreator(1))->ids())->toThrow(InvalidArgumentException::class)
         ->and($query()->whereNot(fn (Builder $q) => $q->where('elements.id', $editor))->ids())->toBe([$blockedEditor, $viewer])
         ->and($query()->where('elements.id', $viewer)->orWhere(fn (Builder $q) => $q->where('elements.id', $editor))->ids())->toBe([$editor, $viewer]);
 });
@@ -316,7 +325,8 @@ it('selects the columns passed to get() unless the query has its own select', fu
     expect(entryQuery()->id($id)->asArray()->get(['elements.id', 'teaser'])->all())->toBe([['id' => $id, 'teaser' => 'Hi']])
         ->and(entryQuery()->id($id)->asArray()->select('title')->get(['slug'])->all())->toBe([['title' => $title]])
         ->and(entryQuery()->id($id)->asArray()->addSelect('title as heading')->first(['slug']))->toHaveKeys(['id', 'heading'])
-        ->and(entryQuery()->id($id)->first(['title'])->slug)->toBeNull();
+        ->and(entryQuery()->id($id)->first(['title'])->slug)->toBeNull()
+        ->and(entryQuery()->id($id)->asArray()->orderBy('elements.id')->cursorPaginate(1, ['elements.id'])->items())->toBe([['id' => $id]]);
 });
 
 it('chunks and lazily iterates by id', function () {
