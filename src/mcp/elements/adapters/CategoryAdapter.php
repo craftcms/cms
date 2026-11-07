@@ -7,6 +7,7 @@ namespace craft\mcp\elements\adapters;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Category;
+use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
 use craft\mcp\ElementQueryCriteria;
 use craft\mcp\elements\BaseElementAdapter;
@@ -66,6 +67,7 @@ class CategoryAdapter extends BaseElementAdapter
             'description' => 'For a new category, provide groupId.',
             'properties' => [
                 'groupId' => ['type' => 'integer', 'description' => 'Category group ID of a new category.'],
+                'siteId' => ['type' => 'integer', 'description' => 'Site ID of a new category.'],
             ],
             'additionalProperties' => false,
         ];
@@ -85,6 +87,12 @@ class CategoryAdapter extends BaseElementAdapter
         return parent::fieldSchemaElement($element, $context, $actor);
     }
 
+    /** @param Category $element */
+    public function canDelete(User $actor, ElementInterface $element): bool
+    {
+        return $this->canEditSite($actor, $element) && parent::canDelete($actor, $element);
+    }
+
     public function duplicate(ElementInterface $element, ?string $mode): ElementInterface
     {
         if ($mode !== null && $mode !== 'copy') {
@@ -97,11 +105,24 @@ class CategoryAdapter extends BaseElementAdapter
     /** @param Category $element */
     protected function authorizeSave(User $actor, ElementInterface $element): void
     {
-        if (Craft::$app->getIsMultiSite() && !$actor->can("editSite:{$element->getSite()->uid}")) {
+        if (!$this->canEditSite($actor, $element)) {
             throw new ToolCallException('You are not authorized to edit categories for this site.');
         }
 
         parent::authorizeSave($actor, $element);
+    }
+
+    protected function findQuery(): ElementQueryInterface
+    {
+        return Category::find()->drafts(null)->status(null);
+    }
+
+    /**
+     * Whether the actor can edit categories in the element’s site, as the control panel requires to save or delete them.
+     */
+    private function canEditSite(User $actor, Category $category): bool
+    {
+        return !Craft::$app->getIsMultiSite() || $actor->can("editSite:{$category->getSite()->uid}");
     }
 
     /** @return array<string, array<string, mixed>> */

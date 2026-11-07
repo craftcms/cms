@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace craft\mcp\elements\adapters;
 
 use craft\base\ElementInterface;
+use craft\elements\db\ElementQueryInterface;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\mcp\ElementQueryCriteria;
@@ -77,5 +78,10 @@ class TagAdapter extends BaseElementAdapter
         }
 
         return parent::fieldSchemaElement($element, $context, $actor);
+    }
+
+    protected function findQuery(): ElementQueryInterface
+    {
+        return Tag::find()->status(null);
     }
 }

@@ -50,6 +50,8 @@ class ElementAdaptersTest extends TestCase
 
         $categories = $this->elements()->list('categories', ['group' => 'mcpTopics'])->structuredContent['elements'];
         self::assertSame([$category['id']], array_column($categories, 'id'));
+        // Disabled categories can still be read and updated
+        $this->elements()->update('categories', $category['id'], attributes: ['enabled' => false]);
         self::assertSame('Releases', $this->elements()->get('categories', $category['id'])['element']['title']);
         self::assertSame(['craft6'], array_column($this->elements()->list('tags', ['groupId' => $this->tagGroup->id])->structuredContent['elements'], 'title'));
     }
