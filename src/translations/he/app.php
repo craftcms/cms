@@ -1062,6 +1062,7 @@ return [
     'Looks like you are trying to load a template outside the template folder.' => 'נראה שאתה מנסה לטעון תבנית מחוץ לתיקיית התבניות .',
     'Low' => 'נמוך',
     'MCP Settings' => 'הגדרות MCP',
+    'MCP clients can’t sign in until Craft has OAuth signing keys.' => 'MCP clients can’t sign in until Craft has OAuth signing keys.',
     'MCP server' => 'שרת MCP',
     'MCP settings saved.' => 'הגדרות ה־MCP נשמרו.',
     'MCP' => 'MCP',
