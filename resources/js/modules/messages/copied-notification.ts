@@ -1,8 +1,23 @@
+import '@craftcms/ui/components/pane/pane';
 import {t} from '@craftcms/ui/utilities/translate';
 import {Notification, type NotificationSettings} from './notification';
 
 /** The most of the copied text a card shows, or reads out. */
 const TEXT_LENGTH = 500;
+
+/**
+ * Copied text, such as a value's or a link's, in an outlined pane that sets
+ * it apart from the card's message.
+ */
+export function copiedTextPane(...content: Node[]): HTMLElement {
+  const pane = document.createElement('craft-pane');
+  pane.className = 'copied-notification-pane';
+  pane.setAttribute('appearance', 'outline');
+  pane.setAttribute('padding', 'md');
+  pane.append(...content);
+
+  return pane;
+}
 
 /**
  * A "copied" card, for whatever's on the control panel's clipboard, with a
@@ -54,7 +69,7 @@ export abstract class CopiedNotification extends Notification {
     } else {
       content.className = 'copied-notification-text';
       content.append(textElement);
-      container.append(content);
+      container.append(copiedTextPane(content));
     }
 
     // Fade out only the edges the preview actually runs off. Its size changes

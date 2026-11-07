@@ -199,10 +199,12 @@ describe('renderValuePreview', () => {
       })
     )) as HTMLElement;
 
-    expect([...preview.children].map((line) => line.textContent)).toEqual([
-      'Craft & co',
-      'https://craftcms.com',
-    ]);
+    expect(preview.matches('craft-pane[appearance="outline"]')).toBe(true);
+    expect(
+      [...preview.querySelector('.copied-field-value-link')!.children].map(
+        (line) => line.textContent
+      )
+    ).toEqual(['Craft & co', 'https://craftcms.com']);
     // Element links have no URL to show
     expect(
       await renderValuePreview(
@@ -223,6 +225,13 @@ describe('renderValuePreview', () => {
     expect(json.textContent).toBe(text);
     expect(json.querySelector('.th-string')!.textContent).toBe('"Craft"');
     expect(markdown.querySelector('.th-heading')).not.toBeNull();
+    // Markdown wraps, JSON keeps its lines
+    expect(json.classList.contains('copied-notification-pane--nowrap')).toBe(
+      true
+    );
+    expect(
+      markdown.classList.contains('copied-notification-pane--nowrap')
+    ).toBe(false);
     // Other textareas show their text
     expect(
       await renderValuePreview(copied({component: 'craft:textarea', text}))
@@ -287,6 +296,8 @@ describe('the copied card', () => {
     const details = await card({component: 'craft:text', text: 'Hello'});
 
     expect(details.querySelector('.copied-notification-preview')).toBeNull();
-    expect(details.textContent).toBe('Hello');
+    expect(
+      details.querySelector('craft-pane[appearance="outline"]')!.textContent
+    ).toBe('Hello');
   });
 });

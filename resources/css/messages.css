@@ -299,8 +299,27 @@
   white-space: pre-wrap;
 }
 
-/* A copied link's label, above its URL, each on one line. */
-.cp-messages .copied-field-value-link {
+/* Copied text, such as a value's, a link's, or code, in an outlined pane
+   as wide as its text, which wraps within the card. */
+.cp-messages .copied-notification-pane {
+  inline-size: fit-content;
+  max-inline-size: 100%;
+}
+
+/* Code whose lines shouldn't wrap, such as JSON, widens its pane past the
+   card's edge, where it fades out. */
+.cp-messages .copied-notification-pane--nowrap {
+  max-inline-size: none;
+
+  .copied-field-value-code {
+    white-space: pre;
+  }
+}
+
+/* A copied link's label, above its URL, each on one line, cut short. */
+.cp-messages .copied-field-value-link > * {
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -309,13 +328,13 @@
   font-size: var(--c-text-sm);
 }
 
-/* Copied code, such as JSON or Markdown, with its indentation, and long
-   lines running off the card's edge. */
+/* Copied code, such as JSON or Markdown, with its indentation. */
 .cp-messages .copied-field-value-code {
   margin: 0;
   font-family: var(--c-font-mono);
   font-size: var(--c-text-sm);
-  white-space: pre;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 
 /* Copied elements' chips, and a copied value's items, such as selected

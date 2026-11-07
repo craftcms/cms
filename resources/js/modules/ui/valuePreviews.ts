@@ -14,6 +14,7 @@ import {
   chipRow,
   renderChips,
 } from '@/modules/elements/copied-elements-notification';
+import {copiedTextPane} from '@/modules/messages/copied-notification';
 import type {CopiedFieldValue, CopiedValueItem} from './copiedFieldValue';
 
 /**
@@ -210,11 +211,15 @@ const link: UiValuePreview = ({html, text}) => {
     preview.append(urlLine);
   }
 
-  return preview;
+  return copiedTextPane(preview);
 };
 
-/** Code, such as JSON or Markdown, color-coded as code blocks are. */
-function code(language: string): UiValuePreview {
+/**
+ * Code, such as JSON or Markdown, color-coded as code blocks are. Prose,
+ * such as Markdown, wraps; anything else keeps its lines, which run off the
+ * card's edge.
+ */
+function code(language: string, {wrap = false} = {}): UiValuePreview {
   return ({text}) => {
     if (!text.trim()) {
       return null;
@@ -231,7 +236,10 @@ function code(language: string): UiValuePreview {
     preview.append(element);
     highlightCodeBlocks(preview);
 
-    return preview;
+    const pane = copiedTextPane(preview);
+    pane.classList.toggle('copied-notification-pane--nowrap', !wrap);
+
+    return pane;
   };
 }
 
@@ -244,7 +252,7 @@ const previews = new Map<string, UiValuePreview>([
   ['craft:color-select', paletteColor],
   ['craft:icon-picker', icon],
   ['craft:link', link],
-  ['craft:markdown', code('markdown')],
+  ['craft:markdown', code('markdown', {wrap: true})],
   // JSON fields' textareas, which only take values copied from JSON fields
   [
     'craft:textarea',
