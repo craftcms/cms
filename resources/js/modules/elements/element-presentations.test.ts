@@ -215,6 +215,39 @@ describe('useElementPresentations()', () => {
     expect(field.presentations.get(7, 1)?.label).toBe('Rendered later');
   });
 
+  it('keeps a refetch when a component mounts with an older render of it', async () => {
+    let answer!: () => void;
+    const post = vi.spyOn(actionClient, 'post').mockImplementation(
+      (_url, body: any) =>
+        new Promise((resolve) => {
+          answer = () =>
+            resolve({
+              data: {elements: [{id: 7, siteId: body.siteId, label: 'Saved'}]},
+            } as never);
+        })
+    );
+    const list = {elementType: ENTRY, viewMode: 'list'};
+    // Picked in the selector, so nothing seeded it.
+    const field = consume(list, [{id: 7, siteId: 1}]);
+
+    broadcast({event: 'saveElement', id: 7});
+    await vi.waitFor(() => expect(post).toHaveBeenCalled());
+    consume(list, [{id: 7, siteId: 1}], [{id: 7, label: 'Old'}]);
+    answer();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(field.presentations.get(7, 1)?.label).toBe('Saved');
+  });
+
+  it('doesn’t keep a server render of an element no component draws', () => {
+    const list = {elementType: ENTRY, viewMode: 'list'};
+    // The server still renders a relation the user removed, unsaved.
+    const field = consume(list, []);
+    field.presentations.seed([{id: 7, label: 'Old'}], 1, {replace: true});
+
+    expect(field.presentations.get(7, 1)).toBeUndefined();
+  });
+
   it('drops an element as soon as no component draws it', async () => {
     const elements = ref<PresentedElement[]>([{id: 7, siteId: 1}]);
     const scope = effectScope();

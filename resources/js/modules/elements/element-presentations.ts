@@ -225,15 +225,25 @@ export function useElementPresentations(
     get: (id, siteId) =>
       cache.get(entryKey(toValue(query), siteKey(siteId), id)),
     seed: (presentations, fallbackSiteId, {replace = false} = {}) => {
+      // Only elements a component draws are kept: a render can include
+      // relations the user has removed but not saved.
+      const used = usedKeys();
       presentations.forEach((presentation) => {
         const key = entryKey(
           toValue(query),
           siteKey(presentation.siteId ?? fallbackSiteId),
           presentation.id
         );
-        if (replace || !cache.has(key)) {
+        if (!used.has(key)) {
+          return;
+        }
+        if (replace) {
           cache.set(key, presentation);
           nextGeneration(key);
+        } else if (!cache.has(key)) {
+          // Filling a gap leaves the generation alone, so a refetch already
+          // on its way, which is newer, still lands.
+          cache.set(key, presentation);
         }
       });
     },
