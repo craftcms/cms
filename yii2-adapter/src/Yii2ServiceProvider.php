@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter;
 
 use Craft;
+use craft\config\GeneralConfig as LegacyGeneralConfig;
 use craft\events\ExceptionEvent;
 use craft\events\RedirectEvent;
 use craft\web\Application as WebApplication;
@@ -120,6 +121,8 @@ class Yii2ServiceProvider extends ServiceProvider
 
         new ClassAliases()->register();
         new MultiEnvironmentConfigCompatibility()->register($this->app);
+
+        LegacyGeneralConfig::registerBootingCallback($this->app);
 
         $appType = $this->app->runningInConsole() ? 'console' : 'web';
         Config::set('craft.general', new GeneralConfigCompatibility()->convert(
