@@ -9,7 +9,6 @@ use CraftCms\Cms\Config\AnchorsConfig;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
-use InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 
@@ -41,11 +40,11 @@ class Anchors
 
         $tagPattern = implode('|', array_map(fn (string $tag) => preg_quote($tag, '/'), $tags));
 
-        return preg_replace_callback("/<($tagPattern)([^>]*)>\s*([\w\W]+?)\s*<\/\\1>/", function (array $match) use ($config, $language, $lowercase) {
+        return preg_replace_callback("/<($tagPattern)((?:[^>\"']|\"[^\"]*\"|'[^']*')*)>\s*([\w\W]+?)\s*<\/\\1>/", function (array $match) use ($config, $language, $lowercase) {
             [, $tag, $attributes, $content] = $match;
 
             // Reuse the heading’s own `id`, unless the anchor goes on a separate tag
-            $headingId = $config->useAdditionalTagToAnchorTo ? null : $this->headingId("<$tag$attributes>");
+            $headingId = $config->useAdditionalTagToAnchorTo ? null : $this->headingId($attributes);
             $anchorName = $headingId ?? $this->generateAnchorName($content, $language, $lowercase);
 
             $heading = preg_replace('/\s+/', ' ', strip_tags(str_replace(['&nbsp;', "\u{00A0}"], ' ', $content)));
@@ -97,14 +96,21 @@ class Anchors
         return Str::ascii(implode('-', $words), $language ?? app()->getLocale());
     }
 
-    private function headingId(string $openingTag): ?string
+    /**
+     * Returns the decoded value of the `id` attribute among a heading’s attributes, if it has one.
+     */
+    private function headingId(string $attributes): ?string
     {
-        try {
-            $id = Html::parseTagAttributes($openingTag, decode: true)['id'] ?? null;
-        } catch (InvalidArgumentException) {
-            return null;
+        preg_match_all('/([^\s"\'>\/=]+)(?:\s*=\s*(?:"([^"]*)"|\'([^\']*)\'|([^\s"\'=<>`]+)))?/', $attributes, $matches, PREG_SET_ORDER);
+
+        foreach ($matches as $match) {
+            if (strtolower($match[1]) === 'id') {
+                $id = html_entity_decode(($match[2] ?? '').($match[3] ?? '').($match[4] ?? ''), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+                return $id !== '' ? $id : null;
+            }
         }
 
-        return is_string($id) && $id !== '' ? $id : null;
+        return null;
     }
 }

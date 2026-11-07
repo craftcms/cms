@@ -52,6 +52,9 @@ it('reads the heading’s actual id attribute', function (string $heading, strin
     'hyphenated id' => ['<h2 id="intro-section">Intro</h2>', '<h2 id="intro-section">Intro ', '#intro-section'],
     'single-quoted id' => ["<h2 id='single'>Single</h2>", "<h2 id='single'>Single ", '#single'],
     'encoded id' => ['<h2 id="a&amp;b">Amp</h2>', '<h2 id="a&amp;b">Amp ', '#a&amp;b'],
+    'id decoded exactly once' => ['<h2 id="a&amp;amp;b">Amp</h2>', '<h2 id="a&amp;amp;b">Amp ', '#a&amp;amp;b'],
+    'numeric entity id' => ['<h2 id="&#105;ntro">Intro</h2>', '<h2 id="&#105;ntro">Intro ', '#intro'],
+    'quoted > before the id' => ['<h2 title="A > B" id="custom">Intro</h2>', '<h2 title="A > B" id="custom">Intro ', '#custom'],
     'data-id is not the id' => ['<h2 data-id="metadata">Data</h2>', '<h2 data-id="metadata" id="data">', '#data'],
 ]);
 
