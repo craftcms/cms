@@ -1062,6 +1062,7 @@ return [
     'Looks like you are trying to load a template outside the template folder.' => 'Şablon klasörü dışarısından bir şablon yüklemeye çalışıyorsunuz gibi gözükmekte.',
     'Low' => 'Düşük',
     'MCP Settings' => 'MCP Ayarları',
+    'MCP clients can’t sign in until Craft has OAuth signing keys.' => 'MCP clients can’t sign in until Craft has OAuth signing keys.',
     'MCP server' => 'MCP sunucusu',
     'MCP settings saved.' => 'MCP ayarları kaydedildi.',
     'MCP' => 'MCP',
