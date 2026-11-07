@@ -1062,6 +1062,7 @@ return [
     'Looks like you are trying to load a template outside the template folder.' => 'Det er ser ut som du forsøker å laste en mal som er utenfor mal-mappen.',
     'Low' => 'Lav',
     'MCP Settings' => 'MCP-innstillinger',
+    'MCP clients can’t sign in until Craft has OAuth signing keys.' => 'MCP clients can’t sign in until Craft has OAuth signing keys.',
     'MCP server' => 'MCP-server',
     'MCP settings saved.' => 'MCP-innstillingene er lagret.',
     'MCP' => 'MCP',
