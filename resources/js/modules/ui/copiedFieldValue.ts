@@ -35,8 +35,20 @@ export interface CopiedFieldValue extends UiValueSnapshot {
   text: string;
   /** The value as HTML, as it was put on the system clipboard, if it was. */
   html?: string | null;
-  /** The value's items as text, when it's a list, such as selected options' labels. */
-  items?: string[] | null;
+  /**
+   * The value's items, when it's a list or one of a control's options, such
+   * as the selected options' labels, with their icons and colors.
+   */
+  items?: CopiedValueItem[] | null;
+}
+
+/** One of a copied value's items, such as a selected option. */
+export interface CopiedValueItem {
+  label: string;
+  /** The name of the option's icon. */
+  icon?: string | null;
+  /** The option's CSS color. */
+  color?: string | null;
 }
 
 /** A value as other apps take it from the clipboard. */
@@ -44,8 +56,8 @@ export interface FieldValueFormats {
   text: string;
   /** Only when it says more than the text does. */
   html: string | null;
-  /** The value's items as text, when it's a list of them. */
-  items?: string[] | null;
+  /** The value's items, when it's a list or one of a control's options. */
+  items?: CopiedValueItem[] | null;
 }
 
 const STORAGE_KEY = 'copiedFieldValue';
@@ -134,13 +146,23 @@ export function fieldValueFormats(
   }
 
   const labels = optionLabels(control.props);
+  const options = optionItems(control.props);
+  const {value} = snapshot;
+  const item = (entry: unknown): CopiedValueItem | null => {
+    const option = isScalar(entry) ? options?.get(String(entry)) : undefined;
+    const label = option?.label ?? valueText(entry, labels);
+
+    return label ? {...option, label} : null;
+  };
 
   return {
-    text: valueText(snapshot.value, labels),
+    text: valueText(value, labels),
     html: null,
-    items: Array.isArray(snapshot.value)
-      ? snapshot.value.map((item) => valueText(item, labels)).filter(Boolean)
-      : null,
+    items: Array.isArray(value)
+      ? value.flatMap((entry) => item(entry) ?? [])
+      : isScalar(value) && options?.has(String(value))
+        ? [item(value)!]
+        : null,
   };
 }
 
@@ -255,8 +277,12 @@ function valueText(
     .join(', ');
 }
 
-/** A choice control's option labels, by value. */
-function optionLabels(props: object): Map<string, string> | null {
+function isScalar(value: unknown): value is string | number | boolean {
+  return ['string', 'number', 'boolean'].includes(typeof value);
+}
+
+/** A choice control's options, with their icons and colors, by value. */
+function optionItems(props: object): Map<string, CopiedValueItem> | null {
   const options = (props as {options?: unknown}).options;
 
   if (!Array.isArray(options)) {
@@ -264,14 +290,36 @@ function optionLabels(props: object): Map<string, string> | null {
   }
 
   return new Map(
-    options.flatMap((option: {value?: unknown; label?: unknown}) =>
-      option &&
-      typeof option.label === 'string' &&
-      ['string', 'number', 'boolean'].includes(typeof option.value)
-        ? [[String(option.value as string), option.label] as const]
-        : []
+    options.flatMap(
+      (option: {
+        value?: unknown;
+        label?: unknown;
+        icon?: unknown;
+        color?: unknown;
+      }) =>
+        option && typeof option.label === 'string' && isScalar(option.value)
+          ? [
+              [
+                String(option.value),
+                {
+                  label: option.label,
+                  icon: typeof option.icon === 'string' ? option.icon : null,
+                  color: typeof option.color === 'string' ? option.color : null,
+                },
+              ] as const,
+            ]
+          : []
     )
   );
+}
+
+/** A choice control's option labels, by value. */
+function optionLabels(props: object): Map<string, string> | null {
+  const options = optionItems(props);
+
+  return options
+    ? new Map([...options].map(([value, {label}]) => [value, label]))
+    : null;
 }
 
 /** The "copied" card, with the value's preview and a Cancel button that clears it. */

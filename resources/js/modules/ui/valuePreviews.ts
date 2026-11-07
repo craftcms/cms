@@ -4,8 +4,12 @@
  * stored copy whenever the card is shown, on any page or tab.
  */
 
+import '@craftcms/ui/components/icon/icon';
+import '@craftcms/ui/components/indicator/indicator';
+import {t} from '@craftcms/ui/utilities/translate';
+import {iconSvg} from '@/common/craft/icon-svg';
 import {renderChipStack} from '@/modules/elements/copied-elements-notification';
-import type {CopiedFieldValue} from './copiedFieldValue';
+import type {CopiedFieldValue, CopiedValueItem} from './copiedFieldValue';
 
 /**
  * Draws a preview of a value copied from a control drawn by the component
@@ -67,7 +71,76 @@ const table: UiValuePreview = ({html}) => {
   return preview;
 };
 
-/** Lists, such as several selected options, as a pill for each item. */
+/**
+ * A color's swatch: a CSS color, or the name of one of the palette's
+ * (`red`, say).
+ */
+function swatch(color: string): HTMLElement {
+  const indicator = document.createElement('craft-indicator');
+  indicator.setAttribute('fill', color);
+
+  return indicator;
+}
+
+/** A swatch, or an icon, beside a label. */
+function labelled(marker: Node, label: string): HTMLElement {
+  const preview = document.createElement('span');
+  preview.className = 'copied-field-value-labelled';
+  const text = document.createElement('span');
+  text.textContent = label;
+  preview.append(marker, text);
+
+  return preview;
+}
+
+/** Colors, as their swatch and value. */
+const color: UiValuePreview = ({value}) =>
+  typeof value === 'string' && value ? labelled(swatch(value), value) : null;
+
+/** Palette colors, as their swatch and name, as the palette shows them. */
+const paletteColor: UiValuePreview = ({value}) =>
+  typeof value === 'string' && value && value !== 'transparent'
+    ? labelled(swatch(value), t(value.charAt(0).toUpperCase() + value.slice(1)))
+    : null;
+
+/** Icons, as the icon and its name. */
+const icon: UiValuePreview = async ({value}) => {
+  const svg = typeof value === 'string' && value ? await iconSvg(value) : null;
+
+  if (!svg) {
+    return null;
+  }
+
+  // `<craft-icon>` sizes the SVG it's given, and makes it decorative.
+  const element = document.createElement('craft-icon');
+  element.append(svg);
+
+  return labelled(element, value as string);
+};
+
+/**
+ * An item's icon, tinted with its color, or else its color as a dot, as
+ * choice controls show them beside their options.
+ */
+function itemMarker({icon, color}: CopiedValueItem): HTMLElement | null {
+  if (icon) {
+    const element = document.createElement('craft-icon');
+    element.setAttribute('name', icon);
+
+    if (color) {
+      element.style.color = color;
+    }
+
+    return element;
+  }
+
+  return color ? swatch(color) : null;
+}
+
+/**
+ * Lists, such as several selected options, and options, as a pill for each
+ * item, with its icon or color.
+ */
 const list: UiValuePreview = ({items}) => {
   if (!items?.length) {
     return null;
@@ -78,7 +151,13 @@ const list: UiValuePreview = ({items}) => {
   preview.append(
     ...items.map((item) => {
       const pill = document.createElement('li');
-      pill.textContent = item;
+      const marker = itemMarker(item);
+
+      if (marker) {
+        pill.append(marker);
+      }
+
+      pill.append(item.label);
 
       return pill;
     })
@@ -90,6 +169,9 @@ const list: UiValuePreview = ({items}) => {
 const previews = new Map<string, UiValuePreview>([
   ['craft:element-select', elementChips],
   ['craft:table', table],
+  ['craft:color', color],
+  ['craft:color-select', paletteColor],
+  ['craft:icon-picker', icon],
 ]);
 
 /**

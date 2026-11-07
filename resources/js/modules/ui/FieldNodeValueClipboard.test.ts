@@ -277,26 +277,35 @@ describe('fieldValueFormats', () => {
     );
   });
 
-  it('keeps a list’s items apart, by their option labels', () => {
-    const formats = fieldValueFormats(
-      {
-        type: 'Choice',
-        component: 'craft:choice',
-        path: ['fields', 'colors'],
-        deltaGroup: ['fields', 'colors'],
-        mode: 'editable',
-        props: {
-          multiple: true,
-          options: [
-            {label: 'Red, dark', value: 'red'},
-            {label: 'Blue', value: 'blue'},
-          ],
-        },
+  it('keeps options’ labels apart, with their icons and colors', () => {
+    const choice = (multiple: boolean) => ({
+      type: 'Choice',
+      component: 'craft:choice',
+      path: ['fields', 'colors'],
+      deltaGroup: ['fields', 'colors'],
+      mode: 'editable' as const,
+      props: {
+        multiple,
+        options: [
+          {label: 'Red, dark', value: 'red', icon: 'fire', color: '#b91c1c'},
+          {label: 'Blue', value: 'blue', color: '#1d4ed8'},
+        ],
       },
-      {value: ['red', 'blue', 'teal']}
-    );
+    });
+    const formats = fieldValueFormats(choice(true), {
+      value: ['red', 'blue', 'teal'],
+    });
 
     expect(formats.text).toBe('Red, dark, Blue, teal');
-    expect(formats.items).toEqual(['Red, dark', 'Blue', 'teal']);
+    expect(formats.items).toEqual([
+      {label: 'Red, dark', icon: 'fire', color: '#b91c1c'},
+      {label: 'Blue', icon: null, color: '#1d4ed8'},
+      {label: 'teal'},
+    ]);
+    // One selected option is an item too, but text that isn't one isn't
+    expect(fieldValueFormats(choice(false), {value: 'blue'}).items).toEqual([
+      {label: 'Blue', icon: null, color: '#1d4ed8'},
+    ]);
+    expect(fieldValueFormats(choice(false), {value: 'teal'}).items).toBeNull();
   });
 });

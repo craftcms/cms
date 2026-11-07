@@ -374,8 +374,9 @@ Cp.booting((cp) => {
 ```
 
 The preview gets the copied value, the props its Control named in `valueProps`, and the value as it was put on the
-clipboard: `text`, `html` when there was any, and `items`, the value's items as text when it's a list. Controls without a
-preview of their own show lists, such as selected options, as pills, and other values as text. A preview may return a
+clipboard: `text`, `html` when there was any, and `items` when it's a list or one of the Control's options: each item's
+`label`, with the option's `icon` and `color` when it has them. Controls without a preview of their own show items, such
+as selected options, as pills with their icons or colors, and other values as text. A preview may return a
 promise. If it throws or rejects, the card shows the value's text. Either one runs off the card's edges when it's too big
 for it, fading out as it reaches them.
 

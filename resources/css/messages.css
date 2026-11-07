@@ -323,6 +323,21 @@
   white-space: pre-line;
 }
 
+/* A copied color's swatch, or icon, beside its value. */
+.cp-messages .copied-field-value-labelled {
+  display: inline-flex;
+  gap: var(--c-spacing-md);
+  align-items: center;
+
+  craft-indicator {
+    --size: 1.25em;
+  }
+
+  craft-icon {
+    font-size: calc(24rem / 16);
+  }
+}
+
 /* A copied list's items, such as selected options, as pills. */
 .cp-messages .copied-field-value-list {
   display: flex;
@@ -334,6 +349,9 @@
   font-size: var(--c-text-sm);
 
   li {
+    display: inline-flex;
+    gap: calc(var(--c-spacing) * 1.5);
+    align-items: center;
     max-width: 100%;
     padding-block: calc(var(--c-spacing) * 0.5);
     padding-inline: calc(var(--c-spacing) * 2.5);

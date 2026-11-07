@@ -1,5 +1,6 @@
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
+import {iconSvg} from '@/common/craft/icon-svg';
 import '@/modules/messages/components/cp-messages';
 import {
   clearCopiedFieldValue,
@@ -8,7 +9,7 @@ import {
 } from './copiedFieldValue';
 import {registerValuePreview, renderValuePreview} from './valuePreviews';
 
-vi.mock('@/common/craft/icon-svg', () => ({iconSvg: async () => null}));
+vi.mock('@/common/craft/icon-svg', () => ({iconSvg: vi.fn(async () => null)}));
 
 function copied(overrides: Partial<CopiedFieldValue>): CopiedFieldValue {
   return {
@@ -104,20 +105,79 @@ describe('renderValuePreview', () => {
     );
   });
 
-  it('draws a list, such as selected options, as a pill for each item', async () => {
+  it('draws a list, such as selected options, as pills with their icons or colors', async () => {
     const preview = (await renderValuePreview(
       copied({
         component: 'craft:choice',
-        text: 'Red, green, Blue',
-        items: ['Red, green', 'Blue'],
+        text: 'Red, green, Blue, Teal',
+        items: [
+          {label: 'Red, green', icon: 'fire', color: '#b91c1c'},
+          {label: 'Blue', color: '#1d4ed8'},
+          {label: 'Teal'},
+        ],
       })
     )) as HTMLElement;
+    const pills = [...preview.querySelectorAll('li')];
 
+    expect(pills.map((li) => li.textContent)).toEqual([
+      'Red, green',
+      'Blue',
+      'Teal',
+    ]);
+    // The icon tinted with the color, or else the color as a dot
+    const icon = pills[0]!.querySelector('craft-icon')!;
+    expect(icon.getAttribute('name')).toBe('fire');
+    expect(icon.style.color).toBe('#b91c1c');
+    expect(pills[0]!.querySelector('craft-indicator')).toBeNull();
     expect(
-      [...preview.querySelectorAll('li')].map((li) => li.textContent)
-    ).toEqual(['Red, green', 'Blue']);
+      pills[1]!.querySelector('craft-indicator')!.getAttribute('fill')
+    ).toBe('#1d4ed8');
+    expect(pills[2]!.children).toHaveLength(0);
     expect(
       await renderValuePreview(copied({component: 'craft:choice', items: []}))
+    ).toBeNull();
+  });
+
+  it('draws colors as swatches', async () => {
+    const color = (await renderValuePreview(
+      copied({component: 'craft:color', value: '#0000ff80'})
+    )) as HTMLElement;
+    const palette = (await renderValuePreview(
+      copied({component: 'craft:color-select', value: 'red'})
+    )) as HTMLElement;
+
+    expect(color.querySelector('craft-indicator')!.getAttribute('fill')).toBe(
+      '#0000ff80'
+    );
+    expect(color.textContent).toBe('#0000ff80');
+    expect(palette.querySelector('craft-indicator')!.getAttribute('fill')).toBe(
+      'red'
+    );
+    expect(palette.textContent).toBe('Red');
+    expect(
+      await renderValuePreview(
+        copied({component: 'craft:color-select', value: 'transparent'})
+      )
+    ).toBeNull();
+  });
+
+  it('draws icons', async () => {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    vi.mocked(iconSvg).mockResolvedValueOnce(svg);
+
+    const preview = (await renderValuePreview(
+      copied({component: 'craft:icon-picker', value: 'star'})
+    )) as HTMLElement;
+
+    expect(iconSvg).toHaveBeenCalledWith('star');
+    expect(preview.querySelector('craft-icon')!.firstChild).toBe(svg);
+    expect(preview.textContent).toBe('star');
+
+    vi.mocked(iconSvg).mockRejectedValueOnce(new Error('Offline'));
+    expect(
+      await renderValuePreview(
+        copied({component: 'craft:icon-picker', value: 'missing'})
+      )
     ).toBeNull();
   });
 
