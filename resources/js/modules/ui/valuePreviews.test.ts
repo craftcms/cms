@@ -26,7 +26,7 @@ describe('renderValuePreview', () => {
 
   afterEach(() => post.mockReset());
 
-  it('draws relations as the chips of the elements that still exist', async () => {
+  it('draws relations as the chips of the elements that still exist, side by side', async () => {
     post.mockResolvedValue({
       data: {
         elements: {
@@ -59,10 +59,12 @@ describe('renderValuePreview', () => {
       ),
     });
     expect(
-      [...preview.querySelectorAll('.copied-element-chip')].map(
+      [...preview.querySelectorAll('.copied-field-value-chips > .chip')].map(
         (chip) => chip.textContent
       )
     ).toEqual(['Apples']);
+    // Laid out like a list's pills, not stacked like copied elements
+    expect(preview.querySelector('.copied-element-chip')).toBeNull();
   });
 
   it('draws a table’s first rows, without its headings', async () => {

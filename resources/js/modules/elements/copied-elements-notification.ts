@@ -111,7 +111,7 @@ export class CopiedElementsNotification extends Notification {
 }
 
 /** An element to draw a chip for. */
-export interface ChipStackElement {
+export interface ChipElement {
   type: string;
   id: string | number | null;
   siteId?: number | null;
@@ -119,13 +119,12 @@ export interface ChipStackElement {
 }
 
 /**
- * Draws elements' chips stacked with each one behind the last, as the
- * "copied" cards show them, leaving out elements that no longer exist.
- * Resolves to `null` when none of them do.
+ * Draws elements' chips, in order, leaving out elements that no longer
+ * exist. Resolves to `null` when none of them do.
  */
-export async function renderChipStack<T extends ChipStackElement>(
+export async function renderChips<T extends ChipElement>(
   elements: T[]
-): Promise<{container: HTMLElement; chips: Map<T, HTMLElement>} | null> {
+): Promise<Map<T, HTMLElement> | null> {
   const {data} = await actionClient.post<RenderedElements>(
     'app/render-elements',
     {
@@ -150,8 +149,6 @@ export async function renderChipStack<T extends ChipStackElement>(
   }, 1);
 
   const rendered = data.elements;
-  const container = document.createElement('div');
-  container.className = 'copied-elements';
   const template = document.createElement('template');
   const chips = new Map<T, HTMLElement>();
 
@@ -164,11 +161,32 @@ export async function renderChipStack<T extends ChipStackElement>(
         candidate.dataset.siteId === String(element.siteId)
     );
 
-    if (!chip) {
-      continue;
+    if (chip) {
+      chips.set(element, chip);
     }
+  }
 
-    const index = chips.size;
+  return chips;
+}
+
+/**
+ * Draws elements' chips stacked with each one behind the last, as the
+ * "copied elements" card shows them, leaving out elements that no longer
+ * exist. Resolves to `null` when none of them do.
+ */
+async function renderChipStack<T extends ChipElement>(
+  elements: T[]
+): Promise<{container: HTMLElement; chips: Map<T, HTMLElement>} | null> {
+  const chips = await renderChips(elements);
+
+  if (!chips) {
+    return null;
+  }
+
+  const container = document.createElement('div');
+  container.className = 'copied-elements';
+
+  [...chips.values()].forEach((chip, index) => {
     chip.classList.add('copied-element-chip');
     chip.style.zIndex = String(elements.length - index);
 
@@ -183,8 +201,7 @@ export async function renderChipStack<T extends ChipStackElement>(
     }
 
     container.append(chip);
-    chips.set(element, chip);
-  }
+  });
 
   return {container, chips};
 }

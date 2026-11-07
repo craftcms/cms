@@ -8,7 +8,7 @@ import '@craftcms/ui/components/icon/icon';
 import '@craftcms/ui/components/indicator/indicator';
 import {t} from '@craftcms/ui/utilities/translate';
 import {iconSvg} from '@/common/craft/icon-svg';
-import {renderChipStack} from '@/modules/elements/copied-elements-notification';
+import {renderChips} from '@/modules/elements/copied-elements-notification';
 import type {CopiedFieldValue, CopiedValueItem} from './copiedFieldValue';
 
 /**
@@ -24,7 +24,10 @@ export type UiValuePreview = (
 /** The most rows a table preview shows. */
 const TABLE_PREVIEW_ROWS = 5;
 
-/** Relations, as the chips of the elements they relate. */
+/**
+ * Relations, as the chips of the elements they relate, laid out like a
+ * list's pills.
+ */
 const elementChips: UiValuePreview = async ({props}) => {
   const elements = props?.elements;
   const type = props?.elementType;
@@ -33,7 +36,7 @@ const elementChips: UiValuePreview = async ({props}) => {
     return null;
   }
 
-  const stack = await renderChipStack(
+  const chips = await renderChips(
     elements.flatMap((element) => {
       const {id, siteId, revisionId} = (element ?? {}) as {
         id?: string | number | null;
@@ -45,7 +48,15 @@ const elementChips: UiValuePreview = async ({props}) => {
     })
   );
 
-  return stack?.container ?? null;
+  if (!chips) {
+    return null;
+  }
+
+  const preview = document.createElement('div');
+  preview.className = 'copied-field-value-chips';
+  preview.append(...chips.values());
+
+  return preview;
 };
 
 /** Tables, as the first rows of the HTML table they were copied to the clipboard as. */

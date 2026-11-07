@@ -353,6 +353,13 @@
   }
 }
 
+/* A copied relation's chips, laid out like a list's pills. */
+.cp-messages .copied-field-value-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--c-spacing) * 1.5);
+}
+
 /* A copied list's items, such as selected options, as pills. */
 .cp-messages .copied-field-value-list {
   display: flex;
