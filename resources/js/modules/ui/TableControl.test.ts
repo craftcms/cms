@@ -443,6 +443,7 @@ describe('Vue table rows', () => {
               options: [
                 {label: 'Small', value: 's'},
                 {label: 'Medium', value: 'm'},
+                {label: 'Large', value: 'l', disabled: true},
               ],
             }),
           ],
@@ -474,7 +475,7 @@ describe('Vue table rows', () => {
       paste(
         'title',
         0,
-        '"Pears\nripe"\t5\tTRUE\tmedium\r\nPlums\tlots\tno\tXL\r\nFigs\t2\r\n'
+        '"Pears\nripe"\t5\tTRUE\tmedium\r\nPlums\t0x10\tno\tLarge\r\nFigs\t2\r\n'
       ).defaultPrevented
     ).toBe(true);
     await settle();

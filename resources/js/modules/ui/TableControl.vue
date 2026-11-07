@@ -374,9 +374,9 @@
 
   /**
    * The value a pasted cell gives a column, or `undefined` when the column
-   * can't take it: number columns only take numbers, checkbox and lightswitch
-   * columns take yes/no words, and dropdown columns take an option's value
-   * or label.
+   * can't take it: number columns only take numbers a number input accepts,
+   * checkbox and lightswitch columns take yes/no words, and dropdown columns
+   * take an enabled option's value or label.
    */
   function pastedValue(
     key: string,
@@ -386,7 +386,8 @@
     const trimmed = text.trim();
     switch (props.control.props.columns[key]!.type) {
       case 'number':
-        return trimmed === '' || Number.isFinite(Number(trimmed))
+        return trimmed === '' ||
+          /^-?(\d+(\.\d+)?|\.\d+)(e[-+]?\d+)?$/i.test(trimmed)
           ? trimmed
           : undefined;
       case 'checkbox':
@@ -397,10 +398,13 @@
         return undefined;
       }
       case 'select': {
-        const options = (field.control?.props.options ?? []) as Array<{
-          label?: string;
-          value?: UiValue;
-        }>;
+        const options = (
+          (field.control?.props.options ?? []) as Array<{
+            label?: string;
+            value?: UiValue;
+            disabled?: boolean;
+          }>
+        ).filter((option) => !option.disabled);
         return (
           options.find((option) => String(option.value) === trimmed) ??
           options.find(
