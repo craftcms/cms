@@ -995,8 +995,8 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Element source headings can now have a `handle`, which gives their control panel navigation items stable IDs. ([#20247](https://github.com/craftcms/cms/pull/20247))
 
 #### Element Queries
-- Added `CraftCms\Cms\Element\Element::query()`. Static calls to element classes that aren’t macros, such as `Entry::section('news')`, return a new element query, as they do on Eloquent models.
-- Added `CraftCms\Cms\Element\Queries\ElementQuery::toBase()`, which returns a base query builder with the query’s params applied. Element queries can be passed to Laravel query builder methods that take a subquery, such as `whereIn()`, `whereExists()`, and `joinSub()`.
+- Added `CraftCms\Cms\Element\Element::query()`. Static calls to element classes that aren’t macros, such as `Entry::section('news')`, return a new element query, as they do on Eloquent models. ([#20450](https://github.com/craftcms/cms/pull/20450))
+- Added `CraftCms\Cms\Element\Queries\ElementQuery::toBase()`, which returns a base query builder with the query’s params applied. Element queries can be passed to Laravel query builder methods that take a subquery, such as `whereIn()`, `whereExists()`, and `joinSub()`. ([#20450](https://github.com/craftcms/cms/pull/20450))
 - Deprecated `craft\elements\db\ElementRelationParamParser`. `CraftCms\Cms\Database\ElementRelationParamFilter` should be used instead.
 - Deprecated `craft\elements\db\NestedElementQueryInterface`. `CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface` should be used instead.
 - Deprecated `craft\elements\db\NestedElementQueryTrait`. `CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements` should be used instead.
