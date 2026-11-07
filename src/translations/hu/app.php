@@ -1062,6 +1062,7 @@ return [
     'Looks like you are trying to load a template outside the template folder.' => 'Úgy tűnik, hogy olyan sablont próbálsz betölteni, ami a sablon könyvtár elérésén kívül van.',
     'Low' => 'Alacsony',
     'MCP Settings' => 'MCP-beállítások',
+    'MCP clients can’t sign in until Craft has OAuth signing keys.' => 'MCP clients can’t sign in until Craft has OAuth signing keys.',
     'MCP server' => 'MCP-szerver',
     'MCP settings saved.' => 'MCP-beállítások mentve.',
     'MCP' => 'MCP',
