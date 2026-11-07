@@ -9,6 +9,7 @@ use CraftCms\Cms\Config\AnchorsConfig;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
+use InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 
@@ -44,7 +45,7 @@ class Anchors
             [, $tag, $attributes, $content] = $match;
 
             // Reuse the heading’s own `id`, unless the anchor goes on a separate tag
-            $headingId = $config->useAdditionalTagToAnchorTo ? null : $this->idFromAttributes($attributes);
+            $headingId = $config->useAdditionalTagToAnchorTo ? null : $this->headingId("<$tag$attributes>");
             $anchorName = $headingId ?? $this->generateAnchorName($content, $language, $lowercase);
 
             $heading = preg_replace('/\s+/', ' ', strip_tags(str_replace(['&nbsp;', "\u{00A0}"], ' ', $content)));
@@ -96,12 +97,14 @@ class Anchors
         return Str::ascii(implode('-', $words), $language ?? app()->getLocale());
     }
 
-    private function idFromAttributes(string $attributes): ?string
+    private function headingId(string $openingTag): ?string
     {
-        if (preg_match('/id="(\w+)"/', $attributes, $match)) {
-            return $match[1];
+        try {
+            $id = Html::parseTagAttributes($openingTag, decode: true)['id'] ?? null;
+        } catch (InvalidArgumentException) {
+            return null;
         }
 
-        return null;
+        return is_string($id) && $id !== '' ? $id : null;
     }
 }

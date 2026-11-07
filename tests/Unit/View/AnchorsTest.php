@@ -42,6 +42,19 @@ it('puts the id on the heading itself, keeping an existing one, when the additio
     );
 });
 
+it('reads the heading’s actual id attribute', function (string $heading, string $expectedOpeningTag, string $expectedHref) {
+    Cms::config()->anchors(new AnchorsConfig()->useAdditionalTagToAnchorTo(false));
+
+    expect($this->anchors->parseHtml($heading))
+        ->toStartWith($expectedOpeningTag)
+        ->toContain("href=\"$expectedHref\"");
+})->with([
+    'hyphenated id' => ['<h2 id="intro-section">Intro</h2>', '<h2 id="intro-section">Intro ', '#intro-section'],
+    'single-quoted id' => ["<h2 id='single'>Single</h2>", "<h2 id='single'>Single ", '#single'],
+    'encoded id' => ['<h2 id="a&amp;b">Amp</h2>', '<h2 id="a&amp;b">Amp ', '#a&amp;b'],
+    'data-id is not the id' => ['<h2 data-id="metadata">Data</h2>', '<h2 data-id="metadata" id="data">', '#data'],
+]);
+
 it('generates anchor names from heading text', function (string $heading, ?string $language, bool $lowercase, string $expected) {
     expect($this->anchors->generateAnchorName($heading, $language, $lowercase))->toBe($expected);
 })->with([

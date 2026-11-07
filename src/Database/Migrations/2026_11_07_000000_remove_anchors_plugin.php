@@ -17,8 +17,18 @@ return new class extends Migration
         $projectConfig = app(ProjectConfig::class);
         $path = ProjectConfig::PATH_PLUGINS.'.anchors';
 
-        if ($projectConfig->get($path) !== null) {
+        if ($projectConfig->get($path) === null) {
+            return;
+        }
+
+        $muteEvents = $projectConfig->muteEvents;
+        $projectConfig->muteEvents = true;
+
+        try {
             $projectConfig->remove($path, 'Remove the Anchors plugin, which is part of Craft now');
+            $projectConfig->saveModifiedConfigData();
+        } finally {
+            $projectConfig->muteEvents = $muteEvents;
         }
     }
 };

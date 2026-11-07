@@ -30,7 +30,7 @@ class Anchors extends Directive
             'args' => [
                 [
                     'name' => 'tags',
-                    'type' => Type::listOf(Type::string()),
+                    'type' => Type::listOf(Type::nonNull(Type::string())),
                     'defaultValue' => self::DEFAULT_TAGS,
                     'description' => 'The tags to add anchor links to.',
                 ],
