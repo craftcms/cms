@@ -35,6 +35,8 @@ export interface CopiedFieldValue extends UiValueSnapshot {
   text: string;
   /** The value as HTML, as it was put on the system clipboard, if it was. */
   html?: string | null;
+  /** The value's items as text, when it's a list, such as selected options' labels. */
+  items?: string[] | null;
 }
 
 /** A value as other apps take it from the clipboard. */
@@ -42,6 +44,8 @@ export interface FieldValueFormats {
   text: string;
   /** Only when it says more than the text does. */
   html: string | null;
+  /** The value's items as text, when it's a list of them. */
+  items?: string[] | null;
 }
 
 const STORAGE_KEY = 'copiedFieldValue';
@@ -129,9 +133,14 @@ export function fieldValueFormats(
     return tableFormats(snapshot.value, columns as Record<string, TableColumn>);
   }
 
+  const labels = optionLabels(control.props);
+
   return {
-    text: valueText(snapshot.value, optionLabels(control.props)),
+    text: valueText(snapshot.value, labels),
     html: null,
+    items: Array.isArray(snapshot.value)
+      ? snapshot.value.map((item) => valueText(item, labels)).filter(Boolean)
+      : null,
   };
 }
 
@@ -289,34 +298,52 @@ class CopiedFieldValueNotification extends Notification {
   /**
    * The value's preview, when its control has one, or else its text. A
    * preview is only for looking at, so screen readers read the text with it.
+   * Either one runs off the card's edges when it's too big for it, and fades
+   * out as it reaches them.
    */
   override async getDetails(): Promise<HTMLElement | null> {
     const {text} = this.#value;
     const preview = await renderValuePreview(this.#value);
+
+    if (!preview && !text) {
+      return null;
+    }
+
     const container = document.createElement('div');
     container.className = 'copied-field-value';
+    const content = document.createElement('div');
     const textElement = document.createElement('span');
     textElement.textContent =
       text.length > PREVIEW_LENGTH ? `${text.slice(0, PREVIEW_LENGTH)}…` : text;
 
-    if (!preview) {
-      if (!text) {
-        return null;
-      }
-
-      container.append(textElement);
-
-      return container;
+    if (preview) {
+      content.className = 'copied-field-value-preview';
+      // Neither focusable nor read out, so it can't hold up the card either.
+      content.inert = true;
+      content.append(preview);
+      textElement.className = 'sr-only';
+      container.append(content, textElement);
+    } else {
+      content.className = 'copied-field-value-text';
+      content.append(textElement);
+      container.append(content);
     }
 
-    const visual = document.createElement('div');
-    visual.className = 'copied-field-value-preview';
-    // Neither focusable nor read out, so it can't hold up the card either.
-    visual.inert = true;
-    visual.append(preview);
-    textElement.className = 'sr-only';
-    container.classList.add('copied-field-value--preview');
-    container.append(visual, textElement);
+    // Fade out only the edges the value actually runs off. The content's
+    // size changes as a preview's chips or images load.
+    const observer = new ResizeObserver(() => {
+      container.toggleAttribute(
+        'data-overflow-block',
+        container.scrollHeight > container.clientHeight + 1
+      );
+      container.toggleAttribute(
+        'data-overflow-inline',
+        container.scrollWidth > container.clientWidth + 1
+      );
+    });
+    observer.observe(container);
+    observer.observe(content);
+    this.on('close', () => observer.disconnect());
 
     return container;
   }

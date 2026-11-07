@@ -67,6 +67,26 @@ const table: UiValuePreview = ({html}) => {
   return preview;
 };
 
+/** Lists, such as several selected options, as a pill for each item. */
+const list: UiValuePreview = ({items}) => {
+  if (!items?.length) {
+    return null;
+  }
+
+  const preview = document.createElement('ul');
+  preview.className = 'copied-field-value-list';
+  preview.append(
+    ...items.map((item) => {
+      const pill = document.createElement('li');
+      pill.textContent = item;
+
+      return pill;
+    })
+  );
+
+  return preview;
+};
+
 const previews = new Map<string, UiValuePreview>([
   ['craft:element-select', elementChips],
   ['craft:table', table],
@@ -84,17 +104,15 @@ export function registerValuePreview(
 }
 
 /**
- * The preview of a copied value, or `null` when its component has none, or
- * it couldn't be drawn, and the card shows the value's text instead.
+ * The preview of a copied value, or `null` when it has none, or it couldn't
+ * be drawn, and the card shows the value's text instead. Values from
+ * components without a preview of their own are previewed as lists, when
+ * they're lists.
  */
 export async function renderValuePreview(
   copied: CopiedFieldValue
 ): Promise<Node | null> {
-  const preview = previews.get(copied.component);
-
-  if (!preview) {
-    return null;
-  }
+  const preview = previews.get(copied.component) ?? list;
 
   try {
     return await preview(copied);

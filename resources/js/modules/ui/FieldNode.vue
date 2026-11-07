@@ -458,15 +458,13 @@
 
     // A value that was never set reads as the control's empty value.
     snapshot.value ??= value.value ?? null;
-    const {text, html} = fieldValueFormats(control.value, snapshot);
 
     copyFieldValue({
       ...snapshot,
       component: control.value.component,
       valueScope: control.value.valueScope,
       label: resolvedNode.value.props.label ?? null,
-      text,
-      html,
+      ...fieldValueFormats(control.value, snapshot),
     });
   });
 

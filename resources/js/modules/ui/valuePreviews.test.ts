@@ -104,6 +104,23 @@ describe('renderValuePreview', () => {
     );
   });
 
+  it('draws a list, such as selected options, as a pill for each item', async () => {
+    const preview = (await renderValuePreview(
+      copied({
+        component: 'craft:choice',
+        text: 'Red, green, Blue',
+        items: ['Red, green', 'Blue'],
+      })
+    )) as HTMLElement;
+
+    expect(
+      [...preview.querySelectorAll('li')].map((li) => li.textContent)
+    ).toEqual(['Red, green', 'Blue']);
+    expect(
+      await renderValuePreview(copied({component: 'craft:choice', items: []}))
+    ).toBeNull();
+  });
+
   it('lets a component register its own preview', async () => {
     const node = document.createElement('span');
     registerValuePreview('craft:test-preview', ({value}) => {

@@ -252,24 +252,10 @@
   }
 }
 
-/* A copied field value's text, a few lines of it, unless its control draws
-   a preview of it instead (see `valuePreviews.ts`). */
-.cp-messages .copied-field-value:not(.copied-field-value--preview) {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  overflow: hidden;
-  overflow-wrap: anywhere;
-  white-space: pre-line;
-}
-
-.cp-messages .copied-field-value-preview {
-  overflow: hidden;
-}
-
-/* A copied table runs under the Cancel button and off the card's right and
-   bottom edges, fading out as it reaches them. */
-.cp-messages .copied-field-value-notification:has(.copied-field-value-table) {
+/* A copied field value runs under the Cancel button, and off the card's
+   right and bottom edges when it's too big for the card, fading out as it
+   reaches them. `copiedFieldValue.ts` says which edges it runs off. */
+.cp-messages .copied-field-value-notification:has(.copied-field-value) {
   .notification-inner {
     display: grid;
     grid-template-columns: calc(20rem / 16) 1fr auto;
@@ -299,19 +285,64 @@
     margin-block-end: calc(var(--c-spacing) * -2.5);
     margin-inline-end: calc(var(--c-spacing) * -3.5);
   }
+}
 
-  /* A table that fits ends above the bottom fade; only one that doesn't
-     runs into it. */
-  .copied-field-value-preview {
-    --fade-block: calc(var(--c-spacing) * 6);
+/* Content that fits keeps the card's padding; content that doesn't runs
+   through it to the edge. */
+.cp-messages .copied-field-value {
+  --fade-inline: linear-gradient(#000, #000);
+  --fade-block: linear-gradient(#000, #000);
 
-    box-sizing: border-box;
-    max-block-size: calc(var(--c-spacing) * 30);
-    padding-block-end: var(--fade-block);
-    mask-image:
-      linear-gradient(to left, transparent, #000 calc(var(--c-spacing) * 12)),
-      linear-gradient(to top, transparent, #000 var(--fade-block));
-    mask-composite: intersect;
+  box-sizing: border-box;
+  max-block-size: calc(var(--c-spacing) * 36);
+  padding-block-end: calc(var(--c-spacing) * 2.5);
+  padding-inline-end: calc(var(--c-spacing) * 3.5);
+  overflow: hidden;
+  mask-image: var(--fade-inline), var(--fade-block);
+  mask-composite: intersect;
+
+  &[data-overflow-inline] {
+    --fade-inline: linear-gradient(
+      to left,
+      transparent,
+      #000 calc(var(--c-spacing) * 12)
+    );
+  }
+
+  &[data-overflow-block] {
+    --fade-block: linear-gradient(
+      to top,
+      transparent,
+      #000 calc(var(--c-spacing) * 10)
+    );
+  }
+}
+
+.cp-messages .copied-field-value-text {
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+/* A copied list's items, such as selected options, as pills. */
+.cp-messages .copied-field-value-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--c-spacing) * 1.5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--c-text-sm);
+
+  li {
+    max-width: 100%;
+    padding-block: calc(var(--c-spacing) * 0.5);
+    padding-inline: calc(var(--c-spacing) * 2.5);
+    overflow: hidden;
+    border: 1px solid var(--c-color-neutral-border-quiet);
+    border-radius: var(--c-radius-full);
+    background-color: var(--c-color-neutral-fill-quiet);
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 

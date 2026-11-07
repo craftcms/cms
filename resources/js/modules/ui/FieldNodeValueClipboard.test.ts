@@ -276,4 +276,27 @@ describe('fieldValueFormats', () => {
         '<tr><td>Two\tlines &quot;quoted&quot;</td><td></td></tr></tbody></table>'
     );
   });
+
+  it('keeps a list’s items apart, by their option labels', () => {
+    const formats = fieldValueFormats(
+      {
+        type: 'Choice',
+        component: 'craft:choice',
+        path: ['fields', 'colors'],
+        deltaGroup: ['fields', 'colors'],
+        mode: 'editable',
+        props: {
+          multiple: true,
+          options: [
+            {label: 'Red, dark', value: 'red'},
+            {label: 'Blue', value: 'blue'},
+          ],
+        },
+      },
+      {value: ['red', 'blue', 'teal']}
+    );
+
+    expect(formats.text).toBe('Red, dark, Blue, teal');
+    expect(formats.items).toEqual(['Red, dark', 'Blue', 'teal']);
+  });
 });
